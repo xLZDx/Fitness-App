@@ -24,12 +24,26 @@ final scheduledSessionRepositoryProvider =
 
 /// Live history of every scheduled session for the signed-in user, sorted
 /// ascending by [ScheduledSession.scheduledFor].
+///
+/// MVP-1: awaits `authUserProvider.future` rather than sampling
+/// `.valueOrNull`, which collapsed "auth still restoring" and "genuinely
+/// signed out" into the same branch -- reachable on every cold start, not
+/// just under adversarial timing. Same fix already applied to
+/// `currentSubscriptionProvider` and `screeningProfileProvider`; see
+/// `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md`. Note: several
+/// downstream consumers of this provider still read it via
+/// `.valueOrNull ?? const []`, which itself cannot distinguish loading from
+/// empty -- tracked separately as MVP-2, not fixed by this provider-level
+/// change alone.
 final scheduledSessionsProvider =
-    StreamProvider<List<ScheduledSession>>((ref) {
-  final user = ref.watch(authUserProvider).valueOrNull;
-  if (user == null) return Stream.value(const <ScheduledSession>[]);
+    StreamProvider<List<ScheduledSession>>((ref) async* {
+  final user = await ref.watch(authUserProvider.future);
+  if (user == null) {
+    yield const <ScheduledSession>[];
+    return;
+  }
   final repo = ref.watch(scheduledSessionRepositoryProvider);
-  return repo.watch(user.uid);
+  yield* repo.watch(user.uid);
 });
 
 /// Filters [scheduledSessionsProvider] down to upcoming pending sessions

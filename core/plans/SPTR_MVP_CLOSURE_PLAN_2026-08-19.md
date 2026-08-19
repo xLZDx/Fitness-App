@@ -41,41 +41,79 @@ each agent's transcript; verified myself where noted below.
 - **Marketing truth (allowed-gate claims)**: every publicly-showable claim spot-checked against
   code is true. `claim_lint.py` passes clean.
 
-## MVP BLOCKER
+## MVP BLOCKER — MVP-1, CLOSED (`workoutSessionTotalsProvider` and 5 siblings)
 
 **Auth-restore window renders false state as truth, on every cold start, for every returning
-user.** `workoutSessionTotalsProvider` / `workoutSessionsProvider`
-(`mobile/lib/features/workouts/state/workout_session_providers.dart:23-29,43-48`) read
-`ref.watch(authUserProvider).valueOrNull` and collapse "auth still resolving" and "genuinely
-signed out" into the same branch, returning a hard zero. This is not a timing race requiring
-adversarial ordering — `authUserProvider` provably sits in `AsyncLoading` on every cold start
-until Firebase finishes restoring the persisted session, so the zero branch is reachable on
-every launch. `deriveProgress` renders it as **"0 workouts, 0-day streak"** for a real user with
-real history — the exact false-state-as-truth condition the MVP definition rules out.
+user.** Six leaf providers read `ref.watch(authUserProvider).valueOrNull` and collapsed "auth
+still resolving" and "genuinely signed out" into the same branch, returning a hard default. Not
+a timing race requiring adversarial ordering — `authUserProvider` provably sits in `AsyncLoading`
+on every cold start until Firebase finishes restoring the persisted session, so the default
+branch is reachable on every launch.
 
-Same root cause, same reach, additional confirmed instances: `currentProfileProvider`
-(`profile_providers.dart:31-36`, shows "Sign in to sync" to an already-signed-in user),
-`programmesProvider`, `generatedPlanProvider`. The legacy `workoutLogsProvider`/
-`workoutTotalsProvider` (`workout_log_providers.dart`) have the same shape but are confirmed
-dead code — no UI references them — out of scope.
+Fixed (test-first: each reproduced with a failing test against the live bug, then fixed, then
+confirmed passing — see `core/DECISION_LOG.md`'s MVP-1 entry for the full list): `workoutSessionsProvider`,
+`workoutSessionTotalsProvider`, `currentProfileProvider`, `programmesProvider`,
+`generatedPlanProvider`, `scheduledSessionsProvider` (`mobile/lib/features/workouts/state/workout_session_providers.dart`,
+`profile_providers.dart`, `programme_providers.dart`, `ai_planner_providers.dart`,
+`scheduled_session_providers.dart`). Pattern: `await ref.watch(authUserProvider.future)` instead
+of sampling `.valueOrNull` — already proven 3x elsewhere in this codebase before this gate
+(`screeningProfileProvider`, `currentSubscriptionProvider`, the photo-store providers).
 
-This is not a hypothesis: reproducibility is provable from the code shape alone (a
-synchronously-reachable branch, not a suspected race). The fix pattern already exists and is
-proven three times elsewhere in this exact codebase (`screeningProfileProvider`,
-`currentSubscriptionProvider`, the photo-store providers) — `await ref.watch(authUserProvider.future)`
-instead of sampling `.valueOrNull`.
+**Correction to the type-design-analyzer review round**: it flagged `workoutLogsProvider`/
+`workoutTotalsProvider`/`logWorkoutActionProvider` (`workout_log_providers.dart`) as also live,
+citing an `ref.invalidate(workoutTotalsProvider)` call — that call is `LogWorkoutAction`'s own
+internal self-reference inside the same dead file, not evidence of an external caller. Verified
+directly (`grep -rn` across `mobile/lib`, zero external references): this file is genuinely dead
+code, superseded by `workout_session_providers.dart` per that file's own doc comment. Left
+untouched — fixing dead code would be wasted, risk-adding work, not a "smallest safe fix".
 
 **MVP NEED**: blocker — violates the north-star flow's own "auth path must not show false state
 as truth" point directly and reproducibly.
-**User failure without it**: every returning user with real workout history sees their progress
-apparently wiped, every single time they open the app, until the async gap closes.
-**Cheapest alternative considered**: none — this isn't a claim that can be hidden or an optional
-feature that can be cut; it's an existing screen lying about existing data. Must fix.
+**User failure without it**: every returning user with real workout/programme/scheduled-session
+history sees it apparently wiped, every single time they open the app, until the async gap closes.
+**Cheapest alternative considered**: none — an existing screen lying about existing data cannot be
+hidden or deferred like an unbuilt claim. Must fix.
 
-## MVP REQUIRED
+## MVP REQUIRED — found during MVP-1's own review, not yet started
 
-None found beyond closing the blocker above. The recon deliberately looked for gaps across all
-ten north-star points and found the rest already correctly built.
+Independent review of MVP-1 (flutter-reviewer + type-design-analyzer) surfaced two further real,
+evidenced gaps in the same "auth/session path lies to the user" criterion. Both are genuine
+(verified myself, not taken on the reviewer's word alone) but are their own properly-scoped
+gates, not folded into MVP-1's already-large diff — each touches a different layer.
+
+**MVP-2 — the fix at the provider layer doesn't reach the screen.** `workoutSessionHistoryProvider`,
+`activeProgrammeProvider`, `_sessionsOf` (`progress_page.dart:117-118`), and at least 10 more
+call sites across `home_dashboard_providers.dart`, `programme_providers.dart`,
+`recovery_providers.dart`, `offline_video_providers.dart`, `session_screening_providers.dart`,
+`workout_player_page.dart`, `form_check_providers.dart`, `setup_note_card.dart`,
+`exercise_reference.dart`, `set_timer_providers.dart`, `equipment_detail_page.dart` all read a
+now-correctly-loading provider via `.valueOrNull ?? default` — a plain (synchronous) `Provider`
+or a raw UI read cannot itself stay "loading", so it silently renders the same false default MVP-1
+was created to remove, one hop downstream. Verified concretely on Progress: `deriveProgress`
+(`progress_stats.dart:66-78`) has two branches for "no logs" — `totals == null` → `ProgressStats.empty`,
+`totals != null` → real numbers — and **both currently render identical zeros** to the user during
+the restore window, so MVP-1 alone changes nothing the user actually sees on that screen yet.
+**MVP NEED**: required — same criterion 8 as MVP-1, this is the part of it users actually see.
+**Cheapest alternative**: gate the affected screens' rendering on `.isLoading` (matching the
+codebase's own existing correct pattern at `entitlementStatusProvider` and
+`workout_player_page.dart:505-507`) rather than a structural rewrite.
+
+**MVP-3 — the auth-restore race also reaches app navigation itself, mitigated but not closed.**
+`app_router.dart`'s `redirect` (`:233-240`) reads `authRepo.currentUser` — a synchronous Firebase
+getter with the identical cold-start ambiguity (null until session restore completes, even for a
+returning signed-in user) — not through any resolved-stream contract. If reached before restore
+completes, a real signed-in user would be redirected to `/login`. Mitigated in practice: the
+splash screen (`splash_page.dart:26-32`) waits a fixed 1300ms before navigating to `/home` at all,
+and local session restore (a disk/keychain read, not a network call) normally completes well
+inside that window — so this is evidenced and real, but lower practical likelihood than MVP-1's
+instances, which had no buffer at all. `questionnaireDraftProvider`
+(`questionnaire_notifier.dart:14-23`) has the same defect shape in a synchronous `Notifier.build()`
+and is entangled with this same router path (onboarding is only reachable after `isSignedIn`
+resolves) rather than independently reachable.
+**MVP NEED**: required — this is literally the "authentication/session path" the criterion names,
+just mitigated rather than absent.
+**Cheapest alternative**: make the splash screen wait for `authUserProvider`'s actual first
+emission instead of a fixed timer, rather than restructuring the router's redirect contract.
 
 ## POST-MVP (evidence preserved, not started)
 
@@ -105,16 +143,20 @@ MRD-07), plus any future personalization/moat work. No new items added here.
 
 ## Execution order
 
-1. **MVP-1** — reproduce the auth-restore false-state collapse with a test first (no fixing on
-   hypothesis), then apply the proven `await authUserProvider.future` pattern to the confirmed
-   live instances, full suite + mutation proof, independent review (flutter-reviewer +
-   type-design-analyzer), commit, **push immediately**, verify remote SHA.
-2. **Release gate** — device/emulator pass over: install/build, first launch, auth, scan flow
+1. **MVP-1** — CLOSED. Auth-restore false-state collapse at the provider layer, 6 leaf providers,
+   test-first, full suite + `flutter analyze` clean, independent review (flutter-reviewer +
+   type-design-analyzer), findings fixed, committed, **pushed**, remote SHA verified.
+2. **MVP-2** — the same collapse one hop downstream, at the screens/derived-providers that
+   actually render to the user (Progress first, since it's the literal named symptom; then the
+   rest of the call-site list above). Same discipline: reproduce, smallest fix, test, review.
+3. **MVP-3** — the router-redirect and onboarding-notifier instances of the same defect,
+   mitigated by the splash screen's existing buffer but not structurally closed.
+4. **Release gate** — device/emulator pass over: install/build, first launch, auth, scan flow
    (known/ambiguous/unknown machine), exercise/instruction path, injury filtering, EN+RU,
    offline behavior, no console/runtime failures.
-3. **Final dream-team review** — MVP-only question: does anything block a minimal, honest,
+5. **Final dream-team review** — MVP-only question: does anything block a minimal, honest,
    safe release? Not "what could be better."
-4. **MVP READY** — report to operator and stop. Do not auto-start POST-MVP.
+6. **MVP READY** — report to operator and stop. Do not auto-start POST-MVP.
 
 ## Release gate checklist (MVP-only bar)
 

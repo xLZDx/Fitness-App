@@ -28,11 +28,21 @@ final localSensitiveStoreProvider =
     Provider<LocalSensitiveStore>((_) => InMemorySensitiveStore());
 
 /// The current user's profile (or null if signed out / not yet created).
-final currentProfileProvider = StreamProvider<UserProfile?>((ref) {
-  final user = ref.watch(authUserProvider).valueOrNull;
-  if (user == null) return Stream.value(null);
+///
+/// MVP-1: awaits `authUserProvider.future` rather than sampling
+/// `.valueOrNull`, which collapsed "auth still restoring" and "genuinely
+/// signed out" into the same branch -- reachable on every cold start, not
+/// just under adversarial timing. Same fix already applied to
+/// `currentSubscriptionProvider` and `screeningProfileProvider`; see
+/// `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md`.
+final currentProfileProvider = StreamProvider<UserProfile?>((ref) async* {
+  final user = await ref.watch(authUserProvider.future);
+  if (user == null) {
+    yield null;
+    return;
+  }
   final repo = ref.watch(profileRepositoryProvider);
-  return repo.watch(user.uid);
+  yield* repo.watch(user.uid);
 });
 
 /// How many of the user's stored injuries still need an area chosen.

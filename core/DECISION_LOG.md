@@ -10535,3 +10535,85 @@ Full per-surface evidence (file:line for every claim above) lives in the four re
 transcripts for this turn and is condensed into `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md`.
 
 **PUSH REQUIRED IMMEDIATELY AFTER THIS COMMIT, per the new standing rule.**
+
+---
+
+## 2026-08-19 — MVP-1: auth-restore false-state collapse fixed at the provider layer
+
+**Test-first, per the operator's explicit "не чинить гипотезу".** For each of six providers,
+wrote a regression test overriding `authUserProvider` with a `StreamController<AuthUser?>` that
+has not yet emitted (modeling a genuine cold-start restore window — `MockAuthRepository` replays
+synchronously and cannot reproduce this), ran it against the live (unfixed) code to confirm it
+failed with the exact predicted symptom, applied the fix, re-ran to confirm it passed. Fixed:
+`workoutSessionsProvider`, `workoutSessionTotalsProvider`
+(`mobile/lib/features/workouts/state/workout_session_providers.dart`), `currentProfileProvider`
+(`profile_providers.dart`), `programmesProvider` (`programme_providers.dart`),
+`generatedPlanProvider` (`ai_planner_providers.dart`), `scheduledSessionsProvider`
+(`scheduled_session_providers.dart`) — all six now `await ref.watch(authUserProvider.future)`
+instead of sampling `.valueOrNull`, matching the pattern already proven three times in this
+codebase before this gate (`screeningProfileProvider`, `currentSubscriptionProvider`, the
+photo-store providers). New/extended tests: `workout_session_providers_test.dart` (new, 3),
+`scheduled_session_providers_test.dart` (new, 1), `profile_providers_test.dart` (+1),
+`programme_providers_test.dart` (+1), `ai_planner_providers_test.dart` (new, 2) — 8 new tests.
+Full suite 2506/2506 (2498 + 8). `flutter analyze`: 7 issues, unchanged baseline, none introduced
+by this diff.
+
+**Independent review (flutter-reviewer, type-design-analyzer, parallel, no cross-seeding).**
+Both agents' first responses returned no plain-text result (only a tool-call trace); each had to
+be resumed twice via `SendMessage` asking explicitly for a plain-text restatement before a usable
+report arrived — noted here as a process observation, not a finding.
+
+type-design-analyzer: the fix itself is the correct type-level fix in all four then-changed
+files, matching the two precedents exactly — no defect. **BLOCKER**: recon had undercounted live
+instances; `scheduledSessionsProvider` was still live and unfixed, with 7+ real downstream
+consumers, and two of the files this gate had already touched (`programme_providers.dart`'s
+`activeProgrammeProgressProvider`, `ai_planner_providers.dart`'s `generatedPlanProvider` via
+`deloadVerdictProvider`) transitively depended on it — so the race survived inside the gate's own
+output. Fixed (see above). The same finding also named `workoutLogsProvider`/`workoutTotalsProvider`
+as live, citing `ref.invalidate(workoutTotalsProvider)` — checked directly rather than trusted:
+that call is `LogWorkoutAction.log`'s own internal reference to its sibling provider **inside the
+same file**, and a repo-wide grep found zero external callers of `workoutLogsProvider`,
+`workoutTotalsProvider`, or `logWorkoutActionProvider`/`LogWorkoutAction` — confirmed genuinely
+dead code (superseded by `workout_session_providers.dart` per that file's own doc comment),
+correcting this part of the finding rather than fixing unreferenced code. One MINOR
+(`questionnaireDraftProvider` has the same defect shape in a synchronous `Notifier.build()`,
+where the `.future` pattern doesn't drop in as-is) and two lower-severity notes (a harmless
+double-await already mirrored by an existing precedent; `GeneratedPlan` lacking value equality,
+unlike its siblings `WorkoutLogTotals`/`Programme`) deferred — see MVP-3/backlog below.
+
+flutter-reviewer: no defect in the five call sites changed at the time of its review or their
+tests — sound, correctly modeling the cold-start window, covering both the loading-window and
+genuinely-signed-out halves of the bug class. **MAJOR** (its own words: "not a regression," but a
+real gap): most of the real screens that display this data read the now-correctly-loading
+providers through a `.valueOrNull ?? default` collapse one hop downstream (a plain synchronous
+`Provider` cannot itself suspend), so the fix does not yet visibly change what Progress, Home,
+Programmes, or Profile actually show during the restore window. Verified concretely, not taken on
+trust: `progress_page.dart:29-36` reads `workoutSessionHistoryProvider` (`.valueOrNull ?? []`) and
+`workoutSessionTotalsProvider.valueOrNull` directly; `deriveProgress`'s own two branches for
+"no logs" (`totals == null` → `ProgressStats.empty`; `totals != null` → real totals,
+`progress_stats.dart:66-78`) currently render **identical zeros** either way during the window —
+this gate's fix changes the provider's honesty, not yet the pixel the user sees. Logged as
+**MVP-2**, its own gate, not folded into this diff (touches 10+ files across Home/Progress/
+Programmes/workout-player/form-check/etc., a materially different, larger-blast-radius change
+than a provider-definition swap).
+
+**A further finding, found by me while verifying the review's scope, not by either reviewer**:
+`app_router.dart`'s `redirect` (`:233-240`) reads `authRepo.currentUser` — a synchronous Firebase
+getter with the identical cold-start ambiguity, not a resolved-stream contract — so a real
+signed-in user reached before restore completes would be redirected to `/login`. Mitigated in
+practice by `splash_page.dart`'s fixed 1300ms wait before ever navigating past `/splash` (local
+session restore is a disk/keychain read, normally well inside that window), but not structurally
+closed. `questionnaireDraftProvider` has the same defect shape and is entangled with this same
+path (onboarding is only reachable once `isSignedIn` resolves). Logged as **MVP-3**.
+
+**MVP scope-pressure-test applied explicitly, per the operator's own required format:**
+MVP-1 (provider layer) — BLOCKER, no cheaper alternative, an existing screen was lying about
+existing data. MVP-2 (screen layer) — REQUIRED, same criterion 8, cheapest alternative is gating
+the affected screens on `.isLoading` rather than restructuring; not folded into MVP-1 because of
+its size. MVP-3 (router/navigation layer) — REQUIRED but lower practical likelihood than MVP-1
+given the splash buffer; cheapest alternative is making the splash wait for the real first auth
+emission rather than a fixed timer, not a router redesign.
+
+Full plan updated: `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md`.
+
+**PUSH REQUIRED IMMEDIATELY AFTER THIS COMMIT, per the new standing rule.**
