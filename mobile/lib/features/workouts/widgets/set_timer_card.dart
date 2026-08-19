@@ -5,7 +5,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/app_buttons.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_metric.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../../equipment/data/equipment_models.dart';
 import '../data/set_session.dart';
 import '../state/set_timer_providers.dart';
@@ -84,7 +85,7 @@ class SetTimerCard extends ConsumerWidget {
       SetPhase.idle => (l10n.timerReady, AppPalette.auroraViolet),
     };
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('workout.set_timer'),
       child: Column(
         children: [
@@ -110,58 +111,56 @@ class SetTimerCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 14),
-          SizedBox(
-            width: 176,
-            height: 176,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 176,
-                  height: 176,
-                  child: TweenAnimationBuilder<double>(
-                    // Animated between ticks so the ring sweeps rather than
-                    // stepping once a second — a stepping ring reads as a
-                    // stopwatch that is lagging.
-                    tween: Tween(end: timer.isIdle ? 0.0 : timer.progress),
-                    duration: const Duration(milliseconds: 900),
-                    curve: Curves.linear,
-                    builder: (_, value, __) => CircularProgressIndicator(
-                      value: value,
-                      strokeWidth: 12,
-                      strokeCap: StrokeCap.round,
-                      backgroundColor:
-                          theme.colorScheme.onSurface.withValues(alpha: 0.08),
-                      valueColor: AlwaysStoppedAnimation(colour),
+          // Session 150: the handoff's hero-ring geometry for this screen
+          // (`HudRing`'s own doc comment) — r 66, 3pt arc, guide at r 53,
+          // glow 9. `TweenAnimationBuilder` is unchanged from before the
+          // reskin: it is what makes the ring sweep between ticks rather
+          // than stepping once a second, and only the painted widget under
+          // it changed.
+          TweenAnimationBuilder<double>(
+            tween: Tween(end: timer.isIdle ? 0.0 : timer.progress),
+            duration: const Duration(milliseconds: 900),
+            curve: Curves.linear,
+            builder: (_, value, __) => HudRing(
+              size: 150,
+              radius: 66,
+              strokeWidth: 3,
+              guideRadius: 53,
+              glowBlur: 9,
+              progress: value,
+              color: colour,
+              // No `semanticsLabel` here, unlike the Scan confidence ring:
+              // `HudRing` wraps its label in `ExcludeSemantics` when one is
+              // given (`hud_metric.dart`), and this ring's `child` IS the
+              // live information -- the countdown and the phase name, not a
+              // decorative echo of a value already announced elsewhere.
+              // Excluding it would silence the one thing a screen-reader
+              // user following a timed set actually needs.
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    timer.isIdle
+                        ? _clock(plan.workSeconds)
+                        : _clock(timer.secondsLeft),
+                    key: const Key('workout.set_timer.clock'),
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      height: 1,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      timer.isIdle
-                          ? _clock(plan.workSeconds)
-                          : _clock(timer.secondsLeft),
-                      key: const Key('workout.set_timer.clock'),
-                      style: theme.textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        height: 1,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
+                  const SizedBox(height: 4),
+                  Text(
+                    label.toUpperCase(),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      letterSpacing: 2,
+                      fontWeight: FontWeight.w900,
+                      color: theme.colors.textSecondary,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      label.toUpperCase(),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        letterSpacing: 2,
-                        fontWeight: FontWeight.w900,
-                        color: theme.colors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),

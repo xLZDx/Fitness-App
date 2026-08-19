@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../form_check/state/form_check_providers.dart';
 import '../programmes/data/programme_labels.dart';
@@ -166,182 +167,200 @@ class WorkoutPlayerPage extends ConsumerWidget {
 
     return FrostedScaffold(
       appBar: GlassAppBar(title: AppLocalizations.of(context).equipmentWorkout),
-      body: exercise.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-            child: Text(AppLocalizations.of(context).equipmentCouldNotLoad(e))),
-        data: (resolution) {
-          // Withheld, not missing. Saying "we couldn't find that exercise" to
-          // someone who was linked to it — from their own scheduled session,
-          // or a friend, or a plan — is false, and it hides the one fact they
-          // can act on: it is their own injury list doing this, and they can
-          // change it.
-          if (resolution.hiddenForInjury) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
-              child: GlassCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)
-                          .equipmentHiddenForInjury(resolution.exercise!.title),
-                      style: theme.textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      AppLocalizations.of(context).equipmentHiddenForInjuryHint,
-                      style: theme.textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-          // Withheld for a reason that is not an injury — the screening, a
-          // movement restriction, post-operative restrictions. Before Gate N
-          // this fell through to "we couldn't find that exercise", which is
-          // the exact lie the branch above exists to avoid, told for a
-          // different reason.
-          if (resolution.visible == null && resolution.exercise != null) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
-              child: EligibilityNotice(
-                key: const Key('player.withheld'),
-                reasons: resolution.withheldFor,
-                onReviewProfile: () => GoRouter.of(context).push('/onboarding'),
-              ),
-            );
-          }
-          final item = resolution.visible;
-          if (item == null) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
-              child: GlassCard(
-                child: Text(
-                  AppLocalizations.of(context)
-                      .equipmentWeCouldnTFindThatExercise,
-                  style: theme.textTheme.titleMedium,
-                ),
-              ),
-            );
-          }
-          // Which body to demonstrate on. Read from the profile, and null when
-          // the user has not said or has said they would rather not — in which
-          // case there is nothing to infer from, and the model falls back to
-          // whichever clip exists.
-          final body = ExerciseItem.bodyForGender(
-              ref.watch(currentProfileProvider).valueOrNull?.personal.gender);
-          final demoVideo = item.playableVideoFor(body) ?? item.videoUrl;
-          return SmoothScrollList(
-            padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
-            children: [
-              // F020: this screen builds its own list rather than calling
-              // `exerciseReferenceSections`, so it needs the same
-              // catalog-wide "screened by rules, not a clinician" disclosure
-              // inserted separately -- see that function's own comment.
-              const SafetyDisclosure(compact: true),
-              const SizedBox(height: 16),
-              // Above the exercise, not below it: the first question someone
-              // who tapped a day has is "what am I doing today and where am I
-              // in it", and that has to be answerable without scrolling past
-              // a video.
-              if (dayId != null) ...[
-                _DayStrip(dayId: dayId!, currentExerciseId: exerciseId),
-                const SizedBox(height: 16),
-              ],
-              ExerciseHero(exercise: item),
-              const SizedBox(height: 16),
-              // A clip or nothing. The two photograph fallbacks that used to sit
-              // here are gone: `frames` and `imageUrls` are both stills of a man
-              // in a gym, and putting either in front of an exercise made the
-              // catalog look like two different apps stitched together.
-              //
-              // Lists cannot reach this state at all — `withDemonstration`
-              // removes those exercises upstream. This page can still be opened
-              // by deep link or from a logged workout, so the honest card has to
-              // exist here too rather than relying on nobody arriving.
-              if (demoVideo != null)
-                ExerciseVideoBlock(url: demoVideo, poster: item.posterFor(body))
-              else
-                ExerciseNoVideoFallback(),
-              if (item.muscles.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                GlassCard(
+      // `HudPanel`/`HudSurface` frost their backdrop with `BackdropFilter` by
+      // default (`HudQuality.frostedOf` falls back to true with no ancestor).
+      // This is the one screen that can carry up to nine of them mounted at
+      // once -- the day strip, the muscle map, the suggested-weight chip, the
+      // set timer, the rest timer and all four action buttons -- and it is
+      // the exact page `GlassCard`'s own `blur: false` default was written
+      // for: "the workout page carried 11 of them... that is what made
+      // scrolling crawl" (`glass.dart`). Opting this page out restores that
+      // same guarantee under the new kit rather than reintroducing the bug it
+      // fixed.
+      body: HudQuality(
+        frostedGlass: false,
+        child: exercise.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(
+              child:
+                  Text(AppLocalizations.of(context).equipmentCouldNotLoad(e))),
+          data: (resolution) {
+            // Withheld, not missing. Saying "we couldn't find that exercise" to
+            // someone who was linked to it — from their own scheduled session,
+            // or a friend, or a plan — is false, and it hides the one fact they
+            // can act on: it is their own injury list doing this, and they can
+            // change it.
+            if (resolution.hiddenForInjury) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
+                child: HudPanel(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(AppLocalizations.of(context).equipmentMusclesWorked,
-                          style: theme.textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w800)),
+                      Text(
+                        AppLocalizations.of(context).equipmentHiddenForInjury(
+                            resolution.exercise!.title),
+                        style: theme.textTheme.titleMedium,
+                      ),
                       const SizedBox(height: 8),
-                      MuscleMap(
-                        primary: item.primaryMuscles.isEmpty
-                            ? item.muscles.take(1).toList()
-                            : item.primaryMuscles,
-                        secondary: item.muscles
-                            .where((m) => !item.primaryMuscles.contains(m))
-                            .toList(),
+                      Text(
+                        AppLocalizations.of(context)
+                            .equipmentHiddenForInjuryHint,
+                        style: theme.textTheme.bodyMedium,
                       ),
                     ],
                   ),
                 ),
-              ],
-              const SizedBox(height: 16),
-              ExerciseStepsCard(exercise: item),
-              // Right under the technique steps, which is where the design
-              // puts it and where it belongs: you have just read how the
-              // movement should look, and this offers to watch you do it.
-              //
-              // Shown ONLY where the coach can actually judge the movement --
-              // `formCoachSupports`, not merely `poseTargetId != null`. 570
-              // catalog rows carry a pattern tag; one pattern has authored
-              // targets AND a rep signal. Offering the other seven would teach
-              // users the feature is broken, and that lesson is expensive to
-              // undo.
-              if (formCoachSupports(item.poseTargetId)) ...[
+              );
+            }
+            // Withheld for a reason that is not an injury — the screening, a
+            // movement restriction, post-operative restrictions. Before Gate N
+            // this fell through to "we couldn't find that exercise", which is
+            // the exact lie the branch above exists to avoid, told for a
+            // different reason.
+            if (resolution.visible == null && resolution.exercise != null) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
+                child: EligibilityNotice(
+                  key: const Key('player.withheld'),
+                  reasons: resolution.withheldFor,
+                  onReviewProfile: () =>
+                      GoRouter.of(context).push('/onboarding'),
+                ),
+              );
+            }
+            final item = resolution.visible;
+            if (item == null) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
+                child: HudPanel(
+                  child: Text(
+                    AppLocalizations.of(context)
+                        .equipmentWeCouldnTFindThatExercise,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                ),
+              );
+            }
+            // Which body to demonstrate on. Read from the profile, and null when
+            // the user has not said or has said they would rather not — in which
+            // case there is nothing to infer from, and the model falls back to
+            // whichever clip exists.
+            final body = ExerciseItem.bodyForGender(
+                ref.watch(currentProfileProvider).valueOrNull?.personal.gender);
+            final demoVideo = item.playableVideoFor(body) ?? item.videoUrl;
+            return SmoothScrollList(
+              padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
+              children: [
+                // F020: this screen builds its own list rather than calling
+                // `exerciseReferenceSections`, so it needs the same
+                // catalog-wide "screened by rules, not a clinician" disclosure
+                // inserted separately -- see that function's own comment.
+                const SafetyDisclosure(compact: true),
                 const SizedBox(height: 16),
-                ExerciseFormCoachCard(),
-              ],
-              if (item.contraindications.isNotEmpty) ...[
+                // Above the exercise, not below it: the first question someone
+                // who tapped a day has is "what am I doing today and where am I
+                // in it", and that has to be answerable without scrolling past
+                // a video.
+                if (dayId != null) ...[
+                  _DayStrip(dayId: dayId!, currentExerciseId: exerciseId),
+                  const SizedBox(height: 16),
+                ],
+                ExerciseHero(exercise: item),
                 const SizedBox(height: 16),
-                ExerciseCautionCard(item: item),
-              ],
-              const SizedBox(height: 12),
-              _SuggestedWeightChip(exerciseId: item.id),
-              const SizedBox(height: 16),
-              // Above the tools and below the instructions: you read how to do
-              // it, then you do it. Operator: "к упражнения нужно добавить
-              // таймер... нужна кнопка начать упражнение".
-              SetTimerCard(exercise: item),
-              const SizedBox(height: 12),
-              _ToolsRow(),
-              if (ref.watch(restTimerVisibleProvider)) ...[
+                // A clip or nothing. The two photograph fallbacks that used to sit
+                // here are gone: `frames` and `imageUrls` are both stills of a man
+                // in a gym, and putting either in front of an exercise made the
+                // catalog look like two different apps stitched together.
+                //
+                // Lists cannot reach this state at all — `withDemonstration`
+                // removes those exercises upstream. This page can still be opened
+                // by deep link or from a logged workout, so the honest card has to
+                // exist here too rather than relying on nobody arriving.
+                if (demoVideo != null)
+                  ExerciseVideoBlock(
+                      url: demoVideo, poster: item.posterFor(body))
+                else
+                  ExerciseNoVideoFallback(),
+                if (item.muscles.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  HudPanel(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                            AppLocalizations.of(context).equipmentMusclesWorked,
+                            style: theme.textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 8),
+                        MuscleMap(
+                          primary: item.primaryMuscles.isEmpty
+                              ? item.muscles.take(1).toList()
+                              : item.primaryMuscles,
+                          secondary: item.muscles
+                              .where((m) => !item.primaryMuscles.contains(m))
+                              .toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                ExerciseStepsCard(exercise: item),
+                // Right under the technique steps, which is where the design
+                // puts it and where it belongs: you have just read how the
+                // movement should look, and this offers to watch you do it.
+                //
+                // Shown ONLY where the coach can actually judge the movement --
+                // `formCoachSupports`, not merely `poseTargetId != null`. 570
+                // catalog rows carry a pattern tag; one pattern has authored
+                // targets AND a rep signal. Offering the other seven would teach
+                // users the feature is broken, and that lesson is expensive to
+                // undo.
+                if (formCoachSupports(item.poseTargetId)) ...[
+                  const SizedBox(height: 16),
+                  ExerciseFormCoachCard(),
+                ],
+                if (item.contraindications.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  ExerciseCautionCard(item: item),
+                ],
                 const SizedBox(height: 12),
-                // The duration is set where the set is logged, not here: the
-                // card renders whatever rest is in progress, and a widget that
-                // took a duration would restart one on every rebuild.
-                const RestTimer(),
+                _SuggestedWeightChip(exerciseId: item.id),
+                const SizedBox(height: 16),
+                // Above the tools and below the instructions: you read how to do
+                // it, then you do it. Operator: "к упражнения нужно добавить
+                // таймер... нужна кнопка начать упражнение".
+                SetTimerCard(exercise: item),
+                const SizedBox(height: 12),
+                _ToolsRow(),
+                if (ref.watch(restTimerVisibleProvider)) ...[
+                  const SizedBox(height: 12),
+                  // The duration is set where the set is logged, not here: the
+                  // card renders whatever rest is in progress, and a widget that
+                  // took a duration would restart one on every rebuild.
+                  const RestTimer(),
+                ],
+                const SizedBox(height: 20),
+                _MarkCompleteButton(
+                  exercise: item,
+                  sessionKey: _sessionKey,
+                  inDay: dayId != null,
+                ),
+                const SizedBox(height: 12),
+                _AddExerciseButton(
+                  entryExercise: item,
+                  sessionKey: _sessionKey,
+                  inDay: dayId != null,
+                ),
+                const SizedBox(height: 12),
+                _ScheduleButton(exercise: item),
+                const SizedBox(height: 12),
+                _AddToProgrammeButton(exercise: item),
               ],
-              const SizedBox(height: 20),
-              _MarkCompleteButton(
-                exercise: item,
-                sessionKey: _sessionKey,
-                inDay: dayId != null,
-              ),
-              const SizedBox(height: 12),
-              _AddExerciseButton(
-                entryExercise: item,
-                sessionKey: _sessionKey,
-                inDay: dayId != null,
-              ),
-              const SizedBox(height: 12),
-              _ScheduleButton(exercise: item),
-              const SizedBox(height: 12),
-              _AddToProgrammeButton(exercise: item),
-            ],
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -386,7 +405,7 @@ class _DayStrip extends ConsumerWidget {
     final position =
         planned.indexWhere((e) => e.exerciseId == currentExerciseId);
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('player.dayStrip'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -706,7 +725,7 @@ class _MarkCompleteButton extends ConsumerWidget {
       }
     }
 
-    return GlassCard(
+    return HudPanel(
       // Keyed so a test can drive the write path rather than only the pure
       // merge function beneath it. The invariant this gate exists for -- a day
       // is ONE session -- lives in what this button assembles, not in
@@ -898,7 +917,7 @@ class _AddExerciseButton extends ConsumerWidget {
       );
     }
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('player.addExercise'),
       padding: EdgeInsets.zero,
       onTap: loading ? null : onTap,
@@ -1143,7 +1162,7 @@ class _ScheduleButton extends ConsumerWidget {
       );
     }
 
-    return GlassCard(
+    return HudPanel(
       padding: EdgeInsets.zero,
       onTap: loading ? null : onTap,
       child: Container(
@@ -1247,7 +1266,7 @@ class _AddToProgrammeButton extends ConsumerWidget {
       );
     }
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('player.addToProgramme'),
       padding: EdgeInsets.zero,
       onTap: loading ? null : onTap,
@@ -1305,7 +1324,7 @@ class _SuggestedWeightChip extends ConsumerWidget {
     final colors = suggestion.isDecrease
         ? const [AppPalette.auroraPeach, AppPalette.auroraPink]
         : const [AppPalette.auroraTeal, AppPalette.auroraLime];
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       child: Row(
         children: [

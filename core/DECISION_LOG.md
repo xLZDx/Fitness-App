@@ -18064,3 +18064,67 @@ file via the Artifact tool (English is the durable in-repo record only, per hous
 
 Suites: none -- report authoring only, no app source changed by this entry's own commit. PUSH: pending
 this commit (operator rule: push immediately, verify remote==local before further work).
+
+## 2026-08-19 -- MVP Gate M5: Active Session reskinned onto the HUD kit, two real defects found and fixed
+
+**Same conservative-reskin discipline as M2/M4**, applied to `workout_player_page.dart` (the Session
+screen), `rest_timer.dart` and `set_timer_card.dart`. Read the full page (1367 lines), its two timer
+widgets, `workout_player_day_test.dart` (457 lines, 11 pinned behaviors), and the design handoff's
+Session `sc-if` block (Sunset.dc.html lines 127-180: a 150px hero ring, weight/sets side info, primary
+CTA, scrollable set list) before changing anything. `FrostedScaffold`/`GlassAppBar` deliberately left
+untouched, same precedent as Scanner's `ScanTopBar` -- this is a container swap, not a navigation-shell
+rewrite.
+
+**What changed:** every `GlassCard` in `workout_player_page.dart` (hidden-for-injury card, not-found
+card, muscle-map card, day strip, and all four action buttons -- Mark Complete/Add Exercise/Schedule/Add
+to Programme -- plus the suggested-weight chip) -> `HudPanel`, `key`/`padding`/`onTap` carried over
+identically. `rest_timer.dart`'s outer card -> `HudPanel`; its 56px inline `CircularProgressIndicator`
+was deliberately left alone -- no handoff geometry exists at that size (only Home 112, Session 150,
+Progress 104, Scan 78 are documented), and inventing a fifth would be exactly the fabrication this
+project's fidelity rule forbids. `set_timer_card.dart`'s outer card -> `HudPanel`; its 176px
+`CircularProgressIndicator` (already wrapped in a `TweenAnimationBuilder` for the between-tick sweep) ->
+`HudRing` at the exact "Session 150" geometry (r 66, 3pt, guide r 53, glow 9) `hud_metric.dart`'s own doc
+comment had already reserved for this screen but never wired to a real value -- the natural real-data
+equivalent of the handoff's hero ring for this screen's primary metric (current set/phase/countdown), the
+same "bind a pre-reserved geometry to real data" pattern M4 used for the Scan confidence ring.
+
+**Two independent review agents** (`flutter-reviewer`, `a11y-architect`) ran in parallel against the
+diff plus `hud_surface.dart`/`hud_metric.dart`/`glass.dart`. Both real findings were fixed before this
+commit, not deferred:
+
+- **MAJOR (a11y, FACT):** `HudRing.semanticsLabel` wraps its `child` in `ExcludeSemantics`
+  (`hud_metric.dart:136-141`) -- correct for the Scan ring, whose child is a decorative echo of a value
+  already in the semantics `value:` string, but wrong here: `SetTimerCard`'s ring child is the *only*
+  place the live countdown and phase name (`0:45`, `WORK`/`REST`/`GET READY`) exist, and excluding it
+  would silence exactly what a screen-reader user following a timed set needs. Fixed by dropping
+  `semanticsLabel` on this call site so the clock/phase `Text` nodes stay in the accessibility tree,
+  unlike the Scan ring where the label is correct.
+- **MAJOR (perf, FACT):** `HudSurface` frosts with `BackdropFilter` whenever `HudQuality.frostedOf`
+  finds no ancestor override, which defaults to true (`hud_surface.dart:88-90`) -- and this screen can
+  mount up to nine `HudPanel`s at once (day strip, muscle card, weight chip, both timers, four action
+  buttons). This is the exact regression `GlassCard.blur`'s own doc comment names this same page for
+  ("the workout page carried 11 of them... that is what made scrolling crawl"). Fixed by wrapping this
+  page's body in `HudQuality(frostedGlass: false, child: ...)` -- a page-scoped opt-out, not a change to
+  the shared HUD default (which Home/Workouts/Scanner also don't set, a pre-existing design-system gap
+  out of this gate's scope; noted for whoever owns the HUD scroll-perf story, not fixed here).
+
+Both reviewers separately confirmed no BLOCKER: every `Key`, `onTap`, provider read, and safety/
+persistence branch (session merge logic, the cold-start race guard, the sequential double-tap guard) is
+untouched; `GlassCard`-only params (`tint`/`gradient`/`blur`/`floating`) are not used at any swapped call
+site, so nothing was silently dropped; `HudRing`'s own overflow hardening protects the clock/label
+`Column` at the new 150px geometry without a new test.
+
+**Verification:** `flutter analyze` on all three touched files: clean. Targeted:
+`workout_player_day_test.dart` 11/11, `rest_timer_test.dart` + `rest_timer_card_test.dart` +
+`set_timer_controller_test.dart` all green, `hud_components_test.dart` 47/47, `blur_budget_test.dart`
+green (confirms the `HudQuality` opt-out didn't need its own new test -- the existing suite only pins
+`GlassCard`, not `HudSurface`, a gap noted by the reviewer as pre-existing and out of scope). Full suite:
+3118/3119 -- the same pre-existing, order-dependent scheduler flake recorded at every prior gate this
+session (`test/widgets/app_buttons_test.dart` origin, same `glass_nav_bar_test.dart`/`widget_test.dart`
+neighbor cluster), identical count to M4's own final tally, i.e. zero new failures from this gate.
+
+**MVP status:** M1-M5 closed. M6 (Profile) is next, per the standing mandate's own sequence.
+
+Suites: `flutter analyze` clean; targeted suites above all green; full suite 3118/3119 (1 pre-existing
+unrelated flake). PUSH: pending this entry's commit (operator rule: push immediately, verify
+remote==local before further work).

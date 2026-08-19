@@ -7,7 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/app_buttons.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../state/rest_timer_providers.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 
@@ -85,8 +85,7 @@ class _RestTimerState extends ConsumerState<RestTimer> {
     if (outcome != null) {
       // After the frame: firing a haptic and a callback from inside build would
       // mutate state during a build.
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => _announce(outcome));
+      WidgetsBinding.instance.addPostFrameCallback((_) => _announce(outcome));
     } else {
       _announced = null;
     }
@@ -94,7 +93,7 @@ class _RestTimerState extends ConsumerState<RestTimer> {
     final remaining = rest.remaining(now);
     final done = outcome != null;
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('rest-timer'),
       padding: const EdgeInsets.all(16),
       child: Column(
