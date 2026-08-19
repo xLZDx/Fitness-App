@@ -10364,3 +10364,86 @@ test — same repo-wide gap as every other Firestore-backed repository here (no
 `fake_cloud_firestore`/mocking dependency), sharing rather than introducing that boundary.
 
 **PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
+
+---
+
+## 2026-08-19 — Gate H: contribution-pipeline measurement (MRD-07 slice) shipped
+
+**Reconnaissance concluded "needs new infrastructure" — a dashboard, scheduled digest, or
+notification loop, none of which this repo has an audience/cadence decision for — but flagged a
+narrower option it hadn't ruled out: a read-only report script using only patterns already shipped.**
+Five targeted questions with file:line evidence (full report in the D0 note) established: no
+operator/admin-facing reader of `MachineCard` data exists anywhere despite three doc comments
+claiming a collection-group read is "possible"; no analytics/reporting subsystem exists to extend;
+MRD-07 is referenced in exactly three places, all agreeing measurement was scoped out, never in; the
+scanner's own "seen N times" copy is per-user, never cross-user; and — the strongest reason to stop
+short of anything actionable — nothing in the shipped app ever writes `MachineCardStatus.inCatalog`
+or `.declined`, so the `preparing -> inCatalog` transition a ranking would nominally help trigger has
+no writer at all today, making a dashboard or notification loop premature regardless of who'd read it.
+
+**Decision: ship exactly the read-only script the evidence supports, nothing that requires deciding
+audience or cadence.** `scripts/ops/machine_card_contribution_report.py` runs a Firestore REST
+collection-group query over `machine_cards` (mirroring `strip_health_from_profiles.py`'s own
+auth/query pattern), aggregates `timesSeen` per machine id across every user, and prints a table
+ranked by total sightings, tie-broken by distinct-user count so one enthusiastic photographer cannot
+outrank a machine three separate people asked about. No write path (nothing to mutate — no `--apply`
+unlike its migration-script precedent), no schema change, no Firestore rules change, no Cloud
+Function, no scheduled job. Explicitly not attempted: automating the `preparing -> inCatalog`
+transition (nothing writes it today; deciding what should is a separate, undecided piece of scope)
+and any dashboard/notification delivery (no evidence of intended audience or cadence — inventing one
+would be a product decision, not a wiring task). This is the final gate of the standing Gate D-H
+instruction; no Gate I is defined anywhere in this repo's evidence.
+
+**Independent review (security-reviewer, python-reviewer, parallel, no cross-seeding) found no
+BLOCKER/MAJOR; four real MINOR correctness findings, all fixed and mutation-tested.**
+security-reviewer: clean, two MINOR hardening suggestions applied (narrow the REST query's `select`
+to only fields the report reads, so `recognisedAs`/`confidence`/free-text `uses` never cross the wire
+at all; confirmed the never-print-uid guarantee has direct test coverage). python-reviewer: (1)
+`_decode_value` had no `timestampValue` branch even though the model's own read side documents
+Firestore-native Timestamps as a real possibility for date fields — a document written that way
+silently decoded to `None`; fixed by adding the branch. (2) `aggregate()` compared ISO timestamp
+strings lexicographically; Dart's `toIso8601String()` omits the microsecond suffix when it's zero,
+so the same instant can appear at two different string widths and sort backwards under raw string
+comparison — fixed with `_earlier`/`_later`/`_parse_iso` helpers that parse into real `datetime`
+objects first (a naive/aware `datetime` comparison hazard in an earlier draft of this fix was caught
+and avoided before ever running a test, by re-reading the code rather than debugging a crash). (3)
+`isinstance(times_seen, int)` accepted Python booleans (`bool` is an `int` subclass) — a hand-edited
+`timesSeen: true` would silently contribute a phantom sighting; fixed with an explicit
+`and not isinstance(times_seen, bool)` exclusion. (4) `render()`'s fixed-width name column truncated
+silently — two machines whose names agree for the first 32 characters (plausible for verbose
+vision-model-generated descriptions) would print as identical rows with no signal they differ; fixed
+with a `_display_name()` helper that truncates with a visible `~` marker, while `aggregate()` itself
+still always keys on the untruncated id so display truncation can never merge two real rows. Also
+self-caught, before any external review: a `TestAggregate` tiebreak test that used machine names
+happening to sort correctly by name alone even without the real distinct-user tiebreak (silently
+passing against a mutation that should have failed it) — caught by reading mutation-test output
+carefully, fixed by renaming the fixture data so alphabetical order alone would rank wrong; and a
+backwards `is_still_unresolved` property (`statuses <= {'preparing'}`, true only if EVERY sighting
+is unresolved, when the correct semantics is true if ANY sighting is still unresolved) — caught while
+naming the property's own test, before any test run.
+
+Full reconnaissance, decision rationale, and review findings:
+`core/product/GATE_H_CONTRIBUTION_MEASUREMENT_D0_NOTE_2026-08-19.md`.
+
+`python -m py_compile` clean on both the script and its test file. 28 pytest tests, all passing (19
+original + 9 added during review — `TestEarlierLater`, `TestDisplayName`, plus boolean/timestampValue
+cases). Five mutation proofs, each following the same break -> confirm-fail-with-predicted-symptom ->
+restore -> `diff -q`-verify-identical pattern used throughout Gates F-H, backups kept only in the
+session scratchpad: the distinct-user tiebreak, the `timestampValue` decode branch, the bool exclusion
+in `parse_card_doc`, the parsed-datetime comparison in `_earlier`/`_later`, and the `_display_name`
+truncation marker — all five caught their mutation with the exact predicted failure, all five restores
+verified byte-identical. Known gaps: no test exercises `find_machine_card_docs`/`access_token`/the
+live REST call path, consistent with `strip_health_from_profiles.py`'s own no-network-test precedent
+(no Firestore emulator harness for Python scripts in this repo); the script has never been run against
+real production data as part of this gate — the operator should run it once by hand to confirm the
+live query and REST decoding behave as expected before relying on its output.
+
+This closes the standing Gate D-H product-implementation instruction. Summary across all five gates:
+Gate D (equipment-type memory, `2cc271b`), Gate E (shared uncertainty contract, `105f9d4`), Gate F
+(gym identity, `41d5b23`), Gate G (setup-note memory, `8dabc20`), Gate H (contribution measurement,
+this entry) — five independent review rounds run, each finding and fixing at least one real defect
+(three for D — BLOCKER/MAJOR, HIGH, MAJOR; one MAJOR for E; one MAJOR for F; three MAJOR for G; four
+MINOR for H), every fix mutation-tested (or, for Gate E's compiler-enforced bound, verified directly
+against the compiler), every gate committed locally in sequence.
+
+**PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
