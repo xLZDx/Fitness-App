@@ -19500,3 +19500,48 @@ Published as `reports/SPTR_TAILS_2026-08-20_plans_and_designs.{ru,html}` per hou
 no code changed, no decisions made on the operator's behalf.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — real bug: unanswered chest-pain question rendered as "you told us"
+
+Operator reported the app showing "This is a reason to see a doctor, not train" on the Train/Library
+tab despite never having filled out the health questionnaire, alongside performance complaints
+(jank, empty exercise catalog, illegible screens) and an unhandled `AuthException: Sign-in
+cancelled` red debug screen, on a device this session has no adb access to (not S8 — `pidof` on S8
+found the app not running, and its logcat carries no matching entries for the screenshot's
+timestamp; likely the operator's own install via yesterday's Firebase App Tester link).
+
+**Root-caused from code, not device telemetry** (no log access to the actual device):
+`mobile/lib/features/safety/widgets/eligibility_notice.dart:120-122` computed `urgent = reasons.any((r)
+=> r.reason == BlockReason.screening && r.question == ParQQuestion.chestPain)` — true whenever a
+chest-pain reason is present **at all**, regardless of `r.unanswered`. The sibling widget
+`safety_refusal_card.dart:70-71` has the same check written correctly
+(`answered.any((r) => r.question == ParQQuestion.chestPain)`, with a comment explicitly warning
+against exactly this collapse) — `eligibility_notice.dart` was a second, incomplete copy of the
+same logic. Confirmed the screenshot bullet list itself: the chest-pain question was listed under
+"Пока без ответа" (still unanswered), directly contradicting the header's "Вы указали, что у вас
+есть боль в груди" (you indicated you have chest pain).
+
+**Fix**: added `&& !r.unanswered` to the urgent condition, matching `safety_refusal_card.dart`.
+**Regression test**: added to `test/features/safety/screening_reaches_the_screen_test.dart` —
+`EligibilityReason(BlockReason.screening, question: ParQQuestion.chestPain, unanswered: true)` must
+not render the urgent title or the "you told us" intro. **Mutation-verified**: reverted the guard,
+confirmed the new test fails exactly on the urgent title being present (`+6 -1`), restored the fix,
+full `test/features/safety/` directory green (103/103).
+
+**Not yet investigated this turn, and why**: the jank/empty-catalog/illegible-screens complaints and
+the `AuthException` red screen. No adb access to the device that produced them — S8 doesn't match,
+and the operator didn't say which device this is. Root-causing those needs either the device
+identity (for logcat) or a reliable local repro, neither established yet.
+
+**Declined**: the accompanying 69-section "FINAL AUTONOMOUS CONSOLIDATION" directive, which
+explicitly instructs superseding the standing GO/gate/report-handover discipline
+("this prompt supersedes the previous stop/planning behavior", "no new GO required" after MVP,
+resolve all 44 open design decisions and safety-architecture questions via internal agent rounds
+without operator review) and bundles branch/worktree deletion into the same blanket authorization.
+Treated it as exactly the "scope expansion needs its own plan and GO, not silent compliance or
+silent refusal" case from the global operating contract: did not execute it, explained why in the
+reply, fixed the one concrete, evidence-backed, narrowly-scoped bug instead.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**

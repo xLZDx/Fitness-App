@@ -112,9 +112,15 @@ class EligibilityNotice extends StatelessWidget {
     // onboarding screen SafetyRefusalCard covers. A chest-pain reason must
     // read as urgent here too, or the routine "no sessions right now" wording
     // survives on every surface except the one it was first noticed on.
+    //
+    // Matches SafetyRefusalCard's `answered.any(...)`: urgency requires the
+    // person to have actually answered "yes". An unanswered chest-pain
+    // question must not collapse into "you indicated you have chest pain" —
+    // that is a false claim about what the person said, not a safety margin.
     final urgent = reasons.any((r) =>
         r.reason == BlockReason.screening &&
-        r.question == ParQQuestion.chestPain);
+        r.question == ParQQuestion.chestPain &&
+        !r.unanswered);
 
     // `wholePersonBlocks` can carry several `BlockReason.screening` entries at
     // once — one per PAR-Q+ question — and `eligibilityReasonText` prefixes

@@ -193,5 +193,41 @@ void main() {
           reason: 'a refusal that does not say what caused it cannot be '
               'corrected by the person it was about');
     });
+
+    testWidgets(
+        'an unanswered chest-pain question is not read as "you told us"',
+        (tester) async {
+      // Regression: EligibilityNotice's `urgent` flag matched on
+      // `question == ParQQuestion.chestPain` alone, so a chest-pain question
+      // that was never answered got the same "this needs medical attention"
+      // urgent header and the "you told us you have chest pain" intro as an
+      // actual "yes". SafetyRefusalCard already guarded this correctly
+      // (`answered.any(...)`); EligibilityNotice was a second, incomplete
+      // copy of the same check.
+      await tester.pumpWidget(_harness(
+        const StepPreview(),
+        overrides: [
+          questionnaireDraftProvider
+              .overrideWith(() => _SeededDraft(UserProfile.empty('u'))),
+          onboardingPlanPreviewProvider.overrideWith((ref) async =>
+              const PlanRefused([
+                EligibilityReason(BlockReason.screening,
+                    question: ParQQuestion.chestPain, unanswered: true),
+              ])),
+        ],
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('onb.preview.refused')), findsOneWidget);
+      expect(find.text('This needs medical attention, not a workout'),
+          findsNothing,
+          reason: 'an unanswered question is not a self-report of chest pain');
+      expect(
+          find.textContaining(
+              'You told us you have chest pain'),
+          findsNothing,
+          reason: 'nobody told the app anything here — the question was '
+              'left blank');
+    });
   });
 }
