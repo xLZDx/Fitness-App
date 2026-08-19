@@ -18609,3 +18609,43 @@ Screenshots and report update to follow in the next commit (evidence under
 `reports/screenshots/visual_recovery/`, keyed to this commit's short SHA).
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-19 — SPTR_VISUAL_FIDELITY_74f2f76 report updated with V2b-1 device evidence
+
+Follow-up to the V2b-1 fix commit (`9e0cd32`). Six real captures added under
+`reports/screenshots/visual_recovery/9e0cd32/` (PNG originals plus the JPEGs actually embedded in
+the report, resized to 540px wide / quality 82 to keep the report's size reasonable — same
+convention the `74f2f76` evidence set already used): `20`/`21` HOME_BLOCKED (top/bottom of the
+`EligibilityNotice` card at Home's suggestions section), `22`/`23` WORKOUTS_BLOCKED (same widget at
+the Library-list `train.blocked` mount point), `24`/`25` the health-answer editing path (screening
+step 9/10 with the questions left unanswered, and the step-10/10 preview screen showing the same
+fixed card before onboarding itself is reskinned).
+
+RU/EN report updated in place: a new `.resolved` banner for V2b-1 (mirroring V-READABILITY-01's own
+banner), the "Home — safety state" and "Workouts — Library" screen cards replaced with the new
+evidence and an explicit "before, from the code, not a saved screenshot" note (the prior evidence
+set never captured a blocked screen either, so there is no saved "before" image to compare
+against — stated as such rather than implied), a note plus two images added to the onboarding screen
+card documenting the same fix reached via the health-edit path, `CONTENT HIERARCHY` moved
+MAJOR → PASS in the criteria matrix, `GLASS` and `STATE FIDELITY` rows updated to reflect what V2b-1
+did and did not close (the Library list's blocked STATE is now captured; the underlying exercise
+catalogue under an allowed profile still is not — that still needs a separate QA profile per §23),
+fix order's `V2b` split into `V2b-1` (done) and `V2b-2` (onboarding + scanner sheet, in progress),
+and the top verdict updated: `VISUAL_GATE` stays `FAIL` — onboarding is now the only remaining
+unresolved MAJOR.
+
+A structural bug was caught before publishing: the first patch pass duplicated a `<div class="screen">`
+opening tag at each of the two replaced screen-card boundaries (the slice's own end marker already
+carried that opening tag; the replacement text repeated it), leaving `.wrap` and `.screens`
+unclosed at end-of-file. Caught by parsing the file with Python's `html.parser` and diffing div
+open/close counts against the original (109/109 balanced) rather than trusting the diff to look
+right — `git diff --stat` alone would not have shown this, since base64 image lines make line counts
+uninformative. Fixed, re-verified both RU and EN files balance to zero unclosed tags, and
+`report_conform.py --check` confirms a single provenance block, no duplication from the edit.
+
+Republished to the same artifact URL
+(`https://claude.ai/code/artifact/aa289300-92a0-4284-b410-f17258c17a15`).
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
