@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_semantic_colors.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../core/theme/hud_tokens.dart';
+import '../../../core/theme/hud_typography.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../data/eligibility.dart';
 import '../data/health_flags.dart';
 import '../data/par_q.dart' show ParQQuestion;
@@ -104,7 +105,7 @@ class EligibilityNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final t = context.hud;
 
     // F017: this card is the one every whole-person block renders through
     // (Train tab, programme-enrolment refusal, deep links) — not only the
@@ -115,8 +116,29 @@ class EligibilityNotice extends StatelessWidget {
         r.reason == BlockReason.screening &&
         r.question == ParQQuestion.chestPain);
 
-    return GlassCard(
-      tint: theme.colorScheme.error,
+    // `wholePersonBlocks` can carry several `BlockReason.screening` entries at
+    // once — one per PAR-Q+ question — and `eligibilityReasonText` prefixes
+    // EACH with the same "screening did not clear you" sentence, because that
+    // function also has to word single-reason cases (a withheld exercise) on
+    // its own. Rendered one bullet per reason, a six-question refusal repeats
+    // that sentence six times. Grouping them here, the way
+    // `SafetyRefusalCard` already groups PAR-Q+ answers, states the shared
+    // sentence once and lists only the specific questions — no wording
+    // changes, the same localised strings composed differently.
+    final screened = reasons
+        .where((r) => r.reason == BlockReason.screening && r.question != null)
+        .toList();
+    final other = reasons.where((r) => !screened.contains(r)).toList();
+    final answered = screened.where((r) => !r.unanswered).toList();
+    final unanswered = screened.where((r) => r.unanswered).toList();
+
+    // `dense: true` reuses the adaptive-alpha surface already solved for
+    // Workouts' cards over a photograph background — the refusal sits on the
+    // same sky as the rest of the screen. Danger is carried by the icon and
+    // heading colour, matching the handoff's semantic-state language, not a
+    // full tinted fill.
+    return HudPanel(
+      dense: true,
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,53 +149,80 @@ class EligibilityNotice extends StatelessWidget {
                   urgent
                       ? Icons.local_hospital_outlined
                       : Icons.shield_outlined,
-                  color: theme.colorScheme.error),
+                  color: t.danger),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                     urgent
                         ? l10n.eligTrainingBlockedUrgentTitle
                         : title ?? l10n.eligBlockedTitle,
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w800)),
+                    style: HudType.panelTitle(t).copyWith(fontSize: 16)),
               ),
             ],
           ),
           const SizedBox(height: 10),
           Text(urgent ? l10n.eligBlockedUrgentIntro : l10n.eligBlockedIntro,
-              style: theme.textTheme.bodyMedium),
-          for (final r in reasons)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6, right: 8),
-                    child: Container(
-                      width: 5,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: theme.colors.textSecondary,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(eligibilityReasonText(l10n, r),
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: theme.colors.textSecondary)),
-                  ),
-                ],
-              ),
-            ),
+              style: HudType.body(t, size: 12.5)),
+          if (screened.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(l10n.eligReasonScreening,
+                style: HudType.bodyStrong(t, size: 12.5)),
+            if (answered.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(l10n.safetyReasonYouAnswered, style: HudType.label(t)),
+              for (final r in answered)
+                _ReasonBullet(text: parQQuestionText(l10n, r.question!)),
+            ],
+            if (unanswered.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(l10n.safetyReasonNotAnswered, style: HudType.label(t)),
+              for (final r in unanswered)
+                _ReasonBullet(text: parQQuestionText(l10n, r.question!)),
+            ],
+          ],
+          for (final r in other)
+            _ReasonBullet(text: eligibilityReasonText(l10n, r)),
           if (onReviewProfile != null) ...[
             const SizedBox(height: 16),
-            FilledButton(
+            HudButton(
+              label: l10n.eligOpenProfile,
+              tone: HudButtonTone.accent,
               onPressed: onReviewProfile,
-              child: Text(l10n.eligOpenProfile),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ReasonBullet extends StatelessWidget {
+  const _ReasonBullet({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.hud;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 6, right: 8),
+            child: Container(
+              width: 5,
+              height: 5,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: t.textSecondary,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(text, style: HudType.body(t, size: 12)),
+          ),
         ],
       ),
     );

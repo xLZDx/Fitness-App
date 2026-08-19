@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_semantic_colors.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../core/theme/hud_tokens.dart';
+import '../../../core/theme/hud_typography.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../data/par_q.dart';
 
 /// The wording for one PAR-Q+ question, in the reader's locale.
@@ -52,7 +53,7 @@ class SafetyRefusalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final t = context.hud;
     final answered = reasons.where((r) => !r.incomplete).toList();
     final unanswered = reasons.where((r) => r.incomplete).toList();
 
@@ -69,8 +70,14 @@ class SafetyRefusalCard extends StatelessWidget {
     final urgent =
         answered.any((r) => r.question == ParQQuestion.chestPain);
 
-    return GlassCard(
-      tint: theme.colorScheme.error,
+    // `dense: true` reuses the same adaptive-alpha surface Workouts' cards
+    // use over a photograph background (`HudSkyScope.denseSurfaceAlpha`) —
+    // the refusal is drawn on the same sky as everything else on the screen,
+    // so it needs the same readability fix, not a second one. Danger is
+    // carried by the icon and heading colour, not a full tinted fill: the
+    // handoff's semantic states colour an accent, not the glass itself.
+    return HudPanel(
+      dense: true,
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +90,7 @@ class SafetyRefusalCard extends StatelessWidget {
                       : referral
                           ? Icons.medical_services_outlined
                           : Icons.pending_actions,
-                  color: theme.colorScheme.error),
+                  color: t.danger),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -92,8 +99,7 @@ class SafetyRefusalCard extends StatelessWidget {
                       : referral
                           ? l10n.safetyBlockedTitle
                           : l10n.safetyIncompleteTitle,
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w800),
+                  style: HudType.panelTitle(t).copyWith(fontSize: 16),
                 ),
               ),
             ],
@@ -105,26 +111,25 @@ class SafetyRefusalCard extends StatelessWidget {
                   : referral
                       ? l10n.safetyBlockedBody
                       : l10n.safetyIncompleteBody,
-              style: theme.textTheme.bodyMedium),
+              style: HudType.body(t, size: 12.5)),
           if (answered.isNotEmpty) ...[
             const SizedBox(height: 14),
-            Text(l10n.safetyReasonYouAnswered,
-                style: theme.textTheme.labelLarge),
+            Text(l10n.safetyReasonYouAnswered, style: HudType.label(t)),
             for (final r in answered)
-              _Bullet(text: parQQuestionText(l10n, r.question)),
+              _SafetyBullet(text: parQQuestionText(l10n, r.question)),
           ],
           if (unanswered.isNotEmpty) ...[
             const SizedBox(height: 14),
-            Text(l10n.safetyReasonNotAnswered,
-                style: theme.textTheme.labelLarge),
+            Text(l10n.safetyReasonNotAnswered, style: HudType.label(t)),
             for (final r in unanswered)
-              _Bullet(text: parQQuestionText(l10n, r.question)),
+              _SafetyBullet(text: parQQuestionText(l10n, r.question)),
           ],
           if (onOpenScreening != null && !referral) ...[
             const SizedBox(height: 16),
-            FilledButton(
+            HudButton(
+              label: l10n.safetyOpenScreening,
+              tone: HudButtonTone.accent,
               onPressed: onOpenScreening,
-              child: Text(l10n.safetyOpenScreening),
             ),
           ],
         ],
@@ -133,14 +138,14 @@ class SafetyRefusalCard extends StatelessWidget {
   }
 }
 
-class _Bullet extends StatelessWidget {
-  const _Bullet({required this.text});
+class _SafetyBullet extends StatelessWidget {
+  const _SafetyBullet({required this.text});
 
   final String text;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final t = context.hud;
     return Padding(
       padding: const EdgeInsets.only(top: 6),
       child: Row(
@@ -153,14 +158,12 @@ class _Bullet extends StatelessWidget {
               height: 5,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: theme.colors.textSecondary,
+                color: t.textSecondary,
               ),
             ),
           ),
           Expanded(
-            child: Text(text,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colors.textSecondary)),
+            child: Text(text, style: HudType.body(t, size: 12)),
           ),
         ],
       ),

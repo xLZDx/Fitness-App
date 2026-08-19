@@ -262,6 +262,20 @@ void main() {
       );
       expect(find.byKey(const Key('home.suggestions.refused')), findsOneWidget);
       expect(find.byKey(const Key('suggestions-empty')), findsNothing);
+      // A widget carrying the right key but an empty `build()` would still
+      // satisfy the two checks above — caught by mutation testing (§5): a
+      // gutted `EligibilityNotice.build() => const SizedBox.shrink()`
+      // survived this test until the line below was added, because
+      // `find.byKey` matches the element regardless of what it renders. The
+      // refusal is only proven present if its own wording is on screen.
+      //
+      // `kUnscreened` leaves every PAR-Q+ question unanswered, chest pain
+      // included, so `EligibilityNotice` takes its urgent branch and the
+      // `title` this call site passes ("No sessions right now") is
+      // overridden — matching the F017 behaviour asserted for the Library
+      // list in workouts_page_test.dart.
+      expect(find.text('This needs medical attention, not a workout'),
+          findsOneWidget);
     });
 
     testWidgets('the quick-scan card navigates to /scan', (tester) async {

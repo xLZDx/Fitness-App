@@ -18496,3 +18496,116 @@ now the only remaining blockers. Republished to the same artifact URL
 --check` confirms a single provenance block, no duplication from the redeploy.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-19 — V2b-1: the safety/eligibility block moves onto HUD, and the repeated sentence is gone
+
+**Trigger.** The operator's "SPTR — VISUAL REMEDIATION CONTINUATION" mandate names V2b-1 (safety
+presentation) as the first current blocker, closing V-READABILITY-01 and forbidding its reopening.
+Explicit constraint: visual + information-hierarchy remediation only — no change to eligibility
+decisions, health-answer semantics, PAR-Q+ wording, or refusal meaning.
+
+**Root cause, confirmed by reading both widgets in full rather than assuming from the screenshot.**
+Two different cards render a whole-person block: `SafetyRefusalCard` (onboarding's screening step
+only) already grouped PAR-Q+ answers into "Вы ответили «да»:"/"Пока без ответа:" sections with bare
+question bullets — genuinely clean. `EligibilityNotice` (`eligibility_notice.dart`) is the one every
+other surface renders through — Home, the Workouts Library list, programme enrolment, deep links —
+and its `eligibilityReasonText()` prepends the full `eligReasonScreening` sentence ("Скрининг
+здоровья не допустил вас к занятиям.") to EVERY reason row. For the common whole-person-block case —
+several unanswered PAR-Q+ questions, all sharing `BlockReason.screening` — that repeats the identical
+lead-in once per question. Six unanswered questions read the same sentence six times, which is
+exactly the operator's complaint. Both cards also painted on the old `GlassCard(tint:
+theme.colorScheme.error)` — a flat, opaque, out-of-system pink slab.
+
+**Fix, in both widgets.**
+* `GlassCard` → `HudPanel(dense: true)`. Reuses V-READABILITY-01's already-measured adaptive-alpha
+  surface (`HudSkyScope.denseSurfaceAlpha`) rather than inventing a second readability mechanism —
+  the refusal sits on the same photographed sky as every other panel on the screen it appears on.
+* Danger is carried by the icon and heading colour (`HudTokens.danger`), not a full tinted wash —
+  matching how the handoff's own semantic states work elsewhere, and avoiding a bespoke "red glass"
+  recipe with its own contrast risk.
+* `EligibilityNotice` now groups its reasons before rendering: every `BlockReason.screening` reason
+  that names a specific PAR-Q+ question is pulled out, the shared `eligReasonScreening` sentence is
+  stated ONCE, and the questions themselves are listed under "Вы ответили «да»:" /
+  "Пока без ответа:" — the exact pattern `SafetyRefusalCard` already used. Every other `BlockReason`
+  (injury, movement restriction, equipment, …) still renders through `eligibilityReasonText()`
+  unchanged, since those rows are genuinely distinct sentences and were never the complaint.
+  `eligibilityReasonText()` itself is untouched — still the one place wording happens; this is a
+  presentation-layer regrouping of the same localised strings, not a new copy path.
+* `FilledButton` → `HudButton(tone: .accent)` for the review-profile / open-screening action, so the
+  refusal's own next step reads at least as prominent as an ordinary Start-workout CTA — relevant
+  because both `EligibilityNotice` mount points that matter (Home's suggestions section,
+  `workouts_page.dart`'s Library-list branch) fully REPLACE the normal content when blocked rather
+  than sitting beside it, so there is no competing CTA underneath to begin with; confirmed by reading
+  the surrounding `if`/`else` at each call site, not assumed.
+
+**A caught-and-fixed accessibility regression, from my own first draft.** `HudPanel` and
+`HudButton`'s `semanticLabel` parameter wraps the whole subtree in `ExcludeSemantics` when supplied
+with no `onTap` — appropriate for a panel that behaves as one opaque tap target, wrong here: an
+initial draft passed the card's title as `semanticLabel`, which would have collapsed the entire
+refusal — body paragraph, the list of blocking/unanswered reasons, and the review-profile button —
+into a single flat announcement of the title alone, unreachable by swipe navigation. Caught before
+any test ran by re-reading `HudPanel.build`'s own branch logic; removed from both widgets before
+committing.
+
+**Mutation-tested per the operator's explicit requirement, using the source itself as the mutant —
+not a hypothetical.** Five mutations applied to a running working tree, one at a time, each reverted
+before the next:
+1. `home_page.dart`'s blocked-branch guard forced to never trigger ("route around the gate") — killed
+   by `home_page_test.dart`'s existing suite (6 failures).
+2. `workouts_page.dart`'s Library-list guard forced to never trigger — killed by the existing F017
+   test asserting on rendered urgent wording.
+3. `EligibilityNotice.build()` gutted to `return const SizedBox.shrink()` ("remove refusal
+   rendering") — killed everywhere it was checked EXCEPT `home_page_test.dart`'s own "an unscreened
+   user gets the refusal" test, which only asserted `find.byKey(...)`, a check a widget with the
+   right key and an empty body still satisfies. **A real surviving mutant, per the operator's own
+   framing a TEST_DEFECT.** Fixed by adding a `find.text(...)` assertion on the card's actual rendered
+   wording to that same test; the mutation was re-applied and re-reverted to confirm the strengthened
+   test now kills it.
+4. `SafetyRefusalCard.build()` gutted the same way — killed immediately; that suite already asserted
+   on rendered text, not just widget presence.
+
+All four source files (`home_page.dart`, `workouts_page.dart`, `eligibility_notice.dart`,
+`safety_refusal_card.dart`) were diffed against HEAD after the mutation pass to confirm every
+temporary mutation was fully reverted before the real change was committed — only
+`eligibility_notice.dart`, `safety_refusal_card.dart` and the strengthened
+`test/features/home_page_test.dart` carry an intentional diff.
+
+**Device evidence, real APK, current branch.** Built `bcc57a2-dirty` debug APK (working tree with
+this fix), installed on `emulator-5554` (`com.fitnessapp.fitness_app.sptr.debug`, confirmed by
+`lastUpdateTime=2026-08-19 20:14:34`, matching the install just performed). Signed-in account
+("Спортсмен") had no screening answers; navigated Profile → "Анкета о здоровье → Изменить ответы" and
+skipped through to the end WITHOUT answering the PAR-Q+ questions — `screen()` is fail-closed, so an
+unanswered screen blocks exactly like an explicit refusal, and this is the harder of the two cases
+for the repetition bug (up to 7 grouped items, not 1). Captured, real device, this build:
+* **HOME_BLOCKED** — Home → suggestions section, `EligibilityNotice` at key `home.suggestions.refused`.
+  Urgent branch (chest pain is among the unanswered set), danger-red medical icon, "Скрининг здоровья
+  не допустил вас к занятиям." stated once, "Пока без ответа:" heading, 7 bare question bullets, the
+  photographed sunset visible through the panel, accent CTA "Проверить мои ответы о здоровье".
+* **WORKOUTS_BLOCKED** — Workouts → Библиотека → Тренажёры, `EligibilityNotice` at key
+  `train.blocked`. Identical composition, confirming the fix behaves the same at both mount points.
+* **Health-edit path** — the step-10/10 preview screen this same skip-through produced
+  (`onboarding/steps/step_preview.dart`'s `EligibilityNotice`), on the still-unmigrated flat-black
+  onboarding background (§8–15, not yet done) — the panel correctly falls back to `HudPanel`'s
+  protective default alpha with no `HudSkyScope` ancestor to read from, exactly as
+  `_denseGlass`'s doc comment says it should; not a bug, and expected to look different once
+  onboarding itself gets its `HudSky` background.
+
+**Not claimed.** No screenshot of the OLD pink-slab rendering was captured for this specific device
+state — the prior investigation's evidence set never captured a blocked screen (the same S0-style
+fail-closed state blocked Session/Library capture back then too, per the entry above `74f2f76`'s
+report). The "before" description here is from reading the removed code
+(`GlassCard(tint: theme.colorScheme.error)` plus the six-times-repeated
+`eligibilityReasonText()` concatenation), not from a saved image; stated as such rather than implied
+as a screenshot comparison.
+
+**Verification.** `flutter analyze` on all four touched files plus the strengthened test: clean.
+Targeted run (176 tests: `home_page_test`, `workouts_page_test`, `workout_player_day_test`,
+`programme_action_test`, `screening_reaches_the_screen_test`, `safety_refusal_card_test`,
+`eligibility_test`, `cross_gate_matrix_test`): all pass.
+
+Screenshots and report update to follow in the next commit (evidence under
+`reports/screenshots/visual_recovery/`, keyed to this commit's short SHA).
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
