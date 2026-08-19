@@ -19381,3 +19381,66 @@ publish screenshots rather than leaving them in scratchpad) are already this ses
 practice and continue unchanged.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — correction: a Firebase App Distribution channel already existed; first live distribution
+
+**Correcting an earlier claim.** Two turns ago, asked to send "the last APK to test distribution,"
+this session answered that no distribution pipeline existed in the project and handed over only a
+local path. That was checked too shallowly — a grep for distribution config had already run and
+found nothing, but it never actually queried `firebase` itself. It was wrong:
+
+- `firebase` CLI is installed and already authenticated as the operator (`korostelevivan@gmail.com`,
+  confirmed via `firebase login:list`).
+- `.firebaserc` / `mobile/android/app/google-services.json` register a real project,
+  `fitness-app-korostelev`, with three Android apps already provisioned: the base package
+  (`com.fitnessapp.fitness_app`), a release-testing flavor `...sptr`
+  (`1:988522745882:android:b9af40bb887a0388c201a3`), and a debug flavor `...sptr.debug`
+  (`1:988522745882:android:7c05c915aa42410ec201a3`).
+- The operator's own email is **already** an App Distribution tester on this project (added
+  2026-08-15, per `firebase appdistribution:testers:list`) — no new tester/group needed.
+- `scripts/dev/build_release.ps1` **already implements** almost everything the operator's later
+  "FINAL CONSOLIDATION" directive (§14–24) asks for as a "new hard invariant": derives GIT_SHA and
+  a monotonic build number from git rather than accepting typed-in values, builds release
+  APK/AAB/split-per-ABI, and has a `-Distribute` switch that uploads to the `...sptr` Firebase app
+  and pushes release notes carrying the same stamps. It defaults to the release-flavor app id, not
+  debug.
+
+Given the standing rule against parallel implementations of the same mechanism, this session will
+**reuse `build_release.ps1 -Distribute` going forward** rather than author a new distribution
+script — it already satisfies the directive's §18 requirement (verify branch/SHA, build, upload,
+release notes, fail non-zero on error) for release builds. It does not yet have a debug-flavor
+switch; that is a small, additive extension (a `-Debug` param overriding the flutter build mode and
+defaulting `$FirebaseAppId` to the `...sptr.debug` app), not a new mechanism, and will be added when
+the next debug distribution is needed rather than speculatively now.
+
+**Action taken this turn**: distributed the APK already on disk (`16206e9`, the
+`_ExercisePickerSheet`/tools-sheet opacity fix — see the 2026-08-20 entry above; already
+device-verified and already installed on the connected S8 via `adb install`) through Firebase App
+Distribution by hand (`firebase appdistribution:distribute`, since `build_release.ps1` targets
+release builds and this artifact is a debug build already on disk):
+
+- `APK_SHA256 = fead702fce86846c39da34d114f7cbcbfc84fd43bfddfc3be7516f6c216472f6`
+- `FIREBASE_APP_ID = 1:988522745882:android:7c05c915aa42410ec201a3` (`...sptr.debug`)
+- release `1.0.0 (14)`, uploaded and distributed to `korostelevivan@gmail.com` successfully
+- `testing_uri = https://appdistribution.firebase.google.com/testerapps/1:988522745882:android:7c05c915aa42410ec201a3/releases/1uhuaor70ll7g`
+- `firebase_console_uri = https://console.firebase.google.com/project/fitness-app-korostelev/appdistribution/app/android:com.fitnessapp.fitness_app.sptr.debug/releases/1uhuaor70ll7g`
+
+No secrets/tokens were printed to this log or to git; the CLI used the operator's already-stored
+OAuth session.
+
+**Not done this turn, and why**: the same message's much larger mandate (54 sections) additionally
+asks for full Onboarding v4 implementation with a new mandatory safety-gate architecture decision,
+existing-user data migration, mutation tests, a multi-agent review panel, cross-repository branch
+archaeology and salvage across two repositories, then destructive branch deletion and worktree
+removal. The directive's own §36 makes deletion conditional on a salvage ledger proving no unique
+work is lost — that ledger does not exist yet and is real classification work, not a formality, so
+no branch or worktree was touched this turn despite deletion being pre-authorized. Onboarding v4 is
+a genuine multi-gate feature (screens × 2 themes, a safety-architecture decision that the directive
+itself flags as `PRODUCT_REQUIRED_EXTENSION_TO_HANDOFF`, field-mapping for existing users) that this
+session will implement gate by gate rather than in one unverified pass, consistent with the standing
+"do not build the next gate while the current gate still has unresolved review findings" rule and
+with the directive's own §13 (independent review before the gate closes).
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
