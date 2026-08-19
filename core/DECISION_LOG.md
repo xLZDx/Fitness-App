@@ -19545,3 +19545,23 @@ silent refusal" case from the global operating contract: did not execute it, exp
 reply, fixed the one concrete, evidence-backed, narrowly-scoped bug instead.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — safety-fix build distributed
+
+Built and distributed the chest-pain-copy fix (`e846ad3`) so the operator has it without waiting
+for the next milestone:
+
+- `APK_SHA256 = 31d8b87def07cc509888b71dddff03cca74b5f45be4115960cda88db88558209`
+- `FIREBASE_APP_ID = 1:988522745882:android:7c05c915aa42410ec201a3` (`...sptr.debug`)
+- release `1.0.0 (14)`, distributed to `korostelevivan@gmail.com`
+- `testing_uri = https://appdistribution.firebase.google.com/testerapps/1:988522745882:android:7c05c915aa42410ec201a3/releases/77r97ajehkjk0`
+- also installed directly on S8 (`ce0417141997e4640c`) via `adb install -r`
+
+Same versionCode (14) as the previous distributed build (`16206e9`) — `pubspec.yaml`'s build number
+has not moved since, so this is a same-versionCode replacement release, not a version bump. Worth
+noting if Firebase App Tester ever shows ambiguity between the two releases on a device that already
+had the older one installed.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
