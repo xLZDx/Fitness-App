@@ -10447,3 +10447,16 @@ MINOR for H), every fix mutation-tested (or, for Gate E's compiler-enforced boun
 against the compiler), every gate committed locally in sequence.
 
 **PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
+
+---
+
+## 2026-08-19 — final consolidated status report published for the Gate D-H run
+
+House HTML-report format applied to the full, now-closed Gate D-H run:
+`reports/GATE_D_H_FINAL_STATUS_2026-08-19.{html,ru.html}` — commit hashes, per-gate test/mutation
+evidence, independent-review summaries, MRD status table, known gaps carried forward. Same content
+both languages, provenance block and copy-button injected via `report_conform.py`, Russian version
+published as an artifact and linked to the operator. Documentation only — no code changed by this
+entry.
+
+**PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
