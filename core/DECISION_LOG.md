@@ -18480,3 +18480,19 @@ Report and screenshots to follow in the next commit (`SPTR_VISUAL_FIDELITY_74f2f
 `10_after_night_dark_bg.png` through `13_after_bright_dawn.png`).
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-19 — SPTR_VISUAL_FIDELITY_74f2f76 report updated with V-READABILITY-01
+
+Follow-up to the V-READABILITY-01 fix commit (`ad5a371`): the RU/EN visual fidelity report is
+updated with the before/after contrast tables, the root-cause writeup, the `onAccent` bug found
+along the way, and the three device captures (`10_after_night_dark_bg.png` through
+`13_after_bright_dawn.png`). Criteria matrix split GLASS's readability half into
+`TEXT_CONTRAST`/`CTA_CONTRAST`, both now `PASS`; fix order splits V2 into V2a (done) / V2b
+(remaining: safety block, onboarding, scanner sheet). `VISUAL_GATE` stays `FAIL` — those two are
+now the only remaining blockers. Republished to the same artifact URL
+(`https://claude.ai/code/artifact/aa289300-92a0-4284-b410-f17258c17a15`); `report_conform.py
+--check` confirms a single provenance block, no duplication from the redeploy.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
