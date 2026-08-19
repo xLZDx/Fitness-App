@@ -209,17 +209,40 @@ MRD-07), plus any future personalization/moat work. No new items added here.
    "auth-restore truthfulness" window they were required to fix no longer exists for any of
    MVP-2's downstream call sites — see the reasoning under MVP-2 above. `questionnaireDraftProvider`
    decided the same way (accept as mitigated, no code change). No MVP work remains from this item.
-4. **Release gate** — device/emulator pass over: install/build, first launch, auth, scan flow
-   (known/ambiguous/unknown machine), exercise/instruction path, injury filtering, EN+RU,
-   offline behavior, no console/runtime failures.
+4. **Release gate** — IN PROGRESS, real-device pass started (`emulator-5554`, Pixel API 34, debug
+   APK). See checklist below and `core/DECISION_LOG.md`'s release-gate entry for full evidence.
+   Not yet complete — several items still need coverage before this step can close.
 5. **Final dream-team review** — MVP-only question: does anything block a minimal, honest,
-   safe release? Not "what could be better."
+   safe release? Not "what could be better." Not started — waits on the release gate closing.
 6. **MVP READY** — report to operator and stop. Do not auto-start POST-MVP.
 
 ## Release gate checklist (MVP-only bar)
 
-Install/build · first launch · auth (including the just-fixed restore window) · scan (known /
-ambiguous / unknown equipment) · exercise/instruction path · injury/safety filtering ·
-persistence/account isolation · EN + RU critical flow · offline/network failure behavior ·
-privacy truth · marketing truth (allowed-gate claims only — the site itself stays internal) ·
-no critical console/runtime failures.
+- [x] **Install/build** — `flutter build apk --debug` succeeded, installed cleanly via `adb`.
+- [x] **First launch** — correct RU welcome screen, no crash.
+- [x] **Auth, including the just-fixed restore window** — the one check this gate exists for,
+  confirmed directly: anonymous sign-in works; a true cold start (`am force-stop` then relaunch)
+  restored the same session straight to Home with no `/login` bounce and no MVP-3 timeout/error
+  log — the real fix, not just its unit test, verified live.
+- [ ] **Scan (known / ambiguous / unknown equipment)** — screen loads, ambiguity + privacy
+  disclaimers render correctly, system photo-picker opens without error. Full recognition
+  round-trip **not exercised** — this AVD has no camera passthrough and no gym-equipment photo was
+  available. Needs a real device or a seeded test image.
+- [ ] **Exercise/instruction path** — not reached this pass.
+- [ ] **Injury/safety filtering** — entry tile confirmed present on Profile; the questionnaire
+  screen's own content was not captured (navigation mistap, not re-attempted). Not verified.
+- [x] **Persistence** — the same anonymous session and its state survived a full process kill and
+  relaunch.
+- [ ] **Account isolation** — not exercised; needs a second real account.
+- [ ] **EN + RU critical flow** — RU confirmed throughout this pass; EN not switched to and
+  checked.
+- [x] **Offline/network failure behavior** — Home and Scan both render cleanly with wifi+data
+  disabled via `svc`; no crash, no infinite spinner, no misleading state. (Used service-level
+  toggles, not the OS airplane-mode UI path — close enough for this check, not identical.)
+- [x] **Privacy truth** — the scan screen's own disclosure (photo sent to Gemini, on-device
+  fallback, bystanders may be captured) matches what the plan doc already established.
+- [x] **Marketing truth** — already established pre-MVP (`claim_lint.py` clean); not re-checked
+  this pass, no marketing-facing code changed.
+- [x] **No critical console/runtime failures** — no `FATAL`/`AndroidRuntime` crash at any point.
+  Environment-only noise (TLS trust-anchor / Play-Services Phenotype failures) attributed to this
+  bare AVD image, not the app — see decision log.

@@ -10750,3 +10750,58 @@ by the operator's own house-report rule (any closed-gate/status work gets both f
 block, copy button — enforced mechanically by `report_conform.py`, verified `--check` clean).
 Russian published as an artifact and linked to the operator; English committed as the durable
 in-repo record. No code or scope decisions in this entry — reporting only.
+
+---
+
+## 2026-08-19 — release gate: real-device pass, partial (auth-restore fix confirmed live)
+
+**Built and ran the actual app** (`flutter build apk --debug`, installed on a booted
+`Pixel_API_34` AVD, `emulator-5554`, package `com.fitnessapp.fitness_app.sptr.debug`) rather than
+relying on unit/widget tests alone for the release-gate checklist in the plan doc — per the global
+instruction to actually exercise a UI change before calling it done, applied here to the
+auth-restore fix specifically since it is exactly the class of bug unit tests can model but not
+fully prove on a real Android auth stack.
+
+**The one check this pass exists to make, made directly**: force-stopped the app (`am force-stop`,
+a true process kill, not backgrounding) after establishing a signed-in anonymous session, cleared
+logcat, relaunched. By ~4s the app landed directly on Home showing the same restored session
+("Спортсмен") — no bounce through `/login`, no flash of a wiped/zeroed state. Logcat for the
+relaunch had no `MVP-3:` line (the `_reportAuthWaitFailure` log added this session) and no
+`FATAL`/`AndroidRuntime` crash — meaning the real first `authUserProvider` emission won the race
+against the 5s safety timeout on genuine hardware-adjacent conditions, exactly the intended
+fast-path behavior, not merely in a controlled `StreamController` test.
+
+**Broad smoke coverage, all clean, no `FATAL`/`AndroidRuntime` crash at any point**: cold install
++ first launch (RU locale, correct welcome copy) · anonymous sign-in · onboarding skip-through (8
+steps) to Workouts tab · Home / Progress / Profile tabs, each rendering an honest empty state for
+a fresh account, not a false default · scan screen (camera UI, the "Экспериментально" ambiguity
+disclaimer, and the Gemini/on-device privacy disclosure all render correctly) · Android system
+photo-picker opens without error from the scan screen's gallery button · Home and Scan both
+render correctly with `svc wifi disable` + `svc data disable` (no crash, no infinite spinner, no
+misleading state), re-enabled after.
+
+**Environment noise, checked and attributed, not silently ignored**: `FirebaseCrashlytics`
+settings fetch and `FirebaseSessions` remote-config fetch both failed with
+`CertPathValidatorException: Trust anchor for certification path not found`, and several
+`GoogleApiManager`/`FlagStore` warnings referencing Play Services Phenotype. Consistent with this
+specific bare AVD image lacking a signed-in Google account / current CA store — anonymous
+sign-in itself (a direct Identity Toolkit call, not routed through GMS) succeeded seconds later on
+the same run, confirming these are this AVD's own Play-Services gaps, not an app defect. One
+`tflite` warning (`tensor.data.raw != nullptr was not true`) logged once at boot with no repeat and
+no crash — read as a benign interpreter warm-up probe, not confirmed further given no reachable
+recognition round-trip in this pass (see below); flagged rather than dismissed.
+
+**Not covered by this pass — explicitly unverified, not assumed passing**: full scan
+recognition round-trip (known/ambiguous/unknown equipment) — this AVD has no camera passthrough
+(the preview renders black) and no gym-equipment photo was available to feed through the
+photo-picker, so only the screen/disclaimer/picker-launch layer was exercised, not an actual
+Gemini/on-device recognition call; EN locale (device stayed on its default RU); true
+airplane-mode radio state (used `svc` service toggles instead, which disable the interfaces but
+are not identical to the OS airplane-mode UI path); account-switch isolation (would need a second
+real account, not exercised); the health/injury questionnaire's own screen content (the entry
+tile was confirmed present on Profile, but a mistap navigated back to Home before its content was
+captured — not re-attempted this pass). These remain open items before the release-gate checklist
+in `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md` can be marked fully closed.
+
+**No code changed by this entry.** Screenshots retained in the session scratchpad
+(`release_gate/`), not committed — ephemeral verification evidence, not a repo artifact.
