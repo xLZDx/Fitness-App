@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../auth/data/auth_user.dart';
 import '../auth/state/auth_providers.dart';
 import '../progress_photos/state/progress_photos_providers.dart';
@@ -40,7 +41,7 @@ class ProfilePage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 120),
         children: [
-          GlassCard(
+          HudPanel(
             child: Row(
               children: [
                 Container(
@@ -84,7 +85,7 @@ class ProfilePage extends ConsumerWidget {
           // different weight from "celebrity plans". The groups are by what a
           // row DOES, so nothing had to be renamed to fit a heading.
           _SectionLabel(l10n.profileSectionYou),
-          GlassCard(
+          HudPanel(
             padding: EdgeInsets.zero,
             child: Column(
               children: [
@@ -122,7 +123,7 @@ class ProfilePage extends ConsumerWidget {
             ),
           ),
           _SectionLabel(l10n.profileSectionProgress),
-          GlassCard(
+          HudPanel(
             padding: EdgeInsets.zero,
             child: Column(
               children: [
@@ -147,7 +148,7 @@ class ProfilePage extends ConsumerWidget {
             ),
           ),
           _SectionLabel(l10n.profileSectionCoaching),
-          GlassCard(
+          HudPanel(
             padding: EdgeInsets.zero,
             child: Column(
               children: [
@@ -175,7 +176,7 @@ class ProfilePage extends ConsumerWidget {
             ),
           ),
           _SectionLabel(l10n.profileSectionCommunity),
-          GlassCard(
+          HudPanel(
             padding: EdgeInsets.zero,
             child: Column(
               children: [
@@ -192,7 +193,7 @@ class ProfilePage extends ConsumerWidget {
             ),
           ),
           _SectionLabel(l10n.profileSectionMembership),
-          GlassCard(
+          HudPanel(
             padding: EdgeInsets.zero,
             child: Column(
               children: [
@@ -219,7 +220,7 @@ class ProfilePage extends ConsumerWidget {
             ),
           ),
           _SectionLabel(l10n.profileSectionApp),
-          GlassCard(
+          HudPanel(
             padding: EdgeInsets.zero,
             child: Column(
               children: [
@@ -397,7 +398,7 @@ class _ProfileSummary extends StatelessWidget {
       if (profile.goals.flexibility) l10n.onbGoalFlexibility,
       if (profile.goals.generalFitness) l10n.onbGoalGeneral,
     ];
-    return GlassCard(
+    return HudPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

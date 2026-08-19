@@ -18128,3 +18128,53 @@ neighbor cluster), identical count to M4's own final tally, i.e. zero new failur
 Suites: `flutter analyze` clean; targeted suites above all green; full suite 3118/3119 (1 pre-existing
 unrelated flake). PUSH: pending this entry's commit (operator rule: push immediately, verify
 remote==local before further work).
+
+## 2026-08-19 -- MVP Gate M6: Profile reskinned onto the HUD kit
+
+**Same conservative-reskin discipline as M1/M2/M4/M5.** Investigated via a dedicated Explore-agent pass
+plus a full manual read of `profile_page.dart` (478 lines, no explicit `Key`s anywhere in the file --
+both its test suites locate everything by `find.text(...)`) before changing anything. Confirmed the
+screen carries no delete-account flow, no payment form, and no locale switcher directly (those live one
+hop away at `/settings`, `/subscription`, `/account_deletion`) -- the only safety/business logic embedded
+in this page itself is display branching, not decision logic: the guest-vs-registered
+`AuthProvider.anonymous` branch that makes the account-linking route reachable (243-254), the
+`_subscriptionSubtitle` entitlement-status switch that avoids showing "Free -- start a trial" to a paying
+member mid cold-start (321-351), and the injury-count subtitle. None of these were touched.
+
+**What changed:** all 8 `GlassCard` instances -> `HudPanel` (identity header, `_ProfileSummary`'s "At a
+glance" card, and the six section-group cards -- YOU/PROGRESS/COACHING/COMMUNITY/MEMBERSHIP/APP), each
+keeping the exact same `child`/`padding` arguments -- none of the 8 used `onTap`, `tint`, `gradient`,
+`blur`, or `floating`, so nothing was silently dropped by the swap. `FrostedScaffold`/`GlassAppBar`
+deliberately left untouched, same as every prior gate.
+
+**HudQuality opt-out deliberately NOT added, reasoned rather than assumed.** M5 needed
+`HudQuality(frostedGlass: false)` because its screen combines up to nine frosted panels with per-frame
+repaint sources (the set timer, the rest timer) -- the exact combination that made `GlassCard`'s own
+blur-by-default measurably crawl. Profile has up to 8 static `HudPanel`s (all group cards render once per
+build, none behind a `StreamBuilder`/`Timer`-driven repaint) on a tab-root screen structurally identical
+to Home (5 `HudPanel`s) and Workouts (12+), neither of which opted out either. Both the investigating
+Explore agent and the independent `flutter-reviewer` pass reached this same conclusion independently
+before I applied it -- not opting out here matches the accepted Home/Workouts precedent rather than
+being an inconsistent gap; flagged (MINOR, no action) as something to revisit only if a real frame-
+timeline measurement ever shows otherwise.
+
+**Independent review** (`flutter-reviewer`): APPROVE, no BLOCKER/MAJOR. One MINOR (the same BackdropFilter
+count observation above, explicitly "no action required for this gate") and one NIT (the panel/card
+corner radius moves from 26 to the HUD token's 30 -- the intended visual outcome of the reskin already
+accepted on every prior gate, not a defect).
+
+**Verification:** `flutter analyze` on the touched file: clean. Both Profile test suites --
+`test/features/profile/profile_page_test.dart` (7 cases, including the activity-level dynamic-dispatch
+regression guard and the four guest-upgrade-tile branching cases) and `test/features/profile_page_test.dart`
+(2 cases, older GoRouter-based suite) -- 9/9, unmodified, confirming neither suite's `find.text(...)`-only
+assertions or its oversized test viewports (800x2400, 1000x4400) were disturbed by the container swap.
+Full suite: 3118/3119 -- the same pre-existing, order-dependent scheduler flake recorded at every prior
+gate this session (`app_buttons_test.dart` origin, same `glass_nav_bar_test.dart`/`widget_test.dart`
+neighbor cluster), identical tally to M4 and M5, i.e. zero new failures from this gate.
+
+**MVP status:** M1-M6 closed. M7 (critical l10n/a11y/responsive sweep for MVP screens) is next, per the
+standing mandate's own sequence.
+
+Suites: `flutter analyze` clean; both Profile suites 9/9; full suite 3118/3119 (1 pre-existing unrelated
+flake). PUSH: pending this entry's commit (operator rule: push immediately, verify remote==local before
+further work).
