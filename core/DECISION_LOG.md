@@ -10176,3 +10176,55 @@ fixes, each proven by reverting the fix and confirming its test fails, then rest
 it passes (mutation evidence, not just green-suite claims).
 
 **PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
+
+## 2026-08-19 15:40 local / 12:40 UTC — Gate E: shared uncertainty contract (MRD-06) shipped
+
+**Reconnaissance first, evidence-driven scope.** An Explore agent inventoried every place the app
+already expresses uncertainty (six categories: equipment recognition, rep/weight withholding,
+AI-content labels, injury-screening safety levels, form-check/posture scoring, video-failure
+classification). Confirmed no shared type exists anywhere in `lib/`. The load-bearing finding: three
+independent systems (`ScanOutcome`, `PoseGateVerdict`, `VideoFailureReason`) reinvented the same
+"closed-set reason for not having a confident answer" shape without ever referencing each other —
+that convergence, not any one system, is what a shared layer should formalize.
+
+**A universal numeric confidence score was explicitly rejected, on the codebase's own evidence** — not
+just the operator's instruction. `VisualMatch.confidence` and `TextAnchorMatch.confidence` are two
+different, non-comparable 0..1 scales already living in the *same* feature, with the second
+explicitly documented as "not a probability and must not be rendered as a percentage next to the
+classifier's softmax, which IS one." A cross-domain numeric model would repeat that exact mistake at
+a larger scale. `BuddyMatchScore` (a real 0..1 score already in the app) was checked and explicitly
+excluded — it answers "who's a good match," not "how sure is the app of a fact." `ScanResult`'s
+ranked-candidate-list shape was also checked and excluded — "confident value or a reason" cannot
+represent "here are 3 candidates, you pick" without dropping information.
+
+**Decision: ship the contract type only, do not retrofit the five existing mature systems in this
+gate.** `Answer<T, R>` (`mobile/lib/shared/uncertainty/answer.dart`) — a Dart 3 sealed,
+exhaustiveness-checked type: either a confident `T` value, or a domain-owned closed-set `R` reason,
+with an optional structurally-separate `bestGuess` for the "possibly: X" tentative case
+(`LiveRecognition.settled == false` is the existing precedent for that idea). `R` stays generic and
+domain-owned deliberately — unifying `PoseGateVerdict` and `VideoFailureReason` into one enum would be
+the same universal-model mistake one level down. Not retrofitted onto `visual_equipment`, `form_check`,
+safety screening, `set_capture`, or `video_failure`: each is mature, individually calibrated
+(`confidentMargin = 0.15`, `kPoseMatchPassing = 0.80`, `_unsureBelow = 0.45`), and none of the
+null-returning cases currently carries an explicit reason — adopting the contract there would mean
+inventing new reason taxonomies inside safety-adjacent code as an unrequested side effect of a
+governance gate, not a genuine behavioral improvement anyone asked for. Zero existing production files
+touched.
+
+**Independent review (type-design-analyzer, one specialist — proportionate to a self-contained,
+zero-existing-call-site change) found one real MAJOR:** unbounded `T`/`R` let `T` be instantiated as
+nullable, reopening the exact ambiguity the type exists to close — `Answer<String?, R>.confident(null)`
+("confidently nothing") became indistinguishable from an uncertain answer through `valueOrNull`.
+Fixed: `Answer<T extends Object, R extends Object>`. Verified directly by adding a temporary probe
+declaring `Answer<String?, R>` to the test file, confirming `type_argument_not_matching_bounds`, then
+removing it — the fix is enforced by the compiler itself, so no runtime regression test was needed. One
+MINOR (phantom-`R` equality/hashCode asymmetry on the confident arm) explicitly deferred per the
+reviewer's own recommendation — zero call sites today, not worth defensive complexity yet.
+
+**Verification:** `flutter analyze` clean; full suite 2459/2459 (2445 after Gate D + 14 new); two
+mutation proofs (`valueOrNull` leaking `bestGuess`, `isConfident` hardcoded true) both caught by the
+test suite, confirmed by reverting each and re-running.
+
+Full detail: `core/product/GATE_E_SHARED_UNCERTAINTY_D0_NOTE_2026-08-19.md`.
+
+**PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
