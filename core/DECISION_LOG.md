@@ -10842,3 +10842,14 @@ the test suite alone. Given the remaining items each need either different tooli
 photo, a second account) or a real device rather than this bare AVD, further progress here is
 better spent as a scoped follow-up than continued ad hoc adb probing — reporting current status
 to the operator rather than declaring the release gate closed on partial evidence.
+
+---
+
+## 2026-08-19 — house-format report for the release-gate device pass
+
+Bilingual status report (`reports/SPTR_MVP_RELEASE_GATE_PASS_2026-08-19.{html,ru.html}`) covering
+the three release-gate commits above, with six embedded screenshots from the actual device pass
+(first launch, the force-stop/relaunch auth-restore proof, scan screen, injuries screen, exercise
+detail, offline scan). Required by the operator's house-report rule. Russian published as an
+artifact and linked to the operator; English committed as the durable in-repo record. No code or
+scope decisions in this entry — reporting only.
