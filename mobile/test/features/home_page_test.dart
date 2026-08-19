@@ -21,7 +21,7 @@ import 'package:fitness_app/features/programmes/state/programme_providers.dart';
 import 'package:fitness_app/features/workouts/data/mock_scheduled_session_repository.dart';
 import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
 import 'package:fitness_app/shared/widgets/aurora_background.dart';
-import 'package:fitness_app/shared/widgets/smooth_scroll_list.dart';
+import 'package:fitness_app/shared/widgets/hud/hud_scaffold.dart';
 
 Future<void> _setLargeSurface(WidgetTester tester) async {
   tester.view.physicalSize = const Size(800, 1600);
@@ -188,11 +188,16 @@ void main() {
       expect(find.text('records'), findsOneWidget);
     });
 
-    testWidgets('uses a SmoothScrollList for the home content', (tester) async {
+    // MVP Gate M1: Home is rebuilt on the HUD widget kit
+    // (`hud_scaffold.dart`), whose scroll region is `HudScreenBody` — the
+    // handoff's own inset-and-mask geometry, not `SmoothScrollList`'s
+    // physics. This is the deliberate architectural swap the gate makes, not
+    // a regression: the assertion follows the screen to its new mechanism.
+    testWidgets('uses HudScreenBody for the home content', (tester) async {
       await _setLargeSurface(tester);
       await tester.pumpWidget(_buildApp());
       await tester.pump();
-      expect(find.byType(SmoothScrollList), findsOneWidget);
+      expect(find.byType(HudScreenBody), findsOneWidget);
     });
 
     // Replaces a test that asserted five hardcoded titles ("Upper body
@@ -334,7 +339,13 @@ void main() {
       // operator photographed. The title now resolves from `templateId`
       // through `ProgrammeLabels`, so the assertion follows the locale and
       // would fail again if a template title were ever hardcoded back.
-      expect(find.textContaining('Strength base · Week 2 of 8'), findsOneWidget);
+      //
+      // MVP Gate M1: the identity strip is now the handoff's own uppercase
+      // tracked micro-label style (`_HudIdentityRow`, matching `HudNavBar`'s
+      // and `HudSectionHeader`'s existing `.toUpperCase()` convention in this
+      // widget kit) — a presentational transform of the same locale-correct
+      // string, not a new locale defect.
+      expect(find.textContaining('STRENGTH BASE · WEEK 2 OF 8'), findsOneWidget);
     });
   });
 

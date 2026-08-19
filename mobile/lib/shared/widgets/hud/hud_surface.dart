@@ -267,10 +267,15 @@ class HudPanel extends StatelessWidget {
     );
 
     if (semanticLabel == null && onTap == null) return surface;
+    // Without `ExcludeSemantics`, the panel's own Text children merge into
+    // this node and a screen reader announces the label and then the visible
+    // copy again — `HudButton`'s doc comment names this exact bug for the
+    // same reason. Excluded only when a label is actually supplied: a bare
+    // `onTap` with no override should still let the real content through.
     return Semantics(
       button: onTap != null,
       label: semanticLabel,
-      child: surface,
+      child: semanticLabel != null ? ExcludeSemantics(child: surface) : surface,
     );
   }
 }

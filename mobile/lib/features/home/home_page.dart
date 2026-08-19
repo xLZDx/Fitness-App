@@ -7,8 +7,12 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/health/widgets/health_sync_card.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../core/theme/hud_tokens.dart';
+import '../../core/theme/hud_typography.dart';
 import '../../shared/widgets/glass.dart';
-import '../../shared/widgets/smooth_scroll_list.dart';
+import '../../shared/widgets/hud/hud_metric.dart';
+import '../../shared/widgets/hud/hud_scaffold.dart';
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../auth/state/auth_providers.dart';
 import '../moments/data/moment.dart';
 import '../moments/state/moment_providers.dart';
@@ -30,35 +34,45 @@ import 'state/home_dashboard_providers.dart';
 import 'state/suggestion_providers.dart';
 import '../equipment/widgets/exercise_thumb.dart';
 
-/// Home, rebuilt at R11a against the real design source.
+/// Home, rebuilt at MVP Gate M1 against the real HUD handoff
+/// (`Fitness Glass Phone v1 - Sunset.dc.html`, the "Home" `sc-if` block).
 ///
-/// The screen this replaces was never built from the Figma Make prototype: R1-R4
-/// were scoped from an audit document's prose retelling of the design, and R9
-/// recoloured the result. The operator's own words on seeing it on a device —
-/// *"это не похоже на дизайн с фигмы, это старый дизайн только лайма
-/// добавили"* — are the reason this gate exists.
+/// ## What follows the handoff, and what does not
 ///
-/// The structure below follows `HomeScreen` in the prototype
-/// (`xLZDx/ReviewExistingExamples` @ `8209787`, `src/App.tsx:2441-2548`):
-/// greeting header → plan progress → today hero → quick scan → recovery strip →
-/// week strip + three totals.
+/// The identity/week strip, the day panel (ring, session line, CTA), the
+/// seven-day week grid, the muscle-recovery panel and the quick-scan row are
+/// the handoff's own spine and are built against its exact geometry via the
+/// shared HUD widget kit (`hud_scaffold.dart`, `hud_metric.dart`,
+/// `hud_surface.dart`).
 ///
-/// **Two deliberate departures, both because the alternative would be
-/// fabrication:**
+/// Two deliberate departures from the handoff's pixels, both because the
+/// alternative would be fabrication (`CLAUDE.md` §61, "no fake data"):
 ///
-/// * The prototype's header carries a notification bell. There is no
-///   notifications route in this app (`app_router.dart` registers 27 paths and
-///   none of them is one), so the bell would be a control that does nothing.
-/// * The prototype's progress bar reads "Силовая база · Неделя 2 из 8" — a
-///   multi-week programme. Gate P added that entity
-///   (`programmes/data/programme.dart`); [_PlanProgressBar] now shows it when
-///   the user has enrolled in one, and falls back to [derivePlanProgress]'s
-///   plain "this week's schedule" bar when they have not.
+/// * The handoff's day panel carries a `READY {{recAvg}}` badge and a
+///   readiness marker on a poor/mid/good zone bar. There is no single
+///   "readiness" score anywhere in the domain layer — [muscleRecoveryProvider]
+///   only reports a per-muscle ready/medium/recovering *status*. What is
+///   shown is the one real, derivable number: the fraction of tracked muscle
+///   groups currently `ready`. It is omitted entirely (not shown as 0%) when
+///   there is no training history to derive it from, the same rule the old
+///   recovery strip already enforced.
+/// * The handoff's "Form coach" panel shows per-set Tempo/Depth/Symmetry
+///   numbers. Home has no pipeline that produces those; inventing plausible
+///   ones would be exactly the fake-ML-confidence CLAUDE.md forbids. The
+///   panel is replaced by the app's real, working posture-check entry point
+///   ([_PostureCheckCard]), kept from the previous build.
 ///
-/// The app's own entry points that the prototype has no equivalent for (AI
-/// plan, posture check, health sync, suggestions) are kept, moved below the
-/// design's spine under their own heading. Deleting them to match the
-/// prototype more closely would strand four working features.
+/// The muscle-recovery panel also drops the handoff's per-muscle percentage
+/// bar for the same reason: [MuscleRecovery] carries an ordinal status, not a
+/// measured percentage, so the row shows the status word, not an invented bar
+/// length.
+///
+/// The app's own entry points the handoff has no equivalent for (AI plan,
+/// posture check, health sync, deload notice, today's summary, upcoming
+/// sessions, suggestions) are kept below the redesigned spine under their own
+/// headings, unchanged from the previous build — deleting them to chase the
+/// handoff more closely would strand working features the handoff was never
+/// asked to depict.
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
@@ -97,109 +111,112 @@ class _HomePageState extends ConsumerState<HomePage> {
     final upcoming = ref.watch(screenedUpcomingSessionsProvider).valueOrNull ??
         const <ScreenedSession>[];
 
-    return FrostedScaffold(
-      // No GlassAppBar: the design's header IS the top of the scroll, and a
-      // bar reading "Home" above a greeting that already names the user is the
-      // same information twice.
-      body: SmoothScrollList(
-        padding: const EdgeInsets.fromLTRB(20, 54, 20, 110),
-        children: [
-          const _GreetingHeader(),
-          const SizedBox(height: 14),
-          const _PlanProgressBar(),
-          _TodayHero(
-            upcoming: upcoming,
-            digest: ref.watch(todayDigestProvider),
-          ),
+    return HudScreenBody(
+      children: [
+        const _HudGreeting(),
+        const _HudIdentityRow(),
+        _HudDayPanel(
+          upcoming: upcoming,
+          digest: ref.watch(todayDigestProvider),
+        ),
+        const SizedBox(height: 14),
+        const _HudWeekSection(),
+        const SizedBox(height: 14),
+        const _HudRecoveryPanel(),
+        const SizedBox(height: 14),
+        const _HudQuickScanRow(),
+        const SizedBox(height: 20),
+        _gutter(const DeloadBanner()),
+        // R5's way in. Shown only once the day has something to summarise: a
+        // permanent link to a screen that says "nothing finished today" is a
+        // link to a disappointment.
+        if (!ref.watch(todayResultProvider).isEmpty) ...[
           const SizedBox(height: 12),
-          const _QuickScanCard(),
+          _gutter(const _SummaryLinkCard()),
+        ],
+        if (upcoming.length > 1) ...[
           const SizedBox(height: 20),
-          const _RecoveryStrip(),
-          const _WeekSection(),
-          const SizedBox(height: 12),
-          const DeloadBanner(),
-          // R5's way in. Shown only once the day has something to summarise:
-          // a permanent link to a screen that says "nothing finished today"
-          // is a link to a disappointment.
-          if (!ref.watch(todayResultProvider).isEmpty) ...[
+          _HudSectionTitle(l10n.homeSectionUpcoming),
+          for (final s in upcoming.skip(1).take(3)) ...[
+            _gutter(_UpcomingCard(screened: s)),
             const SizedBox(height: 12),
-            const _SummaryLinkCard(),
           ],
-          if (upcoming.length > 1) ...[
-            const SizedBox(height: 24),
-            _SectionHeader(l10n.homeSectionUpcoming),
-            const SizedBox(height: 12),
-            for (final s in upcoming.skip(1).take(3)) ...[
-              _UpcomingCard(screened: s),
-              const SizedBox(height: 12),
-            ],
-          ],
-          const SizedBox(height: 28),
-          _SectionHeader(l10n.homeSectionMore),
-          const SizedBox(height: 12),
-          const _AiPlanCard(),
-          const SizedBox(height: 12),
-          const _PostureCheckCard(),
-          const SizedBox(height: 12),
-          const HealthSyncCard(),
-          const SizedBox(height: 28),
-          _SectionHeader(l10n.homeSectionSuggestions),
-          const SizedBox(height: 14),
-          // Gate M's floor on the surface a user actually lands on.
-          //
-          // `buildSuggestions` is a second workout-producing path, and gating
-          // it by returning an empty list would have rendered as
-          // `homeSuggestionsEmpty` — "nothing to suggest right now", which is
-          // a different and untrue reason. The verdict is read here, where the
-          // section is drawn, because that is where the wrong message would
-          // have been shown.
-          if (ref.watch(safetyContextProvider).valueOrNull
-              case final c? when !c.allowsAnyTraining)
-            EligibilityNotice(
-              key: const Key('home.suggestions.refused'),
-              title: l10n.eligTrainingBlockedTitle,
-              reasons: c.wholePersonBlocks,
-              onReviewProfile: () => GoRouter.of(context).push('/onboarding'),
-            )
-          else
+        ],
+        const SizedBox(height: 8),
+        _HudSectionTitle(l10n.homeSectionMore),
+        _gutter(const _AiPlanCard()),
+        const SizedBox(height: 12),
+        _gutter(const _PostureCheckCard()),
+        const SizedBox(height: 12),
+        _gutter(const HealthSyncCard()),
+        const SizedBox(height: 20),
+        _HudSectionTitle(l10n.homeSectionSuggestions),
+        // Gate M's floor on the surface a user actually lands on.
+        //
+        // `buildSuggestions` is a second workout-producing path, and gating it
+        // by returning an empty list would have rendered as
+        // `homeSuggestionsEmpty` — "nothing to suggest right now", which is a
+        // different and untrue reason. The verdict is read here, where the
+        // section is drawn, because that is where the wrong message would
+        // have been shown.
+        if (ref.watch(safetyContextProvider).valueOrNull
+            case final c? when !c.allowsAnyTraining)
+          _gutter(EligibilityNotice(
+            key: const Key('home.suggestions.refused'),
+            title: l10n.eligTrainingBlockedTitle,
+            reasons: c.wholePersonBlocks,
+            onReviewProfile: () => GoRouter.of(context).push('/onboarding'),
+          ))
+        else
           ...ref.watch(suggestionsProvider).when(
-                loading: () => const [_SuggestionsPlaceholder()],
+                loading: () => [_gutter(const _SuggestionsPlaceholder())],
                 error: (e, _) =>
-                    [_SuggestionsMessage(l10n.homeCouldNotLoad('$e'))],
+                    [_gutter(_SuggestionsMessage(l10n.homeCouldNotLoad('$e')))],
                 data: (list) => list.isEmpty
-                    ? [_SuggestionsMessage(l10n.homeSuggestionsEmpty)]
+                    ? [_gutter(_SuggestionsMessage(l10n.homeSuggestionsEmpty))]
                     : [
                         for (var i = 0; i < list.length; i++) ...[
-                          _SuggestionCard(
+                          _gutter(_SuggestionCard(
                             list[i],
                             gradient: AppPalette.tileGradients[
                                 i % AppPalette.tileGradients.length],
-                          ),
-                          const SizedBox(height: 16),
+                          )),
+                          const SizedBox(height: 12),
                         ],
                       ],
               ),
-        ],
-      ),
+      ],
     );
   }
 }
 
-/// "Good evening" over the user's name, per the prototype's header.
-class _GreetingHeader extends ConsumerWidget {
-  const _GreetingHeader();
+/// `margin:0 16px` — the handoff's panel gutter, applied to whatever still
+/// needs it explicitly (the legacy glass cards kept below the spine; the new
+/// HUD panels apply it themselves).
+Widget _gutter(Widget child) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: HudTokens.screenGutter),
+      child: child,
+    );
+
+/// "Good evening" over the user's first name. Not in the handoff — which opens
+/// straight on the identity/week strip — but the greeting is real, tested
+/// behaviour from the previous build and the handoff was never asked to depict
+/// it, so it is kept and restyled rather than deleted.
+class _HudGreeting extends ConsumerWidget {
+  const _HudGreeting();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     final user = ref.watch(authUserProvider).valueOrNull;
 
     // First word only: the header is a greeting, and "Иван Коростелев" in
-    // 34pt display type is a legal document, not a hello. An anonymous user
-    // has no name at all, which is what `homeAthlete` is for.
+    // display type is a legal document, not a hello. An anonymous user has no
+    // name at all, which is what `homeAthlete` is for.
     final full = user?.displayName.trim() ?? '';
-    final name = full.isEmpty ? l10n.homeAthlete : full.split(RegExp(r'\s+')).first;
+    final name =
+        full.isEmpty ? l10n.homeAthlete : full.split(RegExp(r'\s+')).first;
 
     final greeting = switch (greetingFor(DateTime.now())) {
       DayGreeting.morning => l10n.homeGreetingMorning,
@@ -207,142 +224,74 @@ class _GreetingHeader extends ConsumerWidget {
       DayGreeting.evening => l10n.homeGreetingEvening,
     };
 
-    return Column(
-      key: const Key('home.greeting'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          greeting,
-          style: theme.textTheme.bodyMedium
-              ?.copyWith(color: theme.colors.textSecondary),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-            height: 1.1,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// The prototype's header bar: "Силовая база · Неделя 2 из 8" when the user
-/// has enrolled in a programme (Gate P), otherwise this week's plain
-/// schedule completion — see [PlanProgress.isEmpty] for when that fallback
-/// itself renders nothing.
-class _PlanProgressBar extends ConsumerWidget {
-  const _PlanProgressBar();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final programme = ref.watch(activeProgrammeProvider);
-    final programmeProgress = ref.watch(activeProgrammeProgressProvider);
-    if (programme != null && programmeProgress != null) {
-      final l = AppLocalizations.of(context);
-      return _ProgressBarCard(
-        key: const Key('home.programmeProgress'),
-        label: '${ProgrammeLabels.title(l, programme.templateId, stored: programme.title)} · '
-            '${l.programmeWeekOfWeeks(
-              programmeProgress.week,
-              programmeProgress.weeks,
-            )}',
-        fraction: programmeProgress.fraction,
-        percent: programmeProgress.percent,
-      );
-    }
-
-    final progress = ref.watch(planProgressProvider);
-    if (progress.isEmpty) return const SizedBox.shrink();
-
-    final l10n = AppLocalizations.of(context);
-    return _ProgressBarCard(
-      key: const Key('home.planProgress'),
-      label: '${l10n.homeWeekPlan} · '
-          '${l10n.homeWeekPlanCount(progress.done, progress.total)}',
-      fraction: progress.fraction,
-      percent: progress.percent,
-    );
-  }
-}
-
-/// The card shell shared by the programme bar and the plain-schedule bar —
-/// same label/percent/track layout either way, so enrolling in a programme
-/// changes what the bar says, not how it looks.
-class _ProgressBarCard extends StatelessWidget {
-  const _ProgressBarCard({
-    super.key,
-    required this.label,
-    required this.fraction,
-    required this.percent,
-  });
-
-  final String label;
-  final double fraction;
-  final int percent;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colors;
-
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: GlassCard(
-        padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-        borderRadius: 14,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: colors.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '$percent%',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: colors.accentPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(99),
-              child: LinearProgressIndicator(
-                value: fraction,
-                minHeight: 4,
-                backgroundColor: colors.surfaceInteractive,
-                valueColor: AlwaysStoppedAnimation<Color>(colors.accentPrimary),
-              ),
-            ),
-          ],
-        ),
+      key: const Key('home.greeting'),
+      padding: const EdgeInsets.fromLTRB(
+          HudTokens.headerGutter, 6, HudTokens.headerGutter, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(greeting, style: HudType.body(t, size: 12.5).overPhoto(t)),
+          const SizedBox(height: 2),
+          Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: HudType.screenTitle(t).overPhoto(t),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// The day, as the prototype's centrepiece: eyebrow, large title, muscle
-/// chips, one line of shape, and a full-width accent CTA.
-class _TodayHero extends ConsumerWidget {
-  const _TodayHero({required this.upcoming, required this.digest});
+/// The handoff's top strip: `IVAN · STRENGTH BASE` / `Week 2 of 8` —
+/// programme title and week when the user has enrolled in one (Gate P),
+/// otherwise this week's plain schedule completion. Absent entirely when
+/// there is nothing to report — see [PlanProgress.isEmpty].
+class _HudIdentityRow extends ConsumerWidget {
+  const _HudIdentityRow();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final HudTokens t = context.hud;
+    final programme = ref.watch(activeProgrammeProvider);
+    final programmeProgress = ref.watch(activeProgrammeProgressProvider);
+
+    String label;
+    Key key;
+    if (programme != null && programmeProgress != null) {
+      final l = AppLocalizations.of(context);
+      key = const Key('home.programmeProgress');
+      label = '${ProgrammeLabels.title(l, programme.templateId, stored: programme.title)} · '
+          '${l.programmeWeekOfWeeks(programmeProgress.week, programmeProgress.weeks)}';
+    } else {
+      final progress = ref.watch(planProgressProvider);
+      if (progress.isEmpty) return const SizedBox.shrink();
+      final l10n = AppLocalizations.of(context);
+      key = const Key('home.planProgress');
+      label = '${l10n.homeWeekPlan} · '
+          '${l10n.homeWeekPlanCount(progress.done, progress.total)}';
+    }
+
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.fromLTRB(
+          HudTokens.headerGutter, 0, HudTokens.headerGutter, 12),
+      child: Text(
+        label.toUpperCase(),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: HudType.label(t, size: 10, color: t.textPrimary).overPhoto(t),
+      ),
+    );
+  }
+}
+
+/// The day, as the handoff's centrepiece panel: eyebrow + readiness badge,
+/// title, ring + session facts + zone bar, and a full-width CTA.
+class _HudDayPanel extends ConsumerWidget {
+  const _HudDayPanel({required this.upcoming, required this.digest});
 
   final List<ScreenedSession> upcoming;
 
@@ -352,34 +301,35 @@ class _TodayHero extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final colors = theme.colors;
+    final HudTokens t = context.hud;
+    final rows = ref.watch(muscleRecoveryProvider);
+    final double? readiness = rows.isEmpty
+        ? null
+        : rows.where((r) => r.status == RecoveryStatus.ready).length /
+            rows.length;
 
     if (upcoming.isEmpty) {
-      return GlassCard(
-        key: const Key('home.heroEmpty'),
-        borderRadius: 22,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.homeNoWorkoutsScheduled,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              l10n.homePickAPlanOrScanA,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: colors.textSecondary),
-            ),
-            const SizedBox(height: 16),
-            _AccentButton(
-              label: l10n.homeTodaySAdaptivePlan,
-              icon: Icons.auto_awesome,
-              onTap: () => GoRouter.of(context).push('/plan'),
-            ),
-          ],
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: HudTokens.screenGutter),
+        child: HudPanel(
+          key: const Key('home.heroEmpty'),
+          semanticLabel: l10n.homeNoWorkoutsScheduled,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.homeNoWorkoutsScheduled,
+                  style: HudType.heroTitle(t).inPanel(t)),
+              const SizedBox(height: 6),
+              Text(l10n.homePickAPlanOrScanA,
+                  style: HudType.body(t, size: 12.5).inPanel(t)),
+              const SizedBox(height: 16),
+              HudButton(
+                label: l10n.homeTodaySAdaptivePlan,
+                icon: Icons.auto_awesome,
+                onPressed: () => GoRouter.of(context).push('/plan'),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -390,327 +340,171 @@ class _TodayHero extends ConsumerWidget {
     // A one-exercise day IS its exercise: "Back" tells the user less there
     // than "Pull-up" does.
     final title = (digest.exerciseCount > 1 && digest.muscles.isNotEmpty)
-        ? digest.muscles
-            .map((m) => CatalogLabels.muscle(l10n, m))
-            .join(' · ')
+        ? digest.muscles.map((m) => CatalogLabels.muscle(l10n, m)).join(' · ')
         : resolveExerciseTitle(
             ref.watch(exerciseTitlesProvider), next.exerciseId, next.exerciseTitle);
 
-    return GlassCard(
-      key: const Key('home.hero'),
-      borderRadius: 22,
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          colors.surfacePrimary,
-          colors.accentPrimary.withValues(alpha: 0.07),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.homeTodayIs(
-              DateFormat.EEEE(l10n.localeName).format(next.scheduledFor),
-            ),
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: colors.accentPrimary,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              height: 1.1,
-            ),
-          ),
-          if (digest.muscles.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: HudTokens.screenGutter),
+      child: HudPanel(
+        key: const Key('home.hero'),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                for (final m in digest.muscles)
-                  _Chip(label: CatalogLabels.muscle(l10n, m)),
-              ],
-            ),
-          ],
-          const SizedBox(height: 12),
-          Text(
-            screened.hasWithheldExercise
-                ? l10n.homeSessionWithheld
-                : l10n.homeTodayDigest(
-                    digest.exerciseCount, digest.totalMinutes),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: screened.hasWithheldExercise
-                  ? theme.colorScheme.error
-                  : colors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 16),
-          // The CTA is withheld when any of the day's exercises is. Screening
-          // is a safety rule, not a display filter (`core/CONVENTIONS.md`);
-          // a "Start workout" button that opens work the eligibility layer
-          // just removed would defeat it.
-          //
-          // `hasWithheldExercise`, not the old `hiddenForInjury`: that asked
-          // one member of `BlockReason`, so a user whose PAR-Q answers, a
-          // clinician's instruction or post-operative restrictions had just
-          // blocked them still saw a live button over a session the player
-          // refuses on the next screen. The reason belongs where it can be
-          // read in full, which is that screen — this card says the day is
-          // withheld and points at it.
-          if (!screened.hasWithheldExercise)
-            _AccentButton(
-              label: l10n.homeStartWorkout,
-              icon: Icons.play_arrow_rounded,
-              // `?day=` is what turns this from "open exercise one" into
-              // "start today's workout": the player keys its log by the day
-              // instead of by this exercise, so all of the day's exercises
-              // land in ONE history entry and the strip can walk between them.
-              onTap: () => GoRouter.of(context)
-                  .push('/workout/${next.exerciseId}?day=${next.id}'),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Full-width solid-accent CTA, per the prototype's primary button.
-class _AccentButton extends StatelessWidget {
-  const _AccentButton({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colors;
-    return SizedBox(
-      width: double.infinity,
-      child: Material(
-        color: colors.accentPrimary,
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 20, color: colors.onAccent),
-                const SizedBox(width: 8),
-                // Flexible, not bare: a `Row` gives an unconstrained child all
-                // the width it asks for, so at 320 dp this label overflowed the
-                // button by 19 px — the one real defect among the seven
-                // failing integration tests. `Flexible` + `ellipsis` makes it
-                // yield instead of the layout breaking; `TextOverflow.fade`
-                // was rejected because a faded verb reads as a rendering bug
-                // rather than as a truncation.
                 Flexible(
                   child: Text(
-                    label,
+                    DateFormat.EEEE(l10n.localeName).format(next.scheduledFor),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: colors.onAccent,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: HudType.label(t).inPanel(t),
                   ),
                 ),
+                if (readiness != null) ...[
+                  const SizedBox(width: 8),
+                  _ReadyBadge(fraction: readiness),
+                ],
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// A muscle tag on the hero.
-class _Chip extends StatelessWidget {
-  const _Chip({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colors;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: colors.surfaceInteractive,
-        borderRadius: BorderRadius.circular(99),
-      ),
-      child: Text(
-        label,
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: colors.textSecondary,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-}
-
-/// The prototype's "Незнакомый тренажёр?" row — the scanner's way in.
-class _QuickScanCard extends StatelessWidget {
-  const _QuickScanCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    return GlassCard(
-      key: const Key('home.quickScan'),
-      borderRadius: 16,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      onTap: () => GoRouter.of(context).go('/scan'),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: const LinearGradient(colors: [
-                AppPalette.auroraViolet,
-                AppPalette.auroraBlue,
-              ]),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: HudType.heroTitle(t).inPanel(t),
             ),
-            child: const Icon(Icons.qr_code_scanner_rounded,
-                color: AppSemanticColors.onGradientInk),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 14),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  l10n.homeUnfamiliarMachine,
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                HudRing(
+                  size: 112,
+                  radius: 49,
+                  strokeWidth: 2.5,
+                  trackWidth: 1.5,
+                  guideRadius: 38,
+                  progress: readiness ?? 0,
+                  semanticsLabel: l10n.homeSectionRecovery,
+                  child: HudRingLabel(
+                    value: '${digest.exerciseCount}',
+                    caption: l10n.homeRingExercises,
+                  ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  l10n.homeIdentifyWithCamera,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colors.textSecondary),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Horizontally scrolling muscle-recovery cards.
-///
-/// Absent, not empty, when there is no history to derive it from — see
-/// [deriveRecovery].
-class _RecoveryStrip extends ConsumerWidget {
-  const _RecoveryStrip();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final rows = ref.watch(muscleRecoveryProvider);
-    if (rows.isEmpty) return const SizedBox.shrink();
-
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final colors = theme.colors;
-
-    Color dot(RecoveryStatus s) => switch (s) {
-          RecoveryStatus.ready => colors.success,
-          RecoveryStatus.medium => colors.warning,
-          RecoveryStatus.recovering => colors.danger,
-        };
-    String label(RecoveryStatus s) => switch (s) {
-          RecoveryStatus.ready => l10n.homeRecoveryReady,
-          RecoveryStatus.medium => l10n.homeRecoveryModerate,
-          RecoveryStatus.recovering => l10n.homeRecoveryRecovering,
-        };
-
-    return Padding(
-      key: const Key('home.recovery'),
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _SectionHeader(l10n.homeSectionRecovery),
-          const SizedBox(height: 10),
-          SizedBox(
-            height: 76,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: rows.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, i) {
-                final r = rows[i];
-                return GlassCard(
-                  borderRadius: 14,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 10),
+                const SizedBox(width: 16),
+                Expanded(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: dot(r.status),
-                          shape: BoxShape.circle,
+                      Text(l10n.homeSessionLabel.toUpperCase(),
+                          style: HudType.label(t, size: 8.5).inPanel(t)),
+                      const SizedBox(height: 3),
+                      Text(
+                        screened.hasWithheldExercise
+                            ? l10n.homeSessionWithheld
+                            : l10n.homeTodayDigest(
+                                digest.exerciseCount, digest.totalMinutes),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: HudType.bodyStrong(t, size: 12.5).inPanel(t).copyWith(
+                              color: screened.hasWithheldExercise
+                                  ? t.danger
+                                  : null,
+                            ),
+                      ),
+                      const SizedBox(height: 9),
+                      if (readiness != null) ...[
+                        Text(l10n.homeSectionRecovery.toUpperCase(),
+                            style: HudType.label(t, size: 8.5).inPanel(t)),
+                        const SizedBox(height: 3),
+                        HudZoneBar(
+                          value: readiness,
+                          semanticsLabel: l10n.homeSectionRecovery,
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        CatalogLabels.muscle(l10n, r.muscle),
-                        style: theme.textTheme.labelLarge
-                            ?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        label(r.status),
-                        style: theme.textTheme.labelSmall
-                            ?.copyWith(color: colors.textSecondary),
-                      ),
+                      ],
                     ],
                   ),
-                );
-              },
+                ),
+              ],
             ),
-          ),
-        ],
+            // The CTA is withheld when any of the day's exercises is.
+            // Screening is a safety rule, not a display filter — a "Start
+            // workout" button that opens work the eligibility layer just
+            // removed would defeat it. Home displays the day's state; it does
+            // not decide whether the day may be trained.
+            if (!screened.hasWithheldExercise) ...[
+              const SizedBox(height: 16),
+              HudButton(
+                label: l10n.homeStartWorkout,
+                icon: Icons.play_arrow_rounded,
+                tone: HudButtonTone.accent,
+                // `?day=` is what turns this from "open exercise one" into
+                // "start today's workout": the player keys its log by the day
+                // instead of by this exercise, so all of the day's exercises
+                // land in ONE history entry and the strip can walk between
+                // them.
+                onPressed: () => GoRouter.of(context)
+                    .push('/workout/${next.exerciseId}?day=${next.id}'),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
 }
 
-/// The week strip plus the three totals under it.
-class _WeekSection extends ConsumerWidget {
-  const _WeekSection();
+/// The small "READY 74%" badge — the one real, derivable readiness number:
+/// the fraction of tracked muscle groups the recovery model currently reports
+/// as ready. Not shown when there is no training history to derive it from.
+class _ReadyBadge extends StatelessWidget {
+  const _ReadyBadge({required this.fraction});
+  final double fraction;
+
+  @override
+  Widget build(BuildContext context) {
+    final HudTokens t = context.hud;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final Color dot = fraction >= 0.6
+        ? t.zoneGood
+        : fraction >= 0.3
+            ? t.zoneMid
+            : t.zonePoor;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: dot,
+            boxShadow: t.brightness == Brightness.dark
+                ? [BoxShadow(color: dot, blurRadius: 10)]
+                : null,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          '${l10n.homeRecoveryReady.toUpperCase()} ${(fraction * 100).round()}%',
+          style: HudType.mono(t, size: 9.5).inPanel(t),
+        ),
+      ],
+    );
+  }
+}
+
+/// The seven-day week grid, bare over the photograph per the handoff, plus
+/// the three totals underneath.
+class _HudWeekSection extends ConsumerWidget {
+  const _HudWeekSection();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    final colors = theme.colors;
+    final HudTokens t = context.hud;
     final week = ref.watch(weekStripProvider);
     final totals = ref.watch(weekTotalsProvider);
 
@@ -718,83 +512,82 @@ class _WeekSection extends ConsumerWidget {
       key: const Key('home.week'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _SectionHeader(l10n.homeThisWeek),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            for (final cell in week) ...[
-              Expanded(
-                child: Column(
-                  children: [
-                    Text(
-                      // Locale's own short weekday. Nineteen names in an ARB
-                      // file would have been wrong for the next language.
-                      DateFormat.E(l10n.localeName).format(cell.day),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: cell.isToday
-                            ? colors.accentPrimary
-                            : colors.textDisabled,
+        _HudSectionTitle(l10n.homeThisWeek),
+        Padding(
+          padding:
+              const EdgeInsets.symmetric(horizontal: HudTokens.screenGutter),
+          child: Row(
+            children: [
+              for (final cell in week) ...[
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        // Locale's own short weekday. Nineteen names in an
+                        // ARB file would have been wrong for the next
+                        // language.
+                        DateFormat.E(l10n.localeName).format(cell.day),
+                        maxLines: 1,
+                        style: HudType.mono(
+                          t,
+                          size: 8.5,
+                          em: 0.04,
+                          color: cell.isToday ? t.accent : t.textTertiary,
+                        ).overPhoto(t),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    AspectRatio(
-                      aspectRatio: 1,
-                      child: Container(
+                      const SizedBox(height: 7),
+                      Container(
+                        width: 7,
+                        height: 7,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
+                          shape: BoxShape.circle,
                           color: cell.done
-                              ? colors.accentPrimary
+                              ? t.accent
                               : cell.isToday
-                                  ? colors.accentPrimary
-                                      .withValues(alpha: 0.2)
-                                  : cell.isRest
-                                      ? colors.surfaceInteractive
-                                      : colors.surfacePrimary,
-                          border: Border.all(
-                            color: cell.isToday
-                                ? colors.accentPrimary
-                                : colors.outline,
-                            width: cell.isToday ? 1.5 : 1,
-                          ),
+                                  ? t.accent.withValues(alpha: 0.5)
+                                  : t.textTertiary.withValues(alpha: 0.4),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                ),
+                if (cell != week.last) const SizedBox(width: 4),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        Padding(
+          padding:
+              const EdgeInsets.symmetric(horizontal: HudTokens.screenGutter),
+          child: Row(
+            children: [
+              Expanded(
+                child: _TotalCard(
+                  value: '${totals.workouts}',
+                  label: l10n.homeStatWorkouts,
                 ),
               ),
-              if (cell != week.last) const SizedBox(width: 4),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _TotalCard(
+                  // Whole kilos: a volume total is a scale reading, not a
+                  // measurement, and "5 820.4 kg" implies a precision the
+                  // logged plate weights do not have.
+                  value: NumberFormat.decimalPattern(l10n.localeName)
+                      .format(totals.volumeKg.round()),
+                  label: l10n.homeStatVolume,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _TotalCard(
+                  value: '${totals.personalRecords}',
+                  label: l10n.homeStatRecords,
+                ),
+              ),
             ],
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _TotalCard(
-                value: '${totals.workouts}',
-                label: l10n.homeStatWorkouts,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _TotalCard(
-                // Whole kilos: a volume total is a scale reading, not a
-                // measurement, and "5 820.4 kg" implies a precision the
-                // logged plate weights do not have.
-                value: NumberFormat.decimalPattern(l10n.localeName)
-                    .format(totals.volumeKg.round()),
-                label: l10n.homeStatVolume,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _TotalCard(
-                value: '${totals.personalRecords}',
-                label: l10n.homeStatRecords,
-              ),
-            ),
-          ],
+          ),
         ),
       ],
     );
@@ -809,25 +602,24 @@ class _TotalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return GlassCard(
-      borderRadius: 14,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+    final HudTokens t = context.hud;
+    return HudPanel(
+      secondary: true,
+      radius: HudTokens.radiusChip,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           FittedBox(
-            child: Text(
-              value,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w800),
-            ),
+            child: Text(value, style: HudType.panelHeading(t).inPanel(t)),
           ),
           const SizedBox(height: 2),
           Text(
             label,
             textAlign: TextAlign.center,
-            style: theme.textTheme.labelSmall
-                ?.copyWith(color: theme.colors.textSecondary),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: HudType.rowMeta(t).inPanel(t),
           ),
         ],
       ),
@@ -835,17 +627,246 @@ class _TotalCard extends StatelessWidget {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader(this.label);
+/// The handoff's "Recovery" panel — muscle, status word, coloured dot.
+/// Absent, not empty, when there is no history to derive it from — see
+/// [deriveRecovery]. No numeric bar: [MuscleRecovery] carries an ordinal
+/// status, not a measured percentage, and drawing one anyway would be a
+/// precision the data does not have.
+class _HudRecoveryPanel extends ConsumerWidget {
+  const _HudRecoveryPanel();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final rows = ref.watch(muscleRecoveryProvider);
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    final l10n = AppLocalizations.of(context);
+    final HudTokens t = context.hud;
+
+    Color dot(RecoveryStatus s) => switch (s) {
+          RecoveryStatus.ready => t.zoneGood,
+          RecoveryStatus.medium => t.zoneMid,
+          RecoveryStatus.recovering => t.zonePoor,
+        };
+    String label(RecoveryStatus s) => switch (s) {
+          RecoveryStatus.ready => l10n.homeRecoveryReady,
+          RecoveryStatus.medium => l10n.homeRecoveryModerate,
+          RecoveryStatus.recovering => l10n.homeRecoveryRecovering,
+        };
+
+    return Padding(
+      key: const Key('home.recovery'),
+      padding: const EdgeInsets.symmetric(horizontal: HudTokens.screenGutter),
+      child: HudPanel(
+        semanticLabel: l10n.homeSectionRecovery,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.homeSectionRecovery,
+                style: HudType.panelTitle(t).inPanel(t)),
+            const SizedBox(height: 10),
+            for (final r in rows) ...[
+              Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration:
+                        BoxDecoration(shape: BoxShape.circle, color: dot(r.status)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      CatalogLabels.muscle(l10n, r.muscle),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: HudType.bodyStrong(t).inPanel(t),
+                    ),
+                  ),
+                  Text(label(r.status), style: HudType.mono(t, size: 9.5, color: dot(r.status)).inPanel(t)),
+                ],
+              ),
+              if (r != rows.last) ...[
+                const SizedBox(height: 8),
+                Divider(height: 1, color: t.divider),
+                const SizedBox(height: 8),
+              ],
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The handoff's "Unfamiliar machine?" row — the scanner's way in.
+class _HudQuickScanRow extends StatelessWidget {
+  const _HudQuickScanRow();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final HudTokens t = context.hud;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: HudTokens.screenGutter),
+      child: HudPanel(
+        key: const Key('home.quickScan'),
+        secondary: true,
+        radius: HudTokens.radiusSubPanel,
+        padding: const EdgeInsets.fromLTRB(18, 15, 18, 15),
+        semanticLabel: l10n.homeUnfamiliarMachine,
+        onTap: () => GoRouter.of(context).go('/scan'),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(l10n.homeUnfamiliarMachine,
+                      style: HudType.rowTitle(t, strong: true).inPanel(t)),
+                  const SizedBox(height: 2),
+                  Text(l10n.homeIdentifyWithCamera,
+                      style: HudType.body(t, size: 11.5).inPanel(t)),
+                ],
+              ),
+            ),
+            Icon(Icons.qr_code_scanner_rounded, size: 24, color: t.textPrimary),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A panel-title-weight section heading (`700 20px`, plain case) — the
+/// handoff's own "Form coach" / "Recovery" panel titles, reused for the
+/// sections below the redesigned spine ("Upcoming", "More", "Suggested for
+/// you"). Deliberately not [HudSectionHeader]: that widget is the small
+/// uppercase-tracked micro-label the handoff uses for Profile's dividers, a
+/// different and smaller role than a section's own bold heading.
+class _HudSectionTitle extends StatelessWidget {
+  const _HudSectionTitle(this.label);
   final String label;
 
   @override
   Widget build(BuildContext context) {
+    final HudTokens t = context.hud;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+          HudTokens.headerGutter, 10, HudTokens.headerGutter, 10),
+      child: Text(label, style: HudType.panelHeading(t).overPhoto(t)),
+    );
+  }
+}
+
+/// "Today's plan" CTA. Routes to the AI workout generator. Kept unchanged
+/// from the previous build — the handoff has no equivalent screen to redesign
+/// it against.
+class _AiPlanCard extends StatelessWidget {
+  const _AiPlanCard();
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Text(
-      label,
-      style: theme.textTheme.titleLarge?.copyWith(
-        color: theme.colors.textSecondary,
+    return GlassCard(
+      onTap: () => GoRouter.of(context).push('/plan'),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              gradient: const LinearGradient(colors: [
+                AppPalette.auroraTeal,
+                AppPalette.auroraBlue,
+              ]),
+            ),
+            child: const Icon(Icons.auto_awesome,
+                color: AppSemanticColors.onGradientInk),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context).homeTodaySAdaptivePlan,
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  AppLocalizations.of(context)
+                      .homeBuiltFromYourIntakeRatingsAnd,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: theme.colors.textSecondary),
+        ],
+      ),
+    );
+  }
+}
+
+/// Entry point for R10's posture check -- a card rather than a 6th bottom-nav
+/// tab, per `core/plans/PLAN_R10_POSTURE_2026-08-08.md` section 4: the shell
+/// is a fixed 5 tabs and none of them fit a static stand-and-check feature.
+/// Also stands in for the handoff's "Form coach" panel — see the file doc
+/// comment for why that panel's own numbers are not shown.
+class _PostureCheckCard extends StatelessWidget {
+  const _PostureCheckCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GlassCard(
+      key: const Key('home.postureCard'),
+      onTap: () => GoRouter.of(context).push('/posture'),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              gradient: const LinearGradient(colors: [
+                AppPalette.auroraLime,
+                AppPalette.auroraTeal,
+              ]),
+            ),
+            child: const Icon(Icons.accessibility_new_rounded,
+                color: AppSemanticColors.onGradientInk),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context).postureTitle,
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  AppLocalizations.of(context).postureHomeSubtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right_rounded, color: theme.colors.textSecondary),
+        ],
       ),
     );
   }
@@ -1087,8 +1108,8 @@ class _SuggestionCard extends StatelessWidget {
 ///
 /// The builder is a pure function with no `BuildContext`, so it reports which
 /// reason applies and this turns it into a sentence. Before the split, the
-/// builder composed the sentence itself and a Russian Home screen read
-/// "You have not trained hamstrings this week" — English string *and* an
+/// builder composed the sentence itself and a Russian Home screen read "You
+/// have not trained hamstrings this week" — English string *and* an
 /// untranslated catalog muscle tag. The muscle goes through `CatalogLabels`,
 /// the same table every other screen uses, so it cannot be translated on the
 /// exercise page and raw here.
@@ -1135,115 +1156,6 @@ class _SuggestionsMessage extends StatelessWidget {
         style: theme.textTheme.bodySmall?.copyWith(
           color: theme.colors.textSecondary,
         ),
-      ),
-    );
-  }
-}
-
-/// Entry point for R10's posture check -- a card rather than a 6th bottom-nav
-/// tab, per `core/plans/PLAN_R10_POSTURE_2026-08-08.md` section 4: the shell
-/// is a fixed 5 tabs and none of them fit a static stand-and-check feature.
-class _PostureCheckCard extends StatelessWidget {
-  const _PostureCheckCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return GlassCard(
-      key: const Key('home.postureCard'),
-      onTap: () => GoRouter.of(context).push('/posture'),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              gradient: const LinearGradient(colors: [
-                AppPalette.auroraLime,
-                AppPalette.auroraTeal,
-              ]),
-            ),
-            child: const Icon(Icons.accessibility_new_rounded,
-                color: AppSemanticColors.onGradientInk),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppLocalizations.of(context).postureTitle,
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  AppLocalizations.of(context).postureHomeSubtitle,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right_rounded, color: theme.colors.textSecondary),
-        ],
-      ),
-    );
-  }
-}
-
-/// "Today's plan" CTA. Routes to the AI workout generator. The killer
-/// feature was hidden behind a URL until this card existed.
-class _AiPlanCard extends StatelessWidget {
-  const _AiPlanCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return GlassCard(
-      onTap: () => GoRouter.of(context).push('/plan'),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              gradient: const LinearGradient(colors: [
-                AppPalette.auroraTeal,
-                AppPalette.auroraBlue,
-              ]),
-            ),
-            child: const Icon(Icons.auto_awesome,
-                color: AppSemanticColors.onGradientInk),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppLocalizations.of(context).homeTodaySAdaptivePlan,
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  AppLocalizations.of(context)
-                      .homeBuiltFromYourIntakeRatingsAnd,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right_rounded, color: theme.colors.textSecondary),
-        ],
       ),
     );
   }

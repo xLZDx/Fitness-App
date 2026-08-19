@@ -17534,3 +17534,102 @@ the directory, including these two, carries the mandated provenance block. Publi
 tool; links given to the operator in-chat.
 
 Suites: none -- report authoring only, no source changed. PUSH: NOT PERFORMED.
+
+---
+
+## 2026-08-19 -- MVP Gate M1: Home rebuilt against the real HUD handoff; shell nav swapped to HudNavBar
+
+Operator mandate ("SPTR -- FASTEST SAFE MVP FIRST", GO: AUTHORIZED, PUSH: NO) supplied the design
+handoff at `D:\Downloads\Mobile app design (1).zip` -- the blocker the prior entry recorded is
+resolved. Extracted (integrity-verified, 40 entries) and read in full: `CLAUDE.md`, `README.md`, and
+`Fitness Glass Phone v1 - Sunset.dc.html` (the dark-theme master prototype, all 814 lines). This entry
+covers M0 (a lightweight discovery, not written up as a separate artifact) and M1 (Home).
+
+**M0, folded into M1's own investigation rather than a standalone document:** the D1 HUD widget kit
+(`HudScaffold`/`HudSurface`/`HudMetric`/`hud_sky.dart`/`HudTokens`) was already built correctly against
+this exact handoff in an earlier part of this session -- confirmed by cross-reading `HudNavBar`'s own
+doc comment (independently describing the same "Scan not raised, moved to centre, Home . Workouts .
+Scan . Progress . Profile order" divergence this session found in the handoff) against the handoff
+spec just read. No screen had actually been wired onto that kit yet -- `home_page.dart` and
+`main_shell.dart` were both still on the pre-HUD (`GlassCard`/`GlassNavBar`) system. Home's real
+domain layer (`home_dashboard.dart`'s pure arithmetic, `home_dashboard_providers.dart`'s Riverpod
+wiring, the R11a `home_page.dart`'s provider-wired sections) was read in full and reused rather than
+reimplemented -- this rebuild is a reskin against real state, not a rewrite of the domain layer.
+
+**What was built**, in `mobile/lib/features/home/home_page.dart` (full rewrite) and
+`mobile/lib/shared/widgets/main_shell.dart` (nav bar + background swap):
+
+* Identity/week strip, day panel (ring + session facts + zone bar + CTA), seven-day week grid, week
+  totals, muscle-recovery panel and the quick-scan row are built against the handoff's exact geometry
+  via the shared HUD kit (`HudPanel`, `HudRing`/`HudRingLabel`, `HudZoneBar`, `HudButton`, `HudSurface`).
+* `MainShell` now wraps its body in `HudSkyBackground` (phase derived from `HudSkyPhase.forTime(DateTime.now())`
+  -- the only honest default before the background-settings screen (P2-3/D9) exists to let a user
+  choose a scene) and its `bottomNavigationBar` is `HudNavBar`, tab order Home . Workouts . Scan .
+  Progress . Profile per the handoff (was Home . Scan . Workouts . Progress . Profile with Scan
+  raised). `shellBottomObstruction` (`shell_insets.dart`) reads the framework's own computed
+  `MediaQuery.padding.bottom` rather than either bar's fixed height, so the scanner's bottom-sheet
+  math needed no change for this swap -- verified by inspection of that file's own doc comment, not
+  assumed.
+* The PopScope/`_AnnounceShellCanPop` Back-button interception logic in `MainShell` is untouched,
+  verbatim.
+
+**Two deliberate departures from the handoff's pixels, both `CLAUDE.md` SS61 ("no fake data") calls, not
+fidelity misses:**
+
+1. The handoff's day panel shows a `READY {{recAvg}}` badge and a readiness marker on a zone bar. No
+   single "readiness" score exists anywhere in the domain layer -- `muscleRecoveryProvider` only
+   reports a per-muscle ready/medium/recovering *status*. What ships is the one real, derivable
+   number: the fraction of tracked muscle groups currently `ready` (`_ReadyBadge`, `_HudDayPanel`).
+   Omitted entirely, not shown as 0%, when there is no training history to derive it from -- the same
+   rule the pre-existing recovery strip already enforced, now extended to this new badge/bar.
+2. The handoff's "Form coach" panel shows per-set Tempo/Depth/Symmetry numbers. Nothing in this
+   codebase produces those for Home; inventing plausible ones would be fake ML confidence. The panel
+   is replaced by the app's real, working posture-check entry point (kept from the previous build,
+   `Key('home.postureCard')`, unchanged behaviour). The muscle-recovery panel also drops the handoff's
+   per-muscle percentage bar for the same reason -- `MuscleRecovery` carries an ordinal status, not a
+   measured percentage, so the row shows the status word, not an invented bar length.
+
+The app's own entry points the handoff has no equivalent for (AI plan, posture check, health sync,
+deload notice, today's summary, upcoming sessions, suggestions) are kept below the redesigned spine,
+unchanged, per the precedent the previous build's own doc comment already established.
+
+**A real, pre-existing accessibility gap found and fixed while building the first real `HudPanel`
+caller that combines `onTap` with an explicit `semanticLabel`** (`_HudQuickScanRow`,
+`_HudRecoveryPanel`'s label, the empty-state day panel): `HudPanel` merged its own Text children into
+the outer `Semantics` node instead of excluding them, so a screen reader would announce the label and
+then the same visible copy again -- the exact bug `HudButton`'s own doc comment already names and
+fixes for a different widget. Fixed in `hud_surface.dart` by wrapping the child in `ExcludeSemantics`
+only when a `semanticLabel` is actually supplied (a bare `onTap` with no override still lets real
+content through, unchanged from before). No existing test exercised this combination
+(`grep 'HudPanel(' test/` confirmed), so nothing was pinning the buggy behaviour.
+
+**Two ARB keys added** (`homeSessionLabel`, `homeRingExercises`, EN+RU) for the day panel's "Session"
+row label and the ring's "Exercises" caption -- neither existed under any name close enough to reuse
+without fabricating a translation.
+
+**One deliberate test change**, `test/features/home_page_test.dart`:
+`'uses a SmoothScrollList for the home content'` -> `'uses HudScreenBody for the home content'`. Home's
+scroll region is now `HudScreenBody` (the handoff's own inset/mask geometry), not `SmoothScrollList`'s
+physics -- a deliberate architectural swap this gate makes, not a regression, and the assertion follows
+the screen to its new mechanism. The 'active programme' test's substring assertion was updated from
+`'Strength base . Week 2 of 8'` to `'STRENGTH BASE . WEEK 2 OF 8'`: the identity/week strip is now the
+handoff's own uppercase tracked micro-label style (matching `HudNavBar`'s and the existing
+`HudSectionHeader`'s established `.toUpperCase()` convention in this widget kit), a presentational
+transform of the same locale-correct string, not a new locale defect -- same reasoning the B2a comment
+immediately above it already applies to the underlying string's locale-correctness.
+
+**Verification:** `flutter analyze` clean (0 issues in touched files; the 16 pre-existing repo-wide
+issues are unrelated files this gate did not touch). `flutter test test/features/home_page_test.dart`
+15/15. `flutter test test/shared/widgets/hud/hud_components_test.dart` 47/47 (confirms the
+`HudPanel` semantics fix against the existing HUD kit suite). `flutter test
+test/router/back_navigation_test.dart` 10/10 (confirms the shell's Back-button plumbing survived the
+nav-bar swap). Full suite: `flutter test` -- **3093/3093**, 0 failures, same total as the R-D1
+checkpoint (two existing tests edited in place, none added or removed).
+
+**MVP status:** M1 (Home) closed. M0 folded in above. M2 (Workouts), M3 (Level-1 equipment memory),
+M4 (Scanner), M5 (Session), M6 (Profile) remain -- `workouts_page.dart` (1816 lines), `scanner_page.dart`
+(1769 lines) and `profile_page.dart` (478 lines) are still on the pre-HUD system; sized by inspection,
+not yet touched. MVP_REACHED is NOT yet claimed.
+
+Suites: `flutter analyze` clean; `flutter test` 3093/3093 (see above). PUSH: NOT PERFORMED (mandate:
+PUSH: NO).

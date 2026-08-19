@@ -157,6 +157,8 @@
   "equipmentHiddenForInjuryHint": "It conflicts with an injury you told us about. You can change your injury list in your profile.",
   "equipmentScheduledHiddenForInjury": "Conflicts with a logged injury",
   "homeSessionWithheld": "Withheld — open it to see why",
+  "homeSessionLabel": "Session",
+  "homeRingExercises": "Exercises",
   "equipmentWorkout": "Workout",
   "formcheckFormCoach": "Form coach",
   "formcheckStartSet": "Start set",

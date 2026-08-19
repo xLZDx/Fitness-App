@@ -139,6 +139,8 @@
   "equipmentHiddenForInjuryHint": "Упражнение противопоказано при травме, которую вы указали. Список травм можно изменить в профиле.",
   "equipmentScheduledHiddenForInjury": "Противоречит указанной травме",
   "homeSessionWithheld": "Отложено — откройте, чтобы увидеть причину",
+  "homeSessionLabel": "Сессия",
+  "homeRingExercises": "Упражнения",
   "equipmentWorkout": "Тренировка",
   "formcheckFormCoach": "Тренер по технике",
   "formcheckStartSet": "Начать подход",
