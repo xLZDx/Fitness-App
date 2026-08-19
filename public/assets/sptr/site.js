@@ -59,7 +59,7 @@
 
     s4Eyebrow: 'Основание',
     s4Title: 'Он показывает, что прочитал.',
-    s4Lede: 'На большинстве тренажёров написано их собственное название. Когда SPTR опирается на эти слова, он выводит их рядом с ответом — проверка занимает секунду, и верить на слово не нужно.',
+    s4Lede: 'На многих тренажёрах написано их собственное название. Когда SPTR может опереться на эти слова, он выводит их рядом с ответом — проверка занимает секунду, и верить на слово не нужно.',
     proofCap: 'На тренажёре',
     uiRead: 'Прочитано на тренажёре',
     s4Restraint: 'А когда он не уверен, он так и пишет: <em>«Не уверен — самое похожее»</em> — и предлагает варианты, вместо того чтобы выбрать один и звучать уверенно.',
@@ -184,6 +184,34 @@
         if (!b) return;
         if (b.dataset.setConcept) applyConcept(b.dataset.setConcept);
         if (b.dataset.setLang) applyLang(b.dataset.setLang);
+      });
+
+      // The CSS badges show claim-state and public-gate; the qualification
+      // condition itself is longer prose. A native `title` tooltip alone is
+      // unreachable by keyboard, touch and much assistive tech (a11y review
+      // finding), so this is a real focusable disclosure instead: a small
+      // toggle button that reveals the qualify text as visible, selectable
+      // page content rather than a hover-only tooltip.
+      document.querySelectorAll('[data-claim-qualify]').forEach(function (el) {
+        var toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'qualify-toggle';
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.textContent = 'qualify ▾';
+
+        var detail = document.createElement('span');
+        detail.className = 'qualify-detail';
+        detail.hidden = true;
+        detail.textContent = el.dataset.claimQualify;
+
+        toggle.addEventListener('click', function () {
+          var open = toggle.getAttribute('aria-expanded') === 'true';
+          toggle.setAttribute('aria-expanded', String(!open));
+          toggle.textContent = open ? 'qualify ▾' : 'qualify ▴';
+          detail.hidden = open;
+        });
+
+        el.append(' ', toggle, detail);
       });
     }
 

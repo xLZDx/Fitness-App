@@ -3,8 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SPTR — know the machine in front of you</title>
-<meta name="description" content="Point your phone at a gym machine. SPTR helps identify the equipment and shows the exercises available for it — and shows you what it read.">
+<!-- Title/description are static SEO fields outside the data-i18n system (they
+     do not change with ?lang=ru) and restate claims already classified in the
+     body -- hero-a-mechanic and hero-b-evidence. Keep them consistent with
+     those two if either wording changes. claim_lint.py requires both of these
+     two specific tags to carry a claim marker even without data-i18n, since
+     they are exactly the kind of live marketing copy a body-only scan would
+     miss (found by security review during Gate A remediation). -->
+<title data-nonclaim="seo-title">SPTR — know the machine in front of you</title>
+<meta name="description" data-nonclaim="seo-description" content="Point your phone at a gym machine. SPTR helps identify the equipment and shows the exercises available for it — and shows you what it read.">
+<!-- noindex/nofollow keeps search engines from indexing this internal prototype.
+     It is NOT access control -- anyone with the URL can still load the page.
+     If this build is ever deployed to a reachable host before the pre-public
+     truth gate runs, it must sit behind real access control (authenticated
+     preview, VPN/internal network, or equivalent) -- robots metadata never
+     substitutes for that. See core/marketing/SPTR_MARKETING_SITE_QA_2026-08-19.md. -->
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#FAF9FC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0C0716" media="(prefers-color-scheme: dark)">
@@ -33,9 +46,9 @@
   <div class="shell nav-in">
     <a class="mark" href="/" aria-label="SPTR — short for Spotter">
       <span class="mark-word" aria-hidden="true">SP<span class="mark-x">O</span>T<span class="mark-x">TE</span>R</span>
-      <span class="mark-sub" data-i18n="brandSub">short for Spotter</span>
+      <span class="mark-sub" data-nonclaim="brand-label" data-i18n="brandSub">short for Spotter</span>
     </a>
-    <a class="btn btn-sm" href="#cta" data-i18n="navCta">Try the prototype</a>
+    <a class="btn btn-sm" href="#cta" data-nonclaim="cta-label" data-i18n="navCta">Try the prototype</a>
   </div>
 </header>
 
@@ -45,21 +58,21 @@
   <section class="hero">
     <div class="shell hero-in">
       <div class="hero-copy">
-        <p class="eyebrow" data-i18n="heroEyebrow">Gym equipment, understood</p>
+        <p class="eyebrow" data-nonclaim="eyebrow" data-i18n="heroEyebrow">Gym equipment, understood</p>
 
-        <h1 class="hero-h" data-for="a" data-i18n="heroA">That machine you keep walking past?</h1>
-        <h1 class="hero-h" data-for="b" data-i18n="heroB">See what SPTR saw.</h1>
-        <h1 class="hero-h hero-h-steps" data-for="c">
-          <span data-i18n="heroC1">Point.</span> <span data-i18n="heroC2">Recognize.</span> <span data-i18n="heroC3">Continue.</span>
+        <h1 class="hero-h" data-for="a" data-nonclaim="headline" data-i18n="heroA">That machine you keep walking past?</h1>
+        <h1 class="hero-h" data-for="b" data-nonclaim="headline" data-i18n="heroB">See what SPTR saw.</h1>
+        <h1 class="hero-h hero-h-steps" data-for="c" data-nonclaim="headline">
+          <span data-nonclaim="headline" data-i18n="heroC1">Point.</span> <span data-nonclaim="headline" data-i18n="heroC2">Recognize.</span> <span data-nonclaim="headline" data-i18n="heroC3">Continue.</span>
         </h1>
 
-        <p class="hero-sub" data-for="a" data-claim-class="exists" data-i18n="subA">Point your phone at it. SPTR helps identify the equipment and shows the exercises and instructions available for it.</p>
-        <p class="hero-sub" data-for="b" data-claim-class="exists" data-i18n="subB">When SPTR uses words printed on a machine to make a match, it shows you the words it read, right next to the result.</p>
-        <p class="hero-sub" data-for="c" data-claim-class="committed" data-i18n="subC">Recognize the equipment now. When you come back to it, bring back the workout and the setup you saved for that machine.</p>
+        <p class="hero-sub" data-for="a" data-claim-id="hero-a-mechanic" data-claim-state="exists" data-public-gate="allowed" data-i18n="subA">Point your phone at it. SPTR helps identify the equipment and shows the exercises and instructions available for it.</p>
+        <p class="hero-sub" data-for="b" data-claim-id="hero-b-evidence" data-claim-state="exists" data-public-gate="allowed" data-i18n="subB">When SPTR uses words printed on a machine to make a match, it shows you the words it read, right next to the result.</p>
+        <p class="hero-sub" data-for="c" data-claim-id="hero-c-recurring" data-claim-state="committed" data-public-gate="internal-only" data-i18n="subC">Recognize the equipment now. When you come back to it, bring back the workout and the setup you saved for that machine.</p>
 
         <div class="hero-act">
-          <a class="btn" href="#cta" data-i18n="ctaPrimary">Try the prototype</a>
-          <a class="btn btn-ghost" href="#how" data-i18n="ctaSecondary">See how it works</a>
+          <a class="btn" href="#cta" data-nonclaim="cta-label" data-i18n="ctaPrimary">Try the prototype</a>
+          <a class="btn btn-ghost" href="#how" data-nonclaim="cta-label" data-i18n="ctaSecondary">See how it works</a>
         </div>
       </div>
 
@@ -74,7 +87,7 @@
             <div class="reticle" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
           </div>
         </div>
-        <figcaption class="media-note" data-i18n="heroCaption">Real photograph, real gym. The app view above is a camera frame, not a screenshot.</figcaption>
+        <figcaption class="media-note" data-claim-id="hero-media-provenance" data-claim-state="exists" data-public-gate="allowed" data-i18n="heroCaption">Real photograph, real gym. The app view above is a camera frame, not a screenshot.</figcaption>
       </figure>
     </div>
   </section>
@@ -83,26 +96,26 @@
   <section id="how" class="band">
     <div class="shell">
       <header class="sec-head">
-        <p class="eyebrow" data-i18n="s2Eyebrow">The mechanic</p>
-        <h2 data-i18n="s2Title">Point the camera. Get the machine.</h2>
-        <p class="lede" data-i18n="s2Lede">No stickers on the equipment. No setup by the gym. Nothing to install on the machine — it works on whatever is standing in front of you.</p>
+        <p class="eyebrow" data-nonclaim="eyebrow" data-i18n="s2Eyebrow">The mechanic</p>
+        <h2 data-nonclaim="headline" data-i18n="s2Title">Point the camera. Get the machine.</h2>
+        <p class="lede" data-claim-id="mechanic-no-setup" data-claim-state="exists" data-public-gate="allowed" data-i18n="s2Lede">No stickers on the equipment. No setup by the gym. Nothing to install on the machine — it works on whatever is standing in front of you.</p>
       </header>
 
       <ol class="steps">
         <li class="card">
           <span class="step-n" aria-hidden="true">1</span>
-          <h3 data-i18n="s2aTitle">Point</h3>
-          <p data-claim-class="exists" data-i18n="s2aBody">Aim at the machine you mean. SPTR reads the words printed on it, and looks at the machine itself.</p>
+          <h3 data-nonclaim="headline" data-i18n="s2aTitle">Point</h3>
+          <p data-claim-id="mechanic-point" data-claim-state="exists" data-public-gate="allowed" data-i18n="s2aBody">Aim at the machine you mean. SPTR reads the words printed on it, and looks at the machine itself.</p>
         </li>
         <li class="card">
           <span class="step-n" aria-hidden="true">2</span>
-          <h3 data-i18n="s2bTitle">Recognize</h3>
-          <p data-claim-class="exists" data-i18n="s2bBody">It answers from a catalogue of 69 equipment types — in English and Russian, with the aliases people actually use.</p>
+          <h3 data-nonclaim="headline" data-i18n="s2bTitle">Recognize</h3>
+          <p data-claim-id="mechanic-catalogue-size" data-claim-state="exists" data-public-gate="allowed" data-i18n="s2bBody">It answers from a catalogue of 69 equipment types — in English and Russian, with the aliases people actually use.</p>
         </li>
         <li class="card">
           <span class="step-n" aria-hidden="true">3</span>
-          <h3 data-i18n="s2cTitle">Do something with it</h3>
-          <p data-claim-class="exists" data-i18n="s2cBody">1,887 exercises with steps and demonstration video, filtered against the injuries you tell it about.</p>
+          <h3 data-nonclaim="headline" data-i18n="s2cTitle">Do something with it</h3>
+          <p data-claim-id="mechanic-exercise-library" data-claim-state="exists" data-public-gate="qualify" data-claim-qualify="Injury filtering covers 1,527 of 1,887 exercises and is self-reported, not a medical screen; wording must say so before public use. Video is streamed from a signed URL, not bundled -- must not be phrased as 'works offline'" data-i18n="s2cBody">1,887 exercises with steps and demonstration video, filtered against the injuries you tell it about.</p>
         </li>
       </ol>
     </div>
@@ -112,32 +125,32 @@
   <section class="band band-tint">
     <div class="shell split">
       <div class="split-copy">
-        <p class="eyebrow" data-i18n="s3Eyebrow">Coming back</p>
-        <h2 data-i18n="s3Title">The second time should be easier than the first.</h2>
-        <p class="lede" data-i18n="s3Lede">Knowing what a machine is called is useful once. What matters on the fourth visit is the part nobody remembers: where the seat was, and what you actually lifted.</p>
+        <p class="eyebrow" data-nonclaim="eyebrow" data-i18n="s3Eyebrow">Coming back</p>
+        <h2 data-nonclaim="headline" data-i18n="s3Title">The second time should be easier than the first.</h2>
+        <p class="lede" data-nonclaim="framing" data-i18n="s3Lede">Knowing what a machine is called is useful once. What matters on the fourth visit is the part nobody remembers: where the seat was, and what you actually lifted.</p>
 
         <ul class="ticks">
-          <li data-claim-class="committed" data-i18n="s3a">What you lifted on this equipment last time, and when.</li>
-          <li data-claim-class="committed" data-i18n="s3b">The setup you saved for it — seat, pad, pin, or whatever that machine actually has.</li>
-          <li data-claim-class="exists" data-i18n="s3c">A suggested next weight, derived from how the last sessions went.</li>
+          <li data-claim-id="memory-last-lift" data-claim-state="committed" data-public-gate="internal-only" data-i18n="s3a">What you lifted on this equipment last time, and when.</li>
+          <li data-claim-id="memory-setup" data-claim-state="committed" data-public-gate="internal-only" data-i18n="s3b">The setup you saved for it — seat, pad, pin, or whatever that machine actually has.</li>
+          <li data-claim-id="memory-suggested-weight" data-claim-state="exists" data-public-gate="qualify" data-claim-qualify="Derived from self-logged history, not personalised coaching or a medical recommendation; the app must say the user makes the final call" data-i18n="s3c">A suggested next weight, derived from how the last sessions went.</li>
         </ul>
 
-        <p class="provenance" data-claim-class="committed" data-i18n="s3Prov"><strong>SPTR does not decide your settings.</strong> It shows you what you saved, and says when it saved it.</p>
+        <p class="provenance" data-claim-id="memory-provenance" data-claim-state="committed" data-public-gate="internal-only" data-i18n="s3Prov"><strong>SPTR does not decide your settings.</strong> It shows you what you saved, and says when it saved it.</p>
       </div>
 
       <div class="split-media">
         <div class="stack-cards" data-media="illustration">
           <div class="ui-card">
-            <span class="ui-k" data-i18n="uiLast">Last time here</span>
+            <span class="ui-k" data-nonclaim="illustration-example" data-i18n="uiLast">Last time here</span>
             <span class="ui-v">45 kg × 10</span>
-            <span class="ui-m" data-i18n="uiWhen">2 weeks ago · you logged it</span>
+            <span class="ui-m" data-nonclaim="illustration-example" data-i18n="uiWhen">2 weeks ago · you logged it</span>
           </div>
           <div class="ui-card">
-            <span class="ui-k" data-i18n="uiSetup">Setup you saved</span>
-            <span class="ui-v" data-i18n="uiSetupV">Seat 4 · pad 2</span>
-            <span class="ui-m" data-i18n="uiSetupM">saved by you on 4 Aug</span>
+            <span class="ui-k" data-nonclaim="illustration-example" data-i18n="uiSetup">Setup you saved</span>
+            <span class="ui-v" data-nonclaim="illustration-example" data-i18n="uiSetupV">Seat 4 · pad 2</span>
+            <span class="ui-m" data-nonclaim="illustration-example" data-i18n="uiSetupM">saved by you on 4 Aug</span>
           </div>
-          <p class="media-note" data-i18n="illusNote">Illustration of a future capability — not a screenshot, and not built yet.</p>
+          <p class="media-note" data-nonclaim="disclosure" data-i18n="illusNote">Illustration of a future capability — not a screenshot, and not built yet.</p>
         </div>
       </div>
     </div>
@@ -147,9 +160,9 @@
   <section class="band">
     <div class="shell split split-rev">
       <div class="split-copy">
-        <p class="eyebrow" data-i18n="s4Eyebrow">Evidence</p>
-        <h2 data-i18n="s4Title">It shows you what it read.</h2>
-        <p class="lede" data-i18n="s4Lede">Most machines have their own name printed on them. When SPTR uses those words to make a match, it puts them on screen next to the answer — so checking it takes about a second, and you do not have to take its word for anything.</p>
+        <p class="eyebrow" data-nonclaim="eyebrow" data-i18n="s4Eyebrow">Evidence</p>
+        <h2 data-nonclaim="headline" data-i18n="s4Title">It shows you what it read.</h2>
+        <p class="lede" data-claim-id="evidence-nameplate-prevalence" data-claim-state="exists" data-public-gate="qualify" data-claim-qualify="Nameplate prevalence is bounded to ~28 of 69 registry types (selectorised strength machines); free weights and bodyweight equipment can never carry one. Exact prevalence is an open field study in the evidence backlog, not yet measured" data-i18n="s4Lede">Many machines have their own name printed on them. When SPTR can use those words to make a match, it puts them on screen next to the answer — so checking it takes about a second, and you do not have to take its word for anything.</p>
 
         <div class="proof">
           <figure class="proof-photo" data-media="real-photo">
@@ -158,16 +171,16 @@
                  sizes="(max-width: 820px) 88vw, 480px"
                  width="1180" height="260" loading="lazy" decoding="async"
                  alt="A close photograph of a machine placard reading PEC FLY / REAR DELT.">
-            <figcaption data-i18n="proofCap">On the machine</figcaption>
+            <figcaption data-nonclaim="photo-caption-label" data-i18n="proofCap">On the machine</figcaption>
           </figure>
           <div class="proof-arrow" aria-hidden="true">↓</div>
           <div class="ui-card ui-card-wide" data-media="illustration">
-            <span class="ui-k" data-i18n="uiRead">Read on the machine</span>
+            <span class="ui-k" data-nonclaim="illustration-example" data-i18n="uiRead">Read on the machine</span>
             <span class="ui-v ui-mono">PEC FLY / REAR DELT</span>
           </div>
         </div>
 
-        <p class="restraint" data-claim-class="exists" data-i18n="s4Restraint">And when it is not sure, it says <em>“Not sure — closest matches”</em> and offers them, instead of picking one and sounding certain.</p>
+        <p class="restraint" data-claim-id="evidence-restraint" data-claim-state="exists" data-public-gate="allowed" data-i18n="s4Restraint">And when it is not sure, it says <em>“Not sure — closest matches”</em> and offers them, instead of picking one and sounding certain.</p>
       </div>
 
       <figure class="split-media" data-media="real-photo">
@@ -176,7 +189,7 @@
              sizes="(max-width: 820px) 92vw, 440px"
              width="1100" height="1591" loading="lazy" decoding="async"
              alt="The same placard seen on the machine it belongs to, photographed in a real gym.">
-        <figcaption class="media-note" data-i18n="s4Cap">Photographed on a real gym floor, 30 July 2026.</figcaption>
+        <figcaption class="media-note" data-claim-id="evidence-photo-provenance" data-claim-state="exists" data-public-gate="allowed" data-i18n="s4Cap">Photographed on a real gym floor, 30 July 2026.</figcaption>
       </figure>
     </div>
   </section>
@@ -185,25 +198,25 @@
   <section class="band band-tint">
     <div class="shell">
       <header class="sec-head">
-        <p class="eyebrow" data-i18n="s5Eyebrow">The honest part</p>
-        <h2 data-i18n="s5Title">Nothing recognises every machine. So it tells you when it doesn't.</h2>
-        <p class="lede" data-i18n="s5Lede">An answer it cannot stand behind is worse than no answer. When a machine falls outside what SPTR knows, it says so and keeps the sighting instead of guessing.</p>
+        <p class="eyebrow" data-nonclaim="eyebrow" data-i18n="s5Eyebrow">The honest part</p>
+        <h2 data-nonclaim="headline" data-i18n="s5Title">Nothing recognises every machine. So it tells you when it doesn't.</h2>
+        <p class="lede" data-nonclaim="framing" data-i18n="s5Lede">An answer it cannot stand behind is worse than no answer. When a machine falls outside what SPTR knows, it says so and keeps the sighting instead of guessing.</p>
       </header>
 
       <div class="flow">
         <div class="card flow-i">
-          <h3 data-i18n="s5aTitle">It says it doesn't know</h3>
-          <p data-claim-class="exists" data-i18n="s5aBody">The machine gets a card of its own, marked <em>“Not in the catalog yet”</em>, with your photo of it.</p>
+          <h3 data-nonclaim="headline" data-i18n="s5aTitle">It says it doesn't know</h3>
+          <p data-claim-id="unknown-machine-card" data-claim-state="exists" data-public-gate="allowed" data-i18n="s5aBody">The machine gets a card of its own, marked <em>“Not in the catalog yet”</em>, with your photo of it.</p>
         </div>
         <div class="flow-sep" aria-hidden="true"></div>
         <div class="card flow-i">
-          <h3 data-i18n="s5bTitle">It counts how often it comes up</h3>
-          <p data-claim-class="exists" data-i18n="s5bBody">Sightings of the same machine merge — <em>“scanned 3 times”</em> — so the gap has a size, not just a name.</p>
+          <h3 data-nonclaim="headline" data-i18n="s5bTitle">It counts how often it comes up</h3>
+          <p data-claim-id="unknown-sighting-count" data-claim-state="exists" data-public-gate="allowed" data-i18n="s5bBody">Sightings of the same machine merge — <em>“scanned 3 times”</em> — so the gap has a size, not just a name.</p>
         </div>
         <div class="flow-sep" aria-hidden="true"></div>
         <div class="card flow-i">
-          <h3 data-i18n="s5cTitle">The gaps set the queue</h3>
-          <p data-claim-class="hypothesis" data-i18n="s5cBody">The equipment people actually stand in front of is what gets covered next. No promise about when.</p>
+          <h3 data-nonclaim="headline" data-i18n="s5cTitle">The gaps set the queue</h3>
+          <p data-claim-id="unknown-coverage-queue" data-claim-state="hypothesis" data-public-gate="internal-only" data-i18n="s5cBody">The equipment people actually stand in front of is what gets covered next. No promise about when.</p>
         </div>
       </div>
 
@@ -221,21 +234,21 @@
   <section class="band">
     <div class="shell">
       <header class="sec-head">
-        <p class="eyebrow" data-i18n="s6Eyebrow">Straight about the data</p>
-        <h2 data-i18n="s6Title">Where your pictures go, in plain words.</h2>
+        <p class="eyebrow" data-nonclaim="eyebrow" data-i18n="s6Eyebrow">Straight about the data</p>
+        <h2 data-nonclaim="headline" data-i18n="s6Title">Where your pictures go, in plain words.</h2>
       </header>
       <div class="facts">
         <div class="fact">
-          <h3 data-i18n="s6aTitle">Progress photos stay on your phone</h3>
-          <p data-claim-class="exists" data-i18n="s6aBody">Encrypted on the device with a key held in the hardware keystore, and excluded from device backups.</p>
+          <h3 data-nonclaim="headline" data-i18n="s6aTitle">Progress photos stay on your phone</h3>
+          <p data-claim-id="privacy-progress-photo-encryption" data-claim-state="exists" data-public-gate="qualify" data-claim-qualify="Verified against source architecture (hardware-backed secure storage, backup exclusion rules); not an independently audited security claim -- wording must not imply a third-party audit" data-i18n="s6aBody">Encrypted on the device with a key held in the hardware keystore, and excluded from device backups.</p>
         </div>
         <div class="fact">
-          <h3 data-i18n="s6bTitle">Recognition photos are sent to be recognised</h3>
-          <p data-claim-class="exists" data-i18n="s6bBody">A machine photo goes to Google's Gemini through Firebase to be identified. That is not on-device, and the app says so too.</p>
+          <h3 data-nonclaim="headline" data-i18n="s6bTitle">Recognition photos are sent to be recognised</h3>
+          <p data-claim-id="privacy-recognition-upload" data-claim-state="exists" data-public-gate="allowed" data-i18n="s6bBody">A machine photo goes to Google's Gemini through Firebase to be identified. That is not on-device, and the app says so too.</p>
         </div>
         <div class="fact">
-          <h3 data-i18n="s6cTitle">This page has no trackers</h3>
-          <p data-claim-class="exists" data-i18n="s6cBody">No analytics, no third-party scripts, no cookies. Nothing here reports back anywhere.</p>
+          <h3 data-nonclaim="headline" data-i18n="s6cTitle">This page has no trackers</h3>
+          <p data-claim-id="privacy-no-trackers" data-claim-state="exists" data-public-gate="allowed" data-i18n="s6cBody">No analytics, no third-party scripts, no cookies. Nothing here reports back anywhere.</p>
         </div>
       </div>
     </div>
@@ -244,10 +257,10 @@
   <!-- 7 ───────────────── CTA ───────────────── -->
   <section id="cta" class="cta">
     <div class="shell cta-in">
-      <h2 data-i18n="ctaTitle">SPTR is being built in the open.</h2>
-      <p data-i18n="ctaBody">There is no company behind it and nothing to buy. It is one Android app, in English and Russian, made by people who got tired of guessing what a machine was for.</p>
-      <button type="button" class="btn btn-big" data-cta data-i18n="ctaBtn">Try the prototype</button>
-      <p class="cta-fine" data-i18n="ctaFine">Prototype link not wired up in this internal build.</p>
+      <h2 data-nonclaim="headline" data-i18n="ctaTitle">SPTR is being built in the open.</h2>
+      <p data-claim-id="cta-no-company" data-claim-state="exists" data-public-gate="allowed" data-i18n="ctaBody">There is no company behind it and nothing to buy. It is one Android app, in English and Russian, made by people who got tired of guessing what a machine was for.</p>
+      <button type="button" class="btn btn-big" data-cta data-nonclaim="cta-label" data-i18n="ctaBtn">Try the prototype</button>
+      <p class="cta-fine" data-nonclaim="disclosure" data-i18n="ctaFine">Prototype link not wired up in this internal build.</p>
     </div>
   </section>
 
@@ -257,28 +270,33 @@
   <div class="shell foot-in">
     <span class="foot-mark">SPTR</span>
     <nav class="foot-links">
-      <a href="/privacy" data-i18n="footPrivacy">Privacy</a>
-      <a href="/terms" data-i18n="footTerms">Terms</a>
+      <a href="/privacy" data-nonclaim="nav-label" data-i18n="footPrivacy">Privacy</a>
+      <a href="/terms" data-nonclaim="nav-label" data-i18n="footTerms">Terms</a>
     </nav>
-    <span class="foot-note" data-i18n="footNote">Internal R&amp;D prototype. Not a public page.</span>
+    <span class="foot-note" data-nonclaim="disclosure" data-i18n="footNote">Internal R&amp;D prototype. Not a public page.</span>
   </div>
 </footer>
 
 <!-- Debug-only R&D controls. Hidden unless ?debug=1 -->
 <aside class="debug" hidden>
-  <div class="debug-row">
-    <span class="debug-l">concept</span>
+  <fieldset class="debug-row">
+    <legend class="debug-l">concept</legend>
     <button type="button" data-set-concept="a">A</button>
     <button type="button" data-set-concept="b">B</button>
     <button type="button" data-set-concept="c">C</button>
-  </div>
-  <div class="debug-row">
-    <span class="debug-l">lang</span>
+  </fieldset>
+  <fieldset class="debug-row">
+    <legend class="debug-l">lang</legend>
     <button type="button" data-set-lang="en">EN</button>
     <button type="button" data-set-lang="ru">RU</button>
+  </fieldset>
+  <div class="debug-row debug-key">
+    <span class="debug-l">state</span>
+    <span class="k-exists">exists</span><span class="k-committed">committed</span><span class="k-hypothesis">hypothesis</span>
   </div>
   <div class="debug-row debug-key">
-    <span class="k-exists">exists</span><span class="k-committed">committed</span><span class="k-hypothesis">hypothesis</span>
+    <span class="debug-l">gate</span>
+    <span class="k-allowed">allowed</span><span class="k-qualify">qualify</span><span class="k-blocked">blocked</span><span class="k-internal-only">internal</span>
   </div>
 </aside>
 

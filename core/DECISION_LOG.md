@@ -10058,3 +10058,55 @@ that beat the UA `[hidden]` rule and left the internal debug switcher visible to
 
 **Not done deliberately:** no hero selected, no deployment, no push, pre-public truth gate not run.
 Full detail in `core/marketing/SPTR_MARKETING_SITE_{IMPLEMENTATION,CLAIM_REGISTER,QA}_2026-08-19.md`.
+
+## 2026-08-19 — SPTR site: claim governance split into two axes, fail-closed lint added (Gates A/B/C)
+
+**Operator decision (post-implementation review of `dd12695`).** Two governance defects found: the
+single `data-claim-class` axis conflated product truth with public-publishability, and an
+unclassified claim silently vanished from the hand-regenerated register instead of failing a check.
+A third item (`noindex, nofollow` is not access control) needed only documentation.
+
+**Two independent axes, every claim re-adjudicated.** `data-claim-state` (exists/committed/
+hypothesis/never) and `data-public-gate` (allowed/qualify/blocked/internal-only) now ride
+separately on all 22 classified sentences in `public/index.html`; `exists` was never auto-mapped to
+`allowed`. Re-deriving both caught a real overclaim: "Most machines have their own name printed on
+them" is not supported by the ~28-of-69 registry bound from a prior round's field measurement —
+corrected to "Many machines… when SPTR can use those words," in both languages, and marked
+`qualify` rather than `allowed`. Four claims total came out `exists` + `qualify` (injury filtering,
+suggested weight, nameplate prevalence, progress-photo encryption) — each true, each needing a named
+condition before it can go public. 45 non-claim nodes (headlines, eyebrows, CTA labels, framing,
+illustration examples, disclosures) now carry explicit `data-nonclaim="reason"` instead of no
+metadata at all.
+
+**`scripts/marketing/claim_lint.py` is fail-closed, and proves it.** Fails on unclassified marketing
+copy, invalid enums, a `committed`/`hypothesis` claim marked `allowed`, `never` rendering at all,
+duplicate IDs, and drift against `core/marketing/claim_register.json` (now the single source of
+truth; the human-readable register is generated from it, not hand-maintained).
+`--self-test` applies real mutations in memory and asserts the lint catches every one — 9 cases,
+including two added after independent review (below). The register's own build caught a bug in
+itself: the attribute regex `data-[a-z-]+` didn't match `data-i18n` (digits in "i18n"), so every
+claim reported as unclassified on the first run.
+
+**Independent review of this remediation before commit** (security-reviewer + a11y-architect, run
+in parallel): found one real BLOCKER — the lint only ever scanned tags carrying `data-i18n`, so
+`<title>` and `<meta name="description">` (live copy restating hero-a/hero-b claims) rendered
+unclassified with zero errors. Fixed by broadening node discovery to match any claim-system
+attribute regardless of `data-i18n`, plus a hardcoded check that those two specific tags must be
+classified. Also found: three of four `qualify` texts had silently diverged between the HTML
+tooltip and the JSON register (new `QUALIFY TEXT DRIFT` lint rule now catches this); a debug-mode
+badge on `.mark-sub` reintroduced the same nav-overflow bug class already fixed once for `.btn`
+(root-caused to `white-space: nowrap` on generated content forcing a flex-item minimum width — fixed
+site-wide with `overflow-wrap: anywhere` instead of a growing `:not()` exclusion list, re-swept
+280–390px clean); and a debug-only qualify tooltip used `el.title`, unreachable by keyboard/touch/AT
+— replaced with a focusable `<button aria-expanded>` disclosure. All fixed, all re-verified.
+
+**Full render QA re-run clean**: 3 concepts × 2 languages × 2 viewports, 0px overflow, 0 external
+requests, 0 console errors. Privacy claims independently cross-checked against
+`photo_key_store.dart`, `aes_photo_cipher.dart`, Android backup-rules XML, and
+`gemini_equipment_service.dart` — match source exactly.
+
+**Deliberately out of scope:** product implementation (Level-1 equipment memory, MRD-01…07) touches
+the live Flutter app's data models and is not attempted in this change — flagged as needing its own
+scoped plan rather than folding a schema-affecting scope expansion into a governance fix.
+
+Full detail: `core/marketing/SPTR_MARKETING_SITE_GOVERNANCE_REMEDIATION_2026-08-19.md`.

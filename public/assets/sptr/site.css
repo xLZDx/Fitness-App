@@ -115,7 +115,13 @@ html[data-concept="c"] [data-for="c"] { display: block; }
 }
 .nav-in { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 68px; }
 
-.mark { display: flex; flex-direction: column; gap: 1px; text-decoration: none; }
+/* min-width:0 lets a flex child shrink below its content's natural width --
+   without it a flex item is floored at that width, which is what let a
+   debug-mode badge (an ::after appended to .mark-sub) blow the nav bar out
+   past the viewport on narrow screens even after CTA buttons were excluded
+   from the same badge system. General fix rather than an exclusion list, so
+   it holds for any future badge added inside a nav flex child. */
+.mark { display: flex; flex-direction: column; gap: 1px; text-decoration: none; min-width: 0; }
 .mark-word {
   font-size: 21px; font-weight: 800; letter-spacing: .04em;
   line-height: 1; color: var(--ink);
@@ -350,8 +356,14 @@ html[data-concept="c"] [data-for="c"] { display: block; }
   border-radius: var(--r); box-shadow: var(--shadow-lg);
   font-size: 12px;
 }
-.debug-row { display: flex; align-items: center; gap: 6px; }
-.debug-l { width: 54px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+/* The concept/lang switchers are <fieldset>+<legend> rather than a plain
+   span label, so a screen-reader user tabbing through the buttons hears the
+   group name instead of just "A button, B button..." with no context
+   (a11y finding from the Gate A/B/C review). Reset fieldset's default
+   border/padding/margin and legend's own box model so this still lays out
+   exactly like the flat .debug-row it replaced. */
+.debug-row { display: flex; align-items: center; gap: 6px; border: 0; margin: 0; padding: 0; min-width: 0; }
+.debug-l, legend.debug-l { width: 54px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-size: 10px; padding: 0; float: none; }
 .debug button {
   font: inherit; font-weight: 700; cursor: pointer;
   padding: 4px 11px; border-radius: 999px;
@@ -361,17 +373,63 @@ html[data-concept="c"] [data-for="c"] { display: block; }
 .debug-key { gap: 5px; flex-wrap: wrap; }
 .debug-key span { padding: 2px 7px; border-radius: 3px; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
 
-.k-exists,     html[data-debug] [data-claim-class="exists"]::after     { background: #DDEBE2; color: #1D5B3A; }
-.k-committed,  html[data-debug] [data-claim-class="committed"]::after  { background: #F4E8D3; color: #8A5A0B; }
-.k-hypothesis, html[data-debug] [data-claim-class="hypothesis"]::after { background: #DEE6F1; color: #2E4E7E; }
+/* Two independent axes: what is TRUE (state) vs what may be SAID PUBLICLY
+   (gate). A claim can be exists+blocked or committed+internal-only — the two
+   never collapse into one lookup, so they get two separate badge families. */
+.k-exists,     html[data-debug] [data-claim-state="exists"]::after     { background: #DDEBE2; color: #1D5B3A; }
+.k-committed,  html[data-debug] [data-claim-state="committed"]::after  { background: #F4E8D3; color: #8A5A0B; }
+.k-hypothesis, html[data-debug] [data-claim-state="hypothesis"]::after { background: #DEE6F1; color: #2E4E7E; }
+.k-never,      html[data-debug] [data-claim-state="never"]::after      { background: #F5DEDB; color: #9B2A20; }
 
-html[data-debug] [data-claim-class] { position: relative; }
-html[data-debug] [data-claim-class]::after {
-  content: attr(data-claim-class);
+.k-allowed,       html[data-debug] [data-public-gate="allowed"]::before       { background: #DDEBE2; color: #1D5B3A; }
+.k-qualify,       html[data-debug] [data-public-gate="qualify"]::before       { background: #F4E8D3; color: #8A5A0B; }
+.k-blocked,       html[data-debug] [data-public-gate="blocked"]::before       { background: #F5DEDB; color: #9B2A20; }
+.k-internal-only, html[data-debug] [data-public-gate="internal-only"]::before { background: #E3DCF4; color: #5B21B6; }
+
+/* `.btn` is excluded from every debug badge below: a pseudo-element child
+   inside an inline-flex button (the CTAs are data-nonclaim="cta-label")
+   forces the flex box to grow around it, which overflowed the nav bar on
+   narrow viewports. CTA buttons are self-evidently non-claims by their own
+   styling, so the annotation adds nothing there and only risks layout. */
+html[data-debug] [data-claim-state]:not(.btn) { position: relative; }
+html[data-debug] [data-claim-state]:not(.btn)::after {
+  content: attr(data-claim-state);
   display: inline-block; margin-left: 8px; vertical-align: middle;
   padding: 2px 7px; border-radius: 3px;
   font-size: 9.5px; font-weight: 700; letter-spacing: .06em;
-  text-transform: uppercase; white-space: nowrap;
+  text-transform: uppercase; overflow-wrap: anywhere;
+}
+html[data-debug] [data-public-gate]:not(.btn)::before {
+  content: "gate:" attr(data-public-gate);
+  display: inline-block; margin-left: 8px; vertical-align: middle;
+  padding: 2px 7px; border-radius: 3px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; overflow-wrap: anywhere;
+}
+/* A nonclaim node gets a quiet grey tag too, so debug mode accounts for
+   100% of data-i18n nodes with no silent gaps. */
+html[data-debug] [data-nonclaim]:not(.btn) { position: relative; }
+html[data-debug] [data-nonclaim]:not(.btn)::after {
+  content: "nonclaim:" attr(data-nonclaim);
+  display: inline-block; margin-left: 6px; vertical-align: middle;
+  padding: 2px 6px; border-radius: 3px;
+  font-size: 9px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; overflow-wrap: anywhere;
+  background: var(--sunk); color: var(--muted);
+}
+/* Debug-only qualify disclosure, inserted by site.js next to any
+   qualify-gated claim: a real focusable button + visible text rather than a
+   hover-only title tooltip (a11y review finding). */
+.qualify-toggle {
+  font: inherit; font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  cursor: pointer; margin-left: 6px; padding: 2px 7px; border-radius: 3px; vertical-align: middle;
+  border: 1px solid var(--brand); background: transparent; color: var(--brand);
+}
+.qualify-toggle[aria-expanded="true"] { background: var(--brand); color: var(--paper); }
+.qualify-detail {
+  display: block; margin-top: 6px; padding: 8px 11px;
+  background: var(--sunk); border-left: 3px solid var(--brand); border-radius: 0 6px 6px 0;
+  font-size: 12.5px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--soft);
 }
 html[data-debug] [data-media]::before {
   content: attr(data-media);
