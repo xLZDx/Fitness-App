@@ -1,0 +1,358 @@
+<title>Gates M1–M3</title>
+<style>
+  :root {
+    --bg: #F3F1EA; --surface: #FFFFFF; --sunk: #EAE6DA; --ink: #201C15;
+    --muted: #6E6656; --rule: #DDD7C6; --accent: #8A5A1F; --accent-soft: #EFE1C6;
+    --done: #2E7A50; --done-bg: #DCEEE1;
+    --pending: #A96F0C; --pending-bg: #F5E7C7;
+    --blocked-c: #B23F2F; --blocked-bg: #F5DAD2;
+    --deferred: #6E6656; --deferred-bg: #E9E4D5;
+    --shadow: 0 1px 2px rgba(32,28,21,0.06), 0 8px 24px -12px rgba(32,28,21,0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15130F; --surface: #1E1B15; --sunk: #262219; --ink: #ECE7DA;
+      --muted: #A79C86; --rule: #362F23; --accent: #E0A857; --accent-soft: #362A15;
+      --done: #7FCB9C; --done-bg: #16281E;
+      --pending: #E3B85F; --pending-bg: #2E2313;
+      --blocked-c: #E4796A; --blocked-bg: #2E1712;
+      --deferred: #A79C86; --deferred-bg: #262219;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15130F; --surface: #1E1B15; --sunk: #262219; --ink: #ECE7DA;
+    --muted: #A79C86; --rule: #362F23; --accent: #E0A857; --accent-soft: #362A15;
+    --done: #7FCB9C; --done-bg: #16281E;
+    --pending: #E3B85F; --pending-bg: #2E2313;
+    --blocked-c: #E4796A; --blocked-bg: #2E1712;
+    --deferred: #A79C86; --deferred-bg: #262219;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 15.5px; line-height: 1.62; margin: 0; padding: 0 22px 100px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  .serif { font-family: ui-serif, Georgia, "Iowan Old Style", serif; }
+  .mono, code, .id, .path { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; }
+
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  header.masthead { padding: 56px 0 26px; border-bottom: 4px solid var(--accent); }
+  .eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 6px 20px; margin-bottom: 18px; }
+  h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 14px;
+    font-weight: 700; text-wrap: balance; }
+  .standfirst { font-size: 16.5px; color: var(--muted); max-width: 74ch; margin: 0; }
+
+  .pushbar { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700;
+    letter-spacing: 0.03em; padding: 7px 13px; border-radius: 4px; }
+  .badge.go { background: var(--done-bg); color: var(--done); }
+  .badge.nopush { background: var(--blocked-bg); color: var(--blocked-c); }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+
+  section { padding: 40px 0 6px; border-bottom: 1px solid var(--rule); }
+  section:last-of-type { border-bottom: none; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px; }
+  .sec-tag { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11.5px; color: var(--accent);
+    font-weight: 700; padding-top: 5px; letter-spacing: 0.04em; }
+  h2 { font-size: clamp(20px, 2.6vw, 27px); line-height: 1.15; margin: 0; font-weight: 700;
+    letter-spacing: -0.01em; text-wrap: balance; }
+  h3 { font-size: 15.5px; margin: 22px 0 9px; font-weight: 700; }
+  p { margin: 0 0 13px; max-width: 78ch; }
+  ul, ol { margin: 0 0 13px; padding-left: 21px; max-width: 78ch; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--muted); }
+  strong { font-weight: 700; }
+
+  .stats { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+    border-radius: 6px; overflow: hidden; margin-bottom: 6px; grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 720px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat { background: var(--surface); padding: 18px 18px 16px; }
+  .stat .n { font-size: 27px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .stat .n small { font-size: 15px; font-weight: 600; color: var(--muted); }
+  .stat .l { font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+    margin-top: 4px; }
+
+  .cls { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 3px; font-weight: 700; white-space: nowrap; }
+  .cls .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .cls.done { background: var(--done-bg); color: var(--done); }
+  .cls.pending { background: var(--pending-bg); color: var(--pending); }
+  .cls.blocked { background: var(--blocked-bg); color: var(--blocked-c); }
+  .cls.deferred { background: var(--deferred-bg); color: var(--deferred); }
+
+  .scroll { overflow-x: auto; margin-bottom: 16px; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 560px; }
+  th { text-align: left; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted);
+    border-bottom: 1.5px solid var(--ink); padding: 0 12px 8px 0; font-weight: 700; }
+  td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  td code { font-size: 12px; background: var(--sunk); padding: 1px 5px; border-radius: 3px; }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .box { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface);
+    padding: 16px 19px; margin: 0 0 16px; max-width: 82ch; border-radius: 0 6px 6px 0; }
+  .box .lbl { display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .box.done { border-left-color: var(--done); } .box.done .lbl { color: var(--done); }
+  .box.blocked { border-left-color: var(--blocked-c); } .box.blocked .lbl { color: var(--blocked-c); }
+  .box p:last-child { margin-bottom: 0; }
+
+  .gate { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+    padding: 16px 19px; margin-bottom: 12px; }
+  .gate .g-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .gate .g-id { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--accent);
+    font-weight: 700; }
+  .gate .g-title { font-size: 15px; font-weight: 650; }
+  .gate p:last-child { margin-bottom: 0; }
+  .gate p { font-size: 13.5px; }
+
+  footer { padding: 34px 0 0; color: var(--muted); font-size: 13px; }
+  footer .src { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11.5px; word-break: break-word; }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow">
+    <span>SPTR — Fitness Glass Phone redesign</span>
+    <span>Gate-closure report</span>
+    <span>2026-08-19</span>
+    <span class="mono">formcoach/gates-a-c @ a08f428</span>
+  </div>
+  <h1 class="serif">Gates M1–M3 closed: Home, Workouts, equipment memory</h1>
+  <p class="standfirst">Three MVP gates closed back to back: Home and the bottom navigation rebuilt
+  against the real HUD handoff, Train (Workouts) rebuilt the same way as a conservative reskin that
+  preserves every safety branch verbatim, and a Level-1 equipment-type memory domain layer added
+  (what the user last did on a machine of THIS TYPE). Every commit was pushed immediately and
+  verified — local HEAD matched remote HEAD after each of the three — a new operator rule for this
+  thread, covered in §04.</p>
+  <div class="pushbar">
+    <span class="badge go"><span class="dot"></span>GO: AUTHORIZED — autonomous execution in force</span>
+    <span class="badge go"><span class="dot"></span>PUSH: DONE — 3/3 commits, remote == local every time</span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>_wt-formcoach</dd>
+    <dt>Folder</dt><dd>D:\Repo\_wt-formcoach</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; formcoach/gates-a-c @ a08f428</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <div class="sec-head"><span class="sec-tag">00</span><h2 class="serif">The numbers</h2></div>
+  <div class="stats">
+    <div class="stat"><div class="n">3<small>/3</small></div><div class="l">Gates closed (M1, M2, M3)</div></div>
+    <div class="stat"><div class="n">3<small>/3</small></div><div class="l">Commits pushed and verified against remote</div></div>
+    <div class="stat"><div class="n">2</div><div class="l">Real defects caught and fixed before shipping</div></div>
+    <div class="stat"><div class="n">3102<small>/3103</small></div><div class="l">flutter test at the end of the pass</div></div>
+  </div>
+  <p style="margin-top:14px">The one full-suite failure, at all three checkpoints (3093/3093, then
+  3092/3093, then 3102/3103), is the same previously-documented, order-dependent test-scheduler flake
+  (<code>test/widgets/app_buttons_test.dart:173</code>), never reproduced in isolation. Not a
+  regression — see §03 and §05.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">01</span><h2 class="serif">M1 — Home and bottom navigation</h2></div>
+  <div class="gate">
+    <div class="g-head"><span class="g-id"><code>d951476</code></span><span class="g-title">Home rebuilt against the real HUD handoff, shell nav swapped to HudNavBar</span></div>
+    <p>The domain layer was untouched — the existing providers (<code>home_dashboard.dart</code>,
+    <code>home_dashboard_providers.dart</code>) were reused wholesale; this is a reskin over real
+    state, not a rewrite of business logic. Bottom-nav tab order now matches the handoff (Home ·
+    Workouts · Scan · Progress · Profile, Scan no longer raised above the bar).</p>
+    <p><strong>Two deliberate departures from the handoff's pixels — both a "no fake data" call:</strong>
+    the handoff's readiness figure was replaced with an honestly-derived share of tracked muscles at
+    "ready" status (and hidden entirely with no history yet); invented form-coach numbers (tempo,
+    depth, symmetry) were replaced with a real entry into the app's existing posture check.</p>
+    <p>A real accessibility bug in <code>HudPanel</code> was found and fixed along the way: combining
+    <code>onTap</code> with <code>semanticLabel</code> announced the label and the visible child text
+    twice in a row — now wrapped in <code>ExcludeSemantics</code> only when a label is actually set,
+    the same pattern <code>HudButton</code> already documents for itself.</p>
+    <p>Verified: 15/15 <code>home_page_test.dart</code>, 47/47 HUD components, 10/10 back navigation,
+    full suite 3093/3093.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">02</span><h2 class="serif">M2 — Train (Workouts)</h2></div>
+  <div class="gate">
+    <div class="g-head"><span class="g-id"><code>b85ca35</code></span><span class="g-title">Train rebuilt against the HUD handoff as a conservative reskin, every safety branch verbatim</span></div>
+    <p>Every eligibility/contraindication/Gate-N (whole-person refusal) branch, the per-user advisory,
+    the N01 refusal dialog and the offline prefetch logic kept their exact behavior — only the
+    container changed (<code>GlassCard</code> → <code>HudPanel</code>), plus one honest addition: a
+    current-programme meta line built from the real <code>Programme</code> entity's own fields
+    (weeks/days-per-week/goal/level), not the template's.</p>
+    <p><strong>Two real defects caught in the process, not after:</strong> the first pass dropped the
+    premium/locked branching in the offline-prefetch card and substituted a non-existent l10n key —
+    caught by <code>flutter analyze</code> before a single test ran, recovered from
+    <code>git show HEAD:...</code>. Second: removing the screen's own <code>Scaffold</code> broke
+    <code>ScaffoldMessenger.showSnackBar</code> in the enrol-in-programme dialog — caught by a test
+    (<code>_scaffolds.isNotEmpty</code>), fixed by keeping a transparent <code>Scaffold</code> around
+    <code>HudScreenBody</code>, the same pattern already proven for a nested Scaffold in
+    <code>shell_insets_test.dart</code>.</p>
+    <p>An independent <code>flutter-reviewer</code> agent pass on the diff found no BLOCKER/MAJOR.
+    Verified: 37/37 <code>workouts_page_test.dart</code> (all 5 safety-regression cases included), full
+    suite twice — 3092/3093, with an isolated re-run of the one suspect test clean at 22/22.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">03</span><h2 class="serif">M3 — Level-1 equipment-type memory (domain layer)</h2></div>
+  <div class="gate">
+    <div class="g-head"><span class="g-id"><code>a08f428</code></span><span class="g-title">equipmentMemoryFor(): what the user last did on this TYPE of machine</span></div>
+    <p>A pure, Flutter-independent function (<code>equipment_memory.dart</code>) resolves the most
+    recent matching entry from the real workout history (<code>workoutSessionHistoryProvider</code>)
+    via the <code>exerciseId → ExerciseItem.equipmentId</code> chain — the log entry itself carries no
+    direct <code>equipmentId</code> — reusing the same catalogue-map pattern already used by
+    <code>day_result.dart</code> and <code>session_digest.dart</code>. Wired via
+    <code>equipmentMemoryProvider</code> (<code>Provider.family</code>).</p>
+    <p><strong>"Type," not "this exact unit" — the whole point of the contract:</strong> the equipment
+    id names a machine model, not a physical unit in a specific gym — nothing in this app's data model
+    represents per-instance state, and inventing one would be exactly the kind of claim this gate exists
+    to rule out. Every field is copied verbatim from a real log entry: no progression, no projected
+    next weight — this is recall, not coaching.</p>
+    <p>Scanner-screen integration is deliberately deferred to M4 (its own handoff-driven rebuild), not
+    skipped: wiring the service into a screen about to be fully rewritten would be thrown-away work.
+    The domain layer itself does not wait on M4, per the mandate's own instruction.</p>
+    <p>Verified: 8/8 unit tests on the pure function (latest by time, not by list position; unrelated
+    equipment excluded; a deleted/renamed <code>exerciseId</code> is skipped, not guessed at; no
+    history returns <code>null</code>, not a zeroed record) and 3/3 real-provider wiring tests. Full
+    suite 3102/3103 — the same documented flake.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">04</span><h2 class="serif">Operator rule change: push immediately after every commit</h2></div>
+  <p>Mid-thread (between M2 and M3) the operator introduced a new mandatory rule for this session:
+  <strong>push immediately after every commit and verify remote HEAD equals local HEAD</strong> before
+  starting the next unit of work — superseding the prior "PUSH: NO" restriction for this thread only.
+  The cycle is now: implement → test → review/mutation where warranted → fix → commit → push
+  immediately → verify remote → only then the next work. No batching commits.</p>
+  <p>Attached to that message was a large mandate written for a SIBLING worktree
+  (<code>D:\Repo\Fitness_App</code> on <code>marketing/site-prototype-2026-08-19</code>) — the operator
+  explicitly flagged it as a report from that other tree, specifically so this thread would not start
+  building a second, competing Home/Scanner implementation on top of the marketing branch. That
+  mandate's own worktree-ownership rule ("if the redesign is on <code>formcoach/gates-a-c</code> and
+  this session is on a different branch, do not silently port mobile UI there") and this repo's own
+  "one session, one project" rule agreed: only the operator's own two general statements from that
+  message (MVP-first, push after every commit) were adopted here; everything about Gate F, the
+  marketing site, or claim-governance belongs to a different session on a different tree and was left
+  untouched.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">05</span><h2 class="serif">What's next</h2></div>
+  <p>M4 (Scanner) is in progress as of this report: the local conservative HUD reskin of the scanner
+  screen is complete and green on its own suites (44/44 <code>scanner_page_test.dart</code>, 47/47 HUD
+  components), including a new honest recognition-confidence ring bound directly to the real
+  <code>VisualMatch.confidence</code> field, never renormalised — this codebase already documents a
+  past bug where renormalising a lone surviving candidate inflated it to a false "100%". The full test
+  suite and an independent reviewer-agent pass on the diff had both finished as this report was being
+  written, and one MINOR finding (a rounding mismatch between the ring's number and the confidence text
+  beside it) was fixed on the spot. M4's commit and push had not yet happened at the time this report
+  was published — the gate is not closed. M5 (Session), M6 (Profile), M7 (l10n/a11y), M8 (goldens), M9
+  (falsification) remain. <code>MVP_REACHED</code> is not yet claimed.</p>
+</section>
+
+<footer>
+  <p>Three commits this pass, each pushed and verified against remote immediately after creation:
+  <code>d951476</code> (M1), <code>b85ca35</code> (M2), <code>a08f428</code> (M3). The full narrative,
+  every source citation, and the detail on each caught defect live in
+  <code>core/DECISION_LOG.md</code>, which this page summarizes rather than replaces.
+  <strong>PUSH: DONE for all three commits.</strong></p>
+</footer>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

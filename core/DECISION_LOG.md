@@ -17824,3 +17824,21 @@ M6 (Profile) remain. MVP_REACHED is NOT yet claimed.
 Suites: `flutter analyze` clean; `flutter test` 3102/3103 (1 pre-existing unrelated flake, not
 reproduced in isolation -- see above). PUSH: pending this entry's commit (operator rule: push
 immediately, verify remote==local before further work).
+
+## 2026-08-19 -- MVP gates M1-M3 closure report (RU + EN), house format
+
+Stop-hook flagged the report as overdue: 3 commits (`d951476`, `b85ca35`, `a08f428`) had landed since
+the last report with none produced, and this project's house format (`html-report` skill) requires one
+for closed gates. Written now: `reports/mvp_gates_m1_m3_2026-08-19.{ru.,}html`, reusing the palette/type/
+component system already established by `reports/r_d1_hardening_gate_2026-08-19.ru.html` rather than
+inventing a new one. Covers M1 (Home + shell nav), M2 (Workouts/Train), M3 (equipment-memory domain
+layer) with their real commit hashes, test counts, the two defects caught during M2, the HudPanel a11y
+fix from M1, and the mid-thread operator rule change (push immediately + verify remote==local; worktree
+ownership confirmed against the Fitness_App/marketing mandate that was NOT for this session). Section 05
+notes M4 (Scanner) status honestly as in-progress, not closed, at the time of writing.
+
+`report_conform.py --check` confirms both files carry the mandated provenance block. Published: the
+Russian file via the Artifact tool (English is the durable in-repo record only, per house format).
+
+Suites: none -- report authoring only, no app source changed by this entry's own commit. PUSH: pending
+this commit (operator rule: push immediately, verify remote==local before further work).
