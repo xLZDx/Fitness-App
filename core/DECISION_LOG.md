@@ -10853,3 +10853,167 @@ the three release-gate commits above, with six embedded screenshots from the act
 detail, offline scan). Required by the operator's house-report rule. Russian published as an
 artifact and linked to the operator; English committed as the durable in-repo record. No code or
 scope decisions in this entry — reporting only.
+
+---
+
+## 2026-08-19 — RG-1/RG-2/RG-3: closing the three open release-gate items with real on-device evidence
+
+Continuation of the same `emulator-5554` (Pixel API 34) debug session, same installed build
+(no source changed since `851083e`). Full raw screenshot set retained in the operator's local
+scratchpad (not committed — same "ephemeral verification evidence" policy as the prior pass);
+canonical captures embedded in the house-format report for this entry.
+
+**Operator correction accepted as FACT**: the prior pass's "10 of 12 items confirmed" line
+undercounted its own listed exceptions. Honest count at that point was 9 FULL, with Scan and
+EN+RU each PARTIAL and account isolation fully OPEN (9 + 2 partial + 1 open = 12). Recorded here
+so the mistake doesn't repeat; see the RG-4 recount below for the corrected table.
+
+### RG-1 — real scan round-trip, real gym-photo corpus (`data/gym_photos_2026-07-30/`)
+
+No synthetic input. Seed images pushed to `/sdcard/Pictures/` via `adb push` +
+`content call --uri content://media/external/file --method scan_volume`, selected through the
+real Android Photo Picker, run through the shipped Scan screen exactly as a user would.
+
+**FACT, load-bearing**: cloud recognition is dead in the Firebase project this build points at.
+Every attempt logged the identical `flutter` line before falling back:
+`cloud recognition unavailable, falling back on-device: cloud recognition failed: Firebase AI
+Logic has been deactivated in this project. To resume using Firebase AI Logic, you must enforce
+Firebase App Check.` This is a backend/project-configuration fact, not an AVD artifact — it comes
+from the Firebase AI Logic backend rejecting the call, independent of emulator vs. real device.
+Every one of the 5 real-photo round-trips below hit this path.
+
+Five real photos tried (on-device fallback only, since cloud never once succeeded this session):
+
+1. `20260730_141731.jpg` (Nautilus Inspiration ab machine, clean, branded, no people) → honest
+   **unknown** ("Не удалось понять, что это" / "Couldn't understand what this is"), with concrete
+   recovery guidance (frame one machine fully, no people/clutter). No crash, no fabricated
+   confidence.
+2. `20260730_135651.jpg` (plain unbranded benches — chosen as the UNKNOWN candidate) → honest
+   **unknown**, same honest framing-guidance card. Correct outcome for a non-distinctive object.
+3. `20260730_142207.jpg` (Star Trac ellipticals row) → **ambiguous**, on-device, openly labeled
+   "Not sure — closest match: Treadmill, confidence 30%" (translated; seen live in RU as
+   "Не уверен — самое похожее: Беговая дорожка, уверенность 30%"). Confidence shown honestly, not
+   inflated to a false-confident answer.
+4. `20260730_142215.jpg` (Star Trac elliptical console close-up, different framing) → same
+   **ambiguous** result, "Treadmill, 30%" again — on-device fallback is coarse enough to bucket
+   two different cardio photos into the identical low-confidence guess rather than discriminating
+   between them.
+5. `20260730_135629.jpg` (squat rack / deadlift platform) → honest **unknown** again.
+
+**No genuinely confident KNOWN result was produced across 5 real, varied, well-framed photos of
+real branded gym equipment.** This is real evidence, not a methodology failure — MediaStore/Photo
+Picker indexing was independently confirmed working (`content query`, `ls -la` on-device), each
+image was manually inspected before selection, and the honest degrade path itself (no crash, no
+fabricated confidence, clear recovery copy) worked exactly as designed on every attempt.
+
+**MAJOR finding, basis FACT**: with Firebase AI Logic deactivated project-wide, the scan feature's
+*only* live path today is the on-device fallback, and that fallback did not produce a single
+confident equipment match against this real corpus — its ceiling observed this session is 30%
+confidence, always surfaced as "ambiguous," never "known." A real user pointing this build at real
+gym equipment today gets "I don't know" or "not sure" every time, never a confident identification
+with exercises attached. This is not a test-environment artifact (the root cause is a backend
+project setting, App Check enforcement, not the AVD) and is squarely inside the north-star flow's
+own "get an honest identification" criterion — the identification path is honest but is currently
+never confident. Left as an explicit dream-team question below rather than silently downgraded.
+
+AMBIGUOUS reproduced naturally from the real corpus (item 3/4 above) — no need to fabricate one,
+matching the plan's own instruction.
+
+### RG-2 — English through the product's own settings, not adb locale — CLOSED, FULL
+
+Superseded the prior pass's adb-locale attempt entirely. Real path: Profile → Settings → Language
+→ tapped "English" in the shipped language picker.
+
+- Instant live retranslation confirmed on the Settings screen itself, then independently on Home,
+  Scan (including the privacy/ambiguity disclaimer text), Workouts/Library, Library → Machines
+  (including the "Screened by rules, not by a clinician" safety copy), and an exercise detail page
+  (`Assisted Pistol Squats` — title, muscle tags, level/equipment/type chips, "Muscles worked", and
+  the honest "The clip link is unavailable" degraded-video state, all in English).
+- **Persistence proven live, not inferred**: `am force-stop` + relaunch landed directly on an
+  English Home screen ("Good evening / Athlete / No workouts scheduled...") — no reset to Russian,
+  no re-prompt.
+- **Bonus cross-check**: the language setting survived a full sign-out → new-anonymous-sign-in →
+  onboarding cycle (User B, see RG-3) — the Welcome/login screen itself rendered in English before
+  any user was even signed in, confirming the language preference is stored independent of the
+  authenticated user's profile data (a device/app-level preference, not a per-account Firestore
+  field) — worth flagging to Product/UX as a scope note, not a defect: a shared device would show
+  the last-chosen language regardless of which account signs in, which is reasonable default
+  behavior but should be a conscious product decision, not an accident.
+
+RU was already confirmed live throughout the prior pass and this one. **EN + RU: FULL, both
+confirmed live on-device, not by the test suite standing in.**
+
+### RG-3 — real account isolation, two real anonymous Firebase UIDs — one-way isolation CLOSED, FULL; restoration NOT ATTEMPTED (explicit scope decision)
+
+Real `AuthRepository` anonymous sign-in used for both accounts, not a mock or Firestore-rule-only
+proof.
+
+- **User A** (pre-existing session from this pass's RG-1/RG-2 work): UID
+  `1W6hoUVfU9hdBTEON5c2UWyhkZH2`, confirmed directly from a `FirebaseAuth: Notifying id token
+  listeners about user (...)` logcat line (FACT, not inferred from an encrypted preference key
+  name). Sentinel written through the real, Firestore-backed Injuries editor
+  (`ProfileRepository.save()`'s real editable surface, not a synthetic Firestore write): body part
+  text `SENTINEL_SER_A_UID_1W6hr` (a stray character got eaten by `adb shell input text`'s
+  handling of the literal string — cosmetic transcription artifact of the test tooling, not an app
+  bug; still unique and readable), area `Knee`. Toast-confirmed `Saved`.
+- Signed out User A via the real Profile → Sign out flow.
+- **User B**: tapped "Continue" (anonymous) on the real Welcome screen. `FirebaseAuth` logged a
+  new, distinct UID: `NwGwLGfWQVSicfE0mgcXsXsj5093` — confirmed different from User A's UID by
+  direct string comparison.
+- **Real defect found here (basis FACT, reproduced once, not yet triaged to a fix)**: after this
+  interactive anonymous sign-in succeeded (confirmed by the `FirebaseAuth` listener log firing
+  immediately), the UI stayed on the Welcome/login screen — tapping "Continue" again produced no
+  further auth events and no navigation. `am force-stop` + relaunch immediately landed correctly
+  on User B's onboarding wizard (step 1/10), proving the signed-in state itself was correct and
+  persisted; only the *live, in-session* post-sign-in redirect failed to fire. No exception, no
+  crash, nothing in `logcat` around the stuck window (`flutter|error|exception` grep empty) — a
+  silent redirect-not-triggered gap, not a caught error. This is a distinct defect from the
+  already-fixed MVP-1/MVP-3 cold-start auth-restore bugs (this one is live-session, post-interactive-
+  sign-in, not cold-start) and was not previously known. Not fixed in this gate — flagged to the
+  dream-team as a real, reproduced UX defect for a GO/NO-GO call, per the operator's "found a real
+  bug → reproduce, smallest fix, tests, re-run, review, commit, push" instruction; given this
+  session's time budget was earmarked for evidence-gap closure and this needs a proper Flutter-
+  reviewer-scoped fix (likely the router's redirect isn't wired to the auth stream while already
+  sitting on `/login`), it is reported rather than patched blind in this same pass.
+- Completed User B's onboarding (real skip-through path, already an established-good pattern).
+- **Isolation proof**: User B's Profile → Injuries page reads "You haven't listed any injuries." —
+  User A's sentinel is **not visible**. Combined with User B's "At a glance" (Age/Height/Weight/
+  Goals) all showing `—` (never touched), this is a real, on-device, two-distinct-real-UID proof
+  that `data(A) != data(B)` and B cannot read A's data.
+- **Restoration to A (sign out B → sign back in as A → sentinel A still present) NOT ATTEMPTED**:
+  the operator's own preferred flow for this requires linking A to a real Google account first
+  (anonymous-only accounts have no credential to sign back in with after sign-out). This bare AVD
+  has no configured Google test account, and the operator's instructions explicitly authorize
+  treating a Google-flow AVD blocker as acceptable to skip, deferring to "one-way isolation +
+  existing Firestore rule isolation tests is enough" as a dream-team decision rather than forcing
+  it. Explicit decision, not a silent gap: **one-way A→B isolation is FULL evidence; full A→B→A
+  round-trip restoration is NOT REPRODUCED this session**, combined with the pre-existing
+  `firestore.rules` uid-scoping already verified in the MVP closure plan's recon. Dream-team must
+  decide explicitly (RG-5) whether this is sufficient for MVP.
+
+### RG-4 — release-gate checklist recount (mechanical, no item counted FULL unless directly evidenced this pass or a prior pass)
+
+| Item | Status | Evidence |
+|---|---|---|
+| Install/build | FULL | prior pass |
+| First launch | FULL | prior pass |
+| Auth incl. restore window | FULL | prior pass (MVP-3 fix verified live) |
+| **Scan (known/ambiguous/unknown)** | **PARTIAL** | this pass — real round-trips confirmed honest across 5 photos; **no confident KNOWN result reproduced**; root cause identified (Firebase AI Logic deactivated + weak on-device fallback), not fixed |
+| Exercise/instruction path | FULL | prior pass + reconfirmed in English this pass |
+| Injury/safety filtering | FULL | prior pass + reconfirmed in English this pass (fail-closed gate correctly blocked Machines library until health questionnaire answered) |
+| Persistence | FULL | prior pass + reconfirmed (language setting, User B session) this pass |
+| **Account isolation** | **PARTIAL** | this pass — one-way A→B isolation FULL with two real UIDs; A→B→A restoration not attempted (explicit scope decision, needs dream-team sign-off) |
+| **EN + RU critical flow** | **FULL** (upgraded from PARTIAL) | this pass — real in-product language switch, live retranslation across 6 screens, persisted through force-stop and through a full sign-out/sign-in cycle |
+| Offline/network failure behavior | FULL | prior pass |
+| Privacy truth | FULL | prior pass |
+| Marketing truth | FULL | prior pass |
+| No critical console/runtime failures | FULL | prior pass + reconfirmed this pass (no crash across 3 hours of on-device interaction, including the newly-found stuck-navigation defect, which degrades UX but does not crash) |
+
+**Mechanical count: 10 FULL, 2 PARTIAL (Scan, Account isolation), 0 OPEN.** Improvement from the
+prior honest count (9 FULL / 2 PARTIAL / 1 OPEN). Neither PARTIAL item is silently rounded up to
+FULL. Two new real findings (cloud recognition deactivated + on-device fallback never confident;
+live post-sign-in navigation stuck) are carried into RG-5 as explicit BLOCKER-candidate questions,
+not resolved unilaterally in this entry.
+
+**No code changed by this entry.** Two real, reproduced defects found and documented, not fixed —
+see RG-5 for the dream-team's explicit BLOCKER / SUFFICIENTLY-COVERED call on each.

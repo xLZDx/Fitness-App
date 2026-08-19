@@ -218,43 +218,60 @@ MRD-07), plus any future personalization/moat work. No new items added here.
 
 ## Release gate checklist (MVP-only bar)
 
+Recounted 2026-08-19 after the RG-1/RG-2/RG-3 real-device pass (`core/DECISION_LOG.md`'s
+"RG-1/RG-2/RG-3" entry has full evidence). 10 FULL, 2 PARTIAL, 0 OPEN.
+
 - [x] **Install/build** — `flutter build apk --debug` succeeded, installed cleanly via `adb`.
 - [x] **First launch** — correct RU welcome screen, no crash.
-- [x] **Auth, including the just-fixed restore window** — the one check this gate exists for,
-  confirmed directly: anonymous sign-in works; a true cold start (`am force-stop` then relaunch)
-  restored the same session straight to Home with no `/login` bounce and no MVP-3 timeout/error
-  log — the real fix, not just its unit test, verified live.
-- [ ] **Scan (known / ambiguous / unknown equipment)** — screen loads, ambiguity + privacy
-  disclaimers render correctly, system photo-picker opens without error. Full recognition
-  round-trip **not exercised** — this AVD has no camera passthrough and no gym-equipment photo was
-  available. Needs a real device or a seeded test image.
+- [x] **Auth, including the just-fixed restore window** — anonymous sign-in works; a true cold
+  start (`am force-stop` then relaunch) restored the same session straight to Home with no
+  `/login` bounce and no MVP-3 timeout/error log — the real fix, not just its unit test, verified
+  live. **Caveat found 2026-08-19**: a *different*, newly-discovered defect — after a fresh
+  interactive anonymous sign-in (not cold start), the live UI can stay stuck on the Welcome screen
+  until the app is force-stopped and relaunched. Auth state itself is correct throughout; only the
+  in-session redirect trigger is affected. Not yet fixed — see decision log and RG-5.
+- [~] **Scan (known / ambiguous / unknown equipment)** — real round-trip exercised end-to-end
+  against 5 real photos from `data/gym_photos_2026-07-30/` via the actual Photo Picker → real
+  network attempt → real fallback. Unknown and ambiguous outcomes both reproduced honestly (no
+  crash, no fabricated confidence, correct recovery copy). **No confident KNOWN result achieved**:
+  Firebase AI Logic is deactivated in this build's Firebase project (App Check not enforced), so
+  cloud recognition never once succeeded this session; on-device fallback's observed ceiling is
+  30% confidence, always "ambiguous," never "known." Root cause identified, not fixed — dream-team
+  BLOCKER-candidate question, see RG-5.
 - [x] **Exercise/instruction path** — Library → exercise detail loads correctly: level,
   equipment, type tags, muscle diagram, "why this matters" copy. Video asset was unavailable on
-  this AVD and the app said so honestly ("Ссылка на ролик недоступна") rather than failing
-  silently or showing a broken player.
-- [x] **Injury/safety filtering** — the real editable surface (`/injuries`, the "Травмы" tile)
-  loads correctly with an honest empty state and working explanatory copy. (The separate "Анкета
-  о здоровье" tile dead-ends back to `/home` — confirmed pre-existing/documented in
-  `injuries_page.dart`'s own doc comment, not a regression from this session.)
-- [x] **Persistence** — the same anonymous session and its state survived a full process kill and
-  relaunch.
-- [ ] **Account isolation** — not exercised; needs a second real account.
-- [~] **EN + RU critical flow** — RU confirmed live, on-device, throughout this pass. EN not
-  confirmed live: Android's per-app-locale command reported `en-US` applied
-  (`cmd locale get-app-locales`) but the app kept rendering Russian after a force-stop + relaunch,
-  most likely a locale-propagation timing quirk of this AVD/launch method
-  (`deviceLocalesProvider` reads `PlatformDispatcher.instance.locales` once at provider-container
-  creation) rather than an app defect — not chased further given the cost/value here. Indirect
-  evidence stands in for a live check: the full suite's default (`kTestLocale = Locale('en')`,
-  `test/helpers/test_app.dart:15`) already runs and passed 2508/2508 in English, including every
-  test touched this session (`splash_page_test.dart`). EN visually on a real device remains open.
+  this AVD and the app said so honestly ("Ссылка на ролик недоступна" / "The clip link is
+  unavailable") rather than failing silently or showing a broken player. Reconfirmed live in
+  English 2026-08-19.
+- [x] **Injury/safety filtering** — the real editable surface (`/injuries`, the "Травмы"/
+  "Injuries" tile) loads correctly with an honest empty state and working explanatory copy, in
+  both languages. The fail-closed health-screening gate correctly blocked the Machines library for
+  an unanswered questionnaire and unblocked it once genuinely answered — confirms the gate is real,
+  not cosmetic. (The separate "Анкета о здоровье" tile dead-ends back to `/home` — confirmed
+  pre-existing/documented in `injuries_page.dart`'s own doc comment, not a regression.)
+- [x] **Persistence** — the same anonymous session and its state, and separately the language
+  preference, both survived a full process kill and relaunch.
+- [~] **Account isolation** — one-way isolation **FULL**: two real anonymous Firebase UIDs used,
+  a real Firestore-backed sentinel written by User A, confirmed absent for User B. A→B→A
+  restoration **not attempted** (needs Google-account linking, which this bare AVD can't exercise
+  without a configured test account) — explicit scope decision, not a silent gap; combined with
+  existing `firestore.rules` uid-scoping already verified in this plan's recon. Dream-team call
+  needed on sufficiency, see RG-5.
+- [x] **EN + RU critical flow** — upgraded to FULL 2026-08-19. Superseded the earlier adb-locale
+  attempt entirely: real in-product Settings → Language → English switch, live retranslation
+  confirmed across Home, Scan, Library, Machines, an exercise detail page, Profile, and Settings
+  itself; persisted through `am force-stop` + relaunch and through a full sign-out/new-anonymous-
+  sign-in cycle. RU confirmed live throughout both passes.
 - [x] **Offline/network failure behavior** — Home and Scan both render cleanly with wifi+data
   disabled via `svc`; no crash, no infinite spinner, no misleading state. (Used service-level
   toggles, not the OS airplane-mode UI path — close enough for this check, not identical.)
 - [x] **Privacy truth** — the scan screen's own disclosure (photo sent to Gemini, on-device
-  fallback, bystanders may be captured) matches what the plan doc already established.
+  fallback, bystanders may be captured) matches what the plan doc already established. (Note: the
+  Gemini/cloud half of this disclosure is currently aspirational given Firebase AI Logic is
+  deactivated — the disclosure describes the intended pipeline, not what actually executes today.)
 - [x] **Marketing truth** — already established pre-MVP (`claim_lint.py` clean); not re-checked
   this pass, no marketing-facing code changed.
-- [x] **No critical console/runtime failures** — no `FATAL`/`AndroidRuntime` crash at any point.
-  Environment-only noise (TLS trust-anchor / Play-Services Phenotype failures) attributed to this
-  bare AVD image, not the app — see decision log.
+- [x] **No critical console/runtime failures** — no `FATAL`/`AndroidRuntime` crash at any point
+  across both passes, including through the newly-found stuck-navigation defect (degrades UX, does
+  not crash). Environment-only noise (TLS trust-anchor / Play-Services Phenotype failures)
+  attributed to this bare AVD image, not the app — see decision log.
