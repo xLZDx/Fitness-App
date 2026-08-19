@@ -1,0 +1,344 @@
+<title>Gate M4 — Scanner</title>
+<style>
+  :root {
+    --bg: #F3F1EA; --surface: #FFFFFF; --sunk: #EAE6DA; --ink: #201C15;
+    --muted: #6E6656; --rule: #DDD7C6; --accent: #8A5A1F; --accent-soft: #EFE1C6;
+    --done: #2E7A50; --done-bg: #DCEEE1;
+    --pending: #A96F0C; --pending-bg: #F5E7C7;
+    --blocked-c: #B23F2F; --blocked-bg: #F5DAD2;
+    --deferred: #6E6656; --deferred-bg: #E9E4D5;
+    --shadow: 0 1px 2px rgba(32,28,21,0.06), 0 8px 24px -12px rgba(32,28,21,0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15130F; --surface: #1E1B15; --sunk: #262219; --ink: #ECE7DA;
+      --muted: #A79C86; --rule: #362F23; --accent: #E0A857; --accent-soft: #362A15;
+      --done: #7FCB9C; --done-bg: #16281E;
+      --pending: #E3B85F; --pending-bg: #2E2313;
+      --blocked-c: #E4796A; --blocked-bg: #2E1712;
+      --deferred: #A79C86; --deferred-bg: #262219;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15130F; --surface: #1E1B15; --sunk: #262219; --ink: #ECE7DA;
+    --muted: #A79C86; --rule: #362F23; --accent: #E0A857; --accent-soft: #362A15;
+    --done: #7FCB9C; --done-bg: #16281E;
+    --pending: #E3B85F; --pending-bg: #2E2313;
+    --blocked-c: #E4796A; --blocked-bg: #2E1712;
+    --deferred: #A79C86; --deferred-bg: #262219;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 15.5px; line-height: 1.62; margin: 0; padding: 0 22px 100px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  .serif { font-family: ui-serif, Georgia, "Iowan Old Style", serif; }
+  .mono, code, .id, .path { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; }
+
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  header.masthead { padding: 56px 0 26px; border-bottom: 4px solid var(--accent); }
+  .eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 6px 20px; margin-bottom: 18px; }
+  h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 14px;
+    font-weight: 700; text-wrap: balance; }
+  .standfirst { font-size: 16.5px; color: var(--muted); max-width: 74ch; margin: 0; }
+
+  .pushbar { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700;
+    letter-spacing: 0.03em; padding: 7px 13px; border-radius: 4px; }
+  .badge.go { background: var(--done-bg); color: var(--done); }
+  .badge.nopush { background: var(--blocked-bg); color: var(--blocked-c); }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+
+  section { padding: 40px 0 6px; border-bottom: 1px solid var(--rule); }
+  section:last-of-type { border-bottom: none; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px; }
+  .sec-tag { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11.5px; color: var(--accent);
+    font-weight: 700; padding-top: 5px; letter-spacing: 0.04em; }
+  h2 { font-size: clamp(20px, 2.6vw, 27px); line-height: 1.15; margin: 0; font-weight: 700;
+    letter-spacing: -0.01em; text-wrap: balance; }
+  h3 { font-size: 15.5px; margin: 22px 0 9px; font-weight: 700; }
+  p { margin: 0 0 13px; max-width: 78ch; }
+  ul, ol { margin: 0 0 13px; padding-left: 21px; max-width: 78ch; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--muted); }
+  strong { font-weight: 700; }
+
+  .stats { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+    border-radius: 6px; overflow: hidden; margin-bottom: 6px; grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 720px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat { background: var(--surface); padding: 18px 18px 16px; }
+  .stat .n { font-size: 27px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .stat .n small { font-size: 15px; font-weight: 600; color: var(--muted); }
+  .stat .l { font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+    margin-top: 4px; }
+
+  .cls { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 3px; font-weight: 700; white-space: nowrap; }
+  .cls .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .cls.done { background: var(--done-bg); color: var(--done); }
+  .cls.pending { background: var(--pending-bg); color: var(--pending); }
+  .cls.blocked { background: var(--blocked-bg); color: var(--blocked-c); }
+  .cls.deferred { background: var(--deferred-bg); color: var(--deferred); }
+
+  .scroll { overflow-x: auto; margin-bottom: 16px; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 560px; }
+  th { text-align: left; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted);
+    border-bottom: 1.5px solid var(--ink); padding: 0 12px 8px 0; font-weight: 700; }
+  td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  td code { font-size: 12px; background: var(--sunk); padding: 1px 5px; border-radius: 3px; }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .box { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface);
+    padding: 16px 19px; margin: 0 0 16px; max-width: 82ch; border-radius: 0 6px 6px 0; }
+  .box .lbl { display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .box.done { border-left-color: var(--done); } .box.done .lbl { color: var(--done); }
+  .box.blocked { border-left-color: var(--blocked-c); } .box.blocked .lbl { color: var(--blocked-c); }
+  .box p:last-child { margin-bottom: 0; }
+
+  .gate { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+    padding: 16px 19px; margin-bottom: 12px; }
+  .gate .g-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .gate .g-id { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--accent);
+    font-weight: 700; }
+  .gate .g-title { font-size: 15px; font-weight: 650; }
+  .gate p:last-child { margin-bottom: 0; }
+  .gate p { font-size: 13.5px; }
+
+  footer { padding: 34px 0 0; color: var(--muted); font-size: 13px; }
+  footer .src { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11.5px; word-break: break-word; }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow">
+    <span>SPTR — Fitness Glass Phone redesign</span>
+    <span>Gate closure report</span>
+    <span>2026-08-19</span>
+    <span class="mono">formcoach/gates-a-c @ 9729ab5</span>
+  </div>
+  <h1 class="serif">Gate M4: Scanner onto the HUD kit, cross-branch consolidation, equipment memory wired in</h1>
+  <p class="standfirst">Three commits in this pass: a narrow-scope reskin of the Scanner screen onto the
+  HUD handoff, an operator-authorized reconciliation with a sibling worktree (which surfaced and
+  resolved a duplicate equipment-memory implementation — Gate D), and finally wiring the surviving
+  implementation into the scan result via the equipment detail page's existing
+  <code>LastSessionCard</code> widget. Every commit was pushed immediately and verified against remote.</p>
+  <div class="pushbar">
+    <span class="badge go"><span class="dot"></span>GO: AUTHORIZED — autonomous execution stands</span>
+    <span class="badge go"><span class="dot"></span>PUSH: DONE — 3/3 commits, remote == local (verified: HEAD 9729ab5, 0/0)</span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>_wt-formcoach</dd>
+    <dt>Folder</dt><dd>D:\Repo\_wt-formcoach</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; formcoach/gates-a-c @ 9729ab5</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <div class="sec-head"><span class="sec-tag">00</span><h2 class="serif">Numbers</h2></div>
+  <div class="stats">
+    <div class="stat"><div class="n">3<small>/3</small></div><div class="l">Commits pushed and verified against remote</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">Real collision found and resolved by operator decision</div></div>
+    <div class="stat"><div class="n">48<small>/48</small></div><div class="l">scanner_page_test.dart at end of pass</div></div>
+    <div class="stat"><div class="n">3118<small>/3119</small></div><div class="l">flutter test at end of pass</div></div>
+  </div>
+  <p style="margin-top:14px">The only full-suite failure at all three checkpoints in this pass
+  (3102/3103, then 3114/3115, then 3118/3119) is the same previously documented, order-dependent test
+  scheduler flake (<code>test/widgets/app_buttons_test.dart:173</code>), never reproduced in isolation.
+  Not a regression — see §01–§03.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">01</span><h2 class="serif">Scanner reskin — narrow scope by design</h2></div>
+  <div class="gate">
+    <div class="g-head"><span class="g-id"><code>dafa2d9</code></span><span class="g-title">Scanner rebuilt onto the HUD widget kit via conservative reskin</span></div>
+    <p><code>scanner_page.dart</code> is 1769 lines with ~44 tests pinning safety-critical behavior
+    (AI-coach gating on stated health answers, four distinct camera-denial causes, a double-tap guard
+    against duplicate paid cloud classification calls, the printed-text-vs-classifier-label honesty
+    rule). A structural survey confirmed the screen had already been through an earlier redesign pass
+    and was structurally close to the handoff's Scan block. So this gate is a presentational container
+    swap only, not a rewrite: every <code>Key</code>, <code>onTap</code>, provider read, and safety
+    branch is unchanged.</p>
+    <p><strong>What changed:</strong> <code>GlassCard</code> → <code>HudPanel</code> in six places.
+    Deliberately left on <code>GlassCard</code>: both error states (need a tint parameter
+    <code>HudPanel</code> does not have) and five widgets each with its own documented reason (the top
+    bar, the shutter control, the opaque sheet background over the live camera, the viewfinder banner,
+    the camera-unavailable state — for which the handoff has no equivalent at all).</p>
+    <p><strong>One real, additive fidelity gain:</strong> <code>_HeroMatchCard</code>, a new card for
+    a confident match with a <code>HudRing</code> at the "Scan 78" geometry already reserved for this
+    screen in <code>hud_metric.dart</code>'s own doc comment but never wired to a real value until now.
+    The ring is bound directly to <code>VisualMatch.confidence</code> with no renormalisation.</p>
+    <p>Independent review (<code>flutter-reviewer</code>) found no BLOCKER/MAJOR; one MINOR (a rounding
+    mismatch between the ring's number and the adjacent confidence text) was fixed on the spot.
+    Verified: <code>flutter analyze</code> clean, 44/44 <code>scanner_page_test.dart</code> with no test
+    file changes at all, 47/47 HUD components, full suite 3102/3103 — the same documented flake.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">02</span><h2 class="serif">Cross-worktree consolidation: Gate D replaces M3</h2></div>
+  <div class="gate">
+    <div class="g-head"><span class="g-id"><code>ef8cc34</code></span><span class="g-title">A real collision found and resolved: two independent implementations of the same feature on two branches</span></div>
+    <p>Per direct operator instruction, performed an operator-directed, surgical integration of
+    completed product slices from a sibling worktree (<code>D:\Repo\Fitness_App</code>,
+    <code>marketing/site-prototype-2026-08-19</code>) — explicitly not a blind merge of the whole
+    branch. A read-only check came first: both branches were already fully pushed (the pasted mandate's
+    divergence claim was stale); the branches' common ancestor predates the redesign work by a wide
+    margin.</p>
+    <p><strong>The real collision:</strong> Gate D ("Level-1 equipment-type memory" on the marketing
+    branch) turned out to be a second, independent implementation of the exact feature this stream had
+    already shipped as M3. The choice was presented to the operator as a structured question; the
+    operator chose <strong>take Gate D, retire M3</strong> — and on inspection Gate D's version is
+    objectively stronger: it distinguishes "confirmed never done this" from "not found in the checked
+    window" via a real all-session count, counts by distinct session rather than row, and accounts for
+    AI-generated exercises for equipment with no catalog entry.</p>
+    <p>Integrated surgically, mobile files only, hand-reconciled at the current (diverged) insertion
+    points — marketing-site files and the claim-governance register were left untouched. M3
+    (<code>equipment_memory.dart</code> and its provider) was removed after confirming by grep that
+    nothing else referenced it; commit <code>a08f428</code> remains in history.</p>
+    <p>Verified: 39/39 carried-over Gate D tests, 10/10 of the existing equipment-detail test (the new
+    <code>LastSessionCard</code> insertion did not disturb AI-coach gating), full suite 3114/3115 — the
+    same flake, isolated re-run 29/29 clean.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">03</span><h2 class="serif">M4 complete: memory wired into the scan result</h2></div>
+  <div class="gate">
+    <div class="g-head"><span class="g-id"><code>9729ab5</code></span><span class="g-title">LastSessionCard wired into the Scanner's confident match — without rewriting Gate D</span></div>
+    <p>The surviving implementation (Gate D) was wired into <code>_HeroMatchCard</code>: the confident
+    match card now renders the exact same <code>LastSessionCard</code> widget the equipment detail page
+    already uses — no second implementation of the same idea anywhere in the app. Deliberately not
+    attached to the plain "maybe this" rows — attaching memory to an unresolved candidate would claim
+    the app knows the machine when it has explicitly said it is not sure.</p>
+    <p>The "what is this and how sure are we" hierarchy (ring + confidence + name) and "what did you log
+    here before" (memory, a different data source) are visually separated, not merged into one row.</p>
+    <p><strong>Four new tests</strong> in <code>scanner_page_test.dart</code> proving the WIRING itself
+    (the arithmetic is already proven by <code>equipment_type_history_test.dart</code>): real history
+    renders correctly; a confirmed-empty history renders no fabricated card; history from a different
+    equipment type does not leak into this match; an unresolved candidate never instantiates a memory
+    card at all. The first draft of one test failed with "0 widgets found" from an unmet async-provider
+    expectation — caught and fixed before it shipped, not after.</p>
+    <p>Verified: <code>flutter analyze</code> clean, <code>scanner_page_test.dart</code> 48/48 (44
+    existing + 4 new), full suite 3118/3119 — the same documented flake, not caused by this change.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">04</span><h2 class="serif">What's next</h2></div>
+  <p>M1–M4 are closed. M5 (Active Session) is in progress as of this report: a conservative reskin of
+  the active-workout screen (<code>workout_player_page.dart</code>, the set timer, the rest timer) onto
+  the HUD widget kit, preserving state/providers/safety branches byte-identical, with one honest
+  addition — a real progress ring for the set timer at the "Session 150" geometry the handoff documents
+  specifically for this screen. M6 (Profile), M7 (l10n/a11y), M8 (goldens), M9 (falsification) remain.
+  <code>MVP_REACHED</code> is not yet claimed.</p>
+</section>
+
+<footer>
+  <p>Three commits in this pass, each pushed and verified against remote immediately after creation:
+  <code>dafa2d9</code> (Scanner reskin), <code>ef8cc34</code> (Gate D consolidation, M3 retired),
+  <code>9729ab5</code> (memory wired into the scan result). The full narrative, every source citation
+  and every caught defect's writeup live in <code>core/DECISION_LOG.md</code>, which this page
+  summarizes rather than replaces.
+  <strong>PUSH: DONE for all three commits, remote HEAD == local HEAD == 9729ab5.</strong></p>
+</footer>
+
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

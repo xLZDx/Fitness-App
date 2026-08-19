@@ -18047,3 +18047,20 @@ M5 (Active Session) is next.
 Suites: `flutter analyze` clean; `scanner_page_test.dart` 48/48. Full suite: see next entry. PUSH:
 pending this entry's commit (operator rule: push immediately, verify remote==local before further
 work).
+
+## 2026-08-19 -- MVP Gate M4 closure report (RU + EN), house format
+
+Stop-hook flagged the report as overdue: 3 commits (`dafa2d9`, `ef8cc34`, `9729ab5`) had landed since
+the last report with none produced. Written now: `reports/mvp_gate_m4_scanner_2026-08-19.{ru.,}html`,
+reusing the palette/type/component system already established by
+`reports/mvp_gates_m1_m3_2026-08-19.ru.html`. Covers the Scanner reskin (dafa2d9), the cross-worktree
+Gate D consolidation that superseded M3 (ef8cc34), and wiring the surviving equipment-memory
+implementation into the Scanner result (9729ab5), with their real commit hashes, test counts, and the
+one real MINOR rounding defect caught and fixed during the reskin. Section 04 previews M5 (Active
+Session) honestly as in-progress at the time of writing.
+
+`report_conform.py` ran over both files (fresh injection, confirmed present). Published: the Russian
+file via the Artifact tool (English is the durable in-repo record only, per house format).
+
+Suites: none -- report authoring only, no app source changed by this entry's own commit. PUSH: pending
+this commit (operator rule: push immediately, verify remote==local before further work).
