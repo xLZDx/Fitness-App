@@ -25,8 +25,8 @@ import 'package:fitness_app/features/workouts/data/workout_session.dart';
 import 'package:fitness_app/features/workouts/state/scheduled_session_providers.dart';
 import 'package:fitness_app/features/workouts/workouts_page.dart';
 import 'package:fitness_app/shared/widgets/aurora_background.dart';
-import 'package:fitness_app/shared/widgets/glass.dart';
-import 'package:fitness_app/shared/widgets/smooth_scroll_list.dart';
+import 'package:fitness_app/shared/widgets/hud/hud_scaffold.dart';
+import 'package:fitness_app/shared/widgets/hud/hud_surface.dart';
 
 AssetEquipmentRepository _seededRepo() {
   return AssetEquipmentRepository()
@@ -250,10 +250,12 @@ void main() {
       }
     });
 
-    testWidgets('shows a SmoothScrollList for the workout list',
-        (tester) async {
+    // MVP Gate M2: Train is rebuilt on the HUD widget kit, whose scroll
+    // region is `HudScreenBody` -- the same deliberate swap Home's own gate
+    // made (`home_page_test.dart`), not a regression.
+    testWidgets('shows a HudScreenBody for the workout list', (tester) async {
       await _pumpLibrary(tester, _seededRepo());
-      expect(find.byType(SmoothScrollList), findsOneWidget);
+      expect(find.byType(HudScreenBody), findsOneWidget);
     });
 
     testWidgets('"For you" surfaces every catalog exercise (no profile)',
@@ -700,15 +702,20 @@ void main() {
       }
 
       /// Template card titles in the order they are laid out on screen.
+      ///
+      /// MVP Gate M2: `_ProgrammeTemplateCard`'s outer widget is now
+      /// `HudPanel` (the HUD handoff reskin), not `GlassCard` — a deliberate
+      /// architectural swap this gate makes, not a regression, so the finder
+      /// follows the card to its new wrapper.
       List<String> renderedOrder(WidgetTester tester) {
         final cards = find.byWidgetPredicate((w) =>
-            w is GlassCard &&
+            w is HudPanel &&
             w.key is ValueKey<String> &&
             (w.key as ValueKey<String>)
                 .value
                 .startsWith('programme.template.'));
         final ids = tester
-            .widgetList<GlassCard>(cards)
+            .widgetList<HudPanel>(cards)
             .map((w) => (w.key as ValueKey<String>).value)
             .toList();
         // Laid out top-to-bottom, so tree order is visual order here.

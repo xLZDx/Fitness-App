@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,9 +5,13 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
-import '../../shared/widgets/glass.dart';
+import '../../core/theme/hud_tokens.dart';
+import '../../core/theme/hud_typography.dart';
+import '../../shared/widgets/glass.dart' show GlassCard;
+import '../../shared/widgets/hud/hud_metric.dart';
+import '../../shared/widgets/hud/hud_scaffold.dart';
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../../shared/widgets/shell_insets.dart';
-import '../../shared/widgets/smooth_scroll_list.dart';
 import '../equipment/data/catalog_labels.dart';
 import '../equipment/data/equipment_models.dart';
 import '../equipment/data/exercise_filter.dart' show availableWith;
@@ -231,15 +234,37 @@ final _filteredExercisesProvider =
       .toList());
 });
 
-/// Which half of the Train tab is showing. R11i split what used to be one
-/// flat exercise browser into the prototype's own two-tab shape
-/// (`App.tsx`'s `WorkoutsScreen`, `subTab: 'programs' | 'library'`):
-/// [programs] is the NEW half, built on Gate P's programme entity;
-/// [library] is every pixel of the original tab, unchanged, just moved into
-/// its own widget so it could sit behind a toggle instead of always being
-/// what "Train" shows.
+/// Which half of the Train tab is showing.
 enum _WorkoutsSubTab { programs, library }
 
+/// MVP Gate M2: Train, rebuilt against the real HUD handoff
+/// (`Fitness Glass Phone v1 - Sunset.dc.html`, the "Train" `sc-if` block).
+///
+/// The whole screen — title, sub-tab pill, and whichever half is
+/// showing — is now one scroll region ([HudScreenBody]), matching the
+/// handoff: the prototype draws the title and the toggle INSIDE the same
+/// scrolling container, not pinned above it.
+///
+/// What follows the handoff exactly: the sub-tab pill, the current-programme
+/// panel, the "All programmes" list, the filter row, the exercise list, and
+/// the Form-coach/Recognise rows at the foot of the Library tab. What does
+/// not, and why:
+///
+/// * The current-programme panel's CTA names the actual next exercise
+///   (`"Pull-up +2 →"`) rather than the handoff's generic "Continue" — the
+///   same choice Home's day panel already made, kept for the same reason:
+///   real information over a closer pixel match.
+/// * The programme template cards keep their existing goal/level/fit-reason
+///   content (`_ProgrammeTemplateCard`) rather than flattening to the
+///   handoff's plain title/badge/chevron row — that content is real ranking
+///   output (`programme_fit.dart`), not decoration, and the handoff's mockup
+///   list was never asked to represent it.
+/// * "Build from my answers" and the offline-video download card have no
+///   handoff equivalent and are kept, unchanged in behaviour, below the
+///   redesigned spine — the same precedent Home's own doc comment
+///   established for its non-handoff extras.
+/// * The confirm-switch bottom sheet is untouched: a rare confirmation modal,
+///   not one of the handoff's depicted screens.
 class WorkoutsPage extends ConsumerStatefulWidget {
   const WorkoutsPage({super.key});
 
@@ -255,23 +280,71 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return FrostedScaffold(
-      appBar: GlassAppBar(title: AppLocalizations.of(context).workoutsTrain),
-      body: Column(
+    final l10n = AppLocalizations.of(context);
+    // A real (if invisible) `Scaffold`, not just the HUD scroll body:
+    // `_startProgramme`'s enrol-failure snackbar reaches for
+    // `ScaffoldMessenger.of(context).showSnackBar`, which asserts unless a
+    // descendant `Scaffold` exists. In the shipped app `MainShell` supplies
+    // one, but this screen must not silently depend on always being hosted
+    // there -- the previous build's own `FrostedScaffold` carried the same
+    // guarantee, kept here rather than dropped in the reskin.
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      extendBody: true,
+      body: HudScreenBody(
         children: [
-          const SizedBox(height: 92),
+          HudScreenTitle(l10n.workoutsTrain),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: _SubTabToggle(
+            padding: const EdgeInsets.symmetric(
+                horizontal: HudTokens.screenGutter),
+            child: _HudSubTabToggle(
               selected: _subTab,
               onChanged: (t) => setState(() => _subTab = t),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
+          _subTab == _WorkoutsSubTab.programs
+              ? const _ProgramsTab()
+              : const _LibraryTab(),
+        ],
+      ),
+    );
+  }
+}
+
+/// The two-cell segmented pill -- same shape as the handoff's own
+/// `grid-template-columns:1fr 1fr` toggle, built on the existing [HudChip]
+/// (its own selected-wash and semantics, not reinvented here).
+class _HudSubTabToggle extends StatelessWidget {
+  const _HudSubTabToggle({required this.selected, required this.onChanged});
+  final _WorkoutsSubTab selected;
+  final ValueChanged<_WorkoutsSubTab> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return HudPanel(
+      secondary: true,
+      radius: HudTokens.radiusSubPanel,
+      padding: const EdgeInsets.all(4),
+      child: Row(
+        children: [
           Expanded(
-            child: _subTab == _WorkoutsSubTab.programs
-                ? const _ProgramsTab()
-                : const _LibraryTab(),
+            child: HudChip(
+              label: l.workoutsSubTabPrograms,
+              selected: selected == _WorkoutsSubTab.programs,
+              expand: true,
+              onTap: () => onChanged(_WorkoutsSubTab.programs),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: HudChip(
+              label: l.workoutsSubTabLibrary,
+              selected: selected == _WorkoutsSubTab.library,
+              expand: true,
+              onTap: () => onChanged(_WorkoutsSubTab.library),
+            ),
           ),
         ],
       ),
@@ -279,67 +352,57 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
   }
 }
 
-/// The toggle pill itself -- same visual language as the filter chips below
-/// it (`AnimatedContainer`, accent gradient on the active side), because it
-/// is the same kind of control: pick one of a small fixed set.
-class _SubTabToggle extends StatelessWidget {
-  const _SubTabToggle({required this.selected, required this.onChanged});
-  final _WorkoutsSubTab selected;
-  final ValueChanged<_WorkoutsSubTab> onChanged;
+/// A horizontally-scrolling row of [HudChip]s. Shared by the Library filter
+/// row and the Programs goal-filter row -- both are "pick one of a small
+/// fixed set, scrolled" and neither needs a bespoke implementation.
+///
+/// Deliberately a real `ListView` (not a `Wrap`): `_chipRow`/`_tapChip` in
+/// `workouts_page_test.dart` find this by its horizontal `Scrollable`, and
+/// several safety-regression tests (`the Shoulders chip drops the restricted
+/// movement`, `so does the All chip`, ...) depend on being able to scroll to
+/// and tap a chip that starts outside the viewport.
+class _HudChipRow extends StatelessWidget {
+  const _HudChipRow({
+    required this.count,
+    required this.labelOf,
+    required this.selectedOf,
+    required this.onTap,
+  });
+
+  final int count;
+  final String Function(int index) labelOf;
+  final bool Function(int index) selectedOf;
+  final ValueChanged<int> onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l = AppLocalizations.of(context);
-    return Container(
-      height: 44,
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: theme.colors.surfaceInteractive,
-        borderRadius: BorderRadius.circular(13),
-      ),
-      child: Row(
-        children: _WorkoutsSubTab.values.map((tab) {
-          final isSelected = tab == selected;
-          return Expanded(
-            child: Semantics(
-              button: true,
-              selected: isSelected,
-              child: GestureDetector(
-                onTap: () => onChanged(tab),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOutCubic,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: isSelected ? theme.colors.accentPrimary : null,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    tab == _WorkoutsSubTab.programs
-                        ? l.workoutsSubTabPrograms
-                        : l.workoutsSubTabLibrary,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w600,
-                      color: isSelected
-                          ? AppSemanticColors.onGradientInk
-                          : theme.colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
+    return SizedBox(
+      // 48, not the 44pt floor `HudChip` itself already guarantees: the row
+      // is the app's main navigation between exercise lists, and the extra
+      // four pixels are the difference between a chip a shaky hand can hit
+      // and one it cannot -- the same reasoning the previous build already
+      // applied here.
+      height: 48,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding:
+            const EdgeInsets.symmetric(horizontal: HudTokens.screenGutter),
+        physics: const BouncingScrollPhysics(),
+        itemCount: count,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, i) => Center(
+          child: HudChip(
+            label: labelOf(i),
+            selected: selectedOf(i),
+            onTap: () => onTap(i),
+          ),
+        ),
       ),
     );
   }
 }
 
-/// The original Train tab, byte-for-byte, minus the top padding the parent
-/// [Column] now supplies (it used to be baked into this list's own padding,
-/// back when this WAS the whole page).
+/// The original Train tab's content, unchanged logic, restyled.
 class _LibraryTab extends ConsumerStatefulWidget {
   const _LibraryTab();
 
@@ -352,78 +415,22 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     final list = ref.watch(_filteredExercisesProvider(_selected));
 
-    return SmoothScrollList(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _QuickToolsRow(),
-        const SizedBox(height: 16),
-        const _OfflinePrefetchCard(),
-        const SizedBox(height: 16),
-        SizedBox(
-          // 48, not 44. The row is the app's main navigation between
-          // exercise lists and 44dp is under every platform's minimum
-          // target; the extra four pixels are the difference between a chip
-          // a shaky hand can hit and one it cannot.
-          height: 48,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.zero,
-            physics: const BouncingScrollPhysics(),
-            itemCount: WorkoutsFilter.values.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
-            itemBuilder: (context, i) {
-              final filter = WorkoutsFilter.values[i];
-              final selected = filter == _selected;
-              return Semantics(
-                // A GestureDetector announces nothing, so the whole filter
-                // row read to a screen reader as a list of words with no
-                // indication that any of them was tappable or which one was
-                // active. `selected` is what makes the current filter
-                // audible at all.
-                button: true,
-                selected: selected,
-                child: GestureDetector(
-                  onTap: () => setState(() => _selected = filter),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 280),
-                    curve: Curves.easeOutCubic,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(22),
-                      gradient: selected
-                          ? LinearGradient(
-                              colors: AppPalette.tileGradients[i % 5])
-                          : null,
-                      color: selected
-                          ? null
-                          : Colors.white.withValues(alpha: 0.32),
-                    ),
-                    child: Center(
-                      child: Text(
-                        workoutsFilterLabel(
-                            AppLocalizations.of(context), filter),
-                        style: TextStyle(
-                          fontWeight:
-                              selected ? FontWeight.w700 : FontWeight.w600,
-                          color: selected
-                              ? AppSemanticColors.onGradientInk
-                              : theme.colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+        _HudChipRow(
+          count: WorkoutsFilter.values.length,
+          labelOf: (i) =>
+              workoutsFilterLabel(AppLocalizations.of(context), WorkoutsFilter.values[i]),
+          selectedOf: (i) => WorkoutsFilter.values[i] == _selected,
+          onTap: (i) => setState(() => _selected = WorkoutsFilter.values[i]),
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 18),
         ...list.when(
-          loading: () => const [_LoadingCard()],
+          loading: () => [_gutter(const _LoadingCard())],
           // The exception used to be interpolated straight into the card, so
           // a Firestore outage read as "[cloud_firestore/unavailable] The
           // service is currently unavailable. This is a most likely a
@@ -432,12 +439,13 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
           // do something they have no button for. Now: what happened, and
           // the retry the message was describing.
           error: (e, _) => [
-            GlassCard(
+            _gutter(HudPanel(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(AppLocalizations.of(context).errorServiceUnavailable),
+                  Text(AppLocalizations.of(context).errorServiceUnavailable,
+                      style: HudType.body(t).inPanel(t)),
                   const SizedBox(height: 12),
                   Align(
                     alignment: Alignment.centerRight,
@@ -450,7 +458,7 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
                   ),
                 ],
               ),
-            ),
+            )),
           ],
           data: (items) {
             // Gate N. The whole-person gate is a screen state, never a silent
@@ -460,23 +468,23 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
             final safety = ref.watch(safetyContextProvider).valueOrNull;
             if (safety != null && !safety.allowsAnyTraining) {
               return [
-                EligibilityNotice(
+                _gutter(EligibilityNotice(
                   key: const Key('train.blocked'),
                   title: AppLocalizations.of(context).eligTrainingBlockedTitle,
                   reasons: safety.wholePersonBlocks,
                   onReviewProfile: () =>
                       GoRouter.of(context).push('/onboarding'),
-                ),
+                )),
               ];
             }
             if (items.isEmpty) {
               return [
-                GlassCard(
+                _gutter(HudPanel(
                   child: Text(
                     _emptyMessage(context, _selected),
-                    style: theme.textTheme.bodyMedium,
+                    style: HudType.body(t).inPanel(t),
                   ),
-                ),
+                )),
               ];
             }
             final advisories = safety?.advisories ?? const [];
@@ -485,26 +493,46 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
               // disclosure, which used to render on equipment_detail_page.dart
               // alone while this list — the highest-traffic exercise-serving
               // surface in the app — carried only the per-user advisory below.
-              const SafetyDisclosure(compact: true),
+              _gutter(const SafetyDisclosure(compact: true)),
               const SizedBox(height: 16),
             ];
             // Once, above the list, not once per card: an unscreenable
             // restriction is a fact about the person, and repeating it on
             // every row would train them to scroll past it.
             if (advisories.isNotEmpty) {
-              out.add(EligibilityNotice(
+              out.add(_gutter(EligibilityNotice(
                 key: const Key('train.advisory'),
                 reasons: advisories,
-              ));
+              )));
               out.add(const SizedBox(height: 16));
             }
             for (final ex in items) {
-              out.add(_ExerciseCard(exercise: ex));
-              out.add(const SizedBox(height: 16));
+              out.add(_gutter(_ExerciseCard(exercise: ex)));
+              out.add(const SizedBox(height: 14));
             }
             return out;
           },
         ),
+        const SizedBox(height: 8),
+        _gutter(_QuickTool(
+          icon: Icons.center_focus_strong_outlined,
+          label: AppLocalizations.of(context).formcheckFormCoach,
+          subtitle: AppLocalizations.of(context).workoutsOnDevicePoseCheck,
+          onTap: () => GoRouter.of(context).push('/form-check'),
+        )),
+        const SizedBox(height: 10),
+        _gutter(_QuickTool(
+          icon: Icons.photo_camera_outlined,
+          label: AppLocalizations.of(context).workoutsRecognise,
+          subtitle: AppLocalizations.of(context).workoutsPhotoEquipment,
+          // The Scan tab owns the camera + classifier; the old standalone
+          // /recognise page fed raw JPEG bytes into an NV21-metadata
+          // InputImage and died with InputImageConverterError on-device.
+          onTap: () => GoRouter.of(context).go('/scan'),
+        )),
+        const SizedBox(height: 18),
+        _gutter(const _OfflinePrefetchCard()),
+        const SizedBox(height: 20),
       ],
     );
   }
@@ -520,12 +548,19 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
   }
 }
 
+/// `margin:0 16px` — the handoff's panel gutter, applied at each call site
+/// that is not already a self-guttered HUD widget.
+Widget _gutter(Widget child) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: HudTokens.screenGutter),
+      child: child,
+    );
+
 class _LoadingCard extends StatelessWidget {
   const _LoadingCard();
 
   @override
   Widget build(BuildContext context) {
-    return const GlassCard(
+    return const HudPanel(
       child: SizedBox(
         height: 80,
         child: Center(child: CircularProgressIndicator()),
@@ -568,13 +603,15 @@ class _ExerciseCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     // Same body the detail page will demonstrate on, so the thumbnail and the
     // clip behind it are not two different people.
     final body = ExerciseItem.bodyForGender(
         ref.watch(currentProfileProvider).valueOrNull?.personal.gender);
-    return GlassCard(
-      padding: const EdgeInsets.all(16),
+    return HudPanel(
+      secondary: true,
+      radius: HudTokens.radiusTile,
+      padding: const EdgeInsets.all(13),
       onTap: () => GoRouter.of(context).push('/exercise/${exercise.id}'),
       child: Row(
         children: [
@@ -592,22 +629,19 @@ class _ExerciseCard extends ConsumerWidget {
                         exercise.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                        style: HudType.rowTitle(t, strong: true).inPanel(t),
                       ),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       AppLocalizations.of(context)
                           .equipmentMin(exercise.durationMinutes),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: HudType.mono(t, size: 9.5, color: t.textSecondary)
+                          .inPanel(t),
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(
                   exerciseSubtitle(
                     exercise,
@@ -616,9 +650,7 @@ class _ExerciseCard extends ConsumerWidget {
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colors.textSecondary,
-                  ),
+                  style: HudType.body(t, size: 11).inPanel(t),
                 ),
               ],
             ),
@@ -686,18 +718,20 @@ String prefetchLine(AppLocalizations l10n, AsyncValue<PrefetchOutcome?> a) {
 
 /// Premium-gated "Download next week's videos for offline" card. Tapping
 /// it triggers [OfflinePrefetchAction.prefetchNext7Days]; free users see
-/// the upsell version that routes to /subscription.
+/// the upsell version that routes to /subscription. No handoff equivalent —
+/// kept, unchanged in behaviour, below the redesigned spine.
 class _OfflinePrefetchCard extends ConsumerWidget {
   const _OfflinePrefetchCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     final tier = ref.watch(effectiveTierProvider);
     final isPremium = tier != SubscriptionTier.free;
     final action = ref.watch(offlinePrefetchActionProvider);
 
-    return GlassCard(
+    return HudPanel(
+      secondary: true,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       onTap: () async {
         // The plan may still be loading, and `isPremium` reads `free` while it
@@ -731,10 +765,8 @@ class _OfflinePrefetchCard extends ConsumerWidget {
             height: 40,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(13),
-              gradient: const LinearGradient(colors: [
-                AppPalette.auroraTeal,
-                AppPalette.auroraBlue,
-              ]),
+              gradient: const LinearGradient(
+                  colors: [AppPalette.auroraViolet, AppPalette.auroraBlue]),
             ),
             child: const Icon(Icons.download_for_offline_outlined,
                 color: AppSemanticColors.onGradientInk),
@@ -743,27 +775,25 @@ class _OfflinePrefetchCard extends ConsumerWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   isPremium
-                      ? AppLocalizations.of(context)
-                          .workoutsOfflineDownloadTitle
+                      ? AppLocalizations.of(context).workoutsOfflineDownloadTitle
                       : AppLocalizations.of(context).workoutsOfflineLockedTitle,
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w800),
+                  style: HudType.rowTitle(t, strong: true).inPanel(t),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   prefetchLine(AppLocalizations.of(context), action),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colors.textSecondary,
-                  ),
+                  style: HudType.body(t, size: 11).inPanel(t),
                 ),
               ],
             ),
           ),
+          const SizedBox(width: 8),
           if (action.isLoading)
             const SizedBox(
               width: 18,
@@ -773,7 +803,7 @@ class _OfflinePrefetchCard extends ConsumerWidget {
           else
             Icon(
               isPremium ? Icons.cloud_download_outlined : Icons.lock_outline,
-              color: theme.colors.textSecondary,
+              color: t.textSecondary,
             ),
         ],
       ),
@@ -781,98 +811,52 @@ class _OfflinePrefetchCard extends ConsumerWidget {
   }
 }
 
-/// Two side-by-side tools above the filter row: Form coach + Recognise.
-/// Both are page routes that previously had no nav surface.
-class _QuickToolsRow extends StatelessWidget {
-  const _QuickToolsRow();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _QuickTool(
-            icon: Icons.center_focus_strong_outlined,
-            label: AppLocalizations.of(context).formcheckFormCoach,
-            subtitle: AppLocalizations.of(context).workoutsOnDevicePoseCheck,
-            gradient: const [
-              AppPalette.auroraPeach,
-              AppPalette.auroraPink,
-            ],
-            onTap: () => GoRouter.of(context).push('/form-check'),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _QuickTool(
-            icon: Icons.photo_camera_outlined,
-            label: AppLocalizations.of(context).workoutsRecognise,
-            subtitle: AppLocalizations.of(context).workoutsPhotoEquipment,
-            gradient: const [
-              AppPalette.auroraViolet,
-              AppPalette.auroraBlue,
-            ],
-            // The Scan tab owns the camera + classifier; the old standalone
-            // /recognise page fed raw JPEG bytes into an NV21-metadata
-            // InputImage and died with InputImageConverterError on-device.
-            onTap: () => GoRouter.of(context).go('/scan'),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
+/// One of the handoff's two Library-tab foot rows — Form coach / Recognise —
+/// `icon · title/subtitle · chevron`, full width.
 class _QuickTool extends StatelessWidget {
   const _QuickTool({
     required this.icon,
     required this.label,
     required this.subtitle,
-    required this.gradient,
     required this.onTap,
   });
   final IconData icon;
   final String label;
   final String subtitle;
-  final List<Color> gradient;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return GlassCard(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+    final HudTokens t = context.hud;
+    return HudPanel(
+      secondary: true,
+      radius: HudTokens.radiusSubPanel,
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
+      semanticLabel: label,
       onTap: onTap,
       child: Row(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(11),
-              gradient: LinearGradient(colors: gradient),
-            ),
-            child: Icon(icon, color: AppSemanticColors.onGradientInk, size: 20),
-          ),
-          const SizedBox(width: 10),
+          Icon(icon, size: 22, color: t.textPrimary),
+          const SizedBox(width: 13),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(label,
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(fontWeight: FontWeight.w800),
+                    style: HudType.panelTitle(t, ).inPanel(t).copyWith(fontSize: 13),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 2),
                 Text(subtitle,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colors.textSecondary,
-                    ),
+                    style: HudType.body(t, size: 10.5).inPanel(t),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
+          Icon(Icons.chevron_right_rounded,
+              size: 18, color: t.textPrimary.withValues(alpha: 0.5)),
         ],
       ),
     );
@@ -897,7 +881,7 @@ class _ProgramsTabState extends ConsumerState<_ProgramsTab> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     final filtered = _goalFilter == null
         ? programmeTemplates
         : programmeTemplates.where((t) => t.goal == _goalFilter).toList();
@@ -946,71 +930,34 @@ class _ProgramsTabState extends ConsumerState<_ProgramsTab> {
     final templates =
         rankTemplates(filtered, profile, catalogue: availableCatalogue);
 
-    return SmoothScrollList(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 110),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _CurrentProgrammeCard(),
-        const SizedBox(height: 18),
+        _gutter(const _CurrentProgrammeCard()),
+        const SizedBox(height: 16),
         // Above the goal filter, not inside the filtered list: this offer is
         // not one of the six programmes being filtered, and a chip tap must
         // not make it disappear. It hides itself when the questionnaire has
         // nothing to build from.
-        const _BuildFromAnswersCard(),
-        SizedBox(
-          height: 40,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.zero,
-            physics: const BouncingScrollPhysics(),
-            itemCount: ProgrammeGoal.values.length + 1,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (context, i) {
-              final goal = i == 0 ? null : ProgrammeGoal.values[i - 1];
-              final selected = goal == _goalFilter;
-              return Semantics(
-                button: true,
-                selected: selected,
-                child: GestureDetector(
-                  onTap: () => setState(() => _goalFilter = goal),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(99),
-                      border: Border.all(
-                        color: selected
-                            ? theme.colors.accentPrimary
-                            : theme.colors.outline,
-                        width: 1.5,
-                      ),
-                      color: selected
-                          ? theme.colors.accentPrimary.withValues(alpha: 0.12)
-                          : theme.colors.surfaceElevated,
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      goal == null ? l.workoutsFilterAll : _goalLabel(l, goal),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: selected
-                            ? theme.colors.accentPrimary
-                            : theme.colors.textSecondary,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
+        _gutter(const _BuildFromAnswersCard()),
+        _HudChipRow(
+          count: ProgrammeGoal.values.length + 1,
+          labelOf: (i) => i == 0
+              ? l.workoutsFilterAll
+              : _goalLabel(l, ProgrammeGoal.values[i - 1]),
+          selectedOf: (i) =>
+              (i == 0 ? null : ProgrammeGoal.values[i - 1]) == _goalFilter,
+          onTap: (i) => setState(
+              () => _goalFilter = i == 0 ? null : ProgrammeGoal.values[i - 1]),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 16),
         if (templates.isEmpty)
-          GlassCard(
-              child: Text(l.workoutsEmptyFiltered(_goalLabel(l, _goalFilter!))))
+          _gutter(HudPanel(
+              child: Text(l.workoutsEmptyFiltered(_goalLabel(l, _goalFilter!)),
+                  style: HudType.body(t).inPanel(t))))
         else
           for (var i = 0; i < templates.length; i++) ...[
-            _ProgrammeTemplateCard(
+            _gutter(_ProgrammeTemplateCard(
               template: templates[i].template,
               fit: templates[i].fit,
               // The badge marks ONE card, and only when it actually leads on
@@ -1022,9 +969,10 @@ class _ProgramsTabState extends ConsumerState<_ProgramsTab> {
                   templates[i].fit.hasAny &&
                   (templates.length == 1 ||
                       templates[1].fit.score < templates[0].fit.score),
-            ),
-            const SizedBox(height: 16),
+            )),
+            const SizedBox(height: 14),
           ],
+        const SizedBox(height: 20),
       ],
     );
   }
@@ -1095,7 +1043,7 @@ class _CurrentProgrammeCard extends ConsumerWidget {
     if (programme == null || progress == null) return const SizedBox.shrink();
 
     final l = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     // Earliest upcoming session belonging to THIS programme -- the same
     // "Спина и бицепс →" CTA the prototype's current-programme card shows,
     // sourced from real scheduled rows rather than a guessed "next day".
@@ -1106,44 +1054,45 @@ class _CurrentProgrammeCard extends ConsumerWidget {
         .where((s) => s.programmeId == programme.id);
     final ScheduledSession? next = matching.isEmpty ? null : matching.first;
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('workouts.currentProgramme'),
-      padding: const EdgeInsets.all(16),
-      borderRadius: 18,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l.programmeCurrentProgramme,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: theme.colors.accentPrimary,
-              fontWeight: FontWeight.w700,
-            ),
+            l.programmeCurrentProgramme.toUpperCase(),
+            style: HudType.label(t).inPanel(t),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 7),
           Text(
             ProgrammeLabels.title(l, programme.templateId,
                 stored: programme.title),
-            style: theme.textTheme.headlineSmall
-                ?.copyWith(fontWeight: FontWeight.w800),
+            style: HudType.panelHeading(t).inPanel(t),
           ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(99),
-            child: LinearProgressIndicator(
-              value: progress.fraction,
-              minHeight: 4,
-              backgroundColor: theme.colors.surfaceInteractive,
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(theme.colors.accentPrimary),
-            ),
+          const SizedBox(height: 5),
+          // The handoff's own meta line -- "8 weeks · 4 days/week ·
+          // Strength · Intermediate" -- built from the programme's real
+          // fields rather than the template's, since the user may have
+          // enrolled in a questionnaire-built programme with no template id
+          // any of the six `programmeTemplates` share.
+          Text(
+            '${l.programmeWeeksAndDaysPerWeek(programme.weeks, programme.daysPerWeek)} · '
+            '${_goalLabel(l, programme.goal)} · '
+            '${CatalogLabels.difficulty(l, programme.level)}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: HudType.body(t, size: 11.5).inPanel(t),
+          ),
+          const SizedBox(height: 12),
+          HudProgressTrack(
+            value: progress.fraction,
+            semanticsLabel: l.programmeCurrentProgramme,
           ),
           const SizedBox(height: 8),
           Text(
             '${l.programmeWeekOfWeeks(progress.week, progress.weeks)} · '
             '${progress.percent}%',
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: theme.colors.textSecondary),
+            style: HudType.body(t, size: 11).inPanel(t),
           ),
           if (next != null) ...[
             const SizedBox(height: 12),
@@ -1151,47 +1100,28 @@ class _CurrentProgrammeCard extends ConsumerWidget {
           ],
           const SizedBox(height: 14),
           if (next != null)
-            GlassCard(
+            HudButton(
               key: const Key('workouts.currentProgramme.continue'),
-              padding: EdgeInsets.zero,
-              onTap: () => GoRouter.of(context)
+              tone: HudButtonTone.accent,
+              icon: Icons.arrow_forward_rounded,
+              onPressed: () => GoRouter.of(context)
                   .push('/workout/${next.exerciseId}?day=${next.id}'),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
-                  gradient: LinearGradient(
-                      colors: [AppPalette.auroraTeal, AppPalette.auroraBlue]),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  // Same "+N" as Home's tile, and for the same reason — see
-                  // `home_page.dart`.
-                  //
-                  // The label says how big the day is, and since the player's
-                  // day gate the tap now delivers all of it: `?day=` below
-                  // makes the player key its log by the day and draw the day
-                  // strip, so the remaining exercises are reachable from
-                  // inside instead of needing the add-exercise button
-                  // (`workout_player_page.dart:60-72`, `daySessionId`).
-                  //
-                  // This comment previously said the opposite — that the tap
-                  // opened only the first exercise — which was true when it
-                  // was written and stopped being true one commit later.
-                  '${resolveExerciseTitle(ref.watch(exerciseTitlesProvider), next.exerciseId, next.exerciseTitle)}${next.exerciseCount > 1 ? '  +${next.exerciseCount - 1}' : ''} →',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: AppSemanticColors.onGradientInk,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
+              // Same "+N" as Home's tile, and for the same reason — see
+              // `home_page.dart`.
+              //
+              // The label says how big the day is, and since the player's
+              // day gate the tap now delivers all of it: `?day=` below makes
+              // the player key its log by the day and draw the day strip, so
+              // the remaining exercises are reachable from inside instead of
+              // needing the add-exercise button
+              // (`workout_player_page.dart:60-72`, `daySessionId`).
+              label:
+                  '${resolveExerciseTitle(ref.watch(exerciseTitlesProvider), next.exerciseId, next.exerciseTitle)}${next.exerciseCount > 1 ? '  +${next.exerciseCount - 1}' : ''}',
             )
           else
             Text(
               l.programmeNoUpcomingSession,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colors.textSecondary),
+              style: HudType.body(t, size: 11).inPanel(t),
             ),
         ],
       ),
@@ -1226,7 +1156,7 @@ class _ProgrammeDayThumbs extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final planned = session.exercises;
     if (planned.isEmpty) return const SizedBox.shrink();
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
 
     // Measured rather than assumed. Five 44px tiles plus their gaps need 268px;
     // this card has ~328px on a 400px phone but only ~248px on a 320px one, so
@@ -1294,10 +1224,7 @@ class _ProgrammeDayThumbs extends ConsumerWidget {
             if (remainder > 0)
               Text(
                 '+$remainder',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: theme.colors.textSecondary,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: HudType.bodyStrong(t).inPanel(t),
               ),
           ],
         );
@@ -1318,7 +1245,7 @@ class _ThumbPlaceholder extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(size * 0.31),
-          color: Theme.of(context).colors.surfaceInteractive,
+          color: context.hud.tileFill,
         ),
       );
 }
@@ -1421,7 +1348,7 @@ class _BuildFromAnswersCard extends ConsumerWidget {
     if (!canBuildProgrammeFromProfile(profile)) return const SizedBox.shrink();
 
     final l = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     final template = programmeFromProfile(profile);
     final active = ref.watch(activeProgrammeProvider);
     final loading = ref.watch(programmeActionProvider).isLoading;
@@ -1443,8 +1370,8 @@ class _BuildFromAnswersCard extends ConsumerWidget {
     // gap left behind by a hidden widget is the usual way "conditionally
     // rendered" turns into "mysterious blank strip".
     return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: GlassCard(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: HudPanel(
         key: const Key('programme.fromAnswers'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1456,8 +1383,7 @@ class _BuildFromAnswersCard extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     l.programmeBuildFromAnswers,
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(fontWeight: FontWeight.w800),
+                    style: HudType.panelTitle(t).inPanel(t),
                   ),
                 ),
               ],
@@ -1465,8 +1391,7 @@ class _BuildFromAnswersCard extends ConsumerWidget {
             const SizedBox(height: 6),
             Text(
               l.programmeBuildFromAnswersHint,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colors.textSecondary),
+              style: HudType.body(t, size: 11.5).inPanel(t),
             ),
             const SizedBox(height: 10),
             // Wrap, not Row: three content-sized chips at 320dp with the text
@@ -1484,28 +1409,10 @@ class _BuildFromAnswersCard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
-            GlassCard(
-              padding: EdgeInsets.zero,
-              onTap: loading || isCurrent
-                  ? null
-                  : () => _startProgramme(context, ref, active, template),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: isCurrent
-                      ? null
-                      : Border.all(color: theme.colors.outline, width: 1.5),
-                  color: isCurrent ? theme.colors.surfaceInteractive : null,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  isCurrent ? l.programmeContinue : l.programmeStart,
-                  style: theme.textTheme.labelMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ),
+            HudButton(
+              label: isCurrent ? l.programmeContinue : l.programmeStart,
+              onPressed:
+                  loading || isCurrent ? null : () => _startProgramme(context, ref, active, template),
             ),
           ],
         ),
@@ -1560,7 +1467,7 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     final active = ref.watch(activeProgrammeProvider);
     final loading = ref.watch(programmeActionProvider).isLoading;
     final isCurrent = active != null &&
@@ -1571,19 +1478,17 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
         : template.muscles.map((m) => CatalogLabels.muscle(l, m)).join(', ');
     final hue = _goalHue(template.goal);
 
-    return GlassCard(
+    return HudPanel(
       key: Key('programme.template.${template.id}'),
       padding: EdgeInsets.zero,
-      borderRadius: 18,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 76,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(18)),
+              borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(HudTokens.radiusPanel - 1)),
               // 0.20 -> 0.08 are the prototype's own `${p.color}33` and
               // `${p.color}15` (`App.tsx:4795`), read as alpha.
               gradient: LinearGradient(
@@ -1631,26 +1536,21 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
                     ),
                     child: Text(
                       l.programmeRecommended,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: hue,
-                      ),
+                      style: HudType.mono(t, size: 9.5, weight: FontWeight.w800, color: hue).inPanel(t),
                     ),
                   ),
                   const SizedBox(height: 6),
                 ],
                 Text(
                   ProgrammeLabels.title(l, template.id),
-                  style: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w800),
+                  style: HudType.panelHeading(t).inPanel(t),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   muscleLabel,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colors.textSecondary),
+                  style: HudType.body(t, size: 11).inPanel(t),
                 ),
                 // Named dimensions, not a percentage: these are four booleans,
                 // and "87% match" would claim a precision they do not have.
@@ -1660,47 +1560,22 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
                   Text(
                     l.programmeFitMatches(_fitReasons(l, fit).join(', ')),
                     key: const Key('programme.fitReason'),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: hue,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: HudType.body(t, size: 11).inPanel(t).copyWith(
+                          color: hue,
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                 Text(
                   l.programmeWeeksAndDaysPerWeek(
                       template.weeks, template.daysPerWeek),
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colors.textSecondary),
+                  style: HudType.body(t, size: 11).inPanel(t),
                 ),
                 const SizedBox(height: 12),
-                GlassCard(
-                  padding: EdgeInsets.zero,
-                  onTap: loading || isCurrent
+                HudButton(
+                  label: isCurrent ? l.programmeContinue : l.programmeStart,
+                  onPressed: loading || isCurrent
                       ? null
                       : () => _startProgramme(context, ref, active, template),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: isCurrent
-                          ? null
-                          : Border.all(color: theme.colors.outline, width: 1.5),
-                      color: isCurrent ? theme.colors.surfaceInteractive : null,
-                    ),
-                    alignment: Alignment.center,
-                    child: loading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : Text(
-                            isCurrent ? l.programmeContinue : l.programmeStart,
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              color: theme.colorScheme.onSurface,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                  ),
                 ),
               ],
             ),
@@ -1752,7 +1627,8 @@ class _TemplateChip extends StatelessWidget {
 /// Confirms replacing the active programme -- enrolling in a second one
 /// abandons the first (`ProgrammeAction.enroll`'s own doc comment), which is
 /// a real state change worth a beat before committing to, not a silent
-/// side-effect of tapping "Start programme" on a browse card.
+/// side-effect of tapping "Start programme" on a browse card. No handoff
+/// equivalent -- kept unchanged.
 class _ConfirmSwitchSheet extends StatelessWidget {
   const _ConfirmSwitchSheet({required this.currentTitle});
   final String currentTitle;

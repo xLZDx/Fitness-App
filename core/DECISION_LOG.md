@@ -17633,3 +17633,125 @@ not yet touched. MVP_REACHED is NOT yet claimed.
 
 Suites: `flutter analyze` clean; `flutter test` 3093/3093 (see above). PUSH: NOT PERFORMED (mandate:
 PUSH: NO).
+
+---
+
+## 2026-08-19 -- Operator rule change: push required after every commit; worktree ownership confirmed
+
+Operator message, addressed explicitly to "this thread": two new standing rules supersede the prior
+`PUSH: NO` for this session. (1) FASTEST SAFE MVP FIRST -- already this session's standing approach,
+no change. (2) Every commit must be pushed immediately, with local/remote HEAD verified equal before
+starting further work.
+
+The message carried a large mandate block that was NOT written for this repo -- its checkpoint
+(HEAD `105f9d4`, branch `marketing/site-prototype-2026-08-19`, Gates D/E/F) belongs to the sibling
+worktree `D:\Repo\Fitness_App`, a second worktree of this same origin
+(`github.com/xLZDx/Fitness-App.git`) checked out on a different branch. The operator's own closing
+note, and the mandate's own SS15 ("if redesign is on formcoach/gates-a-c and this session is on
+marketing/site-prototype-2026-08-19, do NOT silently port/reimplement mobile UI here"), both confirm
+this session (`D:\Repo\_wt-formcoach`, `formcoach/gates-a-c`) is the correct, authoritative mobile
+redesign worktree and must not act on the other worktree's Fitness_App-specific instructions (Gate
+D/E/F content, marketing-site work). Only the two generic rules above were adopted here, per
+`D:\Repo\CLAUDE.md`'s "one session, one project" boundary.
+
+Verified via `git worktree list`: `D:/Repo/Fitness_App` at `41d5b23` on `marketing/site-prototype-
+2026-08-19`; `D:/Repo/_wt-formcoach` at `d951476` on `formcoach/gates-a-c` (this session's HEAD, the
+M1 commit). `git rev-list --left-right --count @{u}...HEAD` before acting: `0 105` -- 105 commits
+accumulated locally-only under the old no-push mandate, matching the new rule's own "push the
+existing local tail first" instruction.
+
+**Action taken:** `git push origin formcoach/gates-a-c` -- fast-forward, non-force
+(`f965302..d951476`). `git fetch` + `git rev-parse` confirmed `origin/formcoach/gates-a-c` ==
+local `HEAD` == `d951476`; `git rev-list --left-right --count @{u}...HEAD` -> `0 0`. The
+`codex_review_gate.py` push check (latest receipt for this repo must carry `final=True`) was already
+satisfied by the M1 gate's fail-open receipt (`usage_limit_exhausted`, `force_final: true` --
+`~/.claude/tools/codex_review.py`'s own documented escape hatch).
+
+Going forward: every subsequent commit in this session is pushed immediately, with the same
+fetch+rev-parse verification, before starting the next unit of work -- no batching.
+
+Suites: none -- git operations only, no source changed. PUSH: PERFORMED (`f965302..d951476`,
+verified local==remote).
+
+---
+
+## 2026-08-19 -- MVP Gate M2: Train (Workouts) rebuilt against the HUD handoff
+
+Same handoff, next screen: `mobile/lib/features/workouts/workouts_page.dart` rebuilt against
+`Fitness Glass Phone v1 - Sunset.dc.html`'s `Train` `sc-if` block (lines 228-320: sub-tab pill,
+current-programme panel, "All programmes" list, filter row, exercise list, Form-coach/Recognise
+foot rows). Read the full 1816-line source and its 39-case test file
+(`test/features/workouts_page_test.dart`) in full before touching anything -- this screen carries the
+app's eligibility/contraindication/N01-refusal test surface (B5, F017, F020, N01, Gate N), so the
+approach here was conservative reskin (containers, typography, chip/panel chrome) rather than the
+heavier restructuring M1 did, to minimise risk on safety-critical logic.
+
+**What changed, restyle-only, logic untouched byte-for-byte:** `WorkoutsPage`'s shell (`HudScreenBody`
++ `HudScreenTitle`, replacing `FrostedScaffold`/`GlassAppBar`), the sub-tab pill (`_HudSubTabToggle`,
+built on the existing `HudChip`), both horizontally-scrolling filter rows (`_HudChipRow`, shared by the
+Library filter chips and the Programs goal chips -- deliberately still a real horizontal `ListView`,
+since `_chipRow`/`_tapChip` in the test file find it by `Scrollable` axis and several safety-regression
+tests scroll-then-tap a chip outside the initial viewport), `_ExerciseCard`/`_LoadingCard`/the error and
+empty cards (`GlassCard` -> `HudPanel`), `_CurrentProgrammeCard`, `_BuildFromAnswersCard`,
+`_ProgrammeTemplateCard` (same `GlassCard` -> `HudPanel` swap, all fit-reasoning/best-match/goal-hue
+content kept verbatim), and the two Library-tab foot rows (Form coach / Recognise -- repositioned to
+match the handoff's own foot placement, same routes, same labels, no new l10n).
+
+**Every provider read, safety branch, and pure function is unchanged**: `WorkoutsFilter`,
+`kFilterMuscles`/`kFilterCategories`, `workoutsFilterLabel`, `videoFirst`, `_filteredExercisesProvider`
+(the `eligibleCatalog()` closure every filter routes through -- G-B/B5's fix), the Gate-N whole-person
+refusal branch (`EligibilityNotice` at `train.blocked`), the per-user advisory branch (`train.advisory`),
+`SafetyDisclosure`, `_startProgramme` (N01's safety-refusal dialog vs. generic-retry-snackbar split),
+`_fitReasons`, `_goalHue`/`_goalLabel`, and `_ConfirmSwitchSheet` (left completely untouched -- a rare
+confirmation modal with no handoff equivalent, still built on `GlassCard`).
+
+**One real, cheap fidelity gain kept from the handoff**: the current-programme panel now states
+`"8 weeks · 4 days/week · Strength · Intermediate"` -- the handoff's own meta line -- computed from the
+real `Programme` entity's own fields (`weeks`/`daysPerWeek`/`goal`/`level`), not the template's, so it
+is correct for a questionnaire-built programme too. The panel's CTA still names the actual next exercise
+(`"Pull-up +2 →"`) rather than the handoff's generic "Continue" -- same choice Home's day panel already
+made, kept for the same reason.
+
+**One real defect caught and fixed while rewriting `_OfflinePrefetchCard`**: the first pass dropped the
+premium/locked title branch (`workoutsOfflineDownloadTitle` vs `workoutsOfflineLockedTitle`) and the
+trailing loading/cloud/lock indicator entirely, replacing both with a single invented, non-existent
+l10n key (`workoutsOfflineTitle`) and no trailing icon -- caught by `flutter analyze` (undefined getter)
+before it ever ran, then corrected by recovering the exact original branching from `git show HEAD:...`
+rather than reconstructing it from memory.
+
+**One real regression caught by the test suite, not by inspection**: removing `WorkoutsPage`'s own
+`Scaffold` (replaced by bare `HudScreenBody`) broke `ScaffoldMessenger.of(context).showSnackBar` in
+`_startProgramme` -- `'tapping Start on a template reaches the enroll action'` failed with
+`_scaffolds.isNotEmpty` false. In production this is masked (`MainShell` supplies a `Scaffold`), but the
+screen must not silently depend on always being hosted there, and the test harness pumps `WorkoutsPage`
+directly without `MainShell`. Fixed by keeping a real (transparent, `extendBody: true`) `Scaffold` around
+`HudScreenBody`, matching the shape `FrostedScaffold` used to provide and the already-tested "the
+obstruction survives the page's own nested Scaffold" precedent in `shell_insets_test.dart`.
+
+**Test changes, both deliberate and documented in place**: `'shows a SmoothScrollList for the workout
+list'` -> `'shows a HudScreenBody for the workout list'`, same reasoning as Home's own M1 swap.
+`renderedOrder()`'s widget predicate (used by all 5 template-ranking tests) updated from
+`w is GlassCard` to `w is HudPanel`, since `_ProgrammeTemplateCard`'s outer widget changed -- the
+`ValueKey<String>` lookup itself (`'programme.template.<id>'`) is untouched.
+
+**Verification:** `flutter analyze` on the two touched files and the whole app: clean (same 15
+pre-existing, unrelated issues as the M1 checkpoint). `flutter test test/features/workouts_page_test.dart`
+37/37, including every safety-regression case (B5 restriction propagation across every chip, N01
+safety-blocked-enrolment dialog vs. generic-retry split, F017 urgent wording, H4 screen-reader
+semantics on contraindicated thumbnails, the 320dp/1.6x-textscale overflow cases). Full suite: `flutter
+test` -- 3092 of 3093 pass on the first full-suite run, 1 failure
+(`test/widget_test.dart: App boots...`, retried 3x by the binding's own flake-retry, still failing);
+re-ran the full suite a second time -- same single failure, same exception origin
+(`test/widgets/app_buttons_test.dart:173`, `EXCEPTION CAUGHT BY SCHEDULER LIBRARY`, `!_needsLayout`).
+Isolated re-run of `app_buttons_test.dart` + `widget_test.dart` together: 22/22 pass clean. This is the
+**same pre-existing, order-dependent scheduler flake already recorded in this log** (search "Gap -- an
+unrelated pre-existing test flake observed, not caused", and its two later recurrences) -- unrelated to
+any file this gate touched, not a regression. Not reproduced by isolation is the load-bearing evidence,
+not an assumption.
+
+**MVP status:** M1 (Home) and M2 (Workouts) closed. M3 (Level-1 equipment memory), M4 (Scanner), M5
+(Session), M6 (Profile) remain. MVP_REACHED is NOT yet claimed.
+
+Suites: `flutter analyze` clean; `flutter test` 3092/3093 twice (1 pre-existing unrelated flake, not
+reproduced in isolation -- see above). PUSH: pending this entry's commit (operator rule, see prior
+entry: push immediately, verify remote==local before further work).
