@@ -10739,3 +10739,14 @@ closes out every open MVP-REQUIRED/undecided item: MVP BLOCKER (MVP-1) and both 
 instances (MVP-3 fixed; MVP-2 reclassified with the same evidence bar as a fix would have needed)
 are now resolved. Next step per the plan: the **release gate** (device/emulator pass), then the
 **final MVP-only dream-team review**, then **MVP READY** — not a fourth code gate.
+
+---
+
+## 2026-08-19 — house-format report for the M0→MVP-2 run
+
+Bilingual status report (`reports/SPTR_MVP_M0_1_3_2_STATUS_2026-08-19.{html,ru.html}`) covering
+the four commits above: Gate M0 recon, MVP-1 close, MVP-3 close, MVP-2 reclassification. Required
+by the operator's own house-report rule (any closed-gate/status work gets both files, provenance
+block, copy button — enforced mechanically by `report_conform.py`, verified `--check` clean).
+Russian published as an artifact and linked to the operator; English committed as the durable
+in-repo record. No code or scope decisions in this entry — reporting only.
