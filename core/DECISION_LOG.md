@@ -18884,3 +18884,25 @@ Excludes concurrent-session files from staging (`core/plans/FINAL_AUTONOMOUS_ACT
 none of those files were touched by this change.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-19 — status report on the overflow-bug fix and VISUAL_GATE state
+
+Operator asked for a report ("репорт") right after the overflow fix above landed
+(`4cfac26`). Per the house `html-report` format: wrote an RU/EN pair,
+`reports/SPTR_STATUS_2026-08-19_overflow_fix.ru.html` (shown) and
+`reports/SPTR_STATUS_2026-08-19_overflow_fix.html` (durable English record) — a status
+summary, not a review/audit, so no findings-contract table, just what shipped today, the
+overflow fix's evidence (RED/GREEN mutation-test excerpt), and a state table for the
+VISUAL_GATE mandate's known-open items (scanner sheet V2b-2b, Workouts card density V5,
+the rest of the roadmap).
+
+Provenance block and copy button injected via `report_conform.py` (not hand-written);
+`--check` across the whole `reports/` directory passed clean. Published the RU file as an
+artifact: `https://claude.ai/code/artifact/da17cf2f-0a94-4171-86e8-b42938d3a393`.
+
+Excludes concurrent-session files from staging, same set as the prior entry — verified via
+`git status --porcelain=v1` before staging.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**

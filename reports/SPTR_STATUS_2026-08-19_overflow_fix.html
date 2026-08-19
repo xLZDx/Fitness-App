@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SPTR VISUAL_GATE — status</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --surface-2: #edf1f4;
+    --border: #d7dee4;
+    --text: #16202b;
+    --text-dim: #5b6b7a;
+    --text-faint: #8a97a3;
+    --accent: #1f7a8c;
+    --accent-soft: #e3f1f3;
+    --good: #2f7d5a;
+    --good-soft: #e5f3ec;
+    --bad: #b1382e;
+    --bad-soft: #fbe9e7;
+    --warn: #a9701a;
+    --warn-soft: #faefdd;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+    --display: 'Sora', var(--sans);
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(20,30,40,0.04), 0 8px 24px -12px rgba(20,30,40,0.12);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1319;
+      --surface: #131b23;
+      --surface-2: #1a2530;
+      --border: #29394a;
+      --text: #e8eef3;
+      --text-dim: #9fb0bd;
+      --text-faint: #6f8293;
+      --accent: #5fc4d6;
+      --accent-soft: #16323a;
+      --good: #6fcf9e;
+      --good-soft: #133226;
+      --bad: #ec7a70;
+      --bad-soft: #3a1a17;
+      --warn: #e3b565;
+      --warn-soft: #382a12;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1319;
+    --surface: #131b23;
+    --surface-2: #1a2530;
+    --border: #29394a;
+    --text: #e8eef3;
+    --text-dim: #9fb0bd;
+    --text-faint: #6f8293;
+    --accent: #5fc4d6;
+    --accent-soft: #16323a;
+    --good: #6fcf9e;
+    --good-soft: #133226;
+    --bad: #ec7a70;
+    --bad-soft: #3a1a17;
+    --warn: #e3b565;
+    --warn-soft: #382a12;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.55);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15.5px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+
+  header { margin-bottom: 8px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(28px, 4.4vw, 38px);
+    line-height: 1.14;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+  .lede {
+    color: var(--text-dim);
+    font-size: 16.5px;
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 32px 0 40px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .stat .n {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .n.good { color: var(--good); }
+  .stat .n.warn { color: var(--warn); }
+  .stat .l {
+    color: var(--text-faint);
+    font-size: 11.5px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  section { margin: 48px 0; }
+  section > h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: -0.005em;
+    margin: 0 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section > h2 .num {
+    font-family: var(--mono);
+    color: var(--text-faint);
+    font-weight: 400;
+    font-size: 15px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+  }
+  .card + .card { margin-top: 14px; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  .badge.bad { background: var(--bad-soft); color: var(--bad); }
+  .badge.good { background: var(--good-soft); color: var(--good); }
+  .badge.warn { background: var(--warn-soft); color: var(--warn); }
+
+  .kv {
+    display: grid;
+    grid-template-columns: 132px 1fr;
+    gap: 8px 16px;
+    font-size: 14px;
+    margin: 16px 0;
+  }
+  .kv dt { color: var(--text-faint); }
+  .kv dd { margin: 0; font-family: var(--mono); font-size: 13.5px; }
+
+  p { margin: 12px 0; }
+  .card p:first-child { margin-top: 0; }
+  .card p:last-child { margin-bottom: 0; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--surface-2);
+    padding: 0.1em 0.4em;
+    border-radius: 5px;
+  }
+
+  .evidence {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .evidence .pane {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .evidence .pane .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .evidence .pane.red .tag { color: var(--bad); }
+  .evidence .pane.green .tag { color: var(--good); }
+  .evidence .pane pre {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--text);
+  }
+
+  @media (max-width: 560px) {
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .evidence { grid-template-columns: 1fr; }
+    .kv { grid-template-columns: 108px 1fr; }
+  }
+
+  table.status {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  table.status th, table.status td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.status th {
+    color: var(--text-faint);
+    font-weight: 500;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  table.status tr:last-child td { border-bottom: none; }
+  table.status .item { font-weight: 500; }
+  table.status .note { color: var(--text-dim); }
+
+  ol.steps, ul.plain {
+    padding-left: 0;
+    list-style: none;
+    margin: 16px 0 0;
+  }
+  ol.steps li, ul.plain li {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+  }
+  ol.steps li:first-child, ul.plain li:first-child { border-top: none; padding-top: 0; }
+  ol.steps { counter-reset: step; }
+  ol.steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    font-family: var(--mono);
+    color: var(--accent);
+    flex: 0 0 auto;
+    width: 20px;
+  }
+  ul.plain li::before {
+    content: "→";
+    color: var(--text-faint);
+    flex: 0 0 auto;
+  }
+
+  footer.meta {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 12.5px;
+    font-family: var(--mono);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">SPTR · Fitness App · formcoach/gates-a-c</p>
+  <h1>VISUAL_GATE status: a real overflow bug found and closed</h1>
+  <p class="lede">Status report for the 2026-08-19 autonomous-loop tick: diagnosis, fix,
+  mutation test, and push for one visual defect, plus a summary of the "visual remediation"
+  mandate's current state.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>_wt-formcoach</dd>
+    <dt>Folder</dt><dd>D:\Repo\_wt-formcoach</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; formcoach/gates-a-c @ 4cfac26</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="stat-row">
+  <div class="stat"><div class="n good">4cfac26</div><div class="l">Current HEAD</div></div>
+  <div class="stat"><div class="n good">3</div><div class="l">Commits today</div></div>
+  <div class="stat"><div class="n good">3140 / 3141</div><div class="l">Tests passing</div></div>
+  <div class="stat"><div class="n warn">0 / 0</div><div class="l">Ahead / behind origin</div></div>
+</div>
+
+<section>
+  <h2><span class="num">01</span> What was found and fixed</h2>
+  <div class="card">
+    <span class="badge bad">Visual defect</span>
+    <p>While investigating programme-card density on the Workouts tab, a test account with
+    chest pain answered "yes" tapped "Start programme". The resulting refusal dialog
+    (<code>programme.enrol.blocked</code>) rendered a real device render error:</p>
+    <p style="font-family:var(--mono); font-size:14px; color:var(--bad);">
+    BOTTOM OVERFLOWED BY 271 PIXELS</p>
+    <p>The lower PAR-Q+ questions were clipped off screen — physically unreadable.</p>
+
+    <dl class="kv">
+      <dt>File</dt><dd>mobile/lib/features/workouts/workouts_page.dart</dd>
+      <dt>Cause</dt><dd>EligibilityNotice inside a Dialog with no ScrollView</dd>
+      <dt>Test</dt><dd>mobile/test/features/workouts_page_test.dart</dd>
+      <dt>Commit</dt><dd>4cfac26</dd>
+    </dl>
+
+    <p><strong>Root cause.</strong> Chest pain is a blocking answer (F017), and the screen
+    honestly stops asking after it — six of seven PAR-Q+ questions stay
+    <code>incomplete</code>. <code>EligibilityNotice</code> renders one bullet per reason
+    with no scroll of its own — correct where it is already embedded in a scrolling list
+    (the Workouts tab, the exercise list), wrong for a plain <code>Dialog</code>, which does
+    not supply one either.</p>
+
+    <p><strong>Fix.</strong> Wrapped the dialog's content in
+    <code>ConstrainedBox(maxHeight: 80% of screen)</code> + <code>SingleChildScrollView</code>
+    — a long reasons list now scrolls inside the dialog instead of overflowing it.
+    <code>EligibilityNotice</code> itself was not changed.</p>
+
+    <div class="evidence">
+      <div class="pane red">
+        <div class="tag">Before the fix (RED)</div>
+        <pre>Expected: null
+Actual: FlutterError:&lt;A RenderFlex overflowed
+by 929 pixels on the bottom.&gt;</pre>
+      </div>
+      <div class="pane green">
+        <div class="tag">After the fix (GREEN)</div>
+        <pre>00:01 +1: All tests passed!</pre>
+      </div>
+    </div>
+
+    <p style="margin-top:16px;">The regression test reproduces the same profile shape seen
+    on device (<code>chestPain: true</code>, every other question absent from the answers
+    map → <code>incomplete</code>) at a 360×800 viewport. Reverting the fix reproduces a RED
+    overflow of the same kind; restoring it is GREEN. Full file: 38/38. Full mobile suite:
+    3140 passed, 1 failed — the same already-known Flutter semantics-tree flake, unrelated to
+    this change (its stack trace touches none of the changed files; the implicated file
+    passes 21/21 clean in isolation).</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Closed today, overall</h2>
+  <div class="card">
+    <ul class="plain">
+      <li><strong>Onboarding migrated onto the HUD system</strong> (commit
+      <code>3a7a760</code>) — also caught and fixed a separate bug, the step-counter
+      wrapping onto a second line ("10/10") from <code>HudType.label</code>'s default
+      letter-spacing, with its own mutation test.</li>
+      <li><strong>SPTR_VISUAL_FIDELITY_74f2f76 report updated</strong> with real device
+      screenshots for onboarding (commit <code>d692dea</code>), republished to the same
+      artifact URL.</li>
+      <li><strong>The enrolment-refusal dialog stopped overflowing</strong> (commit
+      <code>4cfac26</code>, above).</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> VISUAL_GATE state</h2>
+  <div class="card">
+    <table class="status">
+      <thead><tr><th>Area</th><th>Status</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="item">Onboarding (HUD migration)</td>
+          <td><span class="badge good">Closed</span></td>
+          <td class="note">V2b-2a — confirmed with 9 device captures</td>
+        </tr>
+        <tr>
+          <td class="item">Safety refusal card</td>
+          <td><span class="badge good">Closed</span></td>
+          <td class="note">V2b-1 + today's enrolment-dialog overflow fix</td>
+        </tr>
+        <tr>
+          <td class="item">Scanner bottom sheet</td>
+          <td><span class="badge warn">Open</span></td>
+          <td class="note">V2b-2b — not started</td>
+        </tr>
+        <tr>
+          <td class="item">Programme-card density (Workouts)</td>
+          <td><span class="badge warn">In progress</span></td>
+          <td class="note">V5 — cards ~3x taller than the reference; verifying whether the
+          "no current-programme hero" / "no build-from-answers panel" claims are stale (the
+          code appears to already implement both — needs confirmation with a real screenshot
+          of an active programme)</td>
+        </tr>
+        <tr>
+          <td class="item">Form Coach, light theme, final report</td>
+          <td><span class="badge bad">Not started</span></td>
+          <td class="note">Remaining mandate roadmap</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Next step</h2>
+  <div class="card">
+    <ol class="steps">
+      <li>Dismiss the refusal dialog still open on the emulator (from the pre-fix build).</li>
+      <li>Re-walk the PAR-Q+ screening on the test account, answering "no" to every
+      question, to reach a genuinely cleared profile.</li>
+      <li>Enroll in a programme and capture real screenshots of the current-programme card
+      and the build-from-answers panel.</li>
+      <li>If the code does already implement both widgets, correct the stale claims in the
+      SPTR_VISUAL_FIDELITY_74f2f76 report with this evidence.</li>
+    </ol>
+  </div>
+</section>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>
