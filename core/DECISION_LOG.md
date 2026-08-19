@@ -11100,3 +11100,27 @@ covering this session's RG-1/RG-2/RG-3 device pass and the build/branch mismatch
 MVP release gate from closing on it. Required by the operator's house-report rule. Russian
 published as an artifact and linked to the operator; English committed as the durable in-repo
 record. No code or scope decisions in this entry — reporting only.
+
+## 2026-08-20 -- SPTR reporting convention: one rolling status report, not a new dated file per event
+
+Operator instruction: stop creating a new dated `reports/<NAME>_<date>.html` file for every
+release-gate pass / status update on SPTR. Renamed (via `git mv`, history preserved) the prior
+stop-the-line report to a fixed name -- `reports/SPTR_STATUS.html` (English, durable in-repo
+record) and `reports/SPTR_STATUS.ru.html` (Russian, shown to the operator) -- and updated the
+header (title, eyebrow, a "last updated" line) so it reads as a living status page rather than a
+one-time snapshot. Content itself (the stop-the-line finding, evidence, and the still-open
+rebuild-and-retest requirement) is unchanged from the prior entry -- this is a packaging/workflow
+change only, not a new finding or a decision that the gate is closer to done.
+
+Re-conformed both files with `report_conform.py` (copy button + provenance block refreshed).
+Published the Russian file as a new artifact (file path changed, so it could not update the old
+artifact in place): `https://claude.ai/code/artifact/50a15371-89a0-4713-b17e-163b58ecb126`. Recorded
+the file paths and this artifact URL in project memory
+(`project-sptr-rolling-status-report.md`) together with the operating rule that future updates to
+this report must pass that URL explicitly to the Artifact tool -- a bare republish by file path
+from a different session would fork a second, separate artifact instead of updating this one.
+
+Going forward, SPTR status updates edit `SPTR_STATUS.{html,ru.html}` in place and redeploy to the
+same artifact link rather than creating a new dated file. This does not change or reopen the
+stop-the-line decision: the MVP release gate is still not closed, and the rebuild-from-HEAD +
+retest step from the prior entry is still pending explicit operator direction.
