@@ -15,6 +15,7 @@ import '../workouts/widgets/plate_calculator.dart';
 import '../workouts/widgets/warmup_calculator.dart';
 import '../safety/state/eligibility_providers.dart' show safetyContextProvider;
 import 'data/equipment_models.dart';
+import 'widgets/last_session_card.dart';
 import 'widgets/safety_disclosure.dart';
 import 'state/equipment_providers.dart';
 import 'widgets/equipment_report_sheet.dart';
@@ -86,6 +87,8 @@ class EquipmentDetailPage extends ConsumerWidget {
               // screening that already runs for this machine's exercises rather
               // than from a new judgement about the machine itself.
               _SuitabilityCard(equipmentId: item.id),
+              const SizedBox(height: 12),
+              LastSessionCard(equipmentId: item.id),
               const SizedBox(height: 12),
               const _ToolsRow(),
               const SizedBox(height: 16),

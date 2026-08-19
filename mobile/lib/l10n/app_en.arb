@@ -2023,6 +2023,16 @@
   "equipmentSuitableBecause": "Checked against the health answers you gave us",
   "equipmentCheckWithCoach": "Check with a coach",
   "equipmentCheckBecauseInjury": "You have logged an injury this equipment can load",
+  "equipmentLastSessionHeadline": "Your last session with this equipment",
+  "equipmentLastSessionNotFoundRecent": "Not found in your recent workouts",
+  "commonReps": "{value} reps",
+  "@commonReps": {
+    "placeholders": {
+      "value": {
+        "type": "Object"
+      }
+    }
+  },
   "equipmentRecommendedForYou": "Recommended for you",
   "equipmentRecommendedBadge": "Recommended",
   "coachCheckingView": "Checking the view",

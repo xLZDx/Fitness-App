@@ -17915,3 +17915,85 @@ to be the more natural real estate for "you last did X here"; tracked here rathe
 Suites: `flutter analyze` clean; `flutter test` 44/44 (scanner) + 47/47 (HUD kit) + 3102/3103 (full
 suite, 1 pre-existing unrelated flake). PUSH: pending this entry's commit (operator rule: push
 immediately, verify remote==local before further work).
+
+## 2026-08-19 -- Branch consolidation: Gate D (equipment-type memory) integrated from marketing/site-prototype-2026-08-19, M3 superseded
+
+**Operator-directed cross-worktree integration**, per an explicit new mandate ("SPTR -- FINISH THE
+MVP NOW... давай все смержим в один проект обратно") authorizing evidence-based, surgical integration
+of completed product slices from the sibling worktree (`D:\Repo\Fitness_App`,
+`marketing/site-prototype-2026-08-19`) into this branch -- explicitly NOT a blind merge of that whole
+branch (its own §40/§7: no duplicate implementation, no regression, mobile-only).
+
+**Read-only verification first** (both worktrees, `git status`/`branch`/`rev-parse`/`rev-list
+--left-right --count @{u}...HEAD`): both branches were ALREADY fully pushed (`AHEAD=0 BEHIND=0` on
+both) -- the pasted mandate's claim of a 4-commit unpushed tail on the marketing branch was stale;
+current marketing HEAD is `2a2d2cb` (one commit past the reported `0f3bcf3`, confirmed an ancestor).
+Nothing to push before integrating. `merge-base formcoach/gates-a-c marketing/site-prototype-2026-08-19`
+= `4d8e681`, well before either branch's redesign/product work -- the two have never been merged.
+
+**A real collision surfaced and was resolved by explicit operator decision, not silently:** Gate D
+("Level-1 equipment-type workout memory", `2cc271b` on the marketing branch) is a SECOND, independent
+implementation of the exact feature this session had already shipped as M3
+(`equipment_memory.dart`/`equipmentMemoryProvider`, `a08f428`) -- built without visibility into the
+other branch's work, since this session had no reason to look there until directed to. Presented to the
+operator as a structured choice (keep M3 and wire it myself / take Gate D and retire M3 / hybrid /
+postpone entirely); operator chose **take Gate D, retire M3** -- and on inspection Gate D's version is
+the stronger implementation: it tracks a genuine completeness distinction
+(`EquipmentHistoryCompleteness.completeHistory` vs `.recentWindowOnly`, using the real all-time session
+total to tell "confirmed never done this" from "not found in the window we checked" -- M3 conflated
+these into a bare `null`), counts by distinct `sessionId` rather than row count (R11e multi-exercise
+session correctness), and unions in cached AI-generated exercise ids so the 11/48 equipment types with
+no vendored catalog rows still match history correctly. It also came pre-reviewed (flutter-reviewer,
+type-design-analyzer, silent-failure-hunter in parallel, three real defects found and fixed before that
+commit landed) and mutation-tested.
+
+**What was integrated, mobile-only, hand-reconciled rather than raw-cherry-picked** (the source commit
+also touched `core/marketing/claim_register.json`, the marketing claim-register doc, and
+`public/assets/sptr/site.js`/`index.html` -- the marketing site's own build output; none of that belongs
+on this branch, which owns the mobile app, not the marketing prototype -- left out entirely, per this
+session's standing "one project" boundary and the new mandate's own "do not blindly merge the marketing
+branch" rule):
+- New: `mobile/lib/features/workouts/data/equipment_type_history.dart` (`summarizeEquipmentTypeHistory`,
+  `formatLastSessionMetric`), `mobile/lib/features/equipment/widgets/last_session_card.dart`
+  (`LastSessionCard`), `core/product/GATE_D_EQUIPMENT_TYPE_HISTORY_D0_NOTE_2026-08-19.md`.
+- Modified, applied by hand at the current (diverged) insertion points rather than a raw patch, since
+  both files had independently moved since the branches' common ancestor:
+  `mobile/lib/features/equipment/state/equipment_providers.dart` (+`equipmentExerciseIdsProvider`),
+  `mobile/lib/features/equipment/equipment_detail_page.dart` (+`LastSessionCard(equipmentId: item.id)`
+  under `_SuitabilityCard`, same relative position as the source commit).
+  `mobile/lib/l10n/app_en.arb`/`app_ru.arb`: 3 new keys (`equipmentLastSessionHeadline`,
+  `equipmentLastSessionNotFoundRecent`, `commonReps`) -- checked for collision against every key this
+  session already added (M1-M4): none. The two keys `formatLastSessionMetric` also calls
+  (`workoutsKgReps`, `commonKilograms`) were already present on this branch, confirmed by grep before
+  relying on them.
+- Tests carried over verbatim: `equipment_exercise_ids_provider_test.dart` (3 cases),
+  `last_session_card_test.dart` (20 cases, including the Gate D7 no-flash-before-first-snapshot
+  regression, run 12 times over distinct fixtures), `equipment_type_history_test.dart` (16 cases,
+  including both Gate D7 regression tests on session-vs-row counting).
+
+**M3 retired, not silently discarded:** `equipment_memory.dart`, `equipment_memory_providers.dart`, and
+their two test files removed from this branch (nothing else on this branch ever imported them --
+confirmed by grep before deleting; M3's own decision-log entry deliberately deferred UI wiring, so
+nothing downstream depended on it). The `a08f428` commit and its full diff remain in this branch's git
+history for anyone who wants to compare the two designs later; this entry is the disposition record.
+
+**Verification:** `flutter analyze` on every touched/added file: clean. Full-repo `flutter analyze`:
+same 15 pre-existing unrelated issues as every prior checkpoint this session, nothing new. New Gate D
+test files: 3 + 20 + 16 = 39/39 pass, carried over unmodified. `equipment_detail_coach_gate_test.dart`
+(the only existing test that pumps `EquipmentDetailPage`): 10/10 pass -- the new `LastSessionCard`
+insertion did not disturb the AI-coach gating tests. Full suite: 3114/3115 -- the one failure is the
+same pre-existing, order-dependent scheduler flake recorded at every prior gate this session (origin
+`test/widgets/app_buttons_test.dart:173`, `EXCEPTION CAUGHT BY SCHEDULER LIBRARY`/`!_needsLayout`,
+surfaced this run as `test/widget_test.dart: App boots...` failing after 3 binding retries); isolated
+re-run of `widget_test.dart` + `app_buttons_test.dart` + `glass_nav_bar_test.dart` together: 29/29 clean.
+Not caused by this integration.
+
+**MVP status:** M1-M4 unchanged. Gate D (equipment-type memory) is now live in this branch as of this
+integration, superseding M3's design. Per the new mandate's own §7, the next step is wiring this
+surviving implementation (not M3's, which no longer exists) into the Scanner result screen -- tracked
+as the immediate next unit of work, not yet done as of this entry.
+
+Suites: `flutter analyze` clean (project-wide, same pre-existing 15). New/integrated tests 39/39 +
+existing detail-page test 10/10 + full suite 3114/3115 (1 pre-existing unrelated flake, not reproduced
+in isolation). PUSH: pending this entry's commit (operator
+rule: push immediately, verify remote==local before further work).

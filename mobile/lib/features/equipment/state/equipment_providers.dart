@@ -83,6 +83,39 @@ final _exercisesForEquipmentProvider =
   return repo.exercisesFor(equipmentId);
 });
 
+/// Every `exerciseId` mapped to this equipment type, unscreened.
+///
+/// Deliberately reads [_exercisesForEquipmentProvider] rather than
+/// [recommendedExercisesProvider]: this set is used to match *past* logged
+/// workouts against an equipment type (`summarizeEquipmentTypeHistory`), and
+/// injury screening can change after a workout was logged (an exercise done
+/// safely last month can be hidden today because of an injury logged since).
+/// Screening what is safe to *recommend* must not also decide what counts as
+/// history that actually happened.
+///
+/// Also unions in cached AI-generated exercise ids (Gate D review finding):
+/// the vendored catalog alone is empty for the 11 registry machines with no
+/// real exercises, which [_exercisesForEquipmentProvider] falls through to
+/// nothing for -- see [exercisesForEquipmentWithAiFallbackProvider]'s doc
+/// comment. A workout logged against one of those machines is logged under
+/// a generated `ai::$equipmentId::$i` id (`ai_exercise_generator.dart`), so
+/// without this, history matching would silently and permanently fail for
+/// every one of them. Reads [GeneratedExerciseRepository.get] -- the CACHE
+/// only, never [AiExerciseGenerator.generate] -- a background history
+/// lookup must not trigger a new billed generation; that belongs to the
+/// page actually showing the exercise list, which already caches it there.
+final equipmentExerciseIdsProvider =
+    FutureProvider.family<Set<String>, String>((ref, equipmentId) async {
+  final items = await ref.watch(_exercisesForEquipmentProvider(equipmentId).future);
+  final ids = items.map((e) => e.id).toSet();
+  if (ids.isNotEmpty) return ids;
+
+  final lang = ref.watch(effectiveLanguageCodeProvider);
+  final genRepo = ref.watch(generatedExerciseRepositoryProvider);
+  final cached = await genRepo.get(equipmentId, lang);
+  return {for (final e in cached ?? const <ExerciseItem>[]) e.id};
+});
+
 /// Generates AI exercises once per (user, machine, language) and caches the
 /// result. Default is the in-memory mock so widget tests never touch
 /// Firebase; `main.dart` overrides with [FirestoreGeneratedExerciseRepository].
