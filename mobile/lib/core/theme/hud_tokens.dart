@@ -101,10 +101,15 @@ class HudGlass {
     this.dropShadows = const <BoxShadow>[],
     this.saturate,
     this.topHighlight,
+    this.fillGradient,
   });
 
   /// The surface fill. On dark this is `rgba(255,255,255,.014)` — so nearly
   /// nothing that the shape is carried entirely by [innerBorder] and [glow].
+  ///
+  /// Ignored when [fillGradient] is set; kept as the single-colour value
+  /// closest to it (this recipe's top stop) so a consumer that only reads
+  /// [fill] — there is none today, but the field stays meaningful on its own.
   final Color fill;
 
   /// The CSS blur radius. Pass through [blurSigma] before handing it to
@@ -141,12 +146,34 @@ class HudGlass {
   /// been read off a screen this repository does not build yet.
   final Color? topHighlight;
 
+  /// `background:linear-gradient(180deg, <top>, <bottom>)` — the floating tab
+  /// bar's own fill, not the flat [fill] every other surface uses. Null for
+  /// every other recipe: the handoff draws exactly one gradient-filled glass
+  /// surface (`Sunset.dc.html:449`, the dark nav bar's `.40` top to `.24`
+  /// bottom), and painting it as [fill]'s flat `.40` for one D1 review round
+  /// was a confirmed fidelity gap. Reinstated once measured: a
+  /// `BoxDecoration.gradient` and a `BoxDecoration.color` are the same GPU
+  /// primitive -- a single cached `Shader` fill of one rounded rect -- so a
+  /// two-stop linear gradient costs nothing meaningful next to the
+  /// `BackdropFilter`/drop-shadow work already on the same surface. Takes
+  /// priority over [fill] in `HudSurface` when set.
+  final Gradient? fillGradient;
+
   /// The composed backdrop filter, or a plain blur when there is no saturation.
   ///
   /// `HudSurface` reads this on every frame the one `BackdropFilter` call site
-  /// rebuilds, and a Home screen carries six. Computed once and cached rather
-  /// than rebuilt per frame -- safe because [HudGlass] is immutable, so the
-  /// value can only ever come out identical.
+  /// rebuilds, and a Home screen carries six. Computed once and cached per
+  /// [HudGlass] instance -- safe because the class is immutable, so the value
+  /// can only ever come out identical for a given instance.
+  ///
+  /// That guarantee is scoped to one instance, not to a theme. The two
+  /// static [HudTokens.dark]/[HudTokens.light] singletons each build their
+  /// [HudGlass] recipes exactly once, so this genuinely caches across the
+  /// app's whole lifetime for ordinary (non-transitioning) frames. `lerp`
+  /// below constructs a fresh [HudGlass] on every animated frame of a theme
+  /// transition, so during the ~200ms toggle this filter is recomputed each
+  /// frame rather than reused -- unmeasured, but worth knowing if that
+  /// transition is ever profiled as janky.
   late final ui.ImageFilter backdropFilter = _computeBackdropFilter();
 
   ui.ImageFilter _computeBackdropFilter() {
@@ -162,17 +189,38 @@ class HudGlass {
     );
   }
 
-  static HudGlass lerp(HudGlass a, HudGlass b, double t) => HudGlass(
-        fill: Color.lerp(a.fill, b.fill, t)!,
-        cssBlur: ui.lerpDouble(a.cssBlur, b.cssBlur, t)!,
-        innerBorder: Color.lerp(a.innerBorder, b.innerBorder, t)!,
-        outerBorder: Color.lerp(a.outerBorder, b.outerBorder, t),
-        glow: BoxShadow.lerp(a.glow, b.glow, t),
-        dropShadows: BoxShadow.lerpList(a.dropShadows, b.dropShadows, t) ??
-            const <BoxShadow>[],
-        saturate: ui.lerpDouble(a.saturate ?? 1.0, b.saturate ?? 1.0, t),
-        topHighlight: Color.lerp(a.topHighlight, b.topHighlight, t),
-      );
+  static HudGlass lerp(HudGlass a, HudGlass b, double t) {
+    // `fillGradient` has no meaningful "in between" the way a flat colour
+    // does: `Gradient.lerp` treats one side being null as "fade this
+    // gradient down to transparent", not "cross-fade into the other side's
+    // opaque flat fill". For the one recipe this is reachable on today (the
+    // dark nav bar, whose light counterpart carries no gradient), that made
+    // the settled end of a dark->light theme transition paint the bar fully
+    // transparent instead of light's own opaque fill -- confirmed against
+    // `LinearGradient.lerp`'s source, which returns `otherSide.scale(...)`
+    // rather than `null` on a one-sided-null lerp. Snapped at the midpoint
+    // instead, the same way `brightness` a few lines below already snaps
+    // rather than interpolates for the identical kind of property. `fill` is
+    // snapped in lockstep, but only while a gradient is actually involved,
+    // so this changes nothing for every gradient-less recipe (panel,
+    // subPanel, button, chip in both themes), which keep the smooth
+    // `Color.lerp` they already had.
+    final bool hasGradient = a.fillGradient != null || b.fillGradient != null;
+    return HudGlass(
+      fill: hasGradient
+          ? (t < 0.5 ? a.fill : b.fill)
+          : Color.lerp(a.fill, b.fill, t)!,
+      cssBlur: ui.lerpDouble(a.cssBlur, b.cssBlur, t)!,
+      innerBorder: Color.lerp(a.innerBorder, b.innerBorder, t)!,
+      outerBorder: Color.lerp(a.outerBorder, b.outerBorder, t),
+      glow: BoxShadow.lerp(a.glow, b.glow, t),
+      dropShadows: BoxShadow.lerpList(a.dropShadows, b.dropShadows, t) ??
+          const <BoxShadow>[],
+      saturate: ui.lerpDouble(a.saturate ?? 1.0, b.saturate ?? 1.0, t),
+      topHighlight: Color.lerp(a.topHighlight, b.topHighlight, t),
+      fillGradient: hasGradient ? (t < 0.5 ? a.fillGradient : b.fillGradient) : null,
+    );
+  }
 }
 
 /// The HUD's colours, glass recipes, geometry and typography scale.
@@ -418,7 +466,16 @@ class HudTokens extends ThemeExtension<HudTokens> {
       topHighlight: const Color(0x4DFFFFFF), // white @ .30
     ),
     navBar: HudGlass(
-      fill: const Color(0x661A0F22), // rgba(26,15,34,.40)
+      fill: const Color(
+          0x661A0F22), // rgba(26,15,34,.40) -- fillGradient's top stop
+      fillGradient: const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: <Color>[
+          Color(0x661A0F22), // rgba(26,15,34,.40)
+          Color(0x3D1A0F22), // rgba(26,15,34,.24)
+        ],
+      ),
       cssBlur: 30,
       saturate: 1.8,
       innerBorder: const Color(0x2EFFFFFF), // white @ .18

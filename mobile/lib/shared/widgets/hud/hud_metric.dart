@@ -75,6 +75,35 @@ class HudRing extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final HudTokens t = context.hud;
+    // The centre content (almost always a `HudRingLabel`) is unconstrained
+    // today: `Center` lets a child grow past the ring's own bounds, so at a
+    // large system text scale the number-plus-caption column either paints
+    // outside the ring or -- once it's wide enough to hit the `Center`'s own
+    // loose-constraint ceiling -- throws a real `RenderFlex` overflow.
+    // Reproduced directly: a 78px ring's label overflows by 11px at 2.0x
+    // system scale and 55px at 3.0x. Bounding it to a fraction of the ring's
+    // own drawn diameter and scaling it down with `FittedBox` removes the
+    // crash -- at 1.0x every current label already fits inside that bound,
+    // so `BoxFit.scaleDown` is a no-op and normal-scale rendering is
+    // unchanged; only text scale large enough to no longer fit gets shrunk,
+    // never grown. The fraction is derived from this instance's own
+    // `radius`/`size` (how much of the ring the arc itself occupies) rather
+    // than a flat constant, so a differently-proportioned ring at a future
+    // call site is protected without retuning a magic number here.
+    //
+    // What this trades away, confirmed by an accessibility review round: the
+    // bound is fixed in px, not in `textScale`, so a user who sets a large
+    // system text scale specifically to read this ring's own number gets a
+    // capped, sub-proportional result once the label would have exceeded
+    // the bound -- not the full growth uncapped text elsewhere in the app
+    // gets. That is a real, accepted trade-off for this gate, not an
+    // oversight: the alternative (growing the ring itself, or moving the
+    // label outside the ring's geometry above some scale threshold) is a
+    // presentation decision beyond a hardening fix and is left to a future
+    // design pass. Regression-tested in `hud_components_test.dart`: the
+    // capped result never renders smaller than the 1.0x baseline and never
+    // again exceeds the bound that caused the original overflow.
+    final double contentFraction = (2 * radius / size) * 0.92;
     final Widget painted = SizedBox(
       width: size,
       height: size,
@@ -92,7 +121,15 @@ class HudRing extends StatelessWidget {
           guide: t.ringGuide,
           glow: t.ringGlow,
         ),
-        child: child == null ? null : Center(child: child),
+        child: child == null
+            ? null
+            : Center(
+                child: SizedBox(
+                  width: size * contentFraction,
+                  height: size * contentFraction,
+                  child: FittedBox(fit: BoxFit.scaleDown, child: child),
+                ),
+              ),
       ),
     );
 

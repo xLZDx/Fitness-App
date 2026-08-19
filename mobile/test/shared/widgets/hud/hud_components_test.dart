@@ -10,11 +10,21 @@ import 'package:fitness_app/shared/widgets/hud/hud_metric.dart';
 import 'package:fitness_app/shared/widgets/hud/hud_scaffold.dart';
 import 'package:fitness_app/shared/widgets/hud/hud_surface.dart';
 
-Widget _host(Widget child, {Brightness brightness = Brightness.dark}) =>
-    MaterialApp(
-      theme: brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
-      home: Scaffold(body: Center(child: child)),
-    );
+Widget _host(
+  Widget child, {
+  Brightness brightness = Brightness.dark,
+  double textScale = 1.0,
+}) {
+  final Widget app = MaterialApp(
+    theme: brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
+    home: Scaffold(body: Center(child: child)),
+  );
+  if (textScale == 1.0) return app;
+  return MediaQuery(
+    data: MediaQueryData(textScaler: TextScaler.linear(textScale)),
+    child: app,
+  );
+}
 
 /// The decoration that actually carries the fill and the hairline.
 BoxDecoration _fillDecoration(WidgetTester t) {
@@ -169,6 +179,40 @@ void main() {
         ),
       ));
       expect(find.byType(BackdropFilter), findsOneWidget);
+    });
+  });
+
+  group('HudScrollFade', () {
+    testWidgets('masks with a ShaderMask at full quality', (t) async {
+      await t.pumpWidget(_host(
+        const SizedBox(
+          width: 200,
+          height: 200,
+          child: HudScrollFade(child: Text('content')),
+        ),
+      ));
+      expect(find.byType(ShaderMask), findsOneWidget);
+      expect(find.text('content'), findsOneWidget);
+    });
+
+    testWidgets('drops the ShaderMask under reduced quality, keeps the child',
+        (t) async {
+      // `ShaderMask` forces a save layer every repaint of its subtree -- the
+      // same class of cost `HudSurface`'s `BackdropFilter` carries, and this
+      // widget carried no way to shed it until this fix. Reuses the same
+      // `HudQuality` toggle rather than a second independent setting.
+      await t.pumpWidget(_host(
+        const HudQuality(
+          frostedGlass: false,
+          child: SizedBox(
+            width: 200,
+            height: 200,
+            child: HudScrollFade(child: Text('content')),
+          ),
+        ),
+      ));
+      expect(find.byType(ShaderMask), findsNothing);
+      expect(find.text('content'), findsOneWidget);
     });
   });
 
@@ -453,6 +497,92 @@ void main() {
         150,
       );
     });
+
+    testWidgets(
+        'a large system text scale shrinks the label instead of overflowing',
+        (t) async {
+      // Reproduced directly before this fix: a 78px ring (Scan's size)
+      // holding a two-line HudRingLabel threw a real RenderFlex overflow at
+      // 2.0x system text scale (11px) and 3.0x (55px) -- `Center` lets a
+      // child grow past the ring's own bounds, and once it grew past the
+      // ring's *loose*-constraint ceiling too, the label's own inner Row/
+      // Column had nowhere left to lay out into.
+      for (final double scale in <double>[1.0, 1.3, 1.5, 2.0, 3.0]) {
+        await t.pumpWidget(_host(
+          const HudRing(
+            size: 78,
+            radius: 34,
+            progress: 0.5,
+            child: HudRingLabel(value: '04', caption: 'sets', valueSize: 22),
+          ),
+          textScale: scale,
+        ));
+        expect(t.takeException(), isNull, reason: 'at ${scale}x scale');
+      }
+    });
+
+    testWidgets('at ordinary text scale the label is not touched', (t) async {
+      // `RenderBox.size` (what a naive `getSize` comparison would read) is
+      // set by `RenderFittedBox` laying its child out with UNCONSTRAINED
+      // constraints regardless of `fit` -- the fit is applied purely as a
+      // paint-time transform, so comparing the label's own reported size
+      // against itself is tautological: it reads identical even with
+      // `scaleDown` actively shrinking the paint. `tester.getRect` reads the
+      // actual painted bounds in the global coordinate space (via
+      // `RenderBox.localToGlobal`), so it reflects what `scaleDown` really
+      // did.
+      await t.pumpWidget(_host(
+        const HudRing(
+          size: 78,
+          radius: 34,
+          progress: 0.5,
+          child: HudRingLabel(value: '04', caption: 'sets', valueSize: 22),
+        ),
+      ));
+      final Size natural = t.getSize(find.byType(HudRingLabel));
+      final Size painted = t.getRect(find.byType(HudRingLabel)).size;
+      expect(painted, natural,
+          reason: 'scaleDown must not touch a label that already fits');
+    });
+
+    testWidgets(
+        'at large text scale the label never renders smaller than its 1.0x '
+        'baseline, and never exceeds the bound that caused the overflow',
+        (t) async {
+      // The bound is fixed in px (derived from `size`/`radius`, not from
+      // `textScale`), so a large system text scale cannot get the label's
+      // number to grow proportionally forever the way uncapped text
+      // elsewhere in the app does -- it saturates at the ring's own
+      // geometry. What must still hold, and is the actual regression this
+      // gate is responsible for: the capped result is never SMALLER than
+      // what a 1.0x user already sees, and it never again exceeds the box
+      // that the original `RenderFlex` overflow came from.
+      const HudRing ring = HudRing(
+        size: 78,
+        radius: 34,
+        progress: 0.5,
+        child: HudRingLabel(value: '04', caption: 'sets', valueSize: 22),
+      );
+      const double boxSide = 78 * (2 * 34 / 78) * 0.92;
+
+      await t.pumpWidget(_host(ring, textScale: 1.0));
+      final double baselineHeight = t.getRect(find.byType(HudRingLabel)).height;
+
+      for (final double scale in <double>[1.3, 1.5, 2.0, 3.0]) {
+        await t.pumpWidget(_host(ring, textScale: scale));
+        final Rect painted = t.getRect(find.byType(HudRingLabel));
+
+        expect(painted.height, greaterThanOrEqualTo(baselineHeight - 0.5),
+            reason: 'at ${scale}x scale, painted height must not regress '
+                'below the 1.0x baseline');
+        expect(painted.width, lessThanOrEqualTo(boxSide + 0.5),
+            reason: 'at ${scale}x scale, painted width must stay inside the '
+                'bound the original overflow escaped');
+        expect(painted.height, lessThanOrEqualTo(boxSide + 0.5),
+            reason: 'at ${scale}x scale, painted height must stay inside the '
+                'bound the original overflow escaped');
+      }
+    });
   });
 
   group('HudNavBar', () {
@@ -463,6 +593,34 @@ void main() {
           HudNavItem(icon: Icons.north_east, label: 'Progress'),
           HudNavItem(icon: Icons.person, label: 'Profile'),
         ];
+
+    testWidgets('the bar actually paints its gradient fill, not a flat colour',
+        (t) async {
+      await t.pumpWidget(_host(
+        SizedBox(
+          width: 390,
+          child: HudNavBar(items: items(), selectedIndex: 0, onSelect: (_) {}),
+        ),
+      ));
+      final BoxDecoration deco = _fillDecoration(t);
+      expect(deco.color, isNull,
+          reason: 'a gradient and a flat colour must not both be set');
+      final LinearGradient g = deco.gradient! as LinearGradient;
+      expect(g.colors, HudTokens.dark.navBar.fillGradient!.colors);
+    });
+
+    testWidgets('the light bar has no gradient to paint', (t) async {
+      await t.pumpWidget(_host(
+        SizedBox(
+          width: 390,
+          child: HudNavBar(items: items(), selectedIndex: 0, onSelect: (_) {}),
+        ),
+        brightness: Brightness.light,
+      ));
+      final BoxDecoration deco = _fillDecoration(t);
+      expect(deco.gradient, isNull);
+      expect(deco.color, HudTokens.light.navBar.fill);
+    });
 
     testWidgets('five equal tabs, none of them raised', (t) async {
       await t.pumpWidget(_host(

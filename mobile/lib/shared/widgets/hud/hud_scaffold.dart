@@ -79,6 +79,14 @@ class HudScrollFade extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // `ShaderMask` forces its subtree through a save layer every frame it
+    // repaints -- a scroll view's content, repainting on every scroll delta
+    // -- the same class of cost `HudSurface`'s `BackdropFilter` carries, and
+    // this widget carried no way to shed it. Reuses `HudQuality`'s existing
+    // toggle rather than a second independent setting: one flag already
+    // means "skip the expensive compositing", and this is another instance
+    // of exactly that, not a different question.
+    if (!HudQuality.frostedOf(context)) return child;
     return ShaderMask(
       shaderCallback: (Rect bounds) {
         final double h = bounds.height;

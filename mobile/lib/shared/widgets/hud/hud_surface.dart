@@ -153,11 +153,16 @@ class HudSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color hairline = border ?? glass.innerBorder;
     final Color? highlight = topHighlight ?? glass.topHighlight;
+    // `overlay` is a per-instance override (a selected chip's accent wash);
+    // `glass.fillGradient` is the recipe's own inherent fill, when the recipe
+    // has one (only the dark nav bar does). `overlay` wins when both are
+    // somehow present, since it represents a more specific state.
+    final Gradient? gradient = overlay ?? glass.fillGradient;
 
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
-        color: overlay == null ? glass.fill : null,
-        gradient: overlay,
+        color: gradient == null ? glass.fill : null,
+        gradient: gradient,
         borderRadius: borderRadius,
         border: Border.all(color: hairline, width: 1),
       ),

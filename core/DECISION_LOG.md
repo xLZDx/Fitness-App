@@ -17257,3 +17257,184 @@ tree and must be re-verified here, not assumed, before any MRD-01/Level-1 implem
 
 Suites: none run -- this entry is a copy-in and a decision-log record, no source changed. PUSH: NOT
 PERFORMED.
+
+---
+
+## 2026-08-19 -- R-D1 hardening gate: HudRing overflow, nav-bar gradient lerp, HudScrollFade quality, and the veil's own evidence trail
+
+Turn 2's mandate required a "short hardening gate" before any new screen: close R-D1-01
+(`HudRingLabel` overflow at large text scale), R-D1-02 (nav-bar `.40`->`.24` gradient), R-D1-03
+(`HudScrollFade` quality kill-switch) and a new R-D1-04 (adaptive veil density per shipped background),
+then run four independent Round-1 reviewers before committing. All four residuals are implemented;
+the review round surfaced two production defects and two test-quality defects, all four fixed and
+mutation-verified below; the veil-multiplier formula this entry itself now documents was the specific
+gap MAJOR-1 named.
+
+**R-D1-01 -- `HudRingLabel` overflow, reproduced then fixed.** A 78px ring's centre label threw a real
+`RenderFlex` overflow at 2.0x system text scale (11px) and 3.0x (55px) -- `Center` let the label grow
+past the ring's own bounds. Fixed in `hud_metric.dart`'s `HudRing.build` by bounding the centre child
+to `size * contentFraction` (`contentFraction = (2*radius/size)*0.92`, derived per-instance so a
+differently-proportioned ring is protected without a hand-tuned constant) and wrapping it in
+`FittedBox(fit: BoxFit.scaleDown)`. At 1.0x every current label already fits the bound, so this is a
+no-op there; regression-tested (`hud_components_test.dart`) at 1.0/1.3/1.5/2.0/3.0x, mutation-verified
+by reverting to the pre-fix `Center(child: child)` and confirming both new tests fail.
+
+Confirmed accessibility trade-off, not fixed further this pass: the bound is fixed in px, not in
+`textScale`, so a user requesting a large system text scale specifically to read this ring's own
+number gets a capped, sub-proportional result once the label exceeds the bound -- not the full growth
+uncapped text elsewhere in the app gets. A real design trade-off (grow the ring itself, or move the
+label outside its geometry above some scale threshold) is a presentation decision beyond a hardening
+fix and is left to a future pass; the doc comment at `hud_metric.dart`'s `HudRing.build` now states
+this instead of implying the fix is proportional. What IS guaranteed and regression-tested: the capped
+result never renders smaller than the 1.0x baseline, and never again exceeds the bound that caused the
+original overflow (`hud_components_test.dart`, measured via `tester.getRect`, not `tester.getSize` --
+`RenderFittedBox` lays its child out with unconstrained constraints regardless of `fit` and applies the
+fit purely as a paint-time transform, so `RenderBox.size` never reflects it; only the painted global
+rect does).
+
+**R-D1-02 -- the nav bar's real gradient fill, and the lerp bug it exposed.** Measured cheap enough to
+implement rather than record as an accepted deviation: a `BoxDecoration.gradient` and a
+`BoxDecoration.color` are the same GPU primitive (one cached `Shader` fill of a rounded rect), costing
+nothing meaningful next to the `BackdropFilter`/drop-shadow work already on the same surface. Added
+`HudGlass.fillGradient`, wired into the dark `navBar` recipe (`rgba(26,15,34,.40)` top to `.24` bottom,
+transcribed from `Sunset.dc.html:449`) and into `HudSurface`'s paint path ahead of flat `fill`.
+
+**Confirmed BLOCKER, found by the design-fidelity/Flutter reviewer, independently verified against the
+Flutter SDK source, fixed:** `HudGlass.lerp()`'s naive `Gradient.lerp(a.fillGradient, b.fillGradient,
+t)` does not do what the name suggests when one side is `null` (every recipe but the dark nav bar).
+Read directly from `LinearGradient.lerp` in `packages/flutter/lib/src/painting/gradient.dart:495-504`
+(Flutter 3.27.1, stable): a one-sided-null lerp returns `otherSide.scale(factor)` -- a transparent
+COPY of the non-null side, never `null` and never the other side's own flat colour. On a live
+dark->light theme toggle (`AnimatedTheme`, ~200ms), this made the settled end of the transition paint
+the nav bar's gradient faded to fully transparent instead of light's own opaque flat fill -- a real,
+reachable rendering defect on every theme switch, not a hypothetical one.
+
+Fixed in `hud_tokens.dart`'s `HudGlass.lerp()`: `fillGradient` (and `fill`, in lockstep, but only when
+a gradient is actually involved on either side) is now snapped at the midpoint -- `t < 0.5 ? a : b` --
+the same way `brightness` a few lines below already snaps rather than interpolates, for the identical
+reason: a property with no meaningful "in between" state. Every gradient-less recipe (panel, subPanel,
+button, chip, both themes) is unaffected -- the branch is a no-op for all of them. Two new tests in
+`hud_tokens_test.dart` pin both transition directions at their settled/mid points; mutation-verified by
+reverting to the naive `Gradient.lerp` call and confirming both fail (the settled-at-t=1.0 test caught
+it directly).
+
+**Confirmed MAJOR, inferred/unmeasured, documentation fix only:** the same `lerp()` also defeats
+`HudGlass.backdropFilter`'s `late final` memoization during a live theme transition, since `lerp`
+constructs a fresh `HudGlass` every animated frame and the cache is per-instance, not per-theme. Not
+reproduced as a measured jank -- a ~200ms, once-per-toggle cost -- so left unfixed rather than adding a
+frame-level cache for an unmeasured cost; `backdropFilter`'s doc comment now states the caching
+guarantee is scoped to the two static `HudTokens.dark`/`.light` singletons, not to instances produced
+by `lerp`.
+
+**R-D1-03 -- `HudScrollFade`'s quality kill-switch.** Per the mandate's own instruction not to invent a
+second performance-setting system, `HudScrollFade.build` now checks the existing `HudQuality.frostedOf`
+toggle and returns `child` directly (skipping the `ShaderMask`) when quality is reduced, reusing
+exactly the mechanism `HudSurface`'s own frost toggle already uses. Not gated on OS-level
+reduced-motion/reduced-transparency (noted by the a11y reviewer as worth naming, not a defect): the
+mask is a static gradient, not an animation, so reduced-motion is not the applicable signal here.
+
+**R-D1-04 -- adaptive veil density per shipped background, and the evidence this entry itself supplies.**
+The prior D1 review round (entry above, "Ground-truthed rather than dismissed: the contrast BLOCKER")
+measured real per-image brightness across all ten `assets/coach_bg/*.webp` files and confirmed the
+worst case (near-pure-white regions) is reachable with the app's own shipped assets, explicitly
+deferring "a full fix (per-image adaptive veil density)" as its own design decision. This gate is that
+design decision.
+
+*Measurement, reproduced this pass* (`measure_bg_luminance.py`, Pillow, Rec.709 coefficients
+0.213/0.715/0.072 -- the same weights `saturationFilter()` in `hud_tokens.dart` already uses, for one
+luminance definition across the design system): top-45%-of-frame mean / 95th-percentile / max, per
+bundled scene.
+
+| Scene | mean | p95 | max |
+|---|---|---|---|
+| 01_cliffs_moher.webp | 185.23 | 228.69 | 253.14 |
+| 02_volcano.webp | 103.28 | 145.08 | 227.63 |
+| 03_waterfall_dock.webp | 116.86 | 174.97 | 251.27 |
+| 04_fuji_sakura.webp | 210.91 | 242.26 | 253.85 |
+| 05_sunset_hills.webp | 123.75 | 172.20 | 215.44 |
+| 06_greek_terrace.webp | 193.07 | 222.37 | 254.14 |
+| 07_snow_peak_tarn.webp | 185.21 | 227.69 | 253.56 |
+| 08_coast_turquoise.webp | 101.96 | 152.33 | 218.72 |
+| 09_forest_lake.webp | 162.67 | 240.84 | 255.00 |
+| 10_beach_sunset.webp | 116.59 | 184.28 | 244.31 |
+
+p95, not mean or max, is what `HudSky._topZoneP95` carries and `HudBackgroundProfile` is built from:
+mean understates a bright top-of-frame band a small dim area could pull down; max overreacts to a
+single hot pixel (a sun glint) that carries no real reading-surface area.
+
+*Formula* (`HudBackgroundProfile.multiplierForP95`, `hud_sky.dart`): `baseline=140`, `ceiling=250`,
+`maxBoost=0.45` -- `multiplier = 1.0 + clamp((p95-baseline)/(ceiling-baseline), 0, 1) * maxBoost`.
+`baseline=140` sits below every measured p95 in the table above (min 145.08), so every bundled scene
+gets at least some boost; `ceiling=250` sits just above the brightest measured p95 (242.26), so the
+formula is calibrated to the app's own real asset range rather than an arbitrary round number;
+`maxBoost=0.45` was originally chosen heuristically, without a computed contrast target -- the gap the
+accessibility reviewer's MAJOR-1 finding correctly named, since this file's doc comment pointed here
+for that derivation and nothing existed. Retroactively grounded now, not merely re-asserted:
+`multiplier(255) = 1.45` (`test/core/background/hud_sky_test.dart`, "caps at the boost ceiling") is the
+scale that turns the dimmest phase's (dawn/dusk, 0.44 base alpha) theoretical pure-white worst case
+from a real, computed WCAG AA failure (4.16:1, sub-4.5) into a comfortable pass (10.21:1) -- see below.
+`maxBoost` was not re-tuned to produce this outcome; the existing 0.45 already clears it with margin,
+which is itself evidence the original heuristic choice happened to land in a safe region, not proof it
+was derived correctly. A future change to `maxBoost` should re-run
+`test/core/background/hud_sky_test.dart`'s `worst-case veil contrast (WCAG)` group, which will fail if
+a smaller value stops clearing AA.
+
+*Contrast, computed, not assumed* (WCAG 2.1 formula, `test/support/wcag_contrast.dart` -- the same
+gamma-correct implementation `app_semantic_colors_test.dart` already maintained for the flat-colour
+token set, now shared rather than duplicated):
+
+| Scenario | Phase | Background | Scale applied | Contrast (white text) |
+|---|---|---|---|---|
+| Regression case, no boost (pre-R-D1-04 behaviour) | dawn (.44 base) | theoretical pure white (255) | 1.00x | **4.16:1 -- fails AA** |
+| Regression case, with boost | dawn (.44 base) | theoretical pure white (255) | 1.45x | 10.21:1 |
+| Real asset, densest phase | day (.56 base) | 04_fuji_sakura.webp (p95 242.26) | 1.42x | 17.20:1 |
+| Real asset, dimmest phase | dawn (.44 base) | 04_fuji_sakura.webp (p95 242.26) | 1.42x | 10.02:1 |
+| Real asset, secondary text (white @ .80, two-stage blend) | day (.56 base) | 04_fuji_sakura.webp | 1.42x | 11.30:1 |
+
+All five are asserted in `test/core/background/hud_sky_test.dart`'s `worst-case veil contrast (WCAG)`
+group against a 4.5:1 floor (WCAG AA, normal-size text -- HUD status/caption labels are not "large
+text" by the spec's own size definition, so the stricter bound applies). The first row is
+mutation-verified: forcing `multiplierForP95` to a constant `1.0` makes that row's own assertion fail
+with the exact hand-computed value (4.1648...), confirmed by running the mutant.
+
+*What this does not claim*: WCAG compliance across every screen, font weight and size the redesign will
+eventually draw over a background -- only the two roles (`textPrimary`, `textSecondary`) and the two
+extreme phases actually computed above. A future screen drawing smaller or lower-contrast text over a
+background must be checked on its own merits, not assumed covered by this entry.
+
+**Review round: four independent Round-1 reviewers** (a11y-architect, flutter-reviewer/design-fidelity,
+performance-optimizer, functional-test-reviewer), each reviewing the same changed files blind to the
+others' findings, explicit devil's-advocate instruction. Confirmed findings and disposition:
+
+* BLOCKER, `HudGlass.lerp()` gradient transparency -- fixed above.
+* MAJOR (inferred), `HudGlass.lerp()` backdropFilter memoization defeat -- doc-comment scoped, not
+  code-fixed (unmeasured cost).
+* MAJOR, a11y: veil-multiplier's cited `DECISION_LOG.md` evidence did not exist -- this entry.
+* MAJOR, a11y: `HudRing`'s FittedBox cap trades the crash for a legibility ceiling at extreme scale --
+  doc-comment corrected to state the trade-off plainly; regression-tested (never below 1.0x baseline,
+  never past the bound); no further code change this pass (product decision, not a hardening-gate fix).
+* BLOCKER, test-quality: the FittedBox regression test compared `RenderBox.size` against itself through
+  a `FittedBox`, tautological since the fit is a paint-time transform the reported size never reflects
+  -- rewritten to read `tester.getRect` (global painted bounds); mutation-verified.
+* MAJOR, test-quality: `sampleBackgroundProfile`'s only in-suite test never called the function -- the
+  pure luminance/percentile math is now extracted to `profileFromRgbaBytes` (`@visibleForTesting`,
+  takes raw RGBA bytes instead of a `ui.Image`) so it can run against synthetic buffers without the
+  `ui.Image` decode path that hangs `flutter test` on this host; six new tests, including one that pins
+  the exact Rec.709 coefficients against an equal-weight/Rec.601 mutant (a white/black buffer cannot
+  distinguish channel weights -- every weighting agrees on the achromatic endpoints).
+* MINOR/NIT (not fixed this pass, none blocking): `contentFraction` unclamped for a hypothetical future
+  ring with `radius > ~0.54*size`; the bounding box's diagonal exceeds the ring's own diameter
+  (cosmetic, unreachable at current content); `HudScrollFade`'s "same cost class as BackdropFilter"
+  comment is an unmeasured magnitude claim; ring geometry tested at one size/radius ratio only.
+
+**Mutation-verified, this pass:** `HudGlass.lerp()` gradient snap (2 tests killed the naive
+`Gradient.lerp` reversion), `HudRing` FittedBox fix (2 tests killed the pre-fix `Center(child: child)`
+reversion), `profileFromRgbaBytes` Rec.709 coefficients (1 test killed an equal-weight mutant), veil
+contrast regression case (1 test killed `multiplierForP95` forced to a constant `1.0`).
+
+Suites: `flutter analyze` clean on every touched file (`hud_metric.dart`, `hud_tokens.dart`,
+`hud_surface.dart`, `hud_scaffold.dart`, `hud_sky.dart`, and the four touched test files).
+`flutter test` on the four touched suites (`hud_components_test.dart`, `hud_tokens_test.dart`,
+`hud_sky_test.dart`, `app_semantic_colors_test.dart`) green; full-suite run pending before this gate's
+local commit. `pytest`, `tsc`, `jest` NOT RUN -- no Python, TypeScript or `firestore.rules` changed.
+PUSH: NOT PERFORMED.

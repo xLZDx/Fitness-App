@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +7,8 @@ import 'package:fitness_app/core/theme/app_palette.dart';
 import 'package:fitness_app/core/theme/app_semantic_colors.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 
+import '../support/wcag_contrast.dart';
+
 /// Contrast is asserted by computation, not by eye.
 ///
 /// A token file is exactly the kind of thing that looks reviewed and is not:
@@ -15,24 +16,10 @@ import 'package:fitness_app/core/theme/app_theme.dart';
 /// them is legible is arithmetic. So the arithmetic lives here, and a value
 /// edited later has to survive it.
 ///
-/// WCAG 2.1 relative luminance, from the spec's own formula.
-double _channel(int v) {
-  final c = v / 255.0;
-  return c <= 0.03928 ? c / 12.92 : math.pow((c + 0.055) / 1.055, 2.4) as double;
-}
-
-double _luminance(Color c) =>
-    0.2126 * _channel((c.r * 255).round()) +
-    0.7152 * _channel((c.g * 255).round()) +
-    0.0722 * _channel((c.b * 255).round());
-
-double contrast(Color a, Color b) {
-  final la = _luminance(a), lb = _luminance(b);
-  return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
-}
-
-/// [fg] at its own alpha composited onto opaque [bg].
-Color flatten(Color fg, Color bg) => Color.alphaBlend(fg, bg);
+/// `contrast`/`flatten` now live in `test/support/wcag_contrast.dart` --
+/// shared with `hud_sky_test.dart`'s worst-case veil contrast check, so the
+/// WCAG formula exists exactly once rather than as two copies that could
+/// silently drift apart.
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

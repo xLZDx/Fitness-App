@@ -25,6 +25,9 @@
 library;
 
 import 'dart:io';
+import 'dart:math' as math;
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -120,6 +123,181 @@ abstract final class HudSky {
 
   /// `transition: opacity 1.6s ease`.
   static const Duration crossfade = Duration(milliseconds: 1600);
+
+  /// Raw top-45%-of-frame 95th-percentile luminance (Rec.709, 0..255) for
+  /// each bundled scene, measured directly against these exact WebP files --
+  /// not a synthetic worst-case. Source of the accessibility BLOCKER this
+  /// closes: an accessibility review's worst-case contrast calculation
+  /// assumed a pure-white photo, which reads as a synthetic edge case; this
+  /// is what the app's own ten shipped backgrounds actually measure in the
+  /// zone the HUD draws status text over. Full per-image mean/p95/max table
+  /// and measurement method in `DECISION_LOG.md`.
+  static const Map<String, double> _topZoneP95 = <String, double>{
+    '$_dir/01_cliffs_moher.webp': 228.69,
+    '$_dir/02_volcano.webp': 145.08,
+    '$_dir/03_waterfall_dock.webp': 174.97,
+    '$_dir/04_fuji_sakura.webp': 242.26,
+    '$_dir/05_sunset_hills.webp': 172.20,
+    '$_dir/06_greek_terrace.webp': 222.37,
+    '$_dir/07_snow_peak_tarn.webp': 227.69,
+    '$_dir/08_coast_turquoise.webp': 152.33,
+    '$_dir/09_forest_lake.webp': 240.84,
+    '$_dir/10_beach_sunset.webp': 184.28,
+  };
+
+  /// Every bundled scene's [HudBackgroundProfile], derived from
+  /// [_topZoneP95] through the same [HudBackgroundProfile.multiplierForP95]
+  /// formula a locally-sampled user photo (D9) will use -- computed once
+  /// here rather than hand-transcribed a second time, so the two can never
+  /// drift against each other.
+  static final Map<String, HudBackgroundProfile> backgroundProfiles =
+      <String, HudBackgroundProfile>{
+    for (final MapEntry<String, double> e in _topZoneP95.entries)
+      e.key: HudBackgroundProfile(
+        topZoneP95Luminance: e.value,
+        recommendedVeilMultiplier:
+            HudBackgroundProfile.multiplierForP95(e.value),
+      ),
+  };
+
+  /// The profile for whatever [HudSkySelection.imageKey] resolves to.
+  ///
+  /// A user-selected local photo (any key not in [backgroundProfiles], since
+  /// that map only ever holds the ten bundled assets) has no profile yet --
+  /// on-device sampling exists as [sampleBackgroundProfile] but nothing
+  /// calls it, because the background-settings screen that would let a user
+  /// choose a local photo, and the cache that would store the result, do not
+  /// exist yet (D9). The neutral default is the pre-fix behaviour: no
+  /// per-image boost, only the phase's own base veil.
+  static HudBackgroundProfile profileFor(Object imageKey) =>
+      backgroundProfiles[imageKey] ?? HudBackgroundProfile.neutral;
+}
+
+/// A background image's measured brightness in the zone the HUD draws status
+/// text over, and the veil multiplier that keeps text readable against it.
+@immutable
+class HudBackgroundProfile {
+  const HudBackgroundProfile({
+    required this.topZoneP95Luminance,
+    required this.recommendedVeilMultiplier,
+  });
+
+  /// 0..255. The 95th percentile, not the mean or the max: robust to a
+  /// single hot pixel (a sun glint) that a max would overreact to, while
+  /// still tracking a genuinely bright region a mean would understate.
+  final double topZoneP95Luminance;
+
+  /// Multiplies [HudSkySelection.veilScale] in [hudVeil], before that
+  /// combined value is clamped to the same 0.55..1.6 range the user-facing
+  /// control already respects -- a bright image cannot itself push the veil
+  /// past the point the design already treats as "the photograph is gone".
+  final double recommendedVeilMultiplier;
+
+  /// No per-image boost -- [hudVeil] behaves exactly as it did before this
+  /// profile system existed.
+  static const HudBackgroundProfile neutral = HudBackgroundProfile(
+    topZoneP95Luminance: 128,
+    recommendedVeilMultiplier: 1.0,
+  );
+
+  /// The formula behind every entry in [HudSky.backgroundProfiles], exposed
+  /// so a locally-sampled user photo computes an identical recommendation,
+  /// not merely a similar one.
+  ///
+  /// Bounds are measured, not guessed: 140 sits just under this app's own
+  /// darkest bundled scene (`02_volcano`, p95 145.08) so it costs nothing;
+  /// 250 sits just under the brightest (`04_fuji_sakura`, p95 242.26) so
+  /// that scene is very nearly at the cap. The 0.45 ceiling on the boost
+  /// itself keeps `veilScale 1.0 * multiplier` under the hard 1.6 clamp
+  /// `hudVeil` already enforces, so the user's own density control always
+  /// keeps some headroom above whatever the image alone earned.
+  static double multiplierForP95(double p95Luminance) {
+    const double baseline = 140.0;
+    const double ceiling = 250.0;
+    const double maxBoost = 0.45;
+    final double t =
+        ((p95Luminance - baseline) / (ceiling - baseline)).clamp(0.0, 1.0);
+    return 1.0 + t * maxBoost;
+  }
+}
+
+/// A one-time, entirely on-device luminance sample of an already-decoded
+/// image's top [topFraction] -- the same zone [HudSky.backgroundProfiles]
+/// measures for the bundled scenes. No network call, no upload: exists so a
+/// user-selected local photo (D9) can get the same
+/// [HudBackgroundProfile.recommendedVeilMultiplier] treatment, computed once
+/// when the photo is picked and cached from there by that future screen,
+/// never re-sampled on every frame or from inside a build method.
+///
+/// [stride] samples every Nth pixel in each dimension rather than every
+/// pixel -- a full 1440-wide top zone is over a million pixels, and this is
+/// a one-time cost the caller controls, not a per-frame one, but there is no
+/// reason to pay for more precision than a percentile estimate needs.
+Future<HudBackgroundProfile> sampleBackgroundProfile(
+  ui.Image image, {
+  double topFraction = 0.45,
+  int stride = 4,
+}) async {
+  final ByteData? bytes =
+      await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+  if (bytes == null) return HudBackgroundProfile.neutral;
+
+  return profileFromRgbaBytes(
+    bytes.buffer.asUint8List(),
+    width: image.width,
+    height: image.height,
+    topFraction: topFraction,
+    stride: stride,
+  );
+}
+
+/// The pure luminance math [sampleBackgroundProfile] runs, pulled out of the
+/// `ui.Image`/`toByteData` decode path so it can be exercised with a
+/// synthetic buffer in a plain unit test. `flutter test` on this host hangs
+/// indefinitely inside `ui.decodeImageFromPixels`/`instantiateImageCodec`
+/// regardless of input (confirmed with isolated diagnostic scripts, well
+/// after the decode itself had already returned and been disposed -- an
+/// environment limitation, not a defect here or a reason to leave this math
+/// untested; see `DECISION_LOG.md`). [pixels] is raw RGBA8888, row-major,
+/// exactly what [ui.ImageByteFormat.rawRgba] produces.
+@visibleForTesting
+HudBackgroundProfile profileFromRgbaBytes(
+  Uint8List pixels, {
+  required int width,
+  required int height,
+  double topFraction = 0.45,
+  int stride = 4,
+}) {
+  if (pixels.isEmpty || width <= 0 || height <= 0) {
+    return HudBackgroundProfile.neutral;
+  }
+
+  final int topRows = math.max(1, (height * topFraction).round());
+
+  final List<double> samples = <double>[];
+  for (int y = 0; y < topRows; y += stride) {
+    for (int x = 0; x < width; x += stride) {
+      final int i = (y * width + x) * 4;
+      if (i + 2 >= pixels.length) continue;
+      final double r = pixels[i].toDouble();
+      final double g = pixels[i + 1].toDouble();
+      final double b = pixels[i + 2].toDouble();
+      // Rec.709 coefficients -- the same ones `saturationFilter` in
+      // `hud_tokens.dart` uses, for one consistent luminance definition
+      // across the design system rather than two.
+      samples.add(0.213 * r + 0.715 * g + 0.072 * b);
+    }
+  }
+  if (samples.isEmpty) return HudBackgroundProfile.neutral;
+
+  samples.sort();
+  final int p95Index =
+      (samples.length * 0.95).floor().clamp(0, samples.length - 1);
+  final double p95 = samples[p95Index];
+  return HudBackgroundProfile(
+    topZoneP95Luminance: p95,
+    recommendedVeilMultiplier: HudBackgroundProfile.multiplierForP95(p95),
+  );
 }
 
 /// What background a screen should show right now.
@@ -187,21 +365,40 @@ class HudSkySelection {
   int get hashCode => Object.hash(phase, photoSet, userPhotoPath, veilScale);
 }
 
-/// The veil gradient for a phase, scaled by the user's density preference.
+/// The veil gradient for a phase, scaled by the user's density preference
+/// AND by how bright this specific picture actually measures.
+///
+/// ## One flat alpha per phase was not enough
+///
+/// Before this, every image assigned to a phase shared that phase's veil
+/// alpha regardless of how bright the actual photograph was -- `day`'s alpha
+/// applied identically to `06_greek_terrace` (top-zone p95 222) and whatever
+/// darker scene might join that phase later. An accessibility review's
+/// worst-case contrast calculation assumed a pure-white photo and was
+/// dismissed as synthetic until it was checked against the ten actual
+/// shipped assets and found realistically reachable -- several genuinely
+/// come within a few percent of pure white in the exact zone the HUD draws
+/// status text over (see `HudSky.backgroundProfiles`). [HudSky.profileFor]
+/// supplies a per-image multiplier on top of the phase's own alpha, so a
+/// bright scene gets more veil without a uniformly darker experience on
+/// every scene assigned to the same phase.
 ///
 /// ## The floor is a safety rule, not a style rule
 ///
 /// The interface is white text on an arbitrary photograph. Below roughly 55% of
 /// the handoff's own alpha, a bright sky puts white-on-white on the screen and
 /// the app stops being readable — including its refusals and its safety copy.
-/// So the density control moves between 0.55× and 1.6×, and asking for less
-/// than that yields the floor rather than the request.
+/// So the combined density (user preference × image multiplier) moves between
+/// 0.55× and 1.6×, and asking for less than that yields the floor rather than
+/// the request.
 ///
 /// The cap exists for the opposite reason and is much less important: past
 /// about 1.6× the photograph is gone and the design is a flat dark screen with
 /// a decoding cost.
 LinearGradient hudVeil(HudTokens tokens, HudSkySelection selection) {
-  final double scale = selection.veilScale.clamp(0.55, 1.6);
+  final double imageMultiplier =
+      HudSky.profileFor(selection.imageKey).recommendedVeilMultiplier;
+  final double scale = (selection.veilScale * imageMultiplier).clamp(0.55, 1.6);
   final List<Color> stops = tokens.veilStops[selection.phase.key]!;
   return LinearGradient(
     begin: Alignment.topCenter,

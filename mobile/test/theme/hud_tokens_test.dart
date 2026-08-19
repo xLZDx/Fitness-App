@@ -131,6 +131,77 @@ void main() {
       expect(HudTokens.light.navBar.cssBlur, HudTokens.light.panel.cssBlur);
       expect(HudTokens.dark.navBar.cssBlur, 30);
       expect(HudTokens.dark.navBar.fill, isNot(HudTokens.dark.panel.fill));
+      expect(HudTokens.light.navBar.fillGradient, isNull,
+          reason: 'light draws no gradient at all here, only dark does');
+    });
+
+    test('the dark nav bar fill is the source gradient, not a flattened value',
+        () {
+      // `Sunset.dc.html:449`:
+      // `linear-gradient(180deg,rgba(26,15,34,.4),rgba(26,15,34,.24))`.
+      // Painting this as a flat `.40` was a confirmed D1 fidelity gap.
+      final LinearGradient? g =
+          HudTokens.dark.navBar.fillGradient as LinearGradient?;
+      expect(g, isNotNull);
+      expect(g!.begin, Alignment.topCenter);
+      expect(g.end, Alignment.bottomCenter);
+      expect(g.colors, hasLength(2));
+      expect((g.colors[0].a * 100).round(), 40);
+      expect((g.colors[1].a * 100).round(), 24);
+      // Same hue both stops -- only the alpha moves.
+      expect(g.colors[0].withValues(alpha: 1.0),
+          g.colors[1].withValues(alpha: 1.0));
+      // fill stays the gradient's top stop, for anything that only reads it.
+      expect(HudTokens.dark.navBar.fill, g.colors[0]);
+    });
+
+    test('no other dark recipe carries a fill gradient', () {
+      // The handoff draws exactly one gradient-filled glass surface. A
+      // gradient turning up anywhere else would be an invention, not a
+      // transcription.
+      final HudTokens t = HudTokens.dark;
+      for (final HudGlass glass in <HudGlass>[
+        t.panel,
+        t.subPanel,
+        t.button,
+        t.chip,
+      ]) {
+        expect(glass.fillGradient, isNull);
+      }
+    });
+
+    test(
+        'a theme transition settles on the light nav bar exactly, not a '
+        'transparent gradient', () {
+      // Confirmed BLOCKER: `Gradient.lerp(a, null, t)` fades the dark bar's
+      // gradient toward transparent instead of toward light's own opaque
+      // flat fill, because Flutter's own `LinearGradient.lerp` treats a
+      // null other side as "scale this gradient down", never as "the other
+      // side's colour". At t=1.0 (a fully settled light theme) the nav bar
+      // must read exactly as `HudTokens.light.navBar` does on its own --
+      // no residual gradient, no residual transparency.
+      final HudTokens settled = HudTokens.dark.lerp(HudTokens.light, 1.0);
+      expect(settled.navBar.fillGradient, isNull);
+      expect(settled.navBar.fill, HudTokens.light.navBar.fill);
+    });
+
+    test(
+        'a theme transition into the dark nav bar snaps its gradient at the '
+        'midpoint, never a half-transparent one', () {
+      // The reverse direction: light -> dark. Before the midpoint the bar
+      // has no gradient (light's own state, snapped); at/after the midpoint
+      // it has dark's real, fully-opaque two-stop gradient -- never a
+      // `Gradient.lerp`-produced fade.
+      final HudTokens beforeMidpoint = HudTokens.light.lerp(HudTokens.dark, 0.4);
+      expect(beforeMidpoint.navBar.fillGradient, isNull);
+      expect(beforeMidpoint.navBar.fill, HudTokens.light.navBar.fill);
+
+      final HudTokens atMidpoint = HudTokens.light.lerp(HudTokens.dark, 0.5);
+      final LinearGradient? g =
+          atMidpoint.navBar.fillGradient as LinearGradient?;
+      expect(g, isNotNull);
+      expect(g!.colors, HudTokens.dark.navBar.fillGradient!.colors);
+      expect(atMidpoint.navBar.fill, HudTokens.dark.navBar.fill);
     });
   });
 
