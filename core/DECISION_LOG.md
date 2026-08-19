@@ -17216,3 +17216,44 @@ issues and 10 pre-existing `test/` issues, none touched, none new); `flutter tes
 at D1 + 9 new: keyboard activation x4, `topHighlight` x1, nav-tab floor x1, `HudSettingRow` x2,
 crossfade-revert regression x1). `pytest scripts/`, `tsc`, `jest` NOT RUN -- no Python, no TypeScript
 and no `firestore.rules` changed. PUSH: NOT PERFORMED.
+
+---
+
+## 2026-08-19 -- The Marketing R&D Decision Pack blocker is resolved: copied in, not read around
+
+The previous entry surfaced a structural blocker rather than working around it: Turn 2's mandate
+governs several MRD-numbered gates by a "Marketing R&D Decision Pack v1.0" that lived only as an
+**untracked** file in the sibling worktree `D:/Repo/Fitness_App` (`marketing/site-prototype-2026-08-19`,
+`reports/SPTR_MARKETING_RND_DECISION_PACK_2026-08-19.html`) -- out of reach without crossing this
+workspace's one-session-one-project rule. Put to the operator directly rather than assumed; the answer
+was to copy it in, not to authorize reading the sibling worktree as an ongoing arrangement.
+
+Read once from the sibling worktree (read-only) to confirm what it actually is before copying: `v1.0
+-- frozen`, dated 2026-08-19, `xLZDx/Fitness-App @ 78b24dc`. It is genuinely the document Turn 2's
+mandate describes -- claim-class doctrine (`EXISTS_NOW`/`COMMITTED_BEFORE_MARKETING`/
+`CONCEPT_HYPOTHESIS`/`NEVER_CLAIM`), the exact forbidden-language examples ("protects your knees",
+"SPTR spots you", unqualified "counts your reps"), the MRD-01..07 backlog with status against that
+tree, and an explicit refusal to select a winning marketing hero -- matching the mandate's own
+instruction not to make that call here either.
+
+Copied via filesystem `cp`, not retyped through a text tool, specifically to avoid a transcription
+risk in a document whose own content is full of em dashes, curly quotes and arrows (`—`, `→`, `×`) --
+a tool that reflows or re-encodes any of those would silently produce a DIFFERENT document from the
+one that was actually reviewed and frozen. Verified byte-identical by MD5 both sides
+(`b6c5e6ec377adc866456ef0ea6026580`) after the copy, not merely assumed from the `cp` exit code.
+
+Now tracked at `reports/SPTR_MARKETING_RND_DECISION_PACK_2026-08-19.html` in this worktree, this
+commit. The sibling worktree was not written to, and nothing else in it was touched. This unblocks
+every MRD-numbered gate in Turn 2's mandate; the copy's own content is the source of truth for that
+work, not this paragraph's summary of it -- read the file directly before acting on any MRD-numbered
+requirement.
+
+One divergence worth flagging rather than silently reconciling: this pack's §06 states
+`WorkoutLogEntry` already carries `exerciseId` and that 1,384 of 1,887 exercises already carry
+`equipmentId`, making Level-1 equipment-type memory "a query, not a migration" -- verified against
+`xLZDx/Fitness-App @ 78b24dc`, a **different repository** from this one (`fitness_app` /
+`_wt-formcoach`). Those specific counts and that specific commit are not claims about this repo's own
+tree and must be re-verified here, not assumed, before any MRD-01/Level-1 implementation gate begins.
+
+Suites: none run -- this entry is a copy-in and a decision-log record, no source changed. PUSH: NOT
+PERFORMED.
