@@ -1,0 +1,495 @@
+<title>R-D1 Hardening Gate</title>
+<style>
+  :root {
+    --bg: #F3F1EA; --surface: #FFFFFF; --sunk: #EAE6DA; --ink: #201C15;
+    --muted: #6E6656; --rule: #DDD7C6; --accent: #8A5A1F; --accent-soft: #EFE1C6;
+    --done: #2E7A50; --done-bg: #DCEEE1;
+    --pending: #A96F0C; --pending-bg: #F5E7C7;
+    --blocked-c: #B23F2F; --blocked-bg: #F5DAD2;
+    --deferred: #6E6656; --deferred-bg: #E9E4D5;
+    --shadow: 0 1px 2px rgba(32,28,21,0.06), 0 8px 24px -12px rgba(32,28,21,0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15130F; --surface: #1E1B15; --sunk: #262219; --ink: #ECE7DA;
+      --muted: #A79C86; --rule: #362F23; --accent: #E0A857; --accent-soft: #362A15;
+      --done: #7FCB9C; --done-bg: #16281E;
+      --pending: #E3B85F; --pending-bg: #2E2313;
+      --blocked-c: #E4796A; --blocked-bg: #2E1712;
+      --deferred: #A79C86; --deferred-bg: #262219;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15130F; --surface: #1E1B15; --sunk: #262219; --ink: #ECE7DA;
+    --muted: #A79C86; --rule: #362F23; --accent: #E0A857; --accent-soft: #362A15;
+    --done: #7FCB9C; --done-bg: #16281E;
+    --pending: #E3B85F; --pending-bg: #2E2313;
+    --blocked-c: #E4796A; --blocked-bg: #2E1712;
+    --deferred: #A79C86; --deferred-bg: #262219;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 15.5px; line-height: 1.62; margin: 0; padding: 0 22px 100px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  .serif { font-family: ui-serif, Georgia, "Iowan Old Style", serif; }
+  .mono, code, .id, .path { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; }
+
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  header.masthead { padding: 56px 0 26px; border-bottom: 4px solid var(--accent); }
+  .eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 6px 20px; margin-bottom: 18px; }
+  h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 14px;
+    font-weight: 700; text-wrap: balance; }
+  .standfirst { font-size: 16.5px; color: var(--muted); max-width: 74ch; margin: 0; }
+
+  .pushbar { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700;
+    letter-spacing: 0.03em; padding: 7px 13px; border-radius: 4px; }
+  .badge.go { background: var(--done-bg); color: var(--done); }
+  .badge.nopush { background: var(--blocked-bg); color: var(--blocked-c); }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+
+  section { padding: 40px 0 6px; border-bottom: 1px solid var(--rule); }
+  section:last-of-type { border-bottom: none; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px; }
+  .sec-tag { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11.5px; color: var(--accent);
+    font-weight: 700; padding-top: 5px; letter-spacing: 0.04em; }
+  h2 { font-size: clamp(20px, 2.6vw, 27px); line-height: 1.15; margin: 0; font-weight: 700;
+    letter-spacing: -0.01em; text-wrap: balance; }
+  h3 { font-size: 15.5px; margin: 22px 0 9px; font-weight: 700; }
+  p { margin: 0 0 13px; max-width: 78ch; }
+  ul, ol { margin: 0 0 13px; padding-left: 21px; max-width: 78ch; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--muted); }
+  strong { font-weight: 700; }
+
+  .stats { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+    border-radius: 6px; overflow: hidden; margin-bottom: 6px; grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 720px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat { background: var(--surface); padding: 18px 18px 16px; }
+  .stat .n { font-size: 27px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .stat .n small { font-size: 15px; font-weight: 600; color: var(--muted); }
+  .stat .l { font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+    margin-top: 4px; }
+
+  .cls { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 3px; font-weight: 700; white-space: nowrap; }
+  .cls .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .cls.done { background: var(--done-bg); color: var(--done); }
+  .cls.pending { background: var(--pending-bg); color: var(--pending); }
+  .cls.blocked { background: var(--blocked-bg); color: var(--blocked-c); }
+  .cls.deferred { background: var(--deferred-bg); color: var(--deferred); }
+
+  .scroll { overflow-x: auto; margin-bottom: 16px; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 560px; }
+  th { text-align: left; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted);
+    border-bottom: 1.5px solid var(--ink); padding: 0 12px 8px 0; font-weight: 700; }
+  td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  td code { font-size: 12px; background: var(--sunk); padding: 1px 5px; border-radius: 3px; }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .box { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface);
+    padding: 16px 19px; margin: 0 0 16px; max-width: 82ch; border-radius: 0 6px 6px 0; }
+  .box .lbl { display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .box.done { border-left-color: var(--done); } .box.done .lbl { color: var(--done); }
+  .box.blocked { border-left-color: var(--blocked-c); } .box.blocked .lbl { color: var(--blocked-c); }
+  .box p:last-child { margin-bottom: 0; }
+
+  .finding-list { display: grid; gap: 10px; margin-bottom: 6px; }
+  .finding { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+    padding: 13px 16px; display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: baseline; }
+  .finding .f-cls { grid-row: 1 / 3; align-self: start; margin-top: 2px; }
+  .finding .f-title { font-size: 14px; font-weight: 650; }
+  .finding .f-note { font-size: 13px; color: var(--muted); grid-column: 2; }
+
+  .residual { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+    padding: 16px 19px; margin-bottom: 12px; }
+  .residual .r-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .residual .r-id { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--accent);
+    font-weight: 700; }
+  .residual .r-title { font-size: 15px; font-weight: 650; }
+  .residual p:last-child { margin-bottom: 0; }
+  .residual p { font-size: 13.5px; }
+
+  footer { padding: 34px 0 0; color: var(--muted); font-size: 13px; }
+  footer .src { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11.5px; word-break: break-word; }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow">
+    <span>SPTR — редизайн Fitness Glass Phone</span>
+    <span>Отчёт о закрытии гейта</span>
+    <span>2026-08-19</span>
+    <span class="mono">formcoach/gates-a-c @ 0a98c2e</span>
+  </div>
+  <h1 class="serif">Закрытие hardening-гейта R-D1</h1>
+  <p class="standfirst">Закрыты все четыре остаточных пункта, проведён независимый ревью-раунд из
+  четырёх агентов, четыре подтверждённых замечания исправлены и проверены мутационным тестированием,
+  утверждение о контрасте по изображению не заявлено, а реально вычислено, и одна предпосылка MRD
+  перепроверена по реальным данным этого дерева. Отдельно: реальный блокер, вынесенный на поверхность,
+  а не обойдённый молча.</p>
+  <div class="pushbar">
+    <span class="badge go"><span class="dot"></span>ГО: РАЗРЕШЕНО — автономное выполнение в силе</span>
+    <span class="badge nopush"><span class="dot"></span>ПУШ: НЕ ВЫПОЛНЕН — только локальные коммиты</span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>_wt-formcoach</dd>
+    <dt>Папка</dt><dd>D:\Repo\_wt-formcoach</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; formcoach/gates-a-c @ 0a98c2e</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <div class="sec-head"><span class="sec-tag">00</span><h2 class="serif">Цифры</h2></div>
+  <div class="stats">
+    <div class="stat"><div class="n">4<small>/4</small></div><div class="l">Остатков R-D1 закрыто</div></div>
+    <div class="stat"><div class="n">4<small>/4</small></div><div class="l">Подтверждённых замечаний исправлено</div></div>
+    <div class="stat"><div class="n">3093<small>/3093</small></div><div class="l">flutter test проходит</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">Регресс-тестов, проверенных мутациями</div></div>
+  </div>
+  <p style="margin-top:14px">Два локальных коммита за этот проход: <code>f40e5cc</code> (сам гейт — код,
+  тесты, исправления замечаний ревью) и <code>0a98c2e</code> (блокер по дизайн-хендоффу и перепроверка
+  MRD-01, только decision-log). Оба поверх <code>c020e96</code>. Полное повествование по каждому
+  решению — в <code>core/DECISION_LOG.md</code>; эта страница его резюмирует, а не заменяет.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">01</span><h2 class="serif">R-D1-01 – R-D1-04, каждый закрыт с доказательствами</h2></div>
+
+  <div class="residual">
+    <div class="r-head"><span class="r-id">R-D1-01</span><span class="r-title">Переполнение HudRingLabel при крупном системном масштабе текста</span></div>
+    <p>Сначала воспроизведено: подпись в центре кольца 78px давала реальное переполнение
+    <code>RenderFlex</code> — 11px при масштабе 2.0x и 55px при 3.0x. Исправлено ограничением
+    центрального содержимого долей собственного диаметра кольца (выводится для каждого экземпляра из
+    <code>radius</code>/<code>size</code>, а не задаётся константой) и оборачиванием в
+    <code>FittedBox(fit: BoxFit.scaleDown)</code>. При 1.0x любая текущая подпись уже помещается, так
+    что здесь это не влияет ни на что.</p>
+    <p>Регресс проверен при 1.0/1.3/1.5/2.0/3.0x через <code>tester.getRect</code> — не
+    <code>tester.getSize</code>, который <code>RenderFittedBox</code> делает тавтологичным: он
+    раскладывает дочерний элемент без ограничений и применяет вписывание как чисто отрисовочное
+    преобразование, которое сообщаемый размер никогда не отражает. Проверено мутацией: откат к
+    исходному <code>Center(child: child)</code> ломает оба новых теста.</p>
+    <p><strong>Компромисс по доступности назван, а не спрятан:</strong> граница задана в px, а не в
+    <code>textScale</code>, поэтому пользователь, запросивший крупный масштаб именно ради числа в этом
+    кольце, получает ограниченный, непропорциональный результат, как только подпись превышает границу.
+    Настоящее дизайн-решение (увеличить кольцо или вынести подпись за его геометрию) выходит за рамки
+    hardening-исправления и оставлено на будущий проход — комментарий в коде теперь так и говорит,
+    вместо того чтобы подразумевать пропорциональность исправления. Что гарантировано и проверено
+    тестом: результат никогда не отрисовывается меньше базового значения при 1.0x и никогда снова не
+    превышает границу, вызвавшую исходный сбой.</p>
+  </div>
+
+  <div class="residual">
+    <div class="r-head"><span class="r-id">R-D1-02</span><span class="r-title">Реальный градиент навбара .40→.24 и обнаруженный им баг lerp</span></div>
+    <p>Измерено как достаточно дешёвое, чтобы реализовать, а не фиксировать как отклонение: заливка
+    градиентом и плоская заливка — один и тот же GPU-примитив рядом с уже существующим
+    <code>BackdropFilter</code> на этой поверхности. Подключено — и тут дизайн-ревьюер нашёл под этим
+    реальный BLOCKER.</p>
+    <p><strong>Подтверждено, независимо перепроверено по исходникам Flutter SDK, исправлено:</strong>
+    наивный <code>Gradient.lerp(a, b, t)</code> внутри <code>HudGlass.lerp()</code> делает не то, что
+    подразумевает название, когда одна из сторон — <code>null</code> (это все рецепты, кроме тёмного
+    навбара). Прочитано напрямую из <code>LinearGradient.lerp</code> (Flutter 3.27.1 stable,
+    <code>packages/flutter/lib/src/painting/gradient.dart:495-504</code>): lerp с одной пустой стороной
+    возвращает прозрачную КОПИЮ непустой стороны, а не собственный плоский цвет другой стороны. При
+    живом переключении тёмная→светлая тема это отрисовывало навбар полностью прозрачным в конце
+    перехода — реальный дефект при каждом переключении темы, а не гипотетический.</p>
+    <p>Исправлено фиксацией (snap) <code>fillGradient</code> (и <code>fill</code> синхронно, только
+    когда градиент действительно задействован) в середине перехода — тот же паттерн, что уже
+    использовался для <code>brightness</code> несколькими строками выше по той же причине: нет
+    осмысленного промежуточного состояния. Два новых теста фиксируют оба направления перехода;
+    проверено мутацией — откат к наивному <code>Gradient.lerp</code> ломает оба.</p>
+  </div>
+
+  <div class="residual">
+    <div class="r-head"><span class="r-id">R-D1-03</span><span class="r-title">У HudScrollFade не было переключателя качества</span></div>
+    <p>Следуя явному указанию мандата не изобретать вторую систему настроек производительности,
+    <code>HudScrollFade</code> теперь проверяет существующий переключатель
+    <code>HudQuality.frostedOf</code> и пропускает свой <code>ShaderMask</code> при пониженном
+    качестве — тот же механизм, что уже используется собственным переключателем frost у
+    <code>HudSurface</code>.</p>
+  </div>
+
+  <div class="residual">
+    <div class="r-head"><span class="r-id">R-D1-04</span><span class="r-title">Адаптивная плотность вуали по фону — и вычисленное число контраста, а не предполагаемое</span></div>
+    <p>Предыдущий ревью-раунд измерил реальную яркость по всем десяти встроенным фонам и подтвердил, что
+    близкий к белому худший случай достижим на реальных отгружаемых ассетах, отложив исправление по
+    изображению как отдельное дизайн-решение. Этот гейт — то самое решение:
+    <code>HudBackgroundProfile</code>, выведенный из измеренной 95-й перцентили яркости верхней зоны
+    каждой сцены, усиливает вуаль для более ярких сцен.</p>
+    <p>MAJOR-замечание a11y-ревьюера по этому остатку было точным и верным: комментарий к формуле
+    ссылался на <code>DECISION_LOG.md</code> за выводом, а там ничего не было. Закрыто написанием
+    реальных доказательств — см. §04 ниже — а не смягчением утверждения.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">02</span><h2 class="serif">Ревью-раунд из четырёх агентов</h2></div>
+  <p>a11y-architect, flutter-reviewer/design-fidelity, performance-optimizer и functional-test-reviewer
+  независимо просмотрели одни и те же изменённые файлы, не видя выводов друг друга, с явным указанием
+  занять позицию адвоката дьявола. Подтверждённые замечания и что с каждым произошло:</p>
+  <div class="finding-list">
+    <div class="finding"><span class="f-cls cls done"><span class="dot"></span>исправлено</span>
+      <span class="f-title">BLOCKER — HudGlass.lerp() затухал градиент навбара до прозрачности вместо плоской заливки устоявшейся темы</span>
+      <span class="f-note">Независимо перепроверено по исходникам Flutter SDK перед исправлением. См. R-D1-02 выше. Проверено мутацией.</span></div>
+    <div class="finding"><span class="f-cls cls done"><span class="dot"></span>исправлено</span>
+      <span class="f-title">BLOCKER — регресс-тест FittedBox был тавтологичным</span>
+      <span class="f-note">Сравнивал сообщаемый размер виджета с самим собой через FittedBox, который отрисовочное-only преобразование никогда не меняет. Переписан на чтение tester.getRect (реальные глобальные отрисованные границы).</span></div>
+    <div class="finding"><span class="f-cls cls done"><span class="dot"></span>исправлено</span>
+      <span class="f-title">MAJOR — единственный тест sampleBackgroundProfile в наборе вообще не вызывал тестируемую функцию</span>
+      <span class="f-note">Чистая математика яркости/перцентиля теперь вынесена в profileFromRgbaBytes (@visibleForTesting), запускаемую на синтетических буферах без пути декодирования ui.Image, который вешает flutter test на этом хосте. Шесть новых тестов, включая один, фиксирующий точные коэффициенты Rec.709 против мутанта Rec.601/равных весов.</span></div>
+    <div class="finding"><span class="f-cls cls done"><span class="dot"></span>исправлено</span>
+      <span class="f-title">MAJOR — процитированные доказательства формулы вуали в DECISION_LOG.md не существовали</span>
+      <span class="f-note">Комментарий к коду ссылался на таблицу измерений и вывод, которых никогда не было написано. Закрыто написанием их — полная таблица и вычисленный контраст, §04.</span></div>
+  </div>
+  <h3>Задокументировано, но не исправлено в коде (оба — неизмеренная стоимость / продуктовые решения)</h3>
+  <div class="finding-list">
+    <div class="finding"><span class="f-cls cls deferred"><span class="dot"></span>задокументировано</span>
+      <span class="f-title">MAJOR (по выводу) — тот же lerp() также срывает мемоизацию HudGlass.backdropFilter во время живого перехода темы</span>
+      <span class="f-note">Не воспроизведено как измеренное подтормаживание — стоимость ~200мс раз за переключение. Комментарий теперь ограничивает гарантию кэширования двумя статическими синглтонами темы, а не экземплярами, порождёнными lerp.</span></div>
+    <div class="finding"><span class="f-cls cls deferred"><span class="dot"></span>задокументировано</span>
+      <span class="f-title">MAJOR — ограничение FittedBox у HudRing меняет сбой на потолок читаемости при экстремальном масштабе текста</span>
+      <span class="f-note">См. R-D1-01 выше. Проверено регресс-тестом (никогда не меньше базового 1.0x, никогда не превышает границу); собственно компромисс роста-от-масштаба — открытое дизайн-решение.</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">03</span><h2 class="serif">Журнал мутационного тестирования</h2></div>
+  <p>Каждый новый регресс-тест в этом проходе проверен одинаково: откатить продакшн-исправление к
+  состоянию до фикса, убедиться, что тест падает (УБИТ), восстановить исправление, убедиться, что снова
+  зелёный.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Тестируемое исправление</th><th>Применённая мутация</th><th>Результат</th></tr></thead>
+      <tbody>
+        <tr><td>Фиксация градиента в HudGlass.lerp()</td><td>Откат к наивному <code>Gradient.lerp(a, b, t)</code></td><td>2 новых теста <strong>УБИЛИ</strong> его</td></tr>
+        <tr><td>Граница FittedBox у HudRing</td><td>Откат к исходному <code>Center(child: child)</code></td><td>2 новых теста <strong>УБИЛИ</strong> его</td></tr>
+        <tr><td>Веса Rec.709 в profileFromRgbaBytes</td><td>Заменены на равные веса (0.5/0.3/0.2)</td><td>1 новый тест <strong>УБИЛ</strong> его — буферы белый/чёрный не различают веса, буфер смешанного цвета — различает</td></tr>
+        <tr><td>Регресс-кейс контраста вуали</td><td><code>multiplierForP95</code> зафиксирован на константе <code>1.0</code></td><td>1 новый тест <strong>УБИЛ</strong> его — вычислено 4.16:1, точное совпадение с ручным расчётом</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">04</span><h2 class="serif">Формула вуали, теперь реально доказанная</h2></div>
+  <p>Реальное измерение яркости через Pillow (яркость Rec.709, верхние 45% кадра — зона, которую дизайн
+  резервирует под текст статуса/имени/приветствия) по всем десяти встроенным сценам:</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Сцена</th><th class="num">mean</th><th class="num">p95</th><th class="num">max</th></tr></thead>
+      <tbody>
+        <tr><td><code>01_cliffs_moher.webp</code></td><td class="num">185.23</td><td class="num">228.69</td><td class="num">253.14</td></tr>
+        <tr><td><code>02_volcano.webp</code></td><td class="num">103.28</td><td class="num">145.08</td><td class="num">227.63</td></tr>
+        <tr><td><code>03_waterfall_dock.webp</code></td><td class="num">116.86</td><td class="num">174.97</td><td class="num">251.27</td></tr>
+        <tr><td><code>04_fuji_sakura.webp</code></td><td class="num">210.91</td><td class="num">242.26</td><td class="num">253.85</td></tr>
+        <tr><td><code>05_sunset_hills.webp</code></td><td class="num">123.75</td><td class="num">172.20</td><td class="num">215.44</td></tr>
+        <tr><td><code>06_greek_terrace.webp</code></td><td class="num">193.07</td><td class="num">222.37</td><td class="num">254.14</td></tr>
+        <tr><td><code>07_snow_peak_tarn.webp</code></td><td class="num">185.21</td><td class="num">227.69</td><td class="num">253.56</td></tr>
+        <tr><td><code>08_coast_turquoise.webp</code></td><td class="num">101.96</td><td class="num">152.33</td><td class="num">218.72</td></tr>
+        <tr><td><code>09_forest_lake.webp</code></td><td class="num">162.67</td><td class="num">240.84</td><td class="num">255.00</td></tr>
+        <tr><td><code>10_beach_sunset.webp</code></td><td class="num">116.59</td><td class="num">184.28</td><td class="num">244.31</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:14px"><code>multiplierForP95</code>: <code>baseline=140</code> (ниже любой
+  измеренной p95, поэтому усиление получает каждая сцена), <code>ceiling=250</code> (чуть выше самой
+  яркой измеренной p95), <code>maxBoost=0.45</code> — изначально выбран эвристически, без вычисленной
+  цели по контрасту, и это ровно тот пробел, который назвал a11y-ревьюер. Теперь обоснован задним
+  числом вычисленным контрастом WCAG 2.1 по результату с вуалью (гамма-корректная формула, общая с уже
+  существующими проверками контраста токенов в <code>app_semantic_colors_test.dart</code>):</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Сценарий</th><th>Фаза</th><th>Фон</th><th>Масштаб</th><th class="num">Контраст</th></tr></thead>
+      <tbody>
+        <tr><td>Регресс-кейс, без усиления (поведение до фикса)</td><td>рассвет (.44 база)</td><td>теоретический чистый белый (255)</td><td class="num">1.00x</td><td class="num"><strong>4.16:1 — не проходит AA</strong></td></tr>
+        <tr><td>Регресс-кейс, с усилением</td><td>рассвет (.44 база)</td><td>теоретический чистый белый (255)</td><td class="num">1.45x</td><td class="num">10.21:1</td></tr>
+        <tr><td>Реальный ассет, самая плотная фаза</td><td>день (.56 база)</td><td>04_fuji_sakura.webp (p95 242.26)</td><td class="num">1.42x</td><td class="num">17.20:1</td></tr>
+        <tr><td>Реальный ассет, самая слабая фаза</td><td>рассвет (.44 база)</td><td>04_fuji_sakura.webp</td><td class="num">1.42x</td><td class="num">10.02:1</td></tr>
+        <tr><td>Реальный ассет, вторичный текст (двухэтапное смешение)</td><td>день (.56 база)</td><td>04_fuji_sakura.webp</td><td class="num">1.42x</td><td class="num">11.30:1</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:14px">Все пять строк утверждаются в группе <code>worst-case veil contrast
+  (WCAG)</code> файла <code>hud_sky_test.dart</code> против порога 4.5:1 (WCAG AA, текст обычного
+  размера). Первая строка проверена мутацией — см. §03. <strong>Чего это НЕ утверждает:</strong>
+  соответствие WCAG на каждом экране, начертании и размере, которые будущий гейт нарисует поверх фона —
+  только <code>textPrimary</code>/<code>textSecondary</code> на двух вычисленных здесь крайних фазах.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">05</span><h2 class="serif">Предпосылка MRD-01, перепроверенная по этому дереву</h2></div>
+  <div class="box done">
+    <span class="lbl">Подтверждено</span>
+    <p>Marketing Decision Pack утверждает, что <code>WorkoutLogEntry</code> уже несёт
+    <code>exerciseId</code>, а 1384 из 1887 упражнений уже несут <code>equipmentId</code> — из-за чего
+    memory-функция уровня 1 по типу оборудования становится «запросом, а не миграцией». Эти цифры были
+    вычислены по <em>другому</em> репозиторию (<code>xLZDx/Fitness-App @ 78b24dc</code>) и не подлежали
+    доверию здесь без перепроверки.</p>
+    <p>Измерено напрямую по реальному отгружаемому ассету этого дерева
+    (<code>assets/data/exercises_vendor.json</code>, <code>python3</code> + <code>json.load</code>, в
+    этой сессии): <strong>1887 строк, 1384 с непустым <code>equipmentId</code></strong> — почти точное
+    совпадение с цифрами из пакета. В этой кодовой базе нет понятия пользовательского/кастомного
+    упражнения, поэтому любой <code>exerciseId</code>, который может нести запись лога, ведёт либо в
+    каталог поставщика, либо в AI-сгенерированное упражнение, по построению привязанное к id
+    оборудования. Вес хранится как единый канонический <code>weightKg</code>, без неоднозначности
+    единиц измерения.</p>
+  </div>
+  <div class="box blocked">
+    <span class="lbl">Отмечено, а не тихо согласовано</span>
+    <p>Комментарий к коду в <code>equipment_models.dart</code> утверждает, что <code>equipmentId</code>
+    равен null для «всех 1899» записей закупленной библиотеки, объясняя это тем, что метаданные
+    поставщика — только свободный текст. Это устарело относительно измеренных 1384/1887 — либо гейт
+    сопоставления, на который он ссылается, уже прошёл с момента написания комментария, либо он описывает
+    другой, больший срез данных. Не отредактировано в этом проходе (менять его, не зная, какое из
+    объяснений верно, рискует заменить одно устаревшее утверждение другим); отмечено для того, кто
+    следующим коснётся этого файла.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">06</span><h2 class="serif">Блокер, остановивший работу над экранами — нужно решение оператора</h2></div>
+  <div class="box blocked">
+    <span class="lbl">Обнаружено</span>
+    <p>Мандат требует прочитать экранно-специфичные прототипы дизайн-хендоффа (<code>*.dc.html</code>)
+    перед сборкой D2 Home и далее. Они недоступны в этой сессии. Комментарии в
+    <code>hud_tokens.dart</code>/<code>hud_metric.dart</code>/<code>hud_sky.dart</code> цитируют точные
+    значения из именованных файлов (<code>Sunset.dc.html:449</code>,
+    <code>design_handoff_fitness_hud/CLAUDE.md</code>), которые дали токены дизайн-системы D0/D1 —
+    тщательный поиск в этой сессии (<code>Glob</code> по <code>**/design_handoff*/**</code> и
+    <code>**/*.dc.html</code> по всему <code>D:\Repo</code>; <code>grep</code> по decision log и
+    планам; <code>find</code> по <code>D:\Repo</code>, <code>D:\Temp</code>, <code>C:\Users</code>) не
+    дал результатов.</p>
+    <p>Значения, уже транскрибированные в комментарии кода D0/D1, остаются надёжными — они читались и
+    цитировались, когда источник был доступен, скорее всего через вложение в переписке в более ранней
+    сессии, а не через постоянный путь в репозитории. Но для D2 Home, D3 Workouts, D4 Scanner, D5–D10
+    ничего не транскрибировано. Строить что-либо из этого сейчас означало бы выдумывать вёрстку и текст
+    и подписывать их «по хендоффу» — тот же класс ошибки, который Stop-hook уже поймал один раз в этой
+    сессии для обычного пути ссылки. Не выполнено.</p>
+    <p><strong>Нужно решение:</strong> либо заново приложить или указать путь к хендоффу для этой
+    сессии, либо явно разрешить проектировать D2 и далее по существующей системе токенов D1 и
+    продуктовому суждению — с явной пометкой, что это не транскрипция.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">07</span><h2 class="serif">Состояние сборки</h2></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Проверка</th><th>Результат</th><th>Примечания</th></tr></thead>
+      <tbody>
+        <tr><td><code>flutter analyze</code></td><td>Чисто</td><td>Те же 6 ранее существовавших замечаний в <code>lib/</code> + 10 в <code>test/</code>, что и на прошлом гейте — ничего не тронуто, ничего нового.</td></tr>
+        <tr><td><code>flutter test</code></td><td class="num">3093 / 3093 проходит</td><td>База 3062 на прошлом гейте D1; +31 чистого прироста за этот проход по четырём затронутым наборам.</td></tr>
+        <tr><td>Проверка мутациями</td><td>5 целевых мутантов</td><td>См. §03. Каждый откачен, подтверждён как УБИТ, восстановлен.</td></tr>
+        <tr><td><code>pytest</code> / <code>tsc</code> / <code>jest</code></td><td>Не запускались</td><td>Python, TypeScript и <code>firestore.rules</code> в этом проходе не менялись.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <p>Два локальных коммита за этот проход поверх <code>c020e96</code>: <code>f40e5cc</code> (код, тесты
+  и исправления замечаний ревью гейта) и <code>0a98c2e</code> (блокер по дизайн-хендоффу и перепроверка
+  MRD-01). Полное повествование, каждая ссылка на источник и полные таблицы измерений/выводов — в
+  <code>core/DECISION_LOG.md</code>, который эта страница резюмирует, а не заменяет.
+  <strong>ПУШ: НЕ ВЫПОЛНЕН</strong> — ничего не покинуло эту машину.</p>
+</footer>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

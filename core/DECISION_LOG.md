@@ -17513,3 +17513,24 @@ UI surface it would appear on, which runs into the same design-handoff blocker a
 beyond reusing existing D1 HUD tokens on a non-prototyped layout.
 
 Suites: none -- data verification only, no source changed. PUSH: NOT PERFORMED.
+
+---
+
+## 2026-08-19 -- R-D1 hardening gate evidence report, published RU+EN
+
+The operator asked directly where the evidence report was, per this project's own house format
+(review findings/audits/status summaries get a Russian + English HTML pair, on disk and published as
+Artifacts, with a copy-page button and a provenance block). It had not been produced for the R-D1
+hardening gate commits (`f40e5cc`, `0a98c2e`) despite qualifying -- an omission, not a refusal.
+
+Written now: `reports/r_d1_hardening_gate_2026-08-19.{ru.,}html`, reusing this project's existing
+report token system (`reports/program_status_2026-08-19.html`'s palette/type/component set) rather
+than inventing a new one. Covers the four R-D1 residuals with their evidence, the four-agent review
+round's confirmed findings and disposition, the mutation-testing ledger, the full veil
+measurement/derivation/contrast tables from the prior entry, the MRD-01 re-verification, and the
+design-handoff sourcing blocker -- all as already recorded in `DECISION_LOG.md`, restated here in the
+mandated house format rather than as new claims. `report_conform.py --check` confirms every report in
+the directory, including these two, carries the mandated provenance block. Published via the Artifact
+tool; links given to the operator in-chat.
+
+Suites: none -- report authoring only, no source changed. PUSH: NOT PERFORMED.

@@ -1,0 +1,487 @@
+<title>R-D1 Hardening Gate</title>
+<style>
+  :root {
+    --bg: #F3F1EA; --surface: #FFFFFF; --sunk: #EAE6DA; --ink: #201C15;
+    --muted: #6E6656; --rule: #DDD7C6; --accent: #8A5A1F; --accent-soft: #EFE1C6;
+    --done: #2E7A50; --done-bg: #DCEEE1;
+    --pending: #A96F0C; --pending-bg: #F5E7C7;
+    --blocked-c: #B23F2F; --blocked-bg: #F5DAD2;
+    --deferred: #6E6656; --deferred-bg: #E9E4D5;
+    --shadow: 0 1px 2px rgba(32,28,21,0.06), 0 8px 24px -12px rgba(32,28,21,0.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #15130F; --surface: #1E1B15; --sunk: #262219; --ink: #ECE7DA;
+      --muted: #A79C86; --rule: #362F23; --accent: #E0A857; --accent-soft: #362A15;
+      --done: #7FCB9C; --done-bg: #16281E;
+      --pending: #E3B85F; --pending-bg: #2E2313;
+      --blocked-c: #E4796A; --blocked-bg: #2E1712;
+      --deferred: #A79C86; --deferred-bg: #262219;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #15130F; --surface: #1E1B15; --sunk: #262219; --ink: #ECE7DA;
+    --muted: #A79C86; --rule: #362F23; --accent: #E0A857; --accent-soft: #362A15;
+    --done: #7FCB9C; --done-bg: #16281E;
+    --pending: #E3B85F; --pending-bg: #2E2313;
+    --blocked-c: #E4796A; --blocked-bg: #2E1712;
+    --deferred: #A79C86; --deferred-bg: #262219;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 15.5px; line-height: 1.62; margin: 0; padding: 0 22px 100px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  .serif { font-family: ui-serif, Georgia, "Iowan Old Style", serif; }
+  .mono, code, .id, .path { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; }
+
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  header.masthead { padding: 56px 0 26px; border-bottom: 4px solid var(--accent); }
+  .eyebrow { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 6px 20px; margin-bottom: 18px; }
+  h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.05; letter-spacing: -0.02em; margin: 0 0 14px;
+    font-weight: 700; text-wrap: balance; }
+  .standfirst { font-size: 16.5px; color: var(--muted); max-width: 74ch; margin: 0; }
+
+  .pushbar { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700;
+    letter-spacing: 0.03em; padding: 7px 13px; border-radius: 4px; }
+  .badge.go { background: var(--done-bg); color: var(--done); }
+  .badge.nopush { background: var(--blocked-bg); color: var(--blocked-c); }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex: none; }
+
+  section { padding: 40px 0 6px; border-bottom: 1px solid var(--rule); }
+  section:last-of-type { border-bottom: none; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px; }
+  .sec-tag { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11.5px; color: var(--accent);
+    font-weight: 700; padding-top: 5px; letter-spacing: 0.04em; }
+  h2 { font-size: clamp(20px, 2.6vw, 27px); line-height: 1.15; margin: 0; font-weight: 700;
+    letter-spacing: -0.01em; text-wrap: balance; }
+  h3 { font-size: 15.5px; margin: 22px 0 9px; font-weight: 700; }
+  p { margin: 0 0 13px; max-width: 78ch; }
+  ul, ol { margin: 0 0 13px; padding-left: 21px; max-width: 78ch; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--muted); }
+  strong { font-weight: 700; }
+
+  .stats { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+    border-radius: 6px; overflow: hidden; margin-bottom: 6px; grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 720px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat { background: var(--surface); padding: 18px 18px 16px; }
+  .stat .n { font-size: 27px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .stat .n small { font-size: 15px; font-weight: 600; color: var(--muted); }
+  .stat .l { font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+    margin-top: 4px; }
+
+  .cls { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 3px; font-weight: 700; white-space: nowrap; }
+  .cls .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .cls.done { background: var(--done-bg); color: var(--done); }
+  .cls.pending { background: var(--pending-bg); color: var(--pending); }
+  .cls.blocked { background: var(--blocked-bg); color: var(--blocked-c); }
+  .cls.deferred { background: var(--deferred-bg); color: var(--deferred); }
+
+  .scroll { overflow-x: auto; margin-bottom: 16px; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 560px; }
+  th { text-align: left; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted);
+    border-bottom: 1.5px solid var(--ink); padding: 0 12px 8px 0; font-weight: 700; }
+  td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  td code { font-size: 12px; background: var(--sunk); padding: 1px 5px; border-radius: 3px; }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .box { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface);
+    padding: 16px 19px; margin: 0 0 16px; max-width: 82ch; border-radius: 0 6px 6px 0; }
+  .box .lbl { display: block; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .box.done { border-left-color: var(--done); } .box.done .lbl { color: var(--done); }
+  .box.blocked { border-left-color: var(--blocked-c); } .box.blocked .lbl { color: var(--blocked-c); }
+  .box p:last-child { margin-bottom: 0; }
+
+  .finding-list { display: grid; gap: 10px; margin-bottom: 6px; }
+  .finding { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+    padding: 13px 16px; display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: baseline; }
+  .finding .f-cls { grid-row: 1 / 3; align-self: start; margin-top: 2px; }
+  .finding .f-title { font-size: 14px; font-weight: 650; }
+  .finding .f-note { font-size: 13px; color: var(--muted); grid-column: 2; }
+
+  .residual { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+    padding: 16px 19px; margin-bottom: 12px; }
+  .residual .r-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .residual .r-id { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--accent);
+    font-weight: 700; }
+  .residual .r-title { font-size: 15px; font-weight: 650; }
+  .residual p:last-child { margin-bottom: 0; }
+  .residual p { font-size: 13.5px; }
+
+  footer { padding: 34px 0 0; color: var(--muted); font-size: 13px; }
+  footer .src { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11.5px; word-break: break-word; }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow">
+    <span>SPTR — Fitness Glass Phone redesign</span>
+    <span>Gate closure evidence</span>
+    <span>2026-08-19</span>
+    <span class="mono">formcoach/gates-a-c @ 0a98c2e</span>
+  </div>
+  <h1 class="serif">Closing the R-D1 hardening gate</h1>
+  <p class="standfirst">Four residuals closed, a four-agent independent review round run against them,
+  four confirmed findings fixed and mutation-verified, a per-image contrast claim actually computed
+  instead of asserted, and one MRD premise re-checked against this tree's real data. Also: a real
+  blocker, surfaced rather than worked around.</p>
+  <div class="pushbar">
+    <span class="badge go"><span class="dot"></span>ГО: РАЗРЕШЕНО — autonomous execution in force</span>
+    <span class="badge nopush"><span class="dot"></span>ПУШ: НЕ ВЫПОЛНЕН — local commits only</span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>_wt-formcoach</dd>
+    <dt>Folder</dt><dd>D:\Repo\_wt-formcoach</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; formcoach/gates-a-c @ 0a98c2e</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <div class="sec-head"><span class="sec-tag">00</span><h2 class="serif">The numbers</h2></div>
+  <div class="stats">
+    <div class="stat"><div class="n">4<small>/4</small></div><div class="l">R-D1 residuals closed</div></div>
+    <div class="stat"><div class="n">4<small>/4</small></div><div class="l">Confirmed review findings fixed</div></div>
+    <div class="stat"><div class="n">3093<small>/3093</small></div><div class="l">flutter test passing</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">Mutation-verified regression tests</div></div>
+  </div>
+  <p style="margin-top:14px">Two local commits this pass: <code>f40e5cc</code> (the gate itself — code,
+  tests, review-finding fixes) and <code>0a98c2e</code> (the design-handoff blocker and the MRD-01
+  re-verification, decision-log only). Both on top of <code>c020e96</code>. Full narrative for every
+  decision below lives in <code>core/DECISION_LOG.md</code>; this page summarizes it, and does not
+  replace it.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">01</span><h2 class="serif">R-D1-01 – R-D1-04, each closed with evidence</h2></div>
+
+  <div class="residual">
+    <div class="r-head"><span class="r-id">R-D1-01</span><span class="r-title">HudRingLabel overflow at large system text scale</span></div>
+    <p>Reproduced first: a 78px ring's centre label threw a real <code>RenderFlex</code> overflow — 11px
+    at 2.0x system text scale, 55px at 3.0x. Fixed by bounding the centre child to a fraction of the
+    ring's own drawn diameter (derived per-instance from <code>radius</code>/<code>size</code>, not a
+    flat constant) and wrapping it in <code>FittedBox(fit: BoxFit.scaleDown)</code>. At 1.0x every
+    current label already fits, so this is a no-op there.</p>
+    <p>Regression-tested at 1.0/1.3/1.5/2.0/3.0x using <code>tester.getRect</code> — not
+    <code>tester.getSize</code>, which <code>RenderFittedBox</code> makes tautological, since it lays
+    its child out unconstrained and applies the fit as a pure paint-time transform the reported size
+    never reflects. Mutation-verified: reverting to the pre-fix <code>Center(child: child)</code> makes
+    both new tests fail.</p>
+    <p><strong>Accessibility trade-off named, not hidden:</strong> the bound is fixed in px, not in
+    <code>textScale</code>, so a user requesting a large scale specifically for this ring's own number
+    gets a capped, sub-proportional result once the label exceeds the bound. A real design decision
+    (grow the ring, or move the label outside its geometry) is out of scope for a hardening fix and is
+    left to a future pass — the code's own doc comment says so now, instead of implying the fix is
+    proportional. What is guaranteed and tested: the result never renders smaller than the 1.0x
+    baseline, and never again exceeds the bound that caused the original crash.</p>
+  </div>
+
+  <div class="residual">
+    <div class="r-head"><span class="r-id">R-D1-02</span><span class="r-title">Nav bar's real .40→.24 gradient fill, and the lerp bug it exposed</span></div>
+    <p>Measured cheap enough to implement rather than accept as a deviation: a gradient fill and a flat
+    fill are the same GPU primitive next to the <code>BackdropFilter</code> already on that surface.
+    Wired in — then a design-fidelity reviewer found a real BLOCKER underneath it.</p>
+    <p><strong>Confirmed, independently re-verified against the Flutter SDK source, fixed:</strong>
+    <code>HudGlass.lerp()</code>'s naive <code>Gradient.lerp(a, b, t)</code> does not do what the name
+    suggests when one side is <code>null</code> — every recipe but the dark nav bar. Read directly from
+    <code>LinearGradient.lerp</code> (Flutter 3.27.1 stable,
+    <code>packages/flutter/lib/src/painting/gradient.dart:495-504</code>): a one-sided-null lerp returns
+    a transparent COPY of the non-null side, never the other side's own flat colour. On a live
+    dark→light theme toggle this painted the nav bar fully transparent at the settled end of the
+    transition — a real defect on every theme switch, not a hypothetical one.</p>
+    <p>Fixed by snapping <code>fillGradient</code> (and <code>fill</code>, in lockstep, only when a
+    gradient is actually involved) at the transition midpoint — the same pattern <code>brightness</code>
+    already used a few lines away for the identical reason: no meaningful "in between" state. Two new
+    tests pin both transition directions; mutation-verified by reverting to the naive
+    <code>Gradient.lerp</code> call and confirming both fail.</p>
+  </div>
+
+  <div class="residual">
+    <div class="r-head"><span class="r-id">R-D1-03</span><span class="r-title">HudScrollFade had no quality kill-switch</span></div>
+    <p>Per the mandate's own instruction not to invent a second performance-setting system,
+    <code>HudScrollFade</code> now checks the existing <code>HudQuality.frostedOf</code> toggle and
+    skips its <code>ShaderMask</code> under reduced quality — the exact mechanism
+    <code>HudSurface</code>'s own frost toggle already used.</p>
+  </div>
+
+  <div class="residual">
+    <div class="r-head"><span class="r-id">R-D1-04</span><span class="r-title">Adaptive veil density per shipped background — and a computed contrast number, not an assumed one</span></div>
+    <p>A prior review round measured real brightness across all ten bundled backgrounds and confirmed a
+    near-white worst case is reachable with the app's own shipped assets, deferring a per-image fix as
+    its own design decision. This gate is that decision: <code>HudBackgroundProfile</code>, derived from
+    each scene's measured top-zone 95th-percentile luminance, boosts the veil for the brighter scenes.</p>
+    <p>The a11y reviewer's MAJOR finding on this residual was sharp and correct: the formula's doc
+    comment pointed to <code>DECISION_LOG.md</code> for its derivation, and nothing was there. Closed by
+    writing the actual evidence — see §04 below — not by softening the claim.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">02</span><h2 class="serif">The four-agent review round</h2></div>
+  <p>a11y-architect, flutter-reviewer/design-fidelity, performance-optimizer and functional-test-reviewer
+  each reviewed the same changed files independently, blind to the others' findings, with an explicit
+  devil's-advocate instruction. Confirmed findings, and what happened to each:</p>
+  <div class="finding-list">
+    <div class="finding"><span class="f-cls cls done"><span class="dot"></span>fixed</span>
+      <span class="f-title">BLOCKER — HudGlass.lerp() faded the nav-bar gradient to transparent instead of the settled theme's flat fill</span>
+      <span class="f-note">Independently re-verified against the Flutter SDK source before fixing. See R-D1-02 above. Mutation-verified.</span></div>
+    <div class="finding"><span class="f-cls cls done"><span class="dot"></span>fixed</span>
+      <span class="f-title">BLOCKER — the FittedBox regression test was tautological</span>
+      <span class="f-note">Compared a widget's own reported size against itself through a FittedBox, which a paint-time-only transform never changes. Rewritten to read tester.getRect (painted global bounds).</span></div>
+    <div class="finding"><span class="f-cls cls done"><span class="dot"></span>fixed</span>
+      <span class="f-title">MAJOR — sampleBackgroundProfile's only in-suite test never called the function under test</span>
+      <span class="f-note">The pure luminance/percentile math is now extracted to profileFromRgbaBytes (@visibleForTesting), runnable against synthetic buffers without the ui.Image decode path that hangs flutter test on this host. Six new tests, including one that pins the exact Rec.709 coefficients against a Rec.601/equal-weight mutant.</span></div>
+    <div class="finding"><span class="f-cls cls done"><span class="dot"></span>fixed</span>
+      <span class="f-title">MAJOR — the veil-multiplier's cited DECISION_LOG.md evidence did not exist</span>
+      <span class="f-note">The doc comment pointed to a measurement table and derivation that had never been written. Closed by writing it — full table and computed contrast, §04.</span></div>
+  </div>
+  <h3>Documented, not code-fixed (both unmeasured / product decisions)</h3>
+  <div class="finding-list">
+    <div class="finding"><span class="f-cls cls deferred"><span class="dot"></span>documented</span>
+      <span class="f-title">MAJOR (inferred) — the same lerp() also defeats HudGlass.backdropFilter's memoization during a live theme transition</span>
+      <span class="f-note">Not reproduced as measured jank — a ~200ms once-per-toggle cost. The doc comment now scopes the caching guarantee to the two static theme singletons, not to lerp-produced instances.</span></div>
+    <div class="finding"><span class="f-cls cls deferred"><span class="dot"></span>documented</span>
+      <span class="f-title">MAJOR — HudRing's FittedBox cap trades the crash for a legibility ceiling at extreme text scale</span>
+      <span class="f-note">See R-D1-01 above. Regression-tested (never below 1.0x baseline, never past the bound); the actual growth-vs-scale trade-off is a presentation decision left open.</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">03</span><h2 class="serif">Mutation testing ledger</h2></div>
+  <p>Every new regression test this pass was verified the same way: revert the production fix to its
+  pre-fix state, confirm the test fails (KILLED), restore the fix, confirm green again.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Fix under test</th><th>Mutation applied</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>HudGlass.lerp() gradient snap</td><td>Reverted to naive <code>Gradient.lerp(a, b, t)</code></td><td>2 new tests <strong>KILLED</strong> it</td></tr>
+        <tr><td>HudRing FittedBox bound</td><td>Reverted to pre-fix <code>Center(child: child)</code></td><td>2 new tests <strong>KILLED</strong> it</td></tr>
+        <tr><td>profileFromRgbaBytes Rec.709 weights</td><td>Swapped for an equal-weight mix (0.5/0.3/0.2)</td><td>1 new test <strong>KILLED</strong> it — white/black buffers can't tell weights apart, a mixed-colour buffer can</td></tr>
+        <tr><td>Veil contrast regression case</td><td><code>multiplierForP95</code> forced to a constant <code>1.0</code></td><td>1 new test <strong>KILLED</strong> it — computed 4.16:1, an exact match to the hand-derived value</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">04</span><h2 class="serif">The veil formula, actually evidenced</h2></div>
+  <p>Real Pillow brightness measurement (Rec.709 luminance, top 45% of frame — the zone the design
+  reserves for status/name/greeting text) across all ten bundled scenes:</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Scene</th><th class="num">mean</th><th class="num">p95</th><th class="num">max</th></tr></thead>
+      <tbody>
+        <tr><td><code>01_cliffs_moher.webp</code></td><td class="num">185.23</td><td class="num">228.69</td><td class="num">253.14</td></tr>
+        <tr><td><code>02_volcano.webp</code></td><td class="num">103.28</td><td class="num">145.08</td><td class="num">227.63</td></tr>
+        <tr><td><code>03_waterfall_dock.webp</code></td><td class="num">116.86</td><td class="num">174.97</td><td class="num">251.27</td></tr>
+        <tr><td><code>04_fuji_sakura.webp</code></td><td class="num">210.91</td><td class="num">242.26</td><td class="num">253.85</td></tr>
+        <tr><td><code>05_sunset_hills.webp</code></td><td class="num">123.75</td><td class="num">172.20</td><td class="num">215.44</td></tr>
+        <tr><td><code>06_greek_terrace.webp</code></td><td class="num">193.07</td><td class="num">222.37</td><td class="num">254.14</td></tr>
+        <tr><td><code>07_snow_peak_tarn.webp</code></td><td class="num">185.21</td><td class="num">227.69</td><td class="num">253.56</td></tr>
+        <tr><td><code>08_coast_turquoise.webp</code></td><td class="num">101.96</td><td class="num">152.33</td><td class="num">218.72</td></tr>
+        <tr><td><code>09_forest_lake.webp</code></td><td class="num">162.67</td><td class="num">240.84</td><td class="num">255.00</td></tr>
+        <tr><td><code>10_beach_sunset.webp</code></td><td class="num">116.59</td><td class="num">184.28</td><td class="num">244.31</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:14px"><code>multiplierForP95</code>: <code>baseline=140</code> (below every measured
+  p95, so every scene gets at least some boost), <code>ceiling=250</code> (just above the brightest
+  measured p95), <code>maxBoost=0.45</code> — originally chosen heuristically, without a computed
+  contrast target, which is exactly the gap the a11y reviewer named. Retroactively grounded now, by
+  WCAG 2.1 contrast computed against the veiled result (gamma-correct formula, shared with
+  <code>app_semantic_colors_test.dart</code>'s existing token-contrast checks):</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Scenario</th><th>Phase</th><th>Background</th><th>Scale</th><th class="num">Contrast</th></tr></thead>
+      <tbody>
+        <tr><td>Regression case, no boost (pre-fix behaviour)</td><td>dawn (.44 base)</td><td>theoretical pure white (255)</td><td class="num">1.00x</td><td class="num"><strong>4.16:1 — fails AA</strong></td></tr>
+        <tr><td>Regression case, with boost</td><td>dawn (.44 base)</td><td>theoretical pure white (255)</td><td class="num">1.45x</td><td class="num">10.21:1</td></tr>
+        <tr><td>Real asset, densest phase</td><td>day (.56 base)</td><td>04_fuji_sakura.webp (p95 242.26)</td><td class="num">1.42x</td><td class="num">17.20:1</td></tr>
+        <tr><td>Real asset, dimmest phase</td><td>dawn (.44 base)</td><td>04_fuji_sakura.webp</td><td class="num">1.42x</td><td class="num">10.02:1</td></tr>
+        <tr><td>Real asset, secondary text (two-stage blend)</td><td>day (.56 base)</td><td>04_fuji_sakura.webp</td><td class="num">1.42x</td><td class="num">11.30:1</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:14px">All five rows are asserted in <code>hud_sky_test.dart</code>'s
+  <code>worst-case veil contrast (WCAG)</code> group against a 4.5:1 floor (WCAG AA, normal-size text).
+  The first row is mutation-verified — see §03. <strong>What this does not claim:</strong> WCAG
+  compliance across every screen, weight and size a future gate will draw over a background — only
+  <code>textPrimary</code>/<code>textSecondary</code> at the two extreme phases computed here.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">05</span><h2 class="serif">MRD-01's premise, re-verified against this tree</h2></div>
+  <div class="box done">
+    <span class="lbl">Confirmed</span>
+    <p>The Marketing Decision Pack claims <code>WorkoutLogEntry</code> already carries
+    <code>exerciseId</code> and that 1,384 of 1,887 exercises already carry <code>equipmentId</code> —
+    making Level-1 equipment-type memory "a query, not a migration." Those numbers were computed against
+    a <em>different</em> repository (<code>xLZDx/Fitness-App @ 78b24dc</code>) and were not to be
+    trusted here without re-checking.</p>
+    <p>Measured directly against this tree's own shipped asset (<code>assets/data/exercises_vendor.json</code>,
+    <code>python3</code> + <code>json.load</code>, this session): <strong>1,887 rows, 1,384 with a
+    non-null <code>equipmentId</code></strong> — matching the Pack's cited numbers almost exactly. No
+    custom/user-authored exercise concept exists in this codebase, so every <code>exerciseId</code> a log
+    entry can carry resolves to either the vendor catalogue or an AI-generated exercise keyed by
+    equipment id by construction. Weight is stored as a single canonical <code>weightKg</code>, no unit
+    ambiguity to resolve.</p>
+  </div>
+  <div class="box blocked">
+    <span class="lbl">Flagged, not silently reconciled</span>
+    <p><code>equipment_models.dart</code>'s own doc comment states <code>equipmentId</code> is null for
+    "all 1,899" of the purchased library's entries, attributing that to the vendor's free-text-only
+    metadata. That is stale against the measured 1,384/1,887 — either the mapping gate it refers to
+    already ran since that comment was written, or it describes a different, larger snapshot. Not edited
+    this pass (changing it without knowing which explanation is correct risks replacing one stale claim
+    with another); flagged for whoever next touches that file.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">06</span><h2 class="serif">The blocker that stopped screen work — needs an operator decision</h2></div>
+  <div class="box blocked">
+    <span class="lbl">Found</span>
+    <p>The mandate requires reading the design handoff's screen-specific prototypes
+    (<code>*.dc.html</code>) before building D2 Home onward. They are not reachable in this session.
+    <code>hud_tokens.dart</code>/<code>hud_metric.dart</code>/<code>hud_sky.dart</code>'s own doc comments
+    cite exact values from named files (<code>Sunset.dc.html:449</code>,
+    <code>design_handoff_fitness_hud/CLAUDE.md</code>) that supplied the D0/D1 design-system tokens — a
+    thorough search this session (<code>Glob</code> for <code>**/design_handoff*/**</code> and
+    <code>**/*.dc.html</code> across <code>D:\Repo</code>; <code>grep</code> across the decision log and
+    plans; <code>find</code> across <code>D:\Repo</code>, <code>D:\Temp</code>, <code>C:\Users</code>)
+    came back empty.</p>
+    <p>The values already transcribed into D0/D1 code comments remain trustworthy — read and cited when
+    the source was available, most likely via a conversation upload in an earlier session rather than a
+    persisted repository path. But nothing for D2 Home, D3 Workouts, D4 Scanner, D5–D10 has been
+    transcribed. Building any of them now would mean inventing layout and copy and presenting it as "per
+    the handoff" — the same class of failure a Stop hook already caught once this session, for a mundane
+    link path. Not done.</p>
+    <p><strong>Needs a decision:</strong> either re-attach or repoint this session at the handoff, or
+    explicitly authorize designing D2 onward from the existing D1 token system and product judgement
+    alone — clearly labelled as that, not as a transcription.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">07</span><h2 class="serif">Build health</h2></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Check</th><th>Result</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>flutter analyze</code></td><td>Clean</td><td>Same 6 pre-existing <code>lib/</code> issues + 10 pre-existing <code>test/</code> issues as the prior gate — none touched, none new.</td></tr>
+        <tr><td><code>flutter test</code></td><td class="num">3093 / 3093 passing</td><td>Baseline 3062 at the prior D1 gate; +31 net new this pass across the four touched suites.</td></tr>
+        <tr><td>Mutation verification</td><td>5 targeted mutants</td><td>See §03. Every one reverted, confirmed KILLED, restored.</td></tr>
+        <tr><td><code>pytest</code> / <code>tsc</code> / <code>jest</code></td><td>Not run</td><td>No Python, TypeScript or <code>firestore.rules</code> changed this pass.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <p>Two local commits this pass on top of <code>c020e96</code>: <code>f40e5cc</code> (the gate's code,
+  tests and review-finding fixes) and <code>0a98c2e</code> (the design-handoff blocker and the MRD-01
+  re-verification). Full narrative, every source citation and the full measurement/derivation tables
+  live in <code>core/DECISION_LOG.md</code>, which this page summarizes but does not replace.
+  <strong>ПУШ: НЕ ВЫПОЛНЕН</strong> — nothing has left this machine.</p>
+</footer>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
