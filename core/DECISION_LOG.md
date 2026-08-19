@@ -17438,3 +17438,78 @@ Suites: `flutter analyze` clean on every touched file (`hud_metric.dart`, `hud_t
 `hud_sky_test.dart`, `app_semantic_colors_test.dart`) green; full-suite run pending before this gate's
 local commit. `pytest`, `tsc`, `jest` NOT RUN -- no Python, TypeScript or `firestore.rules` changed.
 PUSH: NOT PERFORMED.
+
+*Correction, same session, after this entry was written and committed (`f40e5cc`):* the full
+`flutter test` run this paragraph called "pending" was in fact run before the commit and is green --
+3093 passed, 0 failed (baseline was 3062 at the prior D1 gate; +31 is the net of this gate's new
+tests). Recorded here rather than amending the already-committed entry.
+
+---
+
+## 2026-08-19 -- Design handoff source is unreachable this session; MRD-01's premise re-verified against this tree instead
+
+Turn 2's mandate (Section 1) requires reading the design handoff's screen-specific prototypes
+(`*.dc.html`) before building D2 Home onward, and (Section 10) requires independently re-verifying
+every Marketing R&D Decision Pack premise against THIS tree -- not trusting the Pack's own numbers,
+which were computed against a different repository (`xLZDx/Fitness-App @ 78b24dc`) -- before any
+Level-1 memory implementation gate.
+
+**Blocker, surfaced rather than worked around: the screen-specific design source is not reachable in
+this session.** `hud_tokens.dart`/`hud_metric.dart`/`hud_sky.dart`'s own doc comments cite exact
+values from named files (`Sunset.dc.html:449`, `design_handoff_fitness_hud/CLAUDE.md`,
+`design_handoff_fitness_hud/README.md`) that supplied the D0/D1 design-system tokens. Searched this
+session: `Glob` for `**/design_handoff*/**` and `**/*.dc.html` across `D:\Repo` (no matches), `grep`
+across `core/DECISION_LOG.md` and `core/plans/*.md` for the same names (no matches to a real path),
+`find` across `D:\Repo`, `D:\Temp` and `C:\Users` at reasonable depth (no matches). The values already
+transcribed into D0/D1 code comments remain trustworthy -- they were read and cited when the source
+was available, presumably in an earlier session via a conversation upload rather than a persisted
+repository path, which would explain why no path resolves now. But nothing for D2 Home, D3 Workouts,
+D4 Scanner, D5-D10 and onward has been transcribed yet, and this session has no way to read those
+screens' own prototypes. Building any of them now would mean inventing layout, colour and copy and
+presenting it as "per the handoff" -- exactly the citation-integrity failure a Stop hook already
+caught once this session for a mundane link path, and a far more serious one to commit silently for
+an entire screen's visual design. **Not done. Reported to the operator as a blocker requiring either
+the handoff re-attached/repointed, or explicit authorization to design D2+ from the existing D1 token
+system and product judgement alone, clearly labelled as such rather than as a transcription.**
+
+**Unblocked instead, per the mandate's own track-switching rule (a blocked track must not stop
+other work): MRD-01's premise, re-verified against this tree's real data, not assumed from the
+Pack.** The Pack states `WorkoutLogEntry` already carries `exerciseId` and that 1,384 of 1,887
+exercises already carry `equipmentId`, making Level-1 equipment-type memory "a query, not a
+migration."
+
+* `WorkoutLogEntry` (`lib/features/workouts/data/workout_log.dart:30-78`) carries `exerciseId`
+  (`String`, required), `weightKg` (`double?`), `repsCompleted` (`int?`) -- confirmed by direct read,
+  not the Pack's description of a different repo's copy of this class.
+* The exercise catalogue's real count, measured directly against the shipped asset (not a doc
+  comment, not the Pack): `assets/data/exercises_vendor.json` has **1,887** rows, of which **1,384**
+  carry a non-null `equipmentId` (`python3 -c` `json.load` + count, this session). This matches the
+  Pack's cited numbers for THIS repo almost exactly, despite the Pack being computed against a
+  different one -- read as the same shipped data having been carried across both repos' history, not
+  as a coincidence to be suspicious of on its own.
+* **A real divergence worth flagging, not silently reconciled:** `equipment_models.dart:79-82`'s own
+  doc comment states flatly that "[equipmentId] is null for all **1,899** of its entries" for the
+  purchased library, attributing the zero-mapping state to the vendor's free-text-only metadata and
+  naming "the scanner's gate" as where mapping would happen. That comment is now stale against the
+  measured 1,384/1,887 -- either the mapping gate it refers to already ran and populated the asset
+  since that comment was written, or the comment describes a different, larger snapshot (1,899 vs
+  1,887) than what ships today. The comment was not edited this session (out of scope for a data
+  verification pass, and changing it without knowing which explanation is correct risks replacing one
+  stale claim with another); flagged here so whoever next touches `equipment_models.dart` checks
+  before trusting either number.
+* No custom/user-authored exercise concept exists in this codebase (`grep` for
+  `customExercise`/`isCustom`/`CustomExercise` across `lib/features/` returns nothing) -- every
+  `exerciseId` a `WorkoutLogEntry` can carry resolves to either the vendor catalogue above or an
+  AI-generated exercise (`ai_coach/generated_exercise_repository.dart`), and the latter are cached
+  keyed by `<equipmentId>_<languageCode>` -- generated FOR a specific equipment id, so they carry one
+  by construction. Level-1 memory does not need to handle a deleted-exercise-with-orphaned-equipment
+  case from a source that doesn't exist.
+* Weight is stored as a single canonical `weightKg` on the log entry -- no separate unit-system field,
+  no ambiguity to resolve for a memory feature that would aggregate weights across sessions.
+
+**Conclusion: MRD-01's specific numeric premise holds in this tree**, verified independently rather
+than trusted. This does not itself authorize starting Level-1 implementation -- that still needs the
+UI surface it would appear on, which runs into the same design-handoff blocker above for anything
+beyond reusing existing D1 HUD tokens on a non-prototyped layout.
+
+Suites: none -- data verification only, no source changed. PUSH: NOT PERFORMED.
