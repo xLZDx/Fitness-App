@@ -10227,4 +10227,15 @@ test suite, confirmed by reverting each and re-running.
 
 Full detail: `core/product/GATE_E_SHARED_UNCERTAINTY_D0_NOTE_2026-08-19.md`.
 
+---
+
+## 2026-08-19 — status report published for the D/E + marketing-governance commits
+
+House HTML-report format applied to the four commits accumulated since the last report (dd12695,
+9db5902, 2cc271b, 105f9d4) — the operator's mechanical stop-hook check
+(`report_conform.py --check`) flagged the gap. `reports/GATE_D_E_STATUS_2026-08-19.{html,ru.html}`:
+same content both languages, provenance block and copy-button injected via `report_conform.py`,
+Russian version published as an artifact and linked to the operator. Documentation only — no code
+changed by this entry.
+
 **PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
