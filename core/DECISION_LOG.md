@@ -19625,3 +19625,70 @@ a refusal card there, by design, unchanged by this fix. The Google Sign-In crash
 unresponsiveness remain open, separate from this fix.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — findings only (no code change): Home design gap root-caused; three new bugs found on S8
+
+Investigation session, live on S8, after the operator supplied the canonical design source
+(`D:\Downloads\Mobile app design (4).zip`, extracted to
+`design_handoff_fitness_hud/` — README + CLAUDE.md marked "утверждён" / approved, high-fidelity,
+"воспроизводить попиксельно"). This is confirmed (FACT) to be the exact same file the operator's
+earlier "Home · 3 экрана" reference screenshot came from —
+`screenshots/light/01-home.png` carries the identical "день тренировки / день отдыха / утро"
+captions.
+
+**Home design gap, root-caused (FACT, from code + device):** `home_page.dart`'s own doc comment
+(lines 37-75) states Home was already rebuilt at "MVP Gate M1" specifically against this exact
+handoff, with two DELIBERATE, documented departures: no fabricated Form-coach Tempo/Depth/Symmetry
+numbers and no fabricated per-muscle recovery percentages, both citing `CLAUDE.md`'s "no fake data"
+rule — the domain layer has no pipeline that produces either number. Confirmed on-device
+(`_HudDayPanel`, `home_page.dart:311-334`): for an account with zero training history (a fresh
+guest, `upcoming.isEmpty`), the day panel falls back to a bare `HudPanel` with text + one button —
+no ring, no exercise count — and `_HudRecoveryPanel` renders nothing at all (empty `rows`). This is
+why Home reads as nothing like the reference for the exact account the operator has been testing
+with: the "rich" HUD version (ring, Form-coach panel via `_PostureCheckCard` substitute, populated
+recovery bars) exists in code but only activates once there is real history to show, and the
+substitute panels intentionally do not carry the reference's exact numbers even then. Separately,
+`GlassCard`'s own comment (`glass.dart:62-75`) documents a second, deliberate departure: real
+frosted `BackdropFilter` blur is off by default app-wide (`blur: false`) because it measurably wrecked
+scroll performance (11 blurred cards on the old Workouts page alone) — cards are opaque fills, not
+the handoff's translucent glass, everywhere, not only on Home. Net: the visual gap is real, but it
+is two SEPARATE, already-argued product tradeoffs (no-fake-data empty states; opaque cards for
+scroll perf) rather than unfinished work — worth the operator's explicit sign-off on whether those
+tradeoffs should still hold, not a code defect to silently "fix" by fabricating data or turning blur
+back on.
+
+**NEW bug — the guest "Продолжить" button on `login_page.dart`'s `LoginPage` does not respond to a
+tap (FACT, reproduced twice this session, matches an identical unresolved finding from earlier in
+this same session before this compaction).** Evidence: `adb shell input tap` at the button's
+color-verified pixel center; logcat confirms `InputDispatcher` delivered both DOWN and UP to the
+app's own `MainActivity` `ViewRootImpl` (`ViewPostIme pointer 0` / `pointer 1`) — the touch reaches
+Flutter normally. But `AuthAction.signInAnonymously()` (`auth_providers.dart:35-43`) sets
+`state = const AsyncValue.loading()` as its very first statement, which would flip the button to a
+spinner (`isLoading` in `login_page.dart:99`) on the very next frame — the screenshot 2s after the
+tap still shows the plain, unchanged button, so the handler was never invoked at all. Ruled out:
+Firebase/App Check involvement (the call never starts), a stuck global overlay in `main.dart`
+(`AuroraBackground` is a bare `ColoredBox`, no absorb/ignore-pointer), and a genuinely cold start
+(force-stop + relaunch skips `LoginPage` entirely and opens straight on onboarding step 1/10 — this
+screen is only reached by some OTHER navigation path not yet identified). Root mechanism NOT yet
+found — needs either a live DevTools widget-inspector attach (not available headless) or tracing
+which route pushes `LoginPage` to find what precedes it on the stack. Flagged, not fixed.
+
+**NEW: AI-Trainer entirely down (FACT, operator screenshot).** Exact error surfaced in-app: "Тренер
+недоступен: Firebase AI Logic has been deactivated in this project. To resume using Firebase AI
+Logic, you must enforce Firebase App Check." This is a Firebase **console/project configuration**
+problem, not an app code defect — matches this session's earlier, separate observation of Firebase
+App Check rate-limiting on the Scanner ("Too many attempts"), so App Check is now confirmed to be
+breaking at least two independent Firebase-backed features. Needs Firebase Console access (project
+`fitness-app-korostelev`) to either enforce App Check properly or re-enable AI Logic — outside what
+a code change can fix.
+
+**NEW: Form-coach filter chip on the Library tab reported obstructed by the "Отобрано правилами, а
+не врачом" (F020) disclosure banner (operator report, not yet independently verified in code).** Not
+investigated this session — flagged for the next pass.
+
+No code changed in this entry. Logged so the findings survive the next context compaction and so a
+report can cite this instead of re-deriving it.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
