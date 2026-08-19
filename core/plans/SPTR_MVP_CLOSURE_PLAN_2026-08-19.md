@@ -218,8 +218,18 @@ MRD-07), plus any future personalization/moat work. No new items added here.
 
 ## Release gate checklist (MVP-only bar)
 
+**STOP-THE-LINE, 2026-08-19: the checklist below is NOT currently certified.** The device pass it
+was recounted from almost certainly ran against a debug APK built from a *different* branch
+(`master`/`formcoach/gates-a-c`), not this one — the app it tested showed a PAR-Q-style safety
+module (`mobile/lib/features/safety/`) that provably does not exist anywhere in
+`marketing/site-prototype-2026-08-19`'s git history. Full evidence and required next steps in
+`core/DECISION_LOG.md`'s "STOP-THE-LINE CORRECTION" entry (last entry in the file). Do not treat
+any `[x]` below as verified for this branch until that entry's rebuild-and-retest step is done.
+Left in place, not rolled back, so the diff against the pre-recount version stays visible.
+
 Recounted 2026-08-19 after the RG-1/RG-2/RG-3 real-device pass (`core/DECISION_LOG.md`'s
-"RG-1/RG-2/RG-3" entry has full evidence). 10 FULL, 2 PARTIAL, 0 OPEN.
+"RG-1/RG-2/RG-3" entry has full evidence — **now itself flagged as unverified for this branch, see
+above**). 10 FULL, 2 PARTIAL, 0 OPEN, as claimed at the time — status unconfirmed pending rebuild.
 
 - [x] **Install/build** — `flutter build apk --debug` succeeded, installed cleanly via `adb`.
 - [x] **First launch** — correct RU welcome screen, no crash.

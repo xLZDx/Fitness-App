@@ -11017,3 +11017,76 @@ not resolved unilaterally in this entry.
 
 **No code changed by this entry.** Two real, reproduced defects found and documented, not fixed —
 see RG-5 for the dream-team's explicit BLOCKER / SUFFICIENTLY-COVERED call on each.
+
+---
+
+## 2026-08-19 — STOP-THE-LINE CORRECTION: the RG-1/RG-2/RG-3 device pass almost certainly tested the wrong build
+
+**This supersedes the "release gate can close on this evidence" framing of every entry above it in
+this session. Read this before acting on anything above.**
+
+While running the RG-5 dream-team panel, the Clinical/Safety reviewer reported it could not find
+the PAR-Q-style health-screening gate ("Has your doctor ever said you have a heart condition...",
+"This needs medical attention, not a workout") anywhere in `mobile/lib` — despite that exact
+content being directly witnessed live on-device throughout this session (screenshots, RG-2's and
+RG-3's own entries above). Checked myself rather than trusting either side of the disagreement:
+
+**FACT (git tree comparison, not inference)**: `mobile/lib/features/safety/` — the entire
+eligibility/PAR-Q module (`data/eligibility.dart`, `state/eligibility_providers.dart`,
+`widgets/eligibility_notice.dart`, `widgets/safety_refusal_card.dart`) — exists on `origin/master`
+but is **completely absent from `marketing/site-prototype-2026-08-19`'s git history**. Confirmed
+three ways: `git ls-tree -r HEAD` finds nothing under `features/safety`; the feature's origin
+commits (`9c16699`, `8bf16d2`, `917dc01`, `4cfac26`, `d925940`, and others) are `NOT_ANCESTOR` of
+this branch's HEAD via `git merge-base --is-ancestor`; and this branch's fork point from master
+(`78b24dc`) predates all of them — this branch was never in a position to receive that work, not a
+case of it being reverted.
+
+**Conclusion, FACT-based**: the debug APK installed on `emulator-5554` and used for this entire
+session's real-device evidence (RG-1's scan round-trips, RG-2's language-switch verification,
+RG-3's account-isolation and stuck-navigation findings, and the injury/safety-gate behavior cited
+in this plan's checklist) was **not built from `marketing/site-prototype-2026-08-19`**. It was
+built from `master` (or a branch carrying master's safety-module commits, e.g.
+`formcoach/gates-a-c`) at some earlier point and left installed on a shared emulator — consistent
+with this workspace's own standing note that multiple sessions share checkouts and devices. Device
+package metadata (`versionCode=14`, `firstInstallTime=2026-08-19 18:00:39`) is consistent with an
+install that predates this session's start; a second real device
+(`ce0417141997e4640c`, Samsung SM-G950F) was also found attached mid-session, corroborating that
+this environment is shared, not exclusive to this session.
+
+**What this does and does not invalidate**:
+- **Does not invalidate**: the RG-5 panel's direct source-code citations of files that exist
+  identically in both branches' relevant area (`app_router.dart`, `login_page.dart`,
+  `auth_providers.dart`, `firestore.rules`, `gemini_equipment_service.dart`) — those were read
+  live from this session's actual working tree on this branch, not from the running app.
+- **Does invalidate, as evidence specifically FOR THIS BRANCH**: every *live behavioral* claim in
+  the RG-1/RG-2/RG-3 entry above — the scan outcomes, the language-switch screenshots, the
+  account-isolation live proof, the stuck-on-Welcome reproduction, and the injury-gate pass/fail
+  behavior. These are still genuine, real observations of *some* real build of this app doing real
+  things (not fabricated), and the underlying defects they surfaced (dead Firebase AI Logic
+  project config, the silent stuck-navigation bug, the missing Crashlytics call on the recognition
+  fallback path) are very likely still real on this branch too, since the touched code
+  (`gemini_equipment_service.dart`, the router/auth files) is common ancestry — but "very likely"
+  is not the evidentiary bar this repo's own rules require for a release-gate closure, and none of
+  it can be certified as this branch's verified behavior without re-running it against a build
+  provably compiled from this branch's actual HEAD.
+
+**Decision: MVP release gate is NOT closed. RG-5/RG-6 do not proceed on this evidence.** The 9
+dream-team verdicts already gathered this session are preserved for their code-level analysis and
+reasoning quality, but their behavioral premises (the exact scan/navigation/isolation findings they
+were asked to judge) need re-confirming against a verified-correct build before any BLOCKER /
+SUFFICIENTLY-COVERED call is treated as final. Required before this gate can honestly close:
+
+1. Rebuild the debug APK explicitly from this branch's current HEAD (`c4c94bc` at the time of this
+   entry, or whatever it has advanced to), on a device/emulator confirmed not shared with a
+   concurrent session mid-test.
+2. Re-run RG-1/RG-2/RG-3 (or at minimum spot-check the specific claims: scan outcomes, language
+   persistence, account isolation, and specifically whether the injury/safety gate this branch
+   actually ships even resembles the PAR-Q flow described above — **this branch may not have any
+   equivalent safety gate at all**, which is a materially different and more urgent question than
+   anything else in this file, since the plan doc's "Existing state" section asserts injury/safety
+   gating is "genuinely enforced and fail closed" for the app being released, and that assertion
+   itself may now be resting on the wrong branch's code).
+3. Only then resume RG-5 with confirmed-accurate behavioral evidence.
+
+**No code changed by this entry.** This is a correction of the evidentiary basis for the gate, not
+a new defect fix.
