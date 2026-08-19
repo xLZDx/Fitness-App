@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/data/mock_auth_repository.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/profile/data/mock_profile_repository.dart';
@@ -61,6 +64,46 @@ void main() {
       expect(saved!.hasCompletedOnboarding, isTrue);
       expect(saved.personal.age, 31);
       expect(container.read(profileSubmitProvider), isA<AsyncData<void>>());
+    });
+
+    test(
+        'currentProfileProvider stays loading during the auth-restore '
+        'window, never a false null (MVP-1)', () async {
+      // A directly-controlled StreamController models a genuine cold start
+      // (no emission until the real session resolves) -- MockAuthRepository
+      // replays its current user synchronously on listen, which never
+      // reproduces this window.
+      final authStream = StreamController<AuthUser?>.broadcast();
+      addTearDown(authStream.close);
+      final localContainer = ProviderContainer(overrides: [
+        authUserProvider.overrideWith((ref) => authStream.stream),
+        profileRepositoryProvider.overrideWith((ref) {
+          ref.onDispose(profiles.dispose);
+          return profiles;
+        }),
+      ]);
+      addTearDown(localContainer.dispose);
+
+      final sub = localContainer.listen(currentProfileProvider, (_, __) {});
+      addTearDown(sub.close);
+      await Future<void>.delayed(Duration.zero);
+
+      final duringRestore = localContainer.read(currentProfileProvider);
+      expect(duringRestore.isLoading, isTrue,
+          reason: 'a still-resolving auth stream must not be reported as '
+              'signed-out (no profile)');
+
+      const uid = 'carol';
+      await profiles.save(UserProfile.empty(uid).copyWith(
+        personal: const PersonalInfo(age: 40),
+      ));
+      authStream.add(const AuthUser(uid: uid, displayName: 'Carol'));
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+
+      final resolved = localContainer.read(currentProfileProvider).valueOrNull;
+      expect(resolved, isNotNull);
+      expect(resolved!.personal.age, 40);
     });
 
     test('ProfileSubmit.saveDraft persists without setting completedAt',

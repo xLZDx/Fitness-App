@@ -18249,3 +18249,69 @@ Change is a single-line `model:` frontmatter edit per file, nothing else touched
 `git diff --stat` shows exactly `1 file, 1 insertion, 1 deletion` per file, 10 files, and a spot
 check of `clinical-safety-gate.md`/`fitness-recommendation-orchestrator.md`/
 `recommendation-adversary.md` headers confirms only the `model:` line changed.
+
+---
+
+## 2026-08-19 — MVP-1/MVP-3 auth-restore salvage + the Profile questionnaire dead end
+
+Three fixes, one commit, all on the cold-start auth path or the surface that exposed it.
+
+**MVP-1 — provider-layer auth-restore collapse (semantic port of legacy `f7279ca`).** Six providers
+sampled `ref.watch(authUserProvider).valueOrNull`, which collapses "auth still restoring after a
+cold start" and "genuinely signed out" into the same branch. `FirebaseAuth.userChanges()` has no
+first emission at all until the native SDK finishes reading the persisted session, so a real
+signed-in user got a confident false answer during that window: zero workouts, no profile, an empty
+programme list, no plan, no schedule. Fixed with `await ref.watch(authUserProvider.future)` in
+`ai_planner_providers.dart` (`generatedPlanProvider`), `profile_providers.dart`
+(`currentProfileProvider`), `programme_providers.dart` (`programmesProvider`),
+`scheduled_session_providers.dart` (`scheduledSessionsProvider`) and
+`workout_session_providers.dart` (`workoutSessionsProvider`, `workoutSessionTotalsProvider`).
+
+**Ported semantically, not cherry-picked.** `ai_planner_providers.dart` has diverged on this branch
+(`GeneratedPlan?` became `PlanOutcome?` under the Gate-M sealed-type work), so the legacy diff text
+does not apply; the underlying fix was reapplied against the current file's shape and its Gate-M doc
+comment kept verbatim. The four `StreamProvider`s needed conversion from a synchronous body
+returning a `Stream` to an `async*` generator (`yield` for the signed-out value, `yield*` for the
+repository stream); the two `FutureProvider`s were one-line changes.
+
+**MVP-3 — the same defect class at the router/splash layer (port of legacy `68cef87`).**
+`app_router.dart`'s `redirect` reads `authRepo.currentUser`, a synchronous getter with the identical
+cold-start ambiguity, and the only thing standing between a returning user and a `/login` bounce was
+`SplashPage`'s fixed 1300 ms timer racing the restore. `SplashPage` is now a `ConsumerStatefulWidget`
+whose `_proceed()` runs `Future.wait([authWait, Future.delayed(_minDwell)])` — the real first
+`authUserProvider` emission raced against the existing dwell rather than replacing it, so
+normal-path timing is unchanged — bounded by a 5 s `_maxAuthWait` so a hung stream cannot strand the
+user on the splash screen. Both fallback branches (stream error, timeout) proceed to `/home` exactly
+as before but now log through `_reportAuthWaitFailure` (`debugPrint` + a try/catch-wrapped
+`FirebaseCrashlytics.recordError`, matching `main.dart`'s own boot-time-guard convention) rather
+than failing silently. The fix's premise — that `authRepo.currentUser` is already synchronized once
+the stream fires — carries the legacy branch's verification against the pinned
+`firebase_auth_platform_interface` 8.1.9 method-channel source as a doc comment on
+`FirebaseAuthRepository.currentUser`.
+
+**The Profile "health questionnaire" dead end — operator-flagged, MVP_REQUIRED.** Profile's first
+tile reads "Edit your answers" for an onboarded user and called `context.go('/onboarding')`, which
+`resolveRedirect` bounced straight back to `/home` — a literal dead end for exactly the population
+the label addresses. Confirmed reachable: the tile is present and unchanged for every onboarded
+user, and M6's Profile reskin was a pure container swap that did not touch this. Classified
+MVP_REQUIRED rather than POST_MVP because the shipped minimum Profile exposes the dead action.
+`profile_page.dart:116-119` had already *documented* this bug as the reason the Injuries tile got
+its own route, without fixing the tile that had it.
+
+Fixed with a distinct `/onboarding/edit` route mounting the same `OnboardingPage`, which the
+existing redirect does not match. No new surface was needed: `OnboardingPage` already rehydrates
+from the saved draft (`_maybeResume`/`onboardingResumeIndex`) and persists through the same
+`profileSubmitProvider`. The plain `/onboarding` guard is deliberately kept — it stops a deep link
+or back button landing an onboarded user back in first-run onboarding — and a not-yet-onboarded
+user hitting `/onboarding/edit` is still steered to plain `/onboarding`. Both directions are pinned
+by new tests in `app_router_test.dart`.
+
+**Verification.** `flutter analyze` clean on every touched file; the repo-wide count is unchanged at
+its 15-issue baseline. Targeted suites across router, splash, profile, programmes, workouts state
+and ai_planner: 296/296. Full suite: 3131 tests, one failure —
+`app_semantic_colors_test.dart`'s hardcoded-whites census (expected 61, actual 60), **reproduced
+with this session's `lib/` changes stashed**, so it is pre-existing on this working tree and not a
+regression from this commit. Not silently absorbed: recorded here as an open item to attribute
+before the release gate.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**

@@ -27,11 +27,19 @@ final programmeRepositoryProvider = Provider<ProgrammeRepository>((ref) {
 });
 
 /// Every programme the signed-in user has ever enrolled in, newest first.
-final programmesProvider = StreamProvider<List<Programme>>((ref) {
-  final user = ref.watch(authUserProvider).valueOrNull;
-  if (user == null) return Stream.value(const <Programme>[]);
+///
+/// MVP-1: awaits `authUserProvider.future` rather than sampling
+/// `.valueOrNull`, which collapsed "auth still restoring" and "genuinely
+/// signed out" into the same branch — reachable on every cold start, not
+/// just under adversarial timing.
+final programmesProvider = StreamProvider<List<Programme>>((ref) async* {
+  final user = await ref.watch(authUserProvider.future);
+  if (user == null) {
+    yield const <Programme>[];
+    return;
+  }
   final repo = ref.watch(programmeRepositoryProvider);
-  return repo.watch(user.uid);
+  yield* repo.watch(user.uid);
 });
 
 /// The one programme currently in progress, or null.

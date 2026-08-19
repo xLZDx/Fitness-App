@@ -99,7 +99,12 @@ class ProfilePage extends ConsumerWidget {
                   subtitle: onboarded
                       ? AppLocalizations.of(context).profileEditYourAnswers
                       : AppLocalizations.of(context).profilePersonalizePlan,
-                  onTap: () => context.go('/onboarding'),
+                  // Onboarded users go through /onboarding/edit, a distinct
+                  // path that resolveRedirect does not bounce back to /home
+                  // -- see the redirect rule's own comment in app_router.dart.
+                  // A first-run user still goes through plain /onboarding.
+                  onTap: () => context
+                      .go(onboarded ? '/onboarding/edit' : '/onboarding'),
                 ),
                 _divider(context),
                 _profileTile(
@@ -113,10 +118,9 @@ class ProfilePage extends ConsumerWidget {
                   subtitle: unresolved > 0
                       ? l10n.profileInjuriesNeedArea(unresolved)
                       : l10n.profileInjuriesSubtitle,
-                  // Its own route rather than a fix to the questionnaire tile
-                  // above: that one routes to /onboarding, which
-                  // resolveRedirect bounces straight back to /home for anyone
-                  // who has onboarded, so it can reach no save at all.
+                  // Its own dedicated surface, distinct from the
+                  // questionnaire tile above, since injuries are edited one
+                  // at a time rather than through the full onboarding flow.
                   onTap: () => context.push('/injuries'),
                 ),
               ],

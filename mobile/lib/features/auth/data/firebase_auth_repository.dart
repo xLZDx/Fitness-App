@@ -59,6 +59,17 @@ class FirebaseAuthRepository implements AuthRepository {
       _auth.userChanges().map(_toDomain);
 
   @override
+  // MVP-3 (`splash_page.dart`): the splash screen waits for
+  // `authUserProvider`'s (built on `userChanges()`) first emission before
+  // ever leaving `/splash`, on the premise that by the time that stream
+  // fires, this synchronous getter already reflects the same user -- so the
+  // router's redirect (which reads this getter, not the stream) sees a
+  // consistent value right after. Verified against the pinned
+  // firebase_auth_platform_interface 8.1.9 method-channel source
+  // (`method_channel_firebase_auth.dart:179-193`): `instance.currentUser` is
+  // always assigned before the corresponding event is pushed onto the
+  // `userChanges()`/`idTokenChanges()` stream controller, for both the
+  // signed-in and signed-out branches -- never the other way around.
   AuthUser? get currentUser => _toDomain(_auth.currentUser);
 
   @override

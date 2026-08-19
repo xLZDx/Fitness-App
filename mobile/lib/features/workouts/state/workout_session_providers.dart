@@ -20,12 +20,22 @@ final workoutSessionRepositoryProvider =
 });
 
 /// Live session history of the signed-in user, newest first. Empty when
-/// signed out -- mirrors `workoutLogsProvider`'s null-safety shape.
-final workoutSessionsProvider = StreamProvider<List<WorkoutSession>>((ref) {
-  final user = ref.watch(authUserProvider).valueOrNull;
-  if (user == null) return Stream.value(const <WorkoutSession>[]);
+/// signed out.
+///
+/// MVP-1: awaits `authUserProvider.future` rather than sampling
+/// `.valueOrNull`, which collapsed "auth still restoring" and "genuinely
+/// signed out" into the same branch — reachable on every cold start, not
+/// just under adversarial timing, since `FirebaseAuth.userChanges()` has no
+/// first emission until the native SDK finishes restoring a persisted
+/// session.
+final workoutSessionsProvider = StreamProvider<List<WorkoutSession>>((ref) async* {
+  final user = await ref.watch(authUserProvider.future);
+  if (user == null) {
+    yield const <WorkoutSession>[];
+    return;
+  }
   final repo = ref.watch(workoutSessionRepositoryProvider);
-  return repo.watch(user.uid);
+  yield* repo.watch(user.uid);
 });
 
 /// All-time count and streak record for sessions.
@@ -42,7 +52,7 @@ final workoutSessionsProvider = StreamProvider<List<WorkoutSession>>((ref) {
 /// used, even though the count and history were both correct.
 final workoutSessionTotalsProvider =
     FutureProvider<WorkoutLogTotals>((ref) async {
-  final user = ref.watch(authUserProvider).valueOrNull;
+  final user = await ref.watch(authUserProvider.future);
   if (user == null) return WorkoutLogTotals.zero;
   return ref.watch(workoutSessionRepositoryProvider).totals(user.uid);
 });

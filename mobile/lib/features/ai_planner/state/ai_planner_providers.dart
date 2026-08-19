@@ -20,8 +20,15 @@ import '../data/workout_plan.dart';
 /// Returns null while any dependency is still loading. Null means LOADING and
 /// nothing else — a refusal comes back as [PlanRefused], which is why Gate M
 /// made the outcome a sealed type instead of leaning on this null.
+///
+/// MVP-1: the auth check awaits `authUserProvider.future` rather than
+/// sampling `.valueOrNull`, which collapsed "auth still restoring" and
+/// "genuinely signed out" into the same branch — reachable on every cold
+/// start, not just under adversarial timing, since `FirebaseAuth
+/// .userChanges()` has no first emission until the native SDK finishes
+/// restoring a persisted session.
 final generatedPlanProvider = FutureProvider<PlanOutcome?>((ref) async {
-  final user = ref.watch(authUserProvider).valueOrNull;
+  final user = await ref.watch(authUserProvider.future);
   if (user == null) return null;
   final profile = await ref.watch(currentProfileProvider.future);
   if (profile == null) return null;

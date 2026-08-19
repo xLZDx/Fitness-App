@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:fitness_app/features/auth/data/auth_user.dart';
+import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/splash/splash_page.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -34,10 +39,63 @@ void main() {
       // assert the hand-off happened.
       expect(find.text('home-stub'), findsOneWidget);
     });
+
+    testWidgets(
+        'does not hand off while auth is still genuinely restoring, '
+        'even past the normal dwell time', (tester) async {
+      final auth = StreamController<AuthUser?>.broadcast();
+      addTearDown(auth.close);
+
+      await tester.pumpWidget(_router(initial: '/splash', auth: auth.stream));
+      await tester.pump();
+
+      // Well past the old fixed 1300ms+600ms dwell -- under the old
+      // fixed-timer behaviour this would already have navigated regardless
+      // of auth state, which is exactly the router-redirect race this fix
+      // exists to close (a real signed-in user reached here would be bounced
+      // to /login by `resolveRedirect` reading `currentUser` as still-null).
+      // Two separate pumps, matching the settle pattern the "hands off after
+      // the splash delay" test above already needs -- a single big pump can
+      // fire the navigation call without giving the destination route a
+      // frame to actually render, which would make this assertion pass for
+      // the wrong reason.
+      await tester.pump(const Duration(milliseconds: 1500));
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.text('home-stub'), findsNothing,
+          reason: 'auth has not resolved yet -- must not navigate on a '
+              'fixed timer regardless of auth state');
+
+      auth.add(const AuthUser(uid: 'alice', displayName: 'Alice'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(find.text('home-stub'), findsOneWidget);
+    });
+
+    testWidgets(
+        'proceeds anyway after the safety timeout if auth never resolves, '
+        'rather than stranding the user on a black screen', (tester) async {
+      final auth = StreamController<AuthUser?>.broadcast();
+      addTearDown(auth.close);
+
+      await tester.pumpWidget(_router(initial: '/splash', auth: auth.stream));
+      await tester.pump();
+
+      // Never emits into `auth` -- simulates a hung/broken restore. Two
+      // separate pumps past the safety timeout, for the same settling
+      // reason as the test above.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('home-stub'), findsOneWidget,
+          reason: 'a stream that never resolves must not strand the user '
+              'on the splash screen forever');
+    });
   });
 }
 
-Widget _router({required String initial}) {
+Widget _router({required String initial, Stream<AuthUser?>? auth}) {
   final router = GoRouter(
     initialLocation: initial,
     routes: [
@@ -47,11 +105,16 @@ Widget _router({required String initial}) {
           builder: (_, __) => const Scaffold(body: Text('home-stub'))),
     ],
   );
-  return MaterialApp.router(
-    theme: AppTheme.light(),
-    locale: kTestLocale,
-    localizationsDelegates: kTestLocalizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    routerConfig: router,
+  return ProviderScope(
+    overrides: [
+      if (auth != null) authUserProvider.overrideWith((ref) => auth),
+    ],
+    child: MaterialApp.router(
+      theme: AppTheme.light(),
+      locale: kTestLocale,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      routerConfig: router,
+    ),
   );
 }

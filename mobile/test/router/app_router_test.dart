@@ -136,6 +136,32 @@ void main() {
       );
     });
 
+    test(
+        'onboarded user landing on /onboarding/edit is NOT bounced -- '
+        'Profile\'s "edit your answers" tile must actually reach '
+        'OnboardingPage', () {
+      expect(
+        resolveRedirect(
+            isSignedIn: true,
+            isOnboarded: true,
+            location: '/onboarding/edit',
+            isAnonymous: false),
+        isNull,
+      );
+    });
+
+    test('not-yet-onboarded user on /onboarding/edit is still forced into '
+        'plain /onboarding', () {
+      expect(
+        resolveRedirect(
+            isSignedIn: true,
+            isOnboarded: false,
+            location: '/onboarding/edit',
+            isAnonymous: false),
+        '/onboarding',
+      );
+    });
+
     test('a public page reaches a signed-in, not-yet-onboarded user', () {
       // Found reviewing L0a: /terms, /about, /donors and /licences are all
       // listed in _publicPaths, but before this the onboarding gate ignored

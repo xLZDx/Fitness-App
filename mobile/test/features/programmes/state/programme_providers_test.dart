@@ -1,5 +1,10 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fitness_app/features/auth/data/auth_user.dart';
+import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/programmes/state/programme_providers.dart';
 import 'package:fitness_app/features/workouts/data/scheduled_session.dart';
 
@@ -63,6 +68,31 @@ void main() {
         _row('a', scheduledFor: DateTime(2026, 1, 1), programmeId: 'p1'),
       ];
       expect(nextProgrammeSlot('p1', existing, now: now), DateTime(2026, 6, 2));
+    });
+  });
+
+  group('programmesProvider auth-restore window (MVP-1)', () {
+    test('stays loading during the restore window, never a false empty list',
+        () async {
+      final auth = StreamController<AuthUser?>.broadcast();
+      addTearDown(auth.close);
+      final container = ProviderContainer(overrides: [
+        authUserProvider.overrideWith((ref) => auth.stream),
+      ]);
+      addTearDown(container.dispose);
+
+      final sub = container.listen(programmesProvider, (_, __) {});
+      addTearDown(sub.close);
+      await Future<void>.delayed(Duration.zero);
+
+      final duringRestore = container.read(programmesProvider);
+      expect(duringRestore.isLoading, isTrue,
+          reason: 'a still-resolving auth stream must not be reported as '
+              'signed-out (no programmes)');
+
+      auth.add(null);
+      await Future<void>.delayed(Duration.zero);
+      expect(container.read(programmesProvider).valueOrNull, isEmpty);
     });
   });
 }

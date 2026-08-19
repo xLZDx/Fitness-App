@@ -285,6 +285,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/onboarding',
         pageBuilder: (_, __) => _fadeThrough(const OnboardingPage()),
       ),
+      // Distinct path so the "already onboarded -> /onboarding bounces to
+      // /home" redirect below (a guard against landing an onboarded user
+      // back in first-run onboarding via deep link/back button) does not
+      // also block Profile's "edit your answers" tile, which deliberately
+      // sends an onboarded user into the same page to revise a saved
+      // answer -- OnboardingPage already resumes from the saved draft and
+      // persists through the same profileSubmitProvider, so no new surface
+      // is needed, only a way in that survives the redirect.
+      GoRoute(
+        path: '/onboarding/edit',
+        pageBuilder: (_, __) => _fadeThrough(const OnboardingPage()),
+      ),
       GoRoute(
         path: '/equipment/:id',
         pageBuilder: (_, state) => _fadeThrough(
