@@ -81,22 +81,42 @@ evidenced gaps in the same "auth/session path lies to the user" criterion. Both 
 (verified myself, not taken on the reviewer's word alone) but are their own properly-scoped
 gates, not folded into MVP-1's already-large diff — each touches a different layer.
 
-**MVP-2 — the fix at the provider layer doesn't reach the screen.** `workoutSessionHistoryProvider`,
-`activeProgrammeProvider`, `_sessionsOf` (`progress_page.dart:117-118`), and at least 10 more
-call sites across `home_dashboard_providers.dart`, `programme_providers.dart`,
-`recovery_providers.dart`, `offline_video_providers.dart`, `session_screening_providers.dart`,
-`workout_player_page.dart`, `form_check_providers.dart`, `setup_note_card.dart`,
-`exercise_reference.dart`, `set_timer_providers.dart`, `equipment_detail_page.dart` all read a
-now-correctly-loading provider via `.valueOrNull ?? default` — a plain (synchronous) `Provider`
-or a raw UI read cannot itself stay "loading", so it silently renders the same false default MVP-1
-was created to remove, one hop downstream. Verified concretely on Progress: `deriveProgress`
-(`progress_stats.dart:66-78`) has two branches for "no logs" — `totals == null` → `ProgressStats.empty`,
-`totals != null` → real numbers — and **both currently render identical zeros** to the user during
-the restore window, so MVP-1 alone changes nothing the user actually sees on that screen yet.
-**MVP NEED**: required — same criterion 8 as MVP-1, this is the part of it users actually see.
-**Cheapest alternative**: gate the affected screens' rendering on `.isLoading` (matching the
-codebase's own existing correct pattern at `entitlementStatusProvider` and
-`workout_player_page.dart:505-507`) rather than a structural rewrite.
+**MVP-2 — RECLASSIFIED to POST-MVP after MVP-3 closed (explicit scope decision, not a silent
+drop).** `workoutSessionHistoryProvider`, `activeProgrammeProvider`, `_sessionsOf`
+(`progress_page.dart:117-118`), and at least 10 more call sites across
+`home_dashboard_providers.dart`, `programme_providers.dart`, `recovery_providers.dart`,
+`offline_video_providers.dart`, `session_screening_providers.dart`, `workout_player_page.dart`,
+`form_check_providers.dart`, `setup_note_card.dart`, `exercise_reference.dart`,
+`set_timer_providers.dart`, `equipment_detail_page.dart` all read a now-correctly-loading provider
+via `.valueOrNull ?? default` — a plain (synchronous) `Provider` or a raw UI read cannot itself
+stay "loading", so in isolation this still silently renders a false default one hop downstream of
+MVP-1's fix.
+
+**Why POST-MVP now, when it was REQUIRED at the time it was found**: it was scoped against a
+codebase where the splash screen navigated on a fixed timer, so a user could reach these screens
+*while `authUserProvider` was still genuinely `AsyncLoading`* — that was the reachable "confident
+lie" window. MVP-3 (closed above) makes `/splash` wait for `authUserProvider`'s real first
+emission before ever navigating to `/home`, and a `StreamProvider` that has emitted once stays
+`AsyncData` for every later watch (Riverpod caches the last value; it does not spontaneously
+re-enter `AsyncLoading` mid-session). So by the time a user can reach Progress, Home, Programmes,
+or any of the other call sites, `authUserProvider` — and every MVP-1-fixed provider built on it —
+has already resolved. Confirmed structurally, not assumed: `app_router.dart`'s redirect only
+allows past `/login` when `isSignedIn` (`authRepo.currentUser != null`), and MVP-3's own review
+verified there is no OS-level deep-link/state-restoration entry point anywhere in this app that
+bypasses `/splash` (`initialLocation` is hardcoded to `/splash`; no `uni_links`/`app_links`/
+`RestorationMixin` found). The remaining `.valueOrNull ?? default` reads are therefore bounded to
+ordinary Firestore-fetch latency (the network round-trip *after* auth resolves) — normal
+loading-flicker every app has, not the auth-restore truthfulness defect the north-star criterion
+names. Verified concretely on Progress, the one call site with a passing regression test written
+against the actual bug (`deriveProgress`'s two "no logs" branches, `progress_stats.dart:66-78`):
+that test exercised the pre-MVP-3 world where splash navigated on a fixed timer regardless of
+auth; it does not describe the post-MVP-3 reachable state.
+**MVP NEED (re-scored)**: was required, now POST-MVP — the truthfulness gap it was required to
+close is already closed transitively by MVP-1 + MVP-3 together.
+**Cheapest alternative, deferred rather than applied**: gate the affected screens' rendering on
+`.isLoading` (matching the codebase's own existing correct pattern at `entitlementStatusProvider`
+and `workout_player_page.dart:505-507`) — worth doing for UX polish (a skeleton beats a flashed
+zero during a real fetch), but that is a POST-MVP improvement, not an MVP truthfulness fix.
 
 **MVP-3 — CLOSED.** The auth-restore race also reached app navigation itself. `app_router.dart`'s
 `redirect` reads `authRepo.currentUser` — a synchronous Firebase getter with the identical
@@ -119,23 +139,38 @@ a doc comment on `FirebaseAuthRepository.currentUser`.
 
 `questionnaireDraftProvider` (`questionnaire_notifier.dart:14-23`) has the same defect shape in a
 synchronous `Notifier.build()` and is entangled with this same router path (onboarding is only
-reachable after `isSignedIn` resolves) — left open, tracked below, not folded into this gate.
+reachable after `isSignedIn` resolves) — decided below (accept as mitigated), not folded into
+this gate.
 **MVP NEED**: required — this is literally the "authentication/session path" the criterion names.
 **Cheapest alternative applied**: made the splash screen wait for `authUserProvider`'s actual first
 emission instead of a fixed timer, rather than restructuring the router's redirect contract.
 
-## Open item carried out of MVP-3, not yet decided
+## `questionnaireDraftProvider` — decided: accept as mitigated by MVP-3, not separately fixed
 
-- **`questionnaireDraftProvider`** (`questionnaire_notifier.dart:14-23`) has the same
-  auth-restore-collapse defect shape as MVP-1, but inside a synchronous `Notifier.build()` where
-  the `await ref.watch(authUserProvider.future)` pattern doesn't drop in as-is, and it's entangled
-  with the same router path MVP-3 just fixed (onboarding is only reachable once `isSignedIn`
-  resolves, i.e. after the splash wait already closed the practical window). type-design-analyzer
-  flagged it MINOR during the MVP-1 review. Needs an explicit decision (fix vs. accept-as-mitigated
-  by MVP-3's splash fix) before the release gate, not a silent carry-forward.
+`questionnaireDraftProvider`'s `build()` (`questionnaire_notifier.dart:16-18`) reads
+`ref.watch(authUserProvider).valueOrNull`, the same collapse shape as MVP-1's leaf providers, but
+inside a synchronous `Notifier.build()` where `await ref.watch(authUserProvider.future)` doesn't
+drop in as-is (a `Notifier.build()` cannot be `async`). type-design-analyzer flagged it MINOR
+during the MVP-1 review.
+
+Checked directly, same reasoning as the MVP-2 reclassification above: `app_router.dart`'s redirect
+only routes to `/onboarding` when `isSignedIn` is true (`authRepo.currentUser != null`,
+`app_router.dart:62-92`), and MVP-3 guarantees `authRepo.currentUser` is already synchronized to
+`authUserProvider`'s stream by the time `/splash` hands off. So by the time
+`QuestionnaireDraft.build()` can run at all, `authUserProvider`'s `.valueOrNull` is no longer null
+for a signed-in user — the window this provider's shape is vulnerable to is structurally
+unreachable via the only path that reaches it. **Decision: accept as mitigated, no separate code
+change.** Not the same call as MVP-2 (which is deferred UX polish for a still-real, just
+lower-priority gap) — here the specific defect this shape enables is not reachable at all given
+the current router gating, so there is nothing left to fix.
 
 ## POST-MVP (evidence preserved, not started)
 
+- **MVP-2 (reclassified) — downstream `.valueOrNull ?? default` reads** on Progress, Home,
+  Programmes, and ~10 more call sites (full list above). Gate on `.isLoading` for a skeleton
+  instead of a flashed zero during real Firestore-fetch latency — genuine UX polish, not a
+  truthfulness fix now that MVP-1 + MVP-3 close the actual auth-restore window these screens can
+  ever be reached during.
 - **Gate I — gym-scoped workout memory** (full evidence already gathered this session,
   see the prior turn's recon). Equipment-TYPE memory (Gate D) already covers the honest minimal
   claim; gym-scoping is retention/correctness polish, not required to ship truthfully.
@@ -165,14 +200,15 @@ MRD-07), plus any future personalization/moat work. No new items added here.
 1. **MVP-1** — CLOSED. Auth-restore false-state collapse at the provider layer, 6 leaf providers,
    test-first, full suite + `flutter analyze` clean, independent review (flutter-reviewer +
    type-design-analyzer), findings fixed, committed, **pushed**, remote SHA verified.
-2. **MVP-2** — the same collapse one hop downstream, at the screens/derived-providers that
-   actually render to the user (Progress first, since it's the literal named symptom; then the
-   rest of the call-site list above). Same discipline: reproduce, smallest fix, test, review.
-3. **MVP-3** — CLOSED. The router-redirect instance of the same defect, structurally closed (the
+2. **MVP-3** — CLOSED. The router-redirect instance of the same defect, structurally closed (the
    splash screen now waits for the real auth emission instead of a fixed timer), test-first, full
    suite + `flutter analyze` clean, independent review (flutter-reviewer), findings fixed,
-   committed, **pushed**, remote SHA verified. `questionnaireDraftProvider` carried forward as an
-   open, undecided item (see above), not folded in.
+   committed, **pushed**, remote SHA verified. (Done ahead of MVP-2 in the original numbering —
+   closing the navigation gate first is what let MVP-2 be reclassified below instead of built.)
+3. **MVP-2** — RECLASSIFIED to POST-MVP. Once MVP-1 + MVP-3 both closed, the reachable
+   "auth-restore truthfulness" window they were required to fix no longer exists for any of
+   MVP-2's downstream call sites — see the reasoning under MVP-2 above. `questionnaireDraftProvider`
+   decided the same way (accept as mitigated, no code change). No MVP work remains from this item.
 4. **Release gate** — device/emulator pass over: install/build, first launch, auth, scan flow
    (known/ambiguous/unknown machine), exercise/instruction path, injury filtering, EN+RU,
    offline behavior, no console/runtime failures.

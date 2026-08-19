@@ -10697,3 +10697,45 @@ ordinary async-loading flicker, not the same defect class) is an explicit scopin
 before starting that gate, not assumed.
 
 **PUSH REQUIRED IMMEDIATELY AFTER THIS COMMIT, per the new standing rule.**
+
+---
+
+## 2026-08-19 — MVP-2 reclassified POST-MVP; `questionnaireDraftProvider` accepted as mitigated
+
+**The scoping decision flagged above, made explicitly rather than left open**, per the operator's
+own required MVP scope-pressure-test format. Re-examined MVP-2 (the ~13 `.valueOrNull ?? default`
+downstream call sites listed in the plan doc) against the state of the app *after* MVP-3 closed,
+not against the state it was originally scoped in (which still had a fixed-timer splash screen).
+
+**Reasoning, checked structurally rather than assumed**: MVP-3 makes `/splash` wait for
+`authUserProvider`'s real first emission before ever navigating to `/home`. A Riverpod
+`StreamProvider` that has emitted once caches that value as `AsyncData` for every subsequent
+watch — it does not spontaneously re-enter `AsyncLoading` mid-session. `app_router.dart`'s
+redirect (`:62-92`) only allows a route past `/login` when `isSignedIn`
+(`authRepo.currentUser != null`), and MVP-3's own independent review confirmed there is no
+OS-level deep-link or state-restoration entry point anywhere in this app that bypasses `/splash`
+(`initialLocation` hardcoded to `/splash`; grepped, no `uni_links`/`app_links`/`RestorationMixin`).
+So the window MVP-2 was scoped to close — a user reaching Progress/Home/Programmes/etc. while
+`authUserProvider` is still genuinely restoring — is no longer reachable by any path in this app.
+What remains at those ~13 call sites is ordinary Firestore-fetch latency *after* auth has already
+resolved: normal loading-flicker every app has, not the auth-restore truthfulness defect the
+north-star criterion (`no data leaks or lies... across the auth-restore window`) names.
+
+**Decision: MVP-2 reclassified to POST-MVP** — the `.isLoading`-gating fix is still worth doing
+(a skeleton beats a flashed zero during a real fetch) but as UX polish, not a release blocker.
+Full re-scoring and file list preserved in the plan doc rather than discarded, so the POST-MVP
+gate has real evidence to start from when it's picked up.
+
+**`questionnaireDraftProvider`** (`questionnaire_notifier.dart:16-18`, carried open out of MVP-3):
+same reasoning applies more directly — `/onboarding` is itself only reachable once `isSignedIn`
+is true, so `QuestionnaireDraft.build()` can never run while `authUserProvider.valueOrNull` would
+still be null for a signed-in user. **Decision: accept as mitigated by MVP-3's router-gating,
+no separate code change.** Unlike MVP-2 (a real gap just deprioritized), this one's specific
+defect shape is not reachable at all given the current router, so there is nothing left to fix,
+not merely something deferred.
+
+**No code changed by this entry — plan-doc-only.** Per the plan's own execution order, this
+closes out every open MVP-REQUIRED/undecided item: MVP BLOCKER (MVP-1) and both MVP REQUIRED
+instances (MVP-3 fixed; MVP-2 reclassified with the same evidence bar as a fix would have needed)
+are now resolved. Next step per the plan: the **release gate** (device/emulator pass), then the
+**final MVP-only dream-team review**, then **MVP READY** — not a fourth code gate.
