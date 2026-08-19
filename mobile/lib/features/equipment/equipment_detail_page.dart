@@ -19,6 +19,7 @@ import 'widgets/safety_disclosure.dart';
 import 'state/equipment_providers.dart';
 import 'widgets/equipment_report_sheet.dart';
 import 'widgets/exercise_thumb.dart';
+import '../profile/state/profile_providers.dart';
 
 class EquipmentDetailPage extends ConsumerWidget {
   const EquipmentDetailPage({super.key, required this.equipmentId});
@@ -88,10 +89,25 @@ class EquipmentDetailPage extends ConsumerWidget {
                         label: AppLocalizations.of(context)
                             .equipmentReportBrokenEquipment,
                         onPressed: () async {
+                          // MRD-02, Gate F: was always the sheet's own
+                          // 'unknown' default -- every report ever filed
+                          // carried that literal string, silently defeating
+                          // the server's gyms/{gymId} webhook lookup for
+                          // every user. Now reads the user's own free-text
+                          // answer when they set one.
+                          final gymId = ref
+                              .read(currentProfileProvider)
+                              .valueOrNull
+                              ?.equipment
+                              .gymId
+                              ?.trim();
                           final sent = await EquipmentReportSheet.show(
                             context,
                             equipmentId: item.id,
                             equipmentName: item.name,
+                            gymId: gymId == null || gymId.isEmpty
+                                ? 'unknown'
+                                : gymId,
                           );
                           if (sent == true && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(

@@ -79,6 +79,35 @@ void main() {
     });
   });
 
+  group('gymId (MRD-02, Gate F)', () {
+    test('unset by default, distinguishable from an empty answer', () {
+      expect(const EquipmentAccess().gymId, isNull);
+    });
+
+    test('copyWith sets it without disturbing other fields', () {
+      const before = EquipmentAccess(
+        location: TrainingLocation.gym,
+        available: [EquipmentKind.barbell],
+      );
+      final after = before.copyWith(gymId: 'Planet Fitness Downtown');
+      expect(after.gymId, 'Planet Fitness Downtown');
+      expect(after.location, TrainingLocation.gym,
+          reason: 'copyWith must not disturb fields it was not given');
+      expect(after.available, [EquipmentKind.barbell]);
+    });
+
+    test('copyWith can clear it to empty string (the onboarding field\'s '
+        'own clear-the-text-box case), distinct from never having been set',
+        () {
+      const before = EquipmentAccess(gymId: 'Old Gym');
+      final cleared = before.copyWith(gymId: '');
+      expect(cleared.gymId, '',
+          reason: 'an explicit empty string must stick, not fall back to '
+              'the previous value — this is how the onboarding text field '
+              'expresses "the user deleted what they typed"');
+    });
+  });
+
   group('serialisation', () {
     test('writes the derived answer, not the stored one', () {
       // Anything still reading `hasGymAccess` — an old export, a Cloud Function
@@ -104,6 +133,18 @@ void main() {
       expect(eq['location'], isNull);
       expect(eq['hasGymAccess'], isNull);
       expect(eq['available'], isEmpty);
+      expect(eq['gymId'], isNull);
+    });
+
+    test('gymId round-trips through toJson (MRD-02, Gate F)', () {
+      final p = UserProfile.empty('u').copyWith(
+        equipment: const EquipmentAccess(
+          location: TrainingLocation.gym,
+          gymId: 'Iron Temple',
+        ),
+      );
+      final eq = p.toJson()['equipment'] as Map<String, dynamic>;
+      expect(eq['gymId'], 'Iron Temple');
     });
   });
 }

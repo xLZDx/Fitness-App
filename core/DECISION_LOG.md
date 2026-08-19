@@ -10238,4 +10238,58 @@ same content both languages, provenance block and copy-button injected via `repo
 Russian version published as an artifact and linked to the operator. Documentation only — no code
 changed by this entry.
 
+---
+
+## 2026-08-19 — Gate F: gym identity (MRD-02 slice) shipped
+
+**Reconnaissance found the load-bearing fact: `gyms/{gymId}` already exists server-side as a
+business/operator-provisioned namespace, with its own security policy** (`firestore.rules`:
+client-read, server-write-only) and a real consumer — `functions/src/index.ts`'s `reportEquipment`
+callable looks up `gyms/{gymId}.maintenanceWebhookUrl` for a Slack notification. `gymId` had exactly
+two appearances client-side before this gate: a dead-code field on `BuddyProfile`
+(`buddy_match.dart`, no callers anywhere in the app) and a parameter on
+`EquipmentReportSheet.show()` that defaulted to the literal string `'unknown'` and was never once
+passed a real value by any caller — every equipment report ever filed silently defeated the
+server's webhook lookup, regardless of which gym the reporter trains at. This meant I did not need
+to invent gym-identity product policy (uniqueness, moderation, geo-verification — MRD-02's fuller
+scope); the minimal safe seam was completing a half-wired client-side field, not designing a new one.
+
+**Decision: free-text field, not a validated picker.** A searchable gym directory would need to
+match against the real `gyms/{gymId}` document-ID/slug convention, and there is no client-visible
+evidence of what that convention is (write-protected collection, no admin UI, no seed data). A free
+answer degrades honestly — the Cloud Function's lookup either matches or, same as today, finds
+nothing; a guessed slug format would degrade silently instead. Collected in onboarding
+(`step_equipment.dart`), shown only when `location == gym || location == mixed` — the same condition
+`hasGymAccess` already derives from — and wired only into the one live consumer
+(`equipment_detail_page.dart`'s report button); the dead-code `buddy_match.dart` consumer was left
+untouched.
+
+**Independent review (flutter-reviewer, type-design-analyzer, parallel, no cross-seeding) found and
+fixed one real MAJOR.** The onboarding field trimmed on every keystroke, which — because
+`GlassTextField` is a controlled widget that force-resyncs its controller whenever its `value` prop
+disagrees with the displayed text — silently deleted the space after every word as the user typed,
+turning "Iron Temple Gym" into "IronTempleGym". Fixed by trimming only at the one consumption
+boundary that needs a normalized value, not inside the field's own `onChanged`. A first version of
+the regression test (feeding precomputed target-prefix substrings via `enterText`) did not catch
+this; rewritten to append each character to the field's actual live-displayed text, it reproduced
+the exact corrupted string, then confirmed fixed, then confirmed the fix survives reverting back to
+the buggy line and forward again (`diff`-verified restore). One MINOR noted and deliberately left
+undocumented-in-code: `EquipmentAccess.gymId` (free text) and the dead `BuddyProfile.gymId`
+(required, exact-match key) share a bare name with no cross-reference — harmless today, a real
+footgun if buddy matching is ever revived without reading both declarations first; fix belongs with
+whichever gate revives that feature, not this one.
+
+Full reconnaissance, decision rationale, and review findings:
+`core/product/GATE_F_GYM_IDENTITY_D0_NOTE_2026-08-19.md`.
+
+`flutter analyze` clean on all six touched/added files. New/extended test coverage: 9 model/
+serialization assertions (`equipment_access_test.dart`) plus 7 widget tests
+(`step_equipment_test.dart`, including the keystroke-fidelity regression above), all passing.
+Two additional mutation proofs beyond the review-driven one: the onboarding field's location-gating
+condition (`gym || mixed` mutated to `gym`-only) and `copyWith`'s clear-to-empty-string handling,
+both confirmed caught by reverting and re-running. Known gap: `firestore_profile_repository.dart`'s
+`_fromMap` read-side line for `gymId` has no direct test — this repo has no
+`fake_cloud_firestore`/mocking dependency (documented pre-existing scope boundary), and the line is
+a one-token cast identical in shape to every other field this same function already reads untested.
+
 **PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
