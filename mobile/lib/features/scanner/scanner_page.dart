@@ -18,6 +18,8 @@ import '../safety/state/eligibility_providers.dart' show safetyContextProvider;
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/experimental_banner.dart';
 import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/hud/hud_metric.dart';
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../../shared/widgets/shell_insets.dart';
 import '../visual_equipment/data/live_recognition.dart';
 import '../visual_equipment/data/scan_outcome.dart';
@@ -1082,11 +1084,11 @@ class _PreparingTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final l = AppLocalizations.of(context);
-    return GlassCard(
+    return HudPanel(
       key: Key('scan-preparing-${card.id}'),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       child: Theme(
-        // The default divider draws a line through a glass card.
+        // The default divider draws a line through a glass panel.
         data: theme.copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           key: Key('scan-preparing-tile-${card.id}'),
@@ -1137,7 +1139,7 @@ class _HintCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return GlassCard(
+    return HudPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1194,7 +1196,7 @@ class _LiveCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final r = recognition;
     if (r == null) {
-      return GlassCard(
+      return HudPanel(
         key: const Key('scan-live-searching'),
         child: Row(
           children: [
@@ -1218,7 +1220,7 @@ class _LiveCard extends ConsumerWidget {
       // The vote has a leader but hasn't passed its bars. Honest progress
       // beats an infinite spinner: name the leader, show its REAL numbers,
       // still let the user tap through if they can see it's right.
-      return GlassCard(
+      return HudPanel(
         key: const Key('scan-live-tentative'),
         onTap: () => onOpen(r.equipmentId),
         child: Row(
@@ -1255,7 +1257,7 @@ class _LiveCard extends ConsumerWidget {
         ),
       );
     }
-    return GlassCard(
+    return HudPanel(
       key: const Key('scan-live-result'),
       onTap: () => onOpen(r.equipmentId),
       child: Row(
@@ -1305,6 +1307,11 @@ class _Matches extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final unsure = matches.isEmpty || matches.first.confidence < _unsureBelow;
+    // A hero only for a match confident enough to headline -- the same bar
+    // that already decides "Best matches" vs "Not sure", so the ring never
+    // claims a certainty the header itself is denying.
+    final hero = unsure ? null : matches.first;
+    final rest = hero == null ? matches : matches.skip(1);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1316,43 +1323,23 @@ class _Matches extends ConsumerWidget {
               ?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
-        for (final m in matches) ...[
-          GlassCard(
+        if (hero != null) ...[
+          _HeroMatchCard(
+            match: hero,
+            name: equipmentDisplayName(ref, hero.equipmentId),
+            onOpen: onOpen,
+          ),
+          const SizedBox(height: 8),
+        ],
+        for (final m in rest) ...[
+          HudPanel(
             onTap: () => onOpen(m.equipmentId),
             child: Row(
               children: [
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        equipmentDisplayName(ref, m.equipmentId),
-                        style: theme.textTheme.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w800),
-                      ),
-                      Text(
-                        AppLocalizations.of(context).scannerConfidence(
-                            (m.confidence * 100).toStringAsFixed(0)),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colors.textSecondary,
-                        ),
-                      ),
-                      // Only for a match that came from text printed on the
-                      // machine. The classifier fills `labelHint` too, but
-                      // with its own internal label (`treadmill`, `bench`) --
-                      // captioning that "read on the machine" would be a
-                      // straight lie, which is why the source is checked and
-                      // not merely the presence of the hint.
-                      if (m.source == MatchSource.printedText &&
-                          m.labelHint != null)
-                        Text(
-                          AppLocalizations.of(context)
-                              .scannerReadOnMachine(m.labelHint!.toUpperCase()),
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colors.textSecondary,
-                          ),
-                        ),
-                    ],
+                  child: _MatchDetails(
+                    match: m,
+                    name: equipmentDisplayName(ref, m.equipmentId),
                   ),
                 ),
                 const Icon(Icons.chevron_right_rounded),
@@ -1362,6 +1349,107 @@ class _Matches extends ConsumerWidget {
           const SizedBox(height: 8),
         ],
       ],
+    );
+  }
+}
+
+/// The name/confidence/printed-text-hint column shared by the hero card and
+/// every plain match row -- one place, so the honesty rule on
+/// [VisualMatch.labelHint] (only captioned "read on the machine" for
+/// [MatchSource.printedText]) cannot drift between the two.
+class _MatchDetails extends StatelessWidget {
+  const _MatchDetails({required this.match, required this.name, this.titleStyle});
+
+  final VisualMatch match;
+  final String name;
+  final TextStyle? titleStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          name,
+          style: titleStyle ??
+              theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        Text(
+          AppLocalizations.of(context)
+              .scannerConfidence((match.confidence * 100).toStringAsFixed(0)),
+          style: theme.textTheme.labelSmall
+              ?.copyWith(color: theme.colors.textSecondary),
+        ),
+        if (match.source == MatchSource.printedText && match.labelHint != null)
+          Text(
+            AppLocalizations.of(context)
+                .scannerReadOnMachine(match.labelHint!.toUpperCase()),
+            style: theme.textTheme.labelSmall
+                ?.copyWith(color: theme.colors.textSecondary),
+          ),
+      ],
+    );
+  }
+}
+
+/// The confident top match, headlined with a real confidence ring.
+///
+/// `HudRing` was already sized for this exact screen ("Scan 78" — `r 34,
+/// 2.5pt, no guide` — `hud_metric.dart`), just never wired to a real value
+/// here. The ring binds [VisualMatch.confidence] directly: `rankTopK`
+/// deliberately does not renormalise surviving candidates
+/// (`visual_equipment_match.dart`) after a past bug inflated a lone weak
+/// survivor to "100%", so this must never re-derive or invent a number either
+/// -- what the ring draws is the same figure the row below it has always
+/// printed as "N% confidence".
+class _HeroMatchCard extends StatelessWidget {
+  const _HeroMatchCard(
+      {required this.match, required this.name, required this.onOpen});
+
+  final VisualMatch match;
+  final String name;
+  final Future<void> Function(String equipmentId) onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    return HudPanel(
+      onTap: () => onOpen(match.equipmentId),
+      child: Row(
+        children: [
+          HudRing(
+            size: 78,
+            radius: 34,
+            strokeWidth: 2.5,
+            glowBlur: 6,
+            progress: match.confidence,
+            semanticsLabel: l10n.scannerMatchLabel,
+            child: HudRingLabel(
+              // Same rounding as the confidence line beside it
+              // (`_MatchDetails`) -- `.round()` here disagreed with that
+              // `toStringAsFixed(0)` on a binary-tie percentage, showing two
+              // different numbers for the one figure this file is most
+              // careful never to invent.
+              value: (match.confidence * 100).toStringAsFixed(0),
+              caption: l10n.scannerMatchLabel,
+              valueSize: 22,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _MatchDetails(
+              match: match,
+              name: name,
+              titleStyle: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w800),
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded),
+        ],
+      ),
     );
   }
 }
@@ -1428,7 +1516,7 @@ class _ScanAiCoachEntry extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('scan-ai-coach'),
       onTap: () => AiCoachSheet.show(
         context,
@@ -1474,7 +1562,7 @@ class _ScanNote extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(
         children: [
@@ -1563,7 +1651,7 @@ class _ScanProblemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1746,7 +1834,7 @@ class _ScanPrivacyStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

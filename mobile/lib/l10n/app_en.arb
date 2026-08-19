@@ -677,6 +677,10 @@
       }
     }
   },
+  "scannerMatchLabel": "Match",
+  "@scannerMatchLabel": {
+    "description": "Caption under the ring showing the top match's confidence as a number, e.g. a ring reading 80 with this word under it."
+  },
   "scannerReadOnMachine": "Read on the machine: {arg0}",
   "@scannerReadOnMachine": {
     "description": "Shown under a match that came from the text printed on the machine rather than from the classifier. Lets the user check the identification instead of trusting it.",

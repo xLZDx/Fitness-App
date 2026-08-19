@@ -17842,3 +17842,76 @@ Russian file via the Artifact tool (English is the durable in-repo record only, 
 
 Suites: none -- report authoring only, no app source changed by this entry's own commit. PUSH: pending
 this commit (operator rule: push immediately, verify remote==local before further work).
+
+## 2026-08-19 -- MVP Gate M4: Scanner reskinned onto the HUD kit (narrow scope, by design)
+
+**Scope decided deliberately narrower than M1/M2.** `scanner_page.dart` is 1769 lines with ~44 tests
+pinning safety-critical behavior (AI-Coach gating on stated health answers -- N04/R-07/F014 --, four
+distinct camera-permission-denial causes, a double-tap retry guard against duplicate paid cloud
+classification calls, the printed-text-vs-classifier-label honesty rule, offline-fallback disclosure).
+An Explore-agent structural survey (this session) plus a full manual read confirmed the screen already
+went through an earlier "camera-first, pull-up sheet" redesign pass (`R11c` comments, citing an older
+`App.tsx` prototype) -- structurally already close to the `.dc.html` handoff's Scan `sc-if` block
+(lines 180-226, re-extracted this session from `D:\Downloads\Mobile app design (1).zip` into the
+session scratchpad after the prior blocker entry's search missed `D:\Downloads` itself). Given that and
+the safety density, this gate is a **presentational container swap only**, not a rewrite: every `Key`,
+`onTap` callback, provider read, and safety branch in `scanner_page.dart` is unchanged.
+
+**What changed:** `GlassCard` -> `HudPanel` for `_PreparingTile`, `_HintCard`, all three `_LiveCard`
+states, `_ScanAiCoachEntry`, `_ScanNote`, `_ScanProblemCard`, `_ScanPrivacyStrip`, and the per-row match
+cards in `_Matches`. Deliberately left on `GlassCard`: the `scan.when(error: ...)` fallback and
+`_LiveSection`'s `scan-live-error` card, both using `GlassCard`'s `tint: theme.colorScheme.error` --
+`HudPanel` has no tint parameter, and a wrong-colored error card was judged worse than leaving two
+widgets on the old kit. Also left untouched, each for a specific documented reason rather than
+oversight: `ScanTopBar` (fixes a real Russian-locale overflow bug), `_CaptureCluster` (a11y-fixed
+shutter+tooltip), `_ScanSheet`'s opaque `Container` background (fixes glass-over-live-camera
+unreadability -- the same defect class `GlassCard.floating`'s own doc comment names), `_ViewfinderBanner`
+(explicit dark-token-over-camera choice), `_CameraUnavailable` (no handoff equivalent exists for this
+state at all).
+
+**One real, additive fidelity gain, bound to real data only:** `_HeroMatchCard`, a new widget rendering
+ONLY the top match when confident enough to headline (same `unsure` threshold, confidence >= 0.45,
+that already decides "Best matches" vs "Not sure -- closest matches" wording -- reused, not
+reinvented). Uses `HudRing(size: 78, radius: 34, strokeWidth: 2.5, glowBlur: 6)`, the exact geometry
+`hud_metric.dart`'s own doc comment already reserved for this screen ("Scan 78") but never wired to a
+real value until now. Bound directly to `VisualMatch.confidence` -- never re-derived or renormalised,
+per `rankTopK`'s own documented rule (a past bug inflated a lone weak survivor to a false "100%" by
+renormalising). Remaining matches (if any) still render as plain list rows below it. Match-row content
+(name/confidence/printed-text-hint) was extracted into a shared `_MatchDetails` widget so the hero card
+and the plain rows read the exact same fields for the exact same match object -- cannot drift apart.
+
+**New ARB key**: `scannerMatchLabel` ("Match" / "Совпадение"), the ring's caption -- no existing key
+matched the handoff's bare "Match" label; `HudRingLabel` uppercases it automatically, same convention
+as every other HUD section header in this app.
+
+**Independent adversarial review** (`flutter-reviewer` agent, full read of `scanner_page.dart` plus the
+`HudPanel`/`HudRing`/`GlassCard` implementations): no BLOCKER/MAJOR. Confirmed by direct citation, not
+assumed: the N04/R-07/F014 gate, all four camera-unavailable branches, the retry guard, and the
+printed-text honesty rule are byte-identical aside from the container swap; `_HeroMatchCard` can never
+show one match's ring next to another's text (both read the same `VisualMatch` object, not a re-fetch by
+index); `HudRing.progress` is clamped in the painter independently of the caller; the `HudPanel`+`onTap`
+swap without `semanticLabel` announces the same thing `GlassCard` did (both merge child text into one
+button-level `Semantics` node when no label override is given).
+
+**One MINOR finding, fixed on the spot:** the reviewer caught a real rounding-function mismatch --
+`_HeroMatchCard`'s ring used `.round()` while the confidence text beside it (and every other confidence
+display in this file) used `.toStringAsFixed(0)`, which can disagree by 1 on a binary-tie percentage.
+Fixed by switching the ring to the same `toStringAsFixed(0)` call, with a comment naming why -- this
+file is explicitly the one place in the app most careful never to show two different numbers for one
+real figure.
+
+**Verification:** `flutter analyze` on the touched files: clean. `flutter test
+test/features/scanner_page_test.dart`: 44/44, unmodified (no test file changes at all -- the swap
+needed none). `flutter test test/shared/widgets/hud/hud_components_test.dart`: 47/47. Full suite:
+3102/3103 -- the same pre-existing, order-dependent scheduler flake recorded at M2 and M3 (origin
+`test/widgets/app_buttons_test.dart:173`), not reproduced in isolation, not caused by this gate.
+
+**MVP status:** M1-M4 closed. M5 (Session), M6 (Profile), M7 (l10n/a11y), M8 (goldens), M9
+(falsification) remain. `equipmentMemoryProvider` (M3) is NOT yet wired into this screen -- deferred to
+a follow-up within this same gate's spirit (additive, low-risk) or to M5 if the Session screen turns out
+to be the more natural real estate for "you last did X here"; tracked here rather than silently dropped.
+`MVP_REACHED` is not yet claimed.
+
+Suites: `flutter analyze` clean; `flutter test` 44/44 (scanner) + 47/47 (HUD kit) + 3102/3103 (full
+suite, 1 pre-existing unrelated flake). PUSH: pending this entry's commit (operator rule: push
+immediately, verify remote==local before further work).
