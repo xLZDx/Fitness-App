@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_palette.dart';
-import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/hud_tokens.dart';
+import '../../../core/theme/hud_typography.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 
 /// The question, rendered above each step's body.
 ///
@@ -25,29 +26,14 @@ class StepTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontSize: 30,
-            fontWeight: FontWeight.w800,
-            height: 1.1,
-            color: theme.colors.textPrimary,
-          ),
-        ),
+        Text(title, style: HudType.heroTitle(t).copyWith(fontSize: 26).overPhoto(t)),
         if (subtitle != null) ...[
           const SizedBox(height: 6),
-          Text(
-            subtitle!,
-            style: theme.textTheme.bodySmall?.copyWith(
-              fontSize: 13,
-              height: 1.5,
-              color: theme.colors.textSecondary,
-            ),
-          ),
+          Text(subtitle!, style: HudType.body(t, size: 13).overPhoto(t)),
         ],
       ],
     );
@@ -60,16 +46,10 @@ class FieldLabel extends StatelessWidget {
   final String label;
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     return Padding(
       padding: const EdgeInsets.only(top: 18, bottom: 6),
-      child: Text(
-        label,
-        style: theme.textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w700,
-          color: theme.colors.textSecondary,
-        ),
-      ),
+      child: Text(label, style: HudType.label(t, size: 11).overPhoto(t)),
     );
   }
 }
@@ -92,11 +72,11 @@ class SingleChoiceChips<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+      spacing: 10,
+      runSpacing: 10,
       children: [
         for (final opt in options)
-          _ChoicePill(
+          HudChip(
             label: labelOf(opt),
             selected: value == opt,
             onTap: () => onChanged(opt),
@@ -124,11 +104,11 @@ class MultiChoiceChips<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+      spacing: 10,
+      runSpacing: 10,
       children: [
         for (final opt in options)
-          _ChoicePill(
+          HudChip(
             label: labelOf(opt),
             selected: values.contains(opt),
             onTap: () {
@@ -171,145 +151,75 @@ class ChoiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
+    final Color ink = selected ? t.accent : t.textSecondary;
     // `selected` carries the answer, and colour is the only thing that says so.
     // Without this a screen reader reads a list of sentences with no indication
     // that any of them is pressable or that one is already chosen.
     return Semantics(
       button: true,
       selected: selected,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            color: selected
-                ? AppPalette.auroraLime.withValues(alpha: 0.16)
-                : theme.colors.surfaceInteractive,
-            border: Border.all(
-              color: selected ? AppPalette.auroraLime : theme.colors.outline,
-              width: selected ? 2 : 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              if (icon != null) ...[
-                Icon(
-                  icon,
-                  size: 22,
-                  color: selected
-                      ? AppPalette.auroraLimeDeep
-                      : theme.colors.textSecondary,
-                ),
-                const SizedBox(width: 14),
-              ],
-              // Flexible, not fixed: these titles are questionnaire answers and
-              // the Russian ones are the longest strings in the flow. A row
-              // that cannot shrink is the `/scan` overflow again.
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: theme.colors.textPrimary,
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 12,
-                          color: theme.colors.textSecondary,
-                        ),
-                      ),
-                    ],
+      child: HudKeyboardActivation(
+        onActivate: onTap,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: HudTokens.minTapTarget),
+            child: HudSurface(
+              // `subPanel` is the lightest glass tier — right for a row inside a
+              // step's content rather than a whole-screen card. Selection reuses
+              // the same accent recipe `HudChip` already carries (gradient wash
+              // plus a matching hairline) rather than a bespoke lime-alpha fill,
+              // so "selected" reads identically everywhere the app says it.
+              glass: t.subPanel,
+              overlay: selected ? t.accentChipGradient : null,
+              border: selected ? t.accentChipBorder : null,
+              topHighlight: selected ? t.accentChipTopHighlight : null,
+              borderRadius: BorderRadius.circular(18),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              // No `ExcludeSemantics` here: the outer `Semantics(button:
+              // true, selected: ...)` carries no `label` of its own, so
+              // excluding the child would announce a selectable button with
+              // no text at all. Left to merge naturally, a screen reader
+              // reads title, subtitle and the selected state together —
+              // exactly what this row shows.
+              child: Row(
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 22, color: ink),
+                    const SizedBox(width: 14),
                   ],
-                ),
-              ),
-              const SizedBox(width: 10),
-              // The ring reads as "chosen" without relying on the fill colour,
-              // which matters for anyone who cannot separate the lime tint from
-              // the muted surface behind it.
-              Icon(
-                selected
-                    ? Icons.radio_button_checked_rounded
-                    : Icons.radio_button_unchecked_rounded,
-                size: 20,
-                color: selected
-                    ? AppPalette.auroraLimeDeep
-                    : theme.colors.textSecondary,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ChoicePill extends StatelessWidget {
-  const _ChoicePill({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    // Выбранность здесь несёт только градиент. Для скринридера пилюля была
-    // просто текстом: ни что по ней можно нажать, ни какая из них выбрана —
-    // а это единственный способ ответить на вопрос анкеты.
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            // R9: the "selected" indicator, one colour everywhere a pill is
-            // chosen -- moved off the pre-R9 pink/violet pair onto lime.
-            gradient: selected
-                ? const LinearGradient(colors: [
-                    AppPalette.auroraLime,
-                    AppPalette.auroraLimeDeep,
-                  ])
-                : null,
-            color: selected ? null : Colors.white.withValues(alpha: 0.32),
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: AppPalette.auroraLime.withValues(alpha: 0.30),
-                      blurRadius: 14,
-                      offset: const Offset(0, 6),
+                  // Flexible, not fixed: these titles are questionnaire
+                  // answers and the Russian ones are the longest strings in
+                  // the flow. A row that cannot shrink is the `/scan`
+                  // overflow again.
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(title, style: HudType.rowTitle(t, strong: true)),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: 2),
+                          Text(subtitle!, style: HudType.body(t, size: 12)),
+                        ],
+                      ],
                     ),
-                  ]
-                : null,
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: selected
-                  ? AppSemanticColors.onGradientInk
-                  : theme.colorScheme.onSurface,
-              fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-              fontSize: 14,
+                  ),
+                  const SizedBox(width: 10),
+                  // The ring reads as "chosen" without relying on the fill
+                  // colour, which matters for anyone who cannot separate the
+                  // accent tint from the muted surface behind it.
+                  Icon(
+                    selected
+                        ? Icons.radio_button_checked_rounded
+                        : Icons.radio_button_unchecked_rounded,
+                    size: 20,
+                    color: ink,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -374,31 +284,29 @@ class _GlassTextFieldState extends State<GlassTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     return TextFormField(
       controller: _controller,
       onChanged: widget.onChanged,
       keyboardType: widget.keyboardType,
       maxLines: widget.maxLines,
-      style: theme.textTheme.bodyLarge,
+      style: HudType.body(t, size: 15).copyWith(color: t.textPrimary),
       decoration: InputDecoration(
         hintText: widget.hint,
+        hintStyle: HudType.body(t, size: 15).copyWith(color: t.textTertiary),
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.40),
+        fillColor: t.subPanel.fill,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: t.subPanel.innerBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(color: t.subPanel.innerBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: theme.colorScheme.primary.withValues(alpha: 0.6),
-            width: 1.4,
-          ),
+          borderSide: BorderSide(color: t.accent.withValues(alpha: 0.60), width: 1.4),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

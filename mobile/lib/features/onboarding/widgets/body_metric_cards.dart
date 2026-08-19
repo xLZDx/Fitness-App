@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_semantic_colors.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../core/theme/hud_tokens.dart';
+import '../../../core/theme/hud_typography.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../data/body_metrics.dart';
 
 /// The design's `BMICard`, with the caveat the design does not carry.
@@ -22,19 +23,18 @@ class BmiCard extends StatelessWidget {
     if (bmi == null) return const SizedBox.shrink();
 
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     final band = bandFor(bmi);
     // Only the healthy band is drawn in the success colour. The other three
     // are neutral, not alarming: this screen is someone's first five minutes
     // in the app, and a red badge on a number that cannot tell muscle from
     // fat would be both discouraging and wrong.
-    final tone = band == BmiBand.healthy
-        ? theme.colors.success
-        : theme.colors.textSecondary;
+    final tone = band == BmiBand.healthy ? t.success : t.textSecondary;
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('onb.bmiCard'),
-      borderRadius: 16,
+      dense: true,
+      radius: 16,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,25 +43,19 @@ class BmiCard extends StatelessWidget {
             children: [
               Text(
                 l10n.onbBmiTitle(bmi.toStringAsFixed(1)),
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w800),
+                style: HudType.panelTitle(t).copyWith(fontSize: 14),
               ),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
                   _bandLabel(l10n, band),
-                  style: theme.textTheme.labelLarge
-                      ?.copyWith(color: tone, fontWeight: FontWeight.w600),
+                  style: HudType.label(t, size: 11, color: tone),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 6),
-          Text(
-            l10n.onbBmiCaveat,
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: theme.colors.textSecondary),
-          ),
+          Text(l10n.onbBmiCaveat, style: HudType.body(t, size: 12)),
         ],
       ),
     );
@@ -96,21 +90,21 @@ class WeightDeltaCard extends StatelessWidget {
     if (delta == null) return const SizedBox.shrink();
 
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     // Rounded to the ruler's own resolution: the pickers move in half kilos,
     // so a delta with more precision than that is arithmetic noise.
     final rounded = (delta * 2).round() / 2;
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('onb.deltaCard'),
-      borderRadius: 16,
+      dense: true,
+      radius: 16,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Text(
         rounded == 0
             ? l10n.onbDeltaSame
             : l10n.onbDeltaTitle(_signed(rounded)),
-        style: theme.textTheme.titleSmall
-            ?.copyWith(fontWeight: FontWeight.w700),
+        style: HudType.panelTitle(t).copyWith(fontSize: 14),
       ),
     );
   }

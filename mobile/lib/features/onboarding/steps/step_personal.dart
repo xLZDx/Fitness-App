@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../core/theme/hud_tokens.dart';
+import '../../../core/theme/hud_typography.dart';
 import '../../profile/data/profile_models.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/body_metric_cards.dart';
@@ -14,6 +16,7 @@ class StepPersonal extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final HudTokens t = context.hud;
     final personal = ref.watch(questionnaireDraftProvider).personal;
     final notifier = ref.read(questionnaireDraftProvider.notifier);
 
@@ -51,7 +54,7 @@ class StepPersonal extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 6),
             child: Text(
               l10n.onbAgeApprox(personal.age ?? 0),
-              style: Theme.of(context).textTheme.bodySmall,
+              style: HudType.body(t, size: 12).overPhoto(t),
             ),
           ),
         FieldLabel(l10n.onbGender),

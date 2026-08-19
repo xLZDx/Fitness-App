@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../core/theme/app_palette.dart';
-import '../../core/theme/app_semantic_colors.dart';
-import '../../shared/widgets/glass.dart';
+import '../../core/background/hud_sky.dart';
+import '../../core/theme/hud_tokens.dart';
+import '../../core/theme/hud_typography.dart';
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../auth/state/auth_providers.dart';
 import '../profile/data/profile_models.dart';
 import '../profile/state/profile_providers.dart';
@@ -179,44 +180,60 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     final answered =
         isOnboardingStepAnswered(kOnboardingOrder[_index], draft);
 
-    return FrostedScaffold(
-      // The counter moved into `ObProgressHeader`; leaving "Step N of M" here
-      // as well would print it twice on every screen.
-      appBar: GlassAppBar(title: _titleFor(kOnboardingOrder[_index], l10n)),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 88, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ObProgressHeader(
-                step: _index + 1,
-                total: _stepCount,
-                onBack: (_index == 0 || isSubmitting) ? null : _back,
-              ),
-              const SizedBox(height: 18),
-              Expanded(
-                child: PageView.builder(
-                  controller: _ctrl,
-                  onPageChanged: (i) => setState(() => _index = i),
-                  itemCount: _stepCount,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, i) => SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: _widgetFor(kOnboardingOrder[i]),
+    final HudTokens t = context.hud;
+
+    // A full-screen route pushed above `MainShell` (never one of its five
+    // tabs), so it mounts its own sky rather than relying on an ancestor —
+    // the same reason Session and the form coach each do the same. The phase
+    // is the real clock, exactly like `MainShell`'s: onboarding has no reason
+    // to show a different time of day than the rest of the app a moment
+    // later.
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: HudSkyBackground(
+        selection: HudSkySelection(phase: HudSkyPhase.forTime(DateTime.now())),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // The counter lives in `ObProgressHeader`; printing "Step N of
+                // M" again here would say it twice on every screen.
+                Text(
+                  _titleFor(kOnboardingOrder[_index], l10n),
+                  style: HudType.label(t, size: 11).overPhoto(t),
+                ),
+                const SizedBox(height: 10),
+                ObProgressHeader(
+                  step: _index + 1,
+                  total: _stepCount,
+                  onBack: (_index == 0 || isSubmitting) ? null : _back,
+                ),
+                const SizedBox(height: 18),
+                Expanded(
+                  child: PageView.builder(
+                    controller: _ctrl,
+                    onPageChanged: (i) => setState(() => _index = i),
+                    itemCount: _stepCount,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, i) => SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: _widgetFor(kOnboardingOrder[i]),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              _PrimaryCta(
-                label: !answered
-                    ? l10n.onboardingSkipStep
-                    : (isLast ? l10n.commonDone : l10n.commonNext),
-                answered: answered,
-                busy: isSubmitting,
-                onTap: _next,
-              ),
-            ],
+                const SizedBox(height: 12),
+                _PrimaryCta(
+                  label: !answered
+                      ? l10n.onboardingSkipStep
+                      : (isLast ? l10n.commonDone : l10n.commonNext),
+                  answered: answered,
+                  busy: isSubmitting,
+                  onTap: _next,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -248,8 +265,8 @@ class _PrimaryCta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colors;
+    final HudTokens t = context.hud;
+    final Color ink = answered ? t.onAccent : t.textPrimary;
     // Спиннер подменяет текст, поэтому под ним у элемента не остаётся никакой
     // метки — скринридер молчал бы ровно тогда, когда человек ждёт ответа. В
     // обычном состоянии метку даёт сам Text, и второй label превратил бы
@@ -258,52 +275,40 @@ class _PrimaryCta extends StatelessWidget {
       button: true,
       enabled: !busy,
       label: busy ? label : null,
-      child: GestureDetector(
-        key: const Key('onboarding.cta'),
-        onTap: busy ? null : onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          height: 54,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            // R9: brand CTA, moved off the pre-R9 pink/violet pair.
-            gradient: answered
-                ? const LinearGradient(colors: [
-                    AppPalette.auroraLime,
-                    AppPalette.auroraLimeDeep,
-                  ])
-                : null,
-            color: answered ? null : colors.surfaceInteractive,
-            boxShadow: answered
-                ? [
-                    BoxShadow(
-                      color: AppPalette.auroraLime.withValues(alpha: 0.40),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Center(
-            child: busy
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor:
-                          AlwaysStoppedAnimation(AppSemanticColors.onGradientInk),
-                    ),
-                  )
-                : Text(
-                    label,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: answered
-                          ? AppSemanticColors.onGradientInk
-                          : colors.textSecondary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+      child: HudKeyboardActivation(
+        onActivate: busy ? null : onTap,
+        child: GestureDetector(
+          key: const Key('onboarding.cta'),
+          onTap: busy ? null : onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 54),
+            child: HudSurface(
+              // The same accent recipe every other primary action in the app
+              // uses (`HudButton`'s `accent` tone) rather than a bespoke
+              // gradient — R9's brand CTA lives in one token set now, not a
+              // literal lime/lime-deep pair repeated per screen.
+              glass: t.button,
+              overlay: answered ? t.accentChipGradient : null,
+              border: answered ? t.accentChipBorder : null,
+              topHighlight: answered ? t.accentChipTopHighlight : null,
+              borderRadius: BorderRadius.circular(20),
+              child: Center(
+                child: busy
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(ink),
+                        ),
+                      )
+                    : Text(
+                        label,
+                        style: HudType.panelTitle(t)
+                            .copyWith(fontSize: 16, color: ink),
+                      ),
+              ),
+            ),
           ),
         ),
       ),

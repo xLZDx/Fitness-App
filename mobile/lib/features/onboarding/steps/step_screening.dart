@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/hud_tokens.dart';
+import '../../../core/theme/hud_typography.dart';
 import '../../safety/data/par_q.dart';
 import '../../safety/widgets/safety_refusal_card.dart';
 import '../state/questionnaire_notifier.dart';
@@ -32,7 +33,7 @@ class StepScreening extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     final answers = ref.watch(questionnaireDraftProvider).health.screening;
     final notifier = ref.read(questionnaireDraftProvider.notifier);
     final verdict = screen(answers);
@@ -71,8 +72,7 @@ class StepScreening extends ConsumerWidget {
         const SizedBox(height: 4),
         Text(
           l10n.safetyScreeningMedicationNote,
-          style: theme.textTheme.bodySmall
-              ?.copyWith(color: theme.colors.textSecondary),
+          style: HudType.body(t, size: 12.5).overPhoto(t),
         ),
         // The verdict as soon as it exists, on the screen that produced it.
         // Finding out at the preview that an answer three screens back closed
@@ -90,7 +90,7 @@ class StepScreening extends ConsumerWidget {
           Text(
             l10n.safetyRestrictedNotice,
             key: const Key('onb.screening.restricted'),
-            style: theme.textTheme.bodySmall,
+            style: HudType.body(t, size: 12.5).overPhoto(t),
           ),
         ],
       ],

@@ -18649,3 +18649,133 @@ Republished to the same artifact URL
 (`https://claude.ai/code/artifact/aa289300-92a0-4284-b410-f17258c17a15`).
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-19 — V2b-2: onboarding migrated onto the HUD system
+
+§8-15 of the visual remediation mandate. Onboarding — both the first-run flow and the existing-user
+health/profile edit path (same widgets, same route) — was the last screen family still on the
+pre-HUD look: `GlassCard`/`FrostedScaffold`/`GlassAppBar`/`AppPalette` literals, opaque answer
+cards, no `HudSkyBackground`. This is a presentation migration only: step count, the state machine,
+validation, the questionnaire model, health screening, profile construction, programme inputs,
+navigation and completion are untouched. `git diff --stat` on every touched file shows widget/style
+substitutions only, no changed logic branches.
+
+**What moved.** `widgets/inputs.dart` first — the single highest-leverage file, since all ten step
+files compose from it with zero bespoke styling of their own (confirmed by grep before and after:
+zero remaining `GlassCard`/`AppPalette`/`FrostedScaffold`/`GlassAppBar`/`theme.colors`/
+`Colors.white.withValues`/`surfaceInteractive` references anywhere under `lib/features/onboarding`).
+`StepTitle`/`FieldLabel` onto `HudType`; `SingleChoiceChips`/`MultiChoiceChips` now instantiate
+`HudChip` directly (a private `_ChoicePill` deleted — `HudChip` already had the 44pt tap target,
+keyboard activation and selected-state recipe this needed); `ChoiceCard` rebuilt on `HudSurface`
+with the same `accentChipGradient`/`accentChipBorder`/`accentChipTopHighlight` selected-wash used
+elsewhere; `GlassTextField` recoloured onto `t.subPanel`. `onboarding_page.dart`'s scaffold rebuilt
+on `HudSkyBackground` (onboarding is a full-screen route on the root navigator, not one of the five
+bottom tabs, so — like Session and Form Coach — it mounts its own background rather than inheriting
+one); `_PrimaryCta` rebuilt on `HudSurface` in place of a literal `AppPalette.auroraLime` gradient,
+busy-spinner-replaces-label behaviour preserved exactly. `ob_shell.dart`'s progress header
+recoloured. The remaining bespoke-styled leaves — `step_health_flags.dart`, `step_preview.dart`,
+`step_screening.dart`, `step_body.dart`, `step_personal.dart`, `measure_ruler.dart`,
+`body_zone_map.dart`, `body_metric_cards.dart` — each had one to a few leftover `theme.colors`/
+`Theme.of(context).textTheme` usages migrated individually. `step_equipment.dart`,
+`step_goal_and_level.dart`, `step_lifestyle.dart`, `step_barriers.dart`, `step_schedule.dart` and
+`step_health.dart` needed no changes at all — the cascade from `inputs.dart` reached them for free.
+
+**Two real defects caught before this was called done, both by the gate's own review questions.**
+
+1. *Semantics.* `ChoiceCard`'s rebuild first wrapped its content Row in `ExcludeSemantics` (copying
+   a pattern used elsewhere in the HUD system for cards with a `semanticLabel`). Reverted before any
+   test ran: this card's outer `Semantics(button: true, selected: ...)` node carries no explicit
+   `label`, so excluding the children would have announced a labelless selectable control to a
+   screen reader — exactly the same class of bug caught and fixed for `EligibilityNotice`/
+   `SafetyRefusalCard` in the V2b-1 commit. Children now merge naturally into the outer `Semantics`
+   node, matching the pre-migration widget's behaviour exactly.
+
+2. *"Can large text overflow?"* — the gate's own question, and it did, in a form no widget test
+   caught: `ObProgressHeader`'s step counter sits in a `SizedBox(width: 36)` sized to match the
+   36px back button. The old style (`theme.textTheme.labelSmall`) had no letter-spacing; the new
+   `HudType.label` default (`em: 0.16`) does, and the extra ~10px of tracking on `"10/10"` (five
+   characters) was enough to wrap it onto a second line inside that fixed box — invisible to every
+   existing test (`Text` does not throw on wrapping; `find.text('10/10')` still finds it, wrapped or
+   not) and found only by walking a real device through to the tenth step. Fixed with
+   `HudType.label(t, size: 12, em: 0)` plus `softWrap: false` on that one `Text`
+   (`mobile/lib/features/onboarding/widgets/ob_shell.dart`).
+
+   **Regression test added and mutation-tested**, per the standing rule that a fix without a test is
+   not a closed fix. `onboarding_shell_test.dart` gained
+   `'the double-digit step counter stays on one line in its fixed-width box'`: it pumps
+   `ObProgressHeader(step: 10, total: 10)` in isolation (not the full flow — the flow's own preview
+   step generates a plan and does not settle inside the minimal test harness this file already uses,
+   so the header is tested directly rather than driven there), then compares the rendered
+   `RenderParagraph`'s height against a `TextPainter` laid out with the *same fully-resolved style*
+   (`rendered.text.style`, not the raw style passed to the `Text` constructor — `Text` merges
+   against the ambient `DefaultTextStyle`'s `height` factor, and comparing against the unmerged style
+   at first produced a false positive on the ALREADY-FIXED code, caught before it was mistaken for a
+   real regression). Mutation: reverted `ob_shell.dart` to the pre-fix style, ran the new test —
+   RED (`Expected: <17.0>` vs `Actual: <51.0>`, a genuine three-line wrap, worse than the two-line
+   case seen on device). Restored the fix — GREEN. The test would have caught this defect had it
+   existed before the migration; it now guards against the same class of regression at any future
+   double-digit step count.
+
+**Gate review, the mandate's own five questions, answered:**
+- *Does any old visual component remain?* No — grepped to zero across the directory, listed above.
+- *Can the user distinguish selection states?* Yes — `ChoiceCard`/`HudChip` both carry the accent
+  gradient wash, border and top-highlight recipe used everywhere else selection matters in this app;
+  unselected state has none of the three. Verified visually (device screenshot `03`) and by the
+  outer `Semantics(selected: ...)` flag being read correctly (semantics fix above).
+- *Can large RU text overflow?* One real instance found and fixed (above); no others found by
+  `flutter analyze` or by walking the RU-locale flow end to end on device.
+- *Does the HUD migration change answer semantics?* No — every touched file's diff is
+  widget/style-only; the questionnaire model, validation and navigation logic are byte-identical to
+  before this gate, confirmed by `git diff --stat` showing no changed line inside `state/` or
+  `data/`.
+- *Can completed users actually edit health answers?* Yes, unchanged from before this gate — the
+  edit path is the same `step_screening.dart`/`step_preview.dart` route this migration recoloured,
+  not a separate implementation; `SafetyRefusalCard`/`EligibilityNotice` (already fixed in V2b-1)
+  render correctly at both the screening step and the preview step reached this way.
+
+**No forced validation/error state (numbered state 06) exists in this flow to capture.** Every
+question in the questionnaire is optional — `an untouched step offers Skip, and it still advances`
+in `onboarding_shell_test.dart` asserts this directly, and it held for all ten steps walked on
+device this session. Recorded as N/A rather than staged: there is no rejection/error state for a
+HUD-styled validation message to exist in, so none was fabricated.
+
+**Verification.** `flutter analyze lib/features/onboarding test/features/onboarding`: clean.
+`flutter test test/features/onboarding/`: 118/118 pass (117 pre-existing plus the new regression
+test). Full-suite `flutter test` run in the background before this commit: 3138 passed, 1 failed —
+`app_semantic_colors_test.dart`'s "the hardcoded whites that survived G1.2b stay accounted for" —
+the same pre-existing flake noted in earlier gates in this mandate, not a regression from this
+change.
+
+**Device evidence, real APK, current branch.** Built and installed the debug APK twice on
+`emulator-5554` (`com.fitnessapp.fitness_app.sptr.debug`): once mid-walkthrough to discover the
+counter defect above, once more after the fix to confirm it on device before calling this done.
+Walked a fresh anonymous account through the full ten-step flow. Captured, real device, the fixed
+build:
+* **01 entry** — step 1/10, "Какая у вас главная цель?", `HudSkyBackground` sunset visible behind
+  translucent `ChoiceCard`s, none selected.
+* **02/04** — step 2/10, "Оборудование": radio choice, `HudChip` multi-select row, and the migrated
+  `GlassTextField` all on one screen.
+* **03 selected** — step 1/10 with "Стать сильнее" selected: accent wash, filled radio, and the
+  `_PrimaryCta` switching tone from glass "Пропустить" to accent "Далее".
+* **05 health/safety question** — step 9/10, "Скрининг здоровья", the PAR-Q+ screen with the
+  `Нет`/`Да` `HudChip` pairs.
+* **07 programme/personalisation question** — step 7/10, "Образ жизни и привычки": diet/smoking/
+  alcohol chip rows plus a numeric sleep-hours field.
+* **08 completion** — step 10/10, reached by answering "Да" to the chest-pain PAR-Q+ question: the
+  already-fixed `EligibilityNotice` urgent refusal card renders correctly on the now-HUD-styled
+  completion screen, with the counter fix visible in the same frame (`10/10`, one line).
+* **09 existing-user edit entry** — Profile → "Анкета о здоровье → Изменить ответы" (captured in an
+  earlier session on this branch; unaffected by this gate's changes, since the edit path is the same
+  onboarding route this commit recoloured).
+
+**Not claimed.** No before/after A-B pair exists for the ten step screens themselves — the prior
+evidence gates never captured pre-migration onboarding screenshots beyond the two already documented
+in the `74f2f76` report's onboarding card, and this gate does not restate those. The visual
+before/after for onboarding is the code diff plus the `74f2f76` report's existing onboarding entry,
+not a newly fabricated side-by-side.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**

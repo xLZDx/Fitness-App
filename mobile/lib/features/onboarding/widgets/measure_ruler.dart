@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/hud_tokens.dart';
+import '../../../core/theme/hud_typography.dart';
 
 /// Maps a ruler's value range onto pixels, and back.
 ///
@@ -142,8 +143,7 @@ class _MeasureRulerState extends State<MeasureRuler> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colors;
+    final HudTokens t = context.hud;
     final scale = _scale;
     final current = scale.valueAt(_offset);
     final answered = widget.value != null;
@@ -169,10 +169,11 @@ class _MeasureRulerState extends State<MeasureRuler> {
           children: [
             Text(
               '${_format(current)} ${widget.unit}'.trim(),
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: answered ? colors.accentPrimary : colors.textSecondary,
-              ),
+              style: HudType.heroTitle(t)
+                  .copyWith(
+                      fontSize: 24,
+                      color: answered ? t.accent : t.textSecondary)
+                  .overPhoto(t),
             ),
             const SizedBox(height: 6),
             SizedBox(
@@ -184,12 +185,12 @@ class _MeasureRulerState extends State<MeasureRuler> {
                     scale: scale,
                     offset: _offset,
                     majorEvery: widget.majorEvery,
-                    tick: colors.textDisabled,
-                    majorTick: colors.textSecondary,
-                    needle: colors.accentPrimary,
-                    label: colors.textSecondary,
+                    tick: t.textTertiary,
+                    majorTick: t.textSecondary,
+                    needle: t.accent,
+                    label: t.textSecondary,
                     textDirection: Directionality.of(context),
-                    labelStyle: theme.textTheme.labelSmall,
+                    labelStyle: HudType.label(t, size: 10),
                   ),
                 ),
               ),

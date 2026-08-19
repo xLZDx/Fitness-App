@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,6 +8,7 @@ import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/features/onboarding/data/step_answered.dart';
 import 'package:fitness_app/features/onboarding/onboarding_page.dart';
 import 'package:fitness_app/features/onboarding/state/questionnaire_notifier.dart';
+import 'package:fitness_app/features/onboarding/widgets/ob_shell.dart';
 import 'package:fitness_app/features/profile/data/mock_profile_repository.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
 import 'package:fitness_app/features/profile/state/profile_providers.dart';
@@ -198,5 +200,49 @@ void main() {
 
     expect(find.bySemanticsLabel('Step 1 of $total'), findsOneWidget);
     handle.dispose();
+  });
+
+  testWidgets(
+      'the double-digit step counter stays on one line in its fixed-width box',
+      (tester) async {
+    // ObProgressHeader in isolation, not the full flow: the counter sits in a
+    // SizedBox(width: 36) alongside the 36px back button, for symmetry.
+    // HudType.label's default letter-spacing widens "10/10" just enough to
+    // wrap onto a second line inside that box -- silent, since Text does not
+    // throw on wrapping, and only visible on a device once a flow reaches
+    // double digits.
+    const demoStep = 10;
+    const demoTotal = 10;
+    await tester.pumpWidget(MaterialApp(
+      locale: kTestLocale,
+      localizationsDelegates: kTestLocalizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const Scaffold(
+        body: ObProgressHeader(step: demoStep, total: demoTotal),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('$demoStep/$demoTotal'), findsOneWidget);
+
+    final rendered = tester
+        .renderObject<RenderParagraph>(find.text('$demoStep/$demoTotal'));
+    // The RESOLVED style, as `RenderParagraph` actually paints it -- not the
+    // raw style passed to the `Text` constructor. `Text` merges its style
+    // against the ambient `DefaultTextStyle` (Scaffold/MaterialApp supply a
+    // `height` factor that `HudType.label` itself leaves unset), so measuring
+    // against the unmerged style understates the real single-line height and
+    // makes a genuinely single-line render look "too tall" by comparison.
+    final effectiveSpan = rendered.text as TextSpan;
+    final scaler = MediaQuery.textScalerOf(
+        tester.element(find.text('$demoStep/$demoTotal')));
+    final singleLine = TextPainter(
+      text: TextSpan(text: '$demoStep/$demoTotal', style: effectiveSpan.style),
+      textDirection: TextDirection.ltr,
+      textScaler: scaler,
+    )..layout();
+    expect(rendered.size.height, closeTo(singleLine.height, 0.5),
+        reason: 'e.g. "$demoStep/$demoTotal" wrapped onto a second line '
+            'inside the fixed 36px box instead of staying on one');
   });
 }

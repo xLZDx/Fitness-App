@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/hud_tokens.dart';
+import '../../../core/theme/hud_typography.dart';
 import '../../profile/data/profile_models.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/body_zone_map.dart';
@@ -203,12 +204,13 @@ class _TabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: theme.colors.surfaceInteractive,
+        color: t.subPanel.fill,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: t.subPanel.innerBorder),
       ),
       child: Row(
         children: [
@@ -225,20 +227,15 @@ class _TabBar extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: i == index
-                          ? theme.colorScheme.surface
+                          ? t.accent.withValues(alpha: 0.20)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       labels[i],
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight:
-                            i == index ? FontWeight.w700 : FontWeight.w500,
-                        color: i == index
-                            ? theme.colors.textPrimary
-                            : theme.colors.textSecondary,
-                      ),
+                      style: HudType.rowTitle(t, strong: i == index).copyWith(
+                          color: i == index ? t.textPrimary : t.textSecondary),
                     ),
                   ),
                 ),
@@ -269,7 +266,7 @@ class _Disclosure extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -284,17 +281,14 @@ class _Disclosure extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      title,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: theme.colors.textSecondary,
-                      ),
-                    ),
+                    child: Text(title,
+                        style: HudType.rowTitle(t, strong: true)
+                            .copyWith(color: t.textSecondary)
+                            .overPhoto(t)),
                   ),
                   Icon(
                     open ? Icons.expand_less : Icons.expand_more,
-                    color: theme.colors.textSecondary,
+                    color: t.textSecondary,
                   ),
                 ],
               ),

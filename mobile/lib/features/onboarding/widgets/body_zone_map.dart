@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_palette.dart';
-import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/hud_tokens.dart';
 import '../../profile/data/profile_models.dart';
 
 /// The design box every rectangle below is expressed in. The widget scales to
@@ -155,7 +154,7 @@ class BodyZoneMap<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     return AspectRatio(
       aspectRatio: kBodyMapDesignSize.width / kBodyMapDesignSize.height,
       child: LayoutBuilder(
@@ -171,8 +170,9 @@ class BodyZoneMap<T> extends StatelessWidget {
               painter: _BodyPainter<T>(
                 selected: selected,
                 rects: rects,
-                silhouette: theme.colors.surfaceInteractive,
-                outline: theme.colors.outline,
+                silhouette: t.subPanel.fill,
+                outline: t.subPanel.innerBorder,
+                accent: t.accent,
               ),
             ),
           );
@@ -188,12 +188,14 @@ class _BodyPainter<T> extends CustomPainter {
     required this.rects,
     required this.silhouette,
     required this.outline,
+    required this.accent,
   });
 
   final Set<T> selected;
   final Map<T, List<Rect>> rects;
   final Color silhouette;
   final Color outline;
+  final Color accent;
 
   /// The body itself: head, torso, arms, legs. Purely decorative — nothing here
   /// is tappable, so it is drawn first and the zones sit on top of it.
@@ -221,13 +223,11 @@ class _BodyPainter<T> extends CustomPainter {
     for (final entry in rects.entries) {
       final isOn = selected.contains(entry.key);
       final fill = Paint()
-        ..color = isOn
-            ? AppPalette.auroraLime.withValues(alpha: 0.85)
-            : Colors.transparent;
+        ..color = isOn ? accent.withValues(alpha: 0.85) : Colors.transparent;
       final stroke = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = isOn ? 2 : 1
-        ..color = isOn ? AppPalette.auroraLimeDeep : outline;
+        ..color = isOn ? accent : outline;
       for (final r in entry.value) {
         final rect = RRect.fromRectAndRadius(
           Rect.fromLTWH(r.left * sx, r.top * sy, r.width * sx, r.height * sy),
@@ -248,5 +248,6 @@ class _BodyPainter<T> extends CustomPainter {
       // rectangles until something else forced a repaint.
       !identical(old.rects, rects) ||
       old.silhouette != silhouette ||
-      old.outline != outline;
+      old.outline != outline ||
+      old.accent != accent;
 }

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/hud_tokens.dart';
+import '../../../core/theme/hud_typography.dart';
 import '../../ai_planner/data/workout_plan.dart';
 import '../../ai_planner/plan_reason_text.dart';
 import '../../safety/widgets/eligibility_notice.dart';
@@ -89,17 +90,14 @@ class StepPreview extends ConsumerWidget {
         text: l10n.onbPreviewEmpty,
       );
     }
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     return Column(
       key: const Key('onb.preview.plan'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           l10n.onbPreviewLength(plan.estimatedMinutes),
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: theme.colors.textPrimary,
-          ),
+          style: HudType.panelTitle(t).copyWith(fontSize: 16).overPhoto(t),
         ),
         const SizedBox(height: 12),
         for (final ex in plan.exercises)
@@ -110,8 +108,7 @@ class StepPreview extends ConsumerWidget {
         // reading.
         Text(
           planRationaleText(AppLocalizations.of(context), plan.reasons),
-          style: theme.textTheme.bodySmall
-              ?.copyWith(color: theme.colors.textSecondary),
+          style: HudType.body(t, size: 12.5).overPhoto(t),
         ),
       ],
     );
@@ -125,12 +122,8 @@ class _Message extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Text(
-      text,
-      style: theme.textTheme.bodyMedium
-          ?.copyWith(color: theme.colors.textSecondary),
-    );
+    final HudTokens t = context.hud;
+    return Text(text, style: HudType.body(t, size: 13).overPhoto(t));
   }
 }
 
@@ -142,25 +135,25 @@ class _PlanRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.circle, size: 7, color: theme.colors.textSecondary),
+          Icon(Icons.circle, size: 7, color: t.textSecondary),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               name,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colors.textPrimary),
+              style: HudType.body(t, size: 13.5)
+                  .copyWith(color: t.textPrimary)
+                  .overPhoto(t),
             ),
           ),
           Text(
             AppLocalizations.of(context).onbPreviewMinutes(minutes),
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: theme.colors.textSecondary),
+            style: HudType.body(t, size: 12).overPhoto(t),
           ),
         ],
       ),

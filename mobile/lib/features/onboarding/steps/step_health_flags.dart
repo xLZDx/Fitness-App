@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/hud_tokens.dart';
+import '../../../core/theme/hud_typography.dart';
 import '../../safety/data/health_flags.dart';
 import '../../safety/widgets/eligibility_notice.dart';
 import '../state/questionnaire_notifier.dart';
@@ -41,7 +42,7 @@ class StepHealthFlags extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final HudTokens t = context.hud;
     final health = ref.watch(questionnaireDraftProvider).health;
     final flags = health.flags;
     final notifier = ref.read(questionnaireDraftProvider.notifier);
@@ -62,8 +63,7 @@ class StepHealthFlags extends ConsumerWidget {
             child: Text(
               l10n.healthLegacyNotice,
               key: const Key('onb.flags.legacy'),
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colors.textSecondary),
+              style: HudType.body(t, size: 12.5).overPhoto(t),
             ),
           ),
         const SizedBox(height: 16),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/hud_tokens.dart';
+import '../../../core/theme/hud_typography.dart';
 
 /// The onboarding chrome: back chevron, progress bar, step counter.
 ///
@@ -34,8 +35,7 @@ class ObProgressHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colors;
+    final HudTokens t = context.hud;
     final l10n = AppLocalizations.of(context);
     final fraction = total <= 0 ? 0.0 : (step / total).clamp(0.0, 1.0);
 
@@ -52,8 +52,9 @@ class ObProgressHeader extends StatelessWidget {
                   button: true,
                   label: l10n.onboardingBack,
                   child: Material(
-                    color: colors.surfaceInteractive,
-                    shape: const CircleBorder(),
+                    color: t.button.fill,
+                    shape: CircleBorder(
+                        side: BorderSide(color: t.button.innerBorder)),
                     clipBehavior: Clip.antiAlias,
                     child: InkWell(
                       key: const Key('onboarding.back'),
@@ -61,7 +62,7 @@ class ObProgressHeader extends StatelessWidget {
                       child: Icon(
                         Icons.chevron_left,
                         size: 22,
-                        color: colors.textSecondary,
+                        color: t.textPrimary,
                       ),
                     ),
                   ),
@@ -75,14 +76,14 @@ class ObProgressHeader extends StatelessWidget {
               height: 3,
               child: Stack(
                 children: [
-                  Container(color: colors.outline),
+                  Container(color: t.textPrimary.withValues(alpha: 0.14)),
                   AnimatedFractionallySizedBox(
                     duration: const Duration(milliseconds: 400),
                     curve: Curves.easeOutCubic,
                     widthFactor: fraction,
                     alignment: Alignment.centerLeft,
                     child: DecoratedBox(
-                      decoration: BoxDecoration(color: colors.accentPrimary),
+                      decoration: BoxDecoration(color: t.accent),
                     ),
                   ),
                 ],
@@ -101,11 +102,11 @@ class ObProgressHeader extends StatelessWidget {
             child: Text(
               '$step/$total',
               textAlign: TextAlign.right,
-              style: theme.textTheme.labelSmall?.copyWith(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: colors.textSecondary,
-              ),
+              softWrap: false,
+              // No letter-spacing: HudType.label's default tracking is wide
+              // enough that "10/10" wraps inside this box's fixed 36px width,
+              // matched to the back button on the other side for symmetry.
+              style: HudType.label(t, size: 12, em: 0).overPhoto(t),
             ),
           ),
         ),
