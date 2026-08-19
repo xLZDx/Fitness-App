@@ -10460,3 +10460,78 @@ published as an artifact and linked to the operator. Documentation only — no c
 entry.
 
 **PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
+
+---
+
+## 2026-08-19 — operator course change: MVP FIRST, push-on-every-commit, Gate M0 recon
+
+**Operator directive, full text preserved in session context, summarized here.** The
+open-ended "close every valid seam" mode (Gates D-H) is superseded for now by a strict
+MVP-first sequence: MINIMAL MVP → RELEASE-READY → VALIDATE, then POST-MVP → FULL PRODUCT.
+Two durable new rules: (1) **push immediately after every commit** from now on — `git push`,
+or `git push -u origin HEAD` if no upstream, then verify local HEAD == remote branch HEAD
+before proceeding; local commits must not accumulate unpushed. (2) Every candidate change now
+requires an explicit MVP-need classification (BLOCKER / REQUIRED / POST-MVP / FULL PRODUCT)
+and a cheapest-alternative check before any code is written.
+
+**Phase 0 — push the accumulated Gate D-H branch.** `marketing/site-prototype-2026-08-19` had
+9 local commits never pushed (`dd12695` through `2a2d2cb`, diverged from `origin/master` at
+`78b24dc`). No existing remote branch of that name. Pushed with `git push -u origin HEAD`;
+verified `git rev-parse HEAD` == `git rev-parse origin/marketing/site-prototype-2026-08-19` ==
+`2a2d2cb05b42213db2ad8cfc2853f304688a2654`. Match confirmed.
+
+**Gate M0 — MVP closure reconnaissance.** Four parallel read-only agents swept the current
+working tree (not old reports) against the operator's 10-point north-star MVP flow:
+onboarding, scan→recognition→content, safety-critical gating, account isolation, auth/session
+honesty, buildability, and marketing truth. Full plan: `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md`.
+
+**Finding: one real MVP BLOCKER.** `workoutSessionTotalsProvider` /
+`workoutSessionsProvider` (`mobile/lib/features/workouts/state/workout_session_providers.dart:23-29,43-48`)
+collapse "auth still restoring" and "genuinely signed out" into the same `.valueOrNull == null`
+branch, returning a hard zero. Confirmed **provably reachable on every cold start with valid
+persisted credentials** — `authUserProvider` genuinely sits in `AsyncLoading` on every launch
+until Firebase finishes session restore, not merely under adversarial timing. `deriveProgress`
+renders this as "0 workouts, 0-day streak" for a real user with real history. Same root cause,
+same reach, also confirmed live in `currentProfileProvider` ("Sign in to sync" shown to an
+already-signed-in user), `programmesProvider`, `generatedPlanProvider`. The legacy
+`workoutLogsProvider`/`workoutTotalsProvider` have the identical shape but are confirmed dead
+code (no UI reference found) — excluded from scope. The fix pattern is already proven three
+times elsewhere in this exact codebase (`screeningProfileProvider`,
+`currentSubscriptionProvider`, the photo-store providers): `await ref.watch(authUserProvider.future)`
+instead of sampling `.valueOrNull`. This becomes **MVP-1**, the next gate, starting with a
+reproduction test before any fix (operator's explicit "не чинить гипотезу").
+
+**No MVP REQUIRED items found.** Everything else on the north-star checklist recon'd clean:
+onboarding's minimal skip-through path works and persists correctly; the scan→recognition→content
+path handles all three outcomes honestly with no dead ends and a real offline fallback; injury
+and pose-check gating are both genuinely enforced and fail closed by trace; Firestore rules and
+local storage are correctly uid-scoped with no cross-account leak found; a real signed Android
+release build is achievable today (`key.properties` + keystore both present, real Firebase
+config, working `build_release.ps1` + CI); every publicly-showable marketing claim spot-checked
+against code is true and `claim_lint.py` passes clean.
+
+**Re-ruled: Gate I (gym-scoped workout memory) is POST-MVP**, per direct operator instruction —
+its own evidence, gathered the prior turn, is preserved in the plan doc and this log rather than
+discarded. Equipment-TYPE memory (Gate D) already covers the honest minimal claim; gym-scoping
+is retention/correctness polish, not a truthfulness requirement.
+
+**Four items logged as POST-MVP, not started**, each with a one-line reason in the plan doc: no
+rate-limit on manual recognition taps (cost, not correctness — no automatic-loop risk found);
+catalog contraindication tagging beyond the current 81% (content work, already honestly
+disclosed live); SharedPreferences not wiped on sign-out (retention hygiene, not a mixing bug —
+storage is uid-keyed); `mobile/README.md` still Flutter boilerplate (cosmetic).
+
+**One item flagged as a hard pre-condition for a different, separate release gate — not the app
+MVP.** The marketing site's `gate:"qualify"` disclaimers (e.g. "not personalised coaching, you
+make the final call") only render to a visitor when `?debug=1` is set
+(`public/assets/sptr/site.js:180-217`); an ordinary visitor sees the unqualified claim. This
+would be a real overclaim-by-omission **if the site were shown publicly today**, but the site
+was built and has always been scoped as an internal R&D prototype, never the MVP's launch
+surface (Gate A/B/C decision-log entries: "ships as an R&D instrument, not a launch asset").
+Not an app-MVP blocker; tracked as a precondition the site-publication gate must clear
+whenever that separate decision is made.
+
+Full per-surface evidence (file:line for every claim above) lives in the four recon agents'
+transcripts for this turn and is condensed into `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md`.
+
+**PUSH REQUIRED IMMEDIATELY AFTER THIS COMMIT, per the new standing rule.**
