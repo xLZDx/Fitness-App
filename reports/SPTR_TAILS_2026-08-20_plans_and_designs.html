@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SPTR: loose ends across plans and designs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f6f8; --surface: #ffffff; --surface-2: #edf1f4; --border: #d7dee4;
+    --text: #16202b; --text-dim: #5b6b7a; --text-faint: #8a97a3;
+    --accent: #1f7a8c; --accent-soft: #e3f1f3;
+    --good: #2f7d5a; --good-soft: #e5f3ec;
+    --bad: #b1382e; --bad-soft: #fbe9e7;
+    --warn: #a9701a; --warn-soft: #faefdd;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+    --display: 'Sora', var(--sans);
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(20,30,40,0.04), 0 8px 24px -12px rgba(20,30,40,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1319; --surface: #131b23; --surface-2: #1a2530; --border: #29394a;
+      --text: #e8eef3; --text-dim: #9fb0bd; --text-faint: #6f8293;
+      --accent: #5fc4d6; --accent-soft: #16323a;
+      --good: #6fcf9e; --good-soft: #133226;
+      --bad: #ec7a70; --bad-soft: #3a1a17;
+      --warn: #e3b565; --warn-soft: #382a12;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1319; --surface: #131b23; --surface-2: #1a2530; --border: #29394a;
+    --text: #e8eef3; --text-dim: #9fb0bd; --text-faint: #6f8293;
+    --accent: #5fc4d6; --accent-soft: #16323a;
+    --good: #6fcf9e; --good-soft: #133226;
+    --bad: #ec7a70; --bad-soft: #3a1a17;
+    --warn: #e3b565; --warn-soft: #382a12;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.55);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15.5px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 56px 24px 96px; }
+  header { margin-bottom: 8px; }
+  .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
+  h1 { font-family: var(--display); font-weight: 800; font-size: clamp(26px, 4vw, 36px); line-height: 1.16; letter-spacing: -0.01em; margin: 0 0 12px; text-wrap: balance; }
+  .lede { color: var(--text-dim); font-size: 16.5px; max-width: 68ch; margin: 0; }
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 32px 0 40px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+  .stat .n { font-family: var(--mono); font-weight: 500; font-size: 18px; font-variant-numeric: tabular-nums; }
+  .stat .n.good { color: var(--good); } .stat .n.warn { color: var(--warn); } .stat .n.bad { color: var(--bad); }
+  .stat .l { color: var(--text-faint); font-size: 11.5px; letter-spacing: 0.03em; text-transform: uppercase; margin-top: 4px; }
+  section { margin: 48px 0; }
+  section > h2 { font-family: var(--display); font-weight: 700; font-size: 21px; letter-spacing: -0.005em; margin: 0 0 8px; display: flex; align-items: center; gap: 10px; }
+  section > .sub { color: var(--text-dim); font-size: 13.5px; margin: 0 0 18px; }
+  section > h2 .num { font-family: var(--mono); color: var(--text-faint); font-weight: 400; font-size: 15px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; }
+  .card + .card { margin-top: 14px; }
+  .card.warn-card { border-color: color-mix(in srgb, var(--warn) 40%, var(--border)); }
+  .card.bad-card { border-color: color-mix(in srgb, var(--bad) 45%, var(--border)); }
+  .card.good-card { border-color: color-mix(in srgb, var(--good) 40%, var(--border)); }
+  .badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: 0.03em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; }
+  .badge.bad { background: var(--bad-soft); color: var(--bad); }
+  .badge.good { background: var(--good-soft); color: var(--good); }
+  .badge.warn { background: var(--warn-soft); color: var(--warn); }
+  p { margin: 12px 0; } .card p:first-child { margin-top: 0; } .card p:last-child { margin-bottom: 0; }
+  code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 0.1em 0.4em; border-radius: 5px; }
+  table.status { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.status th, table.status td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.status th { color: var(--text-faint); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.status tr:last-child td { border-bottom: none; }
+  table.status .item { font-weight: 500; }
+  table.status .note { color: var(--text-dim); }
+  ul.plain { padding-left: 0; list-style: none; margin: 16px 0 0; }
+  ul.plain li { display: flex; gap: 12px; padding: 9px 0; border-top: 1px solid var(--border); font-size: 13.5px; }
+  ul.plain li:first-child { border-top: none; padding-top: 0; }
+  ul.plain li::before { content: "→"; color: var(--text-faint); flex: 0 0 auto; }
+  .callout { margin-top: 16px; padding: 14px 16px; border-radius: 10px; background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border)); font-size: 13.5px; color: var(--text); }
+  .callout strong { color: var(--warn); }
+  .callout.bad { background: var(--bad-soft); border-color: color-mix(in srgb, var(--bad) 35%, var(--border)); }
+  .callout.bad strong { color: var(--bad); }
+  .callout.good { background: var(--good-soft); border-color: color-mix(in srgb, var(--good) 35%, var(--border)); }
+  .callout.good strong { color: var(--good); }
+  @media (max-width: 620px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">SPTR · Fitness App · xLZDx/Fitness-App</p>
+  <h1>The full list of loose ends across plans and designs</h1>
+  <p class="lede">Compiled from <code>core/CURRENT_STATE.md</code> (the machine-checked ledger),
+  <code>docs/Redisign/</code> (the open design-decision register and Figma↔production drift matrix),
+  <code>core/plans/</code> (~40 files, the key ones read in full), and this session's own active
+  mandate. Not everything was read line by line — section 09 names honestly what was left out.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>_wt-master-sync</dd>
+    <dt>Folder</dt><dd>D:\Repo\_wt-master-sync</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 6b88aa2</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="stat-row">
+  <div class="stat"><div class="n bad">5</div><div class="l">HARD BLOCKER (design register)</div></div>
+  <div class="stat"><div class="n warn">44</div><div class="l">Open D1–D9 decisions</div></div>
+  <div class="stat"><div class="n warn">8</div><div class="l">Operator/External rows in CURRENT_STATE</div></div>
+  <div class="stat"><div class="n bad">3</div><div class="l">Unreconciled onboarding sources</div></div>
+</div>
+
+<section>
+  <h2><span class="num">01</span> This session's active mandate</h2>
+  <p class="sub">SPTR visual remediation — closed vs open, from this session's own working memory, without reopening closed items</p>
+  <div class="card">
+    <table class="status">
+      <thead><tr><th>Item</th><th>Status</th><th>What's left</th></tr></thead>
+      <tbody>
+        <tr><td class="item">V5 / Scanner</td><td><span class="badge good">Closed</span></td><td class="note">Device-confirmed, report published</td></tr>
+        <tr><td class="item">Session — Active/Rest</td><td><span class="badge good">Closed</span></td><td class="note">Real sheet-opacity bug found and fixed (<code>16206e9</code>)</td></tr>
+        <tr><td class="item">Session — Finish/summary</td><td><span class="badge warn">Not covered</span></td><td class="note">Summary screen not yet inspected under this mandate</td></tr>
+        <tr><td class="item">Home/Train/Library cards</td><td><span class="badge bad">Open</span></td><td class="note">Illegible text over the lava background — found yesterday, code not yet opened</td></tr>
+        <tr><td class="item">Form Coach</td><td><span class="badge bad">Not started</span></td><td class="note">MVP-required; see §03 — 5 HARD BLOCKER product decisions already gate this item</td></tr>
+        <tr><td class="item">Light theme</td><td><span class="badge bad">Not started</span></td><td class="note">See §03 — a Figma anchor isn't required per the gap matrix, but nothing built yet</td></tr>
+        <tr><td class="item">Onboarding v4 reconciliation</td><td><span class="badge bad">Open</span></td><td class="note">See §04 — three unreconciled sources of truth</td></tr>
+        <tr><td class="item">Branches/worktrees (directive §36)</td><td><span class="badge warn">Not started</span></td><td class="note">Salvage ledger proving no unique work is lost doesn't exist yet</td></tr>
+        <tr><td class="item">app_semantic_colors_test.dart</td><td><span class="badge warn">Known failure</span></td><td class="note">Confirmed pre-existing via <code>git stash</code>, out of scope for the current gate</td></tr>
+        <tr><td class="item">S23 (connection method)</td><td><span class="badge warn">Unresolved</span></td><td class="note">adb-over-network vs. distribution — never clarified by the operator</td></tr>
+        <tr><td class="item">Scanner App Check / Welcome-hang / RG-2 / RG-3</td><td><span class="badge warn">Backlog</span></td><td class="note">Legacy findings, recorded as <code>MASTER_REVALIDATION_BACKLOG</code>, not re-confirmed on master</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span> <code>core/CURRENT_STATE.md</code> — the machine-checked ledger</h2>
+  <p class="sub">The only auto-generated source; a row cannot be closed by engineering without a named artefact from the required authority</p>
+  <div class="card">
+    <table class="status">
+      <thead><tr><th>Row</th><th>State</th><th>Authority</th><th>What closes it</th></tr></thead>
+      <tbody>
+        <tr><td class="item">N-05</td><td><span class="badge warn">Operator required</span></td><td>OPERATOR</td><td class="note"><code>core/review/N05_DISPOSITION.md</code></td></tr>
+        <tr><td class="item">N-04-gym-association</td><td><span class="badge warn">Operator required</span></td><td>OPERATOR</td><td class="note">Product question with no engineering answer: tying a report to a gym</td></tr>
+        <tr><td class="item">gym-webhook-disclosure</td><td><span class="badge warn">Operator required</span></td><td>OPERATOR</td><td class="note">Whether a gym's webhook is disclosed as a third-party processor</td></tr>
+        <tr><td class="item">scanner-pipeline-location</td><td><span class="badge warn">Operator required</span></td><td>OPERATOR</td><td class="note">Where the 2 GB unversioned recovered pipeline should live</td></tr>
+        <tr><td class="item">roboflow-key-reissue</td><td><span class="badge warn">Operator required</span></td><td>OPERATOR</td><td class="note">Key was pasted into a conversation on 2026-08-07; reissue unconfirmed</td></tr>
+        <tr><td class="item">D1 / H3</td><td><span class="badge bad">External authority</span></td><td>EXTERNAL</td><td class="note">Clinical catalogue review — entirely outside the repo</td></tr>
+        <tr><td class="item">CT1-human-labels</td><td><span class="badge bad">External authority</span></td><td>EXTERNAL</td><td class="note">0 human labels; evaluation gap open</td></tr>
+        <tr><td class="item">F025 / N-07</td><td><span class="badge good">Dormant (by design)</span></td><td>OPERATOR</td><td class="note">Not a defect — tracks that the guard doesn't silently vanish</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px">Five rows cannot be closed by any engineering commit — they physically need a file naming the authority responsible, outside this repository. They cannot be swept up "autonomously" by construction.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> The <code>docs/Redisign/</code> design register</h2>
+  <p class="sub">A larger, older source of truth than onboarding_v4 — 44 open decisions, 5 of them hard-blocking Form Coach</p>
+  <div class="card bad-card">
+    <span class="badge bad">5 × HARD BLOCKER</span>
+    <p><code>OPEN_DECISIONS_REGISTER_v1.3.md</code>, section D6 (Technique Coach & Workout Summary) —
+    exactly the screen next on the VISUAL_GATE roadmap:</p>
+    <table class="status">
+      <thead><tr><th>#</th><th>Question</th><th>Owner</th></tr></thead>
+      <tbody>
+        <tr><td class="item">Q19</td><td>Real ML scope for Form Check, or demo prototype</td><td class="note">Tech + Product</td></tr>
+        <tr><td class="item">Q20</td><td>Supported exercise list (top-5 / top-15 / whole library)</td><td class="note">Product</td></tr>
+        <tr><td class="item">Q21</td><td>Exercise → camera angle → required landmarks matrix</td><td class="note">Sport Science</td></tr>
+        <tr><td class="item">Q23</td><td>Voice cues: on-device TTS or recorded files</td><td class="note">Dev</td></tr>
+        <tr><td class="item">Q26</td><td>Does WorkoutSummary replace WorkoutDone, or do both exist</td><td class="note">Dev</td></tr>
+      </tbody>
+    </table>
+    <p>The other 39 questions aren't blockers but are real: light theme scope (full / 3-5 screens /
+    post-launch), paywall placement, family subscription, profile data export, minimum OS versions,
+    and more — the full 44 live in the source file.</p>
+  </div>
+  <div class="card warn-card">
+    <span class="badge warn">Category C — needs Figma before dev</span>
+    <p><code>HANDOFF_GAP_MATRIX_v1.5.md</code>: Exercise Page is the one screen with no approved Figma
+    anchor at all (media states, "why recommended for you", TechCoach entry, etc.). Everything else
+    (Home/Scanner completion, navigation, platform adaptations) dev can close without a new Figma round.</p>
+  </div>
+  <div class="card">
+    <p><strong>Figma↔production drift, 2026-08-16 audit</strong> (<code>06_FIGMA_PRODUCTION_DRIFT.csv</code>):
+    none of the 10 screens checked (Home, Scanner, Equipment, Exercise, Workout Player, Rest Timer,
+    Form Check, Summary, Progress, Progress Photo Compare) have an actual Figma file or token export in
+    the repository — only prose specs under <code>docs/Redisign/</code> and a JPG prototype
+    (<code>docs/Redisign/reference/prototype/</code>). "Checked against the mockup" is formally
+    unreproducible without a source that isn't in the tree.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Three unreconciled sources of truth for onboarding</h2>
+  <div class="card bad-card">
+    <span class="badge bad">Not reconciled</span>
+    <p><strong>What's in code now</strong> (<code>step_answered.dart</code>, checked today): 10 steps —
+    goalAndLevel, equipment, schedule, body, barriers, personal, lifestyle, healthFlags, screening,
+    preview.</p>
+    <p><strong>The 18-screen Figma target</strong> (<code>LATEST_DEV_SINGLE_FILE_MASTER_PROMPT_EN.md</code>,
+    via <code>PLAN_R11_DECISIONS_2026-08-12.md</code>): the operator decided "keep 7 steps" + "take
+    styling from Figma" — a recorded conflict, with the actual reconciliation (P5) explicitly
+    "not authorized, waiting on its own GO." Structure has since grown to 10, but reconciliation
+    against the 18-screen target was never substantively reopened.</p>
+    <p><strong>onboarding_v4</strong> (imported yesterday, <code>core/design/reference/onboarding_v4/</code>):
+    9 steps, a different goal taxonomy, no PAR-Q+ at all, a fabricated "Technique 94%" on the camera
+    step (already flagged as prohibited).</p>
+    <p>None of the three has been explicitly declared superseded. Implementing onboarding_v4 without
+    first deciding which one is authoritative means building a fourth version on top of an unresolved
+    conflict.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> R11 / Ф3 redesign remainder</h2>
+  <div class="card">
+    <p><strong>R11b — the largest unstarted gate.</strong> The prototype defines 13 onboarding screens
+    (the progress indicator counts to 9 — first and last are deliberately excluded). Missing widgets:
+    <code>WheelYear</code>, <code>HRuler</code>, <code>VRuler</code>, <code>BodyDiagram</code>,
+    <code>ChoiceCard</code>, <code>BMICard</code>, <code>DeltaCard</code>. None of it is built.</p>
+    <p><strong>Ф3 — screen-by-screen reconciliation against the prototype,</strong> deliberately
+    sequenced after R11f/R11h/R11b to avoid double work — so likewise not started.</p>
+    <p><strong>Paywall — HELD.</strong> Tier count and trial length are an operator money decision, not
+    layout work; open since 2026-08-12.</p>
+    <p><strong>A dated but important caveat (2026-08-12):</strong> at that point, no R11-series screen
+    had ever been opened on a real device — only <code>analyze</code> + <code>test</code>. This session
+    has since device-verified V5/Scanner/Session, but never checked whether that closes the caveat for
+    R11a/c/d/g/i as a whole — not re-measured.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Exercise catalogue content debt</h2>
+  <div class="card warn-card">
+    <span class="badge warn">A separate, large front</span>
+    <p><code>FINAL_SCOPE_2026-08-16.md</code> — measured against code and data on 2026-08-16, not
+    carried forward from older documents: 1,484 of 1,887 cards (78.6%) lack a "why this matters" field;
+    1,368 cards (72.5%) have never been read card-by-card by a human; of the 519 cards flagged by
+    detectors, 320 were dismissed at earlier gates A/B/C and never re-verified, while the SPINE_CUE
+    detector produced 29 false positives out of 29 checked. Extrapolating the verified-519 hit rate onto
+    the unread 1,368 is unsound in both directions.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Older operator tickets — currency unverified</h2>
+  <div class="card">
+    <p><code>NEXT_TICKETS.md</code> is dated 2026-05-11 — over three months old; some items may have
+    closed without the file being updated. Operator actions listed there: 5 Stripe price IDs, training
+    and bundling <code>equipment_v1.tflite</code>, generating the iOS scaffold, a Wear OS smoke test,
+    nonprofit-launch blockers. Engineering items: AES-GCM for production photos, the Stripe Connect
+    return URL, integration work on 7 Tier MK features (Live Form Coach + voice, goal-photo → program,
+    cycle-aware programming, insurance attestations, white-label SDK, camera body-comp, recovery as a
+    workout). None were checked against current code in this pass.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Verified and closed — not a tail</h2>
+  <div class="card good-card">
+    <span class="badge good">Confirmed now, not from memory</span>
+    <p><code>SESSION_HANDOFF_2026-08-15_CATALOG_GATE_E.md</code> flagged a BLOCKER: the test
+    <code>coach_single_status_test.dart</code> referenced nonexistent
+    <code>avatarCannotPlaceBodyProvider</code> and <code>coachStatusHasRepVerdict</code>, plus checked
+    keys (<code>coach.ready</code>, <code>form_check.cue_card</code>) that don't exist in production.
+    Checked today: all identifiers now exist in
+    <code>form_check_providers.dart</code>/<code>form_check_page.dart</code>/<code>coach_readiness_band.dart</code>
+    — someone closed this between the 15th and the 20th. Not reopening it.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Not covered this pass</h2>
+  <div class="card">
+    <p>About 25 files under <code>core/plans/</code> were not read line by line this pass — mostly
+    narrow and dated July/early August (B1/B3/B5 media/data, ML_STRATEGY, PLAN_AI_RESTRUCTURE,
+    PLAN_DEVICE_DEFECTS, business planning files, earlier SESSION_STATE/SESSION_HANDOFF documents).
+    <code>IMPLEMENTATION_PLAN.md</code> names itself historical — superseded by
+    <code>ROADMAP_2026_V2.md</code>. A full line-by-line pass over all ~40 files would be its own
+    separate turn, not this one.</p>
+  </div>
+</section>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

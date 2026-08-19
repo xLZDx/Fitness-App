@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>SPTR: хвосты по планам и дизайнам</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f6f8; --surface: #ffffff; --surface-2: #edf1f4; --border: #d7dee4;
+    --text: #16202b; --text-dim: #5b6b7a; --text-faint: #8a97a3;
+    --accent: #1f7a8c; --accent-soft: #e3f1f3;
+    --good: #2f7d5a; --good-soft: #e5f3ec;
+    --bad: #b1382e; --bad-soft: #fbe9e7;
+    --warn: #a9701a; --warn-soft: #faefdd;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+    --display: 'Sora', var(--sans);
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(20,30,40,0.04), 0 8px 24px -12px rgba(20,30,40,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1319; --surface: #131b23; --surface-2: #1a2530; --border: #29394a;
+      --text: #e8eef3; --text-dim: #9fb0bd; --text-faint: #6f8293;
+      --accent: #5fc4d6; --accent-soft: #16323a;
+      --good: #6fcf9e; --good-soft: #133226;
+      --bad: #ec7a70; --bad-soft: #3a1a17;
+      --warn: #e3b565; --warn-soft: #382a12;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1319; --surface: #131b23; --surface-2: #1a2530; --border: #29394a;
+    --text: #e8eef3; --text-dim: #9fb0bd; --text-faint: #6f8293;
+    --accent: #5fc4d6; --accent-soft: #16323a;
+    --good: #6fcf9e; --good-soft: #133226;
+    --bad: #ec7a70; --bad-soft: #3a1a17;
+    --warn: #e3b565; --warn-soft: #382a12;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.55);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15.5px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 56px 24px 96px; }
+  header { margin-bottom: 8px; }
+  .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
+  h1 { font-family: var(--display); font-weight: 800; font-size: clamp(26px, 4vw, 36px); line-height: 1.16; letter-spacing: -0.01em; margin: 0 0 12px; text-wrap: balance; }
+  .lede { color: var(--text-dim); font-size: 16.5px; max-width: 68ch; margin: 0; }
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 32px 0 40px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+  .stat .n { font-family: var(--mono); font-weight: 500; font-size: 18px; font-variant-numeric: tabular-nums; }
+  .stat .n.good { color: var(--good); } .stat .n.warn { color: var(--warn); } .stat .n.bad { color: var(--bad); }
+  .stat .l { color: var(--text-faint); font-size: 11.5px; letter-spacing: 0.03em; text-transform: uppercase; margin-top: 4px; }
+  section { margin: 48px 0; }
+  section > h2 { font-family: var(--display); font-weight: 700; font-size: 21px; letter-spacing: -0.005em; margin: 0 0 8px; display: flex; align-items: center; gap: 10px; }
+  section > .sub { color: var(--text-dim); font-size: 13.5px; margin: 0 0 18px; }
+  section > h2 .num { font-family: var(--mono); color: var(--text-faint); font-weight: 400; font-size: 15px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; }
+  .card + .card { margin-top: 14px; }
+  .card.warn-card { border-color: color-mix(in srgb, var(--warn) 40%, var(--border)); }
+  .card.bad-card { border-color: color-mix(in srgb, var(--bad) 45%, var(--border)); }
+  .card.good-card { border-color: color-mix(in srgb, var(--good) 40%, var(--border)); }
+  .badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: 0.03em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; }
+  .badge.bad { background: var(--bad-soft); color: var(--bad); }
+  .badge.good { background: var(--good-soft); color: var(--good); }
+  .badge.warn { background: var(--warn-soft); color: var(--warn); }
+  p { margin: 12px 0; } .card p:first-child { margin-top: 0; } .card p:last-child { margin-bottom: 0; }
+  code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 0.1em 0.4em; border-radius: 5px; }
+  table.status { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.status th, table.status td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.status th { color: var(--text-faint); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.status tr:last-child td { border-bottom: none; }
+  table.status .item { font-weight: 500; }
+  table.status .note { color: var(--text-dim); }
+  ul.plain { padding-left: 0; list-style: none; margin: 16px 0 0; }
+  ul.plain li { display: flex; gap: 12px; padding: 9px 0; border-top: 1px solid var(--border); font-size: 13.5px; }
+  ul.plain li:first-child { border-top: none; padding-top: 0; }
+  ul.plain li::before { content: "→"; color: var(--text-faint); flex: 0 0 auto; }
+  .callout { margin-top: 16px; padding: 14px 16px; border-radius: 10px; background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border)); font-size: 13.5px; color: var(--text); }
+  .callout strong { color: var(--warn); }
+  .callout.bad { background: var(--bad-soft); border-color: color-mix(in srgb, var(--bad) 35%, var(--border)); }
+  .callout.bad strong { color: var(--bad); }
+  .callout.good { background: var(--good-soft); border-color: color-mix(in srgb, var(--good) 35%, var(--border)); }
+  .callout.good strong { color: var(--good); }
+  @media (max-width: 620px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">SPTR · Fitness App · xLZDx/Fitness-App</p>
+  <h1>Полный список хвостов по планам и дизайнам</h1>
+  <p class="lede">Сведено из <code>core/CURRENT_STATE.md</code> (машинно-проверенный реестр),
+  <code>docs/Redisign/</code> (реестр открытых дизайн-решений и матрица разрывов Figma↔прод),
+  <code>core/plans/</code> (~40 файлов, ключевые прочитаны целиком) и активного мандата этой сессии.
+  Не всё прочитано построчно — раздел 09 честно называет, что осталось за скобками.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>_wt-master-sync</dd>
+    <dt>Папка</dt><dd>D:\Repo\_wt-master-sync</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 6b88aa2</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="stat-row">
+  <div class="stat"><div class="n bad">5</div><div class="l">HARD BLOCKER (дизайн-реестр)</div></div>
+  <div class="stat"><div class="n warn">44</div><div class="l">Открытых решений D1–D9</div></div>
+  <div class="stat"><div class="n warn">8</div><div class="l">Operator/External строк в CURRENT_STATE</div></div>
+  <div class="stat"><div class="n bad">3</div><div class="l">Несведённых онбординга</div></div>
+</div>
+
+<section>
+  <h2><span class="num">01</span> Активный мандат этой сессии</h2>
+  <p class="sub">SPTR visual remediation — что уже закрыто и что нет, из живой памяти сессии, без переоткрытия закрытых пунктов</p>
+  <div class="card">
+    <table class="status">
+      <thead><tr><th>Пункт</th><th>Статус</th><th>Что осталось</th></tr></thead>
+      <tbody>
+        <tr><td class="item">V5 / Scanner</td><td><span class="badge good">Закрыто</span></td><td class="note">Устройство подтвердило, отчёт опубликован</td></tr>
+        <tr><td class="item">Session — Active/Rest</td><td><span class="badge good">Закрыто</span></td><td class="note">Найден и исправлен реальный баг непрозрачности шторки (<code>16206e9</code>)</td></tr>
+        <tr><td class="item">Session — Finish/summary</td><td><span class="badge warn">Не снят</span></td><td class="note">Экран итогов сессии ещё не осмотрен в этом мандате</td></tr>
+        <tr><td class="item">Карточки Home/Train/Library</td><td><span class="badge bad">Открыто</span></td><td class="note">Нечитаемый текст поверх фона лавы — найдено вчера, код ещё не открывался</td></tr>
+        <tr><td class="item">Form Coach</td><td><span class="badge bad">Не начато</span></td><td class="note">MVP-обязателен; см. §03 — 5 HARD BLOCKER продуктовых решений блокируют этот пункт заранее</td></tr>
+        <tr><td class="item">Light theme</td><td><span class="badge bad">Не начато</span></td><td class="note">См. §03 — Figma-эталон не обязателен по матрице разрывов, но не начато</td></tr>
+        <tr><td class="item">Onboarding v4 (сверка)</td><td><span class="badge bad">Открыто</span></td><td class="note">См. §04 — три несведённых источника правды</td></tr>
+        <tr><td class="item">Ветки/ворктри (§36 директивы)</td><td><span class="badge warn">Не начато</span></td><td class="note">Ledger сохранности уникальной работы ещё не составлен</td></tr>
+        <tr><td class="item">app_semantic_colors_test.dart</td><td><span class="badge warn">Известный сбой</span></td><td class="note">Подтверждено предсуществующим через <code>git stash</code>, вне охвата текущего гейта</td></tr>
+        <tr><td class="item">S23 (метод подключения)</td><td><span class="badge warn">Не решено</span></td><td class="note">adb-по-сети vs дистрибуция — не уточнено оператором</td></tr>
+        <tr><td class="item">Scanner App Check / Welcome-hang / RG-2 / RG-3</td><td><span class="badge warn">Backlog</span></td><td class="note">Легаси-находки, зафиксированы как <code>MASTER_REVALIDATION_BACKLOG</code>, не переподтверждены на master</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span> <code>core/CURRENT_STATE.md</code> — машинно-проверенный реестр</h2>
+  <p class="sub">Единственный автогенерируемый источник; строка не может быть закрыта инженерией без именованного артефакта от нужной инстанции</p>
+  <div class="card">
+    <table class="status">
+      <thead><tr><th>Строка</th><th>Состояние</th><th>Инстанция</th><th>Что нужно для закрытия</th></tr></thead>
+      <tbody>
+        <tr><td class="item">N-05</td><td><span class="badge warn">Требует оператора</span></td><td>OPERATOR</td><td class="note"><code>core/review/N05_DISPOSITION.md</code></td></tr>
+        <tr><td class="item">N-04-gym-association</td><td><span class="badge warn">Требует оператора</span></td><td>OPERATOR</td><td class="note">Продуктовый вопрос без инженерного ответа: привязка отчёта к залу</td></tr>
+        <tr><td class="item">gym-webhook-disclosure</td><td><span class="badge warn">Требует оператора</span></td><td>OPERATOR</td><td class="note">Раскрыт ли вебхук зала как третья сторона в privacy-политике</td></tr>
+        <tr><td class="item">scanner-pipeline-location</td><td><span class="badge warn">Требует оператора</span></td><td>OPERATOR</td><td class="note">Где жить 2 ГБ невеверсионированному recovered-пайплайну</td></tr>
+        <tr><td class="item">roboflow-key-reissue</td><td><span class="badge warn">Требует оператора</span></td><td>OPERATOR</td><td class="note">Ключ был вставлен в переписку 2026-08-07; переиздание не подтверждено</td></tr>
+        <tr><td class="item">D1 / H3</td><td><span class="badge bad">Внешняя инстанция</span></td><td>EXTERNAL</td><td class="note">Клиническая проверка каталога — вне репозитория целиком</td></tr>
+        <tr><td class="item">CT1-human-labels</td><td><span class="badge bad">Внешняя инстанция</span></td><td>EXTERNAL</td><td class="note">0 человеческих меток; разрыв оценки открыт</td></tr>
+        <tr><td class="item">F025 / N-07</td><td><span class="badge good">Dormant (штатно)</span></td><td>OPERATOR</td><td class="note">Не дефект — отслеживает, что guard не исчезнет незаметно</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px">Пять строк не может закрыть ни один инженерный коммит — им физически нужен файл с именем ответственного вне репозитория. Собирать их «автономно» невозможно по конструкции.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Дизайн-реестр <code>docs/Redisign/</code></h2>
+  <p class="sub">Более крупный и старый источник правды, чем onboarding_v4 — 44 открытых решения, из них 5 жёстко блокируют Form Coach</p>
+  <div class="card bad-card">
+    <span class="badge bad">5 × HARD BLOCKER</span>
+    <p><code>OPEN_DECISIONS_REGISTER_v1.3.md</code>, раздел D6 (Technique Coach & Workout Summary) —
+    ровно тот экран, что следующий в дорожной карте VISUAL_GATE:</p>
+    <table class="status">
+      <thead><tr><th>№</th><th>Вопрос</th><th>Инстанция</th></tr></thead>
+      <tbody>
+        <tr><td class="item">Q19</td><td>Реальный ML-скоуп Form Check или демо-прототип</td><td class="note">Tech + Product</td></tr>
+        <tr><td class="item">Q20</td><td>Список поддерживаемых упражнений (топ-5 / топ-15 / вся библиотека)</td><td class="note">Product</td></tr>
+        <tr><td class="item">Q21</td><td>Матрица упражнение → угол камеры → нужные landmark'и</td><td class="note">Sport Science</td></tr>
+        <tr><td class="item">Q23</td><td>Голосовые подсказки: on-device TTS или записанные файлы</td><td class="note">Dev</td></tr>
+        <tr><td class="item">Q26</td><td>WorkoutSummary заменяет WorkoutDone или существует параллельно</td><td class="note">Dev</td></tr>
+      </tbody>
+    </table>
+    <p>Остальные 39 вопросов — не блокеры, но реальны: light theme (полностью/3-5 экранов/после релиза),
+    paywall placement, семейная подписка, экспорт данных профиля, минимальные версии ОС и т.д. — полный
+    список из 44 в исходном файле.</p>
+  </div>
+  <div class="card warn-card">
+    <span class="badge warn">Категория C — нужен Figma прежде dev</span>
+    <p><code>HANDOFF_GAP_MATRIX_v1.5.md</code>: Exercise Page — единственный экран, для которого вообще
+    нет утверждённого Figma-эталона (media-состояния, «почему рекомендовано», entry в TechCoach и т.д.).
+    Остальные разрывы (Home/Scanner completion, навигация, платформенные адаптации) dev может закрыть
+    без нового Figma-раунда.</p>
+  </div>
+  <div class="card">
+    <p><strong>Дрейф Figma↔прод, аудит 2026-08-16</strong> (<code>06_FIGMA_PRODUCTION_DRIFT.csv</code>):
+    ни для одного из 10 проверенных экранов (Home, Scanner, Equipment, Exercise, Workout Player, Rest
+    Timer, Form Check, Summary, Progress, Progress Photo Compare) в репозитории нет самого Figma-файла
+    или token-экспорта — только прозаические спеки в <code>docs/Redisign/</code> и JPG-прототип
+    (<code>docs/Redisign/reference/prototype/</code>). Формально «сверка с макетом» не воспроизводима
+    без исходника, который не в дереве.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Три несведённых источника правды по онбордингу</h2>
+  <div class="card bad-card">
+    <span class="badge bad">Не сведено</span>
+    <p><strong>Сейчас в коде</strong> (<code>step_answered.dart</code>, проверено сегодня): 10 шагов —
+    goalAndLevel, equipment, schedule, body, barriers, personal, lifestyle, healthFlags, screening,
+    preview.</p>
+    <p><strong>18-экранная Figma-цель</strong> (<code>LATEST_DEV_SINGLE_FILE_MASTER_PROMPT_EN.md</code>,
+    через <code>PLAN_R11_DECISIONS_2026-08-12.md</code>): оператор решил «оставить 7 шагов» + «взять
+    оформление из Фигмы» — зафиксированный конфликт, решение P5 «не авторизовано, ждёт своего GO».
+    Структура с тех пор выросла до 10, но сверка с 18-экранной целью по существу не переоткрывалась.</p>
+    <p><strong>onboarding_v4</strong> (импортирован вчера, <code>core/design/reference/onboarding_v4/</code>):
+    9 шагов, другая таксономия целей, нет PAR-Q+ вообще, фейковый «Техника 94%» на шаге камеры
+    (запрещён к использованию, уже задокументировано).</p>
+    <p>Ни один из трёх не объявлен устаревшим явно. Реализовывать onboarding_v4 без предварительного
+    решения, какой из них авторитетен, means строить четвёртую версию поверх нерешённого конфликта.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Остаток редизайна R11 / Ф3</h2>
+  <div class="card">
+    <p><strong>R11b — крупнейший неначатый гейт.</strong> Прототип определяет 13 экранов онбординга
+    (индикатор считает до 9 — первый и последний намеренно вне счёта). Отсутствующие виджеты:
+    <code>WheelYear</code>, <code>HRuler</code>, <code>VRuler</code>, <code>BodyDiagram</code>,
+    <code>ChoiceCard</code>, <code>BMICard</code>, <code>DeltaCard</code>. Ничего из этого не построено.</p>
+    <p><strong>Ф3 — поэкранная сверка с прототипом,</strong> запланирована как шаг после R11f/R11h/R11b
+    именно чтобы не делать работу дважды — соответственно тоже не начата.</p>
+    <p><strong>Paywall — HELD.</strong> Количество тарифов и длина триала — решение оператора по деньгам,
+    не вёрстка; висит с 2026-08-12.</p>
+    <p><strong>Устаревшая, но важная оговорка (2026-08-12):</strong> на тот момент ни один экран серии
+    R11 не открывался на реальном устройстве — только <code>analyze</code> + <code>test</code>. Эта
+    сессия с тех пор устройство-верифицировала V5/Scanner/Session, но не проверяла, закрывает ли это
+    оговорку для R11a/c/d/g/i целиком — не переизмерено.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">06</span> Каталог упражнений — контентный долг</h2>
+  <div class="card warn-card">
+    <span class="badge warn">Отдельный крупный фронт</span>
+    <p><code>FINAL_SCOPE_2026-08-16.md</code> — измерено по коду и данным на 2026-08-16, не переносится
+    из старых документов: 1484 из 1887 карточек (78.6%) без поля «зачем это нужно»; 1368 карточек
+    (72.5%) никогда не читались человеком построчно; из 519 карточек, отмеченных детекторами, 320
+    отклонены на старых гейтах A/B/C и не перепроверены, притом что детектор SPINE_CUE дал 29
+    ложных срабатываний из 29 проверенных. Экстраполировать процент подтверждения с проверенных 519 на
+    непроверенные 1368 явно некорректно в обе стороны.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">07</span> Старые операторские тикеты — актуальность не подтверждена</h2>
+  <div class="card">
+    <p><code>NEXT_TICKETS.md</code> датирован 2026-05-11 — три с лишним месяца назад, часть могла
+    закрыться без обновления файла. Операторские действия, перечисленные там: 5 Stripe price ID,
+    обучение и упаковка <code>equipment_v1.tflite</code>, генерация iOS-скаффолда, smoke-тест Wear OS,
+    блокеры некоммерческого запуска. Инженерные — AES-GCM для продакшен-фото, return-URL Stripe Connect,
+    интеграционная работа по 7 функциям Tier MK (Live Form Coach + голос, goal-photo → программа,
+    cycle-aware программирование, страховые аттестации, white-label SDK, body comp по камере, recovery
+    как тренировка). Ни один не проверен против текущего кода в этом проходе.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">08</span> Проверено и закрыто — не хвост</h2>
+  <div class="card good-card">
+    <span class="badge good">Подтверждено сейчас, а не по памяти</span>
+    <p><code>SESSION_HANDOFF_2026-08-15_CATALOG_GATE_E.md</code> называл BLOCKER: тест
+    <code>coach_single_status_test.dart</code> ссылался на несуществующие
+    <code>avatarCannotPlaceBodyProvider</code> и <code>coachStatusHasRepVerdict</code>, плюс проверял
+    ключи (<code>coach.ready</code>, <code>form_check.cue_card</code>), которых нет в продакшене.
+    Проверено сегодня: все идентификаторы теперь существуют в
+    <code>form_check_providers.dart</code>/<code>form_check_page.dart</code>/<code>coach_readiness_band.dart</code>
+    — кто-то закрыл это между 15 и 20 августа. Не переоткрываю.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">09</span> Не охвачено в этом проходе</h2>
+  <div class="card">
+    <p>В <code>core/plans/</code> ещё около 25 файлов, не прочитанных построчно в этом проходе — в
+    основном узкие и датированные июлем/началом августа (B1/B3/B5 media/data, ML_STRATEGY,
+    PLAN_AI_RESTRUCTURE, PLAN_DEVICE_DEFECTS, business-плановые файлы, SESSION_STATE/SESSION_HANDOFF
+    более ранние). <code>IMPLEMENTATION_PLAN.md</code> сам себя называет историческим — заменён
+    <code>ROADMAP_2026_V2.md</code>. Если нужен полный построчный проход по всем ~40 файлам — отдельный
+    заход, не эта сессия одним ходом.</p>
+  </div>
+</section>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

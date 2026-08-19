@@ -19461,3 +19461,42 @@ wait for the operator rather than rolling straight into the next gate (onboardin
 branch archaeology, deletion).
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — full loose-ends inventory across plans and designs
+
+Operator asked for the full list of open items across all plans and designs. Read
+`core/CURRENT_STATE.md` (the auto-generated ledger — 8 rows requiring OPERATOR/EXTERNAL authority,
+5 of which cannot be closed by any commit in this tree), `docs/Redisign/OPEN_DECISIONS_REGISTER_v1.3.md`
+(44 open product decisions, 5 marked HARD BLOCKER in section D6 — Technique Coach, i.e. Form Coach,
+next on this session's own VISUAL_GATE roadmap), `docs/Redisign/HANDOFF_GAP_MATRIX_v1.5.md` (Exercise
+Page is the one screen with no approved Figma anchor at all), `core/audits/FULL_PROJECT_AUDIT_2026-08-16/06_FIGMA_PRODUCTION_DRIFT.csv`
+(no Figma file/token export exists in the tree for any of 10 checked screens), `core/plans/PLAN_R11_DECISIONS_2026-08-12.md`
+and `PLAN_REDESIGN_REMAINDER_2026-08-12.md` (an unresolved 7-vs-18-step onboarding conflict, never
+reopened even though the code has since grown to 10 steps; R11b — 13-screen onboarding widgets
+(`WheelYear`/`HRuler`/`VRuler`/`BodyDiagram`/`ChoiceCard`/`BMICard`/`DeltaCard`) entirely unbuilt;
+Paywall HELD on an operator pricing decision since 2026-08-12), and `core/plans/FINAL_SCOPE_2026-08-16.md`
+(exercise-catalogue content debt: 1484/1887 cards missing a "why", 1368/1887 never human-reviewed).
+
+**New finding, not previously tracked in this session**: onboarding now has **three** unreconciled
+sources of truth — the 10-step code in `step_answered.dart`, the 18-screen Figma target from
+`docs/Redisign/`, and the 9-step `onboarding_v4` reference imported yesterday. None has been declared
+authoritative over the others. Building onboarding_v4 without resolving this first would be adding a
+fourth version on top of an already-unresolved conflict, not implementing "the" design.
+
+**Verified, not just cited**: `SESSION_HANDOFF_2026-08-15_CATALOG_GATE_E.md`'s BLOCKER
+(`coach_single_status_test.dart` referencing nonexistent providers/keys) — checked against current
+code, all referenced identifiers now exist in production (`form_check_providers.dart`,
+`form_check_page.dart`, `coach_readiness_band.dart`). Closed between 2026-08-15 and today; not
+reopened.
+
+**Not done**: a full line-by-line read of the remaining ~25 files under `core/plans/` (mostly dated
+July/early-August, narrower in scope — catalog data/media, ML strategy, business planning). Flagged
+explicitly in the published report rather than silently omitted.
+
+Published as `reports/SPTR_TAILS_2026-08-20_plans_and_designs.{ru,html}` per house format
+(`https://claude.ai/code/artifact/9a01bc54-ab3b-4bd6-97d8-6d4a80935381`). Pure inventory/reporting —
+no code changed, no decisions made on the operator's behalf.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
