@@ -14,6 +14,7 @@ import '../../core/camera/centre_crop.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../equipment/state/equipment_providers.dart';
+import '../equipment/widgets/last_session_card.dart';
 import '../safety/state/eligibility_providers.dart' show safetyContextProvider;
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/experimental_banner.dart';
@@ -1418,36 +1419,50 @@ class _HeroMatchCard extends StatelessWidget {
     final theme = Theme.of(context);
     return HudPanel(
       onTap: () => onOpen(match.equipmentId),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          HudRing(
-            size: 78,
-            radius: 34,
-            strokeWidth: 2.5,
-            glowBlur: 6,
-            progress: match.confidence,
-            semanticsLabel: l10n.scannerMatchLabel,
-            child: HudRingLabel(
-              // Same rounding as the confidence line beside it
-              // (`_MatchDetails`) -- `.round()` here disagreed with that
-              // `toStringAsFixed(0)` on a binary-tie percentage, showing two
-              // different numbers for the one figure this file is most
-              // careful never to invent.
-              value: (match.confidence * 100).toStringAsFixed(0),
-              caption: l10n.scannerMatchLabel,
-              valueSize: 22,
-            ),
+          Row(
+            children: [
+              HudRing(
+                size: 78,
+                radius: 34,
+                strokeWidth: 2.5,
+                glowBlur: 6,
+                progress: match.confidence,
+                semanticsLabel: l10n.scannerMatchLabel,
+                child: HudRingLabel(
+                  // Same rounding as the confidence line beside it
+                  // (`_MatchDetails`) -- `.round()` here disagreed with that
+                  // `toStringAsFixed(0)` on a binary-tie percentage, showing
+                  // two different numbers for the one figure this file is
+                  // most careful never to invent.
+                  value: (match.confidence * 100).toStringAsFixed(0),
+                  caption: l10n.scannerMatchLabel,
+                  valueSize: 22,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _MatchDetails(
+                  match: match,
+                  name: name,
+                  titleStyle: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded),
+            ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: _MatchDetails(
-              match: match,
-              name: name,
-              titleStyle: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w800),
-            ),
-          ),
-          const Icon(Icons.chevron_right_rounded),
+          // Level-1 equipment-type memory, surfaced right where the user
+          // just identified the machine -- not folded into the recognition
+          // row above, because a "last time here" fact and a "how sure the
+          // classifier is" fact come from two different sources of truth and
+          // must not read as one. Same widget the equipment detail page
+          // uses (`LastSessionCard`), unchanged: it already hides itself for
+          // a confirmed no-history and only ever shows real logged numbers.
+          const SizedBox(height: 12),
+          LastSessionCard(equipmentId: match.equipmentId),
         ],
       ),
     );

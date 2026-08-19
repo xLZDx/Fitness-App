@@ -17997,3 +17997,53 @@ Suites: `flutter analyze` clean (project-wide, same pre-existing 15). New/integr
 existing detail-page test 10/10 + full suite 3114/3115 (1 pre-existing unrelated flake, not reproduced
 in isolation). PUSH: pending this entry's commit (operator
 rule: push immediately, verify remote==local before further work).
+
+## 2026-08-19 -- M4 completed: Level-1 equipment memory wired into the Scanner result
+
+Per the new mandate's own §7 ("CONNECT M3 MEMORY NOW... wire it into the Scanner RESULT experience"),
+adapted to the collision resolution from the previous entry: the surviving implementation is Gate D's
+(`LastSessionCard`/`summarizeEquipmentTypeHistory`), not M3's retired `equipmentMemoryProvider`, so that
+is what got wired.
+
+**What changed**, `mobile/lib/features/scanner/scanner_page.dart` only: `_HeroMatchCard` (the confident
+top-match card added earlier this gate, with the real confidence ring) now renders `LastSessionCard(
+equipmentId: match.equipmentId)` below the recognition row -- the exact same widget the equipment detail
+page uses, unchanged, so there is exactly one implementation of "what does this equipment's memory look
+like" in the whole app. Deliberately NOT added to the plain match rows (the `alternatives`/"not sure"
+list): per the mandate's own §9 ("no incorrect memory attached unless the selected canonical type is
+actually resolved"), attaching a memory card to an unresolved candidate would imply the app knows which
+machine the user is looking at when it has explicitly said it does not.
+
+**Hierarchy preserved deliberately** (mandate §8): the ring + confidence + name answer "what is this and
+how sure are we", `LastSessionCard` answers a completely different question ("what did you log here
+before") from a different data source (workout history, not the classifier) -- the two are visually
+separated (a `SizedBox` gap, not merged into one Row) and the doc comment on the insertion states this
+explicitly so a future edit does not fold them back together.
+
+**Four new tests added to `scanner_page_test.dart`** (not merely re-asserting the arithmetic --
+`equipment_type_history_test.dart` already does that -- these prove the WIRING): a confident match with
+real logged history shows the real headline and the real formatted weight/reps; a confident match with
+a confirmed-empty history shows no card at all (never a fabricated number); history logged against a
+DIFFERENT equipment type's exercises is excluded (the fake repository only maps ids for the id it is
+asked about, so a mismatched exerciseId cannot leak in); an `alternatives` (undecided) result attaches
+no memory card at all, because `LastSessionCard` is structurally never instantiated on that path -- not
+merely hidden. Building these required settling three independently-async providers (exercise ids, the
+session stream, the totals future) before asserting, the same reasoning already documented for
+`session_digest_providers_test.dart`'s own multi-provider `settle()` helper; the first draft of the
+"real history" test asserted before any of the three had resolved and failed with zero widgets found --
+caught immediately by the test itself, not shipped.
+
+**Verification:** `flutter analyze` on the touched files: clean. `scanner_page_test.dart`: 48/48 (44
+pre-existing + 4 new), all passing. Full suite: 3118/3119 -- the one failure is the same pre-existing,
+order-dependent scheduler flake recorded at every prior gate this session (origin
+`test/widgets/app_buttons_test.dart:173`, surfaced this run as `test/widget_test.dart: App boots...`
+failing after 3 binding retries, same neighbouring `glass_nav_bar_test.dart` cluster as every prior
+occurrence); not caused by this change.
+
+**MVP status:** M4 (Scanner) is now genuinely complete, including the Level-1 memory integration the
+mandate specifically called for -- not just the visual reskin from the earlier M4 entry. M1-M4 closed.
+M5 (Active Session) is next.
+
+Suites: `flutter analyze` clean; `scanner_page_test.dart` 48/48. Full suite: see next entry. PUSH:
+pending this entry's commit (operator rule: push immediately, verify remote==local before further
+work).

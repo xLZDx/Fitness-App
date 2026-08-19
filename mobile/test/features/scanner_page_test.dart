@@ -18,7 +18,11 @@ import 'package:fitness_app/features/visual_equipment/data/recognition_history.d
 import 'package:fitness_app/features/visual_equipment/data/scan_outcome.dart';
 import 'package:fitness_app/features/visual_equipment/state/recognition_history_providers.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
+import 'package:fitness_app/features/equipment/data/equipment_repository.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/workouts/data/workout_log_totals.dart';
+import 'package:fitness_app/features/workouts/data/workout_session.dart';
+import 'package:fitness_app/features/workouts/state/workout_session_providers.dart';
 import 'package:fitness_app/features/safety/data/eligibility.dart';
 import 'package:fitness_app/features/safety/data/health_flags.dart';
 import 'package:fitness_app/features/safety/data/par_q.dart';
@@ -244,6 +248,60 @@ class _FakePermissionGate extends CameraPermissionGate {
     return opens;
   }
 }
+
+/// Feeds [equipmentExerciseIdsProvider] a fixed exercise-id set per
+/// equipment, the same shape `last_session_card_test.dart` uses to prove
+/// [LastSessionCard] against real providers rather than a mocked one.
+class _FakeEquipmentRepository implements EquipmentRepository {
+  _FakeEquipmentRepository(this.exerciseIds);
+  final List<String> exerciseIds;
+
+  @override
+  Future<List<ExerciseItem>> exercisesFor(String equipmentId) async => [
+        for (final id in exerciseIds)
+          ExerciseItem.fromJson({
+            'id': id,
+            'title': id,
+            'equipmentId': equipmentId,
+            'durationMinutes': 10,
+            'difficulty': 'beginner',
+            'muscles': const <String>[],
+            'steps': const ['Step'],
+          }),
+      ];
+
+  @override
+  Future<List<ExerciseItem>> bodyweightExercises() async => const [];
+
+  @override
+  Future<EquipmentItem?> findEquipment(String id) async => null;
+
+  @override
+  Future<List<EquipmentItem>> listEquipment() async => const [];
+}
+
+WorkoutSession _scanTestSession({
+  required String id,
+  required String exerciseId,
+  required DateTime completedAt,
+  double? weightKg,
+  int? reps,
+}) =>
+    WorkoutSession(
+      id: id,
+      title: exerciseId,
+      status: WorkoutSessionStatus.completed,
+      startedAt: completedAt.subtract(const Duration(minutes: 20)),
+      completedAt: completedAt,
+      durationMinutes: 20,
+      exercises: [
+        WorkoutSessionExercise(
+          exerciseId: exerciseId,
+          exerciseTitle: exerciseId,
+          sets: [(weightKg: weightKg, reps: reps)],
+        ),
+      ],
+    );
 
 void main() {
   /// Pumps ScannerPage under a real router.
@@ -511,6 +569,175 @@ void main() {
       // The classifier fills labelHint too, with its own internal label. That
       // must never be captioned as something read off the machine.
       expect(find.textContaining('Read on the machine'), findsNothing);
+    });
+
+    // Gate D -> Scanner wiring: the same Level-1 equipment-type memory the
+    // equipment detail page shows now also appears under a confident scan
+    // result. These prove the WIRING (real equipment id reaches
+    // LastSessionCard, and it stays honest when there is nothing to say) --
+    // the arithmetic itself is `equipment_type_history_test.dart`'s job.
+    testWidgets(
+        'a confident match with real logged history shows Level-1 memory',
+        (tester) async {
+      final when = DateTime.now().subtract(const Duration(days: 3));
+      final container = await pumpScan(tester, overrides: [
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.8),
+          ]),
+        ),
+        equipmentRepositoryProvider
+            .overrideWithValue(_FakeEquipmentRepository(['leg_press_row'])),
+        workoutSessionsProvider.overrideWith((_) => Stream.value([
+              _scanTestSession(
+                id: 's1',
+                exerciseId: 'leg_press_row',
+                completedAt: when,
+                weightKg: 70,
+                reps: 8,
+              ),
+            ])),
+        workoutSessionTotalsProvider.overrideWith(
+            (_) async => WorkoutLogTotals(total: 1, longestStreakDays: 1)),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/machine.jpg');
+      // LastSessionCard reads three independently-async providers
+      // (exercise ids, the session stream, the totals future) before it has
+      // anything to render; settle all three before asserting, the same
+      // reasoning `session_digest_providers_test.dart` documents for its own
+      // multi-provider `settle()` helper.
+      await container.read(equipmentExerciseIdsProvider('leg_press').future);
+      await container.read(workoutSessionsProvider.future);
+      await container.read(workoutSessionTotalsProvider.future);
+      await tester.pump();
+
+      expect(find.text('Your last session with this equipment'),
+          findsOneWidget);
+      expect(find.text('70 kg × 8 reps'), findsOneWidget);
+    });
+
+    testWidgets(
+        'a confident match with no logged history shows no fake memory',
+        (tester) async {
+      final container = await pumpScan(tester, overrides: [
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.8),
+          ]),
+        ),
+        equipmentRepositoryProvider
+            .overrideWithValue(_FakeEquipmentRepository(['leg_press_row'])),
+        // An empty (not never-emitting) stream: a real snapshot that says
+        // "checked, zero sessions" -- `Stream.empty()` never emits at all,
+        // which would leave `workoutSessionsProvider.future` hanging forever
+        // and prove nothing about the CONFIRMED-no-history path this test
+        // names.
+        workoutSessionsProvider
+            .overrideWith((_) => Stream.value(const <WorkoutSession>[])),
+        workoutSessionTotalsProvider
+            .overrideWith((_) async => WorkoutLogTotals.zero),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/machine.jpg');
+      await container.read(equipmentExerciseIdsProvider('leg_press').future);
+      await container.read(workoutSessionsProvider.future);
+      await container.read(workoutSessionTotalsProvider.future);
+      await tester.pump();
+
+      // A confirmed empty history earns no card at all -- never a fabricated
+      // "0 kg" or "never used" line (see LastSessionCard's own doc comment).
+      expect(
+          find.text('Your last session with this equipment'), findsNothing);
+      expect(find.textContaining('kg'), findsNothing);
+    });
+
+    testWidgets(
+        "history logged on a DIFFERENT equipment type is excluded from this match's memory",
+        (tester) async {
+      final when = DateTime.now().subtract(const Duration(days: 1));
+      final container = await pumpScan(tester, overrides: [
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.8),
+          ]),
+        ),
+        // The fake repository only ever maps exercise ids for the equipment
+        // id it is asked about, so a session logged against an exercise
+        // that belongs to a DIFFERENT equipment type's id set never matches.
+        equipmentRepositoryProvider
+            .overrideWithValue(_FakeEquipmentRepository(['leg_press_row'])),
+        workoutSessionsProvider.overrideWith((_) => Stream.value([
+              _scanTestSession(
+                id: 's1',
+                exerciseId: 'lat_pulldown_row',
+                completedAt: when,
+                weightKg: 40,
+                reps: 10,
+              ),
+            ])),
+        workoutSessionTotalsProvider.overrideWith(
+            (_) async => WorkoutLogTotals(total: 1, longestStreakDays: 1)),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/machine.jpg');
+      await container.read(equipmentExerciseIdsProvider('leg_press').future);
+      await container.read(workoutSessionsProvider.future);
+      await container.read(workoutSessionTotalsProvider.future);
+      await tester.pump();
+
+      // This is the confirmed-no-history case for `leg_press` -- the one
+      // logged session belongs to a different equipment type -- so the whole
+      // card is absent, not just the number.
+      expect(
+          find.text('Your last session with this equipment'), findsNothing);
+      expect(find.text('40 kg × 10 reps'), findsNothing);
+    });
+
+    testWidgets('undecided (alternatives) matches attach no memory at all',
+        (tester) async {
+      // Below the honesty threshold (`_Matches._unsureBelow`), so neither
+      // candidate headlines -- and neither should carry a memory card, since
+      // the app has not actually resolved which equipment the user is
+      // looking at.
+      final when = DateTime.now().subtract(const Duration(days: 1));
+      final container = await pumpScan(tester, overrides: [
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.3),
+            VisualMatch(equipmentId: 'treadmill', confidence: 0.25),
+          ]),
+        ),
+        equipmentRepositoryProvider
+            .overrideWithValue(_FakeEquipmentRepository(['leg_press_row'])),
+        workoutSessionsProvider.overrideWith((_) => Stream.value([
+              _scanTestSession(
+                id: 's1',
+                exerciseId: 'leg_press_row',
+                completedAt: when,
+                weightKg: 70,
+                reps: 8,
+              ),
+            ])),
+        workoutSessionTotalsProvider.overrideWith(
+            (_) async => WorkoutLogTotals(total: 1, longestStreakDays: 1)),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/machine.jpg');
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Not sure — closest matches'), findsOneWidget);
+      expect(
+          find.text('Your last session with this equipment'), findsNothing);
     });
 
     testWidgets('a match read off the machine says so, and shows the phrase',
