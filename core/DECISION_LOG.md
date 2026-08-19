@@ -19061,3 +19061,47 @@ account's PAR-Q+ screening to verify the current-programme hero and build-from-a
 real evidence before any layout change).
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-19 — nav bar "difference" was a false alarm; found and fixed a stale-APK gap instead
+
+Operator pasted a side-by-side of reference Home/Profile mockups against live emulator
+screenshots and circled the bottom navigation bar, asking whether the visible difference (a
+flush full-width bar in the reference vs. a floating rounded pill with a selection dot on
+device) was a real defect.
+
+**First read was wrong, corrected on the same turn.** Grepped for `GlassNavBar` and read its doc
+comment ("flat, full width, pinned to the screen edge... No floating pill") and reported that as
+current behaviour — without checking whether the widget is actually used anywhere.
+`grep -rln "GlassNavBar(" lib/` returns only the widget's own definition file: it has zero call
+sites, dead code superseded by a later widget. The real bottom nav, wired into
+`main_shell.dart:149`, is `HudNavBar` (`hud_scaffold.dart`), whose own doc comment says the
+opposite: "It floats... the handoff's is an inset glass pill... selection is ink plus a 4px
+accent dot" — exactly what the emulator showed. `git log` confirms the swap: `d951476` replaced
+`GlassNavBar` with `HudNavBar`. The existing `SPTR_VISUAL_FIDELITY_74f2f76` report already marks
+the `NAV` criteria-matrix row `PASS` for "плавающая капсула" (floating capsule). **Conclusion:
+not a defect** — the floating pill is the deliberate, already-verified design; the operator's
+pasted reference mockups are not the same handoff the code and prior report evidence are built
+against. Correction stated to the operator in-thread rather than silently fixed.
+
+**What the investigation actually surfaced**: while chasing this, the installed emulator APK
+(built earlier today from an older HEAD, `3a7a760`-based per the `74f2f76` report's own evidence
+footer) predates every commit made in this session after that point — including today's own
+overflow-dialog fix (`4cfac26`) and the branch-switch's fast-forward onto `master`. All device
+screenshots taken so far in this thread (the profile/home/scanner walk, the stuck overflow
+dialog) were captured against that stale build, not against current `master` HEAD. Continuing
+device verification (V5 hero/build-from-answers cards, or anything else) on that build risks
+drawing conclusions about code that no longer matches what's installed.
+
+**Fix**: rebuilding `flutter build apk --debug` from `D:\Repo\_wt-master-sync` (current master).
+First attempt failed — `google-services.json` missing, because git worktrees only materialise
+tracked files and that config is gitignored; it existed only in the original
+`D:\Repo\_wt-formcoach` checkout. Copied it across (local build config, not committed, matches
+its gitignored status) and re-ran the build.
+
+**Not yet done**: install the fresh APK on `emulator-5554`, relaunch, and resume the interrupted
+V5 device verification (current-programme hero, build-from-answers panel) on a build that
+actually reflects `master` HEAD.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
