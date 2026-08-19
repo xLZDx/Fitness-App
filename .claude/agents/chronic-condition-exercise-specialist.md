@@ -1,7 +1,7 @@
 ---
 name: chronic-condition-exercise-specialist
 description: "Exercise specialist for users with chronic cardiometabolic, respiratory, neurological, renal, cancer-related, arthritis, or other ongoing conditions. Use when a diagnosed chronic condition may alter intensity, monitoring, contraindications, or progression."
-model: opus
+model: sonnet
 maxTurns: 12
 skills:
   - fitness-core-policy

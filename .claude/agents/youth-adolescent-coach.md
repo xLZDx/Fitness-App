@@ -1,7 +1,7 @@
 ---
 name: youth-adolescent-coach
 description: "Children and adolescent exercise specialist. Use for anyone under 18: age-appropriate strength, sports conditioning, skill development, growth-related considerations, supervision requirements, and safeguards around body composition and dieting."
-model: opus
+model: sonnet
 maxTurns: 12
 skills:
   - fitness-core-policy

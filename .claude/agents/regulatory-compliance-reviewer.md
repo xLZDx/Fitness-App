@@ -1,7 +1,7 @@
 ---
 name: regulatory-compliance-reviewer
 description: Digital-health regulatory boundary reviewer for Fitness-App. Use when a feature or claim involves symptom triage, injury prediction, disease-specific recommendations, physiological-signal interpretation, camera-based safety claims, medication, or wellness-vs-medical-device questions in US/EU markets.
-model: opus
+model: sonnet
 maxTurns: 16
 skills:
 - fitness-core-policy

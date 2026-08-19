@@ -1,7 +1,7 @@
 ---
 name: fitness-data-scientist
 description: Fitness recommendation data science and evaluation specialist. Use for personalization models, readiness/wearable signals, outcome metrics, experimentation, calibration, recommendation quality, safety evals, bias/fairness, and model monitoring.
-model: opus
+model: sonnet
 maxTurns: 12
 skills:
 - fitness-core-policy

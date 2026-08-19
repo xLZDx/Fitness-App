@@ -1,7 +1,7 @@
 ---
 name: evidence-guideline-reviewer
 description: Evidence and guideline verification specialist. Use when a recommendation rule is being added/changed, when two agents disagree, when a source may be outdated, or before shipping medical-adjacent fitness policy.
-model: opus
+model: sonnet
 maxTurns: 16
 skills:
 - fitness-core-policy

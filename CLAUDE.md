@@ -73,3 +73,63 @@ engineering facts** — skip it for code work.
 
 Adding or removing a feature means updating `core/CODEMAP.md` in the same commit. Moving or
 deleting anything a doc names means `scripts/dev/audit_doc_links.ps1` must still exit 0.
+
+## History — 423 commits, and the shape they came in
+
+36 commits in May, **none in June**, 91 in July, 296 in August. Three eras, and the June gap is
+real: the project was built fast, abandoned for seven weeks, then restarted as a release-engineering
+and audit effort rather than a feature effort. Most of what is in the app today was written in the
+first three days; most of the *work* went into finding out what was wrong with it.
+
+**Era 1 — 2026-05-07 to 05-10: the whole app in three days.** Phase 0 scaffold with the aurora
+glass design system, Phase 1A auth plus a 34-question onboarding questionnaire, Phase 1B wiring
+Firebase (against the existing `traidingbot-b4061` project — the trading bot's, reused, which is
+why the Firebase console shows an unrelated name), Phase 2A scanner and 2B video player, 2C/2D
+injury-aware recommendations, Phase 3A–3D logging → progress → scheduling → reminders, Phase 4A
+subscription tiers and 4B Stripe Checkout with a Cloud Functions webhook. Then `ee72853`, a
+competitive-assessment gap closure that added pricing, adaptive personalisation, missing pages and
+the Wear OS scaffold.
+
+**Era 2 — 2026-07-28 onward: release engineering.** It opens with `bc0a527` — "kill doc-vs-reality
+contradictions + add link-audit gate" — which is the origin of the "Keeping docs true" rule above.
+Then builds `1.0.0+2` through `+9` in three days, each one a real device install, with nine gates
+checkpointed in `1163b3d` and `7df44ec` **including their stated non-goals**. `c66d43c`
+("one owner, one conversion, structural release") is the camera refactor that followed a leak found
+by using the app rather than by reading it.
+
+**Era 3 — August: the audits.** This is where the interesting failures live.
+
+- **Licensing.** Builds `+12`, `+13`, `+14` land the video library, and then `dcfef30` — "the
+  catalog was still serving the unlicensed scaffold". Shipping the licensed bundle and *serving* it
+  were two different things, and only a direct check found the gap.
+- **The full-app Figma-parity audit (`4dc291a`, 2026-08-11)** found **six real bugs** and produced
+  the R11 gate plan. It was followed by a run of "act gates" — deliberately adversarial passes over
+  finished features — and every one of them found something the feature work had missed:
+  `e6bfa85` (A2-sec: **two paths that destroyed photos**), `aa9abf7` (A3 export: the counterparty
+  was not redacted, reads were unbounded, a stale token failed silently), `d7335c0` (A6-lite: the
+  system **refunded what had never signed up**, and an empty batch read as success), `e54bbef`
+  (unbounded batch, unpaginated list, unkeyed locale, silent skips). If you are about to call a
+  feature done, the act gate is the step that has historically earned its cost here.
+- **A fix can be a regression.** `8125a5c` — "correct the muscle clean, and five regressions the
+  Gate E pass introduced". The catalog re-verification pass broke five things while fixing others.
+- **Honest release logging.** `e8ad0a7` records a **failed** release build — no APK, nothing
+  distributed — as its own commit. `4d8e681` records that a branch shipped **without** a Codex
+  round. Absence is logged, not omitted.
+- **Measurement over assertion.** The equipment classifier was measured against the operator's own
+  30 gym photos and scored top-3 5/18, while the machine's printed name identified 18/18 — which is
+  why the text anchor runs first and why those photos are test data that must never be trained on.
+  Both facts are in the section above; they came from measurement, not design.
+- **Agent cost.** `d69ccc7` installed the v2.3.1 expert-team pack project-scoped without its
+  installer, and `3783e98` then **downgraded 10 of the 12 opus agents to sonnet**. The 30 agents in
+  `.claude/agents/` are a real running cost; treat adding another as a decision.
+
+**2026-08-14 (`4071655`)** finished the `D:\test 2` → `D:\Repo` path rewrite across docs, agents and
+scripts — which is why any path of that older form found anywhere in this repo is a bug, not
+history.
+
+**Current state (2026-08-17).** `master` at `3783e98`, working tree clean, in sync with
+`origin/master`. A second worktree exists at `D:\Repo\_wt-formcoach` on branch
+`formcoach/gates-a-c`; the gates-a-c merge and its stash disposition are recorded in `8a16d2d`.
+Two things are deliberately left broken and must not be "fixed" casually: Wear release pairing
+(`wear/build.gradle.kts` declares no `signingConfig`, so signing changes need their own GO) and the
+open personalisation ranking decision named in `a42abe3`.

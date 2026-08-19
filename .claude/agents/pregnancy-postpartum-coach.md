@@ -1,7 +1,7 @@
 ---
 name: pregnancy-postpartum-coach
 description: "Pregnancy and postpartum exercise specialist, including return to activity, resistance/aerobic modifications, pelvic-floor symptom awareness, obstetric contraindications, and postpartum progression. Use whenever pregnancy or postpartum status is applicable."
-model: opus
+model: sonnet
 maxTurns: 12
 skills:
   - fitness-core-policy

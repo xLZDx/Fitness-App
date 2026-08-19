@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Python314/python.exe",
+            "timeout": 5,
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/validate_fitness_child_agent.py"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
