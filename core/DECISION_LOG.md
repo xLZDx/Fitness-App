@@ -18315,3 +18315,79 @@ regression from this commit. Not silently absorbed: recorded here as an open ite
 before the release gate.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-19 — Visual Recovery Gate: the operator's screenshot was not this branch
+
+**Trigger.** The operator supplied a device screenshot that did not match the approved handoff and,
+more importantly, did not look like this branch's HUD implementation at all: bottom navigation read
+Home · Scan · Workouts · Progress · Profile with Scan raised inside a circle, over solid charcoal
+cards and no photographic background.
+
+**ROOT_CAUSE = STALE / WRONG BRANCH APK. Proven before building anything**, from four independent
+facts that agree to the second:
+
+1. `main_shell.dart` on this branch mounts `HudNavBar` — five equal tabs, order
+   Home · Workouts · Scan · Progress · Profile, no raised item. It has done so since `d951476`,
+   2026-08-19 15:43. `GlassNavBar` (the raised-Scan implementation) is referenced nowhere but in
+   comments.
+2. The legacy worktree `D:/Repo/Fitness_App`, on `marketing/site-prototype-2026-08-19`, contains
+   `HudNavBar` **zero** times, declares Scan as `GlassNavItem(raised: true)`, and orders Scan
+   *before* Workouts — exactly the screenshot.
+3. That worktree's `app-debug.apk` was built 2026-08-19 **18:00**.
+4. The emulator's `com.fitnessapp.fitness_app.sptr.debug` reported
+   `lastUpdateTime=2026-08-19 18:00:39`.
+
+The device was carrying **three** packages of this app at once — `com.fitnessapp.fitness_app`
+(2026-08-06, the pre-split application id), `…sptr` (2026-08-13 release) and `…sptr.debug` — i.e.
+three near-identical launcher icons, which is what made the mix-up possible at all. Also confirmed:
+`pointer_location=1` and `show_touches=1` were set on the emulator, which is the coordinate strip
+and magenta trail in the operator's image. Both disabled.
+
+**Canonical build.** `flutter clean` → `pub get` → `build apk --debug` with
+`--dart-define=GIT_SHA=74f2f76 --dart-define=BUILT_AT=…` (the dart-defines `main.dart` already
+documents, and whose default `'unknown'` its own comment calls untraceable). Installed 18:54:29,
+verified by package timestamp. Working tree content was identical to HEAD — the files git listed as
+modified differ only in line endings, confirmed by an empty `git diff`.
+
+**The freshly built APK answers §11's first question: the UI is already correct at the system
+level.** Photographic `HudSky` fills the screen and is visible through the panels; the nav is five
+equal tabs in the right order with the selection dot and no raised Scan; panels are translucent
+glass. No already-correct UI was rewritten.
+
+**Screen-by-screen fidelity, with a self-correction.** A first pass judged the segmented control and
+filter chips "roughly 3× too tall" — that was wrong, and it was wrong because it compared raw pixels
+across two images at different scales. Normalised against screen width the control measures 11.1%
+against the reference's 11.0%, and the chips 9.7% against 9.0%: faithful. `font_scale` was checked
+and unset, so no accessibility inflation was masking anything. The genuine, measurable gap is the
+programme card at ~43% of screen width against the reference's ~15% list row.
+
+Findings that survived: programme cards ~3× the reference row height, with the CURRENT PROGRAMME
+hero and the "Build from my answers" panel absent (MAJOR); the safety/eligibility block rendering as
+a flat opaque pink slab outside the glass system, with grey-on-pink bullets and one sentence
+repeated six times (FAIL — content correct and must stay, presentation must move into the approved
+language per §15); onboarding entirely un-reskinned, flat near-black with opaque cards and no
+`HudSky` (FAIL — it was never in any of gates M1–M6, so a systemic gap, not a regression); Home's
+"More" card and Profile's tile icons still carrying old-language saturated gradients (MINOR).
+
+**VISUAL_GATE = FAIL** — unresolved MAJORs remain, so the gate does not pass under §19's own rule,
+even though the root cause is resolved.
+
+**Device evidence for the questionnaire fix committed earlier today.** Tapping Profile's
+"Health questionnaire → Edit your answers" on the running build now opens the questionnaire at step
+1/10 instead of bouncing to `/home`. That upgrades the fix from UNIT_TEST_EVIDENCE to
+EMULATOR_DEVICE_EVIDENCE.
+
+**Not verified, recorded rather than absorbed.** The emulator clamps to 1080×1920 (16:9) where the
+handoff is drawn for ~19.5:9. Only the dark theme was captured. Session, Rest and Form Coach were
+not captured (the test profile's S0 chest-pain state blocks starting a workout) and the Library list
+is unreachable for the same reason — a second profile without that answer is required. Live camera
+preview was judged against the emulator's synthetic feed, so preview fidelity stays UNVERIFIED. And
+gates M1–M6 were all closed without a capture of the running app, so their VISUAL_STATUS before this
+run should read UNVERIFIED rather than PASS.
+
+Report: `reports/SPTR_VISUAL_FIDELITY_74f2f76.ru.html` / `.html`; captures under
+`reports/screenshots/visual_recovery/74f2f76/`.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
