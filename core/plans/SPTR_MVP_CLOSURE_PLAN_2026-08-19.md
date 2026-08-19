@@ -98,22 +98,41 @@ the restore window, so MVP-1 alone changes nothing the user actually sees on tha
 codebase's own existing correct pattern at `entitlementStatusProvider` and
 `workout_player_page.dart:505-507`) rather than a structural rewrite.
 
-**MVP-3 — the auth-restore race also reaches app navigation itself, mitigated but not closed.**
-`app_router.dart`'s `redirect` (`:233-240`) reads `authRepo.currentUser` — a synchronous Firebase
-getter with the identical cold-start ambiguity (null until session restore completes, even for a
-returning signed-in user) — not through any resolved-stream contract. If reached before restore
-completes, a real signed-in user would be redirected to `/login`. Mitigated in practice: the
-splash screen (`splash_page.dart:26-32`) waits a fixed 1300ms before navigating to `/home` at all,
-and local session restore (a disk/keychain read, not a network call) normally completes well
-inside that window — so this is evidenced and real, but lower practical likelihood than MVP-1's
-instances, which had no buffer at all. `questionnaireDraftProvider`
-(`questionnaire_notifier.dart:14-23`) has the same defect shape in a synchronous `Notifier.build()`
-and is entangled with this same router path (onboarding is only reachable after `isSignedIn`
-resolves) rather than independently reachable.
-**MVP NEED**: required — this is literally the "authentication/session path" the criterion names,
-just mitigated rather than absent.
-**Cheapest alternative**: make the splash screen wait for `authUserProvider`'s actual first
+**MVP-3 — CLOSED.** The auth-restore race also reached app navigation itself. `app_router.dart`'s
+`redirect` reads `authRepo.currentUser` — a synchronous Firebase getter with the identical
+cold-start ambiguity (null until session restore completes, even for a returning signed-in user)
+— not through any resolved-stream contract; if reached before restore completes, a real signed-in
+user would have been redirected to `/login`.
+
+Fixed (test-first, same reproduction pattern as MVP-1 — see `core/DECISION_LOG.md`'s MVP-3 entry
+for the full trail, including a self-caught false-pass in the first draft of the reproduction
+test): `splash_page.dart` now waits for `authUserProvider`'s real first emission (raced against
+the existing minimum-dwell timer, `Future.wait`, so normal-path timing is unchanged) before ever
+leaving `/splash`, bounded by a 5s safety timeout so a broken/hung stream cannot strand the user.
+Both the timeout and a genuine stream-error path are logged (`debugPrint` +
+`FirebaseCrashlytics.instance.recordError`, non-fatal), matching this codebase's own established
+boot-time-guard logging convention — a silent-failure-hunter and flutter-reviewer finding, fixed
+in this gate rather than deferred. The fix's core premise (that `authRepo.currentUser` is already
+synchronized by the time `authUserProvider`'s stream fires) was independently verified against the
+pinned `firebase_auth_platform_interface` 8.1.9 source, not left as an assumption, and recorded as
+a doc comment on `FirebaseAuthRepository.currentUser`.
+
+`questionnaireDraftProvider` (`questionnaire_notifier.dart:14-23`) has the same defect shape in a
+synchronous `Notifier.build()` and is entangled with this same router path (onboarding is only
+reachable after `isSignedIn` resolves) — left open, tracked below, not folded into this gate.
+**MVP NEED**: required — this is literally the "authentication/session path" the criterion names.
+**Cheapest alternative applied**: made the splash screen wait for `authUserProvider`'s actual first
 emission instead of a fixed timer, rather than restructuring the router's redirect contract.
+
+## Open item carried out of MVP-3, not yet decided
+
+- **`questionnaireDraftProvider`** (`questionnaire_notifier.dart:14-23`) has the same
+  auth-restore-collapse defect shape as MVP-1, but inside a synchronous `Notifier.build()` where
+  the `await ref.watch(authUserProvider.future)` pattern doesn't drop in as-is, and it's entangled
+  with the same router path MVP-3 just fixed (onboarding is only reachable once `isSignedIn`
+  resolves, i.e. after the splash wait already closed the practical window). type-design-analyzer
+  flagged it MINOR during the MVP-1 review. Needs an explicit decision (fix vs. accept-as-mitigated
+  by MVP-3's splash fix) before the release gate, not a silent carry-forward.
 
 ## POST-MVP (evidence preserved, not started)
 
@@ -149,8 +168,11 @@ MRD-07), plus any future personalization/moat work. No new items added here.
 2. **MVP-2** — the same collapse one hop downstream, at the screens/derived-providers that
    actually render to the user (Progress first, since it's the literal named symptom; then the
    rest of the call-site list above). Same discipline: reproduce, smallest fix, test, review.
-3. **MVP-3** — the router-redirect and onboarding-notifier instances of the same defect,
-   mitigated by the splash screen's existing buffer but not structurally closed.
+3. **MVP-3** — CLOSED. The router-redirect instance of the same defect, structurally closed (the
+   splash screen now waits for the real auth emission instead of a fixed timer), test-first, full
+   suite + `flutter analyze` clean, independent review (flutter-reviewer), findings fixed,
+   committed, **pushed**, remote SHA verified. `questionnaireDraftProvider` carried forward as an
+   open, undecided item (see above), not folded in.
 4. **Release gate** — device/emulator pass over: install/build, first launch, auth, scan flow
    (known/ambiguous/unknown machine), exercise/instruction path, injury filtering, EN+RU,
    offline behavior, no console/runtime failures.

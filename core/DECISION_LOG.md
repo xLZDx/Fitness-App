@@ -10617,3 +10617,83 @@ emission rather than a fixed timer, not a router redesign.
 Full plan updated: `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md`.
 
 **PUSH REQUIRED IMMEDIATELY AFTER THIS COMMIT, per the new standing rule.**
+
+---
+
+## 2026-08-19 — MVP-3: splash screen no longer races the router's auth-restore read
+
+**Test-first, per the operator's "не чинить гипотезу".** Two new widget tests in
+`splash_page_test.dart`, both overriding `authUserProvider` with a `StreamController<AuthUser?>`
+that has not yet emitted (the same reproduction pattern as MVP-1 — `MockAuthRepository` replays
+synchronously and cannot model a genuine restore gap). First version of the "does not hand off
+while restoring" test used one large `tester.pump(Duration(seconds: 3))` settle call and produced
+a **false pass** against the unfixed code (the old fixed-1300ms-timer splash should have navigated
+regardless of auth state, so `findsNothing` should have failed — it didn't). Root cause: a single
+large pump does not reliably settle a multi-hop async-chain-then-route-transition; fixed by using
+the same multi-step pump sequence (`pump(1500ms); pump(600ms); pump(more)`) the pre-existing "hands
+off after the splash delay" test already relied on. Re-run against the unfixed code then correctly
+reproduced the failure; re-run against the fix then correctly passed.
+
+**Fix** (`splash_page.dart`): `SplashPage`/`_SplashPageState` converted from `StatefulWidget`/
+`State` to `ConsumerStatefulWidget`/`ConsumerState`. `_proceed()` now runs
+`Future.wait([authWait, Future.delayed(_minDwell)])` — the real first `authUserProvider` emission
+raced against the existing 1300ms minimum-dwell timer, taking the max of the two rather than the
+timer alone — before ever calling `context.go('/home')`. A broken/hung stream cannot strand the
+user: `_maxAuthWait` (5s) bounds the wait via `.timeout()`, and a genuine stream error is caught
+via `.then(onError:)`; both fall back to `null` and proceed exactly as before. Local session
+restore is a disk/keychain read, not a network call, so 5s is a generous safety margin, not an
+expected wait — the fast/mock path still resolves in well under 1300ms, so normal-path timing is
+unchanged (verified: the two pre-existing splash tests still pass unmodified).
+
+**Independent review (flutter-reviewer).** First response returned no plain-text result (only a
+tool-call trace); needed one `SendMessage` restatement request, including a self-correction of its
+own file-path citations (resolved relative to the wrong root on the first pass). **VERDICT:
+APPROVE** — closes the race for every currently-reachable cold-start path; correctly scoped given
+`initialLocation` is hardcoded to `/splash` and no OS-level deep-link/state-restoration entry point
+exists anywhere in the app (grepped: no `uni_links`/`app_links`/`RestorationMixin`/custom
+`RouteInformationParser`). No BLOCKER/MAJOR. Two MINOR findings:
+
+1. The auth-wait's error/timeout path was completely silent (no debug/Crashlytics signal),
+   inconsistent with this codebase's own established `main.dart` logging discipline for boot-time
+   guards — a genuinely broken restore path on some devices would be indistinguishable from
+   "signed out" in Crashlytics. **Fixed**: both the `.then(onError:)` and `.timeout(onTimeout:)`
+   branches now route through a `_reportAuthWaitFailure` helper —
+   `debugPrint('MVP-3: $reason, proceeding to /home anyway: $error')` followed by a
+   defensively try/catch-wrapped `FirebaseCrashlytics.instance.recordError(error, st, fatal: false)`
+   (Crashlytics itself failing must not be a second silent failure; matches `main.dart`'s own
+   pattern for exactly this "diagnostic call might itself fail" case). Re-verified: all 4 splash
+   tests still pass with this change in place, including confirming `FirebaseCrashlytics.instance`
+   does not throw when called from a widget in the test sandbox (an explicitly flagged, previously
+   unverified risk — no prior test in this codebase called Crashlytics from a widget).
+
+2. The fix's core premise — that once `authUserProvider`'s stream emits, `authRepo.currentUser`
+   (the sync getter the router's `redirect` reads) is already synchronized to the same user — was
+   asserted but not verified against the pinned SDK source, unlike a neighboring comment in the
+   same file that did verify a related claim. **Verified directly, not left as a documentation
+   gap**: read the pinned `firebase_auth_platform_interface` 8.1.9 method-channel source
+   (`method_channel_firebase_auth.dart:179-193`, `_handleIdTokenChangesListener`) — `instance.currentUser`
+   is assigned **before** the corresponding event is pushed onto the `userChanges()`/
+   `idTokenChanges()` stream controller, in both the signed-in and signed-out branches, never the
+   reverse. The premise holds. Recorded as a doc comment on `FirebaseAuthRepository.currentUser`
+   (`firebase_auth_repository.dart`), matching this file's own existing standard for this class of
+   claim, rather than left implicit.
+
+Third finding (forward-looking, not a defect): if the app ever adds OS-level deep linking that
+bypasses `/splash`, that entry path would reopen the original race. No action taken — reviewer's
+own words, "not a request to change this diff"; nothing in this codebase does that today.
+
+**Full suite / analyze after all fixes**: see commit message for exact counts (run immediately
+before this commit). `flutter analyze`: reintroduced then removed one new `unnecessary_import`
+lint (`flutter/foundation.dart` fully shadowed by `flutter/material.dart` once both are imported in
+the same file) — caught by `flutter analyze` itself before commit, fixed by dropping the redundant
+import; final count matches the unchanged 7-issue baseline.
+
+**MVP-3 CLOSED.** Per the plan doc's execution order, MVP BLOCKER + both MVP REQUIRED items
+(MVP-1, MVP-3) are now closed. **MVP-2** (the same collapse one hop downstream, at the
+screens/derived-providers — Progress, Home, Programmes, etc.) remains scoped and evidenced in the
+plan doc but not started; whether to pursue it in full, in part, or reclassify further given that
+MVP-1+MVP-3 now close the actual "confident lie" risk (the remaining downstream collapse is largely
+ordinary async-loading flicker, not the same defect class) is an explicit scoping decision to make
+before starting that gate, not assumed.
+
+**PUSH REQUIRED IMMEDIATELY AFTER THIS COMMIT, per the new standing rule.**
