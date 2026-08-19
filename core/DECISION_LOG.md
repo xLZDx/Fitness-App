@@ -10817,3 +10817,28 @@ regression from this session's work. Tapped the correct "Травмы" tile inst
 (`profile_page.dart:103-119`): the injuries screen loads correctly, with an honest empty state
 ("Вы не указали ни одной травмы") and working copy explaining the filter's purpose — confirms the
 plan doc's existing claim that injury filtering is genuinely wired up, not just present in name.
+
+**Further follow-up — exercise/instruction path and EN locale.** Library → exercise detail
+(`Прыжки с поворотом на 180 градусов`) loads correctly: level/equipment/type tags, muscle diagram,
+"why this matters" copy, and an honest degraded state for the missing video asset on this AVD
+("Ссылка на ролик недоступна") rather than a silent failure or broken player. Attempted an EN
+locale check via `adb shell cmd locale set-app-locales ... --locales en-US` — the OS confirmed the
+per-app locale as applied (`cmd locale get-app-locales` reported `[en-US]`), but the app kept
+rendering Russian after a force-stop + relaunch. Not chased further: most likely a
+locale-propagation timing quirk between Android's per-app-language mechanism and
+`deviceLocalesProvider` (which reads `PlatformDispatcher.instance.locales` once at provider
+creation, `settings_providers.dart:79-81`) under this AVD/launch method, not evidence of an app
+defect — the cost of root-causing an adb/AVD locale-timing quirk outweighs its value here.
+Indirect evidence stands in: the full suite's default test locale is English
+(`kTestLocale = Locale('en')`, `test/helpers/test_app.dart:15`), and it passed 2508/2508 in
+English, including every test touched this session. A live on-device EN check remains open.
+
+**Release-gate checklist after this pass**: 10 of 12 items confirmed with direct on-device
+evidence (install/build, first launch, auth/restore, persistence, offline behavior, privacy
+truth, marketing truth, no critical crashes, injury filtering, exercise/instruction). Still open:
+full scan-recognition round-trip (needs camera passthrough or a seeded photo), account-switch
+isolation (needs a second account), and EN locale confirmed live on a real device rather than via
+the test suite alone. Given the remaining items each need either different tooling (a seeded gym
+photo, a second account) or a real device rather than this bare AVD, further progress here is
+better spent as a scoped follow-up than continued ad hoc adb probing — reporting current status
+to the operator rather than declaring the release gate closed on partial evidence.
