@@ -1,9 +1,42 @@
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/background/hud_sky.dart';
 import 'hud/hud_scaffold.dart';
+
+/// `--dart-define=HUD_PHASE=night` pins the background to one phase.
+///
+/// Exists because the readability of a dense surface depends on which
+/// photograph is behind it, and the app picks that from the clock. Verifying a
+/// fix against a dark, a medium and a bright scene therefore means moving the
+/// clock — which a production Android image will not let `adb` do without
+/// root. This selects a real phase through the real code path with a real
+/// bundled asset; it fakes nothing, it only removes the wait.
+///
+/// Ignored outright in release: `kReleaseMode` is checked as well as the
+/// define, so even a release build assembled with the flag set behaves
+/// normally.
+const String _phaseOverride = String.fromEnvironment('HUD_PHASE');
+
+HudSkyPhase _phaseNow() {
+  if (!kReleaseMode && _phaseOverride.isNotEmpty) {
+    for (final HudSkyPhase p in HudSkyPhase.values) {
+      if (p.key == _phaseOverride) return p;
+    }
+  }
+  return HudSkyPhase.forTime(DateTime.now());
+}
+
+/// `--dart-define=HUD_PHOTO_SET=b` — same reasoning as [_phaseNow]. Set A
+/// alone cannot reach `04_fuji_sakura` or `09_forest_lake`, the two scenes
+/// that clamp [HudBackgroundProfile.denseSurfaceAlpha] at its ceiling; only
+/// set B's `dawn`/`morning` do.
+const String _photoSetOverride = String.fromEnvironment('HUD_PHOTO_SET');
+
+HudPhotoSet _photoSetNow() =>
+    !kReleaseMode && _photoSetOverride == 'b' ? HudPhotoSet.b : HudPhotoSet.a;
 
 /// MVP Gate M1: the shell's chrome, rebuilt against the real HUD handoff
 /// (`Fitness Glass Phone v1 - Sunset.dc.html`).
@@ -87,8 +120,7 @@ class MainShell extends StatelessWidget {
         backgroundColor: Colors.transparent,
         extendBody: true,
         body: HudSkyBackground(
-          selection:
-              HudSkySelection(phase: HudSkyPhase.forTime(DateTime.now())),
+          selection: HudSkySelection(phase: _phaseNow(), photoSet: _photoSetNow()),
           child: _AnnounceShellCanPop(
             // Measured on the operator's S23 (2026-08-13): Back on a non-home
             // tab threw the app out to the launcher on the FIRST press, while

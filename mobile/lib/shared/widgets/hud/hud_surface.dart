@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show KeyDownEvent, KeyEvent, LogicalKeyboardKey;
 
+import '../../../core/background/hud_sky.dart';
 import '../../../core/theme/hud_tokens.dart';
 import '../../../core/theme/hud_typography.dart';
 
@@ -223,9 +224,12 @@ class HudPanel extends StatelessWidget {
     this.padding = const EdgeInsets.all(18),
     this.radius = HudTokens.radiusPanel,
     this.secondary = false,
+    this.dense = false,
     this.onTap,
     this.semanticLabel,
-  });
+  }) : assert(!(secondary && dense),
+            'A panel is one tier: subPanel is the lightest, contentPanel the '
+            'most protective. Asking for both describes no surface.');
 
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -234,8 +238,39 @@ class HudPanel extends StatelessWidget {
   /// Draws the lighter `subPanel` tier — list wrappers and promo rows.
   final bool secondary;
 
+  /// Draws the `contentPanel` tier, for a card carrying a title, metadata,
+  /// body copy and an action together.
+  ///
+  /// Its fill alpha is taken from `HudSkyScope` — the measured
+  /// [HudBackgroundProfile.denseSurfaceAlpha] for the picture actually on
+  /// screen — rather than from the recipe, so a dark scene keeps more of its
+  /// photograph than a bright one. With no scope above, the protective
+  /// default applies; see [HudSkyScope.of].
+  final bool dense;
+
   final VoidCallback? onTap;
   final String? semanticLabel;
+
+  /// The `contentPanel` recipe with its placeholder alpha replaced by the one
+  /// measured for the picture on screen.
+  ///
+  /// Only the alpha moves. Colour, blur, saturation, hairline and glow stay
+  /// exactly as the tier defines them, so this cannot drift into being a
+  /// second, differently-shaped surface.
+  HudGlass _denseGlass(BuildContext context, HudTokens t) {
+    final HudGlass base = t.contentPanel;
+    final double alpha = HudSkyScope.of(context).denseSurfaceAlpha;
+    return HudGlass(
+      fill: base.fill.withValues(alpha: alpha),
+      cssBlur: base.cssBlur,
+      innerBorder: base.innerBorder,
+      outerBorder: base.outerBorder,
+      glow: base.glow,
+      dropShadows: base.dropShadows,
+      saturate: base.saturate,
+      topHighlight: base.topHighlight,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -251,7 +286,7 @@ class HudPanel extends StatelessWidget {
     );
 
     final Widget surface = HudSurface(
-      glass: secondary ? t.subPanel : t.panel,
+      glass: dense ? _denseGlass(context, t) : (secondary ? t.subPanel : t.panel),
       borderRadius: br,
       padding: onTap == null ? padding : null,
       child: onTap == null
@@ -365,8 +400,16 @@ class _HudButtonState extends State<HudButton> {
         hairline = t.textPrimary.withValues(alpha: 0.20);
     }
 
-    final Color foreground =
-        live ? t.textPrimary : t.textPrimary.withValues(alpha: 0.38);
+    // `accent` paints a bright lime (dark theme) / saturated green (light
+    // theme) fill; `textPrimary` (white on dark) is the wrong ink for either
+    // -- measured on the shipped Workouts CTA at 4.17:1, under AA, because
+    // white text loses contrast against a fill that is itself light. `onAccent`
+    // exists in this exact token set for this exact case and was defined but
+    // never wired to a button; every other tone keeps `textPrimary`, since
+    // `glass`/`ink` fill dark regardless of theme.
+    final Color base =
+        widget.tone == HudButtonTone.accent ? t.onAccent : t.textPrimary;
+    final Color foreground = live ? base : base.withValues(alpha: 0.38);
 
     final List<Widget> content = <Widget>[
       Flexible(

@@ -1373,6 +1373,9 @@ class _BuildFromAnswersCard extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: HudPanel(
         key: const Key('programme.fromAnswers'),
+        // Same shape as the template cards above: heading, hint copy, three
+        // chips and an action, so it takes the same tier for the same reason.
+        dense: true,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1411,6 +1414,9 @@ class _BuildFromAnswersCard extends ConsumerWidget {
             const SizedBox(height: 12),
             HudButton(
               label: isCurrent ? l.programmeContinue : l.programmeStart,
+              // See the template card's note: commit-an-action tone, and the
+              // only one that clears 4.5:1 over a photograph.
+              tone: HudButtonTone.accent,
               onPressed:
                   loading || isCurrent ? null : () => _startProgramme(context, ref, active, template),
             ),
@@ -1480,6 +1486,12 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
 
     return HudPanel(
       key: Key('programme.template.${template.id}'),
+      // Dense, not the default panel: this card carries a title, a muscle
+      // line, a fit line, a duration line and an action. Measured on the
+      // shipped build over `01_cliffs_moher`, that body copy ran at 1.39:1
+      // and the action at 2.51:1, because `panel`'s fill is white at 1.4% and
+      // the veil is at its thinnest exactly here. See `HudSky._contentZoneP95`.
+      dense: true,
       padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1573,6 +1585,19 @@ class _ProgrammeTemplateCard extends ConsumerWidget {
                 const SizedBox(height: 12),
                 HudButton(
                   label: isCurrent ? l.programmeContinue : l.programmeStart,
+                  // `accent`, not the default `glass`. Two reasons, and the
+                  // first is in this enum's own doc: the accent tone is for
+                  // "an action that commits something: log a set, open the
+                  // exercises a scan found, CONTINUE A PROGRAMME". The glass
+                  // tone is documented as "the brightest element on the
+                  // screen, and there is at most one per view" -- this list
+                  // draws one per card. Second, measured: as glass it renders
+                  // a near-white translucent pill whose own surface sits at
+                  // 0.615 luminance, so its white label tops out at 1.58:1 no
+                  // matter what text alpha is chosen. The handoff draws this
+                  // button accent-filled, so the readable answer and the
+                  // faithful one are the same answer.
+                  tone: HudButtonTone.accent,
                   onPressed: loading || isCurrent
                       ? null
                       : () => _startProgramme(context, ref, active, template),

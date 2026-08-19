@@ -293,6 +293,40 @@ void main() {
       expect(fill.color, isNull);
     });
 
+    testWidgets(
+        'the accent tone sets onAccent ink, not textPrimary -- a '
+        'readability review measured the shipped Workouts CTA at 4.17:1 '
+        'against AA\'s 4.5:1 because white text sat on a lime fill',
+        (t) async {
+      await t.pumpWidget(_host(
+        SizedBox(
+          width: 300,
+          child: HudButton(
+            label: 'Start programme',
+            tone: HudButtonTone.accent,
+            onPressed: () {},
+          ),
+        ),
+      ));
+      final Text label = t.widget<Text>(
+          find.descendant(of: find.byType(HudButton), matching: find.text('Start programme')));
+      expect(label.style!.color, HudTokens.dark.onAccent);
+      expect(label.style!.color, isNot(HudTokens.dark.textPrimary));
+    });
+
+    testWidgets('the glass and ink tones keep textPrimary -- only accent '
+        'reads its fill as light enough to need onAccent', (t) async {
+      await t.pumpWidget(_host(
+        SizedBox(
+          width: 300,
+          child: HudButton(label: 'Go', onPressed: () {}),
+        ),
+      ));
+      final Text label = t.widget<Text>(
+          find.descendant(of: find.byType(HudButton), matching: find.text('Go')));
+      expect(label.style!.color, HudTokens.dark.textPrimary);
+    });
+
     testWidgets('it announces itself as a button with its label', (t) async {
       final SemanticsHandle h = t.ensureSemantics();
       await t.pumpWidget(_host(

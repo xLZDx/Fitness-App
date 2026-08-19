@@ -18391,3 +18391,92 @@ Report: `reports/SPTR_VISUAL_FIDELITY_74f2f76.ru.html` / `.html`; captures under
 `reports/screenshots/visual_recovery/74f2f76/`.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-19 — V-READABILITY-01: dense HUD surfaces, and a CTA that measured worse the more it was fixed until the real bug was found
+
+**Trigger.** The operator supplied a real screenshot of Workouts → Programs from the canonical HUD
+build and rejected the previous report's `BACKGROUND = PASS` / `TYPOGRAPHY = PASS` as insufficient:
+present is not the same as readable. Correct call — the report had checked that `HudSky` decodes and
+displays, never that text survives it.
+
+**Measured, not eyeballed, from the start.** WCAG relative luminance/contrast on the flagged capture:
+title 5.41:1 (passes), `'8 недель...'` 3.22:1, `'Всё тело'` 1.39:1, the CTA label 2.51:1 — all under
+AA's 4.5:1 for body text. The CTA surface itself measured a median luminance of 0.615: white text on
+it cannot mathematically exceed ~1.58:1 no matter what text alpha is chosen.
+
+**Root-cause hypothesis F (background-profile only protects the top zone) was tested and disproved.**
+Measuring the identical 40–100% content band across all ten bundled assets showed no systematic
+brightening — five of ten are *darker* there than in the top 45% `HudSky._topZoneP95` already
+samples. The real cause was the veil gradient's own shape: `HudTokens.veilPositions` dips to
+`alpha * 0.74` at its 82% stop, which is exactly where dense card content sits, compounded by
+`panel.fill` being white at 1.4% — a fill that contributes essentially no separation over a bright
+photograph. `navBar`'s existing `rgba(26,15,34,.40)` fill was the one surface in the app that already
+got this right, and became the template for the fix.
+
+**Fix — a dense-surface tier that adapts to the actual picture, not a flat alpha.**
+`HudBackgroundProfile` gained `contentZoneP95Luminance` and `denseSurfaceAlpha`; the latter is solved
+in `denseAlphaForP95` from the WEAKEST veil case (dawn/dusk's 0.44 phase alpha × the 0.74 dip) so one
+number is safe across every phase, clamped to `[0.28, 0.68]`. The upper clamp is a deliberate,
+recorded trade: the two brightest bundled scenes (`04_fuji_sakura`, `09_forest_lake`) hit it and land
+around 4.26:1/3.61:1 rather than the 5.38:1/4.51:1 the other eight reach — raising the ceiling would
+buy that contrast by erasing the photograph, which is the one thing this design is for.
+`HudSkyScope`, an `InheritedWidget` on the same pattern as the existing `HudQuality`, publishes the
+profile down from `HudSkyBackground` to wherever a card is actually drawn — nothing below the shell
+could previously see what picture it was sitting on. `HudPanel(dense: true)` consumes it; applied to
+the two Workouts programme cards that carry title + metadata + action together.
+
+**A second, independent bug found while fixing the first.** `HudButton` used `t.textPrimary` (white)
+as its foreground for every tone, including `accent` — even though `HudTokens.onAccent` (dark ink on
+dark theme, white on light) exists for exactly this case and was simply never wired to a button. This
+is why the CTA's own measured contrast **got worse, not better**, immediately after switching it from
+`glass` to `accent` tone (matching the handoff's filled-pill CTA) without also fixing this: white text
+on a bright lime fill is contrast-starved by construction, independent of any dense-panel work.
+Fixed by reading `onAccent` for the accent tone specifically; `glass`/`ink` keep `textPrimary`, since
+both fill dark regardless of theme. Pinned by two new widget tests.
+
+**A measurement bug caught before it produced a false result.** The device-capture verification
+script assumed text is always the brighter population in a region — true for white-on-dark, false
+for dark-ink-on-accent. Applied blindly after the `onAccent` fix, it reported the CTA contrast had
+*dropped* to 3.15:1. Rechecking the raw luminance percentiles the other way around gave 6.93:1 — the
+polarity assumption was wrong, not the fix. The script now takes both readings and keeps the higher,
+real one, and this is recorded so the false alarm cannot be mistaken for a regression later.
+
+**Device evidence across the brightness range, not just the flagged asset.** A debug-only
+`--dart-define=HUD_PHASE`/`HUD_PHOTO_SET` override (checked against `kReleaseMode` so it cannot leak
+into a release build) let three genuinely different bundled scenes be captured without root access to
+move the emulator's clock, which this Android image refuses:
+
+| Scene | Content p95 | denseSurfaceAlpha | title | meta | meta | CTA | badge | chip |
+|---|---|---|---|---|---|---|---|---|
+| `02_volcano` (darkest) | 150.7 | 0.31 | 10.69:1 | 5.73:1 | 6.32:1 | 6.93:1 | 8.38:1 | 5.39:1 |
+| `06_greek_terrace` (medium) | 172.1 | 0.49 | 13.89:1 | 8.66:1 | 8.74:1 | 5.57:1 | 10.57:1 | 6.70:1 |
+| `04_fuji_sakura` (brightest, clamped) | 242.8 | 0.68 | 15.17:1 | 8.99:1 | 9.24:1 | 4.64:1 | 12.00:1 | 4.93:1 |
+
+Every region on every asset clears its target (4.5:1 body/CTA, 3.0:1 the level badge, which is
+short bold caps text). The brightest scene's real numbers came in well above the formula's own
+worst-case guarantee (4.26/3.61) — expected, since that guarantee assumes the weakest veil AND the
+95th-percentile pixel, not what any one captured frame necessarily shows; recorded as a floor, not a
+promise, so a future capture reading lower than these three is not automatically a regression.
+
+**Cross-screen sweep, scoped rather than blanket.** Measured Home's mid-frame panels (the weekly
+stat numbers, the "unfamiliar machine" card) against the same method: 5.11–9.61:1, already passing,
+because Home's panels are shorter and do not reach as far into the veil's weak zone as the tall
+programme cards do. `dense: true` was applied only where measurement found a real defect
+(`workouts_page.dart`'s two programme-card widgets), not swept across every panel in the app on the
+assumption that the same fix was needed everywhere.
+
+**Verification.** `flutter analyze`: clean on every touched file, 5-issue baseline unchanged.
+`test/core/background/dense_surface_contrast_test.dart` (new): pins the WCAG arithmetic per bundled
+asset by name, including the two that hit the ceiling by design, so a future asset swap that changes
+which scenes pay that price fails a test rather than shipping quietly. `hud_components_test.dart`:
+two new tests pin `onAccent` on the accent tone and `textPrimary` on the others. Full suite:
+3137/3138 — the one failure is `app_semantic_colors_test.dart`'s pre-existing hardcoded-whites count
+(61 expected / 60 actual), already reproduced on this working tree with this session's changes
+stashed and recorded as an open item, not a new regression.
+
+Report and screenshots to follow in the next commit (`SPTR_VISUAL_FIDELITY_74f2f76` update, captures
+`10_after_night_dark_bg.png` through `13_after_bright_dawn.png`).
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**

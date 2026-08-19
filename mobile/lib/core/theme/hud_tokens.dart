@@ -242,6 +242,7 @@ class HudTokens extends ThemeExtension<HudTokens> {
     required this.zoneGood,
     required this.panel,
     required this.subPanel,
+    required this.contentPanel,
     required this.button,
     required this.chip,
     required this.navBar,
@@ -310,6 +311,15 @@ class HudTokens extends ThemeExtension<HudTokens> {
 
   /// The lighter secondary surface — list wrappers, promo rows, week chips.
   final HudGlass subPanel;
+
+  /// The surface for a card that carries a title, metadata, body copy AND an
+  /// action together — where [panel]'s 1.4% white fill leaves body text
+  /// sitting on whatever pixel the photograph happens to put behind it.
+  ///
+  /// Its fill alpha is not fixed: `HudPanel(dense: true)` substitutes
+  /// `HudBackgroundProfile.denseSurfaceAlpha` for the picture on screen, so a
+  /// dark scene keeps more of its photograph than a bright one does.
+  final HudGlass contentPanel;
 
   /// The brightest element on the screen. Never more than one per view.
   final HudGlass button;
@@ -449,6 +459,34 @@ class HudTokens extends ThemeExtension<HudTokens> {
       cssBlur: 6,
       innerBorder: const Color(0x47FFFFFF), // white @ .28
     ),
+    // The fill alpha here is a PLACEHOLDER that `HudPanel(dense: true)`
+    // replaces with `HudBackgroundProfile.denseSurfaceAlpha` for the picture
+    // actually on screen; only the colour, blur, saturation and hairline come
+    // from this recipe. It is written at the protective end so that a surface
+    // drawn with no `HudSkyScope` above it still separates.
+    //
+    // The ink is `#0A0C16` -- the veil's own colour, not a new one -- so a
+    // dense card reads as more veil in that spot rather than as a foreign
+    // panel. `panel` fills with WHITE at 1.4%, which is why it adds no
+    // separation at all over a bright photograph and why this tier had to
+    // exist: on a dark interface, more white is the wrong direction. `navBar`
+    // already proved the right one (`rgba(26,15,34,.40)`), and is the only
+    // surface in the app whose body copy measured above 4.5:1 before this.
+    //
+    // Blur 20 and saturate 1.5 are not decoration either: the review's
+    // complaint was "visual noise from the photograph remains active through
+    // content-heavy cards", and luminance alone does not fix competing detail.
+    contentPanel: HudGlass(
+      fill: const Color(0xAD0A0C16), // #0A0C16 @ .68 -- see maxDenseAlpha
+      cssBlur: 20,
+      saturate: 1.5,
+      innerBorder: const Color(0x3DFFFFFF), // white @ .24
+      glow: BoxShadow(
+        color: const Color(0x2EFFFFFF), // white @ .18
+        blurRadius: 22,
+        spreadRadius: -8,
+      ),
+    ),
     button: HudGlass(
       fill: const Color(0x0DFFFFFF), // white @ .05
       cssBlur: 7,
@@ -548,6 +586,17 @@ class HudTokens extends ThemeExtension<HudTokens> {
       cssBlur: 12, // NOT the panel's 14 -- the light prototype drops it here
       innerBorder: const Color(0xCCFFFFFF), // white @ .80
       outerBorder: const Color(0x291B2030), // ink @ .16
+    ),
+    // Light inverts the direction: its text is ink `#1B2030`, so a dense
+    // surface has to push the photograph UP toward white, not down toward
+    // black. Same job, opposite end of the scale -- which is exactly why the
+    // fill lives in the recipe and the alpha is substituted per picture.
+    contentPanel: HudGlass(
+      fill: const Color(0xADF6F7FC), // #F6F7FC @ .68 -- light's own veil ink
+      cssBlur: 20,
+      saturate: 1.5,
+      innerBorder: const Color(0xF2FFFFFF), // white @ .95
+      outerBorder: const Color(0x3D1B2030), // ink @ .24
     ),
     button: HudGlass(
       fill: const Color(0x75FFFFFF), // white @ .46
@@ -703,6 +752,7 @@ class HudTokens extends ThemeExtension<HudTokens> {
         zoneGood: zoneGood,
         panel: panel,
         subPanel: subPanel,
+        contentPanel: contentPanel,
         button: button,
         chip: chip,
         navBar: navBar,
@@ -744,6 +794,7 @@ class HudTokens extends ThemeExtension<HudTokens> {
       zoneGood: Color.lerp(zoneGood, other.zoneGood, t)!,
       panel: HudGlass.lerp(panel, other.panel, t),
       subPanel: HudGlass.lerp(subPanel, other.subPanel, t),
+      contentPanel: HudGlass.lerp(contentPanel, other.contentPanel, t),
       button: HudGlass.lerp(button, other.button, t),
       chip: HudGlass.lerp(chip, other.chip, t),
       navBar: HudGlass.lerp(navBar, other.navBar, t),

@@ -145,11 +145,41 @@ abstract final class HudSky {
     '$_dir/10_beach_sunset.webp': 184.28,
   };
 
+  /// The same measurement as [_topZoneP95], taken over the band dense content
+  /// actually occupies: 40%-100% of the frame.
+  ///
+  /// This exists because a readability review of the shipped Workouts screen
+  /// measured body copy at **1.39:1** and its call-to-action at **2.51:1**
+  /// against the photograph, while the filter chips a few hundred pixels above
+  /// them measured 6-7.75:1. The first hypothesis -- that [_topZoneP95] simply
+  /// sampled the wrong zone -- was **disproved** by these numbers: across the
+  /// ten assets the content band is not systematically brighter, and is
+  /// *darker* for five of them. The real cause is that the veil gradient
+  /// itself thins to `alpha * 0.74` at its 82% stop (`HudTokens.veilPositions`),
+  /// which is exactly where dense content sits, and that `panel.fill` is white
+  /// at 1.4% and therefore contributes no separation of its own.
+  ///
+  /// So this table does not adjust the veil. It sizes the **dense surface**
+  /// tier ([denseSurfaceAlpha]) that content-heavy cards draw instead of the
+  /// near-invisible `panel` fill.
+  static const Map<String, double> _contentZoneP95 = <String, double>{
+    '$_dir/01_cliffs_moher.webp': 181.01,
+    '$_dir/02_volcano.webp': 150.65,
+    '$_dir/03_waterfall_dock.webp': 182.45,
+    '$_dir/04_fuji_sakura.webp': 242.84,
+    '$_dir/05_sunset_hills.webp': 190.57,
+    '$_dir/06_greek_terrace.webp': 172.14,
+    '$_dir/07_snow_peak_tarn.webp': 209.25,
+    '$_dir/08_coast_turquoise.webp': 163.01,
+    '$_dir/09_forest_lake.webp': 242.40,
+    '$_dir/10_beach_sunset.webp': 162.20,
+  };
+
   /// Every bundled scene's [HudBackgroundProfile], derived from
-  /// [_topZoneP95] through the same [HudBackgroundProfile.multiplierForP95]
-  /// formula a locally-sampled user photo (D9) will use -- computed once
-  /// here rather than hand-transcribed a second time, so the two can never
-  /// drift against each other.
+  /// [_topZoneP95] and [_contentZoneP95] through the same formulas a
+  /// locally-sampled user photo (D9) will use -- computed once here rather
+  /// than hand-transcribed a second time, so the two can never drift against
+  /// each other.
   static final Map<String, HudBackgroundProfile> backgroundProfiles =
       <String, HudBackgroundProfile>{
     for (final MapEntry<String, double> e in _topZoneP95.entries)
@@ -157,6 +187,9 @@ abstract final class HudSky {
         topZoneP95Luminance: e.value,
         recommendedVeilMultiplier:
             HudBackgroundProfile.multiplierForP95(e.value),
+        contentZoneP95Luminance: _contentZoneP95[e.key]!,
+        denseSurfaceAlpha:
+            HudBackgroundProfile.denseAlphaForP95(_contentZoneP95[e.key]!),
       ),
   };
 
@@ -180,6 +213,8 @@ class HudBackgroundProfile {
   const HudBackgroundProfile({
     required this.topZoneP95Luminance,
     required this.recommendedVeilMultiplier,
+    required this.contentZoneP95Luminance,
+    required this.denseSurfaceAlpha,
   });
 
   /// 0..255. The 95th percentile, not the mean or the max: robust to a
@@ -193,12 +228,83 @@ class HudBackgroundProfile {
   /// past the point the design already treats as "the photograph is gone".
   final double recommendedVeilMultiplier;
 
+  /// 0..255, measured over the 40%-100% band. See [HudSky._contentZoneP95].
+  final double contentZoneP95Luminance;
+
+  /// The fill alpha a **dense content surface** needs over this picture for
+  /// its body copy to stay readable -- the tier `HudPanel(dense: true)` draws.
+  ///
+  /// Not a style value: [denseAlphaForP95] solves it from the measurement.
+  final double denseSurfaceAlpha;
+
   /// No per-image boost -- [hudVeil] behaves exactly as it did before this
   /// profile system existed.
+  ///
+  /// [denseSurfaceAlpha] deliberately does **not** take the same neutral
+  /// treatment. An unmeasured picture (a user's own photo, D9) could be a
+  /// white wall, and a dense card that assumed otherwise would put white text
+  /// on white. So the fallback is [maxDenseAlpha] -- the protective end of the
+  /// range, not the middle of it: unknown means assume the worst, and a
+  /// measured photo can only ever relax it.
   static const HudBackgroundProfile neutral = HudBackgroundProfile(
     topZoneP95Luminance: 128,
     recommendedVeilMultiplier: 1.0,
+    contentZoneP95Luminance: 255,
+    denseSurfaceAlpha: maxDenseAlpha,
   );
+
+  /// Enough presence to be a surface at all on the darkest bundled scene.
+  static const double minDenseAlpha = 0.28;
+
+  /// The point past which the card stops being glass and becomes a slab.
+  ///
+  /// This is a **cap on readability**, deliberately: the two brightest bundled
+  /// scenes (`04_fuji_sakura`, `09_forest_lake`, content p95 ~242) reach it and
+  /// therefore land at roughly 4.26:1 for a title and 3.61:1 for body copy
+  /// rather than the 5.38:1 / 4.51:1 the other eight get. Raising it would buy
+  /// that contrast by erasing the photograph, which is the one thing this
+  /// design is for. Recorded rather than hidden, and pinned by name in
+  /// `dense_surface_contrast_test.dart` so a future asset swap that changes
+  /// which scenes pay this price fails a test instead of shipping.
+  static const double maxDenseAlpha = 0.68;
+
+  /// `#0A0C16`, the veil's own ink, in linear light. A dense card deepens the
+  /// colour the veil is already made of, so it reads as more veil here rather
+  /// than as a foreign panel.
+  static const double _veilInkLinear = 0.0043;
+
+  /// The weakest veil the dark theme can put over content: the lowest phase
+  /// alpha (0.44, dawn and dusk) times the 0.74 dip at `veilPositions`' 82%
+  /// stop. Assuming the weakest case here is what makes one alpha safe for
+  /// every phase.
+  static const double _weakestVeilAlpha = 0.3256;
+
+  /// The composite luminance a dense surface must land at or below.
+  ///
+  /// Solved from the **secondary** text, not the title. Two rounds of that
+  /// mattered: at 0.183 a pure-white heading clears 4.5:1 while the metadata
+  /// under a programme name does not, and a first attempt at 0.155 assumed
+  /// body copy at white@.90 when `HudTokens.textSecondary` is actually
+  /// white@.80 — which the contrast test caught at 4.30:1. 0.145 is where the
+  /// real token clears 4.5:1, and it carries the heading to 5.38:1 for free.
+  static const double _targetCompositeLuminance = 0.145;
+
+  /// The fill alpha that carries body copy to 4.5:1 over a picture measuring
+  /// [p95Luminance] in the content band, clamped to [minDenseAlpha] ..
+  /// [maxDenseAlpha].
+  static double denseAlphaForP95(double p95Luminance) {
+    final double photo = _srgbToLinear(p95Luminance / 255.0);
+    final double backdrop = (1 - _weakestVeilAlpha) * photo +
+        _weakestVeilAlpha * _veilInkLinear;
+    if (backdrop <= _targetCompositeLuminance) return minDenseAlpha;
+    final double alpha = (backdrop - _targetCompositeLuminance) /
+        (backdrop - _veilInkLinear);
+    return alpha.clamp(minDenseAlpha, maxDenseAlpha);
+  }
+
+  static double _srgbToLinear(double c) => c <= 0.04045
+      ? c / 12.92
+      : math.pow((c + 0.055) / 1.055, 2.4).toDouble();
 
   /// The formula behind every entry in [HudSky.backgroundProfiles], exposed
   /// so a locally-sampled user photo computes an identical recommendation,
@@ -266,6 +372,7 @@ HudBackgroundProfile profileFromRgbaBytes(
   required int width,
   required int height,
   double topFraction = 0.45,
+  double contentStartFraction = 0.40,
   int stride = 4,
 }) {
   if (pixels.isEmpty || width <= 0 || height <= 0) {
@@ -273,9 +380,18 @@ HudBackgroundProfile profileFromRgbaBytes(
   }
 
   final int topRows = math.max(1, (height * topFraction).round());
+  final int contentStart = (height * contentStartFraction).round();
 
-  final List<double> samples = <double>[];
-  for (int y = 0; y < topRows; y += stride) {
+  // Two bands in one pass over the pixels, because they overlap and decoding
+  // is the expensive part: the top band sizes the veil, the content band
+  // sizes the dense surface. Sampling twice would double the cost of the only
+  // part of this that is not arithmetic.
+  final List<double> topSamples = <double>[];
+  final List<double> contentSamples = <double>[];
+  for (int y = 0; y < height; y += stride) {
+    final bool inTop = y < topRows;
+    final bool inContent = y >= contentStart;
+    if (!inTop && !inContent) continue;
     for (int x = 0; x < width; x += stride) {
       final int i = (y * width + x) * 4;
       if (i + 2 >= pixels.length) continue;
@@ -285,19 +401,33 @@ HudBackgroundProfile profileFromRgbaBytes(
       // Rec.709 coefficients -- the same ones `saturationFilter` in
       // `hud_tokens.dart` uses, for one consistent luminance definition
       // across the design system rather than two.
-      samples.add(0.213 * r + 0.715 * g + 0.072 * b);
+      final double lum = 0.213 * r + 0.715 * g + 0.072 * b;
+      if (inTop) topSamples.add(lum);
+      if (inContent) contentSamples.add(lum);
     }
   }
-  if (samples.isEmpty) return HudBackgroundProfile.neutral;
+  if (topSamples.isEmpty) return HudBackgroundProfile.neutral;
 
-  samples.sort();
-  final int p95Index =
-      (samples.length * 0.95).floor().clamp(0, samples.length - 1);
-  final double p95 = samples[p95Index];
+  final double topP95 = _p95(topSamples);
+  // A picture too short to have a content band is not a reason to guess: fall
+  // back to the protective default rather than reusing the top-band number,
+  // which measures a different part of the frame and would understate a
+  // bright lower half exactly when it matters.
+  final double contentP95 = contentSamples.isEmpty
+      ? 255
+      : _p95(contentSamples);
   return HudBackgroundProfile(
-    topZoneP95Luminance: p95,
-    recommendedVeilMultiplier: HudBackgroundProfile.multiplierForP95(p95),
+    topZoneP95Luminance: topP95,
+    recommendedVeilMultiplier: HudBackgroundProfile.multiplierForP95(topP95),
+    contentZoneP95Luminance: contentP95,
+    denseSurfaceAlpha: HudBackgroundProfile.denseAlphaForP95(contentP95),
   );
+}
+
+double _p95(List<double> samples) {
+  samples.sort();
+  final int i = (samples.length * 0.95).floor().clamp(0, samples.length - 1);
+  return samples[i];
 }
 
 /// What background a screen should show right now.
@@ -512,7 +642,15 @@ class _HudSkyBackgroundState extends State<HudSkyBackground> {
               BoxDecoration(gradient: hudVeil(tokens, widget.selection)),
         ),
         if (widget.showStreaks) const _LightStreaks(),
-        widget.child,
+        // Published here rather than read from a global: the selection is
+        // built in `MainShell` and was reachable by nothing below it, so a
+        // dense card had no way to know what it was sitting on. Same
+        // inherited-value shape as `HudQuality`, for the same reason -- one
+        // screen can differ from the rest without a global to coordinate.
+        HudSkyScope(
+          profile: HudSky.profileFor(widget.selection.imageKey),
+          child: widget.child,
+        ),
       ],
     );
   }
@@ -531,6 +669,33 @@ class _HudSkyBackgroundState extends State<HudSkyBackground> {
       onVisible: opaque ? null : () => _settle(key),
     );
   }
+}
+
+/// Carries the current background's [HudBackgroundProfile] to everything drawn
+/// on top of it, so a surface can size itself against the actual picture
+/// instead of a fixed guess.
+class HudSkyScope extends InheritedWidget {
+  const HudSkyScope({
+    super.key,
+    required this.profile,
+    required super.child,
+  });
+
+  final HudBackgroundProfile profile;
+
+  /// Falls back to [HudBackgroundProfile.neutral] -- the protective end of the
+  /// range -- when nothing above supplied one. A component pumped in a bare
+  /// test tree, or drawn on a screen that mounts no sky, must not assume it is
+  /// sitting on something dark.
+  static HudBackgroundProfile of(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<HudSkyScope>()
+          ?.profile ??
+      HudBackgroundProfile.neutral;
+
+  @override
+  bool updateShouldNotify(HudSkyScope oldWidget) =>
+      oldWidget.profile.denseSurfaceAlpha != profile.denseSurfaceAlpha;
 }
 
 class _CrossfadeLayer extends StatefulWidget {
