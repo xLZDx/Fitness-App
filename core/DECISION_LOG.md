@@ -17755,3 +17755,72 @@ not an assumption.
 Suites: `flutter analyze` clean; `flutter test` 3092/3093 twice (1 pre-existing unrelated flake, not
 reproduced in isolation -- see above). PUSH: pending this entry's commit (operator rule, see prior
 entry: push immediately, verify remote==local before further work).
+
+## 2026-08-19 -- MVP Gate M3: Level-1 equipment-type memory (domain layer)
+
+**What was built.** A pure, Flutter-independent domain function, `equipmentMemoryFor` (new file
+`mobile/lib/features/equipment/data/equipment_memory.dart`), that answers "what did the user last do
+on this equipment TYPE" from data the app already has: `workoutSessionHistoryProvider`'s
+`List<WorkoutLogEntry>` (F3.3's read-convergence view) resolved through `safeCatalogProvider`'s
+`exerciseId -> ExerciseItem.equipmentId` map (the same `{for (final e in catalog) e.id: e}` pattern
+already used by `day_result.dart`, `session_digest.dart`, and `offline_video_providers.dart`), because
+`WorkoutLogEntry` carries no `equipmentId` of its own. Wired to Riverpod via a new
+`equipmentMemoryProvider = Provider.family<EquipmentMemory?, String>` (new file
+`equipment_memory_providers.dart`), following `todayResultProvider`'s own construction (catalogue map
+built once in a private provider, not per read).
+
+**Why "type" and not "this machine."** `EquipmentItem`/`ExerciseItem.equipmentId` identifies a machine
+model, not a physical unit -- there is no per-gym, per-instance state anywhere in this app's data
+model, and inventing one would be exactly the kind of claim `fitness-clinical-reference`'s truthfulness
+boundary and this gate's own mandate rule out ("Level-1... never a claim about the physical unit the
+scanner just photographed"). `EquipmentMemory`'s doc comment states this as the type's whole contract,
+not a caveat buried in a method.
+
+**What is truthfully surfaced, and what deliberately is not.** Every field on `EquipmentMemory`
+(`exerciseTitle`, `completedAt`, `weightKg`, `repsCompleted`) is copied verbatim from one real
+`WorkoutLogEntry` -- the most recent one whose exercise resolves to the requested `equipmentId`. No
+progression, no "up 5kg since last time," no projected next weight: Level-1 memory is recall, not
+coaching, matching `DayResult.volumeKg`'s own established precedent of adding nothing rather than
+guessing when a value was never logged. A set logged with no weight (bodyweight, or the user declined)
+keeps `weightKg`/`repsCompleted` null rather than reading back as `0`.
+
+**Edge cases covered by design and by test** (`equipment_memory_test.dart`, 8 cases): latest record wins
+regardless of list order (ties on `completedAt`, not on list position, since `workoutSessionHistoryProvider`
+gives no ordering guarantee); unrelated equipment excluded; two different exercises mapping to the same
+equipment type both count and the more recent wins; a logged `exerciseId` absent from the current
+catalogue (deleted/renamed since logging) is skipped, not guessed at; no history returns `null`, not a
+zeroed record; a bodyweight/unweighted set keeps both numeric fields `null`; an exercise with no
+`equipmentId` (home/bodyweight catalogue rows) never matches any equipment id.
+
+**Provider-wiring test** (`equipment_memory_providers_test.dart`, 3 cases), same rationale as
+`session_digest_providers_test.dart`'s own comment: the arithmetic being right is not the same claim as
+the wiring reaching the real providers. Covers a real completed session resolving through the real
+`safeCatalogProvider`/`workoutSessionsProvider` overrides, a `pending` (uncompleted) session correctly
+excluded (`workoutSessionHistoryProvider` already filters on `status == completed`), and a session on a
+different equipment id returning `null`. One construction detail worth recording: `equipmentMemoryProvider`
+is a synchronous `Provider.family`, so a test must await both `safeCatalogProvider.future` AND
+`workoutSessionsProvider.future` before reading it -- awaiting only the former left the stream
+un-subscribed and `workoutSessionHistoryProvider` reading `valueOrNull` as still-loading, i.e. empty;
+caught by the first version of this test asserting non-null and getting `null` back.
+
+**Scanner integration deferred to M4, not skipped.** The mandate allows deciding whether to wire this
+into the current pre-redesign `scanner_page.dart` now or at M4's own HUD rebuild; wiring it into a
+screen about to be fully rewritten would be thrown-away work, so the *service* ships now (this gate)
+and M4 consumes `equipmentMemoryProvider` directly when it rebuilds the scan-result screen against the
+handoff's Scan `sc-if` block. The domain layer itself does not wait on M4, per the mandate's own
+instruction on this point.
+
+**Verification.** `flutter analyze` on all 4 new files: clean. `flutter test` on the 2 new test files in
+isolation: 11/11 pass. Full suite: 3102/3103 pass -- the 1 failure is the same pre-existing,
+order-dependent scheduler flake recorded at M2 and at least 3 times earlier in this log (origin
+`test/widgets/app_buttons_test.dart:173`, `EXCEPTION CAUGHT BY SCHEDULER LIBRARY`/`!_needsLayout`,
+surfaced this run as `test/widget_test.dart: App boots...` failing after 3 binding retries); not
+reproduced when the two new files run in isolation, consistent with every prior recurrence.
+
+**MVP status:** M1 (Home), M2 (Workouts), M3 (equipment memory, domain layer) closed. M4 (Scanner) is
+next -- includes wiring `equipmentMemoryProvider` into the redesigned scan-result screen. M5 (Session),
+M6 (Profile) remain. MVP_REACHED is NOT yet claimed.
+
+Suites: `flutter analyze` clean; `flutter test` 3102/3103 (1 pre-existing unrelated flake, not
+reproduced in isolation -- see above). PUSH: pending this entry's commit (operator rule: push
+immediately, verify remote==local before further work).
