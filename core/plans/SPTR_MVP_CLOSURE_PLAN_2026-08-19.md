@@ -229,8 +229,10 @@ MRD-07), plus any future personalization/moat work. No new items added here.
   round-trip **not exercised** — this AVD has no camera passthrough and no gym-equipment photo was
   available. Needs a real device or a seeded test image.
 - [ ] **Exercise/instruction path** — not reached this pass.
-- [ ] **Injury/safety filtering** — entry tile confirmed present on Profile; the questionnaire
-  screen's own content was not captured (navigation mistap, not re-attempted). Not verified.
+- [x] **Injury/safety filtering** — the real editable surface (`/injuries`, the "Травмы" tile)
+  loads correctly with an honest empty state and working explanatory copy. (The separate "Анкета
+  о здоровье" tile dead-ends back to `/home` — confirmed pre-existing/documented in
+  `injuries_page.dart`'s own doc comment, not a regression from this session.)
 - [x] **Persistence** — the same anonymous session and its state survived a full process kill and
   relaunch.
 - [ ] **Account isolation** — not exercised; needs a second real account.

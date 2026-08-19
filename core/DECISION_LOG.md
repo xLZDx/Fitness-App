@@ -10805,3 +10805,15 @@ in `core/plans/SPTR_MVP_CLOSURE_PLAN_2026-08-19.md` can be marked fully closed.
 
 **No code changed by this entry.** Screenshots retained in the session scratchpad
 (`release_gate/`), not committed — ephemeral verification evidence, not a repo artifact.
+
+**Follow-up in the same pass — injury/safety filtering entry point.** The Profile page's "Анкета
+о здоровье" (health questionnaire) tile routed to `/onboarding` and bounced straight back to
+`/home` twice in a row when tapped — briefly suspected as a new navigation regression, checked
+before assuming so: `injuries_page.dart:14-27`'s own doc comment documents this exact dead end as
+pre-existing and already the reason a separate `InjuriesPage` (`/injuries`) exists — `ProfileRepository.save()`'s
+only real editable surface, deliberately built around the questionnaire tile's redirect dead end
+rather than patching `resolveRedirect` (documented as the larger, rejected option). Not a
+regression from this session's work. Tapped the correct "Травмы" tile instead
+(`profile_page.dart:103-119`): the injuries screen loads correctly, with an honest empty state
+("Вы не указали ни одной травмы") and working copy explaining the filter's purpose — confirms the
+plan doc's existing claim that injury filtering is genuinely wired up, not just present in name.
