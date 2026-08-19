@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SPTR: switch to master</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --surface-2: #edf1f4;
+    --border: #d7dee4;
+    --text: #16202b;
+    --text-dim: #5b6b7a;
+    --text-faint: #8a97a3;
+    --accent: #1f7a8c;
+    --accent-soft: #e3f1f3;
+    --good: #2f7d5a;
+    --good-soft: #e5f3ec;
+    --bad: #b1382e;
+    --bad-soft: #fbe9e7;
+    --warn: #a9701a;
+    --warn-soft: #faefdd;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+    --display: 'Sora', var(--sans);
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(20,30,40,0.04), 0 8px 24px -12px rgba(20,30,40,0.12);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1319;
+      --surface: #131b23;
+      --surface-2: #1a2530;
+      --border: #29394a;
+      --text: #e8eef3;
+      --text-dim: #9fb0bd;
+      --text-faint: #6f8293;
+      --accent: #5fc4d6;
+      --accent-soft: #16323a;
+      --good: #6fcf9e;
+      --good-soft: #133226;
+      --bad: #ec7a70;
+      --bad-soft: #3a1a17;
+      --warn: #e3b565;
+      --warn-soft: #382a12;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1319;
+    --surface: #131b23;
+    --surface-2: #1a2530;
+    --border: #29394a;
+    --text: #e8eef3;
+    --text-dim: #9fb0bd;
+    --text-faint: #6f8293;
+    --accent: #5fc4d6;
+    --accent-soft: #16323a;
+    --good: #6fcf9e;
+    --good-soft: #133226;
+    --bad: #ec7a70;
+    --bad-soft: #3a1a17;
+    --warn: #e3b565;
+    --warn-soft: #382a12;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px -14px rgba(0,0,0,0.55);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15.5px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+
+  header { margin-bottom: 8px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(28px, 4.4vw, 38px);
+    line-height: 1.14;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+  .lede {
+    color: var(--text-dim);
+    font-size: 16.5px;
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 32px 0 40px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .stat .n {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .n.good { color: var(--good); }
+  .stat .n.warn { color: var(--warn); }
+  .stat .l {
+    color: var(--text-faint);
+    font-size: 11.5px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  section { margin: 48px 0; }
+  section > h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: -0.005em;
+    margin: 0 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section > h2 .num {
+    font-family: var(--mono);
+    color: var(--text-faint);
+    font-weight: 400;
+    font-size: 15px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 24px;
+  }
+  .card + .card { margin-top: 14px; }
+  .card.warn-card { border-color: color-mix(in srgb, var(--warn) 40%, var(--border)); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  .badge.bad { background: var(--bad-soft); color: var(--bad); }
+  .badge.good { background: var(--good-soft); color: var(--good); }
+  .badge.warn { background: var(--warn-soft); color: var(--warn); }
+
+  .kv {
+    display: grid;
+    grid-template-columns: 168px 1fr;
+    gap: 8px 16px;
+    font-size: 14px;
+    margin: 16px 0;
+  }
+  .kv dt { color: var(--text-faint); }
+  .kv dd { margin: 0; font-family: var(--mono); font-size: 13px; word-break: break-all; }
+
+  p { margin: 12px 0; }
+  .card p:first-child { margin-top: 0; }
+  .card p:last-child { margin-bottom: 0; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--surface-2);
+    padding: 0.1em 0.4em;
+    border-radius: 5px;
+  }
+
+  .evidence {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .evidence .pane {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .evidence .pane .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .evidence .pane.good .tag { color: var(--good); }
+  .evidence .pane.warn .tag { color: var(--warn); }
+  .evidence .pane pre {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--text);
+  }
+
+  @media (max-width: 560px) {
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .evidence { grid-template-columns: 1fr; }
+    .kv { grid-template-columns: 128px 1fr; }
+  }
+
+  table.status {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  table.status th, table.status td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.status th {
+    color: var(--text-faint);
+    font-weight: 500;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  table.status tr:last-child td { border-bottom: none; }
+  table.status .item { font-weight: 500; }
+  table.status .note { color: var(--text-dim); }
+
+  ol.steps, ul.plain {
+    padding-left: 0;
+    list-style: none;
+    margin: 16px 0 0;
+  }
+  ol.steps li, ul.plain li {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+  }
+  ol.steps li:first-child, ul.plain li:first-child { border-top: none; padding-top: 0; }
+  ol.steps { counter-reset: step; }
+  ol.steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    font-family: var(--mono);
+    color: var(--accent);
+    flex: 0 0 auto;
+    width: 20px;
+  }
+  ul.plain li::before {
+    content: "→";
+    color: var(--text-faint);
+    flex: 0 0 auto;
+  }
+
+  .callout {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: var(--warn-soft);
+    border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
+    font-size: 13.5px;
+    color: var(--text);
+  }
+  .callout strong { color: var(--warn); }
+
+  footer.meta {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 12.5px;
+    font-family: var(--mono);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">SPTR · Fitness App · xLZDx/Fitness-App</p>
+  <h1>Canonical product branch switched to master</h1>
+  <p class="lede">Branch consolidation report, 2026-08-19: fast-forwarded <code>master</code> to
+  the current <code>formcoach/gates-a-c</code> HEAD (155 commits), on direct operator
+  instruction. No merge commit, no force-push, with an honest disclosure of the Codex gate's
+  actual state.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>_wt-master-sync</dd>
+    <dt>Folder</dt><dd>D:\Repo\_wt-master-sync</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ f5705a6</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="stat-row">
+  <div class="stat"><div class="n good">78b24dc → f5705a6</div><div class="l">master before / after</div></div>
+  <div class="stat"><div class="n good">155</div><div class="l">Commits pulled in</div></div>
+  <div class="stat"><div class="n good">0 / 0</div><div class="l">Ahead / behind origin</div></div>
+  <div class="stat"><div class="n warn">FF</div><div class="l">Integration method</div></div>
+</div>
+
+<section>
+  <h2><span class="num">01</span> What happened</h2>
+  <div class="card">
+    <p>The operator gave explicit GO to switch the canonical product branch: the whole SPTR
+    visual mandate had been running on <code>formcoach/gates-a-c</code>, while
+    <code>master</code> was 155 commits behind. Branch consolidation had already been listed as
+    an unstarted item in this mandate's roadmap — it is done now on direct instruction rather
+    than deferred further.</p>
+
+    <dl class="kv">
+      <dt>Repository</dt><dd>xLZDx/Fitness-App</dd>
+      <dt>master before</dt><dd>78b24dc19b1a2f125e0804eaac7c945f5af3aa0</dd>
+      <dt>formcoach HEAD</dt><dd>57ae6680bffe2ba0c8b7170b57e8ac2ffc9e7730</dd>
+      <dt>master after</dt><dd>f5705a673ad5b655282e26df78ecbae31b2bbe59</dd>
+    </dl>
+
+    <p>The formcoach HEAD turned out to be one commit newer than the instruction itself named
+    (<code>4cfac26</code>) — because of a status report this same session committed and pushed
+    after the instruction was drafted. Verified against real state before acting, not taken on
+    faith — the instruction itself explicitly demanded that.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">02</span> Topology check and execution</h2>
+  <div class="card">
+    <p><strong>Topology, verified before acting:</strong> <code>git rev-list --left-right
+    --count origin/master...origin/formcoach/gates-a-c</code> → <code>0 155</code> (zero
+    master-only commits, 155 formcoach-only). <code>git merge-base</code> equals
+    <code>origin/master</code> exactly — master is a strict ancestor, so the fast-forward is
+    valid and needs no semantic merge.</p>
+
+    <p><strong>Execution</strong> — in an isolated worktree, <code>D:\Repo\_wt-master-sync</code>,
+    created separately from the existing checkouts: <code>D:\Repo\Fitness_App</code> (on an
+    unrelated branch, <code>marketing/site-prototype-2026-08-19</code> — left untouched) and
+    <code>D:\Repo\_wt-formcoach</code> (this whole session's working directory — not repointed,
+    stays on <code>formcoach/gates-a-c</code> at the same HEAD, frozen as source history).
+    <code>git merge --ff-only origin/formcoach/gates-a-c</code> succeeded with no conflict and no
+    merge commit — a pure pointer advance, confirmed by an identical linear history in
+    <code>git log</code>.</p>
+
+    <p><strong>Validation</strong> — <code>flutter analyze</code>: 0 errors (only pre-existing
+    style lints); spot-checked that the two most recent fixes (the enrolment-dialog overflow fix,
+    the onboarding step-counter wrap fix) are present in the fast-forwarded tree. The full test
+    suite was not re-run — a fast-forward changes no file content, and everything had already
+    been verified as each commit landed on formcoach.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">03</span> Codex review gate — an important caveat</h2>
+  <div class="card warn-card">
+    <span class="badge warn">Fail-open, not a real review</span>
+    <p>The push was blocked by the mechanical <code>codex_review_gate.py</code> hook — no
+    Codex-review receipt existed yet for this worktree path (the gate keys receipts by checkout
+    path, not by underlying repository identity, and this worktree had just been created).</p>
+
+    <p>The fast-forward's aggregate diff — 479 files, ~187,935 insertions / 3,784 deletions: the
+    entire formcoach history, already reviewed line-by-line through this same gate as each commit
+    landed. Running it through Codex again wholesale would have directly contradicted the
+    instruction's own explicit "don't redo weeks of historical audit just because the branch
+    pointer changed" — but the gate has no fast-forward carve-out, by deliberate design.</p>
+
+    <div class="evidence">
+      <div class="pane warn">
+        <div class="tag">Codex responded</div>
+        <pre>ERROR: You've hit your usage limit.
+Try again at Aug 20th, 2026 5:32 PM.</pre>
+      </div>
+      <div class="pane good">
+        <div class="tag">Outcome</div>
+        <pre>final: true (auto, quota rule)
+ok: false
+push: allowed (fail-open)</pre>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Honestly:</strong> Codex did not actually review this diff. The quota is
+      exhausted globally — the same receipts file shows the identical wall hitting concurrent
+      sessions in other repositories (ERP, AI_trading_assistance, Virtual_marketing_company)
+      around the same time. The tool itself marked the receipt final per its documented
+      "usage-limit auto-final" rule (the quota resets 2026-08-20 17:32; an immediate retry would
+      fail identically), and the push proceeded under the gate's explicit fail-open policy — not
+      because a review actually concluded.
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">04</span> Resulting state</h2>
+  <div class="card">
+    <table class="status">
+      <thead><tr><th>What</th><th>Status</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr>
+          <td class="item">master</td>
+          <td><span class="badge good">Canonical</span></td>
+          <td class="note">HEAD f5705a6, synced with origin (0/0), verified twice</td>
+        </tr>
+        <tr>
+          <td class="item">formcoach/gates-a-c</td>
+          <td><span class="badge warn">Frozen</span></td>
+          <td class="note">History preserved; no further product commits land there</td>
+        </tr>
+        <tr>
+          <td class="item">D:\Repo\Fitness_App</td>
+          <td><span class="badge good">Untouched</span></td>
+          <td class="note">Own branch (marketing/site-prototype-2026-08-19), other session</td>
+        </tr>
+        <tr>
+          <td class="item">Tag / GitHub Release</td>
+          <td><span class="badge warn">Not created</span></td>
+          <td class="note">Not explicitly authorized by this instruction</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">05</span> Next</h2>
+  <div class="card">
+    <ol class="steps">
+      <li>The whole visual roadmap (V5 programme-card density, scanner, Session, Form Coach,
+      light theme) now runs from <code>master</code>, not formcoach.</li>
+      <li>Resume the interrupted device check of the current-programme card / build-from-answers
+      panel — from a master worktree.</li>
+      <li>If the operator wants a real Codex review of this diff, it should be run deliberately
+      after the quota resets (2026-08-20 17:32), not as a side effect of the gate.</li>
+    </ol>
+  </div>
+</section>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

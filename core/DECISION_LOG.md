@@ -18988,3 +18988,31 @@ authorized by this instruction, which explicitly limited authorization to commit
 canonical branch.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+
+---
+
+## 2026-08-19 — status report on the branch-switch operation
+
+Operator asked "а где нормальный репорт?" after a chat-only summary of the master fast-forward
+above (`f5705a6`) — the house `html-report` format is mandatory for a status summary with items
+to browse, and a chat reply alone did not satisfy it. Wrote the RU/EN pair,
+`reports/SPTR_STATUS_2026-08-19_branch_switch.ru.html` (shown) and
+`reports/SPTR_STATUS_2026-08-19_branch_switch.html` (durable English record), in the now-canonical
+`master` worktree (`D:\Repo\_wt-master-sync`).
+
+Content covers the same ground as the chat summary — topology verification, the isolated-worktree
+fast-forward, bounded validation, and the Codex push-gate's fail-open outcome — with the same
+explicit, undiluted disclosure that no real Codex review ran against the 155-commit aggregate diff
+(global usage-limit exhaustion, confirmed via other concurrent sessions' receipts for the same
+window). Not softened for the report relative to the chat disclosure.
+
+Provenance block injected via `report_conform.py` (not hand-written); scoped `--check` on just
+these two files passed. The wider `reports --check` across the directory flags 16 pre-existing
+reports as missing the block — same files this whole session has treated as belonging to a
+concurrent session's working state; left untouched, out of scope here.
+
+Published the RU file as an artifact:
+`https://claude.ai/code/artifact/3f7d7c74-6550-4ddb-ab5c-d16e5f508000`.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
