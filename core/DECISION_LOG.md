@@ -18778,4 +18778,42 @@ not a newly fabricated side-by-side.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
 
+---
+
+## 2026-08-19 — SPTR_VISUAL_FIDELITY_74f2f76 report updated with V2b-2a device evidence
+
+Follow-up to the V2b-2 onboarding-migration commit (`3a7a760`). A duplicated closing "PUSH
+IMMEDIATELY" line from that commit's own DECISION_LOG entry (an editing slip, not a code defect) is
+fixed in this commit too.
+
+Eight real captures added under `reports/screenshots/visual_recovery/3a7a760/` (PNG originals plus
+the JPEGs actually embedded in the report, 540px wide / quality 82, matching the `74f2f76`/`9e0cd32`
+convention): `26` entry (step 1/10, nothing selected), `27` an ordinary question (step 2/10, radio),
+`28` selected option (step 1/10, accent wash + CTA tone switch), `29` multi-select + the migrated
+text field (step 2/10, scrolled), `30` the PAR-Q+ screening step (step 9/10), `31` lifestyle and
+habits (step 7/10), `32` completion (step 10/10) — captured from a fresh anonymous account that
+answered "yes" to the chest-pain PAR-Q+ question, so this single frame shows both the already-fixed
+`EligibilityNotice` urgent refusal card AND the counter-wrap fix (`10/10` on one line) at once, and
+`33` the existing-user edit entry point from Profile (carried over from an earlier session on this
+branch, unaffected by this gate).
+
+RU/EN report updated in place: a new `.resolved` banner for V2b-2a (same pattern as the V2b-1 and
+V-READABILITY-01 banners), the onboarding screen card's tags moved from `VISUAL: FAIL` to
+`VISUAL: FIXED (V2b-2a)` with a new "STEP COUNTER: WRAP FIXED" tag, its notes list rewritten to
+describe what actually shipped instead of the pre-migration state, four new image-pair rows added
+with the eight captures above, the `GLASS` criteria-matrix row updated (onboarding now on HUD;
+only the scanner sheet remains opaque), the fix-order's `V2b-2` split into `V2b-2a` (done) and
+`V2b-2b` (the scanner bottom sheet, still in progress — out of scope for this gate, which covered
+onboarding only), the top verdict updated to reflect the real remaining blockers for `VISUAL_GATE`
+(Workouts programme-card density and the scanner sheet — not onboarding, which is now closed), and
+the footer's evidence-folder/APK_SOURCE_SHA list extended with `3a7a760-dirty`.
+
+Verified structurally before publishing: a Python `html.parser` div-balance check on both files
+(132 opens / 132 closes, zero unclosed, matching the methodology the `9e0cd32` evidence commit
+established after that commit's own duplication bug), then `report_conform.py --check` across the
+whole `reports/` directory.
+
+Republished to the same artifact URL
+(`https://claude.ai/code/artifact/aa289300-92a0-4284-b410-f17258c17a15`).
+
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
