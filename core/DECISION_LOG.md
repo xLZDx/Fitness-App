@@ -19016,3 +19016,48 @@ Published the RU file as an artifact:
 `https://claude.ai/code/artifact/3f7d7c74-6550-4ddb-ab5c-d16e5f508000`.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-19 — operator ratified the branch switch as the new canonical checkpoint
+
+Operator independently verified the branch-switch report against GitHub directly and confirmed
+agreement, with one terminology correction accepted as stated: `CANONICAL_HEAD` is
+`f5705a673ad5b655282e26df78ecbae31b2bbe59` (the fast-forward's own endpoint, `formcoach`'s HEAD at
+switch time), not a later report commit — `master` is now one documentation commit ahead of frozen
+`formcoach/gates-a-c`, product code identical between them. Re-verified at the start of this entry:
+actual local/remote `master` HEAD is `802aa28f0ca8d28b5fbbd54291cfef2f2ba6fe6f` (one commit newer
+still than even `f5705a6` — this session's own subsequent branch-switch status-report commit,
+landed after the operator's message was composed), branch=master, ahead/behind origin = 0/0.
+
+Operator explicitly fixed, verbatim, as the standing record:
+- `REPOSITORY` = `xLZDx/Fitness-App`
+- `CANONICAL_PRODUCT_BRANCH` = `master`
+- `WORKTREE FOR CONTINUATION` = `D:\Repo\_wt-master-sync` (or another clean worktree on master)
+- `formcoach/gates-a-c` = FROZEN / HISTORICAL ONLY — no further product commits there
+- `marketing/site-prototype-2026-08-19` = LEGACY / DO NOT USE FOR PRODUCT DEVELOPMENT
+- `MARKETING PROJECT` = `xLZDx/Virtual_marketing_company` (a different repository entirely — noted
+  for context, out of scope for this repo's work)
+- Codex gate outcome for the fast-forward: `NOT_RUN — QUOTA_EXHAUSTED / FAIL-OPEN`, not `PASS` —
+  operator confirmed this framing is correct and that no re-review of the 155-commit aggregate
+  diff is warranted (each commit already reviewed as it landed on formcoach).
+- Branch-consolidation topic is CLOSED — no further branch/worktree consolidation actions unless
+  explicitly reopened.
+- Going forward, any report whose header states `formcoach/gates-a-c` as the current product
+  branch is a process error; report headers must read `SPTR · FITNESS APP · MASTER @ <sha>`.
+  `formcoach` may be mentioned only as the source of the now-merged history.
+
+**How to apply**: every report and status update from this point forward must show
+`master` as `CANONICAL_PRODUCT_BRANCH`, with the actual current SHA (verified fresh each time, not
+copied from a prior message) — never `formcoach/gates-a-c`. Continuation work happens in
+`D:\Repo\_wt-master-sync` (or an equivalent clean `master` worktree), never in `D:\Repo\_wt-formcoach`
+going forward.
+
+Operator then issued a large authorized continuation directive for the interrupted VISUAL_GATE
+roadmap (V5 programme density, scanner sheet, Session, Form Coach, light theme, final report, then
+M7-M9 -> MVP_REACHED), all from `master`, with the same commit -> push -> verify-0/0 discipline as
+before. Resuming from item 1 (V5): the interrupted device investigation (clearing the test
+account's PAR-Q+ screening to verify the current-programme hero and build-from-answers panel with
+real evidence before any layout change).
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
