@@ -19105,3 +19105,70 @@ V5 device verification (current-programme hero, build-from-answers panel) on a b
 actually reflects `master` HEAD.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-19 — V5 device verification: Current Programme hero and Build-from-answers card, both PASS with real data
+
+Resumed the interrupted V5 device-verification step ("verify Current Programme hero on device
+before changing it; verify 'Build from my answers' on device before changing it") on the freshly
+rebuilt `master`-HEAD APK from the previous entry, on a real QA profile carried through the actual
+app flow rather than a seeded/mocked account.
+
+**Setup**: the test account's PAR-Q+ safety block (`kBlockingQuestions`) was still set from an
+earlier session, which forces every recommendation surface into a safety-refusal state. Cleared it
+by walking the full "Edit your answers" flow via `adb shell uiautomator dump` (precise
+`content-desc`/`bounds` lookup — screenshot-coordinate tapping had already shown itself unreliable
+across onboarding steps of varying height, see the previous entry's navigation notes) through all
+10 steps, answering "No" to all 7 PAR-Q+ screening questions, verified via `selected="true"` on
+each "No" chip before advancing. Step 10/10 then rendered a real generated session ("Here's your
+first session," ~50 min, 5 named exercises) instead of the prior "This needs medical attention"
+refusal card, confirming the block was cleared, not merely visually different.
+
+**Home, immediately after onboarding, before starting a programme**: `content-desc` dump and a
+screenshot both show "No workouts scheduled — Pick a plan or scan a machine to start," a "Today's
+adaptive plan" CTA, and a `0/0/0` this-week stat row. Matches
+[the `_CurrentProgrammeCard` source comment](../mobile/lib/features/workouts/workouts_page.dart)
+at `workouts_page.dart:1032-1035`: the card is deliberately *absent*, not a placeholder, when
+`activeProgrammeProvider` is null — the same convention `PlanProgress.isEmpty` uses on Home for
+the same reason ("an empty card reads as failure, not as you have not started one yet"). This is
+correct, intended behaviour, not a defect.
+
+**Workouts → Programs tab, same state**: `_BuildFromAnswersCard` ("Build from my answers — Goal,
+level, days and focus areas — taken from what you already told us. No template to pick.") renders
+with real chips pulled from the actual questionnaire answers — `Form` / `Beginner` / `8 weeks · 3
+days/week` — and a "Start programme" CTA. No fake/prototype values, no template picker. Confirms
+the operator's explicit requirement ("no fake ... prototype values") is met for this card.
+
+**After tapping "Start programme"**: `_CurrentProgrammeCard` now renders at the top of the
+Programs tab with real data end to end — title "My programme," the same real
+weeks/days/goal/level meta line, a `Week 1 of 8 · 0%` progress track, and (on a second read a few
+seconds later — the first read raced the schedule provider and briefly showed "No upcoming session
+yet," which is why this was re-verified rather than taken at face value) four exercise thumbnail
+images plus a `Continue`-style CTA reading "Air Swing Walking +3." The `Build from my answers`
+card's own CTA correctly relabeled from "Start programme" to "Continue" once a programme is
+active. Home also updated correctly: "MY PROGRAMME · WEEK 1 OF 8," a "Friday — Core · Lats ·
+Traps" session card, "4 EXERCISES," "SESSION 4 exercises · 40 min," "Start workout." No layout
+overflow, no truncation, no placeholder/lorem content anywhere in this flow at 1080×1920 (emulator
+density).
+
+**Conclusion**: both cards this V5 item was scoped to (`_CurrentProgrammeCard`,
+`_BuildFromAnswersCard`) match the operator's V5 ask — real data, no fake metrics, correct
+density/hierarchy, correct empty-state suppression before a programme exists. **No layout or
+density defect was reproduced, so no code change was made for this item** — the directive's own
+scoping rule was "fix only reproduced remaining layout/density differences." The one transient
+"No upcoming session yet" read was a one-time provider-timing race on the first screenshot after
+tapping "Start programme," gone on the next read a few seconds later with no user action taken in
+between; noted here for completeness, not treated as a reproducible bug since it never recurred
+across the rest of this walkthrough and does not block the CTA or corrupt any persisted state.
+
+**Screenshots retained this session** (not committed — device-verification working files, per the
+project's existing pattern of not committing scratch screenshots):
+`home_cleared.png`, `home_real.png`, `workouts.png`, `after_start.png`, `home_after_start.png`,
+`workouts2.png` under the session scratchpad.
+
+**Next**: proceed to VISUAL_GATE roadmap item 2 (Scanner lower sheet) per the operator's
+continuation directive, still on `master`, still using real device/emulator verification before
+any change.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
