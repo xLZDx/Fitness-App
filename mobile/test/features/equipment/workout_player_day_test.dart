@@ -356,6 +356,52 @@ void main() {
             'filter, not empty the picker');
   });
 
+  testWidgets(
+      'the add-exercise sheet has an opaque backing, not the screen '
+      'bleeding through', (t) async {
+    // Regression: the sheet's Container painted itself with
+    // theme.scaffoldBackgroundColor, which app_theme.dart sets to
+    // Colors.transparent by design so AuroraBackground shows through every
+    // Scaffold. Reused as a sheet's own backing, that left it with no real
+    // occlusion, so the "Timed set" screen underneath bled straight through
+    // its list -- device-confirmed 2026-08-20.
+    await tall(t);
+    // The add-exercise button only draws once a session already exists for
+    // this day (see _AddExerciseButton.build) -- same fixture as N02 above.
+    final repo = MockWorkoutSessionRepository(latency: Duration.zero);
+    addTearDown(repo.dispose);
+    await t.runAsync(
+        () => repo.save('u1', _daySessionWith(const [_squatLogged])));
+
+    await t.pumpWidget(_app(
+      const WorkoutPlayerPage(exerciseId: 'ea_row', dayId: 'day_1'),
+      days: [_day(exercises: [_squat, _row])],
+      logged: [_daySessionWith(const [_squatLogged])],
+      repo: repo,
+      catalog: [_press],
+      safety: SafetyContext(
+        screening: screen({for (final q in ParQQuestion.values) q: false}),
+        health: const HealthFlags(),
+      ),
+    ));
+    await t.pumpAndSettle();
+
+    await t.tap(find.byKey(const Key('player.addExercise')));
+    await t.pumpAndSettle();
+
+    final container = t.widget<Container>(find
+        .ancestor(
+          of: find.text('Pick another exercise'),
+          matching: find.byType(Container),
+        )
+        .first);
+    final color = (container.decoration as BoxDecoration).color;
+    expect(color, isNotNull);
+    expect(color!.alpha, 255,
+        reason: 'a translucent or transparent sheet backing lets the '
+            'workout screen behind it bleed through its own list');
+  });
+
   testWidgets('a tap before the history has loaded waits instead of overwriting',
       (t) async {
     // The cold-start race, caught in review before it shipped. On a fresh

@@ -19260,3 +19260,64 @@ after injection (still compliant, provenance block untouched) and republished th
 its existing artifact URL.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — VISUAL_GATE item 3 (Session): found and fixed a real Active/Rest overlap bug
+
+Continued the operator's directive into VISUAL_GATE roadmap item 3 (Session: Active/Rest/Finish),
+device-verifying before changing anything, on `emulator-5554` running the `master @ 9d0dc3b`
+build. Ran a real active session on the cleared test profile (see the two entries above) via
+`adb shell uiautomator dump` navigation throughout, since screenshot-coordinate taps had already
+proven unreliable across this app's varying layouts.
+
+**Confirmed working, no defect:** the Active countdown (`Set 1 of 3`, `GET READY` → `WORK`,
+Skip/Pause/Stop controls), the post-set RPE prompt ("How did that feel?" — Too easy / Right / Too
+hard, with real copy explaining it tunes the suggested load), the Rest card ("Put the phone down —
+the next set is coming.", `+30 s` / `Skip`), and the Plate/Warm-up calculator tool sheets (real
+per-side plate math, a 4-step warm-up ramp at 40/60/75/90% of working weight) — all render cleanly,
+full content, no truncation.
+
+**Found a real, reproducible bug.** Tapping "Add another exercise" opens `_ExercisePickerSheet`
+("Pick another exercise") as a `showModalBottomSheet`, and its list rendered directly on top of the
+still-visible workout screen underneath — set-timer text, the Start/Plates/Warm-up buttons, the
+"Rest complete" card and "Mark complete" button all visually blended with the picker's own list
+text, unreadable in the overlap region. Reproduced twice (a screenshot with no interaction in
+between showed the identical overlap, ruling out a one-frame render glitch).
+
+**Root cause, confirmed from code, not guessed:**
+`workout_player_page.dart:1005` painted the sheet's `Container` with
+`color: theme.scaffoldBackgroundColor` — which `app_theme.dart:148` sets to `Colors.transparent`
+by deliberate design, so `AuroraBackground` shows through every `Scaffold`. Reused as a modal
+sheet's own backing, that left the sheet with zero real opacity: nothing painted behind its list,
+so the screen underneath showed straight through. The same file's `_ToolsRow._openSheet` (Plates/
+Warm-up) had the identical class of bug, one step worse: no backing `Container` at all, just a bare
+`SingleChildScrollView` — masked mostly by the two calculator widgets' own opaque card
+backgrounds, but with a faint bleed-through visible around/above them (a stray "0:15" ghosted
+through the Warm-up calculator's header in one screenshot from this same session).
+
+**Fix.** Both sheets now paint with `theme.colors.surfaceElevated` — the same real opaque token
+`scanner_page.dart`'s `_ScanSheet` already uses for exactly this "must actually occlude what's
+behind it" requirement (see the earlier scanner-sheet entry in this log). `_ToolsRow`'s sheet
+gained the `Container` wrapper it never had, with the same rounded-top decoration the other two
+sheets use. Two-line, same-shape fix; no other behaviour touched.
+
+**Regression test**, `test/features/equipment/workout_player_day_test.dart` ("the add-exercise
+sheet has an opaque backing, not the screen bleeding through"): opens the real picker sheet via
+the `player.addExercise` key (same fixture as the existing N02 test) and asserts the wrapping
+`Container`'s decoration color has `alpha == 255`. Mutation-verified: reverting the fix via `sed`
+reproduced `Expected: <255> Actual: <0>` — the exact defect, not a coincidental pass — then the fix
+was restored and the suite re-ran green.
+
+**Full suite**: `flutter test` — 3141 run, 1 failed. Confirmed via `git stash` that the one failure
+(`test/theme/app_semantic_colors_test.dart`, "the hardcoded whites that survived G1.2b stay
+accounted for", `Expected: <61> Actual: <58>`) reproduces identically on clean HEAD with none of
+this entry's changes applied — a pre-existing drift in a hardcoded-`Colors.white` budget tracker,
+unrelated to this fix. Left untouched; fixing it is outside this gate's scope.
+
+**Not yet done**: the Finish/session-summary screen itself was not reached this pass — the app's
+rest/RPE/set-advance sequencing made it slower to walk than expected via `uiautomator`, and the
+picker-sheet bug took priority once found. Session item 3 is therefore not fully closed; Finish
+still needs its own device pass before this roadmap item can be marked complete.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**

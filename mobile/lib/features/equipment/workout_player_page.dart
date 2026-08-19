@@ -1002,7 +1002,14 @@ class _ExercisePickerSheet extends StatelessWidget {
       expand: false,
       builder: (_, controller) => Container(
         decoration: BoxDecoration(
-          color: theme.scaffoldBackgroundColor,
+          // theme.scaffoldBackgroundColor is Colors.transparent by design
+          // (app_theme.dart) so AuroraBackground shows through every
+          // Scaffold -- using it here left this sheet with no real backing,
+          // so its list bled straight into the workout screen underneath.
+          // surfaceElevated is the same opaque token _ScanSheet uses for
+          // exactly this "sheet must actually occlude what's behind it"
+          // case.
+          color: theme.colors.surfaceElevated,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -1059,15 +1066,25 @@ class _ToolsRow extends StatelessWidget {
         minChildSize: 0.5,
         maxChildSize: 0.95,
         expand: false,
-        builder: (_, controller) => SingleChildScrollView(
-          controller: controller,
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
-          child: const Column(
-            children: [
-              PlateCalculator(),
-              SizedBox(height: 14),
-              WarmupCalculator(),
-            ],
+        builder: (_, controller) => Container(
+          // Same fix as _ExercisePickerSheet below: this sheet had no
+          // backing at all, so the workout screen behind it showed through
+          // the gaps around and between the two calculator cards.
+          decoration: BoxDecoration(
+            color: Theme.of(sheetContext).colors.surfaceElevated,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: SingleChildScrollView(
+            controller: controller,
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+            child: const Column(
+              children: [
+                PlateCalculator(),
+                SizedBox(height: 14),
+                WarmupCalculator(),
+              ],
+            ),
           ),
         ),
       ),
