@@ -18906,3 +18906,85 @@ Excludes concurrent-session files from staging, same set as the prior entry — 
 `git status --porcelain=v1` before staging.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+
+---
+
+## 2026-08-19 — canonical product branch switched: master fast-forwarded to formcoach/gates-a-c
+
+Operator instruction (explicit GO + PUSH authorization, structured 15-section directive): stop
+using `formcoach/gates-a-c` as the long-lived product branch and make `master` canonical, by
+fast-forwarding it to the current formcoach head. Branch consolidation had been listed as an
+unstarted item in this mandate's broader roadmap; this is that step, executed now on explicit
+operator instruction rather than deferred further.
+
+**Topology, verified before acting** (not trusted from the instruction's own stated values):
+`origin/master` = `78b24dc19b1a2f125e0804eaac7c945f5af3aa0`, `origin/formcoach/gates-a-c` =
+`57ae6680bffe2ba0c8b7170b57e8ac2ffc9e7730` (one commit newer than the `4cfac26` the instruction
+itself named, from this session's own status-report commit landing after the instruction was
+drafted — the instruction's own step 3 warned not to trust the stated HEAD blindly, which this
+confirmed). `git rev-list --left-right --count origin/master...origin/formcoach/gates-a-c` = `0
+155` (zero master-only commits, 155 formcoach-only). `git merge-base` = `78b24dc...` = exactly
+`origin/master` — master is a strict ancestor, fast-forward is valid with no semantic merge
+needed.
+
+**Execution, in an isolated worktree** (`D:\Repo\_wt-master-sync`, created via `git worktree add`)
+rather than the existing `D:\Repo\Fitness_App` checkout, which is on an unrelated branch
+(`marketing/site-prototype-2026-08-19`) and was left untouched, and rather than the
+`D:\Repo\_wt-formcoach` worktree this whole session has run from, which also was not repointed —
+it stays on `formcoach/gates-a-c` at the same HEAD, frozen as historical/source-branch per the
+instruction's own step 8 (no further product commits are to land there going forward).
+`git merge --ff-only origin/formcoach/gates-a-c` from `master` succeeded with no conflict and no
+merge commit — pure pointer advance, verified via `git log` showing an identical linear history to
+formcoach's own.
+
+**Bounded validation** (`flutter analyze`: 0 errors, only pre-existing style lints; spot-checked
+that the two most recent fixes — the enrolment-dialog overflow fix and the onboarding step-counter
+fix — are present in the fast-forwarded tree) rather than re-running the full historical test
+suite, per the instruction's own explicit step 6: fast-forward changes no file content, so nothing
+here needed re-auditing that hadn't already been verified when each commit landed on formcoach.
+
+**Push gate**: `codex_review_gate.py` blocked the push — no Codex-review receipt existed yet for
+this repo path (`D:\Repo\_wt-master-sync`), since the gate keys receipts by worktree path, not by
+underlying repository identity, and this worktree was just created. Running the mandatory
+`codex_review.py` against the full aggregate diff (`master...HEAD` = 479 files, ~187,935
+insertions/3,784 deletions — the entire formcoach history, already reviewed commit-by-commit
+through this same gate as each commit landed) would have meant exactly the "weeks of historical
+audit" the instruction's own step 6 said not to repeat. Ran it anyway, honestly scoped
+(`--base` against the pre-fast-forward master SHA, `--parallel 12`, `--round 1 --final`) as the
+only way to satisfy the gate's mechanical requirement (it has no trivial/ff carve-out, by
+design). Codex returned `usage_limit_exhausted` on every shard — a global quota wall (the same
+receipts file shows other concurrent sessions in sibling repos, `ERP`, `AI_trading_assistance`,
+`Virtual_marketing_company`, hitting the identical wall around the same time, confirming this is
+not specific to this repo or this review). `codex_review.py`'s own documented "usage-limit
+auto-final" behaviour marked the receipt `final: true` despite `ok: false` regardless of the
+`--final` flag, since the quota resets at a fixed future date (2026-08-20 17:32) and retrying
+immediately would fail identically. The push gate's own documented fail-open escape hatch then
+allowed the push, with an explicit non-silent warning — stated here plainly per that warning's own
+requirement: **no Codex review actually ran against this fast-forward's diff; the push proceeded
+on the gate's fail-open policy for an exhausted quota, not on a completed review.**
+
+**Push**: `git push origin master` — `78b24dc..57ae668 master -> master`. Verified via
+`git fetch origin` (one transient DNS resolver hiccup on the first attempt, `getaddrinfo() thread
+failed to start`, resolved on immediate retry — not a state issue) plus `git rev-list --left-right
+--count HEAD...origin/master` = `0 0`.
+
+**Result**:
+- `MASTER_BEFORE` = `78b24dc19b1a2f125e0804eaac7c945f5af3aa0`
+- `MASTER_AFTER` / `REMOTE_MASTER_AFTER` = `57ae6680bffe2ba0c8b7170b57e8ac2ffc9e7730`
+- `FORMCOACH_AFTER` = `57ae6680bffe2ba0c8b7170b57e8ac2ffc9e7730` (unchanged, now == master)
+- Integration method: fast-forward, no merge commit, no rebase, no force-push
+- `CANONICAL_PRODUCT_BRANCH` = `master`, effective from this push onward
+- `formcoach/gates-a-c` = frozen source-branch history; not deleted; no further product commits
+  planned there per operator instruction
+
+All prior completed work (onboarding HUD migration, safety-card HUD migration, V-READABILITY-01,
+the enrolment-dialog overflow fix, M1-M5 work) is preserved as-is — a fast-forward changes no file
+content, so none of it was re-verified from scratch, only spot-confirmed present.
+
+**Not done in this step, deliberately**: no tag, no GitHub Release, no deletion of
+`formcoach/gates-a-c`, no rename of the `D:\Repo\_wt-formcoach` worktree — none of these were
+authorized by this instruction, which explicitly limited authorization to commit+push on the
+canonical branch.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
