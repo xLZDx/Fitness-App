@@ -114,8 +114,7 @@ void main() {
       final HudTokens t = HudTokens.dark;
       const HudSkySelection base = HudSkySelection(phase: HudSkyPhase.day);
       final LinearGradient plain = hudVeil(t, base);
-      final LinearGradient heavier =
-          hudVeil(t, base.copyWith(veilScale: 1.4));
+      final LinearGradient heavier = hudVeil(t, base.copyWith(veilScale: 1.4));
       expect(heavier.colors.first.a, greaterThan(plain.colors.first.a));
     });
 
@@ -125,10 +124,8 @@ void main() {
       // readable. Asking for 0 yields the floor.
       final HudTokens t = HudTokens.dark;
       const HudSkySelection base = HudSkySelection(phase: HudSkyPhase.day);
-      final LinearGradient floored =
-          hudVeil(t, base.copyWith(veilScale: 0.0));
-      final LinearGradient atFloor =
-          hudVeil(t, base.copyWith(veilScale: 0.55));
+      final LinearGradient floored = hudVeil(t, base.copyWith(veilScale: 0.0));
+      final LinearGradient atFloor = hudVeil(t, base.copyWith(veilScale: 0.55));
       expect(floored.colors.first.a, closeTo(atFloor.colors.first.a, 0.001));
       expect(floored.colors.first.a, greaterThan(0.3));
     });
@@ -144,8 +141,8 @@ void main() {
     });
 
     test('it runs top to bottom with the handoff stop positions', () {
-      final LinearGradient g =
-          hudVeil(HudTokens.dark, const HudSkySelection(phase: HudSkyPhase.dawn));
+      final LinearGradient g = hudVeil(
+          HudTokens.dark, const HudSkySelection(phase: HudSkyPhase.dawn));
       expect(g.begin, Alignment.topCenter);
       expect(g.end, Alignment.bottomCenter);
       expect(g.stops, <double>[0.0, 0.58, 0.82, 1.0]);
@@ -214,6 +211,42 @@ void main() {
       // The prototype mounts all six phase images at once; at 1440x2560 that
       // is ~84 MB resident for five pictures nobody is looking at.
       expect(find.byType(Image), findsNWidgets(2));
+    });
+
+    testWidgets(
+        'reverting to the settled picture mid-fade cancels the stale one',
+        (t) async {
+      // Two phase changes inside one 1.6s crossfade window: night -> day
+      // starts a fade, and day -> night (back to what is already settled)
+      // arrives before it finishes. `didUpdateWidget` used to compare only
+      // against `_settled`, so a target equal to it was treated as "nothing
+      // to do" even with an unrelated fade still in flight -- that stale fade
+      // would still run to completion and silently re-settle on `day`, the
+      // picture nobody wants anymore, with nothing left to correct it.
+      Widget app(HudSkySelection s) => MaterialApp(
+            home: HudSkyBackground(selection: s, child: const SizedBox()),
+          );
+      const HudSkySelection night = HudSkySelection(phase: HudSkyPhase.night);
+      const HudSkySelection day = HudSkySelection(phase: HudSkyPhase.day);
+
+      await t.pumpWidget(app(night));
+      await t.pump();
+      expect(find.byType(Image), findsOneWidget);
+
+      await t.pumpWidget(app(day));
+      await t.pump();
+      expect(find.byType(Image), findsNWidgets(2),
+          reason: 'day is fading in over the settled night');
+
+      await t.pumpWidget(app(night));
+      await t.pump();
+      expect(find.byType(Image), findsOneWidget,
+          reason: 'the stale fade toward day must be cancelled outright');
+
+      // Let any in-flight animation/timer run to completion. If the stale
+      // fade were still alive, its `onEnd` fires here and re-settles on day.
+      await t.pumpAndSettle();
+      expect(find.byType(Image), findsOneWidget);
     });
 
     testWidgets('the decorative streaks are hidden from screen readers',

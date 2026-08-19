@@ -28,21 +28,40 @@
 /// Where (3) contradicts (1) the approved formula wins and the divergence is
 /// recorded at the field. There is exactly one such case, [success].
 ///
-/// ## CSS blur is not Flutter sigma
+/// ## CSS blur IS the Flutter sigma — corrected 2026-08-19
 ///
-/// CSS `blur(R)` specifies a Gaussian whose **standard deviation is R/2**
-/// (filter-effects-1 §. So `backdrop-filter:blur(7px)` is
-/// `ImageFilter.blur(sigmaX: 3.5, sigmaY: 3.5)`, not 7. Every blur below is
-/// stored as the CSS radius and converted once, in [blurSigma], so the
-/// transcription can be checked against the handoff by eye.
+/// This file shipped one gate carrying `blurSigma(css) => css / 2`, on the
+/// belief that CSS `blur(R)` halves into a Gaussian sigma the way a
+/// `box-shadow` blur radius does. It does not, and a D1 review round caught
+/// it by quoting the spec rather than trusting the comment that was here.
+/// CSSWG filter-effects-1 on `blur()`, verbatim: *"The passed parameter
+/// defines the value of the standard deviation to the Gaussian function."*
+/// The length IS the sigma. Every frosted surface in the app was rendering at
+/// **half** its designed strength — `blur(7px)` at σ 3.5 instead of 7,
+/// `blur(30px)` at σ 15 instead of 30 — for the whole of D1.
+///
+/// `box-shadow`'s blur radius is the thing that halves (its radius is
+/// conventionally ~2× the equivalent sigma, which is why Flutter's own
+/// `BoxShadow.blurRadius` needs no correction here — Skia already applies
+/// that conversion internally, so a literal CSS `box-shadow` radius passed
+/// straight into `BoxShadow(blurRadius: …)` is correct as-is). `blur()` and
+/// `drop-shadow()` do NOT share that halving: the spec draws the distinction
+/// explicitly — *"Values are interpreted as for box-shadow but with the
+/// optional 3rd `<length>` value being the standard deviation instead of
+/// blur radius… Standard deviation is different to box-shadow's blur
+/// radius."* `hud_metric.dart`'s ring glow, painted as a simulated
+/// `drop-shadow()`, carried the identical bug for the identical reason and is
+/// fixed alongside this.
 library;
 
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
-/// CSS `blur(<radius>)` -> the Gaussian sigma Flutter wants.
-double blurSigma(double cssRadius) => cssRadius / 2;
+/// CSS `blur(<radius>)` -> the Gaussian sigma Flutter's `ImageFilter.blur`
+/// wants. Identity, not a halving — see the library doc for why a halving
+/// was here for one gate and was wrong.
+double blurSigma(double cssRadius) => cssRadius;
 
 /// A `saturate(<amount>)` colour matrix, as `filter: saturate()` defines it.
 ///
@@ -68,7 +87,12 @@ ColorFilter saturationFilter(double amount) {
 /// a tier the design has. Grouping them makes that mistake impossible to express.
 @immutable
 class HudGlass {
-  const HudGlass({
+  // Not `const`: `backdropFilter` below is a `late final` field that caches
+  // an `ui.ImageFilter` on first read, and Dart forbids that combination on a
+  // const-constructible class. No call site actually built one as a const
+  // literal -- every recipe is assembled at `HudTokens.dark`/`.light`'s
+  // static-init time, in a `static final`, not a `static const`.
+  HudGlass({
     required this.fill,
     required this.cssBlur,
     required this.innerBorder,
@@ -76,6 +100,7 @@ class HudGlass {
     this.glow,
     this.dropShadows = const <BoxShadow>[],
     this.saturate,
+    this.topHighlight,
   });
 
   /// The surface fill. On dark this is `rgba(255,255,255,.014)` — so nearly
@@ -108,8 +133,23 @@ class HudGlass {
   /// cheaper, and is why dark does not carry one it does not need.
   final double? saturate;
 
+  /// `box-shadow: inset 0 1px 0 <colour>` — a top-only bevel highlight,
+  /// distinct from [innerBorder]'s all-round ring. Missing entirely until a
+  /// D1 review round quoted the CSS; wired only where it is currently
+  /// reachable from a built screen (see `HudSurface`'s doc). Null where the
+  /// handoff genuinely draws no such highlight, or where a value has not yet
+  /// been read off a screen this repository does not build yet.
+  final Color? topHighlight;
+
   /// The composed backdrop filter, or a plain blur when there is no saturation.
-  ui.ImageFilter get backdropFilter {
+  ///
+  /// `HudSurface` reads this on every frame the one `BackdropFilter` call site
+  /// rebuilds, and a Home screen carries six. Computed once and cached rather
+  /// than rebuilt per frame -- safe because [HudGlass] is immutable, so the
+  /// value can only ever come out identical.
+  late final ui.ImageFilter backdropFilter = _computeBackdropFilter();
+
+  ui.ImageFilter _computeBackdropFilter() {
     final blur = ui.ImageFilter.blur(
       sigmaX: blurSigma(cssBlur),
       sigmaY: blurSigma(cssBlur),
@@ -131,6 +171,7 @@ class HudGlass {
         dropShadows: BoxShadow.lerpList(a.dropShadows, b.dropShadows, t) ??
             const <BoxShadow>[],
         saturate: ui.lerpDouble(a.saturate ?? 1.0, b.saturate ?? 1.0, t),
+        topHighlight: Color.lerp(a.topHighlight, b.topHighlight, t),
       );
 }
 
@@ -374,12 +415,14 @@ class HudTokens extends ThemeExtension<HudTokens> {
       fill: const Color(0x05FFFFFF), // white @ .02
       cssBlur: 6,
       innerBorder: const Color(0x47FFFFFF), // white @ .28
+      topHighlight: const Color(0x4DFFFFFF), // white @ .30
     ),
     navBar: HudGlass(
       fill: const Color(0x661A0F22), // rgba(26,15,34,.40)
       cssBlur: 30,
       saturate: 1.8,
       innerBorder: const Color(0x2EFFFFFF), // white @ .18
+      topHighlight: const Color(0x6BFFFFFF), // white @ .42
       dropShadows: <BoxShadow>[
         BoxShadow(
           color: const Color(0xE614081E), // rgba(20,10,30,.9)
@@ -467,9 +510,11 @@ class HudTokens extends ThemeExtension<HudTokens> {
     chip: HudGlass(
       fill: const Color(0x47FFFFFF), // white @ .28
       cssBlur: 12,
-      innerBorder:
-          const Color(0x661B2030), // ink @ .40 -- an ink ring, not white
-      outerBorder: const Color(0x3D1B2030), // ink @ .24
+      // A single ink ring, not the double white-then-ink ring this recipe
+      // carried until a review round checked it against the source: the
+      // prototype's chipOff draws exactly one `inset 0 0 0 1px` line.
+      innerBorder: const Color(0x3D1B2030), // ink @ .24
+      topHighlight: const Color(0x66FFFFFF), // white @ .40
     ),
     // Light does NOT give the bar its own recipe: it reuses panel glass
     // verbatim, dropping dark's tinted gradient and 30px blur entirely.
@@ -568,6 +613,13 @@ class HudTokens extends ThemeExtension<HudTokens> {
       );
 
   Color get accentChipBorder => accent.withValues(alpha: 0.50);
+
+  /// `inset 0 1px 0 rgba(255,255,255,.5)` on the selected accent chip
+  /// (`chipOn`, `Fitness Glass Phone v1 - Sunset.dc.html:686`). The light
+  /// prototype's equivalent block was never independently confirmed, so this
+  /// stays null there rather than guessing a value.
+  Color? get accentChipTopHighlight =>
+      brightness == Brightness.dark ? const Color(0x80FFFFFF) : null;
 
   @override
   HudTokens copyWith({Color? accent}) =>

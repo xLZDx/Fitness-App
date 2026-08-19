@@ -7,9 +7,53 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'
+    show KeyDownEvent, KeyEvent, LogicalKeyboardKey;
 
 import '../../../core/theme/hud_tokens.dart';
 import '../../../core/theme/hud_typography.dart';
+
+/// Makes a tap target reachable from an external keyboard or a switch-control
+/// device, which `GestureDetector` alone never is.
+///
+/// `HudButton`, `HudChip` and `HudToggle` are all built on raw
+/// `GestureDetector`, not `InkWell`/`ButtonStyleButton` — kept deliberately
+/// for their custom press geometry (the 2px lift, the accent wash) rather than
+/// Material's ripple. That choice has a real cost: a `GestureDetector` gets no
+/// `FocusNode` and no keyboard activation for free, so a person driving the
+/// app with a Bluetooth keyboard or "Full Keyboard Access"-style switch input
+/// could Tab past every primary control and never be able to press it. This
+/// wrapper is the one place that gap is closed, so all three controls fix it
+/// the same way rather than three slightly different ways.
+class HudKeyboardActivation extends StatelessWidget {
+  const HudKeyboardActivation({
+    super.key,
+    required this.onActivate,
+    required this.child,
+  });
+
+  /// Null makes the control unfocusable, matching a disabled tap handler.
+  final VoidCallback? onActivate;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (onActivate == null) return child;
+    return Focus(
+      onKeyEvent: (FocusNode node, KeyEvent event) {
+        if (event is! KeyDownEvent) return KeyEventResult.ignored;
+        final bool isActivation =
+            event.logicalKey == LogicalKeyboardKey.enter ||
+                event.logicalKey == LogicalKeyboardKey.numpadEnter ||
+                event.logicalKey == LogicalKeyboardKey.space;
+        if (!isActivation) return KeyEventResult.ignored;
+        onActivate!();
+        return KeyEventResult.handled;
+      },
+      child: child,
+    );
+  }
+}
 
 /// Whether HUD surfaces actually frost their backdrop.
 ///
@@ -63,6 +107,16 @@ class HudQuality extends InheritedWidget {
 ///  * `0 0 0 1px <c>` — an **outer** ring (light theme only). A `BoxShadow` with
 ///    `blurRadius: 0, spreadRadius: 1`, which is exactly a 1px ring.
 ///  * `0 0 26px -6px <c>` / `0 18px 34px -22px <c>` — an actual shadow.
+///  * `inset 0 1px 0 <c>` — a **top-only** highlight, distinct from the
+///    all-round inset hairline above. Six elements in the handoff carry this
+///    as well as the full ring; it was missing entirely for one gate, caught
+///    by a fidelity review that quoted the CSS for the ones that are wired
+///    into a screen that exists yet — `HudChip`'s selected wash and (via
+///    `HudTokens.navBar`) the floating tab bar. Approximated as a 1px line
+///    inset from each top corner by ~30% of the radius, rather than a true
+///    path-following stroke: at 1px wide the curve into the corner the real
+///    CSS produces is barely perceptible, and a `PathMetric`-based stroke
+///    would be materially more code for a difference nobody will see.
 ///
 /// Collapsing them into one list is the mistake this class exists to prevent.
 class HudSurface extends StatelessWidget {
@@ -74,6 +128,7 @@ class HudSurface extends StatelessWidget {
     this.padding,
     this.overlay,
     this.border,
+    this.topHighlight,
   });
 
   final HudGlass glass;
@@ -89,9 +144,15 @@ class HudSurface extends StatelessWidget {
   /// for one state (a selected chip's accent ring).
   final Color? border;
 
+  /// Replaces [HudGlass.topHighlight] for one state. Explicit `null` here
+  /// still falls back to the glass recipe's own value — pass
+  /// [Colors.transparent] to suppress it outright.
+  final Color? topHighlight;
+
   @override
   Widget build(BuildContext context) {
     final Color hairline = border ?? glass.innerBorder;
+    final Color? highlight = topHighlight ?? glass.topHighlight;
 
     Widget surface = DecoratedBox(
       decoration: BoxDecoration(
@@ -104,6 +165,25 @@ class HudSurface extends StatelessWidget {
           ? child
           : Padding(padding: padding!, child: child ?? const SizedBox.shrink()),
     );
+
+    if (highlight != null) {
+      final double inset =
+          (borderRadius.topLeft.x + borderRadius.topRight.x) / 2 * 0.3;
+      surface = Stack(
+        fit: StackFit.passthrough,
+        children: <Widget>[
+          surface,
+          Positioned(
+            top: 1,
+            left: inset,
+            right: inset,
+            child: IgnorePointer(
+              child: Container(height: 1, color: highlight),
+            ),
+          ),
+        ],
+      );
+    }
 
     if (HudQuality.frostedOf(context)) {
       surface = BackdropFilter(filter: glass.backdropFilter, child: surface);
@@ -305,50 +385,53 @@ class _HudButtonState extends State<HudButton> {
       // reader announce the same words twice. Measured: the node's label came
       // back with the child's own appended after a separator until this was
       // added.
-      child: GestureDetector(
-        onTapDown: live ? (_) => setState(() => _pressed = true) : null,
-        onTapUp: live ? (_) => setState(() => _pressed = false) : null,
-        onTapCancel: live ? () => setState(() => _pressed = false) : null,
-        onTap: live ? widget.onPressed : null,
-        behavior: HitTestBehavior.opaque,
-        child: AnimatedSlide(
-          offset: _pressed ? const Offset(0, -0.035) : Offset.zero,
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.ease,
-          child: ConstrainedBox(
-            // The handoff's own floor, and WCAG 2.5.5's.
-            constraints:
-                const BoxConstraints(minHeight: HudTokens.minTapTarget),
-            child: HudSurface(
-              glass: glass,
-              overlay: overlay,
-              border: hairline,
-              borderRadius: BorderRadius.circular(widget.radius),
-              padding: widget.padding,
-              child: ExcludeSemantics(
-                child: Row(
-                  mainAxisAlignment: widget.centered
-                      ? MainAxisAlignment.center
-                      : MainAxisAlignment.spaceBetween,
-                  mainAxisSize:
-                      widget.centered ? MainAxisSize.min : MainAxisSize.max,
-                  children: widget.centered
-                      ? <Widget>[
-                          if (widget.icon != null) ...<Widget>[
-                            Icon(widget.icon, size: 20, color: foreground),
-                            const SizedBox(width: 9),
-                          ],
-                          Flexible(
-                            child: Text(
-                              widget.label,
-                              style: HudType.panelTitle(t)
-                                  .copyWith(color: foreground),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+      child: HudKeyboardActivation(
+        onActivate: live ? widget.onPressed : null,
+        child: GestureDetector(
+          onTapDown: live ? (_) => setState(() => _pressed = true) : null,
+          onTapUp: live ? (_) => setState(() => _pressed = false) : null,
+          onTapCancel: live ? () => setState(() => _pressed = false) : null,
+          onTap: live ? widget.onPressed : null,
+          behavior: HitTestBehavior.opaque,
+          child: AnimatedSlide(
+            offset: _pressed ? const Offset(0, -0.035) : Offset.zero,
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.ease,
+            child: ConstrainedBox(
+              // The handoff's own floor, and WCAG 2.5.5's.
+              constraints:
+                  const BoxConstraints(minHeight: HudTokens.minTapTarget),
+              child: HudSurface(
+                glass: glass,
+                overlay: overlay,
+                border: hairline,
+                borderRadius: BorderRadius.circular(widget.radius),
+                padding: widget.padding,
+                child: ExcludeSemantics(
+                  child: Row(
+                    mainAxisAlignment: widget.centered
+                        ? MainAxisAlignment.center
+                        : MainAxisAlignment.spaceBetween,
+                    mainAxisSize:
+                        widget.centered ? MainAxisSize.min : MainAxisSize.max,
+                    children: widget.centered
+                        ? <Widget>[
+                            if (widget.icon != null) ...<Widget>[
+                              Icon(widget.icon, size: 20, color: foreground),
+                              const SizedBox(width: 9),
+                            ],
+                            Flexible(
+                              child: Text(
+                                widget.label,
+                                style: HudType.panelTitle(t)
+                                    .copyWith(color: foreground),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                        ]
-                      : content,
+                          ]
+                        : content,
+                  ),
                 ),
               ),
             ),
@@ -401,23 +484,28 @@ class HudChip extends StatelessWidget {
       button: onTap != null,
       selected: selected,
       label: label,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: HudTokens.minTapTarget),
-          child: HudSurface(
-            glass: t.chip,
-            overlay: selected ? t.accentChipGradient : null,
-            border: selected ? t.accentChipBorder : null,
-            borderRadius: br,
-            padding: padding,
-            child: ExcludeSemantics(
-              child: Align(
-                alignment: Alignment.center,
-                widthFactor: expand ? null : 1.0,
-                heightFactor: 1.0,
-                child: text,
+      child: HudKeyboardActivation(
+        onActivate: onTap,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: ConstrainedBox(
+            constraints:
+                const BoxConstraints(minHeight: HudTokens.minTapTarget),
+            child: HudSurface(
+              glass: t.chip,
+              overlay: selected ? t.accentChipGradient : null,
+              border: selected ? t.accentChipBorder : null,
+              topHighlight: selected ? t.accentChipTopHighlight : null,
+              borderRadius: br,
+              padding: padding,
+              child: ExcludeSemantics(
+                child: Align(
+                  alignment: Alignment.center,
+                  widthFactor: expand ? null : 1.0,
+                  heightFactor: 1.0,
+                  child: text,
+                ),
               ),
             ),
           ),

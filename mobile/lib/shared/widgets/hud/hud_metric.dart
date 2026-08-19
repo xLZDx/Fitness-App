@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/hud_tokens.dart';
 import '../../../core/theme/hud_typography.dart';
+import 'hud_surface.dart' show HudKeyboardActivation;
 
 /// One circular metric — track, glowing progress arc, optional dashed guide,
 /// and whatever sits in the middle.
@@ -158,6 +159,12 @@ class _RingPainter extends CustomPainter {
     // `drop-shadow(0 0 Npx c)` is a blurred copy under the shape, so it is
     // painted as a blurred stroke first and the crisp one over it. A
     // `MaskFilter` on the visible stroke would blur the stroke itself.
+    //
+    // `glowBlur` is passed straight through as `MaskFilter.blur`'s sigma, NOT
+    // halved. CSSWG filter-effects-1 draws the length param of `drop-shadow()`
+    // as the standard deviation directly -- the same fact `blurSigma()` in
+    // `hud_tokens.dart` states, and this ring carried the identical /2 bug for
+    // the identical wrong reason until the same review round caught it.
     canvas.drawArc(
       arcRect,
       start,
@@ -168,7 +175,7 @@ class _RingPainter extends CustomPainter {
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round
         ..color = glow
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, glowBlur / 2),
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, glowBlur),
     );
 
     canvas.drawArc(
@@ -539,58 +546,62 @@ class HudToggle extends StatelessWidget {
       toggled: value,
       label: semanticLabel,
       enabled: live,
-      child: GestureDetector(
-        onTap: live ? () => onChanged!(!value) : null,
-        behavior: HitTestBehavior.opaque,
-        child: SizedBox(
-          // The switch itself is 29 tall; the hit box is not.
-          height: HudTokens.minTapTarget,
-          width: HudTokens.minTapTarget + 6,
-          child: Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.ease,
-              width: 50,
-              height: 29,
-              padding: const EdgeInsets.all(3),
-              alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                color: value ? t.accent : t.textPrimary.withValues(alpha: 0.12),
-                border: Border.all(
-                  color: value
-                      ? HudTokens.switchRingOn
-                      : t.textPrimary.withValues(alpha: 0.30),
-                  width: 1,
-                ),
-                boxShadow: value
-                    ? <BoxShadow>[
-                        BoxShadow(
-                          color: t.accent,
-                          blurRadius: 18,
-                          spreadRadius: -4,
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Container(
-                width: 23,
-                height: 23,
+      child: HudKeyboardActivation(
+        onActivate: live ? () => onChanged!(!value) : null,
+        child: GestureDetector(
+          onTap: live ? () => onChanged!(!value) : null,
+          behavior: HitTestBehavior.opaque,
+          child: SizedBox(
+            // The switch itself is 29 tall; the hit box is not.
+            height: HudTokens.minTapTarget,
+            width: HudTokens.minTapTarget + 6,
+            child: Center(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.ease,
+                width: 50,
+                height: 29,
+                padding: const EdgeInsets.all(3),
+                alignment: value ? Alignment.centerRight : Alignment.centerLeft,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  // White in both themes: the handoff's own reason is that the
-                  // handle has to read "on any frame", and an ink handle would
-                  // disappear into the light theme's white glass.
-                  color: value
-                      ? HudTokens.switchHandleOn
-                      : HudTokens.switchHandleOff,
-                  boxShadow: const <BoxShadow>[
-                    BoxShadow(
-                      color: Color(0x59000000),
-                      blurRadius: 6,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(15),
+                  color:
+                      value ? t.accent : t.textPrimary.withValues(alpha: 0.12),
+                  border: Border.all(
+                    color: value
+                        ? HudTokens.switchRingOn
+                        : t.textPrimary.withValues(alpha: 0.30),
+                    width: 1,
+                  ),
+                  boxShadow: value
+                      ? <BoxShadow>[
+                          BoxShadow(
+                            color: t.accent,
+                            blurRadius: 18,
+                            spreadRadius: -4,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Container(
+                  width: 23,
+                  height: 23,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    // White in both themes: the handoff's own reason is that the
+                    // handle has to read "on any frame", and an ink handle would
+                    // disappear into the light theme's white glass.
+                    color: value
+                        ? HudTokens.switchHandleOn
+                        : HudTokens.switchHandleOff,
+                    boxShadow: const <BoxShadow>[
+                      BoxShadow(
+                        color: Color(0x59000000),
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -675,10 +686,13 @@ class HudSettingRow extends StatelessWidget {
     );
 
     if (onTap == null) return row;
+    // Without ExcludeSemantics the inner Text nodes merge into the outer
+    // Semantics and the row is announced twice -- `HudButton`'s doc comment
+    // names this exact bug and this row carried an undone instance of it.
     return Semantics(
       button: true,
       label: title,
-      child: InkWell(onTap: onTap, child: row),
+      child: ExcludeSemantics(child: InkWell(onTap: onTap, child: row)),
     );
   }
 }

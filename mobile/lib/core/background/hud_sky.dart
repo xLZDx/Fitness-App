@@ -264,9 +264,19 @@ class _HudSkyBackgroundState extends State<HudSkyBackground> {
   void didUpdateWidget(HudSkyBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     final Object next = widget.selection.imageKey;
-    if (next != _settled && next != _incoming) {
-      setState(() => _incoming = next);
+    if (next == _incoming) return;
+    if (next == _settled) {
+      // The target reverted to what is already settled while a stale fade
+      // toward a different picture was still in flight -- e.g. two phase
+      // changes inside one 1.6s crossfade. Left alone, that fade's `onVisible`
+      // still fires and settles on the picture nobody wants anymore, with
+      // nothing left to correct it until the next unrelated selection change.
+      // Cancelling it here, rather than only guarding in `_settle`, also drops
+      // the now-pointless incoming decode instead of letting it finish unseen.
+      if (_incoming != null) setState(() => _incoming = null);
+      return;
     }
+    setState(() => _incoming = next);
   }
 
   void _settle(Object key) {
@@ -280,13 +290,17 @@ class _HudSkyBackgroundState extends State<HudSkyBackground> {
   @override
   Widget build(BuildContext context) {
     final HudTokens tokens = context.hud;
-    final MediaQueryData media = MediaQuery.of(context);
 
     // Decode at the size actually painted, not at 1440 wide. On a 1080p phone
     // that is a third of the pixels and a third of the memory, for a picture
-    // that is then scaled down anyway.
-    final int cacheWidth =
-        (media.size.width * media.devicePixelRatio).round().clamp(320, 1440);
+    // that is then scaled down anyway. `sizeOf`/`devicePixelRatioOf` scope
+    // this widget's dependency to only that field, instead of `MediaQuery.of`
+    // rebuilding it on every unrelated MediaQuery change (keyboard insets,
+    // text scale, orientation).
+    final int cacheWidth = (MediaQuery.sizeOf(context).width *
+            MediaQuery.devicePixelRatioOf(context))
+        .round()
+        .clamp(320, 1440);
 
     return Stack(
       fit: StackFit.expand,

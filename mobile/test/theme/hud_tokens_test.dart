@@ -14,23 +14,25 @@ import 'package:fitness_app/core/theme/hud_tokens.dart';
 /// back would pass against any typo; these compare the constant to the number
 /// the handoff states, written out here independently.
 void main() {
-  group('CSS blur is halved into a Gaussian sigma', () {
-    test('blur(7px) is sigma 3.5, not 7', () {
-      // The whole point: a `backdrop-filter:blur(7px)` implemented as
-      // `sigmaX: 7` is twice the blur the design asks for, and nothing about
-      // the result looks wrong enough to notice.
-      expect(blurSigma(7), 3.5);
-      expect(blurSigma(14), 7);
-      expect(blurSigma(30), 15);
+  group('CSS blur IS the Gaussian sigma, not double it', () {
+    test('blur(7px) is sigma 7, not 3.5', () {
+      // The whole point: CSSWG filter-effects-1 states the length parameter
+      // of `blur()`/`drop-shadow()` directly as the standard deviation. A
+      // `sigmaX: cssRadius / 2` implementation renders at half the design's
+      // blur, and nothing about the result looks wrong enough to notice —
+      // this file shipped exactly that bug for one gate.
+      expect(blurSigma(7), 7);
+      expect(blurSigma(14), 14);
+      expect(blurSigma(30), 30);
     });
 
-    test('a glass recipe actually applies the halved value', () {
+    test('a glass recipe actually applies the unhalved value', () {
       // Not "the helper is correct" but "the helper is what the recipe uses".
       final ui.ImageFilter filter = HudTokens.dark.panel.backdropFilter;
       expect(
         filter.toString(),
-        contains('3.5'),
-        reason: 'panel blur must reach ImageFilter as sigma 3.5, not 7',
+        contains('7.0'),
+        reason: 'panel blur must reach ImageFilter as sigma 7, not 3.5',
       );
     });
 
@@ -146,10 +148,9 @@ void main() {
       // Stated because a "brighter as the day goes on" formula would look
       // right and be wrong: dawn and dusk share a value, night and morning
       // share another.
-      expect(HudTokens.darkVeilAlpha['dawn'],
-          HudTokens.darkVeilAlpha['dusk']);
-      expect(HudTokens.darkVeilAlpha['night'],
-          HudTokens.darkVeilAlpha['morning']);
+      expect(HudTokens.darkVeilAlpha['dawn'], HudTokens.darkVeilAlpha['dusk']);
+      expect(
+          HudTokens.darkVeilAlpha['night'], HudTokens.darkVeilAlpha['morning']);
     });
 
     test('the four stops are a+.1 / a / a*.74 / a*.9', () {
@@ -220,17 +221,14 @@ void main() {
     test('brightness snaps rather than interpolating', () {
       // There is no theme half way between light and dark; anything branching
       // on brightness must never see a value that does not exist.
-      final HudTokens mid =
-          HudTokens.dark.lerp(HudTokens.light, 0.4);
+      final HudTokens mid = HudTokens.dark.lerp(HudTokens.light, 0.4);
       expect(mid.brightness, Brightness.dark);
-      final HudTokens past =
-          HudTokens.dark.lerp(HudTokens.light, 0.6);
+      final HudTokens past = HudTokens.dark.lerp(HudTokens.light, 0.6);
       expect(past.brightness, Brightness.light);
     });
 
     test('the endpoints are exact', () {
-      final HudTokens at1 =
-          HudTokens.dark.lerp(HudTokens.light, 1.0);
+      final HudTokens at1 = HudTokens.dark.lerp(HudTokens.light, 1.0);
       expect(at1.accent, HudTokens.light.accent);
       expect(at1.panel.fill, HudTokens.light.panel.fill);
     });
@@ -301,8 +299,7 @@ void main() {
       );
     });
 
-    testWidgets('a bare MaterialApp falls back instead of throwing',
-        (t) async {
+    testWidgets('a bare MaterialApp falls back instead of throwing', (t) async {
       // `GlassCard` shipped the throwing version of this getter once, and it
       // took down every widget test that did not install the app theme. A
       // design token that cannot be read outside one ThemeData makes its own

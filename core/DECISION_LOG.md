@@ -17094,3 +17094,125 @@ The hardcoded-white ratchet stays at **61**: the seven literals this gate first 
 Suites at this gate: `flutter analyze` clean for the new files (6 pre-existing issues in `lib/`, none
 touched); `flutter test` 3053 passed. `pytest scripts/`, `tsc`, `jest` NOT RUN -- no Python, no
 TypeScript and no `firestore.rules` changed.
+
+---
+
+## 2026-08-19 -- D1 review fix pass: the blur bug was worse than reported, and one reviewer's fabrication claim wasn't
+
+Four independent agents reviewed `177aae5` (architecture/performance, design fidelity, accessibility,
+test quality) before any screen gate was allowed to build on it. This entry is the fix pass, not the
+review itself -- what each finding actually was, which held up under independent verification, and
+what changed.
+
+**My own blur-sigma bug was worse than my own doc comment claimed.** D1 shipped `blurSigma(css) =>
+css / 2`, on the belief that CSS `blur()` halves into a Gaussian sigma the way `box-shadow`'s blur
+radius conventionally does. `WebFetch` to the actual CSSWG `filter-effects-1` spec settles it the
+other way: *"The passed parameter defines the value of the standard deviation to the Gaussian
+function"* -- the length **is** the sigma, verbatim, with the spec drawing the box-shadow distinction
+explicitly. Every frosted surface in the app was rendering at half its designed strength for the whole
+of D1. It hit a **second** code path independently: `hud_metric.dart`'s `_RingPainter` paints its glow
+as a simulated `drop-shadow()` and carried the identical `/2` for the identical wrong reason. Both
+fixed; `hud_tokens_test.dart`'s `blurSigma(7) == 3.5` assertion -- now provably wrong -- corrected to
+`== 7`, and a second assertion added that a real glass recipe's `ImageFilter` actually reaches the
+canvas unhalved, not just that the helper function does.
+
+Worth recording because a reviewer agent, working from the same spec, asserted the ring's `/2` "is
+correct and must stay" -- confidently wrong, on the same source I checked. Fixed anyway, on the
+primary source rather than agent consensus: evidence outranks agent count.
+
+**A design-fidelity reviewer's "fabricated quote" claim was itself wrong.** It flagged the doc comment
+quoting "ручка белая с тенью, видна на любом кадре" as invented, not present in the source. A direct
+`grep` of `Fitness Backgrounds.dc.html` found it verbatim, twice. The reviewer's *other* claims about
+that same review round (light `ringGlow` colour, `chip` border value) checked out against source and
+are correct -- so this was one bad claim in an otherwise sound report, not a reason to distrust the
+round; it just could not be taken on the reviewer's word alone; the citation was re-verified, and the
+review's own instruction to check any citation rather than trust it held up as the useful discipline
+it is.
+
+**Mutation testing turned the test-quality reviewer's vacuity claims into a measured result.** Six
+targeted single-line mutants (`mutate_d1.py`), one production line each, run against the specific test
+file that should catch it: `M1` (light-streak semantics exclusion), `M2` (the ring painter's own
+progress clamp, independent of the widget-level clamp already asserted), `M4` (nav-bar selected/
+unselected ink swap) and `M5` (a crossfade that never settles) all **survived** -- confirming the
+claims that those four defects are currently invisible to the suite. `M3` (a `BackdropFilter` swapped
+for a hardcoded zero-sigma blur) was **killed**, refining rather than confirming the reviewer's
+claim -- the frost-off test does catch total blur removal, just not a change to the *value*, which the
+reviewer's underlying point (the filter's contents are never inspected) still holds for. `C1`, a
+control mutant expected to be caught by anything, was killed too, ruling out a silently broken
+harness. This is what moved "an agent said X" to "X is demonstrated"; kept in `mutate_d1.py`; not
+wired into CI, since it exists to interrogate a specific review round rather than run every commit.
+
+**Ground-truthed rather than dismissed: the contrast BLOCKER.** The accessibility reviewer's
+worst-case contrast calculation assumed a pure-white/black photo, which reads as a synthetic edge
+case. Measured instead: Pillow brightness sampling across all ten actual `assets/coach_bg/*.webp`
+files in the top 45% "HUD text zone" the design reserves for status/name/greeting -- real max values
+218-255 (several frames near-pure-white), means 105-212. The worst case is reachable with the app's
+own shipped assets, not merely a theoretical one. A full fix (per-image adaptive veil density) is
+its own design decision and out of scope for this pass; recorded as confirmed-but-deferred, not
+dismissed and not silently fixed.
+
+**Fixed this pass**, each independently confirmed before being touched:
+
+* `HudSettingRow` announced its title twice -- the outer `Semantics.label` plus the child `Text`
+  merging upward with nothing to stop it. `ExcludeSemantics` wrap, same fix `HudButton`'s own doc
+  comment already named for the identical bug in a different widget.
+* `HudButton`, `HudChip` and `HudToggle` were unreachable from a keyboard or switch-control device --
+  built on a raw `GestureDetector`, which gets no `FocusNode` for free. New shared
+  `HudKeyboardActivation` (`Focus` + Enter/Space/numpad-Enter -> the same callback the tap uses),
+  wired into all three from one place rather than three slightly different ones.
+* `_NavTab`'s hit height was never actually 44px: `Row`'s default `crossAxisAlignment.center` does
+  not stretch children to the bar's own 72px height, so each tab's real tap area was whatever its
+  icon-plus-label column measured. `ConstrainedBox(minHeight: HudTokens.minTapTarget)` added per tab;
+  a new test asserts every `InkResponse`'s measured size, not the bar's.
+* `HudGlass.topHighlight` -- `inset 0 1px 0`, the fourth CSS shadow kind the class doc already named
+  as missing -- wired into the two glass recipes with a source citation each: dark `chip` (white @
+  .30, `chipOff`) and dark `navBar` (white @ .42, `Sunset.dc.html:449`), plus `HudTokens
+  .accentChipTopHighlight` (white @ .5 dark / null light -- light's `chipOn` block was never
+  independently confirmed, so it stays null rather than guessed) for the selected-chip variant.
+  Light `chip`'s `innerBorder` was also carrying a doubled ring -- an ink `.40` inner plus an ink
+  `.24` outer -- against a source that draws exactly one `inset 0 0 0 1px rgba(27,32,48,.24)`;
+  corrected to the single ring plus its own white `.40` top highlight (`Light.dc.html:687`).
+* `hud_sky.dart` read `MediaQuery.of(context)` for one field; switched to `MediaQuery.sizeOf`/
+  `.devicePixelRatioOf` so the background doesn't rebuild on an unrelated `MediaQuery` change
+  (keyboard inset, text scale).
+* **The crossfade revert-mid-fade bug**, architecture-round FACT, precisely traced: `didUpdateWidget`
+  compared the new target only against `_settled`, so a target that reverted to the already-settled
+  picture while an unrelated fade was still in flight (two phase changes inside one 1.6s crossfade
+  window) read as "nothing to do" -- the stale fade ran to completion regardless and silently
+  re-settled on the picture nobody wanted, with nothing left to correct it until the next unrelated
+  change. Fixed by cancelling the stale `_incoming` outright when the target reverts, rather than only
+  guarding in `_settle`. Verified by the same mutation discipline as above: a new regression test
+  (`hud_sky_test.dart`, "reverting to the settled picture mid-fade cancels the stale one") was run
+  against the reverted pre-fix condition first and failed as expected (KILLED), then confirmed passing
+  against the fix.
+* `HudGlass.backdropFilter` recomputed `ui.ImageFilter.blur`/`.compose` on every read, and
+  `HudSurface.build()` reads it every frame its one `BackdropFilter` call site rebuilds -- a Home
+  screen carries six. Changed from a getter to a `late final` field, memoized on first access; safe
+  because `HudGlass` is immutable, so the recomputed value could only ever come out identical. This
+  required dropping `HudGlass`'s `const` constructor (Dart forbids `late final` alongside one) --
+  checked first that no call site anywhere actually built one as a const literal; every recipe is
+  assembled at `HudTokens.dark`/`.light`'s `static final` init time, never as a compile-time constant.
+
+**Not fixed this pass, still open:** `HudRingLabel`'s unclipped overflow at large text scale
+(confirmed a11y MAJOR); the dark `navBar.fill` gradient (`.40` -> `.24`) the recipe currently renders
+as a flat value instead (confirmed fidelity MAJOR/perf tradeoff -- fixing it costs a second paint
+layer per nav bar frame; documenting it as an accepted deviation is the likely resolution, not yet
+decided); `HudScrollFade`'s own `HudQuality` kill-switch (it currently always applies its
+`ShaderMask`, independent of the frost toggle).
+
+**Structural blocker, surfaced, not resolved:** Turn 2's mandate names a "Marketing R&D Decision Pack
+v1.0" as governing source of truth for several MRD-numbered gates. It does not exist in this worktree
+(`_wt-formcoach`, `formcoach/gates-a-c`) -- `find`/`grep` both came back empty. It exists as an
+**untracked** file, `reports/SPTR_MARKETING_RND_DECISION_PACK_2026-08-19.html`, in the sibling
+worktree `D:/Repo/Fitness_App` on branch `marketing/site-prototype-2026-08-19`. Reading or acting on
+it from this session crosses the workspace's own stated rule -- one session works on one child
+project, cross-project work needs an explicit operator request -- and its untracked state raises the
+possibility that a concurrent session is actively authoring it. Not read, not acted on. Any
+MRD-numbered gate that depends on it is blocked until the operator either points this session at a
+tracked copy in this worktree or explicitly authorizes reading the sibling one.
+
+Suites at this gate: `flutter analyze` clean across `lib/` and `test/` (same 6 pre-existing `lib/`
+issues and 10 pre-existing `test/` issues, none touched, none new); `flutter test` 3062 passed (3053
+at D1 + 9 new: keyboard activation x4, `topHighlight` x1, nav-tab floor x1, `HudSettingRow` x2,
+crossfade-revert regression x1). `pytest scripts/`, `tsc`, `jest` NOT RUN -- no Python, no TypeScript
+and no `firestore.rules` changed. PUSH: NOT PERFORMED.

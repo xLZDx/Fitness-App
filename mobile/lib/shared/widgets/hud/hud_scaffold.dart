@@ -266,51 +266,59 @@ class _NavTab extends StatelessWidget {
       button: true,
       selected: selected,
       label: item.label,
-      child: InkResponse(
-        onTap: onTap,
-        radius: 40,
-        containedInkWell: true,
-        borderRadius: BorderRadius.circular(28),
-        // Excluded from semantics because the wrapper above already carries
-        // the label in its proper case. Without this a screen reader announces
-        // "Scan" and then "SCAN" -- the uppercasing is a display transform and
-        // must not reach the accessibility tree.
-        child: ExcludeSemantics(
-          child: Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Icon(item.icon, size: 20, color: ink),
-                  const SizedBox(height: 6),
-                  // A label that wraps pushes its tab out of line with the other
-                  // four; one that is merely clipped does not. Russian labels are
-                  // materially longer than English ones, so this is load-bearing.
-                  Text(
-                    item.label.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: HudType.navLabel(t, color: ink),
-                  ),
-                ],
-              ),
-              Positioned(
-                bottom: 7,
-                child: Container(
-                  width: 4,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    // Selection is carried by ink AND the dot, never by colour
-                    // alone — the dot is a second, non-chromatic channel for the
-                    // same fact.
-                    color: selected ? dot : Colors.transparent,
+      // `Row` centres its children on the cross axis rather than stretching
+      // them, so without this the tab's actual hit height is whatever the
+      // icon-plus-label column measures -- comfortably under the 44px floor
+      // the handoff itself states. `Row`'s own height (`navBarHeight`) is not
+      // what a screen reader or a finger sees; this is.
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: HudTokens.minTapTarget),
+        child: InkResponse(
+          onTap: onTap,
+          radius: 40,
+          containedInkWell: true,
+          borderRadius: BorderRadius.circular(28),
+          // Excluded from semantics because the wrapper above already carries
+          // the label in its proper case. Without this a screen reader announces
+          // "Scan" and then "SCAN" -- the uppercasing is a display transform and
+          // must not reach the accessibility tree.
+          child: ExcludeSemantics(
+            child: Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(item.icon, size: 20, color: ink),
+                    const SizedBox(height: 6),
+                    // A label that wraps pushes its tab out of line with the other
+                    // four; one that is merely clipped does not. Russian labels are
+                    // materially longer than English ones, so this is load-bearing.
+                    Text(
+                      item.label.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: HudType.navLabel(t, color: ink),
+                    ),
+                  ],
+                ),
+                Positioned(
+                  bottom: 7,
+                  child: Container(
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      // Selection is carried by ink AND the dot, never by colour
+                      // alone — the dot is a second, non-chromatic channel for the
+                      // same fact.
+                      color: selected ? dot : Colors.transparent,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

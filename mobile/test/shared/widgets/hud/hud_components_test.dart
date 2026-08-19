@@ -1,5 +1,6 @@
 import 'package:flutter/semantics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
@@ -44,7 +45,8 @@ void main() {
   group('HudSurface paints CSS box-shadows as the three different things', () {
     testWidgets('inset 0 0 0 1px is a Border, not a shadow', (t) async {
       await t.pumpWidget(_host(
-        const SizedBox(width: 200, height: 100, child: HudPanel(child: Text('x'))),
+        const SizedBox(
+            width: 200, height: 100, child: HudPanel(child: Text('x'))),
       ));
 
       final BoxDecoration fill = _fillDecoration(t);
@@ -66,7 +68,8 @@ void main() {
     testWidgets('the dark halo reaches the canvas with its own numbers',
         (t) async {
       await t.pumpWidget(_host(
-        const SizedBox(width: 200, height: 100, child: HudPanel(child: Text('x'))),
+        const SizedBox(
+            width: 200, height: 100, child: HudPanel(child: Text('x'))),
       ));
       final List<BoxShadow> shadows = _shadowDecoration(t).boxShadow!;
       expect(shadows, hasLength(1));
@@ -77,7 +80,8 @@ void main() {
     testWidgets('light adds a 1px outer ink ring as spread-1, blur-0',
         (t) async {
       await t.pumpWidget(_host(
-        const SizedBox(width: 200, height: 100, child: HudPanel(child: Text('x'))),
+        const SizedBox(
+            width: 200, height: 100, child: HudPanel(child: Text('x'))),
         brightness: Brightness.light,
       ));
       final List<BoxShadow> shadows = _shadowDecoration(t).boxShadow!;
@@ -92,13 +96,44 @@ void main() {
 
     testWidgets('dark emits no outer ring at all', (t) async {
       await t.pumpWidget(_host(
-        const SizedBox(width: 200, height: 100, child: HudPanel(child: Text('x'))),
+        const SizedBox(
+            width: 200, height: 100, child: HudPanel(child: Text('x'))),
       ));
       final List<BoxShadow> shadows = _shadowDecoration(t).boxShadow!;
       expect(
         shadows.where((BoxShadow s) => s.blurRadius == 0),
         isEmpty,
       );
+    });
+
+    Color? topHighlightOf(WidgetTester t, Finder of) {
+      final Iterable<Container> lines = t.widgetList<Container>(
+        find.descendant(of: of, matching: find.byType(Container)),
+      );
+      final Iterable<Container> coloured =
+          lines.where((Container c) => c.color != null);
+      return coloured.isEmpty ? null : coloured.single.color;
+    }
+
+    testWidgets(
+        'inset 0 1px 0 is a top-only line, distinct from selected/unselected',
+        (t) async {
+      // `chipOff`'s box-shadow already carries `inset 0 1px 0 rgba(255,255,255,.3)`
+      // alongside its ring; `chipOn`'s is `.5`. Both were missing from
+      // HudSurface entirely for one gate — this is the fourth shadow kind the
+      // class doc names, not the all-round hairline `HudSurface` already drew.
+      await t
+          .pumpWidget(_host(const HudChip(label: 'Strength', selected: false)));
+      expect(topHighlightOf(t, find.byType(HudChip)),
+          HudTokens.dark.chip.topHighlight);
+
+      await t
+          .pumpWidget(_host(const HudChip(label: 'Strength', selected: true)));
+      expect(topHighlightOf(t, find.byType(HudChip)),
+          HudTokens.dark.accentChipTopHighlight);
+      expect(HudTokens.dark.accentChipTopHighlight,
+          isNot(HudTokens.dark.chip.topHighlight),
+          reason: 'selected must read as a distinct, stronger highlight');
     });
   });
 
@@ -231,6 +266,47 @@ void main() {
       expect(node.hasFlag(SemanticsFlag.isEnabled), isTrue);
       h.dispose();
     });
+
+    testWidgets('reachable and activatable from a keyboard, not only a tap',
+        (t) async {
+      // `HudButton` is built on a raw `GestureDetector`, which gets no
+      // `FocusNode` and no keyboard activation for free -- a person driving
+      // the app with a Bluetooth keyboard or switch control could Tab to it
+      // and never be able to press it. `HudKeyboardActivation` closes that
+      // gap; this proves the gap stays closed.
+      int hits = 0;
+      await t.pumpWidget(_host(
+        SizedBox(
+            width: 300, child: HudButton(label: 'Go', onPressed: () => hits++)),
+      ));
+      Focus.of(t.element(find.byType(GestureDetector).first)).requestFocus();
+      await t.pump();
+      await t.sendKeyEvent(LogicalKeyboardKey.enter);
+      await t.pump();
+      expect(hits, 1);
+
+      await t.sendKeyEvent(LogicalKeyboardKey.space);
+      await t.pump();
+      expect(hits, 2);
+    });
+
+    testWidgets('a disabled button carries no Focus node to activate',
+        (t) async {
+      // `HudKeyboardActivation` returns its child bare when `onActivate` is
+      // null, rather than wrapping a `Focus` an assistive keyboard could
+      // land on and fire a stale handler from.
+      await t.pumpWidget(_host(
+        SizedBox(
+          width: 300,
+          child: HudButton(label: 'Go', enabled: false, onPressed: () {}),
+        ),
+      ));
+      expect(
+        find.descendant(
+            of: find.byType(HudButton), matching: find.byType(Focus)),
+        findsNothing,
+      );
+    });
   });
 
   group('HudChip', () {
@@ -276,11 +352,22 @@ void main() {
       expect(t.getSize(find.byType(HudChip)).height,
           greaterThanOrEqualTo(HudTokens.minTapTarget));
     });
+
+    testWidgets('Enter activates it exactly like a tap', (t) async {
+      int hits = 0;
+      await t.pumpWidget(_host(
+        HudChip(label: 'Cardio', selected: false, onTap: () => hits++),
+      ));
+      Focus.of(t.element(find.byType(GestureDetector).first)).requestFocus();
+      await t.pump();
+      await t.sendKeyEvent(LogicalKeyboardKey.enter);
+      await t.pump();
+      expect(hits, 1);
+    });
   });
 
   group('HudToggle', () {
-    testWidgets('is 50x29 with a 23pt handle inside a 44pt hit box',
-        (t) async {
+    testWidgets('is 50x29 with a 23pt handle inside a 44pt hit box', (t) async {
       await t.pumpWidget(_host(HudToggle(value: true, onChanged: (_) {})));
       expect(t.getSize(find.byType(HudToggle)).height,
           greaterThanOrEqualTo(HudTokens.minTapTarget));
@@ -289,8 +376,7 @@ void main() {
       expect(track.height, 29);
     });
 
-    testWidgets('tapping reports the opposite of its current value',
-        (t) async {
+    testWidgets('tapping reports the opposite of its current value', (t) async {
       bool? got;
       await t.pumpWidget(
           _host(HudToggle(value: false, onChanged: (bool v) => got = v)));
@@ -304,6 +390,17 @@ void main() {
       // Nothing to assert but the absence of a crash and of a state change;
       // the point is that the gesture is not wired when there is no handler.
       expect(t.takeException(), isNull);
+    });
+
+    testWidgets('Space toggles it exactly like a tap', (t) async {
+      bool? got;
+      await t.pumpWidget(
+          _host(HudToggle(value: false, onChanged: (bool v) => got = v)));
+      Focus.of(t.element(find.byType(GestureDetector).first)).requestFocus();
+      await t.pump();
+      await t.sendKeyEvent(LogicalKeyboardKey.space);
+      await t.pump();
+      expect(got, isTrue);
     });
   });
 
@@ -347,10 +444,12 @@ void main() {
         const HudRing(size: 150, radius: 66, progress: 0.25),
       ));
       expect(
-        t.getSize(find.descendant(
-          of: find.byType(HudRing),
-          matching: find.byType(CustomPaint),
-        )).width,
+        t
+            .getSize(find.descendant(
+              of: find.byType(HudRing),
+              matching: find.byType(CustomPaint),
+            ))
+            .width,
         150,
       );
     });
@@ -404,12 +503,14 @@ void main() {
         ),
       ));
       final SemanticsNode scan = t.getSemantics(
-        find.ancestor(of: find.text('SCAN'), matching: find.byType(InkResponse)),
+        find.ancestor(
+            of: find.text('SCAN'), matching: find.byType(InkResponse)),
       );
       expect(scan.label, 'Scan');
       expect(scan.hasFlag(SemanticsFlag.isSelected), isTrue);
       final SemanticsNode home = t.getSemantics(
-        find.ancestor(of: find.text('HOME'), matching: find.byType(InkResponse)),
+        find.ancestor(
+            of: find.text('HOME'), matching: find.byType(InkResponse)),
       );
       expect(home.hasFlag(SemanticsFlag.isSelected), isFalse);
       // The accent dot is a second, non-chromatic channel for the same fact,
@@ -446,14 +547,32 @@ void main() {
       ));
       final Iterable<Container> lit = t
           .widgetList<Container>(find.descendant(
-            of: find.byType(HudNavBar),
-            matching: find.byType(Container),
-          ))
+        of: find.byType(HudNavBar),
+        matching: find.byType(Container),
+      ))
           .where((Container c) {
         final BoxDecoration? d = c.decoration as BoxDecoration?;
         return d?.shape == BoxShape.circle && d?.color != Colors.transparent;
       });
       expect(lit, isEmpty);
+    });
+
+    testWidgets('every tab clears the 44pt floor, not just the bar itself',
+        (t) async {
+      // `Row` centres its children on the cross axis rather than stretching
+      // them, so the bar's own 72px height does not guarantee any one tab's
+      // hit area does -- each tab must claim its own floor.
+      await t.pumpWidget(_host(
+        SizedBox(
+          width: 390,
+          child: HudNavBar(items: items(), selectedIndex: 0, onSelect: (_) {}),
+        ),
+      ));
+      for (final Size size in t
+          .widgetList<InkResponse>(find.byType(InkResponse))
+          .map((InkResponse w) => t.getSize(find.byWidget(w)))) {
+        expect(size.height, greaterThanOrEqualTo(HudTokens.minTapTarget));
+      }
     });
 
     testWidgets('tapping a tab reports its index', (t) async {
@@ -498,6 +617,33 @@ void main() {
         'Workouts',
       );
       h.dispose();
+    });
+  });
+
+  group('HudSettingRow', () {
+    testWidgets('a tappable row announces itself once, not twice', (t) async {
+      // The title Text merging upward into the outer Semantics without
+      // `ExcludeSemantics` produced a node whose label was the title twice
+      // over (once from the outer `Semantics.label`, once from the child
+      // `Text` merging in) -- caught by reading the actual node, not by
+      // searching for a label that happened to still be found somewhere.
+      final SemanticsHandle h = t.ensureSemantics();
+      await t.pumpWidget(_host(
+        HudSettingRow(
+            icon: Icons.settings, title: 'Notifications', onTap: () {}),
+      ));
+      final SemanticsNode node = t.getSemantics(find.byType(HudSettingRow));
+      expect(node.label, 'Notifications');
+      expect(node.hasFlag(SemanticsFlag.isButton), isTrue);
+      h.dispose();
+    });
+
+    testWidgets('a row with no onTap carries no button semantics at all',
+        (t) async {
+      await t.pumpWidget(
+          _host(const HudSettingRow(icon: Icons.info, title: 'Version 1.0')));
+      expect(find.byType(Semantics), findsWidgets);
+      expect(find.byType(InkWell), findsNothing);
     });
   });
 
