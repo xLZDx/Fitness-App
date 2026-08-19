@@ -96,13 +96,13 @@
     {
       "id": "memory-last-lift",
       "copy_key": "s3a",
-      "state": "committed",
-      "gate": "internal-only",
+      "state": "exists",
+      "gate": "qualify",
       "locales": ["en", "ru"],
       "verification_route": "source",
-      "evidence": "No equipment link in WorkoutLogEntry today. Type-level join is cheap (exerciseId -> equipmentId exists for 1,384/1,887 exercises); machine-level needs MRD-01/MRD-03",
-      "qualify": null,
-      "blocking_dependency": "MRD-01"
+      "evidence": "Gate D, 2026-08-19: summarizeEquipmentTypeHistory() in equipment_type_history.dart, wired into LastSessionCard (equipment/widgets/last_session_card.dart) on the equipment detail page. Matches exerciseId -> equipmentId client-side against workoutSessionHistoryProvider's windowed history; no Firestore schema change. See core/product/GATE_D_EQUIPMENT_TYPE_HISTORY_D0_NOTE_2026-08-19.md",
+      "qualify": "Equipment-TYPE level only -- the same card shows for every gym's leg press, not one physical machine (that needs MRD-03/MRD-04, not built). Matched against the user's most recent logged workouts; a session older than that window is reported as 'not found in your recent workouts', never as 'no history'",
+      "blocking_dependency": null
     },
     {
       "id": "memory-setup",

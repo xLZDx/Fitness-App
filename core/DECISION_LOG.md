@@ -10110,3 +10110,69 @@ the live Flutter app's data models and is not attempted in this change — flagg
 scoped plan rather than folding a schema-affecting scope expansion into a governance fix.
 
 Full detail: `core/marketing/SPTR_MARKETING_SITE_GOVERNANCE_REMEDIATION_2026-08-19.md`.
+
+## 2026-08-19 14:26 local / 11:26 UTC — Gate D: Level-1 equipment-type workout memory shipped
+
+**Operator decision.** After Gates A/B/C (governance remediation) landed, the operator explicitly
+rejected stopping there: the original GO already authorized the subsequent product gates (D–H), and
+Gate D — showing a recognized equipment TYPE's prior workout context ("Your last leg press: 45 kg ×
+10", never "this exact machine") — was in scope without a fresh confirmation. Gym entity, physical
+machine instance, and any Firestore migration were explicitly ruled out of this gate's scope by the
+operator up front (deferred to MRD-02/03/04).
+
+**Reconnaissance correction, mid-gate.** D0 initially targeted the legacy `workoutLogsProvider` /
+`workout_logs` path before discovering, while reading `workout_player_page.dart`'s own suggested-
+weight chip, that `workout_logs` stopped receiving writes at F3.3/F3.4 — the current path is
+`workoutSessionHistoryProvider` / `workoutSessionTotalsProvider` over `workout_sessions`. Corrected
+before any code was written; full evidence trail in
+`core/product/GATE_D_EQUIPMENT_TYPE_HISTORY_D0_NOTE_2026-08-19.md`.
+
+**Minimal seam chosen deliberately over the obvious schema fix.** `exerciseId → equipmentId` cardinality
+is high enough (up to 254 exercises for one equipment type) that a Firestore `whereIn` query — capped
+at ~30 values — cannot serve this directly, and adding a denormalized `equipmentId` field to every
+`WorkoutLogEntry` would be a write-path/backfill change the operator explicitly said not to assume.
+Instead: match client-side, over data already fetched for other screens (the windowed session
+history, the exact-count `totals()` used to detect window truncation) — zero new Firestore reads,
+zero schema change. Truncated-window honesty (D3): a miss inside a full window is a confirmed
+"never done this equipment," a miss inside a *truncated* window is reported as "not found in your
+recent workouts," never conflated.
+
+**Independent review (D7) found and fixed three real defects before commit**, run as three parallel
+specialists (flutter-reviewer, type-design-analyzer, silent-failure-hunter), no cross-seeding:
+1. **BLOCKER/MAJOR** (two reviewers independently) — the truncation check compared exercise-*row*
+   count (`WorkoutSession.asLogEntries()` emits one row per exercise since R11e) against the all-time
+   *session* count, so a multi-exercise-session user could see a truncated window silently reported
+   as complete. Fixed by counting distinct `sessionId`s instead of raw rows.
+2. **HIGH** (silent-failure-hunter) — the new exercise-id-matching set only read the vendored catalog;
+   11 of 48 registry machines have no vendored exercises and fall through to AI generation, so a
+   workout logged under a generated `ai::equipmentId::i` id could never match, permanently and
+   deterministically (not a race) — indistinguishable from "never used this equipment." Fixed by
+   unioning in cached (never freshly-generated, to avoid a spurious billed call) generated-exercise ids.
+3. **MAJOR** (flutter-reviewer) — the card gated only on the totals fetch, not the session stream's
+   own loading state, so it could flash a false "not found" before the stream's first snapshot arrived.
+   Fixed by also gating on the stream's `AsyncValue`.
+
+One MINOR type-hardening applied (private constructor + `.found()`/`.notFound()` factories, so the
+invalid "match found but marked truncated" combination is unrepresentable). One MEDIUM finding
+(`workoutSessionTotalsProvider`'s `authUserProvider.valueOrNull` auth-restore-race zero-collapse, a
+shared provider also used by Home/Progress) deliberately **not** fixed in this gate — flagged as a
+candidate for a dedicated cross-consumer hardening pass rather than widened here. Full findings,
+evidence, and fixes: `core/product/GATE_D_EQUIPMENT_TYPE_HISTORY_D0_NOTE_2026-08-19.md`.
+
+**Marketing claim reclassified.** `memory-last-lift` (site copy: "What you lifted on this equipment
+last time, and when") moved `committed`/`internal-only` → `exists`/`qualify` in
+`core/marketing/claim_register.json`, with a qualify condition naming the two real bounds
+(equipment-TYPE only, not physical-machine; matched against the recent window, not literal all-time).
+The site's illustration card for this claim was split from the still-unbuilt "setup you saved" card
+and re-labelled to say the feature now exists rather than "not built yet" — no fabricated screenshot;
+attempting a real pixel capture via `RenderRepaintBoundary.toImage()` under `flutter test`'s headless
+VM platform hung for the full 10-minute suite timeout (a known Flutter/Windows engine limitation, not
+a Gate D code defect) and was abandoned in favor of the honest text-only disclosure.
+`claim_lint.py --self-test` and the real lint both still pass (22/22 claims reconciled).
+
+**Verification:** `flutter analyze` clean on every touched file; full suite 2445/2445 (was 2439 before
+this gate's own tests); 4 pure-function tests + 5 formatter tests + regression tests for all three D7
+fixes, each proven by reverting the fix and confirming its test fails, then restoring and confirming
+it passes (mutation evidence, not just green-suite claims).
+
+**PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**

@@ -130,7 +130,7 @@
         <p class="lede" data-nonclaim="framing" data-i18n="s3Lede">Knowing what a machine is called is useful once. What matters on the fourth visit is the part nobody remembers: where the seat was, and what you actually lifted.</p>
 
         <ul class="ticks">
-          <li data-claim-id="memory-last-lift" data-claim-state="committed" data-public-gate="internal-only" data-i18n="s3a">What you lifted on this equipment last time, and when.</li>
+          <li data-claim-id="memory-last-lift" data-claim-state="exists" data-public-gate="qualify" data-claim-qualify="Equipment-TYPE level only -- the same card shows for every gym's leg press, not one physical machine (that needs MRD-03/MRD-04, not built). Matched against the user's most recent logged workouts; a session older than that window is reported as 'not found in your recent workouts', never as 'no history'" data-i18n="s3a">What you lifted on this equipment last time, and when.</li>
           <li data-claim-id="memory-setup" data-claim-state="committed" data-public-gate="internal-only" data-i18n="s3b">The setup you saved for it — seat, pad, pin, or whatever that machine actually has.</li>
           <li data-claim-id="memory-suggested-weight" data-claim-state="exists" data-public-gate="qualify" data-claim-qualify="Derived from self-logged history, not personalised coaching or a medical recommendation; the app must say the user makes the final call" data-i18n="s3c">A suggested next weight, derived from how the last sessions went.</li>
         </ul>
@@ -139,18 +139,19 @@
       </div>
 
       <div class="split-media">
-        <div class="stack-cards" data-media="illustration">
-          <div class="ui-card">
+        <div class="stack-cards">
+          <div class="ui-card" data-media="illustration-shipped">
             <span class="ui-k" data-nonclaim="illustration-example" data-i18n="uiLast">Last time here</span>
             <span class="ui-v">45 kg × 10</span>
             <span class="ui-m" data-nonclaim="illustration-example" data-i18n="uiWhen">2 weeks ago · you logged it</span>
           </div>
-          <div class="ui-card">
+          <p class="media-note" data-nonclaim="illustration-shipped-note" data-i18n="uiLastCap">Illustration of a feature that now exists in the app (Gate D, 19 Aug 2026) — not a screenshot; wording and layout differ in the app itself.</p>
+          <div class="ui-card" data-media="illustration-unbuilt">
             <span class="ui-k" data-nonclaim="illustration-example" data-i18n="uiSetup">Setup you saved</span>
             <span class="ui-v" data-nonclaim="illustration-example" data-i18n="uiSetupV">Seat 4 · pad 2</span>
             <span class="ui-m" data-nonclaim="illustration-example" data-i18n="uiSetupM">saved by you on 4 Aug</span>
           </div>
-          <p class="media-note" data-nonclaim="disclosure" data-i18n="illusNote">Illustration of a future capability — not a screenshot, and not built yet.</p>
+          <p class="media-note" data-nonclaim="disclosure" data-i18n="illusNoteSetup">Illustration of a future capability — not a screenshot, and not built yet.</p>
         </div>
       </div>
     </div>
