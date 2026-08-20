@@ -19692,3 +19692,98 @@ No code changed in this entry. Logged so the findings survive the next context c
 report can cite this instead of re-deriving it.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — defect burn-down: D-03/D-05 not reproduced, D-04 App Check token fixed (config, no code diff), new D-07 found
+
+Operator authorized (GO, this exact defect list, "ГО: РАЗРЕШЕНО") continuing D-03 through D-06 from
+the prior findings-only entry, plus Firebase config changes on the existing project when current
+credentials allow them. Worked D-03/D-04/D-05 live on S8; D-06 and D-02's implementation are
+separate, not yet done as of this entry.
+
+**D-03 (guest Continue button) — NOT_REPRODUCED_AFTER_BOUNDED_ATTEMPTS.** Added temporary
+`debugPrint` instrumentation to `_GradientButton.build()`/`onTapDown`/the `onTap` closure in
+`login_page.dart` (reverted before commit, `git diff` confirmed clean), rebuilt, installed. Tested
+the exact button on two independently-reachable `/login` instances: (1) pushed on top of Profile via
+`context.push('/login')` (the "link account" entry, `profile_page.dart:257`, matching how the
+originally-stuck screen was almost certainly reached) and (2) the true redirect-driven cold `/login`
+after signing out (`isSignedIn=false`). Both times: `D03_TAPDOWN` → `D03_TAP_FIRED` → loading →
+settled, in under 1.3s, confirmed via logcat. Also confirmed via the SAME screen's Google button
+(`adb shell input tap` at its own verified bounds) that it opened a real `GoogleSignInActivity`
+chooser in the exact session where Continue had originally failed twice — ruling out any page-level
+overlay/transition/hit-test theory, since an adjacent control on the identical screen worked. The
+original failure is real (two clean earlier reproductions this session, logcat showing literally zero
+`flutter`-tagged output for the tap, ruling out a slow-but-working call) but could not be reproduced
+after switching to a fully fresh app/account state. Hypothesis (HYPOTHESIS, not confirmed): tied to
+whatever state a long-lived widget/provider instance had accumulated earlier in this session, or to
+App Check throttling being worse in that specific moment than what was observed here (see D-04 —
+"Too many attempts" was firing on every Firebase call before the token fix below). No code change
+made for D-03; instrumentation fully reverted.
+
+**D-04 (AI Trainer / App Check) — PARTIALLY FIXED (config only), remainder EXTERNAL_BLOCKED with an
+exact action.** Root cause of the "Too many attempts" / placeholder-token warnings that have been
+firing on every Firebase call all session (Scanner, auth, everywhere): `main.dart`'s App Check
+`activate()` uses a fixed `APP_CHECK_DEBUG_TOKEN` `--dart-define`, by design, so every debug build
+shares one registered token instead of each install minting an unregistered one. Every build made
+this session (including `e846ad3`, distributed and installed on both devices) omitted that
+`--dart-define`, so every one of them was running on an unregistered, auto-generated token — the
+`.env.example` doc references a token "created via API" but it turned out to be registered under the
+WRONG Firebase app: `1:988522745882:android:682db78304b13de2c201a3` ("fitness_app (android)"), not
+`1:988522745882:android:7c05c915aa42410ec201a3` ("Fitness App (debug)", the actual `.sptr.debug`
+package built and installed all session). Confirmed via
+`GET .../apps/{appId}/debugTokens` on both app ids (`firebaseappcheck.googleapis.com/v1beta`,
+authenticated via `gcloud auth print-access-token --account=korostelevivan@gmail.com` +
+`x-goog-user-project` header — `gcloud`/`firebase` CLI were both already authenticated in this
+environment). Registered a new debug token under the correct app id via
+`POST .../debugTokens {"displayName":"local dev (sptr.debug, API 2026-08-20)"}` — the server-assigned
+value is `f0fe6a33-8a32-47b3-b336-32c2517c0821` (not committed anywhere, per the existing `.env.example`
+convention; only ever passed via `--dart-define=APP_CHECK_DEBUG_TOKEN=...` at build time). Rebuilt,
+installed, cold-launched: zero `AppCheck`/"Too many attempts" lines in logcat, versus firing on every
+prior build. **This `--dart-define` must be added to every future debug build** (`build_release.ps1`
+and any manual `flutter build apk --debug` invocation) or the regression returns silently.
+
+The separate "Firebase AI Logic has been deactivated... you must enforce Firebase App Check" error is
+NOT the same problem and is NOT fixed by the token above. Checked, in order: (1) `firebase-tools` CLI
+— no `appcheck:*` command exists for service enforcement; (2) App Check Management REST API,
+`GET/PATCH projects/{p}/services/{serviceId}` — the three configurable services on this project are
+`firebaseml.googleapis.com`, `firestore.googleapis.com`, `identitytoolkit.googleapis.com` (all
+`UNENFORCED`); `firebasevertexai.googleapis.com` and `generativelanguage.googleapis.com` both return
+`400 Service not supported` from this endpoint; (3) confirmed via current Firebase documentation
+(https://firebase.google.com/docs/ai-logic/app-check, and the AI Logic "guided setup" flow at
+`https://console.firebase.google.com/projects/fitness-app-korostelev/genai`) that AI Logic's own
+App-Check-enforcement is a **console-only, one-time guided-setup action** ("Get started" on that
+page), with no documented REST/CLI equivalent — the underlying Cloud API
+(`firebasevertexai.googleapis.com`) is already enabled at the project level (`gcloud services list
+--enabled`) and billing is linked (`billingEnabled: true`), so neither of those is the blocker.
+**EXTERNAL_BLOCKER, exact action:** open
+`https://console.firebase.google.com/projects/fitness-app-korostelev/genai` and complete the AI
+Logic guided setup ("Get started"), which per Google's own docs auto-enforces App Check for the
+Gemini proxy as part of that flow. Continuing all other defect work meanwhile, per the standing
+instruction.
+
+**D-05 (Technique Coach chip obstructed by the safety banner) — NOT_REPRODUCED.** Live on S8 (Library
+tab, RU locale): the chip is fully selectable, the "Отобрано правилами, а не врачом" banner renders
+in its own row strictly below the chip row with no overlap, and the filtered list renders normally
+underneath. First tap attempt did not register (chip stayed on "Для вас"); an identical second tap at
+the same coordinates worked cleanly. No structural obstruction found in the current build.
+
+**NEW — D-07, found while reproducing D-05, not yet fixed.** Tapping into an individual exercise's
+reference page reruns the whole-person gate a THIRD way: `equipment_providers.dart`'s
+`exerciseResolutionProvider` calls `evaluateExercise(found, context)` with `includeWholePerson`
+defaulted `true`, so an unanswered PAR-Q+ question renders the same "Это упражнение придержано"
+withheld card here too — inconsistent with the operator's D-02 browsing decision applied to the
+Library list (D-01/`7635573`): a user can now see an exercise in the list but still cannot open it.
+Not a quick copy of the D-01 fix: `exerciseResolutionProvider` is shared between this browsing view
+AND `workout_player_page.dart`'s actual session-start path (per that provider's own doc comment,
+deliberately, "the scheduled-session screening needs exactly the same lookup"), so a naive
+`includeWholePerson: false` would also loosen the gate on actually STARTING a workout, which should
+stay fail-closed on an unanswered questionnaire. Needs its own scoped fix (split the two call sites,
+or thread a stated-only variant of `wholePersonBlocks` through), not attempted in this pass. Also
+observed on the same card: a real `RenderFlex` overflow ("BOTTOM OVERFLOWED BY 116 PIXELS", visible
+black/yellow debug stripe) — a rendering bug independent of the gating question, not yet fixed.
+
+Suites/analyze not rerun in this entry (no source changed). `flutter analyze` on `login_page.dart`
+confirmed clean after the diagnostic-instrumentation revert.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
