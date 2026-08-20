@@ -75,8 +75,6 @@ Anything richer would need a Markdown dependency on both sides to render two
 static documents, which is not a trade worth making.
 """
 
-LAST_UPDATED = "2026-08-06"
-
 #: The whole sentence per language, not a date plus a translated label. A
 #: `"Last updated {date}"` placeholder would need `@`-metadata in both .arb
 #: files and would still render an ISO date to a reader — one key each says
@@ -103,9 +101,13 @@ policy or about your data: korostelevivan@gmail.com.
 They are never sold, and they are never sent to an AI model.
 - Photos you take of gym machines are sent to Google's Gemini to be \
 recognised. Other people may be in shot.
-- Everything is stored in Google Cloud data centres in the European Union.
-- You can export all of it, and you can delete all of it permanently, from \
-inside the app.
+- What we hold is stored in Google Cloud data centres in the European Union. \
+The one thing that leaves our systems by design is an equipment report you \
+send to a gym with its own maintenance channel -- see "Equipment reports" \
+below.
+- You can export everything we hold, and delete it permanently, from inside \
+the app. A report already forwarded to a gym is outside our systems by then, \
+so deleting your account does not recall it.
 
 ## What is collected
 
@@ -284,9 +286,14 @@ Fitness App делает и поддерживает один независим
 конфликтуют с вашими травмами. Их не продают и не отправляют в ИИ-модель.
 - Фотографии тренажёров, которые вы делаете, отправляются в Google Gemini для \
 распознавания. В кадр могут попасть посторонние люди.
-- Все данные хранятся в дата-центрах Google Cloud на территории Европейского \
-союза.
-- Всё это можно выгрузить и можно безвозвратно удалить прямо из приложения.
+- То, что храним мы, лежит в дата-центрах Google Cloud на территории \
+Европейского союза. Единственное, что по замыслу покидает наши системы -- \
+сообщение о неисправном оборудовании, если вы отправили его в зал с \
+собственным каналом техобслуживания -- см. «Сообщения о неисправном \
+оборудовании» ниже.
+- Всё, что храним мы, можно выгрузить и можно безвозвратно удалить прямо из \
+приложения. Сообщение, уже переданное залу, к этому моменту вне наших систем, \
+поэтому удаление аккаунта его не отзывает.
 
 ## Какие данные собираются
 

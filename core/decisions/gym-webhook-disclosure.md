@@ -1,10 +1,21 @@
 # Decision: `gym-webhook-disclosure`
 
 **Decision: DISCLOSE.** A gym-registered maintenance webhook is an authorized conditional third
-*recipient* of equipment-report content -- not a GDPR Article 28 "processor" (no controller-processor
-agreement governs it; codex review, 2026-08-21, caught the first version of this record overclaiming
-that) -- conditioned on the gym having registered one. The privacy copy is amended accordingly; the
-dispatch itself (`functions/src/index.ts`'s `reportEquipment`) is kept as-is, not removed.
+*recipient* of equipment-report content, conditioned on the gym having registered one. The privacy
+copy is amended accordingly; the dispatch itself (`functions/src/index.ts`'s `reportEquipment`) is
+kept as-is, not removed.
+
+**Why recipient, not processor (purposes-and-means analysis, GDPR Art. 4(8)/28).** A gym that
+receives a fault report about its own equipment fixes its own equipment -- its own operational
+purpose, using its own means, not a purpose or method the app sets for it and not "on behalf of" or
+"per the instructions of" the app in the Art. 4(8) sense. That is recipient/independent-actor
+behaviour, not processor behaviour, regardless of paperwork. The privacy copy already states the
+operative fact: "a gym does not act on this app's instructions and nothing here governs what it
+does with what it receives." Codex review, 2026-08-21 (round 4), caught the first version of this
+record leaning on "no controller-processor agreement governs it" as if the absence of an agreement
+were itself what settled the question -- backwards: the absence of an Art. 28 agreement is the
+*consequence* of the gym acting independently, not the reason it does. Restated here with the
+actual test first.
 
 ## Who decided, and how
 

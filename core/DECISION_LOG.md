@@ -20633,3 +20633,52 @@ handed to the operator rather than iterated on again in this gate.
 **No app runtime code changed by this entry** -- only legal copy (`legal_text.py` and its generated
 `.arb`/`.html` outputs) and the governance ledger (`state_ledger.py`, its tests, and the decision
 record).
+
+---
+
+## 2026-08-21 -- codex review round 4 (--uncommitted, --final) on the gym-webhook-disclosure closure
+
+Fourth and, per the round policy's 3-round circuit breaker (already invoked at the end of the round
+3 entry above), final round against this diff before push. Found 2 MAJOR + 2 NIT; all four fixed
+rather than surfaced, since each was a concrete, verifiable text-accuracy gap fixable without a new
+operator judgment call -- the DISCLOSE decision itself was not reopened.
+
+**MAJOR (confirmed by direct read of `legal_text.py`'s "The short version").** The TL;DR bullets
+still made blanket claims -- "Everything is stored in Google Cloud data centres in the European
+Union" and "you can... delete all of it permanently" -- that the round-3 "Equipment reports"
+disclosure had already made untrue for one case: a report forwarded to a gym leaves this app's
+systems and can no longer be recalled by an account deletion. Fixed both bullets (EN+RU) to scope
+the claim to "what we hold" / "everything we hold" and cross-reference "Equipment reports";
+regenerated via `build_legal.py`.
+
+**MAJOR (confirmed by direct read of the decision record, and correct on the law).** The record's
+stated reason for "recipient, not processor" was "no controller-processor agreement governs it" --
+which gets GDPR Art. 4(8)/28 backwards: the agreement's absence is a *consequence* of a party acting
+independently, not the test for it. The actual, and already-true, test is purposes and means: a gym
+fixes its own equipment for its own purpose, not on this app's instructions. Rewrote the record's
+opening reasoning to lead with that purposes-and-means analysis and demote the agreement's absence
+to what it actually is -- a consequence, restated, not the justification. `core/review/
+OPERATOR_DECISIONS.md`'s P1 summary updated to match and to point at the full reasoning instead of
+duplicating a compressed (and, before this fix, equally backwards) version of it.
+
+**NIT, fixed.** `legal_text.py`'s `LAST_UPDATED = "2026-08-06"` constant had drifted from `STAMP`'s
+21 August 2026 and was unreferenced anywhere else in the repository (`grep -rn LAST_UPDATED` --
+one hit, its own definition) -- removed rather than resynced, since a second date field with no
+reader is exactly the kind of thing that drifts again.
+
+**NIT, fixed.** `core/review/OPERATOR_DECISIONS.md`'s P1 summary said the invariant covers "four
+surfaces" and only two reopening conditions; the actual implementation (post round 3) checks six
+localized texts plus the webhook dispatch plus the decision record. Corrected in the same edit as
+the MAJOR fix above.
+
+Verified: `python scripts/legal/build_legal.py --check` clean; direct call to
+`gym_webhook_disclosure_stays_honest()` returns `(True, ...)`; full suite -- 137 passed, unchanged
+from round 3 (this round's fixes were copy/reasoning only, no check logic changed, so no new tests
+were needed). `core/CURRENT_STATE.md` regenerated.
+
+Per the round policy, this receipt is marked `--final`: the push gate for this repository is now
+satisfied by it. No further codex round is being opened on this diff; any future finding on this
+closure is a new gate, not a continuation of this one.
+
+**No app runtime code changed by this entry** -- same scope as round 3 (legal copy + governance
+ledger + one operator-facing doc).

@@ -120,13 +120,15 @@ unreachable to reachable, and a Codex review of that port raised this exact ques
 it landed. The operator chose keep-and-disclose over remove. `scripts/legal/legal_text.py` (the
 single canonical source for both `.arb` locales and `public/privacy.html`/`terms.html`, per
 `scripts/legal/build_legal.py`) now names the gym as a conditional third *recipient* of report
-contents specifically -- not a "processor" in the GDPR Article 28 sense, since no controller-processor
-agreement governs it (codex review caught the original wording overclaiming this) -- and states
-plainly that this app does not control what a named gym does with what it receives.
+contents specifically -- not a "processor" in the GDPR Article 28 sense, because it receives the
+report to fix its own equipment for its own purpose, not on this app's instructions -- and states
+plainly that this app does not control what a named gym does with what it receives. Full
+purposes-and-means reasoning: `core/decisions/gym-webhook-disclosure.md`.
 `core/CURRENT_STATE.md`'s `gym-webhook-disclosure` row is `CLOSED`, with an invariant
 (`gym_webhook_disclosure_stays_honest`, `scripts/review/state_ledger.py`) that reopens it if the
-disclosure regresses in any of the four surfaces (source + generated, both locales) or the decision
-record disappears.
+disclosure regresses on any of six checked texts (`legal_text.py` and `public/privacy.html`, each in
+both locales, plus the generated `legalPrivacyBody` key in both `.arb` files), if the webhook
+dispatch in `functions/src/index.ts` is removed, or if the decision record disappears.
 
 Surfaced while measuring N-04, and genuinely new. The analysis below is preserved as the record of
 what was actually weighed, not rewritten after the fact.
