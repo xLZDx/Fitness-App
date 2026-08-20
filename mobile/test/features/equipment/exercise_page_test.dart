@@ -143,6 +143,45 @@ void main() {
         reason: 'no coach entry point for work the app is refusing');
   });
 
+  testWidgets(
+      'D-07: a withheld exercise with several reasons does not overflow '
+      'a phone-height screen', (t) async {
+    // The withheld/hidden-for-injury/not-found branches used to sit directly
+    // in FrostedScaffold's body with no scroll wrapper, unlike the "found"
+    // branch (SmoothScrollList). A refusal naming several PAR-Q+ questions
+    // is taller than a real phone viewport and does not fit — this is the
+    // S8-observed "BOTTOM OVERFLOWED BY 116 PIXELS" reproduced with a
+    // same-order-of-magnitude viewport instead of the 400x1600 the other
+    // tests in this file use.
+    t.view.physicalSize = const Size(360, 640);
+    t.view.devicePixelRatio = 1.0;
+    addTearDown(t.view.resetPhysicalSize);
+    addTearDown(t.view.resetDevicePixelRatio);
+
+    await t.pumpWidget(_page(
+      const ExercisePage(exerciseId: 'ea_air_squat'),
+      resolution: ExerciseResolution.withheld(_item, const [
+        EligibilityReason(BlockReason.screening,
+            question: ParQQuestion.chestPain),
+        EligibilityReason(BlockReason.screening,
+            question: ParQQuestion.dizzinessOrLossOfConsciousness),
+        EligibilityReason(BlockReason.screening,
+            question: ParQQuestion.musculoskeletalProblem, unanswered: true),
+        EligibilityReason(BlockReason.screening,
+            question: ParQQuestion.otherChronicCondition, unanswered: true),
+        EligibilityReason(BlockReason.screening,
+            question: ParQQuestion.medicallySupervisedOnly,
+            unanswered: true),
+      ]),
+    ));
+    await t.pumpAndSettle();
+
+    expect(t.takeException(), isNull,
+        reason: 'a RenderFlex overflow throws during layout; this screen '
+            'must scroll instead of overflowing');
+    expect(find.byKey(const Key('exercise.withheld')), findsOneWidget);
+  });
+
   testWidgets('the AI coach can be asked about a movement', (t) async {
     // `AiCoachSource.exercise` had no production caller: the prompt branch for
     // a movement — the one that tells the model to teach a load judgement

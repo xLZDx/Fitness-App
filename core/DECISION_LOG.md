@@ -19839,3 +19839,56 @@ file report failed too, but that is the `flutter test` runner's own cascade beha
 uncaught exception mid-file, reproduced identically on clean master — not five additional bugs.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — D-07 overflow fixed; D-07's gating itself reclassified as by-design
+
+**D-07 reclassification (not a bug, evidenced by the codebase's own documented contract):**
+the earlier finding framed `exerciseResolutionProvider` defaulting to
+`evaluateExercise(..., includeWholePerson: true)` as a third copy of D-01's bug. It is not.
+`eligibility.dart:309-316`'s own doc comment on `includeWholePerson` names the exact taxonomy: strict
+(`true`, the default) is correct for "a deep link, a tap from the catalogue, a scheduled session
+about to start"; loose (`false`) is for "which of these are suitable", the passive-list shape D-01
+was about. `exercise_reference.dart`'s per-exercise detail view and `workout_player_page.dart`'s
+session player are both exactly the "tap from the catalogue" / "session about to start" case this
+provider's shared doc comment (`equipment_providers.dart:499-509`) already argues for keeping
+strict. No code change made for this half — the existing behavior matches the architecture's own
+stated design.
+
+One real, distinct bug WAS found on the same withheld-exercise card, and that one is fixed below.
+
+**Open, not yet decided:** `workouts_page.dart:1196`'s programme-day thumbnail strip also reads
+`exerciseResolutionProvider` with the same strict default, but that call site is a passive summary
+row (today's planned exercises), not a tap — closer to D-01's shape than to a deep link. Not changed
+in this pass; needs its own look before deciding whether it should pass `includeWholePerson: false`.
+
+**Fix — the overflow.** `ExerciseResolutionView.build()`
+(`mobile/lib/features/equipment/widgets/exercise_reference.dart`, the `hiddenForInjury` /
+`withheldFor.isNotEmpty` / not-found branches) rendered its content directly under
+`FrostedScaffold`'s `body`, with no scroll wrapper — unlike the sibling "found" branch
+(`exercise_page.dart`), which wraps its content in `SmoothScrollList`. `EligibilityNotice` can list
+several PAR-Q+ questions in one refusal; on a phone-height viewport that content is taller than the
+screen with nothing to scroll it into view, including the "review profile" button. This is the S8-
+observed "BOTTOM OVERFLOWED BY 116 PIXELS". All three branches now wrap their content in
+`SingleChildScrollView` instead of `Padding`.
+
+**Regression test:** `mobile/test/features/equipment/exercise_page_test.dart`, new test
+"D-07: a withheld exercise with several reasons does not overflow a phone-height screen" — a 360x640
+viewport (phone-scale, smaller than every other test in this file's 400x1600/2400) with four
+screening reasons, asserting `tester.takeException()` is null (a `RenderFlex` overflow throws during
+layout) and the withheld card still renders.
+
+**Mutation-verified:** reverted the `withheldFor` branch to `Padding` via Python string-replace
+(not the Edit tool), ran the new test alone — RED, `FlutterError:<A RenderFlex overflowed by 772
+pixels on the bottom.>`. Restored the fix, reran the full file — GREEN, 9/9. Full
+`test/features/equipment/` suite (409 tests, every file in the directory, since
+`exercise_reference.dart` is shared with the workout player): all pass, no regressions.
+`flutter analyze` on both touched files: clean.
+
+**Build/device:** a fresh debug APK off `28c08a2` (includes D-01, D-02, D-04's App Check token,
+`GIT_SHA=28c08a2`), `sha256=920790692d91ea6765ab5fb7722caaf176285a35e74233bc7694f14658045836`,
+installed on S8 (`ce0417141997e4640c`) — built and installed BEFORE this D-07 code change, so it does
+not yet contain this fix; a later build will fold it in.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**

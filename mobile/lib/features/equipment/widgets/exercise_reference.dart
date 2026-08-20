@@ -1159,7 +1159,7 @@ class ExerciseResolutionView extends ConsumerWidget {
           error: (e, _) => Center(child: Text(l10n.equipmentCouldNotLoad(e))),
           data: (resolution) {
             if (resolution.hiddenForInjury) {
-              return Padding(
+              return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
                 child: GlassCard(
                   child: Column(
@@ -1184,8 +1184,18 @@ class ExerciseResolutionView extends ConsumerWidget {
             // exercise did not exist, which is both false and unactionable:
             // the one thing they could do about it is the one thing the
             // message hid from them.
+            //
+            // D-07 overflow: this branch (and the two neighbouring ones) sat
+            // directly in FrostedScaffold's `body`, unlike the "found" branch
+            // which the page wraps in SmoothScrollList. EligibilityNotice can
+            // list several PAR-Q+ questions at once, and on a phone-height
+            // screen that content is taller than the viewport with no way to
+            // reach the rest of it — a RenderFlex overflow, not a cosmetic
+            // one, since the "review profile" button could be the part cut
+            // off. SingleChildScrollView is the same fix SmoothScrollList's
+            // sibling branch already relies on.
             if (resolution.withheldFor.isNotEmpty) {
-              return Padding(
+              return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
                 child: EligibilityNotice(
                   key: const Key('exercise.withheld'),
@@ -1197,7 +1207,7 @@ class ExerciseResolutionView extends ConsumerWidget {
             }
             final item = resolution.visible;
             if (item == null) {
-              return Padding(
+              return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
                 child: GlassCard(
                   child: Text(l10n.equipmentWeCouldnTFindThatExercise,
