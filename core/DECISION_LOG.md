@@ -20064,4 +20064,76 @@ via Python string-replace, ran the new test alone — RED, `[null, null]` instea
 `test/features/workouts/`: 761/761, no regressions. `flutter analyze` on all three touched files:
 clean.
 
+---
+
+## 2026-08-20 — D-03 REOPENED: the NOT_A_PRODUCT_BUG verdict above was wrong
+
+**Correction, not a new observation.** The entry immediately above this one concluded
+NOT_A_PRODUCT_BUG on the strength of the `diag-d03` instrumented build: 5/5 taps succeeded once
+each was issued after `D03_BUILD` confirmed the widget had actually rebuilt. That evidence was
+real, but the conclusion it was used to support — that the canonical (non-instrumented) build has
+no problem once a tap respects cold-start timing — was checked against the canonical build only
+after this was already written and pushed (`b1008d1`), and the canonical build does not hold up.
+
+**Evidence, canonical build (`8245833`, no debugPrint instrumentation), same device (S8
+`ce0417141997e4640c`):**
+
+- One bounded D-05 reproduction attempt, done immediately after the entry above was pushed: tapped
+  `(360, 890)` 26 seconds after `B6: session log armed` (a wide margin by the ~7s cold-start figure
+  this file already recorded) — no reaction. Confirmed genuinely current (not a stale screenshot)
+  by cross-checking a screenshot taken 50+ seconds post-tap against a live `adb shell date`. pid-
+  filtered logcat (`--pid=<pid>`, not a `tail`-truncated broad grep) showed the tap reaching
+  `ViewRootImpl` (`ViewPostIme pointer 0/1`) and nothing Flutter-tagged after it.
+- Five more clean trials, same protocol each time (`pm clear` → launch → fixed ~4s margin from `B6`
+  armed to tap, no VM-service or accessibility-service interaction in these five): **1 success, 4
+  failures.** The one success reached onboarding (`Какая у вас главная цель?`); all four failures
+  sat unchanged on `/login`, gradient CTA still painted in its full-opacity enabled state (not the
+  dimmed `disabled` branch), no Flutter-tagged log line after the tap in any of the four.
+
+**Ruled out during this same investigation, evidence each:**
+
+- *Third-party accessibility service intercepting touch.* S8 has `kz.sirius.siriuschat`'s
+  `SiriusAccessibilityService` (an app-limits/parental-control service) enabled system-wide
+  (`settings get secure accessibility_enabled` → `1`). `touch_exploration_enabled` is `0`, and
+  disabling the service entirely (`accessibility_enabled=0`) and retesting still reproduced the
+  dead tap — restored to `1` afterwards. Not the cause.
+- *Touch delivery broken in general on this device/build.* A control tap on the sibling
+  "Продолжить с Google" `OutlinedButton`, same screen instance, same session, opened the real
+  Google account picker on the first single tap, every time it was tried. Whatever is wrong is
+  specific to the anonymous-continue control, not to input delivery on this device.
+  `uiautomator dump` also shows this asymmetry structurally: the Google button is a real
+  `android.widget.Button` node with `clickable="true"`; the anonymous-continue button has **no
+  node at all** in the accessibility tree, at any point this was checked this session.
+  `ext.flutter.debugDumpRenderTree` over the VM service (port-forwarded, queried mid-investigation)
+  shows the opposite at the Flutter-internal level: the `InkWell`'s `RenderPointerListener` is
+  present, correctly sized (`315.4×54.0`), `behavior: opaque`, `listeners: down, panZoomStart` — so
+  the gap is between "Flutter's own render tree says this is tappable" and "Android's accessibility
+  bridge and, empirically, ~80% of raw taps say otherwise", not a degenerate/zero-size render
+  object.
+- *Fixed by waiting longer.* The 26-second-margin tap (well past the ~4s margin used in the 1/5
+  trials, and well past the ~7s cold-start figure this file already had on record) still failed.
+  A pure "first frame hasn't built yet" theory predicts a long margin fixes it; it did not.
+
+**Not yet identified: an actual root cause for the ~80% drop rate.** What is left standing,
+un-ruled-out: `_GradientButton` (`login_page.dart`) is a bespoke bare `InkWell` — no `Material`
+ancestor of its own (it borrows `GlassCard`'s, several widgets up), no explicit
+`Semantics(button: true, ...)` — unlike every other interactive control on this screen
+(`AppSecondaryButton`/`OutlinedButton` for Google, the terms/privacy links, which each carry their
+own `Semantics(button: true, ...)`) and unlike the app's own shared button library
+(`app_buttons.dart`, `AppPrimaryButton`/`AppSecondaryButton`/`AppTertiaryButton`, all built on real
+`FilledButton`/`OutlinedButton`/`TextButton`). The Google control's 100% observed reliability in
+this same investigation, against `_GradientButton`'s ~20%, is correlation, not a proven causal
+mechanism — I have not reproduced a fix and re-measured it on-device before writing this entry, so
+I am not calling this the root cause. It is the most evidence-backed lead available, and the
+missing `Semantics(button: true)` is independently a confirmed real accessibility defect regardless
+of whether it turns out to be tap-drop-related.
+
+**D-03 status: CONFIRMED_OPEN_BUG, intermittent (~20% success observed, n=5, plus one independent
+26s-margin failure).** The `b1008d1` NOT_A_PRODUCT_BUG verdict is withdrawn. Next step: give
+`_GradientButton` its own `Material` ancestor and explicit `Semantics(button: true, label: ...)`,
+matching the `GlassCard`/`AppSecondaryButton` pattern already established in this codebase, rebuild
+the canonical APK, and re-run the same 5-trial on-device protocol before calling this fixed.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**

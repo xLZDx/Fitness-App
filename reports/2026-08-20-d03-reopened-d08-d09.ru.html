@@ -1,0 +1,545 @@
+<title>D-03: пересмотр вывода</title>
+<style>
+  :root {
+    --bg: #f4f5f3;
+    --surface: #ffffff;
+    --surface-2: #eceee9;
+
+    --text: #171a15;
+    --text-2: #5b6058;
+    --text-3: #868c81;
+
+    --accent: #4c7a1f;
+    --accent-ink: #f4ffe4;
+    --accent-soft: #e4f0d3;
+
+    --warn: #a8620c;
+    --warn-ink: #fff7ea;
+    --warn-soft: #f6e6c8;
+
+    --border: #dfe2da;
+    --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14160f;
+      --surface: #1b1e15;
+      --surface-2: #22261a;
+
+      --text: #eef1e6;
+      --text-2: #b7bcac;
+      --text-3: #868c78;
+
+      --accent: #a8d966;
+      --accent-ink: #16210a;
+      --accent-soft: #29350f;
+
+      --warn: #f0a94e;
+      --warn-ink: #241705;
+      --warn-soft: #3a2a12;
+
+      --border: #2c3122;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #14160f;
+    --surface: #1b1e15;
+    --surface-2: #22261a;
+
+    --text: #eef1e6;
+    --text-2: #b7bcac;
+    --text-3: #868c78;
+
+    --accent: #a8d966;
+    --accent-ink: #16210a;
+    --accent-soft: #29350f;
+
+    --warn: #f0a94e;
+    --warn-ink: #241705;
+    --warn-soft: #3a2a12;
+
+    --border: #2c3122;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.55;
+  }
+
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  header { margin-bottom: 8px; }
+
+  .eyebrow {
+    font-family: 'Space Grotesk', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-size: 12.5px;
+    color: var(--text-3);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 34px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+
+  .lede {
+    font-size: 17px;
+    color: var(--text-2);
+    margin: 0 0 4px;
+    max-width: 62ch;
+  }
+
+  .counters {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin: 32px 0 40px;
+  }
+
+  .counter {
+    background: var(--surface);
+    padding: 18px 16px;
+    text-align: center;
+  }
+
+  .counter .n {
+    display: block;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 26px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent);
+  }
+
+  .counter.warn .n { color: var(--warn); }
+  .counter.neutral .n { color: var(--text-3); }
+
+  .counter .lbl {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-3);
+    letter-spacing: 0.02em;
+  }
+
+  section { margin: 40px 0; }
+
+  h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-3);
+    margin: 0 0 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+
+  .card.correction {
+    border-color: var(--warn);
+    border-width: 1.5px;
+    background: linear-gradient(180deg, var(--warn-soft) 0%, var(--surface) 130px);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+
+  .card-head h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    margin: 0;
+    flex: 1 1 auto;
+    min-width: 160px;
+  }
+
+  .pill {
+    display: inline-block;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .pill.fixed { background: var(--accent-soft); color: var(--accent); }
+  .pill.reopened { background: var(--warn-soft); color: var(--warn); }
+  .pill.pending { background: var(--surface-2); color: var(--text-2); border: 1px dashed var(--text-3); }
+
+  .card p { margin: 10px 0; color: var(--text-2); }
+  .card p:first-of-type { margin-top: 0; }
+  .card strong { color: var(--text); }
+
+  .evidence {
+    margin: 14px 0 6px;
+    padding: 0;
+    list-style: none;
+  }
+  .evidence li {
+    position: relative;
+    padding-left: 20px;
+    margin: 8px 0;
+    color: var(--text-2);
+    font-size: 14.5px;
+  }
+  .evidence li::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-3);
+  }
+  .evidence li.ruled-out::before { background: var(--accent); }
+
+  code, .mono {
+    font-family: var(--mono);
+    font-size: 0.92em;
+    background: var(--surface-2);
+    padding: 1px 6px;
+    border-radius: 5px;
+  }
+
+  .timeline {
+    border-left: 2px solid var(--border);
+    margin: 16px 0 4px 4px;
+    padding-left: 20px;
+  }
+  .timeline .step {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .timeline .step::before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 5px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--text-3);
+  }
+  .timeline .step.bad::before { border-color: var(--warn); }
+  .timeline .step.good::before { border-color: var(--accent); }
+  .timeline .t {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-3);
+  }
+  .timeline .d { margin-top: 2px; color: var(--text); font-size: 14.5px; }
+
+  .stat-row {
+    display: flex;
+    gap: 20px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+  .stat {
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    flex: 1 1 140px;
+  }
+  .stat .v {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .k { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+  .callout {
+    border-radius: 12px;
+    padding: 16px 18px;
+    font-size: 14.5px;
+    background: var(--surface-2);
+    color: var(--text-2);
+    border: 1px dashed var(--text-3);
+  }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-3);
+    font-size: 13px;
+  }
+
+  a { color: var(--accent); }
+
+  @media (max-width: 560px) {
+    .counters { grid-template-columns: repeat(2, 1fr); }
+    h1 { font-size: 27px; }
+  }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SPTR · Fitness-App · дефект-гейт</p>
+    <h1>D-03: вывод "не баг" был неверным</h1>
+    <p class="lede">
+      Отчёт продолжает предыдущий (D-02/D-06/D-07). Ниже — закрытие D-08 и D-09, и главное:
+      честная отмена собственного вывода по D-03, сделанного и запушенного в этом же окне работы.
+    </p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>_wt-master-sync</dd>
+    <dt>Папка</dt><dd>D:\Repo\_wt-master-sync</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 8245833</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="counters">
+    <div class="counter neutral">
+      <span class="n">2</span>
+      <span class="lbl">закрыто<br>(D-08, D-09)</span>
+    </div>
+    <div class="counter warn">
+      <span class="n">1</span>
+      <span class="lbl">переоткрыто<br>(D-03)</span>
+    </div>
+    <div class="counter neutral">
+      <span class="n">1/5</span>
+      <span class="lbl">повтор бага<br>на устройстве</span>
+    </div>
+    <div class="counter neutral">
+      <span class="n">—</span>
+      <span class="lbl">проверка фикса<br>ожидается</span>
+    </div>
+  </div>
+
+  <section>
+    <h2>Главное: D-03</h2>
+    <div class="card correction">
+      <div class="card-head">
+        <h3>Гостевая кнопка "Продолжить" на /login</h3>
+        <span class="pill reopened">CONFIRMED_OPEN_BUG · переоткрыт</span>
+      </div>
+      <p>
+        В этом же окне работы ранее было запущено расследование D-03 на инструментированной
+        диагностической сборке (<code>diag-d03</code>) с отладочными <code>debugPrint</code>.
+        Пять тапов подряд, каждый — после подтверждённой готовности виджета, дали 5/5 успехов.
+        Вывод был записан в <code>DECISION_LOG.md</code> и запушен: <strong>NOT_A_PRODUCT_BUG,
+        артефакт тайминга холодного старта</strong> (коммит <code>b1008d1</code>).
+      </p>
+      <p>
+        Сразу после этого, уже на канонической (без инструментации) сборке, тот же тап через
+        26 секунд после подтверждённой готовности экрана — не сработал. Это прямое противоречие
+        только что зафиксированному выводу, и по правилу «исправлять ошибочные утверждения сразу»
+        вывод отменён отдельной записью в decision log, а не тихо переписан.
+      </p>
+      <div class="timeline">
+        <div class="step bad">
+          <div class="t">до этого отчёта</div>
+          <div class="d">Diag-сборка, тап после подтверждённой готовности: <strong>5/5 успех</strong> → вывод «не баг», запушено.</div>
+        </div>
+        <div class="step bad">
+          <div class="t">сразу после</div>
+          <div class="d">Каноническая сборка, тап через 26 c после готовности: <strong>отказ</strong>. Тач дошёл до <code>ViewRootImpl</code> (лог Android), реакции Flutter — ноль.</div>
+        </div>
+        <div class="step bad">
+          <div class="t">контрольная серия</div>
+          <div class="d">5 чистых прогонов подряд (сброс данных, запуск, тап через ~4 c после готовности): <strong>1 успех / 4 отказа</strong>.</div>
+        </div>
+        <div class="step good">
+          <div class="t">сейчас</div>
+          <div class="d">Запись в decision log исправлена. Применён точечный фикс (ниже). Проверка на устройстве — не завершена.</div>
+        </div>
+      </div>
+
+      <p><strong>Что исключено на очной проверке, с доказательством:</strong></p>
+      <ul class="evidence">
+        <li class="ruled-out">Сторонний accessibility-сервис (<code>kz.sirius.siriuschat</code>, лимиты приложений) — отключён полностью, баг воспроизвёлся и без него.</li>
+        <li class="ruled-out">Доставка тачей на устройстве в принципе — контрольный тап по соседней кнопке «Продолжить с Google» (<code>OutlinedButton</code>) срабатывал каждый раз, с первого касания.</li>
+        <li class="ruled-out">Геометрия хит-теста во Flutter — дамп рендер-дерева через VM service показывает верный размер и <code>opaque</code>-обработчик у проблемной кнопки.</li>
+        <li>«Просто подождать дольше» — не подтвердилось: 26-секундный запас тоже дал отказ.</li>
+      </ul>
+
+      <p><strong>Что применено (не доказанный фикс, а обоснованная, но не подтверждённая гипотеза):</strong>
+      кастомная кнопка <code>_GradientButton</code> была голым <code>InkWell</code> без
+      собственного <code>Material</code> и без явного <code>Semantics(button: true)</code> — в
+      отличие от каждого другого элемента на этом экране и от общей библиотеки кнопок приложения.
+      Она не появлялась вообще ни одним узлом в дампе accessibility-дерева. Кнопка обёрнута в
+      <code>Material</code> + <code>Semantics(button: true)</code> по уже принятому в проекте
+      паттерну (<code>GlassCard</code>). Добавлен и мутационно проверен регресс-тест на семантику.
+      </p>
+
+      <div class="callout">
+        Пересобранный APK устанавливался на тестовое устройство S8 для повторного 5-кратного
+        стресс-теста в момент, когда сработал хук на отчёт. Снижает ли фикс частоту отказов —
+        <strong>пока не известно</strong>. Это открытый вопрос, не закрытый гейт.
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Закрыто в этом окне</h2>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>D-08 · Формулировка отказа на Home</h3>
+        <span class="pill fixed">STALE_TEST</span>
+      </div>
+      <p>
+        Не регрессия. Тест ожидал экстренную формулировку («это требует медицинской помощи») для
+        пользователя, который просто не ответил на вопросы скрининга — но по действующей политике
+        F017 срочность требует <em>отвеченного</em> «да» на вопрос о боли в груди, а не просто
+        неотвеченного вопроса. Продакшн-код уже был прав; поправлен только тест, вместе с
+        каскадом из пяти тестов, падавших из-за него.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>D-09 · Пустые превью упражнений дня</h3>
+        <span class="pill fixed">FIXED</span>
+      </div>
+      <p>
+        Реальный баг: для непрошедшего скрининг пользователя превью-картинки упражнений дня в уже
+        запланированной программе гасли, хотя это пассивный просмотр, а не вход в тренировку.
+        Провайдер разделён на два — строгий (для входа в упражнение) и мягкий (для превью), без
+        дублирования логики поиска, по уже существующему в коде паттерну
+        <code>includeWholePerson: false</code>. Регресс-тест добавлен и мутационно проверен.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Открытые хвосты</h2>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="v">D-03</div>
+        <div class="k">фикс есть, проверка на устройстве не завершена</div>
+      </div>
+      <div class="stat">
+        <div class="v">D-05</div>
+        <div class="k">блокирована тем же экраном логина, не начата заново</div>
+      </div>
+      <div class="stat">
+        <div class="v">D-04</div>
+        <div class="k">не начата в этом окне</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

@@ -156,61 +156,77 @@ class _GradientButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final disabled = onTap == null;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        height: 54,
-        decoration: BoxDecoration(
+    // D-03: this was a bare InkWell with no Material of its own (it borrowed
+    // GlassCard's, several widgets up) and no explicit Semantics(button:
+    // true) -- unlike every other control on this screen. It never showed up
+    // as a node in an accessibility-tree dump, and on-device it dropped
+    // taps intermittently (~80% of a 5-trial sample) with zero visible
+    // feedback. Matching the GlassCard/AppSecondaryButton pattern already
+    // established in this codebase is the smallest change that closes both
+    // gaps at once.
+    return Material(
+      type: MaterialType.transparency,
+      child: Semantics(
+        button: true,
+        enabled: !disabled,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(20),
-          // R9: brand CTA, moved off the pre-R9 pink/violet pair.
-          gradient: LinearGradient(
-            colors: disabled
-                ? [
-                    AppPalette.auroraLime.withValues(alpha: 0.55),
-                    AppPalette.auroraLimeDeep.withValues(alpha: 0.55),
-                  ]
-                : const [AppPalette.auroraLime, AppPalette.auroraLimeDeep],
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-          ),
-          boxShadow: disabled
-              ? null
-              : [
-                  BoxShadow(
-                    color: AppPalette.auroraLime.withValues(alpha: 0.45),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (loading)
-              const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(AppSemanticColors.onGradientInk),
-                ),
-              )
-            else
-              Text(
-                label,
-                style: const TextStyle(
-                  color: AppSemanticColors.onGradientInk,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            height: 54,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              // R9: brand CTA, moved off the pre-R9 pink/violet pair.
+              gradient: LinearGradient(
+                colors: disabled
+                    ? [
+                        AppPalette.auroraLime.withValues(alpha: 0.55),
+                        AppPalette.auroraLimeDeep.withValues(alpha: 0.55),
+                      ]
+                    : const [AppPalette.auroraLime, AppPalette.auroraLimeDeep],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
               ),
-            if (!loading) ...[
-              const SizedBox(width: 8),
-              Icon(icon, color: AppSemanticColors.onGradientInk, size: 20),
-            ],
-          ],
+              boxShadow: disabled
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: AppPalette.auroraLime.withValues(alpha: 0.45),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (loading)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor:
+                          AlwaysStoppedAnimation(AppSemanticColors.onGradientInk),
+                    ),
+                  )
+                else
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: AppSemanticColors.onGradientInk,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                if (!loading) ...[
+                  const SizedBox(width: 8),
+                  Icon(icon, color: AppSemanticColors.onGradientInk, size: 20),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );

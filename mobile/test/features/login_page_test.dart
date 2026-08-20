@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -58,6 +59,26 @@ void main() {
       expect(repo.googleCalls, 1);
       expect(repo.anonymousCalls, 0);
       expect(repo.currentUser?.provider, AuthProvider.google);
+    });
+
+    testWidgets(
+        'D-03: the guest Continue control exposes real button semantics',
+        (tester) async {
+      // A bare InkWell with no Material/Semantics of its own never showed up
+      // as a node in an on-device accessibility-tree dump -- confirmed empty
+      // where "Continue with Google" (a real OutlinedButton) showed up fine.
+      // This guards the fix regardless of whether it also explains the
+      // separate intermittent tap-drop D-03 is still open for.
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(_app());
+      await tester.pump();
+
+      final data = tester.getSemantics(find.text('Continue')).getSemanticsData();
+      expect(data.hasFlag(SemanticsFlag.isButton), isTrue);
+      expect(data.hasFlag(SemanticsFlag.isEnabled), isTrue);
+      expect(data.hasAction(SemanticsAction.tap), isTrue);
+
+      handle.dispose();
     });
 
     testWidgets('buttons are disabled while signing in', (tester) async {
