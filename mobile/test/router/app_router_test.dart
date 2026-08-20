@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../helpers/test_app.dart';
 import 'package:fitness_app/core/router/app_router.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/data/mock_auth_repository.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/profile/data/mock_profile_repository.dart';
@@ -330,6 +331,46 @@ void main() {
       expect(pathOf(router), '/login');
     });
 
+    // D-03: `login_page_test.dart` proves the "Continue" button's own onTap
+    // works when `LoginPage` is mounted directly under `MaterialApp`. It says
+    // nothing about the button once it is reached the way a real device
+    // reaches it -- through splash's redirect and the router's own
+    // `_fadeThrough` CustomTransitionPage. If a stale transition layer, a
+    // stuck animation, or anything else in that path were eating the tap,
+    // this is the one test that would catch it and the isolated test above
+    // would stay green regardless.
+    testWidgets(
+        'the Continue button still works after reaching /login through '
+        'the real splash → redirect → fade-transition path', (tester) async {
+      final auth = _RecordingMockAuth(latency: Duration.zero);
+      late GoRouter router;
+      await tester.pumpWidget(buildApp(
+        auth: auth,
+        profiles: MockProfileRepository(latency: Duration.zero),
+        capture: (r) => router = r,
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1500));
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(pathOf(router), '/login');
+
+      // Let any in-flight page-transition animation fully settle before
+      // tapping -- the device repro tapped anywhere from 2s to 15s after the
+      // page appeared, so a mid-animation timing gap is not the point of
+      // this test.
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Continue'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(auth.anonymousCalls, 1,
+          reason: 'the tap must reach LoginPage\'s onTap and call '
+              'signInAnonymously exactly once, the same as the isolated '
+              'widget test -- if this is 0, the router/transition layer is '
+              'swallowing the gesture, not the button itself');
+    });
+
   });
 
   // The pure tests above prove `resolveRedirect` DECIDES correctly about a
@@ -402,4 +443,15 @@ void main() {
           reason: 'once they have a credential, /login has nothing to offer');
     });
   });
+}
+
+class _RecordingMockAuth extends MockAuthRepository {
+  _RecordingMockAuth({super.latency});
+  int anonymousCalls = 0;
+
+  @override
+  Future<AuthUser> signInAnonymously() {
+    anonymousCalls += 1;
+    return super.signInAnonymously();
+  }
 }

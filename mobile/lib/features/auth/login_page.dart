@@ -91,6 +91,7 @@ class LoginPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 24),
                     _GradientButton(
+                      key: const Key('login.continueGuest'),
                       onTap: isLoading
                           ? null
                           : () => ref
@@ -140,6 +141,7 @@ class LoginPage extends ConsumerWidget {
 
 class _GradientButton extends StatelessWidget {
   const _GradientButton({
+    super.key,
     required this.onTap,
     required this.label,
     required this.icon,

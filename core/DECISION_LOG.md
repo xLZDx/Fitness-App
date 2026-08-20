@@ -19939,3 +19939,56 @@ the instrumented-build approach has now failed to even confirm its own `build()`
 Report: `reports/2026-08-20-defect-burndown-d02-d06-d07.ru.html` / `.html`.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — D-03 root-caused: cold-start timing, not a dead button
+
+**Correcting the prior entry's CONFIRMED_OPEN verdict.** Two new tests isolate the two halves of
+the claim:
+
+1. `test/router/app_router_test.dart`, "the Continue button still works after reaching /login
+   through the real splash → redirect → fade-transition path" — boots the actual `appRouterProvider`
+   (not `LoginPage` in isolation), waits for the router to settle on `/login`, `pumpAndSettle()`s any
+   transition animation, then taps. `signInAnonymously` fires exactly once. This rules out the
+   router/`_fadeThrough`/widget-composition layer as a cause — the earlier working theory from
+   before this session's compaction.
+2. Device instrumentation (`debugPrint` in `_GradientButton.build()` and its `onTap`, `GIT_SHA=
+   diag-d03`, reverted after use — `git diff` on `login_page.dart` is clean) filtered by exact
+   process pid rather than a keyword grep across the buffer (the earlier greps were silently losing
+   lines to `tail`/volume from this device's very chatty WifiStateMachine logging, not to a real
+   gap): a tap issued while `_GradientButton.build()` had not yet run even once landed on nothing —
+   Android's `ViewRootImpl` (the Activity root, always present) received it, but no Dart-level
+   reaction followed, reproducing every earlier "dead tap" symptom exactly. Polling for the first
+   `D03_BUILD` line showed this debug build's cold start takes ~7s before the button exists at all.
+   Five separate taps issued only after that confirmation (2/2 same session, 3/3 across fresh
+   `pm clear` + cold-launch cycles, including a 20s-delayed one matching the earlier "waited well
+   past ready, still dead" scenario) all fired `D03_TAP_FIRED` → `loading=true` → completed
+   correctly, 5/5.
+
+**Conclusion:** every "dead button" observation this session, including the fresh 4/4 reproduction
+logged in the previous entry, is explained by the tap landing before the login page's button widget
+had mounted — a test-timing artifact of scripted `sleep N; tap` sequences against a device whose
+cold-start time varies with build type and system load, not a gesture/hit-test bug in
+`_GradientButton`/`InkWell`/`GlassCard`. `signInAnonymously` was checked against Identity Toolkit
+App Check enforcement (`UNENFORCED` per the Management API) before this was found, ruling out the
+App Check throttling hypothesis this entry's predecessor left open. **D-03 is downgraded from
+CONFIRMED_OPEN_BUG to NOT_A_PRODUCT_BUG**, superseding both the earlier NOT_REPRODUCED and the
+most recent CONFIRMED_OPEN verdicts — this is the third and, given the mechanism is now understood
+rather than merely unobserved, hopefully final word on it.
+
+**One real, bounded, non-blocking observation kept from this investigation:** ~7s from cold launch
+to an interactive `/login` on a debug build on S8. Not otherwise actioned here — it is a debug-build
+cold-start number, not demonstrated against a release build, and is a performance note rather than
+a defect.
+
+**Shipped:** `mobile/lib/features/auth/login_page.dart` — `_GradientButton` now takes a `key`
+parameter and the guest CTA carries `Key('login.continueGuest')`, so a future test can target it by
+key instead of by localized label text. `test/router/app_router_test.dart` keeps the new
+router-integration regression test permanently, since it is the one test in the suite that exercises
+the tap through the actual transition path rather than a bare `LoginPage()`.
+
+**Verification:** `test/features/login_page_test.dart` + `test/router/app_router_test.dart`, 26/26
+green. `flutter analyze` on both touched files plus `login_page.dart`: clean.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
