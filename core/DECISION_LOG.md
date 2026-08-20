@@ -20137,3 +20137,95 @@ the canonical APK, and re-run the same 5-trial on-device protocol before calling
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — D-03: the Material/Semantics candidate fix does NOT close it; real root cause found, is NOT a dead tap
+
+**Verified the candidate fix from the entry above on canonical `bab46c6` (device S8
+`ce0417141997e4640c`), then found the actual mechanism. Correction, not a new observation:
+`_GradientButton`'s tap IS being delivered and IS calling `signInAnonymously()` correctly in every
+trial. The bug is downstream of the tap, not in the button.**
+
+**Method (20 clean trials, `pm clear` before each, canonical `bab46c6` debug APK rebuilt with the
+correct `APP_CHECK_DEBUG_TOKEN` `--dart-define` per the entry above -- omitting it, as a first build
+this session did, reintroduces the unregistered-token "Too many attempts" noise this repo's own
+convention warns about and would have contaminated this result):** `uiautomator dump`-polled for the
+login screen's actual appearance (title text present) rather than a fixed sleep -- a fixed ~6-11s
+sleep, tried first, sometimes fired before the screen existed at all, which would have looked like a
+dead tap for the wrong reason. Tap coordinate fixed at a screenshot-verified point on the visible
+gradient pill (`(360, 887)` on this device's 720x1480 capture), not derived from the button's
+accessibility-node bounds -- the D-03 `Semantics(button: true)` fix merges upward with the title/
+subtitle `Text` siblings into one accessibility node spanning icon-to-button, so that node's bounds
+centroid lands on the subtitle text, nowhere near the real pill; a coordinate derived from it produced
+the same result pattern as the correct one below only by coincidence of also landing in the card, and
+is flagged here as its own real (separate, non-blocking) accessibility defect. Post-tap, polled for
+the login screen's title text to disappear, up to 25s (not the original 10s -- see why below).
+`uiautomator dump` itself was also confirmed unreliable mid-investigation: a third-party app already
+on this shared device (`kz.sirius.siriuschat`, an app-limits/parental-control tool, previously noted
+in this file as ruled out for a different reason) spams a transient Toast window roughly every 3s,
+and `uiautomator dump` sometimes captured that Toast's tiny hierarchy instead of the app's real UI --
+every dump read in the final protocol retries (up to 5x, 400ms apart) until the root node's `package`
+attribute is actually this app's.
+
+**Result, final protocol: 5/10 SUCCESS, 5/10 the screen never leaves `/login` within 25s of the tap
+-- but perfectly bimodal, not random.** Every SUCCESS trial reached the login screen in ~3.6-3.7s
+from launch and navigated ~4.4s after the tap. Every non-navigating trial took ~15.5-15.7s to reach
+the *visually identical* login screen (same accessibility-node bounds, same enabled/clickable state --
+confirmed by diffing the two dumps) before the tap was even issued. Re-ran the full 10-trial protocol
+three times (naive fixed-coordinate, corrected-coordinate, corrected-coordinate-plus-dump-retry) and
+the same 3.6s-vs-15.6s split landed on the same trial parity every time -- this is deterministic on
+this device today, not a flaky ~50%.
+
+**Root cause, found from PID-scoped logcat on a non-navigating trial:** the tap *is* delivered
+(`ViewRootImpl ... ViewPostIme pointer 0/1`, on the real app process, not a stray process -- the
+"two PIDs" red herring earlier in this same investigation was the `monkey`/`uiautomator` CLI helper
+processes sharing the app's package name as an argument, not the app restarting). Immediately after:
+
+```
+W LocalRequestInterceptor: Error getting App Check token; using placeholder token instead. Error:
+  com.google.firebase.FirebaseException: Error returned from API. code: 403 body: App attestation failed.
+W LocalRequestInterceptor: Error getting App Check token; using placeholder token instead. Error:
+  com.google.firebase.FirebaseException: Too many attempts.
+D FirebaseAuth: Notifying id token listeners about user ( Q6lcurNjxGcvB9FMlgsGw7ck0ln1 ).
+D FirebaseAuth: Notifying auth state listeners about user ( Q6lcurNjxGcvB9FMlgsGw7ck0ln1 ).
+```
+
+**The sign-in succeeds** -- a real anonymous UID is created and the native SDK's own auth-state
+listeners fire -- **but the app never navigates away from `/login`.** The five SUCCESS trials'
+logcat has zero App-Check-related lines at all: clean attestation, clean sign-in, normal navigation.
+The five non-navigating trials all show this exact `403 App attestation failed` -> `Too many attempts`
+-> placeholder-token pair before the (still successful) sign-in -- correlated 5/5, not sampled.
+Registering the corrected debug token (prior entry) did not eliminate this; on a `pm clear`-fresh
+launch the debug provider's attestation handshake with Google's servers apparently still fails
+intermittently and falls back, adding the observed ~12s of retry/backoff before the screen even
+paints, and (HYPOTHESIS, not yet confirmed against source) leaves something about the auth/router
+wiring in a state where `lib/core/router/app_router.dart`'s `redirect` -- which reads
+`authRepo.currentUser` synchronously inside `redirectFor` and only re-runs when `profileListenable`
+(a `_MultiSourceListenable` over `authRepo.authStateChanges()` + `profileWatchOf(...)`) calls
+`notifyListeners()` -- either never receives that notification on this path, or receives it before
+`currentUser` itself has caught up, on the fresh-install/App-Check-retry timing this exposes. This is
+the same defect *class* `MVP-1`/`MVP-3` closed for the splash/data-provider paths on the
+`marketing/site-prototype-2026-08-19` branch (not yet ported to this branch as of this entry -- see
+the pending branch-salvage pass) -- an auth-state consumer trusting a synchronous read instead of the
+real stream emission -- but this is a *different* call site (`app_router.dart`'s general redirect,
+not the splash timer or the six leaf providers MVP-1 touched) that neither of those fixes covers.
+
+**D-03 status: CONFIRMED_OPEN_BUG. Reclassified.** Not a dead tap, not a hit-test/gesture-arena
+problem (the render tree lead from the entry above is not the mechanism) -- a genuine sign-in
+succeeds and the UI silently fails to react. The Material/Semantics change is not wrong (it is a
+real, separate, now-fixed accessibility gap: the button had no accessibility-tree presence before
+it) but does not touch this bug and should not be credited with fixing D-03. **Also newly found, not
+yet fixed:** the D-03 Semantics fix's upward merge with the title/subtitle `Text` siblings, described
+above -- a screen-reader user now hears the whole card as one "button" including the headline and
+body copy, not just the CTA's own label. **Next step, not attempted in this pass:** confirm
+`app_router.dart`'s redirect-refresh path against a controlled/mocked App-Check-failure-then-success
+sequence (unit/widget test, not just on-device -- the existing `MVP-3`-style pattern of racing a
+controlled `StreamController` is directly reusable here) before changing production code; do not
+guess at a fix without first reproducing it under test, per this repo's own test-first convention.
+
+**No code changed by this entry.** Correction of the evidentiary basis and root-cause understanding
+for D-03, not a fix. Diagnostic screenshots/logcat kept outside the repo (session scratchpad), not
+committed -- reproducible from this entry's protocol description.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
