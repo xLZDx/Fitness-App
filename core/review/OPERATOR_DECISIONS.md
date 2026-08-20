@@ -1,13 +1,16 @@
 # Everything waiting on you
 
-**Nine decisions. None of them is engineering's, and none can be closed from inside this
-repository.** Each row below is answerable in one sentence without opening another document; the
-research is finished and cited, not summarised again here.
+**Eight decisions remain open; one (P1) has been answered.** None of the nine was engineering's to
+decide, and none could be closed from inside this repository without a named artefact from you.
+Each row below is answerable in one sentence without opening another document; the research is
+finished and cited, not summarised again here.
 
 > **This file is not a decision record.** Recording a decision means a file at
-> `core/decisions/<id>.md`, written by you. `core/decisions/` deliberately does not exist yet, and
-> nothing in this pass created it — a decision record authored by engineering would close an
-> operator row on engineering's say-so, which is the one thing the ledger exists to prevent.
+> `core/decisions/<id>.md`, written by you. `core/decisions/gym-webhook-disclosure.md` is the first
+> one, recorded 2026-08-21 from a live exchange with you while porting Gate F (see P1 below) — a
+> decision record authored by engineering on its own say-so, with no such exchange behind it, would
+> be exactly the forgery the ledger exists to catch, which is why every other row here still has
+> none.
 
 ---
 
@@ -19,7 +22,7 @@ research is finished and cited, not summarised again here.
 | **N05-B** | Configure a platform budget alert? | **Yes, do it** | Total |
 | **N05-C** | Enforce App Check? | **Not yet** — sequence it after the first Play upload | Total |
 | **N04** | Who is the customer for an equipment report? | **The user**, for now | High |
-| **P1** | Is a gym's webhook a disclosed processor? | **Remove the dispatch** | Total |
+| **P1** | Is a gym's webhook a disclosed processor? | **ANSWERED 2026-08-21: keep it, disclose it (P1-A)** | -- |
 | **S1** | Where does the pipeline source live? | **Separate clean repo, evidence tree frozen** | High |
 | **S2** | May the corpora leave this machine? | **No** | One-way if yes |
 | **S3** | Does the scanner programme continue? | **Pause, preserve** | Total |
@@ -108,9 +111,25 @@ the dispatch".
 
 ---
 
-## P1 — is a gym's webhook a disclosed processor?
+## P1 — is a gym's webhook a disclosed processor? — ANSWERED: P1-A
 
-Surfaced while measuring N-04, and genuinely new.
+**AUTHORIZED P1-A, 2026-08-21** (`core/decisions/gym-webhook-disclosure.md`), surfaced live while
+porting Gate F (`gym identity`, MRD-02) onto `master`: Gate F is the first client code to ever
+supply a real, non-`"unknown"` `gymId` on a report, which is what turns the dispatch below from
+unreachable to reachable, and a Codex review of that port raised this exact question again before
+it landed. The operator chose keep-and-disclose over remove. `scripts/legal/legal_text.py` (the
+single canonical source for both `.arb` locales and `public/privacy.html`/`terms.html`, per
+`scripts/legal/build_legal.py`) now names the gym as a conditional third *recipient* of report
+contents specifically -- not a "processor" in the GDPR Article 28 sense, since no controller-processor
+agreement governs it (codex review caught the original wording overclaiming this) -- and states
+plainly that this app does not control what a named gym does with what it receives.
+`core/CURRENT_STATE.md`'s `gym-webhook-disclosure` row is `CLOSED`, with an invariant
+(`gym_webhook_disclosure_stays_honest`, `scripts/review/state_ledger.py`) that reopens it if the
+disclosure regresses in any of the four surfaces (source + generated, both locales) or the decision
+record disappears.
+
+Surfaced while measuring N-04, and genuinely new. The analysis below is preserved as the record of
+what was actually weighed, not rewritten after the fact.
 
 The published privacy body says: **"Two processors are involved, and no others: Google … and
 Stripe."** `reportEquipment` looks up `gyms/{gymId}.maintenanceWebhookUrl` and POSTs report contents
@@ -139,10 +158,10 @@ pass added an `https:`-only check and `redirect: "manual"`, because report conte
 user free text should not travel in cleartext regardless of who the customer is, and a scheme check
 that redirects can undo is decorative. That is engineering's and is done.
 
-> **AUTHORIZE P1-B:** *"Remove the gym webhook dispatch. Reports stay inside SPTR."*
-> **or AUTHORIZE P1-A:** *"Keep gym dispatch and amend the privacy copy to name gym-selected
-> endpoints as recipients of report contents, including the free-text note, before onboarding any
-> gym."*
+> ~~AUTHORIZE P1-B: "Remove the gym webhook dispatch. Reports stay inside SPTR."~~
+> **AUTHORIZED P1-A, 2026-08-21:** *"Keep gym dispatch and amend the privacy copy to name
+> gym-selected endpoints as recipients of report contents, including the free-text note, before
+> onboarding any gym."* See `core/decisions/gym-webhook-disclosure.md` for the full record.
 
 ---
 

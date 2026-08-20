@@ -211,9 +211,9 @@
 
 <header>
   <p class="eyebrow">SPTR &middot; живой статус-отчёт &middot; обновляется на месте, не переиздаётся</p>
-  <h1>D-03 оказался не про тап — про роутер после успешного входа</h1>
-  <p class="dek">Первый проход по автономной программе SPTR: проверил реальное состояние репозитория и веток, довёл до конца верификацию D-03 и D-05 на устройстве, нашёл и запушил новую, ранее не задокументированную первопричину D-03. Остальные 13 сабгейтов программы (Onboarding v4, Form Coach, Light theme, Visual Gate, релизная ревалидация, M7&ndash;M9, MVP, Full Product) не начаты &mdash; см. раздел 6.</p>
-  <p style="font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft); margin:14px 0 0;">Обновлено 2026-08-20 &middot; эта страница правится и редеплоится на тот же линк при каждом обновлении, а не заменяется новым файлом с датой</p>
+  <h1>D-03 нашёл и исправил настоящую причину; Gate E перенесён; блокер по вебхуку зала закрыт</h1>
+  <p class="dek">Второй проход по автономной программе SPTR (отдельная сессия от той, что писала предыдущую версию этой страницы). Три результата, все с реальной верификацией: причина D-03 найдена тестом, а не догадкой, и исправлена; Gate E (shared uncertainty contract) перенесён с маркетинговой ветки с двумя раундами правок по Codex; governance-блокер по раскрытию вебхука зала в политике конфиденциальности закрыт решением оператора после четырёх раундов ревью Codex. Работа на устройстве (D-05B, D-04, 20-прогонная верификация D-03 на S8) не выполнялась &mdash; в этой сессии нет доступа к adb/Android SDK. Остальные разделы программы (Onboarding v4, Form Coach, Light theme, Visual Gate, M7&ndash;M9, MVP) не начаты &mdash; см. раздел 7.</p>
+  <p style="font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft); margin:14px 0 0;">Обновлено 2026-08-21 &middot; эта страница правится и редеплоится на тот же линк при каждом обновлении, а не заменяется новым файлом с датой</p>
 </header>
 
 <!-- report-conform:begin -->
@@ -239,9 +239,9 @@
 </style>
 <div class="rc-bar">
   <dl>
-    <dt>Проект</dt><dd>_wt-master-sync</dd>
-    <dt>Папка</dt><dd>D:\Repo\_wt-master-sync</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 572ebb4</dd>
+    <dt>Проект</dt><dd>_wt-gates-efgh</dd>
+    <dt>Папка</dt><dd>D:\Repo\_wt-gates-efgh</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; HEAD @ c9451d7</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
@@ -249,160 +249,145 @@
 </div>
 <!-- report-conform:end -->
 
+
+
 <div class="wrap">
 
   <div class="stopbanner warn">
     <span class="glyph">СТАТУС</span>
     <div>
-      <strong>MVP_READY: не достигнут. Это ожидаемо на данном этапе, не отклонение.</strong>
-      <p>Программа из 64 разделов реалистично описывает несколько недель работы (полная реализация Onboarding v4, Form Coach MVP, Light theme, golden-тесты с нуля, M7&ndash;M9). За этот проход добросовестно закрыт только Subgate A (частично) и собран задел по Subgate B/C. Дальше идти в том же режиме &mdash; без промежуточных отчётов, с push-подтверждением перед каждым push, как оператор подтвердил в начале сессии.</p>
+      <strong>MVP_READY: не достигнут. Ожидаемо на данном этапе, не отклонение.</strong>
+      <p>Программа реалистично описывает несколько недель работы. За этот проход добросовестно закрыты три узких, полностью верифицированных результата (D-03 root-cause fix, перенос Gate E, закрытие governance-блокера по раскрытию вебхука зала); ни один из крупных разделов программы (Onboarding v4, Form Coach, Light theme, Visual Gate, M7&ndash;M9) не начат. Работа на реальном устройстве не выполнялась &mdash; в этой сессии нет доступа к adb/Android SDK, см. §6.</p>
     </div>
   </div>
 
   <section>
     <h2><span class="num">01</span> Что было сделано за этот проход</h2>
-    <p class="section-lede">Реальное состояние репозитория проверено с нуля, а не взято на веру из текста программы &mdash; часть заявленного реестра дефектов подтвердилась, часть оказалась устаревшей.</p>
+    <p class="section-lede">Три независимых результата, каждый с собственной верификацией (тесты, codex-ревью, или оба).</p>
     <div class="statusgrid">
-      <div class="statusrow"><span class="label">origin/master синхронизирован</span><span class="chip ok">0 ahead / 0 behind</span></div>
-      <div class="statusrow"><span class="label">D-03 &middot; guest Continue</span><span class="chip crit">Переклассифицирован, не тап-баг</span></div>
-      <div class="statusrow"><span class="label">D-05 &middot; чип Technique Coach</span><span class="chip ok">Подтверждено: без перекрытия</span></div>
-      <div class="statusrow"><span class="label">D-04 &middot; AI Trainer / App Check</span><span class="chip warn">Попытка неубедительна, см. §3</span></div>
-      <div class="statusrow"><span class="label">Ветка formcoach/gates-a-c</span><span class="chip ok">Полностью слита в master</span></div>
-      <div class="statusrow"><span class="label">Ветка marketing/site-prototype</span><span class="chip warn">22 коммита, классификация ниже</span></div>
+      <div class="statusrow"><span class="label">D-03 &middot; guest Continue</span><span class="chip ok">Root cause найден и исправлен, запушено</span></div>
+      <div class="statusrow"><span class="label">Gate E &middot; shared uncertainty (MRD-06)</span><span class="chip ok">Перенесён, 2 раунда codex, запушено</span></div>
+      <div class="statusrow"><span class="label">gym-webhook-disclosure &middot; governance-блокер</span><span class="chip ok">CLOSED, 4 раунда codex, закоммичено</span></div>
+      <div class="statusrow"><span class="label">D-05B / D-04 / 20-прогонная верификация D-03</span><span class="chip crit">Не выполнялось &mdash; нет adb/SDK</span></div>
+      <div class="statusrow"><span class="label">Ветка formcoach/gates-a-c</span><span class="chip warn">Верифицирована безопасной к удалению, оператор попросил оставить как есть</span></div>
+      <div class="statusrow"><span class="label">Ветка marketing/site-prototype, 22 коммита</span><span class="chip warn">Классифицирована; портирован только Gate E</span></div>
     </div>
   </section>
 
   <section>
-    <h2><span class="num">02</span> D-03: реальная первопричина</h2>
-    <p class="section-lede">Кандидат-фикс из прошлой сессии (<code>Material</code> + <code>Semantics(button: true)</code>) закрывает реальный, отдельный accessibility-дефект, но не является причиной D-03. 20 чистых прогонов на S8 (canonical <code>bab46c6</code>) на исправленной сборке с корректным App Check debug-токеном.</p>
-
-    <div class="card crit">
-      <h3>Тап реально доходит. signInAnonymously() реально успешен. UI не переходит с /login.</h3>
-      <p>Метод: опрос готовности экрана через <code>uiautomator dump</code> вместо фиксированной паузы (первая попытка на фиксированной паузе давала ложный результат &mdash; экран ещё не существовал в момент тапа). Координата тапа &mdash; по скриншоту, а не по границам accessibility-узла: merge-семантика после фикса D-03 объединяет заголовок, подзаголовок и саму кнопку в один узел, чей центр приходится на текст подзаголовка &mdash; это отдельный, новый accessibility-дефект.</p>
-      <p><strong>Результат: 5/10 успех, 5/10 &mdash; экран не покидает /login за 25с. Строго бимодально, не ~50% случайно.</strong> Успешные прогоны выходят на /login за ~3.6&ndash;3.7с и переходят дальше за ~4.4с. Неудачные выходят на визуально идентичный /login за ~15.5&ndash;15.7с &mdash; и застревают.</p>
-      <pre>W LocalRequestInterceptor: App attestation failed (403)
-W LocalRequestInterceptor: Too many attempts
-D FirebaseAuth: Notifying auth state listeners about user ( Q6lcurNjxGcvB9FMlgsGw7ck0ln1 )</pre>
-      <p>Пять успешных прогонов &mdash; ноль строк про App Check в логе. Пять зависших &mdash; во всех пяти именно эта пара ошибок перед (всё равно успешным) входом. Корреляция 5/5, не выборка. <strong>Рабочая гипотеза (не подтверждена по коду):</strong> <code>app_router.dart</code>'s <code>redirect</code> читает <code>authRepo.currentUser</code> синхронно и переоценивается только по <code>notifyListeners()</code> от <code>profileListenable</code> &mdash; на этом тайминге либо уведомление не доходит, либо <code>currentUser</code> ещё не успел обновиться. Тот же класс дефекта, что чинили MVP-1/MVP-3 на ветке <code>marketing/site-prototype-2026-08-19</code> (см. §4) &mdash; но другая точка вызова, ни один из тех фиксов её не покрывает.</p>
-      <p><strong>Следующий шаг (не сделан в этом проходе):</strong> воспроизвести под контролируемым widget-тестом (тем же паттерном, что MVP-3 &mdash; гонка через управляемый <code>StreamController</code>) прежде чем трогать <code>app_router.dart</code> &mdash; тест-first, без угадывания фикса.</p>
+    <h2><span class="num">02</span> D-03: настоящая причина найдена и исправлена</h2>
+    <p class="section-lede">Предыдущая версия этой страницы фиксировала D-03 как гипотезу гонки с App Check. Гипотеза не подтвердилась по коду: <code>firebase_auth_repository.dart</code> уже гарантирует, что <code>currentUser</code> присваивается раньше события потока <code>authStateChanges()</code> (проверено против кода Firebase SDK). Настоящая причина оказалась детерминированной, не вероятностной.</p>
+    <div class="card ok">
+      <h3>Разрешённое исключение в router redirect для анонимного входа с /login</h3>
+      <p><code>app_router.dart</code>'s <code>resolveRedirect()</code> содержит исключение для guest-upgrade: <code>if (isSignedIn &amp;&amp; !isAnonymous &amp;&amp; location == '/login') return isOnboarded ? '/home' : '/onboarding';</code> &mdash; условие требует <code>!isAnonymous</code>. После анонимного входа пользователь именно анонимный, поэтому это условие никогда не срабатывает, а <code>/login</code> входит в <code>_publicPaths</code>, так что redirect его вообще не трогает. UI оставался на /login не из-за гонки, а потому что ни одна ветка redirect не покрывала «только что вошёл анонимно» как повод уйти с /login.</p>
+      <p><strong>Фикс:</strong> кнопка «Continue» (анонимный вход) в <code>login_page.dart</code> теперь вызывает <code>context.go('/home')</code> явно после успешного <code>signInAnonymously()</code>, вместо того чтобы полагаться на то, что GoRouter переоценит redirect сам по себе.</p>
+      <p><strong>Доказательство, не только код-ревью:</strong> новый widget-тест с управляемым fake-репозиторием (<code>_ControllableAuthRepository</code>), который разделяет присвоение <code>currentUser</code> и событие потока <code>authStateChanges()</code> на два независимо триггерящихся шага &mdash; фикс проверен независимо от того, срабатывает ли поток вовремя. Первая версия теста ошибочно исходила из гипотезы гонки; переписана после того, как первый прогон показал зависание даже при корректно сработавшем потоке &mdash; это и вскрыло настоящую причину.</p>
+      <p><strong>Не сделано в этом проходе:</strong> верификация на реальном устройстве (20 прогонов на S8, как того требует критерий FIXED_VERIFIED программы) &mdash; в этой сессии нет доступа к adb/Android SDK. Статус &mdash; <code>FIXED</code>, не <code>FIXED_VERIFIED</code>.</p>
     </div>
-
     <div class="commitlog">
       <li>
-        <span class="sha">572ebb4</span>
-        <div class="msg">docs(decision-log): D-03 reclassified &mdash; not a dead tap, an App-Check-triggered auth/router desync
-          <span class="sub">Только core/DECISION_LOG.md, без изменения кода &middot; запушено, origin/master подтверждён 0/0</span>
+        <span class="sha">733e3e9</span>
+        <div class="msg">fix(auth): Continue must leave /login on a fresh anonymous sign-in (D-03)
+          <span class="sub">app_router.dart анализ + login_page.dart фикс + новые тесты в app_router_test.dart и login_page_test.dart &middot; запушено на master</span>
         </div>
       </li>
     </div>
   </section>
 
   <section>
-    <h2><span class="num">03</span> D-05 и D-04</h2>
-    <div class="card ok">
-      <h3>D-05 &middot; <span class="chip ok">подтверждено закрытым</span></h3>
-      <p>Library, RU, S8: чип «Тренер по технике» и баннер «Отобрано правилами, а не врачом» не перекрываются &mdash; баннер строго в своей строке под чипом, список фильтруется корректно. Воспроизведена и прежняя нюанс-находка: первый тап по чипу не сработал, идентичный второй &mdash; сработал. Совпадает с записью в decision log; отдельно не расследовалось &mdash; вероятно та же природа, что и D-03, но не подтверждено.</p>
-    </div>
+    <h2><span class="num">03</span> Gate E: перенос shared uncertainty contract (MRD-06)</h2>
+    <p class="section-lede">Первый из PRODUCT_REQUIRED коммитов с ветки <code>marketing/site-prototype-2026-08-19</code>, портирован на master. Новый тип <code>Answer&lt;T, R&gt;</code> (sealed: <code>ConfidentAnswer</code> / <code>UncertainAnswer</code>) в <code>mobile/lib/shared/uncertainty/answer.dart</code>.</p>
     <div class="card warn">
-      <h3>D-04 &middot; <span class="chip warn">попытка неубедительна</span></h3>
-      <p>Открыл Scanner, нажал кнопку распознавания &mdash; ни одной строки лога от пакета приложения не появилось (тап не долетел до подтверждённой цели). Требует более аккуратного UI-разбора экрана Scanner прежде чем повторять. Статус из предыдущей записи decision log (App Check debug-токен пофикшен; сам Firebase AI Logic enforcement &mdash; EXTERNAL_BLOCKED, консольное действие) считается всё ещё актуальным, свежих доказательств ни за, ни против не добавлено.</p>
+      <h3>Два раунда codex-ревью, оба нашли реальные дефекты</h3>
+      <p><strong>Раунд 1, исправлено:</strong> асимметрия <code>operator==</code> из-за ковариантности дженериков &mdash; <code>ConfidentAnswer&lt;int,R&gt; is ConfidentAnswer&lt;num,R&gt;</code> в Dart асимметрично. Добавлена явная проверка <code>runtimeType</code> перед <code>is</code>-проверкой в обеих реализациях <code>==</code>.</p>
+      <p><strong>Раунд 1, исправлено:</strong> тестовая фикстура <code>_ClipFailureReason</code> не покрывала реальный 4-й вариант <code>VideoFailureReason.quotaExhausted</code> &mdash; добавлен в фикстуру, в <code>classify()</code> и в отдельный тест.</p>
+      <p><strong>Раунд 2, найдено и <em>сознательно не исправлено</em>:</strong> тот же <code>MAJOR</code> с более резким примером (<code>Answer&lt;int, PoseGateVerdict&gt;.uncertain(PoseGateVerdict.ok)</code> &mdash; успешное значение из чужого enum, используемое как «причина неуверенности», потому что ничто не мешает <code>R</code> быть перечислением, где есть не только причины). Это реальный, уже существовавший дизайн-компромисс автора Gate E, а не то, что внёс перенос &mdash; сужение выходит за рамки «перенести этот коммит» и вынесено оператору как открытый вопрос, а не спрятано.</p>
+    </div>
+    <div class="commitlog">
+      <li>
+        <span class="sha">7e9bc76</span>
+        <div class="msg">Gate E: shared uncertainty contract (MRD-06)
+          <span class="sub">answer.dart + answer_test.dart, раунд-1 фиксы &middot; запушено на master</span>
+        </div>
+      </li>
+      <li>
+        <span class="sha">c9451d7</span>
+        <div class="msg">docs(decision-log): codex round-2 review of the committed Gate E port
+          <span class="sub">Раунд-2 находка задокументирована, не спрятана &middot; запушено на master</span>
+        </div>
+      </li>
     </div>
   </section>
 
   <section>
-    <h2><span class="num">04</span> Задел по Subgate B &mdash; консолидация веток</h2>
-    <p class="section-lede">Классификация по правилам §21&ndash;22 программы, не выполнена до конца (порт PRODUCT_REQUIRED-контента и удаление веток не сделаны).</p>
+    <h2><span class="num">04</span> Закрытие governance-блокера: gym-webhook-disclosure</h2>
+    <p class="section-lede">Codex-ревью переноса Gate F (следующий коммит в очереди, «gym identity») поднял <code>BLOCKER</code>: Gate F &mdash; первый клиентский код, который вообще передаёт настоящий <code>gymId</code> в отчёт об оборудовании, что делает достижимым уже существующий, но ранее недостижимый серверный диспетчер (<code>functions/src/index.ts</code>'s <code>reportEquipment</code> &rarr; вебхук на <code>gyms/{gymId}.maintenanceWebhookUrl</code>) &mdash; при том, что опубликованная политика конфиденциальности прямо утверждала «Two processors are involved, and no others».</p>
     <div class="card ok">
-      <h3><code>formcoach/gates-a-c</code> <span class="chip ok">ALREADY_IN_MASTER</span></h3>
-      <p>Полный предок <code>master</code> (<code>git merge-base --is-ancestor</code> = true, 0 уникальных коммитов, пустой diff). Безопасно удалять удалённую ветку без потери контента &mdash; порт не нужен.</p>
+      <h3>Решение оператора: DISCLOSE, не REMOVE</h3>
+      <p>Зал, зарегистрировавший канал техобслуживания, теперь описан в политике как обусловленный третий <em>получатель</em> содержимого отчёта &mdash; не «обработчик» в смысле GDPR Art. 28: зал чинит своё же оборудование ради собственной цели, не по инструкциям приложения, и это уже сам по себе верный тест «получатель против обработчика» (Art. 4(8)), а не просто отсутствие подписанного соглашения. Диспетчер в коде не тронут.</p>
+      <p><strong>Четыре раунда codex-ревью на этом закрытии, все находки исправлены:</strong> раунд 1 &mdash; черновая формулировка записи решения переоценивала правовой статус («processor»); раунд 2 &mdash; инвариант в state_ledger.py проверял только одну сторону/поверхность; раунд 3 &mdash; проверка была поиском подстроки по всему файлу вместо чтения именно значения политики (decoy в несвязанном ключе мог пройти незамеченным), плюс Условия использования разошлись с Политикой по формулировке цели отчёта («чтобы поправить каталог» vs «переслать в зал»), плюс инвариант не проверял, что сам диспетчер в коде жив; раунд 4 &mdash; блок «коротко» в политике всё ещё безусловно обещал «всё хранится в ЕС» и «можно удалить всё», хотя пересланная запись уже покидает системы приложения, плюс формулировка решения обосновывала статус «получатель» отсутствием соглашения вместо фактического теста целей-и-средств.</p>
+      <p>Итоговый инвариант <code>gym_webhook_disclosure_stays_honest()</code> проверяет шесть текстов (канонический источник + оба <code>.arb</code> + <code>public/privacy.html</code>, оба языка &mdash; каждый через прямой импорт/JSON-парсинг конкретного значения, не поиск по всему файлу), сам диспетчер в <code>functions/src/index.ts</code>, и наличие файла решения &mdash; откатится, если любое из этого перестанет быть верным. Полный набор тестов: 137 (было 135, +2 новых на decoy и на удаление диспетчера).</p>
     </div>
-    <div class="card warn">
-      <h3><code>marketing/site-prototype-2026-08-19</code> <span class="chip warn">смешанная, 22 уникальных коммита</span></h3>
-      <p><strong>Важная находка на будущее, не для master:</strong> весь модуль допуска <code>mobile/lib/features/safety/</code> (PAR-Q/eligibility) существует на <code>master</code>, но полностью отсутствует в истории этой ветки &mdash; она форкнулась до этого функционала, а не потеряла его. Это уже задокументировано на самой ветке отдельной записью STOP-THE-LINE (2026-08-19) &mdash; вся её сессия device-evidence (сканер, EN/RU, изоляция аккаунтов) шла против чужой сборки и не была пересобрана/перепроверена; release gate там официально не закрыт.</p>
-      <p>Два коммита (<code>f7279ca</code>, <code>68cef87</code> &mdash; исправление auth-restore false-state collapse, MVP-1/MVP-3) уже <strong>не нужно портировать</strong>: master получил эквивалентный, более полный фикс отдельным коммитом <code>74f2f76</code> (плюс закрытие Profile questionnaire dead-end, которого не было в версии с ветки). Остальные 20 коммитов (маркетинговый сайт-прототип, claim_lint.py, machine_card_contribution_report.py, отчёты) не classified построчно в этом проходе &mdash; следующий шаг для Subgate B.</p>
+    <div class="commitlog">
+      <li>
+        <span class="sha">closure</span>
+        <div class="msg">Gate F prep: close gym-webhook-disclosure via DISCLOSE, harden its invariant
+          <span class="sub">legal_text.py, оба .arb, privacy.html, terms.html, state_ledger.py + тесты, core/decisions/gym-webhook-disclosure.md &middot; закоммичено в _wt-gates-efgh, ещё не запушено &mdash; ждёт финального раунда codex</span>
+        </div>
+      </li>
     </div>
   </section>
 
   <section>
-    <h2><span class="num">05</span> Реальное состояние кода против заявленного в программе</h2>
-    <p class="section-lede">Независимая read-only проверка (агент, canonical <code>_wt-master-sync</code>) &mdash; часть заявлений программы устарела или неполна.</p>
-    <table>
-      <thead><tr><th>Пункт</th><th>Заявлено в программе</th><th>Найдено фактически</th></tr></thead>
-      <tbody>
-        <tr><td>Onboarding v4</td><td>9-шаговый эталон готов к реализации</td><td>Референс-ассеты есть (<code>core/design/reference/onboarding_v4/</code>), собственный README прямо говорит: не согласован с текущей реализацией, содержит фиктивную метрику «Техника 94%», которую нельзя выпускать</td></tr>
-        <tr><td>Form Coach</td><td>MVP на реальном on-device движке</td><td>Подтверждено реальным: <code>google_mlkit_pose_detection</code>, конкретный <code>MlKitPoseDetectorService</code>, не заглушка</td></tr>
-        <tr><td>Golden-тесты (M8)</td><td>критические состояния как детерминированные golden</td><td>Ни одного golden-теста в репозитории на сегодня &mdash; работа с нуля</td></tr>
-        <tr><td>Light theme</td><td>критические экраны покрыты</td><td>Токенная структура есть (<code>AppTheme.light()</code>/<code>.dark()</code>), но продуктовое решение прямо в коде: light сознательно отложена («dark first... light later»)</td></tr>
-      </tbody>
-    </table>
+    <h2><span class="num">05</span> Почему появился новый ворктри <code>_wt-gates-efgh</code></h2>
+    <p class="section-lede">Локальный hook <code>shell_policy_gate</code> заблокировал команды уборки (<code>git reset --hard</code>, <code>git checkout HEAD -- &lt;файлы&gt;</code>) в <code>_wt-master-sync</code> даже после явного разрешения оператора в диалоге &mdash; механический хук не читает разрешения из переписки. Вместо того чтобы обходить хук переформулировкой команд, работа продолжена в новом ворктри <code>_wt-gates-efgh</code> (detached HEAD от <code>origin/master</code>). <code>_wt-master-sync</code> оставлен как есть, с незакоммиченной незавершённой попыткой переноса Gate F &mdash; не тронут, не потерян.</p>
   </section>
 
   <section>
-    <h2><span class="num">06</span> Что не начато</h2>
-    <p class="section-lede">Честно, без попытки представить частичный проход как завершённую программу.</p>
+    <h2><span class="num">06</span> Что не сделано и почему</h2>
     <ul class="backlog">
-      <li><span class="tag">SUBGATE C</span> Реконциляция plan/design source-of-truth &mdash; не начато</li>
-      <li><span class="tag">SUBGATE D</span> Onboarding v4 (9 экранов, Dark+Light, безопасность, тесты, визуальные доказательства) &mdash; не начато</li>
-      <li><span class="tag">SUBGATE E</span> Session Finish / Workout Summary ревизия &mdash; не начато</li>
-      <li><span class="tag">SUBGATE F</span> Form Coach MVP-имплементация HUD поверх реального движка &mdash; не начато</li>
-      <li><span class="tag">SUBGATE G</span> Light theme на критических поверхностях &mdash; не начато</li>
-      <li><span class="tag">SUBGATE H</span> Visual Gate (Dark+Light, FAIL=0/MAJOR=0) &mdash; не начато</li>
-      <li><span class="tag">SUBGATE I</span> Provenance-чистая релизная ревалидация (Scanner/App Check/auth/EN-RU/изоляция) &mdash; не начато</li>
-      <li><span class="tag">SUBGATE J&ndash;L</span> M7 (a11y/l10n), M8 (goldens), M9 (adversarial) &mdash; не начаты</li>
-      <li><span class="tag">SUBGATE M</span> MVP_READY сборка и доставка в Firebase App Tester &mdash; не начато</li>
-      <li><span class="tag">SUBGATE N</span> Post-MVP по канoническому плану &mdash; не начато</li>
+      <li><span class="tag">D-03</span> Верификация 20 прогонов на S8 &mdash; блокировано отсутствием adb/Android SDK в этой сессии</li>
+      <li><span class="tag">D-05B</span> Первый тап не срабатывает &mdash; не расследовано, тот же блокер</li>
+      <li><span class="tag">D-04</span> Реальный E2E тест AI Trainer/Scanner &mdash; не выполнялся, тот же блокер</li>
+      <li><span class="tag">GATE F</span> Cherry-pick коммита «gym identity» &mdash; блокер снят (§4), сам перенос ещё не переиграно</li>
+      <li><span class="tag">GATE G/H</span> setup-note memory, standalone ops script &mdash; не начаты, зависят от Gate F</li>
+      <li><span class="tag">BRANCH</span> Удаление <code>formcoach/gates-a-c</code> &mdash; верифицировано безопасным, оператор попросил оставить пока как есть</li>
+      <li><span class="tag">ONBOARDING</span> Reconciliation plan/design authority, Onboarding v4 &mdash; не начато</li>
+      <li><span class="tag">FORM COACH, THEMES, SAFETY, M7&ndash;M9, MVP_READY</span> &mdash; не начаты</li>
     </ul>
   </section>
 
   <section>
-    <h2><span class="num">07</span> Счётчики (обязательный формат программы, §9)</h2>
+    <h2><span class="num">07</span> Счётчики</h2>
     <div class="statgrid">
-      <div class="stat"><div class="n">1</div><div class="l">Fixed &amp; pushed</div></div>
-      <div class="stat"><div class="n zero">0</div><div class="l">Fixed config</div></div>
-      <div class="stat"><div class="n">1</div><div class="l">Root cause found, not fixed</div></div>
-      <div class="stat"><div class="n">2</div><div class="l">Confirmed open bugs</div></div>
-      <div class="stat"><div class="n">1</div><div class="l">External blockers</div></div>
-      <div class="stat"><div class="n zero">0</div><div class="l">Unverified operator reports</div></div>
-      <div class="stat"><div class="n">1</div><div class="l">Not reproduced</div></div>
-      <div class="stat"><div class="n">2</div><div class="l">New defects found</div></div>
-      <div class="stat"><div class="n zero">0</div><div class="l">Milestones closed</div></div>
-      <div class="stat"><div class="n zero">0</div><div class="l">New APKs built (в Firebase)</div></div>
-      <div class="stat"><div class="n zero">0</div><div class="l">Firebase distributions</div></div>
-      <div class="stat"><div class="n zero">0</div><div class="l">Master ahead</div></div>
-      <div class="stat"><div class="n zero">0</div><div class="l">Master behind</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">Fixed &amp; pushed (D-03, Gate E)</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">Governance-блокер закрыт</div></div>
+      <div class="stat"><div class="n zero">0</div><div class="l">FIXED_VERIFIED на устройстве</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">Confirmed open bugs (D-05B, D-04)</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">External blockers (adb/SDK)</div></div>
+      <div class="stat"><div class="n">8</div><div class="l">Codex-раундов всего (2+4+2 по трём результатам)</div></div>
+      <div class="stat"><div class="n zero">0</div><div class="l">New APKs / Firebase distributions</div></div>
+      <div class="stat"><div class="n zero">0</div><div class="l">Master ahead / behind (перед пушем)</div></div>
     </div>
-    <p class="section-lede" style="margin-top:16px;">«Fixed &amp; pushed» = документация первопричины D-03 (реальный код-фикс не сделан, см. §2). «New defects found»: D-03 переклассифицирован как router-desync (не тап), плюс merge-семантика в <code>_GradientButton</code> превращает заголовок+подзаголовок+кнопку в один accessibility-узел. 2 отладочных APK собраны локально для тестирования, но не отправлены в Firebase &mdash; ни один build этого прохода не был milestone-сборкой.</p>
   </section>
 
   <section>
-    <h2><span class="num">08</span> Провенанс сборки, использованной в §2&ndash;3</h2>
-    <table>
-      <thead><tr><th>Поле</th><th>Значение</th></tr></thead>
-      <tbody>
-        <tr><td>SOURCE_SHA</td><td class="mono">bab46c662b699bf82565c1d2cd808fb909475e49 (canonical master на начало сессии)</td></tr>
-        <tr><td>REPORT_COMMIT_SHA</td><td class="mono">572ebb40f421ad612f95fd0af4a2bf0e070d270e</td></tr>
-        <tr><td>FINAL_REMOTE_MASTER_SHA</td><td class="mono">572ebb40f421ad612f95fd0af4a2bf0e070d270e (0 ahead / 0 behind, подтверждено fetch)</td></tr>
-        <tr><td>APK_SHA256</td><td class="mono">feb4c45fbe36fc8453130fe2617650f3bc9a2db17c4a5b145391c574dabd17fe (debug, с корректным APP_CHECK_DEBUG_TOKEN)</td></tr>
-        <tr><td>Устройство</td><td>Samsung SM-G950F (S8), serial <code>ce0417141997e4640c</code> &mdash; общий, не эксклюзивное окно</td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2><span class="num">09</span> Рекомендация на продолжение</h2>
+    <h2><span class="num">08</span> Рекомендация на продолжение</h2>
     <ol class="checklist">
-      <li>Widget-тест на гонку App-Check-failure &rarr; успешный sign-in &rarr; router redirect (паттерн MVP-3), прежде чем трогать <code>app_router.dart</code> для D-03.</li>
-      <li>Классифицировать оставшиеся 20 коммитов <code>marketing/site-prototype-2026-08-19</code> построчно (PRODUCT_REQUIRED / MARKETING_REQUIRED / HISTORICAL / SUPERSEDED), затем удалить обе устаревшие удалённые ветки.</li>
-      <li>Onboarding v4: сначала согласовать 9-экранный референс с текущей 10-шаговой реализацией (включая устранение фиктивной метрики «94%») &mdash; отдельный, не начатый гейт.</li>
-      <li>Продолжать в Program mode: без промежуточных отчётов по каждому сабгейту, с коротким push-подтверждением перед каждым push, как в этой сессии.</li>
+      <li>Дождаться финального раунда codex по закрытию gym-webhook-disclosure и запушить (round 4, <code>--final</code>, уже маркирован).</li>
+      <li>Повторить cherry-pick Gate F («gym identity») в <code>_wt-gates-efgh</code> &mdash; блокер снят.</li>
+      <li>Портировать Gate G и Gate H, затем классифицировать оставшиеся коммиты marketing-ветки построчно и удалить обе устаревшие ветки.</li>
+      <li>Любая верификация D-03/D-05B/D-04 на устройстве требует сессии с рабочим adb/Android SDK &mdash; недоступно здесь.</li>
     </ol>
   </section>
 
   <footer>
-    Живой статус-отчёт SPTR &middot; правится на месте, не переиздаётся заново &middot; предыдущая версия (STOP-THE-LINE, ветка <code>marketing/site-prototype-2026-08-19</code>) сохранена в истории git той ветки.
+    Живой статус-отчёт SPTR &middot; правится на месте, не переиздаётся заново.
   </footer>
 
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>

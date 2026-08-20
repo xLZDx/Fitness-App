@@ -20579,3 +20579,57 @@ real cases (missed in the original 2026-08-19 write-up, predating this port) -- 
 `core/product/GATE_E_SHARED_UNCERTAINTY_D0_NOTE_2026-08-19.md` to include `quotaExhausted`.
 
 **No product code changed by this entry.**
+
+---
+
+## 2026-08-21 -- codex review round 3 (--uncommitted) on the gym-webhook-disclosure closure
+
+Third round against the evolving `gym_webhook_disclosure_stays_honest` invariant and its supporting
+copy. Found and fixed all three:
+
+**MAJOR (confirmed by direct read of `state_ledger.py:1095`).** The closure checks were whole-file
+substring searches on `legal_text.py` and the `.arb`s, not reads of the actual privacy value. An
+`app_en.arb` with the disclosure marker sitting in an unrelated key (e.g. `legalTermsBody`) while
+`legalPrivacyBody` itself still carried the old two-processors claim would have passed. Fixed by (1)
+importing `legal_text` directly and reading `PRIVACY_EN`/`PRIVACY_RU` off the module instead of
+grepping the raw file -- this also retires the old `\`-line-continuation-stripping workaround, since
+an imported string is already evaluated; and (2) JSON-parsing each `.arb` and checking its
+`legalPrivacyBody` key specifically instead of the whole file text. `public/privacy.html` was left
+as a whole-file check: `build_legal.py` writes one file per document (`for doc in DOCS: ... /
+f"{doc}.html"`), so it never contains Terms content and was already scoped correctly. New regression
+test: `test_closure_ignores_a_decoy_marker_in_an_unrelated_arb_key`, using codex's own example
+verbatim.
+
+**MAJOR (confirmed by direct read of `legal_text.py`'s `TERMS_EN`/`TERMS_RU`, "What you contribute"
+section).** Terms still described an equipment report's purpose as "to correct the catalogue," while
+the just-amended Privacy Policy says a report is kept in this app's own records and, when the named
+gym has registered a maintenance channel, forwarded there too. Two legal documents describing
+different purposes for the same submitted content is a real drift, not a stylistic nit. Fixed in
+both `TERMS_EN` and `TERMS_RU`, cross-referencing Privacy's "Equipment reports" section; regenerated
+via `build_legal.py` (`--check` clean).
+
+**MINOR (confirmed by direct read of `state_ledger.py:1095`).** The invariant never read
+`functions/src/index.ts`, so the decision record's promise that removing the webhook dispatch
+reopens the row was not actually enforced. Fixed by folding in the same dispatch-presence check
+`gym_webhook_still_undisclosed` already used (`maintenanceWebhookUrl` + `await fetch(` inside the
+comment-stripped `reportEquipment` handler). New regression test:
+`test_closure_breaks_if_the_webhook_dispatch_is_removed`.
+
+`core/decisions/gym-webhook-disclosure.md`'s "Reopening" section updated to name the current
+invariant (`gym_webhook_disclosure_stays_honest`, not the retired `gym_webhook_still_undisclosed`)
+and to record the Terms/Privacy drift and its fix.
+
+Verified: `python scripts/legal/build_legal.py --check` clean; direct call to
+`gym_webhook_disclosure_stays_honest()` returns `(True, ...)`; full suite
+`python -m pytest scripts/review/test_state_ledger.py scripts/legal/ -q` -- 137 passed (135 before
+this round, +2 new regression tests), including the two decoy/dispatch-removal tests added this
+round. `core/CURRENT_STATE.md` regenerated.
+
+This is the third round on this same invariant. Per the codex-consensus round policy's 3-round
+circuit breaker, a round-4 confirmation pass is being run and marked `--final` for the push gate
+rather than opening a fourth substantive round; any further finding it surfaces is recorded and
+handed to the operator rather than iterated on again in this gate.
+
+**No app runtime code changed by this entry** -- only legal copy (`legal_text.py` and its generated
+`.arb`/`.html` outputs) and the governance ledger (`state_ledger.py`, its tests, and the decision
+record).

@@ -82,8 +82,8 @@ LAST_UPDATED = "2026-08-06"
 #: files and would still render an ISO date to a reader — one key each says
 #: the same thing in the form each language actually writes it.
 STAMP = {
-    "en": "Last updated 6 August 2026",
-    "ru": "Обновлено 6 августа 2026",
+    "en": "Last updated 21 August 2026",
+    "ru": "Обновлено 21 августа 2026",
 }
 
 # --------------------------------------------------------------------------
@@ -166,6 +166,15 @@ that other people may be in the frame.
 Progress photos are different: they stay on your phone. There is no \
 server-side storage for them at all.
 
+**Equipment reports.** If you report broken or missing equipment and name the \
+gym you are at, that report -- including anything you typed in the note -- \
+goes to this app's own records, and separately to that gym's own maintenance \
+channel, if the gym has registered one. Which system that is depends on \
+which gym you name; it is not one of the two processors below, and this app \
+does not control what that gym does with it afterwards. If the gym you name \
+has not registered a channel, or you leave the field blank, the report only \
+ever reaches this app's own records.
+
 **Health Connect and Apple Health.** If you connect them, the app reads five \
 things: steps, active calories burned, resting heart rate, sleep, and heart \
 rate variability. It writes one thing back: a workout entry when you finish a \
@@ -196,9 +205,13 @@ Data lives in Google Cloud's eur3 multi-region, inside the European Union, and \
 the server code that reads it runs in europe-west1. Firestore security rules \
 restrict every document under your account to you alone.
 
-Two processors are involved, and no others: Google (Firebase Authentication, \
+Two processors handle everything else: Google (Firebase Authentication, \
 Firestore, Crashlytics, App Check, and the Gemini model) and Stripe \
-(payments).
+(payments). A gym you name in an equipment report can be a third recipient of \
+that report's contents, but only that report, and only when that specific \
+gym has registered its own maintenance channel -- see "Equipment reports" \
+above. Unlike Google and Stripe, a gym does not act on this app's \
+instructions and nothing here governs what it does with what it receives.
 
 ## The supporter wall is public, and only by your own request
 
@@ -335,6 +348,16 @@ Fitness App делает и поддерживает один независим
 С фотографиями прогресса иначе: они остаются на телефоне. Серверного \
 хранилища для них нет вообще.
 
+**Сообщения о неисправном оборудовании.** Если вы сообщаете о сломанном или \
+отсутствующем оборудовании и указываете зал, это сообщение -- включая всё, \
+что вы написали в примечании, -- попадает в собственные записи этого \
+приложения, а отдельно -- в канал техобслуживания этого зала, если у него \
+такой зарегистрирован. Какая это система, зависит от того, какой зал вы \
+указали; это не один из двух обработчиков ниже, и это приложение не \
+контролирует, что этот зал делает с сообщением дальше. Если у указанного \
+зала канал не зарегистрирован или поле оставлено пустым, сообщение доходит \
+только до собственных записей этого приложения.
+
 **Health Connect и Apple Health.** Если вы их подключите, приложение читает \
 пять показателей: шаги, активные калории, пульс покоя, сон и вариабельность \
 сердечного ритма. Записывает обратно одно: запись о тренировке по завершении \
@@ -368,9 +391,14 @@ Apple Health немедленно прекращает чтение -- прил�
 безопасности Firestore ограничивают доступ к каждому документу вашей учётной \
 записи только вами.
 
-Задействованы два обработчика и никакие другие: Google (Firebase \
-Authentication, Firestore, Crashlytics, App Check и модель Gemini) и Stripe \
-(платежи).
+Всё остальное обрабатывают два обработчика: Google (Firebase Authentication, \
+Firestore, Crashlytics, App Check и модель Gemini) и Stripe (платежи). \
+Указанный вами в сообщении об оборудовании зал может стать третьим \
+получателем содержимого этого сообщения -- но только этого сообщения, и \
+только если у этого конкретного зала зарегистрирован собственный канал \
+техобслуживания -- см. «Сообщения о неисправном оборудовании» выше. В \
+отличие от Google и Stripe, зал не действует по инструкциям этого \
+приложения, и оно никак не контролирует, что зал делает с полученным.
 
 ## Стена поддержки публична -- и только по вашей просьбе
 
@@ -514,7 +542,9 @@ not a party to what happens in a session between you and a coach.
 
 Equipment reports, machine notes and your supporter-wall message stay yours. \
 By submitting them, you allow them to be stored and shown for the purpose they \
-exist for -- an equipment report to correct the catalogue, a wall message to \
+exist for -- an equipment report to be kept in this app's own records and, \
+when the gym you name has registered a maintenance channel, forwarded there \
+too (see the Privacy Policy's "Equipment reports" section), a wall message to \
 appear on the public wall. Do not submit anything unlawful, or anything you \
 have no right to submit.
 
@@ -623,9 +653,12 @@ Fitness App делает и поддерживает один независим
 
 Сообщения о тренажёрах, заметки по ним и ваше сообщение на стене поддержки \
 остаются вашими. Отправляя их, вы разрешаете хранить и показывать их ради \
-того, для чего они существуют: сообщение о тренажёре -- чтобы поправить \
-каталог, сообщение на стене -- чтобы появиться на публичной стене. Не \
-отправляйте противоправное и то, на что у вас нет прав.
+того, для чего они существуют: сообщение о тренажёре -- чтобы попасть в \
+собственные записи этого приложения и, если указанный вами зал зарегистрировал \
+канал техобслуживания, быть также переданным туда (см. раздел «Сообщения о \
+неисправном оборудовании» в Политике конфиденциальности), сообщение на стене \
+-- чтобы появиться на публичной стене. Не отправляйте противоправное и то, на \
+что у вас нет прав.
 
 ## Прекращение
 

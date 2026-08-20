@@ -1084,15 +1084,24 @@ def test_no_operator_decision_records_exist_in_the_real_tree():
     there, an operator item is being closed -- which is legitimate when a
     person wrote it and a forgery when a test did. Either way it must not
     happen unnoticed.
+
+    `gym-webhook-disclosure.md` is the one expected exception: the operator
+    decided DISCLOSE in a live session, 2026-08-21, while Gate F's port onto
+    master turned the previously-unreachable `maintenanceWebhookUrl` dispatch
+    reachable (see the file itself, and the matching `gym-webhook-disclosure`
+    row in `RULES`, restated to `CLOSED` in the same commit as the decision
+    record, per this test's own instruction above).
     """
     decisions = sl.REPO / "core" / "decisions"
     present = sorted(p.name for p in decisions.glob("*.md")) \
         if decisions.exists() else []
-    assert not present, (
-        f"decision records exist: {present}. If an operator wrote these, the "
-        "matching ledger rows must be restated and this assertion updated in "
-        "the same commit. If anything else wrote them, that is the forgery "
-        "this mechanism is built to make visible."
+    expected = ["gym-webhook-disclosure.md"]
+    assert present == expected, (
+        f"decision records exist: {present}, expected only {expected}. If an "
+        "operator wrote a new one, the matching ledger row must be restated "
+        "and this assertion updated in the same commit. If anything else "
+        "wrote them, that is the forgery this mechanism is built to make "
+        "visible."
     )
 
 
@@ -1228,6 +1237,138 @@ def test_either_answer_retires_the_disclosure_question(monkeypatch, kwargs, why)
 def test_a_webhook_that_survives_only_in_a_comment_is_not_a_dispatch(monkeypatch):
     _p1(monkeypatch, in_comment=True)
     assert not sl.gym_webhook_still_undisclosed()[0]
+
+
+_DISCLOSED_EN = "A gym you name in a report can be a third recipient of its contents."
+_DISCLOSED_RU = "Указанный вами зал может стать третьим получателем содержимого."
+_OLD_CLAIM_EN = "Two processors are involved, and no others: Google and Stripe."
+_OLD_CLAIM_RU = "Задействованы два обработчика и никакие другие: Google и Stripe."
+
+
+def _p1_decided(
+    monkeypatch, tmp_path, *,
+    source_en=_DISCLOSED_EN, source_ru=_DISCLOSED_RU,
+    en_arb=_DISCLOSED_EN, ru_arb=_DISCLOSED_RU,
+    privacy_html=_DISCLOSED_EN + " " + _DISCLOSED_RU,
+    record_present=True,
+):
+    """Six independently-controllable surfaces plus the decision record --
+    codex review, 2026-08-21, across three rounds: the first version of this
+    fixture only varied one file (missed a stale generated surface or a
+    Russian-only regression); the second omitted `public/privacy.html`
+    entirely (missed a regression landing only on the hosted page); the third
+    faked `legal_text.py`/the `.arb`s as whole-file text, which could not
+    prove the check reads the *privacy* value specifically rather than any
+    text anywhere in the file (see
+    `test_closure_ignores_a_decoy_marker_in_an_unrelated_arb_key` below) --
+    fixed by monkeypatching the imported `legal_text` module's own
+    `PRIVACY_EN`/`PRIVACY_RU` attributes and by JSON-encoding the `.arb`
+    fakes under their real `legalPrivacyBody` key.
+    """
+    _p1(monkeypatch, dispatches=True)
+    ts_text = sl._read("functions/src/index.ts")
+
+    real_repo = sl.REPO
+    sys.path.insert(0, str(real_repo / "scripts" / "legal"))
+    import legal_text
+    monkeypatch.setattr(legal_text, "PRIVACY_EN", source_en)
+    monkeypatch.setattr(legal_text, "PRIVACY_RU", source_ru)
+
+    texts = {
+        "mobile/lib/l10n/app_en.arb": json.dumps({"legalPrivacyBody": en_arb}),
+        "mobile/lib/l10n/app_ru.arb": json.dumps({"legalPrivacyBody": ru_arb}),
+        "public/privacy.html": privacy_html,
+        "functions/src/index.ts": ts_text,
+    }
+    monkeypatch.setattr(sl, "_read", lambda rel: texts.get(rel, ""))
+    monkeypatch.setattr(sl, "REPO", tmp_path)
+    if record_present:
+        decisions = tmp_path / "core" / "decisions"
+        decisions.mkdir(parents=True)
+        (decisions / "gym-webhook-disclosure.md").write_text(
+            "decided", encoding="utf-8")
+
+
+def test_closure_stays_honest_once_disclosed_and_recorded(monkeypatch, tmp_path):
+    _p1_decided(monkeypatch, tmp_path)
+    holds, detail = sl.gym_webhook_disclosure_stays_honest()
+    assert holds, detail
+
+
+@pytest.mark.parametrize("kwargs", [
+    {"source_en": _OLD_CLAIM_EN},
+    {"source_ru": _OLD_CLAIM_RU},
+    {"en_arb": _OLD_CLAIM_EN},
+    {"ru_arb": _OLD_CLAIM_RU},
+    {"privacy_html": _OLD_CLAIM_EN},
+    {"privacy_html": _OLD_CLAIM_RU},
+])
+def test_closure_breaks_if_any_one_surface_reverts_to_no_others(
+        monkeypatch, tmp_path, kwargs):
+    """Each of the six texts can regress independently -- a source edit that
+    never got rebuilt, a rebuild that only touched one locale, or a
+    hosted-page-only hand-edit that bypassed the build script entirely -- and
+    each alone must be enough to break the closure."""
+    _p1_decided(monkeypatch, tmp_path, **kwargs)
+    holds, detail = sl.gym_webhook_disclosure_stays_honest()
+    assert not holds, detail
+
+
+def test_closure_breaks_if_a_surface_loses_the_marker_without_reverting(
+        monkeypatch, tmp_path):
+    """The gap the first version actually had: absence of the old sentence
+    was treated as proof of disclosure. Deleting the disclosure paragraph
+    entirely satisfies "not old_claim" without satisfying "discloses
+    anything"."""
+    _p1_decided(monkeypatch, tmp_path, en_arb="(disclosure paragraph removed)")
+    holds, detail = sl.gym_webhook_disclosure_stays_honest()
+    assert not holds, detail
+
+
+def test_closure_breaks_if_the_decision_record_disappears(monkeypatch, tmp_path):
+    _p1_decided(monkeypatch, tmp_path, record_present=False)
+    assert not sl.gym_webhook_disclosure_stays_honest()[0]
+
+
+def test_closure_ignores_a_decoy_marker_in_an_unrelated_arb_key(
+        monkeypatch, tmp_path):
+    """Codex round 3, verbatim: 'An app_en.arb with the disclosure removed
+    from legalPrivacyBody but "third recipient of" placed in an unrelated key
+    still passes.' `legalPrivacyBody` itself still carries the old claim;
+    only a neighboring `legalTermsBody` key carries the marker -- a whole-file
+    substring search would wrongly call this disclosed."""
+    _p1_decided(monkeypatch, tmp_path, en_arb=_OLD_CLAIM_EN)
+    decoyed = json.dumps({
+        "legalPrivacyBody": _OLD_CLAIM_EN,
+        "legalTermsBody": _DISCLOSED_EN,
+    })
+    monkeypatch.setattr(
+        sl, "_read",
+        lambda rel, _orig=sl._read: (
+            decoyed if rel == "mobile/lib/l10n/app_en.arb" else _orig(rel)
+        ),
+    )
+    holds, detail = sl.gym_webhook_disclosure_stays_honest()
+    assert not holds, detail
+
+
+def test_closure_breaks_if_the_webhook_dispatch_is_removed(monkeypatch, tmp_path):
+    """Codex round 3: the decision record promises this row reopens if the
+    dispatch in `functions/src/index.ts` is removed; nothing read that file
+    before, so removing it could not have reopened anything."""
+    _p1_decided(monkeypatch, tmp_path)
+    no_dispatch_ts = (
+        "export const reportEquipment = onCall(INTERACTIVE, async (r) => {});"
+    )
+    monkeypatch.setattr(
+        sl, "_read",
+        lambda rel, _orig=sl._read: (
+            no_dispatch_ts if rel == "functions/src/index.ts" else _orig(rel)
+        ),
+    )
+    holds, detail = sl.gym_webhook_disclosure_stays_honest()
+    assert not holds, detail
+    assert "dispatch" in detail
 
 
 def test_no_roboflow_key_literal_is_committed():

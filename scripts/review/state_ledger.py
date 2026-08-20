@@ -1048,6 +1048,82 @@ def gym_webhook_still_undisclosed() -> tuple[bool, str]:
     )
 
 
+def gym_webhook_disclosure_stays_honest() -> tuple[bool, str]:
+    """The CLOSED-state twin of `gym_webhook_still_undisclosed`.
+
+    The operator chose DISCLOSE, not REMOVE (2026-08-21,
+    `core/decisions/gym-webhook-disclosure.md`): the dispatch stays, the copy
+    names the gym as a conditional third recipient instead of claiming there
+    are only two processors. True while both halves of that hold.
+
+    Checked on the isolated privacy value in each of six surfaces -- codex
+    review, 2026-08-21, across three rounds: (1) reading only the English
+    `.arb` and only testing for the OLD sentence's absence meant a Russian-only
+    or hosted-page-only regression could pass unnoticed -- fixed by adding the
+    other five surfaces; (2) a whole-file substring search on `legal_text.py`
+    or an `.arb` matches a decoy anywhere in the file (the *Terms* body, an
+    unrelated key, a comment) even with the privacy value itself reverted, so
+    a passing check proved nothing about the privacy text specifically --
+    fixed by importing `legal_text` and reading `PRIVACY_EN`/`PRIVACY_RU`
+    directly (the module import also makes the old raw-text
+    line-continuation-stripping workaround unnecessary: Python already
+    evaluated the string), and by JSON-parsing each `.arb` for its
+    `legalPrivacyBody` key specifically. `public/privacy.html` is generated
+    one file per document (`build_legal.py`'s `for doc in DOCS: ... / f"
+    {doc}.html"`), so it never contains Terms content to begin with and a
+    whole-file check on it is already scoped correctly.
+
+    Also checks that the webhook dispatch itself (`functions/src/index.ts`'s
+    `reportEquipment`) is still present -- codex review, round 3: the decision
+    record promises this row reopens if the dispatch is removed, but nothing
+    here read that file, so removing it could not have reopened anything.
+    Mirrors `gym_webhook_still_undisclosed`'s own dispatch check.
+    """
+    sys.path.insert(0, str(REPO / "scripts" / "legal"))
+    import legal_text  # noqa: E402
+
+    en_arb = json.loads(_read("mobile/lib/l10n/app_en.arb"))
+    ru_arb = json.loads(_read("mobile/lib/l10n/app_ru.arb"))
+    # The published surface Google Play's store listing points at, not just
+    # the in-app copy -- codex review, 2026-08-21: a regression landing only
+    # on the hosted page (bypassing `build_legal.py`, or a hand-edit after)
+    # would otherwise leave this row green.
+    privacy_html = _read("public/privacy.html")
+
+    marker_en = "third recipient of"
+    marker_ru = "третьим получателем"
+    old_claim_en = "Two processors are involved, and no others"
+    old_claim_ru = "два обработчика и никакие другие"
+
+    def ok(text: str, marker: str, old_claim: str) -> bool:
+        return marker in text and old_claim not in text
+
+    checks = {
+        "legal_text.py (en)": ok(legal_text.PRIVACY_EN, marker_en, old_claim_en),
+        "legal_text.py (ru)": ok(legal_text.PRIVACY_RU, marker_ru, old_claim_ru),
+        "app_en.arb": ok(en_arb.get("legalPrivacyBody", ""), marker_en, old_claim_en),
+        "app_ru.arb": ok(ru_arb.get("legalPrivacyBody", ""), marker_ru, old_claim_ru),
+        "privacy.html (en)": ok(privacy_html, marker_en, old_claim_en),
+        "privacy.html (ru)": ok(privacy_html, marker_ru, old_claim_ru),
+    }
+    decided = (REPO / "core" / "decisions" / "gym-webhook-disclosure.md").exists()
+    handler = _without_comments(_exported_member(
+        _read("functions/src/index.ts"),
+        "export const reportEquipment = onCall(",
+    ))
+    dispatches = "maintenanceWebhookUrl" in handler and "await fetch(" in handler
+
+    failing = [k for k, v in checks.items() if not v]
+    holds = not failing and decided and dispatches
+    return holds, (
+        "disclosed and in sync across source, en and ru; decision record "
+        "present; dispatch still live"
+        if holds else
+        f"failing surfaces = {failing or 'none'}; decision record present = "
+        f"{decided}; dispatch still live = {dispatches}"
+    )
+
+
 #: A literal assigned to the key, in any quoting style. Narrow on purpose: a
 #: loose "long token near the word roboflow" pattern would fire on every sha256
 #: in the provenance documents, and a guard that cries wolf is switched off.
@@ -1348,22 +1424,31 @@ LEDGER: tuple[Row, ...] = (
     ),
     Row(
         item="gym-webhook-disclosure",
-        state="OPERATOR_DECISION_REQUIRED",
+        state="CLOSED",
         authority=OPERATOR,
-        evidence=("core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md",
+        evidence=("core/decisions/gym-webhook-disclosure.md",
+                  "core/review/N04_EQUIPMENT_REPORT_AUTHORITY.md",
+                  "scripts/legal/legal_text.py",
                   "mobile/lib/l10n/app_en.arb",
+                  "mobile/lib/l10n/app_ru.arb",
+                  "public/privacy.html",
                   "functions/src/index.ts",),
-        invariant=gym_webhook_still_undisclosed,
+        invariant=gym_webhook_disclosure_stays_honest,
         closure=operator_decision_recorded("gym-webhook-disclosure"),
         no_local_predicate="Whether a gym's maintenance endpoint is a disclosed "
                            "processor is a privacy-policy question. Engineering "
                            "can remove the dispatch or amend the copy; it "
                            "cannot decide which is the product's position.",
-        notes="Surfaced while deciding N-04, not by asking N-04's question. The "
-              "published privacy body says two processors and no others; a "
-              "gym-controlled webhook is a third recipient of report contents. "
-              "Harmless today only because no gym document exists, and it stops "
-              "being harmless with no code change in between.",
+        notes="Surfaced while deciding N-04, not by asking N-04's question. "
+              "Closed 2026-08-21 (core/decisions/gym-webhook-disclosure.md): the "
+              "operator chose to disclose rather than remove the dispatch, "
+              "surfaced while porting Gate F (MRD-02) onto master -- Gate F is "
+              "the first client code to ever supply a real gymId on a report, "
+              "which is what turns the previously-unreachable webhook dispatch "
+              "reachable. `legal_text.py` (the single source for the .arb "
+              "bodies and public/privacy.html) now names the gym as a "
+              "conditional third recipient -- not a GDPR processor, since no "
+              "controller-processor agreement governs it.",
     ),
     Row(
         item="roboflow-key-reissue",
