@@ -1,0 +1,462 @@
+<title>SPTR Status</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ink:#13181f;
+    --ink-soft:#4a535e;
+    --bg:#eef1ef;
+    --surface:#ffffff;
+    --surface-2:#e5e9e6;
+    --line:#d3d9d3;
+    --accent:#9a6a1c;
+    --accent-soft:#f1e2c4;
+    --structural:#2c5a6b;
+    --structural-soft:#dde9ec;
+    --ok:#2f7a4f;
+    --ok-soft:#dcefe1;
+    --warn:#c26a0c;
+    --warn-soft:#faead4;
+    --crit:#b1372a;
+    --crit-soft:#fbe0dc;
+    --shadow: 0 1px 2px rgba(19,24,31,.06), 0 8px 24px -12px rgba(19,24,31,.18);
+    --font-display:'Barlow Semi Condensed', 'Arial Narrow', sans-serif;
+    --font-body:'Source Sans 3', 'Segoe UI', sans-serif;
+    --font-mono:'JetBrains Mono', 'Consolas', monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#e9ecef;
+      --ink-soft:#a8b1ba;
+      --bg:#11151b;
+      --surface:#181e26;
+      --surface-2:#1f2731;
+      --line:#2c3540;
+      --accent:#d9a244;
+      --accent-soft:#332711;
+      --structural:#7fb6c9;
+      --structural-soft:#16262b;
+      --ok:#6fc793;
+      --ok-soft:#122a1c;
+      --warn:#e0a850;
+      --warn-soft:#2c2110;
+      --crit:#e2776a;
+      --crit-soft:#301613;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#e9ecef;
+    --ink-soft:#a8b1ba;
+    --bg:#11151b;
+    --surface:#181e26;
+    --surface-2:#1f2731;
+    --line:#2c3540;
+    --accent:#d9a244;
+    --accent-soft:#332711;
+    --structural:#7fb6c9;
+    --structural-soft:#16262b;
+    --ok:#6fc793;
+    --ok-soft:#122a1c;
+    --warn:#e0a850;
+    --warn-soft:#2c2110;
+    --crit:#e2776a;
+    --crit-soft:#301613;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--font-body); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 24px 96px;}
+  header{padding:56px 24px 28px; max-width:920px; margin:0 auto;}
+  .eyebrow{
+    font-family:var(--font-mono); font-size:12.5px; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin:0 0 14px;
+  }
+  h1{
+    font-family:var(--font-display); font-weight:700; font-size:clamp(30px,5vw,46px);
+    line-height:1.08; margin:0 0 14px; text-wrap:balance; letter-spacing:-.01em;
+  }
+  .dek{font-size:18px; color:var(--ink-soft); max-width:62ch; margin:0; text-wrap:balance;}
+
+  .stopbanner{
+    display:flex; gap:18px; align-items:flex-start;
+    border-radius:10px; padding:20px 22px; margin:32px 0 8px;
+    box-shadow:var(--shadow);
+  }
+  .stopbanner.warn{background:var(--warn-soft); border:1px solid var(--warn);}
+  .stopbanner .glyph{
+    font-family:var(--font-display); font-weight:700; font-size:13px; letter-spacing:.08em;
+    color:#fff; border-radius:6px; padding:8px 10px; white-space:nowrap;
+  }
+  .stopbanner.warn .glyph{background:var(--warn);}
+  .stopbanner strong{display:block; font-family:var(--font-display); font-weight:600; font-size:19px; margin-bottom:4px;}
+  .stopbanner p{margin:0; color:var(--ink-soft); font-size:15px; max-width:64ch;}
+
+  section{margin-top:56px;}
+  h2{
+    font-family:var(--font-display); font-weight:600; font-size:26px; margin:0 0 6px;
+    display:flex; align-items:baseline; gap:10px;
+  }
+  h2 .num{font-family:var(--font-mono); color:var(--accent); font-size:15px; font-weight:600;}
+  .section-lede{color:var(--ink-soft); font-size:15.5px; margin:0 0 22px; max-width:68ch;}
+
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:20px 22px; box-shadow:var(--shadow); margin-bottom:14px;
+  }
+  .card.crit{border-left:4px solid var(--crit);}
+  .card.warn{border-left:4px solid var(--warn);}
+  .card.ok{border-left:4px solid var(--ok);}
+  .card.structural{border-left:4px solid var(--structural);}
+  .card h3{font-family:var(--font-display); font-weight:600; font-size:19px; margin:0 0 8px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .card p{margin:0 0 10px; font-size:15px;}
+  .card p:last-child{margin-bottom:0}
+  .card ul{margin:8px 0; padding-left:20px; font-size:15px;}
+  .card li{margin-bottom:5px;}
+
+  code, .mono{font-family:var(--font-mono); font-size:.92em;}
+  .card code, p code, li code{
+    background:var(--surface-2); border:1px solid var(--line); border-radius:4px;
+    padding:1px 6px; font-size:.86em;
+  }
+  pre{
+    background:var(--surface-2); border:1px solid var(--line); border-radius:8px;
+    padding:12px 14px; overflow-x:auto; font-family:var(--font-mono); font-size:12.8px;
+    line-height:1.55; margin:10px 0;
+  }
+
+  .chip{
+    display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono);
+    font-size:11.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
+    padding:4px 10px; border-radius:999px; white-space:nowrap;
+  }
+  .chip.crit{background:var(--crit-soft); color:var(--crit); border:1px solid color-mix(in srgb, var(--crit) 40%, transparent);}
+  .chip.warn{background:var(--warn-soft); color:var(--warn); border:1px solid color-mix(in srgb, var(--warn) 40%, transparent);}
+  .chip.ok{background:var(--ok-soft); color:var(--ok); border:1px solid color-mix(in srgb, var(--ok) 40%, transparent);}
+  .chip.structural{background:var(--structural-soft); color:var(--structural); border:1px solid color-mix(in srgb, var(--structural) 40%, transparent);}
+
+  .statusgrid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:10px; margin:20px 0 8px;
+  }
+  .statusrow{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:11px 14px;
+  }
+  .statusrow .label{font-size:14px; font-weight:600;}
+
+  .statgrid{display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:10px; margin:20px 0 8px;}
+  .stat{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 16px; box-shadow:var(--shadow);}
+  .stat .n{font-family:var(--font-mono); font-variant-numeric:tabular-nums; font-size:26px; font-weight:600; color:var(--structural);}
+  .stat .n.zero{color:var(--ink-soft);}
+  .stat .l{font-size:12px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em; margin-top:2px;}
+
+  table{width:100%; border-collapse:collapse; font-size:14.5px;}
+  .tablewrap{overflow-x:auto; border:1px solid var(--line); border-radius:10px; box-shadow:var(--shadow);}
+  th, td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top;}
+  thead th{
+    font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft); background:var(--surface-2); font-weight:600;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-2);}
+  td.num, th.num{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+
+  .commitlog{list-style:none; margin:18px 0 0; padding:0; display:flex; flex-direction:column; gap:10px;}
+  .commitlog li{
+    display:flex; gap:14px; align-items:flex-start; background:var(--surface);
+    border:1px solid var(--line); border-radius:8px; padding:12px 16px;
+  }
+  .commitlog .sha{
+    font-family:var(--font-mono); font-size:13px; background:var(--structural-soft); color:var(--structural);
+    padding:3px 8px; border-radius:5px; white-space:nowrap; flex-shrink:0;
+  }
+  .commitlog .msg{font-size:14.5px;}
+  .commitlog .msg .sub{color:var(--ink-soft); font-size:13px; display:block; margin-top:2px;}
+
+  .checklist{list-style:none; margin:18px 0 0; padding:0; counter-reset:step;}
+  .checklist li{
+    counter-increment:step; position:relative; padding:12px 16px 12px 52px;
+    background:var(--surface); border:1px solid var(--line); border-radius:8px; margin-bottom:10px;
+    font-size:14.8px;
+  }
+  .checklist li::before{
+    content:counter(step); position:absolute; left:14px; top:50%; transform:translateY(-50%);
+    font-family:var(--font-mono); font-weight:700; font-size:14px; color:var(--accent);
+    background:var(--accent-soft); width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .backlog{list-style:none; margin:18px 0 0; padding:0; display:flex; flex-direction:column; gap:8px;}
+  .backlog li{
+    display:flex; gap:12px; align-items:baseline; background:var(--surface);
+    border:1px solid var(--line); border-radius:8px; padding:10px 14px; font-size:14.5px;
+  }
+  .backlog .tag{font-family:var(--font-mono); font-size:11px; color:var(--ink-soft); white-space:nowrap; min-width:9ch;}
+
+  footer{
+    margin-top:64px; padding-top:24px; border-top:1px solid var(--line);
+    color:var(--ink-soft); font-size:13.5px;
+  }
+  footer a{color:var(--structural);}
+
+  @media (max-width:640px){
+    header{padding:40px 20px 20px;}
+    .wrap{padding:0 20px 72px;}
+    .stopbanner{flex-direction:column;}
+  }
+</style>
+
+<header>
+  <p class="eyebrow">SPTR &middot; live status report &middot; edited in place, never reissued</p>
+  <h1>D-03 was never about the tap &mdash; it's the router after a successful sign-in</h1>
+  <p class="dek">First pass on the autonomous SPTR program: verified the repository and branch state from scratch, took D-03 and D-05 to a real on-device verdict, and found and pushed a new, previously undocumented root cause for D-03. The remaining 13 subgates of the program (Onboarding v4, Form Coach, Light theme, Visual Gate, release revalidation, M7&ndash;M9, MVP, Full Product) have not been started &mdash; see section 6.</p>
+  <p style="font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft); margin:14px 0 0;">Updated 2026-08-20 &middot; this page is edited and redeployed to the same link on every update, not replaced by a new dated file</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>_wt-master-sync</dd>
+    <dt>Folder</dt><dd>D:\Repo\_wt-master-sync</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 572ebb4</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="wrap">
+
+  <div class="stopbanner warn">
+    <span class="glyph">STATUS</span>
+    <div>
+      <strong>MVP_READY: not reached. Expected at this stage, not a deviation.</strong>
+      <p>The 64-section program realistically describes several weeks of work (a full Onboarding v4 implementation, Form Coach MVP, Light theme, golden tests from zero, M7&ndash;M9). This pass genuinely closed only Subgate A (partially) and built groundwork for Subgate B/C. Continuing in the same mode &mdash; no intermediate reports, a short push-confirmation before each push, as the operator confirmed at the start of this session.</p>
+    </div>
+  </div>
+
+  <section>
+    <h2><span class="num">01</span> What happened this pass</h2>
+    <p class="section-lede">Real repository state was verified from scratch rather than taken on faith from the program text &mdash; part of the claimed defect ledger held up, part was stale.</p>
+    <div class="statusgrid">
+      <div class="statusrow"><span class="label">origin/master in sync</span><span class="chip ok">0 ahead / 0 behind</span></div>
+      <div class="statusrow"><span class="label">D-03 &middot; guest Continue</span><span class="chip crit">Reclassified, not a tap bug</span></div>
+      <div class="statusrow"><span class="label">D-05 &middot; Technique Coach chip</span><span class="chip ok">Confirmed: no overlap</span></div>
+      <div class="statusrow"><span class="label">D-04 &middot; AI Trainer / App Check</span><span class="chip warn">Attempt inconclusive, see &sect;3</span></div>
+      <div class="statusrow"><span class="label">Branch formcoach/gates-a-c</span><span class="chip ok">Fully merged into master</span></div>
+      <div class="statusrow"><span class="label">Branch marketing/site-prototype</span><span class="chip warn">22 commits, classification below</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span> D-03: the real root cause</h2>
+    <p class="section-lede">The candidate fix from the prior session (<code>Material</code> + <code>Semantics(button: true)</code>) closes a real, separate accessibility defect, but is not D-03's cause. 20 clean trials on S8 (canonical <code>bab46c6</code>) on a rebuilt binary with the correct App Check debug token.</p>
+
+    <div class="card crit">
+      <h3>The tap is delivered. signInAnonymously() genuinely succeeds. The UI does not leave /login.</h3>
+      <p>Method: polled for screen readiness via <code>uiautomator dump</code> instead of a fixed sleep &mdash; the first attempt on a fixed sleep gave a false result, since the screen didn't exist yet at tap time. Tap coordinate taken from a screenshot, not from the accessibility node's bounds: the D-03 fix's merge semantics combine the title, subtitle, and the button itself into one node whose centroid lands on the subtitle text &mdash; a separate, newly found accessibility defect.</p>
+      <p><strong>Result: 5/10 success, 5/10 never leave /login within 25s. Strictly bimodal, not a ~50% flake.</strong> Successful trials reach /login in ~3.6&ndash;3.7s and navigate on ~4.4s later. Failing trials reach a visually identical /login in ~15.5&ndash;15.7s &mdash; and then stay stuck.</p>
+      <pre>W LocalRequestInterceptor: App attestation failed (403)
+W LocalRequestInterceptor: Too many attempts
+D FirebaseAuth: Notifying auth state listeners about user ( Q6lcurNjxGcvB9FMlgsGw7ck0ln1 )</pre>
+      <p>The five successful trials carry zero App-Check-related log lines. The five stuck trials all show this exact error pair before the (still successful) sign-in &mdash; 5/5 correlated, not sampled. <strong>Working hypothesis (not confirmed against source):</strong> <code>app_router.dart</code>'s <code>redirect</code> reads <code>authRepo.currentUser</code> synchronously and only re-runs on <code>notifyListeners()</code> from <code>profileListenable</code> &mdash; on this timing, either the notification never arrives or <code>currentUser</code> hasn't caught up yet. Same defect class MVP-1/MVP-3 closed on the <code>marketing/site-prototype-2026-08-19</code> branch (see &sect;4) &mdash; but a different call site neither fix covers.</p>
+      <p><strong>Next step (not done this pass):</strong> reproduce under a controlled widget test (the same pattern MVP-3 used &mdash; racing a controlled <code>StreamController</code>) before touching <code>app_router.dart</code> &mdash; test-first, not a guessed fix.</p>
+    </div>
+
+    <div class="commitlog">
+      <li>
+        <span class="sha">572ebb4</span>
+        <div class="msg">docs(decision-log): D-03 reclassified &mdash; not a dead tap, an App-Check-triggered auth/router desync
+          <span class="sub">core/DECISION_LOG.md only, no code change &middot; pushed, origin/master verified 0/0</span>
+        </div>
+      </li>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span> D-05 and D-04</h2>
+    <div class="card ok">
+      <h3>D-05 &middot; <span class="chip ok">confirmed closed</span></h3>
+      <p>Library, RU, S8: the "Technique Coach" chip and the "Selected by rules, not a doctor" banner do not overlap &mdash; the banner sits strictly in its own row below the chip row, the filtered list renders correctly. Also reproduced the earlier nuance finding: the first tap on the chip didn't register, an identical second tap did. Matches the existing decision-log entry; not separately investigated &mdash; plausibly the same nature as D-03, not confirmed.</p>
+    </div>
+    <div class="card warn">
+      <h3>D-04 &middot; <span class="chip warn">attempt inconclusive</span></h3>
+      <p>Opened Scanner, tapped the recognition button &mdash; zero log lines from the app package appeared (the tap did not reach a confirmed target). Needs a more careful UI breakdown of the Scanner screen before retrying. The prior decision-log entry's status (App Check debug token fixed; Firebase AI Logic enforcement itself is EXTERNAL_BLOCKED, a console-only action) is treated as still current &mdash; no fresh evidence for or against was added.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span> Groundwork for Subgate B &mdash; branch consolidation</h2>
+    <p class="section-lede">Classification per the program's &sect;21&ndash;22 rules, not carried through to completion (porting PRODUCT_REQUIRED content and deleting branches not done).</p>
+    <div class="card ok">
+      <h3><code>formcoach/gates-a-c</code> <span class="chip ok">ALREADY_IN_MASTER</span></h3>
+      <p>A full ancestor of <code>master</code> (<code>git merge-base --is-ancestor</code> = true, zero unique commits, empty diff). Safe to delete the remote branch with no content loss &mdash; no port needed.</p>
+    </div>
+    <div class="card warn">
+      <h3><code>marketing/site-prototype-2026-08-19</code> <span class="chip warn">mixed, 22 unique commits</span></h3>
+      <p><strong>Important finding for later, not for master:</strong> the entire eligibility/PAR-Q safety module (<code>mobile/lib/features/safety/</code>) exists on <code>master</code> but is completely absent from this branch's history &mdash; it forked before that work landed, it didn't lose it. Already documented on the branch itself in its own STOP-THE-LINE entry (2026-08-19) &mdash; that whole session's device evidence (scanner, EN/RU, account isolation) ran against the wrong build and was never rebuilt/re-verified; the release gate there is not officially closed.</p>
+      <p>Two commits (<code>f7279ca</code>, <code>68cef87</code> &mdash; the auth-restore false-state collapse fix, MVP-1/MVP-3) <strong>no longer need porting</strong>: master already has an equivalent, more complete fix in its own commit <code>74f2f76</code> (plus closing the Profile questionnaire dead-end, which the branch's version left open). The remaining 20 commits (the marketing site prototype, claim_lint.py, machine_card_contribution_report.py, reports) were not classified line-by-line this pass &mdash; the next Subgate B step.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span> Real code state vs. what the program claimed</h2>
+    <p class="section-lede">Independent read-only check (agent, canonical <code>_wt-master-sync</code>) &mdash; part of the program's claims are stale or incomplete.</p>
+    <table>
+      <thead><tr><th>Item</th><th>Program claimed</th><th>Actually found</th></tr></thead>
+      <tbody>
+        <tr><td>Onboarding v4</td><td>9-step reference ready to implement</td><td>Reference assets exist (<code>core/design/reference/onboarding_v4/</code>), but the README itself says they're unreconciled with the current implementation and contain a fabricated "Technique 94%" metric that must not ship</td></tr>
+        <tr><td>Form Coach</td><td>MVP on a real on-device engine</td><td>Confirmed real: <code>google_mlkit_pose_detection</code>, a concrete <code>MlKitPoseDetectorService</code>, not a stub</td></tr>
+        <tr><td>Golden tests (M8)</td><td>critical states as deterministic goldens</td><td>Zero golden tests exist in the repo today &mdash; work from zero</td></tr>
+        <tr><td>Light theme</td><td>critical screens covered</td><td>Token structure exists (<code>AppTheme.light()</code>/<code>.dark()</code>), but the code itself records a product decision: Light is deliberately deferred ("dark first... light later")</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span> Not started</h2>
+    <p class="section-lede">Stated plainly, not dressed up as a completed program.</p>
+    <ul class="backlog">
+      <li><span class="tag">SUBGATE C</span> Plan/design source-of-truth reconciliation &mdash; not started</li>
+      <li><span class="tag">SUBGATE D</span> Onboarding v4 (9 screens, Dark+Light, safety, tests, visual evidence) &mdash; not started</li>
+      <li><span class="tag">SUBGATE E</span> Session Finish / Workout Summary review &mdash; not started</li>
+      <li><span class="tag">SUBGATE F</span> Form Coach MVP HUD over the real engine &mdash; not started</li>
+      <li><span class="tag">SUBGATE G</span> Light theme on critical surfaces &mdash; not started</li>
+      <li><span class="tag">SUBGATE H</span> Visual Gate (Dark+Light, FAIL=0/MAJOR=0) &mdash; not started</li>
+      <li><span class="tag">SUBGATE I</span> Provenance-clean release revalidation (Scanner/App Check/auth/EN-RU/isolation) &mdash; not started</li>
+      <li><span class="tag">SUBGATE J&ndash;L</span> M7 (a11y/l10n), M8 (goldens), M9 (adversarial) &mdash; not started</li>
+      <li><span class="tag">SUBGATE M</span> MVP_READY build and Firebase App Tester delivery &mdash; not started</li>
+      <li><span class="tag">SUBGATE N</span> Post-MVP per the canonical plan &mdash; not started</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span> Counters (program's own mandated format, &sect;9)</h2>
+    <div class="statgrid">
+      <div class="stat"><div class="n">1</div><div class="l">Fixed &amp; pushed</div></div>
+      <div class="stat"><div class="n zero">0</div><div class="l">Fixed config</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">Root cause found, not fixed</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">Confirmed open bugs</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">External blockers</div></div>
+      <div class="stat"><div class="n zero">0</div><div class="l">Unverified operator reports</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">Not reproduced</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">New defects found</div></div>
+      <div class="stat"><div class="n zero">0</div><div class="l">Milestones closed</div></div>
+      <div class="stat"><div class="n zero">0</div><div class="l">New APKs built (to Firebase)</div></div>
+      <div class="stat"><div class="n zero">0</div><div class="l">Firebase distributions</div></div>
+      <div class="stat"><div class="n zero">0</div><div class="l">Master ahead</div></div>
+      <div class="stat"><div class="n zero">0</div><div class="l">Master behind</div></div>
+    </div>
+    <p class="section-lede" style="margin-top:16px;">"Fixed &amp; pushed" = the D-03 root-cause documentation (no actual code fix was made, see &sect;2). "New defects found": D-03 reclassified as a router desync (not a tap), plus the merge semantics in <code>_GradientButton</code> collapsing the title+subtitle+button into one accessibility node. Two debug APKs were built locally for testing but never distributed to Firebase &mdash; no build this pass was a milestone build.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span> Build provenance used in &sect;2&ndash;3</h2>
+    <table>
+      <thead><tr><th>Field</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>SOURCE_SHA</td><td class="mono">bab46c662b699bf82565c1d2cd808fb909475e49 (canonical master at session start)</td></tr>
+        <tr><td>REPORT_COMMIT_SHA</td><td class="mono">572ebb40f421ad612f95fd0af4a2bf0e070d270e</td></tr>
+        <tr><td>FINAL_REMOTE_MASTER_SHA</td><td class="mono">572ebb40f421ad612f95fd0af4a2bf0e070d270e (0 ahead / 0 behind, fetch-verified)</td></tr>
+        <tr><td>APK_SHA256</td><td class="mono">feb4c45fbe36fc8453130fe2617650f3bc9a2db17c4a5b145391c574dabd17fe (debug, correct APP_CHECK_DEBUG_TOKEN)</td></tr>
+        <tr><td>Device</td><td>Samsung SM-G950F (S8), serial <code>ce0417141997e4640c</code> &mdash; shared, not an exclusive window</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span> Recommendation going forward</h2>
+    <ol class="checklist">
+      <li>Write a widget test for the App-Check-failure &rarr; successful sign-in &rarr; router-redirect race (MVP-3's pattern) before touching <code>app_router.dart</code> for D-03.</li>
+      <li>Classify the remaining 20 <code>marketing/site-prototype-2026-08-19</code> commits line-by-line (PRODUCT_REQUIRED / MARKETING_REQUIRED / HISTORICAL / SUPERSEDED), then delete both obsolete remote branches.</li>
+      <li>Onboarding v4: reconcile the 9-screen reference against the current 10-step implementation first (including removing the fabricated "94%" metric) &mdash; a separate, not-yet-started gate.</li>
+      <li>Keep going in Program mode: no intermediate report per subgate, a short push-confirmation before each push, as in this session.</li>
+    </ol>
+  </section>
+
+  <footer>
+    SPTR live status report &middot; edited in place, never reissued &middot; the previous version (STOP-THE-LINE, <code>marketing/site-prototype-2026-08-19</code> branch) is preserved in that branch's own git history.
+  </footer>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

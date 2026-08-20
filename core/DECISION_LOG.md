@@ -20229,3 +20229,29 @@ for D-03, not a fix. Diagnostic screenshots/logcat kept outside the repo (sessio
 committed -- reproducible from this entry's protocol description.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — SPTR rolling status report created on master, first checkpoint of the autonomous program
+
+House-format report (`reports/SPTR_STATUS.{html,ru.html}`) covering this pass of the operator's
+64-section SPTR_FINAL_AUTONOMOUS_PROGRAM: verified `master`/branch/worktree state from scratch
+rather than trusting the program's embedded ledger, took D-03 to a real on-device verdict and
+found the App-Check-triggered router-desync root cause (see prior entry), reverified D-05 closed,
+attempted D-04 (inconclusive), and gathered branch-salvage evidence for Subgate B
+(`formcoach/gates-a-c` fully merged; `marketing/site-prototype-2026-08-19` has 22 unique commits,
+2 of which -- the MVP-1/MVP-3 auth-restore fix -- are superseded by master's own `74f2f76`, the
+remaining 20 not yet classified). Reports honestly zero milestones closed, zero Firebase
+distributions, MVP_READY not reached -- the 64-section scope is realistically weeks of work, not
+completable in one pass.
+
+The fixed-name rolling-report convention (memory: `project-sptr-rolling-status-report.md`) existed
+only on `marketing/site-prototype-2026-08-19` before this entry; this is the first
+`reports/SPTR_STATUS.*` on `master`. Republished to the same artifact URL
+(`https://claude.ai/code/artifact/50a15371-89a0-4713-b17e-163b58ecb126`) that branch's report
+already used, per the existing rule -- one rolling link across the product, not a new one per
+branch. Conformance verified (`report_conform.py --check`) before commit.
+
+**No product code changed by this entry.**
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
