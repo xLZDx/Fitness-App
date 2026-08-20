@@ -11124,3 +11124,23 @@ Going forward, SPTR status updates edit `SPTR_STATUS.{html,ru.html}` in place an
 same artifact link rather than creating a new dated file. This does not change or reopen the
 stop-the-line decision: the MVP release gate is still not closed, and the rebuild-from-HEAD +
 retest step from the prior entry is still pending explicit operator direction.
+
+## 2026-08-20 -- full session record published: RG-1 through the rolling-report consolidation
+
+Operator request: save all data from this session, with full detail, into a report. Published a
+new dated, comprehensive report -- `reports/SPTR_SESSION_RECORD_2026-08-20.{html,ru.html}` --
+distinct from the concise, continuously-updated `SPTR_STATUS.{html,ru.html}` (which stays a status
+summary, not a full log; adding a full chronological session narrative to it would defeat the
+purpose of the rolling-report decision above). The new report is a chronological, timeline-format
+write-up covering: the RG-1/RG-2/RG-3 evidence pass (all 5 RG-1 photos, RG-2s cross-device/cross-
+account persistence check, RG-3s two real UIDs and the stuck-navigation defect), the RG-4 recount
+table, all nine RG-5 dream-team verdicts, the full stop-the-line git evidence and decision, the
+two-stage reporting history (dated report -> rolling-report consolidation) including the citation-
+integrity hook back-and-forth and its actual resolution (paths resolve against the repo root
+`D:\Repo\Fitness_App`, not the multi-repo container `D:\Repo`), the session's tooling-friction
+notes, and current pending state. Content is drawn directly from `core/DECISION_LOG.md`'s own
+entries and the already-published `SPTR_STATUS.html`, not re-derived from memory, to avoid drift.
+
+Russian published as a new artifact: `https://claude.ai/code/artifact/e7d7f791-485c-44d8-bc75-9ac65782b919`.
+English committed as the durable record. No new decisions, findings, or scope changes in this
+entry -- reporting only. The MVP release gate remains NOT closed; nothing here changes that.
