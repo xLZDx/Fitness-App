@@ -54,6 +54,15 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
   bool _submitting = false;
   String? _error;
 
+  /// codex review, round 3, 2026-08-21: `widget.gymId` is the saved gym from
+  /// the user's *profile*, not confirmed as the gym this specific report is
+  /// about. A report filed while actually at a different gym/branch would
+  /// otherwise silently route to the saved one -- misdelivery to a third
+  /// party, not just the already-acknowledged nondelivery risk from a
+  /// free-text/registry mismatch. Unchecked by default: routing requires an
+  /// explicit per-report confirmation, never trust-by-default.
+  bool _confirmedGym = false;
+
   @override
   void dispose() {
     _noteCtrl.dispose();
@@ -73,7 +82,7 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
     final report = EquipmentReport(
       id: '${DateTime.now().microsecondsSinceEpoch}_${widget.equipmentId}',
       equipmentId: widget.equipmentId,
-      gymId: widget.gymId,
+      gymId: _confirmedGym ? widget.gymId : 'unknown',
       fault: _fault,
       note: _noteCtrl.text.trim(),
       reportedAt: DateTime.now(),
@@ -135,6 +144,37 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
                   ),
               ],
             ),
+            if (widget.gymId != 'unknown') ...[
+              const SizedBox(height: 14),
+              InkWell(
+                key: const Key('equipment-report-confirm-gym'),
+                borderRadius: BorderRadius.circular(10),
+                onTap: () =>
+                    setState(() => _confirmedGym = !_confirmedGym),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Checkbox(
+                        value: _confirmedGym,
+                        onChanged: (v) =>
+                            setState(() => _confirmedGym = v ?? false),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text(
+                            l10n.equipmentReportConfirmGym(widget.gymId),
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 14),
             TextField(
               controller: _noteCtrl,

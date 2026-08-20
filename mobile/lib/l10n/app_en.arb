@@ -137,6 +137,13 @@
   "equipmentPlates": "Plates",
   "equipmentRecommendedExercises": "Recommended exercises",
   "equipmentReportBrokenEquipment": "Report broken equipment",
+  "equipmentReportConfirmGym": "Send this report to {gymName}",
+  "@equipmentReportConfirmGym": {
+    "description": "Checkbox label offered when the user has a saved gym on their profile. Unchecked by default -- codex review, 2026-08-21: a report filed while the user is actually somewhere else must not silently route to this saved gym, so routing requires an explicit, per-report confirmation rather than trusting the profile.",
+    "placeholders": {
+      "gymName": {"type": "String"}
+    }
+  },
   "equipmentReportSentToMaintenanceThanks": "Report sent to maintenance — thanks.",
   "equipmentReportsAreForwardedToTheGym": "Reports are forwarded to the gym's maintenance team. Your identity is shared with the gym only if they ask to follow up.",
   "equipmentSendToMaintenance": "Send to maintenance",

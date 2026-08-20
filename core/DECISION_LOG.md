@@ -20877,3 +20877,58 @@ suspendable by that instruction from inside the session -- so the rolling report
 gate, without treating this as a program-mode-violating stop. Added section 5 (Gate F port + its
 two rounds of fixes), corrected the disclosure closure's commit log to reflect that it was actually
 pushed (cf39a88/9815049, not left uncommitted as the prior report version said).
+
+---
+
+## 2026-08-21 -- Gate F cherry-pick: Codex round-3 rebuttal outcome + confirmation-checkbox fix
+
+### Round 3 verdict
+
+Codex rejected the round-2 rebuttal (previous entry). Verbatim summary: "The rebuttal does not
+hold. Deliberate scope and prior review do not make wrong-recipient disclosure safe. Unlike the
+registry-ID MAJOR, which generally causes nondelivery, this path can send the report and free-text
+note to the wrong gym. A full registry or multi-gym model is unnecessary: confirming the displayed
+saved gym per report -- or retaining `unknown` without confirmation -- closes the risk." BLOCKER,
+`mobile/lib/features/equipment/equipment_detail_page.dart:178`: the report still derives its
+routing destination directly from the persistent profile and never asks whether that saved gym is
+the location of *this* report. Suggested fix: display the saved gym and require explicit
+confirmation before forwarding it; fall back to `unknown` if declined or unavailable.
+
+This distinguishes the failure mode from the already-accepted MAJOR: a stale/mistyped registry ID
+generally causes *nondelivery* (report goes nowhere useful); an unconfirmed but valid saved gym
+causes *misdelivery* (report and free-text note go to a real third party who is not who the user
+meant). The smaller fix Codex proposed (a per-report confirmation, not a directory/picker) does not
+reopen the scope boundary defended in the round-2 rebuttal -- accepted, implemented rather than
+escalating a third round or overriding unilaterally.
+
+### Implementation
+
+`equipment_report_sheet.dart`: added `_confirmedGym` state (default `false`); `_submit()` now sends
+`_confirmedGym ? widget.gymId : 'unknown'`, never the raw profile-sourced value. UI: when
+`widget.gymId != 'unknown'`, an `InkWell`-wrapped `Checkbox` + `Text(l10n.equipmentReportConfirmGym(
+widget.gymId))` (new key `equipment-report-confirm-gym`) is inserted before the note field, naming
+the actual saved gym so the confirmation is informed rather than blind. New l10n key
+`equipmentReportConfirmGym` added to both `app_en.arb`/`app_ru.arb`, `flutter gen-l10n` re-run.
+
+New test file `mobile/test/features/equipment/equipment_report_sheet_test.dart`, 4 cases: no gym on
+profile -> no checkbox, submits `unknown`; gym set, box left unchecked -> still submits `unknown`
+(the BLOCKER case); box checked -> forwards the real gymId; confirmation label names the actual
+saved gym.
+
+### Test-infrastructure bug found and fixed (not a logic bug in the checkbox code)
+
+All 4 new tests initially failed with `Bad state: No element` on
+`MockEquipmentReportService.submitted.single`, including the trivial no-gym case -- the mock never
+received a submission at all. Root cause: `_submit()` only `ref.read()`s `authUserProvider`; nothing
+else in the sheet's widget tree `watch`es it, so the `StreamProvider` is not created/listening until
+that exact `read()` call inside the tap handler. Even for `Stream.value(...)`, the emission lands on
+the next microtask -- so at the moment `_submit()` first reads it, `.valueOrNull` is still `null`
+(`AsyncLoading`), and every test submission hit the "sign in" error path instead of reaching the
+mock service. Confirmed via an ad hoc debug test asserting the "Sign in to submit a report." error
+text was present after the tap. Fix: `_container()` now does
+`await c.read(authUserProvider.future);` right after constructing the container, before the widget
+is pumped -- same warm-up pattern already used in `test/adversarial/cross_gate_matrix_test.dart:421`
+for the identical provider. All 4 tests pass after the fix; `flutter analyze` clean on the full Gate
+F touched-file set (7 files); full Gate F regression surface (`equipment_report_sheet_test.dart`,
+`resolve_equipment_report_gym_id_test.dart`, `equipment_report_gym_routing_test.dart`,
+`step_equipment_test.dart`, `equipment_detail_coach_gate_test.dart`) re-run together: 29/29 pass.
