@@ -20864,3 +20864,16 @@ resolution (belongs with the future gate that builds one).
 Per the codex-consensus round policy (one rebuttal round for a still-contested BLOCKER/MAJOR), this
 disagreement was put back to Codex once with the reasoning above -- see the next entry for the
 outcome -- rather than either silently overriding the finding or looping past the second round.
+
+---
+
+## 2026-08-21 -- reports/SPTR_STATUS.{html,ru.html} updated (Gate F section added)
+
+No code change. `report_gate.py`'s three-commits-since-`reports/`-touch threshold fired after
+9815049/1689564/32a01d5; the operator's standing program-mode instruction (see the top of this
+session) says not to stop for a report per sub-gate, but the mechanical gate itself is not
+suspendable by that instruction from inside the session -- so the rolling report gets updated
+(same file, same artifact URL, per `project-sptr-rolling-status-report.md`) to satisfy the commit
+gate, without treating this as a program-mode-violating stop. Added section 5 (Gate F port + its
+two rounds of fixes), corrected the disclosure closure's commit log to reflect that it was actually
+pushed (cf39a88/9815049, not left uncommitted as the prior report version said).
