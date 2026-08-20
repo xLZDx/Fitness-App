@@ -3,6 +3,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import '../helpers/test_app.dart';
 import 'package:fitness_app/features/auth/data/auth_repository.dart';
@@ -101,17 +102,31 @@ void main() {
 }
 
 Widget _app({AuthRepository? repo}) {
+  // D-03: Continue now calls `context.go('/home')` on a successful sign-in
+  // (see login_page.dart), so this isolated LoginPage harness needs a real
+  // GoRouter ancestor to not crash on tap -- a bare `MaterialApp` no longer
+  // suffices. Deliberately a two-route, redirect-free router: this file
+  // tests LoginPage's own behaviour in isolation, not the app's full
+  // redirect chain, which `app_router_test.dart`'s D-03 group already
+  // covers end to end.
+  final router = GoRouter(
+    initialLocation: '/',
+    routes: [
+      GoRoute(path: '/', builder: (_, __) => const LoginPage()),
+      GoRoute(path: '/home', builder: (_, __) => const SizedBox()),
+    ],
+  );
   return ProviderScope(
     overrides: [
       if (repo != null)
         authRepositoryProvider.overrideWith((ref) => repo),
     ],
-    child: MaterialApp(
+    child: MaterialApp.router(
       theme: AppTheme.dark(),
       locale: kTestLocale,
       localizationsDelegates: kTestLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: LoginPage(),
+      routerConfig: router,
     ),
   );
 }

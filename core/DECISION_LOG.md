@@ -20254,4 +20254,204 @@ branch. Conformance verified (`report_conform.py --check`) before commit.
 
 **No product code changed by this entry.**
 
+---
+
+## 2026-08-20 -- environment note: no adb/Android SDK, no Firebase CLI, in this pass
+
+Before any device work, checked for the tooling the remaining program sections (D-03 20-run S8
+verification, D-04, D-05B first-tap retest, every "build an APK and distribute it" step) require.
+`adb` is not on PATH and no Android SDK exists at the standard `%LOCALAPPDATA%\Android\Sdk`
+location in this session's environment (checked both the Bash and PowerShell shells available to
+this session). `flutter` itself IS available (`D:\flutter`, 3.27.1) so building, analyzing and
+`flutter test`-ing the app is possible; installing an APK on the S8, running `uiautomator`/logcat
+protocols, and Firebase App Distribution CLI upload are not, from this session. This is an
+external tooling gap, not a decision -- consistent with this file's own convention (compare the
+D-04 "Firebase AI Logic" console-only blocker) of naming the exact blocker rather than silently
+skipping the affected work. Everything below this entry that depended on real-device execution is
+marked accordingly; nothing was faked or assumed passing.
+
+**No product code changed by this entry.**
+
+---
+
+## 2026-08-20 -- D-03: the App-Check-race hypothesis does not survive a controlled test; the real cause is deterministic, and a real fix is now in and test-verified
+
+**The prior entry's working theory -- a timing race between `authRepo.currentUser` (read
+synchronously in `redirectFor`) and `authRepo.authStateChanges()` (what drives
+`profileListenable` and therefore `GoRouter`'s `redirect` re-evaluation), triggered by the ~12s
+on-device App-Check retry/backoff -- was explicitly left as `HYPOTHESIS, not yet confirmed against
+source`, with the correct instruction to confirm it under a controlled test before touching
+production code. Built that test (`test/router/app_router_test.dart`, new `_ControllableAuthRepository`
+that splits "sign-in resolved" into two independently-triggerable steps -- `currentUser` assignment
+and the `authStateChanges()` event -- exactly so a test could reproduce the App-Check-delay shape on
+the wire instead of guessing at it, mirroring `test/core/router/profile_watch_test.dart`'s existing
+`_FakeAuth` convention). The hypothesis does not survive: the very first version of the test used
+the plain `MockAuthRepository` every other test in the file already relies on, with `latency:
+Duration.zero` -- no artificial delay, no App-Check simulation at all -- and it still failed. Tapping
+Continue with a completely ordinary, instant, successful anonymous sign-in never left `/login`.
+This is deterministic (10/10, confirmed by rerunning), not intermittent, so the race theory cannot
+be the (sole) explanation.**
+
+**Root cause, found by reading `resolveRedirect` (`app_router.dart`) against this result:** `/login`
+is in `_publicPaths`, and the ONLY branch of `resolveRedirect` that ever redirects a signed-in user
+away from `/login` is `isSignedIn && !isAnonymous`. An anonymous signed-in user at `/login` is
+*deliberately* exempt from every redirect, at any onboarding state -- this is the guest-upgrade fix
+(`profile_page.dart`'s "link your account" tile does `context.push('/login')` on an *already*
+anonymous user, specifically so they can reach the Google-link button without being bounced off
+first; the exemption is what stops the redirect from immediately undoing that push). The bug: the
+exact same state signature (`isSignedIn: true, isAnonymous: true, location: '/login'`) is also what
+a *freshly created* anonymous account looks like the instant `signInAnonymously()` returns -- and
+nothing anywhere in the app (`login_page.dart`, `auth_providers.dart`, `splash_page.dart`) ever
+issued an explicit navigation after that call. The router's declarative redirect was the only thing
+that could have moved a fresh guest forward, and the one branch that could do it is the exact branch
+this exemption switches off for every anonymous user, fresh or returning. Confirmed this reasoning
+against the existing `redirectFor` unit tests already in the file, which prove it component by
+component: `'an anonymous user is NOT bounced away from /login'` (true for both onboarding states)
+and `'a not-yet-onboarded guest still reaches /login'`'s companion assertion that the SAME guest
+targeting `/home` (not `/login`) correctly bounces to `/onboarding` -- i.e. the fix did not need new
+redirect logic, only a caller that asks the question from `/home` instead of relying on `/login`'s
+exempted redirect.
+
+**Fix (`mobile/lib/features/auth/login_page.dart`):** the Continue button's `onTap` now awaits
+`signInAnonymously()` and, on success, calls `context.go('/home')` -- reusing the router's own
+already-tested redirect chain (unonboarded at `/home` -> `/onboarding`; onboarded stays) instead of
+depending on the reactive listenable for this one transition. This also means the fix does not
+depend on `authStateChanges()` firing at all for this specific navigation, which a second test
+confirms directly (assigns `currentUser` and resolves the pending sign-in future, deliberately never
+emits the stream event, still reaches `/onboarding`).
+
+**Test evidence, `flutter test`, this pass:**
+- `test/router/app_router_test.dart` (new D-03 group, 2 tests): RED before the fix (plain
+  `MockAuthRepository`, zero delay, deterministic), GREEN after.
+- `test/features/login_page_test.dart`: 3 of 5 existing tests started throwing `No GoRouter found in
+  context` the moment `onTap` started calling `context.go` (that file mounts `LoginPage` under a bare
+  `MaterialApp`, no router). Fixed by giving that file's harness a minimal two-route, redirect-free
+  `GoRouter` -- it still tests `LoginPage` in isolation from the app's real redirect chain, which
+  `app_router_test.dart` covers; it just needs an ancestor `context.go` can resolve against.
+- Full suite touched by this change: `test/router/` (`app_router_test.dart`,
+  `back_navigation_test.dart`, `reachability_test.dart`), `test/core/router/profile_watch_test.dart`,
+  `test/features/login_page_test.dart` -- all green. `flutter analyze` on every touched file: no
+  issues. A full `flutter test` run across the whole suite was started to catch anything this list
+  missed; its result is recorded in the entry below once it finishes, not assumed here.
+
+**This does NOT fully explain the on-device 5/10-success pattern the prior entry recorded**, and
+that gap is stated honestly rather than papered over: this bug, as proven, is unconditional (any
+fresh anonymous sign-in, every time), not probabilistic. Two explanations are live and NOT yet
+distinguished, because doing so needs a real device and `adb`/Android-SDK access this session's
+environment does not have (see the environment-note entry above):
+1. **This is the actual, complete root cause, and the on-device 5-success trials were contaminated**
+   -- most likely by a build that did not match the commit under test. This exact failure mode is
+   already on record in this same file for RG-1/RG-2/RG-3 ("almost certainly ran the wrong branch's
+   build"), so it is not a remote possibility for this project specifically.
+2. **There is a second, still-unexplained mechanism** that occasionally lets a fresh anonymous user
+   through on a real device despite this code, and the App-Check correlation observed on-device is
+   real evidence of something this Dart-level analysis cannot see (a platform-channel-level event
+   that, when it happens to arrive while some other navigation is already reprocessing redirect,
+   incidentally saves the user -- unconfirmed, speculative, listed only so it is not silently
+   dropped).
+
+**Recommended next on-device step, not performed in this pass (no adb):** build the APK from this
+exact commit, verify the installed build's commit hash matches before running any trial (the RG-1..3
+lesson), then rerun the 10-trial S8 protocol from the prior two entries. If this fix alone takes it
+to 10/10, explanation 1 is confirmed and D-03 closes. If any trial still sticks on `/login`,
+explanation 2 is real and still open.
+
+**D-03 status: FIXED (deterministic Dart-level defect, test-verified) but NOT `FIXED_VERIFIED`
+per this program's own acceptance bar (Section 7: needs real-device evidence + a controlled test
+agreeing).** Do not count this as a closed defect until the on-device rerun above happens.
+**FIXED_AND_PUSHED_THIS_RUN = 1** for this entry specifically (a real product-code change, not a
+documentation/hypothesis commit -- the distinction the operator's counters directive asked this file
+to stop blurring).
+
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 -- D-05 split: D-05A (F020 banner overlap) disproved, D-05B (first-tap failure) still open
+
+**Correction to the rolling-status entry above, which said "reverified D-05 closed."** The
+underlying evidence entry it was summarizing (`D-05 (Technique Coach chip obstructed by the safety
+banner) -- NOT_REPRODUCED`, prior pass) actually recorded two different things and the rolling
+report collapsed them into one closed verdict:
+
+- **D-05A -- the specific claim under investigation** ("Technique Coach chip is physically covered
+  by the F020 safety banner") **-- DISPROVED.** Live on S8: the banner renders in its own row,
+  strictly below the chip row, no overlap, filtered list renders normally underneath. No structural
+  obstruction in the build tested.
+- **D-05B -- a first-tap interaction failure, observed in the same session, not explained by
+  D-05A's disproof:** "First tap attempt did not register (chip stayed on 'Для вас'); an identical
+  second tap at the same coordinates worked cleanly." This is a real, recorded defect distinct from
+  the overlap claim, and nothing in that entry investigated why the first tap failed. Calling the
+  whole of D-05 "closed" on the strength of disproving D-05A silently dropped D-05B.
+
+**D-05B status: CONFIRMED_OPEN**, not closed, not yet investigated for cause. Whether it shares a
+mechanism with D-03 (both are "first interaction after a screen appears sometimes does nothing")
+is a real, open question, not yet evidenced either way -- flagging the resemblance without claiming
+it, per this file's own "do not use 'probably same cause' as closure" standard. Not investigated
+further in this pass: it needs the same real-device protocol D-03 does (10+ controlled first taps
+from a deterministic page-ready state), which needs `adb` (see the environment-note entry above).
+
+**No product code changed by this entry.**
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 -- Subgate B: formcoach/gates-a-c and marketing/site-prototype-2026-08-19 salvage status
+
+**`formcoach/gates-a-c`: verified, NOT yet deleted.** `git merge-base --is-ancestor formcoach/gates-a-c
+master` is true, 0 unique commits ahead of master -- fully merged, matching this program's own
+prior analysis. Its worktree (`D:\Repo\_wt-formcoach`) carries no unique work: `eligibility.dart`
+shows an empty `git diff`, the only other changes are a `report_conform.py`-generated provenance
+block reformat across several `reports/*.html` files, one stale (2026-08-16) unpushed
+`FINAL_AUTONOMOUS_ACTION_LOG.csv` row documenting a commit that had already happened by other means,
+and one stale (2026-08-19) untracked report -- disposable tooling/log debris, not unique engineering
+work. Attempted `git push origin --delete formcoach/gates-a-c`: blocked by this machine's
+`shell_policy_gate` (remote ref deletion), which this session's standing instruction says not to
+route around by reformulating the command. Asked the operator directly, in-session, whether to
+proceed given the blanket branch-deletion authorization already on record for this program vs. the
+gate firing anyway; operator answered **leave it as-is for now**. Branch and worktree therefore
+still exist, deliberately, pending a further operator decision on how to clear this specific gate
+(a `gh` CLI deletion, an explicit re-run of the exact git command, or standing down on this item).
+
+**`marketing/site-prototype-2026-08-19`: 22 unique commits, classified.** `git log
+master..marketing/site-prototype-2026-08-19 --oneline` (fetched fresh from origin first):
+
+| Commit | Subject | Classification |
+|---|---|---|
+| dd12695 | feat(marketing): internal SPTR site prototype, three concept cells | MARKETING_REQUIRED |
+| 9db5902 | fix(marketing): split claim class into truth vs public-eligibility, add fail-closed lint | MARKETING_REQUIRED |
+| 2cc271b | Gate D: Level-1 equipment-type workout memory | SUPERSEDED -- already on master (`ef8cc34`, "Integrate Gate D (equipment-type memory) from marketing branch; retire M3") |
+| 105f9d4 | Gate E: shared uncertainty contract (MRD-06) | PRODUCT_REQUIRED -- `mobile/lib/shared/uncertainty/answer.dart` + tests, not on master, not superseded by anything master's own log records (master's own "Gate E/F/G/H" entries, 2026-08-15, are a same-named but unrelated avatar/catalog workstream -- confirmed not the same feature before writing this row) |
+| c5d2d90 | docs(reports): status report for Gates D/E and marketing governance fix | GENERATED_NOISE (report, superseded by this classification pass) |
+| 41d5b23 | Gate F: gym identity (MRD-02 slice) | PRODUCT_REQUIRED -- onboarding equipment-access step + profile model fields, not on master |
+| 8dabc20 | Gate G: setup-note memory (MRD-03/04/05 slice) | PRODUCT_REQUIRED -- equipment setup-note repository/UI + `main.dart` wiring, not on master |
+| 0f3bcf3 | feat(ops): Gate H - contribution pipeline measurement report (MRD-07) | PRODUCT_REQUIRED -- `scripts/ops/machine_card_contribution_report.py` + tests, not on master |
+| 2a2d2cb | docs(reports): final consolidated status report for Gates D-H | GENERATED_NOISE |
+| 2348ea2 | docs(plan): MVP closure plan and Gate M0 recon (operator course change) | HISTORICAL_EVIDENCE_REQUIRED -- the pivot from Gate-D-H product work to MVP closure is real project history; master's own log does not need the plan doc itself, only the fact, which this row records |
+| f7279ca | fix(mvp-1): close the auth-restore false-state collapse at the provider layer | SUPERSEDED -- per the prior rolling-status entry, master's own `74f2f76` covers the same defect class |
+| 68cef87 | MVP-3: splash waits for real auth-restore before leaving /splash | SUPERSEDED -- same as above; confirmed master's `splash_page.dart` already carries an equivalent `_maxAuthWait`/`authUserProvider.future` wait (read while investigating D-03 in the entry above) |
+| e5d462b | MVP-2 reclassified POST-MVP; questionnaireDraftProvider accepted as mitigated | HISTORICAL_EVIDENCE_REQUIRED -- a reclassification decision, not a code change; the fact belongs in history, not as a commit to port |
+| 82786d4 | docs(report): MVP closure status report (M0 through MVP-2) | GENERATED_NOISE |
+| e733d36, 11d983e, 851083e, a5ce0f8, c4c94bc | docs: release-gate RG-1/RG-2/RG-3 evidence + closure pass (5 commits) | GENERATED_NOISE -- this is the evidence later retracted by the next row; keeping it on a branch about to be deleted, not porting it, is correct |
+| 21d116d | docs: STOP-THE-LINE -- RG-1/RG-2/RG-3 device pass almost certainly ran the wrong branch's build | HISTORICAL_EVIDENCE_REQUIRED -- already represented in master's own `core/DECISION_LOG.md` (the "large consolidation directive" entry references this exact finding and its RG-1/RG-2/RG-3 re-verification consequence) -- confirmed by grep before writing this row, not assumed |
+| db4a552, 30163bf, f95e1c8 | docs(report): stop-the-line report, rolling-report consolidation, full session record (3 commits) | GENERATED_NOISE -- reporting infrastructure, superseded by master's own independent `SPTR_STATUS.*` convention |
+
+**Net action implied, not yet executed:** port Gates E/F/G/H (105f9d4, 41d5b23, 8dabc20, 0f3bcf3) to
+`master` as their own commits -- four genuinely unported product features with their own tests and
+D0 design notes, roughly 500-900 lines each. Deliberately NOT attempted as a blind mass cherry-pick
+in this same pass: each commit touches shared files (`equipment_detail_page.dart`, l10n `.arb`
+files, `main.dart`) that have moved independently on master since 2026-08-19, so each needs its own
+conflict check and a green `flutter test`/`flutter analyze` before being counted as ported -- the
+same standard this file already held D-03's fix to. Not done in this pass; the next pass should
+cherry-pick 105f9d4, then 41d5b23, then 8dabc20, then 0f3bcf3, in that order (their own dependency
+order), verifying tests after each before moving to the next.
+
+**Branch deletion for `marketing/site-prototype-2026-08-19` not attempted in this pass**, for two
+reasons: the four PRODUCT_REQUIRED commits have not been ported yet (deleting the branch first would
+require re-deriving them from `git reflog`/GitHub's own retained ref instead of a clean local
+branch), and the same `shell_policy_gate` block that fired on the formcoach deletion above would
+fire on this one too -- no reason to expect a different outcome without first resolving that
+specific gate with the operator.
+
+**No product code changed by this entry.**

@@ -94,9 +94,37 @@ class LoginPage extends ConsumerWidget {
                       key: const Key('login.continueGuest'),
                       onTap: isLoading
                           ? null
-                          : () => ref
-                              .read(authActionProvider.notifier)
-                              .signInAnonymously(),
+                          : () async {
+                              // D-03: `resolveRedirect` deliberately exempts
+                              // any signed-in anonymous user sitting on
+                              // `/login` from the redirect that would
+                              // otherwise send them onward (`profile_page.dart`
+                              // pushes an already-anonymous guest back here on
+                              // purpose, to let them link a Google account
+                              // without being bounced away first). That
+                              // exemption is correct for a returning guest,
+                              // but it also means a freshly-created anonymous
+                              // account can never leave `/login` on its own --
+                              // there was no other navigation anywhere in this
+                              // flow. Confirmed with a controlled router test
+                              // before this change (deterministic, not a
+                              // race): tapping Continue never left `/login`,
+                              // with or without any artificial delay.
+                              //
+                              // Going to `/home` rather than straight to
+                              // `/onboarding` reuses the router's own,
+                              // already-tested redirect chain (`redirectFor`:
+                              // an unonboarded user at `/home` is bounced to
+                              // `/onboarding`; an already-onboarded one stays)
+                              // instead of duplicating that decision here.
+                              await ref
+                                  .read(authActionProvider.notifier)
+                                  .signInAnonymously();
+                              if (!context.mounted) return;
+                              if (ref.read(authActionProvider).hasValue) {
+                                context.go('/home');
+                              }
+                            },
                       label: isLoading ? AppLocalizations.of(context).authSigningIn : AppLocalizations.of(context).commonContinue,
                       icon: Icons.arrow_forward_rounded,
                       loading: isLoading,

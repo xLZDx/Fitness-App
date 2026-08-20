@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,8 +9,10 @@ import 'package:go_router/go_router.dart';
 import '../helpers/test_app.dart';
 import 'package:fitness_app/core/router/app_router.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/auth/data/auth_repository.dart';
 import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/data/mock_auth_repository.dart';
+import 'package:fitness_app/features/auth/data/sign_in_outcome.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/profile/data/mock_profile_repository.dart';
 import 'package:fitness_app/features/profile/data/profile_models.dart';
@@ -373,6 +377,148 @@ void main() {
 
   });
 
+  // D-03. The DECISION_LOG.md working theory going into this pass was a
+  // timing race between `authRepo.currentUser` (read synchronously in
+  // `redirectFor`) and `authRepo.authStateChanges()` (what actually drives
+  // `profileListenable` and therefore GoRouter's `redirect` re-evaluation),
+  // triggered by the ~12s App-Check attestation retry/backoff seen on
+  // device. That theory does not survive a controlled test: the first test
+  // below, run with ZERO artificial delay and the plain `MockAuthRepository`
+  // every other test in this file already uses, shows tapping Continue never
+  // leaves `/login` at all -- deterministically, not intermittently.
+  //
+  // Root cause: `resolveRedirect` deliberately exempts a signed-in anonymous
+  // user sitting on `/login` from any redirect (`/login` is in
+  // `_publicPaths`, and the `isSignedIn && !isAnonymous` branch is the only
+  // one that ever redirects away from `/login`) -- correct and load-bearing
+  // for `profile_page.dart`'s "link your account" tile, which pushes an
+  // already-anonymous guest back onto `/login` on purpose and must not have
+  // the redirect immediately bounce them off it again. But nothing else in
+  // the app ever navigated a FRESH anonymous sign-in forward, so the same
+  // exemption that protects the returning-guest path also permanently
+  // strands a brand-new guest on `/login` -- with or without any App-Check
+  // delay. Fixed in `login_page.dart`: the Continue button now awaits
+  // `signInAnonymously()` and explicitly navigates to `/home` on success,
+  // reusing the router's own already-tested redirect chain (`redirectFor`:
+  // an unonboarded user at `/home` bounces to `/onboarding`; an onboarded
+  // one stays) rather than depending on the reactive listenable for this
+  // specific transition.
+  //
+  // This does not fully explain the on-device 5/10-success pattern recorded
+  // in DECISION_LOG.md, since this bug is deterministic (10/10), not
+  // probabilistic -- see the DECISION_LOG update accompanying this change for
+  // the honest gap (stale-APK contamination is the leading alternative
+  // explanation, given this exact project already hit that once for
+  // RG-1/RG-2/RG-3).
+  group('D-03: Continue must leave /login on a fresh anonymous sign-in', () {
+    testWidgets(
+        'RED before the fix, GREEN after: plain MockAuthRepository, zero '
+        'artificial delay -- tapping Continue must not leave a fresh guest '
+        'stuck on /login', (tester) async {
+      late GoRouter router;
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWith((ref) {
+            final auth = MockAuthRepository(latency: Duration.zero);
+            ref.onDispose(auth.dispose);
+            return auth;
+          }),
+          profileRepositoryProvider.overrideWith((ref) {
+            final profiles = MockProfileRepository(latency: Duration.zero);
+            ref.onDispose(profiles.dispose);
+            return profiles;
+          }),
+        ],
+        child: Consumer(
+          builder: (context, ref, _) {
+            router = ref.watch(appRouterProvider);
+            return MaterialApp.router(
+              theme: AppTheme.light(),
+              locale: kTestLocale,
+              localizationsDelegates: kTestLocalizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: router,
+            );
+          },
+        ),
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1500));
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(router.routerDelegate.currentConfiguration.uri.path, '/login');
+
+      await tester.tap(find.text('Continue'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(router.routerDelegate.currentConfiguration.uri.path, '/onboarding',
+          reason: 'a fresh anonymous sign-in has no completed profile, so '
+              'Continue must land on /onboarding, not stay on /login and not '
+              'go to /home');
+    });
+
+    testWidgets(
+        'the fix does not depend on authStateChanges() firing at all -- '
+        'navigation happens the instant signInAnonymously() resolves, even '
+        'if the stream event never arrives', (tester) async {
+      final auth = _ControllableAuthRepository();
+      final profiles = MockProfileRepository(latency: Duration.zero);
+      late GoRouter router;
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          authRepositoryProvider.overrideWith((ref) {
+            ref.onDispose(auth.dispose);
+            return auth;
+          }),
+          profileRepositoryProvider.overrideWith((ref) {
+            ref.onDispose(profiles.dispose);
+            return profiles;
+          }),
+        ],
+        child: Consumer(
+          builder: (context, ref, _) {
+            router = ref.watch(appRouterProvider);
+            return MaterialApp.router(
+              theme: AppTheme.light(),
+              locale: kTestLocale,
+              localizationsDelegates: kTestLocalizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: router,
+            );
+          },
+        ),
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 1500));
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(router.routerDelegate.currentConfiguration.uri.path, '/login');
+
+      await tester.tap(find.text('Continue'));
+      await tester.pump();
+
+      // Models the on-device ~12s App-Check retry/backoff window: the
+      // sign-in call itself is what takes long to resolve. Deliberately
+      // never call `auth.emitAuthStateEvent(...)` in this test at all --
+      // proving the fix does not need it.
+      const user = AuthUser(
+        uid: 'controllable-uid',
+        displayName: 'Guest',
+        provider: AuthProvider.anonymous,
+      );
+      auth.assignCurrentUser(user);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(router.routerDelegate.currentConfiguration.uri.path, '/onboarding',
+          reason: 'context.go(\'/home\') fires as soon as the awaited '
+              'signInAnonymously() future resolves, independent of the '
+              'authStateChanges() stream this whole investigation started '
+              'from');
+    });
+  });
+
   // The pure tests above prove `resolveRedirect` DECIDES correctly about a
   // guest. They prove nothing about whether the router ever TELLS it who the
   // guest is: `isAnonymous:` is derived at exactly one place, and a constant
@@ -454,4 +600,67 @@ class _RecordingMockAuth extends MockAuthRepository {
     anonymousCalls += 1;
     return super.signInAnonymously();
   }
+}
+
+/// Splits "sign-in resolved" into two independently-triggerable steps --
+/// `currentUser` assignment and the `authStateChanges()` event -- so a test
+/// can control the gap between them. [MockAuthRepository] cannot do this: it
+/// always sets its `_current` field and calls `_controller.add` on two
+/// consecutive lines, with no seam to insert a delay or drop the second step
+/// while keeping the first.
+///
+/// `authStateChanges()` replays the latest known state to a new subscriber,
+/// per the [AuthRepository] contract's own doc comment -- matching
+/// [MockAuthRepository], not simplifying it away.
+class _ControllableAuthRepository implements AuthRepository {
+  AuthUser? _current;
+  final _controller = StreamController<AuthUser?>.broadcast();
+  Completer<AuthUser>? _signInCompleter;
+
+  @override
+  Stream<AuthUser?> authStateChanges() {
+    late StreamController<AuthUser?> replay;
+    replay = StreamController<AuthUser?>(
+      onListen: () {
+        replay.add(_current);
+        _controller.stream.listen(replay.add,
+            onError: replay.addError, onDone: replay.close);
+      },
+    );
+    return replay.stream;
+  }
+
+  @override
+  AuthUser? get currentUser => _current;
+
+  /// Updates the synchronous getter and resolves the button's own in-flight
+  /// `signInAnonymously()` call (so `LoginPage`'s loading spinner clears and
+  /// does not spin forever under `pump()`) -- deliberately WITHOUT ever
+  /// pushing an event through `authStateChanges()`, to prove the D-03 fix's
+  /// navigation does not depend on that stream firing.
+  void assignCurrentUser(AuthUser user) {
+    _current = user;
+    _signInCompleter?.complete(user);
+  }
+
+  @override
+  Future<AuthUser> signInAnonymously() {
+    // The button under test only needs this call to hang until the test
+    // drives `assignCurrentUser`/`emitAuthStateEvent` itself -- the router
+    // does not react to this Future at all, only to the stream event.
+    _signInCompleter = Completer<AuthUser>();
+    return _signInCompleter!.future;
+  }
+
+  @override
+  Future<SignInResult> signInWithGoogle() =>
+      throw UnimplementedError('not exercised by the D-03 race tests');
+
+  @override
+  Future<void> signOut() async {
+    _current = null;
+    _controller.add(null);
+  }
+
+  void dispose() => _controller.close();
 }
