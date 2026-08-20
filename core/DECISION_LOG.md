@@ -20455,3 +20455,107 @@ fire on this one too -- no reason to expect a different outcome without first re
 specific gate with the operator.
 
 **No product code changed by this entry.**
+
+---
+
+## 2026-08-19 15:40 local / 12:40 UTC — Gate E: shared uncertainty contract (MRD-06) shipped
+
+**Ported to master 2026-08-20, from `marketing/site-prototype-2026-08-19` (commit `105f9d4`), as
+part of the Subgate B salvage classification above -- classified PRODUCT_REQUIRED, not superseded
+by anything on master. Entry text below is the original, unedited.**
+
+**Reconnaissance first, evidence-driven scope.** An Explore agent inventoried every place the app
+already expresses uncertainty (six categories: equipment recognition, rep/weight withholding,
+AI-content labels, injury-screening safety levels, form-check/posture scoring, video-failure
+classification). Confirmed no shared type exists anywhere in `lib/`. The load-bearing finding: three
+independent systems (`ScanOutcome`, `PoseGateVerdict`, `VideoFailureReason`) reinvented the same
+"closed-set reason for not having a confident answer" shape without ever referencing each other —
+that convergence, not any one system, is what a shared layer should formalize.
+
+**A universal numeric confidence score was explicitly rejected, on the codebase's own evidence** — not
+just the operator's instruction. `VisualMatch.confidence` and `TextAnchorMatch.confidence` are two
+different, non-comparable 0..1 scales already living in the *same* feature, with the second
+explicitly documented as "not a probability and must not be rendered as a percentage next to the
+classifier's softmax, which IS one." A cross-domain numeric model would repeat that exact mistake at
+a larger scale. `BuddyMatchScore` (a real 0..1 score already in the app) was checked and explicitly
+excluded — it answers "who's a good match," not "how sure is the app of a fact." `ScanResult`'s
+ranked-candidate-list shape was also checked and excluded — "confident value or a reason" cannot
+represent "here are 3 candidates, you pick" without dropping information.
+
+**Decision: ship the contract type only, do not retrofit the five existing mature systems in this
+gate.** `Answer<T, R>` (`mobile/lib/shared/uncertainty/answer.dart`) — a Dart 3 sealed,
+exhaustiveness-checked type: either a confident `T` value, or a domain-owned closed-set `R` reason,
+with an optional structurally-separate `bestGuess` for the "possibly: X" tentative case
+(`LiveRecognition.settled == false` is the existing precedent for that idea). `R` stays generic and
+domain-owned deliberately — unifying `PoseGateVerdict` and `VideoFailureReason` into one enum would be
+the same universal-model mistake one level down. Not retrofitted onto `visual_equipment`, `form_check`,
+safety screening, `set_capture`, or `video_failure`: each is mature, individually calibrated
+(`confidentMargin = 0.15`, `kPoseMatchPassing = 0.80`, `_unsureBelow = 0.45`), and none of the
+null-returning cases currently carries an explicit reason — adopting the contract there would mean
+inventing new reason taxonomies inside safety-adjacent code as an unrequested side effect of a
+governance gate, not a genuine behavioral improvement anyone asked for. Zero existing production files
+touched.
+
+**Independent review (type-design-analyzer, one specialist — proportionate to a self-contained,
+zero-existing-call-site change) found one real MAJOR:** unbounded `T`/`R` let `T` be instantiated as
+nullable, reopening the exact ambiguity the type exists to close — `Answer<String?, R>.confident(null)`
+("confidently nothing") became indistinguishable from an uncertain answer through `valueOrNull`.
+Fixed: `Answer<T extends Object, R extends Object>`. Verified directly by adding a temporary probe
+declaring `Answer<String?, R>` to the test file, confirming `type_argument_not_matching_bounds`, then
+removing it — the fix is enforced by the compiler itself, so no runtime regression test was needed. One
+MINOR (phantom-`R` equality/hashCode asymmetry on the confident arm) explicitly deferred per the
+reviewer's own recommendation — zero call sites today, not worth defensive complexity yet.
+
+**Verification:** `flutter analyze` clean; full suite 2459/2459 (2445 after Gate D + 14 new); two
+mutation proofs (`valueOrNull` leaking `bestGuess`, `isConfident` hardcoded true) both caught by the
+test suite, confirmed by reverting each and re-running.
+
+Full detail: `core/product/GATE_E_SHARED_UNCERTAINTY_D0_NOTE_2026-08-19.md`.
+
+**PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
+
+---
+
+## 2026-08-20 -- full `flutter test` result for the D-03 fix, and a codex review pass on the Gate E port
+
+**Full suite (3149 tests), run after the D-03 fix was already committed and pushed:** 3148 passed, 1
+failed -- `test/theme/app_semantic_colors_test.dart`, `'the hardcoded whites that survived G1.2b
+stay accounted for'` (expected 61 hardcoded-white literals across the audited files, found 58,
+broken down per-file in the failure output). Every file in that breakdown
+(`celebrity_plans_page.dart`, `form_check_page.dart`, `scanner_page.dart`, `posture_page.dart`, and
+others) is untouched by this pass's changes (`login_page.dart`, `app_router.dart`'s test file,
+`answer.dart`) -- pre-existing drift in a hardcoded-color count this audit test tracks, not a
+regression from D-03 or Gate E. Not investigated further or fixed in this pass: unrelated to the
+active work, and the test's own purpose (tracking a count down over time) means a stale expectation
+failing low is not urgent the way a new hardcoded white would be.
+
+**Codex review on the Gate E cherry-pick (`codex_review.py --uncommitted`), before committing:**
+found 2 MAJOR findings in the ported `answer.dart`, both genuine and both about the port itself, not
+introduced by the port:
+1. `ConfidentAnswer`/`UncertainAnswer.==` used `other is ConfidentAnswer<T, R>` alone, which is not
+   symmetric under Dart's covariant generics (`Answer<int,R>.confident(1) == Answer<num,R>.confident(1)`
+   and its reverse could disagree). **Fixed**: added a `runtimeType` guard to both `==` overrides,
+   plus a regression test proving both comparison directions now agree. `flutter analyze` clean,
+   `answer_test.dart` 15/15 (was 14, +1 for the new regression case).
+2. `R extends Object` does not compiler-enforce the documented "closed-set, never a free-text
+   string" invariant -- `Answer<int, String>.uncertain('offline')` compiles. **Not fixed in this
+   pass, flagged instead**: the original Gate E entry already explicitly chose to keep `R` generic
+   and domain-owned rather than force every domain's reasons into one shape (`R` unifying
+   `PoseGateVerdict` and `VideoFailureReason` was the exact universal-model mistake that entry
+   argues against). Narrowing to `R extends Enum` is a real option but is a design change beyond
+   "port this commit," and this port did not originate the tradeoff -- recording it here as a
+   flagged, deliberately-deferred finding rather than silently accepting or silently fixing it.
+
+One MINOR also found and fixed: the test fixture `_ClipFailureReason` mirrored only 3 of the real
+`VideoFailureReason`'s 4 cases, missing `quotaExhausted` (split out of `linkUnavailable` in the real
+enum specifically because the two need opposite messages). Added the case, a `quotaExhausted` branch
+in the fixture's `classify` helper, and a test asserting it stays distinct from `linkUnavailable`.
+16/16 in `answer_test.dart` after this fix (was 15).
+
+Second MAJOR from this codex pass -- that the full suite is 3148/3149, not 3149/3149 -- is the same
+pre-existing, unrelated `app_semantic_colors_test.dart` drift already recorded above; not treated as
+blocking this specific commit for the reason already given there (zero file overlap with anything
+this pass touched). Recorded here rather than silently dropped, since it is a real finding, just not
+a new one and not in scope for this commit to fix.
+
+**No product code changed by this entry beyond what the two entries above already describe.**
