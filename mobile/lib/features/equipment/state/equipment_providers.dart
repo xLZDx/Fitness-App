@@ -508,7 +508,32 @@ class ExerciseResolution {
 /// The scheduled-session screening needs exactly the same lookup, which is the
 /// second reason it belongs in one place rather than two.
 final exerciseResolutionProvider =
-    FutureProvider.family<ExerciseResolution, String>((ref, id) async {
+    FutureProvider.family<ExerciseResolution, String>((ref, id) =>
+        _resolveExercise(ref, id, includeWholePerson: true));
+
+/// The same lookup, for a surface that only ever DISPLAYS an id — never a tap,
+/// never a deep link, never a session about to start.
+///
+/// D-09: `workouts_page.dart`'s current-programme-day thumbnail strip reads an
+/// exercise id straight out of a scheduled day to draw its picture, the same
+/// "which of these are suitable" shape `eligibleExercises` already exists for
+/// (`eligibility.dart`), not the "may this person do THIS, now" shape
+/// `exerciseResolutionProvider` is for. Sharing that provider meant an
+/// unscreened user's every thumbnail in an already-scheduled day silently
+/// turned into the "no clip filmed" gradient tile — the D-01 failure shape,
+/// just at exercise-thumbnail granularity instead of list granularity. A
+/// STATED refusal (an injury, a movement restriction, an answered PAR-Q+
+/// "yes") still withholds the picture here; only the fail-closed
+/// unanswered-screening gate does not.
+final exercisePreviewResolutionProvider =
+    FutureProvider.family<ExerciseResolution, String>((ref, id) =>
+        _resolveExercise(ref, id, includeWholePerson: false));
+
+Future<ExerciseResolution> _resolveExercise(
+  Ref ref,
+  String id, {
+  required bool includeWholePerson,
+}) async {
   final profile = await ref.watch(screeningProfileProvider.future);
 
   // Gate N: the whole eligibility layer, not just the injury filter. This is a
@@ -528,7 +553,8 @@ final exerciseResolutionProvider =
 
   ExerciseResolution screenOne(ExerciseItem? found) {
     if (found == null) return const ExerciseResolution.notFound();
-    final verdict = evaluateExercise(found, context);
+    final verdict = evaluateExercise(found, context,
+        includeWholePerson: includeWholePerson);
     if (verdict.isAllowed || verdict is Degraded) {
       return ExerciseResolution.found(found);
     }
@@ -573,7 +599,7 @@ final exerciseResolutionProvider =
     }
   }
   return const ExerciseResolution.notFound();
-});
+}
 
 /// Where a clip reference becomes a playable URL.
 ///

@@ -1192,8 +1192,13 @@ class _ProgrammeDayThumbs extends ConsumerWidget {
           children: [
             for (final e in shown) ...[
               Builder(builder: (context) {
-                final resolved =
-                    ref.watch(exerciseResolutionProvider(e.exerciseId));
+                // D-09: a passive summary row, not a tap and not a session
+                // about to start -- `exercisePreviewResolutionProvider`, not
+                // the strict `exerciseResolutionProvider`, so an unanswered
+                // PAR-Q+ question doesn't blank out every thumbnail in an
+                // already-scheduled day.
+                final resolved = ref
+                    .watch(exercisePreviewResolutionProvider(e.exerciseId));
                 // A tile still resolving is NOT the same as a tile with no
                 // clip, and ExerciseThumb's gradient fallback means the
                 // latter (`exercise_thumb.dart:15-19`). Handing it a null

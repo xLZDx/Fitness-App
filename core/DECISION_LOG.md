@@ -20023,3 +20023,45 @@ title, A8 narrow-screens overflow) all pass now that the file runs to completion
 fix). `flutter analyze`: clean.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — D-09 fixed: programme-day thumbnails classified PASSIVE_PREVIEW
+
+**Classification: PASSIVE_PREVIEW, not ACTIONABLE_TRAINING_ENTRY.** `workouts_page.dart:1196`'s
+current-programme-day thumbnail strip reads an exercise id from an already-scheduled day purely to
+draw its picture — no tap, no deep link, nothing about starting a session. It shared
+`exerciseResolutionProvider` (`includeWholePerson: true`, correct for "may this person do THIS,
+now" per `eligibility.dart`'s own documented contract) with `exercise_reference.dart`'s detail view
+and `workout_player_page.dart`'s session player, both genuinely in that stricter category. For an
+unscreened user, this meant every thumbnail in an already-scheduled day silently became the
+"no clip filmed" gradient tile — the same D-01 failure shape (an unanswered question read as a
+stated refusal), one level down in granularity.
+
+**Fix:** split the provider by call shape, not by duplicating its lookup logic.
+`equipment_providers.dart`'s `exerciseResolutionProvider` body moved into a shared
+`_resolveExercise(ref, id, {required includeWholePerson})`; the existing provider now calls it with
+`includeWholePerson: true` (unchanged behavior, still used by `exercise_reference.dart` and
+`workout_player_page.dart`/`session_screening_providers.dart`) and a new
+`exercisePreviewResolutionProvider` calls it with `false`, mirroring `eligibleExercises`'s existing
+`includeWholePerson: false` list-filter pattern. `workouts_page.dart`'s thumbnail strip now watches
+the new provider. A STATED refusal — an injury, a movement restriction, an answered PAR-Q+ "yes" —
+still withholds the picture; only the fail-closed unanswered-screening gate does not.
+
+**Regression test:** `workouts_page_test.dart`, "D-09: an unscreened user still sees the day's
+pictures, not a row of blank tiles" — drives the real provider end to end (no verdict override,
+unlike the file's other two thumbnail tests) with `screeningProfileProvider` returning `null`,
+asserting both thumbnails in a two-exercise day still resolve to their real ids. The file's two
+existing thumbnail tests had their `exerciseResolutionProvider` override retargeted to
+`exercisePreviewResolutionProvider` — retargeting was necessary, not just tidy: after the code
+change, the old override pointed at a provider `workouts_page.dart` no longer reads, so the real
+(unstubbed) provider would have run against `_seededRepo()` instead of the verdicts the tests
+state, and did fail exactly that way when checked mid-change.
+
+**Mutation-verified:** reverted `workouts_page.dart`'s provider call to `exerciseResolutionProvider`
+via Python string-replace, ran the new test alone — RED, `[null, null]` instead of `['pushup',
+'rack_squat']`. Restored, reran the full file — GREEN, 40/40. Full `test/features/equipment/` +
+`test/features/workouts/`: 761/761, no regressions. `flutter analyze` on all three touched files:
+clean.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**

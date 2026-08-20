@@ -889,7 +889,13 @@ void main() {
               // Overridden directly so the test states the safety verdict it
               // is testing, instead of building an injury profile and hoping
               // the catalogue produces the verdict by side effect.
-              exerciseResolutionProvider.overrideWith((ref, id) async =>
+              //
+              // D-09: the thumbnail strip reads `exercisePreviewResolutionProvider`
+              // (passive-preview, loose whole-person gate), not the strict
+              // `exerciseResolutionProvider` -- overriding the wrong one here
+              // would leave the real provider running against `_seededRepo()`
+              // instead of the verdict this test states.
+              exercisePreviewResolutionProvider.overrideWith((ref, id) async =>
                   injured.contains(id)
                       ? ExerciseResolution.hiddenForInjury(item(id))
                       : ExerciseResolution.found(item(id))),
@@ -942,6 +948,62 @@ void main() {
           tester.widgetList<ExerciseThumb>(thumbs).map((t) => t.exercise?.id),
           ['squat', null, 'press'],
           reason: 'the contraindicated exercise must reach the tile as null',
+        );
+      });
+
+      testWidgets(
+          'D-09: an unscreened user still sees the day\'s pictures, not a '
+          'row of blank tiles', (tester) async {
+        // Drives the REAL exercisePreviewResolutionProvider end to end (no
+        // verdict override, unlike the two tests above) with no screening
+        // profile at all -- the exact "unanswered, not refused" shape D-01
+        // fixed for the Library list. Before D-09's fix this provider
+        // defaulted to includeWholePerson: true and every thumbnail in an
+        // already-scheduled day silently turned into the gradient
+        // "no clip" tile for anyone who had not completed PAR-Q+.
+        tester.view.physicalSize = const Size(400, 1400);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final programme = active();
+        final router = GoRouter(
+          initialLocation: '/workouts',
+          routes: [
+            GoRoute(
+                path: '/workouts', builder: (_, __) => const WorkoutsPage()),
+          ],
+        );
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              equipmentRepositoryProvider.overrideWithValue(_seededRepo()),
+              activeProgrammeProvider.overrideWithValue(programme),
+              activeProgrammeProgressProvider.overrideWithValue(
+                deriveProgrammeProgress(programme, const []),
+              ),
+              upcomingSessionsProvider
+                  .overrideWithValue([dayOf(['pushup', 'rack_squat'])]),
+              screeningProfileProvider.overrideWith((ref) async => null),
+            ],
+            child: MaterialApp.router(
+              theme: AppTheme.light(),
+              locale: kTestLocale,
+              localizationsDelegates: kTestLocalizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              routerConfig: router,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(thumbs, findsNWidgets(2));
+        expect(
+          tester.widgetList<ExerciseThumb>(thumbs).map((t) => t.exercise?.id),
+          ['pushup', 'rack_squat'],
+          reason: 'an unanswered PAR-Q+ question is not a stated refusal; '
+              'neither exercise is injury-contraindicated or restricted, so '
+              'both pictures must still draw',
         );
       });
 
