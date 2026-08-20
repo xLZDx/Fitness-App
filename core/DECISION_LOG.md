@@ -19892,3 +19892,50 @@ installed on S8 (`ce0417141997e4640c`) — built and installed BEFORE this D-07 
 not yet contain this fix; a later build will fold it in.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — D-06 root-caused and fixed (Firebase config); D-03 reproduces again
+
+**D-06 (Google sign-in crash) — reproduced, root-caused, fixed, verified on-device.** Cleared S8's
+app data, tapped "Продолжить с Google", selected an account: landed on a debug red screen,
+`AuthException: Sign-in cancelled` — despite an account genuinely being picked. `Auth.Api.Credentials`
+logcat carried the real cause underneath the plugin's generic mapping:
+`ckln: [8] Unknown error [status=UNREGISTERED_ON_API_CONSOLE]`. Confirmed via
+`google-services.json`: the debug package variant (`com.fitnessapp.fitness_app.sptr.debug`,
+`1:988522745882:android:7c05c915aa42410ec201a3`) had zero `oauth_client` entries of `client_type: 1`
+(Android), unlike the release variant's two. Registered the debug keystore's SHA-1
+(`35:F1:52:13:DE:21:79:19:EC:66:E4:E1:E1:4A:19:E9:55:56:28:DB`) against that app via the Firebase
+Management API (`POST .../androidApps/{id}/sha`, `200 OK`). Retested: account picker → a genuine
+OAuth consent screen (never reached before the fix) → accept → successful sign-in → routed to
+onboarding. No crash. This is a Firebase project config change (`fitness-app-korostelev`), not a
+code change — no commit carries it.
+
+**D-03 (dead guest "Продолжить" button) — reproduces again, root cause still open.** While
+retesting D-06 flows, the anonymous continue button on `/login` stopped responding: coordinates
+verified against the rendered button (green-gradient scan of the screenshot, button spans
+y≈844–938), Android confirms delivery (`ViewRootImpl@...[MainActivity]: ViewPostIme pointer 0/1`
+plus the exact `MotionEvent`), and zero `I/flutter` output follows — no state transition, no error,
+not even a `loading` visual change. Reproduced across 2 fresh `pm clear` + cold-launch cycles, with
+the tap delayed 2–15s after the page settled (rules out an in-flight route-transition animation).
+The adjacent "Продолжить с Google" button in the same card, same nesting depth, works reliably —
+which argues against the earlier dead-InkWell-ancestor theory this session's pre-compaction work had
+already reasoned through and provisionally ruled out.
+
+Built a diagnostic APK (`GIT_SHA=diag-d03`) with `debugPrint` added directly in
+`_GradientButton.build()` and its `onTap` closure, to see live `isLoading`/`disabled` state and
+confirm whether the handler fires at all. The install-and-test run produced NO log output
+whatsoever — not even the unconditional startup telemetry line (`B6: session log armed`) that fired
+cleanly on every other launch this session — which reads as a log-capture timing artifact (the grep
+ran before the app finished its first frame) rather than a new symptom, but this was not confirmed
+before the report gate interrupted the run. The diagnostic instrumentation was reverted; `git diff`
+on `login_page.dart` is clean.
+
+**Verdict: D-03 is CONFIRMED_OPEN**, reversing the earlier NOT_REPRODUCED_AFTER_BOUNDED_ATTEMPTS
+verdict from this session's own pre-compaction investigation. Root cause is not established. Next
+step is a live Dart VM Service / Flutter Inspector attach rather than more logcat guessing, since
+the instrumented-build approach has now failed to even confirm its own `build()` ran.
+
+Report: `reports/2026-08-20-defect-burndown-d02-d06-d07.ru.html` / `.html`.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
