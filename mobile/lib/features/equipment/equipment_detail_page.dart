@@ -20,8 +20,17 @@ import 'widgets/safety_disclosure.dart';
 import 'state/equipment_providers.dart';
 import 'widgets/equipment_report_sheet.dart';
 import 'widgets/exercise_thumb.dart';
-import '../profile/data/profile_models.dart' show EquipmentAccess;
+import '../profile/data/profile_models.dart'
+    show EquipmentAccess, UserProfile;
 import '../profile/state/profile_providers.dart';
+
+/// `functions/src/index.ts`'s `bounded(data.gymId, 128, "gymId")` throws
+/// `invalid-argument` -- rejecting the WHOLE report, not just the gym
+/// routing -- for anything longer. Client-side `GlassTextField` has no
+/// length limit of its own (shared widget, no other caller needed one), so
+/// this is the one place that contract can still be enforced (codex review
+/// round 2, 2026-08-21).
+const kMaxGymIdLength = 128;
 
 /// MRD-02, Gate F. `equipment` is null when the caller has no profile at
 /// all (signed out, or the equipment-report button raced ahead of the
@@ -35,7 +44,10 @@ String resolveEquipmentReportGymId(EquipmentAccess? equipment) {
   final gymId = equipment?.hasGymAccess == true
       ? equipment?.gymId?.trim()
       : null;
-  return gymId == null || gymId.isEmpty ? 'unknown' : gymId;
+  if (gymId == null || gymId.isEmpty || gymId.length > kMaxGymIdLength) {
+    return 'unknown';
+  }
+  return gymId;
 }
 
 class EquipmentDetailPage extends ConsumerWidget {
@@ -143,8 +155,21 @@ class EquipmentDetailPage extends ConsumerWidget {
                           // gate on `hasGymAccess`: a stale `gymId` left over
                           // from a location the user has since changed away
                           // from must never be forwarded to that former gym.
-                          final profile = await ref
-                              .read(currentProfileProvider.future);
+                          //
+                          // codex review round 2, 2026-08-21: awaiting the
+                          // future with no error handling regressed a report
+                          // filed before this pass -- back then, routing was
+                          // fire-and-forget wrong ('unknown', always), never
+                          // fatal. A profile-stream error must degrade to the
+                          // same 'unknown' fallback, not block reporting
+                          // entirely.
+                          UserProfile? profile;
+                          try {
+                            profile =
+                                await ref.read(currentProfileProvider.future);
+                          } catch (_) {
+                            profile = null;
+                          }
                           if (!context.mounted) return;
                           final sent = await EquipmentReportSheet.show(
                             context,

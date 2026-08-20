@@ -20807,3 +20807,60 @@ the same pre-existing `app_semantic_colors_test.dart` per-file-count drift alrea
 above (confirmed zero color-literal lines in this pass's diff to `equipment_detail_page.dart`).
 
 **PUSH NOT YET PERFORMED at the time of writing this entry.**
+
+---
+
+## 2026-08-21 -- Gate F, codex round 2 (`--commit 1689564 --round 2 --final`)
+
+Reviewed the committed diff, not another `--uncommitted` pass on top of it. Found 1 new BLOCKER, 1
+MAJOR re-flagged (the already-acknowledged one, unchanged), 1 new MAJOR, 1 new MINOR.
+
+**MAJOR, confirmed by direct read, fixed.** `await ref.read(currentProfileProvider.future)` had no
+error handling. `currentProfileProvider`'s stream (`profile_providers.dart:43`, `yield*
+repo.watch(user.uid)`) can error -- a real Firestore read, not a mock -- and an error on the first
+emission is exactly what `.future` rethrows at the await point. Before Gate F, and even after this
+pass's own round-1 fix, filing a report could not fail this way: routing degraded to `'unknown'`,
+never blocked the report. Fixed with a `try`/`catch` around the await, falling back to a null
+profile (which `resolveEquipmentReportGymId` already turns into `'unknown'`) on any error -- the
+degrade-not-block property is restored. New regression test:
+`equipment_report_gym_routing_test.dart`, overriding `currentProfileProvider` with
+`Stream<UserProfile?>.error(...)` and asserting the report sheet still opens.
+
+**MINOR, confirmed by direct read, fixed.** `functions/src/index.ts`'s `bounded(data.gymId, 128,
+"gymId")` (line 1594) throws `invalid-argument` -- rejecting the *entire* report, every field of
+it, not just dropping gymId -- for anything over 128 characters. `GlassTextField` (the shared
+onboarding input widget, no other caller needed a limit) enforces none. Rather than add a
+`maxLength` parameter to a shared widget for one caller's contract, fixed at the same choke point as
+the round-1 BLOCKER's defense-in-depth fix: `resolveEquipmentReportGymId` now falls back to
+`'unknown'` for anything over `kMaxGymIdLength` (128, named to the same number as the backend's own
+constant) instead of forwarding it and letting the backend reject the whole call. New unit test
+cases in `resolve_equipment_report_gym_id_test.dart` covering exactly-128 (still valid) and 129
+(falls back).
+
+**MAJOR, re-flagged, still deliberately not fixed.** The free-text-vs-registry-ID mismatch from
+round 1 -- unchanged, and correctly identified as unchanged. Same reasoning as before: fixing it
+needs a server-side naming convention nothing on the client can currently see.
+
+**BLOCKER, new: contested, not fixed.** Codex's claim: `gymId` is read from the user's *profile*
+(a single, persistent "home gym"), not confirmed or selectable per report, so a report filed while
+at a different branch/location than the saved one is silently misrouted -- "the same
+wrong-external-recipient failure class as the round-1 BLOCKER."
+
+Disagree with the severity classification, not the underlying fact. The round-1 BLOCKER was a code
+defect this port's own logic produced: a stale value the user had already *changed away from*,
+retained by a `copyWith` bug -- a correctness bug in code this pass wrote/ported. What round 2
+describes is the *original, deliberate* shape of the feature: one profile-level gym per user, set
+once in onboarding, exactly what the source commit's own message calls it ("Minimal safe seam...
+Not a validated picker"). Nothing in this cherry-pick's diff touches per-report gym selection, and
+the original commit's own independent review (flutter-reviewer + type-design-analyzer, recorded in
+the 2026-08-19 entry above) already passed over this same shape without flagging it. Treating an
+inherited, explicitly-documented product-scope boundary as a code BLOCKER in a cherry-pick would
+mean this port can never land without first designing and building a feature (per-report gym
+confirmation/selection UI, a multi-gym data model, new l10n, new tests) that is a materially larger
+change than "port this commit" -- indistinguishable in shape from the already-acknowledged MAJOR
+above, which shares the same root cause (no gym registry/selection UI exists yet) and the same
+resolution (belongs with the future gate that builds one).
+
+Per the codex-consensus round policy (one rebuttal round for a still-contested BLOCKER/MAJOR), this
+disagreement was put back to Codex once with the reasoning above -- see the next entry for the
+outcome -- rather than either silently overriding the finding or looping past the second round.

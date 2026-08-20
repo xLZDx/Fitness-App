@@ -65,4 +65,26 @@ void main() {
       'unknown',
     );
   });
+
+  test(
+      'codex round 2: a gymId over the backend\'s 128-char limit '
+      '(functions/src/index.ts bounded(data.gymId, 128, "gymId")) falls '
+      'back to unknown instead of getting the whole report rejected', () {
+    expect(
+      resolveEquipmentReportGymId(EquipmentAccess(
+        location: TrainingLocation.gym,
+        gymId: 'A' * (kMaxGymIdLength + 1),
+      )),
+      'unknown',
+    );
+    expect(
+      resolveEquipmentReportGymId(EquipmentAccess(
+        location: TrainingLocation.gym,
+        gymId: 'A' * kMaxGymIdLength,
+      )),
+      'A' * kMaxGymIdLength,
+      reason: 'exactly at the limit is still valid -- bounded() only '
+          'rejects strictly longer than max',
+    );
+  });
 }
