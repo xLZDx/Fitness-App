@@ -275,13 +275,22 @@ void main() {
       // `find.byKey` matches the element regardless of what it renders. The
       // refusal is only proven present if its own wording is on screen.
       //
-      // `kUnscreened` leaves every PAR-Q+ question unanswered, chest pain
-      // included, so `EligibilityNotice` takes its urgent branch and the
-      // `title` this call site passes ("No sessions right now") is
-      // overridden — matching the F017 behaviour asserted for the Library
-      // list in workouts_page_test.dart.
+      // D-08 (2026-08-20): this used to assert F017's URGENT wording here,
+      // on the theory that `kUnscreened` (every PAR-Q+ question unanswered)
+      // triggers it the same way an answered "yes" does. It does not, by
+      // design: `EligibilityNotice`'s `urgent` getter is `!r.unanswered` —
+      // urgency requires the person to have actually STATED chest pain, the
+      // same "silence is not a stated refusal" rule this whole gate's D-01
+      // fix is built on (`workouts_page_test.dart`'s F017 case answers
+      // chestPain `true` explicitly, unlike `kUnscreened` here). An
+      // unscreened user is still correctly refused training — that is what
+      // the two checks above prove — just with the routine title, since
+      // nothing urgent was ever stated.
+      expect(find.text('No sessions right now'), findsOneWidget);
       expect(find.text('This needs medical attention, not a workout'),
-          findsOneWidget);
+          findsNothing,
+          reason: 'nobody answered chest pain "yes" -- silence must not '
+              'read as a stated emergency');
     });
 
     testWidgets('the quick-scan card navigates to /scan', (tester) async {

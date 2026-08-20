@@ -19992,3 +19992,34 @@ the tap through the actual transition path rather than a bare `LoginPage()`.
 green. `flutter analyze` on both touched files plus `login_page.dart`: clean.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — D-08 resolved: STALE_TEST, not a regression
+
+**Classification: STALE_TEST.** `home_page_test.dart`'s "an unscreened user gets the refusal, not
+an empty state" asserted F017's urgent wording (`This needs medical attention, not a workout`) for
+`kUnscreened` (`screen(const {})` — every PAR-Q+ question unanswered, chest pain included). That
+premise was always wrong against the current, deliberate `EligibilityNotice` contract: `urgent =
+reasons.any((r) => r.reason == BlockReason.screening && r.question == ParQQuestion.chestPain &&
+!r.unanswered)` — urgency requires the person to have actually answered chest pain "yes", not
+merely left it unanswered. `workouts_page_test.dart`'s own F017 case makes the contrast explicit:
+`screen({for (final q in ParQQuestion.values) q: q == ParQQuestion.chestPain})` answers every
+question, chest pain `true` — a real stated "yes" — while `kUnscreened` answers nothing. This is
+the identical "silence is not a stated refusal" principle D-01 fixed for the Library list; Home's
+production code was already correctly applying it, only this one test's expectation had not caught
+up.
+
+**Fix:** the test's premise is now correct: for `kUnscreened`, Home still shows the refusal (key
+`home.suggestions.refused`, not the empty state) — that half of the test was always right and stays
+— but with the routine title `No sessions right now`, and an explicit `findsNothing` for the urgent
+wording, with a comment explaining why. No production code changed; `home_page.dart`'s refusal
+rendering was correct all along.
+
+**Fallout resolved:** the five tests this stale assertion's uncaught exception cascaded onto
+(quick-scan navigates, empty hero offers planner, Posture card navigates, active programme shows
+title, A8 narrow-screens overflow) all pass now that the file runs to completion.
+`test/features/home_page_test.dart`: 15/15 green (was 4 passing / 1 failing / 5 not-run before this
+fix). `flutter analyze`: clean.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
