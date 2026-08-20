@@ -20682,3 +20682,128 @@ closure is a new gate, not a continuation of this one.
 
 **No app runtime code changed by this entry** -- same scope as round 3 (legal copy + governance
 ledger + one operator-facing doc).
+
+---
+
+## 2026-08-19 — Gate F: gym identity (MRD-02 slice) shipped
+
+**Reconnaissance found the load-bearing fact: `gyms/{gymId}` already exists server-side as a
+business/operator-provisioned namespace, with its own security policy** (`firestore.rules`:
+client-read, server-write-only) and a real consumer — `functions/src/index.ts`'s `reportEquipment`
+callable looks up `gyms/{gymId}.maintenanceWebhookUrl` for a Slack notification. `gymId` had exactly
+two appearances client-side before this gate: a dead-code field on `BuddyProfile`
+(`buddy_match.dart`, no callers anywhere in the app) and a parameter on
+`EquipmentReportSheet.show()` that defaulted to the literal string `'unknown'` and was never once
+passed a real value by any caller — every equipment report ever filed silently defeated the
+server's webhook lookup, regardless of which gym the reporter trains at. This meant I did not need
+to invent gym-identity product policy (uniqueness, moderation, geo-verification — MRD-02's fuller
+scope); the minimal safe seam was completing a half-wired client-side field, not designing a new one.
+
+**Decision: free-text field, not a validated picker.** A searchable gym directory would need to
+match against the real `gyms/{gymId}` document-ID/slug convention, and there is no client-visible
+evidence of what that convention is (write-protected collection, no admin UI, no seed data). A free
+answer degrades honestly — the Cloud Function's lookup either matches or, same as today, finds
+nothing; a guessed slug format would degrade silently instead. Collected in onboarding
+(`step_equipment.dart`), shown only when `location == gym || location == mixed` — the same condition
+`hasGymAccess` already derives from — and wired only into the one live consumer
+(`equipment_detail_page.dart`'s report button); the dead-code `buddy_match.dart` consumer was left
+untouched.
+
+**Independent review (flutter-reviewer, type-design-analyzer, parallel, no cross-seeding) found and
+fixed one real MAJOR.** The onboarding field trimmed on every keystroke, which — because
+`GlassTextField` is a controlled widget that force-resyncs its controller whenever its `value` prop
+disagrees with the displayed text — silently deleted the space after every word as the user typed,
+turning "Iron Temple Gym" into "IronTempleGym". Fixed by trimming only at the one consumption
+boundary that needs a normalized value, not inside the field's own `onChanged`. A first version of
+the regression test (feeding precomputed target-prefix substrings via `enterText`) did not catch
+this; rewritten to append each character to the field's actual live-displayed text, it reproduced
+the exact corrupted string, then confirmed fixed, then confirmed the fix survives reverting back to
+the buggy line and forward again (`diff`-verified restore). One MINOR noted and deliberately left
+undocumented-in-code: `EquipmentAccess.gymId` (free text) and the dead `BuddyProfile.gymId`
+(required, exact-match key) share a bare name with no cross-reference — harmless today, a real
+footgun if buddy matching is ever revived without reading both declarations first; fix belongs with
+whichever gate revives that feature, not this one.
+
+Full reconnaissance, decision rationale, and review findings:
+`core/product/GATE_F_GYM_IDENTITY_D0_NOTE_2026-08-19.md`.
+
+`flutter analyze` clean on all six touched/added files. New/extended test coverage: 9 model/
+serialization assertions (`equipment_access_test.dart`) plus 7 widget tests
+(`step_equipment_test.dart`, including the keystroke-fidelity regression above), all passing.
+Two additional mutation proofs beyond the review-driven one: the onboarding field's location-gating
+condition (`gym || mixed` mutated to `gym`-only) and `copyWith`'s clear-to-empty-string handling,
+both confirmed caught by reverting and re-running. Known gap: `firestore_profile_repository.dart`'s
+`_fromMap` read-side line for `gymId` has no direct test — this repo has no
+`fake_cloud_firestore`/mocking dependency (documented pre-existing scope boundary), and the line is
+a one-token cast identical in shape to every other field this same function already reads untested.
+
+**PUSH NOT PERFORMED. DEPLOYMENT NOT PERFORMED.**
+
+---
+
+## 2026-08-21 -- Gate F (`gym identity`, 41d5b23) cherry-picked onto master
+
+Ported from `marketing/site-prototype-2026-08-19` onto `master` in `_wt-gates-efgh`, now that the
+`gym-webhook-disclosure` blocker this exact port raised is closed (operator DISCLOSE decision, see
+the entries above and `core/decisions/gym-webhook-disclosure.md`). `git cherry-pick -n 41d5b23`:
+9 of 10 files applied cleanly (including both `.arb` files, auto-merged against this session's own
+legal-copy edits with no overlap -- verified by JSON-parsing `app_en.arb` after and confirming both
+the disclosure text and Gate F's new `onbGym*`/`equipmentReportsAreForwardedToTheGym` keys are
+present). `core/DECISION_LOG.md` conflicted (append-only file, diverged history) -- resolved by
+deleting the three marker lines and keeping both sides in their original order, same approach as
+the Gate E port above.
+
+**Codex review round 1 (`--uncommitted`) found 1 BLOCKER and 2 MAJOR, all real:**
+
+1. **BLOCKER, confirmed by direct read.** `EquipmentAccess.copyWith`'s `gymId: gymId ?? this.gymId`
+   (`profile_models.dart:763`) keeps whatever gym name was typed even after the user switches away
+   from gym/mixed -- `step_equipment.dart`'s location `onTap` (line 59, before this fix) only ever
+   passed `location`, never `gymId`. The field just goes out of view; the stale value survives in
+   the draft and `equipment_detail_page.dart` would still forward it on a later report. **Failure
+   scenario**: a user selects "gym", types "Iron Temple", changes their mind and picks "home"
+   instead, then months later reports broken equipment at whatever gym they are *actually* at now --
+   the report's contents go to Iron Temple's maintenance webhook, not the current gym's, not
+   nobody's. The wrong external recipient, not just a missing one -- worse than the bug this gate
+   exists to fix. **Fixed** at the root: the location `onTap` now clears `gymId` (to `''`, the
+   already-tested clear-to-empty-string case) whenever the new location is not gym/mixed, and keeps
+   it when switching between gym and mixed (both are gym access, not a reason to clear it). **Fixed
+   again, defense in depth**: `equipment_detail_page.dart`'s report button no longer trusts `gymId`
+   just because it is non-null -- extracted into `resolveEquipmentReportGymId(EquipmentAccess?)`,
+   which forwards it only when `equipment.hasGymAccess == true`, so any other path that could leave
+   a stale gymId (not just this one call site) still cannot route to the wrong gym. New tests:
+   `step_equipment_test.dart`'s gym→home clears it / gym→mixed keeps it, and a dedicated
+   `resolve_equipment_report_gym_id_test.dart` unit-testing the extracted function directly
+   (including the exact failure scenario above) without needing to drive a real bottom sheet.
+
+2. **MAJOR, confirmed by direct read and by this repo's own documented precedent.**
+   `equipment_detail_page.dart` read `ref.read(currentProfileProvider).valueOrNull` synchronously --
+   `equipment_providers.dart:50`'s own doc comment (`screeningProfileProvider`, pre-existing, this
+   pass did not write it) already explains why that is wrong for this exact provider: while
+   `currentProfileProvider` is still resolving (cold start, post-sign-in, post-refetch),
+   `.valueOrNull` reads as null and is indistinguishable from "no gym", not "not loaded yet". A
+   report filed in that window permanently forwards to nobody even though the real answer would
+   have arrived moments later. **Fixed** using the same pattern the repo already established: `await
+   ref.read(currentProfileProvider.future)` instead, with a `context.mounted` guard before the
+   `context`-using call that follows. Covered by `resolveEquipmentReportGymId`'s "no profile at all"
+   unit-test case; the await itself is exercised indirectly by every widget test that still finds
+   the button present and functional (`equipment_detail_coach_gate_test.dart`).
+
+3. **MAJOR, surfaced and deliberately not fixed.** `gymId` is raw user-typed free text
+   (`step_equipment.dart`), used verbatim as the literal `gyms/{gymId}` Firestore document path
+   (`functions/src/index.ts`'s `reportEquipment`). A real gym's provisioned document ID is very
+   unlikely to be the exact string a user free-types ("Iron Temple" vs. whatever slug the gym
+   operator's onboarding actually assigned), so for most users the webhook lookup will still miss --
+   this gate makes routing *possible*, not *reliable*. This is not new information: the original
+   commit's own message and D0 note already state it as a deliberate scope boundary ("Not a
+   validated picker against `gyms/{gymId}` -- no client-visible evidence of that collection's
+   slug/naming convention"), the same posture this session already took toward Gate E's `R extends
+   Object` tradeoff -- a known, load-bearing limitation gets restated and left, not silently
+   inherited, when fixing it would mean guessing at a server-side naming convention nothing on the
+   client can currently see. Belongs with whatever future gate actually builds the gym directory.
+
+Verified after both fixes: `flutter analyze` on the four touched/added files -- clean. Full suite:
+see the entry immediately following this one for exact numbers; the one failure that survives is
+the same pre-existing `app_semantic_colors_test.dart` per-file-count drift already recorded twice
+above (confirmed zero color-literal lines in this pass's diff to `equipment_detail_page.dart`).
+
+**PUSH NOT YET PERFORMED at the time of writing this entry.**

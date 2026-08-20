@@ -1320,6 +1320,8 @@
   "onbGymAccess": "Do you have access to a gym?",
   "onbHomeEquipment": "Equipment at home",
   "onbHomeEquipmentHint": "e.g. dumbbells, kettlebell, mat",
+  "onbGymName": "Which gym? (optional)",
+  "onbGymNameHint": "Attached to any broken-equipment report you send",
   "onbMotivationPrompt": "What motivates you most?",
   "onbMotivationHint": "A few words about why you train",
   "onbEnvironment": "Preferred environment",

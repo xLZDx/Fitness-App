@@ -122,6 +122,7 @@ class FirestoreProfileRepository implements ProfileRepository {
         hasGymAccess: equipment['hasGymAccess'] as bool?,
         homeEquipment:
             List<String>.from(equipment['homeEquipment'] ?? const []),
+        gymId: equipment['gymId'] as String?,
       ),
       schedule: TrainingSchedule(
         daysPerWeek: schedule['daysPerWeek'] as int?,

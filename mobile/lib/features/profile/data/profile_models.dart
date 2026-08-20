@@ -692,6 +692,7 @@ class EquipmentAccess {
     this.available = const [],
     bool? hasGymAccess,
     this.homeEquipment = const [],
+    this.gymId,
   }) : _storedGymAccess = hasGymAccess;
 
   /// O4. The answer the design's screen 2 actually asks for.
@@ -706,6 +707,26 @@ class EquipmentAccess {
   /// does not fit a category is stored and left out of matching, which is
   /// honest, instead of being forced into the nearest category, which is not.
   final List<String> homeEquipment;
+
+  /// MRD-02, Gate F. Which gym the user trains at, as free text the user
+  /// typed themselves — never a picker, never a directory. The server
+  /// already has a `gyms/{gymId}` collection (`functions/src/index.ts`'s
+  /// `reportEquipment`, which looks up `gyms/{gymId}.maintenanceWebhookUrl`
+  /// to route a broken-equipment report to that gym's maintenance contact),
+  /// provisioned out of band by the gym operator, not by this app —
+  /// `firestore.rules` grants clients read-only access to it
+  /// (`allow write: if false`). This field is only ever the shape a
+  /// signed-in user can offer: their own best answer to "which one," typed
+  /// once and reused. A searchable/validated gym directory is a real,
+  /// separate feature this field deliberately does not attempt to be — see
+  /// `core/product/GATE_F_GYM_IDENTITY_D0_NOTE_2026-08-19.md`.
+  ///
+  /// Null/empty means "not set," and every existing consumer (equipment
+  /// reports) already treats that the same way it always has: falls back
+  /// to `'unknown'`, exactly the value every report carried before this
+  /// field existed. Nothing that worked before regresses for a user who
+  /// never sets this.
+  final String? gymId;
 
   /// What was written into Firestore before [location] existed.
   ///
@@ -732,12 +753,14 @@ class EquipmentAccess {
     List<EquipmentKind>? available,
     bool? hasGymAccess,
     List<String>? homeEquipment,
+    String? gymId,
   }) =>
       EquipmentAccess(
         location: location ?? this.location,
         available: available ?? this.available,
         hasGymAccess: hasGymAccess ?? _storedGymAccess,
         homeEquipment: homeEquipment ?? this.homeEquipment,
+        gymId: gymId ?? this.gymId,
       );
 }
 
@@ -936,6 +959,7 @@ class UserProfile {
           // readable by a version of the app that predates `location`.
           'hasGymAccess': equipment.hasGymAccess,
           'homeEquipment': equipment.homeEquipment,
+          'gymId': equipment.gymId,
         },
         'schedule': {
           'daysPerWeek': schedule.daysPerWeek,

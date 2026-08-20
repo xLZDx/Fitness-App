@@ -20,6 +20,23 @@ import 'widgets/safety_disclosure.dart';
 import 'state/equipment_providers.dart';
 import 'widgets/equipment_report_sheet.dart';
 import 'widgets/exercise_thumb.dart';
+import '../profile/data/profile_models.dart' show EquipmentAccess;
+import '../profile/state/profile_providers.dart';
+
+/// MRD-02, Gate F. `equipment` is null when the caller has no profile at
+/// all (signed out, or the equipment-report button raced ahead of the
+/// profile stream and the caller chose not to wait). `gymId` must never be
+/// forwarded for a location that is not gym/mixed -- a stale answer left
+/// over from a location the user has since changed away from would send
+/// this report to the WRONG gym's maintenance channel, not just an empty
+/// one. Extracted so the routing decision has a test that does not have to
+/// drive a real bottom sheet to exercise it (codex review, 2026-08-21).
+String resolveEquipmentReportGymId(EquipmentAccess? equipment) {
+  final gymId = equipment?.hasGymAccess == true
+      ? equipment?.gymId?.trim()
+      : null;
+  return gymId == null || gymId.isEmpty ? 'unknown' : gymId;
+}
 
 class EquipmentDetailPage extends ConsumerWidget {
   const EquipmentDetailPage({super.key, required this.equipmentId});
@@ -108,10 +125,33 @@ class EquipmentDetailPage extends ConsumerWidget {
                         label: AppLocalizations.of(context)
                             .equipmentReportBrokenEquipment,
                         onPressed: () async {
+                          // MRD-02, Gate F: was always the sheet's own
+                          // 'unknown' default -- every report ever filed
+                          // carried that literal string, silently defeating
+                          // the server's gyms/{gymId} webhook lookup for
+                          // every user. Now reads the user's own free-text
+                          // answer when they set one.
+                          //
+                          // codex review, Gate F cherry-pick, 2026-08-21:
+                          // `.valueOrNull` collapses "no profile yet" and "no
+                          // gym" into the same null, so a report filed before
+                          // the profile stream resolves permanently forwards
+                          // to nobody even though the real answer would have
+                          // arrived moments later -- await the future
+                          // instead, the same fix `equipment_providers.dart`
+                          // already documents for this exact provider. Also
+                          // gate on `hasGymAccess`: a stale `gymId` left over
+                          // from a location the user has since changed away
+                          // from must never be forwarded to that former gym.
+                          final profile = await ref
+                              .read(currentProfileProvider.future);
+                          if (!context.mounted) return;
                           final sent = await EquipmentReportSheet.show(
                             context,
                             equipmentId: item.id,
                             equipmentName: item.name,
+                            gymId: resolveEquipmentReportGymId(
+                                profile?.equipment),
                           );
                           if (sent == true && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(

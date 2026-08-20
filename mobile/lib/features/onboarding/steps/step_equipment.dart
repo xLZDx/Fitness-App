@@ -55,8 +55,19 @@ class StepEquipment extends ConsumerWidget {
             subtitle: _placeSubtitle(l10n, loc),
             icon: _placeIcon(loc),
             selected: eq.location == loc,
-            onTap: () =>
-                notifier.updateEquipment((s) => s.copyWith(location: loc)),
+            onTap: () => notifier.updateEquipment((s) => s.copyWith(
+              location: loc,
+              // codex review, Gate F cherry-pick, 2026-08-21: copyWith's
+              // `gymId ?? this.gymId` keeps whatever gym was typed even
+              // after switching away from gym/mixed -- the field just goes
+              // out of view, the stale value stays in the draft and would
+              // still be forwarded on a later report to the WRONG gym.
+              // Clear it here, at the one place location actually changes.
+              gymId: loc == TrainingLocation.gym ||
+                      loc == TrainingLocation.mixed
+                  ? s.gymId
+                  : '',
+            )),
           ),
           const SizedBox(height: 10),
         ],
@@ -86,6 +97,31 @@ class StepEquipment extends ConsumerWidget {
             (s) => s.copyWith(homeEquipment: _splitTags(v)),
           ),
         ),
+        // MRD-02, Gate F. Only asked when a gym is actually part of the
+        // answer -- the same condition `hasGymAccess` derives from
+        // `location`, so this never appears for someone training purely at
+        // home or outdoors. Free text, no picker: see `EquipmentAccess.gymId`
+        // doc comment for why a validated gym directory is a separate,
+        // deliberately deferred feature.
+        if (eq.location == TrainingLocation.gym ||
+            eq.location == TrainingLocation.mixed) ...[
+          const SizedBox(height: 18),
+          FieldLabel(l10n.onbGymName),
+          GlassTextField(
+            key: const Key('onb.gymId'),
+            value: eq.gymId ?? '',
+            hint: l10n.onbGymNameHint,
+            // Not trimmed here: GlassTextField is controlled (see its own doc
+            // comment) and resyncs its controller whenever `value` disagrees
+            // with what's on screen. Feeding back a transformed value on every
+            // keystroke -- e.g. stripping the trailing space after each word
+            // -- makes every space the user types get deleted on the very
+            // next rebuild. Trim at consumption instead.
+            onChanged: (v) => notifier.updateEquipment(
+              (s) => s.copyWith(gymId: v),
+            ),
+          ),
+        ],
       ],
     );
   }

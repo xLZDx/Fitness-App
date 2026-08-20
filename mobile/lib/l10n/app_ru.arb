@@ -704,6 +704,8 @@
   "onbGymAccess": "Есть доступ в зал?",
   "onbHomeEquipment": "Оборудование дома",
   "onbHomeEquipmentHint": "например: гантели, гиря, коврик",
+  "onbGymName": "Какой зал? (необязательно)",
+  "onbGymNameHint": "Будет указано в любой жалобе на оборудование",
   "onbMotivationPrompt": "Что мотивирует вас больше всего?",
   "onbMotivationHint": "пара слов о том, зачем вы тренируетесь",
   "onbEnvironment": "Как предпочитаете заниматься",
