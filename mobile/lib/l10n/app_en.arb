@@ -1966,6 +1966,7 @@
   "homeRecoveryRecovering": "Recovering",
   "homeRecoveryModerate": "Moderate",
   "homeRecoveryReady": "Ready",
+  "homeRecoveryNoData": "No data yet — this fills in after your first workout.",
   "homeStatWorkouts": "workouts",
   "homeStatVolume": "kg lifted",
   "homeStatRecords": "records",

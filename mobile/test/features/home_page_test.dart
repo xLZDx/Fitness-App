@@ -168,13 +168,19 @@ void main() {
           reason: 'a 0% bar over an empty week reads as failure');
     });
 
-    testWidgets('the recovery strip is absent with no history', (tester) async {
+    testWidgets(
+        'D-02: the recovery panel states "no data yet" with no history, '
+        'rather than an invented bar or vanishing outright', (tester) async {
       await _setLargeSurface(tester);
       await tester.pumpWidget(_buildApp());
       await tester.pump();
 
-      expect(find.byKey(const Key('home.recovery')), findsNothing,
-          reason: 'you cannot be recovered from work you never did');
+      // The populated variant (real per-muscle bars) must still not render:
+      // you cannot be recovered from work you never did.
+      expect(find.byKey(const Key('home.recovery')), findsNothing);
+      expect(find.byKey(const Key('home.recovery.empty')), findsOneWidget,
+          reason: 'the handoff keeps a Recovery panel in the spine; an '
+              'absent panel reads as unfinished, not honest');
     });
 
     testWidgets('the week totals carry the design\'s three labels',

@@ -638,10 +638,34 @@ class _HudRecoveryPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final rows = ref.watch(muscleRecoveryProvider);
-    if (rows.isEmpty) return const SizedBox.shrink();
-
     final l10n = AppLocalizations.of(context);
     final HudTokens t = context.hud;
+
+    // D-02: the handoff's Recovery panel is part of Home's spine, not an
+    // extra shown only once there is history -- dropping it entirely for a
+    // new account left the layout looking unfinished rather than honest.
+    // The stated bars themselves still never render without real
+    // `MuscleRecovery` rows behind them (that would be exactly the invented
+    // percentage this file's own doc comment already refuses to draw).
+    if (rows.isEmpty) {
+      return Padding(
+        key: const Key('home.recovery.empty'),
+        padding: const EdgeInsets.symmetric(horizontal: HudTokens.screenGutter),
+        child: HudPanel(
+          semanticLabel: l10n.homeSectionRecovery,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.homeSectionRecovery,
+                  style: HudType.panelTitle(t).inPanel(t)),
+              const SizedBox(height: 6),
+              Text(l10n.homeRecoveryNoData,
+                  style: HudType.body(t, size: 12).inPanel(t)),
+            ],
+          ),
+        ),
+      );
+    }
 
     Color dot(RecoveryStatus s) => switch (s) {
           RecoveryStatus.ready => t.zoneGood,

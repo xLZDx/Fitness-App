@@ -1093,6 +1093,7 @@
   "homeRecoveryRecovering": "Восстанавливается",
   "homeRecoveryModerate": "Средняя",
   "homeRecoveryReady": "Готовы",
+  "homeRecoveryNoData": "Пока нет данных — появятся после первой тренировки.",
   "homeStatWorkouts": "тренировки",
   "homeStatVolume": "кг поднято",
   "homeStatRecords": "рекордов",

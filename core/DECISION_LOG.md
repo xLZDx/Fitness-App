@@ -19787,3 +19787,55 @@ Suites/analyze not rerun in this entry (no source changed). `flutter analyze` on
 confirmed clean after the diagnostic-instrumentation revert.
 
 **PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
+
+---
+
+## 2026-08-20 — D-02 fixed: Home's Recovery panel states "no data yet" instead of vanishing
+
+**Product decision (DECISION, operator, "ГО: РАЗРЕШЕНО" gate):** for no-history/empty states, Home
+must stay truthful (no invented readiness/recovery/Form-coach numbers) but match the approved
+handoff's STRUCTURE more closely — a panel that is part of the reference's spine should still be
+present with a "no data yet" state rather than disappear outright.
+
+**Scope taken:** of the two candidate surfaces (`_HudDayPanel`'s empty-state card, and
+`_HudRecoveryPanel`), only the Recovery panel was changed. The day panel's existing empty state
+(`home.heroEmpty`, `home_page.dart:311-334`) already carries a title, an explanation and a real CTA
+("Today's adaptive plan") — it does not vanish, so it already satisfies "structurally present,
+honestly worded." The Recovery panel was the one that returned `SizedBox.shrink()` outright
+(`rows.isEmpty`), which is the literal case the decision names.
+
+**Fix:** `mobile/lib/features/home/home_page.dart`, `_HudRecoveryPanel` — the empty case now renders
+a `HudPanel` (key `home.recovery.empty`) with the section title and a new localized line,
+`homeRecoveryNoData` ("Пока нет данных — появятся после первой тренировки." /
+"No data yet — this fills in after your first workout."), added to both `app_ru.arb` and
+`app_en.arb` (the project's only two locales). The populated variant (real per-muscle status rows,
+key `home.recovery`) is untouched and still requires real `MuscleRecovery` data — no percentage or
+status is invented either way.
+
+**Regression test:** `mobile/test/features/home_page_test.dart` — replaced "the recovery strip is
+absent with no history" with "D-02: the recovery panel states 'no data yet' with no history, rather
+than an invented bar or vanishing outright", asserting `home.recovery` (populated) still absent AND
+`home.recovery.empty` present.
+
+**Mutation-verified:** reverted the empty branch to `SizedBox.shrink()` via direct source edit
+(Python string-replace, not the Edit tool), ran the new test alone — RED,
+`Found 0 widgets with key [<'home.recovery.empty'>]`. Restored the fix, reran — GREEN.
+Full `test/features/home_page_test.dart`: 9/9 pass through "an unscreened user gets the refusal, not
+an empty state", where the suite already failed identically — confirmed via `git stash` — on
+unmodified `master` before this change (same failure, same subsequent tests reported failed by the
+same runner cascade). Not caused by this change; logged below as D-08, not fixed in this pass.
+`flutter analyze` on the touched files and `lib/l10n`: clean.
+
+**NEW — D-08, pre-existing, not caused by this session.** `home_page_test.dart`'s "an unscreened
+user gets the refusal, not an empty state" fails on unmodified `master`
+(`git stash` confirmed identical failure and cascade before any of this session's edits): Home's
+suggestions-section `EligibilityNotice` (`home_page.dart:162-169`, chest-pain answered "yes") does
+not render `This needs medical attention, not a workout` — the same urgent-wording contract F017
+fixed in `eligibility_notice.dart` (`e846ad3`) and covered by tests in
+`workouts_page_test.dart`/`screening_reaches_the_screen_test.dart`. Whether this specific Home call
+site regressed independently, or the test itself is stale against a copy/wording change, is not yet
+determined — needs its own investigation, not attempted here. The five tests after it in the same
+file report failed too, but that is the `flutter test` runner's own cascade behavior after an
+uncaught exception mid-file, reproduced identically on clean master — not five additional bugs.
+
+**PUSH IMMEDIATELY AFTER THIS COMMIT, per the standing rule.**
