@@ -49,7 +49,10 @@ evidence in the agent transcript, summarized here:
    arbitration.
 6. **`VideoFailureReason`** (`features/equipment/data/video_failure.dart`) —
    a third, independent reinvention of "name only what is known, never guess
-   the reason" (`linkUnavailable|offline|playbackFailed`).
+   the reason" (`linkUnavailable|quotaExhausted|offline|playbackFailed` —
+   corrected 2026-08-20, porting this gate to master: the original inventory
+   above missed `quotaExhausted`, added to the real enum on 2026-08-18,
+   before this note's own 2026-08-19 date).
 
 **Confirmed: no shared type exists.** A direct search of `lib/shared/` and
 `lib/core/` for `Confidence`/`Uncertainty`/`AmbiguityLevel`/`Ambiguous`

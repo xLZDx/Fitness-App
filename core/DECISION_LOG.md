@@ -20559,3 +20559,23 @@ this pass touched). Recorded here rather than silently dropped, since it is a re
 a new one and not in scope for this commit to fix.
 
 **No product code changed by this entry beyond what the two entries above already describe.**
+
+---
+
+## 2026-08-20 -- codex review round 2 (--commit, --final) on the committed Gate E port
+
+Push gate required a `--final` round against the actual committed diff, not the pre-commit
+`--uncommitted` scan. Ran it (`--commit 7e9bc76 --round 2 --final`): repeated the same `R extends
+Object` MAJOR as round 1, with a sharper example this round (`Answer<int, PoseGateVerdict>.uncertain
+(PoseGateVerdict.ok)` -- a *success* value from an existing app enum used as an "uncertain" reason,
+because nothing stops `R` from being an enum that also contains non-reason members). Still not
+fixed, for the same reason recorded in the entry above: a real, live design tradeoff the original
+Gate E author already made explicitly, not something this port introduced, and narrowing it is a
+design decision beyond "port this commit" -- surfaced here for the operator/next pass rather than
+either silently fixed or silently dropped a second time.
+
+One new MINOR, fixed: the D0 note's own `VideoFailureReason` inventory still listed only 3 of the 4
+real cases (missed in the original 2026-08-19 write-up, predating this port) -- corrected in
+`core/product/GATE_E_SHARED_UNCERTAINTY_D0_NOTE_2026-08-19.md` to include `quotaExhausted`.
+
+**No product code changed by this entry.**
