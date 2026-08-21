@@ -23538,3 +23538,8 @@ later, not only on the one screen where it was first noticed). Flagged back to t
 separate, larger scope decision with an existing safety rationale on record, not bundled into this
 fix; awaiting their explicit call before touching that behavior.
 
+Report published in the house RU/EN format:
+`reports/blank_home_navigation_fix_2026-08-22.ru.html` (Artifact:
+https://claude.ai/code/artifact/b2a9c2aa-f832-4397-b5e8-438a797e2c81) and the English durable copy
+`reports/blank_home_navigation_fix_2026-08-22.html`, both conformed via `report_conform.py --check`.
+
