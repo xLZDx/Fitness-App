@@ -22247,3 +22247,44 @@ Still no code change applied. Root cause and proposed fix (disable Impeller via 
 meta-data, per the entry above) restated to the operator; GO still pending.
 
 No product code changed by this entry.
+
+## 2026-08-21 -- "Form Coach заблокирован" has a real cause, and it isn't the Impeller crash: no entry point from Workouts' default tab
+
+Operator provided real screenshots from the S23 Ultra session
+(`D:\Downloads\Video\New folder (2)\Screenshot_20260821_18*.jpg`, 18:07-18:29) after the earlier
+"билд говно" report, and pointed at `D:\Downloads\Mobile app design (4).zip` and the `New folder (2)`
+screenshots as evidence this session should have already checked before asking whether the redesign
+target was new -- a fair correction, acted on below.
+
+**Confirmed by code, not the screenshots alone**: `workouts_page.dart:275-279`,
+`_subTab = _WorkoutsSubTab.programs;` -- Workouts opens on the Programs tab by default, and Form
+Coach ("Тренер по технике") lives "at the foot of the Library tab" (`:250,823`), a tab the user must
+manually switch to. The 18:25:16 screenshot shows exactly this: Programs tab open, Form Coach not on
+screen; the 18:25:24 screenshot (Library tab) shows it. **This is the literal mechanism behind the
+operator's "не можешь в него попасть с странницы тренировок, его просто не видно"** -- not a crash,
+a discoverability gap. It is also NOT new: `docs/Redisign/HANDOFF_GAP_MATRIX_v1.5.md` gate D6
+("Navigation and summary consolidation") already names "entry point TechCoach из Exercise Page"
+as an open item, and the operator's own 2026-08-19 continuation directive (logged above, :19058)
+listed "Form Coach, light theme" explicitly as still-pending HUD-reskin scope after M1-M6 landed.
+
+**The debug overlay text visible in two of the screenshots (`pose[pixels] n=... trusted>=0.70 ...
+-> OUT OF CONTRACT`) is not a bug**: `form_check_page.dart:548`,
+`poseDebugOverlayProvider` (`form_check_providers.dart:532`) = `Provider<bool>((_) => kDebugMode)`.
+It is gated to debug builds by design (see the surrounding comment, `:529-537` -- a prior session's
+deliberate decision, not an oversight) and will not appear in the release build the operator also
+has installed.
+
+**Redesign question answered from the repository, not asked again**: the operator's earlier
+screenshot (dark glass cards, sunset photo backgrounds) is not a new target -- it is
+`Fitness Glass Phone v1 - Sunset.dc.html`, the HUD handoff already cited by
+`workouts_page.dart:241` and tracked gate-by-gate in this DECISION_LOG (M1 Home, M2 Train, M3
+equipment-type memory, M4 Scanner, M5 Active Session, M6 Profile -- all landed 2026-08-19). Form
+Coach's own screen (plain white/lavender background, muscle-diagram illustrations, no HUD glass
+card or photo background -- see the 18:26-18:29 screenshots) has NOT been reskinned onto this system
+yet; neither has Light Theme. Both are already tracked as remaining scope, not missing scope this
+session just discovered. `M7` (l10n/a11y, in progress today), `M8` (goldens), `M9` (falsification)
+and `MVP_REACHED` remain after them.
+
+No product code changed by this entry. Three distinct, now-evidenced defects await a GO: the
+Impeller/Vulkan crash (entry above), the Form Coach entry-point gap (this entry), and the pending
+Form Coach + Light Theme HUD reskin (scope already known, not newly discovered).
