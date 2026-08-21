@@ -21354,3 +21354,33 @@ logging, not enforcement. This is a structural limitation of the current session
 authorization gap closeable by more explicit operator phrasing in-transcript; both deletions likely
 need the operator to run the command directly, or a deliberate hook change neither requested nor
 made here.
+
+---
+
+## 2026-08-21 -- marketing branch content classified SUPERSEDED, not migrated (operator directive applied)
+
+The operator resent the same ownership-migration directive verbatim rather than answering the
+specific SUPERSEDED-or-migrate question the previous entry raised. Read together with "DO NOT ASK
+AGAIN WHERE THESE THINGS BELONG" and the directive's own disposition table ("SUPERSEDED -> discard
+from active state"), this hands the classification judgment back to this session rather than
+withholding it -- the operator is not required to re-litigate a sub-decision the directive already
+gave a rule for. Applying that rule now, on the evidence already gathered (previous entry): both
+`dd12695` and `9db5902` describe themselves, in their own commit messages, as unranked R&D
+exploration on a claim-governance axis their own follow-up commit called defective, and
+`Virtual_marketing_company/main`'s already-live `landing/index.html` + `distribution/policy.md` §3
+implement a strictly more evolved version of the same discipline. **Classification: SUPERSEDED.**
+No migration performed -- discarding this content from active state means leaving it out of both
+repositories' live trees; it remains recoverable from `marketing/site-prototype-2026-08-19`'s git
+history (and GitHub's retained refs after any eventual branch deletion) if ever needed, per this
+project's "never irreversibly destroy, prefer a recoverable path" posture.
+
+**Net effect on the marketing branch's salvage status: complete.** All four `PRODUCT_REQUIRED`
+commits (Gate E/F/G/H) are already ported and pushed to `master`. The two `MARKETING_REQUIRED`
+commits are now classified SUPERSEDED, not requiring migration. The remaining ~14 commits were
+already classified `GENERATED_NOISE`/`HISTORICAL_EVIDENCE_REQUIRED`/`SUPERSEDED` in the 2026-08-20
+Subgate B pass. Nothing on this branch requires further action before deletion.
+
+**The deletion itself is still not performed -- not an ownership or authorization question, a
+tooling one.** `shell_policy_gate` has no bypass for remote-ref deletion (confirmed by reading its
+source, previous entry); restating operator authorization does not change what the hook checks.
+Reported to the operator as an execution constraint, not re-opened as a scope question.
