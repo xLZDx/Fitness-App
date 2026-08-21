@@ -1,0 +1,299 @@
+<title>Topology &amp; D-03 Checkpoint</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --surface-2:#eef1f4; --border:#dde2e8; --rule:#dde2e8;
+    --ink:#1c2230; --text:#1c2230; --text-2:#3d4657; --text-3:#6b7686; --muted:#6b7686;
+    --accent:#2e6f6b; --accent-ink:#f6f7f9;
+    --ok-bg:#e9f5ee; --ok-ink:#1c6f53; --ok-border:#bfe3cf;
+    --warn-bg:#fbf1e0; --warn-ink:#8a5a10; --warn-border:#efd6a3;
+    --bad-bg:#fbeceb; --bad-ink:#9e2f2a; --bad-border:#f0c6c2;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Consolas,monospace;
+    --sans:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12161c; --surface:#181d25; --surface-2:#1f252e; --border:#2b323d; --rule:#2b323d;
+      --ink:#e8eaed; --text:#e8eaed; --text-2:#c2c8d2; --text-3:#8b95a3; --muted:#8b95a3;
+      --accent:#6cc2b9; --accent-ink:#0c1512;
+      --ok-bg:#12261e; --ok-ink:#7fd6ae; --ok-border:#1e4433;
+      --warn-bg:#2a2113; --warn-ink:#e6b866; --warn-border:#4a3a1c;
+      --bad-bg:#2b1817; --bad-ink:#f0958e; --bad-border:#4a2622;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12161c; --surface:#181d25; --surface-2:#1f252e; --border:#2b323d; --rule:#2b323d;
+    --ink:#e8eaed; --text:#e8eaed; --text-2:#c2c8d2; --text-3:#8b95a3; --muted:#8b95a3;
+    --accent:#6cc2b9; --accent-ink:#0c1512;
+    --ok-bg:#12261e; --ok-ink:#7fd6ae; --ok-border:#1e4433;
+    --warn-bg:#2a2113; --warn-ink:#e6b866; --warn-border:#4a3a1c;
+    --bad-bg:#2b1817; --bad-ink:#f0958e; --bad-border:#4a2622;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;line-height:1.55}
+  .wrap{max-width:760px;margin:0 auto;padding:3.2rem 1.5rem 6rem}
+  header{margin-bottom:0.5rem}
+  .eyebrow{font-family:var(--mono);font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 0.9rem}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(1.9rem,4.5vw,2.6rem);line-height:1.15;
+    margin:0 0 0.7rem;text-wrap:balance;letter-spacing:-0.01em}
+  .dek{font-size:1.05rem;color:var(--text-2);margin:0;max-width:62ch;text-wrap:balance}
+  h2{font-family:var(--serif);font-weight:600;font-size:1.4rem;margin:2.6rem 0 0.9rem;
+    padding-bottom:0.5rem;border-bottom:1px solid var(--rule);letter-spacing:-0.005em}
+  h3{font-family:var(--sans);font-weight:600;font-size:0.98rem;margin:1.5rem 0 0.6rem;color:var(--text)}
+  p{margin:0 0 1rem}
+  a{color:var(--accent)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;margin:1.4rem 0 2rem}
+  .card{border:1px solid var(--border);border-radius:6px;padding:0.9rem 1rem;background:var(--surface)}
+  .card .k{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.07em;text-transform:uppercase;
+    color:var(--text-3);margin-bottom:0.35rem}
+  .card .v{font-weight:600;font-size:0.98rem;line-height:1.35}
+  .pill{display:inline-block;font-family:var(--mono);font-size:0.66rem;letter-spacing:0.06em;
+    text-transform:uppercase;padding:0.2em 0.6em;border-radius:999px;border:1px solid;margin-top:0.5rem}
+  .pill.ok{background:var(--ok-bg);color:var(--ok-ink);border-color:var(--ok-border)}
+  .pill.warn{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-border)}
+  .pill.bad{background:var(--bad-bg);color:var(--bad-ink);border-color:var(--bad-border)}
+  .note{border-left:3px solid var(--accent);background:var(--surface-2);border-radius:0 4px 4px 0;
+    padding:0.9rem 1.1rem;margin:1.2rem 0;font-size:0.94rem}
+  .note.warn{border-left-color:var(--warn-ink)}
+  .note.bad{border-left-color:var(--bad-ink)}
+  code, .mono{font-family:var(--mono);font-size:0.88em;background:var(--surface-2);
+    padding:0.1em 0.4em;border-radius:3px}
+  pre{font-family:var(--mono);font-size:0.82rem;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:6px;padding:0.9rem 1rem;overflow-x:auto;line-height:1.5;margin:1rem 0}
+  .tablewrap{overflow-x:auto;margin:1.2rem 0;border:1px solid var(--border);border-radius:6px}
+  table{border-collapse:collapse;width:100%;font-size:0.88rem;min-width:520px}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+  th{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--text-3);background:var(--surface-2)}
+  tr:last-child td{border-bottom:none}
+  td.result-pass{color:var(--ok-ink);font-weight:600}
+  td.result-fail{color:var(--bad-ink);font-weight:600}
+  .bar{display:flex;height:22px;border-radius:4px;overflow:hidden;border:1px solid var(--border);margin:0.9rem 0}
+  .bar .pass{background:var(--ok-bg);border-right:1px solid var(--ok-border)}
+  .bar .fail{background:var(--bad-bg)}
+  .bar-legend{display:flex;gap:1.4rem;font-family:var(--mono);font-size:0.76rem;color:var(--text-3);margin-bottom:1.4rem}
+  .bar-legend .sw{display:inline-block;width:0.7em;height:0.7em;border-radius:2px;margin-right:0.35em;vertical-align:-0.05em}
+  ul{padding-left:1.3rem;margin:0 0 1rem}
+  li{margin-bottom:0.4rem}
+  footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-size:0.82rem;color:var(--text-3)}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SPTR &middot; Fitness-App &middot; checkpoint, not the final report</p>
+  <h1>Topology fixed, one l10n gap closed, D-03 reopened by real evidence</h1>
+  <p class="dek">This program is still running under a standing "report only at the end" instruction.
+  This checkpoint exists only because a mechanical commit gate requires a <code>reports/</code>
+  touch after three commits without one &mdash; the gate could not see the operator's program-mode
+  instruction across a context-compaction boundary. The substantive reason to write it anyway: one
+  of today's findings reverses a claim from earlier in this same pass.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ d79f792</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="grid">
+  <div class="card">
+    <div class="k">Local topology</div>
+    <div class="v">Fitness_App is now the sole master checkout</div>
+    <span class="pill ok">Fixed</span>
+  </div>
+  <div class="card">
+    <div class="k">M7 &middot; l10n gap</div>
+    <div class="v">Untranslated error/success copy localized</div>
+    <span class="pill ok">Fixed</span>
+  </div>
+  <div class="card">
+    <div class="k">D-03 &middot; guest continue</div>
+    <div class="v">20-trial device measurement: 70% pass</div>
+    <span class="pill bad">Reopened</span>
+  </div>
+</div>
+
+<h2>1 &middot; Local worktree topology</h2>
+<p>Four local checkouts of this repository (<code>Fitness_App</code>, <code>_wt-formcoach</code>,
+<code>_wt-gates-efgh</code>, <code>_wt-master-sync</code>) shared one <code>.git</code>, and this
+session had been operating out of <code>_wt-gates-efgh</code> all along while the directory actually
+named after the project sat on an orphaned marketing branch. Inspected every worktree before touching
+anything, preserved all untracked/unique content found (9 marketing report files plus one
+formcoach report, byte-copied to scratch before any state changed; one path-colliding file renamed
+aside rather than deleted), then freed the <code>master</code> ref from <code>_wt-master-sync</code>
+(a branch detach, not a reset &mdash; its dirty working tree was not touched) and fast-forwarded
+<code>Fitness_App</code> onto it.</p>
+<div class="tablewrap"><table>
+<tr><th>Worktree</th><th>Before</th><th>After</th></tr>
+<tr><td><code>Fitness_App</code></td><td>orphaned branch, 23 commits diverged</td><td class="result-pass">canonical <code>master</code>, 0/0 vs origin</td></tr>
+<tr><td><code>_wt-gates-efgh</code></td><td>detached, 0/0 vs origin</td><td>worktree removed (empty dir left, OS-locked)</td></tr>
+<tr><td><code>_wt-master-sync</code></td><td>owned <code>master</code>, dirty stale content</td><td>detached, still dirty &mdash; removal needs <code>--force</code>, not authorized here</td></tr>
+<tr><td><code>_wt-formcoach</code></td><td>ancestor of origin, benign diff noise</td><td>untouched, not in scope for removal</td></tr>
+</table></div>
+<p>Root cause of why reports kept misidentifying the project as <code>_wt-gates-efgh</code>:
+<code>report_conform.py</code> read the project name from <code>git rev-parse --show-toplevel</code>,
+which is each worktree's own path. Fixed to derive it from the shared <code>origin</code> remote
+instead, with a regression test covering the exact multi-worktree case.</p>
+<div class="note">Two items left in a documented, intentionally-unforced state: the empty
+<code>_wt-gates-efgh</code> directory (OS still holds a handle on it) and
+<code>_wt-master-sync</code>'s removal (needs <code>git worktree remove --force</code>, which would
+discard dirty content without separate authorization). Both are one manual command away once
+cleared.</div>
+
+<h2>2 &middot; M7 &mdash; localized copy that bypassed the ARB pipeline</h2>
+<p>Two files (<code>contribute_video_page.dart</code>, <code>equipment_report_sheet.dart</code>) threw
+plain Dart errors or set plain-string success messages for validation/sign-in failures, then
+displayed them through a variable rather than a literal <code>Text(...)</code> argument &mdash; the
+one blind spot this project's own <code>no_untranslated_strings_test.dart</code> already documents
+it cannot see. A Russian-locale user would still have read English. Replaced with
+<code>AppLocalizations</code> lookups (six new ARB keys, both languages); <code>flutter analyze</code>
+clean, l10n suite 9/9, existing widget suite 4/4.</p>
+<div class="note warn">Worth stating plainly: the first commit attempt for this fix landed a commit
+whose message described the code change but whose diff contained only the DECISION_LOG entry &mdash;
+a mechanical gate had denied an earlier compound <code>git add &amp;&amp; git commit</code> call
+in full, silently leaving the four real files unstaged. Caught immediately from <code>git status</code>
+and <code>git show --stat</code>, fixed with a second commit (not an amend, since the first was
+already pushed) carrying the actual diff.</div>
+
+<h2>3 &middot; D-03 &mdash; the finding that forced this checkpoint</h2>
+<p>Earlier this pass, D-03 (the anonymous "Continue" button not always leaving the login screen) was
+recorded as <code>FIXED (device-verified, 7/7)</code>, with extending to the full 20-trial bar
+flagged as follow-up. Did that follow-up on the same physical device and the same installed build
+(confirmed no auth/onboarding commit landed in between).</p>
+<h3>A methodology defect, caught before it could distort the result</h3>
+<p>The first extension attempt screenshotted 2.5s after the tap &mdash; too short. Most frames caught
+the sign-in spinner still in flight; a couple showed the button already idle with no way to tell
+whether that meant "hasn't started" or "already reverted." <strong>Discarded all 13 as inconclusive</strong>,
+except one (trial 11) that was watched live for four more seconds: the spinner cleared, the app was
+back on the plain login screen &mdash; a genuine first-tap failure &mdash; and a second tap on the
+same screen worked immediately. That is the exact D-05B/D-03 symptom already on record: first tap
+silently drops, identical second tap works.</p>
+<p>Redid the remaining 12 trials with an 8-second settle window, long enough to cover the full cycle
+trial 11 showed takes about 6.5s. Confirmed a PNG-size split (~669KB onboarding vs. ~149KB login)
+tracks the visual result exactly on four spot-checks, then used it to classify the rest.</p>
+<h3>Result</h3>
+<div class="bar-legend">
+  <span><span class="sw" style="background:var(--ok-bg);border:1px solid var(--ok-border)"></span>Pass &mdash; reached onboarding</span>
+  <span><span class="sw" style="background:var(--bad-bg);border:1px solid var(--bad-border)"></span>Fail &mdash; stuck on login</span>
+</div>
+<div class="bar"><div class="pass" style="width:70%"></div><div class="fail" style="width:30%"></div></div>
+<div class="tablewrap"><table>
+<tr><th>Batch</th><th>Method</th><th>Trials</th><th>Pass</th><th>Fail</th></tr>
+<tr><td>Original (prior entry)</td><td>same repro, earlier this pass</td><td>7</td><td class="result-pass">7</td><td>0</td></tr>
+<tr><td>Extension, 2.5s wait</td><td>discarded &mdash; too short to settle</td><td>13</td><td colspan="2">not counted</td></tr>
+<tr><td>Extension, 8s wait</td><td>settled screenshot, this entry</td><td>13</td><td class="result-pass">7</td><td class="result-fail">6</td></tr>
+<tr><td><strong>Combined, n=20</strong></td><td></td><td><strong>20</strong></td><td class="result-pass"><strong>14 (70%)</strong></td><td class="result-fail"><strong>6 (30%)</strong></td></tr>
+</table></div>
+<div class="note bad"><strong>D-03 reclassified: <code>FIXED (7/7)</code> &rarr; <code>CONFIRMED_OPEN_BUG</code>,
+intermittent, ~30% first-tap failure on n=20.</strong> The 7/7 result was real, not fabricated &mdash;
+it just wasn't enough trials to tell "fixed" from "this run got lucky" at the bug's true rate. This
+lines up with the mid-August finding already on record: not a dead tap, not a hit-test/gesture-arena
+problem &mdash; a genuine sign-in succeeds and the UI silently fails to react on a fraction of
+attempts. Root cause (likely an async sign-in/UI-reaction race) is not investigated in this entry;
+this entry is measurement only.</div>
+
+<h2>4 &middot; What's next</h2>
+<ul>
+<li>D-03 root cause &mdash; the async race behind the ~30% failure rate.</li>
+<li>D-05B (Train/Library, Technique Coach chip) and D-04 (AI Trainer / App Check E2E), now that
+device access is confirmed working.</li>
+<li>Form Coach verification (the ML Kit pose-detection feature appears already built and wired;
+not yet independently verified).</li>
+<li>Light theme &mdash; still an open design decision the project's own theme source marks
+unsettled, not something to invent unilaterally.</li>
+<li>M7 remainder (a11y sweep beyond the l10n gap closed here), M8 (goldens), M9 (falsification),
+Visual Gate, MVP_REACHED.</li>
+<li>Firebase App Distribution &mdash; external publishing; needs its own explicit go-ahead per
+standing policy regardless of this program's broader authorization.</li>
+</ul>
+<p>Continuing this pass per the standing instruction; the next report is the final one.</p>
+
+<footer>Fitness-App &middot; SPTR autonomous program &middot; checkpoint, not the closing report</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

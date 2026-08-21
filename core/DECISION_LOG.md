@@ -21781,3 +21781,73 @@ pushed history is not authorized here. The M7 code change itself was correct and
 already verified (`flutter analyze` clean, l10n suite 9/9, equipment_report_sheet
 suite 4/4) before the first commit attempt; nothing about the fix's substance
 changed, only which commit its diff lives in.
+
+## 2026-08-21 -- D-03 extended to the full 20-trial bar: the "FIXED (7/7)" verdict from `:21562` does NOT hold. Reclassified CONFIRMED_OPEN_BUG, intermittent, ~30% first-tap failure measured
+
+**Correcting this session's own prior entry.** `:21562` recorded D-03 as
+`FIXED (device-verified, 7/7)` and explicitly flagged extending to the full
+20-trial bar as follow-up work. Did that follow-up now, on the same S8
+(`ce0417141997e4640c`), same installed build (`com.fitnessapp.fitness_app.sptr.debug`,
+`lastUpdateTime` unchanged since `:21578`'s build -- no commit since `3125b81`
+touches `login_page.dart` or any auth/onboarding routing code, confirmed by
+`git log --oneline -- mobile/lib/features/auth mobile/lib/features/onboarding`
+before reusing the APK rather than rebuilding). Same repro as before: `pm clear`
+(full data wipe) -> `am start` -> wait for the login screen to actually paint ->
+tap the real "Продолжить" button at its screenshot-verified location
+(`(360, 887)` on this device's 720x1480 capture) -> screenshot the result.
+
+**First attempt at extending (13 trials, `trial{12..23}_result.png`) is discarded
+as inconclusive, not counted either way -- a genuine methodology defect, found
+and named rather than silently dropped.** Screenshotted 2.5s after the tap,
+matching what this session assumed was enough margin. It was not: most of these
+came back showing the "Продолжить" button still mid-spin (`trial12`, `trial14`,
+`trial15`, `trial17`, ... -- an in-flight sign-in, not a settled result), and a
+couple showed the button already idle again (`trial13`, `trial16`) with no way to
+tell, from a single frozen frame, whether that idle state was "hasn't started
+yet" or "already reverted." **`trial11` is the one exception, and it is the
+finding that forced this whole re-check**: its 2.5s frame showed the spinner
+in-flight; watching the *same still-running trial* for 4 more seconds in real
+time (`trial11_result_late.png`, ~6.5s post-tap) showed the spinner had gone and
+the app was back on the plain, un-spun login screen -- **first tap did not
+navigate**. A second tap on that same screen (`trial11_retap.png`) landed on
+"Цель и уровень" (1/10) immediately -- **exactly** the historical D-05B/D-03
+symptom already on record at `:20370-20392`: first tap silently drops, identical
+second tap works cleanly. This is a real product observation, not a screenshot
+artifact -- counted as `trial11 = FAIL` (first tap only; the retap is evidence
+about the symptom, not a second scored trial).
+
+**Redid the remaining 12 trials (`trialb1..b6`, `trialc1..c6`) with an 8-second
+wait after the tap** -- long enough to cover the full spin-to-settle cycle
+`trial11` showed takes about 6.5s, confirmed by four spot-checks
+(`trialb1`=PASS/onboarding, `trialb2`=FAIL/login-idle, `trialb5`=PASS,
+`trialc1`=PASS, `trialc6`=FAIL, all read and visually confirmed) that a
+file-size split on the PNG (~669KB for the onboarding screen's photographic
+background, ~149KB for the flat-color login card) tracks the visual result
+exactly -- used to classify the remaining trials in this batch without needing
+to individually open all twelve.
+
+**Result, 13 new valid trials: 7 PASS / 6 FAIL** (`b1`=P, `b2`=F, `b3`=F, `b4`=F,
+`b5`=P, `b6`=F, `c1`=P, `c2`=P, `c3`=P, `c4`=P, `c5`=P, `c6`=F, `trial11`=F).
+**Combined with the original 7/7 from `:21562` (still valid -- same repro, same
+build, nothing about that earlier evidence was wrong): 20 valid trials total,
+14 PASS / 6 FAIL = 70% first-tap success, 30% first-tap failure.**
+
+**D-03 status: reclassified from `FIXED (device-verified, 7/7)` to
+`CONFIRMED_OPEN_BUG`, intermittent, ~30% first-tap failure measured on n=20.**
+The `FIXED` framing in the prior entry was a small-sample artifact -- 7/7 is a
+real, unmanipulated result, but n=7 with no failures does not distinguish "fixed"
+from "this run got lucky" when the true rate is closer to 1-in-3. This is
+consistent with, and now numerically sharper than, the mid-August entries
+(`:20131`: "~20% success observed, n=5" — read as ~20% *failure* would have been
+closer) and with the `:20214` finding still on record: **not a dead tap, not a
+hit-test/gesture-arena problem** -- the `733e3e9` Material/Semantics change is a
+real, separate accessibility fix and does not touch this bug's actual mechanism,
+which remains "a genuine sign-in succeeds and the UI silently fails to react" on
+a fraction of attempts. Root-causing that mechanism (most likely a race between
+the async `signInAnonymously` completion and whatever rebuild/listener is
+supposed to react to it) is not done in this entry -- this entry's scope was
+measuring the true rate honestly once the tooling to do so reliably existed, not
+fixing the underlying race. Screenshots retained:
+`D:/Temp/claude/d--Repo/903899a8-ac69-4bb3-b9c4-2b9ee951b70b/scratchpad/trial{11,11_result_late,11_retap,b1..b6,c1..c6}*.png`.
+
+No product code changed by this entry -- this is measurement, not a fix.

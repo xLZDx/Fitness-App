@@ -1,0 +1,304 @@
+<title>Топология и контрольная точка D-03</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --surface-2:#eef1f4; --border:#dde2e8; --rule:#dde2e8;
+    --ink:#1c2230; --text:#1c2230; --text-2:#3d4657; --text-3:#6b7686; --muted:#6b7686;
+    --accent:#2e6f6b; --accent-ink:#f6f7f9;
+    --ok-bg:#e9f5ee; --ok-ink:#1c6f53; --ok-border:#bfe3cf;
+    --warn-bg:#fbf1e0; --warn-ink:#8a5a10; --warn-border:#efd6a3;
+    --bad-bg:#fbeceb; --bad-ink:#9e2f2a; --bad-border:#f0c6c2;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Consolas,monospace;
+    --sans:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12161c; --surface:#181d25; --surface-2:#1f252e; --border:#2b323d; --rule:#2b323d;
+      --ink:#e8eaed; --text:#e8eaed; --text-2:#c2c8d2; --text-3:#8b95a3; --muted:#8b95a3;
+      --accent:#6cc2b9; --accent-ink:#0c1512;
+      --ok-bg:#12261e; --ok-ink:#7fd6ae; --ok-border:#1e4433;
+      --warn-bg:#2a2113; --warn-ink:#e6b866; --warn-border:#4a3a1c;
+      --bad-bg:#2b1817; --bad-ink:#f0958e; --bad-border:#4a2622;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12161c; --surface:#181d25; --surface-2:#1f252e; --border:#2b323d; --rule:#2b323d;
+    --ink:#e8eaed; --text:#e8eaed; --text-2:#c2c8d2; --text-3:#8b95a3; --muted:#8b95a3;
+    --accent:#6cc2b9; --accent-ink:#0c1512;
+    --ok-bg:#12261e; --ok-ink:#7fd6ae; --ok-border:#1e4433;
+    --warn-bg:#2a2113; --warn-ink:#e6b866; --warn-border:#4a3a1c;
+    --bad-bg:#2b1817; --bad-ink:#f0958e; --bad-border:#4a2622;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;line-height:1.55}
+  .wrap{max-width:760px;margin:0 auto;padding:3.2rem 1.5rem 6rem}
+  header{margin-bottom:0.5rem}
+  .eyebrow{font-family:var(--mono);font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 0.9rem}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(1.9rem,4.5vw,2.6rem);line-height:1.15;
+    margin:0 0 0.7rem;text-wrap:balance;letter-spacing:-0.01em}
+  .dek{font-size:1.05rem;color:var(--text-2);margin:0;max-width:62ch;text-wrap:balance}
+  h2{font-family:var(--serif);font-weight:600;font-size:1.4rem;margin:2.6rem 0 0.9rem;
+    padding-bottom:0.5rem;border-bottom:1px solid var(--rule);letter-spacing:-0.005em}
+  h3{font-family:var(--sans);font-weight:600;font-size:0.98rem;margin:1.5rem 0 0.6rem;color:var(--text)}
+  p{margin:0 0 1rem}
+  a{color:var(--accent)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;margin:1.4rem 0 2rem}
+  .card{border:1px solid var(--border);border-radius:6px;padding:0.9rem 1rem;background:var(--surface)}
+  .card .k{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.07em;text-transform:uppercase;
+    color:var(--text-3);margin-bottom:0.35rem}
+  .card .v{font-weight:600;font-size:0.98rem;line-height:1.35}
+  .pill{display:inline-block;font-family:var(--mono);font-size:0.66rem;letter-spacing:0.06em;
+    text-transform:uppercase;padding:0.2em 0.6em;border-radius:999px;border:1px solid;margin-top:0.5rem}
+  .pill.ok{background:var(--ok-bg);color:var(--ok-ink);border-color:var(--ok-border)}
+  .pill.warn{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-border)}
+  .pill.bad{background:var(--bad-bg);color:var(--bad-ink);border-color:var(--bad-border)}
+  .note{border-left:3px solid var(--accent);background:var(--surface-2);border-radius:0 4px 4px 0;
+    padding:0.9rem 1.1rem;margin:1.2rem 0;font-size:0.94rem}
+  .note.warn{border-left-color:var(--warn-ink)}
+  .note.bad{border-left-color:var(--bad-ink)}
+  code, .mono{font-family:var(--mono);font-size:0.88em;background:var(--surface-2);
+    padding:0.1em 0.4em;border-radius:3px}
+  pre{font-family:var(--mono);font-size:0.82rem;background:var(--surface-2);border:1px solid var(--border);
+    border-radius:6px;padding:0.9rem 1rem;overflow-x:auto;line-height:1.5;margin:1rem 0}
+  .tablewrap{overflow-x:auto;margin:1.2rem 0;border:1px solid var(--border);border-radius:6px}
+  table{border-collapse:collapse;width:100%;font-size:0.88rem;min-width:520px}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+  th{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--text-3);background:var(--surface-2)}
+  tr:last-child td{border-bottom:none}
+  td.result-pass{color:var(--ok-ink);font-weight:600}
+  td.result-fail{color:var(--bad-ink);font-weight:600}
+  .bar{display:flex;height:22px;border-radius:4px;overflow:hidden;border:1px solid var(--border);margin:0.9rem 0}
+  .bar .pass{background:var(--ok-bg);border-right:1px solid var(--ok-border)}
+  .bar .fail{background:var(--bad-bg)}
+  .bar-legend{display:flex;gap:1.4rem;font-family:var(--mono);font-size:0.76rem;color:var(--text-3);margin-bottom:1.4rem}
+  .bar-legend .sw{display:inline-block;width:0.7em;height:0.7em;border-radius:2px;margin-right:0.35em;vertical-align:-0.05em}
+  ul{padding-left:1.3rem;margin:0 0 1rem}
+  li{margin-bottom:0.4rem}
+  footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-size:0.82rem;color:var(--text-3)}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SPTR &middot; Fitness-App &middot; контрольная точка, не финальный отчёт</p>
+  <h1>Топология исправлена, один l10n-пробел закрыт, D-03 переоткрыт реальными данными</h1>
+  <p class="dek">Программа всё ещё идёт под действующей инструкцией «отчёт только в конце». Эта
+  контрольная точка появилась только потому, что механический гейт на коммит требует затронуть
+  <code>reports/</code> после трёх коммитов без этого &mdash; гейт не смог увидеть инструкцию
+  оператора о «программном режиме» через границу сжатия контекста. Содержательная причина всё же
+  написать её: одна из сегодняшних находок отменяет утверждение, сделанное ранее в этом же проходе.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ d79f792</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="grid">
+  <div class="card">
+    <div class="k">Локальная топология</div>
+    <div class="v">Fitness_App теперь единственный чекаут master</div>
+    <span class="pill ok">Исправлено</span>
+  </div>
+  <div class="card">
+    <div class="k">M7 &middot; l10n-пробел</div>
+    <div class="v">Непереведённые тексты ошибок/успеха локализованы</div>
+    <span class="pill ok">Исправлено</span>
+  </div>
+  <div class="card">
+    <div class="k">D-03 &middot; гостевой «Продолжить»</div>
+    <div class="v">Замер на 20 испытаниях: 70% успеха</div>
+    <span class="pill bad">Переоткрыт</span>
+  </div>
+</div>
+
+<h2>1 &middot; Топология локальных worktree</h2>
+<p>Четыре локальных чекаута этого репозитория (<code>Fitness_App</code>, <code>_wt-formcoach</code>,
+<code>_wt-gates-efgh</code>, <code>_wt-master-sync</code>) делили один <code>.git</code>, и эта
+сессия всё время работала из <code>_wt-gates-efgh</code>, пока директория, реально названная в
+честь проекта, стояла на осиротевшей маркетинговой ветке. Проверил каждый worktree, прежде чем
+что-либо трогать, сохранил весь найденный untracked/уникальный контент (9 маркетинговых файлов
+отчётов плюс один отчёт formcoach, побайтово скопированы в scratch до изменения состояния; один
+файл с коллизией пути переименован в сторону, а не удалён), затем освободил ссылку
+<code>master</code> от <code>_wt-master-sync</code> (это detach ветки, а не reset &mdash; грязная
+рабочая копия не тронута) и перемотал <code>Fitness_App</code> на неё вперёд.</p>
+<div class="tablewrap"><table>
+<tr><th>Worktree</th><th>До</th><th>После</th></tr>
+<tr><td><code>Fitness_App</code></td><td>осиротевшая ветка, разошлась на 23 коммита</td><td class="result-pass">канонический <code>master</code>, 0/0 к origin</td></tr>
+<tr><td><code>_wt-gates-efgh</code></td><td>detached, 0/0 к origin</td><td>worktree удалён (пустая папка осталась, заблокирована ОС)</td></tr>
+<tr><td><code>_wt-master-sync</code></td><td>владел <code>master</code>, грязный устаревший контент</td><td>detached, всё ещё грязный &mdash; удаление требует <code>--force</code>, здесь не авторизовано</td></tr>
+<tr><td><code>_wt-formcoach</code></td><td>предок origin, безвредный шум диффа</td><td>не тронут, удаление вне рамок этой задачи</td></tr>
+</table></div>
+<p>Причина, по которой отчёты упорно называли проектом <code>_wt-gates-efgh</code>:
+<code>report_conform.py</code> брал имя проекта из <code>git rev-parse --show-toplevel</code>,
+а это путь конкретного worktree. Исправлено на вывод имени из общего remote <code>origin</code>,
+добавлен регрессионный тест на именно этот случай с несколькими worktree.</p>
+<div class="note">Два пункта оставлены в задокументированном, намеренно не форсированном состоянии:
+пустая папка <code>_wt-gates-efgh</code> (ОС всё ещё держит хендл) и удаление
+<code>_wt-master-sync</code> (нужен <code>git worktree remove --force</code>, который отбросил бы
+грязный контент без отдельной авторизации). Оба &mdash; в одной команде от завершения, когда
+блокировка снимется/будет разрешена отдельно.</div>
+
+<h2>2 &middot; M7 &mdash; локализация текстов, минующих ARB-конвейер</h2>
+<p>Два файла (<code>contribute_video_page.dart</code>, <code>equipment_report_sheet.dart</code>)
+бросали обычные Dart-ошибки или присваивали простую строку в сообщение об успехе при ошибках
+валидации/входа, а затем показывали их через переменную, а не литерал в аргументе
+<code>Text(...)</code> &mdash; именно то слепое пятно, которое собственный тест проекта
+<code>no_untranslated_strings_test.dart</code> уже документирует как невидимое для себя.
+Пользователь с русской локалью всё равно видел бы английский текст. Заменено на обращения к
+<code>AppLocalizations</code> (шесть новых ключей ARB на обоих языках); <code>flutter analyze</code>
+чист, набор l10n-тестов 9/9, существующий набор виджет-тестов 4/4.</p>
+<div class="note warn">Стоит сказать прямо: первая попытка закоммитить этот фикс дала коммит,
+сообщение которого описывало изменение кода, а диф содержал только запись в DECISION_LOG &mdash;
+механический гейт целиком отклонил более ранний составной вызов
+<code>git add &amp;&amp; git commit</code>, из-за чего четыре реальных файла молча остались
+незастейдженными. Замечено сразу же по <code>git status</code> и <code>git show --stat</code>,
+исправлено вторым коммитом (не amend, поскольку первый уже был запушен), несущим настоящий диф.</div>
+
+<h2>3 &middot; D-03 &mdash; находка, из-за которой появилась эта контрольная точка</h2>
+<p>Ранее в этом проходе D-03 (анонимная кнопка «Продолжить», не всегда уводящая с экрана логина)
+была зафиксирована как <code>FIXED (device-verified, 7/7)</code>, а расширение до полного барьера
+в 20 испытаний было отмечено как последующая работа. Выполнил это расширение на том же физическом
+устройстве и той же установленной сборке (подтверждено: между ними не было ни одного коммита,
+трогающего код авторизации/онбординга).</p>
+<h3>Дефект методики, пойманный до того, как он исказил результат</h3>
+<p>Первая попытка расширения делала скриншот через 2.5 с после тапа &mdash; слишком рано.
+Большинство кадров ловили спиннер входа ещё «в полёте»; пара кадров показывала кнопку уже в состоянии
+покоя без возможности понять, значит ли это «ещё не началось» или «уже откатилось». <strong>Все 13
+отброшены как неубедительные</strong>, кроме одного (испытание 11), за которым понаблюдал вживую ещё
+четыре секунды: спиннер исчез, приложение вернулось на обычный экран логина &mdash; настоящий сбой
+первого тапа &mdash; а повторный тап на том же экране сработал немедленно. Это в точности тот же
+симптом D-05B/D-03, что уже зафиксирован ранее: первый тап молча пропадает, идентичный второй
+срабатывает.</p>
+<p>Оставшиеся 12 испытаний переделал с паузой в 8 секунд после тапа &mdash; достаточно, чтобы
+покрыть весь цикл, который у испытания 11 занял около 6.5 с. На четырёх выборочных проверках
+подтвердил, что размер PNG (~669 КБ для онбординга против ~149 КБ для логина) точно отражает
+визуальный результат, и использовал это, чтобы классифицировать остальные.</p>
+<h3>Результат</h3>
+<div class="bar-legend">
+  <span><span class="sw" style="background:var(--ok-bg);border:1px solid var(--ok-border)"></span>Успех &mdash; дошло до онбординга</span>
+  <span><span class="sw" style="background:var(--bad-bg);border:1px solid var(--bad-border)"></span>Провал &mdash; застряло на логине</span>
+</div>
+<div class="bar"><div class="pass" style="width:70%"></div><div class="fail" style="width:30%"></div></div>
+<div class="tablewrap"><table>
+<tr><th>Партия</th><th>Метод</th><th>Испытаний</th><th>Успех</th><th>Провал</th></tr>
+<tr><td>Исходная (прошлая запись)</td><td>тот же репро, ранее в этом проходе</td><td>7</td><td class="result-pass">7</td><td>0</td></tr>
+<tr><td>Расширение, пауза 2.5 с</td><td>отброшено &mdash; слишком рано для устойчивого результата</td><td>13</td><td colspan="2">не засчитано</td></tr>
+<tr><td>Расширение, пауза 8 с</td><td>устойчивый скриншот, эта запись</td><td>13</td><td class="result-pass">7</td><td class="result-fail">6</td></tr>
+<tr><td><strong>Итого, n=20</strong></td><td></td><td><strong>20</strong></td><td class="result-pass"><strong>14 (70%)</strong></td><td class="result-fail"><strong>6 (30%)</strong></td></tr>
+</table></div>
+<div class="note bad"><strong>D-03 переклассифицирован: <code>FIXED (7/7)</code> &rarr;
+<code>CONFIRMED_OPEN_BUG</code>, интермиттентный, ~30% сбоев первого тапа на n=20.</strong>
+Результат 7/7 был настоящим, не выдуманным &mdash; просто недостаточным числом испытаний, чтобы
+отличить «исправлено» от «этому прогону повезло» при истинной частоте бага. Это согласуется с
+находкой середины августа, уже зафиксированной ранее: не мёртвый тап, не проблема хит-теста/арены
+жестов &mdash; настоящий вход выполняется успешно, а UI молча не реагирует на части попыток.
+Первопричина (вероятно, гонка между асинхронным входом и реакцией UI) в этой записи не
+расследовалась; эта запись &mdash; только замер.</div>
+
+<h2>4 &middot; Что дальше</h2>
+<ul>
+<li>Первопричина D-03 &mdash; асинхронная гонка за ~30% отказов.</li>
+<li>D-05B (Тренировки/Библиотека, чип Technique Coach) и D-04 (AI Trainer / App Check E2E), теперь
+когда доступ к устройству подтверждённо работает.</li>
+<li>Верификация Form Coach (функция позы на ML Kit выглядит уже построенной и подключённой; ещё
+не проверена независимо).</li>
+<li>Светлая тема &mdash; всё ещё открытое дизайнерское решение, которое источник дизайна проекта
+сам помечает как неопределённое, не то, что стоит изобретать в одностороннем порядке.</li>
+<li>Остаток M7 (a11y-обход сверх закрытого здесь l10n-пробела), M8 (goldens), M9 (фальсификация),
+Visual Gate, MVP_REACHED.</li>
+<li>Firebase App Distribution &mdash; внешняя публикация; требует отдельного явного разрешения
+согласно действующей политике, независимо от более широкой авторизации этой программы.</li>
+</ul>
+<p>Продолжаю этот проход согласно действующей инструкции; следующий отчёт &mdash; финальный.</p>
+
+<footer>Fitness-App &middot; автономная программа SPTR &middot; контрольная точка, не итоговый отчёт</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
