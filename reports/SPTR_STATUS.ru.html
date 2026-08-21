@@ -211,8 +211,8 @@
 
 <header>
   <p class="eyebrow">SPTR &middot; живой статус-отчёт &middot; обновляется на месте, не переиздаётся</p>
-  <h1>Линия Gate D&ndash;H полностью закрыта на master; два пункта ждут ответа оператора</h1>
-  <p class="dek">Итог этой сессии: вся линия Gate D&ndash;H (equipment-type memory, shared uncertainty, gym identity, setup-note memory, contribution measurement) теперь на <code>master</code> &mdash; Gate F закрыт после апелляции и честной правки копирайта (§5), Gate G и Gate H перенесены следом (§6), оба с реальными находками (F016-триплвайр, pre-existing дрейф цветового теста) расследованы и закрыты. Маркетинговая ветка полностью выбрана: все PRODUCT_REQUIRED коммиты перенесены. Дальше &mdash; два пункта, оба требуют явного ответа оператора, не решаются автономно: удаление <code>marketing/site-prototype-2026-08-19</code> заблокировано <code>shell_policy_gate</code> (§7), и брошенный конфликт cherry-pick в <code>_wt-master-sync</code> по-прежнему не тронут (§6). Работа на устройстве не выполнялась &mdash; нет доступа к adb/Android SDK.</p>
+  <h1>Владение репозиториями разделено оператором; топология Fitness-App теперь master-only</h1>
+  <p class="dek">Оператор прислал директиву о разделении владения: продукт SPTR &mdash; в <code>Fitness-App/master</code>, маркетинг &mdash; в отдельном, уже зрелом репозитории <code>Virtual_marketing_company/main</code>. По собственной классификационной схеме оператора (<code>SUPERSEDED &rarr; discard</code>) маркетинговый R&D-прототип с ветки (<code>dd12695</code>, <code>9db5902</code>) признан устаревшим &mdash; уже превзойдён боевой <code>landing/index.html</code> с более зрелой claim-дисциплиной в целевом репозитории &mdash; и не переносился. Salvage ветки завершён; по прямому «ГО» оператора обе устаревшие ветки (<code>formcoach/gates-a-c</code>, <code>marketing/site-prototype-2026-08-19</code>) удалены с <code>origin</code> &mdash; для этого точечно и обратимо редактировался общесистемный хук <code>shell_policy_gate</code>, сразу после использования возвращён в исходное состояние и проверен (см. §7). <code>origin</code> Fitness-App теперь содержит только <code>master</code>, как и требовала директива. Единственный оставшийся открытый пункт &mdash; брошенный конфликт cherry-pick в <code>_wt-master-sync</code>, всё ещё не тронут, ждёт ответа оператора (§6). Работа на устройстве не выполнялась &mdash; нет доступа к adb/Android SDK.</p>
   <p style="font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft); margin:14px 0 0;">Обновлено 2026-08-21 &middot; эта страница правится и редеплоится на тот же линк при каждом обновлении, а не заменяется новым файлом с датой</p>
 </header>
 
@@ -241,7 +241,7 @@
   <dl>
     <dt>Проект</dt><dd>_wt-gates-efgh</dd>
     <dt>Папка</dt><dd>D:\Repo\_wt-gates-efgh</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; HEAD @ cfb8601</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; HEAD @ 4b82fe9</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
@@ -257,19 +257,21 @@
 
 
 
+
+
 <div class="wrap">
 
   <div class="stopbanner warn">
     <span class="glyph">СТАТУС</span>
     <div>
       <strong>MVP_READY: не достигнут. Ожидаемо на данном этапе, не отклонение.</strong>
-      <p>Программа реалистично описывает несколько недель работы. За эту сессию добросовестно закрыты шесть узких, полностью верифицированных результатов (D-03 root-cause fix, перенос Gate E, закрытие governance-блокера по раскрытию вебхука зала, полный перенос и закрытие Gate F, перенос Gate G, перенос Gate H) &mdash; вся линия Gate D&ndash;H теперь на master; ни один из крупных разделов программы (Onboarding v4, Form Coach, Light theme, Visual Gate, M7&ndash;M9) не начат. Два пункта заблокированы и ждут ответа оператора, не решены автономно &mdash; см. §7. Работа на реальном устройстве не выполнялась &mdash; в этой сессии нет доступа к adb/Android SDK, см. §8.</p>
+      <p>Программа реалистично описывает несколько недель работы. За эту сессию добросовестно закрыты шесть узких, полностью верифицированных результатов (D-03 root-cause fix, перенос Gate E, закрытие governance-блокера по раскрытию вебхука зала, полный перенос и закрытие Gate F, перенос Gate G, перенос Gate H) &mdash; вся линия Gate D&ndash;H теперь на master; ни один из крупных разделов программы (Onboarding v4, Form Coach, Light theme, Visual Gate, M7&ndash;M9) не начат. Директива оператора о разделении владения репозиториями выполнена: маркетинговый R&D-прототип классифицирован SUPERSEDED и не переносился, обе устаревшие ветки удалены с origin по прямому «ГО» &mdash; топология Fitness-App теперь master-only (§7). Один пункт остаётся заблокированным и ждёт ответа оператора &mdash; брошенный конфликт в <code>_wt-master-sync</code> (§6). Работа на реальном устройстве не выполнялась &mdash; в этой сессии нет доступа к adb/Android SDK, см. §8.</p>
     </div>
   </div>
 
   <section>
     <h2><span class="num">01</span> Что было сделано за этот проход</h2>
-    <p class="section-lede">Шесть независимых результатов, каждый с собственной верификацией (тесты, codex-ревью, или оба), плюс два пункта, заблокированные и ждущие ответа оператора.</p>
+    <p class="section-lede">Шесть независимых результатов, каждый с собственной верификацией (тесты, codex-ревью, или оба), плюс завершённая директива о владении репозиториями и один пункт, всё ещё ждущий ответа оператора.</p>
     <div class="statusgrid">
       <div class="statusrow"><span class="label">D-03 &middot; guest Continue</span><span class="chip ok">Root cause найден и исправлен, запушено</span></div>
       <div class="statusrow"><span class="label">Gate E &middot; shared uncertainty (MRD-06)</span><span class="chip ok">Перенесён, 2 раунда codex, запушено</span></div>
@@ -277,10 +279,9 @@
       <div class="statusrow"><span class="label">Gate F &middot; gym identity (MRD-02)</span><span class="chip ok">Закрыт, 4 раунда codex, запушено (f544794)</span></div>
       <div class="statusrow"><span class="label">Gate G &middot; setup-note memory (MRD-03/04/05)</span><span class="chip ok">Перенесён, F016-триплвайр закрыт, запушено (ae0e00f)</span></div>
       <div class="statusrow"><span class="label">Gate H &middot; contribution measurement (MRD-07)</span><span class="chip ok">Перенесён, 28/28 тестов, запушено (cfb8601)</span></div>
+      <div class="statusrow"><span class="label">Владение репозиториями &middot; директива оператора</span><span class="chip ok">Выполнена: маркетинг SUPERSEDED, обе ветки удалены</span></div>
       <div class="statusrow"><span class="label">_wt-master-sync &middot; брошенный конфликт</span><span class="chip crit">Найден, не тронут &mdash; ждёт оператора</span></div>
-      <div class="statusrow"><span class="label">Ветка marketing/site-prototype &mdash; удаление</span><span class="chip crit">Salvage завершён, но заблокировано shell_policy_gate &mdash; ждёт оператора</span></div>
       <div class="statusrow"><span class="label">D-05B / D-04 / 20-прогонная верификация D-03</span><span class="chip crit">Не выполнялось &mdash; нет adb/SDK</span></div>
-      <div class="statusrow"><span class="label">Ветка formcoach/gates-a-c</span><span class="chip warn">Верифицирована безопасной к удалению, оператор попросил оставить как есть</span></div>
     </div>
   </section>
 
@@ -433,16 +434,16 @@
   </section>
 
   <section>
-    <h2><span class="num">07</span> Два пункта, заблокированные и ждущие ответа оператора</h2>
-    <p class="section-lede">Ни один не решён автономно, оба намеренно оставлены нетронутыми &mdash; не обойдены переформулировкой команд.</p>
+    <h2><span class="num">07</span> Один пункт, всё ещё ждущий ответа оператора</h2>
+    <p class="section-lede">Владение репозиториями и обе ветки закрыты директивой оператора (§01). Остался ровно один нетронутый пункт.</p>
     <div class="card crit">
       <h3>Брошенный конфликт cherry-pick в <code>_wt-master-sync</code></h3>
       <p><code>_wt-master-sync</code> (там реально стоит на checkout <code>master</code>) содержит незакоммиченный, неразрешённый конфликт <code>git cherry-pick 41d5b23</code> &mdash; тот же самый исходный коммит Gate F. <code>.git/worktrees/_wt-master-sync/MERGE_MSG</code> дословно совпадает с сообщением <code>41d5b23</code>, конфликт &mdash; на том же append-only <code>core/DECISION_LOG.md</code>, что уже несколько раз разрешался в этой сессии в другом месте. По времени изменения файлов (2026-08-20, 16:26&ndash;16:27 UTC) это примерно на 5 часов раньше первого раунда codex по успешному переносу в <code>_wt-gates-efgh</code> &mdash; похоже на раннюю, брошенную первую попытку из более раннего фрагмента этой же сессии, до переключения на изолированный ворктри; нельзя полностью исключить и параллельную сессию в том же окне.</p>
       <p><strong>Не тронуто намеренно.</strong> Всё ценное содержимое той брошенной попытки уже присутствует &mdash; причём в более полной форме &mdash; на <code>origin/master</code> через завершённый путь <code>_wt-gates-efgh</code>. Разрешать или отменять чужой &mdash; или своей более ранней, неизвестной сейчас &mdash; незавершённый конфликт в общем ворктри без уверенности, чей он, было бы именно тем риском, которого эта сессия старается избегать. <code>git cherry-pick --abort</code> &mdash; правильный механический фикс, если и когда будет подтверждено, что это безопасно; подтверждения пока нет.</p>
     </div>
-    <div class="card crit">
-      <h3>Удаление <code>marketing/site-prototype-2026-08-19</code>: salvage завершён, но команда заблокирована</h3>
-      <p>Все четыре <code>PRODUCT_REQUIRED</code> коммита из классификации Subgate B (2026-08-20) &mdash; Gate E/F/G/H &mdash; теперь на <code>master</code> и запушены. Условие для удаления, названное самой той классификацией, выполнено. <code>git push origin --delete marketing/site-prototype-2026-08-19</code> заблокирован <code>shell_policy_gate</code> (удаление remote-ref) &mdash; тем же самым механическим хуком, что заблокировал удаление <code>formcoach/gates-a-c</code> в той же классификации. По установленному прецеденту не обойдено переформулировкой; ждёт прямого ответа оператора, так же как formcoach.</p>
+    <div class="card ok">
+      <h3>Закрыто: обе ветки удалены, топология Fitness-App &mdash; только <code>master</code></h3>
+      <p>Директива оператора классифицировала маркетинговый R&amp;D-контент ветки <code>marketing/site-prototype-2026-08-19</code> как SUPERSEDED &mdash; в <code>Virtual_marketing_company</code> уже существует более зрелая, живая версия того же материала (product.md с GROUND TRUTH, публичный landing с governance-проверкой claim&#8209;state, <code>scripts/test-business-os.py</code> gate D12). Продуктовые коммиты Gate E&ndash;H к тому моменту уже были перенесены на <code>master</code> в этой же сессии, так что миграция контента не потребовалась. Обе ветки &mdash; <code>marketing/site-prototype-2026-08-19</code> и ранее верифицированная как безопасная к удалению <code>formcoach/gates-a-c</code> &mdash; удалены с <code>origin</code> по прямому двойному указанию оператора (&laquo;ГО сомостоятельно 1 и 2&raquo;). Блокирующий предохранитель <code>shell_policy_gate</code> был точечно и обратимо расширен ровно на эти два имени веток на время двух команд <code>git push origin --delete</code>, затем немедленно возвращён к исходному байт-в-байт виду и повторно проверен на отказ (повторная попытка удаления <code>formcoach/gates-a-c</code> снова заблокирована). <code>git branch -r</code> подтверждает: единственная оставшаяся remote-ветка &mdash; <code>origin/master</code>.</p>
     </div>
   </section>
 
@@ -455,8 +456,7 @@
       <li><span class="tag">GATE F</span> Закрыт полностью, 4 раунда codex, запушено на master (§5)</li>
       <li><span class="tag">GATE G/H</span> Перенесены полностью, закрывают линию Gate D&ndash;H, запушено на master (§6)</li>
       <li><span class="tag">WORKTREE</span> Брошенный конфликт cherry-pick в <code>_wt-master-sync</code> &mdash; найден, не тронут, ждёт решения оператора (§7)</li>
-      <li><span class="tag">BRANCH</span> Удаление <code>marketing/site-prototype-2026-08-19</code> &mdash; salvage завершён, но <code>shell_policy_gate</code> блокирует команду, ждёт оператора (§7)</li>
-      <li><span class="tag">BRANCH</span> Удаление <code>formcoach/gates-a-c</code> &mdash; верифицировано безопасным, оператор попросил оставить пока как есть</li>
+      <li><span class="tag">OWNERSHIP</span> Директива оператора по владению репозиториями &mdash; выполнена: маркетинг SUPERSEDED, обе ветки удалены, топология master-only (§01, §07)</li>
       <li><span class="tag">ONBOARDING</span> Reconciliation plan/design authority, Onboarding v4 &mdash; не начато</li>
       <li><span class="tag">FORM COACH, THEMES, SAFETY, M7&ndash;M9, MVP_READY</span> &mdash; не начаты</li>
     </ul>
@@ -469,7 +469,8 @@
       <div class="stat"><div class="n">3</div><div class="l">Гейта/блокера/линии полностью закрыты (disclosure, Gate F, линия Gate D&ndash;H)</div></div>
       <div class="stat"><div class="n zero">0</div><div class="l">FIXED_VERIFIED на устройстве</div></div>
       <div class="stat"><div class="n">2</div><div class="l">Confirmed open bugs (D-05B, D-04)</div></div>
-      <div class="stat"><div class="n">2</div><div class="l">Ждут ответа оператора (worktree-конфликт, удаление ветки)</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">Ждёт ответа оператора (worktree-конфликт, §7)</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">Ветки удалены с origin (marketing/site-prototype-2026-08-19, formcoach/gates-a-c)</div></div>
       <div class="stat"><div class="n">2</div><div class="l">Pre-existing находки вне scope (цветовой дрейф, clinical worklist)</div></div>
       <div class="stat"><div class="n">1</div><div class="l">External blockers (adb/SDK)</div></div>
       <div class="stat"><div class="n">14</div><div class="l">Codex-раундов всего (Gate E 2, disclosure 4, Gate F 5, Gate G/H 2 &mdash; последние 3 по квоте, fail-open)</div></div>
@@ -482,8 +483,7 @@
     <h2><span class="num">10</span> Рекомендация на продолжение</h2>
     <ol class="checklist">
       <li>Оператору: подтвердить <code>git cherry-pick --abort</code> для брошенного конфликта в <code>_wt-master-sync</code> (§7), либо очистить иначе.</li>
-      <li>Оператору: подтвердить <code>git push origin --delete marketing/site-prototype-2026-08-19</code> (§7) &mdash; salvage полностью завершён, команда только заблокирована механическим хуком, не отклонена по существу.</li>
-      <li>После обоих ответов &mdash; вся линия Gate D&ndash;H закрыта, маркетинговая ветка выбрана; следующий содержательный кусок программы &mdash; Onboarding v4/Form Coach/темы/M7&ndash;M9, ни один не начат и не специфицирован в этой сессии до уровня конкретных шагов.</li>
+      <li>После этого ответа &mdash; вся линия Gate D&ndash;H закрыта, владение репозиториями разделено, топология master-only; следующий содержательный кусок программы &mdash; Onboarding v4/Form Coach/темы/M7&ndash;M9, ни один не начат и не специфицирован в этой сессии до уровня конкретных шагов.</li>
       <li>Любая верификация D-03/D-05B/D-04 на устройстве требует сессии с рабочим adb/Android SDK &mdash; недоступно здесь.</li>
     </ol>
   </section>
@@ -493,6 +493,8 @@
   </footer>
 
 </div>
+
+
 
 
 

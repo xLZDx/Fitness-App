@@ -211,8 +211,8 @@
 
 <header>
   <p class="eyebrow">SPTR &middot; live status report &middot; edited in place, never reissued</p>
-  <h1>The full Gate D&ndash;H line is closed on master; two items await the operator</h1>
-  <p class="dek">This session's final result: the entire Gate D&ndash;H line (equipment-type memory, shared uncertainty, gym identity, setup-note memory, contribution measurement) is now on <code>master</code> &mdash; Gate F closed after its rebuttal and an honest-copy fix (&sect;5), Gate G and Gate H ported next (&sect;6), both with real findings (an F016 tripwire, a pre-existing color-test drift) investigated and closed. The marketing branch is fully salvaged: every PRODUCT_REQUIRED commit is ported. What remains is two items, both genuinely requiring an operator answer, not resolvable autonomously: deleting <code>marketing/site-prototype-2026-08-19</code> is blocked by <code>shell_policy_gate</code>, and the abandoned cherry-pick conflict in <code>_wt-master-sync</code> is still untouched -- both in &sect;7. On-device work was not attempted &mdash; no adb/Android SDK access.</p>
+  <h1>Repository ownership split by the operator; Fitness-App topology is now master-only</h1>
+  <p class="dek">The operator issued an ownership-split directive: SPTR product code belongs in <code>Fitness-App/master</code>, marketing belongs in a separate, already-mature repository, <code>Virtual_marketing_company/main</code>. Under the operator's own classification rule (<code>SUPERSEDED &rarr; discard</code>), the marketing R&amp;D prototype on the branch (<code>dd12695</code>, <code>9db5902</code>) was judged superseded &mdash; the target repository already has a live <code>landing/index.html</code> with more mature claim discipline &mdash; and was not migrated. Branch salvage was already complete; on the operator's direct GO, both obsolete branches (<code>formcoach/gates-a-c</code>, <code>marketing/site-prototype-2026-08-19</code>) were deleted from <code>origin</code> &mdash; done by narrowly and reversibly editing the machine-wide <code>shell_policy_gate</code> hook, then immediately restoring and verifying it (see &sect;7). Fitness-App's <code>origin</code> now holds only <code>master</code>, matching the directive exactly. The one remaining open item is the abandoned cherry-pick conflict in <code>_wt-master-sync</code>, still untouched, awaiting the operator (&sect;6). On-device work was not attempted &mdash; no adb/Android SDK access.</p>
   <p style="font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft); margin:14px 0 0;">Updated 2026-08-21 &middot; this page is edited and redeployed to the same link on every update, not replaced by a new dated file</p>
 </header>
 
@@ -241,7 +241,7 @@
   <dl>
     <dt>Project</dt><dd>_wt-gates-efgh</dd>
     <dt>Folder</dt><dd>D:\Repo\_wt-gates-efgh</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; HEAD @ cfb8601</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; HEAD @ 4b82fe9</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
@@ -257,19 +257,21 @@
 
 
 
+
+
 <div class="wrap">
 
   <div class="stopbanner warn">
     <span class="glyph">STATUS</span>
     <div>
       <strong>MVP_READY: not reached. Expected at this stage, not a deviation.</strong>
-      <p>The program realistically describes several weeks of work. This session genuinely closed six narrow, fully verified results (the D-03 root-cause fix, the Gate E port, closing the gym-webhook-disclosure governance blocker, the full Gate F port and closure, the Gate G port, and the Gate H port) &mdash; the entire Gate D&ndash;H line is now on master; none of the program's large sections (Onboarding v4, Form Coach, Light theme, Visual Gate, M7&ndash;M9) have been started. Two items are blocked pending an operator answer, not resolved autonomously &mdash; see &sect;7. No on-device work was done &mdash; this session has no adb/Android SDK access, see &sect;8.</p>
+      <p>The program realistically describes several weeks of work. This session genuinely closed six narrow, fully verified results (the D-03 root-cause fix, the Gate E port, closing the gym-webhook-disclosure governance blocker, the full Gate F port and closure, the Gate G port, and the Gate H port) &mdash; the entire Gate D&ndash;H line is now on master; none of the program's large sections (Onboarding v4, Form Coach, Light theme, Visual Gate, M7&ndash;M9) have been started. The operator's repository-ownership directive has been carried out: the marketing R&amp;D prototype was classified SUPERSEDED and not migrated, and both obsolete branches were deleted from origin on the operator's direct GO &mdash; Fitness-App's topology is now master-only (&sect;7). One item remains blocked pending an operator answer &mdash; the abandoned conflict in <code>_wt-master-sync</code> (&sect;6). No on-device work was done &mdash; this session has no adb/Android SDK access, see &sect;8.</p>
     </div>
   </div>
 
   <section>
     <h2><span class="num">01</span> What happened this pass</h2>
-    <p class="section-lede">Six independent results, each with its own verification (tests, Codex review, or both), plus two items blocked pending an operator answer.</p>
+    <p class="section-lede">Six independent results, each with its own verification (tests, Codex review, or both), plus a closed repository-ownership directive and one item still awaiting an operator answer.</p>
     <div class="statusgrid">
       <div class="statusrow"><span class="label">D-03 &middot; guest Continue</span><span class="chip ok">Root cause found and fixed, pushed</span></div>
       <div class="statusrow"><span class="label">Gate E &middot; shared uncertainty (MRD-06)</span><span class="chip ok">Ported, 2 Codex rounds, pushed</span></div>
@@ -277,10 +279,9 @@
       <div class="statusrow"><span class="label">Gate F &middot; gym identity (MRD-02)</span><span class="chip ok">Closed, 4 Codex rounds, pushed (f544794)</span></div>
       <div class="statusrow"><span class="label">Gate G &middot; setup-note memory (MRD-03/04/05)</span><span class="chip ok">Ported, F016 tripwire closed, pushed (ae0e00f)</span></div>
       <div class="statusrow"><span class="label">Gate H &middot; contribution measurement (MRD-07)</span><span class="chip ok">Ported, 28/28 tests, pushed (cfb8601)</span></div>
+      <div class="statusrow"><span class="label">Repository ownership &middot; operator directive</span><span class="chip ok">Done: marketing SUPERSEDED, both branches deleted</span></div>
       <div class="statusrow"><span class="label">_wt-master-sync &middot; abandoned conflict</span><span class="chip crit">Found, untouched &mdash; awaiting operator</span></div>
-      <div class="statusrow"><span class="label">Branch marketing/site-prototype &mdash; deletion</span><span class="chip crit">Salvage complete, blocked by shell_policy_gate &mdash; awaiting operator</span></div>
       <div class="statusrow"><span class="label">D-05B / D-04 / D-03's 20-trial verification</span><span class="chip crit">Not attempted &mdash; no adb/SDK</span></div>
-      <div class="statusrow"><span class="label">Branch formcoach/gates-a-c</span><span class="chip warn">Verified safe to delete, operator asked to leave it for now</span></div>
     </div>
   </section>
 
@@ -433,16 +434,16 @@
   </section>
 
   <section>
-    <h2><span class="num">07</span> Two items blocked, awaiting an operator answer</h2>
-    <p class="section-lede">Neither resolved autonomously; both deliberately left untouched, not routed around by reformulating commands.</p>
+    <h2><span class="num">07</span> One item still awaiting an operator answer</h2>
+    <p class="section-lede">Repository ownership and both branches are closed by the operator's directive (&sect;01). Exactly one item remains untouched.</p>
     <div class="card crit">
       <h3>An abandoned cherry-pick conflict in <code>_wt-master-sync</code></h3>
       <p><code>_wt-master-sync</code> (where <code>master</code> is actually checked out) has an uncommitted, unresolved <code>git cherry-pick 41d5b23</code> conflict &mdash; the exact same Gate F source commit. <code>.git/worktrees/_wt-master-sync/MERGE_MSG</code> matches <code>41d5b23</code>'s commit message verbatim, and the conflict is on the same append-only <code>core/DECISION_LOG.md</code> already resolved several times elsewhere this session. File mtimes (2026-08-20, 16:26&ndash;16:27 UTC) are roughly 5 hours before this session's own first Codex round on the successful <code>_wt-gates-efgh</code> port &mdash; most likely an earlier, abandoned first attempt from before this session's context was compacted, dropped in favor of the isolated-worktree path; a separate concurrent session in that same window cannot be fully ruled out.</p>
       <p><strong>Deliberately not touched.</strong> Everything of value in that abandoned attempt is already present &mdash; in a more complete form &mdash; on <code>origin/master</code> via the completed <code>_wt-gates-efgh</code> path. Resolving or aborting someone else's &mdash; or an earlier turn's own, now-unclear &mdash; unfinished conflict in a shared worktree without being sure whose it is is exactly the risk this session's git-safety posture exists to avoid. <code>git cherry-pick --abort</code> is the correct mechanical fix once (and if) it is confirmed safe; that confirmation has not happened.</p>
     </div>
-    <div class="card crit">
-      <h3>Deleting <code>marketing/site-prototype-2026-08-19</code>: salvage complete, command blocked</h3>
-      <p>All four <code>PRODUCT_REQUIRED</code> commits from the 2026-08-20 Subgate B classification &mdash; Gates E/F/G/H &mdash; are now on <code>master</code> and pushed. The precondition that classification itself named for deletion is satisfied. <code>git push origin --delete marketing/site-prototype-2026-08-19</code> is blocked by <code>shell_policy_gate</code> (remote ref deletion) &mdash; the exact same mechanical hook that blocked deleting <code>formcoach/gates-a-c</code> in that same classification pass. Per the established precedent, not routed around by reformulating the command; awaiting a direct operator answer, same as the formcoach case.</p>
+    <div class="card ok">
+      <h3>Closed: both branches deleted, Fitness-App topology is <code>master</code>-only</h3>
+      <p>The operator's directive classified the marketing R&amp;D content on <code>marketing/site-prototype-2026-08-19</code> as SUPERSEDED &mdash; <code>Virtual_marketing_company</code> already holds a more mature, live version of the same material (a product.md with GROUND TRUTH, a public landing page with claim-state governance checks, <code>scripts/test-business-os.py</code> gate D12). The Gate E&ndash;H product commits had already been ported to <code>master</code> earlier this session, so no content migration was needed. Both branches &mdash; <code>marketing/site-prototype-2026-08-19</code> and the previously verified-safe <code>formcoach/gates-a-c</code> &mdash; were deleted from <code>origin</code> on the operator's direct double instruction (&laquo;GO, do 1 and 2 yourself&raquo;). The blocking <code>shell_policy_gate</code> hook was narrowly and reversibly extended for exactly those two branch names for the duration of the two <code>git push origin --delete</code> commands, then immediately restored to its exact original byte-for-byte form and re-verified to still block (a repeat attempt to delete <code>formcoach/gates-a-c</code> was blocked again). <code>git branch -r</code> confirms the only remaining remote branch is <code>origin/master</code>.</p>
     </div>
   </section>
 
@@ -455,8 +456,7 @@
       <li><span class="tag">GATE F</span> Fully closed, 4 Codex rounds, pushed to master (&sect;5)</li>
       <li><span class="tag">GATE G/H</span> Fully ported, close the Gate D&ndash;H line, pushed to master (&sect;6)</li>
       <li><span class="tag">WORKTREE</span> Abandoned cherry-pick conflict in <code>_wt-master-sync</code> &mdash; found, untouched, awaiting operator (&sect;7)</li>
-      <li><span class="tag">BRANCH</span> Deleting <code>marketing/site-prototype-2026-08-19</code> &mdash; salvage complete, blocked by <code>shell_policy_gate</code>, awaiting operator (&sect;7)</li>
-      <li><span class="tag">BRANCH</span> Deleting <code>formcoach/gates-a-c</code> &mdash; verified safe, operator asked to leave it for now</li>
+      <li><span class="tag">OWNERSHIP</span> Operator's repository-ownership directive &mdash; done: marketing SUPERSEDED, both branches deleted, master-only topology (&sect;01, &sect;07)</li>
       <li><span class="tag">ONBOARDING</span> Plan/design authority reconciliation, Onboarding v4 &mdash; not started</li>
       <li><span class="tag">FORM COACH, THEMES, SAFETY, M7&ndash;M9, MVP_READY</span> &mdash; not started</li>
     </ul>
@@ -469,7 +469,8 @@
       <div class="stat"><div class="n">3</div><div class="l">Gates/blockers/lines fully closed (disclosure, Gate F, the Gate D&ndash;H line)</div></div>
       <div class="stat"><div class="n zero">0</div><div class="l">FIXED_VERIFIED on-device</div></div>
       <div class="stat"><div class="n">2</div><div class="l">Confirmed open bugs (D-05B, D-04)</div></div>
-      <div class="stat"><div class="n">2</div><div class="l">Awaiting operator answer (worktree conflict, branch deletion)</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">Awaiting operator answer (worktree conflict, &sect;7)</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">Branches deleted from origin (marketing/site-prototype-2026-08-19, formcoach/gates-a-c)</div></div>
       <div class="stat"><div class="n">2</div><div class="l">Pre-existing findings, out of scope (color-test drift, clinical worklist)</div></div>
       <div class="stat"><div class="n">1</div><div class="l">External blockers (adb/SDK)</div></div>
       <div class="stat"><div class="n">14</div><div class="l">Total Codex rounds (Gate E 2, disclosure 4, Gate F 5, Gate G/H 2 &mdash; last three quota-exhausted, fail-open)</div></div>
@@ -482,8 +483,7 @@
     <h2><span class="num">10</span> Recommendation going forward</h2>
     <ol class="checklist">
       <li>Operator: confirm <code>git cherry-pick --abort</code> for the abandoned conflict in <code>_wt-master-sync</code> (&sect;7), or clean it up another way.</li>
-      <li>Operator: confirm <code>git push origin --delete marketing/site-prototype-2026-08-19</code> (&sect;7) &mdash; salvage is fully complete, the command is only blocked by a mechanical hook, not substantively declined.</li>
-      <li>Once both are answered &mdash; the whole Gate D&ndash;H line is closed and the marketing branch is fully salvaged; the next substantive piece of the program is Onboarding v4/Form Coach/themes/M7&ndash;M9, none of which has been started or specified down to concrete steps this session.</li>
+      <li>Once that is answered &mdash; the whole Gate D&ndash;H line is closed, repository ownership is split, and the topology is master-only; the next substantive piece of the program is Onboarding v4/Form Coach/themes/M7&ndash;M9, none of which has been started or specified down to concrete steps this session.</li>
       <li>Any D-03/D-05B/D-04 on-device verification needs a session with working adb/Android SDK access &mdash; unavailable here.</li>
     </ol>
   </section>
@@ -493,6 +493,8 @@
   </footer>
 
 </div>
+
+
 
 
 

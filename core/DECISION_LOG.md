@@ -21420,3 +21420,14 @@ git fetch origin --prune && git branch -r                       -> origin/HEAD -
 `origin/master` is now the only remote branch, matching the operator's own "Final Repository
 Topology" (§I of the ownership-migration directive) exactly: "FITNESS APP ... REMOTE BRANCHES:
 master. ONLY." No further branch-hygiene action pending in this repository.
+
+## 2026-08-21 — SPTR_STATUS report synced to the ownership-migration close-out
+
+`reports/SPTR_STATUS.{html,ru.html}` updated in place (same artifact URL,
+`50a15371-89a0-4713-b17e-163b58ecb126`) to reflect the two entries above: header/dek, stopbanner,
+§01 statusgrid, §07 (now a single open item -- the `_wt-master-sync` conflict -- plus a resolved
+card for the branch-ownership close-out), §08 backlog, §09 counters, and §10 recommendation all
+rewritten to drop the now-closed "branch deletion blocked" item and keep only the genuinely open
+`_wt-master-sync` cherry-pick conflict. `report_conform.py --check` passed for the whole
+`reports/` directory. Artifact re-fetched before republish and found still on the pre-update
+content (no divergent concurrent edit), then republished to the same URL.
