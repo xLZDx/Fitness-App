@@ -23089,3 +23089,44 @@ wanted, that is a device install of the Firebase-distributed link, not a rebuild
 
 **MVP_REACHED, final build, SHA256, and distribution are all complete.** Proceeding to a bounded
 post-MVP continuation per the directive, before the one final consolidated report.
+
+## 2026-08-21 -- Bounded post-MVP continuation: full-suite regression check at `e7f5dfb`, one
+pre-existing failure confirmed unchanged, no new work started
+
+Reviewed the six known open items recorded in the MVP_REACHED entry above and judged none of them
+safe to start within a "bounded" continuation: two require backend/Cloud-Functions or multi-file
+architectural changes outside this pass's Flutter-only, single-gate discipline (AI-Coach rate
+limiting, `/subscription` navigation defect), two are already-reasoned deferrals on record (PAR-Q
+redesign, Light theme), and two are genuinely non-blocking loose ends with zero shipped impact
+(S23 Impeller A/B test, trace instrumentation removal). Rather than invent new scope, ran the full
+`flutter test` suite at `e7f5dfb` (the commit after the build/delivery record) as the bounded,
+safe, evidence-producing action for this step -- confirming the final shipped build's regression
+health before the closing report.
+
+**Result: 3242/3243 passed.** The one failure is
+`test/theme/app_semantic_colors_test.dart`, `'the hardcoded whites that survived G1.2b stay
+accounted for'` -- **expected 61, actual 58, identical numbers already recorded as pre-existing
+drift on 2026-08-20** (`:20521-20530`, run after the D-03 fix, well before this pass's M7/M8/M9/Form
+Coach work began). Confirmed unchanged, not a new regression from anything this pass did: the
+per-file breakdown in this run's failure output (`form_check_page.dart: 18`,
+`workout_player_page.dart: 3`, `coach_readiness_band.dart: 2`, etc.) matches the test's own inline
+comment history exactly (`form_check_page.dart` pinned at 18 since the 2026-08-15 "form coach Gate
+A" entry, `:490-498`), and a direct diff of the M7/Form-Coach-reskin commit (`1dc1fbf`) shows its
+`Colors.white*` line changes net to zero (`CircularProgressIndicator(color: Colors.white)` and
+`Colors.white38` each removed and re-added at a different line -- pure reformatting, not a literal
+removed or added). This project's own established practice, repeated at `:20527-20530` and
+`:20555-20559`, treats this exact test's stale-low-expectation failures as tracked pre-existing
+drift, not a blocker, "since the test's own purpose (tracking a count down over time) means a stale
+expectation failing low is not urgent the way a new hardcoded white would be" -- followed here
+rather than re-litigated. Not fixed in this pass (updating the ratchet's expected count and its
+required per-change comment is a real, separate piece of work this pass did not do and should not
+silently absorb into a regression-check entry).
+
+**No other failures.** This is independent, direct confirmation (not merely a re-statement of the
+individual test-file runs already logged for each landed change) that `master` carries no
+undetected regression across the whole test suite. `e7f5dfb` is one commit after `67b9fa9`, the
+commit the distributed release build (`1.0.0 (2656)`) was actually built from -- the only change
+between them is the build/delivery record appended to `DECISION_LOG.md` itself, no app code, so
+this result applies equally to the exact bits that were built and distributed.
+
+Bounded post-MVP continuation is complete. Proceeding to the one final consolidated report.
