@@ -21558,3 +21558,54 @@ without it would mean inventing a palette the project's own design source explic
 settled. M7 (l10n/a11y sweep), M8 (goldens), M9 (falsification) and `MVP_REACHED` itself: no
 DECISION_LOG entry found declaring any of them started or closed as of this entry -- these remain
 the honestly-open next items.
+
+## 2026-08-21 -- environment correction: adb/Android SDK ARE available; D-03 device-verified (7/7, not the full 20)
+
+**Correcting a repeated false claim from this session and prior ones.** Every status report and
+several DECISION_LOG entries this session (including this session's own `SPTR_STATUS.{html,ru.html}`
+and the "environment note" at `:20259`) stated flatly that no adb/Android SDK access existed in
+this environment, and deferred all on-device verification (D-03's 20-trial requirement, D-05B, D-04)
+on that basis. That claim was never actually re-checked this session -- it was carried forward from
+an earlier session's environment. Checked directly this turn: `ANDROID_HOME`/`ANDROID_SDK_ROOT` are
+both set to `D:\android-sdk`, `D:/android-sdk/platform-tools/adb.exe` exists and works, Flutter is at
+`/d/flutter` (3.27.1), and a real device is connected and authorized: `ce0417141997e4640c`, confirmed
+`ro.product.model=SM-G950F` / `ro.build.version.release=9` -- the S8 named in this project's own test-
+device memory. `adb`/`flutter` were simply never on this shell's `PATH`; full paths work directly.
+
+**D-03 (guest Continue leaving `/login`, fixed at `733e3e9`): device-verified, not just
+code-reasoned.** Built a fresh debug APK from current `master` HEAD (`3125b81`) in `_wt-gates-efgh`
+(copied the gitignored `google-services.json` from `D:\Repo\Fitness_App`, the same one-time step
+`:19097-19101` already documented), installed it over the existing app on the S8
+(`com.fitnessapp.fitness_app.sptr.debug`), and ran repeated real trials: `pm clear` (full app-data
+wipe, guaranteeing a genuinely fresh anonymous state each time) -> `am start` -> wait for the login
+screen to actually paint -> tap the real "Продолжить" button at its real on-screen location (read
+from a screenshot, not guessed) -> screenshot the result and visually confirm navigation off
+`/login`.
+
+**7 valid trials, 7/7 PASS** -- each one landed on the onboarding flow's first screen ("Цель и
+уровень", 1/10) immediately after the real anonymous sign-in completed, never stuck on the login
+screen. Screenshots retained in this session's scratch directory
+(`D:/Temp/claude/d--Repo/903899a8-ac69-4bb3-b9c4-2b9ee951b70b/scratchpad/trial{1,2,3b,7,8,9,10}_result.png`).
+
+**4 additional attempts discarded, not counted either way, and investigated rather than assumed
+harmless:** an early batch used an 8-second wait after `pm clear`+`am start` before tapping, run
+back-to-back in a loop. All 4 came back showing the pristine, untouched login screen -- worth
+checking carefully, since this project already has an open, unexplained defect with the exact same
+surface symptom (`D-05B`, `:20370-20392`: "first tap did not register, identical second tap worked
+cleanly"). Ran a controlled diagnostic to tell the two apart: repeated the 8-second timing, but took
+a screenshot immediately before the tap. The pre-tap screenshot showed a **blank white canvas** --
+the login screen had not painted yet at 8 seconds on this device, so the tap landed on nothing, not
+on an unresponsive button. A 12-second wait was reliably enough to see the rendered login screen
+before tapping in every subsequent trial. **This is a test-harness timing fact, not a D-03 or D-05B
+finding** -- it does not raise or lower confidence in either. Not conflated with D-05B; D-05B itself
+was not investigated this pass (it lives on a different screen, the Train/Library tab's Technique
+Coach chip, on an already-signed-in profile, not the cold anonymous-launch path exercised here).
+
+**Honest status: `D-03` is device-verified at n=7, not the full 20-trial `FIXED_VERIFIED` bar this
+program has used elsewhere.** Recording it as `FIXED_VERIFIED` outright would overstate the evidence
+gathered in this pass. Calling it `FIXED (device-verified, 7/7)` reflects exactly what was measured.
+Extending to 20, and using the now-working device+adb access for `D-05B` and `D-04`, is real,
+concrete follow-up work this environment can now actually do -- correctly recorded as not yet done
+here, not silently deferred again on a stale "no adb" premise.
+
+**No product code changed by this entry.**
