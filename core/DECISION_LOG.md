@@ -22317,3 +22317,18 @@ layout defect (entry point unconditionally trails an unbounded list), not a tab-
 inconvenience alone.
 
 No product code changed by this entry.
+
+## 2026-08-21 -- Android's "Clear cache" dialog is the same Impeller/Vulkan crash, not a new bug
+
+Operator screenshotted Android's system "Clear cache for fitness_app? fitness_app closed because
+this app has a bug" dialog (19:25, release package `com.fitnessapp.fitness_app.sptr`, build 2637).
+Reconnected S23, pulled fresh `adb logcat -b crash`: two more crashes at `19:24:26.298` and
+`19:24:58.915`, both release build, both thread `1.raster`, 32s apart -- the second is byte-for-byte
+the known signature (fault addr `0x1c`, null pointer dereference). The first has a different fault
+address (`0xfffffffffffffff8`) and its backtrace starts inside `libflutter.so` itself rather than
+`vulkan.adreno.so`, but same thread, same subsystem (Impeller rendering pipeline), same device --
+read as the same root-cause family, not a fourth distinct bug. **12 total occurrences now.** Two
+crashes 32s apart is exactly the pattern that trips Android's own repeated-crash dialog -- this is a
+visible SYMPTOM of the already-logged root cause, not new information about the app.
+
+No product code changed by this entry. Still no GO on the Impeller-disable fix.
