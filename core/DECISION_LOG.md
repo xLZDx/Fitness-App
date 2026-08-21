@@ -23460,3 +23460,7 @@ document" — phased implementation work begins, with future review rounds scope
 per gate rather than further design-document rounds. No implementation gate has been opened yet as of
 this entry; this entry closes the design-review phase only.
 
+**Report published:** house-format milestone report (RU+EN) at
+`reports/SPTR_EQUIPMENT_RECOGNITION_V4_4_CONSENSUS_2026-08-22.{html,ru.html}`, Russian published as
+an artifact and handed to the operator in-session per `~/.claude/CLAUDE.md` §2.
+

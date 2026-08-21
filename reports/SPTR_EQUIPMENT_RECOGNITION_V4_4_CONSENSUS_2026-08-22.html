@@ -1,0 +1,558 @@
+<!doctype html>
+<title>SPTR v4.4 Consensus</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f2ea;
+    --surface: #ffffff;
+    --surface-2: #efe9db;
+    --ink: #1c2430;
+    --ink-dim: #56606f;
+    --ink-faint: #838d9b;
+    --line: #ddd5c2;
+    --line-strong: #c8bda3;
+    --accent: #a97620;
+    --accent-ink: #fff8ec;
+    --accent-soft: #f2e2c4;
+    --ok: #2f7a52;
+    --ok-soft: #e2efe6;
+    --was: #a24338;
+    --was-soft: #f4e3e0;
+    --code-bg: #f0ead9;
+    --shadow: 0 1px 2px rgba(28,36,48,0.06), 0 8px 24px -12px rgba(28,36,48,0.18);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #12161e;
+      --surface: #191f2a;
+      --surface-2: #212836;
+      --ink: #ece7db;
+      --ink-dim: #a8b0be;
+      --ink-faint: #737d8c;
+      --line: #2c3444;
+      --line-strong: #3b4457;
+      --accent: #d99f42;
+      --accent-ink: #1c1607;
+      --accent-soft: #3a2e13;
+      --ok: #63b98a;
+      --ok-soft: #16281f;
+      --was: #d97c6f;
+      --was-soft: #2e1a17;
+      --code-bg: #1e2530;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12161e;
+    --surface: #191f2a;
+    --surface-2: #212836;
+    --ink: #ece7db;
+    --ink-dim: #a8b0be;
+    --ink-faint: #737d8c;
+    --line: #2c3444;
+    --line-strong: #3b4457;
+    --accent: #d99f42;
+    --accent-ink: #1c1607;
+    --accent-soft: #3a2e13;
+    --ok: #63b98a;
+    --ok-soft: #16281f;
+    --was: #d97c6f;
+    --was-soft: #2e1a17;
+    --code-bg: #1e2530;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 3.5rem 1.5rem 6rem;
+  }
+  a { color: var(--accent); }
+
+  header {
+    position: relative;
+    padding-bottom: 1.75rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: clamp(1.9rem, 4.5vw, 2.6rem);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.6rem;
+    text-wrap: balance;
+    max-width: 20ch;
+  }
+  .subhead {
+    font-size: 1.08rem;
+    color: var(--ink-dim);
+    max-width: 46ch;
+    margin: 0 0 1.4rem;
+  }
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    background: var(--accent);
+    padding: 0.5rem 0.9rem;
+    border-radius: 4px;
+    transform: rotate(-1.1deg);
+    box-shadow: var(--shadow);
+  }
+  .stamp svg { width: 15px; height: 15px; flex: none; }
+
+  h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 1.4rem;
+    letter-spacing: -0.005em;
+    margin: 2.6rem 0 1rem;
+    text-wrap: balance;
+  }
+  h2 .num {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--ink-faint);
+    margin-right: 0.55rem;
+  }
+  h3 {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 1.6rem 0 0.6rem;
+    color: var(--ink);
+  }
+  p { margin: 0 0 1rem; }
+  .lede {
+    font-size: 1.03rem;
+  }
+  ul, ol { padding-left: 1.3rem; margin: 0 0 1rem; }
+  li { margin-bottom: 0.4rem; }
+  strong { font-weight: 600; }
+  code {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.86em;
+    background: var(--code-bg);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+  }
+
+  .tldr {
+    background: var(--ok-soft);
+    border: 1px solid color-mix(in srgb, var(--ok) 35%, var(--line));
+    border-radius: 10px;
+    padding: 1.25rem 1.4rem;
+    margin: 1.6rem 0;
+  }
+  .tldr .label {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ok);
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+  }
+  .tldr p:last-child { margin-bottom: 0; }
+
+  .scope-note {
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+    border-radius: 10px;
+    padding: 1.25rem 1.4rem;
+    margin: 1.6rem 0;
+  }
+  .scope-note .label {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+  }
+  .scope-note p:last-child, .scope-note ul:last-child { margin-bottom: 0; }
+
+  /* Timeline */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    margin: 1.4rem 0 0.5rem;
+    border-left: 2px solid var(--line-strong);
+    padding-left: 0;
+  }
+  .tl-item {
+    position: relative;
+    padding: 0 0 1.5rem 1.5rem;
+    margin-left: -2px;
+    border-left: 2px solid var(--line-strong);
+  }
+  .tl-item:last-child { border-left: 2px solid transparent; padding-bottom: 0; }
+  .tl-dot {
+    position: absolute;
+    left: -7px;
+    top: 0.3rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--ink-faint);
+  }
+  .tl-item.is-ok .tl-dot { border-color: var(--ok); background: var(--ok); }
+  .tl-item.is-final .tl-dot { border-color: var(--accent); background: var(--accent); width: 15px; height: 15px; left: -8.5px; top: 0.22rem; }
+  .tl-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.55rem;
+    margin-bottom: 0.3rem;
+  }
+  .tl-ver {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .tl-status {
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 0.14rem 0.55rem;
+    border-radius: 99px;
+  }
+  .tl-status.ok { background: var(--ok-soft); color: var(--ok); }
+  .tl-status.pending { background: var(--surface-2); color: var(--ink-dim); }
+  .tl-status.final { background: var(--accent); color: var(--accent-ink); }
+  .tl-desc { color: var(--ink-dim); font-size: 0.95rem; max-width: 58ch; }
+  .tl-desc code { font-size: 0.85em; }
+
+  /* Closure table */
+  .closure-wrap { overflow-x: auto; margin: 1.2rem 0 1.6rem; border-radius: 10px; border: 1px solid var(--line); }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 0.92rem; background: var(--surface); }
+  thead th {
+    text-align: left;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    padding: 0.7rem 0.9rem;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+  }
+  tbody td {
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.ref { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.85em; color: var(--ink-dim); white-space: nowrap; }
+  td.status-cell { white-space: nowrap; }
+  .pill {
+    display: inline-block;
+    font-size: 0.76rem;
+    font-weight: 600;
+    padding: 0.14rem 0.55rem;
+    border-radius: 99px;
+    background: var(--ok-soft);
+    color: var(--ok);
+  }
+
+  blockquote {
+    margin: 1.3rem 0;
+    padding: 1.1rem 1.3rem;
+    border-left: 3px solid var(--accent);
+    background: var(--surface-2);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.94rem;
+    color: var(--ink);
+  }
+  blockquote p { margin: 0 0 0.7rem; }
+  blockquote p:last-child { margin-bottom: 0; }
+  blockquote .lang { color: var(--ink-dim); font-style: italic; }
+
+  .verdict-box {
+    margin: 1.3rem 0;
+    padding: 1.3rem 1.4rem;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+  }
+  .verdict-box .vline {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.6rem;
+  }
+  .counters {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.6rem;
+    margin: 1rem 0 0.2rem;
+  }
+  .counter {
+    text-align: center;
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 0.7rem 0.4rem;
+  }
+  .counter .n {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-weight: 600;
+    font-size: 1.5rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ok);
+    display: block;
+  }
+  .counter .lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+
+  .gatelist { columns: 2; column-gap: 1.5rem; font-size: 0.92rem; }
+  .gatelist li { break-inside: avoid; }
+
+  footer {
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    color: var(--ink-faint);
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 560px) {
+    .gatelist { columns: 1; }
+    .counters { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SPTR &middot; Fitness-App &middot; Design review</p>
+    <h1>Equipment Recognition v4.4</h1>
+    <p class="subhead">GPT-PM round-4 verdict, 2026-08-22: the iterative Claude&nbsp;+&nbsp;GPT-PM design-consensus loop that ran v4.1&nbsp;&rarr;&nbsp;v4.2&nbsp;&rarr;&nbsp;v4.3&nbsp;&rarr;&nbsp;v4.4 is closed.</p>
+    <span class="stamp">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5l4 4 8-9"/></svg>
+      v4.4 CONSENSUS &mdash; approve for phased implementation
+    </span>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 88c3665</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="tldr">
+    <p class="label">TL;DR</p>
+    <p>GPT-PM's round-4 verdict on the literal v4.4 text: <strong>0 new BLOCKER / 0 CRITICAL / 0 MAJOR / 0 MINOR</strong>. The last two open items from round&nbsp;3 &mdash; a gap in the pinned <code>RecognitionAuthorityTuple</code> and one unrepresentable failure code &mdash; are both confirmed closed. Round-cap on design review is closed; GPT-PM does not consider a further adversarial round necessary. Both closure claims were independently re-checked against the actual v4.4 text on disk before acceptance &mdash; no discrepancy found.</p>
+  </div>
+
+  <div class="scope-note">
+    <p class="label">Scope of this approval</p>
+    <p>This is architecture and implementation-plan approval &mdash; <strong>not</strong> a production exact-model release. Production exact-identity claims stay blocked behind the gates already defined in the design:</p>
+    <ul class="gatelist">
+      <li>P0.G0 &mdash; App&nbsp;Check readiness</li>
+      <li>P6.G0 &mdash; evidence-lane enforcement <em>(new this round)</em></li>
+      <li>P6.G1 &mdash; mandatory shadow deployment</li>
+      <li>P6.G2 &mdash; sealed independent evaluation</li>
+      <li>P6.G3 &mdash; model-by-model promotion</li>
+      <li>P6-T / P6-V statistical lane requirements</li>
+      <li>Calibration / OOD / Clopper&ndash;Pearson gates</li>
+      <li>Rollback &amp; revocation readiness</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">01</span>How we got here</h2>
+  <p>Four revisions, each closing what the previous one's review actually found &mdash; not a self-graded pass.</p>
+
+  <div class="timeline">
+    <div class="tl-item is-ok">
+      <span class="tl-dot"></span>
+      <div class="tl-head"><span class="tl-ver">v4.1</span><span class="tl-status pending">superseded</span></div>
+      <p class="tl-desc">Self-run review, 3 rounds, initially approved &mdash; then superseded by an independent Claude&nbsp;+&nbsp;GPT-PM cross-review that found 4 BLOCKERs the self-review had missed.</p>
+    </div>
+    <div class="tl-item is-ok">
+      <span class="tl-dot"></span>
+      <div class="tl-head"><span class="tl-ver">v4.2</span><span class="tl-status pending">round&#8209;2: not approve</span></div>
+      <p class="tl-desc">Remediated all 4 BLOCKERs plus ~20 MAJOR/MINOR findings. GPT-PM's round-2 review of the <em>full</em> document (not the changelog) then surfaced 1 new BLOCKER, 2 CRITICAL and 4 MAJOR, declared round-cap exhausted, and handed over a closed, 7-item mechanical closure list instead of asking for a third open-ended round.</p>
+    </div>
+    <div class="tl-item is-ok">
+      <span class="tl-dot"></span>
+      <div class="tl-head"><span class="tl-ver">v4.3</span><span class="tl-status pending">round&#8209;3: not yet consensus</span></div>
+      <p class="tl-desc">Mechanically closed 6 of the 7 named invariants. A binary-verification pass (not a new adversarial round) found the 7th &mdash; <code>RecognitionAuthorityTuple</code> &mdash; only partially closed (missing <code>ocrVersion</code>/<code>identityParserVersion</code>), plus one new schema MINOR (<code>UNAVAILABLE_CATALOG_VERSION</code> had no matching <code>failureCode</code>).</p>
+    </div>
+    <div class="tl-item is-final">
+      <span class="tl-dot"></span>
+      <div class="tl-head"><span class="tl-ver">v4.4</span><span class="tl-status final">consensus</span></div>
+      <p class="tl-desc">Closed both remaining items. GPT-PM's round-4 verdict, on this exact text: CONSENSUS &mdash; approve for phased implementation.</p>
+    </div>
+  </div>
+
+  <h2><span class="num">02</span>What v4.4 actually closed</h2>
+  <p>Every item independently re-verified against the binding text on disk before being accepted as closed &mdash; the operator's standing rule for this whole loop was "don't trust GPT, check everything yourself."</p>
+
+  <div class="closure-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Invariant</th><th>Section</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>&mdash;</td><td>Original B&#8209;01&hellip;B&#8209;04</td><td class="ref">v4.2</td><td class="status-cell"><span class="pill">Closed</span></td></tr>
+        <tr><td>1</td><td>Server-derived <code>TEXT_ONLY | VISUAL</code> evidence lane</td><td class="ref">&sect;6.4.1, &sect;6.5, P6.G0</td><td class="status-cell"><span class="pill">Closed</span></td></tr>
+        <tr><td>2</td><td>Infra failures cannot surface as <code>ABSTAIN</code></td><td class="ref">&sect;6.5</td><td class="status-cell"><span class="pill">Closed</span></td></tr>
+        <tr><td>3</td><td>Complete, immutable <code>RecognitionAuthorityTuple</code></td><td class="ref">&sect;4.2, &sect;4.6</td><td class="status-cell"><span class="pill">Closed &middot; round 4</span></td></tr>
+        <tr><td>4</td><td>Real client/server contract negotiation</td><td class="ref">&sect;6.5, P2.G3</td><td class="status-cell"><span class="pill">Closed</span></td></tr>
+        <tr><td>5</td><td><code>NEED_MORE_VIEW</code> stays in the P2.G5 denominator</td><td class="ref">&sect;7.1, P2.G4&ndash;G5</td><td class="status-cell"><span class="pill">Closed</span></td></tr>
+        <tr><td>6</td><td>App&nbsp;Check mode change invalidates prior shadow evidence</td><td class="ref">P0.G0, P6.G1</td><td class="status-cell"><span class="pill">Closed</span></td></tr>
+        <tr><td>7</td><td>Revocation correctness doesn't rest on push/listener alone</td><td class="ref">&sect;6.6</td><td class="status-cell"><span class="pill">Closed</span></td></tr>
+        <tr><td>8</td><td><code>failureCode</code> representable for every <code>UNAVAILABLE_*</code></td><td class="ref">&sect;6.5</td><td class="status-cell"><span class="pill">Closed &middot; round 4</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2><span class="num">03</span>Round-4 verdict, verbatim</h2>
+  <div class="verdict-box">
+    <p class="vline">VERDICT: v4.4 CONSENSUS &mdash; APPROVE FOR PHASED IMPLEMENTATION</p>
+    <div class="counters">
+      <div class="counter"><span class="n">0</span><span class="lbl">New blocker</span></div>
+      <div class="counter"><span class="n">0</span><span class="lbl">New critical</span></div>
+      <div class="counter"><span class="n">0</span><span class="lbl">New major</span></div>
+      <div class="counter"><span class="n">0</span><span class="lbl">New minor</span></div>
+    </div>
+    <blockquote>
+      <p class="lang">Original reply in Russian &mdash; full verbatim text kept in <code>core/review/SPTR_EQUIPMENT_RECOGNITION_V4_4_GPT_PM_ROUND4_CONSENSUS_VERDICT_2026-08-22.md</code>.</p>
+      <p>&laquo;&hellip;оба оставшихся пункта закрыты именно так, как требовалось. Ничего существенного открытым после этой механической проверки я не вижу&hellip; Round-cap на design review считаю закрытым. Дополнительный adversarial круг для v4.4 не нужен. Следующий разумный этап &mdash; реализация по фазам и независимый review уже реального кода/evidence каждого gate, а не очередной review самого design document.&raquo;</p>
+    </blockquote>
+  </div>
+
+  <h2><span class="num">04</span>How this got closed today &mdash; the tooling side</h2>
+  <p>Worth recording because it's genuinely part of why this round finally produced a clean verdict, not a side note. The same day, a live debugging session on <code>pm-bridge</code> (the Claude&harr;GPT automation bridge used to run this whole review loop) found and fixed two real root-cause defects in its Playwright transport:</p>
+  <ul>
+    <li><strong>Stale-tab reuse.</strong> The browser-automation layer was silently reusing a half-alive tab that Chrome's own session-restore had handed back &mdash; same URL, but a page that never finished loading. Confirmed live: the message-turn selector matched <em>zero</em> elements anywhere in a 662&nbsp;KB page dump on the stale tab, and 5 real turns immediately after a forced fresh navigation on the exact same conversation.</li>
+    <li><strong>A same-day regression in that very fix.</strong> Forcing a fresh navigation on every call was correct once per browser session &mdash; but doing it on <em>every</em> call meant the reply-waiting step was discarding the very page the send step had just typed into, reloading seconds into GPT's response. That is very likely what was visible on screen as ChatGPT's own "Analysis paused" state and behind this session's earlier turn-count anomalies. Caught live by the operator watching the browser window; fixed the same day.</li>
+  </ul>
+  <p>The round-4 verdict above was captured moments after both fixes landed, from a genuine new reply in the same long-running conversation.</p>
+
+  <h2><span class="num">05</span>What's next</h2>
+  <p>Per GPT-PM's own recommendation, verbatim: phased implementation begins, and future review rounds should be scoped to <strong>real code and evidence per gate</strong>, not another pass over the design document itself. No implementation gate has been opened yet as of this report &mdash; this closes the design-review phase only.</p>
+
+  <footer>
+    SPTR Equipment Recognition &middot; design-consensus report &middot; 2026-08-22
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
