@@ -22398,3 +22398,49 @@ this entry card; the two share a label by coincidence, not by code).
 
 Not yet committed -- Firestore/build verification and device soak next, per directive section 26
 (commit only after intended diff is inspected and the current gate is satisfied).
+
+**Update, same pass:** committed as `0c0d2a0` after `flutter analyze`/`flutter test` verification
+above. Build then failed: `flutter build apk --debug` errored in `:app:processDebugMainManifest`,
+`org.xml.sax.SAXParseException; lineNumber: 108; columnNumber: 53; The string "--" is not permitted
+within comments.` -- the new AndroidManifest.xml comment used "--" as an em dash (this log's own house
+style), which XML forbids anywhere inside a comment body. Fixed by removing the double-hyphen from
+the comment text (no other change). Rebuilt clean:
+`build\app\outputs\flutter-apk\app-debug.apk`. Not yet re-committed at time of writing -- folded into
+the instrumentation commit below instead of its own, since both touch files already staged together.
+
+## 2026-08-21 -- Temporary first-interaction trace instrumentation added (D-03/D-05B/MainShell)
+
+Per directive section 5-9 (live trace before any further hypothesis-driven fix): added debug-only
+(`kDebugMode`-gated, `debugPrint` to logcat under tag `flutter`) instrumentation at the stages the
+directive names:
+
+- **STAGE A/B** (`mobile/lib/main.dart`, new `_InputTraceListener`): a root `Listener` wrapping
+  `MaterialApp.router`'s `builder` child, logging every `PointerDown`/`PointerUp` with pointer id and
+  engine timestamp -- confirms a raw touch event reached the Flutter engine at all, independent of
+  which widget eventually receives it.
+- **STAGE E** (three call sites, each logs immediately inside the real `onTap`/`onSelect` before any
+  other work): `mobile/lib/features/auth/login_page.dart` (guest "Продолжить", D-03),
+  `mobile/lib/features/workouts/workouts_page.dart` (Form Coach `_QuickTool.onTap`, D-05B),
+  `mobile/lib/shared/widgets/main_shell.dart` (`HudNavBar.onSelect`, MainShell bottom nav).
+- **STAGE G** (`main_shell.dart` `build()`): logs `location` on every rebuild, confirming the router
+  state change from a successful `context.go`/`push` actually reached rendering.
+
+All four sites are marked TEMPORARY in their own comments -- diagnostic only, meant to be removed
+once the failing stage is identified and the real fix lands, not a permanent addition. These are
+`.dart` comments, not XML, so the "--"-in-comment restriction from the manifest bug above does not
+apply here (checked before writing this, not assumed) -- this round's build failure was the
+AndroidManifest.xml one already described above, not a repeat.
+
+Verified: `flutter analyze` on all four touched files -- 0 issues. `flutter test
+test/features/auth/ test/features/workouts/ test/shared/` -- 475/475 passed (the one earlier
+apparent failure was this session's own typo, a nonexistent `test/main_test.dart` path passed to the
+CLI -- "Does not exist", not a real test regression; there is no repo-root `main_test.dart`).
+`flutter build apk --debug` succeeds, producing `build\app\outputs\flutter-apk\app-debug.apk`
+(`GIT_SHA=0c0d2a0-trace`). Not yet installed on either device at time of writing -- the earlier S8
+install in this pass was the PRIOR debug build (Impeller-disabled, pre-instrumentation); this
+instrumented build still needs installing on both S8 and S23 (the latter disconnected again partway
+through this pass) before the trace can actually run.
+
+Next: drive the three repro paths (D-03 guest Continue, D-05B Form Coach entry, MainShell first
+bottom-nav tap) on-device with `adb logcat` capturing the TRACE lines, per directive section 6-7,
+before deciding on any causal fix.
