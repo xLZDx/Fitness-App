@@ -721,6 +721,18 @@ class _MarkCompleteButton extends ConsumerWidget {
                   entry.exercises, justLogged.copyWith(difficulty: rating)),
         );
         await ref.read(logSessionActionProvider.notifier).log(rated);
+        if (!context.mounted) return;
+        final ratingState = ref.read(logSessionActionProvider);
+        if (ratingState.hasError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)
+                  .equipmentCouldNotSave(ratingState.error ?? '')),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
         ref.read(_loggedEntryProvider(sessionKey).notifier).state = rated;
       }
     }

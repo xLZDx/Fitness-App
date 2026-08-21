@@ -22877,3 +22877,115 @@ build is captured.
 
 Next, per the directive's own execution order: M8 (deterministic goldens, not started, no
 infrastructure exists) and M9 (adversarial falsification review, not started).
+
+## 2026-08-21 -- M8 landed (golden-image regression infrastructure), M9 adversarial review
+synthesized: one MAJOR fixed, two MAJOR flagged for the operator, one HYPOTHESIS dismissed with
+evidence
+
+**M8 (deterministic goldens).** A background agent built
+`mobile/test/golden/hud_golden_test.dart` (13 golden-image tests across the 5 low-churn HUD
+primitives: `HudPanel`, `HudButton`, `HudChip`, `HudToggle`, `HudNavBar`, each in both
+`AppTheme.dark()`/`AppTheme.light()` where the visual delta is real), `mobile/test/support/golden_fonts.dart`
+(loads the app's real bundled fonts via `dart:ui`'s `FontLoader`, reading the family list from
+`pubspec.yaml` with the same pattern `test/theme/font_bundle_test.dart` already used -- no
+duplicated font list, no new dependency), and `mobile/test/golden/README.md`. Deliberately scoped
+to primitives, not full-screen compositions (`HomePage` etc. need 4 mocked repositories + a safety
+context + a router to render -- heavy, actively-iterated surface, correctly out of scope for this
+gate). FACT, independently verified in this pass (not taking the agent's own report on faith, per
+house rule): `flutter analyze` on both new files clean; `flutter test test/golden/hud_golden_test.dart`
+run by me directly -- 13/13 pass; `git status` confirms only `test/golden/` and
+`test/support/golden_fonts.dart` are new/untracked, nothing in `lib/` touched by this gate.
+
+**Known open gap, honestly carried by the agent's own README, not fixed in this pass:** the 13
+checked-in PNGs were generated and verified on this Windows session's host. CI
+(`.github/workflows/flutter.yml`) runs on `ubuntu-latest` with Flutter pinned to `3.27.1`, and the
+comparator is Flutter's default exact-pixel match (deliberately not loosened, since CI-to-CI
+comparisons across pushes are stable once a Linux-generated baseline exists) -- but a
+Windows-generated baseline against a Linux CI run is unverified cross-OS pixel parity. The agent
+attempted to regenerate goldens inside a Linux container (`ghcr.io/cirruslabs/flutter:3.27.1`) to
+close this directly; the local Docker daemon never responded to `docker pull`/`docker images`
+within a reasonable wait, so the gap is documented rather than silently left open. Since the
+workflow's `flutter test` step has no path filter, these goldens run automatically on the next
+push -- **the first CI run after this lands is the real test of cross-OS parity; a red run there
+means regenerate the baselines from Linux, not loosen the comparator.**
+
+**M9 (adversarial falsification review).** Three specialist agents run in parallel
+(silent-failure-hunter, security-reviewer, flutter-reviewer), each reviewing the current `master`
+tree cold, told to actively try to falsify robustness rather than confirm it. Findings below,
+triaged.
+
+**Fixed this pass -- MAJOR/FACT (silent-failure-hunter):** `workout_player_page.dart`'s
+difficulty-rating write path (the third of three `logSessionActionProvider.notifier.log(...)` call
+sites in this file) did not check `.hasError` before updating `_loggedEntryProvider`, unlike its
+two sibling call sites at `:668-680` (Mark Complete) and `:892-904` (Add Exercise), which both
+check and show an `equipmentCouldNotSave` SnackBar before returning. Failure scenario: a person
+rates their set's difficulty, the write silently fails (network/Firestore error), the UI updates
+`_loggedEntryProvider` as if it succeeded, and the difficulty rating is lost with zero feedback --
+exactly the class of bug §17's persist-then-confirm ordering exists to prevent, missed on this one
+of three sites. Fix: added the identical `hasError` check + SnackBar + early return, matching the
+other two sites verbatim (`workout_player_page.dart:723-736`). Verified: `flutter analyze` on the
+file clean; `flutter test test/features/equipment/` run by me directly -- 448/448 pass, no
+regression.
+
+**Dismissed with evidence -- HYPOTHESIS (silent-failure-hunter):** flagged
+`form_check_providers.dart:779` (`return reps.last.isClean ? RepVerdict.clean : RepVerdict.faulted;`)
+as possibly missing the `isObservedAt(minObservedRatio)` gate that the aggregate counters
+(`cleanReps`/`sloppyReps`, `:797-802`) correctly apply. Read `:768-780` directly: the gate IS
+applied, one line earlier in the same getter --
+`if (!reps.last.isObservedAt(_minObservedRatio)) return RepVerdict.notEvaluated;` at `:775-777`,
+guarding line 779 before it can ever run on an under-observed rep. Not a defect; the real-time
+per-rep verdict and the aggregate counters apply the same gate, just written once per call site
+rather than factored out. No fix needed.
+
+**Flagged for the operator, not fixed this pass -- MAJOR/INFERENCE (security-reviewer):**
+`ai_coach_service.dart:28-35` calls `FirebaseAI.googleAI().generativeModel(...)` directly from the
+Flutter client, with no Cloud Functions intermediary and no rate limit -- unlike every other
+billable/abusable surface in this app (`account_export.ts`, `video_urls.ts`, `reportEquipment` all
+route through `abuse_guard.ts`'s `QUOTAS`, confirmed by grep against `functions/src/index.ts`).
+Failure scenario: a compromised or simply misbehaving client can call the model in an unbounded
+loop, run up the project's AI-billing directly, with no server-side backstop. **Not fixed in this
+pass**: closing this requires a Cloud Functions (TypeScript, `functions/src/`) change plus a
+redeploy -- a different stack and materially higher blast radius (touches billing/live
+infrastructure) than the Flutter-only work this pass has otherwise done, and the directive's own
+gate discipline (§5: smallest independently verifiable change; §4: production/external-effecting
+changes need their own scoped confirmation) argues against folding an infra change into an
+autonomous UI-reskin/investigation pass. Recorded here as a known, real gap for the operator to
+schedule as its own gate.
+
+**Flagged for the operator, not fixed this pass -- MAJOR/INFERENCE, extends an already-documented
+defect class (flutter-reviewer):** the "pop lands on `/home`, not the tab the user actually came
+from" defect already on record for `/form-check` and `/posture` (root cause: both are top-level
+`GoRoute`s, siblings of the `ShellRoute` at `app_router.dart:421-446`, so `go_router`'s declarative
+pop recomputes location and falls back to the shell's first child rather than preserving true
+navigation history) is **not unique to those two routes**. `/subscription`
+(`app_router.dart:333-336`) shares the identical structural defect and has far more push-origins --
+11+ call sites across `about_page.dart:152`, `celebrity_plans_page.dart:56`,
+`team_feed_page.dart:135`, `form_check_page.dart:1395`, `home_page.dart`, `day3_welcome_modal.dart:83`,
+`workouts_page.dart:770`, `deload_banner.dart:104`, `donor_wall_page.dart:91`,
+`progress_photos_page.dart:644`, `profile_page.dart:211` -- and it is the app's primary
+monetization surface, making this the highest-impact instance of the defect class found so far,
+not a peripheral one. `/photos` (`profile_page.dart:149`, `progress_page.dart:291/324/382`) shares
+the same defect at lower severity (2 origins). Several further single-origin top-level routes carry
+the same class at correspondingly lower individual severity. **Not fixed in this pass**: the
+correct fix is architectural (either migrate the shell to `StatefulShellRoute`, or have every
+top-level route capture and explicitly restore its true calling location instead of relying on
+`go_router`'s default pop behavior) and touches 12+ call sites across the app's highest-traffic and
+highest-revenue screens -- exactly the kind of change that needs its own dedicated gate with
+real device testing, not a rushed patch layered onto an already-long autonomous pass. Recorded here
+so the defect's true scope (not just `/form-check`/`/posture`) is visible to whoever schedules that
+gate.
+
+**Tempered, no action needed (security-reviewer, MINOR):** PAR-Q/safety eligibility gate
+(`eligibility.dart:206-234,304-357`) is client-side-only enforcement with no server-side
+plan-generation check -- but there is no backend plan-generation path at all today for a
+server-side check to sit in front of, and a bypass only lets someone lie to themselves (there is no
+other party the gate protects). Both security-reviewer and silent-failure-hunter independently
+confirmed the client-side logic itself is genuinely fail-closed on its own loading/error edge
+cases. Fixing the architectural gap (server-side enforcement) would require the same
+plan-generation backend that does not exist yet -- out of proportion to the actual risk. No action.
+
+**M9 verdict:** review complete. One real MAJOR fixed and verified. Two real MAJOR findings
+correctly identified and left open by design, not oversight -- both require infrastructure/backend
+work outside this pass's Flutter-only, single-gate discipline, and both are now clearly recorded
+with full evidence for the operator to schedule. One HYPOTHESIS investigated and dismissed with
+direct evidence. One MINOR tempered and left open, correctly.
