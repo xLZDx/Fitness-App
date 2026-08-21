@@ -21431,3 +21431,52 @@ rewritten to drop the now-closed "branch deletion blocked" item and keep only th
 `_wt-master-sync` cherry-pick conflict. `report_conform.py --check` passed for the whole
 `reports/` directory. Artifact re-fetched before republish and found still on the pre-update
 content (no divergent concurrent edit), then republished to the same URL.
+
+## 2026-08-21 -- _wt-master-sync abandoned cherry-pick: cleanup partially blocked, marked pending
+
+Operator authorized `git cherry-pick --abort` in `D:\Repo\_wt-master-sync` for the abandoned
+`41d5b23` conflict, with a bounded safety check first. Actual git state: `CHERRY_PICK_HEAD` was
+already absent (confirmed via the worktree's real gitdir,
+`D:/Repo/Fitness_App/.git/worktrees/_wt-master-sync`), so the porcelain `--abort` itself refuses
+("no cherry-pick or revert in progress") even though `MERGE_MSG`/`ORIG_HEAD`/`AUTO_MERGE` and
+three-stage unmerged index entries for `core/DECISION_LOG.md` were still present -- the abandoned
+state exists, just without the bookkeeping file `--abort` keys off.
+
+**Verification performed (operator's own checklist, all confirmed):**
+- `UNIQUE_REQUIRED_CONTENT = 0` -- diffed every staged/modified path against `origin/master`;
+  the staged content is the pre-fix Gate F source (`41d5b23`) missing the four rounds of codex
+  fixes already on `origin/master` (e.g. `resolveEquipmentReportGymId`/`kMaxGymIdLength`, absent
+  here). `git ls-files --others --exclude-standard` returned empty -- no untracked
+  operator-created content anywhere in the worktree.
+- `HEAD` (`c9451d7`) confirmed an ancestor of `origin/master` (`git merge-base --is-ancestor`).
+- Forensic snapshot captured before any index/worktree change: `git status --porcelain=v2`,
+  `git ls-files -u`, `git diff --binary`, `git diff --cached --binary`, and the untracked-file
+  list, saved to
+  `D:/Temp/claude/d--Repo/903899a8-ac69-4bb3-b9c4-2b9ee951b70b/scratchpad/wt-master-sync-snapshot/`
+  (session-scoped scratch, not committed).
+
+**Actions taken, in the operator's specified order:**
+1. `git reset HEAD -- .` (index-only; does not move `HEAD`) -- succeeded. Unmerged index entries
+   for `core/DECISION_LOG.md` collapsed to a single ordinary "modified" entry;
+   `UNMERGED_INDEX_ENTRIES = 0` confirmed via `git ls-files -u` (empty). Two previously-staged
+   "new file" entries (`core/product/GATE_F_GYM_IDENTITY_D0_NOTE_2026-08-19.md`,
+   `mobile/test/features/onboarding/step_equipment_test.dart`) became untracked.
+2. `git restore --worktree --source=HEAD -- <8 confirmed-stale tracked paths>` -- **blocked by
+   `shell_policy_gate`** (`git restore` writes/discards worktree changes). Per the operator's
+   explicit fallback instruction, not disguised or routed around, and `shell_policy_gate.py` was
+   not touched. Marked `WORKTREE_RESTORE_PERMISSION_BLOCKED`.
+3. `git fetch origin --prune` + `git merge --ff-only origin/master` attempted anyway as a
+   non-destructive probe (git itself refuses unsafe merges). Git correctly refused: the same 8
+   tracked files have uncommitted local changes that the merge would overwrite, plus the 2
+   untracked stale files would also be overwritten. No worktree state changed by this attempt.
+
+**Resulting state of `_wt-master-sync` (left as-is, not touched further):** index clean
+(0 unmerged), `HEAD` still `c9451d7`, 8 tracked files carry stale pre-fix Gate F content as
+ordinary (uncommitted) working-tree modifications, 2 untracked stale files remain. All of this
+content is confirmed superseded by `origin/master`'s reviewed Gate F -- nothing here is at risk of
+being lost, only inconvenient to leave dirty. Per the operator's own contingency plan (section 5 of
+their authorization message): not routed around via a disguised equivalent or a hook edit: left
+for the operator to complete manually (e.g. `git restore --worktree --source=HEAD -- <paths>` run
+directly by the operator, or an operator-authorized narrow `shell_policy_gate` adjustment), and
+autonomous work continued on the rest of the program per the same authorization's explicit
+instruction not to stop for this.
