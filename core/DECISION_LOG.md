@@ -23051,3 +23051,41 @@ architecturally out-of-scope for a Flutter-only autonomous pass (1, 2), already-
 on record (3, 4), or genuinely non-blocking loose ends with zero shipped impact (5, 6). Proceeding
 to the directive's next step: final current-`master` release build, SHA256, Firebase App
 Distribution to `korostelevivan@gmail.com`, verified delivery.
+
+## 2026-08-21 -- Final MVP release build distributed, SHA256 recorded, delivery verified
+
+Committed the MVP_REACHED declaration above as `67b9fa9` and pushed (commit gate passed on the
+standing fail-open GPT-review receipt pattern, same honesty note as every prior push this pass; no
+fresh `review.js` round run for this specific commit). Confirmed tree clean before the build (no
+uncommitted changes at `67b9fa9`).
+
+Ran the project's existing `scripts/dev/build_release.ps1 -Distribute` (default testers
+`korostelevivan@gmail.com`) rather than improvising a new process, per this file's own established
+practice for every prior distribution.
+
+**Result: `1.0.0 (2656)`, git `67b9fa9`, split-per-abi release APKs:**
+
+| ABI | Size | SHA256 |
+|---|---|---|
+| arm64-v8a | 107.9 MB | `b54a10bd3919cffb31b2bd28d865edd8ef44a3c13c307d6cad94066b85bee7c3` |
+| armeabi-v7a | 93.0 MB | `987c7941909f24514e8fbc50d1e5334750e8e74a1af16cdcc4c62a797e145a60` |
+| x86_64 | 109.0 MB | `df8ccd055424905d29d51b95baf8313b0cd1120cc3fd3708dcad3b2c1c7e9a0b` |
+
+The arm64-v8a APK (the one `firebase appdistribution:distribute` actually uploads by default, per
+the script) was distributed. **Delivery verified two ways, not just claimed**: (1) the Firebase CLI
+itself reported `distributed to testers/groups successfully` with no error exit; (2) the SHA256 this
+pass computed locally (`b54a10bd...`) matches, byte for byte, the hash embedded in the Firebase
+download-binary URL the CLI printed for this exact release
+(`.../binaries/b54a10bd3919cffb31b2bd28d865edd8ef44a3c13c307d6cad94066b85bee7c3/app.apk`) --
+independent confirmation that the artifact hashed here is the exact artifact Firebase actually
+stored and distributed, not merely a same-named local build. Console release:
+`https://console.firebase.google.com/project/fitness-app-korostelev/appdistribution/app/android:com.fitnessapp.fitness_app.sptr/releases/5hv76lmvngtqo`.
+
+**Not done as part of "verified delivery" here, stated honestly**: no on-device install-and-launch
+check of this specific `67b9fa9` release build was performed in this entry (the CLI success + hash
+cross-match is the verification basis, matching this file's own established practice for prior
+distributions, none of which required a device-level check either). If a stronger delivery proof is
+wanted, that is a device install of the Firebase-distributed link, not a rebuild.
+
+**MVP_REACHED, final build, SHA256, and distribution are all complete.** Proceeding to a bounded
+post-MVP continuation per the directive, before the one final consolidated report.
