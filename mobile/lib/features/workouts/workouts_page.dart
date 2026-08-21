@@ -509,7 +509,7 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
                   title: AppLocalizations.of(context).eligTrainingBlockedTitle,
                   reasons: safety.wholePersonBlocks,
                   onReviewProfile: () =>
-                      GoRouter.of(context).push('/onboarding'),
+                      GoRouter.of(context).push('/onboarding/edit'),
                 )),
               ];
             }
@@ -1342,7 +1342,7 @@ Future<void> _startProgramme(
                   reasons: reasons,
                   onReviewProfile: () {
                     Navigator.of(dialogContext).pop();
-                    GoRouter.of(context).push('/onboarding');
+                    GoRouter.of(context).push('/onboarding/edit');
                   },
                 ),
               ),

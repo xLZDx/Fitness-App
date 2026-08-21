@@ -225,7 +225,7 @@ class WorkoutPlayerPage extends ConsumerWidget {
                   key: const Key('player.withheld'),
                   reasons: resolution.withheldFor,
                   onReviewProfile: () =>
-                      GoRouter.of(context).push('/onboarding'),
+                      GoRouter.of(context).push('/onboarding/edit'),
                 ),
               );
             }

@@ -165,7 +165,8 @@ class _HomePageState extends ConsumerState<HomePage> {
             key: const Key('home.suggestions.refused'),
             title: l10n.eligTrainingBlockedTitle,
             reasons: c.wholePersonBlocks,
-            onReviewProfile: () => GoRouter.of(context).push('/onboarding'),
+            onReviewProfile: () =>
+                GoRouter.of(context).push('/onboarding/edit'),
           ))
         else
           ...ref.watch(suggestionsProvider).when(

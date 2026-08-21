@@ -63,7 +63,7 @@ class AiPlannerPage extends ConsumerWidget {
                   title: AppLocalizations.of(context).eligTrainingBlockedTitle,
                   reasons: reasons,
                   onReviewProfile: () =>
-                      GoRouter.of(context).push('/onboarding'),
+                      GoRouter.of(context).push('/onboarding/edit'),
                 );
               }
               final plan = (outcome as PlanReady).plan;

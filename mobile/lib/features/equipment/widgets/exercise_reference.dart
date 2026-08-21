@@ -1212,7 +1212,7 @@ class ExerciseResolutionView extends ConsumerWidget {
                   key: const Key('exercise.withheld'),
                   reasons: resolution.withheldFor,
                   onReviewProfile: () =>
-                      GoRouter.of(context).push('/onboarding'),
+                      GoRouter.of(context).push('/onboarding/edit'),
                 ),
               );
             }

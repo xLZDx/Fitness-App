@@ -23496,3 +23496,45 @@ AC/DoD freezes before implementation starts on that gate, never retrofitted afte
 next gate. This is the agreed process for when that work starts, recorded here and in the published
 report's new §06, pending the operator's separate GO to begin it.
 
+## 2026-08-22 -- Blank Home/Progress bug: fix implemented and verified on-device (S8, debug build)
+
+Operator gave GO ("го чинить") for the fix proposed in the prior entry. Implemented: all six
+`onReviewProfile` call sites on `EligibilityNotice` changed from `GoRouter.of(context).push('/onboarding')`
+to `push('/onboarding/edit')` -- `exercise_reference.dart:1215`, `workouts_page.dart:512`,
+`workouts_page.dart:1345`, `ai_planner_page.dart:66`, `workout_player_page.dart:228`,
+`home_page.dart:168`. `flutter analyze` on the five touched files: no issues. Full relevant test
+run (`test/core/router/`, `test/features/safety/`, `test/features/workouts/`, `test/features/home/`,
+`test/features/ai_planner/`, `test/features/equipment/`): 998/998 passed, no regressions.
+
+Built a debug APK (`--dart-define=GIT_SHA=onboarding-redirect-fix`) and installed on S8
+(`ce0417141997e4640c`) rather than touching S23's still-broken release install. Reproduced the
+exact operator repro live: Тренировки -> Библиотека -> tapped an exercise ("Чатуранга на трёх
+точках опоры") with PAR-Q unanswered -> got the "Это упражнение придержано" block
+(`exercise.withheld`) -> scrolled to and tapped "Проверить мои ответы о здоровье". FACT, screenshot-
+verified: this now opens the onboarding questionnaire ("Цель и уровень", 1/10) instead of leaving a
+blank Home -- the bug is gone on this path. Also checked the back-button case (a related concern
+from this same investigation): pressing back from the questionnaire returns cleanly to the exact
+originating block screen, not to a blank Home and not losing the origin tab.
+
+Not yet done: S23 (release build, still on the pre-fix binary) was not touched -- the fix has only
+been verified on a debug build on S8. Not committed to git yet at the time of this entry (commit is
+the very next step, per Plan -> GO -> Build -> Verify -> Commit); not pushed -- push needs its own
+separate operator instruction per house rules, this fix falls outside the already-closed
+SPTR_FINAL_AUTONOMOUS_PROGRAM report flow. The GlobalKey-reparenting mechanism hypothesised in the
+prior entry as the reason content specifically went blank (rather than just landing on the wrong
+page) was not directly proven -- the fix removes the trigger (the redirect no longer swallows the
+push) so the mechanism no longer fires, but no debug-build stack trace or Flutter inspector capture
+was taken of the pre-fix broken state to confirm that mechanism specifically. Left as an open,
+unconfirmed HYPOTHESIS since it is no longer reachable to test on this code path.
+
+Separately, the operator raised a broader product objection in the same message as the GO: that
+this safety/PAR-Q messaging ("Это упражнение придержано" and its reasons) should appear only during
+onboarding and never resurface afterward elsewhere in the app. Not actioned -- `eligibility_notice.dart`
+and `workouts_page.dart:490-505` carry extensive existing doc comments explaining this is a
+deliberate, previously-reasoned-through cross-app safety gate (F017, N01: the block must render on
+every surface that could hand out an exercise -- Train tab, programme enrolment, AI planner, deep
+links -- not only onboarding, specifically so a person who left PAR-Q incomplete is still caught
+later, not only on the one screen where it was first noticed). Flagged back to the operator as a
+separate, larger scope decision with an existing safety rationale on record, not bundled into this
+fix; awaiting their explicit call before touching that behavior.
+
