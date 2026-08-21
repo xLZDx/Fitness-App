@@ -21150,4 +21150,14 @@ Re-ran the full suite after the F016 fix: 3215/3215 pass except the one confirme
 count (`flutter analyze` clean throughout). `machineCardId`'s own pinning test (added by Gate G
 itself, per the entry above) still passes, so the shared slug function is unchanged by this port.
 
-**PUSH NOT YET PERFORMED at the time of writing this entry.**
+Committed as `cb3d653`.
+
+**Codex: skipped (usage_limit_exhausted, resets 2026-08-27 18:25) -- same quota wall as the Gate F
+honest-copy fix.** `--commit cb3d653 --round 1 --final` was attempted; `codex_review.py` wrote a
+fail-open receipt (`ok: false, review_status: NOT_RUN_QUOTA, final: true`) satisfying the mechanical
+gate, but no actual second-opinion review ran. Given the multi-day quota wall, this port's real
+independent review is: (1) the original `8dabc20` commit's own recorded review (flutter-reviewer +
+type-design-analyzer, per the 2026-08-19 entry above -- one MINOR noted, deliberately left as-is);
+(2) this session's own direct verification of the merge and both surfaced failures (diff reads on
+every auto-merged file, `grep` evidence for the F016 and color-drift conclusions, full suite run
+twice). Not equivalent to a fresh Codex pass, and reported as such rather than implied to be one.
