@@ -22718,3 +22718,48 @@ of the Impeller fix itself (the original motivating device) still not done -- di
 throughout this entire pass. Instrumentation left in place for now (not re-removed) in case the
 operator wants the A/B check run; will be removed once that decision is made, per the same
 diagnostic-only marking already on both files.
+
+## 2026-08-21 -- VISUAL_GATE re-verification: two of the two remaining FAIL items from the stale
+2026-08-19 verdict (`:18374`) are resolved; live on-device evidence, not inferred from code
+
+The last EXPLICIT `VISUAL_GATE = FAIL` verdict on record is `:18374` (2026-08-19), listing three
+survivors: (1) programme cards oversized + missing hero/build-from-answers panel (MAJOR) --
+separately closed at `:19111-19159` (2026-08-19, device-verified PASS); (2) the PAR-Q+/safety block
+rendering as "a flat opaque pink slab outside the glass system, with grey-on-pink bullets and one
+sentence repeated six times" (FAIL); (3) onboarding "entirely un-reskinned, flat near-black with
+opaque cards and no `HudSky`" (FAIL). No entry since `:18374` had re-captured (2) or (3) on a live
+device -- they were sitting on the books as open FAILs purely because nobody had gone back to look,
+not because anything was known to still be wrong with them.
+
+**Checked live, this entry, on S8, guest account, screenshot evidence retained**
+(`D:/Temp/claude/d--Repo/903899a8-ac69-4bb3-b9c4-2b9ee951b70b/scratchpad/step_check.png`,
+`parq_check.png`): walked onboarding to step 8/10 ("Что вам нельзя") and step 9/10 ("Скрининг
+здоровья", the PAR-Q+ safety screen `:18367` flagged). Both show the same photographic `HudSky`
+background (a volcano/lava scene) as every other reskinned screen, translucent glass-pill chips and
+Нет/Да buttons matching the established component language -- **not** a flat near-black background,
+**not** an opaque pink slab, **not** repeated bullet text. Both stale FAIL items (2) and (3) are
+**RESOLVED** -- most likely as a side effect of Gate M's PAR-Q+ implementation (`:10164-10250`,
+2026-08-15, already on record as building "the fail-closed PAR-Q+ safety screen as its own step")
+and whatever later gate carried the `HudSky` background into the onboarding flow generally, though
+no single entry explicitly claims "onboarding reskin" as its own gate -- this may have landed as a
+side effect of the O-series/Gate M work rather than a dedicated visual pass. Not investigated further
+since the outcome (screen visually matches the rest of the app) is what actually matters here, not
+which commit did it.
+
+**Current VISUAL_GATE scope, reconciled across every entry on this topic in the log:** of the
+2026-08-19 verdict's three FAILs, all three are now closed (one already closed on 2026-08-19 itself,
+two closed by this entry). The two items the 2026-08-21 reconciliation entries (`:22268-22290`)
+separately and more recently identified as still-open reskin scope -- **Form Coach** (HUD-reskin in
+progress, separate agent task this pass, not yet landed) and **Light theme** (blocked on an
+undecided design choice, not a code task, `:21552-21558`) -- remain the two real gaps. Once Form
+Coach's reskin lands and is device-verified, VISUAL_GATE's DARK-theme scope has no known open FAIL
+or MAJOR left on record; Light theme was never in dark-theme VISUAL_GATE's scope to begin with (the
+2026-08-19 capture itself notes "only the dark theme was captured" as a stated limitation, not a
+failure) so it does not block a dark-theme PASS declaration, only a "both themes" one. Not
+re-declaring `VISUAL_GATE = PASS` in this entry -- Form Coach's reskin has not landed yet and a
+formal gate verdict should follow its own device-verification pass, not be inferred here.
+
+**Not checked this entry:** Home's "More" card and Profile's tile icons (still-saturated-gradient
+MINOR item from `:18372`) -- low priority, MINOR, not attempted this pass given the two FAILs took
+priority. Session/Rest screens were not re-captured (closed via a different, already-cited fix at
+`:19266-19268`, not re-verified visually in this entry).
