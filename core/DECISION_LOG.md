@@ -23193,3 +23193,77 @@ still short of a controlled A/B, not yet closed.
 
 No code changed. No commit needed for the diagnostic pull itself; this entry is committed alongside
 whatever housekeeping follows.
+
+## 2026-08-22 -- New defect surfaced post-MVP: Home/Progress render blank after leaving the
+whole-catalogue PAR-Q block screen. Investigated on-device; root cause not yet confirmed
+
+Operator supplied `D:\Downloads\video_2026-08-22_00-54-41.mp4` (23s, S23, release build `1.0.0
+(2656)` -- the exact build MVP_REACHED shipped) showing a bug not covered by this pass's M9 review.
+Frames extracted via `ffmpeg -vf fps=2` and read directly (`D:/Temp/.../scratchpad/bugvideo/`).
+
+**FACT, from the video.** Sequence, reproduced twice in the same 23s clip: open Библиотека tab with
+the PAR-Q health screening unanswered -> whole-tab block screen ("Это упражнение придержано",
+`eligBlockedTitle`, all 7 PAR-Q reasons shown as "Пока без ответа") -> system Back -> lands on
+`/home` (already-known `/form-check`-class defect, not new) -> **Home renders with NO content**:
+only the HUD background photo and bottom nav, for several seconds, surviving across a subsequent
+tap to Progress (also blank). Profile and Scan, tapped later in the same clip, render correctly.
+Confirmed NOT camera-view black-frame (no camera UI visible, static HUD photo background) and NOT a
+process crash (`dumpsys activity exit-info` on the S23, checked in the prior entry above, shows the
+device's only crashes that day predate the Impeller fix by hours).
+
+**Operator's own point, addressed directly, not deflected**: "если дебаг это не ловит значит он
+сломан" (if debug doesn't catch this, it's broken). Correct premise, wrong conclusion by default --
+checked, not assumed. The app's own `if (kDebugMode) debugPrint(...)` traces (STAGE A/E/G,
+`main.dart`/`main_shell.dart`) are compiled OUT ENTIRELY in a release build (`kDebugMode` is a
+compile-time constant Dart tree-shakes away), so they were *architecturally guaranteed* to produce
+zero output for a release-only repro -- not a broken trace, a trace that cannot exist in that binary
+by the same design that makes it zero-cost. Verified this is not a dead end for THIS defect class,
+not just asserted: built a debug APK from current HEAD (`532235d`, `flutter build apk --debug`,
+`GIT_SHA=532235d-repro`), installed on the connected S8, and reproduced the same "Это упражнение
+придержано" screen (same title, same all-unanswered PAR-Q reasons) via the identical path --
+confirming the underlying condition is real on current code and not release-build-specific in its
+trigger, even though its VISIBLE symptom (silent blank vs. a debug red-screen exception) could
+differ by build type.
+
+**FACT, own repro attempt.** Slow, single-step, screenshot-confirmed navigation through the exact
+same sequence (Библиотека -> blocked screen -> Back) did **not** reproduce the blank-content
+symptom -- Home and the exercise list both rendered correctly every time under that paced protocol.
+
+**FACT, own repro attempt, rapid sequence.** A fast, near-zero-delay tap sequence (Workouts ->
+Библиотека -> Back -> Home tab -> Workouts tab -> Библиотека -> Back, all fired back-to-back) did
+not visually reproduce the blank state either, but the EXISTING STAGE E/G trace instrumentation
+caught a real, logged state mismatch during it: `TRACE stageE navbar onSelect i=0 path=/home` at
+`22.903`, `TRACE stageE navbar onSelect i=1 path=/workouts` at `22.959` (56ms later, a second rapid
+tap), followed by `TRACE stageG shell build location=/home` at `23.220` -- the LAST logged shell
+build still reported `/home`, not `/workouts`, after a tap explicitly for Workouts had already
+fired. `logcat` in the same window shows no exception, no `FATAL`, no `Choreographer` frame-skip
+warning -- ruling against a caught-exception-renders-blank theory, in favor of the already-documented
+Harness Artifact #1 (`:22448-22467` above, this same file, from the D-03/D-05B trace investigation
+earlier this pass): the widget tree can log a location change before the compositor has actually
+painted it, under rapid real-world tap cadence -- now caught DURING active rapid interaction, not
+only at a fixed-wait checkpoint.
+
+**HYPOTHESIS, not yet FACT, per this project's own no-hypothesis-driven-fixes discipline.** The
+shell's own chrome (nav bar, `HudSkyBackground`) is cheap to rebuild/paint and updates instantly;
+Home and Progress both do materially heavier per-tab async provider work (today's digest, week
+totals, muscle recovery, workout session history) than Profile or Scan, which is the one
+structural difference matching which tabs went blank and which did not in the video. A rapid
+subsequent tap could plausibly pre-empt an in-flight content build/paint before it ever completes a
+frame, leaving the content region visibly blank while the cheap shell chrome keeps updating on
+every tap. Not confirmed: no direct observation of Home/Progress's OWN build actually stalling or
+throwing has been captured yet, only the adjacent STAGE E/G mismatch above.
+
+**Not fixed in this entry, deliberately** -- matches this file's own repeatedly-stated discipline
+(directive section 8, restated throughout this pass): no hypothesis-driven fix without a directly
+observed failing stage for the ACTUAL symptom (Home/Progress itself rendering blank), which has not
+yet been captured, only a related and suggestive mismatch one level up (nav-bar-vs-shell-location).
+Recommended next step, not yet taken: reconnect the S23 (disconnected again as of this entry) and
+either (a) capture full `adb logcat` live while reproducing the exact video sequence on the RELEASE
+build itself -- the only artifact this exact symptom has been directly observed on -- or (b) add
+non-`kDebugMode`-gated, release-safe instrumentation at Home/Progress's own `build()` entry/exit
+(not just the shell's) to see whether their build genuinely stalls, throws, or simply never gets
+called again after a rapid tab switch.
+
+No code changed. No commit needed for this investigation alone; will be committed alongside the
+fix, or alongside a decision to schedule this as its own gate, once the actual failing stage is
+directly observed.
