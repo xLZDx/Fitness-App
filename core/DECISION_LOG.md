@@ -21758,3 +21758,26 @@ behavioral coverage, and validation order/every other code path is unchanged.
 The remaining M7 scope from the earlier pass (a11y sweep beyond this l10n gap) is
 not covered by this entry -- this closes the one concrete finding that had
 file:line evidence; a broader a11y pass remains open.
+
+## 2026-08-21 -- correction: previous M7 commit's message did not match its diff
+
+Commit `5bfc4ac` was meant to carry the four files above (the two Dart files plus
+both ARB files); its message describes exactly that change. What actually landed
+was only `core/DECISION_LOG.md` -- `1 file changed, 37 insertions(+)`, confirmed
+with `git show --stat -1`. Cause: `decision_log_gate.py` denies the whole Bash tool
+call it intercepts, not just the `git commit` inside it, so an earlier
+`git add <4 files> && git commit -m "..."` call that the gate blocked never ran
+the `git add` half either -- the files were still sitting unstaged afterward. The
+very next commit only staged `core/DECISION_LOG.md` on its own and reused the
+already-drafted message, so it committed a description of work its own diff did
+not contain.
+
+Caught immediately by reading `git status` and `git show --stat` right after the
+push, per the standing "correct a wrong claim immediately, with the evidence"
+rule -- not by the operator. Fixed with a new commit (`git add` the four files,
+verified staged via `git status --porcelain=v2` before committing this time) --
+not a `git commit --amend`, since `5bfc4ac` was already pushed and rewriting
+pushed history is not authorized here. The M7 code change itself was correct and
+already verified (`flutter analyze` clean, l10n suite 9/9, equipment_report_sheet
+suite 4/4) before the first commit attempt; nothing about the fix's substance
+changed, only which commit its diff lives in.

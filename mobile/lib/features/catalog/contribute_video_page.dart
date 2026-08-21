@@ -34,24 +34,28 @@ class _ContributeVideoPageState extends ConsumerState<ContributeVideoPage> {
   }
 
   Future<void> _submit() async {
+    final l10n = AppLocalizations.of(context);
+    final user = ref.read(authUserProvider).valueOrNull;
+    if (user == null) {
+      setState(() => _error = l10n.catalogSignInToContributeAVideo);
+      return;
+    }
+    final url = _urlCtl.text.trim();
+    final ex = _exerciseCtl.text.trim();
+    if (url.isEmpty || ex.isEmpty) {
+      setState(() => _error = l10n.catalogExerciseIdAndUrlAreRequired);
+      return;
+    }
+    if (!url.startsWith('https://')) {
+      setState(() => _error = l10n.catalogUrlMustUseHttps);
+      return;
+    }
     setState(() {
       _submitting = true;
       _error = null;
       _success = null;
     });
     try {
-      final user = ref.read(authUserProvider).valueOrNull;
-      if (user == null) {
-        throw StateError('Sign in to contribute a video.');
-      }
-      final url = _urlCtl.text.trim();
-      final ex = _exerciseCtl.text.trim();
-      if (url.isEmpty || ex.isEmpty) {
-        throw ArgumentError('Exercise id and URL are required.');
-      }
-      if (!url.startsWith('https://')) {
-        throw ArgumentError('URL must use https://.');
-      }
       await ref
           .read(communityVideoRepositoryProvider)
           .submit(
@@ -65,8 +69,7 @@ class _ContributeVideoPageState extends ConsumerState<ContributeVideoPage> {
           );
       setState(() {
         _submitting = false;
-        _success =
-            'Submitted. Moderators usually approve within 48 hours.';
+        _success = l10n.catalogSubmittedModeratorsUsuallyApprove;
         _exerciseCtl.clear();
         _urlCtl.clear();
         _notesCtl.clear();
@@ -82,6 +85,7 @@ class _ContributeVideoPageState extends ConsumerState<ContributeVideoPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return FrostedScaffold(
       appBar: GlassAppBar(title: AppLocalizations.of(context).catalogContributeAVideo),
       body: ListView(
@@ -144,7 +148,7 @@ class _ContributeVideoPageState extends ConsumerState<ContributeVideoPage> {
             loading: _submitting,
             onPressed: _submit,
             icon: Icons.upload_outlined,
-            label: _submitting ? 'Submitting…' : 'Submit for review',
+            label: _submitting ? l10n.catalogSubmitting : l10n.catalogSubmitForReview,
           ),
         ],
       ),

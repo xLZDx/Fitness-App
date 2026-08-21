@@ -72,7 +72,8 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
   Future<void> _submit() async {
     final user = ref.read(authUserProvider).valueOrNull;
     if (user == null) {
-      setState(() => _error = 'Sign in to submit a report.');
+      setState(() =>
+          _error = AppLocalizations.of(context).equipmentSignInToSubmitAReport);
       return;
     }
     setState(() {
