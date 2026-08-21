@@ -21480,3 +21480,81 @@ for the operator to complete manually (e.g. `git restore --worktree --source=HEA
 directly by the operator, or an operator-authorized narrow `shell_policy_gate` adjustment), and
 autonomous work continued on the rest of the program per the same authorization's explicit
 instruction not to stop for this.
+
+## 2026-08-21 -- plan/design source-of-truth reconciliation: "Onboarding v4" is not unbuilt
+
+Operator's continuation directive named "Onboarding v4" (9 visual steps -> separate mandatory
+Safety/PAR-Q -> eligibility -> programme/training) as the next major build item, and separately
+asked for "plan/design source-of-truth reconciliation" first. `core/DECISION_LOG.md:19482-19486`
+(2026-08-20) had already flagged this exact area as unresolved: three uncoordinated onboarding
+sources of truth (10-step live code, an 18-screen Figma target under `docs/Redisign/`, and the
+9-step `onboarding_v4` schema proposal at `core/plans/O0_ONBOARDING_SCHEMA_2026-08-12.md`), with an
+explicit warning not to build a fourth version on top of the unresolved conflict.
+
+**Investigated before writing any onboarding code, not assumed.** Read
+`O0_ONBOARDING_SCHEMA_2026-08-12.md` in full: it proposes exactly four new enums
+(`TrainingLocation`, `EquipmentKind`, `FocusZone`, `TrainingBarrier`), two enum extensions
+(`ProgrammeGoal.endurance`, `FitnessTier.never`), a new `TrainingSchedule` sub-model, and a
+`PersonalInfo.birthYear` field with a computed `age` migration -- and states an operator GO was
+already given for it (`ГО O0 + ГО P1`, 2026-08-12). Grepped the current model files for every one
+of those identifiers: `mobile/lib/features/profile/data/profile_models.dart` and
+`mobile/lib/features/programmes/data/programme.dart` already contain all of them, verbatim,
+matching the O0 proposal's naming exactly (`FitnessTier { never, beginner, intermediate, advanced }`
+at `:35`, `TrainingLocation`/`EquipmentKind`/`TrainingSchedule` at `:669-835`, `FocusZone` at
+`:596`, `TrainingBarrier` at `:835`, `birthYear` at `:269` with the same age-migration comment the
+proposal specified, `ProgrammeGoal.endurance` in `programme.dart:40` with a comment citing "O3").
+
+Cross-checked against `core/DECISION_LOG.md` history, not just the code: the O-series that
+implemented this schema is fully logged and closed -- `O0 (схема) + P1` and `9R: девятый регион ·
+O1: оболочка онбординга` (2026-08-12, :4421 and :4553), `O2: порядок и возобновление` (:4664),
+`O3, O4` (:4960), and `серия O закрыта (O5-O8, O10)` (2026-08-13, :5222). `Gate M` (2026-08-15,
+:10164-10250) then added the fail-closed PAR-Q+ safety screen as its own step -- explicitly the
+mandatory, separate safety gate the operator's directive describes -- with 2484/2484 tests passing
+and 15/16 mutations caught on first pass, and its own note that "the flow [came] to nine of its own
+accord" matching the Figma prototype's `TOTAL_OB_STEPS = 9`. A later VISUAL_GATE evidence pass
+(`:18790-18808`, device screenshots 26-33 against the live HUD-restyled flow) shows the shipped
+flow at 10 counted steps (a step was added after Gate M's 9), with step 9/10 being the PAR-Q+
+screening gate and step 10/10 the plan-preview/completion step -- i.e. `screening` = the operator's
+"eligibility" and `preview` = the operator's "programme/training" step, already present, not
+missing pieces. That same entry's own top-verdict line states plainly: **"the real remaining
+blockers for VISUAL_GATE (Workouts programme-card density and the scanner sheet -- not onboarding,
+which is now closed)"**. `core/DECISION_LOG.md:19056-19058` (2026-08-19, the operator's own
+standing VISUAL_GATE roadmap) lists the actual next-item sequence as "V5 programme density, scanner
+sheet, Session, Form Coach, light theme, final report, then M7-M9 -> MVP_REACHED" -- onboarding is
+not on that list, because it had already been closed off it three days before this session's own
+directive re-named it as upcoming work.
+
+**Reconciliation decision, evidence-based, not a guess:** `O0_ONBOARDING_SCHEMA_2026-08-12.md` and
+the 18-screen Figma-conflict notes in `core/plans/PLAN_R11_DECISIONS_2026-08-12.md` /
+`PLAN_REDESIGN_REMAINDER_2026-08-12.md` are hereby marked **HISTORICAL / SUPERSEDED** by the shipped
+O0-O10 + Gate M/N implementation, itself already reskinned onto the HUD design system and verified
+against device screenshots. They are left in place (nothing deleted -- house norm from the marketing
+branch decision earlier this session) as the record of how the current schema was arrived at, not as
+active specs to build against. The "three unreconciled sources of truth" finding from
+`:19482-19486` is CLOSED: there were never three live candidates competing for implementation --
+one proposal became the implementation and the code is the only one still current.
+
+**What this means for the operator's directive, stated plainly rather than silently substituted:**
+"Onboarding v4" as described (9 visual steps, separate mandatory safety, eligibility, programme
+step) already exists, is tested, and was independently confirmed closed against VISUAL_GATE two
+days before this directive was issued. Building it again would duplicate live, regression-tested
+product code -- not "continuing the roadmap," a parallel implementation of an already-closed
+mechanism (house rule: fix root causes / avoid parallel implementations of the same mechanism, not
+apparently satisfied by rebuilding a shipped feature). Similarly, this session's earlier read-only
+investigation (Explore agent, this turn) found `mobile/lib/features/form_check/` to be a complete,
+wired, tested on-device ML Kit pose-detection feature (`mlkit_pose_detector_service.dart`,
+`pose_gate.dart`, `rep_counter.dart`, `coach_phases.dart`, `tts_voice_coach.dart`), matching "Form
+Coach MVP using existing real on-device ML engine" from the same directive -- also apparently
+already built, per `core/DECISION_LOG.md:19488-19492`'s own confirmation that its identifiers "now
+exist in production." Not independently re-verified with the same depth as onboarding in this
+entry; flagged for the operator rather than assumed complete on weaker evidence.
+
+**Genuinely still open, per the operator's own standing VISUAL_GATE roadmap and this session's
+evidence:** Light theme -- `mobile/lib/core/theme/app_theme.dart:38-46`'s own comment states the
+light palette is deferred by a prior operator decision (Q1/Q41: "dark first... light later behind a
+toggle") and that "the design source itself marks its own light palette 'открыто' (open,
+undecided)". This is a genuine, still-unmade design decision, not a coding task -- proceeding
+without it would mean inventing a palette the project's own design source explicitly has not
+settled. M7 (l10n/a11y sweep), M8 (goldens), M9 (falsification) and `MVP_REACHED` itself: no
+DECISION_LOG entry found declaring any of them started or closed as of this entry -- these remain
+the honestly-open next items.
