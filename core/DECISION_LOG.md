@@ -22110,3 +22110,27 @@ action) affects this release build's AI-Trainer feature was not verified in this
 distribution request, not a release-build verification pass.
 
 No product code changed by this entry.
+
+## 2026-08-21 -- debug build also distributed, per explicit follow-up request ("чтобы я не делал кучу скринов")
+
+Operator's stated reason: wants to test directly rather than rely on this session's screenshots.
+Same authorization class as the release distribution immediately above -- explicit, action-specific.
+
+Built `.sptr.debug` (not `.sptr`) via `flutter build apk --debug`, stamped the same way
+`build_release.ps1` stamps release builds (`GIT_SHA=55a161f`, `BUILT_AT`), and included
+`--dart-define=APP_CHECK_DEBUG_TOKEN=f0fe6a33-8a32-47b3-b336-32c2517c0821` -- the registered token
+from `:19724-19744`, without which every Firebase call on a debug build logs "Too many attempts" /
+placeholder-token warnings. No `--split-per-abi` (debug builds don't benefit from it the way release
+builds do, and this is a single tester install, not a store artifact) -- one universal debug APK,
+429.6 MB.
+
+**Result: `1.0.0 (14)` on the `.sptr.debug` Firebase app
+(`1:988522745882:android:7c05c915aa42410ec201a3`), distributed to `korostelevivan@gmail.com`.**
+Console: `https://console.firebase.google.com/project/fitness-app-korostelev/appdistribution/app/android:com.fitnessapp.fitness_app.sptr.debug/releases/48i1dv1o55e80`.
+
+This is the SAME package this whole session's device testing (D-03/D-05B/D-04) has been run against
+on the S8, now also available to the operator's own device via App Distribution -- so the operator
+can independently reproduce or contradict any of today's findings (the D-03 30% first-tap rate
+especially) rather than relying solely on this session's screenshots.
+
+No product code changed by this entry.
