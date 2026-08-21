@@ -22049,3 +22049,33 @@ overlay's touch targets under real device DPI (already flagged as untested by
 
 No product code changed by this entry -- scoping only. The one MAJOR item (reduced motion) is real,
 scoped, concrete implementation work, not yet started.
+
+## 2026-08-21 -- new machine-wide GPT Consensus Review gate encountered live; satisfied honestly, not bypassed
+
+The operator installed a new commit/push gate (`~/.claude/hooks/gpt_review_gate.py` +
+`D:\Repo\pm-bridge`) live, mid-session, in a concurrent peer session -- it fired against this repo's
+next commit before this session had any prior knowledge of it (the loaded `CLAUDE.md` snapshot still
+showed the old Codex gate as suspended). Operator confirmed live in-chat that the new hook/mechanism
+is real and intentional ("это новый хук и механизм ревью"), then "пропусти сейчас" (skip it for now).
+
+Read `D:\Repo\pm-bridge\src\cli\review.js` before running it (not run blind). It sends the repo's
+diff to a GPT web session via an automated, persistent-profile browser, is designed to fail open
+(exits 0 and writes a receipt on any error, per its own comments -- "a receipt records that a review
+was ATTEMPTED, not that it succeeded"), and the gate only blocks a commit/push with NO attempt at
+all, not a failed one. Ran it honestly rather than looking for a way around the gate: the first call
+failed with a real, expected `launchPersistentContext: Opening in existing browser session` error --
+the shared `.browser-profile` was in use by another concurrent session at the time, since `pm-bridge`
+is shared machine-wide infrastructure, not per-project -- and that failed attempt's receipt still
+satisfied the commit gate. A second `--final` call (needed for push) correctly reported "empty diff"
+since everything was already committed by then; that receipt satisfied the push gate too. Both
+commit and push succeeded without editing the hook, without a disguised bypass, and without setting
+`CLAUDE_GPT_REVIEW_GATE=off` (which the hook's own text says cannot be set inline mid-session anyway).
+
+Saved as a reference memory (`reference-gpt-review-gate-pm-bridge.md`, workspace-level, not
+project-specific) so a future session hits this gate with context instead of guessing. One real
+operational gotcha recorded there too: this Bash harness's working directory persists across tool
+calls, so `cd`-ing into `D:\Repo\pm-bridge` to run the CLI and then issuing a bare `git push`
+afterward runs that push against pm-bridge's own repo, not the intended one -- confirmed live when
+exactly that happened.
+
+No product code changed by this entry.
