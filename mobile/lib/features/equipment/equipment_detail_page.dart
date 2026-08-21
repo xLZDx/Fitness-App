@@ -16,6 +16,7 @@ import '../workouts/widgets/warmup_calculator.dart';
 import '../safety/state/eligibility_providers.dart' show safetyContextProvider;
 import 'data/equipment_models.dart';
 import 'widgets/last_session_card.dart';
+import 'widgets/setup_note_card.dart';
 import 'widgets/safety_disclosure.dart';
 import 'state/equipment_providers.dart';
 import 'widgets/equipment_report_sheet.dart';
@@ -118,6 +119,8 @@ class EquipmentDetailPage extends ConsumerWidget {
               _SuitabilityCard(equipmentId: item.id),
               const SizedBox(height: 12),
               LastSessionCard(equipmentId: item.id),
+              const SizedBox(height: 12),
+              SetupNoteCard(equipmentId: item.id),
               const SizedBox(height: 12),
               const _ToolsRow(),
               const SizedBox(height: 16),

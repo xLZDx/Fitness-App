@@ -2056,6 +2056,18 @@
   "equipmentCheckBecauseInjury": "You have logged an injury this equipment can load",
   "equipmentLastSessionHeadline": "Your last session with this equipment",
   "equipmentLastSessionNotFoundRecent": "Not found in your recent workouts",
+  "equipmentSetupNoteHeadline": "Setup notes",
+  "equipmentSetupNoteAtGym": "At {gym}",
+  "@equipmentSetupNoteAtGym": {
+    "placeholders": {
+      "gym": {
+        "type": "String"
+      }
+    }
+  },
+  "equipmentSetupNoteHint": "e.g. seat 4, pin 8, incline 15",
+  "equipmentSetupNoteSave": "Save",
+  "equipmentSetupNoteSaved": "Setup note saved",
   "commonReps": "{value} reps",
   "@commonReps": {
     "placeholders": {

@@ -174,6 +174,17 @@ enum MachineCardStatus {
 /// "LAT PULLDOWN" are one machine. Two people photographing the same thing in
 /// two gyms should raise the count on one card, because that count is what
 /// decides which missing content gets filmed first.
+///
+/// Also relied on by `equipment/data/equipment_setup_note.dart`'s
+/// `equipmentSetupNoteId` (Gate G) to slug a gym name into a Firestore doc-id
+/// component -- for a wholly unrelated reason (the gym half of a setup
+/// note's composite key, not machine-name dedup). Changing this function's
+/// normalisation for a machine-card reason changes that feature's doc ids
+/// too, silently orphaning any previously-saved setup note whose gym name is
+/// affected -- `get()` on the old id just returns null, no error.
+/// `equipment_setup_note_test.dart` pins fixed inputs/outputs of this
+/// function specifically to catch that drift; update those pins deliberately
+/// if this normalisation ever changes.
 String machineCardId(String name) {
   final slug = name
       .toLowerCase()

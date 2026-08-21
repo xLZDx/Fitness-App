@@ -350,10 +350,15 @@ void main() {
           'features/visual_equipment/state/visual_equipment_providers.dart',
           'features/visual_equipment/widgets/machine_card_view.dart',
           'features/scanner/scanner_page.dart',
+          'features/equipment/data/equipment_setup_note.dart',
           'main.dart',
         },
         reason: 'a new MachineCard consumer must answer F016 again: can model '
-            'output become an actionable exercise through it?',
+            'output become an actionable exercise through it? -- Gate G answer: '
+            'no. equipment_setup_note.dart only calls the pure machineCardId() '
+            'slugging function to build a Firestore doc-id component; it never '
+            'touches uses/recognisedAs/confidence, the fields that could carry '
+            'a model-invented exercise.',
       );
     });
   });

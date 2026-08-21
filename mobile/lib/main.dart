@@ -61,6 +61,8 @@ import 'features/visual_equipment/data/gemini_equipment_service.dart';
 import 'features/visual_equipment/data/mlkit_text_recogniser.dart';
 import 'features/visual_equipment/data/mlkit_visual_equipment_service.dart';
 import 'features/visual_equipment/state/live_equipment_providers.dart';
+import 'features/equipment/data/firestore_equipment_setup_notes.dart';
+import 'features/equipment/state/equipment_setup_note_providers.dart';
 import 'features/visual_equipment/data/firestore_machine_cards.dart';
 import 'features/visual_equipment/data/machine_describer.dart';
 import 'features/visual_equipment/state/machine_card_providers.dart';
@@ -473,6 +475,11 @@ Future<void> main() async {
         machineDescriberProvider.overrideWith((_) => GeminiMachineDescriber()),
         machineCardRepositoryProvider
             .overrideWith((_) => FirestoreMachineCardRepository()),
+
+        // Gate G / MRD-03-05: the user's own setup reminders, per
+        // (equipment type, gym).
+        equipmentSetupNoteRepositoryProvider
+            .overrideWith((_) => FirestoreEquipmentSetupNoteRepository()),
 
         // AI-generated exercises for machines the vendored catalog has
         // nothing for -- cached per (user, machine, language) so a machine

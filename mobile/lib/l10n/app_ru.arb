@@ -1126,6 +1126,18 @@
   "equipmentCheckBecauseInjury": "У вас указана травма, которую этот тренажёр может нагрузить",
   "equipmentLastSessionHeadline": "Ваша последняя тренировка на этом оборудовании",
   "equipmentLastSessionNotFoundRecent": "Не найдено среди ваших недавних тренировок",
+  "equipmentSetupNoteHeadline": "Заметки о настройке",
+  "equipmentSetupNoteAtGym": "В зале {gym}",
+  "@equipmentSetupNoteAtGym": {
+    "placeholders": {
+      "gym": {
+        "type": "String"
+      }
+    }
+  },
+  "equipmentSetupNoteHint": "например: сиденье 4, фиксатор 8, наклон 15",
+  "equipmentSetupNoteSave": "Сохранить",
+  "equipmentSetupNoteSaved": "Заметка сохранена",
   "commonReps": "{value} повт.",
   "equipmentRecommendedForYou": "Рекомендовано для вас",
   "equipmentRecommendedBadge": "Рекомендовано",
