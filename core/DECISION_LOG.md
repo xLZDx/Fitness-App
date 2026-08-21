@@ -21609,3 +21609,15 @@ concrete follow-up work this environment can now actually do -- correctly record
 here, not silently deferred again on a stale "no adb" premise.
 
 **No product code changed by this entry.**
+
+## 2026-08-21 -- final consolidated report for this pass, per program-mode instruction
+
+`reports/SPTR_STATUS.{html,ru.html}` updated in place (same artifact URL,
+`50a15371-89a0-4713-b17e-163b58ecb126`) per the operator's explicit "ОТЧЁТ: ТОЛЬКО В КОНЦЕ"
+instruction -- one consolidated report at the end of this pass rather than one per sub-gate.
+Covers, as new sections 08-10 (old 08-10 renumbered 11-13): the onboarding source-of-truth
+reconciliation, the adb-availability correction plus D-03's 7/7 device verification, and the M7
+scoping pass; section 07 (the `_wt-master-sync` cleanup) rewritten to reflect the partial cleanup
+performed and the remaining `shell_policy_gate` block, no longer "untouched." `report_conform.py
+--check` passed for the whole `reports/` directory. Artifact re-fetched before republish and found
+still on the pre-pass content (no divergent concurrent edit), then republished to the same URL.
