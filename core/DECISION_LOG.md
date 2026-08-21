@@ -20999,3 +20999,45 @@ the fix's own diff. Known open gap already documented at the top of this project
 this receipt's `final=true` will silently satisfy the push gate for its full 24h window even after
 the quota actually resets; if more Gate F commits land in that window, a genuine fresh round should
 still be attempted rather than relying on this one.
+
+Gate F range pushed to `origin/master`: `9815049..f544794` (`1689564`, `32a01d5`, `6b5a82f`,
+`ab26395`, `f544794`). Fast-forward, verified clean before pushing (`git rev-list --left-right
+--count origin/master...HEAD` = `0  5`, i.e. zero commits behind, five ahead).
+
+---
+
+## 2026-08-21 -- found: a stale, abandoned Gate F cherry-pick conflict in `_wt-master-sync`
+
+Not touched, not resolved -- flagged only. While syncing the `_wt-master-sync` worktree (where
+`master` is actually checked out, distinct from the `_wt-gates-efgh` worktree this whole Gate F pass
+ran in) after the push above, `git pull --ff-only` refused: the worktree already has unmerged files
+(`UU core/DECISION_LOG.md`, plus staged adds/mods matching Gate F's own file list --
+`GATE_F_GYM_IDENTITY_D0_NOTE_2026-08-19.md`, `equipment_detail_page.dart`, `step_equipment.dart`,
+`profile_models.dart`, `firestore_profile_repository.dart`, both `.arb` files,
+`equipment_access_test.dart`, `step_equipment_test.dart`).
+
+**Evidence, not guesswork:** `.git/worktrees/_wt-master-sync/MERGE_MSG` is the exact commit message
+of `41d5b23` ("Gate F: gym identity (MRD-02 slice)... Co-Authored-By: Claude Sonnet 5") with a
+trailing `# Conflicts:\n#\tcore/DECISION_LOG.md` -- a plain `git cherry-pick 41d5b23` (no `-n`) run
+directly against this worktree, which hit the exact same append-only-file conflict this session
+resolved twice already elsewhere, and was abandoned mid-conflict rather than finished. File mtimes
+on the conflicted files: 2026-08-20 19:26:42/19:27:08 +03:00 (16:26/16:27 UTC) -- about 5 hours
+*before* this session's own round-1 Codex receipt for the (separate, successful) `_wt-gates-efgh`
+port (`21:15:12 UTC`, receipts.jsonl). Most likely an earlier, first attempt from before this
+session's context was compacted, abandoned in favor of doing the work in an isolated gate worktree
+instead -- consistent with `project-repo-runs-concurrent-agent-sessions` (this machine runs
+concurrent agent sessions against shared checkouts) as the reason the safer isolated-worktree path
+was chosen. Cannot be fully ruled out as a different concurrent session's in-progress work from that
+same window, though the identical source commit and matching conflict make the first explanation far
+more likely.
+
+**Why this is not acted on now:** everything of value in that abandoned attempt -- the Gate F port
+itself -- is already present in a *more* complete form on `origin/master` (`f544794`, via the
+completed, reviewed, tested `_wt-gates-efgh` path: the BLOCKER fix, both MAJOR fixes, the
+confirmation-checkbox MAJOR fix, and the honest-copy MAJOR fix none of which this abandoned attempt
+ever received). Resolving or aborting someone else's -- or an earlier turn's -- unfinished conflict
+state in a shared worktree without being sure who it belongs to is exactly the kind of action this
+project's own git-safety posture exists to prevent; `git cherry-pick --abort` would be the correct
+mechanical fix if and when it is confirmed safe, but that confirmation has not happened here. Left
+as-is, reported here and in the rolling status report, for the operator to clear (or to say it is
+safe to `--abort`) rather than resolved unilaterally.

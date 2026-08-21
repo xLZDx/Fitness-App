@@ -211,8 +211,8 @@
 
 <header>
   <p class="eyebrow">SPTR &middot; живой статус-отчёт &middot; обновляется на месте, не переиздаётся</p>
-  <h1>D-03 исправлен, Gate E и Gate F перенесены, блокер по вебхуку зала закрыт</h1>
-  <p class="dek">Второй проход по автономной программе SPTR (отдельная сессия от той, что писала предыдущую версию этой страницы). Четыре результата, все с реальной верификацией и codex-ревью: причина D-03 найдена тестом и исправлена; Gate E перенесён с маркетинговой ветки; governance-блокер по раскрытию вебхука зала закрыт решением оператора; Gate F («gym identity») перенесён следом и дважды исправлен по находкам codex, включая настоящий BLOCKER (маршрутизация отчёта в бывший зал пользователя) &mdash; раунд-3 апелляция по одной оспоренной находке в процессе. Работа на устройстве (D-05B, D-04, 20-прогонная верификация D-03 на S8) не выполнялась &mdash; в этой сессии нет доступа к adb/Android SDK. Остальные разделы программы (Onboarding v4, Form Coach, Light theme, Visual Gate, M7&ndash;M9, MVP) не начаты &mdash; см. раздел 7.</p>
+  <h1>Gate F закрыт и запушен; найден брошенный конфликт в соседнем ворктри</h1>
+  <p class="dek">Третий проход по автономной программе SPTR за эту сессию. Gate F («gym identity») полностью закрыт: перенесён, прошёл четыре раунда codex-ревью (1 BLOCKER, 2 изначальных MAJOR, апелляция по спорному BLOCKER о выборе зала на отчёт &mdash; принята, реализован чекбокс подтверждения зала; финальный раунд по всему диапазону нашёл ещё 1 новый MAJOR &mdash; UI безусловно утверждал, что отчёт дошёл до зала, хотя бэкенд тихо не отправляет ничего при <code>gymId: 'unknown'</code> &mdash; исправлено честной формулировкой), и весь диапазон коммитов запушен на <code>origin/master</code>. Отдельно обнаружен и задокументирован (не тронут) брошенный конфликт cherry-pick того же самого коммита Gate F в другом ворктри (<code>_wt-master-sync</code>) &mdash; см. §06. Работа на устройстве по-прежнему не выполнялась &mdash; нет доступа к adb/Android SDK.</p>
   <p style="font-family:var(--font-mono); font-size:12.5px; color:var(--ink-soft); margin:14px 0 0;">Обновлено 2026-08-21 &middot; эта страница правится и редеплоится на тот же линк при каждом обновлении, а не заменяется новым файлом с датой</p>
 </header>
 
@@ -241,7 +241,7 @@
   <dl>
     <dt>Проект</dt><dd>_wt-gates-efgh</dd>
     <dt>Папка</dt><dd>D:\Repo\_wt-gates-efgh</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; HEAD @ 32a01d5</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; HEAD @ f544794</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
@@ -253,13 +253,15 @@
 
 
 
+
+
 <div class="wrap">
 
   <div class="stopbanner warn">
     <span class="glyph">СТАТУС</span>
     <div>
       <strong>MVP_READY: не достигнут. Ожидаемо на данном этапе, не отклонение.</strong>
-      <p>Программа реалистично описывает несколько недель работы. За этот проход добросовестно закрыты три узких, полностью верифицированных результата (D-03 root-cause fix, перенос Gate E, закрытие governance-блокера по раскрытию вебхука зала); ни один из крупных разделов программы (Onboarding v4, Form Coach, Light theme, Visual Gate, M7&ndash;M9) не начат. Работа на реальном устройстве не выполнялась &mdash; в этой сессии нет доступа к adb/Android SDK, см. §6.</p>
+      <p>Программа реалистично описывает несколько недель работы. За эту сессию добросовестно закрыты четыре узких, полностью верифицированных результата (D-03 root-cause fix, перенос Gate E, закрытие governance-блокера по раскрытию вебхука зала, полный перенос и закрытие Gate F); ни один из крупных разделов программы (Onboarding v4, Form Coach, Light theme, Visual Gate, M7&ndash;M9) не начат. Работа на реальном устройстве не выполнялась &mdash; в этой сессии нет доступа к adb/Android SDK, см. §7.</p>
     </div>
   </div>
 
@@ -270,10 +272,11 @@
       <div class="statusrow"><span class="label">D-03 &middot; guest Continue</span><span class="chip ok">Root cause найден и исправлен, запушено</span></div>
       <div class="statusrow"><span class="label">Gate E &middot; shared uncertainty (MRD-06)</span><span class="chip ok">Перенесён, 2 раунда codex, запушено</span></div>
       <div class="statusrow"><span class="label">gym-webhook-disclosure &middot; governance-блокер</span><span class="chip ok">CLOSED, 4 раунда codex, запушено</span></div>
-      <div class="statusrow"><span class="label">Gate F &middot; gym identity (MRD-02)</span><span class="chip warn">Перенесён, 2 раунда фиксов, раунд-3 апелляция в процессе, push после исхода</span></div>
+      <div class="statusrow"><span class="label">Gate F &middot; gym identity (MRD-02)</span><span class="chip ok">Закрыт, 4 раунда codex, запушено (f544794)</span></div>
+      <div class="statusrow"><span class="label">_wt-master-sync &middot; брошенный конфликт</span><span class="chip crit">Найден, не тронут, задокументирован</span></div>
       <div class="statusrow"><span class="label">D-05B / D-04 / 20-прогонная верификация D-03</span><span class="chip crit">Не выполнялось &mdash; нет adb/SDK</span></div>
       <div class="statusrow"><span class="label">Ветка formcoach/gates-a-c</span><span class="chip warn">Верифицирована безопасной к удалению, оператор попросил оставить как есть</span></div>
-      <div class="statusrow"><span class="label">Ветка marketing/site-prototype, 22 коммита</span><span class="chip warn">Классифицирована; портированы Gate E и Gate F</span></div>
+      <div class="statusrow"><span class="label">Ветка marketing/site-prototype, 22 коммита</span><span class="chip warn">Классифицирована; портированы Gate D/E/F; остались Gate G/H</span></div>
     </div>
   </section>
 
@@ -354,7 +357,14 @@
       <h3>Раунд 2 codex (по закоммиченному диффу): 1 новый <code>BLOCKER</code> (оспорен), 1 <code>MAJOR</code> + 1 <code>MINOR</code> исправлены</h3>
       <p><strong>MAJOR, исправлено:</strong> <code>await ... .future</code> без обработки ошибок &mdash; ошибка чтения профиля теперь блокировала бы открытие формы отчёта целиком, регресс по сравнению с поведением до этого прохода. Обёрнуто в <code>try/catch</code> с откатом на «unknown».</p>
       <p><strong>MINOR, исправлено:</strong> серверный <code>bounded(data.gymId, 128, "gymId")</code> отклоняет отчёт целиком при превышении 128 символов &mdash; клиент лимита не знал. Теперь <code>resolveEquipmentReportGymId</code> откатывается на «unknown» при превышении, вместо отправки заведомо отклоняемого значения.</p>
-      <p><strong>BLOCKER, новый, оспорен, не исправлен:</strong> <code>gymId</code> хранится на уровне профиля (один «домашний» зал), не подтверждается и не выбирается для каждого отчёта отдельно &mdash; отчёт из другого зала/филиала уйдёт в сохранённый, а не в фактический. Не согласен с классификацией как BLOCKER именно для этого переноса: это исходная, осознанная форма самого перенесённого коммита («minimal safe seam»), independent review оригинала уже проходил мимо этой же формы, и правильное решение требует такого же справочника залов, которого пока нет ни на клиенте, ни в видимости этой сессии &mdash; та же причина и то же решение, что у уже признанного MAJOR выше. Раунд 3 &mdash; апелляция с этим обоснованием, единственная (по правилу «один раунд апелляции на спорную находку»), результат &mdash; следующий пункт этого списка после публикации.</p>
+      <p><strong>BLOCKER, новый, оспорен раундом 2, апелляция раунда 3 не принята codex &mdash; исправлено:</strong> <code>gymId</code> хранится на уровне профиля (один «домашний» зал), не подтверждается и не выбирается для каждого отчёта отдельно. Апелляция настаивала, что это осознанная, унаследованная граница дизайна, а не дефект переноса; codex отклонил это обоснование &mdash; сознательный дизайн-выбор не делает отправку не в тот адрес безопасной, и в отличие от уже принятого MAJOR (обычно ведёт к недоставке), здесь возможна <em>ложная доставка</em> реальному третьему лицу. Предложенный фикс оказался меньше опасавшегося (не полноценный справочник/пикер залов): чекбокс подтверждения на каждый отчёт, по умолчанию не отмечен, называет сохранённый зал явно. Принято и реализовано &mdash; см. коммит <code>ab26395</code> ниже.</p>
+    </div>
+    <div class="card warn">
+      <h3>Раунд 4 codex (по всему запушенному диапазону, <code>--final</code>): 1 новый <code>MAJOR</code> исправлен, 1 <code>MAJOR</code> повторно найден и уже закрыт, 1 <code>MINOR</code> закрыт этим обновлением, 1 <code>NIT</code> отложен</h3>
+      <p><strong>MAJOR, новый, исправлено:</strong> подпись в форме отчёта и снекбар после отправки безусловно утверждали, что отчёт дошёл до техобслуживания зала &mdash; но бэкенд (<code>functions/src/index.ts</code>) при <code>gymId: 'unknown'</code> возвращает успех, вообще не пытаясь искать вебхук, а «unknown» и сегодня остаётся исходом по умолчанию для подавляющего большинства пользователей. Обе строки переформулированы так, чтобы быть верными в любом состоянии, без изменения публичного API формы.</p>
+      <p><strong>MAJOR, повторно найден:</strong> тот же самый, уже принятый и осознанно отложенный MAJOR про свободный текст <code>gymId</code> vs. Firestore document key (§ выше) &mdash; codex ревьюит холодно, без памяти о прошлых раундах, поэтому повторное обнаружение уже задокументированного пункта ожидаемо, не пропущенная апелляция.</p>
+      <p><strong>MINOR:</strong> этот статус-репорт отставал от факта &mdash; закрывается этим самым обновлением.</p>
+      <p><strong>NIT:</strong> evidence-заметка Gate F (<code>GATE_F_GYM_IDENTITY_D0_NOTE_2026-08-19.md</code>) частично устарела против финального HEAD &mdash; по контракту находок проекта корректно NIT (расхождение документации, не поведения), не исправлялось в этом проходе.</p>
     </div>
     <div class="commitlog">
       <li>
@@ -366,15 +376,32 @@
       <li>
         <span class="sha">32a01d5</span>
         <div class="msg">Gate F: fix codex round-2 MAJOR/MINOR (profile error, gymId length)
-          <span class="sub">Раунд-2 фиксы, ещё не запушено &mdash; ждёт исхода апелляции раунда 3</span>
+          <span class="sub">Раунд-2 фиксы</span>
+        </div>
+      </li>
+      <li>
+        <span class="sha">ab26395</span>
+        <div class="msg">fix(equipment): gate report gymId on explicit per-report confirmation
+          <span class="sub">Итог апелляции раунда 3 &mdash; чекбокс подтверждения зала на каждый отчёт</span>
+        </div>
+      </li>
+      <li>
+        <span class="sha">f544794</span>
+        <div class="msg">fix(equipment): stop claiming report delivery that never happened
+          <span class="sub">Раунд-4 MAJOR фикс &middot; весь диапазон запушен на master (9815049..f544794)</span>
         </div>
       </li>
     </div>
   </section>
 
   <section>
-    <h2><span class="num">06</span> Почему появился новый ворктри <code>_wt-gates-efgh</code></h2>
-    <p class="section-lede">Локальный hook <code>shell_policy_gate</code> заблокировал команды уборки (<code>git reset --hard</code>, <code>git checkout HEAD -- &lt;файлы&gt;</code>) в <code>_wt-master-sync</code> даже после явного разрешения оператора в диалоге &mdash; механический хук не читает разрешения из переписки. Вместо того чтобы обходить хук переформулировкой команд, работа продолжена в новом ворктри <code>_wt-gates-efgh</code> (detached HEAD от <code>origin/master</code>). <code>_wt-master-sync</code> оставлен как есть, с незакоммиченной незавершённой попыткой переноса Gate F &mdash; не тронут, не потерян.</p>
+    <h2><span class="num">06</span> Ворктри <code>_wt-gates-efgh</code> и брошенный конфликт в <code>_wt-master-sync</code></h2>
+    <p class="section-lede">Локальный hook <code>shell_policy_gate</code> заблокировал команды уборки (<code>git reset --hard</code>, <code>git checkout HEAD -- &lt;файлы&gt;</code>) в <code>_wt-master-sync</code> даже после явного разрешения оператора в диалоге &mdash; механический хук не читает разрешения из переписки. Вместо того чтобы обходить хук переформулировкой команд, работа продолжена в новом ворктри <code>_wt-gates-efgh</code> (detached HEAD от <code>origin/master</code>), где Gate F в итоге и был полностью закрыт и запушен (§05).</p>
+    <div class="card crit">
+      <h3>Найдено при синхронизации <code>_wt-master-sync</code> после push: брошенный конфликт того же коммита Gate F</h3>
+      <p><code>_wt-master-sync</code> (там реально стоит на checkout <code>master</code>) содержит незакоммиченный, неразрешённый конфликт <code>git cherry-pick 41d5b23</code> &mdash; тот же самый исходный коммит Gate F. <code>.git/worktrees/_wt-master-sync/MERGE_MSG</code> дословно совпадает с сообщением <code>41d5b23</code>, конфликт &mdash; на том же append-only <code>core/DECISION_LOG.md</code>, что уже дважды разрешался в этой сессии в другом месте. По времени изменения файлов (2026-08-20, 16:26&ndash;16:27 UTC) это примерно на 5 часов раньше первого раунда codex по успешному переносу в <code>_wt-gates-efgh</code> &mdash; похоже на раннюю, брошенную первую попытку из более раннего фрагмента этой же сессии, до переключения на изолированный ворктри; нельзя полностью исключить и параллельную сессию в том же окне.</p>
+      <p><strong>Не тронуто намеренно.</strong> Всё ценное содержимое той брошенной попытки уже присутствует &mdash; причём в более полной форме &mdash; на <code>origin/master</code> через завершённый путь <code>_wt-gates-efgh</code> (BLOCKER-фикс, оба MAJOR раунда 1&ndash;2, чекбокс подтверждения зала, честная формулировка раунда 4). Разрешать или отменять чужой &mdash; или своей более ранней, неизвестной сейчас &mdash; незавершённый конфликт в общем ворктри без уверенности, чей он, было бы именно тем риском, которого эта сессия старается избегать. <code>git cherry-pick --abort</code> &mdash; правильный механический фикс, если и когда будет подтверждено, что это безопасно; подтверждения пока нет. Оставлено оператору для очистки (или подтверждения, что <code>--abort</code> безопасен).</p>
+    </div>
   </section>
 
   <section>
@@ -383,8 +410,9 @@
       <li><span class="tag">D-03</span> Верификация 20 прогонов на S8 &mdash; блокировано отсутствием adb/Android SDK в этой сессии</li>
       <li><span class="tag">D-05B</span> Первый тап не срабатывает &mdash; не расследовано, тот же блокер</li>
       <li><span class="tag">D-04</span> Реальный E2E тест AI Trainer/Scanner &mdash; не выполнялся, тот же блокер</li>
-      <li><span class="tag">GATE F</span> Перенесён и дважды исправлен по codex (§5); раунд-3 апелляция по спорному BLOCKER в процессе, push ждёт исхода</li>
+      <li><span class="tag">GATE F</span> Закрыт полностью, 4 раунда codex, запушено на master (§5)</li>
       <li><span class="tag">GATE G/H</span> setup-note memory, standalone ops script &mdash; не начаты, теперь разблокированы Gate F</li>
+      <li><span class="tag">WORKTREE</span> Брошенный конфликт cherry-pick в <code>_wt-master-sync</code> &mdash; найден, не тронут, ждёт решения оператора (§6)</li>
       <li><span class="tag">BRANCH</span> Удаление <code>formcoach/gates-a-c</code> &mdash; верифицировано безопасным, оператор попросил оставить пока как есть</li>
       <li><span class="tag">ONBOARDING</span> Reconciliation plan/design authority, Onboarding v4 &mdash; не начато</li>
       <li><span class="tag">FORM COACH, THEMES, SAFETY, M7&ndash;M9, MVP_READY</span> &mdash; не начаты</li>
@@ -394,13 +422,14 @@
   <section>
     <h2><span class="num">08</span> Счётчики</h2>
     <div class="statgrid">
-      <div class="stat"><div class="n">2</div><div class="l">Fixed &amp; pushed (D-03, Gate E)</div></div>
-      <div class="stat"><div class="n">2</div><div class="l">Гейта закрыты (disclosure, Gate F) &mdash; Gate F ждёт push</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">Fixed &amp; pushed (D-03, Gate E, Gate F)</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">Гейта/блокера полностью закрыты (disclosure, Gate F)</div></div>
       <div class="stat"><div class="n zero">0</div><div class="l">FIXED_VERIFIED на устройстве</div></div>
       <div class="stat"><div class="n">2</div><div class="l">Confirmed open bugs (D-05B, D-04)</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">Найдено, не тронуто (брошенный конфликт в _wt-master-sync)</div></div>
       <div class="stat"><div class="n">1</div><div class="l">External blockers (adb/SDK)</div></div>
-      <div class="stat"><div class="n">11</div><div class="l">Codex-раундов всего (2+4+3(+) по четырём результатам)</div></div>
-      <div class="stat"><div class="n">1</div><div class="l">Оспоренная находка codex (апелляция в процессе)</div></div>
+      <div class="stat"><div class="n">11</div><div class="l">Codex-раундов всего (Gate E 2, disclosure 4, Gate F 5 &mdash; из них последний по квоте, fail-open)</div></div>
+      <div class="stat"><div class="n">1</div><div class="l">Оспоренная находка codex, апелляция отклонена и реализована</div></div>
       <div class="stat"><div class="n zero">0</div><div class="l">New APKs / Firebase distributions</div></div>
     </div>
   </section>
@@ -408,8 +437,9 @@
   <section>
     <h2><span class="num">09</span> Рекомендация на продолжение</h2>
     <ol class="checklist">
-      <li>Дождаться исхода раунда-3 апелляции по Gate F (спорный BLOCKER о выборе зала на отчёт) и запушить весь диапазон коммитов Gate F.</li>
-      <li>Портировать Gate G и Gate H (теперь разблокированы), затем классифицировать оставшиеся коммиты marketing-ветки построчно и удалить обе устаревшие ветки.</li>
+      <li>Оператору: разобраться с брошенным конфликтом cherry-pick в <code>_wt-master-sync</code> (§6) &mdash; подтвердить, что <code>git cherry-pick --abort</code> безопасен, или очистить иначе.</li>
+      <li>Портировать Gate G (<code>8dabc20</code>) и Gate H (<code>0f3bcf3</code>) &mdash; единственные непортированные коммиты marketing-ветки; остальное уже на master под другими хешами (Gate D, Gate E, MVP-1/3) либо специфично для маркетингового прототипа.</li>
+      <li>После Gate G/H &mdash; удалить обе устаревшие ветки (<code>marketing/site-prototype-2026-08-19</code>; <code>formcoach/gates-a-c</code> оператор попросил оставить).</li>
       <li>Любая верификация D-03/D-05B/D-04 на устройстве требует сессии с рабочим adb/Android SDK &mdash; недоступно здесь.</li>
     </ol>
   </section>
@@ -419,6 +449,8 @@
   </footer>
 
 </div>
+
+
 
 
 
