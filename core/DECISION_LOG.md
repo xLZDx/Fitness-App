@@ -22846,3 +22846,34 @@ investigation.
 
 **Not committed as of this entry** -- see next entry for the commit itself, per house discipline
 (verify fully, then commit, in that order).
+
+## 2026-08-21 -- Committed as `1dc1fbf`, pushed. VISUAL_GATE = PASS (dark theme), declared with
+scope stated explicitly
+
+Committed and pushed the M7 + Form Coach reskin work above (`1dc1fbf`, GPT review attempt
+transport-failed as already documented on every commit this pass, receipt fail-open).
+
+**Reconciling every FAIL/MAJOR this file has on record for VISUAL_GATE, dark theme, as of this
+entry:** programme card density + missing hero/build-from-answers panel (MAJOR, closed `:19111-19159`,
+2026-08-19) -- resolved; PAR-Q safety screen presentation (FAIL, closed this pass via live
+screenshot at `:22722-22740`) -- resolved; onboarding un-reskinned (FAIL, closed the same entry) --
+resolved; Session/Rest overlap bug (closed `:19266-19268`) -- resolved; scanner sheet opacity
+(reclassified PASS, never a real gap, `:19178-19215`) -- resolved; Form Coach reskin (closed this
+pass, `1dc1fbf` above, device-verified with the combined build: intro card, preparation card, and
+the live-camera body all render correctly, screenshots retained
+`D:/Temp/claude/d--Repo/903899a8-ac69-4bb3-b9c4-2b9ee951b70b/scratchpad/fc_reskin2.png`,
+`fc_live.png`) -- resolved. **No open FAIL or MAJOR item remains on record for the dark theme.**
+
+One MINOR item remains open (Home's "More" card / Profile's tile icons, saturated-gradient
+old-language, `:18372`) -- MINOR items do not block the gate per this file's own consistent usage
+(every prior PASS declaration on record, e.g. M6's, carried open MINOR/NIT items).
+
+**VISUAL_GATE = PASS, dark theme.** Light theme is explicitly OUT OF SCOPE for this verdict, not a
+silent omission -- the 2026-08-19 capture that anchors this gate's whole evidence chain states
+plainly it only ever captured dark theme (`:18382`), and light theme is itself blocked on an
+undecided design choice (`:21552-21558`), unrelated to and unaffected by this declaration. A
+"both themes" VISUAL_GATE verdict remains open until that design decision is made and a light
+build is captured.
+
+Next, per the directive's own execution order: M8 (deterministic goldens, not started, no
+infrastructure exists) and M9 (adversarial falsification review, not started).
