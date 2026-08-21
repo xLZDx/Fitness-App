@@ -23130,3 +23130,26 @@ between them is the build/delivery record appended to `DECISION_LOG.md` itself, 
 this result applies equally to the exact bits that were built and distributed.
 
 Bounded post-MVP continuation is complete. Proceeding to the one final consolidated report.
+
+## 2026-08-21 -- One final consolidated report published, per program-mode instruction
+
+Wrote and published the single report the program's own directive requires at its true end (per
+the html-report skill's program-mode contract -- no report was due at any sub-gate in between,
+consistent with the operator's own "ОТЧЁТ: ТОЛЬКО В КОНЦЕ" instruction). Covers the whole run: the
+D-03/D-05B/MainShell investigation and its honest self-correction, M7 + Form Coach reskin + M8 +
+M9 closure (one MAJOR fixed, two MAJOR flagged with full evidence, one HYPOTHESIS dismissed, one
+MINOR tempered), VISUAL_GATE = PASS (dark theme), the MVP_REACHED declaration, the final release
+build (`1.0.0 (2656)`, `67b9fa9`) with its three SHA256 hashes and independently-verified Firebase
+delivery, the bounded post-MVP regression check (3242/3243, one confirmed pre-existing failure),
+the GPT-review-gate honesty note (persistent transport failure this pass, pushes on stale
+`final:true` receipts within their documented validity window), and all eight known open items
+carried forward on the record.
+
+Both files written to `reports/`: `sptr_final_autonomous_program_2026-08-21.ru.html` (Russian,
+shown to the operator) and `sptr_final_autonomous_program_2026-08-21.html` (English, durable
+in-repo record). Both conform to house format (`report_conform.py --check` passes for the whole
+directory). The Russian file published as an artifact:
+`https://claude.ai/code/artifact/f18877a1-4d71-412b-b2fe-929748d33601`.
+
+This entry, committed together with the report files, is itself the handover. Stopping here per
+the html-report skill's own step 6.

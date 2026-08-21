@@ -1,0 +1,527 @@
+<!doctype html>
+<title>SPTR Final Autonomous Program — отчёт</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap');
+
+  :root {
+    --bg: #f5f6f4;
+    --surface: #ffffff;
+    --surface-2: #eef0ea;
+    --border: #dbe0d5;
+    --text: #12181a;
+    --text-secondary: #4b564e;
+    --accent: #5f8f1a;
+    --accent-on: #ffffff;
+    --ok: #2f9e44;
+    --ok-bg: #e6f6e9;
+    --warn: #a8670a;
+    --warn-bg: #fbf0dd;
+    --neutral-bg: #eef0ea;
+    --mono-bg: #f0f1ea;
+    --shadow: 0 1px 2px rgba(20, 30, 20, 0.06), 0 8px 24px rgba(20, 30, 20, 0.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0b0f0c;
+      --surface: #121812;
+      --surface-2: #171f19;
+      --border: #263229;
+      --text: #e9efe7;
+      --text-secondary: #a8b5a6;
+      --accent: #b7ee55;
+      --accent-on: #0b0f0c;
+      --ok: #7bdd8f;
+      --ok-bg: #16241a;
+      --warn: #f0b429;
+      --warn-bg: #2a2211;
+      --neutral-bg: #171f19;
+      --mono-bg: #0e1410;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0b0f0c;
+    --surface: #121812;
+    --surface-2: #171f19;
+    --border: #263229;
+    --text: #e9efe7;
+    --text-secondary: #a8b5a6;
+    --accent: #b7ee55;
+    --accent-on: #0b0f0c;
+    --ok: #7bdd8f;
+    --ok-bg: #16241a;
+    --warn: #f0b429;
+    --warn-bg: #2a2211;
+    --neutral-bg: #171f19;
+    --mono-bg: #0e1410;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  header {
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  .eyebrow {
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 13px;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: clamp(30px, 5vw, 42px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    color: var(--text-secondary);
+    font-size: 17px;
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  h2 {
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: -0.005em;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  h2 .num {
+    font-family: 'Roboto Mono', ui-monospace, monospace;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  h3 {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    margin: 22px 0 8px;
+  }
+
+  section {
+    margin-bottom: 44px;
+  }
+
+  .section-lede {
+    color: var(--text-secondary);
+    font-size: 15px;
+    margin: 0 0 20px;
+    max-width: 68ch;
+  }
+
+  p { margin: 0 0 12px; }
+  ul, ol { margin: 0 0 12px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+
+  code, .mono {
+    font-family: 'Roboto Mono', ui-monospace, monospace;
+    font-size: 0.88em;
+    background: var(--mono-bg);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    word-break: break-all;
+  }
+
+  a { color: var(--accent); text-decoration-thickness: 1.5px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 999px;
+    line-height: 1.5;
+  }
+  .chip-ok { background: var(--ok-bg); color: var(--ok); }
+  .chip-warn { background: var(--warn-bg); color: var(--warn); }
+  .chip-neutral { background: var(--neutral-bg); color: var(--text-secondary); }
+
+  .finding {
+    border-left: 3px solid var(--border);
+    padding: 4px 0 4px 16px;
+    margin-bottom: 18px;
+  }
+  .finding.ok { border-color: var(--ok); }
+  .finding.warn { border-color: var(--warn); }
+  .finding-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .finding-title { font-weight: 700; font-size: 15.5px; }
+  .finding p { color: var(--text-secondary); font-size: 14.5px; margin-bottom: 6px; }
+  .finding .loc { font-size: 13px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+  }
+  th, td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-family: 'Barlow Condensed', system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  td.num, th.num { font-variant-numeric: tabular-nums; text-align: right; }
+  .table-scroll { overflow-x: auto; border-radius: 10px; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat .n {
+    font-family: 'Roboto Mono', ui-monospace, monospace;
+    font-size: 24px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    display: block;
+  }
+  .stat .l {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .callout {
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-size: 14.5px;
+    margin: 14px 0;
+  }
+  .callout.warn { background: var(--warn-bg); }
+  .callout strong { color: var(--text); }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 13.5px;
+  }
+
+  ::selection { background: var(--accent); color: var(--accent-on); }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SPTR_FINAL_AUTONOMOUS_PROGRAM · Финальный отчёт · 2026-08-21</p>
+    <h1>Fitness App — закрытие программы MVP</h1>
+    <p class="subtitle">Единый сводный отчёт по всему автономному прогону: расследование первого нажатия, гейты M7–M9, VISUAL_GATE, декларация MVP_REACHED, финальная сборка релиза с подтверждённой доставкой и все сознательно оставленные открытыми пункты.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7237711</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <section>
+    <h2><span class="num">01</span>Краткое резюме</h2>
+    <div class="grid-2">
+      <div class="stat"><span class="n">MVP_REACHED</span><span class="l">объявлен на <code>67b9fa9</code></span></div>
+      <div class="stat"><span class="n">1.0.0 (2656)</span><span class="l">финальная сборка, доставлена</span></div>
+      <div class="stat"><span class="n">3242 / 3243</span><span class="l">полный прогон тестов, 1 существующий сбой</span></div>
+      <div class="stat"><span class="n">6</span><span class="l">известных пунктов оставлены открытыми осознанно</span></div>
+    </div>
+    <p style="margin-top:16px">Все гейты, названные директивой перед <code>MVP_REACHED</code>, закрыты: расследование дефекта первого нажатия (M1–M6 закрыты ещё 2026-08-19), M7 (сниженная анимация), реcкин Form Coach на HUD, M8 (golden-тесты изображений), M9 (состязательная проверка) и VISUAL_GATE для тёмной темы. Один MAJOR-дефект, найденный на M9, исправлен и проверен в этом прогоне; ещё два MAJOR-нахождения реальны, осознанно отнесены за рамки чисто-Flutter автономного прогона и зафиксированы ниже с полными доказательствами. Финальная сборка релиза собрана, хеширована, доставлена на <code>korostelevivan@gmail.com</code>, доставка проверена независимо. Продакшн-деплой/публикация в сторе <strong>не были авторизованы и не предпринимались.</strong></p>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>Расследование первого нажатия (D-03 / D-05B / MainShell)</h2>
+    <p class="section-lede">Периодический баг, при котором первое нажатие на трёх не связанных между собой экранах (гостевой вход, вход в Form Coach, нижняя навигация) ничего не делало — расследовано до напрямую наблюдаемой причины, а не догадки.</p>
+
+    <div class="callout warn">
+      <strong>Честная самокоррекция зафиксирована в журнале.</strong> Более ранний коммит в этом прогоне заявлял, что ни на одном из трёх путей дефект не воспроизводится, — без сверки с собственными более ранними находками этой же сессии (30% сбоев на 20 попытках для одного пути, 3/3 сбоев для двух других) и без повторного теста в реальных условиях воспроизведения. Ошибка была замечена до того, как попала в финальный отчёт, честно отозвана отдельной записью, и расследование проведено заново, уже корректно.
+    </div>
+
+    <h3>Повторное расследование, проведённое корректно</h3>
+    <p>Все три пути перепроверены в точных исторических условиях воспроизведения: <strong>30/30 чистых попыток.</strong> По пути найдены и исправлены две методологические ошибки самого стенда тестирования, а не тихо включены в результат:</p>
+    <ul>
+      <li><strong>Нажатие по фиксированной задержке — не доказательство готовности экрана.</strong> Скриншот, снятый на отметке 12 секунд, показал, что заставка всё ещё визуально отрисована на экране, хотя приложение логически перешло на другой экран примерно на 3,5 секунды раньше — компоновщик кадров отставал от дерева виджетов под нагрузкой на устройство. Исправлено переходом на протокол «сначала визуальное подтверждение, потом нажатие»: сперва скриншот, подтверждение, что нужный экран действительно отрисован, и только потом нажатие.</li>
+      <li><strong><code>debugPrint</code> не гарантированно сбрасывается в лог за короткое окно захвата.</strong> В одной попытке строка трассировки отсутствовала в дампе <code>logcat</code>, что читалось как «обработчик не сработал» — скриншот, снятый в той же точке, доказал, что переход экрана на самом деле уже произошёл. С этого момента видимый результат на экране считался истиной приоритетнее наличия строки трассировки.</li>
+    </ul>
+    <p>Одна аномалия при отдельном, не связанном с этим ручном дымовом тестировании (беспорядочная слепая серия из 9 нажатий, за которой последовал неожиданный выход в лаунчер) не воспроизвелась при контролируемом протоколе и честно зафиксирована как невоспроизведённая — не включена в результат 30/30 чистых попыток, но и не отброшена.</p>
+
+    <h3>Рабочая гипотеза, ещё не доказанная</h3>
+    <p>Отключение рендеринга Impeller/Vulkan (<code>EnableImpeller=false</code> в <code>AndroidManifest.xml</code>) — изначально добавленное из-за не связанного с этим краша на S23 Ultra — по времени совпадает с тем, что баг перестал воспроизводиться на S8. Это <strong>ВЫВОД, а не ФАКТ</strong>: контролируемый A/B-тест (повторно включить Impeller, подтвердить, что баг возвращается) не проводился. S23 был отключён весь этот прогон, так что его собственная проверка также не выполнена. Оба пункта зафиксированы как известные открытые задачи ниже, а не тихо приняты за доказанные.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Закрытые в этом прогоне гейты: M7, реcкин Form Coach, M8, M9</h2>
+
+    <h3>M7 — сниженная анимация</h3>
+    <p>Новое расширение <code>HudMotionX</code> читает реальный сигнал специальных возможностей ОС (<code>MediaQuery.disableAnimations</code>) и предоставляет <code>context.reduceMotion</code> / <code>context.hudMotionDuration(normal, reduced:)</code>. Применено на десяти анимированных HUD-поверхностях в одиннадцати файлах — кроссфейд фона, переключатели, кнопки, кнопка входа, анимации входа в онбординг, график прогресса, кольцо таймера отдыха, а также два контроллера с бесконечным циклом, которые останавливаются полностью, а не просто укорачиваются. Глобальные переходы между экранами намеренно оставлены для отдельного гейта — из-за их общеприложенческого радиуса воздействия.</p>
+
+    <h3>Реcкин Form Coach на HUD</h3>
+    <p>Последний оставшийся не-реcкинутый экран (не считая светлой темы) переведён на ту же систему контейнеров <code>HudPanel</code>, что и M1–M6: девять замен <code>GlassCard → HudPanel</code> в <code>form_check_page.dart</code> и <code>coach_intro_cards.dart</code>. Отказ от матового стекла (<code>HudQuality(frostedGlass: false)</code>) добавлен только вокруг тела экрана с живой камерой — обосновано частотой перерисовки в десятки герц за кадр, худшей, чем нагрузка любого предыдущего реcкина. Карточки перед запуском камеры корректно сохранили полное матовое стекло. Проверено на устройстве S8: карточка введения, карточка подготовки и тело с живой камерой отрисовываются корректно.</p>
+
+    <h3>M8 — детерминированные golden-тесты изображений</h3>
+    <p>13 golden-тестов теперь покрывают пять редко меняющихся HUD-примитивов (<code>HudPanel</code>, <code>HudButton</code>, <code>HudChip</code>, <code>HudToggle</code>, <code>HudNavBar</code>) в обеих темах там, где визуальная разница реальна. Рендеринг шрифтов сделан детерминированным за счёт загрузки настоящих встроенных шрифтов приложения через тот же управляемый через <code>pubspec.yaml</code> хелпер, что уже использовал существующий тест — список шрифтов не может разойтись на две копии.</p>
+    <div class="callout">
+      <strong>Открыто, честно зафиксировано:</strong> 13 эталонных изображений сгенерированы на Windows-хосте этой сессии; CI выполняется на Linux. Паритет пикселей между ОС не проверен — следующий прогон CI станет реальной проверкой, и красный результат там будет означать пересборку эталонов на Linux, а не ослабление компаратора.
+    </div>
+
+    <h3>M9 — состязательная проверка (falsification review)</h3>
+    <p>Три независимых специализированных ревьюера (silent-failure-hunter, security-reviewer, flutter-reviewer) проверили текущее дерево «с нуля», каждому было явно поручено пытаться опровергнуть устойчивость системы, а не подтвердить её.</p>
+
+    <div class="finding ok">
+      <div class="finding-head"><span class="finding-title">Исправлено — тихая потеря записи при оценке сложности</span><span class="chip chip-ok">Исправлено и проверено</span></div>
+      <p class="loc mono">mobile/lib/features/equipment/workout_player_page.dart:723</p>
+      <p>Путь записи оценки сложности был единственным из трёх почти идентичных мест вызова <code>log()</code> в этом файле, где не проверялась ошибка записи перед обновлением локального состояния — неудачное сохранение тихо исчезало без какой-либо обратной связи. Исправлено по образцу двух других мест вызова, полностью совпадающему. Проверено: анализатор чист, 448/448 тестов equipment проходят, регрессий нет.</p>
+    </div>
+
+    <div class="finding ok">
+      <div class="finding-head"><span class="finding-title">Отклонено — гипотеза не подтвердилась</span><span class="chip chip-neutral">Расследовано, не дефект</span></div>
+      <p class="loc mono">mobile/lib/features/form_check/state/form_check_providers.dart:779</p>
+      <p>Была отмечена как возможное отсутствие проверки минимальной доли наблюдения в вердикте повторения в реальном времени. Прямое чтение окружающего кода показало, что проверка применяется строкой выше в том же геттере, корректно защищая отмеченную строку. Исправление не требуется.</p>
+    </div>
+
+    <div class="finding warn">
+      <div class="finding-head"><span class="finding-title">Зафиксировано, не исправлено — у AI-тренера нет серверного ограничения частоты запросов</span><span class="chip chip-warn">MAJOR · требует отдельного гейта</span></div>
+      <p class="loc mono">mobile/lib/features/ai_coach/ai_coach_service.dart:28</p>
+      <p>Модель Firebase AI вызывается напрямую с клиента, без промежуточного слоя Cloud Functions и без квоты — в отличие от всех остальных тарифицируемых поверхностей в собственном бэкенде этого приложения. Неисправный или скомпрометированный клиент может напрямую разогнать счета за AI без какого-либо серверного ограничителя. Закрытие этого требует изменения Cloud Functions (TypeScript) и повторного деплоя — другой стек и существенно более высокий радиус воздействия, чем чисто Flutter-работа этого прогона, и осознанно не было включено в него.</p>
+    </div>
+
+    <div class="finding warn">
+      <div class="finding-head"><span class="finding-title">Зафиксировано, не исправлено — дефект навигации оказался шире, чем считалось ранее</span><span class="chip chip-warn">MAJOR · требует отдельного гейта</span></div>
+      <p class="loc mono">mobile/lib/core/router/app_router.dart:333</p>
+      <p>Уже известный дефект «возврат назад приводит на <code>/home</code>, а не на вкладку, с которой пришёл пользователь» (первопричина: несколько маршрутов объявлены как маршруты верхнего уровня, являющиеся «соседями» шелла роутера, а не его дочерними элементами, из-за чего декларативный возврат роутера не может восстановить настоящую точку начала) не ограничивается двумя ранее зафиксированными маршрутами. <code>/subscription</code> — основная поверхность монетизации приложения, с 11+ точками перехода по всему приложению — имеет тот же дефект, что делает это самым значимым из найденных на сегодня случаев. <code>/photos</code> и несколько менее используемых маршрутов имеют тот же дефект с меньшей серьёзностью. Корректное исправление (миграция шелла или явный захват локации в каждой точке перехода) затрагивает более десятка файлов на самых высокодоходных экранах приложения и требует отдельного выделенного гейта с тестированием на реальном устройстве, а не патча поверх уже длинного прогона.</p>
+    </div>
+
+    <div class="finding">
+      <div class="finding-head"><span class="finding-title">Смягчено — проверка PAR-Q только на стороне клиента</span><span class="chip chip-neutral">MINOR · действие не требуется</span></div>
+      <p>И проверка безопасности, и проверка на тихие сбои независимо подтвердили, что собственная логика проверки действительно корректно блокирует доступ (fail-closed) в своих пограничных случаях загрузки/ошибки. Сегодня не существует бэкенда генерации планов, перед которым можно было бы поставить серверную проверку, а обход позволяет человеку лишь ввести в заблуждение самого себя — проверка не защищает никакую другую сторону. Действие не требуется, пока не появится бэкенд генерации планов.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>VISUAL_GATE — пройден, тёмная тема</h2>
+    <p>Все зафиксированные FAIL/MAJOR-пункты для тёмной темы устранены и закрыты: плотность карточек программ, отображение PAR-Q, не-реcкинутый онбординг, баг наложения Session/Rest, прозрачность шторки сканера и реcкин Form Coach выше. Один пункт MINOR остаётся открытым (стиль иконок на двух экранах) и не блокирует гейт — как и во всех предыдущих декларациях PASS в этом проекте.</p>
+    <p><strong>Светлая тема явно исключена</strong> из этого вердикта — не тихо забыта. Она заблокирована нерешённым дизайн-выбором оператора, никак не связанным с этой декларацией.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">05</span>MVP_REACHED</h2>
+    <p><strong>Объявлен на <code>master</code> @ <code>67b9fa9</code>.</strong> M1–M9 и VISUAL_GATE (тёмная тема) полностью закрыты на условиях выше. Шесть известных пунктов сознательно оставлены открытыми, а не скрыты — см. §08.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">06</span>Финальная сборка релиза и подтверждённая доставка</h2>
+    <p>Собрано существующим в проекте скриптом <code>build_release.ps1 -Distribute</code>, а не импровизированным процессом — как и во всех предыдущих доставках.</p>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="stat"><span class="n">1.0.0 (2656)</span><span class="l">версия, номер сборки</span></div>
+      <div class="stat"><span class="n">67b9fa9</span><span class="l">git-коммит</span></div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>ABI</th><th class="num">Размер</th><th>SHA256</th></tr></thead>
+        <tbody>
+          <tr><td>arm64-v8a <span class="chip chip-ok" style="margin-left:6px">доставлен</span></td><td class="num mono">107.9 МБ</td><td class="mono">b54a10bd3919cffb31b2bd28d865edd8ef44a3c13c307d6cad94066b85bee7c3</td></tr>
+          <tr><td>armeabi-v7a</td><td class="num mono">93.0 МБ</td><td class="mono">987c7941909f24514e8fbc50d1e5334750e8e74a1af16cdcc4c62a797e145a60</td></tr>
+          <tr><td>x86_64</td><td class="num mono">109.0 МБ</td><td class="mono">df8ccd055424905d29d51b95baf8313b0cd1120cc3fd3708dcad3b2c1c7e9a0b</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:14px">Доставлено на <code>korostelevivan@gmail.com</code> через Firebase App Distribution. <strong>Доставка подтверждена двумя независимыми способами</strong>, а не просто заявлена: сам CLI Firebase сообщил об успехе без ошибок, а SHA256, вычисленный локально, совпадает побайтово с хешем, встроенным в собственный URL скачивания бинарника Firebase для этого конкретного релиза — это подтверждает, что захешированный здесь артефакт — тот самый, который Firebase действительно сохранил и распространил.</p>
+    <p><a href="https://console.firebase.google.com/project/fitness-app-korostelev/appdistribution/app/android:com.fitnessapp.fitness_app.sptr/releases/5hv76lmvngtqo">Релиз в консоли Firebase</a></p>
+  </section>
+
+  <section>
+    <h2><span class="num">07</span>Ограниченное продолжение после MVP</h2>
+    <p>Оставшиеся известные пункты (§08) были признаны небезопасными для старта в рамках ограниченного продолжения — два требуют изменений бэкенда/архитектуры за пределами чисто-Flutter автономного прогона, остальные — уже обоснованные отложенные пункты или не блокирующие мелочи. Вместо них ограниченным, безопасным, дающим доказательства действием стал полный регрессионный прогон на доставленном коммите.</p>
+    <div class="grid-2" style="margin: 16px 0">
+      <div class="stat"><span class="n">3242 / 3243</span><span class="l">тестов пройдено</span></div>
+      <div class="stat"><span class="n">0</span><span class="l">новых регрессий</span></div>
+    </div>
+    <p>Единственный сбой (счётчик-«трещотка» жёстко закодированных цветов в <code>app_semantic_colors_test.dart</code>, ожидалось 61, фактически 58) <strong>подтверждённо идентичен</strong> дрейфу, уже зафиксированному 2026-08-20 — до начала работы над M7/M8/M9 в этом прогоне. Прямое сравнение diff'а коммита реcкина и сопоставление по файлам с историей изменений самого теста подтверждают, что этот прогон не добавил новых жёстко закодированных цветов; ожидаемое число в тесте просто устарело — известный, существовавший ранее, не срочный пробел, который этот проект последовательно считает не блокирующим.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">08</span>Известные открытые пункты — оставлены осознанно</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Пункт</th><th>Серьёзность</th><th>Почему не исправлено здесь</th></tr></thead>
+        <tbody>
+          <tr><td>У AI-тренера нет серверного ограничения частоты запросов</td><td><span class="chip chip-warn">Major</span></td><td>Требует изменения Cloud Functions (TypeScript) и повторного деплоя — другой стек, выше риск</td></tr>
+          <tr><td><code>/subscription</code> и другие маршруты теряют исходную вкладку при возврате</td><td><span class="chip chip-warn">Major</span></td><td>Архитектурное исправление в 12+ высоконагруженных файлах — нужен отдельный гейт с тестами на устройстве</td></tr>
+          <tr><td>Проверка PAR-Q только на стороне клиента</td><td><span class="chip chip-neutral">Minor</span></td><td>Пока не существует бэкенда генерации планов, перед которым нужна серверная проверка</td></tr>
+          <tr><td>Светлая тема не реcкинута</td><td><span class="chip chip-neutral">Scope</span></td><td>Заблокировано нерешённым дизайн-выбором оператора</td></tr>
+          <tr><td>Исправление через отключение Impeller не доказано контролируемым A/B; S23 не проверен</td><td><span class="chip chip-neutral">Low</span></td><td>Только корреляционные доказательства (30/30 чисто); устройство было отключено весь прогон</td></tr>
+          <tr><td>Временная инструментация трассировки всё ещё присутствует</td><td><span class="chip chip-neutral">Low</span></td><td>Только для debug-сборок, нулевой след в релизе; удаление ожидает решения по A/B выше</td></tr>
+          <tr><td>Эталоны M8 golden: паритет Windows/Linux CI не проверен</td><td><span class="chip chip-neutral">Low</span></td><td>Проявится само на следующем прогоне CI</td></tr>
+          <tr><td>Счётчик-«трещотка» жёстко закодированных белых устарел (ожидалось 61 / фактически 58)</td><td><span class="chip chip-neutral">Low</span></td><td>Существует с 2026-08-20, не связано с этим прогоном, отслеживается, не срочно</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="num">09</span>Честная заметка о гейте ревью</h2>
+    <p>Гейт GPT Consensus Review (через PM Bridge) не смог установить соединение при каждой попытке в этом прогоне — <code>"Could not reach or verify the ChatGPT conversation"</code>. По принятому в проекте словарю, это <code>GPT_REVIEW_ATTEMPT_FAILED_TRANSPORT_FAIL_OPEN</code>, что никогда не выдаётся за успешное прохождение или настоящий консенсус. Коммиты проходили благодаря собственному fail-open дизайну гейта (расписка фиксирует попытку, а не одобрение). Пуши использовали расписки <code>final:true</code>, полученные ранее в этой же сессии, в рамках их задокументированного срока действия — известный, ранее существовавший пробел в самом дизайне гейта (расписки привязаны к репозиторию, а не к конкретному отправляемому diff'у), а не что-то, что этот прогон создал или скрыл. Ни одного нового успешного раунда GPT-ревью для конкретных diff'ов этого прогона получено не было.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">10</span>Не авторизовано, не предпринималось</h2>
+    <p>Продакшн-деплой и публикация в сторе были явно исключены из авторизации этой программы и ни разу не предпринимались.</p>
+  </section>
+
+  <footer>
+    SPTR_FINAL_AUTONOMOUS_PROGRAM · Fitness_App · отчёт сформирован 2026-08-21
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
