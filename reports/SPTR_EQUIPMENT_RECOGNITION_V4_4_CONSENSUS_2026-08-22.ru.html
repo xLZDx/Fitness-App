@@ -386,13 +386,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 88c3665</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 8ea623c</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
   <div class="tldr">
     <p class="label">Коротко</p>
@@ -488,10 +490,28 @@
   <h2><span class="num">05</span>Что дальше</h2>
   <p>По собственной рекомендации GPT-PM, дословно: начинается реализация по фазам, и будущие раунды review должны быть ограничены <strong>реальным кодом и evidence по каждому гейту</strong>, а не очередным проходом по самому design-документу. На момент этого отчёта ни один гейт реализации ещё не открыт &mdash; это закрывает только фазу design-review.</p>
 
+  <h2><span class="num">06</span>Открытый вопрос: когда писать AC/DoD по гейтам</h2>
+  <p>Оператор поднял процессный вопрос сразу после консенсуса: писать ли полные, структурированные Acceptance Criteria / Definition of Done (тот же формат, что уже есть у P6.G0 &mdash; Purpose / Inputs / Deliverables / Verification / Required review / Exit / Rollback) для <strong>каждого</strong> гейта плана v4.4 сейчас, одним проходом до начала реализации &mdash; или писать их just-in-time, непосредственно перед открытием конкретного гейта. Контекст: production по-прежнему заблокирован гейтами P0.G0&ndash;P6.G3, и большинство гейтов P0&ndash;P5 сейчас просто помечены «без изменений с v4.2», без той же строгости AC/DoD, что v4.3/v4.4 дали P6.G0.</p>
+
+  <div class="scope-note">
+    <p class="label">Вердикт GPT-PM по срокам AC/DoD</p>
+    <p>Полный детальный AC/DoD для всех P0&ndash;P6 сейчас писать не стоит &mdash; в этом проекте это почти гарантированно создаст stale-spec и переделки, потому что реальные ограничения уточняются по мере прохождения предыдущих гейтов (история P0.G0 и P6.G1 это уже показала). Но и полностью откладывать определение каждого будущего гейта до дня его открытия тоже не стоит &mdash; можно поздно обнаружить, что гейт требует данных или архитектурного hook, который надо было заложить фазами раньше.</p>
+    <p><strong>Принятая двухуровневая схема:</strong></p>
+    <ol>
+      <li><strong>Сейчас</strong> &mdash; лёгкий Gate Contract для <em>каждого</em> гейта P0&ndash;P6: Purpose, prerequisites/dependencies, что гейт блокирует, верхнеуровневые deliverables/evidence classes, требуемые роли ревьюеров, верхнеуровневое exit-условие, класс rollback и известные внешние зависимости. Без точных thresholds, команд, имён файлов и evidence-структуры, которые зависят от результатов предыдущих гейтов.</li>
+      <li><strong>Исключение &mdash; полная детализация сейчас:</strong> P0 и следующий реально исполняемый гейт P1/P2 &mdash; риск дрейфа контекста там низкий, и это сразу даёт рабочий шаблон для всей программы.</li>
+      <li><strong>Just-in-time для остальных</strong> &mdash; полный структурированный AC/DoD (формат P6.G0) непосредственно перед открытием каждого гейта, сверенный с фактическим HEAD репозитория и evidence уже закрытых предшественников, плюс один короткий независимый pre-flight review (0 BLOCKER/CRITICAL) перед тем, как гейт станет OPEN.</li>
+      <li><strong>Принцип:</strong> AC/DoD фиксируется до начала работы, которую он оценивает &mdash; никогда не подгоняется задним числом под то, что реально получилось.</li>
+    </ol>
+    <p>Полный дословный ответ и обоснование &mdash; в <code>core/review/SPTR_EQUIPMENT_RECOGNITION_V4_4_ACDOD_TIMING_QUESTION_2026-08-22.md</code>. <strong>Ничего из этой схемы ещё не реализовано</strong> &mdash; ни Gate Contracts, ни полный AC/DoD для P0/следующего гейта; это согласованный процесс, ожидающий отдельного GO на старт.</p>
+  </div>
+
   <footer>
     SPTR Equipment Recognition &middot; отчёт о дизайн-консенсусе &middot; 2026-08-22
   </footer>
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>

@@ -23464,3 +23464,35 @@ this entry; this entry closes the design-review phase only.
 `reports/SPTR_EQUIPMENT_RECOGNITION_V4_4_CONSENSUS_2026-08-22.{html,ru.html}`, Russian published as
 an artifact and handed to the operator in-session per `~/.claude/CLAUDE.md` §2.
 
+## 2026-08-22 — AC/DoD authoring timing: GPT-PM process question, verdict adopted, not yet implemented
+
+Operator raised a process question immediately after the v4.4 CONSENSUS verdict: should full,
+structured Acceptance Criteria / Definition of Done (the format `P6.G0` already uses -- Purpose,
+Inputs, Deliverables, Verification, Required review, Exit, Rollback) be authored for every gate in
+the v4.4 phased plan now, in one upfront pass, or just-in-time before each gate opens -- and asked
+that this be put to GPT-PM as a final process check, with the conclusion recorded in the report.
+
+**FACT, confirmed by inspection of the v4.4 document:** only `P6.G0` (the gate newly added this
+round) currently has the full structured AC/DoD format. Every other gate in §9 (P0.G0-G6, P1.G1-G6,
+P2.G1-G5, P3-P5, P6.G1-G3) is either "unchanged from v4.2" or a one-line correction -- none have been
+revisited to the same rigor.
+
+**GPT-PM's verdict** (full verbatim reply and reasoning in
+`core/review/SPTR_EQUIPMENT_RECOGNITION_V4_4_ACDOD_TIMING_QUESTION_2026-08-22.md`): neither extreme is
+right. Full upfront AC/DoD for all of P0-P6 risks a stale spec and rework as earlier gates' actual
+results clarify later gates' real constraints (P0.G0 and P6.G1's own revision history in this same
+loop already demonstrates this). Pure JIT risks discovering too late that a future gate needed a
+data/instrumentation hook that should have been built phases earlier. Adopted two-tier scheme: (1)
+now -- a lightweight Gate Contract (Purpose, prerequisites, what it blocks, high-level
+deliverables/evidence classes, required reviewers, high-level exit condition, rollback class, known
+external dependencies) for every gate, for dependency discovery, not detailed specification; (2)
+exception -- P0 and the next actually-executable P1/P2 gate get full AC/DoD now (low context-drift
+risk, establishes a working template); (3) just-in-time -- full structured AC/DoD for every remaining
+gate, authored immediately before it opens, checked against actual repo HEAD and predecessor
+evidence, gated by one independent pre-flight review (0 BLOCKER/CRITICAL) before the gate opens; (4)
+AC/DoD freezes before implementation starts on that gate, never retrofitted afterward.
+
+**Not implemented in this entry** -- no Gate Contracts written, no full AC/DoD authored for P0 or the
+next gate. This is the agreed process for when that work starts, recorded here and in the published
+report's new §06, pending the operator's separate GO to begin it.
+

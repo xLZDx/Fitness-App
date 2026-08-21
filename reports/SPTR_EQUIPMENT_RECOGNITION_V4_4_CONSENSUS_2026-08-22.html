@@ -393,13 +393,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 88c3665</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 8ea623c</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
   <div class="tldr">
     <p class="label">TL;DR</p>
@@ -495,10 +497,28 @@
   <h2><span class="num">05</span>What's next</h2>
   <p>Per GPT-PM's own recommendation, verbatim: phased implementation begins, and future review rounds should be scoped to <strong>real code and evidence per gate</strong>, not another pass over the design document itself. No implementation gate has been opened yet as of this report &mdash; this closes the design-review phase only.</p>
 
+  <h2><span class="num">06</span>Open question: when to write per-gate AC/DoD</h2>
+  <p>The operator raised a process question right after consensus: should full, structured Acceptance Criteria / Definition of Done (the same format P6.G0 already uses &mdash; Purpose / Inputs / Deliverables / Verification / Required review / Exit / Rollback) be written for <strong>every</strong> gate in the v4.4 plan now, in one upfront pass before implementation starts &mdash; or just-in-time, right before each specific gate opens. Context: production stays blocked behind P0.G0&ndash;P6.G3, and most P0&ndash;P5 gates currently just say "unchanged from v4.2," without the same AC/DoD rigor v4.3/v4.4 gave P6.G0.</p>
+
+  <div class="scope-note">
+    <p class="label">GPT-PM's verdict on AC/DoD timing</p>
+    <p>Writing full, detailed AC/DoD for all of P0&ndash;P6 right now is not advisable &mdash; on this project it would almost certainly produce a stale spec and rework, since real constraints keep getting clarified as earlier gates are actually passed (P0.G0 and P6.G1's own history already proved this). But deferring every future gate's definition entirely to the day it opens isn't right either &mdash; a gate can turn out, too late, to need data or an architectural hook that should have been laid down phases earlier.</p>
+    <p><strong>Two-tier scheme adopted:</strong></p>
+    <ol>
+      <li><strong>Now</strong> &mdash; a lightweight Gate Contract for <em>every</em> gate P0&ndash;P6: Purpose, prerequisites/dependencies, what the gate blocks, high-level deliverables/evidence classes, required reviewer roles, a high-level exit condition, a rollback class, and known external dependencies. No exact thresholds, commands, filenames, or evidence structure that depend on results from earlier gates.</li>
+      <li><strong>Exception &mdash; full detail now:</strong> P0 and the next actually-executable P1/P2 gate &mdash; context-drift risk there is low, and it establishes a working template for the whole program.</li>
+      <li><strong>Just-in-time for the rest</strong> &mdash; full structured AC/DoD (the P6.G0 format) authored immediately before each gate opens, checked against the actual repository HEAD and predecessor gates' evidence, plus one short independent pre-flight review (0 BLOCKER/CRITICAL) before the gate is marked OPEN.</li>
+      <li><strong>Principle:</strong> AC/DoD freezes before the work it evaluates begins &mdash; never retrofitted afterward to match what was actually built.</li>
+    </ol>
+    <p>Full verbatim reply and reasoning in <code>core/review/SPTR_EQUIPMENT_RECOGNITION_V4_4_ACDOD_TIMING_QUESTION_2026-08-22.md</code>. <strong>None of this scheme is implemented yet</strong> &mdash; not the Gate Contracts, not the full AC/DoD for P0/the next gate; this is the agreed process, pending a separate GO to start it.</p>
+  </div>
+
   <footer>
     SPTR Equipment Recognition &middot; design-consensus report &middot; 2026-08-22
   </footer>
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>
