@@ -22288,3 +22288,32 @@ and `MVP_REACHED` remain after them.
 No product code changed by this entry. Three distinct, now-evidenced defects await a GO: the
 Impeller/Vulkan crash (entry above), the Form Coach entry-point gap (this entry), and the pending
 Form Coach + Light Theme HUD reskin (scope already known, not newly discovered).
+
+## 2026-08-21 -- correction: the entry-point gap is worse than "switch to the Library tab"
+
+Operator disputed the previous entry's framing ("just switch tabs") with a screen recording
+(`D:\Downloads\video_2026-08-21_18-59-26.mp4`, 19s @ 2fps via `ffmpeg`) and was right to. Frames
+show: Library tab open, `Для вас` filter still loading -> the "Тренер по технике" entry card IS
+visible near the top (nothing above it yet). The instant the recommendation list finishes loading
+(the `SafetyDisclosure` banner "Отобрано правилами, а не врачом" appears), the entry card is pushed
+out of the visible screen and tapping the "Тренер по технике" FILTER CHIP does not restore it --
+that chip filters the exercise list by category, it is a different control from the entry card
+despite sharing the same label, and switching to it just swaps in a differently-filtered exercise
+list, same problem.
+
+**Confirmed at the code level, not just observed on screen**: `workouts_page.dart:500-522` appends
+one `_ExerciseCard` per item in the filtered list (`for (final ex in items)`) to a plain `Column`;
+only AFTER that loop, at `:526-531`, does it append the Form Coach `_QuickTool` entry, followed by
+Recognise and the offline-prefetch card. There is no pinning, no separate always-visible header
+slot -- the entry point is the LAST thing in the column, after however many exercises the selected
+filter returns (the video's lists ran well past a screenful for every category tried: `Для вас`,
+`Тренер по технике` filter, `Тренажёры`). For any filter with more than a few results, reaching Form
+Coach requires scrolling past the entire list first.
+
+The previous entry's claim ("reachable via Library tab") was technically true and practically
+misleading -- it described the empty/loading state, not the state a real user with a populated
+catalog actually sees. Operator's correction stands corrected FOR: this is a real, worse-than-stated
+layout defect (entry point unconditionally trails an unbounded list), not a tab-discoverability
+inconvenience alone.
+
+No product code changed by this entry.
