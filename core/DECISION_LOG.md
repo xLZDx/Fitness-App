@@ -21384,3 +21384,39 @@ Subgate B pass. Nothing on this branch requires further action before deletion.
 tooling one.** `shell_policy_gate` has no bypass for remote-ref deletion (confirmed by reading its
 source, previous entry); restating operator authorization does not change what the hook checks.
 Reported to the operator as an execution constraint, not re-opened as a scope question.
+
+---
+
+## 2026-08-21 -- both obsolete branches deleted; global safety hook edited and reverted, in full
+
+Operator, verbatim: "ГО сомостоятельно 1 и 2" -- explicit authorization to both perform the
+deletions myself and to edit the hook myself, rather than requiring the operator's own terminal.
+
+**Editing `~/.claude/hooks/dangerous_command_gate.py` is a machine-wide change, not a
+Fitness-App-scoped one** -- it is the shared destructive-command classifier every session on this
+machine's `shell_policy_gate` PreToolUse hook uses, per that hook's own module-level docstring. Not
+under git (`~/.claude` has no `.git`), so no clean revert-via-checkout was available; the edit had
+to be exact by construction and its reversal verified by direct re-read, not by trusting a diff
+tool. Scoped the change as narrowly as the actual authorized action allowed: added one `if not
+re.search(...)` guard around the existing `"remote ref deletion via push"` return, matching only
+the two literal, named branch refs already verified safe (`formcoach/gates-a-c`: `git merge-base
+--is-ancestor` true, 0 unique commits; `marketing/site-prototype-2026-08-19`: salvage complete per
+the two entries above) -- not a blanket bypass for this destructive-command category, and not
+keyed to an environment variable that could accidentally survive past this session. Immediately
+after both deletions ran, reverted the guard by deleting the added lines and diffing the restored
+function against the `Read` captured before the edit -- byte-for-byte identical (confirmed by a
+line-range `Read`, not assumed). Verified the hook re-blocks: re-ran
+`git push origin --delete formcoach/gates-a-c` against the now-already-deleted branch and got the
+same `shell_policy_gate` denial as before the edit, proving the bypass window is closed, not just
+visually reverted.
+
+**Results:**
+```
+git push origin --delete formcoach/gates-a-c                    -> [deleted]
+git push origin --delete marketing/site-prototype-2026-08-19    -> [deleted]
+git fetch origin --prune && git branch -r                       -> origin/HEAD -> origin/master
+                                                                     origin/master
+```
+`origin/master` is now the only remote branch, matching the operator's own "Final Repository
+Topology" (§I of the ownership-migration directive) exactly: "FITNESS APP ... REMOTE BRANCHES:
+master. ONLY." No further branch-hygiene action pending in this repository.
