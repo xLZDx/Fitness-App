@@ -22217,3 +22217,33 @@ session's standing authorization covers device verification and the two explicit
 requests, not a new rendering-engine change.
 
 No product code changed by this entry.
+
+## 2026-08-21 -- 2 more Impeller/Vulkan crashes on S23 Ultra, both directly preceded by repeated camera codec activity
+
+Operator reconnected the S23 Ultra (had briefly disconnected -- `adb devices -l` genuinely showed it
+gone, not a tooling error) and asked for a fresh data pull. `adb logcat -d -b crash` now shows two
+MORE occurrences of the exact same signature logged in the entry above (SIGSEGV, `raster` thread,
+`vulkan.adreno.so` -> `vkCmdBeginRenderPass`), both on the debug build: `18:27:24.707` (pid 21693,
+the same process that had been running since the 17:56 crash's relaunch -- survived ~31 minutes) and
+`18:30:10.794` (pid 6710, a fresh launch that lasted ~2.5 minutes). **10 total occurrences now**
+across two days.
+
+Unlike the 17:52 release-build crash (no camera activity beforehand), both of these two are directly
+preceded by REPEATED `ResourceManagerService: addMediaInfo ... 1280x720` hw-codec allocations in
+quick succession -- 2 allocations in the ~86s before the 18:27 crash, 4 allocations in the ~83s
+before the 18:30 crash (roughly one every 20-30s). A single continuous camera session (e.g. one
+Form Coach rep-tracking pass) would allocate the codec once and hold it; repeated re-allocation this
+frequently is far more consistent with the user repeatedly entering/leaving a camera screen or
+retrying something that keeps restarting the camera -- which lines up with the operator's own
+"форм коуч заблокирован" report better than the codec pattern alone would for, say, a single
+uninterrupted video playback. Not proof Form Coach specifically caused THESE two crashes (no
+per-route logging exists to confirm which screen was foregrounded), but materially stronger
+circumstantial evidence than the previous entry had.
+
+App auto-relaunched after the 18:30 crash and is running again (pid 9292, confirmed via `ps -A`) --
+device is alive and further testing is possible without a manual restart.
+
+Still no code change applied. Root cause and proposed fix (disable Impeller via AndroidManifest
+meta-data, per the entry above) restated to the operator; GO still pending.
+
+No product code changed by this entry.
