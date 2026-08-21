@@ -22134,3 +22134,23 @@ can independently reproduce or contradict any of today's findings (the D-03 30% 
 especially) rather than relying solely on this session's screenshots.
 
 No product code changed by this entry.
+
+## 2026-08-21 -- third checkpoint report committed (release/debug distribution, new GPT review gate)
+
+Mechanical `report_gate.py`/`report_due.py` trigger: three commits (`2fed5a7`, `55a161f`, `af5c99f`
+-- GPT-gate documentation, release-build distribution, debug-build distribution) landed without a
+`reports/` touch. Per the html-report skill, wrote both language versions of
+`reports/2026-08-21-distribution-and-review-gate-checkpoint.{html,ru.html}`, ran
+`report_conform.py` to inject the provenance block, and published the Russian version as an
+artifact: `https://claude.ai/code/artifact/13cf0d0a-6cd8-4d27-b052-0334327398e8`.
+
+Content is a checkpoint, not new investigation -- it summarizes the two builds distributed and the
+new GPT Consensus Review gate (`pm-bridge`) encountered and satisfied per its own documented
+fail-open design (see `reference-gpt-review-gate-pm-bridge` memory), no new findings of its own.
+
+Committing this entry itself required a fresh `review.js --uncommitted` call against the staged
+report files; it errored (`Could not reach or verify the ChatGPT conversation "Fitness app"`) but
+still wrote a receipt, which is sufficient per the gate's fail-open contract -- an attempted review
+satisfies the commit gate even when the underlying GPT call fails.
+
+No product code changed by this entry.

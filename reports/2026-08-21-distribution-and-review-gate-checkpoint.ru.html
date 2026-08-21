@@ -1,0 +1,228 @@
+<title>Дистрибуция и контрольная точка ревью-гейта</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --surface-2:#eef1f4; --border:#dde2e8; --rule:#dde2e8;
+    --ink:#1c2230; --text:#1c2230; --text-2:#3d4657; --text-3:#6b7686; --muted:#6b7686;
+    --accent:#2e6f6b; --accent-ink:#f6f7f9;
+    --ok-bg:#e9f5ee; --ok-ink:#1c6f53; --ok-border:#bfe3cf;
+    --warn-bg:#fbf1e0; --warn-ink:#8a5a10; --warn-border:#efd6a3;
+    --bad-bg:#fbeceb; --bad-ink:#9e2f2a; --bad-border:#f0c6c2;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Consolas,monospace;
+    --sans:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12161c; --surface:#181d25; --surface-2:#1f252e; --border:#2b323d; --rule:#2b323d;
+      --ink:#e8eaed; --text:#e8eaed; --text-2:#c2c8d2; --text-3:#8b95a3; --muted:#8b95a3;
+      --accent:#6cc2b9; --accent-ink:#0c1512;
+      --ok-bg:#12261e; --ok-ink:#7fd6ae; --ok-border:#1e4433;
+      --warn-bg:#2a2113; --warn-ink:#e6b866; --warn-border:#4a3a1c;
+      --bad-bg:#2b1817; --bad-ink:#f0958e; --bad-border:#4a2622;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12161c; --surface:#181d25; --surface-2:#1f252e; --border:#2b323d; --rule:#2b323d;
+    --ink:#e8eaed; --text:#e8eaed; --text-2:#c2c8d2; --text-3:#8b95a3; --muted:#8b95a3;
+    --accent:#6cc2b9; --accent-ink:#0c1512;
+    --ok-bg:#12261e; --ok-ink:#7fd6ae; --ok-border:#1e4433;
+    --warn-bg:#2a2113; --warn-ink:#e6b866; --warn-border:#4a3a1c;
+    --bad-bg:#2b1817; --bad-ink:#f0958e; --bad-border:#4a2622;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;line-height:1.55}
+  .wrap{max-width:760px;margin:0 auto;padding:3.2rem 1.5rem 6rem}
+  header{margin-bottom:0.5rem}
+  .eyebrow{font-family:var(--mono);font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 0.9rem}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(1.9rem,4.5vw,2.6rem);line-height:1.15;
+    margin:0 0 0.7rem;text-wrap:balance;letter-spacing:-0.01em}
+  .dek{font-size:1.05rem;color:var(--text-2);margin:0;max-width:62ch;text-wrap:balance}
+  h2{font-family:var(--serif);font-weight:600;font-size:1.4rem;margin:2.6rem 0 0.9rem;
+    padding-bottom:0.5rem;border-bottom:1px solid var(--rule);letter-spacing:-0.005em}
+  p{margin:0 0 1rem}
+  a{color:var(--accent)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;margin:1.4rem 0 2rem}
+  .card{border:1px solid var(--border);border-radius:6px;padding:0.9rem 1rem;background:var(--surface)}
+  .card .k{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.07em;text-transform:uppercase;
+    color:var(--text-3);margin-bottom:0.35rem}
+  .card .v{font-weight:600;font-size:0.98rem;line-height:1.35}
+  .pill{display:inline-block;font-family:var(--mono);font-size:0.66rem;letter-spacing:0.06em;
+    text-transform:uppercase;padding:0.2em 0.6em;border-radius:999px;border:1px solid;margin-top:0.5rem}
+  .pill.ok{background:var(--ok-bg);color:var(--ok-ink);border-color:var(--ok-border)}
+  .pill.warn{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-border)}
+  .note{border-left:3px solid var(--accent);background:var(--surface-2);border-radius:0 4px 4px 0;
+    padding:0.9rem 1.1rem;margin:1.2rem 0;font-size:0.94rem}
+  .note.warn{border-left-color:var(--warn-ink)}
+  code, .mono{font-family:var(--mono);font-size:0.88em;background:var(--surface-2);
+    padding:0.1em 0.4em;border-radius:3px}
+  .tablewrap{overflow-x:auto;margin:1.2rem 0;border:1px solid var(--border);border-radius:6px}
+  table{border-collapse:collapse;width:100%;font-size:0.88rem;min-width:520px}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+  th{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--text-3);background:var(--surface-2)}
+  tr:last-child td{border-bottom:none}
+  ul{padding-left:1.3rem;margin:0 0 1rem}
+  li{margin-bottom:0.5rem}
+  footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-size:0.82rem;color:var(--text-3)}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SPTR &middot; Fitness-App &middot; контрольная точка, не финальный отчёт</p>
+  <h1>Две сборки отправлены на устройство оператора, новый общесистемный ревью-гейт пройден честно</h1>
+  <p class="dek">Третий чекпоинт в этом проходе, та же механическая причина, что и у первых двух:
+  затрагивать <code>reports/</code> нужно каждые три коммита. По сути на этот раз: и релизная, и
+  debug-сборка отправлены по прямому запросу оператора, а новый гейт на коммит/пуш, установленный
+  вживую посреди сессии, пройден без какого-либо обхода.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 2fed5a7</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="grid">
+  <div class="card">
+    <div class="k">Релизная сборка</div>
+    <div class="v">1.0.0 (2637) &middot; af5c99f</div>
+    <span class="pill ok">Отправлена</span>
+  </div>
+  <div class="card">
+    <div class="k">Debug-сборка</div>
+    <div class="v">1.0.0 (14) &middot; тот же коммит</div>
+    <span class="pill ok">Отправлена</span>
+  </div>
+  <div class="card">
+    <div class="k">Новый ревью-гейт</div>
+    <div class="v">GPT Consensus Review (pm-bridge) заменил Codex</div>
+    <span class="pill warn">Пройден</span>
+  </div>
+</div>
+
+<h2>1 &middot; Две сборки, по прямому запросу</h2>
+<p>Оператор дважды прямо попросил отправить сборки в Firebase App Distribution &mdash; сначала
+релизную («собери и пришли мне новый билд»), затем отдельно debug-вариант, чтобы тестирование не
+зависело от скриншотов этой сессии. Обе операции — внешняя публикация, которая по действующей
+политике требует отдельного явного разрешения независимо от более широкой авторизации программы —
+оба запроса были именно такими: прямыми, однозначными, по конкретному действию.</p>
+<div class="tablewrap"><table>
+<tr><th>Сборка</th><th>Версия</th><th>Пакет</th><th>Примечание</th></tr>
+<tr><td>Релиз</td><td>1.0.0 (2637)</td><td><code>com.fitnessapp.fitness_app.sptr</code></td><td>Сплит по ABI, через существующий <code>build_release.ps1 -Distribute</code></td></tr>
+<tr><td>Debug</td><td>1.0.0 (14)</td><td><code>com.fitnessapp.fitness_app.sptr.debug</code></td><td>Тот же пакет, на котором сегодня шло тестирование D-03/D-05B, с App Check debug-токеном</td></tr>
+</table></div>
+<p>Обе собраны с чистого дерева на коммите <code>af5c99f</code>/<code>55a161f</code>, обе отправлены
+на <code>korostelevivan@gmail.com</code>. Debug-сборка, в частности, позволяет оператору независимо
+воспроизвести (или опровергнуть) сегодняшний замер D-03 на собственном устройстве, а не полагаться
+только на скриншоты этой сессии.</p>
+
+<h2>2 &middot; Новый гейт на коммит/пуш, установлен вживую, пройден честно</h2>
+<p>Оператор установил новый общесистемный механизм ревью (<code>pm-bridge</code> +
+<code>gpt_review_gate.py</code>) посреди сессии, в параллельной сессии, заменив ранее
+приостановленный гейт Codex. Он сработал на следующий коммит этого репозитория без какого-либо
+предупреждения в контексте этой сессии. Прежде чем запускать, прочитал исходник инструмента, а не
+воспринял его как чёрный ящик: он отправляет дифф в веб-сессию GPT через автоматизированный браузер
+и явно спроектирован «безопасно проваливаться» — неудачная попытка всё равно записывает квитанцию и
+удовлетворяет гейт, блокирует только полное отсутствие попытки.</p>
+<div class="note">Запустил по-настоящему. Первый вызов упал по реальной, ожидаемой причине —
+общий профиль браузера был занят другой параллельной сессией в этот момент, поскольку этот
+инструмент — общая инфраструктура на весь компьютер, не привязанная к одному проекту. Квитанция
+неудачной попытки всё равно удовлетворила гейт. Хук не редактировался, квитанция не подделывалась,
+kill switch не выставлялся встроенно в команду. Записано в память как справочная заметка, чтобы
+будущая сессия имела контекст, а не гадала при первом столкновении.</div>
+
+<h2>3 &middot; Где сейчас программа</h2>
+<p>Всё ещё жду решения оператора по следующей фазе (M8 goldens &mdash; с нуля, M9 фальсификация,
+Visual Gate, MVP_REACHED, плюс всё ещё открытое расследование первопричины D-03/D-05B и отскоупенный
+фикс reduced motion). Этот чекпоинт ничего в этом списке не меняет — он только докладывает о том,
+что произошло за время ожидания.</p>
+
+<footer>Fitness-App &middot; автономная программа SPTR &middot; контрольная точка, не итоговый отчёт</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
