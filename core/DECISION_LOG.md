@@ -20932,3 +20932,70 @@ for the identical provider. All 4 tests pass after the fix; `flutter analyze` cl
 F touched-file set (7 files); full Gate F regression surface (`equipment_report_sheet_test.dart`,
 `resolve_equipment_report_gym_id_test.dart`, `equipment_report_gym_routing_test.dart`,
 `step_equipment_test.dart`, `equipment_detail_coach_gate_test.dart`) re-run together: 29/29 pass.
+
+Committed as `ab26395`.
+
+---
+
+## 2026-08-21 -- Gate F, codex round 4 (`--base 9815049 --round 4 --final`, full committed range)
+
+Pre-push review of the whole range (`1689564`, `32a01d5`, `6b5a82f`, `ab26395`) as one diff, per
+this session's own established precedent that the push gate needs a `--final` round against the
+actual committed content, not a pre-commit `--uncommitted` scan. First attempt double-backgrounded
+the process (`&` inside an already-backgrounded `Bash run_in_background: true` call) and lost
+tracking -- same failure mode already recorded earlier this session for the disclosure-closure
+review, and the same fix: re-run it as one directly-tracked backgrounded call.
+
+Found 2 MAJOR, 1 MINOR, 1 NIT. Each verified against real code before acting on it (basis: FACT for
+all three acted on).
+
+1. **MAJOR, `step_equipment.dart:120` -- not new, already accepted and deferred.** Restates round
+   1's item 3 verbatim (free-text `gymId` used as the literal `gyms/{gymId}` Firestore key, no
+   registry/picker exists) -- Codex reviews cold with no memory of prior rounds in this same gate,
+   so re-finding an already-logged, already-deferred item on a fresh full-range read is expected,
+   not a missed rebuttal. No action beyond this note; the existing round-1 entry's reasoning and
+   disposition ("belongs with whatever future gate actually builds the gym directory") stands.
+
+2. **MAJOR, `equipment_report_sheet.dart:85` -- new, confirmed by direct read, fixed.** The sheet's
+   caption (`equipmentReportsAreForwardedToTheGym`) was shown unconditionally, and the post-submit
+   snackbar (`equipmentReportSentToMaintenanceThanks`, `equipment_detail_page.dart:185`) fires on
+   any `true` return -- but `_submit()` sends `gymId: 'unknown'` whenever unconfirmed, and
+   `functions/src/index.ts:1651-1653`'s `reportEquipment` returns `{ reportId }` (success) for the
+   `UNASSIGNED_GYM` sentinel without even attempting a webhook lookup, while its own doc comment
+   (`:1554-1556`) confirms Firestore persistence always succeeds independent of webhook delivery.
+   Net effect: both strings claim the report reached a gym's maintenance team in the case --
+   currently the *default* case for every user, per `step_equipment.dart`'s own comment that no
+   caller passes a non-`'unknown'` `gymId` yet -- where nothing was ever attempted. **Fixed** by
+   making both strings unconditionally true instead of conditionally shown (smaller diff than
+   plumbing a forwarded/not-forwarded signal back through `EquipmentReportSheet.show()`'s `bool?`
+   return, which would have widened the API other call sites and tests depend on): caption now reads
+   "Your report is saved to your account. It also goes to your gym's maintenance team if you've
+   confirmed one above."; snackbar now reads "Report recorded — thanks." Neither claims delivery
+   that did not happen, in any state. No test asserted the old exact copy (`grep` confirmed) so no
+   test changes were needed; `flutter analyze` clean on both touched files; full Gate F regression
+   surface re-run, 29/29 pass.
+
+3. **MINOR, `reports/SPTR_STATUS.{html,ru.html}` stale -- accepted, being fixed in the next report
+   update** (round 3 outcome and `ab26395` not yet reflected).
+
+4. **NIT, `core/product/GATE_F_GYM_IDENTITY_D0_NOTE_2026-08-19.md` stale against final HEAD** --
+   correctly a NIT per this project's finding-severity contract (documentation lag, not behavior);
+   not acted on in this pass.
+
+Consensus: this round's own `--final` flag closes the codex-consensus loop for the Gate F range
+(`codex_review_gate.py` requires this before `git push`). Push proceeds next.
+
+**Codex: skipped for the fix commit itself (usage_limit_exhausted, resets 2026-08-27 18:25).** The
+round-4 receipt above (22:51/22:53 UTC 2026-08-20) was already outside `codex_review_gate.py`'s 6h
+commit window by the time this fix was ready to commit, so a fresh `--uncommitted --round 5 --final`
+attempt was made to cover the small honest-copy diff specifically -- it hit Codex's quota wall
+(`ERROR: You've hit your usage limit... try again at Aug 27th, 2026 6:25 PM`). Per the fail-open
+policy, `codex_review.py` still wrote a receipt (`ok: false, review_status: NOT_RUN_QUOTA,
+final: true` -- the script force-sets `final=true` on a quota error so the gate does not spin
+forever against a fixed wall) and the commit gate is satisfied, but round 5 is **not** a real review
+and must not be reported as one. The actual substantive review of this exact defect is round 4
+above (real findings, real fix, real verification) -- round 5 only failed to add a second look at
+the fix's own diff. Known open gap already documented at the top of this project's Codex section:
+this receipt's `final=true` will silently satisfy the push gate for its full 24h window even after
+the quota actually resets; if more Gate F commits land in that window, a genuine fresh round should
+still be attempted rather than relying on this one.

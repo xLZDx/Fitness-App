@@ -144,8 +144,8 @@
       "gymName": {"type": "String"}
     }
   },
-  "equipmentReportSentToMaintenanceThanks": "Report sent to maintenance — thanks.",
-  "equipmentReportsAreForwardedToTheGym": "Reports are forwarded to the gym's maintenance team. Your identity is shared with the gym only if they ask to follow up.",
+  "equipmentReportSentToMaintenanceThanks": "Report recorded — thanks.",
+  "equipmentReportsAreForwardedToTheGym": "Your report is saved to your account. It also goes to your gym's maintenance team if you've confirmed one above. Your identity is shared with the gym only if they ask to follow up.",
   "equipmentSendToMaintenance": "Send to maintenance",
   "equipmentSuggested": "Suggested: ",
   "equipmentTakeCareIfYouHave": "Take care if you have…",
