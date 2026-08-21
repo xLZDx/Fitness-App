@@ -1,16 +1,16 @@
 SPTR / Fitness-App
 
-# Equipment Recognition Master Technical Plan v4.4 — Mechanical Patch Candidate (round 3)
+# Equipment Recognition Master Technical Plan v4.4 — CONSENSUS (APPROVE FOR PHASED IMPLEMENTATION)
 
-Single design authority: v4.3 MECHANICAL PATCH + GPT-PM round-3 binary-verification verdict (2026-08-22, PM Bridge, conversation `https://chatgpt.com/c/6a821d86-5720-83eb-b20b-a33f5b3cb5dc`) that this revision closes
+Single design authority: v4.3 MECHANICAL PATCH + GPT-PM round-3 binary-verification verdict (2026-08-22, PM Bridge, conversation `https://chatgpt.com/c/6a821d86-5720-83eb-b20b-a33f5b3cb5dc`) that this revision closes, confirmed by GPT-PM's own round-4 verdict on this exact text (§0.4, §15)
 
 | Field | Value |
 | --- | --- |
 | Project | xLZDx/Fitness-App |
 | Canonical branch | master |
 | Repository baseline (unchanged since v4.2) | 532235d35d320b340929a736cae40c5e1661f5d5 |
-| Document status | MECHANICAL PATCH CANDIDATE — closes GPT-PM round-3's 2 remaining items (1 CRITICAL partial, 1 MINOR) from binary verification of v4.3. GPT-PM's own round-3 verdict states that applying these two literally is sufficient for `v4.3 CONSENSUS / APPROVE FOR PHASED IMPLEMENTATION` with no further contested round — this document is that literal application, **pending GPT-PM's actual confirmation on this v4.4 text** before the status is self-declared CONSENSUS (§0.4, §15). |
-| Predecessor status | v4.3 MECHANICAL PATCH — round-3 (binary verification, not a new adversarial round) verdict: **NOT YET CONSENSUS**. 6 of 7 round-2 invariants confirmed CLOSED (evidence lane, ABSTAIN/infra split, contract negotiation, NEED_MORE_VIEW denominator, App Check transition, revocation correctness). 1 CRITICAL (`RecognitionAuthorityTuple` missing OCR/parser authority) NOT FULLY CLOSED + 1 new MINOR (`UNAVAILABLE_CATALOG_VERSION` had no matching `failureCode`) found on the full v4.3 text — full record in §0.4 below and in `core/review/` (verdict text logged verbatim via PM Bridge diagnostic read, 2026-08-22). |
+| Document status | **v4.4 CONSENSUS — APPROVE FOR PHASED IMPLEMENTATION**, per GPT-PM's round-4 verdict on this exact text (verbatim in `core/review/SPTR_EQUIPMENT_RECOGNITION_V4_4_GPT_PM_ROUND4_CONSENSUS_VERDICT_2026-08-22.md`, independently re-verified against the binding text below before acceptance). This is architecture/implementation-plan approval, not a production exact-model release: production remains BLOCKED behind the fail-closed gates listed in §15. |
+| Predecessor status | v4.3 MECHANICAL PATCH — round-3 (binary verification, not a new adversarial round) verdict: NOT YET CONSENSUS. 6 of 7 round-2 invariants confirmed CLOSED (evidence lane, ABSTAIN/infra split, contract negotiation, NEED_MORE_VIEW denominator, App Check transition, revocation correctness). 1 CRITICAL (`RecognitionAuthorityTuple` missing OCR/parser authority) NOT FULLY CLOSED + 1 new MINOR (`UNAVAILABLE_CATALOG_VERSION` had no matching `failureCode`) found on the full v4.3 text — full record in §0.4 below and in `core/review/` (verdict text logged verbatim via PM Bridge diagnostic read, 2026-08-22). Both remaining items closed in this v4.4 text and confirmed CLOSED by GPT-PM's round-4 verdict. |
 | Production exact-model claim | Still BLOCKED until P6 sealed blind evaluation + statistical confidence bounds + calibration/open-set gate + model-by-model promotion + B-01..B-04 + all round-2/round-3 invariants close |
 | Workstream classification | POST_MVP_HIGH, unchanged |
 | Primary design rule | Unchanged from v4.2 — NO SILENT DEGRADATION — **extended in this revision**: a claim's evidence lane (text-only vs. visual) is itself now a machine-observable, server-derived fact, not an implementation convention |
@@ -82,6 +82,27 @@ Both findings were independently re-verified against v4.3's actual text before b
 GPT-PM additionally suggested (not required for CONSENSUS, applied anyway as free, same-diff hygiene): `verifierModel` should be explicitly documented as a **display-only mirror** of `authority.verifierModelVersion`, never an independently-resolved value — done in §6.5's binding rules.
 
 Per GPT-PM's own stated condition, applying these two mechanical fixes (verified against the real v4.3 text, not merely pasted as instructed) is sufficient for `v4.3 CONSENSUS / APPROVE FOR PHASED IMPLEMENTATION` without a further contested review round. This document (v4.4) is that mechanical closure — see §15 for the updated final status.
+
+## 0.5 v4.4 round-4 verdict — GPT-PM CONSENSUS, confirmed on this exact text
+
+GPT-PM's round-4 verdict, on the literal v4.4 text (full verbatim reply in
+`core/review/SPTR_EQUIPMENT_RECOGNITION_V4_4_GPT_PM_ROUND4_CONSENSUS_VERDICT_2026-08-22.md`):
+
+> VERDICT: v4.4 CONSENSUS — APPROVE FOR PHASED IMPLEMENTATION
+>
+> ...оба оставшихся пункта закрыты именно так, как требовалось... NEW BLOCKER = 0, NEW CRITICAL = 0,
+> NEW MAJOR = 0, NEW MINOR = 0... Round-cap на design review считаю закрытым. Дополнительный
+> adversarial круг для v4.4 не нужен.
+
+Both closure claims independently re-verified against this file's own binding text before
+acceptance (not taken on GPT-PM's word, per the operator's standing instruction): §4.6's
+`RecognitionAuthorityTuple` does list `ocrVersion`/`identityParserVersion?`, §6.5 no longer carries
+a standalone `ocrVersion` field outside `authority`, and §6.5's `failureCode` enum does list
+`CATALOG_VERSION_UNAVAILABLE` mapped to `decision: UNAVAILABLE_CATALOG_VERSION`. No discrepancy
+found. This closes the iterative Claude+GPT-PM design-consensus loop that ran v4.1 → v4.2 → v4.3 →
+v4.4 (see `core/DECISION_LOG.md`) — the design/architecture is now CONSENSUS-approved for phased
+implementation; production exact-model release remains gated by P0.G0/P6.G0-G3 and the other
+fail-closed gates listed in §15, unaffected by this design-level approval.
 
 # 1-3. Comparison, repository baseline, master decisions
 
@@ -423,30 +444,29 @@ Unchanged in shape from v4.2, with the P6 step now explicitly gated by the new P
 ```text
 FINAL STATUS FOR v4.4
 
-DESIGN STATUS: MECHANICAL PATCH CANDIDATE -- closes GPT-PM round-3's binary-
-  verification findings on v4.3 (1 CRITICAL partial, 1 MINOR) on top of v4.3's
-  already-confirmed closure of 6 of round-2's 7 invariants, on top of v4.2's
-  already-confirmed closure of B-01..B-04.
+DESIGN STATUS: v4.4 CONSENSUS -- APPROVE FOR PHASED IMPLEMENTATION.
+  GPT-PM's round-4 verdict on this exact text: NEW BLOCKER = 0, NEW CRITICAL = 0,
+  NEW MAJOR = 0, NEW MINOR = 0. Round-cap on design review is closed; GPT-PM does
+  not consider a further adversarial round necessary. Full verbatim verdict:
+  core/review/SPTR_EQUIPMENT_RECOGNITION_V4_4_GPT_PM_ROUND4_CONSENSUS_VERDICT_2026-08-22.md.
 FOUNDATION WORK (P0, read-only P1): MAY PROCEED, unchanged.
-USER-FACING / PRODUCTION EXACT IDENTITY: BLOCKED until P6.G0 (new) plus all
-  previously-stated P6 gates close.
+USER-FACING / PRODUCTION EXACT IDENTITY: still BLOCKED -- CONSENSUS approves the
+  architecture and phased implementation plan, not a production exact-model release.
+  Production remains gated behind P0.G0, P6.G0 (new), P6.G1-G3, calibration/OOD/
+  Clopper-Pearson gates, and rollback/revocation readiness, exactly as GPT-PM's own
+  round-4 verdict states.
 
-Per GPT-PM's own round-3 verdict, applying these two fixes literally is sufficient
-for v4.3 CONSENSUS / APPROVE FOR PHASED IMPLEMENTATION with no further contested
-review round. This document is that literal application. Per the operator's standing
-instruction (2026-08-22, "не верь гпт, все проверяй сам"), self-declaring CONSENSUS
-on this document's own say-so is exactly the failure mode that instruction exists to
-prevent -- so this document's status remains MECHANICAL PATCH CANDIDATE, not
-CONSENSUS, until GPT-PM has actually confirmed THIS v4.4 text (not merely
-pre-committed to a description of it).
+Both closure claims independently re-verified against this document's own binding
+text before acceptance (operator's standing instruction, "не верь гпт, все
+проверяй сам") -- no discrepancy found. This closes the iterative Claude+GPT-PM
+design-consensus loop that ran v4.1 -> v4.2 -> v4.3 -> v4.4.
 
   [x] 1. server-derived TEXT_ONLY | VISUAL evidence lane           -- 6.4.1, 6.5, P6.G0
         -- CLOSED, confirmed round 3
   [x] 2. infra failures impossible under ABSTAIN                    -- 6.5
         -- CLOSED, confirmed round 3
   [x] 3. complete immutable RecognitionAuthorityTuple                -- 4.2, 4.6
-        -- round 3: NOT FULLY CLOSED (missing ocrVersion/identityParserVersion) --
-           FIXED in v4.4, pending round-4 (binary) confirmation
+        -- CLOSED, confirmed round 4
   [x] 4. actual client/server contract negotiation                  -- 6.5, P2.G3
         -- CLOSED, confirmed round 3
   [x] 5. NEED_MORE_VIEW remains in P2.G5 denominator                 -- 7.1, P2.G4, P2.G5
@@ -456,9 +476,9 @@ pre-committed to a description of it).
   [x] 7. revocation correctness does not depend solely on
         warm-instance push/listener                                 -- 6.6
         -- CLOSED, confirmed round 3
-  [ ] 8. (round 3, MINOR) failureCode representable for every
+  [x] 8. (round 3, MINOR) failureCode representable for every
         UNAVAILABLE_* decision, incl. UNAVAILABLE_CATALOG_VERSION    -- 6.5
-        -- FIXED in v4.4, pending round-4 (binary) confirmation
+        -- CLOSED, confirmed round 4
 ```
 
 # Appendix A — Gate close checklist
@@ -473,4 +493,4 @@ Unchanged from v4.2, plus: "P6.G0's evidence-lane mutation test is wired into CI
 | v4.1 CONSENSUS | 2026-08-21 | APPROVE FOR PHASED IMPLEMENTATION → SUPERSEDED 2026-08-22 | 3 self-run rounds; approved, then superseded by independent Claude+GPT-PM cross-review. |
 | v4.2 REMEDIATED RC | 2026-08-22 | REMEDIATED REVIEW CANDIDATE → round-2 NOT APPROVE | Closed B-01..B-04 + ~20 MAJOR/MINOR. GPT-PM round-2 (full-document review) found 1 new BLOCKER + 2 CRITICAL + 4 MAJOR, declared round-cap exhausted, supplied a closed 7-point mechanical closure list. |
 | v4.3 MECHANICAL PATCH | 2026-08-22 | MECHANICAL PATCH CANDIDATE → round-3 NOT YET CONSENSUS | Closed 6 of GPT-PM round-2's 7 named invariants (confirmed round 3). Round 3 (binary verification, not a new adversarial round) found `RecognitionAuthorityTuple` still missing OCR/parser authority (CRITICAL, partial) and a new MINOR (`UNAVAILABLE_CATALOG_VERSION` unrepresentable in `failureCode`). |
-| **v4.4 MECHANICAL PATCH** | **2026-08-22** | **MECHANICAL PATCH CANDIDATE — pending round-4 (binary) confirmation** | Closes both remaining round-3 findings: `RecognitionAuthorityTuple` (§4.6) gains `ocrVersion`/`identityParserVersion?`, response contract's standalone `ocrVersion` field removed (sourced from `authority` only), new binding rule that all views in a session share the pinned OCR/parser authority or the session terminates; `failureCode` enum gains `CATALOG_VERSION_UNAVAILABLE`; `verifierModel` documented as a display-only mirror of `authority.verifierModelVersion`. Per GPT-PM's round-3 verdict this is sufficient for CONSENSUS if applied literally — not self-declared here; awaiting GPT-PM's actual confirmation on this text. |
+| **v4.4 CONSENSUS** | **2026-08-22** | **APPROVE FOR PHASED IMPLEMENTATION** | Closes both remaining round-3 findings: `RecognitionAuthorityTuple` (§4.6) gains `ocrVersion`/`identityParserVersion?`, response contract's standalone `ocrVersion` field removed (sourced from `authority` only), new binding rule that all views in a session share the pinned OCR/parser authority or the session terminates; `failureCode` enum gains `CATALOG_VERSION_UNAVAILABLE`; `verifierModel` documented as a display-only mirror of `authority.verifierModelVersion`. GPT-PM's round-4 verdict confirms CONSENSUS on this exact text: 0 new BLOCKER/CRITICAL/MAJOR/MINOR, round-cap closed. Production exact-model release remains gated behind P0.G0/P6.G0-G3 and the other fail-closed gates (§15). |

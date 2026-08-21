@@ -23344,3 +23344,119 @@ diagnostic DOM read reusing the existing page, never spawning a new one) rather 
 retry the unreliable automated path. Not fixed at the root in `pm-bridge`'s own code this session —
 flagged to the operator as needing a real Playwright-transport investigation separately (operator
 requested a GPT code review of `pm-bridge`'s own source for this, same date, separate GPT session).
+
+## 2026-08-22 -- Blank Home/Progress bug: root cause found, code-confirmed (GoRouter redirect
+swallows the eligibility-block "check my answers" button for already-onboarded users)
+
+Continuation of the same-day entry (`05834e5`) that left the root cause unconfirmed and leaning
+"paint-lag." That lean is now superseded: the S23 live-logcat session (operator reconnected the
+device, reproduced live, confirmed "все как на видео") ran ~48 minutes of `adb logcat` spanning the
+whole freeze with the app process (pid 29140) alive and foregrounded throughout, and captured ZERO
+lines from the app itself in that window -- no exception, no `ANR in com.fitnessapp...` from
+ActivityManager (which would fire well inside 48 minutes if the main thread were genuinely
+blocked), no Choreographer/Davey jank warning. FACT, not inference: verified via `grep` across the
+full capture file. This rules out a caught Dart exception, a system-detected ANR, and ordinary
+frame-pacing jank, and argues against a literal main-thread hang -- something is producing no
+frames and no errors, which fits a torn/orphaned widget subtree more than a blocked isolate.
+
+The operator then gave the actual repro in one sentence: "банер появляется, я соглашаюсь, и все
+пропадает, только обои остаются" -- the block screen appears, they tap its one button, and
+everything but the wallpaper vanishes. Re-walking the video frames (fps=2 extraction,
+`scratchpad/bugvideo/frame_016.png`-`frame_018.png`) pinned this down exactly: frame 16/17 is the
+PER-EXERCISE eligibility block ("Это упражнение придержано" = `eligBlockedTitle`, the *default*
+title -- confirmed against `app_ru.arb:1282`, distinct from the whole-catalogue block's
+`eligTrainingBlockedTitle` = "Сейчас тренировок нет" at `app_ru.arb:1307`), rendered by
+`exercise_reference.dart:1208-1217` (`key: const Key('exercise.withheld')`) because the account's
+PAR-Q health screening is entirely unanswered. Its only button, "Проверить мои ответы о здоровье",
+calls `onReviewProfile: () => GoRouter.of(context).push('/onboarding')` (line 1215). One frame
+later (0.5s at this sampling rate), the screen is already blank Home with the bottom-nav "ГЛАВНАЯ"
+tab lit -- no visible intermediate onboarding screen at all.
+
+Root cause, FACT via direct code read of `mobile/lib/core/router/app_router.dart`:
+- Line 108-110: `if (isSignedIn && isOnboarded && location == '/onboarding') return '/home';` --
+  a redirect guard, per its own comment at lines 288-295, added specifically to stop an
+  already-onboarded user from landing back in first-run onboarding via a stale deep link or the
+  back button.
+- `isOnboarded` (`redirectFor`, line 251: `profile?.hasCompletedOnboarding ?? false`) is the
+  coarse "finished the onboarding wizard once" flag -- independent of whether the PAR-Q health
+  screening sub-step within that wizard was actually answered or skipped. An account can be
+  `isOnboarded == true` and still have every PAR-Q question `unanswered`, which is exactly the
+  eligibility-block screen's own precondition. So every single "Проверить мои ответы о здоровье"
+  button, reached specifically BECAUSE PAR-Q is incomplete, fires from a state where this redirect
+  guard is active.
+- `push('/onboarding')` from that button is therefore silently rewritten by the redirect to
+  `push('/home')` before it ever reaches `OnboardingPage`. `/home` (`app_router.dart:426`) is a
+  child of the app's single `ShellRoute` (`navigatorKey: _shellKey`, `MainShell(child: child)` at
+  lines 421-423), while `/onboarding` and the calling route itself (`/exercise/:id`, line 307) are
+  top-level `GoRoute`s on the ROOT navigator, siblings of the ShellRoute -- the same
+  root-navigator/ShellRoute-sibling structure already implicated earlier this session in the
+  `/form-check` back-button defect. A `push()` of a ShellRoute-nested location from a route sitting
+  outside the shell, while the original ShellRoute instance is still mounted lower in the root
+  navigator's stack, is the mechanism under suspicion for the actual blank content (a second
+  `MainShell`/`_shellKey` instantiation racing or reparenting against the first) -- this exact
+  mechanism (GlobalKey reparenting silently tearing the shell's state rather than throwing, so
+  nothing lands in logcat) is HYPOTHESIS, not yet directly proven with a debug-build stack trace or
+  Flutter inspector capture; everything upstream of it (the redirect swallowing the push, the
+  ShellRoute/root-navigator split) is FACT from the code.
+- All six call sites share the same bug: `exercise_reference.dart:1215`, `workouts_page.dart:512`,
+  `workouts_page.dart:1345`, `ai_planner_page.dart:66`, `workout_player_page.dart:228`,
+  `home_page.dart:168` -- every `onReviewProfile` on `EligibilityNotice` pushes `'/onboarding'`.
+
+Proposed minimal fix, not yet applied (no GO given for this gate): change all six to
+`push('/onboarding/edit')`. That route (`app_router.dart:296-299`) renders the identical
+`OnboardingPage` and was added, per its own comment, as "a way in that survives the redirect" for
+exactly an already-onboarded user -- already proven safe for this purpose by Profile's own "edit
+your answers" tile (`profile_page.dart:107`). Checked both branches of `resolveRedirect` against
+`/onboarding/edit`: a not-yet-onboarded user pushing it gets bounced to `/onboarding` by the
+line-101-106 guard (one harmless extra redirect hop, same destination page), and an onboarded user
+pushing it matches neither redirect clause and lands on `/onboarding/edit` directly -- so the swap
+is safe for both populations `exercise_reference.dart`'s exemption list lets reach this screen
+(the QR-scan not-yet-onboarded case, and the already-onboarded PAR-Q-incomplete case). No fix
+applied yet, per this project's no-hypothesis-driven-fixes discipline and because the visual
+mechanism (why content specifically goes blank, not just wrong-page) is still HYPOTHESIS -- reported
+to the operator with the proposed fix; awaiting GO before implementing.
+
+## 2026-08-22 — SPTR Equipment Recognition v4.4: GPT-PM round-4 verdict — CONSENSUS, APPROVE FOR PHASED IMPLEMENTATION
+
+**Decision:** the iterative Claude+GPT-PM design-consensus loop for the SPTR Equipment Recognition
+v4.1 design (v4.1 → v4.2 → v4.3 → v4.4, full narrative in this file's 2026-08-22 entry earlier today,
+"independent verdict, then iterative GPT-PM consensus loop") is now CLOSED. GPT-PM's round-4 verdict
+on the literal v4.4 text: `VERDICT: v4.4 CONSENSUS — APPROVE FOR PHASED IMPLEMENTATION`, 0 new
+BLOCKER/CRITICAL/MAJOR/MINOR, both remaining round-3 items (RecognitionAuthorityTuple's
+ocrVersion/identityParserVersion gap, the UNAVAILABLE_CATALOG_VERSION failureCode MINOR) confirmed
+CLOSED. Full verbatim verdict captured in
+`core/review/SPTR_EQUIPMENT_RECOGNITION_V4_4_GPT_PM_ROUND4_CONSENSUS_VERDICT_2026-08-22.md`.
+
+**Verification (FACT, not taken on GPT-PM's word per the operator's standing "не верь гпт, все
+проверяй сам" instruction):** both closure claims independently re-checked against the actual v4.4
+document text on disk. §4.6's `RecognitionAuthorityTuple` does list `ocrVersion`/
+`identityParserVersion?`; §6.5's response contract no longer carries a standalone `ocrVersion` field
+outside `authority`; §6.5's `failureCode` enum does list `CATALOG_VERSION_UNAVAILABLE` mapped to
+`decision: UNAVAILABLE_CATALOG_VERSION`. No discrepancy found between the verdict and the binding
+text. The v4.4 document's own status, header table, §0.4/§0.5, §15 final-status block, and Appendix B
+revision-history row were all updated from "MECHANICAL PATCH CANDIDATE" to "CONSENSUS — APPROVE FOR
+PHASED IMPLEMENTATION" in this same commit, reflecting this confirmed verdict rather than
+self-declaring it ahead of GPT-PM's actual confirmation (which is exactly what the design's own
+§15 text had explicitly refused to do in every prior revision).
+
+**Scope of this approval, stated explicitly by GPT-PM and preserved verbatim in the document:** this
+is architecture/implementation-plan approval, not a production exact-model release authorization.
+Production exact-identity claims remain BLOCKED behind P0.G0 (App Check readiness), the new P6.G0
+(evidence-lane enforcement), P6.G1 (mandatory shadow), P6.G2 (sealed independent evaluation), P6.G3
+(model-by-model promotion), the P6-T/P6-V statistical lane requirements, calibration/OOD/
+Clopper-Pearson gates, and rollback/revocation readiness — none of those gates are affected or
+satisfied by this design-level CONSENSUS.
+
+**Tooling note:** this verdict was obtained after a substantial live debugging session on the
+PM Bridge tooling itself (two real root-cause bugs found and fixed in `D:\Repo\pm-bridge` the same
+day — see that repo's own `core/DECISION_LOG.md`, 2026-08-22 entries). The verdict that actually
+closed this design loop was captured moments after those fixes landed, from a genuine new assistant
+turn in the same long-running conversation — not re-derived or reconstructed from any earlier,
+partially-failed send.
+
+**Next step, per GPT-PM's own stated recommendation, not yet started:** "реализация по фазам и
+независимый review уже реального кода/evidence каждого gate, а не очередной review самого design
+document" — phased implementation work begins, with future review rounds scoped to real code/evidence
+per gate rather than further design-document rounds. No implementation gate has been opened yet as of
+this entry; this entry closes the design-review phase only.
+
