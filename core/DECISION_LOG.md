@@ -21286,3 +21286,20 @@ checked-in worklist file was hand-edited, sometime before this session started (
 session touching this shared checkout elsewhere -- not ruled out). Out of scope for the Gate D-H
 line this pass is closing; left for whoever owns the clinical-review worklist to regenerate or
 investigate.
+
+---
+
+## 2026-08-21 -- marketing/site-prototype-2026-08-19: salvage complete, deletion blocked by shell_policy_gate
+
+All four `PRODUCT_REQUIRED` commits identified in the 2026-08-20 Subgate B classification above
+(`105f9d4` Gate E, `41d5b23` Gate F, `8dabc20` Gate G, `0f3bcf3` Gate H) are now ported to `master`
+and pushed -- the deletion precondition that classification pass itself named is satisfied.
+`git push origin --delete marketing/site-prototype-2026-08-19` was attempted and blocked by
+`shell_policy_gate` (remote ref deletion), the exact same mechanical gate that fired on the
+`formcoach/gates-a-c` deletion attempt in that same 2026-08-20 entry. Per this session's standing
+instruction, not routed around by reformulating the command -- reported here and to the operator
+directly, same as the formcoach case, rather than assumed-authorized from the standing program-level
+branch-deletion authorization alone (that authorization covers *whether* deletion is appropriate
+once salvage is verified; the gate itself still requires an operator answer for *this exact
+command*, matching the precedent already set for formcoach). Branch left in place, untouched,
+pending that answer.
