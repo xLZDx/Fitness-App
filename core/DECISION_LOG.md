@@ -22154,3 +22154,66 @@ still wrote a receipt, which is sufficient per the gate's fail-open contract -- 
 satisfies the commit gate even when the underlying GPT call fails.
 
 No product code changed by this entry.
+
+## 2026-08-21 -- ROOT CAUSE FOUND: recurring native SIGSEGV in Impeller/Vulkan, both builds, operator's S23 Ultra
+
+Operator reported the build as broken ("билд говно с кучей багов") and Form Coach specifically as
+still blocked, and connected their own device (Samsung S23 Ultra, `SM_S918B`, product `dm3qxxx`,
+serial `R5CW142SASR`) via USB to let this session inspect it directly rather than describe symptoms
+verbally -- a different physical device than the S8 this whole session's D-03/D-05B work has run
+against.
+
+**Pulled `adb logcat -b crash` (`/d/android-sdk/platform-tools/adb.exe`, path found via
+`$env:ANDROID_HOME` -> `D:\android-sdk`, not on PATH). Found 8 identical native crashes**, 6 from
+yesterday (2026-08-20, 01:59-02:22, all `.sptr.debug`) and 2 from today (2026-08-21, 17:52 on the
+RELEASE package `com.fitnessapp.fitness_app.sptr` build 2637, and 17:56 on `.sptr.debug` build 14 --
+both builds distributed earlier this same session). Every occurrence is byte-for-byte the same
+signature:
+
+```
+Fatal signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x1c, thread "N.raster"
+Cause: null pointer dereference
+#00-#04 /vendor/lib64/hw/vulkan.adreno.so (obfuscated symbols)
+#04/#05 qglinternal::vkCmdBeginRenderPass(...)
+#05+     libflutter.so (Impeller's Vulkan backend, offset varies by build but same call chain)
+```
+
+Confirmed via the app's own startup log line captured in the same logcat pull:
+`I/flutter: [IMPORTANT:flutter/shell/platform/android/android_context_vk_impeller.cc(60)] Using the
+Impeller rendering backend (Vulkan).` -- Flutter 3.27.1 (`flutter --version`), no
+`io.flutter.embedding.android.EnableImpeller` override in
+`mobile/android/app/src/main/AndroidManifest.xml` (checked: absent), so Impeller+Vulkan is active by
+whatever this Flutter version's own default is, not a project choice anyone made deliberately.
+
+**FACT, not inference: this is a crash in the Adreno GPU driver's Vulkan implementation
+(`vulkan.adreno.so`), reached from Flutter's own Impeller rendering pipeline on the raster thread,
+identical across 8 occurrences spanning two days and both the release and debug package.** It is NOT
+tied to one specific screen: the 17:56 debug-build crash was preceded (24s and 52s earlier) by
+`ResourceManagerService: addMediaInfo ... 1280x720, hw codec count 1` -- consistent with camera
+activity (Form Coach or the visual-equipment live scanner both hold a 720p camera session) -- but the
+17:52 RELEASE-build crash 84 seconds after launch had NO codec allocation logged at all before it,
+meaning ordinary UI rendering (this app's custom HUD/glass shader work in
+`core/theme/hud_tokens.dart`, `shared/widgets/glass.dart`, `core/background/hud_sky.dart` are the
+heaviest non-camera rendering paths) can trigger the same fault independent of the camera. Read as:
+a systemic Impeller/Vulkan driver-compatibility crash on this specific Adreno GPU/driver
+(`samsung/dm3qxxx/dm3q:16/BP4A.251205.006/S918BXXSAFZG1`), not a bug isolated to Form Coach.
+
+**Correction to this session's own earlier verification:** the 2026-08-21 entry above titled "Form
+Coach verification" (independently verified functional, code-reading + limited device pass on the
+S8) is NOT wrong on its own terms -- the S8 (`SM_G950F`, older Adreno generation, no Impeller/Vulkan
+crash observed there) may simply not hit this driver bug at all. But it is now known to be
+INCOMPLETE: it did not cover the S23 Ultra, and "verified functional" cannot stand as a
+device-independent claim when the underlying rendering backend crashes reproducibly on a second real
+device. Operator's live report supersedes the earlier code-level verification for this specific
+device.
+
+**Root cause is understood; NOT YET FIXED.** The standard, documented mitigation for this exact
+failure class (Impeller/Vulkan SIGSEGV in a vendor GPU driver) is to disable Impeller for Android via
+an `AndroidManifest.xml` meta-data flag (`io.flutter.embedding.android.EnableImpeller` = `false`),
+falling back to the older Skia/OpenGL-ES renderer, which does not exercise this Vulkan driver path at
+all. This has NOT been applied -- proposed to the operator, pending GO, since it changes the
+rendering backend for the entire app (all platforms/devices), not a scoped one-file fix, and this
+session's standing authorization covers device verification and the two explicit build/distribution
+requests, not a new rendering-engine change.
+
+No product code changed by this entry.
