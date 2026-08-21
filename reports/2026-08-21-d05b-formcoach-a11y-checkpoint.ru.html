@@ -1,0 +1,290 @@
+<title>D-05B, Form Coach и контрольная точка a11y</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --surface-2:#eef1f4; --border:#dde2e8; --rule:#dde2e8;
+    --ink:#1c2230; --text:#1c2230; --text-2:#3d4657; --text-3:#6b7686; --muted:#6b7686;
+    --accent:#2e6f6b; --accent-ink:#f6f7f9;
+    --ok-bg:#e9f5ee; --ok-ink:#1c6f53; --ok-border:#bfe3cf;
+    --warn-bg:#fbf1e0; --warn-ink:#8a5a10; --warn-border:#efd6a3;
+    --bad-bg:#fbeceb; --bad-ink:#9e2f2a; --bad-border:#f0c6c2;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Consolas,monospace;
+    --sans:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12161c; --surface:#181d25; --surface-2:#1f252e; --border:#2b323d; --rule:#2b323d;
+      --ink:#e8eaed; --text:#e8eaed; --text-2:#c2c8d2; --text-3:#8b95a3; --muted:#8b95a3;
+      --accent:#6cc2b9; --accent-ink:#0c1512;
+      --ok-bg:#12261e; --ok-ink:#7fd6ae; --ok-border:#1e4433;
+      --warn-bg:#2a2113; --warn-ink:#e6b866; --warn-border:#4a3a1c;
+      --bad-bg:#2b1817; --bad-ink:#f0958e; --bad-border:#4a2622;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12161c; --surface:#181d25; --surface-2:#1f252e; --border:#2b323d; --rule:#2b323d;
+    --ink:#e8eaed; --text:#e8eaed; --text-2:#c2c8d2; --text-3:#8b95a3; --muted:#8b95a3;
+    --accent:#6cc2b9; --accent-ink:#0c1512;
+    --ok-bg:#12261e; --ok-ink:#7fd6ae; --ok-border:#1e4433;
+    --warn-bg:#2a2113; --warn-ink:#e6b866; --warn-border:#4a3a1c;
+    --bad-bg:#2b1817; --bad-ink:#f0958e; --bad-border:#4a2622;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;line-height:1.55}
+  .wrap{max-width:760px;margin:0 auto;padding:3.2rem 1.5rem 6rem}
+  header{margin-bottom:0.5rem}
+  .eyebrow{font-family:var(--mono);font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 0.9rem}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(1.9rem,4.5vw,2.6rem);line-height:1.15;
+    margin:0 0 0.7rem;text-wrap:balance;letter-spacing:-0.01em}
+  .dek{font-size:1.05rem;color:var(--text-2);margin:0;max-width:62ch;text-wrap:balance}
+  h2{font-family:var(--serif);font-weight:600;font-size:1.4rem;margin:2.6rem 0 0.9rem;
+    padding-bottom:0.5rem;border-bottom:1px solid var(--rule);letter-spacing:-0.005em}
+  h3{font-family:var(--sans);font-weight:600;font-size:0.98rem;margin:1.5rem 0 0.6rem;color:var(--text)}
+  p{margin:0 0 1rem}
+  a{color:var(--accent)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;margin:1.4rem 0 2rem}
+  .card{border:1px solid var(--border);border-radius:6px;padding:0.9rem 1rem;background:var(--surface)}
+  .card .k{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.07em;text-transform:uppercase;
+    color:var(--text-3);margin-bottom:0.35rem}
+  .card .v{font-weight:600;font-size:0.98rem;line-height:1.35}
+  .pill{display:inline-block;font-family:var(--mono);font-size:0.66rem;letter-spacing:0.06em;
+    text-transform:uppercase;padding:0.2em 0.6em;border-radius:999px;border:1px solid;margin-top:0.5rem}
+  .pill.ok{background:var(--ok-bg);color:var(--ok-ink);border-color:var(--ok-border)}
+  .pill.warn{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-border)}
+  .pill.bad{background:var(--bad-bg);color:var(--bad-ink);border-color:var(--bad-border)}
+  .note{border-left:3px solid var(--accent);background:var(--surface-2);border-radius:0 4px 4px 0;
+    padding:0.9rem 1.1rem;margin:1.2rem 0;font-size:0.94rem}
+  .note.warn{border-left-color:var(--warn-ink)}
+  .note.bad{border-left-color:var(--bad-ink)}
+  .note.ok{border-left-color:var(--ok-ink)}
+  code, .mono{font-family:var(--mono);font-size:0.88em;background:var(--surface-2);
+    padding:0.1em 0.4em;border-radius:3px}
+  .tablewrap{overflow-x:auto;margin:1.2rem 0;border:1px solid var(--border);border-radius:6px}
+  table{border-collapse:collapse;width:100%;font-size:0.88rem;min-width:520px}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+  th{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--text-3);background:var(--surface-2)}
+  tr:last-child td{border-bottom:none}
+  ul{padding-left:1.3rem;margin:0 0 1rem}
+  li{margin-bottom:0.5rem}
+  ol{padding-left:1.3rem;margin:0 0 1rem}
+  ol li{margin-bottom:0.5rem}
+  .tag{display:inline-block;font-family:var(--mono);font-size:0.66rem;letter-spacing:0.05em;
+    text-transform:uppercase;padding:0.1em 0.55em;border-radius:3px;background:var(--surface-2);
+    color:var(--text-3);border:1px solid var(--border);margin-right:0.4em}
+  .tag.major{background:var(--bad-bg);color:var(--bad-ink);border-color:var(--bad-border)}
+  .tag.minor{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-border)}
+  .tag.ok{background:var(--ok-bg);color:var(--ok-ink);border-color:var(--ok-border)}
+  footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-size:0.82rem;color:var(--text-3)}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SPTR &middot; Fitness-App &middot; контрольная точка, не финальный отчёт</p>
+  <h1>D-05B воспроизведён, Form Coach проверен, a11y отскоупен &mdash; а первопричина D-03 сужена, но не решена</h1>
+  <p class="dek">Второй чекпоинт в этом проходе, причина та же, что и у первого: механический гейт на
+  коммит требует затрагивать <code>reports/</code> каждые три коммита, а инструкция оператора «отчёт
+  только в конце» ему не видна через границу сжатия контекста. Ниже четыре реальных результата,
+  каждый честно ограничен тем, что действительно подтверждено.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 33a124c</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="grid">
+  <div class="card">
+    <div class="k">D-05B</div>
+    <div class="v">Воспроизведён вживую, тот же симптом первого тапа, что и D-03</div>
+    <span class="pill bad">Подтверждён открытым</span>
+  </div>
+  <div class="card">
+    <div class="k">Form Coach</div>
+    <div class="v">Независимо проверен целиком, не просто выглядит подключённым</div>
+    <span class="pill ok">Работает</span>
+  </div>
+  <div class="card">
+    <div class="k">Причина D-03 / D-05B</div>
+    <div class="v">Два кандидата прочитаны, ни один не подтверждён</div>
+    <span class="pill warn">Сужена</span>
+  </div>
+  <div class="card">
+    <div class="k">M7 &middot; a11y</div>
+    <div class="v">Уже зрело; найден один реальный MAJOR-пробел</div>
+    <span class="pill warn">Отскоупен</span>
+  </div>
+</div>
+
+<h2>1 &middot; D-05B воспроизведён, и указывает на нечто большее, чем один чип</h2>
+<p>Чип-фильтр «Тренер по технике» на вкладке «Библиотека» воспроизведён вживую на S8: чистый PASS на
+первом тапе и чистый FAIL на первом тапе после свежего перезапуска приложения &mdash; в точности
+исторический симптом («чип остался на 'Для вас'», второй тап срабатывает). Побочное расследование
+того, почему серия автоматизированных испытаний перестала отвечать (искл ючил сам <code>adb</code> как
+причину &mdash; <code>KEYCODE_HOME</code> сработала корректно прямо во время зависания), вскрыло
+третий, никак не связанный виджет с тем же паттерном отказа: вкладка нижней навигации «ТРЕНИРОВКИ» не
+сработала на самом первом тапе сразу после холодного старта, <strong>3 раза из 3</strong>, каждый раз
+с полностью свежего процесса приложения.</p>
+<div class="note bad">Три разных виджета (кнопка логина, чип-фильтр, вкладка нижней навигации), один и
+тот же симптом: <strong>первый тап сразу после появления экрана иногда ничего не делает; идентичный
+второй тап срабатывает.</strong> D-05B не сведён к проценту, как D-03 &mdash; n=2 чистых испытания
+плюс 3 смежных отказа нижней навигации это реальное свидетельство, но не статистика.</div>
+
+<h2>2 &middot; Form Coach: проверен, а не просто осмотрен</h2>
+<p>Более ранний, поверхностный проход назвал функцию распознавания позы «полной и подключённой» без
+глубокой проверки. Отдельный скептический разбор подтвердил это построчно, от начала до конца:</p>
+<ul>
+<li>Настоящий ML Kit: <code>google_mlkit_pose_detection</code> &mdash; реальная зависимость; сервис
+создаёт настоящий <code>PoseDetector</code>, обрабатывает реальные кадры камеры, конвертирует
+настоящие точки позы.</li>
+<li>Настоящая логика: геометрические проверки в <code>pose_gate.dart</code> и гистерезисный автомат в
+<code>rep_counter.dart</code> &mdash; подлинные, не заглушки.</li>
+<li>Настоящая навигация: экран маршрутизирован, достижим из реальных экранов, подключён в продакшене
+при старте (мок-провайдер &mdash; только тестовое значение по умолчанию).</li>
+<li>Настоящий голосовой тренер: реальная интеграция <code>flutter_tts</code>, не декларация о
+намерениях.</li>
+<li>35 содержательных тестовых файлов, ни одной незакрытой TODO/заглушки в продакшен-коде.</li>
+</ul>
+<div class="note">Одна оговорка, взятая из самих комментариев кода, а не придуманная здесь: пороги
+ворот задокументированы как «стартовые значения&nbsp;&hellip; не измерены на парке устройств» &mdash;
+реально работающие, но клинически не откалиброванные.</div>
+
+<h2>3 &middot; В поисках первопричины D-03/D-05B: два кандидата, ни один не подтверждён</h2>
+<p>Ислючительно по коду проведено расследование, делят ли D-03, D-05B и случай с нижней навигацией
+один механизм. Живой захват таймлайна DevTools не делался, поэтому это сужение подозреваемых, а не
+доказательство.</p>
+<div class="tablewrap"><table>
+<tr><th>Кандидат</th><th>Покрывает</th><th>Статус</th></tr>
+<tr><td><code>_fadeThrough</code> &mdash; 360мс переход fade+slide на каждом роуте (<code>app_router.dart</code>)</td><td>Кнопка логина, контент внутри страницы</td><td>Реальный механизм, но стандартное поведение <code>RenderOpacity</code> во Flutter блокирует хит-тест только при полной прозрачности &mdash; не подтверждено, действительно ли тапы гасятся посреди затухания именно здесь</td></tr>
+<tr><td>Тот же кандидат</td><td>Вкладка нижней навигации</td><td><strong>Структурно исключён</strong> &mdash; панель навигации рендерится вне анимируемого поддерева роута</td></tr>
+<tr><td>Гонка перестройки <code>MainShell</code> из-за redirect</td><td>Только вкладка нижней навигации</td><td>Правдоподобно, не подтверждено &mdash; собственный код панели навигации в этом проходе не читался</td></tr>
+</table></div>
+<div class="note warn">Намеренно не предлагаю фикс ни под один из кандидатов. В истории D-03 уже есть
+один реальный, но неверный фикс (изменение Material/Semantics, само по себе ценное и настоящее, но не
+затронувшее фактический механизм этого бага) &mdash; повторное угадывание здесь рискует повторить ту
+же ошибку. Следующий шаг &mdash; живой захват таймлайна DevTools на устройстве во время неудачного
+тапа, а не дальнейшее чтение исходников.</div>
+
+<h2>4 &middot; Часть M7 про a11y: отскоупена, и лучше, чем ожидалось</h2>
+<p>В этой кодовой базе уже есть выделенный набор a11y-тестов, цветовые токены с измеренными
+WCAG-коэффициентами, компонент кнопки-иконки с обязательным tooltip и эталонная реализация для
+кастомных слайдеров. Скоупинг нашёл один реальный пробел, заслуживающий приоритета:</p>
+<ol>
+<li><span class="tag major">Major</span><strong>Reduced motion нигде не учитывается.</strong> Ноль
+упоминаний <code>disableAnimations</code>/<code>reduceMotion</code> во всём приложении. Несколько
+кастомных HUD-анимаций (фон, тумблеры, входные анимации онбординга) всегда анимируются независимо от
+системной настройки доступности &mdash; реальная проблема для пользователей с вестибулярными
+нарушениями. Согласованное покрытие по всем анимированным поверхностям &mdash; отдельный гейт, не
+однострочная правка.</li>
+<li><span class="tag minor">Minor</span>Неподписанная область жеста на диаграмме зон тела в
+онбординге &mdash; вероятно, намеренно (рядом стоит полностью подписанная сетка чипов с теми же
+зонами, и собственный комментарий виджета это подтверждает), помечено для подтверждения продуктового
+замысла, а не сразу как баг.</li>
+<li><span class="tag minor">Minor</span>Несколько компактных кнопок-иконок могут рендериться меньше
+собственного минимума приложения в 44px &mdash; нужен реальный замер, прежде чем это станет
+подтверждённым фиксом.</li>
+</ol>
+<p>Контраст текста, сигнализация только цветом, подписи кнопок-иконок и семантика кастомных слайдеров
+проверены и подтверждены уже закрытыми, с доказательствами &mdash; не молча приняты как чистые.</p>
+
+<h2>5 &middot; Что дальше</h2>
+<ul>
+<li>Живой захват таймлайна DevTools, чтобы реально подтвердить (или опровергнуть) механизм пропажи
+тапа в D-03/D-05B.</li>
+<li>Реализовать пробел с reduced motion, раз он уже отскоупен.</li>
+<li>D-04, светлая тема, M8 (goldens &mdash; инфраструктуры пока нет, с нуля), M9 (фальсификация),
+Visual Gate, MVP_REACHED, Firebase-дистрибуция &mdash; без изменений относительно списка из
+предыдущего чекпоинта.</li>
+</ul>
+<p>Продолжаю этот проход согласно действующей инструкции; следующий отчёт &mdash; финальный.</p>
+
+<footer>Fitness-App &middot; автономная программа SPTR &middot; контрольная точка, не итоговый отчёт</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

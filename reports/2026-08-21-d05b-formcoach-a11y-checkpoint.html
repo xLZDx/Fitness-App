@@ -1,0 +1,285 @@
+<title>D-05B, Form Coach &amp; a11y Checkpoint</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --surface-2:#eef1f4; --border:#dde2e8; --rule:#dde2e8;
+    --ink:#1c2230; --text:#1c2230; --text-2:#3d4657; --text-3:#6b7686; --muted:#6b7686;
+    --accent:#2e6f6b; --accent-ink:#f6f7f9;
+    --ok-bg:#e9f5ee; --ok-ink:#1c6f53; --ok-border:#bfe3cf;
+    --warn-bg:#fbf1e0; --warn-ink:#8a5a10; --warn-border:#efd6a3;
+    --bad-bg:#fbeceb; --bad-ink:#9e2f2a; --bad-border:#f0c6c2;
+    --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Consolas,monospace;
+    --sans:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12161c; --surface:#181d25; --surface-2:#1f252e; --border:#2b323d; --rule:#2b323d;
+      --ink:#e8eaed; --text:#e8eaed; --text-2:#c2c8d2; --text-3:#8b95a3; --muted:#8b95a3;
+      --accent:#6cc2b9; --accent-ink:#0c1512;
+      --ok-bg:#12261e; --ok-ink:#7fd6ae; --ok-border:#1e4433;
+      --warn-bg:#2a2113; --warn-ink:#e6b866; --warn-border:#4a3a1c;
+      --bad-bg:#2b1817; --bad-ink:#f0958e; --bad-border:#4a2622;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12161c; --surface:#181d25; --surface-2:#1f252e; --border:#2b323d; --rule:#2b323d;
+    --ink:#e8eaed; --text:#e8eaed; --text-2:#c2c8d2; --text-3:#8b95a3; --muted:#8b95a3;
+    --accent:#6cc2b9; --accent-ink:#0c1512;
+    --ok-bg:#12261e; --ok-ink:#7fd6ae; --ok-border:#1e4433;
+    --warn-bg:#2a2113; --warn-ink:#e6b866; --warn-border:#4a3a1c;
+    --bad-bg:#2b1817; --bad-ink:#f0958e; --bad-border:#4a2622;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;line-height:1.55}
+  .wrap{max-width:760px;margin:0 auto;padding:3.2rem 1.5rem 6rem}
+  header{margin-bottom:0.5rem}
+  .eyebrow{font-family:var(--mono);font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 0.9rem}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(1.9rem,4.5vw,2.6rem);line-height:1.15;
+    margin:0 0 0.7rem;text-wrap:balance;letter-spacing:-0.01em}
+  .dek{font-size:1.05rem;color:var(--text-2);margin:0;max-width:62ch;text-wrap:balance}
+  h2{font-family:var(--serif);font-weight:600;font-size:1.4rem;margin:2.6rem 0 0.9rem;
+    padding-bottom:0.5rem;border-bottom:1px solid var(--rule);letter-spacing:-0.005em}
+  h3{font-family:var(--sans);font-weight:600;font-size:0.98rem;margin:1.5rem 0 0.6rem;color:var(--text)}
+  p{margin:0 0 1rem}
+  a{color:var(--accent)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0.75rem;margin:1.4rem 0 2rem}
+  .card{border:1px solid var(--border);border-radius:6px;padding:0.9rem 1rem;background:var(--surface)}
+  .card .k{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.07em;text-transform:uppercase;
+    color:var(--text-3);margin-bottom:0.35rem}
+  .card .v{font-weight:600;font-size:0.98rem;line-height:1.35}
+  .pill{display:inline-block;font-family:var(--mono);font-size:0.66rem;letter-spacing:0.06em;
+    text-transform:uppercase;padding:0.2em 0.6em;border-radius:999px;border:1px solid;margin-top:0.5rem}
+  .pill.ok{background:var(--ok-bg);color:var(--ok-ink);border-color:var(--ok-border)}
+  .pill.warn{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-border)}
+  .pill.bad{background:var(--bad-bg);color:var(--bad-ink);border-color:var(--bad-border)}
+  .note{border-left:3px solid var(--accent);background:var(--surface-2);border-radius:0 4px 4px 0;
+    padding:0.9rem 1.1rem;margin:1.2rem 0;font-size:0.94rem}
+  .note.warn{border-left-color:var(--warn-ink)}
+  .note.bad{border-left-color:var(--bad-ink)}
+  .note.ok{border-left-color:var(--ok-ink)}
+  code, .mono{font-family:var(--mono);font-size:0.88em;background:var(--surface-2);
+    padding:0.1em 0.4em;border-radius:3px}
+  .tablewrap{overflow-x:auto;margin:1.2rem 0;border:1px solid var(--border);border-radius:6px}
+  table{border-collapse:collapse;width:100%;font-size:0.88rem;min-width:520px}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+  th{font-family:var(--mono);font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--text-3);background:var(--surface-2)}
+  tr:last-child td{border-bottom:none}
+  ul{padding-left:1.3rem;margin:0 0 1rem}
+  li{margin-bottom:0.5rem}
+  ol{padding-left:1.3rem;margin:0 0 1rem}
+  ol li{margin-bottom:0.5rem}
+  .tag{display:inline-block;font-family:var(--mono);font-size:0.66rem;letter-spacing:0.05em;
+    text-transform:uppercase;padding:0.1em 0.55em;border-radius:3px;background:var(--surface-2);
+    color:var(--text-3);border:1px solid var(--border);margin-right:0.4em}
+  .tag.major{background:var(--bad-bg);color:var(--bad-ink);border-color:var(--bad-border)}
+  .tag.minor{background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-border)}
+  .tag.ok{background:var(--ok-bg);color:var(--ok-ink);border-color:var(--ok-border)}
+  footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--rule);font-size:0.82rem;color:var(--text-3)}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">SPTR &middot; Fitness-App &middot; checkpoint, not the final report</p>
+  <h1>D-05B reproduced, Form Coach verified, a11y scoped &mdash; and D-03's root cause is narrowed, not solved</h1>
+  <p class="dek">Second checkpoint in this pass, same reason as the first: a mechanical commit gate
+  needs a <code>reports/</code> touch every three commits, and the operator's "report only at the
+  end" instruction isn't visible to it across a context-compaction boundary. Four real results below,
+  each honestly bounded to what was actually confirmed.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 33a124c</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="grid">
+  <div class="card">
+    <div class="k">D-05B</div>
+    <div class="v">Reproduced live, same first-tap symptom as D-03</div>
+    <span class="pill bad">Confirmed open</span>
+  </div>
+  <div class="card">
+    <div class="k">Form Coach</div>
+    <div class="v">Independently verified end-to-end, not just wired-looking</div>
+    <span class="pill ok">Functional</span>
+  </div>
+  <div class="card">
+    <div class="k">D-03 / D-05B cause</div>
+    <div class="v">Two candidates read, neither confirmed</div>
+    <span class="pill warn">Narrowed</span>
+  </div>
+  <div class="card">
+    <div class="k">M7 &middot; a11y</div>
+    <div class="v">Mature already; one real MAJOR gap found</div>
+    <span class="pill warn">Scoped</span>
+  </div>
+</div>
+
+<h2>1 &middot; D-05B reproduced, and it points at something bigger than one chip</h2>
+<p>The Library tab's "Тренер по технике" (Technique Coach) filter chip was reproduced live on the S8:
+a clean first-tap PASS, and a clean first-tap FAIL after a fresh app relaunch &mdash; the exact
+historical symptom ("chip stayed on 'Для вас'," a second tap works). A side investigation into why a
+batch of automated trials went unresponsive (ruled out <code>adb</code> itself &mdash;
+<code>KEYCODE_HOME</code> fired correctly mid-freeze) surfaced a third, unrelated widget with the same
+shape of failure: the bottom-navigation "ТРЕНИРОВКИ" tab failed to register on its very first tap
+immediately after cold start, <strong>3 times out of 3</strong>, each from a completely fresh app
+process.</p>
+<div class="note bad">Three different widgets (login button, a filter chip, a bottom-nav tab), same
+symptom: <strong>the first tap right after a screen becomes visible sometimes does nothing; an
+identical second tap works.</strong> D-05B is not scored to a rate the way D-03 was &mdash; n=2 clean
+trials plus 3 adjacent bottom-nav failures is real evidence, not a percentage.</div>
+
+<h2>2 &middot; Form Coach: verified, not just surveyed</h2>
+<p>An earlier, lighter pass had called the pose-detection feature "complete and wired" without deep
+verification. A dedicated skeptical review confirmed it file:line, end to end:</p>
+<ul>
+<li>Real ML Kit: <code>google_mlkit_pose_detection</code> is a real dependency; the service
+instantiates an actual <code>PoseDetector</code>, streams real camera frames, converts real landmarks.</li>
+<li>Real logic: <code>pose_gate.dart</code>'s geometric checks and <code>rep_counter.dart</code>'s
+hysteresis state machine are genuine, not placeholders.</li>
+<li>Real navigation: routed, reachable from real screens, production-wired at bootstrap (the mock
+provider is only the test default).</li>
+<li>Real voice coaching: a real <code>flutter_tts</code> integration, not aspirational.</li>
+<li>35 substantive test files, no unresolved TODO/stub markers in production source.</li>
+</ul>
+<div class="note">One caveat carried from the code's own comments, not invented here: gate thresholds
+are documented as "opening values&nbsp;&hellip; not measured on a device fleet" &mdash; real and
+working, not clinically tuned.</div>
+
+<h2>3 &middot; Chasing D-03/D-05B's root cause: two candidates, neither confirmed</h2>
+<p>Read-only code investigation into whether D-03, D-05B, and the bottom-nav case share one
+mechanism. No live DevTools frame-timeline capture was done, so this narrows suspects rather than
+proves one.</p>
+<div class="tablewrap"><table>
+<tr><th>Candidate</th><th>Covers</th><th>Status</th></tr>
+<tr><td><code>_fadeThrough</code> &mdash; every route's 360ms fade+slide transition (<code>app_router.dart</code>)</td><td>Login button, in-page content</td><td>Real mechanism, but Flutter's standard <code>RenderOpacity</code> only blocks hit-testing at full transparency &mdash; unconfirmed whether it actually suppresses taps mid-fade here</td></tr>
+<tr><td>Same candidate</td><td>Bottom-nav tab</td><td><strong>Structurally ruled out</strong> &mdash; the nav bar renders outside the animated route subtree</td></tr>
+<tr><td>Redirect-driven <code>MainShell</code> rebuild race</td><td>Bottom-nav tab only</td><td>Plausible, unconfirmed &mdash; the nav bar's own source wasn't read this pass</td></tr>
+</table></div>
+<div class="note warn">Deliberately not proposing a fix against either candidate. D-03's own history
+already has one real-but-wrong fix (a Material/Semantics accessibility change that was genuine and
+separately valuable, but didn't touch this bug's actual mechanism) &mdash; guessing again here would
+risk repeating that. Next step is a live on-device DevTools timeline capture of a failing tap, not
+more source reading.</div>
+
+<h2>4 &middot; M7's accessibility half: scoped, and better than expected</h2>
+<p>This codebase already has a dedicated accessibility test suite, WCAG-ratio-cited color tokens, a
+required-tooltip icon-button component, and a model implementation for its custom slider widgets.
+The scoping pass found one real gap worth prioritizing:</p>
+<ol>
+<li><span class="tag major">Major</span><strong>Reduced motion is never respected.</strong> Zero
+references to <code>disableAnimations</code>/<code>reduceMotion</code> anywhere in the app. Several
+custom HUD animations (background, toggles, onboarding entrances) always animate regardless of the
+OS accessibility setting &mdash; a real issue for vestibular-disorder users. Consistent coverage
+across every animated surface is its own scoped gate, not a one-line patch.</li>
+<li><span class="tag minor">Minor</span>A bare, unlabeled gesture area on the onboarding body-zone
+diagram &mdash; likely intentional (a fully-labeled equivalent chip grid sits right beside it, and
+the widget's own comment says so), flagged for a product-intent confirmation rather than assumed
+broken.</li>
+<li><span class="tag minor">Minor</span>A few compact icon buttons may render under the app's own
+44px minimum-tap-target floor &mdash; needs an actual measurement pass before it's a confirmed fix.</li>
+</ol>
+<p>Contrast, color-only signaling, icon-button labeling, and custom slider semantics were all checked
+and confirmed already covered, with evidence &mdash; not silently assumed clean.</p>
+
+<h2>5 &middot; What's next</h2>
+<ul>
+<li>A live DevTools timeline capture to actually confirm (or refute) the D-03/D-05B tap-drop mechanism.</li>
+<li>Implement the reduced-motion gap now that it's scoped.</li>
+<li>D-04, Light theme, M8 (goldens &mdash; no existing infrastructure, greenfield), M9
+(falsification), Visual Gate, MVP_REACHED, Firebase distribution &mdash; unchanged from the prior
+checkpoint's list.</li>
+</ul>
+<p>Continuing this pass per the standing instruction; the next report is the final one.</p>
+
+<footer>Fitness-App &middot; SPTR autonomous program &middot; checkpoint, not the closing report</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

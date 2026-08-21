@@ -22007,3 +22007,45 @@ failing first tap, on-device, to see directly whether the tap event reaches a wi
 reaching one that then does nothing.
 
 No product code changed by this entry.
+
+## 2026-08-21 -- M7 a11y half scoped: codebase is unusually mature, one real MAJOR gap found (reduced motion), rest already covered or scope-discussion items
+
+Dedicated read-only a11y-architect scoping pass for M7's remaining accessibility half (the l10n half
+already closed earlier this session). Not a blank-slate audit -- confirmed the app already has a
+dedicated `test/features/accessibility/semantics_targets_test.dart` plus two more a11y test files,
+measured WCAG-ratio-cited color tokens in `app_semantic_colors.dart`, a required-`tooltip`
+`AppIconButton`, and a model `Semantics(slider: true, ...)` implementation in `MeasureRuler`.
+
+**Punch list, ranked:**
+1. **MAJOR -- reduced motion is not respected anywhere.** Zero matches for
+   `disableAnimations`/`reduceMotion` across `mobile/lib` and `mobile/test`. Multiple custom animated
+   HUD surfaces (`hud_sky.dart:724`'s `AnimatedOpacity`, `HudToggle` transitions, onboarding entrance
+   animations) always animate regardless of the OS "reduce motion" setting -- a real failure mode for
+   vestibular-disorder users, not cosmetic. Consistent coverage across every animated HUD surface is
+   more than a one-line patch; scope as its own gate rather than a quick fix.
+2. **MINOR, needs a product-intent confirmation, not necessarily a code fix -- `body_zone_map.dart:163-178`**
+   wraps a bare `GestureDetector` (zero `Semantics`, so silent to a screen reader) around the
+   onboarding body diagram. Very likely intentional: the widget's own doc comment calls itself "a
+   shortcut, not the only control," and a fully-labeled `MultiChoiceChips` grid covering the identical
+   zone set sits right beside it (`step_body.dart:117-127`, `:147-157`). Flag for confirmation; only a
+   real gap if that design intent turns out wrong.
+3. **MINOR, needs measurement before it's a fix -- compact `AppIconButton` touch targets.**
+   `app_buttons.dart:208-213`'s `VisualDensity.compact` + `iconSize: 18` (inline steppers, mute/voice,
+   like button) may render under the app's own stated `HudTokens.minTapTarget = 44` floor
+   (`hud_tokens.dart:429`); no test asserts the rendered `Size`. Needs a measurement pass before
+   deciding whether it's actually under target.
+4. **Confirmed fine, with evidence -- no action:** text contrast (WCAG AA/AAA measured per-theme
+   token, with a documented, standards-compliant exception for disabled controls), color-only
+   signaling on the pose coach (colour is explicitly reinforcement-only, paired with text/shape),
+   icon-only buttons generally (required `tooltip` + existing test suite), custom slider/picker
+   semantics (`MeasureRuler`), and the `Hud*` widget family (`hud_metric.dart`) which already wraps
+   custom-painted content in proper `Semantics` with `ExcludeSemantics` on the decorative paint layer.
+
+**Not checked this pass, named rather than silently assumed clean:** modal/bottom-sheet focus
+order/trap behavior (`photo_consent_sheet.dart`, `difficulty_rating_sheet.dart`), RTL/locale
+resilience for the ruler pickers and HUD number formatting, and the camera/equipment-scanner live
+overlay's touch targets under real device DPI (already flagged as untested by
+`gallery_button_a11y_test.dart`'s own comment).
+
+No product code changed by this entry -- scoping only. The one MAJOR item (reduced motion) is real,
+scoped, concrete implementation work, not yet started.
