@@ -23153,3 +23153,43 @@ directory). The Russian file published as an artifact:
 
 This entry, committed together with the report files, is itself the handover. Stopping here per
 the html-report skill's own step 6.
+
+## 2026-08-21 -- S23 Ultra reconnected, real usage evidence pulled for `1.0.0 (2656)`: clean, no
+crashes, and same-device before/after data for the Impeller fix
+
+Operator asked to pull the latest results from the S23 for build `1.0.0 (2656)`. Device
+(`R5CW142SASR`) is connected again (was disconnected the entire pass until now). Read-only
+diagnostic pull, no code changed.
+
+**Confirmed installed**: `versionCode=2656`, `versionName=1.0.0`, `lastUpdateTime=2026-08-21
+23:14:42` -- the exact build distributed and hashed above.
+
+**Real usage since install, not a synthetic test**: `logcat` shows the app foregrounded, the camera
+opened and cleanly closed twice (`23:17:22`, `23:18:38` -- consistent with Scanner or Form Coach),
+then a normal background/freeze lifecycle with no crash, no `Fatal signal`, no `SIGSEGV`, no
+`AndroidRuntime` FATAL, and no new `/data/tombstones` entry anywhere after the install timestamp.
+`dumpsys activity exit-info` (the authoritative source, not just logcat grep) confirms no exit
+recorded for this process since `23:14:42`.
+
+**Same-device before/after data point for the Impeller/Vulkan fix, found while checking exit
+history**: `exit-info` shows three native crashes on THIS device earlier the same day --
+`17:52:15`, `19:24:27`, `19:24:59`, all `reason=5 (APP CRASH(NATIVE))`. All three predate commit
+`0c0d2a0` (Impeller disabled), which landed at `20:32:33` local time -- confirmed via `git show -s
+--format=%ai 0c0d2a0`. These are not a new finding: they are the same S23 Impeller/Vulkan crash
+already logged in this file at `19:43` the same day (commit `be63009`, "Android's crash dialog is
+the same Impeller/Vulkan bug, not new") from the release/debug builds distributed *before* the fix
+(`af5c99f`, `55a161f`). Nothing before this entry had confirmed the POST-fix build on this specific
+device; this is that confirmation: three crashes pre-fix, on this device, today, followed by a
+clean camera-using session post-fix, on this device, today.
+
+**What this does and does not prove.** It is real, same-device, same-day evidence that
+strengthens the correlation already recorded for the Impeller-disable fix -- it is not the
+controlled A/B test (re-enable Impeller on this exact build, confirm the crash returns) that would
+promote this from INFERENCE to FACT, and one clean session is not the 30-trial repro discipline
+applied to the S8. Updating item 5 of the MVP_REACHED known-open-items list accordingly: the S23
+side of this item moves from "unverified, device disconnected" to "one clean real-usage session
+observed post-fix, following three confirmed pre-fix crashes on the same device the same day" --
+still short of a controlled A/B, not yet closed.
+
+No code changed. No commit needed for the diagnostic pull itself; this entry is committed alongside
+whatever housekeeping follows.
