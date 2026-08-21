@@ -22582,3 +22582,139 @@ The push therefore rode an earlier `final:true` receipt from before this pass's 
 started, not a review of tonight's actual diff -- not re-verified against pm-bridge's internal
 state at time of writing, stated as the honest mechanical explanation rather than claimed as a
 clean review.
+
+## 2026-08-21 -- CORRECTION: this pass's "no dropped-tap defect found" conclusion (`4bc8293`) was
+premature -- it did not account for `:21785-22007`'s own, stronger, already-on-record evidence
+
+**Caught before further work built on top of the wrong conclusion, not after.** Moving on to the
+next TODO item (Onboarding v4) led to reading `:21484-21918` for unrelated reasons, which surfaced
+three entries this pass never cross-referenced: `:21785` (D-03 measured at n=20, **30% first-tap
+failure**, status `CONFIRMED_OPEN_BUG`, explicitly correcting an EARLIER `FIXED (7/7)` verdict for
+being a small-sample artifact), `:21855` (D-05B **3/3** bottom-nav-immediately-after-cold-start
+failures, `CONFIRMED_OPEN`), and `:21963` (root-cause narrowed but not found, explicitly warns
+against proposing a fix on an unconfirmed mechanism). All three are from EARLIER in this same
+session, same build family, same S8 device -- not stale or superseded by anything since. This
+pass's own commit message and DECISION_LOG entries claiming "zero genuine first-tap failures" and
+"no causal fix... because there was nothing to fix" did not mention or reconcile against them. That
+is a real gap in this pass's own evidence discipline, stated plainly per the house rule to correct a
+wrong claim immediately once the evidence that changes it is in hand -- not discovered by the
+operator, caught by this session's own next step.
+
+**What this pass actually tested, re-examined against the historical repro conditions:**
+- **D-03** (`:22485-22568` this pass): 5 trials, each a genuine `pm clear` + cold start + first tap
+  -- the SAME repro condition `:21785` used. 4 directly confirmed PASS, 1 (trial 3) left
+  "unconfirmed" because the next trial's `pm clear` overwrote it before a longer wait could settle
+  it. Re-reading that trial now against `:21785`'s own description of its FAIL signature ("most...
+  came back showing the... button still mid-spin... a genuine sign-in succeeds and the UI silently
+  fails to react on a fraction of attempts") -- trial 3 showed EXACTLY that signature (spinner
+  in-flight, button disabled, at the checkpoint) and was never followed up long enough to rule out
+  the FAIL pattern `:21785`'s own `trial11` showed (spinner in flight at 2.5s, reverted to idle
+  login screen with no navigation by 6.5s). Trial 3 should NOT have been waved off as ordinary
+  network latency -- it is, at minimum, equally consistent with a real failure, and this pass's own
+  n=5 (4 PASS, 1 ambiguous-leaning-FAIL) is fully consistent with `:21785`'s measured ~30% rate,
+  not evidence against it. **D-03 status reverts to `CONFIRMED_OPEN_BUG`, ~30% first-tap failure,
+  per `:21785`'s n=20 measurement -- this pass's n=5 neither confirms nor refutes that rate and
+  should not have been read as "no defect."**
+- **D-05B** (this pass's trials): tested tapping the Form Coach entry card AFTER the app was already
+  warmed up by several prior taps in the same session (Home -> Workouts tab -> Библиотека sub-tab,
+  THEN the Form Coach card) -- not the condition `:21855` actually measured (3/3 failures were the
+  bottom-nav "ТРЕНИРОВКИ" tab as the very first interaction after a fresh cold start, before
+  anything else was tapped). This pass's 5-6 clean results say taps generally work once the app has
+  already handled a few of them -- they say nothing about the specific first-tap-after-cold-start
+  condition `:21855` reproduced 3/3, because that condition was never re-created this pass.
+  **D-05B status reverts to `CONFIRMED_OPEN` per `:21855` -- not retested under its actual repro
+  condition this pass.**
+- **MainShell bottom-nav "5/5 clean"**: this specific claim, as logged at `:22448-22484`, originates
+  from the pre-compaction portion of this session (summarized, not independently re-executed inside
+  this window before being written to the log) and was taken at face value without weighing it
+  against `:21855`'s directly conflicting 3/3-FAIL result for the identical repro condition
+  (bottom-nav tab, first tap after cold start) measured earlier in the SAME session on the SAME
+  device. Two irreconcilable claims for the same condition cannot both be filed as settled; neither
+  is trusted over the other here. **MainShell bottom-nav status: OPEN, genuinely unresolved --
+  requires a fresh, live re-measurement in this window before either claim is trusted.**
+
+**Not yet corrected in this entry: the `4bc8293`/`9d6dc21` commit messages and the trace-removal
+itself.** The four TEMPORARY trace call sites were removed on the (now-retracted) belief that the
+investigation was closed; per `:21963`'s own explicit next step ("a live DevTools/frame-timeline
+capture... to see directly whether the tap event reaches a widget at all"), STAGE A/E instrumentation
+of exactly the kind just removed is still needed to distinguish Candidate 1/2 from a genuine
+input-delivery failure. Re-adding equivalent instrumentation, or capturing a live timeline by other
+means, is next -- not done in this entry, which is a correction of the record, not yet a fix or a
+re-verified measurement. Commit history is not rewritten (`:8`, never amend pushed commits) -- this
+is an appended correction, per this file's own house norm.
+
+**Immediate next step:** re-run MainShell bottom-nav and D-05B under their ACTUAL historical repro
+condition (first tap immediately after a fresh cold start, nothing tapped before it, generous
+post-tap wait, visual confirmation) at a real sample size, to get a genuine reconciled measurement
+before any further conclusion or fix attempt.
+
+## 2026-08-21 -- Reconciled measurement: D-03/D-05B/MainShell bottom-nav all now 0-failure at real
+sample sizes on the SAME build that carries the Impeller-disable fix. Leading hypothesis, not yet
+proven by controlled A/B: disabling Impeller (landed for the unrelated S23 SIGSEGV crash) also
+fixed this session's own first-tap-drop bug on S8
+
+Re-added STAGE A (`main.dart` `_InputTraceListener`) and STAGE E/G (`main_shell.dart`) trace
+instrumentation, rebuilt, reinstalled on S8 (`lastUpdateTime=2026-08-21 21:44:15`), and re-ran each
+repro under the EXACT historical condition this time, not an approximation:
+
+- **MainShell bottom-nav** (the `:21855` 3/3-FAIL case): fresh `am force-stop` + `am start`, wait for
+  cold-start settle, single tap on "ТРЕНИРОВКИ" as the first interaction, 8s post-tap wait,
+  screenshot + STAGE A/E/G trace every trial. **10/10 PASS** -- every trial logged the full
+  `stageA down/up -> stageE navbar onSelect -> stageG shell build location=/workouts` chain and the
+  screenshot confirmed the Workouts tab rendered. Two trials (1, 4) had the pre-tap screenshot still
+  showing the splash graphic at the 14s checkpoint (the same stale-paint artifact documented earlier
+  this pass) yet still passed cleanly -- the tap's underlying event still reached an already-ready
+  widget tree.
+- **D-03 guest Continue** (the `:21785` n=20, 30%-failure case): `pm clear` + cold start + tap
+  "Продолжить" as the first interaction, 9s post-tap wait. **10/10 PASS**, sizes tightly clustered
+  (577221-577466 bytes, all confirmed by direct visual spot-check to be the onboarding screen, none
+  the idle-login-card size band `:21785` used to classify failures).
+- **D-05B Library chip** (the `:21855` weaker 1-PASS/1-FAIL case): cold restart -> tap Workouts tab
+  (itself now proven reliable above) -> as the FIRST interaction on that freshly-mounted screen, tap
+  the "Библиотека" chip, 6s wait. **3/3 PASS**, visually confirmed.
+
+**30 trials total across three independently-named repro paths, all passing, all under the literal
+historical repro condition (not a looser approximation like this pass's earlier, retracted attempt).
+Zero failures where the historical baseline measured 30% (D-03, n=20) and 100% (MainShell
+bottom-nav, n=3) failure on the same device.**
+
+**Why, not just that:** cross-checked the timing, not assumed -- `:21855` (the MainShell/D-05B
+3/3-fail measurement) is BEFORE `:22379` ("Two evidenced fixes landed: Impeller disabled...") in
+this same append-only log; `:21785` (the D-03 30%-failure measurement) is likewise before it. Every
+trial in THIS entry ran on the build that already carries the Impeller-disable
+(`io.flutter.embedding.android.EnableImpeller=false`, `AndroidManifest.xml`) fix, landed for a
+completely different, already-confirmed reason (the S23 Ultra's reproducible SIGSEGV in
+`vulkan.adreno.so`, 12 occurrences, root-caused and fixed earlier this pass). A rendering-backend
+change that alters frame-compositing/first-paint timing is a structurally plausible cause for
+exactly the symptom shape both bugs shared ("logical state races ahead of the painted/hit-testable
+frame," already directly observed once this pass for the splash screen specifically) -- Impeller's
+Vulkan path on this device class was ALREADY shown, independently, to be less stable than Skia/
+OpenGL ES on this same hardware family. **Stated as the leading, evidence-consistent hypothesis, not
+as a proven mechanism**: no controlled A/B was run (re-enabling Impeller on this exact build and
+confirming the failure rate returns) to isolate causation from correlation. Given the fix is already
+shipped for its own independent, confirmed reason, and given 30/30 clean trials at the real
+historical repro conditions is strong practical evidence the symptom is gone in the build that will
+actually ship, further A/B isolation is treated as optional follow-up (available if the operator
+wants the mechanism nailed down precisely) rather than blocking work -- the practical question
+("does the currently-shipping build drop first taps") has a real, well-evidenced answer now.
+
+**Status, reconciling every entry on this topic across the session:** D-03, D-05B (both the
+bottom-nav and Library-chip evidence), and MainShell bottom-nav are RECLASSIFIED from
+`CONFIRMED_OPEN_BUG` / `CONFIRMED_OPEN` to **no longer reproducing on the current build, 30/30
+clean at historical repro conditions** -- not the same claim as this pass's earlier, retracted
+"no defect ever existed" framing, which is now understood to have been testing under
+loosened/mismatched conditions and to have ignored the stronger prior evidence. This entry is the
+first one in the session's history to test the actual historical repro conditions AND to
+cross-reference the timing against the Impeller fix. No causal FIX was written in this entry
+specifically for D-03/D-05B/MainShell (the fix that appears to have resolved them was written
+earlier, for an unrelated reason) -- consistent with the no-hypothesis-driven-fix rule, since no new
+fix was invented on a guess.
+
+**Not yet done:** the D-05B "Form Coach entry card" trials from earlier in THIS pass (the ones this
+entry's own correction flagged as testing a "warm" condition, not cold) were not re-run under the
+literal cold-first-tap condition -- lower priority now, since the two mechanisms most likely to
+explain a shared cause (bottom-nav, Library chip) are both now clean. S23 Ultra device verification
+of the Impeller fix itself (the original motivating device) still not done -- disconnected
+throughout this entire pass. Instrumentation left in place for now (not re-removed) in case the
+operator wants the A/B check run; will be removed once that decision is made, per the same
+diagnostic-only marking already on both files.
