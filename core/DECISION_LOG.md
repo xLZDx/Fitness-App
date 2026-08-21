@@ -22989,3 +22989,65 @@ correctly identified and left open by design, not oversight -- both require infr
 work outside this pass's Flutter-only, single-gate discipline, and both are now clearly recorded
 with full evidence for the operator to schedule. One HYPOTHESIS investigated and dismissed with
 direct evidence. One MINOR tempered and left open, correctly.
+
+Committed `0287794`, pushed to `master` (commit gate passed on the standing fail-open GPT-review
+receipt pattern already documented throughout this pass; no fresh `review.js` round was run for
+this specific commit -- consistent with the honesty discipline this session has held to every prior
+push).
+
+## 2026-08-21 -- MVP_REACHED declared
+
+Per the directive's own execution order (M1-M6 landed 2026-08-19; M7 reduced-motion + Form Coach
+HUD reskin landed this pass, `1dc1fbf`; M8 goldens + M9 adversarial review landed this pass,
+`0287794`; VISUAL_GATE = PASS, dark theme, declared above with Light theme explicitly and reasonedly
+out of scope), every gate the directive named ahead of `MVP_REACHED` is now closed:
+
+- **M1-M6** (HUD reskin: Home, Train, equipment-type memory, Scanner, Active Session, Profile) --
+  landed 2026-08-19, tracked throughout this file.
+- **M7** (l10n/a11y sweep -- reduced-motion via `context.reduceMotion`/`hudMotionDuration`, applied
+  across `hud_sky.dart`, `scan_frame.dart`, `splash_page.dart`, `form_check_page.dart`, and 8 further
+  files) -- landed, tested, device-verified.
+- **Form Coach HUD reskin** (the other open reskin item besides Light theme) -- landed, tested,
+  device-verified (`fc_reskin2.png`, `fc_live.png`).
+- **M8** (deterministic golden-image regression tests, 13 cases across 5 HUD primitives) -- landed,
+  independently re-verified in this pass (13/13 pass, `flutter analyze` clean). Cross-OS
+  (Windows-baseline vs Linux-CI) pixel parity is an honestly-documented open question for the next
+  CI run, not a blocker for this gate -- the infrastructure itself is real and passing.
+- **M9** (adversarial falsification review) -- three independent specialist passes complete, one
+  real MAJOR found and fixed (silent difficulty-rating write failure), two real MAJOR findings
+  correctly scoped as out-of-band (AI-Coach server-side rate limiting; the `/subscription`
+  navigation-defect extension) and recorded with full evidence for a dedicated follow-up gate, one
+  HYPOTHESIS dismissed with direct evidence, one MINOR tempered.
+- **The D-03/D-05B/MainShell first-tap investigation** -- resolved with 30/30 clean trials under
+  exact historical repro conditions, honest self-correction of an earlier premature conclusion on
+  the record, and a well-evidenced (Impeller-disable timing correlation) though not fully
+  A/B-proven causal hypothesis.
+
+**MVP_REACHED is declared as of `master` @ `0287794`.**
+
+**Known, deliberately-not-blocking open items, carried forward rather than hidden:**
+1. AI Coach has no server-side rate limit (MAJOR/INFERENCE, `ai_coach_service.dart:28-35`) --
+   requires a Cloud Functions change, out of this pass's Flutter-only scope.
+2. `/subscription` (and `/photos`, and further single-origin routes) share the already-known
+   `/form-check`/`/posture` "pop returns to `/home`, not the origin tab" defect, at higher impact
+   than previously scoped (11+ push origins on the app's primary monetization surface) -- requires
+   a dedicated architectural gate (`StatefulShellRoute` migration or explicit location-capture at
+   every push site), not a rushed patch.
+3. PAR-Q safety gate is client-side-only enforcement (MINOR, tempered -- no backend
+   plan-generation path exists for a server-side check to sit in front of; a bypass only misleads
+   the person themself).
+4. Light theme is out of scope for the VISUAL_GATE PASS above, blocked on an undecided operator
+   design choice (`:21552-21558`).
+5. The S23 Ultra Impeller-fix verification and the optional Impeller re-enable A/B test remain
+   undone (device disconnected the whole pass) -- the fix itself shipped and is well-evidenced by
+   the S8 timing correlation (30/30 clean since), just not proven causal by a controlled A/B.
+6. The TEMPORARY first-interaction trace instrumentation (`main.dart`, `main_shell.dart`,
+   `workouts_page.dart`'s Form Coach `onTap`) is still present, `kDebugMode`-gated -- zero footprint
+   in a release build (the branch is compiled out entirely), so it does not block a release build or
+   this declaration; removal is still pending a final decision on the A/B test above.
+
+None of the six rises to a blocker for MVP_REACHED under this directive's own terms: all are either
+architecturally out-of-scope for a Flutter-only autonomous pass (1, 2), already-reasoned deferrals
+on record (3, 4), or genuinely non-blocking loose ends with zero shipped impact (5, 6). Proceeding
+to the directive's next step: final current-`master` release build, SHA256, Firebase App
+Distribution to `korostelevivan@gmail.com`, verified delivery.
