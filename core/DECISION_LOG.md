@@ -21915,3 +21915,47 @@ Screenshots retained:
 `diag_*.png` (the tap-degradation diagnostic).
 
 No product code changed by this entry -- this is reproduction and hypothesis formation, not a fix.
+
+## 2026-08-21 -- Form Coach verified genuinely functional end-to-end, not just "appears wired"
+
+The operator's program asked for a "Form Coach MVP using existing real on-device ML engine" and an
+earlier pass in this session had only lightly surveyed `mobile/lib/features/form_check/`, concluding
+it "appears to be a complete, wired, real on-device ML Kit pose-detection feature" without deep
+verification. Ran a dedicated, skeptical, read-only, evidence-cited verification pass rather than
+trust that surface impression.
+
+**Verdict: genuinely functional end-to-end, confirmed with file:line citations at every step, not
+inferred from file presence alone:**
+- Real dependency: `google_mlkit_pose_detection: ^0.14.0` (`pubspec.yaml:58`), plus
+  `google_mlkit_commons`, `camera`, `flutter_tts` -- all real, not aspirational.
+- Real detector: `mlkit_pose_detector_service.dart:93-107` instantiates an actual
+  `mlkit.PoseDetector` in stream mode, subscribes to a real `CameraSession`'s `InputImage` stream,
+  calls `processImage` (:115), converts real landmarks (:163-219). Error handling distinguishes
+  permanent native failures from transient ones (:125, :141-150) -- the shape of code written against
+  a real device, not a stub.
+- Real navigation: routed at `app_router.dart:399-402` (`/form-check`), reachable from real entry
+  points (`workouts_page.dart:530`, `exercise_reference.dart:854`), production-wired in
+  `main.dart:373-374` (the mock provider default is overridden at bootstrap, not left in place).
+- Real gate/rep logic: `pose_gate.dart` implements genuine per-joint/per-axis geometric checks and a
+  unit-mismatch smoke detector (:209-235, :241-255); `rep_counter.dart` implements a real hysteresis
+  state machine (top/descending/bottom/ascending, :369-405) with minimum-duration and confidence-floor
+  noise rejection.
+- Real voice coaching: `tts_voice_coach.dart` wraps an actual `FlutterTts` instance and calls
+  `speak()` (:25, :105) with real availability handling; `coach_phases.dart` is a real
+  measurement-driven phase state machine, explicitly built to NOT be timer-driven theatre
+  (compare/contrast comment at :15-23 against a prototype's fake `setTimeout` version).
+- Real tests: 35 files under `test/features/form_check/`, including realistic frame-sequence
+  fixtures (20fps simulated squat with jitter/noise modeling) -- not trivial/skipped coverage.
+- No unresolved TODO/FIXME/"not implemented"/stub markers found in the feature's production source;
+  the only "mock" hits are legitimate test doubles, cleanly separated from the real bootstrap wiring.
+
+**Caveat, stated by the code itself, not by this entry:** `pose_gate.dart:20-26` documents its own
+angle/confidence thresholds as "opening values ... not measured on a device fleet" -- real, working
+logic, but not claimed by its own author as clinically validated against real user variation. Treat
+Form Coach as functionally complete, not as tuned/validated.
+
+**Not read this pass** (named so the gap is visible rather than silently assumed clean):
+`form_classifier.dart` (the actual angle-threshold rule content) and `posture_page.dart` (a sibling
+feature sharing `poseDetectorServiceProvider`).
+
+No product code changed by this entry -- verification only.
