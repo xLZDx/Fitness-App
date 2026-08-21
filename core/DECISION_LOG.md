@@ -21621,3 +21621,103 @@ scoping pass; section 07 (the `_wt-master-sync` cleanup) rewritten to reflect th
 performed and the remaining `shell_policy_gate` block, no longer "untouched." `report_conform.py
 --check` passed for the whole `reports/` directory. Artifact re-fetched before republish and found
 still on the pre-pass content (no divergent concurrent edit), then republished to the same URL.
+
+## 2026-08-21 -- local worktree topology normalized: `D:\Repo\Fitness_App` is now the sole canonical `master` checkout
+
+Operator directive: the four-worktree local layout (`Fitness_App`, `_wt-formcoach`, `_wt-gates-efgh`,
+`_wt-master-sync`) had left this session treating `_wt-gates-efgh` as the de facto project root all
+session, while the directory actually named after the repo (`Fitness_App`) sat on an orphaned
+marketing branch. Remote topology (`xLZDx/Fitness-App`, `master`-only) was already correct; only the
+local checkout layout needed fixing. Target: `D:\Repo\Fitness_App` becomes the one canonical `master`
+worktree, without editing `shell_policy_gate`, without `git reset --hard`, without destroying
+untracked content, and without any disguised bypass of a permission/hook denial.
+
+**Inspection first, before touching anything** (`git status --porcelain=v2 --branch`, `git rev-list
+--left-right --count HEAD...origin/master`, `git merge-base --is-ancestor` per worktree):
+- `Fitness_App`: on local branch `marketing/site-prototype-2026-08-19` (its remote counterpart was
+  deleted earlier this session), 23 commits uniquely ahead of `origin/master`, 204 behind, **not** an
+  ancestor -- genuinely diverged, not just stale. 9 untracked files under `reports/` existed nowhere
+  else in the repo (a 9th, `SPTR_MARKETING_RND_DECISION_PACK_2026-08-19.html`, was missed on the
+  first pass and caught only once `git status` was re-run immediately before the checkout -- see
+  below).
+- `_wt-formcoach`: ancestor of `origin/master` (0 unique commits), one untracked file, rest is benign
+  uncommitted `report_conform.py` provenance-block noise. Left untouched -- not named for removal in
+  this directive, and the Form Coach verification work still pending in this program may use it.
+- `_wt-master-sync`: ancestor of `origin/master` (0 unique commits), same 8 modified + 2 untracked
+  stale pre-Gate-F files classified non-unique in the prior pass's partial cleanup (`DECISION_LOG.md`,
+  entry "`_wt-master-sync` abandoned cherry-pick"). Unchanged since that entry.
+- `_wt-gates-efgh`: clean, detached, HEAD exactly equal to `origin/master` (0 ahead, 0 behind). Zero
+  unique content.
+
+**Preservation before any destructive-adjacent step:** all 9 of `Fitness_App`'s untracked
+`reports/*.html` files, plus `_wt-formcoach`'s one untracked file, copied byte-for-byte to
+`D:/Temp/claude/d--Repo/903899a8-ac69-4bb3-b9c4-2b9ee951b70b/scratchpad/fitness_app-untracked-backup/`
+before any worktree state changed. One of the 9 (`SPTR_MARKETING_RND_DECISION_PACK_2026-08-19.html`)
+turned out to collide by path with a file already tracked on `origin/master`, and its content
+differs from that tracked version (`diff` confirmed). Rather than let `git checkout` silently choose
+or delete either side, the untracked copy was renamed in place to
+`SPTR_MARKETING_RND_DECISION_PACK_2026-08-19.local-untracked-backup.html` (not deleted -- it still
+exists in `Fitness_App/reports/`, in addition to the scratch backup) so the checkout below had no
+path collision to resolve on its own.
+
+**Master ref release, checkout, fast-forward** -- three git operations, none of them on the
+prohibited list (no `--hard`, no `-f` on anything destructive, no hook edits):
+1. `_wt-master-sync`: `git checkout --detach master`. This re-points that worktree's HEAD at the same
+   commit it was already on (`c9451d7`), only detaching it from the branch name -- the dirty working
+   tree (8 modified + 2 untracked files) was not touched, confirmed identical before/after. This freed
+   `refs/heads/master` for use in another worktree.
+2. `Fitness_App`: `git checkout master` (clean switch, no tracked-file conflicts once the one colliding
+   untracked file was renamed aside) then `git fetch origin --prune` then `git merge --ff-only
+   origin/master`. Fast-forwarded `c9451d7..6244b45` (20 commits, pure fast-forward, no merge commit).
+3. Verified: `git branch --show-current` = `master`, `HEAD` = `origin/master` = `6244b45...`,
+   `git rev-list --left-right --count HEAD...origin/master` = `0 0`.
+
+`D:\Repo\Fitness_App` is now the single canonical local `master` checkout, exactly in sync with
+`origin/master`. The 23 orphaned commits on `marketing/site-prototype-2026-08-19` and the untracked
+marketing-report files were not deleted -- the local branch ref still exists (its remote counterpart
+was already deleted earlier this session and separately recorded as SUPERSEDED for product purposes),
+and every untracked file is preserved both in place and in the scratch backup. No disposition beyond
+"preserved, not reachable from master" was authorized in this directive, so none was taken.
+
+**Temporary-worktree removal:**
+- `_wt-gates-efgh`: `git worktree remove` succeeded -- the worktree's git registration
+  (`.git/worktrees/_wt-gates-efgh`) and all tracked content were removed. The now-empty top-level
+  directory itself could not be `rmdir`'d (`Device or resource busy` / `Permission denied` from
+  Windows -- something external still holds an open handle on it; no dart/flutter/adb process was
+  found holding it, `adb.exe` PID 29320 was the only related process running and unrelated to this
+  path). Git no longer considers this a worktree or a claim on any branch; the leftover empty
+  directory is cosmetic and harmless. `TEMP_WORKTREE_CLEANUP_OPERATOR_ACTION_REQUIRED`: manually
+  `rmdir /d/Repo/_wt-gates-efgh` (or `Remove-Item`) once whatever holds it releases the handle.
+- `_wt-master-sync`: `git worktree remove` (no `--force`) refused, as expected, because the worktree
+  still carries the same modified/untracked files noted above ("contains modified or untracked files,
+  use --force to delete it"). Even though this content was already classified non-unique/superseded,
+  `--force` here would silently discard it without it ever landing anywhere else, which the operator's
+  explicit "no destroying untracked content without separate authorization" instruction does not cover
+  as pre-authorized -- forensic snapshots of this exact state already exist from the prior pass
+  (`D:/Temp/claude/.../scratchpad/wt-master-sync-snapshot/`). Left in place, unforced.
+  `TEMP_WORKTREE_CLEANUP_OPERATOR_ACTION_REQUIRED`: `git worktree remove --force
+  D:/Repo/_wt-master-sync` once the operator explicitly authorizes discarding that dirty content (or
+  after it is independently confirmed unneeded and removed by other means).
+
+**Root-cause fix for the reporting bug that motivated this task:**
+`C:/Users/koros/.claude/tools/report_conform.py:151` (`project_facts`) derived the reported `PROJECT`
+name from `Path(git rev-parse --show-toplevel).name` -- which is each worktree's *own* directory path,
+not a repo-level identity. Every report generated from inside `_wt-gates-efgh` this session therefore
+showed `PROJECT = _wt-gates-efgh` instead of `Fitness-App`, even though the underlying repository was
+correct throughout. Fixed by adding `_project_name_from_remote()`, which parses the `origin` remote
+URL (handles `https://host/owner/repo.git`, `git@host:owner/repo.git`, and local paths) and uses that
+as the primary source for `PROJECT`, falling back to the old toplevel-directory-name behavior only
+when no `origin` remote is configured. This is now stable across every worktree of the same repo,
+since they all share one `origin`. A regression test,
+`C:/Users/koros/.claude/tools/test_report_conform.py`, spins up a throwaway two-worktree git repo
+under different directory names and asserts `project_facts()` reports the same, remote-derived name
+for both -- and explicitly asserts the name is *not* either worktree's directory basename, which is
+the exact failure mode this fixes. `py -3 C:/Users/koros/.claude/tools/test_report_conform.py` passes
+(3/3). Existing historical reports in `reports/` were deliberately **not** bulk-reprocessed with
+`report_conform.py` -- that would rewrite dozens of past snapshots outside the scope of this task; the
+fix takes effect for reports generated from here on, including the final consolidated report for this
+pass. `SPTR_STATUS.{html,ru.html}` intentionally not touched by this entry, per the standing "ОТЧЁТ:
+ТОЛЬКО В КОНЦЕ" instruction -- the next (final) update will carry the corrected `PROJECT =
+Fitness-App` / `FOLDER = D:\Repo\Fitness_App` identity.
+
+No mobile/product code changed by this entry.
