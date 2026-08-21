@@ -23267,3 +23267,80 @@ called again after a rapid tab switch.
 No code changed. No commit needed for this investigation alone; will be committed alongside the
 fix, or alongside a decision to schedule this as its own gate, once the actual failing stage is
 directly observed.
+
+---
+
+## 2026-08-22 — SPTR Equipment Recognition v4.1 design: independent verdict, then iterative
+GPT-PM consensus loop (v4.2 → v4.3 → v4.4) via PM Bridge
+
+### Evidence — 4-lens Claude review + GPT-PM live review of two pasted v4.1 design documents
+
+Operator pasted the SPTR Equipment Recognition v4.1 Master Technical Plan (CONSENSUS, APPROVE
+FOR PHASED IMPLEMENTATION per its own 3 self-run review rounds) and its Independent Review R1-R3.
+Both saved verbatim to `core/design/sptr_equipment_recognition_v4_1/`. An independent 4-lens
+Claude review (Architecture/Flutter, ML/Data Science, QA/Adversarial, silent-failure-hunter),
+cross-checked against a live GPT-PM review conducted via PM Bridge (`D:\Repo\pm-bridge`,
+`gpt_send`/`gpt_await_reply`, conversation `https://chatgpt.com/c/6a821d86-...`), found 4 confirmed
+BLOCKERs v4.1's own three self-run rounds had missed: App Check enforcement globally off with no
+gate closing it; `recognised_models` client-forgeable via a Firestore wildcard write; P6 shadow
+deployment misclassified OPTIONAL (a copy-paste of another gate's classification); sealed-test
+reuse across per-model promotion creating a multiple-comparisons/post-selection risk. Full verdict:
+`core/review/SPTR_EQUIPMENT_RECOGNITION_V4_1_INDEPENDENT_VERDICT_2026-08-22.md` (+ HTML pair).
+
+### Decision — operator corrected scope mid-stream: iterate to an implementation-ready document, not a one-shot findings report
+
+Operator: *"начало хорошое но задумка была чтобы ты или гпт переписали дизайн и сделали еще
+раунд, опять перписали и до консенсуса... тоесть выдать имплементейшен реди документ"*. This
+reframed the task from "review and report" to a write→review→rewrite→review loop against GPT-PM,
+with every revision and every verdict saved to disk (operator: *"сохраняй все выводы и новый
+дизайн на диск всегда"*), the full document resent each round rather than a diff (*"я бы
+отпровлял весь документ целиком на случай если ктото потеряет контекст"*), and GPT asked each
+round to also produce a downloadable document artifact (HTML, not Word — operator preference).
+
+v4.2 (`SPTR_EQUIPMENT_RECOGNITION_MASTER_TECHNICAL_PLAN_v4.2_REMEDIATED_RC_2026-08-22.md`) closed
+all 4 BLOCKERs plus ~20 accepted MAJOR/MINOR findings from both review streams; introduced the "NO
+SILENT DEGRADATION" invariant, split P6-T/P6-V promotion lanes, a full terminal-outcome enum, and
+session-pinned catalog/policy authorization (`equipment_identity_sessions`).
+
+GPT-PM's round-2 review (against the FULL v4.2 text, not the changelog — Playwright transport)
+found 1 new BLOCKER (P6-T had no server-enforced `evidenceLane`, so a text-only-promoted model
+could still be authorized `EXACT_MODEL` off a visual signal that never passed P6-V's sealed gate) +
+2 CRITICAL (`abstainReason` still hosted infra-failure causes, contradicting the SAFE ABSTENTION ≠
+SERVICE FAILURE invariant; the session authority pin was narrower than the fields the response
+contract actually carried) + 4 MAJOR, and explicitly declared round-cap exhausted with a closed
+7-point mechanical closure list rather than requesting a third open-ended round. v4.3
+(`..._v4.3_MECHANICAL_PATCH_2026-08-22.md`) applied all 7 literally — each claim re-verified
+against the actual v4.2/v4.3 text before being accepted, never taken on GPT's word (operator:
+*"не верь гпт, все проверяй сам"*).
+
+GPT-PM's round-3 (binary verification only, not a new adversarial round, per its own round-2
+conclusion) found 6/7 confirmed CLOSED, 1 CRITICAL not fully closed (`RecognitionAuthorityTuple`
+omitted `ocrVersion`/an identity-parser version even though the response contract independently
+carried `ocrVersion` outside the pin — two views in one session could formally satisfy "immutable
+tuple" while running different OCR versions) plus 1 new MINOR (`UNAVAILABLE_CATALOG_VERSION` had
+no representable `failureCode`). Both independently re-verified against the real v4.3 text. v4.4
+(`..._v4.4_MECHANICAL_PATCH_2026-08-22.md`) applied both fixes; GPT-PM's own round-3 verdict states
+this is sufficient for `v4.3 CONSENSUS / APPROVE FOR PHASED IMPLEMENTATION` with no further
+contested round if applied literally — **not self-declared here**: v4.4 deliberately keeps
+"MECHANICAL PATCH CANDIDATE," not "CONSENSUS," status pending GPT-PM's actual confirmation on the
+v4.4 text itself, per the operator's explicit instruction that self-certifying on GPT's
+pre-commitment to a description is exactly the failure mode "не верь гпт" exists to prevent.
+Round-4 (binary verification of v4.4) was in progress via PM Bridge clipboard transport at the time
+of this entry.
+
+### Refusal / caution — PM Bridge Playwright transport proved unreliable for this large a payload; degraded to clipboard mid-session
+
+Live automation bugs hit and documented, not silently worked around: (1) `gpt_send` (Playwright
+transport) returned a false-positive "sent" result at least twice for the full v4.2/v4.3 document
+text (tens of thousands of characters) while the text sat unsent in ChatGPT's composer, confirmed
+via direct lock-respecting DOM reads (`browserLock.js`'s `withBrowserLock`) and operator
+screenshots; (2) `about:blank` tabs accumulated in the automated profile across repeated tool
+calls (confirmed via a direct `context.pages()` read: 5 tabs, 4 blank, before any cleanup); (3)
+`gpt_await_reply`'s turn-count-based reply detection remained demonstrably unreliable (stuck/wrong
+counts), a known pre-existing defect. None of these were silently retried into a false "done" —
+each was disclosed to the operator live. Mitigation for this session: switched the v4.3/v4.4 sends
+to the safe `clipboard` transport (operator paste, Claude retrieves the reply via a lock-respecting
+diagnostic DOM read reusing the existing page, never spawning a new one) rather than continuing to
+retry the unreliable automated path. Not fixed at the root in `pm-bridge`'s own code this session —
+flagged to the operator as needing a real Playwright-transport investigation separately (operator
+requested a GPT code review of `pm-bridge`'s own source for this, same date, separate GPT session).

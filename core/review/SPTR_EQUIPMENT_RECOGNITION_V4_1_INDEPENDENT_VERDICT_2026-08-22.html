@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Equipment Recognition v4.1 — Independent Verdict</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef1f0;
+    --surface: #ffffff;
+    --surface-2: #e3e9e7;
+    --text: #16211f;
+    --text-muted: #4d5a58;
+    --line: #ccd6d2;
+    --accent: #1f6f5c;
+    --accent-soft: #dceae5;
+    --blocker: #a32b23;
+    --blocker-soft: #f7e2df;
+    --critical: #9c5a14;
+    --critical-soft: #f5e6d2;
+    --major: #7a6414;
+    --major-soft: #f2ecd1;
+    --ok: #1f6f5c;
+    --ok-soft: #dceae5;
+    --sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12181a;
+      --surface: #1a2225;
+      --surface-2: #202a2d;
+      --text: #e7ecea;
+      --text-muted: #a3b0ac;
+      --line: #2c3a3c;
+      --accent: #6fc9ac;
+      --accent-soft: #1e3630;
+      --blocker: #e8968a;
+      --blocker-soft: #3a221e;
+      --critical: #e3b578;
+      --critical-soft: #3a2c17;
+      --major: #d8c67e;
+      --major-soft: #362f16;
+      --ok: #6fc9ac;
+      --ok-soft: #1e3630;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12181a;
+    --surface: #1a2225;
+    --surface-2: #202a2d;
+    --text: #e7ecea;
+    --text-muted: #a3b0ac;
+    --line: #2c3a3c;
+    --accent: #6fc9ac;
+    --accent-soft: #1e3630;
+    --blocker: #e8968a;
+    --blocker-soft: #3a221e;
+    --critical: #e3b578;
+    --critical-soft: #3a2c17;
+    --major: #d8c67e;
+    --major-soft: #362f16;
+    --ok: #6fc9ac;
+    --ok-soft: #1e3630;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.55;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 40px 24px 100px; }
+  header {
+    padding: 36px 24px 28px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  header .inner { max-width: 920px; margin: 0 auto; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    line-height: 1.2;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+  .subtitle { color: var(--text-muted); font-size: 1rem; max-width: 65ch; }
+  .verdict-banner {
+    margin-top: 40px;
+    border: 1px solid var(--blocker);
+    background: var(--blocker-soft);
+    border-radius: 10px;
+    padding: 20px 24px;
+  }
+  .verdict-banner .tag {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--blocker);
+    margin-bottom: 6px;
+  }
+  .verdict-banner .headline { font-size: 1.25rem; font-weight: 600; }
+  .verdict-banner .prev {
+    margin-top: 10px;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+  }
+  .verdict-banner .prev s { opacity: 0.75; }
+  section { margin-top: 48px; }
+  h2 {
+    font-size: 1.3rem;
+    margin: 0 0 6px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--line);
+  }
+  h2 .n { font-family: var(--mono); color: var(--text-muted); font-weight: 500; margin-right: 8px; }
+  p { margin: 12px 0; }
+  .meta-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 0.94rem;
+  }
+  .meta-table td { padding: 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .meta-table td:first-child { color: var(--text-muted); width: 30%; padding-right: 16px; }
+  .meta-table code { font-size: 0.85em; }
+
+  .finding-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--line);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+  }
+  .finding-card.sev-blocker { border-left-color: var(--blocker); }
+  .finding-card.sev-critical { border-left-color: var(--critical); }
+  .finding-card.sev-major { border-left-color: var(--major); }
+  .sev-pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    margin-right: 8px;
+  }
+  .sev-blocker .sev-pill { background: var(--blocker-soft); color: var(--blocker); }
+  .sev-critical .sev-pill { background: var(--critical-soft); color: var(--critical); }
+  .sev-major .sev-pill { background: var(--major-soft); color: var(--major); }
+  .finding-id { font-family: var(--mono); font-size: 0.82rem; color: var(--text-muted); }
+  .finding-claim { font-weight: 600; margin: 8px 0 6px; }
+  .finding-meta { font-size: 0.88rem; color: var(--text-muted); margin-top: 8px; }
+  .finding-meta strong { color: var(--text); font-weight: 600; }
+
+  table.cross {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-size: 0.92rem;
+  }
+  table.cross th, table.cross td {
+    text-align: left;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.cross th {
+    background: var(--surface-2);
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+  table.cross td { background: var(--surface); }
+
+  ul.findings-list { padding-left: 20px; }
+  ul.findings-list li { margin-bottom: 10px; }
+
+  .invariant-block {
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 22px 24px;
+    font-family: var(--mono);
+    font-size: 0.92rem;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    border: 1px solid var(--line);
+  }
+  .invariant-block .rule { color: var(--accent); font-weight: 600; }
+
+  .ok-block {
+    background: var(--ok-soft);
+    border: 1px solid var(--ok);
+    border-radius: 10px;
+    padding: 18px 22px;
+  }
+  .ok-block h3 { margin: 0 0 10px; color: var(--ok); font-size: 1rem; }
+
+  .next-step {
+    background: var(--accent-soft);
+    border-radius: 10px;
+    padding: 20px 22px;
+    border: 1px solid var(--accent);
+  }
+
+  .pmb-note {
+    margin-top: 48px;
+    padding: 18px 20px;
+    border-radius: 10px;
+    border: 1px dashed var(--line);
+    background: var(--surface);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .pmb-note strong { color: var(--text); }
+
+  code, .mono { font-family: var(--mono); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <div class="inner">
+    <div class="eyebrow">SPTR / Fitness-App — Equipment Recognition</div>
+    <h1>Independent verdict on v4.1: Claude ⨯ GPT-PM cross-review</h1>
+    <div class="subtitle">Two independent review passes (PM Bridge / GPT-PM, and four cold Claude subagents), reconciled into one consensus, downgrade the design's status from APPROVE FOR PHASED IMPLEMENTATION.</div>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 532235d</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="wrap">
+
+  <div class="verdict-banner">
+    <div class="tag">Current status</div>
+    <div class="headline">BLOCKER REMEDIATION REQUIRED</div>
+    <div class="prev">Was: <s>APPROVE FOR PHASED IMPLEMENTATION</s> (the document's own R1-R3 consensus). Foundation work (P0, read-only P1) may proceed; production exact identity / exact history / model-specific setup remain blocked.</div>
+  </div>
+
+  <table class="meta-table">
+    <tr><td>Design reviewed</td><td><code>core/design/sptr_equipment_recognition_v4_1/</code> — Master Technical Plan v4.1 + Independent Review R1-R3</td></tr>
+    <tr><td>Method</td><td>(1) GPT-PM via PM Bridge, a live Playwright round in the same ChatGPT conversation that produced v4.1. (2) Four cold Claude subagents (Architecture/Flutter, ML/Data Science, QA/Adversarial, silent-failure hunter) reading only the source documents and the real Fitness_App repository, blind to GPT's output.</td></tr>
+    <tr><td>Baseline verified</td><td>master @ <code>532235d3...</code> (the design's own claimed baseline <code>3dd2e3e...</code> confirmed as a real 8-commits-back ancestor; the four files the design cites as "current repository truth" are unchanged)</td></tr>
+  </table>
+
+  <section>
+    <h2><span class="n">01</span>Why this supersedes the prior APPROVE</h2>
+    <p>The document's own R1-R3 rounds were run by one continuous reviewer (GPT) role-playing different personas in the same chat, self-consolidating to APPROVE. This verdict is the first pass that (a) checked the design's claims against the real <code>Fitness_App</code> working tree rather than the document's own prose, and (b) ran two genuinely independent review methods and reconciled their output rather than treating one pass as final.</p>
+    <p>Two of the four confirmed BLOCKERs are <strong>repo-grounded facts that contradict the design's own binding invariants</strong>, not design-level gaps:</p>
+    <ul class="findings-list">
+      <li>The design requires <code>enforceAppCheck=true</code> as a security exit condition (§8.5, §11, P2.G3). App Check enforcement is <strong>globally disabled</strong> in this repo today (<code>functions/src/scaling.ts:113-124</code>), gated on an unrelated infrastructure migration (the operator's own Firebase App Distribution test builds cannot currently attest).</li>
+      <li><code>firestore.rules:24-35</code>'s <code>users/{uid}/{coll}/{document=**}</code> wildcard grants full client write to any subcollection not explicitly excluded. The design's <code>recognised_models</code> (exact-model history, P5.G3) is <strong>not</strong> in the exclusion list — a modified client can forge <code>identityLevel: EXACT_MODEL</code> history with arbitrary <code>catalogVersion</code>/<code>modelId</code>, which breaks every "server authority" claim the design makes.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Confirmed BLOCKERs (4)</h2>
+
+    <div class="finding-card sev-blocker">
+      <span class="sev-pill">BLOCKER B-01</span><span class="finding-id">App Check global-off</span>
+      <div class="finding-claim">Enforcement is globally off, blocked on an unrelated platform migration; the P2.G3/P6 security exit can't honestly close.</div>
+      <div class="finding-meta"><strong>Source:</strong> Claude Architecture (repo-grounded) — accepted by GPT with no rebuttal. <strong>Required:</strong> a new prerequisite gate (<code>P0.G0</code>/<code>PLATFORM-AC-01</code>) with states <code>BLOCKED_EXTERNAL_PLATFORM_MIGRATION</code> / <code>READY_FOR_SHADOW</code> / <code>READY_FOR_PRODUCTION</code>; an explicit shadow-vs-production identity split; no production promotion while <code>APP_CHECK_ENFORCED != true</code>.</div>
+    </div>
+
+    <div class="finding-card sev-blocker">
+      <span class="sev-pill">BLOCKER B-02</span><span class="finding-id">Firestore wildcard client write</span>
+      <div class="finding-claim"><code>recognised_models</code> is client-forgeable through the <code>users/{uid}/**</code> wildcard write rule.</div>
+      <div class="finding-meta"><strong>Source:</strong> Claude Architecture (repo-grounded) — GPT called it "worse than a missing rules entry." <strong>Required:</strong> <code>firestore.rules</code> + <code>firestore.indexes.json</code> become mandatory P1/P5 deliverables; deny-by-default/server-authoritative rules for exact history; emulator mutation tests (client CREATE/UPDATE authority fields → DENY, server/admin write → ALLOW, other-account access → DENY).</div>
+    </div>
+
+    <div class="finding-card sev-blocker">
+      <span class="sev-pill">BLOCKER B-03</span><span class="finding-id">P6 shadow wrongly optional</span>
+      <div class="finding-claim">P6.G1 (shadow deployment) is classified <code>OPTIONAL / NOT A P6 PREREQUISITE</code> — a literal copy-paste of P5.G4's classification string.</div>
+      <div class="finding-meta"><strong>Source:</strong> GPT B-01, independently reproduced by Claude Architecture via a different method (copy-paste detection). <strong>Required:</strong> reclassify P6.G1 as <code>RELEASE-BLOCKING PREREQUISITE</code>; define minimum shadow volume/time, terminal-outcome completeness, App Check/rate-limit error SLO before promotion.</div>
+    </div>
+
+    <div class="finding-card sev-blocker">
+      <span class="sev-pill">BLOCKER B-04</span><span class="finding-id">Sealed-test reuse / multiple comparisons</span>
+      <div class="finding-claim">Reusing the sealed test for model-by-model promotion (P6.G3) creates a post-selection bias the single global confidence bound doesn't address.</div>
+      <div class="finding-meta"><strong>Source:</strong> GPT B-02, independently reproduced by Claude ML/Data Science. <strong>Required:</strong> pre-register per-model promotion criteria and a fixed candidate set before the sealed run, with a multiplicity correction (e.g. Bonferroni across K candidate models) or an explicit hierarchical/partial-pooling statistical model — never select which models "pass" after inspecting sealed results.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>Independently convergent findings (GPT and Claude, different methods)</h2>
+    <table class="cross">
+      <tr><th>Topic</th><th>GPT finding</th><th>Claude finding</th></tr>
+      <tr><td>DEFER_VISUAL has no production path</td><td>C-01</td><td>ML/Data Science: "DEFER_VISUAL structurally forecloses any path to production OCR-only exact-model claims"</td></tr>
+      <tr><td>Catalog/policy versioning recorded, not enforced</td><td>C-02</td><td>Architecture: <code>recognitionSessionId</code> doesn't pin <code>(catalogVersion, policyVersion)</code></td></tr>
+      <tr><td>Infra/security failure collapses into ordinary TYPE_ONLY</td><td>C-03</td><td>silent-failure hunter: <code>decision</code> has no terminal state for infra/security failure</td></tr>
+      <tr><td>Demotion/correction doesn't revoke history</td><td>C-04</td><td>silent-failure hunter finding 4: same scenario</td></tr>
+      <tr><td>False-exact-on-OOD unmeasurable online</td><td>M-04</td><td>ML/Data Science finding 7: same conclusion</td></tr>
+      <tr><td>Raw OCR text not covered by the "no raw image in logs" rule</td><td>M-05</td><td>silent-failure hunter finding 5: nearly identical wording</td></tr>
+      <tr><td>Stale-scan client discard doesn't stop server-side work</td><td>M-02</td><td>silent-failure hunter finding 2: same scenario</td></tr>
+      <tr><td>"First non-Stripe Cloud Function"</td><td>M-03 (GPT's original framing)</td><td>Architecture <strong>corrected</strong> this: Functions already serves 12 functions across multiple domains (only <code>package.json</code>'s stale <code>description</code> field says Stripe-only). GPT retracted its own framing, refining it to: a new ML/Vertex workload added to an existing mixed Functions codebase without defined deployment isolation — still MAJOR, different reason.</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Claude-only findings GPT accepted on reconciliation</h2>
+    <p>All ACCEPTed by GPT in the final round, no rebuttal:</p>
+    <ul class="findings-list">
+      <li><strong>Region pinning</strong> (<code>europe-west1</code>/<code>eur3</code>) is tied to the existing Stripe webhook URL's stability (<code>scaling.ts:65-68</code>); P0.G5 must not treat region as an open architecture choice — a region move risks a payments-outage window.</li>
+      <li><strong>Duplicate rate limiter</strong>: <code>rate_limit.ts</code> (§12.3) duplicates the already-shipped, transactional <code>abuse_guard.ts</code>. Extend the existing one first; a second limiter needs a stated gap analysis.</li>
+      <li><strong>Non-autoDispose provider, no scanId lifecycle primitive</strong>: <code>visualEquipmentControllerProvider</code> is a global <code>NotifierProvider</code>, not <code>autoDispose</code>/<code>family</code>; §7.1's async-staleness invariant is currently prose with no Riverpod mechanism behind it. Needs a <code>family</code> keyed by <code>scanId</code>/<code>recognitionSessionId</code> + <code>autoDispose</code> + a current-session guard.</li>
+      <li><strong>Client-readable equipment_models vs. server authority</strong> — ACCEPT WITH REFINEMENT: reading display metadata is fine; the violation is a client deciding "this model is VERIFIED, therefore exact/setup is authorized" from cached fields instead of a live server policy check.</li>
+      <li><strong>Unnamed statistical method</strong>: the numbers (~100/~299 at zero errors) match an exact one-sided Clopper-Pearson bound, but the document never names it — an implementer defaulting to a Wald approximation gets a degenerate interval at zero observed errors. Name Clopper-Pearson explicitly.</li>
+      <li><strong>Round-cap exhaustion has no defined outcome</strong>: an unresolved BLOCKER/CRITICAL at round 5 must force <code>GATE REMAINS OPEN / NO PROMOTION / ESCALATE TO OPERATOR</code>, never an implicit pass by exhaustion.</li>
+      <li><strong>Existing ML governance/CI machinery not reused</strong>: <code>scripts/ml/lifecycle.py</code> + <code>test_ml_contracts.py</code>, wired into <code>.github/workflows/flutter.yml</code>, already mechanically enforce <code>MODEL_REGISTRY.json</code> claims against the real asset tree. The design's new promotion machinery should route through this existing contract instead of a parallel, CI-unenforced one.</li>
+      <li>15 new Cloud Functions files land in the single existing Functions codebase with no scaling/deploy isolation from <code>stripeWebhook</code> — accepted as MAJOR, but GPT did not accept "separate codebase" as the only valid fix; calls for an evidence-driven choice.</li>
+      <li><code>MODEL_REGISTRY.json</code>'s existing schema doesn't cleanly fit <code>equipment_identity_embedding</code>/<code>gemini_equipment_verifier</code> as new <code>models[]</code> entries — the registry already has a <code>vendor_models</code> category (used today for the existing <code>gemini</code> entry) that fits better.</li>
+      <li>Retrieval-specific leakage: an asset used to build the <code>equipment_model_exemplars</code> retrieval index could also appear in <code>CALIBRATION_SET</code>; the pHash-only split rule doesn't catch this.</li>
+      <li>Named reviewer roles in §10 (R2 "Provenance/legal", R5 "Release reviewer") have no matching agent definition under <code>Fitness_App/.claude/agents/</code>, while R1/R3/R4's roles genuinely do exist. Separately, R5's "GPT review mechanism" is currently a global no-op (<code>ENABLED_REPO_ROOTS = []</code>).</li>
+      <li>The optional verifier (P4.G4, <code>POST_MVP</code>) can silently drop out of the <code>EXACT_MODEL</code> decision path with no distinct signal that a claim was produced without Gemini adjudication.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>New invariant — proposed by GPT as the unifying conclusion of the silent-failure half of both reviews</h2>
+    <div class="invariant-block"><span class="rule">NO SILENT DEGRADATION</span>
+Every exact-identity attempt MUST produce exactly one machine-observable terminal outcome.
+
+SAFE ABSTENTION is not SERVICE FAILURE.
+SERVICE FAILURE is not UNSUPPORTED MODEL.
+UNSUPPORTED MODEL is not UNKNOWN EQUIPMENT.
+CLIENT CANCEL is not BACKEND TIMEOUT.
+POLICY REVOCATION is not HISTORICAL EXACT IDENTITY.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>What survived both reviews unchanged</h2>
+    <div class="ok-block">
+      <h3>Do not re-litigate</h3>
+      <ul class="findings-list" style="margin:0;">
+        <li>The additive architecture around <code>equipmentId</code>: exact model never replaces the functional ontology or bypasses existing safety/exercise filtering.</li>
+        <li><code>machine_text_anchor.dart</code>'s denoising stays untouched; a separate <code>IdentityTextParser</code> is the right structural call.</li>
+        <li>Reusing <code>core/ml/MODEL_REGISTRY.json</code> instead of a second ML lifecycle is correct (refined: the <code>vendor_models</code> category, not <code>models[]</code>, is the right fit for the new hosted-model entries).</li>
+        <li>The rights model (§4.4) is genuinely fail-closed and multi-dimensional.</li>
+        <li>The 30-photo legacy-regression reclassification and the OCR-first "resolve via text before uploading an image" design are sound.</li>
+        <li>P0.G5's refusal to trust emulator parity for vector search is correct for this repo.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Recommended next step</h2>
+    <div class="next-step">
+      <p>Per GPT-PM's own conclusion (agreed by Claude): not another full review round on v4.1, but mechanically assembling a <strong>v4.2 Remediated Review Candidate</strong> from this consolidated finding set, closing at minimum the items in §2-§4 above, followed by one final verification pass confirming the agreed fixes actually landed in the document — not a fresh open-ended review.</p>
+    </div>
+  </section>
+
+  <div class="pmb-note">
+    <strong>PM Bridge live-test note.</strong> This review doubled as the first live end-to-end test of PM Bridge's Playwright transport after the Gate 6 concurrency fix. <code>gpt_send</code> succeeded (after one retry — a title-based sidebar-hydration race, since fixed by switching <code>Fitness_App</code>'s <code>config/conversations.md</code> entry to ID-based routing, mirroring pm-bridge's own earlier fix). <code>gpt_await_reply</code> failed to detect the landed reply on two separate exchanges (a real, still-open turn-count-detection bug, not a missing reply — both times the reply was fully present on the page). The reply content was retrieved and logged via <code>gpt_ingest_reply</code> as a fallback both times. This is a genuine unresolved transport defect, not a design-review finding — tracked separately, not fixed as part of this task.
+  </div>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>
