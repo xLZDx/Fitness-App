@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -96,12 +95,6 @@ class LoginPage extends ConsumerWidget {
                       onTap: isLoading
                           ? null
                           : () async {
-                              // TRACE stageE -- SPTR_FINAL_AUTONOMOUS_PROGRAM
-                              // section 5, D-03. TEMPORARY, see
-                              // _InputTraceListener in main.dart.
-                              if (kDebugMode) {
-                                debugPrint('TRACE stageE guestContinue onTap');
-                              }
                               // D-03: `resolveRedirect` deliberately exempts
                               // any signed-in anonymous user sitting on
                               // `/login` from the redirect that would

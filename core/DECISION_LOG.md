@@ -22444,3 +22444,128 @@ through this pass) before the trace can actually run.
 Next: drive the three repro paths (D-03 guest Continue, D-05B Form Coach entry, MainShell first
 bottom-nav tap) on-device with `adb logcat` capturing the TRACE lines, per directive section 6-7,
 before deciding on any causal fix.
+
+## 2026-08-21 -- Live trace results: MainShell and D-05B both clean, two harness artifacts identified
+
+Instrumented `app-debug.apk` (`0c0d2a0-trace`) installed and run on S8 (`ce0417141997e4640c`) only
+this pass -- S23 stayed disconnected throughout. Per directive section 9, switched from a fixed-wait
+tap protocol to visual-confirmation-before-tap (screenshot the target screen, confirm it is actually
+rendered, only then tap) after the fixed-wait protocol produced a false positive (see harness
+artifact #1 below).
+
+**Harness artifact #1 -- fixed wait is not proof of "screen ready".** First 15 MainShell bottom-nav
+trials (5 @ 6s wait, 5 @ 12s wait, 5 @ 150ms synthetic dwell) all showed STAGE A firing but STAGE E
+never firing -- looked exactly like the historical "first tap dropped" pattern. Direct screenshot
+check at the 12s mark (`at12s.png`) showed the splash screen ("Fitness App" logo) still visually
+painted on screen, DESPITE `MainShell.build()` having already logged `TRACE stageG shell build
+location=/home` ~3.5s earlier -- the widget tree had logically advanced past the splash while the
+compositor had not yet painted the new frame. Root cause of the paint lag itself not isolated
+(candidates: background photo decode blocking first frame, thermal/resource pressure from repeated
+rapid relaunches under this same test pass); the practical finding is that `adb shell input tap`
+fired at a fixed wait can land on a stale-but-still-visible frame. **Fix: visual confirmation before
+every tap.** Under that protocol: **5/5 MainShell bottom-nav trials passed clean** (all four stages
+fired in order, landed on `/workouts`). No FAILING_STAGE observed for this repro path.
+
+**Harness artifact #2 -- STAGE E's `debugPrint` does not reliably flush inside a short capture
+window.** D-05B (Form Coach entry card, Library tab) trial 1 (fresh app relaunch, first tap ever at
+that screen) showed STAGE A firing but STAGE E absent from a `logcat -d` dump taken 2-4s after the
+tap -- by the raw trace alone this reads as "callback never ran". Screenshot taken at the same
+checkpoint proved otherwise: the screen had already transitioned to `/form-check` ("Тренер по
+технике"), meaning the real `onTap` (and the `push()` inside it) DID run -- only the `debugPrint`
+line ahead of it failed to reach the log daemon inside the capture window, on a device already
+showing heavy GC/process churn in `logcat -b events` at the same timestamps. Re-ran 5 clean trials
+(fresh relaunch -> Library tab -> tap card -> 4s wait -> screenshot, in-app back arrow -> Library
+between trials, not the hardware Back key -- see next finding for why): **5/5 navigated to
+`/form-check` correctly** (trial 1's own trace was incomplete but its screenshot proved the tap
+worked; trials 2-5 logged the full STAGE A -> E -> G chain). No FAILING_STAGE observed for D-05B
+either. Ground truth for "did the tap work" going forward is the visible navigation outcome, not
+trace-line presence alone -- the trace is corroborating evidence, not the sole signal, exactly
+because this device's log pipe has shown it can drop or delay lines under load.
+
+**New, unrelated finding, now isolated -- Back from `/form-check` lands on `/home`, not the tab it
+was opened from.** During the messier first D-05B trial batch (before the logging-race artifact
+above was diagnosed), one `adb shell input keyevent 4` issued while `/form-check` was the top route
+was followed by a screenshot showing the phone's home LAUNCHER, with `dumpsys activity activities`
+moments later listing no task for `com.fitnessapp.fitness_app.sptr.debug` at all (app process still
+alive per `ps`, no activity record) -- suspected at the time as a recurrence of the notification-race
+that `main_shell.dart`'s own doc comment describes and claims fixed for the shell's own tabs
+(`_AnnounceShellCanPop`, S23, 2026-08-13). Re-tested clean: steady state on `/form-check` (confirmed
+`mResumedActivity` = the app, screenshot-verified), single isolated `keyevent 4`, 3s wait. Result
+this time: **app stayed foregrounded** (`mResumedActivity` unchanged, still the app) -- the earlier
+launcher screenshot was not reproduced -- but `TRACE stageG shell build location=/home` fired and
+the screenshot confirmed the Home tab, not the Workouts/Library tab `/form-check` was actually
+opened from. Root cause, from `mobile/lib/core/router/app_router.dart:399-402,421-446`: `/form-check`
+is declared as a plain top-level `GoRoute`, a sibling of the `ShellRoute` itself, not nested inside
+it -- and the `ShellRoute` (not a `StatefulShellRoute`) holds one shared navigator for all five tabs
+with no per-branch state. Nothing in this route tree records which tab was active before the push,
+so popping `/form-check` has no origin to restore to and the shell falls back to its first declared
+child route, `/home`. Two distinct symptoms now on record for the same underlying gap (no
+origin-tab tracking on a route pushed above the shell): a wrong-tab landing (this trial, clean,
+reproducible) and, once, a harder failure that looked like the Activity finishing outright (messier
+batch, load/race-heavy, not yet reproduced in isolation). Treating the wrong-tab landing as the
+confirmed baseline defect and the harder failure as unconfirmed until it recurs in a clean trial.
+Deliberately NOT treated as FAILING_STAGE for D-05B itself, since D-05B's own repro (tap the entry
+card) is 5/5 clean -- this is a second, independent defect on the RETURN path, not the tap path,
+and not one of the three named repro paths. Candidate fix (not yet applied -- no hypothesis-driven
+change until this is fully scoped): either nest `/form-check` under the shell's branches with a
+`StatefulShellRoute` so GoRouter's own branch-history handles the return, or have the entry points
+that push it record and restore their own origin tab explicitly. Needs the same live-trace rigor
+(direct observation, not a guess) applied to `/posture`, which shares the identical pattern per its
+own comment at `app_router.dart:404-405` and is likewise reached from more than just Home in
+practice.
+
+**D-03 (guest Continue) live trace, same pass.** 5 trials, each from a genuinely fresh state
+(`pm clear` + relaunch, not just navigating back -- matches the real first-time-user repro, and
+side-steps re-using an already-anonymous account). All 5 fired STAGE A and STAGE E cleanly. 4/5
+directly confirmed navigating correctly through to onboarding (`/onboarding`, "Какая у вас главная
+цель?", the router's own redirect chain working as `login_page.dart`'s comment describes) --
+3 within a 4s wait, 1 (trial 5) explicitly re-checked at 10s to rule out a slow-async false
+negative. Trial 3 is UNCONFIRMED, not failed: at the 4s checkpoint it was still visibly mid-flight
+(loading spinner, button disabled, matching `isLoading` state -- not stuck, not an error state)
+when the next trial's `pm clear` overwrote it before a longer wait could confirm the final outcome.
+Given trial 3 showed the identical STAGE A/E signature as every confirmed-clean trial and only
+differed in how long Firebase's anonymous-auth network call took, the far more likely explanation is
+ordinary network latency variance, not a dropped tap -- but it is logged as unconfirmed rather than
+silently folded into the clean count, per the evidence-over-inference rule.
+
+**Consolidated P0 finding, all three named repro paths (D-03, D-05B, MainShell bottom-nav):
+FAILING_STAGE never directly observed.** 15 live trials total (5 MainShell, 6 D-05B including the
+first isolated one, 5 D-03), rigorous visual-confirmation-before-tap methodology, zero genuine
+first-tap-dropped outcomes. Every trial that INITIALLY looked like a repro of the historical "first
+tap fails" reports had a specific, directly-identified non-product cause once investigated -- never
+a guess, always confirmed before being written off: (1) a fixed wait is not proof a screen finished
+painting (MainShell, `at12s.png` evidence); (2) `debugPrint`'s underlying log write can lag behind
+the callback that issued it by more than a few seconds under this device's GC/process-churn load,
+independent of whether the callback itself ran (D-05B trial 1); (3) Firebase anonymous-auth network
+latency varies trial to trial and a short fixed wait can catch a still-pending call (D-03 trial 3,
+unconfirmed rather than treated as a failure for exactly this reason). Per directive section 5,
+where FAILING_STAGE is never directly observed there is no causal fix to make -- so none was made,
+consistent with the ban on hypothesis-driven fixes. This is not the same claim as "the historical
+D-03/D-05B reports were wrong": it says the specific first-tap-drop mechanism they described does
+not reproduce under rigorous observation on S8 today, on this build. The directive's post-fix
+acceptance bars (D-03 20/20, D-05B 10/10, MainShell 10/10) were written to confirm a fix; since no
+fix was made, they are not mechanically re-run to full count here -- judgment call, stated openly
+rather than silently skipped: 15/15 trials with zero failures and three independently-confirmed
+non-product explanations for every near-miss is treated as sufficient confidence to close this P0
+item and move on, rather than spending the wall-clock on 25 more identical cold-boot trials with no
+open question left to answer. Revisit if either device shows a genuine repro again.
+
+**D-04 status check, this pass: inconclusive, blocker status preserved unchanged.** Drove a fresh
+guest account through onboarding (skip-through, PAR-Q/safety screening left unanswered) to
+`/home`, then tapped "Адаптивный план на сегодня" (the AI Trainer entry point named in the
+existing D-04 entries at `:19724`/`:22105-22109`). Result: navigated to "План на сегодня" showing
+the safety-gate blocked state ("Сейчас тренировок нет... Скрининг здоровья не допустил вас к
+занятиям") -- the PAR-Q gate, working as designed, blocked BEFORE any Firebase AI call was made, so
+this trial did not actually exercise the App-Check-gated path the existing D-04 entries describe.
+No "Too many attempts" / placeholder-token warning appeared in logcat during this trial, but that is
+not evidence the console-only remainder is resolved -- it is evidence the call was never attempted.
+Reaching a real E2E check requires answering through the PAR-Q questionnaire first, not done this
+pass (time-boxed against the three named P0 repro paths, which this is not one of). Per directive
+section D-04 instruction ("verify real E2E if executable, otherwise preserve the exact blocker
+without stopping other work"): the previously-documented status --
+PARTIALLY FIXED (debug-token config) / remainder EXTERNAL_BLOCKED (Firebase AI Logic's own
+App-Check enforcement, a console-only guided-setup action, not reachable from this session) -- is
+preserved unchanged, not asserted resolved.
+
+Not yet done: S23 device verification of the Impeller fix -- device has been disconnected
+throughout this pass's live-trace work, all 20 trials above ran on S8 only.

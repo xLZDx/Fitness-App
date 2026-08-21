@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -444,14 +443,7 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
           icon: Icons.center_focus_strong_outlined,
           label: AppLocalizations.of(context).formcheckFormCoach,
           subtitle: AppLocalizations.of(context).workoutsOnDevicePoseCheck,
-          // TRACE stageE -- SPTR_FINAL_AUTONOMOUS_PROGRAM section 5, D-05B.
-          // TEMPORARY, see _InputTraceListener in main.dart.
-          onTap: () {
-            if (kDebugMode) {
-              debugPrint('TRACE stageE formcoach quicktool onTap');
-            }
-            GoRouter.of(context).push('/form-check');
-          },
+          onTap: () => GoRouter.of(context).push('/form-check'),
         )),
         const SizedBox(height: 10),
         _gutter(_QuickTool(

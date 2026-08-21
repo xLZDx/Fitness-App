@@ -597,36 +597,8 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       scrollBehavior: const _GlassScrollBehavior(),
-      builder: (context, child) => _InputTraceListener(
-        child: AuroraBackground(child: child ?? const SizedBox.shrink()),
-      ),
-    );
-  }
-}
-
-/// TEMPORARY -- live first-interaction root-cause trace (D-03/D-05B/MainShell
-/// bottom-nav first-tap failures, SPTR_FINAL_AUTONOMOUS_PROGRAM section 5).
-///
-/// STAGE A/B only: confirms a raw pointer event reached the Flutter engine at
-/// all, independent of which widget it eventually hits. Debug-only
-/// (`kDebugMode` twice over, same reasoning `debug_telemetry.dart` already
-/// documents for why a release-mode guard alone is not enough for a suite
-/// that runs in debug) -- remove once the failing stage is identified and
-/// fixed, this is not meant to ship.
-class _InputTraceListener extends StatelessWidget {
-  const _InputTraceListener({required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    if (!kDebugMode) return child;
-    return Listener(
-      behavior: HitTestBehavior.translucent,
-      onPointerDown: (e) => debugPrint(
-          'TRACE stageA down id=${e.pointer} t=${e.timeStamp.inMilliseconds}'),
-      onPointerUp: (e) => debugPrint(
-          'TRACE stageA up   id=${e.pointer} t=${e.timeStamp.inMilliseconds}'),
-      child: child,
+      builder: (context, child) =>
+          AuroraBackground(child: child ?? const SizedBox.shrink()),
     );
   }
 }

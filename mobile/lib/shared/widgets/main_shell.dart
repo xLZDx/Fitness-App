@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kDebugMode, kReleaseMode;
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -103,12 +103,6 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
     final selected = _indexFor(location);
-    // TRACE stageG -- SPTR_FINAL_AUTONOMOUS_PROGRAM section 5. Confirms this
-    // shell actually rebuilds against the new location, i.e. the router
-    // state change from a nav tap reached rendering. TEMPORARY.
-    if (kDebugMode) {
-      debugPrint('TRACE stageG shell build location=$location');
-    }
 
     return PopScope(
       // Tab routes replace each other (`context.go`), so the shell is always
@@ -155,14 +149,7 @@ class MainShell extends StatelessWidget {
         bottomNavigationBar: HudNavBar(
           items: _itemsFor(AppLocalizations.of(context)),
           selectedIndex: selected,
-          onSelect: (i) {
-            // TRACE stageE -- did the tap's onTap callback actually execute.
-            // TEMPORARY, see _InputTraceListener in main.dart.
-            if (kDebugMode) {
-              debugPrint('TRACE stageE navbar onSelect i=$i path=${_paths[i]}');
-            }
-            context.go(_paths[i]);
-          },
+          onSelect: (i) => context.go(_paths[i]),
         ),
       ),
     );
