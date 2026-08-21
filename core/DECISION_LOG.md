@@ -21851,3 +21851,67 @@ fixing the underlying race. Screenshots retained:
 `D:/Temp/claude/d--Repo/903899a8-ac69-4bb3-b9c4-2b9ee951b70b/scratchpad/trial{11,11_result_late,11_retap,b1..b6,c1..c6}*.png`.
 
 No product code changed by this entry -- this is measurement, not a fix.
+
+## 2026-08-21 -- D-05B reproduced live; new evidence suggests it and D-03 may share one root cause: "first tap shortly after a screen becomes visible" is unreliable app-wide, not two isolated widget bugs
+
+**D-05B repro, following up on `:20387`'s own note that it "needs the same real-device protocol
+D-03 does."** Signed in on the S8, skipped onboarding, navigated to Тренировки -> Библиотека (the
+"Library tab" `:20381` names) and tapped the "Тренер по технике" chip as the first interaction on a
+freshly-mounted screen (chip defaults to "Для вас"; confirmed via screenshot before each trial tap,
+not assumed).
+
+**First clean trial: PASS** (chip switched to "Тренер по технике" immediately; this also surfaced
+the F020 disclosure banner and a real filtered exercise list underneath, with no overlap -- extra,
+incidental confirmation of D-05A's disproof).
+
+**A second attempt at more trials hit a confound, investigated rather than reported as-is:** a batch
+of alternating chip taps within the same long-lived app process, and then a batch of sub-tab toggle
+taps in that same process, both degraded to near-total unresponsiveness (10 of 11 consecutive
+screenshots byte-identical -- the screen was not changing at all). Ruled out a global synthetic-input
+failure first: `adb shell input keyevent KEYCODE_HOME` fired instantly and correctly mid-freeze, so
+`adb`/the OS input pipeline was not the cause. Most likely explanation: this single app process had
+by then been driven through the full D-03 20-trial run plus this exploration without ever being
+killed -- a plausible resource/engine-state degradation from sustained hammering, not something
+claimed as a confirmed mechanism here. **Force-stopped and cleanly relaunched the app** before
+trusting any further trial.
+
+**Three clean trials after that, each its own fresh `am force-stop` + `am start` + 10s cold-start
+wait (matching the timing D-03 already established is enough for the first frame to paint):**
+tapped the bottom-nav "ТРЕНИРОВКИ" tab as the very first interaction after the home screen became
+visible. **3 of 3 stayed on ГЛАВНАЯ (Home) -- the tap did not register, every single time**,
+confirmed by screenshot after each (`d05b_r2.png`, `d05b_r3.png`, `d05b_r4.png`).
+
+**This is a new, more consistent failure than D-03's ~30%: 3/3 on a completely different UI element
+(a bottom-nav tab, not a chip or a sign-in button), immediately after cold start.** Combined with the
+one clean D-05B chip trial that failed on first tap after a mid-session relaunch (`d05b_fresh_trial1.png`)
+and the one that passed (`d05b_chip_tap1.png`, `d05b_chip_tap2.png` re-check), the pattern across
+this whole pass -- D-03's login button, this session's sub-tab toggle, the Library chip, and now the
+bottom-nav tab -- is the same shape every time: **the first tap immediately after a screen/route
+becomes visible is unreliable; a second, identical tap on the same target works.**
+
+**HYPOTHESIS, not yet confirmed by code inspection: D-03 and D-05B (and possibly this bottom-nav
+case) may be one shared root cause** -- something in the app's transition-into-a-new-frame path
+(most plausibly a warm-up gap between the first visually-complete frame and Flutter's gesture/hit-test
+binding being fully wired for that frame) rather than three unrelated per-widget defects. Flagging
+the resemblance, per this file's own `:20389` standard, without claiming it: no source has been read
+to identify an actual mechanism, and the earlier `:20214` finding already on record for D-03
+specifically ("not a hit-test/gesture-arena problem") argues against the simplest version of this
+hypothesis for D-03 at least -- so this needs real investigation, not a merge-on-suspicion.
+
+**D-05B status: CONFIRMED_OPEN** (unchanged verdict, now with live n=2 clean first-tap trials: 1
+PASS, 1 FAIL, plus the 3/3 bottom-nav failures as adjacent evidence of the same symptom class on a
+third widget). Not escalated to a measured rate the way D-03 was -- 2 trials is not a rate, and
+forcing a percentage out of it would overstate the evidence, exactly the mistake corrected for D-03
+earlier in this same pass.
+
+**Next step, not done in this entry:** read the actual navigation/gesture-handling code (route
+transitions, `MainShell`'s bottom nav, `PageView`/`IndexedStack` usage, any `AnimatedSwitcher` or
+similar around first-frame-after-navigation) to find a real mechanism before proposing a fix --
+guessing at a fix for a hypothesis this size would very likely produce another false "Material/
+Semantics-style" non-fix like the one already on record for D-03.
+
+Screenshots retained:
+`D:/Temp/claude/d--Repo/903899a8-ac69-4bb3-b9c4-2b9ee951b70b/scratchpad/d05b_*.png`,
+`diag_*.png` (the tap-degradation diagnostic).
+
+No product code changed by this entry -- this is reproduction and hypothesis formation, not a fix.
