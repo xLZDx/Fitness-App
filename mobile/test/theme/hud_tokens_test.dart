@@ -394,4 +394,62 @@ void main() {
       expect(dark.extension<AppSemanticColors>(), isNotNull);
     });
   });
+
+  group('HudMotionX -- the reduce-motion signal', () {
+    Widget host(bool disableAnimations, WidgetBuilder builder) => MediaQuery(
+          data: MediaQueryData(disableAnimations: disableAnimations),
+          child: MaterialApp(home: Builder(builder: builder)),
+        );
+
+    testWidgets('reduceMotion mirrors MediaQuery.disableAnimations',
+        (t) async {
+      bool? seenOff;
+      bool? seenOn;
+      await t.pumpWidget(host(false, (c) {
+        seenOff = c.reduceMotion;
+        return const SizedBox.shrink();
+      }));
+      await t.pumpWidget(host(true, (c) {
+        seenOn = c.reduceMotion;
+        return const SizedBox.shrink();
+      }));
+      expect(seenOff, isFalse);
+      expect(seenOn, isTrue);
+    });
+
+    testWidgets('hudMotionDuration passes the normal duration through when '
+        'the platform is not asking for reduced motion', (t) async {
+      late Duration seen;
+      await t.pumpWidget(host(false, (c) {
+        seen = c.hudMotionDuration(const Duration(milliseconds: 300));
+        return const SizedBox.shrink();
+      }));
+      expect(seen, const Duration(milliseconds: 300));
+    });
+
+    testWidgets(
+        'hudMotionDuration defaults to Duration.zero under reduce motion',
+        (t) async {
+      late Duration seen;
+      await t.pumpWidget(host(true, (c) {
+        seen = c.hudMotionDuration(const Duration(milliseconds: 300));
+        return const SizedBox.shrink();
+      }));
+      expect(seen, Duration.zero);
+    });
+
+    testWidgets(
+        'hudMotionDuration honours an explicit non-zero reduced duration -- '
+        'for a state change that must still visibly register', (t) async {
+      late Duration seen;
+      await t.pumpWidget(host(true, (c) {
+        seen = c.hudMotionDuration(
+          const Duration(milliseconds: 300),
+          reduced: const Duration(milliseconds: 20),
+        );
+        return const SizedBox.shrink();
+      }));
+      expect(seen, const Duration(milliseconds: 20));
+    });
+  });
 }

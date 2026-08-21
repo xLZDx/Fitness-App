@@ -14,14 +14,18 @@ Widget _host(
   Widget child, {
   Brightness brightness = Brightness.dark,
   double textScale = 1.0,
+  bool disableAnimations = false,
 }) {
   final Widget app = MaterialApp(
     theme: brightness == Brightness.dark ? AppTheme.dark() : AppTheme.light(),
     home: Scaffold(body: Center(child: child)),
   );
-  if (textScale == 1.0) return app;
+  if (textScale == 1.0 && !disableAnimations) return app;
   return MediaQuery(
-    data: MediaQueryData(textScaler: TextScaler.linear(textScale)),
+    data: MediaQueryData(
+      textScaler: TextScaler.linear(textScale),
+      disableAnimations: disableAnimations,
+    ),
     child: app,
   );
 }
@@ -273,6 +277,17 @@ void main() {
       expect(offsetOf(), 0);
     });
 
+    testWidgets('reduce motion collapses the press lift to zero duration',
+        (t) async {
+      await t.pumpWidget(_host(
+        SizedBox(width: 300, child: HudButton(label: 'Go', onPressed: () {})),
+        disableAnimations: true,
+      ));
+      final AnimatedSlide slide =
+          t.widget<AnimatedSlide>(find.byType(AnimatedSlide));
+      expect(slide.duration, Duration.zero);
+    });
+
     testWidgets('the accent tone washes the surface in the accent', (t) async {
       await t.pumpWidget(_host(
         SizedBox(
@@ -478,6 +493,35 @@ void main() {
       await t.pump();
       await t.sendKeyEvent(LogicalKeyboardKey.space);
       await t.pump();
+      expect(got, isTrue);
+    });
+
+    testWidgets('normally animates the handle over 180ms', (t) async {
+      await t.pumpWidget(_host(HudToggle(value: false, onChanged: (_) {})));
+      final AnimatedContainer track =
+          t.widget<AnimatedContainer>(find.byType(AnimatedContainer));
+      expect(track.duration, const Duration(milliseconds: 180));
+    });
+
+    testWidgets(
+        'reduce motion collapses the handle transition to zero duration',
+        (t) async {
+      await t.pumpWidget(_host(
+        HudToggle(value: false, onChanged: (_) {}),
+        disableAnimations: true,
+      ));
+      final AnimatedContainer track =
+          t.widget<AnimatedContainer>(find.byType(AnimatedContainer));
+      expect(track.duration, Duration.zero);
+
+      // The state change itself must still land -- reduce motion removes the
+      // sweep, not the feedback that the toggle actually flipped.
+      bool? got;
+      await t.pumpWidget(_host(
+        HudToggle(value: false, onChanged: (bool v) => got = v),
+        disableAnimations: true,
+      ));
+      await t.tap(find.byType(HudToggle));
       expect(got, isTrue);
     });
   });

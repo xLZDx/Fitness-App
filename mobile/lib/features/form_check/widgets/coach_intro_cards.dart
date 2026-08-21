@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../state/coach_phase_providers.dart';
 
 /// The two cards the design puts in front of a coached set, and the reason the
@@ -83,8 +84,8 @@ class _CoachBullet extends StatelessWidget {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: GlassCard(
-        borderRadius: 12,
+      child: HudPanel(
+        radius: 12,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,9 +130,9 @@ class _CoachFinePrint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       key: cardKey,
-      borderRadius: 12,
+      radius: 12,
       padding: const EdgeInsets.all(12),
       child: Text(
         text,
@@ -177,8 +178,7 @@ class CoachLaunchCard extends ConsumerWidget {
             style: theme.textTheme.bodyLarge
                 ?.copyWith(color: theme.colors.textSecondary, height: 1.6)),
         const SizedBox(height: 20),
-        _CoachBullet(
-            icon: Icons.tag, title: l10n.formcheckIntroFeatureReps),
+        _CoachBullet(icon: Icons.tag, title: l10n.formcheckIntroFeatureReps),
         _CoachBullet(
             icon: Icons.chat_bubble_outline,
             title: l10n.formcheckIntroFeatureCues),
@@ -215,9 +215,9 @@ class CoachPreparationCard extends ConsumerWidget {
         onPressed: onOpenCamera,
       ),
       children: [
-        GlassCard(
+        HudPanel(
           key: const Key('coach.prep.angle'),
-          borderRadius: 16,
+          radius: 16,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

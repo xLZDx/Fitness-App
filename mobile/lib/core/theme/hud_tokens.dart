@@ -839,3 +839,43 @@ extension HudTokensThemeX on ThemeData {
       extension<HudTokens>() ??
       (brightness == Brightness.dark ? HudTokens.dark : HudTokens.light);
 }
+
+/// The one place every HUD surface asks "should this actually animate".
+///
+/// `MediaQuery.of(context).disableAnimations` is the real, standard Flutter
+/// API for the OS-level "reduce motion" accessibility signal -- it mirrors
+/// `Settings > Accessibility > Reduce Motion` on iOS and
+/// `Settings > Accessibility > Remove animations` on Android, and Flutter
+/// keeps it live if the user flips it while the app is running. There is
+/// deliberately no app-level settings toggle for this: it is the same class
+/// of concern as locale or platform brightness -- an OS signal the app must
+/// respect, not a preference the app invents its own copy of.
+///
+/// A HUD surface reads [reduceMotion] directly when it only needs the yes/no
+/// (a repeating `AnimationController` deciding whether to `repeat()` at all,
+/// for instance) and [hudMotionDuration] when it owns a plain `Duration` --
+/// most `Animated*` widgets and `TweenAnimationBuilder` calls -- so the
+/// `disableAnimations ? ... : ...` conditional is written once rather than at
+/// every call site.
+extension HudMotionX on BuildContext {
+  /// The platform's "reduce motion" signal, read live off [MediaQuery].
+  bool get reduceMotion => MediaQuery.of(this).disableAnimations;
+
+  /// The duration a HUD animation should actually run for.
+  ///
+  /// Ambient/decorative motion -- a background crossfade, a bar chart
+  /// growing in, a value ring sweeping to a number that is also shown as
+  /// text -- should call this with the default [reduced] (`Duration.zero`):
+  /// reduce motion means that motion is skipped outright and the surface
+  /// jumps straight to its end state.
+  ///
+  /// An animation that IS the state change the user needs to perceive (a
+  /// switch flipping, a selected tab's fill changing) should pass a short
+  /// but nonzero [reduced] instead, so the change still visibly registers --
+  /// just without the animated motion getting there.
+  Duration hudMotionDuration(
+    Duration normal, {
+    Duration reduced = Duration.zero,
+  }) =>
+      reduceMotion ? reduced : normal;
+}

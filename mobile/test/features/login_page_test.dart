@@ -98,10 +98,21 @@ void main() {
       // Drain the slow mock so the test ends cleanly.
       await tester.pump(const Duration(seconds: 2));
     });
+
+    testWidgets(
+        'reduce motion collapses the CTA dim/undim to zero duration',
+        (tester) async {
+      await tester.pumpWidget(_app(disableAnimations: true));
+      await tester.pump();
+
+      final AnimatedContainer cta = tester.widget<AnimatedContainer>(
+          find.byType(AnimatedContainer).first);
+      expect(cta.duration, Duration.zero);
+    });
   });
 }
 
-Widget _app({AuthRepository? repo}) {
+Widget _app({AuthRepository? repo, bool disableAnimations = false}) {
   // D-03: Continue now calls `context.go('/home')` on a successful sign-in
   // (see login_page.dart), so this isolated LoginPage harness needs a real
   // GoRouter ancestor to not crash on tap -- a bare `MaterialApp` no longer
@@ -116,7 +127,7 @@ Widget _app({AuthRepository? repo}) {
       GoRoute(path: '/home', builder: (_, __) => const SizedBox()),
     ],
   );
-  return ProviderScope(
+  final Widget app = ProviderScope(
     overrides: [
       if (repo != null)
         authRepositoryProvider.overrideWith((ref) => repo),
@@ -128,6 +139,11 @@ Widget _app({AuthRepository? repo}) {
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
     ),
+  );
+  if (!disableAnimations) return app;
+  return MediaQuery(
+    data: const MediaQueryData(disableAnimations: true),
+    child: app,
   );
 }
 

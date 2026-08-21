@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/hud_tokens.dart' show HudMotionX;
 
 /// What the frame is currently saying.
 enum ScanFramePhase {
@@ -60,7 +61,30 @@ class _ScanFrameState extends State<ScanFrame>
     _c = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
-    )..repeat();
+    );
+    // Not started here: `MediaQuery` (read by [_syncMotion]) is not safely
+    // readable in `initState` -- `didChangeDependencies` runs immediately
+    // after and is where this loop actually starts.
+  }
+
+  /// The sweep line and analyzing pulse are purely decorative, continuous,
+  /// looping motion over a live camera preview -- exactly the kind of thing
+  /// reduce motion exists to suppress. Whether the loop should be running is
+  /// re-decided here rather than once: `didChangeDependencies` also fires if
+  /// the OS accessibility setting flips while this screen is open.
+  void _syncMotion() {
+    if (context.reduceMotion) {
+      if (_c.isAnimating) _c.stop();
+      _c.value = 0;
+    } else if (!_c.isAnimating) {
+      _c.repeat();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncMotion();
   }
 
   @override

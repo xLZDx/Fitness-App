@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../shared/widgets/glass.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../progress_photos/data/photo_timeline.dart';
@@ -703,7 +704,13 @@ class _BarChart extends StatelessWidget {
                         return Align(
                           alignment: Alignment.bottomCenter,
                           child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 320),
+                            // The bar growing in is decorative chart
+                            // entrance -- the final height is what carries
+                            // the value either way, so reduce motion jumps
+                            // straight to it instead of animating the grow.
+                            duration: context.hudMotionDuration(
+                              const Duration(milliseconds: 320),
+                            ),
                             curve: Curves.easeOutCubic,
                             height: h.clamp(minH, constraints.maxHeight),
                             decoration: BoxDecoration(

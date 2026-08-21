@@ -92,6 +92,42 @@ void main() {
           reason: 'a stream that never resolves must not strand the user '
               'on the splash screen forever');
     });
+
+    testWidgets(
+        'reduce motion skips the logo fade/scale straight to its end state',
+        (tester) async {
+      // Purely decorative entrance -- under reduce motion the logo should
+      // already be fully opaque and at its settled scale on the very first
+      // frame, with no animated build-up.
+      await tester.pumpWidget(MediaQuery(
+        data: const MediaQueryData(disableAnimations: true),
+        child: _router(initial: '/splash'),
+      ));
+      await tester.pump();
+
+      // Scoped to an ancestor of the logo icon, and `.first` (the nearest
+      // one) taken deliberately: `AppTheme`'s own page-route transition also
+      // wraps its child in a `FadeTransition`/`ScaleTransition`, so a bare
+      // `find.byType` here matches two of each.
+      final fade = tester.widget<FadeTransition>(find
+          .ancestor(
+            of: find.byIcon(Icons.fitness_center),
+            matching: find.byType(FadeTransition),
+          )
+          .first);
+      expect(fade.opacity.value, 1.0);
+      final scale = tester.widget<ScaleTransition>(find
+          .ancestor(
+            of: find.byIcon(Icons.fitness_center),
+            matching: find.byType(ScaleTransition),
+          )
+          .first);
+      expect(scale.scale.value, 1.0);
+
+      // Drain the auto-navigation timer so it doesn't leak into the next test.
+      await tester.pump(const Duration(milliseconds: 1500));
+      await tester.pump(const Duration(milliseconds: 600));
+    });
   });
 }
 

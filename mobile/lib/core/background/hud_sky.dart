@@ -723,7 +723,10 @@ class _CrossfadeLayerState extends State<_CrossfadeLayer> {
   Widget build(BuildContext context) {
     return AnimatedOpacity(
       opacity: _visible ? 1 : 0,
-      duration: HudSky.crossfade,
+      // Purely decorative: the crossfade only smooths a background photo
+      // swap, and the image is fully correct either way it lands. Reduce
+      // motion skips straight to the settled state.
+      duration: context.hudMotionDuration(HudSky.crossfade),
       curve: Curves.ease,
       onEnd: widget.onVisible,
       child: Image(

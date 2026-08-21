@@ -448,7 +448,11 @@ class _HudButtonState extends State<HudButton> {
           behavior: HitTestBehavior.opaque,
           child: AnimatedSlide(
             offset: _pressed ? const Offset(0, -0.035) : Offset.zero,
-            duration: const Duration(milliseconds: 180),
+            // Decorative press feedback only -- the tap itself already fires
+            // through `onTap` regardless of this settling instantly.
+            duration: context.hudMotionDuration(
+              const Duration(milliseconds: 180),
+            ),
             curve: Curves.ease,
             child: ConstrainedBox(
               // The handoff's own floor, and WCAG 2.5.5's.

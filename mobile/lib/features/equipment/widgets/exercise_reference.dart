@@ -27,6 +27,7 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
 import '../data/video_failure.dart';
@@ -556,7 +557,12 @@ class ExerciseVideoBlockState extends ConsumerState<ExerciseVideoBlock> {
               // single-frame flash of a decode.
               AnimatedOpacity(
                 opacity: 1,
-                duration: const Duration(milliseconds: 180),
+                // The poster is the clip's own first frame, so skipping this
+                // under reduce motion trades an invisible crossfade for an
+                // invisible cut -- neither one moves.
+                duration: context.hudMotionDuration(
+                  const Duration(milliseconds: 180),
+                ),
                 child: VideoPlayer(ctrl),
               ),
             if (playing)
@@ -577,7 +583,12 @@ class ExerciseVideoBlockState extends ConsumerState<ExerciseVideoBlock> {
                   onTap: () => setState(
                       () => ctrl.value.isPlaying ? ctrl.pause() : ctrl.play()),
                   child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
+                    // Play/pause is a state the user needs to see register,
+                    // so this keeps a (near-)instant swap under reduce
+                    // motion rather than losing the icon change outright.
+                    duration: context.hudMotionDuration(
+                      const Duration(milliseconds: 220),
+                    ),
                     child: ctrl.value.isPlaying
                         ? const SizedBox.shrink()
                         : Container(

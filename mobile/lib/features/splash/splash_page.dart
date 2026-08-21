@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../shared/widgets/glass.dart';
 import '../auth/data/auth_user.dart';
 import '../auth/state/auth_providers.dart';
@@ -24,7 +25,13 @@ class _SplashPageState extends ConsumerState<SplashPage>
   late final AnimationController _ctrl = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1100),
-  )..forward();
+  );
+
+  /// Guards the `didChangeDependencies` start below so it fires exactly once
+  /// -- that callback can run again later for unrelated `MediaQuery` changes
+  /// (a rotation, a text-scale change), and re-starting the entrance then
+  /// would replay it over an already-settled splash screen.
+  bool _entranceStarted = false;
 
   /// Bounds how long the splash waits for `authUserProvider`'s real first
   /// emission before proceeding anyway -- a broken/hung auth stream must not
@@ -42,6 +49,21 @@ class _SplashPageState extends ConsumerState<SplashPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _proceed());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_entranceStarted) return;
+    _entranceStarted = true;
+    // Purely decorative logo fade/scale -- reduce motion jumps straight to
+    // the settled end state (`_proceed`'s own dwell timer is unaffected, so
+    // this does not change how long the splash stays up).
+    if (context.reduceMotion) {
+      _ctrl.value = 1;
+    } else {
+      _ctrl.forward();
+    }
   }
 
   Future<void> _proceed() async {

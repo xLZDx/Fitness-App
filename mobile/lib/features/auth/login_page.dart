@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
 import 'state/auth_providers.dart';
@@ -201,7 +202,11 @@ class _GradientButton extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(20),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 220),
+            // Decorative dim/undim between enabled and disabled -- the tap
+            // target's own enabled state is already conveyed by semantics.
+            duration: context.hudMotionDuration(
+              const Duration(milliseconds: 220),
+            ),
             height: 54,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),

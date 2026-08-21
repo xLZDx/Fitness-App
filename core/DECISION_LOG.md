@@ -22763,3 +22763,86 @@ formal gate verdict should follow its own device-verification pass, not be infer
 MINOR item from `:18372`) -- low priority, MINOR, not attempted this pass given the two FAILs took
 priority. Session/Rest screens were not re-captured (closed via a different, already-cited fix at
 `:19266-19268`, not re-verified visually in this entry).
+
+## 2026-08-21 -- M7 reduced-motion landed; Form Coach HUD-reskin landed; both verified together
+after a concurrent-edit collision on one shared file
+
+Two bounded implementation tasks run as parallel background agents this pass, both against
+already-scoped, evidenced gaps (M7's reduced-motion MAJOR from `:22011-22051`; Form Coach's
+still-pending reskin from `:22268-22290`). Reviewed both diffs by hand before verifying or
+committing -- not taken on the agents' own self-reports alone.
+
+**M7 -- reduced motion (`context.reduceMotion` / `context.hudMotionDuration`, new `HudMotionX`
+extension in `hud_tokens.dart`).** Reads `MediaQuery.of(context).disableAnimations`, the real OS
+accessibility signal (not an invented app setting), live -- reacts if the user flips it mid-session.
+Applied across 10 distinct animated surfaces re-derived by a fresh grep, not trusted from the old
+scoping list: `hud_sky.dart`'s background crossfade, `HudToggle`, `HudButton`'s press-slide,
+`login_page.dart`'s CTA dim, `exercise_reference.dart`'s poster/video crossfade and play-icon swap,
+onboarding's page-turn/progress-fill/tab-selector (three separate surfaces, not the one "onboarding
+entrance animation" the old scoping pass implied), `progress_page.dart`'s bar-chart grow-in, and
+`set_timer_card.dart`'s ring sweep -- decorative motion collapses to `Duration.zero`, state-change
+motion (toggle, tab selector) keeps a short nonzero duration so the change still visibly registers.
+Two continuous-loop `AnimationController`s (`scan_frame.dart`'s sweep/pulse, `form_check_page.dart`'s
+demo silhouette) are stopped/frozen rather than shortened, correctly moved out of `initState` into
+`didChangeDependencies` since `MediaQuery` is not safely readable in the former. `splash_page.dart`'s
+entrance animation was similarly moved with a one-shot guard. Deliberately out of scope, named
+rather than silently skipped: `app_router.dart`'s `_fadeThrough` and `app_theme.dart`'s
+`_FadeScalePageTransition` -- the global page-route transitions, real motion but app-wide
+infrastructure with a much larger blast radius, left for a dedicated follow-up.
+
+**Form Coach HUD reskin.** Same conservative container-swap discipline as M1/M2/M4/M5/M6 (`GlassCard`
+-> `HudPanel`, argument-for-argument, no behavior change): all 9 `GlassCard` sites across
+`form_check_page.dart` (6) and `coach_intro_cards.dart` (3), none using an argument `HudPanel`
+lacks, so nothing silently dropped. `HudQuality(frostedGlass: false)` added around
+`form_check_page.dart`'s main body ONLY, reasoned rather than copied from M5/M6 by default: that body
+watches `formFeedbackControllerProvider`, whose `_onFrame` (`form_check_providers.dart:563-616`)
+unconditionally reassigns state on every camera pose frame (`FormFeedback` has no `==` override) --
+tens-of-Hz rebuilds, strictly worse than M5's 1 Hz timers that already justified the same opt-out.
+`coach_intro_cards.dart`'s cards render only pre-camera (`CoachPhase.launch`/`preparation`, before
+the frame provider is ever watched) and correctly got no opt-out, matching Home/Workouts/Profile
+precedent. `pose_gate.dart`/`rep_counter.dart`/`coach_phases.dart`/`tts_voice_coach.dart`/
+`mlkit_pose_detector_service.dart` untouched, as scoped.
+
+**Concurrent-edit collision, caught and resolved, not silently absorbed.** Both agents independently
+touched `form_check_page.dart` (M7 added the `reduceMotion` check to `_syncDemo`; the reskin agent
+did the `GlassCard`->`HudPanel` swap across the same file) -- the reskin agent finished first and
+correctly reported 2 pre-existing analyze errors + 11 test files failing to compile, caused by M7's
+then-still-in-flight edit referencing `reduceMotion` before its import landed. Not a bug in either
+agent's own work -- confirmed once M7 finished (its own report: "verified via diff that it applied
+cleanly against their in-flight changes with no overlap") and by re-running verification on the
+merged result: `flutter analyze lib/` -- 5 issues, all in files neither agent touched (pre-existing,
+confirmed via `git diff --name-only` against the issue list) -- 0 new. `flutter test
+test/features/form_check/` -- **388/388**, including the 11 files that were compile-blocked mid-flight.
+Full sweep of every other touched-area suite (`test/theme/`, `test/core/background/`, `test/shared/`,
+`test/features/scanner/`, `test/features/onboarding/`, `test/features/splash_page_test.dart`,
+`test/features/login_page_test.dart`, `test/features/equipment/`, `test/features/progress/`,
+`test/features/workouts/`) -- one failure (`workout_session_models_test.dart`, several cases) that
+does NOT reproduce running that file alone (25/25 clean) -- the same pre-existing order-dependent
+flake already on record from M6's own verification (`:18170-18171`, "3118/3119... the same
+pre-existing, order-dependent scheduler flake recorded at every prior [gate]"), not a regression
+from either agent's work.
+
+**Device verification, S8, combined build.** `flutter build apk --debug` succeeds, installs clean,
+no crash-buffer entries. Home, onboarding (steps 1 and 8-10 spot-checked), Workouts/Library tab,
+and the full Form Coach entry chain (card tap -> intro card -> preparation card, both reskinned
+screens rendering correctly with the HUD panel styling) all confirmed via screenshot, single
+deliberate taps from a confirmed-stable prior screen each time.
+
+**One anomaly observed, NOT reproduced under controlled conditions, logged honestly rather than
+either dismissed or overclaimed.** During ad-hoc manual exploration (NOT the rigorous single-tap
+protocol) -- after a blind 9-tap "skip through onboarding" sequence that, on reflection, actually
+landed on an already-onboarded Home screen partway through (so those taps hit unknown targets, not
+onboarding's own skip button) -- a single subsequent tap on the Workouts bottom-nav tab was followed
+by the launcher being resumed instead of the app. `logcat -b crash`: empty. `dumpsys activity`: the
+app process alive, un-resumed, launcher resumed -- no `am_crash`/`am_anr` events. Immediately
+re-tested under the SAME controlled protocol that produced this pass's earlier 10/10 MainShell
+bottom-nav result (fresh relaunch, screenshot-confirmed stable Home, single deliberate tap): clean
+PASS, navigated correctly, `mResumedActivity` correctly the app. Given the one occurrence followed a
+messy, unintended-input precondition and did not reproduce under controlled conditions immediately
+after, this is recorded as an unreproduced anomaly, not folded into either the 10/10 MainShell
+finding (which stands, controlled-condition evidence outranks one messy occurrence) or dismissed as
+definitely nothing -- if it recurs under a clean, single-variable repro, it needs its own
+investigation.
+
+**Not committed as of this entry** -- see next entry for the commit itself, per house discipline
+(verify fully, then commit, in that order).

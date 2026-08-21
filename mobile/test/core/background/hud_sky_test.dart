@@ -610,6 +610,35 @@ void main() {
       expect(find.byType(Image), findsOneWidget);
     });
 
+    testWidgets('normally crossfades photo swaps over HudSky.crossfade',
+        (t) async {
+      await t.pumpWidget(const MaterialApp(
+        home: HudSkyBackground(
+          selection: HudSkySelection(phase: HudSkyPhase.night),
+          child: SizedBox(),
+        ),
+      ));
+      final AnimatedOpacity layer =
+          t.widget<AnimatedOpacity>(find.byType(AnimatedOpacity).first);
+      expect(layer.duration, HudSky.crossfade);
+    });
+
+    testWidgets('reduce motion collapses the photo crossfade to zero duration',
+        (t) async {
+      await t.pumpWidget(const MediaQuery(
+        data: MediaQueryData(disableAnimations: true),
+        child: MaterialApp(
+          home: HudSkyBackground(
+            selection: HudSkySelection(phase: HudSkyPhase.night),
+            child: SizedBox(),
+          ),
+        ),
+      ));
+      final AnimatedOpacity layer =
+          t.widget<AnimatedOpacity>(find.byType(AnimatedOpacity).first);
+      expect(layer.duration, Duration.zero);
+    });
+
     testWidgets('the decorative streaks are hidden from screen readers',
         (t) async {
       final SemanticsHandle handle = t.ensureSemantics();

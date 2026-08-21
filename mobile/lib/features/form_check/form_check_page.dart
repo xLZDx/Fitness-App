@@ -9,9 +9,11 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/experimental_banner.dart';
 import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/hud/hud_surface.dart';
 import 'data/cue_text.dart';
 import 'data/form_classifier.dart';
 import 'data/mlkit_pose_detector_service.dart';
@@ -65,12 +67,19 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
   /// A repeating controller ticks whether or not anything is listening, so
   /// leaving it running would keep the vsync alive for the whole set — next to
   /// a camera and a pose detector, on a phone the user is not holding.
+  ///
+  /// Also gated on reduce motion: a continuously looping silhouette is
+  /// exactly the ambient motion that setting exists to suppress, and the
+  /// static top-of-rep silhouette (`_demo.value == 0`) still shows the target
+  /// pose to copy, just without the up/down cycle demonstrating it.
   void _syncDemo(bool wanted) {
-    if (wanted == _demo.isAnimating) return;
-    if (wanted) {
+    final bool animate = wanted && !context.reduceMotion;
+    if (animate == _demo.isAnimating) return;
+    if (animate) {
       _demo.repeat(reverse: true);
     } else {
       _demo.stop();
+      if (!wanted || context.reduceMotion) _demo.value = 0;
     }
   }
 
@@ -354,230 +363,254 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       // above — every provider watched further up stays watched, so the frame
       // subscription and the camera survive the summary and "new set" resumes
       // instantly instead of walking back through preparation and the gate.
-      body: phase == CoachPhase.summary
-          ? ListView(
-              padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
-              children: [
-                // A1. Here as well as on the live screen, and deliberately not
-                // only there: the summary is where the rep count stops being a
-                // number ticking on a preview and becomes a result the user
-                // reads as what they did. That is the strongest version of the
-                // claim, so it is the one that most needs qualifying.
-                ExperimentalBanner(
-                    message:
-                        AppLocalizations.of(context).experimentalFormCoach),
-                _SetSummaryCard(
-                  session: session,
-                  onReset: () => ref
-                      .read(repSessionControllerProvider.notifier)
-                      .resetSet(),
-                ),
-                const SizedBox(height: 16),
-                AppPrimaryButton(
-                  key: const Key('form_check.new_set'),
-                  label: AppLocalizations.of(context).formcheckNewSet,
-                  onPressed: () {
-                    // Reset first, then unpause. The other order would let the
-                    // frames that arrive between the two land on the previous
-                    // set's counter.
-                    ref.read(repSessionControllerProvider.notifier).resetSet();
-                    ref.read(coachPhaseControllerProvider.notifier).start();
-                  },
-                ),
-              ],
-            )
-          : ListView(
-        padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
-        children: [
-          // A1. Above the upgrade card on purpose: what the coach can and
-          // cannot tell you is not a detail below the offer to pay for it.
-          ExperimentalBanner(
-              message: AppLocalizations.of(context).experimentalFormCoach),
-          if (!isPremium && ref.watch(entitlementResolvedProvider)) ...[
-            _UpgradeCard(),
-            const SizedBox(height: 16),
-          ],
-          // Asked for here rather than left to the profile tab, because this
-          // is the one screen where the answers visibly change something: the
-          // outline the user is about to aim at. Operator: "если етих данных
-          // нет в анкете то как только кто то заходит к тренеру тот должен
-          // предложить дозаполнить нехватающих деталей."
-          const _CompleteProfileCard(),
-          // Which movement is being coached. Above the camera on purpose: the
-          // rules that will judge you are chosen here, so it should be read
-          // before the set, not discovered after it.
-          const _ExercisePicker(),
-          const SizedBox(height: 12),
-          // Above the preview, not overlaid on it. The bottom of the preview is
-          // already the cue card's, and a control that shares space with the
-          // one sentence telling you what you did wrong is a control that will
-          // be pressed by accident mid-rep.
-          _SetControls(phase: phase),
-          AspectRatio(
-            aspectRatio: 9 / 16,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(22),
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.85),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (failure != null)
-                      Center(
-                        child: _StartFailure(
-                          failure: failure,
-                          // Pressing "try again" on a permission failure is
-                          // the clearest possible ask for the camera, so this
-                          // one always requests. Passing the tear-off would
-                          // silently take the `false` default -- it type-checks
-                          // (optional named parameters are droppable in Dart),
-                          // which is exactly why it would not have been caught.
-                          onRetry: () => _startDetector(requestPermission: true),
-                        ),
-                      )
-                    else if (!_started)
-                      const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
-                    // The camera keeps running either way — detection reads the
-                    // image stream, not this widget. What changes is only what
-                    // the user is shown in its place.
-                    else if (ref.watch(avatarModeProvider))
-                      const _AvatarBackdrop()
-                    else
-                      _CameraPreview(svc: svc),
-                    // Everything below is a readout of a running camera. With
-                    // no camera there is nothing to read out, and the bottom
-                    // card sat directly on top of the retry button — an error
-                    // screen whose one useful control could not be pressed.
-                    if (failure == null) ...[
-                      // Directly over the preview and under everything else:
-                      // it is a picture of the camera's input, so it belongs
-                      // against the input rather than on top of the verdicts.
-                      // Under the skeleton, which is a diagnostic drawn ON the
-                      // picture — and in avatar mode this IS the picture.
-                      const Positioned.fill(
-                        child: IgnorePointer(child: _PoseAvatar()),
-                      ),
-                      const Positioned.fill(
-                        child: IgnorePointer(child: _SkeletonOverlay()),
-                      ),
-                      // Over the preview, under the readouts: what to do, then
-                      // the shape to arrive at.
-                      Positioned.fill(
-                        child: IgnorePointer(
-                          child: _Silhouette(
-                            demo: _demo,
-                            demonstrating: demonstrating,
-                          ),
-                        ),
-                      ),
-                      // One strip, laid out top-down. Previously these were
-                      // three independently positioned children of this Stack,
-                      // and two of them claimed the same corner -- see
-                      // `CoachTopStrip`.
-                      Positioned(
-                        left: 12,
-                        right: 12,
-                        top: 12,
-                        child: CoachTopStrip(
-                          session: session,
-                          showRepCount: showRepCount,
-                        ),
-                      ),
-                      // Silent while the strip above is telling the user the
-                      // coach cannot see them. A verdict on the last rep is
-                      // still true in that moment and is still the wrong thing
-                      // to read: the question on screen has become "why has it
-                      // stopped", and answering a different one underneath is
-                      // how three messages ended up disagreeing in one frame.
-                      if (!instructing)
-                        Positioned(
-                          left: 12,
-                          right: 12,
-                          bottom: 12,
-                          child: _CueCard(
-                            feedback: session.lastRepCue,
-                            verdict: session.lastRepVerdict,
-                            reject: session.lastReject,
-                          ),
-                        ),
-                    ],
+      //
+      // `HudPanel` frosts its backdrop with `BackdropFilter` by default
+      // (`HudQuality.frostedOf` falls back to true with no ancestor), and this
+      // screen is a genuine per-frame-repaint page, not a static one:
+      // `formFeedbackControllerProvider` is watched above (`:271`) purely for
+      // its side effect of subscribing to the pose-frame stream, and its
+      // `_onFrame` (`form_check_providers.dart:563-616`) unconditionally
+      // reassigns `state` on every camera frame — `FormFeedback` has no `==`
+      // override, so this rebuilds the whole body at camera-frame cadence
+      // (tens of Hz) whenever the camera is running, not once a second like
+      // M5's set/rest timers. Every `HudPanel` in this body (the on-device
+      // disclaimer, the optional complete-profile/upgrade/voice-error cards,
+      // the rep summary) sits inside that same rebuilding subtree, so it is
+      // opted out the same way `workout_player_page.dart` opts out M5.
+      body: HudQuality(
+        frostedGlass: false,
+        child: phase == CoachPhase.summary
+            ? ListView(
+                padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
+                children: [
+                  // A1. Here as well as on the live screen, and deliberately not
+                  // only there: the summary is where the rep count stops being a
+                  // number ticking on a preview and becomes a result the user
+                  // reads as what they did. That is the strongest version of the
+                  // claim, so it is the one that most needs qualifying.
+                  ExperimentalBanner(
+                      message:
+                          AppLocalizations.of(context).experimentalFormCoach),
+                  _SetSummaryCard(
+                    session: session,
+                    onReset: () => ref
+                        .read(repSessionControllerProvider.notifier)
+                        .resetSet(),
+                  ),
+                  const SizedBox(height: 16),
+                  AppPrimaryButton(
+                    key: const Key('form_check.new_set'),
+                    label: AppLocalizations.of(context).formcheckNewSet,
+                    onPressed: () {
+                      // Reset first, then unpause. The other order would let the
+                      // frames that arrive between the two land on the previous
+                      // set's counter.
+                      ref
+                          .read(repSessionControllerProvider.notifier)
+                          .resetSet();
+                      ref.read(coachPhaseControllerProvider.notifier).start();
+                    },
+                  ),
+                ],
+              )
+            : ListView(
+                padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
+                children: [
+                  // A1. Above the upgrade card on purpose: what the coach can and
+                  // cannot tell you is not a detail below the offer to pay for it.
+                  ExperimentalBanner(
+                      message:
+                          AppLocalizations.of(context).experimentalFormCoach),
+                  if (!isPremium && ref.watch(entitlementResolvedProvider)) ...[
+                    _UpgradeCard(),
+                    const SizedBox(height: 16),
                   ],
-                ),
+                  // Asked for here rather than left to the profile tab, because this
+                  // is the one screen where the answers visibly change something: the
+                  // outline the user is about to aim at. Operator: "если етих данных
+                  // нет в анкете то как только кто то заходит к тренеру тот должен
+                  // предложить дозаполнить нехватающих деталей."
+                  const _CompleteProfileCard(),
+                  // Which movement is being coached. Above the camera on purpose: the
+                  // rules that will judge you are chosen here, so it should be read
+                  // before the set, not discovered after it.
+                  const _ExercisePicker(),
+                  const SizedBox(height: 12),
+                  // Above the preview, not overlaid on it. The bottom of the preview is
+                  // already the cue card's, and a control that shares space with the
+                  // one sentence telling you what you did wrong is a control that will
+                  // be pressed by accident mid-rep.
+                  _SetControls(phase: phase),
+                  AspectRatio(
+                    aspectRatio: 9 / 16,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(22),
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.85),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            if (failure != null)
+                              Center(
+                                child: _StartFailure(
+                                  failure: failure,
+                                  // Pressing "try again" on a permission failure is
+                                  // the clearest possible ask for the camera, so this
+                                  // one always requests. Passing the tear-off would
+                                  // silently take the `false` default -- it type-checks
+                                  // (optional named parameters are droppable in Dart),
+                                  // which is exactly why it would not have been caught.
+                                  onRetry: () =>
+                                      _startDetector(requestPermission: true),
+                                ),
+                              )
+                            else if (!_started)
+                              const Center(
+                                child: CircularProgressIndicator(
+                                    color: Colors.white),
+                              )
+                            // The camera keeps running either way — detection reads the
+                            // image stream, not this widget. What changes is only what
+                            // the user is shown in its place.
+                            else if (ref.watch(avatarModeProvider))
+                              const _AvatarBackdrop()
+                            else
+                              _CameraPreview(svc: svc),
+                            // Everything below is a readout of a running camera. With
+                            // no camera there is nothing to read out, and the bottom
+                            // card sat directly on top of the retry button — an error
+                            // screen whose one useful control could not be pressed.
+                            if (failure == null) ...[
+                              // Directly over the preview and under everything else:
+                              // it is a picture of the camera's input, so it belongs
+                              // against the input rather than on top of the verdicts.
+                              // Under the skeleton, which is a diagnostic drawn ON the
+                              // picture — and in avatar mode this IS the picture.
+                              const Positioned.fill(
+                                child: IgnorePointer(child: _PoseAvatar()),
+                              ),
+                              const Positioned.fill(
+                                child: IgnorePointer(child: _SkeletonOverlay()),
+                              ),
+                              // Over the preview, under the readouts: what to do, then
+                              // the shape to arrive at.
+                              Positioned.fill(
+                                child: IgnorePointer(
+                                  child: _Silhouette(
+                                    demo: _demo,
+                                    demonstrating: demonstrating,
+                                  ),
+                                ),
+                              ),
+                              // One strip, laid out top-down. Previously these were
+                              // three independently positioned children of this Stack,
+                              // and two of them claimed the same corner -- see
+                              // `CoachTopStrip`.
+                              Positioned(
+                                left: 12,
+                                right: 12,
+                                top: 12,
+                                child: CoachTopStrip(
+                                  session: session,
+                                  showRepCount: showRepCount,
+                                ),
+                              ),
+                              // Silent while the strip above is telling the user the
+                              // coach cannot see them. A verdict on the last rep is
+                              // still true in that moment and is still the wrong thing
+                              // to read: the question on screen has become "why has it
+                              // stopped", and answering a different one underneath is
+                              // how three messages ended up disagreeing in one frame.
+                              if (!instructing)
+                                Positioned(
+                                  left: 12,
+                                  right: 12,
+                                  bottom: 12,
+                                  child: _CueCard(
+                                    feedback: session.lastRepCue,
+                                    verdict: session.lastRepVerdict,
+                                    reject: session.lastReject,
+                                  ),
+                                ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // A coach that has gone silent because the device has no voice
+                  // installed is indistinguishable from a coach with nothing to say.
+                  // `lastErrorMessage` existed for exactly this and nothing read it —
+                  // the same wiring `health_sync_card.dart` already uses for health.
+                  if (ref.watch(voiceErrorProvider) != null) ...[
+                    HudPanel(
+                      child: Text(
+                        AppLocalizations.of(context).formcheckVoiceUnavailable,
+                        key: const Key('form_check.voice_error'),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppPalette.auroraPeach,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  // The coordinate diagnostic, now behind a debug flag.
+                  //
+                  // It shipped in release on purpose: the measurement could only be
+                  // taken on a real phone, in a gym, with a real body in frame, and a
+                  // value that never leaves a debug build is a value nobody reads. That
+                  // argument expired the moment the number arrived —
+                  // `pose[pixels] n=807 x -0.466..1.968 (bound 0.667) y -2.173..3.015`,
+                  // recorded in the R0 audit §7.5. The instrument stays; only its
+                  // exposure to users goes.
+                  //
+                  // What that line MEANS is still open, and this comment used to call
+                  // it an open defect on the strength of the extents alone. It cannot
+                  // be: BlazePose extrapolates the joints that leave the frame and the
+                  // service forwards them unfiltered, so those numbers fit a broken
+                  // conversion and a perfectly healthy session equally well. The probe
+                  // now reports the extent restricted to landmarks above
+                  // `minLikelihood` beside the full one, which is the measurement that
+                  // separates the two — see `pose_unit_probe.dart`. Until that second
+                  // line has been read off a real device, neither verdict is earned.
+                  if (ref.watch(poseDebugOverlayProvider) &&
+                      !ref.watch(poseUnitReportProvider).isEmpty) ...[
+                    Text(
+                      ref.watch(poseUnitReportProvider).summary,
+                      key: const Key('form-check-unit-probe'),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.white38,
+                        fontFamily: 'monospace',
+                        fontSize: 11,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  // Mid-set the summary is a running tally under the preview; once the
+                  // user calls the set finished it is the whole screen, and the tally
+                  // stops being something to glance past.
+                  if (showRepCount && phase != CoachPhase.summary) ...[
+                    _SetSummaryCard(
+                      session: session,
+                      onReset: () => ref
+                          .read(repSessionControllerProvider.notifier)
+                          .resetSet(),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  HudPanel(
+                    child: Text(
+                      AppLocalizations.of(context)
+                          .formcheckFormCoachRunsOnDeviceUsing,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          // A coach that has gone silent because the device has no voice
-          // installed is indistinguishable from a coach with nothing to say.
-          // `lastErrorMessage` existed for exactly this and nothing read it —
-          // the same wiring `health_sync_card.dart` already uses for health.
-          if (ref.watch(voiceErrorProvider) != null) ...[
-            GlassCard(
-              child: Text(
-                AppLocalizations.of(context).formcheckVoiceUnavailable,
-                key: const Key('form_check.voice_error'),
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: AppPalette.auroraPeach,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          // The coordinate diagnostic, now behind a debug flag.
-          //
-          // It shipped in release on purpose: the measurement could only be
-          // taken on a real phone, in a gym, with a real body in frame, and a
-          // value that never leaves a debug build is a value nobody reads. That
-          // argument expired the moment the number arrived —
-          // `pose[pixels] n=807 x -0.466..1.968 (bound 0.667) y -2.173..3.015`,
-          // recorded in the R0 audit §7.5. The instrument stays; only its
-          // exposure to users goes.
-          //
-          // What that line MEANS is still open, and this comment used to call
-          // it an open defect on the strength of the extents alone. It cannot
-          // be: BlazePose extrapolates the joints that leave the frame and the
-          // service forwards them unfiltered, so those numbers fit a broken
-          // conversion and a perfectly healthy session equally well. The probe
-          // now reports the extent restricted to landmarks above
-          // `minLikelihood` beside the full one, which is the measurement that
-          // separates the two — see `pose_unit_probe.dart`. Until that second
-          // line has been read off a real device, neither verdict is earned.
-          if (ref.watch(poseDebugOverlayProvider) &&
-              !ref.watch(poseUnitReportProvider).isEmpty) ...[
-            Text(
-              ref.watch(poseUnitReportProvider).summary,
-              key: const Key('form-check-unit-probe'),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.white38,
-                fontFamily: 'monospace',
-                fontSize: 11,
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          // Mid-set the summary is a running tally under the preview; once the
-          // user calls the set finished it is the whole screen, and the tally
-          // stops being something to glance past.
-          if (showRepCount && phase != CoachPhase.summary) ...[
-            _SetSummaryCard(
-              session: session,
-              onReset: () =>
-                  ref.read(repSessionControllerProvider.notifier).resetSet(),
-            ),
-            const SizedBox(height: 16),
-          ],
-          GlassCard(
-            child: Text(
-              AppLocalizations.of(context).formcheckFormCoachRunsOnDeviceUsing,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colors.textSecondary,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -625,7 +658,8 @@ class _SetControls extends ConsumerWidget {
                   key: Key(paused
                       ? 'form_check.resume_set'
                       : 'form_check.pause_set'),
-                  label: paused ? l10n.formcheckResumeSet : l10n.formcheckPauseSet,
+                  label:
+                      paused ? l10n.formcheckResumeSet : l10n.formcheckPauseSet,
                   icon: paused ? Icons.play_arrow : Icons.pause,
                   onPressed: paused ? coach.resume : coach.pause,
                 ),
@@ -873,7 +907,6 @@ class _AvatarBackdrop extends ConsumerWidget {
         ),
       );
 }
-
 
 /// The user, drawn as a figure instead of shown on camera.
 class _PoseAvatar extends ConsumerWidget {
@@ -1285,7 +1318,7 @@ class _SetSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (session.reps.isEmpty) {
-      return GlassCard(
+      return HudPanel(
         child: Text(
           // Which way to face, said out loud. The targets are authored as side
           // views and the outline is drawn from the side, but nothing on the
@@ -1311,7 +1344,7 @@ class _SetSummaryCard extends StatelessWidget {
           formRuleName(AppLocalizations.of(context), rule),
     };
 
-    return GlassCard(
+    return HudPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1358,7 +1391,7 @@ class _UpgradeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       onTap: () => GoRouter.of(context).push('/subscription'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1551,7 +1584,8 @@ class _ExercisePicker extends ConsumerWidget {
               else
                 ChoiceChip(
                   key: Key('form_check.exercise.${e.name}'),
-                  label: Text('${label(e)} · ${l10n.formcheckExerciseNotTaught}'),
+                  label:
+                      Text('${label(e)} · ${l10n.formcheckExerciseNotTaught}'),
                   selected: false,
                   onSelected: null,
                 ),
@@ -1663,7 +1697,7 @@ class _CompleteProfileCard extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: GlassCard(
+      child: HudPanel(
         key: const Key('form_check.complete_profile'),
         onTap: () => GoRouter.of(context).push('/profile'),
         child: Row(

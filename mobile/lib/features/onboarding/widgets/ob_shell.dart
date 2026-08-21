@@ -78,7 +78,12 @@ class ObProgressHeader extends StatelessWidget {
                 children: [
                   Container(color: t.textPrimary.withValues(alpha: 0.14)),
                   AnimatedFractionallySizedBox(
-                    duration: const Duration(milliseconds: 400),
+                    // Decorative fill of the step-progress track -- the
+                    // current step is also shown as text in the header, so
+                    // reduce motion jumps the fill straight to its width.
+                    duration: context.hudMotionDuration(
+                      const Duration(milliseconds: 400),
+                    ),
                     curve: Curves.easeOutCubic,
                     widthFactor: fraction,
                     alignment: Alignment.centerLeft,

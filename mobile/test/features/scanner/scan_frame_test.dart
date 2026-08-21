@@ -17,8 +17,9 @@ Future<void> _pumpFrame(
   WidgetTester tester,
   ScanFramePhase phase, {
   double fraction = 0.75,
+  bool disableAnimations = false,
 }) async {
-  await tester.pumpWidget(testHarness(
+  Widget harness = testHarness(
     child: Center(
       child: SizedBox(
         width: 400,
@@ -26,7 +27,14 @@ Future<void> _pumpFrame(
         child: ScanFrame(phase: phase, fraction: fraction),
       ),
     ),
-  ));
+  );
+  if (disableAnimations) {
+    harness = MediaQuery(
+      data: const MediaQueryData(disableAnimations: true),
+      child: harness,
+    );
+  }
+  await tester.pumpWidget(harness);
   await tester.pump();
 }
 
@@ -88,6 +96,21 @@ void main() {
 
     expect(later.shouldRepaint(first), isTrue,
         reason: 'a still sweep line is not a sweep line');
+  });
+
+  testWidgets('reduce motion freezes the sweep/pulse loop', (tester) async {
+    // The sweep line and analyzing pulse are purely decorative, continuous,
+    // looping motion over a live camera preview -- exactly what reduce motion
+    // exists to suppress. The brackets and corner colour still say "ready" vs
+    // "analyzing" without it.
+    await _pumpFrame(tester, ScanFramePhase.ready, disableAnimations: true);
+    final first = _paintOf(tester).painter!;
+
+    await tester.pump(const Duration(milliseconds: 400));
+    final later = _paintOf(tester).painter!;
+
+    expect(later.shouldRepaint(first), isFalse,
+        reason: 'reduce motion must stop the loop, not merely slow it');
   });
 
   testWidgets('disposes its controller when removed', (tester) async {

@@ -245,4 +245,27 @@ void main() {
         reason: 'e.g. "$demoStep/$demoTotal" wrapped onto a second line '
             'inside the fixed 36px box instead of staying on one');
   });
+
+  testWidgets(
+      'reduce motion collapses the progress-track fill to zero duration',
+      (tester) async {
+    // Decorative fill of the step-progress track -- the step is also given
+    // as text ("N/M") right beside it, so reduce motion should jump the
+    // track straight to its width instead of animating the grow.
+    await tester.pumpWidget(const MediaQuery(
+      data: MediaQueryData(disableAnimations: true),
+      child: MaterialApp(
+        locale: kTestLocale,
+        localizationsDelegates: kTestLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: ObProgressHeader(step: 2, total: 4)),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    final track = tester
+        .widget<AnimatedFractionallySizedBox>(
+            find.byType(AnimatedFractionallySizedBox));
+    expect(track.duration, Duration.zero);
+  });
 }

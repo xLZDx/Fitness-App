@@ -127,25 +127,27 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 
   Future<void> _next() async {
+    // Read before the `await` below, not after: `context` is only safe to
+    // touch synchronously, and `Duration.zero` makes `PageController`'s own
+    // `animateTo` jump straight to the next page instead of sliding -- reduce
+    // motion skips the page-turn, not the step change itself.
+    final Duration duration =
+        context.hudMotionDuration(const Duration(milliseconds: 320));
     // Persist whatever the user has so far before advancing or finishing.
     await ref.read(questionnaireDraftProvider.notifier).saveDraft();
     if (_index < _stepCount - 1) {
-      await _ctrl.nextPage(
-        duration: const Duration(milliseconds: 320),
-        curve: Curves.easeOutCubic,
-      );
+      await _ctrl.nextPage(duration: duration, curve: Curves.easeOutCubic);
     } else {
       await _submit();
     }
   }
 
   Future<void> _back() async {
+    final Duration duration =
+        context.hudMotionDuration(const Duration(milliseconds: 280));
     await ref.read(questionnaireDraftProvider.notifier).saveDraft();
     if (_index == 0) return;
-    await _ctrl.previousPage(
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.easeOutCubic,
-    );
+    await _ctrl.previousPage(duration: duration, curve: Curves.easeOutCubic);
   }
 
   Future<void> _submit() async {

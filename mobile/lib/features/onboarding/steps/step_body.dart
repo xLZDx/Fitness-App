@@ -223,7 +223,12 @@ class _TabBar extends StatelessWidget {
                   onTap: () => onChanged(i),
                   behavior: HitTestBehavior.opaque,
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
+                    // The fill is the selection state itself, so keep an
+                    // instant change under reduce motion instead of losing
+                    // which tab is selected.
+                    duration: context.hudMotionDuration(
+                      const Duration(milliseconds: 180),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: i == index

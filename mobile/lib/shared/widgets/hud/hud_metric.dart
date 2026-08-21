@@ -594,7 +594,12 @@ class HudToggle extends StatelessWidget {
             width: HudTokens.minTapTarget + 6,
             child: Center(
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
+                // The toggle's own position IS the state it reports, so
+                // reduce motion still gets a (near-)instant handle jump
+                // rather than losing the change entirely.
+                duration: context.hudMotionDuration(
+                  const Duration(milliseconds: 180),
+                ),
                 curve: Curves.ease,
                 width: 50,
                 height: 29,

@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/hud/hud_metric.dart';
 import '../../../shared/widgets/hud/hud_surface.dart';
@@ -119,7 +120,13 @@ class SetTimerCard extends ConsumerWidget {
           // it changed.
           TweenAnimationBuilder<double>(
             tween: Tween(end: timer.isIdle ? 0.0 : timer.progress),
-            duration: const Duration(milliseconds: 900),
+            // The ring's sweep is decorative -- the countdown and phase name
+            // inside it are the live information, given as text either way
+            // -- so reduce motion jumps the ring straight to the value
+            // rather than sweeping to it.
+            duration: context.hudMotionDuration(
+              const Duration(milliseconds: 900),
+            ),
             curve: Curves.linear,
             builder: (_, value, __) => HudRing(
               size: 150,
