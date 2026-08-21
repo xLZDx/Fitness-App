@@ -22332,3 +22332,46 @@ crashes 32s apart is exactly the pattern that trips Android's own repeated-crash
 visible SYMPTOM of the already-logged root cause, not new information about the app.
 
 No product code changed by this entry. Still no GO on the Impeller-disable fix.
+
+## 2026-08-21 -- SPTR_FINAL_AUTONOMOUS_PROGRAM: GO received, program-mode active, new evidence merged into the directive's plan
+
+Operator issued a full autonomous-program directive (GO/ГО, push-after-every-commit, Firebase
+distribution for every build, production/store release explicitly NOT authorized, program-mode
+markers present verbatim -- "не останавливаться после каждого сабгейта", "ОТЧЁТ: ТОЛЬКО В КОНЦЕ").
+Per the html-report skill's program-mode contract, the report-cadence/handover checks are quiet for
+the rest of this transcript; the artifact-link format check stays active regardless (unaffected --
+no report is being written right now).
+
+**The directive was composed without visibility into three findings this session made after its own
+last-known checkpoint**: the Impeller/Vulkan native crash (12 occurrences, both builds), the Form
+Coach entry-point layout bug (`workouts_page.dart:500-531`, entry card unconditionally trails the
+filtered exercise list), and the confirmation that the operator's dark-glass design reference is the
+already-tracked HUD handoff (M1-M6 landed 08-19). None of these contradict the directive -- they are
+new, in-scope evidence for IR-03 (shared D-03/D-05B root cause) and the "already enumerated defect
+burn-down" the directive names in its own preamble. Folding them in rather than re-litigating scope:
+the Impeller crash is a plausible mechanism for BOTH D-03 and D-05B's shared first-tap failure (a
+raster-thread crash or GPU-driver stall at the moment of interaction is a candidate the prior
+two-hypothesis narrowing never had, since it wasn't discovered yet) -- worth checking against the
+live trace the directive orders next, not assumed as the answer without observation (directive
+section 8: no hypothesis-driven fixes without a directly observed failing stage).
+
+**Push gate status, honestly, per IR-15's own required vocabulary**: `review.js --final` was
+attempted again for the 6 locally-committed, unpushed commits from this session
+(`5102f3b`..`be63009`) and failed identically to the three prior attempts today: `Could not reach or
+verify the ChatGPT conversation "Fitness app"`. `final` stays `false` on any non-`RAN` status by the
+tool's own design (`review.js:221-223` -- deliberately not overridable, so a transport failure can
+never satisfy the push gate by claim alone). This is
+`GPT_REVIEW_ATTEMPT_FAILED_TRANSPORT_FAIL_OPEN`, not `GPT_REVIEW_PASS` or `GPT_REVIEW_NOT_RUN` --
+a real attempt was made and failed at the browser/conversation-lookup step, four times today. Per
+`pm-bridge/README.md:46`, first login must happen in an unautomated browser window -- something
+only the operator can do; no CLI diagnostic exists to self-service this. Commits proceed (fail-open
+satisfies the commit gate); push stays mechanically blocked until either the conversation becomes
+reachable or the operator sets the session-level kill switch before a future session starts. Not
+treated as a program stop condition (directive section 28 -- this blocks one step, not all
+executable work); flagged plainly instead of worked around, and will be retried periodically as
+this program continues.
+
+Proceeding to execute the directive's priority order starting at its bounded, already-evidenced
+defect burn-down items (Impeller disable, Form Coach entry-point pin) before the live
+first-interaction trace, since both already have direct evidence (crash logs, code line numbers) and
+count as "already enumerated" per the directive's own preamble, not new hypothesis-driven guesses.
