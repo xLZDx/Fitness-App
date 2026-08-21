@@ -429,6 +429,33 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
           onTap: (i) => setState(() => _selected = WorkoutsFilter.values[i]),
         ),
         const SizedBox(height: 18),
+        // Above the filtered list, not below it: these were originally the
+        // LAST two children in this Column, after every card the active
+        // filter returned. For any filter with more than a screenful of
+        // results (every filter tried on-device did), reaching them meant
+        // scrolling past the entire list first -- for a real user, an entry
+        // point that takes that much scrolling to reach is not "on the
+        // Library tab", it is not found. Same reasoning `_ProgramsTab`
+        // already applies to `_BuildFromAnswersCard` above its own goal
+        // filter (`:947-950`): a quick action must not be hostage to how
+        // long the list below it happens to be.
+        _gutter(_QuickTool(
+          icon: Icons.center_focus_strong_outlined,
+          label: AppLocalizations.of(context).formcheckFormCoach,
+          subtitle: AppLocalizations.of(context).workoutsOnDevicePoseCheck,
+          onTap: () => GoRouter.of(context).push('/form-check'),
+        )),
+        const SizedBox(height: 10),
+        _gutter(_QuickTool(
+          icon: Icons.photo_camera_outlined,
+          label: AppLocalizations.of(context).workoutsRecognise,
+          subtitle: AppLocalizations.of(context).workoutsPhotoEquipment,
+          // The Scan tab owns the camera + classifier; the old standalone
+          // /recognise page fed raw JPEG bytes into an NV21-metadata
+          // InputImage and died with InputImageConverterError on-device.
+          onTap: () => GoRouter.of(context).go('/scan'),
+        )),
+        const SizedBox(height: 18),
         ...list.when(
           loading: () => [_gutter(const _LoadingCard())],
           // The exception used to be interpolated straight into the card, so
@@ -523,23 +550,6 @@ class _LibraryTabState extends ConsumerState<_LibraryTab> {
           },
         ),
         const SizedBox(height: 8),
-        _gutter(_QuickTool(
-          icon: Icons.center_focus_strong_outlined,
-          label: AppLocalizations.of(context).formcheckFormCoach,
-          subtitle: AppLocalizations.of(context).workoutsOnDevicePoseCheck,
-          onTap: () => GoRouter.of(context).push('/form-check'),
-        )),
-        const SizedBox(height: 10),
-        _gutter(_QuickTool(
-          icon: Icons.photo_camera_outlined,
-          label: AppLocalizations.of(context).workoutsRecognise,
-          subtitle: AppLocalizations.of(context).workoutsPhotoEquipment,
-          // The Scan tab owns the camera + classifier; the old standalone
-          // /recognise page fed raw JPEG bytes into an NV21-metadata
-          // InputImage and died with InputImageConverterError on-device.
-          onTap: () => GoRouter.of(context).go('/scan'),
-        )),
-        const SizedBox(height: 18),
         _gutter(const _OfflinePrefetchCard()),
         const SizedBox(height: 20),
       ],

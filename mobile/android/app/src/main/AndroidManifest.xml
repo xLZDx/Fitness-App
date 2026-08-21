@@ -103,6 +103,15 @@
             </intent-filter>
         </activity-alias>
 
+        <!-- Impeller's Vulkan backend crashes reproducibly on this device class
+             (Samsung S23 Ultra / Adreno, SIGSEGV in vulkan.adreno.so's
+             vkCmdBeginRenderPass, raster thread) -- 12 occurrences across both
+             release and debug builds, 2026-08-20/21, core/DECISION_LOG.md. Falls
+             back to Skia/OpenGL ES, which does not exercise this driver path. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

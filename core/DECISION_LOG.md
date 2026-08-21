@@ -22375,3 +22375,26 @@ Proceeding to execute the directive's priority order starting at its bounded, al
 defect burn-down items (Impeller disable, Form Coach entry-point pin) before the live
 first-interaction trace, since both already have direct evidence (crash logs, code line numbers) and
 count as "already enumerated" per the directive's own preamble, not new hypothesis-driven guesses.
+
+## 2026-08-21 -- Two evidenced fixes landed: Impeller disabled, Form Coach entry pinned above the list
+
+**Impeller disabled.** `mobile/android/app/src/main/AndroidManifest.xml`: added
+`io.flutter.embedding.android.EnableImpeller = false` meta-data, falling back to Skia/OpenGL ES.
+Standard, documented Flutter mitigation for this exact crash signature (SIGSEGV in
+`vulkan.adreno.so`'s `vkCmdBeginRenderPass`, raster thread) -- root cause and 12 occurrences already
+logged above. Not yet device-verified that this actually stops the crashes -- next step is a debug
+build + on-device soak per the directive's acceptance bar.
+
+**Form Coach entry pinned above the filtered list.** `mobile/lib/features/workouts/workouts_page.dart`:
+moved the two `_QuickTool` entries (Form Coach, Recognise) from after the `...list.when(...)` spread
+to immediately after `_HudChipRow`, before it -- same position `_ProgramsTab` already uses for
+`_BuildFromAnswersCard` above its own goal filter, for the identical reason (`:947-950`'s own
+comment: a quick action must not be hostage to how long the filtered list below it is). No behavior
+change to the entries themselves (same `_QuickTool`, same `onTap` targets), pure reorder. Verified:
+`flutter analyze lib/features/workouts/workouts_page.dart` -- 0 issues; `flutter test
+test/features/workouts/` -- 352/352 passed, including `form_coach_filter_test.dart` (confirmed
+unaffected -- that suite tests the SEPARATE `WorkoutsFilter.formCoach` exercise-category chip, not
+this entry card; the two share a label by coincidence, not by code).
+
+Not yet committed -- Firestore/build verification and device soak next, per directive section 26
+(commit only after intended diff is inspected and the current gate is satisfied).
