@@ -22079,3 +22079,34 @@ afterward runs that push against pm-bridge's own repo, not the intended one -- c
 exactly that happened.
 
 No product code changed by this entry.
+
+## 2026-08-21 -- release build distributed to the operator via Firebase App Distribution, per explicit request
+
+Operator asked directly, mid-wait on the M8/M9 scope question: "собери и пришли мне новый билд на
+апп дистрибьюшен" -- build and send a new build via App Distribution. Treated as action-specific
+authorization for this specific external-publishing action (global CLAUDE.md §4 requires that even
+under a broader standing GO), distinct from the still-open, still-unanswered question about starting
+M8/M9.
+
+Verified the tree was clean (not dirty) before stamping, then ran the project's existing
+`scripts/dev/build_release.ps1 -Distribute` (default testers `korostelevivan@gmail.com`, default
+Firebase app id `1:988522745882:android:b9af40bb887a0388c201a3`) rather than improvising a new build
+process -- this script already derives `GIT_SHA`/`BUILT_AT`/the build number from git state
+specifically to avoid the "1.0.0 (2014)" ambiguous-build problem its own comments document from an
+earlier incident.
+
+**Result: `1.0.0 (2637)`, git `af5c99f`, split-per-abi release APKs (arm64-v8a 107.9 MB, armeabi-v7a
+93.0 MB, x86_64 109.0 MB), uploaded and distributed successfully** to
+`korostelevivan@gmail.com` via `firebase appdistribution:distribute`. Firebase console release:
+`https://console.firebase.google.com/project/fitness-app-korostelev/appdistribution/app/android:com.fitnessapp.fitness_app.sptr/releases/7gu6ko4lkt6h0`.
+
+**Scope note, not investigated as part of this build:** this is a RELEASE build (package
+`com.fitnessapp.fitness_app.sptr`), not the `.sptr.debug` package this whole session's on-device
+testing (D-03/D-05B/D-04) has been run against. The App Check debug-token dart-define fix from
+`:19724-19744` is a debug-build-specific concern (release builds attest via Play Integrity, not a
+static debug token) and was correctly NOT passed to this build. Whether D-04's remaining
+EXTERNAL_BLOCKED item (Firebase AI Logic's own App-Check enforcement, a console-only guided-setup
+action) affects this release build's AI-Trainer feature was not verified in this entry -- this was a
+distribution request, not a release-build verification pass.
+
+No product code changed by this entry.
