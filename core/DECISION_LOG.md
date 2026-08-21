@@ -21721,3 +21721,40 @@ pass. `SPTR_STATUS.{html,ru.html}` intentionally not touched by this entry, per 
 Fitness-App` / `FOLDER = D:\Repo\Fitness_App` identity.
 
 No mobile/product code changed by this entry.
+
+## 2026-08-21 -- M7: localized the error/success copy that bypassed the ARB pipeline
+
+Implemented the concrete gap M7's earlier scoping pass identified in
+`mobile/lib/features/catalog/contribute_video_page.dart` and
+`mobile/lib/features/equipment/widgets/equipment_report_sheet.dart`: user-facing
+English strings that never reach `no_untranslated_strings_test.dart`'s scan because
+they are not a literal argument to `Text(...)` -- they were a `throw
+StateError(...)`/`ArgumentError(...)` message later surfaced via `e.toString()`, a
+plain success-message variable, or a non-`Text()` widget's `label:` parameter.
+
+`contribute_video_page.dart`'s `_submit()` threw generic Dart errors for
+validation failures (not signed in, missing exercise id/URL, non-`https://` URL)
+and caught its own throw one line later purely to stringify it into `_error` --
+control flow that also meant a real submission failure and a client-side
+validation failure were indistinguishable to the user. Replaced with direct
+validation returning early with an `AppLocalizations`-sourced message, matching
+the pattern `equipment_report_sheet.dart` already used for its own sign-in check.
+The success message and the submit button's "Submitting…"/"Submit for review"
+label moved to ARB keys the same way.
+`equipment_report_sheet.dart`'s sign-in-required message got the same fix.
+
+Six new ARB keys added to both `app_en.arb` and `app_ru.arb`
+(`catalogSignInToContributeAVideo`, `catalogExerciseIdAndUrlAreRequired`,
+`catalogUrlMustUseHttps`, `catalogSubmittedModeratorsUsuallyApprove`,
+`catalogSubmitting`, `catalogSubmitForReview`, `equipmentSignInToSubmitAReport`);
+`flutter gen-l10n` regenerated cleanly. Verified: `flutter analyze` clean on both
+touched files; `flutter test test/l10n/no_untranslated_strings_test.dart` 9/9;
+`flutter test test/features/equipment/equipment_report_sheet_test.dart` 4/4
+(unaffected -- English wording is unchanged, only its source moved to the ARB).
+No dedicated widget test existed for `contribute_video_page.dart` before this
+change and none was added: the gap fixed here is l10n sourcing, not missing
+behavioral coverage, and validation order/every other code path is unchanged.
+
+The remaining M7 scope from the earlier pass (a11y sweep beyond this l10n gap) is
+not covered by this entry -- this closes the one concrete finding that had
+file:line evidence; a broader a11y pass remains open.
