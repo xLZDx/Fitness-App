@@ -21959,3 +21959,51 @@ Form Coach as functionally complete, not as tuned/validated.
 feature sharing `poseDetectorServiceProvider`).
 
 No product code changed by this entry -- verification only.
+
+## 2026-08-21 -- D-03/D-05B shared-cause hypothesis: narrowed by code reading, not confirmed. Two candidates ranked, one structurally ruled out for the bottom-nav case
+
+Follow-up on the shared-root-cause hypothesis flagged two entries above. Read-only code
+investigation (no live DevTools/frame-timeline capture, so this narrows candidates rather than
+proves a mechanism):
+
+**Confirmed from existing history, not re-derived:** D-03's original bug (the router redirect never
+letting a fresh anonymous user leave `/login`) was already fixed at `login_page.dart:120-126`
+(`await signInAnonymously(); ... context.go('/home')`), and logcat already proved on-device that the
+tap IS delivered and `signInAnonymously()` DOES run on every attempt (`:20214`). The ~30% residual
+failure measured this pass (`:21785-21851`) is a different, still-open problem layered on top of an
+already-real fix -- not evidence the fix regressed.
+
+**Candidate 1 -- `_fadeThrough`, every route's 360ms transition (`app_router.dart:114-139`):** every
+route in this app, without exception, is wrapped in a `CustomTransitionPage` combining
+`FadeTransition` + `SlideTransition` over 360ms. This is a real, code-confirmed, app-wide mechanism
+whose timing window plausibly lines up with "first tap right after a screen becomes visible." **Not
+confirmed as the actual cause:** Flutter's `RenderOpacity` only suppresses hit-testing at fully
+transparent (`opacity == 0.0`); a `FadeTransition` mid-fade at partial opacity does not, by the
+standard framework behavior, block touches from reaching the content underneath. If that holds here,
+this candidate does not actually explain the symptom and would need to be ruled out with a live
+frame-timeline capture, not left as a source-reading conclusion.
+
+**Candidate 1 does not structurally cover the bottom-nav case.** `main_shell.dart:119-155` shows
+`HudNavBar` is built directly in `MainShell`'s own `Scaffold`, OUTSIDE the `_fadeThrough`-wrapped
+routed child -- a page-content transition cannot be the reason the nav bar itself dropped 3/3 first
+taps right after cold start.
+
+**Candidate 2 -- redirect-driven rebuild race, bottom-nav case only, weaker evidence:**
+`app_router.dart:258-274`'s `refreshListenable` is driven by `authStateChanges()` +
+`profileWatchOf(...)` (`:157-230`); an auth/profile stream emission shortly after `/home` becomes
+current re-runs the router's `redirect` and can rebuild routed pages. `splash_page.dart:48-61`
+already documents this exact family of auth-timing race at the redirect layer. Whether this rebuild
+recreates the `MainShell`/`HudNavBar` subtree itself (which would explain a lost first tap on the nav
+bar specifically, as opposed to just the routed content) was **not confirmed** -- `HudNavBar`/
+`hud_scaffold.dart` were not read this pass.
+
+**Status: still open, narrowed not solved.** No single mechanism was proven by source alone to cover
+all three observed cases (login button, Library chip, bottom-nav tab). Do not treat Candidate 1 as a
+fix target without first confirming, live, that partial-opacity `FadeTransition` actually suppresses
+hit-testing in this app's specific widget tree -- proposing a fix against an unconfirmed mechanism is
+exactly how the earlier Material/Semantics change ended up "real but not the fix" for D-03
+(`:20214`-adjacent history). **Next step, still not done:** a Flutter DevTools timeline capture of a
+failing first tap, on-device, to see directly whether the tap event reaches a widget at all versus
+reaching one that then does nothing.
+
+No product code changed by this entry.
