@@ -1,0 +1,15 @@
+{
+  "sourceId": "wger_license_v2",
+  "sourceUrl": "https://wger.de/api/v2/license/?format=json&limit=10",
+  "retrievalMethod": "DIRECT_FETCH",
+  "capturedAt": "2026-08-22T15:18:32Z",
+  "apiVersion": "v2",
+  "note": "Full result set -- API reported count=5, all 5 returned in a single page. This is wger's site-wide license vocabulary; individual exercise/exercise-translation records do NOT carry a resolved reference into this list via the public API (see licenseFieldGap in wger_exercise_translation_sample_raw.json).",
+  "results": [
+    { "id": 1, "fullName": " Creative Commons Attribution Share Alike 3", "shortName": "CC-BY-SA 3", "url": "https://creativecommons.org/licenses/by-sa/3.0/deed.en" },
+    { "id": 4, "fullName": "Creative Commons Attribution 4", "shortName": "CC-BY 4", "url": "https://creativecommons.org/licenses/by/4.0/" },
+    { "id": 2, "fullName": "Creative Commons Attribution Share Alike 4", "shortName": "CC-BY-SA 4", "url": "https://creativecommons.org/licenses/by-sa/4.0/deed.en" },
+    { "id": 3, "fullName": "Creative Commons Public Domain 1.0", "shortName": "CC0", "url": "http://creativecommons.org/publicdomain/zero/1.0/" },
+    { "id": 5, "fullName": "Open Data Commons Open Database License", "shortName": "ODbL", "url": "https://opendatacommons.org/licenses/odbl/" }
+  ]
+}

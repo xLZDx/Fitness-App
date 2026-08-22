@@ -1,0 +1,707 @@
+{
+  "dimensions": {
+    "equipment": {
+      "counts": {
+        "ALIAS_CANDIDATE": 2,
+        "MATCHED": 6,
+        "NOT_APPLICABLE": 1,
+        "UNMATCHED": 3
+      },
+      "dimension": "equipment",
+      "method": "hand-curated (genuine domain knowledge, not automated)",
+      "rows": [
+        {
+          "classification": "MATCHED",
+          "rationale": "Same equipment.",
+          "sptrId": "barbell",
+          "wgerId": 1,
+          "wgerName": "Barbell"
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "rationale": "SZ-Bar is the German name for an EZ-curl bar (SZ = \"Sprint-Zug\"/curved bar shape); same equipment, different-language name.",
+          "sptrId": "ez_curl_bar",
+          "wgerId": 2,
+          "wgerName": "SZ-Bar"
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same equipment.",
+          "sptrId": "dumbbell",
+          "wgerId": 3,
+          "wgerName": "Dumbbell"
+        },
+        {
+          "classification": "UNMATCHED",
+          "rationale": "No SPTR functional-type entry for a generic exercise/gym mat.",
+          "sptrId": null,
+          "wgerId": 4,
+          "wgerName": "Gym mat"
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "rationale": "\"Swiss ball\" and \"stability ball\" are established synonyms for the same equipment.",
+          "sptrId": "stability_ball",
+          "wgerId": 5,
+          "wgerName": "Swiss Ball"
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same equipment.",
+          "sptrId": "pullup_bar",
+          "wgerId": 6,
+          "wgerName": "Pull-up bar"
+        },
+        {
+          "classification": "NOT_APPLICABLE",
+          "rationale": "Not real equipment -- wger's placeholder for exercises requiring none. Excluded from the equipment ontology entirely rather than force-mapped.",
+          "sptrId": null,
+          "wgerId": 7,
+          "wgerName": "none (bodyweight exercise)"
+        },
+        {
+          "classification": "UNMATCHED",
+          "rationale": "SPTR's snapshot only has adjustable_bench and preacher_curl_bench -- both materially more specific than a generic flat bench; not confidently the same concept.",
+          "sptrId": null,
+          "wgerId": 8,
+          "wgerName": "Bench"
+        },
+        {
+          "classification": "UNMATCHED",
+          "rationale": "Same reasoning as Bench -- adjustable_bench covers incline capability but denotes a different, more general piece of equipment, not this specific one.",
+          "sptrId": null,
+          "wgerId": 9,
+          "wgerName": "Incline bench"
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same equipment.",
+          "sptrId": "kettlebell",
+          "wgerId": 10,
+          "wgerName": "Kettlebell"
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same equipment.",
+          "sptrId": "resistance_bands",
+          "wgerId": 11,
+          "wgerName": "Resistance band"
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same equipment.",
+          "sptrId": "cable_machine",
+          "wgerId": 12,
+          "wgerName": "Cable machine"
+        }
+      ],
+      "sptrSource": "core/equipment_identity/p0/functional_type_snapshot_v1.json",
+      "totalWgerEntries": 12,
+      "wgerSource": "wger_equipment_raw.json"
+    },
+    "exercise": {
+      "counts": {
+        "ALIAS_CANDIDATE": 11,
+        "MATCHED": 6,
+        "UNMATCHED": 40
+      },
+      "dimension": "exercise",
+      "method": "deterministic normalized-title matching, NOT hand-curated -- weaker evidence than the equipment/muscle dimensions' human-verified pairings; a MATCHED/ALIAS_CANDIDATE row here is a staging candidate for human review, not a verified equivalence",
+      "rows": [
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1948,
+          "wgerName": "1 Leg Box Squat",
+          "wgerTranslationId": 3099
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1470,
+          "wgerName": "1-Arm Half-Kneeling Lat Pulldown",
+          "wgerTranslationId": 2433
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1966,
+          "wgerName": "1/2 Kneeling Thoracic Rotation",
+          "wgerTranslationId": 3121
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "sptrMatchIds": [
+            "ea_kettlebell_swing"
+          ],
+          "wgerExerciseId": 9,
+          "wgerName": "2 Handed Kettlebell Swing",
+          "wgerTranslationId": 345
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1924,
+          "wgerName": "3008 Abdominal Crunch",
+          "wgerTranslationId": 3073
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1115,
+          "wgerName": "3D lunge warmup",
+          "wgerTranslationId": 2078
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "sptrMatchIds": [
+            "ea_burpee"
+          ],
+          "wgerExerciseId": 997,
+          "wgerName": "4-count burpees",
+          "wgerTranslationId": 1731
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1754,
+          "wgerName": "45° lateral raises",
+          "wgerTranslationId": 2891
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "sptrMatchIds": [
+            "ea_ab_wheel_all_the_way_out",
+            "ea_ab_wheel_halfway_out",
+            "ea_ab_wheel_left_out",
+            "ea_ab_wheel_plank",
+            "ea_ab_wheel_pulses",
+            "ea_ab_wheel_right_out",
+            "ea_ab_wheel_take_it_or_leave_it",
+            "ea_reverse_ab_wheel_rollout",
+            "ea_standing_ab_wheel_rollout"
+          ],
+          "wgerExerciseId": 1573,
+          "wgerName": "Ab wheel",
+          "wgerTranslationId": 2521
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "sptrMatchIds": [
+            "ea_abdominal_crunches",
+            "ea_abdominal_crunches_machine",
+            "ea_abdominal_crunches_with_hold"
+          ],
+          "wgerExerciseId": 1933,
+          "wgerName": "Abdominal Crunch",
+          "wgerTranslationId": 3082
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1828,
+          "wgerName": "Abdominal Draw-In",
+          "wgerTranslationId": 2963
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 56,
+          "wgerName": "Abdominal Stabilization",
+          "wgerTranslationId": 1061
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1096,
+          "wgerName": "Abduction while standing",
+          "wgerTranslationId": 2055
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 2491,
+          "wgerName": "Abductors",
+          "wgerTranslationId": 4970
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "sptrMatchIds": [
+            "ea_side_plank"
+          ],
+          "wgerExerciseId": 2493,
+          "wgerName": "Adductor Side Plank",
+          "wgerTranslationId": 4974
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 2492,
+          "wgerName": "Adductors",
+          "wgerTranslationId": 4972
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1102,
+          "wgerName": "Alternate back lunges",
+          "wgerTranslationId": 2063
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1192,
+          "wgerName": "Alternating Biceps Curls With Dumbbell",
+          "wgerTranslationId": 2148
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1486,
+          "wgerName": "Alternating High Cable Row",
+          "wgerTranslationId": 2449
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1012,
+          "wgerName": "Alternating bicep curls",
+          "wgerTranslationId": 1907
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "sptrMatchIds": [
+            "ea_dumbbell_hammer_curl"
+          ],
+          "wgerExerciseId": 1567,
+          "wgerName": "Alternating dumbbell hammer curl",
+          "wgerTranslationId": 2515
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1501,
+          "wgerName": "Alternative DB Gorilla rows",
+          "wgerTranslationId": 2463
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1864,
+          "wgerName": "Ankle Roll",
+          "wgerTranslationId": 3006
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1141,
+          "wgerName": "Arabesque",
+          "wgerTranslationId": 2120
+        },
+        {
+          "classification": "MATCHED",
+          "sptrMatchIds": [
+            "ea_archer_pull_up"
+          ],
+          "wgerExerciseId": 1545,
+          "wgerName": "Archer Pull Up",
+          "wgerTranslationId": 2494
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1606,
+          "wgerName": "Arm Raises (T/Y/I)",
+          "wgerTranslationId": 2580
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1590,
+          "wgerName": "Arm and neck stretch",
+          "wgerTranslationId": 2539
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 20,
+          "wgerName": "Arnold Shoulder Press",
+          "wgerTranslationId": 227
+        },
+        {
+          "classification": "MATCHED",
+          "sptrMatchIds": [
+            "ea_assisted_pull_up"
+          ],
+          "wgerExerciseId": 1929,
+          "wgerName": "Assisted Pull-Up",
+          "wgerTranslationId": 3078
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "sptrMatchIds": [
+            "ea_chin_up"
+          ],
+          "wgerExerciseId": 1737,
+          "wgerName": "Assisted chin-ups",
+          "wgerTranslationId": 2867
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1219,
+          "wgerName": "Australian pull-ups",
+          "wgerTranslationId": 2186
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 31,
+          "wgerName": "Axe Hold",
+          "wgerTranslationId": 289
+        },
+        {
+          "classification": "MATCHED",
+          "sptrMatchIds": [
+            "ea_back_lever"
+          ],
+          "wgerExerciseId": 1742,
+          "wgerName": "Back Lever",
+          "wgerTranslationId": 2872
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1263,
+          "wgerName": "Back bridge",
+          "wgerTranslationId": 2220
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1143,
+          "wgerName": "Back extensión",
+          "wgerTranslationId": 2122
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1010,
+          "wgerName": "Back neck stretch",
+          "wgerTranslationId": 1884
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "sptrMatchIds": [
+            "ea_arm_circle"
+          ],
+          "wgerExerciseId": 995,
+          "wgerName": "Backward arm circles",
+          "wgerTranslationId": 1702
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1005,
+          "wgerName": "Backward shoulder rotation",
+          "wgerTranslationId": 1826
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1092,
+          "wgerName": "Bag training",
+          "wgerTranslationId": 2046
+        },
+        {
+          "classification": "MATCHED",
+          "sptrMatchIds": [
+            "ea_ball_slams"
+          ],
+          "wgerExerciseId": 1525,
+          "wgerName": "Ball Slams",
+          "wgerTranslationId": 2481
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 165,
+          "wgerName": "Ball crunches",
+          "wgerTranslationId": 1051
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 2494,
+          "wgerName": "Band Terminal Knee extension",
+          "wgerTranslationId": 4976
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1826,
+          "wgerName": "Band pull-apart with external rotation",
+          "wgerTranslationId": 2961
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1380,
+          "wgerName": "Band pull-aparts",
+          "wgerTranslationId": 2346
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1865,
+          "wgerName": "Banded Ankle Mobility",
+          "wgerTranslationId": 3007
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "sptrMatchIds": [
+            "ea_clamshell"
+          ],
+          "wgerExerciseId": 1842,
+          "wgerName": "Banded Clamshell",
+          "wgerTranslationId": 2977
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1877,
+          "wgerName": "Banded Scapular Retraction",
+          "wgerTranslationId": 3019
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1838,
+          "wgerName": "Banded Shoulder Drills",
+          "wgerTranslationId": 2973
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 41,
+          "wgerName": "Barbell Ab Rollout",
+          "wgerTranslationId": 343
+        },
+        {
+          "classification": "MATCHED",
+          "sptrMatchIds": [
+            "ea_barbell_clean_and_press"
+          ],
+          "wgerExerciseId": 1638,
+          "wgerName": "Barbell Clean and press",
+          "wgerTranslationId": 2744
+        },
+        {
+          "classification": "MATCHED",
+          "sptrMatchIds": [
+            "ea_barbell_full_squat"
+          ],
+          "wgerExerciseId": 1801,
+          "wgerName": "Barbell Full Squat",
+          "wgerTranslationId": 2925
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 43,
+          "wgerName": "Barbell Hack Squats",
+          "wgerTranslationId": 407
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "sptrMatchIds": [
+            "ea_barbell_lunges"
+          ],
+          "wgerExerciseId": 46,
+          "wgerName": "Barbell Lunges Standing",
+          "wgerTranslationId": 405
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "sptrMatchIds": [
+            "ea_barbell_lunges",
+            "ea_walking"
+          ],
+          "wgerExerciseId": 802,
+          "wgerName": "Barbell Lunges Walking",
+          "wgerTranslationId": 1053
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 48,
+          "wgerName": "Barbell Reverse Wrist Curl",
+          "wgerTranslationId": 759
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1700,
+          "wgerName": "Barbell Romanian Deadlift (RDL)",
+          "wgerTranslationId": 2819
+        },
+        {
+          "classification": "UNMATCHED",
+          "sptrMatchIds": [],
+          "wgerExerciseId": 1698,
+          "wgerName": "Barbell Row (Overhand)",
+          "wgerTranslationId": 2817
+        }
+      ],
+      "sptrSource": "mobile/assets/data/exercises_vendor.json (1887 entries)",
+      "totalWgerSampleEntries": 57,
+      "wgerSource": "wger_exercise_translation_sample_raw.json (57-entry English sample, not the full 3323-entry table)"
+    },
+    "muscle": {
+      "counts": {
+        "ALIAS_CANDIDATE": 3,
+        "MATCHED": 10,
+        "UNMATCHED": 2
+      },
+      "dimension": "muscle",
+      "method": "hand-curated (genuine domain/anatomical knowledge, not automated)",
+      "rows": [
+        {
+          "classification": "MATCHED",
+          "rationale": "Same muscle group.",
+          "sptrId": "shoulders",
+          "wgerId": 2,
+          "wgerName": "Anterior deltoid",
+          "wgerNameEn": "Shoulders"
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same muscle.",
+          "sptrId": "biceps",
+          "wgerId": 1,
+          "wgerName": "Biceps brachii",
+          "wgerNameEn": "Biceps"
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same muscle group.",
+          "sptrId": "hamstrings",
+          "wgerId": 11,
+          "wgerName": "Biceps femoris",
+          "wgerNameEn": "Hamstrings"
+        },
+        {
+          "classification": "UNMATCHED",
+          "rationale": "SPTR's vocabulary has no distinct entry for brachialis; not confidently folded into biceps (a different, adjacent muscle) without real evidence.",
+          "sptrId": null,
+          "wgerId": 13,
+          "wgerName": "Brachialis",
+          "wgerNameEn": ""
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same muscle group.",
+          "sptrId": "calves",
+          "wgerId": 7,
+          "wgerName": "Gastrocnemius",
+          "wgerNameEn": "Calves"
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same muscle group.",
+          "sptrId": "glutes",
+          "wgerId": 8,
+          "wgerName": "Gluteus maximus",
+          "wgerNameEn": "Glutes"
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same muscle.",
+          "sptrId": "lats",
+          "wgerId": 12,
+          "wgerName": "Latissimus dorsi",
+          "wgerNameEn": "Lats"
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "rationale": "External obliques are commonly grouped under \"core\" in consumer fitness taxonomies -- a real but broader/narrower relationship, not identity.",
+          "sptrId": "core",
+          "wgerId": 14,
+          "wgerName": "Obliquus externus abdominis",
+          "wgerNameEn": ""
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same muscle group.",
+          "sptrId": "chest",
+          "wgerId": 4,
+          "wgerName": "Pectoralis major",
+          "wgerNameEn": "Chest"
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same muscle group.",
+          "sptrId": "quads",
+          "wgerId": 10,
+          "wgerName": "Quadriceps femoris",
+          "wgerNameEn": "Quads"
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "rationale": "Rectus abdominis (\"abs\") is commonly grouped under \"core\" in consumer fitness taxonomies -- a real but broader/narrower relationship, not identity.",
+          "sptrId": "core",
+          "wgerId": 6,
+          "wgerName": "Rectus abdominis",
+          "wgerNameEn": "Abs"
+        },
+        {
+          "classification": "UNMATCHED",
+          "rationale": "SPTR's vocabulary has no distinct or confidently-adjacent entry for serratus anterior.",
+          "sptrId": null,
+          "wgerId": 3,
+          "wgerName": "Serratus anterior",
+          "wgerNameEn": ""
+        },
+        {
+          "classification": "ALIAS_CANDIDATE",
+          "rationale": "Soleus is a real lower-leg (calf) muscle alongside gastrocnemius -- anatomical fact.",
+          "sptrId": "calves",
+          "wgerId": 15,
+          "wgerName": "Soleus",
+          "wgerNameEn": ""
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "\"Traps\" is the standard short name for trapezius -- same muscle, not a granularity mismatch.",
+          "sptrId": "traps",
+          "wgerId": 9,
+          "wgerName": "Trapezius",
+          "wgerNameEn": ""
+        },
+        {
+          "classification": "MATCHED",
+          "rationale": "Same muscle.",
+          "sptrId": "triceps",
+          "wgerId": 5,
+          "wgerName": "Triceps brachii",
+          "wgerNameEn": "Triceps"
+        }
+      ],
+      "sptrMusclesNeverReferenced": [
+        "adductors",
+        "back",
+        "forearms",
+        "lower_back"
+      ],
+      "sptrSource": "mobile/assets/data/exercises_vendor.json (muscles + primaryMuscles union)",
+      "totalWgerEntries": 15,
+      "wgerSource": "wger_muscle_raw.json"
+    },
+    "variation": {
+      "dimension": "variation",
+      "rationale": "wger's exercise objects carry a variation_group UUID that groups mutually-substitutable exercise variants (e.g. different grip widths of the same lift). SPTR's own exercise catalog (mobile/assets/data/exercises_vendor.json) has no corresponding grouping field or mechanism at all -- there is nothing on the SPTR side to map variation_group onto. Reported explicitly as NOT_MODELED per the gate's \"disagreements visible\" AC, rather than silently omitted or given a fabricated one-off correspondence.",
+      "status": "NOT_MODELED"
+    }
+  },
+  "gate": "P1.G4"
+}

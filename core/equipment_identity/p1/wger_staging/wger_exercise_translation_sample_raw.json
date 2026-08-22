@@ -1,0 +1,410 @@
+{
+  "sourceId": "wger_exercise_translation_v2_english_sample",
+  "sourceUrl": "https://wger.de/api/v2/exercise-translation/?format=json&language=2&limit=200",
+  "retrievalMethod": "DIRECT_FETCH",
+  "capturedAt": "2026-08-22T15:00:00Z",
+  "apiVersion": "v2",
+  "note": "Bounded sample, not the full 3323-entry translation table (staging gate, not exhaustive ingestion). The API's own language=2 filter on this endpoint is unreliable at result-set sizes beyond a handful of records -- confirmed live and reproducibly (limit=3 returns all language=2; limit=200 returns languages {1,2,4,6,7,12,17,23} mixed in). Worked around by requesting a larger raw page (limit=200, count=200 raw results) and filtering to language==2 client-side before this fixture was written -- 57 of 200 raw results were language==2. Every record's license field is null in the live API response (see licenseFieldGap below); licenseAuthor is the real populated per-object attribution field.",
+  "licenseFieldGap": "wger's exercise-translation schema exposes a \"license\" key but it returns null on every record observed in this sample (57/57) and in a separate unfiltered 200-record raw batch (200/200). wger's own GitHub README states exercise/ingredient data is licensed \"Creative Commons (see individual entries)\", and the site-wide vocabulary of 5 real Creative-Commons-family licenses is enumerated by /api/v2/license/ (captured separately in wger_license_raw.json) -- but the public API does not expose which of those 5 applies to a given exercise/translation record. licenseAuthor (a contributor handle) is the only per-object attribution value actually present, and is what this ingestion preserves and tests for byte-identical carry-through.",
+  "results": [
+    {
+      "id": 3099,
+      "exerciseId": 1948,
+      "name": "1 Leg Box Squat",
+      "license": null,
+      "licenseAuthor": "jesusd"
+    },
+    {
+      "id": 2433,
+      "exerciseId": 1470,
+      "name": "1-Arm Half-Kneeling Lat Pulldown",
+      "license": null,
+      "licenseAuthor": "Expenses7000"
+    },
+    {
+      "id": 3121,
+      "exerciseId": 1966,
+      "name": "1/2 Kneeling Thoracic Rotation",
+      "license": null,
+      "licenseAuthor": "amwang4"
+    },
+    {
+      "id": 345,
+      "exerciseId": 9,
+      "name": "2 Handed Kettlebell Swing",
+      "license": null,
+      "licenseAuthor": "deusinvictus"
+    },
+    {
+      "id": 3073,
+      "exerciseId": 1924,
+      "name": "3008 Abdominal Crunch",
+      "license": null,
+      "licenseAuthor": ""
+    },
+    {
+      "id": 2078,
+      "exerciseId": 1115,
+      "name": "3D lunge warmup",
+      "license": null,
+      "licenseAuthor": "philip"
+    },
+    {
+      "id": 1731,
+      "exerciseId": 997,
+      "name": "4-count burpees",
+      "license": null,
+      "licenseAuthor": ""
+    },
+    {
+      "id": 2891,
+      "exerciseId": 1754,
+      "name": "45° lateral raises",
+      "license": null,
+      "licenseAuthor": ""
+    },
+    {
+      "id": 2521,
+      "exerciseId": 1573,
+      "name": "Ab wheel",
+      "license": null,
+      "licenseAuthor": "lhegedus"
+    },
+    {
+      "id": 3082,
+      "exerciseId": 1933,
+      "name": "Abdominal Crunch",
+      "license": null,
+      "licenseAuthor": "amaesc"
+    },
+    {
+      "id": 2963,
+      "exerciseId": 1828,
+      "name": "Abdominal Draw-In",
+      "license": null,
+      "licenseAuthor": "beagle"
+    },
+    {
+      "id": 1061,
+      "exerciseId": 56,
+      "name": "Abdominal Stabilization",
+      "license": null,
+      "licenseAuthor": "andikeller"
+    },
+    {
+      "id": 2055,
+      "exerciseId": 1096,
+      "name": "Abduction while standing",
+      "license": null,
+      "licenseAuthor": "tregga"
+    },
+    {
+      "id": 4970,
+      "exerciseId": 2491,
+      "name": "Abductors",
+      "license": null,
+      "licenseAuthor": "lbroggi"
+    },
+    {
+      "id": 4974,
+      "exerciseId": 2493,
+      "name": "Adductor Side Plank",
+      "license": null,
+      "licenseAuthor": "hurr99"
+    },
+    {
+      "id": 4972,
+      "exerciseId": 2492,
+      "name": "Adductors",
+      "license": null,
+      "licenseAuthor": "lbroggi"
+    },
+    {
+      "id": 2063,
+      "exerciseId": 1102,
+      "name": "Alternate back lunges",
+      "license": null,
+      "licenseAuthor": "clafal"
+    },
+    {
+      "id": 2148,
+      "exerciseId": 1192,
+      "name": "Alternating Biceps Curls With Dumbbell",
+      "license": null,
+      "licenseAuthor": "Franpol"
+    },
+    {
+      "id": 2449,
+      "exerciseId": 1486,
+      "name": "Alternating High Cable Row",
+      "license": null,
+      "licenseAuthor": "Moffi"
+    },
+    {
+      "id": 1907,
+      "exerciseId": 1012,
+      "name": "Alternating bicep curls",
+      "license": null,
+      "licenseAuthor": ""
+    },
+    {
+      "id": 2515,
+      "exerciseId": 1567,
+      "name": "Alternating dumbbell hammer curl",
+      "license": null,
+      "licenseAuthor": "Mariano_O"
+    },
+    {
+      "id": 2463,
+      "exerciseId": 1501,
+      "name": "Alternative DB Gorilla rows",
+      "license": null,
+      "licenseAuthor": "JohnPreston"
+    },
+    {
+      "id": 3006,
+      "exerciseId": 1864,
+      "name": "Ankle Roll",
+      "license": null,
+      "licenseAuthor": "Davidgj32"
+    },
+    {
+      "id": 2120,
+      "exerciseId": 1141,
+      "name": "Arabesque",
+      "license": null,
+      "licenseAuthor": "cleen"
+    },
+    {
+      "id": 2494,
+      "exerciseId": 1545,
+      "name": "Archer Pull Up",
+      "license": null,
+      "licenseAuthor": "Antsy6277"
+    },
+    {
+      "id": 2580,
+      "exerciseId": 1606,
+      "name": "Arm Raises (T/Y/I)",
+      "license": null,
+      "licenseAuthor": "WiNNiE"
+    },
+    {
+      "id": 2539,
+      "exerciseId": 1590,
+      "name": "Arm and neck stretch",
+      "license": null,
+      "licenseAuthor": "MrAlfaRobot"
+    },
+    {
+      "id": 227,
+      "exerciseId": 20,
+      "name": "Arnold Shoulder Press",
+      "license": null,
+      "licenseAuthor": "trzr23"
+    },
+    {
+      "id": 3078,
+      "exerciseId": 1929,
+      "name": "Assisted Pull-Up",
+      "license": null,
+      "licenseAuthor": "amaesc"
+    },
+    {
+      "id": 2867,
+      "exerciseId": 1737,
+      "name": "Assisted chin-ups",
+      "license": null,
+      "licenseAuthor": ""
+    },
+    {
+      "id": 2186,
+      "exerciseId": 1219,
+      "name": "Australian pull-ups",
+      "license": null,
+      "licenseAuthor": "PaukOne"
+    },
+    {
+      "id": 289,
+      "exerciseId": 31,
+      "name": "Axe Hold",
+      "license": null,
+      "licenseAuthor": "GrosseHund"
+    },
+    {
+      "id": 2872,
+      "exerciseId": 1742,
+      "name": "Back Lever",
+      "license": null,
+      "licenseAuthor": "Happy"
+    },
+    {
+      "id": 2220,
+      "exerciseId": 1263,
+      "name": "Back bridge",
+      "license": null,
+      "licenseAuthor": "cynomops"
+    },
+    {
+      "id": 2122,
+      "exerciseId": 1143,
+      "name": "Back extensión",
+      "license": null,
+      "licenseAuthor": "Franpol"
+    },
+    {
+      "id": 1884,
+      "exerciseId": 1010,
+      "name": "Back neck stretch",
+      "license": null,
+      "licenseAuthor": ""
+    },
+    {
+      "id": 1702,
+      "exerciseId": 995,
+      "name": "Backward arm circles",
+      "license": null,
+      "licenseAuthor": ""
+    },
+    {
+      "id": 1826,
+      "exerciseId": 1005,
+      "name": "Backward shoulder rotation",
+      "license": null,
+      "licenseAuthor": ""
+    },
+    {
+      "id": 2046,
+      "exerciseId": 1092,
+      "name": "Bag training",
+      "license": null,
+      "licenseAuthor": "clafal"
+    },
+    {
+      "id": 2481,
+      "exerciseId": 1525,
+      "name": "Ball Slams",
+      "license": null,
+      "licenseAuthor": "flanny"
+    },
+    {
+      "id": 1051,
+      "exerciseId": 165,
+      "name": "Ball crunches",
+      "license": null,
+      "licenseAuthor": "Konsumopfer"
+    },
+    {
+      "id": 4976,
+      "exerciseId": 2494,
+      "name": "Band Terminal Knee extension",
+      "license": null,
+      "licenseAuthor": "Rehab Hero"
+    },
+    {
+      "id": 2961,
+      "exerciseId": 1826,
+      "name": "Band pull-apart with external rotation",
+      "license": null,
+      "licenseAuthor": "beagle"
+    },
+    {
+      "id": 2346,
+      "exerciseId": 1380,
+      "name": "Band pull-aparts",
+      "license": null,
+      "licenseAuthor": "schwolfar"
+    },
+    {
+      "id": 3007,
+      "exerciseId": 1865,
+      "name": "Banded Ankle Mobility",
+      "license": null,
+      "licenseAuthor": "Davidgj32"
+    },
+    {
+      "id": 2977,
+      "exerciseId": 1842,
+      "name": "Banded Clamshell",
+      "license": null,
+      "licenseAuthor": "Croak6728"
+    },
+    {
+      "id": 3019,
+      "exerciseId": 1877,
+      "name": "Banded Scapular Retraction",
+      "license": null,
+      "licenseAuthor": "hurr99"
+    },
+    {
+      "id": 2973,
+      "exerciseId": 1838,
+      "name": "Banded Shoulder Drills",
+      "license": null,
+      "licenseAuthor": "Croak6728"
+    },
+    {
+      "id": 343,
+      "exerciseId": 41,
+      "name": "Barbell Ab Rollout",
+      "license": null,
+      "licenseAuthor": "sevae"
+    },
+    {
+      "id": 2744,
+      "exerciseId": 1638,
+      "name": "Barbell Clean and press",
+      "license": null,
+      "licenseAuthor": "Rottekongen"
+    },
+    {
+      "id": 2925,
+      "exerciseId": 1801,
+      "name": "Barbell Full Squat",
+      "license": null,
+      "licenseAuthor": "fabrice"
+    },
+    {
+      "id": 407,
+      "exerciseId": 43,
+      "name": "Barbell Hack Squats",
+      "license": null,
+      "licenseAuthor": "BePieToday"
+    },
+    {
+      "id": 405,
+      "exerciseId": 46,
+      "name": "Barbell Lunges Standing",
+      "license": null,
+      "licenseAuthor": "Mikko Ruohola"
+    },
+    {
+      "id": 1053,
+      "exerciseId": 802,
+      "name": "Barbell Lunges Walking",
+      "license": null,
+      "licenseAuthor": ""
+    },
+    {
+      "id": 759,
+      "exerciseId": 48,
+      "name": "Barbell Reverse Wrist Curl",
+      "license": null,
+      "licenseAuthor": "burenl"
+    },
+    {
+      "id": 2819,
+      "exerciseId": 1700,
+      "name": "Barbell Romanian Deadlift (RDL)",
+      "license": null,
+      "licenseAuthor": "daiben"
+    },
+    {
+      "id": 2817,
+      "exerciseId": 1698,
+      "name": "Barbell Row (Overhand)",
+      "license": null,
+      "licenseAuthor": "daiben"
+    }
+  ]
+}

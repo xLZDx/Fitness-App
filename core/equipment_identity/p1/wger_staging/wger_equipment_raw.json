@@ -1,0 +1,22 @@
+{
+  "sourceId": "wger_equipment_v2",
+  "sourceUrl": "https://wger.de/api/v2/equipment/?format=json&limit=50",
+  "retrievalMethod": "DIRECT_FETCH",
+  "capturedAt": "2026-08-22T15:10:00Z",
+  "apiVersion": "v2",
+  "note": "Full result set -- API reported count=12, all 12 returned in a single page (limit=50 exceeds count).",
+  "results": [
+    { "id": 1, "name": "Barbell" },
+    { "id": 2, "name": "SZ-Bar" },
+    { "id": 3, "name": "Dumbbell" },
+    { "id": 4, "name": "Gym mat" },
+    { "id": 5, "name": "Swiss Ball" },
+    { "id": 6, "name": "Pull-up bar" },
+    { "id": 7, "name": "none (bodyweight exercise)" },
+    { "id": 8, "name": "Bench" },
+    { "id": 9, "name": "Incline bench" },
+    { "id": 10, "name": "Kettlebell" },
+    { "id": 11, "name": "Resistance band" },
+    { "id": 12, "name": "Cable machine" }
+  ]
+}
