@@ -24730,3 +24730,37 @@ Matrix's -- carried forward, not re-litigated here.
 
 Next: P1.G4 (WGER reference ingestion -- attempt first, DEFERRED_NOT_REQUIRED only if genuinely
 unable to close honestly), same operator GO and program-mode reporting.
+
+## 2026-08-22 -- GPT-PM hard precondition for P1.G5: per-brand + total direct-corroboration minimums
+
+GPT-PM accepted P1.G3 as CLOSED/PASS (commit 019e103) without reopening it, and tallied the combined
+pool's evidence quality after G2+G3:
+
+DIRECT first-party: Life Fitness 5, Hammer Strength 4, Nautilus 13, Precor 14 -- total 36.
+SEARCH_INDEX_SNIPPET only: Technogym 9, Matrix 17, Panatta 12 -- total 38.
+
+Per the already-established rule (2026-08-22 entry above) that SEARCH_INDEX_SNIPPET alone cannot
+select a model into the canonical 50, GPT-PM sets a binding HARD PRECONDITION for P1.G5, verbatim
+intent: before canonical-50 pilot selection may start,
+  (a) Technogym, Matrix, and Panatta must each reach >=4 directly-corroborated (DIRECT_FETCH-class)
+      official models -- currently 0 for each;
+  (b) the total directly-corroborated eligible pool must reach >=50.
+With today's 36 direct records, this needs >=14 additional direct first-party corroborations,
+distributed so each of the three snippet-only brands independently clears its own >=4 floor -- not
+just an aggregate total. Acceptable corroboration forms unchanged: an official manufacturer page,
+PDF/spec sheet, API/data feed, or another directly-retrieved first-party document. A search snippet,
+even one whose URL contains a real model code, is discovery evidence only and does not itself confer
+canonical-selection eligibility.
+
+GPT-PM's explicit fallback if this cannot be met after reasonable effort: P1.G5 must report BLOCKED,
+never quietly lower the evidence bar or pad the count with snippet-only models to reach 50. G2/G3's
+own staging data stays fully valid and honestly classified either way -- this precondition governs
+canonical PROMOTION, not the legitimacy of what was already captured.
+
+G4 (WGER reference ingestion) is independent of this shortfall and is authorized to proceed now. The
+direct-corroboration pass for Technogym/Matrix/Panatta is due after G4 and before G5's actual close --
+tracked as a forward requirement, not scope for G4 itself.
+
+Status confirmed by GPT-PM: P1.G1-G3 CLOSED, P1.G4 NEXT/AUTHORIZED, P1.G5 NOT STARTED (blocked on
+the precondition above), P1.G6 NOT STARTED. Proceeding directly to P1.G4 under the same operator GO
+and program-mode reporting.
