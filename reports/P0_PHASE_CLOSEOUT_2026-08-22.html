@@ -1,0 +1,535 @@
+<title>SPTR P0 Closeout</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #17212b;
+    --ink-soft: #46586b;
+    --ink-faint: #7a8b9c;
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --surface-sunken: #eef2f4;
+    --line: #dce3e7;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --amber: #a86a06;
+    --amber-soft: #fbf0dc;
+    --red: #a83a34;
+    --red-soft: #fbeae8;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Sora", "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(23,33,43,0.06), 0 8px 24px -12px rgba(23,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8edf0;
+      --ink-soft: #a9b8c4;
+      --ink-faint: #74879a;
+      --paper: #0f1620;
+      --surface: #161f2b;
+      --surface-sunken: #101720;
+      --line: #263241;
+      --accent: #3fbcc4;
+      --accent-ink: #06222a;
+      --accent-soft: #10333a;
+      --amber: #e0a83f;
+      --amber-soft: #392c10;
+      --red: #e0756e;
+      --red-soft: #3a1a17;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8edf0;
+    --ink-soft: #a9b8c4;
+    --ink-faint: #74879a;
+    --paper: #0f1620;
+    --surface: #161f2b;
+    --surface-sunken: #101720;
+    --line: #263241;
+    --accent: #3fbcc4;
+    --accent-ink: #06222a;
+    --accent-soft: #10333a;
+    --amber: #e0a83f;
+    --amber-soft: #392c10;
+    --red: #e0756e;
+    --red-soft: #3a1a17;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 28px 96px; }
+
+  header { padding-bottom: 8px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(30px, 4.4vw, 42px);
+    font-weight: 600;
+    line-height: 1.12;
+    margin: 0 0 14px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .lede {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 28px;
+  }
+
+  .verdict-band {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 8px 0 44px;
+  }
+  .verdict-band .mark {
+    width: 40px; height: 40px; flex: none;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 700; font-size: 18px;
+  }
+  .verdict-band .text b {
+    font-family: var(--display);
+    font-size: 17px;
+    display: block;
+  }
+  .verdict-band .text span {
+    color: var(--ink-soft);
+    font-size: 14.5px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 56px 0 6px;
+    letter-spacing: -0.005em;
+  }
+  h2 .num {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 10px;
+    font-size: 16px;
+  }
+  .section-note { color: var(--ink-soft); font-size: 15px; margin: 0 0 22px; max-width: 68ch; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 24px 0 40px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .stat .n {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  table.gates {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    font-size: 14.5px;
+  }
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); }
+  table.gates th, table.gates td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.gates th {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    background: var(--surface-sunken);
+    font-weight: 600;
+  }
+  table.gates tr:last-child td { border-bottom: none; }
+  table.gates td.gate { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+  table.gates code { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 8px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+  .pill.closed { background: var(--accent-soft); color: var(--accent); }
+  .pill.closed::before { background: var(--accent); }
+  .pill.blocked { background: var(--surface-sunken); color: var(--ink-faint); }
+  .pill.blocked::before { background: var(--ink-faint); }
+
+  .suite-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+    margin: 20px 0 36px;
+  }
+  .suite {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .suite .name { font-size: 14px; color: var(--ink-soft); }
+  .suite .result { font-family: var(--mono); font-weight: 600; font-size: 14px; }
+  .suite.fail .result { color: var(--red); }
+  .suite.pass .result { color: var(--accent); }
+
+  .finding {
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--ink-faint);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 0 0 16px;
+    background: var(--surface);
+  }
+  .finding.major { border-left-color: var(--red); }
+  .finding.minor { border-left-color: var(--amber); }
+  .finding .tag {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  .finding.major .tag { background: var(--red-soft); color: var(--red); }
+  .finding.minor .tag { background: var(--amber-soft); color: var(--amber); }
+  .finding h3 { font-family: var(--display); font-size: 16.5px; margin: 0 0 8px; font-weight: 600; }
+  .finding p { margin: 0 0 10px; color: var(--ink-soft); font-size: 14.5px; }
+  .finding p:last-child { margin-bottom: 0; }
+  .finding .fixed-tag { color: var(--accent); font-weight: 600; }
+
+  .reviewer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin: 20px 0 36px;
+  }
+  .reviewer {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .reviewer .role {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .reviewer p { font-size: 14px; color: var(--ink-soft); margin: 6px 0; }
+
+  ul.plain { padding-left: 20px; margin: 12px 0; }
+  ul.plain li { margin-bottom: 10px; font-size: 15px; color: var(--ink-soft); }
+  ul.plain li b { color: var(--ink); }
+  ul.plain li code { font-family: var(--mono); font-size: 13.5px; }
+
+  .deviation {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .deviation:last-child { border-bottom: none; }
+  .deviation .gate-tag { font-family: var(--mono); font-weight: 600; color: var(--accent); font-size: 14px; }
+  .deviation p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+
+  .closing {
+    margin-top: 56px;
+    padding: 24px 26px;
+    background: var(--surface-sunken);
+    border-radius: var(--radius);
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .closing b { color: var(--ink); }
+
+  a { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .deviation { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">SPTR Equipment Recognition v4.4 &middot; Phase report</div>
+    <h1>Phase P0 is closed: foundation, provenance &amp; platform feasibility</h1>
+    <p class="lede">Six gates (G1&ndash;G6) implemented, reviewed and closed end to end under a standing autonomous authorization; one external gate (G0) stays blocked as planned; an aggregate verification pass found and fixed one real defect before signing the phase off.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 19c3825</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="verdict-band">
+    <div class="mark">&#10003;</div>
+    <div class="text">
+      <b>P0 COMPLETE &mdash; P1 MAY START</b>
+      <span>Confirmed by an independent aggregate verification and GPT&#8209;PM sign&#8209;off, 2026&#8209;08&#8209;22.</span>
+    </div>
+  </div>
+
+  <h2><span class="num">01</span>At a glance</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="n">6 / 6</div><div class="l">closeable gates passed</div></div>
+    <div class="stat"><div class="n">9</div><div class="l">commits, all pushed &amp; synced</div></div>
+    <div class="stat"><div class="n">410</div><div class="l">Python tests passing</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">MAJOR found &amp; fixed in aggregate pass</div></div>
+    <div class="stat"><div class="n">0</div><div class="l">unresolved BLOCKER / MAJOR</div></div>
+  </div>
+
+  <h2><span class="num">02</span>Gate matrix</h2>
+  <p class="section-note">Every closeable gate ran under the standing <code>EQUIPMENT_RECOGNITION_V4_4_AUTONOMOUS_PROGRAM</code> authorization, sequentially, with an independent multi-agent review before each close. G0 was explicitly out of scope for this run &mdash; it needs a real App&nbsp;Check platform migration, not code.</p>
+  <div class="table-scroll">
+  <table class="gates">
+    <thead><tr><th>Gate</th><th>What it decided</th><th>Status</th><th>Closing commit</th></tr></thead>
+    <tbody>
+      <tr><td class="gate">P0.G0</td><td>App Check platform readiness</td><td><span class="pill blocked">Blocked &middot; external</span></td><td><code>&mdash;</code></td></tr>
+      <tr><td class="gate">P0.G1</td><td>Freeze the current recognition pipeline as a &ldquo;before&rdquo; baseline</td><td><span class="pill closed">Closed</span></td><td><code>f23130b</code></td></tr>
+      <tr><td class="gate">P0.G2</td><td>ML provenance recovery / ratchet</td><td><span class="pill closed">Closed</span></td><td><code>7053cfd</code></td></tr>
+      <tr><td class="gate">P0.G3</td><td>Fail-closed source &amp; rights registry</td><td><span class="pill closed">Closed</span></td><td><code>0a6d5c3</code></td></tr>
+      <tr><td class="gate">P0.G4</td><td>Deterministic catalog type snapshot</td><td><span class="pill closed">Closed</span></td><td><code>eac45bb</code> + <code>0e4316f</code></td></tr>
+      <tr><td class="gate">P0.G5</td><td>Cloud feasibility spike</td><td><span class="pill closed">Closed &middot; deferred outcome</span></td><td><code>e0483c1</code></td></tr>
+      <tr><td class="gate">P0.G6</td><td>Functions deployment isolation</td><td><span class="pill closed">Closed</span></td><td><code>4c97d7e</code> + <code>f6315dd</code></td></tr>
+      <tr><td class="gate">Aggregate</td><td>Cross-gate evidence index &amp; final adversarial pass</td><td><span class="pill closed">Closed</span></td><td><code>19c3825</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2><span class="num">03</span>The two outcome decisions</h2>
+  <p class="section-note">Two gates didn&rsquo;t just pass or fail &mdash; they reached a specific, evidence-backed decision worth stating plainly.</p>
+  <div class="reviewer-grid">
+    <div class="reviewer">
+      <div class="role">P0.G5 &middot; cloud feasibility</div>
+      <p><b style="color:var(--ink)">Outcome: OCR_TEXT_ONLY_DEFER_VISUAL.</b> No safe non-production Firebase/GCP project exists to probe a Vertex AI / vector-search path &mdash; the only available project is the one <code>stripeWebhook</code> runs in. Rather than test against production or guess, every probe is honestly recorded <code>NOT_ATTEMPTED</code> and no provider SDK was installed. Visual equipment recognition stays deferred until a safe staging environment exists.</p>
+    </div>
+    <div class="reviewer">
+      <div class="role">P0.G6 &middot; deployment isolation</div>
+      <p><b style="color:var(--ink)">Strategy: SEPARATE_FIREBASE_CODEBASE.</b> The new equipment-identity ML work gets its own Firebase Functions codebase, package, and CI job &mdash; proven, not asserted: a deliberately-broken identity module was shown to fail its build while the real Stripe-carrying codebase kept building clean at the same time, via real <code>npm</code>/<code>tsc</code> subprocess runs.</p>
+    </div>
+  </div>
+
+  <h2><span class="num">04</span>Regression suite, rerun on final HEAD</h2>
+  <p class="section-note">Not each gate&rsquo;s own commit-time results &mdash; the full suite was rerun against the phase&rsquo;s actual final commit before this verdict was written.</p>
+  <div class="suite-grid">
+    <div class="suite pass"><span class="name">Python &middot; ML governance + equipment identity</span><span class="result">410 passed</span></div>
+    <div class="suite pass"><span class="name">Default Functions &middot; Jest</span><span class="result">240 passed</span></div>
+    <div class="suite pass"><span class="name">Default Functions &middot; Firestore rules</span><span class="result">64 / 64</span></div>
+    <div class="suite pass"><span class="name">Default Functions &middot; e2e</span><span class="result">11 / 11</span></div>
+    <div class="suite pass"><span class="name">Identity codebase &middot; build + Jest</span><span class="result">28 passed</span></div>
+    <div class="suite pass"><span class="name">Flutter &middot; static analysis</span><span class="result">0 errors</span></div>
+    <div class="suite fail"><span class="name">Flutter &middot; full test suite</span><span class="result">3242 / 1 fail*</span></div>
+  </div>
+  <p class="section-note" style="margin-top:-20px">* One pre-existing, P0-unrelated failure: a hardcoded-white-color-count ratchet test in the mobile theme audit lineage (expected 61, actual 58). Every file it checks is a <code>mobile/lib/features/**</code> UI file &mdash; no P0 commit ever touched <code>mobile/lib</code>. Flagged for whoever owns that audit, not fixed here.</p>
+
+  <h2><span class="num">05</span>The one real defect: a stale evidence hash</h2>
+  <p class="section-note">Found by the final adversarial review round, independently reproduced before being trusted, then fixed within the same pass.</p>
+  <div class="finding major">
+    <span class="tag">Major &middot; fixed</span>
+    <h3>P0.G1&rsquo;s baseline recorded a hash from before P0.G4&rsquo;s own line-ending fix</h3>
+    <p><code>recognition_baseline_v1.json</code>, committed first in the phase, recorded the equipment catalog&rsquo;s CRLF-based SHA-256. Roughly four hours later, P0.G4 fixed exactly this class of drift for its <em>own</em> snapshot artifact by pinning line endings &mdash; but nothing regenerated P0.G1&rsquo;s baseline afterward, so it silently kept the stale hash.</p>
+    <p><b>Why nothing caught it:</b> every existing test compared a freshly-built payload to a freshly-computed hash of the current file &mdash; a tautology that stays green even when the real committed file on disk is stale, because it never loads and checks what&rsquo;s actually committed. CI never ran the generator&rsquo;s own <code>--check</code> mode against the real file either.</p>
+    <p><span class="fixed-tag">Fixed:</span> regenerated the artifact for real &mdash; the diff is exactly the affected hash and source-commit fields; the type count didn&rsquo;t change, confirming the catalog&rsquo;s actual content never did either, only the byte representation the hash was computed over. Two new tests now check the real committed files instead of a fresh temp copy, closing the gap for good.</p>
+  </div>
+
+  <h2><span class="num">06</span>Final adversarial review</h2>
+  <p class="section-note">Three independent, cold-read agents against the whole nine-commit P0 diff &mdash; not just the last gate&rsquo;s changes &mdash; hunting specifically for invented provenance, rights fail-open paths, false cloud-feasibility claims, accidental dual deploys, hidden production mutation, and stale evidence.</p>
+  <div class="reviewer-grid">
+    <div class="reviewer">
+      <div class="role">Security &middot; production &amp; deploy safety</div>
+      <p>No issue on all four areas: no hidden production mutation, no path to an accidental dual deploy, no secret or PII disclosure in this public repo, and no way to construct a rights-registry entry that bypasses the review requirement.</p>
+    </div>
+    <div class="reviewer">
+      <div class="role">Provenance authenticity</div>
+      <p>No issue on all four areas, verified against the real orchestration code the baseline doc describes &mdash; not just the doc&rsquo;s own claims about itself. One minor doc-checklist fix applied.</p>
+    </div>
+    <div class="reviewer">
+      <div class="role">Evidence integrity</div>
+      <p>Found the stale-hash MAJOR above. Cloud-feasibility claims checked clean. Two areas left honestly unfinished by the agent rather than guessed at; partially closed by direct follow-up (see below).</p>
+    </div>
+  </div>
+
+  <h2><span class="num">07</span>Deviations from the original plan</h2>
+  <div class="deviation">
+    <span class="gate-tag">P0.G4</span>
+    <p>The gate contract itself required something only a later gate could deliver (server-side validation before P1 exists). Repaired mechanically: the requirement moved to P1.G1 and P1.G6&rsquo;s own task tables, not dropped.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">P0.G1</span>
+    <p>A generator module was renamed early in the phase to avoid silently shadowing an unrelated same-named module elsewhere in the repo&rsquo;s test path.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">P0.G4</span>
+    <p>Wired the first-ever CI test step for the whole equipment-identity Python suite &mdash; a pre-existing gap, not something this phase introduced.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">Aggregate</span>
+    <p>Fixed the P0.G1 stale-hash defect described in section 5, plus the tautological test that let it go undetected.</p>
+  </div>
+
+  <h2><span class="num">08</span>Open items carried into P1</h2>
+  <ul class="plain">
+    <li><b>P0.G0</b> stays blocked on an external App&nbsp;Check platform migration &mdash; confirmed nowhere in the repo is it treated as passed or ready. P1+ work depending on App&nbsp;Check state must keep reading it conditionally.</li>
+    <li><b>Visual equipment recognition</b> has no provider SDK or embedding architecture chosen yet, by design (P0.G5&rsquo;s deferred outcome) &mdash; whoever reopens it starts from zero on that sub-decision.</li>
+    <li><b>Two Firebase CLI behaviors</b> (predeploy-hook scoping; cross-codebase deletion detection) are documented as asserted-not-tested, since both need a real deployed identity function to verify further &mdash; revisit once one ships.</li>
+    <li><b>A cold, exhaustive AC/DoD re-check for gates G3&ndash;G6</b> wasn&rsquo;t finished by a fresh adversarial agent this round; each gate&rsquo;s own close was already checked live against its contract and confirmed with GPT&#8209;PM. Weaker evidence than an independent re-check, flagged honestly rather than upgraded to &ldquo;confirmed.&rdquo;</li>
+    <li><b>The pre-existing Flutter test failure</b> (section 4) is unrelated to P0 and left for its own owning area.</li>
+  </ul>
+
+  <div class="closing">
+    <b>Next:</b> GPT&#8209;PM has formally signed off &mdash; <i>&ldquo;SPTR Equipment Recognition v4.4 &mdash; Phase P0 approved complete. Phase P1 is authorized to begin after the operator-facing P0 final report is delivered.&rdquo;</i> P1 (Canonical Machine Knowledge Base) is not started in this run &mdash; it needs its own separate implementation prompt, per the phase-boundary reporting cadence. This report is that hand-off point.
+  </div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

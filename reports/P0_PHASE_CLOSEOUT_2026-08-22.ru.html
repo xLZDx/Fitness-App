@@ -1,0 +1,535 @@
+<title>SPTR P0 Closeout</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #17212b;
+    --ink-soft: #46586b;
+    --ink-faint: #7a8b9c;
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --surface-sunken: #eef2f4;
+    --line: #dce3e7;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --amber: #a86a06;
+    --amber-soft: #fbf0dc;
+    --red: #a83a34;
+    --red-soft: #fbeae8;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Sora", "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(23,33,43,0.06), 0 8px 24px -12px rgba(23,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8edf0;
+      --ink-soft: #a9b8c4;
+      --ink-faint: #74879a;
+      --paper: #0f1620;
+      --surface: #161f2b;
+      --surface-sunken: #101720;
+      --line: #263241;
+      --accent: #3fbcc4;
+      --accent-ink: #06222a;
+      --accent-soft: #10333a;
+      --amber: #e0a83f;
+      --amber-soft: #392c10;
+      --red: #e0756e;
+      --red-soft: #3a1a17;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8edf0;
+    --ink-soft: #a9b8c4;
+    --ink-faint: #74879a;
+    --paper: #0f1620;
+    --surface: #161f2b;
+    --surface-sunken: #101720;
+    --line: #263241;
+    --accent: #3fbcc4;
+    --accent-ink: #06222a;
+    --accent-soft: #10333a;
+    --amber: #e0a83f;
+    --amber-soft: #392c10;
+    --red: #e0756e;
+    --red-soft: #3a1a17;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 28px 96px; }
+
+  header { padding-bottom: 8px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(28px, 4.4vw, 40px);
+    font-weight: 600;
+    line-height: 1.16;
+    margin: 0 0 14px;
+    text-wrap: balance;
+    letter-spacing: -0.005em;
+  }
+  .lede {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 64ch;
+    margin: 0 0 28px;
+  }
+
+  .verdict-band {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 8px 0 44px;
+  }
+  .verdict-band .mark {
+    width: 40px; height: 40px; flex: none;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 700; font-size: 18px;
+  }
+  .verdict-band .text b {
+    font-family: var(--display);
+    font-size: 17px;
+    display: block;
+  }
+  .verdict-band .text span {
+    color: var(--ink-soft);
+    font-size: 14.5px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 56px 0 6px;
+    letter-spacing: -0.005em;
+  }
+  h2 .num {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 10px;
+    font-size: 16px;
+  }
+  .section-note { color: var(--ink-soft); font-size: 15px; margin: 0 0 22px; max-width: 70ch; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 24px 0 40px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .stat .n {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  table.gates {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    font-size: 14.5px;
+  }
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); }
+  table.gates th, table.gates td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.gates th {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    background: var(--surface-sunken);
+    font-weight: 600;
+  }
+  table.gates tr:last-child td { border-bottom: none; }
+  table.gates td.gate { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+  table.gates code { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 8px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+  .pill.closed { background: var(--accent-soft); color: var(--accent); }
+  .pill.closed::before { background: var(--accent); }
+  .pill.blocked { background: var(--surface-sunken); color: var(--ink-faint); }
+  .pill.blocked::before { background: var(--ink-faint); }
+
+  .suite-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+    margin: 20px 0 36px;
+  }
+  .suite {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .suite .name { font-size: 14px; color: var(--ink-soft); }
+  .suite .result { font-family: var(--mono); font-weight: 600; font-size: 14px; }
+  .suite.fail .result { color: var(--red); }
+  .suite.pass .result { color: var(--accent); }
+
+  .finding {
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--ink-faint);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 0 0 16px;
+    background: var(--surface);
+  }
+  .finding.major { border-left-color: var(--red); }
+  .finding.minor { border-left-color: var(--amber); }
+  .finding .tag {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  .finding.major .tag { background: var(--red-soft); color: var(--red); }
+  .finding.minor .tag { background: var(--amber-soft); color: var(--amber); }
+  .finding h3 { font-family: var(--display); font-size: 16.5px; margin: 0 0 8px; font-weight: 600; }
+  .finding p { margin: 0 0 10px; color: var(--ink-soft); font-size: 14.5px; }
+  .finding p:last-child { margin-bottom: 0; }
+  .finding .fixed-tag { color: var(--accent); font-weight: 600; }
+
+  .reviewer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin: 20px 0 36px;
+  }
+  .reviewer {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .reviewer .role {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .reviewer p { font-size: 14px; color: var(--ink-soft); margin: 6px 0; }
+
+  ul.plain { padding-left: 20px; margin: 12px 0; }
+  ul.plain li { margin-bottom: 10px; font-size: 15px; color: var(--ink-soft); }
+  ul.plain li b { color: var(--ink); }
+  ul.plain li code { font-family: var(--mono); font-size: 13.5px; }
+
+  .deviation {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .deviation:last-child { border-bottom: none; }
+  .deviation .gate-tag { font-family: var(--mono); font-weight: 600; color: var(--accent); font-size: 14px; }
+  .deviation p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+
+  .closing {
+    margin-top: 56px;
+    padding: 24px 26px;
+    background: var(--surface-sunken);
+    border-radius: var(--radius);
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .closing b { color: var(--ink); }
+
+  a { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .deviation { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">SPTR Equipment Recognition v4.4 &middot; Отчёт по фазе</div>
+    <h1>Фаза P0 закрыта: основа, происхождение данных и платформенная осуществимость</h1>
+    <p class="lede">Шесть гейтов (G1&ndash;G6) реализованы, проверены и закрыты сквозным образом в рамках постоянной автономной авторизации; один внешний гейт (G0) остаётся заблокированным, как и планировалось; сводная верификация нашла и устранила один реальный дефект перед итоговым подтверждением фазы.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 19c3825</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="verdict-band">
+    <div class="mark">&#10003;</div>
+    <div class="text">
+      <b>P0 ЗАВЕРШЕНА &mdash; P1 МОЖЕТ НАЧИНАТЬСЯ</b>
+      <span>Подтверждено независимой сводной верификацией и утверждением GPT&#8209;PM, 22.08.2026.</span>
+    </div>
+  </div>
+
+  <h2><span class="num">01</span>Коротко</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="n">6 / 6</div><div class="l">закрываемых гейтов пройдено</div></div>
+    <div class="stat"><div class="n">9</div><div class="l">коммитов, все запушены и синхронизированы</div></div>
+    <div class="stat"><div class="n">410</div><div class="l">проходящих Python-тестов</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">MAJOR найден и исправлен в сводном проходе</div></div>
+    <div class="stat"><div class="n">0</div><div class="l">неразрешённых BLOCKER / MAJOR</div></div>
+  </div>
+
+  <h2><span class="num">02</span>Матрица гейтов</h2>
+  <p class="section-note">Каждый закрываемый гейт выполнялся в рамках постоянной авторизации <code>EQUIPMENT_RECOGNITION_V4_4_AUTONOMOUS_PROGRAM</code>, последовательно, с независимой мультиагентной проверкой перед каждым закрытием. G0 был заведомо вне рамок этого прогона &mdash; ему нужна реальная миграция платформы App&nbsp;Check, а не код.</p>
+  <div class="table-scroll">
+  <table class="gates">
+    <thead><tr><th>Гейт</th><th>Что решает</th><th>Статус</th><th>Закрывающий коммит</th></tr></thead>
+    <tbody>
+      <tr><td class="gate">P0.G0</td><td>Готовность платформы App Check</td><td><span class="pill blocked">Заблокирован &middot; внешне</span></td><td><code>&mdash;</code></td></tr>
+      <tr><td class="gate">P0.G1</td><td>Заморозка текущего пайплайна распознавания как базовой линии &laquo;до&raquo;</td><td><span class="pill closed">Закрыт</span></td><td><code>f23130b</code></td></tr>
+      <tr><td class="gate">P0.G2</td><td>Восстановление/ужесточение ML-происхождения</td><td><span class="pill closed">Закрыт</span></td><td><code>7053cfd</code></td></tr>
+      <tr><td class="gate">P0.G3</td><td>Реестр источников и прав с отказом по умолчанию</td><td><span class="pill closed">Закрыт</span></td><td><code>0a6d5c3</code></td></tr>
+      <tr><td class="gate">P0.G4</td><td>Детерминированный снимок типов каталога</td><td><span class="pill closed">Закрыт</span></td><td><code>eac45bb</code> + <code>0e4316f</code></td></tr>
+      <tr><td class="gate">P0.G5</td><td>Разведка облачной осуществимости</td><td><span class="pill closed">Закрыт &middot; решение отложено</span></td><td><code>e0483c1</code></td></tr>
+      <tr><td class="gate">P0.G6</td><td>Изоляция деплоя Functions</td><td><span class="pill closed">Закрыт</span></td><td><code>4c97d7e</code> + <code>f6315dd</code></td></tr>
+      <tr><td class="gate">Сводный</td><td>Индекс доказательств по всем гейтам и финальный проход</td><td><span class="pill closed">Закрыт</span></td><td><code>19c3825</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2><span class="num">03</span>Два решения по итогам</h2>
+  <p class="section-note">Два гейта не просто прошли или не прошли &mdash; они пришли к конкретному, обоснованному доказательствами решению, которое стоит зафиксировать явно.</p>
+  <div class="reviewer-grid">
+    <div class="reviewer">
+      <div class="role">P0.G5 &middot; облачная осуществимость</div>
+      <p><b style="color:var(--ink)">Итог: OCR_TEXT_ONLY_DEFER_VISUAL.</b> Не существует безопасного непроизводственного проекта Firebase/GCP для проверки пути Vertex AI / векторного поиска &mdash; единственный доступный проект тот же, в котором работает <code>stripeWebhook</code>. Вместо тестирования на проде или догадок каждая проверка честно записана как <code>NOT_ATTEMPTED</code>, SDK провайдера не устанавливался. Визуальное распознавание оборудования остаётся отложенным до появления безопасной тестовой среды.</p>
+    </div>
+    <div class="reviewer">
+      <div class="role">P0.G6 &middot; изоляция деплоя</div>
+      <p><b style="color:var(--ink)">Стратегия: SEPARATE_FIREBASE_CODEBASE.</b> Новая ML-работа по идентификации оборудования получает собственную кодовую базу Firebase Functions, пакет и CI-задачу &mdash; доказано, а не заявлено: намеренно сломанный модуль идентификации не собирался, при этом реальная кодовая база со Stripe продолжала собираться без ошибок в тот же момент, через реальные подпроцессы <code>npm</code>/<code>tsc</code>.</p>
+    </div>
+  </div>
+
+  <h2><span class="num">04</span>Регрессионный набор, перезапущенный на финальном HEAD</h2>
+  <p class="section-note">Не результаты каждого гейта на момент его собственного коммита &mdash; весь набор был перезапущен против фактического финального коммита фазы перед тем, как был написан этот вердикт.</p>
+  <div class="suite-grid">
+    <div class="suite pass"><span class="name">Python &middot; ML governance + equipment identity</span><span class="result">410 прошли</span></div>
+    <div class="suite pass"><span class="name">Default Functions &middot; Jest</span><span class="result">240 прошли</span></div>
+    <div class="suite pass"><span class="name">Default Functions &middot; правила Firestore</span><span class="result">64 / 64</span></div>
+    <div class="suite pass"><span class="name">Default Functions &middot; e2e</span><span class="result">11 / 11</span></div>
+    <div class="suite pass"><span class="name">Кодовая база identity &middot; build + Jest</span><span class="result">28 прошли</span></div>
+    <div class="suite pass"><span class="name">Flutter &middot; статический анализ</span><span class="result">0 ошибок</span></div>
+    <div class="suite fail"><span class="name">Flutter &middot; полный набор тестов</span><span class="result">3242 / 1 упал*</span></div>
+  </div>
+  <p class="section-note" style="margin-top:-20px">* Один заранее существовавший, не связанный с P0 сбой: тест-храповик числа захардкоженных белых цветов в линейке аудита темы мобильного приложения (ожидалось 61, получено 58). Каждый файл в его списке &mdash; UI-файл из <code>mobile/lib/features/**</code>, ни один коммит P0 не касался <code>mobile/lib</code>. Отмечено для владельца этого аудита, здесь не исправлялось.</p>
+
+  <h2><span class="num">05</span>Единственный реальный дефект: устаревший хэш доказательства</h2>
+  <p class="section-note">Найден финальным раундом состязательной проверки, независимо воспроизведён перед тем, как быть принятым на веру, и исправлен в рамках того же прохода.</p>
+  <div class="finding major">
+    <span class="tag">Major &middot; исправлено</span>
+    <h3>Базовая линия P0.G1 хранила хэш до собственного исправления окончаний строк в P0.G4</h3>
+    <p><code>recognition_baseline_v1.json</code>, закоммиченный первым в этой фазе, хранил SHA-256 каталога оборудования, посчитанный по CRLF-версии файла. Примерно четырьмя часами позже P0.G4 исправил ровно такой же класс рассинхронизации для собственного артефакта-снимка, зафиксировав окончания строк &mdash; но базовая линия P0.G1 после этого не была перегенерирована и молча сохранила устаревший хэш.</p>
+    <p><b>Почему это никто не поймал:</b> каждый существующий тест сравнивал свежесобранный payload со свежепосчитанным хэшем текущего файла &mdash; тавтология, которая остаётся зелёной, даже если реально закоммиченный файл на диске устарел, поскольку он никогда не загружает и не проверяет то, что действительно закоммичено. CI тоже никогда не запускал собственный режим <code>--check</code> генератора против реального файла.</p>
+    <p><span class="fixed-tag">Исправлено:</span> артефакт перегенерирован по-настоящему &mdash; дифф затрагивает ровно затронутые поля хэша и коммита-источника; количество типов не изменилось, что подтверждает: реальное содержимое каталога не менялось никогда, менялось только байтовое представление, по которому считался хэш. Два новых теста теперь проверяют реально закоммиченные файлы, а не свежую временную копию, закрывая этот пробел окончательно.</p>
+  </div>
+
+  <h2><span class="num">06</span>Финальная состязательная проверка</h2>
+  <p class="section-note">Три независимых агента с &laquo;холодным&raquo; чтением против всего девятикоммитного диффа P0 &mdash; не только последних изменений гейта &mdash; целенаправленно искали выдуманное происхождение данных, пути отказа-по-умолчанию в правах, ложные заявления об облачной осуществимости, случайный двойной деплой, скрытую мутацию продакшена и устаревшие доказательства.</p>
+  <div class="reviewer-grid">
+    <div class="reviewer">
+      <div class="role">Безопасность &middot; продакшен и деплой</div>
+      <p>Замечаний нет по всем четырём направлениям: ни скрытой мутации продакшена, ни пути к случайному двойному деплою, ни утечки секрета или PII в этом публичном репозитории, ни способа сконструировать запись в реестре прав, обходящую требование ревью.</p>
+    </div>
+    <div class="reviewer">
+      <div class="role">Подлинность происхождения данных</div>
+      <p>Замечаний нет по всем четырём направлениям, проверено против реального кода оркестрации, который описывает документ базовой линии &mdash; а не только заявлений самого документа о себе. Применена одна мелкая правка чек-листа в документации.</p>
+    </div>
+    <div class="reviewer">
+      <div class="role">Целостность доказательств</div>
+      <p>Нашёл описанный выше MAJOR с устаревшим хэшем. Заявления об облачной осуществимости проверены и чисты. Два направления агент честно оставил незавершёнными, а не угадал; частично закрыты прямой доработкой (см. ниже).</p>
+    </div>
+  </div>
+
+  <h2><span class="num">07</span>Отклонения от исходного плана</h2>
+  <div class="deviation">
+    <span class="gate-tag">P0.G4</span>
+    <p>Сам контракт гейта требовал того, что мог поставить только более поздний гейт (серверная валидация до появления P1). Исправлено механически: требование перенесено в собственные таблицы задач P1.G1 и P1.G6, а не отброшено.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">P0.G1</span>
+    <p>Модуль-генератор был переименован в начале фазы, чтобы не затенять молча несвязанный одноимённый модуль в другом месте тестового пути репозитория.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">P0.G4</span>
+    <p>Подключён первый в истории CI-шаг для всего Python-набора equipment-identity &mdash; заранее существовавший пробел, а не что-то, привнесённое этой фазой.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">Сводный</span>
+    <p>Исправлен дефект устаревшего хэша P0.G1, описанный в разделе 5, а также тавтологичный тест, из-за которого он остался незамеченным.</p>
+  </div>
+
+  <h2><span class="num">08</span>Открытые пункты, переносимые в P1</h2>
+  <ul class="plain">
+    <li><b>P0.G0</b> остаётся заблокированным внешней миграцией платформы App&nbsp;Check &mdash; подтверждено, что нигде в репозитории он не трактуется как пройденный или готовый. Работа P1+, зависящая от состояния App&nbsp;Check, должна продолжать читать его условно.</li>
+    <li><b>У визуального распознавания оборудования</b> пока намеренно не выбраны ни SDK провайдера, ни архитектура эмбеддингов (отложенный итог P0.G5) &mdash; тот, кто вернётся к этой задаче, начнёт с нуля именно по этому под-решению.</li>
+    <li><b>Два поведения Firebase CLI</b> (область действия predeploy-хука; обнаружение удаления между кодовыми базами) задокументированы как заявленные, но не проверенные &mdash; обоим нужна реально задеплоенная функция identity для дальнейшей проверки; вернуться к этому, когда она появится.</li>
+    <li><b>Холодная исчерпывающая повторная проверка AC/DoD для гейтов G3&ndash;G6</b> не была завершена свежим состязательным агентом в этом раунде; закрытие каждого гейта уже было вживую сверено с его контрактом и подтверждено GPT&#8209;PM. Это более слабое доказательство, чем независимая повторная проверка, отмечено честно, а не выдано за &laquo;подтверждено&raquo;.</li>
+    <li><b>Заранее существовавший сбой теста Flutter</b> (раздел 4) не связан с P0 и оставлен на усмотрение владельца соответствующей области.</li>
+  </ul>
+
+  <div class="closing">
+    <b>Далее:</b> GPT&#8209;PM формально подтвердил приёмку &mdash; <i>&laquo;SPTR Equipment Recognition v4.4 &mdash; фаза P0 принята завершённой. Фаза P1 авторизована к началу после того, как оператору будет передан финальный отчёт по P0.&raquo;</i> P1 (канонический справочник оборудования) не начинается в этом прогоне &mdash; ему нужен собственный отдельный промпт реализации, согласно установленному режиму отчётности на границах фаз. Этот отчёт и есть точка передачи.
+  </div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

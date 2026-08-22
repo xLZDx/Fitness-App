@@ -24395,3 +24395,14 @@ untouched.
 program-mode report to the operator (repository state, full gate matrix, per-gate evidence, deviations,
 open findings) per the standing authorization -- stop after that report, per the report skill's own
 instructions. No P1 work starts in this run.
+
+**Follow-up (same day)**: GPT-PM confirmed the P0_AGGREGATE gate CLOSED via `pm_set_gate` and gave a
+formal PM sign-off: "SPTR Equipment Recognition v4.4 -- Phase P0 approved complete. Phase P1 is
+authorized to begin after the operator-facing P0 final report is delivered." Wrote and published the
+mandatory house-format report (`reports/P0_PHASE_CLOSEOUT_2026-08-22.ru.html` +
+`.html`, provenance block injected via `report_conform.py`, RU published as an Artifact) covering the
+full gate matrix, the regression rerun, the one MAJOR found and fixed in the aggregate pass, the
+adversarial review results, deviations from plan, and residual items carried into P1. This is the
+program-mode close-out report for the whole P0 chunk -- per the report skill's own instructions, this
+session stops here and waits for the operator rather than starting P1, which GPT-PM also explicitly
+says needs its own separate implementation prompt.
