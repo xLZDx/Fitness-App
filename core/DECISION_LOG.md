@@ -24308,3 +24308,9 @@ checked; left untouched, not included in this gate's commit.
 verification (evidence index across G1-G6, combined test run, a final adversarial review pass, and
 confirming the P0.G4 gate-contract repair is genuinely closed) before any decision on starting P1, per
 GPT-PM's own stated close-out sequence. No P1 work starts in this run.
+
+**Follow-up (same day)**: `p0_g6_isolation_evidence.json`'s `sourceCommit` couldn't reference the
+gate's own closing commit at write time (the hash didn't exist yet), so it briefly carried P0.G5's
+commit (`e0483c1`) instead -- a chicken-and-egg limitation of git, same shape as P0.G4's own
+gate-contract repair earlier in this phase. Updated in a small follow-up commit to the actual P0.G6
+commit hash (`4c97d7e`) now that it exists.

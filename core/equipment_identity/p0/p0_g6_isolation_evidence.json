@@ -14,7 +14,7 @@
   "e2eTests": "PASS -- `npm --prefix functions run test:e2e`, 11/11, via the Firestore+Auth emulator (JDK 17 available locally)",
   "productionDeployPerformed": false,
   "rollback": "Remove the equipment-identity entry from firebase.json's functions array; the default codebase is untouched by that removal. The identity codebase was never production-deployed in P0 -- its src/index.ts exports nothing (`export {}`), so even a deploy attempt against it today would publish zero functions.",
-  "sourceCommit": "e0483c1b0007bbc2f2b8e6b8ba28c9d96b6073bf",
+  "sourceCommit": "4c97d7ecb87a2a4e28ada11b7b0545c3d405b5ed",
   "targetedDeployCommands": [
     "firebase deploy --only functions:default",
     "firebase deploy --only functions:equipment-identity"
