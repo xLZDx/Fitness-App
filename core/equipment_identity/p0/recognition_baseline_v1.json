@@ -1,0 +1,132 @@
+{
+  "functionalCatalog": {
+    "path": "mobile/assets/data/equipment.json",
+    "sha256": "6e72adcd800e503b555629b5b481977f9bdf7e5e5a360572b5246884f0fa80d9",
+    "typeCount": 69
+  },
+  "generatedBy": "scripts/equipment_identity/baseline.py",
+  "genericInvariants": {
+    "exactIdentity": {
+      "exactIdentityConceptsAbsent": true,
+      "hits": [],
+      "tokensSwept": [
+        "identityLevel",
+        "EXACT_MODEL",
+        "RecognitionAuthorityTuple",
+        "evidenceLane",
+        "recognitionSessionId",
+        "EquipmentIdentityResponse"
+      ],
+      "treesSwept": [
+        "mobile/lib/features/visual_equipment",
+        "mobile/lib/features/equipment"
+      ]
+    },
+    "hybridServiceTriesCloudBeforeOnDevice": true,
+    "liveMode": {
+      "livePathIsOnDeviceOnly": true,
+      "note": "Live mode's `settled` state is the functional analogue of ScanOutcome.confident (persisted to recognition history the same way) but has no answeredOffline-style guard, because it is always on-device. Do not assume offlineFallbackNeverReportsConfident covers this path.",
+      "settledLiveReadingHasNoOfflineDowngradeEquivalent": true,
+      "settledLiveReadingsAreWrittenToHistory": true
+    },
+    "matchSourceValues": [
+      "classifier",
+      "printedText"
+    ],
+    "photoPathOfflineFallbackNeverReportsConfident": true,
+    "scanOutcomeStates": [
+      "confident",
+      "alternatives",
+      "unknown",
+      "noEquipment",
+      "timeout",
+      "failed"
+    ],
+    "textAnchorAmbiguitySemantics": {
+      "exactlyTwoReturnedAsCandidates": true,
+      "returnsRankedList": true,
+      "singleUnambiguousMatchHandled": true,
+      "threeOrMoreDistinctCollapsesToGeneric": true
+    },
+    "textAnchorRunsBeforeClassifier": true
+  },
+  "modelArtifacts": {
+    "equipment_recognition@v1": {
+      "artifactPath": "mobile/assets/models/equipment_v1.tflite",
+      "bundledInApk": true,
+      "bytes": 4496661,
+      "champion": true,
+      "classCount": 10,
+      "deploymentStatus": "BUNDLED",
+      "registryVersion": "v1",
+      "sha256": "6f159ec32cd6c010c5319cb3436b22e97ce07ee72ff6f05daf02d3a2c7e696e3",
+      "supportsUnknownOrAbstain": false
+    },
+    "equipment_recognition@v2": {
+      "artifactPath": "D:/tools/equipment-model/out_v2/equipment_v2.tflite",
+      "bundledInApk": false,
+      "deploymentStatus": "NOT_SHIPPED",
+      "note": "NOT_SHIPPED per MODEL_REGISTRY.json — recorded here so a future P1+ change cannot silently start treating v2 as deployed without this baseline being regenerated.",
+      "presentInThisRepoCheckout": false,
+      "registryVersion": "v2"
+    }
+  },
+  "modelRegistry": {
+    "path": "core/ml/MODEL_REGISTRY.json",
+    "sha256": "af0512b0a2480a35849f9d902aada1a436468b2a92b707d01efcdd2c230531fb"
+  },
+  "scannerContracts": [
+    {
+      "path": "mobile/lib/features/visual_equipment/data/gemini_equipment_service.dart",
+      "role": "CLOUD_CLASSIFIER_AND_HYBRID — GeminiVisualEquipmentService (primary) and HybridVisualEquipmentService (cloud-first, on-device-fallback orchestration)",
+      "sha256": "22f68cbcaf34420f530bae5058bc955020d0a810f61a0770100c370d0fc5185f"
+    },
+    {
+      "path": "mobile/lib/features/visual_equipment/data/machine_describer.dart",
+      "role": "DESCRIBER_FALLBACK — names a machine that matched nothing in the catalogue; distinguishes ScanOutcome.unknown from .noEquipment",
+      "sha256": "c81505bc32dc70ac4bb32105ec95d22a270ab9577281df55f9cd727d122ff26b"
+    },
+    {
+      "path": "mobile/lib/features/visual_equipment/data/machine_text_anchor.dart",
+      "role": "TEXT_ANCHOR_MATCHING — pure string matching from OCR text to a catalogue id; runs first, silent unless exactly one machine is named",
+      "sha256": "31da73d1e2748330005929c3151d4a393428253a9d8f20bc671bbe2f250d237c"
+    },
+    {
+      "path": "mobile/lib/features/visual_equipment/data/mlkit_live_equipment_service.dart",
+      "role": "LIVE_VIEWFINDER_RECOGNITION — continuous scan-tab recognition, same text-anchor-first ordering as the single-photo path",
+      "sha256": "475128c114b7de4c5fc37841478d63f49759c9a31bbb5d6bf2e9941e5939c6c7"
+    },
+    {
+      "path": "mobile/lib/features/visual_equipment/data/mlkit_text_recogniser.dart",
+      "role": "TEXT_ANCHOR_OCR_BRIDGE — ML Kit text recognition, feeds the matcher above",
+      "sha256": "f58492afa097abf6a18aaad211ddcec02c098b6094ce75f683df38f9b831ed17"
+    },
+    {
+      "path": "mobile/lib/features/visual_equipment/data/mlkit_visual_equipment_service.dart",
+      "role": "ONDEVICE_TFLITE_CLASSIFIER — bundled equipment_v1.tflite, offline fallback",
+      "sha256": "4c887e309357a54d9a339e9ae012444f26fc91d09a3c496b56be6acb99b27a86"
+    },
+    {
+      "path": "mobile/lib/features/visual_equipment/data/scan_outcome.dart",
+      "role": "OUTCOME_CONTRACT — ScanOutcome enum and ScanResult, the settled shape every recognition attempt ends in",
+      "sha256": "0c6aa7280206a6d372a7fe3efe6e2001e61da4e910fbcbfe309e0f9b1359d6cf"
+    },
+    {
+      "path": "mobile/lib/features/visual_equipment/data/visual_equipment_match.dart",
+      "role": "MATCH_CONTRACT — VisualMatch/MatchSource, one ranked candidate and where it came from",
+      "sha256": "e4f7fd8420e53ef4e10eab70a9d39e706792248bed37be2b16cec716362285bc"
+    },
+    {
+      "path": "mobile/lib/features/visual_equipment/data/visual_equipment_service.dart",
+      "role": "SERVICE_INTERFACE — VisualEquipmentService/FallbackReportingRecogniser abstractions the classifier implementations satisfy",
+      "sha256": "7e0a2dbb7ab3bc6f498f28f03dabf84bbe4f099a83cedda417c04c1bf71d703b"
+    },
+    {
+      "path": "mobile/lib/features/visual_equipment/state/visual_equipment_providers.dart",
+      "role": "ORCHESTRATION_CONTROLLER — VisualEquipmentController.classifyFilePath, wires text anchor -> hybrid classifier -> describer in one call",
+      "sha256": "9924cde8ea62fe4258c84ebedabfa83e6514fd7ae80a14108591227f9924db49"
+    }
+  ],
+  "schemaVersion": 1,
+  "sourceCommit": "c6059c5efa648773cb80c09a8f8bbed5e36ee8f8"
+}

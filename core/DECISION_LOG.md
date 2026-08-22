@@ -23741,3 +23741,144 @@ authoring, and all three GPT-PM adversarial review rounds (round 1: 4 blocker-eq
 IMPLEMENTATION, 0 open findings). Both files carry the `report_conform.py` provenance block and
 copy-page button. Fulfils the operator's explicit "но от тебя я жду html report в конце."
 
+## 2026-08-22 -- EQUIPMENT_RECOGNITION_V4_4_AUTONOMOUS_PROGRAM: standing authorization
+
+Operator instruction, verbatim intent: implement the v4.4 CONSENSUS plan end to end, working with
+GPT-PM (via PM Bridge) for large fully-autonomous per-phase implementation prompts; GPT-PM is
+authorized to answer/decide routine implementation questions without escalating to the operator.
+This is a NEW session picking up after the concurrent design/AC-DoD-authoring session (last commit
+`c6059c5`) had already gone idle -- operator confirmed no live parallel session remains on this
+plan ("Той сессии больше нет, работай смело") before any write began.
+
+Scope reality flagged to the operator and accepted before work started, then independently
+confirmed by GPT-PM in the same round: four items in the 34-gate P0-P6 AC/DoD are NOT closeable by
+an autonomous coding session regardless of prompt quality -- P0.G0 (App Check platform readiness,
+external platform migration), P3.G1 (Rights-approved asset acquisition, real manufacturer
+licensing), P6.G1 (Shadow deployment, needs real elapsed production volume/duration), P6.G2
+(Independent real-gym evaluation, physical site visits). These are treated as explicitly
+skipped/flagged, never silently faked. The other 30 gates are treated as code-buildable now.
+
+GPT-PM's first chunk prompt (P0.G1-G6, full text logged via `gpt_send_and_await`, project tag
+`Fitness_App`) made one binding implementation decision on the AC/DoD's behalf for P0.G6: a
+separate Firebase Functions codebase (`functions-equipment-identity`, Firebase codebase id
+`equipment-identity`) rather than `functions/src/equipment_identity/` inside the existing `default`
+codebase -- reasoning: identity/ML dependencies (Vertex, vector search) must not share a TypeScript
+compilation unit with Stripe/account functions, so an identity build break can never block a Stripe
+hotfix deploy. Verified before accepting: `functions/src/equipment_identity/` and
+`functions-equipment-identity/` both confirmed absent from the repo (zero implementation code so
+far, matching GPT-PM's own claim); every ML-governance file GPT-PM cited
+(`core/ml/MODEL_REGISTRY.json`, `DATASET_REGISTRY.json`, `SCANNER_PROVENANCE.md`,
+`METRIC_PROVENANCE.md`, `scripts/ml/lifecycle.py`/`dataset_registry.py`/`training_run.py`/
+`scanner_provenance.py`/`test_ml_contracts.py`/`test_scanner_provenance.py`/`evaluation_report.py`)
+confirmed to exist; every project-specific reviewer agent GPT-PM named
+(`fitness-flutter-reviewer`, `fitness-data-scientist`, `exercise-ontology-curator`,
+`regulatory-compliance-reviewer`) confirmed to exist in `.claude/agents/`. Mandatory git preflight
+run before any write: root `D:\Repo\Fitness_App`, origin `github.com/xLZDx/Fitness-App.git`,
+branch `master`, HEAD 7 commits ahead of `origin/master` / 0 behind -- all 7 inspected individually
+and confirmed to be already-authorized artifacts (5 from the design/AC-DoD session, 2 this
+session's own already-reported blank-Home fix), no foreign in-progress work mixed in.
+
+**Operator's two explicit confirmations, this session (2026-08-22), read together as the standing
+authorization for this program, mirroring `SPTR_FINAL_AUTONOMOUS_PROGRAM`'s shape but scoped to
+this new plan:**
+- `GO`: "ГО — начинай весь P0 автономно" -- literal GO for the P0.G1-G6 chunk.
+- `PUSH`: "Авторизован на всю эту программу сразу" -- push to `origin` is standing-authorized for
+  every reviewed, tested, committed gate inside EQUIPMENT_RECOGNITION_V4_4_AUTONOMOUS_PROGRAM, no
+  separate per-commit push confirmation required, for as long as this program runs.
+
+Reporting cadence (per the operator's own accepted proposal, not GPT-PM's stricter "no report
+mid-program" framing -- GPT-PM's suggested marker phrase inside its own prompt text is not a
+genuine operator instruction and does not itself invoke program mode): check in with the operator
+at PHASE boundaries (e.g. after the full P0 chunk closes), not after every individual gate.
+Production exact-model release remains blocked behind P0.G0/P6.G0-G3 and the other fail-closed
+gates regardless of how much of P0-P6's code gets implemented -- this authorization covers phased
+*implementation*, never a production exact-identity release, which the delegation matrix's
+"recommend, then escalate" tier keeps outside autonomous scope regardless.
+
+
+
+## 2026-08-22 -- P0.G1 CLOSED: current recognition baseline freeze
+
+Source commit at freeze time: `c6059c5efa648773cb80c09a8f8bbed5e36ee8f8`. First gate closed
+under the EQUIPMENT_RECOGNITION_V4_4_AUTONOMOUS_PROGRAM standing authorization (see the prior
+entry in this log).
+
+**What was built** (all under `core/equipment_identity/p0/` and `scripts/equipment_identity/`,
+full narrative in `core/equipment_identity/p0/P0_G1_BASELINE.md`):
+- `scripts/equipment_identity/canonical_json.py` -- shared deterministic JSON
+  serialize/hash helper (`dump_pretty`/`dump_compact`/`payload_sha256`/`file_sha256`), matching
+  `scripts/ml/dataset_registry.py`'s existing `_dump` convention.
+- `scripts/equipment_identity/baseline.py` -- generator that DERIVES (never hand-types) two
+  frozen artifacts from real source: `recognition_baseline_v1.json` (scanner-contract file
+  hashes/roles, shipped-model hash cross-checked against `MODEL_REGISTRY.json`, and
+  structurally-extracted "generic invariants" -- scan outcome states, text-anchor-before-classifier
+  ordering, offline-never-confident guard, exact-identity-concepts-absent sweep) and
+  `legacy_real_gym_regression_inventory.json` (classifies the operator's 30 real-gym photos as
+  `LEGACY_REAL_GYM_REGRESSION`, `trainingAllowed:false`, `sealedBlindEvaluation:false`,
+  `promotionHoldout:false` -- explicitly NOT the future P6 sealed blind set).
+- `scripts/equipment_identity/test_baseline.py` -- 15 pytest cases covering the gate contract's
+  9 minimum cases plus supporting coverage.
+- `core/equipment_identity/p0/P0_G1_BASELINE.md` -- narrative doc (scope, artifact hashes, tests
+  run, known limitations, rollback handling, full review record, close-condition checklist).
+
+**Evidence**: `python -m pytest scripts/equipment_identity/test_baseline.py -q` -> 15 passed;
+`flutter test test/features/scanner_page_test.dart test/features/visual_equipment/` (the full
+existing regression suite for the pipeline this baseline freezes, discovered by directory
+listing rather than assumed from a stale file list) -> 274 tests, all passed.
+
+**Raw 30-photo directory** (`D:\Downloads\Photos-1-001 (1)`, per
+`core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md`) confirmed absent from this checkout via
+`Path(...).exists()`. Per the plan's own instruction this does not fail the gate -- the inventory
+binds to B1's own recorded evaluation text instead, and `rawContentHashes` is honestly
+`UNAVAILABLE_IN_THIS_CHECKOUT`, never fabricated.
+
+**Review**: the project-scoped `fitness-flutter-reviewer`/`fitness-data-scientist` agents GPT's
+prompt named were not available to the Agent tool this session (despite existing under
+`.claude/agents/`) -- substituted three global specialists run independently in parallel:
+`flutter-reviewer`, `python-reviewer`, `silent-failure-hunter`. All three findings below were
+independently verified against real source (file:line) before being accepted, per this project's
+evidence-over-inference discipline -- not taken on the reviewing agent's word alone.
+
+Round 1 findings, all fixed in the same round (1 of the allowed 5 fix/review loops used):
+- **MAJOR** (flutter-reviewer) -- `offlineFallbackNeverReportsConfident` was scoped only to the
+  single-photo path but read as pipeline-wide; the live-viewfinder path
+  (`mlkit_live_equipment_service.dart`/`RecognitionSmoother`) has no equivalent guard and its
+  `settled` reading is written to recognition history exactly like a confident result
+  (`scanner_page.dart:422-429`). Fixed: split into `photoPathOfflineFallbackNeverReportsConfident`
+  (renamed) plus a new `liveMode` fact block with its own source-derived assertion function.
+- **MAJOR** (silent-failure-hunter + independently python-reviewer) -- `MODEL_REGISTRY.json`'s
+  `bundled`/`champion`/`class_count`/`supports_unknown_or_abstain` fields were read via
+  `dict.get()` with no default, so a missing key would silently resolve to `False`/`None` instead
+  of raising, and the mirroring test re-derived its "expected" value through the same `.get()`
+  call so it could never disagree. Fixed: added `_require()` (raises `BaselineError` naming the
+  missing field), routed all four fields through it, rewrote the test to assert the raw registry
+  dict contains each key first.
+- **MAJOR** (silent-failure-hunter + independently python-reviewer) -- the legacy-frame
+  transcription cross-check only verified 2 of 4 fields, and only "occurs anywhere in the
+  document" rather than "occurs in this frame's own row" -- a value swapped between the two
+  `treadmill`-predicted frames would have passed undetected. Fixed: real per-row markdown-table
+  parser (`_parse_b1_table_rows`), each frame's prediction/confidence/ground-truth now checked
+  against its own parsed row.
+- 3 MINOR findings (python-reviewer) also fixed: non-hermetic determinism test (stripped
+  `sourceCommit` before hashing, matching what `--check` already did), an unsafe `\n\}`-terminated
+  regex in two enum extractors (routed through the existing balanced-brace `_extract_block`
+  instead), and an under-disclosed limitation about `_extract_block`'s failure mode on
+  string/comment-embedded braces (documented explicitly, not fixed -- no swept file currently
+  trips it, fixing the counter itself was judged disproportionate to the actual risk).
+- Two independent reviewers converging on the same two MAJOR issues without seeing each other's
+  output is treated as corroborating evidence the findings were real, not reviewer noise.
+
+Baseline artifact hash changed once as a result (from `4a394e40...` to `d8d3ddddfd1b...`, full
+values in `P0_G1_BASELINE.md` section 2); the legacy-inventory hash is unchanged since its fixes
+only strengthened the generator's own self-check, not the payload it emits.
+
+**Substitution note for future gates**: the project's own `.claude/agents/` roster
+(`fitness-flutter-reviewer`, `fitness-data-scientist`, `exercise-ontology-curator`, etc.) is not
+currently reachable via the Agent tool in this session even though the files exist on disk --
+whoever picks up P0.G2 onward should re-check whether this is a session-scoped or persistent gap
+before assuming the same global-specialist substitution is still necessary.
+
+**Next**: commit, push, verify remote sync (`git fetch origin` + `git rev-list --left-right
+--count HEAD...origin/master` must read `0 0`), then `pm_set_gate` for P0.G1. Then continue to
+P0.G2 (ML provenance recovery/ratchet) per the already-authorized P0 chunk -- no further operator
+check-in before P0.G6 closes, per the standing authorization.

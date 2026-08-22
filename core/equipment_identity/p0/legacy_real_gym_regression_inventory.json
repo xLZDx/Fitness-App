@@ -1,0 +1,59 @@
+{
+  "datasetRole": "LEGACY_REAL_GYM_REGRESSION",
+  "evidenceBasis": {
+    "note": "This inventory binds to B1's recorded evaluation text, not to the raw photo directory, which this checkout does not have.",
+    "sourceDoc": "core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md",
+    "sourceDocSha256": "895b165d66f0674c8fb5b3fb41c067dceb6ddca1f9bdc0b631a4254db834afb2"
+  },
+  "generatedBy": "scripts/equipment_identity/baseline.py",
+  "labeledFrames": [
+    {
+      "frameId": "20260730_135634",
+      "groundTruth": "Precor Inspiration abduction/adduction (leg ab/adduction machine)",
+      "modelConfidence": 0.892,
+      "modelPrediction": "treadmill"
+    },
+    {
+      "frameId": "20260730_141736",
+      "groundTruth": "Precor Inspiration abdominal machine",
+      "modelConfidence": 0.742,
+      "modelPrediction": "treadmill"
+    },
+    {
+      "frameId": "20260806_140007",
+      "groundTruth": "Nautilus Inspiration shoulder press",
+      "modelConfidence": 0.897,
+      "modelPrediction": "leg_press"
+    },
+    {
+      "frameId": "Screenshot_20260806_140916",
+      "groundTruth": "leg extension machine",
+      "modelConfidence": 0.23,
+      "modelPrediction": "treadmill"
+    }
+  ],
+  "measurementSummary": {
+    "classCount": 10,
+    "conclusion": "None of the labeled machines are among the 10 trained classes; the model reports a confident wrong answer rather than abstaining, and a confidence threshold does not fix this (min observed confidence 0.215 is still above both deployed thresholds of 0.05 and 0.10).",
+    "modelEvaluated": "equipment_recognition@v1 (equipment_v1.tflite, the bundled APK model)",
+    "top1BelowRandomChance": 0,
+    "top1ConfidenceMax": 0.897,
+    "top1ConfidenceMedian": 0.437,
+    "top1ConfidenceMin": 0.215
+  },
+  "promotionHoldout": false,
+  "rawPhotoSet": {
+    "capturedOn": [
+      "2026-07-30",
+      "2026-08-06"
+    ],
+    "presentInThisCheckout": false,
+    "rawContentHashes": "UNAVAILABLE_IN_THIS_CHECKOUT",
+    "recordedFrameCount": 30,
+    "recordedPath": "D:\\Downloads\\Photos-1-001 (1)"
+  },
+  "schemaVersion": 1,
+  "sealedBlindEvaluation": false,
+  "sourceCommit": "c6059c5efa648773cb80c09a8f8bbed5e36ee8f8",
+  "trainingAllowed": false
+}
