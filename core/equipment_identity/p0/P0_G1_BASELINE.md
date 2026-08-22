@@ -12,7 +12,7 @@ produced, what they mean, and what they do not cover.
 Before exact-identity work (P1+) touches anything, this gate captures what the
 **current, already-shipping** recognition pipeline actually does — derived
 from source, not from a description of intended behavior. The generator is
-`scripts/equipment_identity/baseline.py`; it is re-run, never hand-edited.
+`scripts/equipment_identity/recognition_baseline.py`; it is re-run, never hand-edited.
 
 Pipeline order, as read from the actual orchestration controller
 (`mobile/lib/features/visual_equipment/state/visual_equipment_providers.dart`,
@@ -34,18 +34,28 @@ Pipeline order, as read from the actual orchestration controller
 
 | File | Payload SHA256 (compact form) |
 |---|---|
-| `recognition_baseline_v1.json` | `d8d3ddddfd1bc8d7c479b8931c8de9fbf0e26db35f71efc277ebfefdefbed9a4` |
-| `legacy_real_gym_regression_inventory.json` | `9b694b2803cac108d8d32816f648a7c1e00f313bc359845899b41a7e581ec0ba` |
+| `recognition_baseline_v1.json` | `961880b7b4602c40739aacdbf24238349dd8408c7cd7dc97d2724931324266ed` |
+| `legacy_real_gym_regression_inventory.json` | `00c7d1c4c7c3a93c252e6080dc0ede7962be590ee3df6e87dd45c59e2a9b8c27` |
 
-(The baseline hash changed once, from an initial `4a394e40…` to the value above, after the review round in §7 below added the `liveMode` fact and renamed `offlineFallbackNeverReportsConfident` → `photoPathOfflineFallbackNeverReportsConfident`. The legacy-inventory hash is unchanged — its review fixes only strengthened the generator's own self-check, not the payload it emits.)
+Both hashes moved twice from their first-committed values: once during the §7 review round (new `liveMode` fact,
+`offlineFallbackNeverReportsConfident` → `photoPathOfflineFallbackNeverReportsConfident`, plus the legacy-inventory
+transcription-verification hardening), and once more for the module rename below (`generatedBy`'s value changed in
+both files, which is the only content difference that rename produced).
+
+**Module renamed 2026-08-22, during P0.G2 work**: `baseline.py` → `recognition_baseline.py`. This repository's
+`scripts/` tree has no package `__init__.py` files, so a bare module name is global once two directories both do
+`sys.path.insert(0, <their own dir>)` — `scripts/ct1/baseline.py` already owned the name `baseline`, and running
+both test suites in one pytest session silently shadowed it in `sys.modules`, breaking `scripts/ct1/review_batch.py`'s
+own `from baseline import ...`. Caught by running the full test suite together rather than each new suite in
+isolation; fixed by rename, not by working around the collision.
 
 Both hashes are computed by `canonical_json.payload_sha256` (compact,
 sorted-key JSON — insensitive to pretty-printing/line-ending drift; see that
 module's own docstring). Regenerate with:
 
 ```
-python scripts/equipment_identity/baseline.py --write
-python scripts/equipment_identity/baseline.py --check   # must report both hashes above
+python scripts/equipment_identity/recognition_baseline.py --write
+python scripts/equipment_identity/recognition_baseline.py --check   # must report both hashes above
 ```
 
 `recognition_baseline_v1.json` records: the functional catalogue's hash and
@@ -106,7 +116,7 @@ boolean.
 The 4 individually-labeled frames in the artifact (3 confident-wrong
 predictions plus the operator's own screenshot) are hand-transcribed from
 B1's table and cross-verified against B1's own text by
-`baseline._verify_legacy_frames` (also exercised as
+`recognition_baseline._verify_legacy_frames` (also exercised as
 `test_legacy_frames_are_grounded_in_the_b1_note_text`) — a transcription slip
 fails the generator loudly instead of silently drifting from source.
 
@@ -225,7 +235,7 @@ being accepted:**
   `settled` reading, no confidence/source distinction). **Fixed**: split into
   `photoPathOfflineFallbackNeverReportsConfident` (renamed, same derivation)
   and a new `liveMode` fact block, derived by
-  `_live_mode_has_no_offline_downgrade_guard()` (`baseline.py`), which itself
+  `_live_mode_has_no_offline_downgrade_guard()` (`recognition_baseline.py`), which itself
   fails loudly if the live service ever gains a cloud reference or an
   `offline`-branch appears in `RecognitionSmoother.add`.
 - **MAJOR** (silent-failure-hunter + independently, python-reviewer) —
@@ -234,7 +244,7 @@ being accepted:**
   default), so a missing key silently resolved to `False`/`None` instead of
   raising — and `test_5` re-derived its "expected" value through the same
   `.get()` call, so it could never disagree with a wrong result. **Verified**
-  by reading `baseline.py`'s original lines directly. **Fixed**: added
+  by reading `recognition_baseline.py`'s original lines directly. **Fixed**: added
   `_require()` (raises `BaselineError` naming the missing field), routed all
   four fields through it, and rewrote `test_5` to assert the raw registry
   dict actually contains each key before comparing.

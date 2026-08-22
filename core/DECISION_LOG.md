@@ -23882,3 +23882,86 @@ before assuming the same global-specialist substitution is still necessary.
 --count HEAD...origin/master` must read `0 0`), then `pm_set_gate` for P0.G1. Then continue to
 P0.G2 (ML provenance recovery/ratchet) per the already-authorized P0 chunk -- no further operator
 check-in before P0.G6 closes, per the standing authorization.
+
+## 2026-08-22 -- P0.G2 CLOSED: ML provenance recovery/ratchet
+
+Second gate of the P0 chunk (EQUIPMENT_RECOGNITION_V4_4_AUTONOMOUS_PROGRAM standing
+authorization). Full narrative in `core/equipment_identity/p0/P0_G2_ML_PROVENANCE.md`.
+
+**What was built**: a provenance CONTRACT for a FUTURE equipment-identity model (does not exist
+yet) -- `core/equipment_identity/p0/equipment_identity_provenance_contract.schema.json` (JSON
+Schema, documentation) and `scripts/equipment_identity/provenance.py` (the actual enforcement,
+`validate_manifest()`). Explicitly reuses existing ML governance rather than duplicating it:
+imports `TRANSITIONS` directly from `scripts/ml/lifecycle.py` and `_commit_exists` directly from
+`scripts/ml/training_run.py` (both confirmed genuine shared references, not redeclared copies, by
+two independent reviewers). Does NOT touch, reinterpret, or "recover" any of
+`equipment_recognition@v1`/`@v2`'s already-documented historical gaps in
+`core/ml/SCANNER_PROVENANCE.md` -- `training_code_commit: UNKNOWN` for both stays exactly that.
+
+Two provenance classes: `FUTURE` (a genuinely new model -- every field must be concrete, 6 fields
+get real structural verification: sha256 shape, positive artifact bytes, commit-exists-in-repo,
+non-empty/non-self-referential evaluation datasets, ISO-8601 timestamp; 10 free-text fields get a
+non-triviality check) and `HISTORICAL_GRANDFATHERED` (restricted to `(modelId, modelVersion)`
+pairs that already exist in `MODEL_REGISTRY.json`, checked at validation time -- not
+self-declarable). An already-CHAMPION legacy model (v1) is accepted as historical fact by this
+validator, not demoted; moving a still-incomplete grandfathered model further along the promotion
+track (CHALLENGER_CANDIDATE and beyond) is refused.
+
+**Evidence**: `python -m pytest scripts/equipment_identity/test_provenance.py -q` -> 23 passed;
+existing ML governance suites unmodified and still green (86 passed); full `scripts/` Python suite
+(`scripts/ml scripts/ct1 scripts/equipment_identity`) -> 359 passed.
+
+**Review**: same substitution as P0.G1 (project-scoped `fitness-data-scientist` still unavailable
+to the Agent tool this session, despite existing under `.claude/agents/` -- flagged again for a
+future session to re-check) -- `python-reviewer` and `silent-failure-hunter` run independently, no
+shared context. Both converged independently on the same core finding, which is itself
+corroborating evidence it was real: `HISTORICAL_GRANDFATHERED` was entirely self-declared, with
+nothing checking a manifest's `(modelId, modelVersion)` against the real registry -- a hand-built
+manifest for a completely fabricated model (every substantive field literally `"UNKNOWN"`) claiming
+`HISTORICAL_GRANDFATHERED` + `lifecycleState: CHAMPION` passed validation cleanly, reproducing
+exactly ML-2a (the original sin this whole gate exists to prevent) laundered through a
+self-asserted class label. **Independently reproduced by direct execution before accepting** (ran
+the fabricated manifest through `validate_manifest`, confirmed `{"ok": True, ...}`) -- not taken on
+either reviewer's word alone, per this project's evidence-over-inference discipline. Fixed:
+`_grandfathered_registry_entries()` reads `MODEL_REGISTRY.json` fresh on every call and restricts
+the class to pairs actually present there; re-ran the same fabricated manifest post-fix, now
+correctly raises `ProvenanceError`; locked in with a permanent regression test.
+
+Three more findings from the same round, all fixed: (1) 12-15 of 21 FUTURE-required fields had only
+a presence check, not a content check (a value like `"x"` passed silently, contradicting the "every
+field must be concrete" claim) -- fixed with a non-triviality check plus an ISO-8601 parse check for
+`trainingTimestamp`, and the doc's claim corrected to state precisely which fields get deep
+verification vs. presence-only, rather than repeating the overclaim; (2) `manifest_from_registry_entry`'s
+`entry.get("rollback_target") or "NOT_RECORDED"` silently relabeled v1's deliberately-recorded
+`rollback_target: null` ("no previous version exists," an explicit fact with its own note in
+MODEL_REGISTRY.json) as the placeholder string reserved for genuinely unknown values -- fixed with
+`.get(key, default)`'s own missing-key-only default semantics, preserving the real `None`; (3)
+`_is_missing`'s `rollbackTarget` exemption was looser than its own comment claimed (accepted any
+value type, not just None/string) -- narrowed to match. All four fixes locked in with 6 new
+regression tests (`test_provenance.py`: 17 -> 23). 1 of the allowed 5 fix/review loops used. No
+unresolved BLOCKER/MAJOR/MINOR.
+
+**A real, separate defect found and fixed during this gate's own build** (not a review finding --
+caught by running the full `scripts/` suite together, which P0.G1's review process had not done):
+`scripts/equipment_identity/baseline.py` (P0.G1's generator) shared its bare module name with the
+pre-existing `scripts/ct1/baseline.py`. This repository's `scripts/` tree has no package
+`__init__.py` files, so a bare module name is global once two directories both
+`sys.path.insert(0, <their own dir>)` -- whichever `baseline` module Python imported first got
+cached in `sys.modules["baseline"]`, and running both test suites in one pytest session broke
+`scripts/ct1/review_batch.py`'s own `from baseline import ...`. Fixed by rename to
+`recognition_baseline.py` (git mv, preserving history), not by working around the collision;
+`test_baseline.py`'s import and every reference in `P0_G1_BASELINE.md` updated; both P0.G1 JSON
+artifacts regenerated (their `generatedBy` field changed, so their payload hashes changed too --
+both documented in `P0_G1_BASELINE.md` with the old and new values). Confirmed via
+`find scripts -name "*.py" | xargs -n1 basename | sort | uniq -d` that no duplicate module
+basenames remain anywhere in `scripts/`.
+
+One pre-existing, unrelated test failure was observed and deliberately left untouched:
+`scripts/review/test_clinical_import.py::test_the_checked_in_worklist_is_the_one_the_catalogue_produces`
+fails at the last-committed HEAD (`f23130b`) with none of this gate's changes present -- confirmed
+via `git stash` and re-running that one test in isolation. Different subsystem (review-worklist
+generation vs. ML provenance), out of scope for P0.G2, not fixed here.
+
+**Next**: commit, push, verify remote sync, `pm_set_gate` for P0.G2. Continue directly to P0.G3
+(Source & rights registry) per the standing authorization -- no further operator check-in before
+P0.G6 closes.

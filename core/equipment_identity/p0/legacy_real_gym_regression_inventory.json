@@ -5,7 +5,7 @@
     "sourceDoc": "core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md",
     "sourceDocSha256": "895b165d66f0674c8fb5b3fb41c067dceb6ddca1f9bdc0b631a4254db834afb2"
   },
-  "generatedBy": "scripts/equipment_identity/baseline.py",
+  "generatedBy": "scripts/equipment_identity/recognition_baseline.py",
   "labeledFrames": [
     {
       "frameId": "20260730_135634",
@@ -54,6 +54,6 @@
   },
   "schemaVersion": 1,
   "sealedBlindEvaluation": false,
-  "sourceCommit": "c6059c5efa648773cb80c09a8f8bbed5e36ee8f8",
+  "sourceCommit": "f23130bb6dd24f0e533e4c8e03ee9fb0a0e98f63",
   "trainingAllowed": false
 }

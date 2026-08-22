@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "equipment_identity_provenance_contract.schema.json",
+  "title": "Equipment-identity model provenance manifest",
+  "description": "Shape enforced by scripts/equipment_identity/provenance.py's validate_manifest(). This schema documents the field shapes; it does NOT and cannot enforce the cross-file checks (trainingCodeCommit must resolve to a real commit in this repository, datasetId must not also appear in evaluationDatasets, artifactSha256/datasetHash must be well-formed sha256 strings) — those live in provenance.py because a static schema cannot express them. Treat this file as documentation plus structural validation, and provenance.py as the actual gate.",
+  "type": "object",
+  "required": [
+    "provenanceClass",
+    "modelId", "modelVersion", "task", "architecture",
+    "artifactPath", "artifactSha256", "artifactBytes",
+    "trainingCodeLocation", "trainingCodeCommit",
+    "datasetId", "datasetHash", "datasetManifest",
+    "dependencyPin", "inputSchema", "outputSchema",
+    "trainingTimestamp", "evaluationDatasets",
+    "primaryMetrics", "guardrailMetrics",
+    "lifecycleState", "deploymentSurface", "rollbackTarget"
+  ],
+  "properties": {
+    "provenanceClass": {
+      "type": "string",
+      "enum": ["FUTURE", "HISTORICAL_GRANDFATHERED"],
+      "description": "FUTURE: every field below must be a concrete, verifiable value -- UNKNOWN/NOT_RECORDED/LEGACY are refused. HISTORICAL_GRANDFATHERED: for an already-existing model whose gaps are frozen evidence (today, only equipment_recognition@v1/@v2); placeholders are accepted but the manifest can never claim a promotion-track lifecycleState it wasn't evaluated to."
+    },
+    "modelId": { "type": "string", "minLength": 1 },
+    "modelVersion": { "type": "string", "minLength": 1 },
+    "task": { "type": "string", "minLength": 1 },
+    "architecture": { "type": "string", "minLength": 1 },
+    "artifactPath": { "type": "string", "minLength": 1 },
+    "artifactSha256": {
+      "type": "string",
+      "description": "For FUTURE: must match ^[0-9a-f]{64}$ (enforced in provenance.py, not by this pattern alone, so a HISTORICAL placeholder can still validate against this schema). For HISTORICAL_GRANDFATHERED: UNKNOWN/NOT_RECORDED/LEGACY also legal."
+    },
+    "artifactBytes": {
+      "description": "Positive integer for FUTURE; UNKNOWN/NOT_RECORDED/LEGACY (string) legal for HISTORICAL_GRANDFATHERED.",
+      "type": ["integer", "string"]
+    },
+    "trainingCodeLocation": { "type": "string", "minLength": 1 },
+    "trainingCodeCommit": {
+      "type": "string",
+      "description": "For FUTURE: must resolve via `git cat-file -e <sha>^{commit}` in this repository (checked in provenance.py, mirroring scripts/ml/training_run.py's _commit_exists -- the exact ML-2a guard). For HISTORICAL_GRANDFATHERED: UNKNOWN is the correct, permanent value for equipment_recognition@v1/@v2 -- the training pipeline was never under version control."
+    },
+    "datasetId": { "type": "string", "minLength": 1 },
+    "datasetHash": {
+      "type": "string",
+      "description": "sha256 for FUTURE; UNKNOWN/NOT_RECORDED/LEGACY legal for HISTORICAL_GRANDFATHERED."
+    },
+    "datasetManifest": { "type": "string", "minLength": 1 },
+    "dependencyPin": { "type": "string", "minLength": 1 },
+    "inputSchema": { "type": "string", "minLength": 1 },
+    "outputSchema": { "type": "string", "minLength": 1 },
+    "trainingTimestamp": { "type": "string" },
+    "evaluationDatasets": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "For FUTURE: must be non-empty and must NOT contain datasetId (a model measured on its own training dataset reports its memory, not its generalisation)."
+    },
+    "primaryMetrics": { "type": "object" },
+    "guardrailMetrics": { "type": "object" },
+    "lifecycleState": {
+      "type": "string",
+      "enum": [
+        "TRAINED", "EVALUATED", "CHALLENGER_CANDIDATE", "SHADOW_READY",
+        "SHADOW", "PROMOTION_REVIEW", "CHAMPION", "REJECTED", "RETIRED"
+      ],
+      "description": "Must equal scripts/ml/lifecycle.py's TRANSITIONS keys exactly -- imported, not redeclared, in provenance.py."
+    },
+    "deploymentSurface": { "type": "string", "minLength": 1 },
+    "rollbackTarget": {
+      "description": "A model id@version string, null, or NOT_RECORDED for a HISTORICAL_GRANDFATHERED entry with no recorded rollback plan.",
+      "type": ["string", "null"]
+    }
+  },
+  "additionalProperties": true
+}

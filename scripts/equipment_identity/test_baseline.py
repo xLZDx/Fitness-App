@@ -15,7 +15,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import baseline  # noqa: E402
+import recognition_baseline as baseline  # noqa: E402
 from canonical_json import file_sha256, payload_sha256  # noqa: E402
 
 

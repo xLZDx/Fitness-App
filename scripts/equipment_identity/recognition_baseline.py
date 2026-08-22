@@ -2,8 +2,8 @@
 """P0.G1 — freeze exactly what current generic recognition does before exact
 identity can touch it.
 
-    python scripts/equipment_identity/baseline.py --write
-    python scripts/equipment_identity/baseline.py --check     # CI
+    python scripts/equipment_identity/recognition_baseline.py --write
+    python scripts/equipment_identity/recognition_baseline.py --check     # CI
     python -m pytest scripts/equipment_identity/test_baseline.py -q
 
 Per `SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md`
@@ -15,6 +15,15 @@ order/enum/guard exists in the source, not in a comment about the source).
 
 Mirrors `scripts/ml/dataset_registry.py`'s `--write`/`--check` shape so a
 reader who already knows that generator recognises this one.
+
+Named `recognition_baseline.py`, not `baseline.py` — this repository's
+per-directory `scripts/` layout has no package `__init__.py` files, so a
+bare module name is global across every `scripts/*/` tree once two of them
+insert themselves onto `sys.path`. `scripts/ct1/baseline.py` already owns
+the generic name; a same-named module here silently shadowed it in
+`sys.modules` and broke `scripts/ct1/review_batch.py`'s
+`from baseline import ...` the moment both test suites ran in the same
+pytest session (caught during P0.G2 work, fixed same-day as P0.G1).
 """
 from __future__ import annotations
 
@@ -519,7 +528,7 @@ def build() -> dict[str, Any]:
     payload: dict[str, Any] = {
         "schemaVersion": SCHEMA_VERSION,
         "sourceCommit": _git_commit(),
-        "generatedBy": "scripts/equipment_identity/baseline.py",
+        "generatedBy": "scripts/equipment_identity/recognition_baseline.py",
         "functionalCatalog": {
             "path": str(FUNCTIONAL_CATALOG.relative_to(REPO)).replace("\\", "/"),
             "sha256": file_sha256(FUNCTIONAL_CATALOG),
@@ -683,7 +692,7 @@ def build_legacy_inventory() -> dict[str, Any]:
     payload: dict[str, Any] = {
         "schemaVersion": LEGACY_INVENTORY_SCHEMA_VERSION,
         "sourceCommit": _git_commit(),
-        "generatedBy": "scripts/equipment_identity/baseline.py",
+        "generatedBy": "scripts/equipment_identity/recognition_baseline.py",
         "datasetRole": "LEGACY_REAL_GYM_REGRESSION",
         "trainingAllowed": False,
         "sealedBlindEvaluation": False,
