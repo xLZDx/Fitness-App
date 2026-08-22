@@ -1,13 +1,20 @@
 /**
- * P1.G2 — runs all four P0 brand adapters and assembles the combined
- * candidate pool + cross-source conflict report + capture manifest. Used
- * both by tests and by scripts/generate_p1_g2_artifacts.js (the
+ * P1.G2/P1.G3 — runs every official P0-registered-brand adapter and
+ * assembles the combined candidate pool + cross-source conflict report +
+ * capture manifest. `runAllP0BrandAdapters`'s name refers to
+ * `core/equipment_identity/p0/source_registry.json`'s brand registry (P0.G3),
+ * not to "gate P0" -- it is deliberately gate-neutral so P1.G3's Precor/
+ * Panatta adapters extend the same pool P1.G2's four adapters populate,
+ * rather than each gate maintaining its own separate candidate pool. Used
+ * both by tests and by scripts/generate_p0_brand_candidates.js (the
  * deterministic-output generator run against the compiled `lib/` tree).
  */
 import { runTechnogymAdapter } from "./technogym_adapter";
 import { runMatrixAdapter } from "./matrix_adapter";
 import { runLifeFitnessHammerStrengthAdapter } from "./life_fitness_hammer_strength_adapter";
 import { runNautilusAdapter } from "./nautilus_adapter";
+import { runPrecorAdapter } from "./precor_adapter";
+import { runPanattaAdapter } from "./panatta_adapter";
 import { detectConflicts, AdapterConflict } from "./conflicts";
 import { AdapterRunResult } from "./adapter_runner";
 import { DriftIssue } from "./source_drift";
@@ -49,6 +56,8 @@ export function runAllP0BrandAdapters(): RunAllResult {
     runMatrixAdapter(),
     runLifeFitnessHammerStrengthAdapter(),
     runNautilusAdapter(),
+    runPrecorAdapter(),
+    runPanattaAdapter(),
   ];
 
   const candidates = runs.flatMap((r) => r.candidates);

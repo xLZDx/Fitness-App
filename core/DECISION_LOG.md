@@ -24674,3 +24674,59 @@ exists -- tracked as a forward requirement for that gate, not something P1.G2/G3
 
 Status confirmed by GPT-PM: P1.G1 CLOSED, P1.G2 CLOSED, P1.G3 NEXT/AUTHORIZED, P1.G4-G6 NOT STARTED.
 Proceeding directly to P1.G3 under the same operator GO and program-mode reporting.
+
+## 2026-08-22 -- P1.G3 CLOSED: Precor / Panatta official brand adapters
+
+Full evidence: `core/equipment_identity/p1/P1_G3_PRECOR_PANATTA_ADAPTERS.md`.
+
+Small additive extension of P1.G2's already-reviewed shared adapter pipeline: 2 new thin per-brand
+adapters (Precor, Panatta) reusing the exact same `runAdapter()`/`candidate_mapper.ts`/
+`conflicts.ts` infrastructure unchanged. 26 new candidates. No new `source_registry.json` entries
+needed -- the 2 pre-existing P0.G3 entries for these brands already pointed at the real official
+locations (unlike P1.G2's 4 brands, whose P0.G3-seeded URLs were stale).
+
+Precor (14 candidates, genuinely DIRECT_FETCH): the official spec-table PDF
+(`static.precor.com/.../Precor-2022-NA-Spec-Tables.pdf`) would not extract via WebFetch's own text
+layer (PDF stream noise only), so this gate installed `pypdf` (a local research tool, not a project
+dependency) and parsed the real PDF text directly -- Resolute/Vitality/Discovery lines, real model
+codes (RSL0602, VSLC001BP, DPL0540, etc), real specs (weight, stack, dimensions). Panatta (12
+candidates, SEARCH_INDEX_SNIPPET): panattasport.com returned HTTP 403 on every direct fetch attempt
+including individual product pages, so every record was located via WebSearch only -- but each
+`sourceUrl` is a real, specific product page whose own model code is visible directly in the URL
+(`/en/product/{CODE}.html`), self-verifying against fabrication. `productLineRaw` deliberately
+omitted on every Panatta record per the "never fabricate to reach a target" invariant -- the
+code-prefix-to-line correlation was visible but not confidently verifiable from snippets alone.
+
+Combined pool after this gate, re-verified by actually regenerating the artifacts (not computed on
+paper): 74 candidates, 7 brands, 6 sources, 0 conflicts, 0 drift issues.
+
+**Review (2 independent parallel specialists -- silent-failure-hunter, code-reviewer -- scaled down
+from P1.G2's 4-reviewer panel since this gate's surface is a small, purely-additive extension of
+already-reviewed infrastructure): 0 BLOCKER/MAJOR, 1 MINOR fixed, 1 MINOR explicitly deferred.**
+
+- MINOR fixed: the `git mv` rename of `generate_p1_g2_artifacts.js` -> `generate_p0_brand_candidates.js`
+  (renamed because its output now spans P1.G2's and P1.G3's adapters, not just G2's) left 3 stale
+  filename references in P1.G2's own evidence doc -- fixed, while leaving that doc's review-record
+  prose (narrating what happened at the time of P1.G2's own review) historically accurate rather
+  than rewritten.
+- MINOR deferred: `source_drift.ts` has no signal for a fixture that omits `productLineRaw` on every
+  record (Panatta's case) -- pre-existing scope of the detector (built to catch unrecognized values,
+  not absent optional ones), explicitly out of this gate's scope since that file is unchanged shared
+  P1.G2 infrastructure. Documented as known residual for a future drift-detector enhancement.
+- Both reviewers independently confirmed: `run_all.ts`'s extension cannot silently drop or miscount
+  a run (plain unconditional array); the rename left no dangling reference inside
+  `functions-equipment-identity/` itself; both new fixtures' internal consistency holds; the 2
+  pre-existing registry entries were correctly left untouched.
+
+**Tests**: `functions-equipment-identity` 218/218 (was 213). `scripts/equipment_identity/` 106/106
+(unchanged count -- the isolation probe's glob-based fixture mirroring from P1.G2 picked up both new
+fixtures automatically, zero code change needed).
+
+GPT-PM's P1.G2 forward requirement (SEARCH_INDEX_SNIPPET alone cannot select a model into the
+canonical 50 for P1.G5) applies to Panatta's 12 records the same way it applies to Technogym/
+Matrix's -- carried forward, not re-litigated here.
+
+`pm_set_gate` called with project="Fitness_App", gate_id="P1.G3".
+
+Next: P1.G4 (WGER reference ingestion -- attempt first, DEFERRED_NOT_REQUIRED only if genuinely
+unable to close honestly), same operator GO and program-mode reporting.

@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "precor_spec_tables",
+  "capturedAt": "2026-08-22T00:00:00Z",
+  "records": [
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Leg Press",
+      "modelCodeRaw": "RSL0602",
+      "productLineRaw": "Resolute Strength Selectorized",
+      "typeHintsRaw": ["leg_press"],
+      "specsRaw": {
+        "productWeight": "826 lb / 375 kg",
+        "weightStack": "400 lb / 182 kg",
+        "dimensions": "77 x 48 x 58 in"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Leg Extension",
+      "modelCodeRaw": "RSL0605",
+      "productLineRaw": "Resolute Strength Selectorized",
+      "typeHintsRaw": ["leg_extension"],
+      "specsRaw": {
+        "productWeight": "616 lb / 280 kg",
+        "weightStack": "240 lb / 109 kg",
+        "dimensions": "61 x 50 x 58 in"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Diverging Low Row",
+      "modelCodeRaw": "RSL0324",
+      "productLineRaw": "Resolute Strength Selectorized",
+      "typeHintsRaw": ["seated_row_machine"],
+      "specsRaw": {
+        "productWeight": "581 lb / 264 kg",
+        "weightStack": "240 lb / 109 kg",
+        "dimensions": "79 x 48 x 58 in"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Chest Press",
+      "modelCodeRaw": "VSLC001BP",
+      "productLineRaw": "Vitality Series Selectorized",
+      "typeHintsRaw": ["chest_press_machine"],
+      "specsRaw": {
+        "productWeight": "464 lb / 210 kg",
+        "weightStack": "240 lb / 109 kg",
+        "dimensions": "39 x 52 x 69 in"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Pulldown / Seated Row",
+      "modelCodeRaw": "VSLC026BP",
+      "productLineRaw": "Vitality Series Selectorized",
+      "typeHintsRaw": ["lat_pulldown", "seated_row_machine"],
+      "specsRaw": {
+        "productWeight": "495 lb / 225 kg",
+        "weightStack": "220 lb / 100 kg",
+        "dimensions": "79 x 52 x 87 in"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Leg Extension",
+      "modelCodeRaw": "VSLC005BP",
+      "productLineRaw": "Vitality Series Selectorized",
+      "typeHintsRaw": ["leg_extension"],
+      "specsRaw": {
+        "productWeight": "486 lb / 221 kg",
+        "weightStack": "200 lb / 91 kg",
+        "dimensions": "49 x 45 x 60 in"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Leg Press / Calf Extension",
+      "modelCodeRaw": "VSLC010BP",
+      "productLineRaw": "Vitality Series Selectorized",
+      "typeHintsRaw": ["leg_press", "calf_raise_machine"],
+      "specsRaw": {
+        "productWeight": "638 lb / 289 kg",
+        "weightStack": "295 lb / 134 kg",
+        "dimensions": "76 x 44 x 69 in"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Biceps Curl / Triceps Extension",
+      "modelCodeRaw": "VSLC025BP",
+      "productLineRaw": "Vitality Series Selectorized",
+      "typeHintsRaw": ["bicep_curl_machine", "tricep_extension_machine"],
+      "specsRaw": {
+        "productWeight": "440 lb / 200 kg",
+        "weightStack": "170 lb / 78 kg",
+        "dimensions": "52 x 42 x 60 in"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Chest Press",
+      "modelCodeRaw": "DPL0540",
+      "productLineRaw": "Discovery Plate Loaded",
+      "typeHintsRaw": ["chest_press_machine"],
+      "specsRaw": {
+        "productWeight": "353 lb / 160 kg",
+        "maxLiftLoadCapacity": "450 lb / 204 kg",
+        "dimensions": "43 x 67 x 70 in",
+        "weightStorageHorns": "6"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Shoulder Press",
+      "modelCodeRaw": "DPL0550",
+      "productLineRaw": "Discovery Plate Loaded",
+      "typeHintsRaw": ["shoulder_press_machine"],
+      "specsRaw": {
+        "productWeight": "310 lb / 141 kg",
+        "maxLiftLoadCapacity": "360 lb / 163 kg",
+        "dimensions": "57 x 61 x 62 in",
+        "weightStorageHorns": "4"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Pulldown",
+      "modelCodeRaw": "DPL0305",
+      "productLineRaw": "Discovery Plate Loaded",
+      "typeHintsRaw": ["lat_pulldown"],
+      "specsRaw": {
+        "productWeight": "326 lb / 148 kg",
+        "maxLiftLoadCapacity": "450 lb / 204 kg",
+        "dimensions": "66 x 51 x 76.5 in",
+        "weightStorageHorns": "4"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Seated Row",
+      "modelCodeRaw": "DPL0309",
+      "productLineRaw": "Discovery Plate Loaded",
+      "typeHintsRaw": ["seated_row_machine"],
+      "specsRaw": {
+        "productWeight": "340 lb / 154 kg",
+        "maxLiftLoadCapacity": "450 lb / 204 kg",
+        "dimensions": "58 x 50 x 49 in",
+        "weightStorageHorns": "2"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Angled Leg Press",
+      "modelCodeRaw": "DPL0601",
+      "productLineRaw": "Discovery Plate Loaded",
+      "typeHintsRaw": ["leg_press"],
+      "specsRaw": {
+        "productWeight": "556 lb / 252 kg",
+        "maxLiftLoadCapacity": "1080 lb / 490 kg",
+        "dimensions": "94 x 55 x 56.5 in",
+        "weightStorageHorns": "4"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Precor",
+      "productNameRaw": "Hack Squat",
+      "modelCodeRaw": "DPL0603",
+      "productLineRaw": "Discovery Plate Loaded",
+      "typeHintsRaw": ["hack_squat_machine"],
+      "specsRaw": {
+        "productWeight": "455 lb / 206 kg",
+        "maxLiftLoadCapacity": "720 lb / 327 kg",
+        "dimensions": "82 x 64 x 58 in",
+        "weightStorageHorns": "4"
+      },
+      "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+      "retrievalMethod": "DIRECT_FETCH"
+    }
+  ]
+}

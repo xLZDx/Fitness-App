@@ -32,6 +32,22 @@
       "candidateCount": 13,
       "driftIssueCount": 0,
       "driftIssues": []
+    },
+    {
+      "sourceId": "precor_spec_tables",
+      "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+      "capturedAt": "2026-08-22T00:00:00Z",
+      "candidateCount": 14,
+      "driftIssueCount": 0,
+      "driftIssues": []
+    },
+    {
+      "sourceId": "panatta_official_product_pages",
+      "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+      "capturedAt": "2026-08-22T00:00:00Z",
+      "candidateCount": 12,
+      "driftIssueCount": 0,
+      "driftIssues": []
     }
   ]
 }

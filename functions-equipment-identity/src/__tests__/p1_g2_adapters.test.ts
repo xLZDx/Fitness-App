@@ -73,18 +73,26 @@ describe("individual P0 brand adapters -- real committed fixtures", () => {
   });
 });
 
-describe("runAllP0BrandAdapters -- combined pool", () => {
-  test("produces exactly 48 candidates across the 4 sources (9+17+9+13), with margin above the 50-model pilot target across future brands (§5.7)", () => {
+describe("runAllP0BrandAdapters -- combined pool (P1.G2 + P1.G3)", () => {
+  test("produces exactly 74 candidates across the 6 sources (9+17+9+13+14+12), with margin above the 50-model pilot target (§5.7)", () => {
     const result = runAllP0BrandAdapters();
-    expect(result.candidates).toHaveLength(48);
-    expect(result.captureManifest).toHaveLength(4);
+    expect(result.candidates).toHaveLength(74);
+    expect(result.captureManifest).toHaveLength(6);
   });
 
-  test("all 7 brands required by §5.7 are represented across P0.G2's brand groups (this gate covers 5 of them)", () => {
+  test("all 7 brands required by §5.7 are represented across P0.G2's + P0.G3's brand groups", () => {
     const result = runAllP0BrandAdapters();
     const brands = new Set(result.candidates.map((c) => c.brandId));
     expect(brands).toEqual(
-      new Set(["technogym", "matrix", "life-fitness", "hammer-strength", "nautilus"]),
+      new Set([
+        "technogym",
+        "matrix",
+        "life-fitness",
+        "hammer-strength",
+        "nautilus",
+        "precor",
+        "panatta",
+      ]),
     );
   });
 

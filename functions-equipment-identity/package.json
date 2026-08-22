@@ -11,7 +11,7 @@
     "check:p0-snapshot": "node scripts/sync_p0_type_snapshot.js --check",
     "sync:p1-generated": "node scripts/sync_p1_generated.js",
     "check:p1-generated": "node scripts/sync_p1_generated.js --check",
-    "generate:p1-g2-candidates": "npm run build && node scripts/generate_p1_g2_artifacts.js"
+    "generate:p0-brand-candidates": "npm run build && node scripts/generate_p0_brand_candidates.js"
   },
   "engines": {
     "node": "20"

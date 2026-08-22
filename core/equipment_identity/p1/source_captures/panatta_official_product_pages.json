@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "panatta_official_product_pages",
+  "capturedAt": "2026-08-22T00:00:00Z",
+  "records": [
+    {
+      "brandNameRaw": "Panatta",
+      "productNameRaw": "Super Inclined Chest Press",
+      "modelCodeRaw": "1FW035",
+      "typeHintsRaw": ["chest_press_machine"],
+      "sourceUrl": "https://panattasport.com/en/product/1FW035.html",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Panatta",
+      "productNameRaw": "Inclined Chest Press",
+      "modelCodeRaw": "1FE037",
+      "typeHintsRaw": ["chest_press_machine"],
+      "sourceUrl": "https://panattasport.com/en/product/1FE037.html",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Panatta",
+      "productNameRaw": "Dual System Horizontal Leg Press",
+      "modelCodeRaw": "1FE095",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://panattasport.com/en/product/1FE095.html",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Panatta",
+      "productNameRaw": "Horizontal Adjustable Leg Press",
+      "modelCodeRaw": "1MTH085",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://panattasport.com/en/product/1MTH085.html",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Panatta",
+      "productNameRaw": "Leg Extension",
+      "modelCodeRaw": "1SC081",
+      "typeHintsRaw": ["leg_extension"],
+      "sourceUrl": "https://www.panattasport.com/en/product/1SC081.html",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Panatta",
+      "productNameRaw": "Seated Leg Curling",
+      "modelCodeRaw": "1SC083",
+      "typeHintsRaw": ["leg_curl"],
+      "sourceUrl": "https://panattasport.com/en/product/1SC083.html",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Panatta",
+      "productNameRaw": "Lat Pulldown",
+      "modelCodeRaw": "1MTH001",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://panattasport.com/en/product/1MTH001.html",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Panatta",
+      "productNameRaw": "Lat Pulldown",
+      "modelCodeRaw": "1SC001",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://www.panattasport.com/en/product/1SC001.html",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Panatta",
+      "productNameRaw": "Lat Pulldown Circular",
+      "modelCodeRaw": "1MTH002",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://panattasport.com/en/product/1MTH002.html",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Panatta",
+      "productNameRaw": "Lat Pulldown Convergent",
+      "modelCodeRaw": "1MTH007",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://panattasport.com/en/product/1MTH007.html",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Panatta",
+      "productNameRaw": "Lat Pulldown Circular",
+      "modelCodeRaw": "1FE002",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://www.panattasport.com/en/product/1FE002.html",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Panatta",
+      "productNameRaw": "High Row Convergent",
+      "modelCodeRaw": "1MTH006",
+      "typeHintsRaw": ["seated_row_machine"],
+      "sourceUrl": "https://panattasport.com/en/product/1MTH006.html",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    }
+  ]
+}

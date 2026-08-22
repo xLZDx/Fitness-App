@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedFromCapturedAt": "2026-08-22T00:00:00Z",
-  "candidateCount": 48,
+  "candidateCount": 74,
   "candidates": [
     {
       "schemaVersion": 1,
@@ -1635,6 +1635,869 @@
         "leg_extension"
       ],
       "sourceStableKey": "9NL-S1010"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "b38250185963ff43f16df22a43488924ae0a4491802c0d1d281d490e1ad35e90",
+      "brandId": "precor",
+      "productLineCandidate": "precor-resolute-strength-selectorized",
+      "canonicalNameCandidate": "Leg Press",
+      "modelCode": "RSL0602",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "RSL0602"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "5e1b37b8dae8965d8ea00dbc8098dc4af32224f3cc5d4abbc991c2c59f5c4c55",
+      "brandId": "precor",
+      "productLineCandidate": "precor-resolute-strength-selectorized",
+      "canonicalNameCandidate": "Leg Extension",
+      "modelCode": "RSL0605",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_extension"
+      ],
+      "sourceStableKey": "RSL0605"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "c91eb5aa340668da2b4f83eef722c679c80fcb8d5272827c1d9417562fb5eabf",
+      "brandId": "precor",
+      "productLineCandidate": "precor-resolute-strength-selectorized",
+      "canonicalNameCandidate": "Diverging Low Row",
+      "modelCode": "RSL0324",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "seated_row_machine"
+      ],
+      "sourceStableKey": "RSL0324"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "256a9b1e3a42347ab8a406e429f3b5d2db09e93000fcd41b255dc71b34947d49",
+      "brandId": "precor",
+      "productLineCandidate": "precor-vitality-series-selectorized",
+      "canonicalNameCandidate": "Chest Press",
+      "modelCode": "VSLC001BP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "VSLC001BP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "cab8f775e15ebcc729cb12be928401c2a48094019ec2d9c7e21f2c3308051a68",
+      "brandId": "precor",
+      "productLineCandidate": "precor-vitality-series-selectorized",
+      "canonicalNameCandidate": "Pulldown / Seated Row",
+      "modelCode": "VSLC026BP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown",
+        "seated_row_machine"
+      ],
+      "sourceStableKey": "VSLC026BP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "f43151b898c60b198bc30c05b2dfa156baf26c62f17d56897edfc8a9c82b81d2",
+      "brandId": "precor",
+      "productLineCandidate": "precor-vitality-series-selectorized",
+      "canonicalNameCandidate": "Leg Extension",
+      "modelCode": "VSLC005BP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_extension"
+      ],
+      "sourceStableKey": "VSLC005BP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "a4b921fcd5e1fd814950abfe7a9cc3e240420d8dbf096882b7f2cceef39f2cd1",
+      "brandId": "precor",
+      "productLineCandidate": "precor-vitality-series-selectorized",
+      "canonicalNameCandidate": "Leg Press / Calf Extension",
+      "modelCode": "VSLC010BP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press",
+        "calf_raise_machine"
+      ],
+      "sourceStableKey": "VSLC010BP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "f28c173a38d94724f97a7c6f0724842f2b784ad889a5db853faa43b9537b80c1",
+      "brandId": "precor",
+      "productLineCandidate": "precor-vitality-series-selectorized",
+      "canonicalNameCandidate": "Biceps Curl / Triceps Extension",
+      "modelCode": "VSLC025BP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "bicep_curl_machine",
+        "tricep_extension_machine"
+      ],
+      "sourceStableKey": "VSLC025BP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "3d1731157f8530451cca0416c0879d9cbfcd81d4577b42170bb242496e5d7648",
+      "brandId": "precor",
+      "productLineCandidate": "precor-discovery-plate-loaded",
+      "canonicalNameCandidate": "Chest Press",
+      "modelCode": "DPL0540",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "DPL0540"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "e7aeccceff3652966ba4fb5d832baf0dee632fb46cf5919895a8d359d907bdac",
+      "brandId": "precor",
+      "productLineCandidate": "precor-discovery-plate-loaded",
+      "canonicalNameCandidate": "Shoulder Press",
+      "modelCode": "DPL0550",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "shoulder_press_machine"
+      ],
+      "sourceStableKey": "DPL0550"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "459662a7400b0b1f00ab2f23821748c3092f5c1986af4b62e4c0b49aab3360a6",
+      "brandId": "precor",
+      "productLineCandidate": "precor-discovery-plate-loaded",
+      "canonicalNameCandidate": "Pulldown",
+      "modelCode": "DPL0305",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "DPL0305"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "eb9f7152469d3b0dd6a18b089d58502edf372d184c303b5a04d82209f8f2b1b2",
+      "brandId": "precor",
+      "productLineCandidate": "precor-discovery-plate-loaded",
+      "canonicalNameCandidate": "Seated Row",
+      "modelCode": "DPL0309",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "seated_row_machine"
+      ],
+      "sourceStableKey": "DPL0309"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "ffbdb3eeacaba613c708ec015da1ec583da3a6efd18230c365d2f0b5e6075fab",
+      "brandId": "precor",
+      "productLineCandidate": "precor-discovery-plate-loaded",
+      "canonicalNameCandidate": "Angled Leg Press",
+      "modelCode": "DPL0601",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "DPL0601"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "56ca677b43c46021b59f86a6d09dd87f56d63a3d772ab2b6f6f9783c2eb7494e",
+      "brandId": "precor",
+      "productLineCandidate": "precor-discovery-plate-loaded",
+      "canonicalNameCandidate": "Hack Squat",
+      "modelCode": "DPL0603",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "precor_spec_tables",
+          "sourceUrl": "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "7312b83234d3f71299b9260e1017da9e04d9b3d06b07c7efe8b7f4b7bf3ce28c",
+          "adapterId": "precor-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "hack_squat_machine"
+      ],
+      "sourceStableKey": "DPL0603"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "132d928b3722bdc30c3e0d8c1152337b54b6b28b8d102a9f338eb613c9fff87a",
+      "brandId": "panatta",
+      "canonicalNameCandidate": "Super Inclined Chest Press",
+      "modelCode": "1FW035",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "panatta_official_product_pages",
+          "sourceUrl": "https://panattasport.com/en/product/1FW035.html",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+          "adapterId": "panatta-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "1FW035"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "54ec0216806ed95476859373c1cf139238a7fcdcc18df2dce21737423e218b9f",
+      "brandId": "panatta",
+      "canonicalNameCandidate": "Inclined Chest Press",
+      "modelCode": "1FE037",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "panatta_official_product_pages",
+          "sourceUrl": "https://panattasport.com/en/product/1FE037.html",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+          "adapterId": "panatta-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "1FE037"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "0e074be530f54fd550e15e2245730c63df1c8fd5d7c13b8c79ea10153f7208de",
+      "brandId": "panatta",
+      "canonicalNameCandidate": "Dual System Horizontal Leg Press",
+      "modelCode": "1FE095",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "panatta_official_product_pages",
+          "sourceUrl": "https://panattasport.com/en/product/1FE095.html",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+          "adapterId": "panatta-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "1FE095"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "2e8251a9bbd4fea0db637274124d5a3149ae11fbfad229486a0512b3a2c27d30",
+      "brandId": "panatta",
+      "canonicalNameCandidate": "Horizontal Adjustable Leg Press",
+      "modelCode": "1MTH085",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "panatta_official_product_pages",
+          "sourceUrl": "https://panattasport.com/en/product/1MTH085.html",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+          "adapterId": "panatta-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "1MTH085"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "3677495ccf02186e5349f7266fcf2f71dc63ab45a6ec95e24f2e3c1f5f539d98",
+      "brandId": "panatta",
+      "canonicalNameCandidate": "Leg Extension",
+      "modelCode": "1SC081",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "panatta_official_product_pages",
+          "sourceUrl": "https://www.panattasport.com/en/product/1SC081.html",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+          "adapterId": "panatta-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_extension"
+      ],
+      "sourceStableKey": "1SC081"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "d3606a1c843fb4d2a826a9e20785e4fe2e725001de6dbad4c9c822768191e2a4",
+      "brandId": "panatta",
+      "canonicalNameCandidate": "Seated Leg Curling",
+      "modelCode": "1SC083",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "panatta_official_product_pages",
+          "sourceUrl": "https://panattasport.com/en/product/1SC083.html",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+          "adapterId": "panatta-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_curl"
+      ],
+      "sourceStableKey": "1SC083"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "f2012787dbb40065a6b148055bb488d6cc599daed166fbe7491cae079801895f",
+      "brandId": "panatta",
+      "canonicalNameCandidate": "Lat Pulldown",
+      "modelCode": "1MTH001",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "panatta_official_product_pages",
+          "sourceUrl": "https://panattasport.com/en/product/1MTH001.html",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+          "adapterId": "panatta-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "1MTH001"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "cb4f17dbb558f70e9762550d11919765d51f8988c76751b5ac6a4e179c02095c",
+      "brandId": "panatta",
+      "canonicalNameCandidate": "Lat Pulldown",
+      "modelCode": "1SC001",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "panatta_official_product_pages",
+          "sourceUrl": "https://www.panattasport.com/en/product/1SC001.html",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+          "adapterId": "panatta-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "1SC001"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "4032bac297a5ec8182cf039176af11da1a93357affe59051e74004c430cb595e",
+      "brandId": "panatta",
+      "canonicalNameCandidate": "Lat Pulldown Circular",
+      "modelCode": "1MTH002",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "panatta_official_product_pages",
+          "sourceUrl": "https://panattasport.com/en/product/1MTH002.html",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+          "adapterId": "panatta-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "1MTH002"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "a8de80b47d2efb9b9c4f0903f27bf59bbb6ef10af175751681b39daed8897687",
+      "brandId": "panatta",
+      "canonicalNameCandidate": "Lat Pulldown Convergent",
+      "modelCode": "1MTH007",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "panatta_official_product_pages",
+          "sourceUrl": "https://panattasport.com/en/product/1MTH007.html",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+          "adapterId": "panatta-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "1MTH007"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "4ac0f6922f622ebba458648d6442d5adbc317918ac478b94aa1b4b28a51735ef",
+      "brandId": "panatta",
+      "canonicalNameCandidate": "Lat Pulldown Circular",
+      "modelCode": "1FE002",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "panatta_official_product_pages",
+          "sourceUrl": "https://www.panattasport.com/en/product/1FE002.html",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+          "adapterId": "panatta-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "1FE002"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "80234e122817129eb3ee2518b94b683b2e3eb3b8cd423c2cdf221012be53a15b",
+      "brandId": "panatta",
+      "canonicalNameCandidate": "High Row Convergent",
+      "modelCode": "1MTH006",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "panatta_official_product_pages",
+          "sourceUrl": "https://panattasport.com/en/product/1MTH006.html",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "72fd7d25a8fcfb2b58480b4188606823dfb1a5b50b58f4160697107c9063cf9b",
+          "adapterId": "panatta-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "seated_row_machine"
+      ],
+      "sourceStableKey": "1MTH006"
     }
   ]
 }

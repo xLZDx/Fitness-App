@@ -1,5 +1,7 @@
-// P1.G2 -- deterministic artifact generation. Runs the built (lib/) adapter
-// pipeline once and writes its output to the repo-owned evidence location:
+// P1.G2/P1.G3 -- deterministic artifact generation. Runs the built (lib/)
+// adapter pipeline once (every official P0-registered-brand adapter, across
+// however many P1 sub-gates have added one -- see run_all.ts's own header)
+// and writes its output to the repo-owned evidence location:
 //   core/equipment_identity/p1/candidates/p0_brand_candidates.json
 //   core/equipment_identity/p1/candidates/adapter_conflicts.json
 //   core/equipment_identity/p1/candidates/capture_manifest.json
@@ -29,7 +31,7 @@
 // two-phase-commit this script doesn't have -- out of scope for a
 // deterministic, single-writer dev-time generator).
 //
-//   npm run generate:p1-g2-candidates   # npm run build && node this script
+//   npm run generate:p0-brand-candidates   # npm run build && node this script
 "use strict";
 
 const fs = require("fs");

@@ -26,7 +26,7 @@ an authoritative `primaryTypeId` (§5.8) — only non-binding `typeHints`.
 | `functions-equipment-identity/src/p1/adapters/{technogym,matrix,life_fitness_hammer_strength,nautilus}_adapter.ts` | Thin per-brand wrappers around `runAdapter`. |
 | `functions-equipment-identity/src/p1/adapters/run_all.ts` | `runAllP0BrandAdapters` — runs all 4, assembles the combined candidate pool, conflict report, and capture manifest. |
 | `functions-equipment-identity/scripts/sync_p1_generated.js` | `sync`/`--check` for two build-time inputs: `core/equipment_identity/p0/source_registry.json` and every `core/equipment_identity/p1/source_captures/*.json` fixture, mirrored into `src/generated/` (same pattern as P1.G1's `sync_p0_type_snapshot.js`). |
-| `functions-equipment-identity/scripts/generate_p1_g2_artifacts.js` | Runs the built adapter pipeline once, writes deterministic output atomically (temp-file + rename per file). |
+| `functions-equipment-identity/scripts/generate_p1_g2_artifacts.js` | Runs the built adapter pipeline once, writes deterministic output atomically (temp-file + rename per file). Renamed to `generate_p0_brand_candidates.js` in P1.G3 once a second gate's adapters started feeding the same shared pool — see `P1_G3_...md`. |
 | `core/equipment_identity/p1/source_captures/*.json` | 4 real, hand-authored fixtures (48 records total) — see §3. |
 | `core/equipment_identity/p1/candidates/{p0_brand_candidates,adapter_conflicts,capture_manifest}.json` | Generated output — 48 candidates, 0 conflicts, 0 drift issues. |
 | `core/equipment_identity/p0/source_registry.json` (extended) | 4 new `UNREVIEWED` entries for the real product-catalog domains (see §2) — the 4 original P0.G3 entries (stale/wrong-purpose pages) are left completely untouched. |
@@ -192,7 +192,8 @@ from different angles):**
   downstream — fixed to use `IsoTimestampSchema` directly, so a malformed
   value fails at fixture-load time with a clear error, not deep inside
   candidate mapping.
-- `generate_p1_g2_artifacts.js` wrote 3 related output files with 3
+- `generate_p1_g2_artifacts.js` (renamed to `generate_p0_brand_candidates.js`
+  in P1.G3, see §1's note) wrote 3 related output files with 3
   separate non-atomic `fs.writeFileSync` calls — fixed to write via
   temp-file + rename per file.
 - (`rights.py`, python-reviewer) No `sourceId` uniqueness check existed in
