@@ -23683,3 +23683,48 @@ Round-3 message sent narrowly scoped to match. Document remains DRAFT, not imple
 pending that round-3 verdict -- this is round 3 of the operator's 3-round cap; an unresolved
 disagreement past this round escalates to the operator rather than looping further.
 
+## GPT-PM round-3 verdict: CONSENSUS -- APPROVE FOR IMPLEMENTATION, full AC/DoD document now
+## IMPLEMENTATION-READY, 0 open BLOCKER/MAJOR/MINOR
+
+Round-3 verdict received, narrowly scoped exactly as GPT-PM specified (the two AC-B03 remainder
+items, not a full re-audit): both CLOSED.
+
+1. P6.G0 DEFER_VISUAL negative-capability proof -- CLOSED. GPT-PM: "отсутствие P4 больше не
+   считается само по себе доказательством отсутствия visual identity path" (absence of P4 is no
+   longer treated as proof of absence of a visual identity path) -- the (a)-(f) proof-obligation
+   list, explicitly covering the pre-existing `VisualMatch` feature and the re-run-on-drift rule,
+   closes what GPT-PM called "the main loophole of the previous version."
+2. Text-calibration ownership MAJOR -- CLOSED. GPT-PM confirmed P6.G1's new T5 supplies everything
+   the hidden prerequisite was missing (explicit owner, calibration-only evidence source, no
+   SEALED_* access, frozen method/strata/pooling/thresholds, textPolicyVersion, artifact hash,
+   insufficient-N fail-closed rule, ML/data review, immutability before P6.G2-T) and that P6.G2 now
+   references a concrete upstream artifact instead of an unowned reference.
+
+Final verdict, GPT-PM's own structure preserved verbatim in translation:
+```
+SPTR EQUIPMENT RECOGNITION v4.4
+FULL P0-P6 EPIC / STORY / TASK AC/DoD
+
+REVIEW STATUS: CONSENSUS
+VERDICT: APPROVE FOR IMPLEMENTATION
+DOCUMENT STATUS: IMPLEMENTATION-READY
+
+OPEN BLOCKER = 0
+OPEN MAJOR   = 0
+OPEN MINOR   = 0
+```
+All 13 round-1 findings (AC-B01..B04, AC-M01..M08, AC-m01) plus both round-2 residuals CLOSED.
+GPT-PM's own scope caveat, explicit: this approves *phased implementation against these gate
+contracts* -- it does not mean any individual production gate has already passed each Story's own
+AC/DoD, required reviews, evidence, and rollback requirements independently. GPT-PM's stated next
+step: no further design/AC review round is needed before implementation starts; the next review
+GPT-PM expects is against real code/evidence for whichever gate opens first, not another AC/DoD
+round.
+
+This satisfies the operator's original requirement in full: "а потом еще раунд ревью AC/DoD с гпт и
+только потом мы можем закрыть это как готово к имплементации" -- the AC/DoD document is now
+GPT-PM-consensus implementation-ready, three rounds in, within the operator's own round-cap-of-3.
+Document status updated to CONSENSUS / IMPLEMENTATION-READY at the top of the file itself. A house-
+format report (RU+EN) covering this whole AC/DoD authoring-and-review arc is the next step, per
+standing report requirements for a milestone of this size.
+

@@ -1,18 +1,19 @@
 # SPTR Equipment Recognition v4.4 — full AC/DoD reference (Epic / Story / Task)
 
-**Status:** DRAFT, round 3 of a 3-round cap (operator instruction, 2026-08-22: "увелич до 3 раундов
-перед тем как отправлять мне" — up to 3 rounds before escalating to the operator). Round 1: GPT-PM's
-devil's-advocate review found **VERDICT: BLOCKER-equivalent findings — NOT IMPLEMENTATION-READY**
-(4 BLOCKER-equivalent, 8 MAJOR, 1 MINOR). Round 2: GPT-PM confirmed 11 of 13 findings CLOSED
-(AC-B01, AC-B02, AC-B04, all 8 MAJORs, the MINOR); AC-B03 was PARTIALLY CLOSED (the round-1
-"vacuously satisfied under `DEFER_VISUAL`" fix for P6.G0 was rejected as too weak — absence of P4
-doesn't prove absence of any visual-capable path, e.g. the pre-existing `VisualMatch` feature) and
-one new MAJOR was found in the round-1 fix itself (P6.G2's `DEFER_VISUAL` text-calibration input had
-no owning Story/Task). Both are fixed below, at P6.G0 and P6.G1 respectively, cited inline. This is
-the narrow round-3 scope GPT-PM itself specified — not a full re-audit. Not yet implementation-ready
-— pending GPT-PM's round-3 confirmation on these two specific items, per the operator's requirement
-that a GPT-PM verdict, not just Claude's own fix, gates this document's implementation-ready status.
-Supersedes the
+**Status: CONSENSUS — APPROVE FOR IMPLEMENTATION — IMPLEMENTATION-READY** (GPT-PM round-3 verdict,
+2026-08-22). Full round history: Round 1, GPT-PM's devil's-advocate review found **VERDICT:
+BLOCKER-equivalent findings — NOT IMPLEMENTATION-READY** (4 BLOCKER-equivalent, 8 MAJOR, 1 MINOR).
+Round 2: 11 of 13 findings confirmed CLOSED; AC-B03 was PARTIALLY CLOSED (the round-1 "vacuously
+satisfied under `DEFER_VISUAL`" fix for P6.G0 was rejected as too weak — absence of P4 doesn't prove
+absence of any visual-capable path, e.g. the pre-existing `VisualMatch` feature) plus one new MAJOR
+found in the round-1 fix itself (P6.G2's `DEFER_VISUAL` text-calibration input had no owning
+Story/Task). Round 3, narrowly scoped to those two items per GPT-PM's own stated scope: **both
+CLOSED, 0 open BLOCKER/MAJOR/MINOR across all 13 original findings plus the 2 round-2 residuals.**
+GPT-PM's own closing caveat, preserved verbatim in intent: this approval means phased implementation
+against these gate contracts may begin — it does **not** mean any individual production gate has
+already passed; each Story still has to independently satisfy its own AC/DoD, required reviews,
+evidence, and rollback requirements before it closes. Full verbatim round texts are in
+`core/DECISION_LOG.md`'s corresponding entries (2026-08-22). Supersedes the
 first draft of this file (two-tier: full AC/DoD for P0+P1.G1 only, lightweight contracts for the
 rest). Operator instruction, 2026-08-22, verbatim: "ты должен слушать меня, я говорю что твой
 воркфлоу должен включать AC/DoD для всего документа и гейтов/подгейтов как в жире — эпик, стори,
@@ -1413,9 +1414,12 @@ drill is actually re-run on the stated cadence, not only once.
   proof, not "vacuously satisfied," and P6.G2's `DEFER_VISUAL` text-calibration input needed an
   owning Story/Task, which round 2 itself surfaced as a new MAJOR. Both are fixed above (P6.G0's two
   verification branches; P6.G1's new T5).
-- **Not yet done, and required before this document may be treated as ready for implementation**
-  (operator instruction, 2026-08-22, round cap raised to 3): GPT-PM's round-3 confirmation, narrowly
-  scoped to the two AC-B03 remainder items above — GPT-PM's own stated scope for this round, not a
-  full re-audit. Only after that verdict — and any further resulting revision, within the 3-round
-  cap — may this be closed as implementation-ready; an unresolved disagreement past round 3
-  escalates to the operator rather than looping further.
+- **Round 3 happened, and this document is now closed as implementation-ready** (2026-08-22).
+  GPT-PM's round-3 verdict, verbatim structure: `REVIEW STATUS: CONSENSUS` / `VERDICT: APPROVE FOR
+  IMPLEMENTATION` / `DOCUMENT STATUS: IMPLEMENTATION-READY`, 0 open BLOCKER/MAJOR/MINOR across all
+  13 round-1 findings plus the 2 round-2 residuals. GPT-PM's own scope caveat, preserved here
+  verbatim in intent: this approves *phased implementation against these gate contracts* — it does
+  not mean any individual production gate has already passed. Each Story still independently proves
+  its own AC/DoD, required reviews, evidence, and rollback requirements before it closes. The next
+  review GPT-PM expects is against real code/evidence for whichever gate opens first (P0), not
+  another design/AC round.
