@@ -221,9 +221,9 @@ All fixes verified: `python -m pytest scripts/equipment_identity/test_type_snaps
 - [x] T1 — Generated immutable type snapshot: regeneration from the same
       input yields the same hash (§4).
 - [x] T2 — Catalog version manifest ties a version to a specific snapshot
-      hash (§2); intended for server consumption once a real exact-model
-      server path exists (§8, known limitation — none exists yet in any
-      phase built so far).
+      hash (§2), full hash recorded, never a truncated prefix. Consumption
+      by real server validation is P1.G1's DoD item (T5), not this gate's
+      — see §8's gate-contract repair.
 - [x] T3 — Build-time referential check: a nonexistent `equipmentId`
       reference fails the build; CI demonstrates this (§5).
 - [x] No second hand-maintained ontology (§1).
@@ -243,16 +243,25 @@ All fixes verified: `python -m pytest scripts/equipment_identity/test_type_snaps
 - `load_source_entries`/`build_snapshot` raise `TypeSnapshotError` (naming
   the exact bad id(s)) on a non-list source, a missing/empty id, or a
   duplicate id — there is no silent partial snapshot.
-- **Known limitation, not fixed in this gate**: the formal Story DoD item
-  "Server validates exact models against the current functional type
-  snapshot" and T2's "Manifest consumed by server validation, not
-  decorative" cannot be literally satisfied yet — no server-side
-  exact-model ingestion/validation path exists in any phase built so far
-  (Functions codebase isolation is P0.G6's scope, and even that gate does
-  not build an exact-model submission endpoint). `validate_type_reference`
-  is built as the reusable seam a future server path is expected to call
-  directly rather than reimplement, per the gate's own implementation
-  plan ("No production EquipmentModel schema yet. Use test fixtures
-  only."). This is a real, honestly-documented gap, not a silent
-  overclaim — the corresponding DoD checkboxes stay unchecked above until
-  a real server consumer exists.
+- **Gate-contract repair (2026-08-22, GPT-PM mechanical AC/DoD correction,
+  post-close review)**: the formal Story DoD item "Server validates exact
+  models against the current functional type snapshot" and T2's "Manifest
+  consumed by server validation, not decorative" could never be literally
+  satisfied by P0.G4 itself — no server-side exact-model ingestion/
+  validation path exists in any phase built so far, and the P0 epic gates
+  P1 (where that server path is first built, in P1.G1) on P0.G1-G4
+  closing — a genuine circular dependency in the original contract, not an
+  implementation gap. Same pattern as the AC-M04 precedent (P1.G1's
+  session-mutation test moved to P2.G3, its real owner). Fixed by editing
+  `SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md`:
+  P0.G4's Story DoD now owns only the foundation artifact and validator
+  seam (both delivered, §4/§7 above); the two downstream requirements
+  became explicit new tasks at their real owners — P1.G1 T5 (server-side
+  `EquipmentModel` write validation calls `validate_type_reference`) and
+  P1.G6 T5 (the publish pipeline's VALIDATE stage re-checks every
+  candidate model's type references before a version can become active).
+  `validate_type_reference` was already built as the reusable seam those
+  two future gates are meant to call directly rather than reimplement, per
+  this gate's own implementation plan ("No production EquipmentModel
+  schema yet. Use test fixtures only.") — this repair only fixes where the
+  DoD checkbox for consuming it lives, not what P0.G4 itself built.

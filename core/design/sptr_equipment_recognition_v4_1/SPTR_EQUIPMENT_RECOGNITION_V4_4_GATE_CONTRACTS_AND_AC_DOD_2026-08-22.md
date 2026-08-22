@@ -217,11 +217,23 @@ Required review. Architecture + ontology review.
 Rollback / failure mode. Regenerate snapshot from `equipment.json`; never hand-edit a duplicate type
 catalog.
 
+**Scope corrected — GPT-PM mechanical AC/DoD repair, 2026-08-22, post-close review of the
+implementation commit: the original Story DoD ("Server validates exact models against the current
+functional type snapshot") and T2's DoD ("Manifest consumed by server validation, not decorative")
+created a real circular dependency — no server-side exact-model consumer can exist before P1.G1 builds
+the EquipmentModel schema, and the P0 epic itself gates P1 on P0.G1-G4 closing. Same pattern as AC-M04
+(P1.G1's session-mutation test moved to P2.G3, its real owner) — this gate now owns only the
+foundation artifact and validator seam; the two downstream requirements move to their real owners,
+P1.G1 and P1.G6 (see those gates' own DoD/task tables below).**
+
 **Story AC:** a build test fails if `primaryTypeId` references a nonexistent `equipmentId`; the
 snapshot hash/version is deterministic across identical inputs.
 
 **Story DoD:**
-- [ ] Server validates exact models against the current functional type snapshot.
+- [ ] Deterministic immutable functional-type snapshot generated from `equipment.json`.
+- [ ] Catalog-version manifest binds the full snapshot hash.
+- [ ] Reusable server-consumable type-reference validation seam exists.
+- [ ] A deliberately-invalid `primaryTypeId`/`supportedTypeId` fails mechanically in CI.
 - [ ] Architecture + ontology review signed off.
 - [ ] Decision log entry recorded.
 
@@ -230,7 +242,7 @@ snapshot hash/version is deterministic across identical inputs.
 | Task | Acceptance Criteria | Definition of Done |
 | --- | --- | --- |
 | T1 — Generated immutable type snapshot | Snapshot is generated, not hand-authored, from `equipment.json` | Regeneration from the same input yields the same hash |
-| T2 — Catalog version manifest | Manifest ties a version to a specific snapshot hash | Manifest consumed by server validation, not decorative |
+| T2 — Catalog version manifest | Manifest ties a version to a specific snapshot hash | Full hash recorded (never a truncated prefix); **consumption by real server validation is P1.G1's DoD item, not this gate's — see P1.G1 T5** |
 | T3 — Build-time referential check | Nonexistent `equipmentId` reference fails the build | CI demonstrates the failure on a deliberately broken input |
 
 ### P0.G5 — Cloud feasibility, IAM, region & SDK spike
@@ -355,6 +367,8 @@ exists to test against).**
 - [ ] The rules mutation-test suite (client/server/cross-account DENY/ALLOW/DENY) passes in CI.
 - [ ] Schema/rules declare `RecognitionAuthorityTuple` fields immutable post-write; the *runtime*
       session-mutation test itself is P2.G3's DoD item, not P1.G1's — see P2.G3.
+- [ ] Server-side `EquipmentModel` schema/write validation consumes P0.G4's current functional-type
+      snapshot and rejects an invalid `primaryTypeId`/`supportedTypeIds` reference — see T5.
 - [ ] Flutter/architecture + ontology + Firebase/backend + security review signed off.
 - [ ] Decision log entry recorded.
 
@@ -366,6 +380,7 @@ exists to test against).**
 | T2 — `firestore.rules` authority exclusions | `recognised_models`/`equipment_identity_sessions`/identity telemetry excluded from `users/{uid}/**` client-write wildcard | `test:rules` suite proves DENY/ALLOW/DENY as specified |
 | T3 — `firestore.indexes.json` entries for P1 queries only | Index covers every query pattern P1 itself issues | Queries run without missing-index errors; **vector indexes deferred to P4.G1**, not built speculatively here |
 | T4 — Schema/rules-level `RecognitionAuthorityTuple` immutability declaration | Field is declared immutable at the schema/rules layer | **Runtime session-mutation test itself lives at P2.G3** (see that gate's T5), once session runtime exists to test |
+| T5 — Server-side type-reference validation (moved here from P0.G4, mechanical AC/DoD repair 2026-08-22) | `EquipmentModel` write path calls P0.G4's `validate_type_reference` (or an equivalent server-side port) against the current functional-type snapshot | A write with a nonexistent `primaryTypeId`/`supportedTypeId` is rejected, mutation-tested in CI — this is the first point in the whole program a real server-side exact-model consumer exists |
 
 ### P1.G2 — Official P0 brand adapters
 
@@ -509,6 +524,8 @@ a duplicate catalog; no adapter/scraper can auto-publish.
 - [ ] Rollback to a prior version tested, not just designed.
 - [ ] Interim `textSupportStatus: EXPERIMENTAL` promotion path exists, staging-only, never
       user-facing.
+- [ ] Publication uses the active P0.G4 functional-type snapshot/version; a deliberately invalid
+      type reference blocks publication, not just the write path — see T5.
 - [ ] Backend + ontology + governance review signed off.
 - [ ] Decision log entry recorded.
 
@@ -520,6 +537,7 @@ a duplicate catalog; no adapter/scraper can auto-publish.
 | T2 — Atomic `activeCatalogVersion` pointer switch | Switch is atomic; no partial-version read is possible | Tested under a simulated mid-switch read |
 | T3 — Interim `EXPERIMENTAL` promotion path | Path is staging-only, auditable, never reaches users | P2.G3/P2.G5 can produce OCR-only evidence through it |
 | T4 — Rollback test | A prior version can be reactivated | Rollback exercised at least once, result recorded |
+| T5 — Publish-time type-reference validation (moved here from P0.G4, mechanical AC/DoD repair 2026-08-22) | The VALIDATE stage re-checks every candidate `EquipmentModel`'s `primaryTypeId`/`supportedTypeIds` against the active P0.G4 snapshot before DIFF/REVIEW | A deliberately invalid type reference blocks the version from becoming active, demonstrated on a real diff — no `EquipmentModel` can reach ACTIVE/VERIFIED with an unresolved type reference |
 
 ---
 

@@ -24102,3 +24102,32 @@ only the P0.G4-specific files this gate created were staged.
 **Next**: commit, push, verify remote sync, `pm_set_gate` for P0.G4. Continue directly to P0.G5
 (Cloud feasibility, IAM, region & SDK spike) per the standing authorization -- no further operator
 check-in before P0.G6 closes.
+
+## 2026-08-22 -- P0.G4 gate-contract repair: circular DoD dependency
+
+`pm_set_gate(P0.G4, passed)`'s GPT-PM reply flagged a real defect in
+`SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md`, not in the P0.G4
+implementation (commit `eac45bb`): P0.G4's own Story DoD required "Server validates exact models
+against the current functional type snapshot" and T2's DoD required "Manifest consumed by server
+validation, not decorative" -- but no server-side exact-model consumer can exist before P1.G1 builds
+the `EquipmentModel` schema, and the P0 epic itself gates P1 on P0.G1-G4 closing. A genuine circular
+dependency: P0.G4 could never close on its own literal contract text. Same class of defect as AC-M04
+(P1.G1's session-mutation test originally required session runtime that didn't exist until P2.G3).
+
+**Decision**: mechanical AC/DoD repair, not a rollback or a fake server consumer built inside P0.
+Edited the gate contract doc: P0.G4's Story DoD now owns only what it actually built (deterministic
+snapshot, version manifest with a full hash, the `validate_type_reference` seam, CI-demonstrated
+referential failure) -- all four already delivered and verified in `eac45bb`. The two downstream
+requirements moved to their real owners as new explicit tasks: P1.G1 T5 (server-side `EquipmentModel`
+write validation must call `validate_type_reference` against P0.G4's snapshot, mutation-tested in CI
+-- the first point in the whole program a real server-side exact-model consumer exists) and P1.G6 T5
+(the publish pipeline's VALIDATE stage must re-check every candidate model's type references before a
+version can become active). `core/equipment_identity/p0/P0_G4_CATALOG_SNAPSHOT.md` section 8 updated
+to reference this repair instead of describing an open "known limitation."
+
+P0.G4 is now honestly CLOSED against its corrected, non-circular contract -- `pm_set_gate` already
+recorded `passed` for the implementation commit; this entry is the paired governance-doc fix GPT-PM's
+reply asked for, referenced by evidence in the next gate-status check-in.
+
+**Next**: continue directly to P0.G5 (Cloud feasibility, IAM, region & SDK spike) per the standing
+authorization.
