@@ -1,15 +1,18 @@
 # SPTR Equipment Recognition v4.4 — full AC/DoD reference (Epic / Story / Task)
 
-**Status:** DRAFT, round 2 of a 3-round cap (operator instruction, 2026-08-22: "увелич до 3 раундов
+**Status:** DRAFT, round 3 of a 3-round cap (operator instruction, 2026-08-22: "увелич до 3 раундов
 перед тем как отправлять мне" — up to 3 rounds before escalating to the operator). Round 1: GPT-PM's
 devil's-advocate review found **VERDICT: BLOCKER-equivalent findings — NOT IMPLEMENTATION-READY**
-(4 BLOCKER-equivalent, 8 MAJOR, 1 MINOR). All findings addressed below, inline at each affected
-gate, cited by ID (AC-B01..B04, AC-M01..M08, AC-m01) — 3 BLOCKERs and all MAJOR/MINOR findings
-independently re-verified against the actual v4.1-v4.4 source text before the fix was written; the
-4th (AC-B02) went through exactly one rebuttal, which GPT-PM did not accept, with a clear mechanical
-fix supplied. Not yet implementation-ready — pending GPT-PM's confirmation that these fixes actually
-close the findings (round 2), per the operator's requirement that a GPT-PM verdict, not just
-Claude's own fix, gates this document's implementation-ready status. Supersedes the
+(4 BLOCKER-equivalent, 8 MAJOR, 1 MINOR). Round 2: GPT-PM confirmed 11 of 13 findings CLOSED
+(AC-B01, AC-B02, AC-B04, all 8 MAJORs, the MINOR); AC-B03 was PARTIALLY CLOSED (the round-1
+"vacuously satisfied under `DEFER_VISUAL`" fix for P6.G0 was rejected as too weak — absence of P4
+doesn't prove absence of any visual-capable path, e.g. the pre-existing `VisualMatch` feature) and
+one new MAJOR was found in the round-1 fix itself (P6.G2's `DEFER_VISUAL` text-calibration input had
+no owning Story/Task). Both are fixed below, at P6.G0 and P6.G1 respectively, cited inline. This is
+the narrow round-3 scope GPT-PM itself specified — not a full re-audit. Not yet implementation-ready
+— pending GPT-PM's round-3 confirmation on these two specific items, per the operator's requirement
+that a GPT-PM verdict, not just Claude's own fix, gates this document's implementation-ready status.
+Supersedes the
 first draft of this file (two-tier: full AC/DoD for P0+P1.G1 only, lightweight contracts for the
 rest). Operator instruction, 2026-08-22, verbatim: "ты должен слушать меня, я говорю что твой
 воркфлоу должен включать AC/DoD для всего документа и гейтов/подгейтов как в жире — эпик, стори,
@@ -50,10 +53,13 @@ artifact rather than a sentence nobody has to act on):** every Story DoD in this
 by one uniform, additional item, whether or not it is repeated as its own bullet in that Story's
 checklist: **the gate's `Rollback / failure mode` text must correspond to a linked, reviewed
 artifact (a runbook, a feature flag with a tested disable path, a documented revert procedure) —
-not prose alone.** A rehearsed drill (an actual, dated, re-run exercise) is required only where
-rollback is operationally significant — release-blocking and production-promotion gates
-(`P0.G0`, `P2.G3`, `P6.G0`–`P6.G3`, and any gate marked `RELEASE-BLOCKING`) — not for every
-foundation/adapter gate, where "the artifact exists and was reviewed" is sufficient.
+not prose alone.** A rehearsed drill (an actual, dated, re-run exercise) is required only **when the
+rollback/failure mode is itself an operational mechanism whose executability matters to gate safety**
+(refined per GPT-PM's round-2 confirmation, 2026-08-22: not a blanket "every release-blocking gate,"
+since e.g. P6.G3's demotion runbook genuinely needs rehearsal, but P3.G2's "if the sample is too
+small, production exact claim remains blocked" rollback is a static policy statement with nothing to
+rehearse) — for a gate whose rollback is a static/structural fact rather than an executable
+procedure, "the artifact exists and was reviewed" is sufficient without a drill.
 
 ---
 
@@ -930,7 +936,13 @@ stratum, forcing a full recalibration once segmentation appears):
 - [ ] Calibration strata/model and the minimum independent-encounters-per-stratum (or an explicit
       pooling rule) are frozen **before fitting**, not asserted after the fact. "4 identity levels"
       is never auto-assumed to mean 4 curves — the actual curve count is derived from the frozen
-      strata definition.
+      strata definition. **Clarified per GPT-PM's round-2 confirmation, 2026-08-22: identity level,
+      evidence class, lane, and verifier-invoked state are the CANDIDATE dimensions to consider, not
+      a mandatory full cross-product — the freeze step is (1) enumerate candidate dimensions, (2)
+      pre-specify empirically which distinctions actually need a separate curve, (3) freeze the
+      resulting strata or an explicit hierarchical/pooling model, (4) set the minimum effective
+      independent N per stratum. A literal Cartesian explosion into dozens of sparse strata is
+      exactly the failure mode this fix must avoid, not produce.**
 - [ ] An insufficient effective N for any frozen stratum blocks this gate's exit outright — it is
       not revisited later as an informal note.
 - [ ] A frozen calibrated policy version is ready for shadow and later sealed P6 evaluation;
@@ -943,7 +955,7 @@ stratum, forcing a full recalibration once segmentation appears):
 | Task | Acceptance Criteria | Definition of Done |
 | --- | --- | --- |
 | T1 — Calibration artifact (fusion/calibration split named) | Reliability/ECE/Brier reported per evidence class | Artifact reviewed and versioned |
-| T0 — Freeze calibration strata before fitting | Strata defined by identity level × evidence class × lane × verifier-invoked state, not assumed | Frozen strata list committed before any curve is fit |
+| T0 — Freeze calibration strata before fitting | Candidate dimensions (identity level, evidence class, lane, verifier-invoked state) empirically pre-specified into actual strata or a pooling model — not a mandatory full cross-product | Frozen strata/pooling model committed before any curve is fit |
 | T2 — Thresholds by identity level/evidence class | Curve count matches the frozen strata list, not an assumed "4" | Sample-size adequacy explicitly checked per stratum, not assumed; insufficient N blocks exit |
 | T3 — One-sided Clopper-Pearson method named | Method explicitly stated, not implied | Referenced identically in P6.G2/P6.G3 |
 | T4 — Frozen policy version | Policy version locked before any sealed evaluation | Version ID recorded, immutable from this point |
@@ -1175,9 +1187,15 @@ Purpose. Prove, mechanically, that the P6-T text-only promotion lane cannot prod
 `EXACT_MODEL` claim contaminated by visual exact-identity evidence.
 
 Inputs. §6.4.1's `evidenceLane` derivation rule; P4.G2's fusion implementation **if it exists —
-lane-conditional (GPT-PM devil's-advocate review round, 2026-08-22, AC-B03): if P2.G5 legitimately
-chose `DEFER_VISUAL`, P4 is never built and there is no visual discriminator to contaminate
-anything with. This gate does not block on P4.G2's existence** — see the lane split below.
+lane-conditional (GPT-PM devil's-advocate review round, 2026-08-22, AC-B03). Under `GO_VISUAL`,
+P4.G2 exists and this gate's proof is the mutation test below. Under `DEFER_VISUAL`, P4 is never
+built, but that does NOT make the invariant vacuous — P6.G0's job was never "we didn't build P4, so
+we're fine," it's a structural guarantee that a `TEXT_ONLY` `EXACT_MODEL` claim cannot use visual
+exact-identity evidence from ANY source, including pre-existing code this redesign didn't touch
+(e.g. the existing `VisualMatch` feature P2.G4 is explicitly required not to change, or any future
+verifier/logo/visual hook). DEFER_VISUAL therefore needs its own, different proof obligation —
+round-2 correction below, not the round-1 "vacuously satisfied" wording (GPT-PM: that wording was
+rejected, real gap, still BLOCKER-equivalent until fixed).**
 
 Required review. Backend/ML + release review.
 
@@ -1185,16 +1203,27 @@ Rollback / failure mode. Until this gate passes, `textSupportStatus: VERIFIED` m
 `identityLevel: EXACT_MODEL` in production for any model that also has visual retrieval/verifier
 signals active — such models remain shadow/`NOT_SUPPORTED`-for-`EXACT_MODEL` in production.
 
-**Story AC:** a CI mutation test forces a visual exact-identity discriminator into the fusion path
-for a model whose `textSupportStatus == VERIFIED` and `visionSupportStatus != VERIFIED`, and asserts
-the response is never `evidenceLane: TEXT_ONLY` with `identityLevel: EXACT_MODEL` — it must instead
-report `evidenceLane: VISUAL` and abstain/downgrade.
+**Story AC — two verification branches, not one (round-2 correction, AC-B03 remainder):**
+- **`GO_VISUAL` branch:** a CI mutation test forces a visual exact-identity discriminator into the
+  fusion path for a model whose `textSupportStatus == VERIFIED` and `visionSupportStatus !=
+  VERIFIED`, and asserts the response is never `evidenceLane: TEXT_ONLY` with `identityLevel:
+  EXACT_MODEL` — it must instead report `evidenceLane: VISUAL` and abstain/downgrade.
+- **`DEFER_VISUAL` branch — a negative-capability/configuration proof, not a mutation test against
+  a nonexistent P4.G2:** production `TEXT_ONLY` exact-identity authorization must prove (a) no
+  visual exact-model retriever is callable from the text-lane request path, including the
+  pre-existing `VisualMatch` feature; (b) no verifier path capable of visual adjudication is
+  invoked; (c) no logo/image/model-visual feature participates in the decision; (d) `evidenceLane`
+  is still server-derived `TEXT_ONLY`, never client-settable; (e) the authority record contains no
+  active visual identity artifact/index version; (f) if a visual exact discriminator is later added
+  (config, deploy, or code change) without this gate being re-run, any attempt to invoke it routes
+  to `VISUAL` lane + `NOT_SUPPORTED`/`ABSTAIN`, never `TEXT_ONLY EXACT_MODEL`.
 
 **Story DoD:**
-- [ ] Mutation test exists, is wired into CI, and passes — a manual code-review sign-off does not
-      satisfy this gate. **Under `DEFER_VISUAL`, the test still exists and still runs (proving no
-      visual discriminator is silently wired in), but its own contamination scenario is vacuously
-      satisfied — no P4.G2 build is required to reach that pass.**
+- [ ] Mutation test (`GO_VISUAL`) or negative-capability/configuration test (`DEFER_VISUAL`) exists,
+      is wired into CI, and passes — a manual code-review sign-off does not satisfy this gate in
+      either branch.
+- [ ] Under `DEFER_VISUAL`, the negative-capability proof explicitly covers `VisualMatch` and any
+      other pre-existing visual path, not only components this redesign introduced.
 - [ ] Backend/ML + release review signed off.
 - [ ] Decision log entry recorded.
 
@@ -1202,7 +1231,8 @@ report `evidenceLane: VISUAL` and abstain/downgrade.
 
 | Task | Acceptance Criteria | Definition of Done |
 | --- | --- | --- |
-| T1 — CI mutation test | Forces contamination scenario, asserts correct abstention; under `DEFER_VISUAL`, asserts no visual discriminator is reachable at all | Blocking in CI, not advisory, in either lane state |
+| T1 — CI mutation test (`GO_VISUAL`) | Forces contamination scenario, asserts correct abstention | Blocking in CI, not advisory |
+| T1-DEFER — CI negative-capability test (`DEFER_VISUAL`) | Proves no visual exact-model retriever, verifier, or feature (including `VisualMatch`) is reachable from the text-lane production path | Blocking in CI; re-run whenever any visual-capable component is added |
 | T2 — `evidenceLane` field wired through fusion | Field present on every response, derived server-side; always `TEXT_ONLY` under `DEFER_VISUAL` | Cannot be set/overridden by client input |
 
 ### P6.G1 — Shadow deployment
@@ -1241,6 +1271,11 @@ whatever data happened to look convenient):
 - [ ] Zero unresolved privacy/security MAJOR.
 - [ ] This gate's exit formally recorded before P6.G2 may begin — an exception requires an
       explicit, documented release waiver, never a default skip.
+- [ ] **Under `DEFER_VISUAL`, the text-lane calibration artifact T5 produces is frozen, versioned,
+      and reviewed before P6.G2's P6-T evaluation may start** (new MAJOR found in GPT-PM's round-2
+      confirmation, 2026-08-22: correcting AC-B03 to route P6.G2's P6-T input through "text
+      calibration" instead of P4.G3 left that artifact with no Story/Task actually producing it —
+      a hidden prerequisite the whole point of upfront AC/DoD was supposed to catch).
 - [ ] Release/ML/privacy review signed off.
 - [ ] Decision log entry recorded.
 
@@ -1253,6 +1288,7 @@ whatever data happened to look convenient):
 | T2 — App Check/rate-limit error SLO | SLO defined and measured | Met before P6.G2 opens |
 | T3 — Evidence-freshness exclusion (v4.4) | Pre-transition auth/availability samples excluded | Exclusion demonstrated against a real or simulated transition |
 | T4 — Lane-scoped exit under `DEFER_VISUAL` | Gate exit is provable from P2-only shadow telemetry alone | No dependency on P3/P4 telemetry that was never generated |
+| T5 — Freeze text-lane calibration artifact (P6-T; new, GPT-PM round-2, closes the ownership gap) | Calibration method/strata/pooling frozen from shadow P2 text evidence + a calibration-only set (no `SEALED_*` labels accessed); thresholds frozen; `textPolicyVersion` assigned; artifact hash recorded; insufficient calibration N blocks P6-T evaluation rather than proceeding | ML/data review signed off; artifact immutable before P6.G2's P6-T evaluation starts |
 
 ### P6.G2 — Independent real-gym evaluation
 
@@ -1262,12 +1298,14 @@ Purpose. Measure exact claims on blind real gyms/physical instances, run separat
 independently sealed) for the P6-T text lane and the P6-V visual lane, using the pre-registered
 per-model candidate set and multiplicity-corrected significance level.
 
-Inputs. **P6-T lane:** P2 text runtime + frozen text calibration/policy (from a text-only slice of
-P4.G3, or an equivalent text-only calibration pass if P4 was never built) + sealed blind real-gym
-and sealed OOD sets (P3.G2). **P6-V lane:** frozen artifacts/policy (P4.G3) + the same sealed sets —
-**`NOT_APPLICABLE` if `DEFER_VISUAL` was chosen** (lane split added — GPT-PM devil's-advocate review
-round, 2026-08-22, AC-B03: the original undivided "Frozen artifacts/policy (P4.G3)" input made the
-whole gate impossible to close under `DEFER_VISUAL`, since P4.G3 never exists in that world).
+Inputs. **P6-T lane:** P2 text runtime + P6.G1's T5 frozen text-calibration artifact (owner
+established in GPT-PM's round-2 confirmation, 2026-08-22 — this input is no longer an ownerless
+"text calibration" reference; it is a specific, versioned artifact produced and reviewed at P6.G1)
++ sealed blind real-gym and sealed OOD sets (P3.G2). **P6-V lane:** frozen artifacts/policy (P4.G3)
++ the same sealed sets — **`NOT_APPLICABLE` if `DEFER_VISUAL` was chosen** (lane split added —
+GPT-PM devil's-advocate review round, 2026-08-22, AC-B03: the original undivided "Frozen
+artifacts/policy (P4.G3)" input made the whole gate impossible to close under `DEFER_VISUAL`, since
+P4.G3 never exists in that world).
 Thresholds are already locked, per lane.
 
 Required review. ML/data + adversarial + release reviewer.
@@ -1369,8 +1407,15 @@ drill is actually re-run on the stated cadence, not only once.
   affected evidence) is adopted as this document's standing convention for exactly the kind of
   stale-spec risk GPT-PM flagged in the prior paragraph — used explicitly at P0.G5/P0.G6, P4.G3, and
   P6.G1 above.
+- **Round 2 happened** (2026-08-22): GPT-PM confirmed CLOSED for AC-B01, AC-B02, AC-B04, all 8
+  MAJORs (AC-M06 and AC-M08 with wording clarifications, both applied above), and the MINOR.
+  AC-B03 was PARTIALLY CLOSED — P6.G0's `DEFER_VISUAL` branch needed a real negative-capability
+  proof, not "vacuously satisfied," and P6.G2's `DEFER_VISUAL` text-calibration input needed an
+  owning Story/Task, which round 2 itself surfaced as a new MAJOR. Both are fixed above (P6.G0's two
+  verification branches; P6.G1's new T5).
 - **Not yet done, and required before this document may be treated as ready for implementation**
-  (operator instruction, 2026-08-22, round cap raised to 3): GPT-PM's confirmation, in a follow-up
-  round, that these fixes actually close the round-1 findings. Only after that verdict — and any
-  further resulting revision, within the 3-round cap — may this be closed as implementation-ready;
-  an unresolved disagreement past round 3 escalates to the operator rather than looping further.
+  (operator instruction, 2026-08-22, round cap raised to 3): GPT-PM's round-3 confirmation, narrowly
+  scoped to the two AC-B03 remainder items above — GPT-PM's own stated scope for this round, not a
+  full re-audit. Only after that verdict — and any further resulting revision, within the 3-round
+  cap — may this be closed as implementation-ready; an unresolved disagreement past round 3
+  escalates to the operator rather than looping further.

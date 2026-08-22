@@ -23642,3 +23642,44 @@ Not yet done: round-2 confirmation from GPT-PM that these fixes actually close t
 per the operator's round-cap-of-3 instruction ("увелич до 3 раундов перед тем как отправлять мне").
 The document is committed as round-2 DRAFT status, not yet implementation-ready.
 
+## GPT-PM round-2 confirmation: 11/13 CLOSED, AC-B03 partially closed + a new MAJOR found,
+## round-3 scope narrowed to those two items only
+
+Sent GPT-PM a per-finding summary of the round-1 fixes (not the whole document -- GPT-PM's GitHub
+connector 404'd on the specific file path, since the fixes were only committed locally, not pushed;
+GPT-PM handled this gracefully by verifying against the summary instead of the live file, noted
+explicitly in its reply). Round-2 verdict: AC-B01/B02/B04 and all 8 MAJORs + the MINOR CONFIRMED
+CLOSED. AC-B03 PARTIALLY CLOSED, for a real reason: the round-1 fix's "the contamination scenario is
+vacuously satisfied under DEFER_VISUAL" wording for P6.G0 was rejected -- the absence of a P4 build
+does not mechanically prove the absence of ANY visual-capable path in the codebase (GPT-PM
+specifically named the pre-existing `VisualMatch` feature, which P2.G4's own v4.1 Purpose text
+already requires not to be touched, as exactly the kind of pre-existing component this gap could
+miss). GPT-PM also surfaced a new MAJOR inside the round-1 AC-B03 fix itself: routing P6.G2's P6-T
+lane input to "text calibration" instead of P4.G3 removed the P4 dependency but left that
+calibration artifact with no owning Story/Task -- a hidden prerequisite, exactly the class of gap
+full upfront AC/DoD exists to catch.
+
+Both verified as real (not accepted on GPT-PM's word alone) and fixed:
+- P6.G0 now has two explicit verification branches instead of one: `GO_VISUAL` keeps the original
+  CI contamination-mutation test against real P4.G2 fusion; `DEFER_VISUAL` gets a distinct
+  negative-capability/configuration proof obligation (no visual exact-model retriever, verifier
+  path, or feature -- explicitly including `VisualMatch` -- reachable from the production text-lane
+  path; `evidenceLane` still server-derived; re-run required if any visual-capable component is
+  later added).
+- P6.G1 gains a new task, T5, owning the text-lane calibration artifact (method/strata/pooling,
+  thresholds, `textPolicyVersion`, artifact hash, ML/data review, immutable before P6.G2's P6-T
+  evaluation starts) -- P6.G2's Inputs line updated to cite this specific owned artifact instead of
+  an unowned reference.
+
+Also applied two non-blocking wording refinements GPT-PM flagged in the same round: AC-M06's
+calibration-strata dimensions clarified as candidates to consider (empirically pre-specified into
+actual strata or a pooling model), not a mandatory full cross-product that would create sparse
+strata; AC-M08's rehearsed-drill requirement narrowed to gates whose rollback is an actual
+operational mechanism (e.g. P6.G3's demotion) rather than every release-blocking gate uniformly
+(e.g. P3.G2's "sample too small -> stay blocked" has nothing to rehearse).
+
+GPT-PM's own stated round-3 scope: verify only these two items, not a full re-audit of the document.
+Round-3 message sent narrowly scoped to match. Document remains DRAFT, not implementation-ready,
+pending that round-3 verdict -- this is round 3 of the operator's 3-round cap; an unresolved
+disagreement past this round escalates to the operator rather than looping further.
+
