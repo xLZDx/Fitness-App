@@ -1,0 +1,472 @@
+<title>AC/DoD Консенсус</title>
+<style>
+  :root {
+    --bg: #f1ede2;
+    --surface: #ffffff;
+    --surface-2: #e9e3d3;
+    --ink: #201f1a;
+    --ink-dim: #5c574a;
+    --line: #d8d0ba;
+    --accent: #2c5f74;
+    --accent-ink: #ffffff;
+    --blocker: #a8392f;
+    --blocker-bg: #f7e2df;
+    --major: #a8730f;
+    --major-bg: #f6ead1;
+    --minor: #6d6a52;
+    --minor-bg: #ece7d5;
+    --closed: #3c7a52;
+    --closed-bg: #e1ede2;
+    --mono-bg: #ebe5d3;
+    --shadow: 0 1px 2px rgba(32,31,26,0.06), 0 8px 24px -12px rgba(32,31,26,0.18);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #17191a;
+      --surface: #1f2224;
+      --surface-2: #262a2b;
+      --ink: #ece8dc;
+      --ink-dim: #a6a290;
+      --line: #383c3a;
+      --accent: #7fb3c7;
+      --accent-ink: #0d1416;
+      --blocker: #e18378;
+      --blocker-bg: #33221f;
+      --major: #dcae5f;
+      --major-bg: #362c1a;
+      --minor: #b2ae98;
+      --minor-bg: #2b2a23;
+      --closed: #83c398;
+      --closed-bg: #1c2c20;
+      --mono-bg: #23262a;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17191a;
+    --surface: #1f2224;
+    --surface-2: #262a2b;
+    --ink: #ece8dc;
+    --ink-dim: #a6a290;
+    --line: #383c3a;
+    --accent: #7fb3c7;
+    --accent-ink: #0d1416;
+    --blocker: #e18378;
+    --blocker-bg: #33221f;
+    --major: #dcae5f;
+    --major-bg: #362c1a;
+    --minor: #b2ae98;
+    --minor-bg: #2b2a23;
+    --closed: #83c398;
+    --closed-bg: #1c2c20;
+    --mono-bg: #23262a;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
+
+  header { position: relative; padding-bottom: 1.5rem; border-bottom: 1px solid var(--line); }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.75rem;
+  }
+  h1 {
+    font-family: 'Newsreader', Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(1.9rem, 4.2vw, 2.75rem);
+    line-height: 1.15;
+    margin: 0 0 0.6rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .subhead { font-size: 1.05rem; color: var(--ink-dim); max-width: 62ch; margin: 0; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    background: var(--closed-bg);
+    color: var(--closed);
+    border: 1px solid color-mix(in srgb, var(--closed) 35%, transparent);
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    margin-top: 1rem;
+  }
+  .badge::before { content: "●"; font-size: 0.6rem; }
+
+  section { margin-top: 2.75rem; }
+  h2 {
+    font-family: 'Newsreader', Georgia, serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    margin: 0 0 1rem;
+    letter-spacing: -0.01em;
+  }
+  p { margin: 0 0 1rem; }
+  .lede { font-size: 1.05rem; }
+
+  .tldr {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .tldr p:last-child { margin-bottom: 0; }
+
+  code, .mono { font-family: 'IBM Plex Mono', monospace; font-size: 0.9em; }
+  .mono-chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    background: var(--mono-bg);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+  }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 2rem; margin-top: 1.5rem; }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    width: 2px;
+    background: var(--line);
+  }
+  .tl-item { position: relative; padding-bottom: 1.75rem; }
+  .tl-item:last-child { padding-bottom: 0; }
+  .tl-dot {
+    position: absolute;
+    left: -2rem;
+    top: 0.15rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .tl-dot.blocker { background: var(--blocker); }
+  .tl-dot.progress { background: var(--major); }
+  .tl-dot.closed { background: var(--closed); }
+  .tl-dot.neutral { background: var(--ink-dim); }
+  .tl-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 0.2rem;
+  }
+  .tl-title { font-weight: 600; margin-bottom: 0.3rem; }
+  .tl-body { color: var(--ink-dim); font-size: 0.96rem; }
+
+  /* findings table */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 0.92rem; min-width: 640px; }
+  th, td { text-align: left; padding: 0.65rem 0.9rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-dim); background: var(--surface-2); }
+  tr:last-child td { border-bottom: none; }
+  .sev {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+  .sev.blocker { background: var(--blocker-bg); color: var(--blocker); }
+  .sev.major { background: var(--major-bg); color: var(--major); }
+  .sev.minor { background: var(--minor-bg); color: var(--minor); }
+  .status-closed { color: var(--closed); font-weight: 600; }
+
+  /* spotlight */
+  .spotlight {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1.5rem 1.75rem;
+    box-shadow: var(--shadow);
+  }
+  .spotlight h3 { margin: 0 0 0.75rem; font-size: 1.1rem; font-family: 'Newsreader', serif; font-weight: 600; }
+  .diff-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+  @media (max-width: 640px) { .diff-row { grid-template-columns: 1fr; } }
+  .diff-col { padding: 0.9rem 1rem; border-radius: 8px; font-size: 0.88rem; }
+  .diff-col.before { background: var(--blocker-bg); }
+  .diff-col.after { background: var(--closed-bg); }
+  .diff-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; opacity: 0.8; }
+  .diff-col.before .diff-label { color: var(--blocker); }
+  .diff-col.after .diff-label { color: var(--closed); }
+
+  .verdict-box {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.75rem 2rem;
+    text-align: center;
+  }
+  .verdict-box .verdict-line {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--closed);
+    letter-spacing: 0.01em;
+  }
+  .verdict-box .counters {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 1.25rem 0;
+    flex-wrap: wrap;
+  }
+  .counter { text-align: center; }
+  .counter .n { font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--closed); }
+  .counter .lbl { font-size: 0.75rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+  blockquote {
+    text-align: left;
+    font-size: 0.92rem;
+    color: var(--ink-dim);
+    border-left: 3px solid var(--line);
+    padding-left: 1rem;
+    margin: 1.25rem 0 0;
+  }
+
+  ul.plain { padding-left: 1.2rem; margin: 0.5rem 0 1rem; }
+  ul.plain li { margin-bottom: 0.4rem; }
+
+  footer { margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); font-size: 0.85rem; color: var(--ink-dim); }
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">SPTR Equipment Recognition · Дизайн-документ</p>
+  <h1>Полный AC/DoD прошёл три раунда adversarial-ревью и достиг консенсуса</h1>
+  <p class="subhead">34 гейта P0–P6, структура Epic → Story → Task, разбор GPT-PM нашёл 4 BLOCKER-эквивалента + 8 MAJOR + 1 MINOR ещё на уровне спецификации — раньше, чем это стало бы багом в коде.</p>
+  <span class="badge">CONSENSUS · APPROVE FOR IMPLEMENTATION</span>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 28c3026</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <div class="tldr">
+    <p class="lede"><strong>Итог одной строкой:</strong> документ с полным AC/DoD для всех 34 гейтов v4.4 (структура Jira: Epic = фаза, Story = гейт, Task = deliverable) прошёл три раунда состязательного ревью GPT-PM и получил финальный вердикт <span class="mono-chip">CONSENSUS — APPROVE FOR IMPLEMENTATION</span>, 0 открытых BLOCKER/MAJOR/MINOR.</p>
+    <p>По пути было два поворота: сначала я реализовала облегчённую двухуровневую схему (полный AC/DoD только для ближайшей фазы, «скелеты» для остального) — вы это прямо отменили и потребовали полный AC/DoD везде и сразу, в иерархии Epic/Story/Task. Затем, уже на готовом документе, ревью GPT-PM нашло реальные, конкретные дефекты — не стилистику, а вещи вроде циклической зависимости между гейтами и отката уже закрытого design-инварианта. Всё исправлено и подтверждено.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Путь документа</h2>
+  <div class="timeline">
+    <div class="tl-item">
+      <span class="tl-dot neutral"></span>
+      <p class="tl-label">Черновик 1</p>
+      <p class="tl-title">Двухуровневая схема (по рекомендации GPT-PM)</p>
+      <p class="tl-body">Полный AC/DoD только для P0 и P1.G1, для остальных 27 гейтов — лёгкие «Gate Contracts» (purpose, зависимости, ревьюеры). Вы отменили это решение: «твой воркфлоу должен включать AC/DoD для всего документа и гейтов/подгейтов как в жире — эпик, стори, таск, и для всего есть AC/DoD».</p>
+    </div>
+    <div class="tl-item">
+      <span class="tl-dot progress"></span>
+      <p class="tl-label">Черновик 2</p>
+      <p class="tl-title">Полный AC/DoD для всех 34 гейтов, Epic → Story → Task</p>
+      <p class="tl-body">Каждая фаза получила Epic-уровневый AC/DoD, каждый гейт — полный Purpose/Inputs/Deliverables/Verification/Required review/Exit/Rollback в формате Story, каждый deliverable — отдельная Task-строка со своим AC и DoD. Собрано из verbatim-текста v4.1 + поправок v4.2/v4.3/v4.4, без фабрикации.</p>
+    </div>
+    <div class="tl-item">
+      <span class="tl-dot blocker"></span>
+      <p class="tl-label">Раунд 1 — devil's advocate</p>
+      <p class="tl-title">VERDICT: BLOCKER-equivalent findings — NOT IMPLEMENTATION-READY</p>
+      <p class="tl-body">4 BLOCKER-эквивалента, 8 MAJOR, 1 MINOR. Каждая находка независимо перепроверена против реального текста v4.1–v4.4 перед принятием — не на слово GPT. 3 подтвердились сразу, по одной (AC-B02) я дала один rebuttal — GPT-PM его не принял, привёл точную цитату из моего же текста P1.G6 и оказался прав.</p>
+    </div>
+    <div class="tl-item">
+      <span class="tl-dot progress"></span>
+      <p class="tl-label">Раунд 2</p>
+      <p class="tl-title">11 из 13 закрыто, 1 частично + новый MAJOR</p>
+      <p class="tl-body">AC-B03 (зависимость P6-T/P6-V от P4) была исправлена лейн-условностью, но формулировка «vacuously satisfied» для ветки DEFER_VISUAL оказалась недостаточно строгой — GPT-PM указал на уже существующую фичу <code>VisualMatch</code>, о которой я не подумала. Заодно моя же правка создала «повисший» вход (text calibration) без владельца-гейта.</p>
+    </div>
+    <div class="tl-item">
+      <span class="tl-dot closed"></span>
+      <p class="tl-label">Раунд 3 — узкий, только 2 пункта</p>
+      <p class="tl-title">CONSENSUS — APPROVE FOR IMPLEMENTATION</p>
+      <p class="tl-body">P6.G0 получил реальное доказательство «нет visual-пути» вместо пустой отговорки; P6.G1 получил новую задачу T5, владеющую артефактом text-калибровки. 0 открытых находок из 15 всего.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Все находки одним взглядом</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Severity</th><th>ID</th><th>Суть</th><th>Статус</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="sev blocker">BLOCKER</span></td><td class="mono">AC-B01</td><td>P2.G4/P2.G5: NEED_MORE_VIEW снова исключён из знаменателя — откат уже закрытого правила v4.3</td><td class="status-closed">Закрыто</td></tr>
+        <tr><td><span class="sev blocker">BLOCKER</span></td><td class="mono">AC-B02</td><td>P2.G3 требует textSupportStatus=VERIFIED, который сам зависит от P6-T — цикл</td><td class="status-closed">Закрыто (после 1 rebuttal)</td></tr>
+        <tr><td><span class="sev blocker">BLOCKER</span></td><td class="mono">AC-B03</td><td>P6.G0/G1/G2 жёстко зависят от P4 даже при легитимном DEFER_VISUAL</td><td class="status-closed">Закрыто (2 раунда)</td></tr>
+        <tr><td><span class="sev blocker">BLOCKER</span></td><td class="mono">AC-B04</td><td>P5 не переносит actionability/revocation-контракт из v4.2 §7.3/§7.4</td><td class="status-closed">Закрыто</td></tr>
+        <tr><td><span class="sev major">MAJOR</span></td><td class="mono">AC-M01…M08</td><td>P0.G5/G6 unconditional tasks, P1.G4 скрыто обязателен, преждевременные P1.G1-задачи, потерян simple retriever baseline, unchekable calibration AC, незамороженный shadow target, расхождение легенды DoD и rollback-артефакта</td><td class="status-closed">Все закрыты</td></tr>
+        <tr><td><span class="sev minor">MINOR</span></td><td class="mono">AC-m01</td><td>P6.G3 путает ABSTAIN и NOT_SUPPORTED</td><td class="status-closed">Закрыто</td></tr>
+        <tr><td><span class="sev major">MAJOR</span></td><td class="mono">round-2</td><td>Text-calibration артефакт P6-T lane без владельца-гейта</td><td class="status-closed">Закрыто (раунд 3)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <h2>Разбор: как выглядела настоящая находка</h2>
+  <div class="spotlight">
+    <h3>AC-B03 — «мы не строили P4» ≠ «visual-путь недоступен»</h3>
+    <p>Самый поучительный момент всего цикла. Когда P2.G5 легитимно выбирает <code>DEFER_VISUAL</code>, фаза P4 (визуальный поиск) вообще не строится. Мой первый фикс сказал: раз P4 не существует — тест на «визуальное заражение» текстового пути автоматически проходит. GPT-PM указал: отсутствие нового кода не доказывает отсутствие ЛЮБОГО визуального пути — в приложении уже есть отдельная фича <code>VisualMatch</code>, про которую я не подумала.</p>
+    <div class="diff-row">
+      <div class="diff-col before">
+        <div class="diff-label">Раунд 2 — отклонено</div>
+        <p style="margin:0">«Под DEFER_VISUAL тест существует, но его сценарий заражения тривиально проходит — сборка P4.G2 не нужна».</p>
+      </div>
+      <div class="diff-col after">
+        <div class="diff-label">Раунд 3 — принято</div>
+        <p style="margin:0">CI-доказательство: ни один визуальный retriever/verifier/фича (включая <code>VisualMatch</code>) не достижимы из production text-lane; при появлении нового визуального компонента без повторного прогона этого гейта — путь автоматически уходит в NOT_SUPPORTED, никогда не EXACT_MODEL.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Что происходило с инструментом ревью попутно</h2>
+  <p>Раунды 1–3 шли через <code>pm-bridge</code> — мост Claude↔ChatGPT с полной автоматизацией браузера. По вашему прямому указанию (после случая с «залипшей» проверкой автоматизации, которая на деле оказалась вашим же параллельным набором текста в том же окне ChatGPT) стандартный формат ответов GPT-PM изменён: теперь только простой Markdown в самом чате, без HTML/canvas-артефактов — файл сохраняю я сама. Дважды проверка «сообщение отправлено» ложно срабатывала как ошибка при реально успешной отправке — каждый раз проверялось напрямую по содержимому страницы перед повторной попыткой, чтобы не задублировать сообщения.</p>
+</section>
+
+<section>
+  <h2>Что дальше</h2>
+  <ul class="plain">
+    <li>Документ живёт в <code>core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</code>, три коммита (`5781416`, `fca682c`, `28c3026`), локально — push не выполнялся, нужно отдельное подтверждение.</li>
+    <li>GPT-PM явно подтвердил: следующий review должен быть уже про реальный код и evidence конкретного гейта, не про дизайн-документ.</li>
+    <li>Одобрение означает готовность начать фазированную реализацию по этим gate contracts — оно не означает, что какой-либо production-гейт уже пройден: каждый Story всё ещё обязан отдельно доказать свой AC/DoD.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="verdict-box">
+    <div class="counters">
+      <div class="counter"><div class="n">0</div><div class="lbl">Open Blocker</div></div>
+      <div class="counter"><div class="n">0</div><div class="lbl">Open Major</div></div>
+      <div class="counter"><div class="n">0</div><div class="lbl">Open Minor</div></div>
+      <div class="counter"><div class="n">3</div><div class="lbl">Раунда ревью</div></div>
+    </div>
+    <p class="verdict-line">REVIEW STATUS: CONSENSUS · VERDICT: APPROVE FOR IMPLEMENTATION</p>
+    <blockquote>«Важно только значение этого approval: можно начинать phased implementation по определённым gate contracts. Это не означает, что какой-либо production gate уже пройден.» — GPT-PM, раунд 3, 2026-08-22</blockquote>
+  </div>
+</section>
+
+<footer>
+  Полный текст находок и оба черновика документа — в <code>core/design/sptr_equipment_recognition_v4_1/</code> и в <code>core/DECISION_LOG.md</code> проекта.
+</footer>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

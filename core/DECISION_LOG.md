@@ -23728,3 +23728,16 @@ Document status updated to CONSENSUS / IMPLEMENTATION-READY at the top of the fi
 format report (RU+EN) covering this whole AC/DoD authoring-and-review arc is the next step, per
 standing report requirements for a milestone of this size.
 
+---
+
+## 2026-08-22 — house-format report published for the AC/DoD authoring-and-review arc
+
+`reports/SPTR_EQUIPMENT_RECOGNITION_ACDOD_CONSENSUS_2026-08-22.ru.html` (published as an Artifact,
+linked to the operator in-session) and the English durable twin
+`reports/SPTR_EQUIPMENT_RECOGNITION_ACDOD_CONSENSUS_2026-08-22.html` cover the full arc: the
+operator's Jira-hierarchy override of the original two-tier scheme, full 34-gate Epic/Story/Task
+authoring, and all three GPT-PM adversarial review rounds (round 1: 4 blocker-equivalent + 8 major +
+1 minor findings; round 2: 11/13 closed + 1 partial + 1 new major; round 3: CONSENSUS -- APPROVE FOR
+IMPLEMENTATION, 0 open findings). Both files carry the `report_conform.py` provenance block and
+copy-page button. Fulfils the operator's explicit "но от тебя я жду html report в конце."
+
