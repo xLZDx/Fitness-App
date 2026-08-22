@@ -23589,3 +23589,56 @@ proposing or silently applying a lightweight/JIT-deferred scheme, even when an e
 recommends the lighter approach -- surface that recommendation's tradeoff to the operator and let
 them decide.
 
+## GPT-PM devil's-advocate review, round 1: full AC/DoD document found NOT IMPLEMENTATION-READY,
+## 4 BLOCKER-equivalent + 8 MAJOR + 1 MINOR -- all fixed inline, pending round-2 confirmation
+
+Per the operator's explicit requirement ("а потом еще раунд ревью AC/DoD с гпт и только потом мы
+можем закрыть это как готово к имплементации"), the full AC/DoD document (previous entry) was sent
+to GPT-PM via PM Bridge for a devil's-advocate review before being treated as implementation-ready.
+Verdict: BLOCKER-equivalent findings, NOT IMPLEMENTATION-READY -- 4 BLOCKER-equivalent (AC-B01..B04)
++ 8 MAJOR (AC-M01..M08) + 1 MINOR (AC-m01). Full findings captured in the conversation transcript
+(not separately filed to disk this round, per the operator's same-day instruction to stop asking
+GPT-PM for HTML/canvas artifacts and use plain Markdown replies instead -- see the reversed
+`feedback-pm-bridge-request-html-artifact-each-round` memory).
+
+Each finding was independently re-verified against the actual v4.1-v4.4 source text before being
+accepted (standing "не верь гпт, все проверяй сам" discipline), not accepted on GPT-PM's word alone:
+
+- AC-B01 (P2.G4/P2.G5 `NEED_MORE_VIEW` denominator exclusion) -- CONFIRMED, exact match: the
+  document's first draft carried v4.2's original exclusion rule verbatim, missing v4.3's explicit
+  binding reversal ("NEED_MORE_VIEW remains IN the P2.G5 value-checkpoint denominator", v4.3 line
+  285). Root cause: v4.3's correction to P2.G4/P2.G5 specifically was not cross-referenced when the
+  AC/DoD document was assembled from v4.1+v4.2 base text.
+- AC-B02 (P2.G3 circular dependency on P6-T `VERIFIED`) -- rebutted once (v4.1 SS6.2 defines
+  `textSupportStatus: VERIFIED` as a runtime catalog-policy predicate, not obviously a P6-gate
+  requirement), rebuttal NOT ACCEPTED by GPT-PM: v4.2's own P1.G6 gate deliberately hands P2 only an
+  `EXPERIMENTAL` status, reserving `VERIFIED` for after P6-T's own promotion pipeline -- confirmed
+  from the AC/DoD document's own P1.G6 text. Fix: P2.G3 now requires only `EXPERIMENTAL` to close,
+  never `VERIFIED`; explicit SHADOW/PRODUCTION runtime-policy split added.
+- AC-B03 (P6.G0/G1/G2 hard-depend on P4 even under a legitimate `DEFER_VISUAL`) -- CONFIRMED as a
+  real gap, inherited from the underlying v4.1-v4.4 design's own unconditional Inputs text (not
+  newly introduced by the AC/DoD consolidation) -- lane-conditional carve-outs added so P6-T can
+  close on P2-only evidence when P4 was never built.
+- AC-B04 (P5 doesn't carry the v4.2 SS7.3/SS7.4 actionability/revocation contract) -- CONFIRMED: the
+  v4.2 phase table itself flagged "history with actionabilityStatus" and "equipment page with
+  render-time re-validation" as v4.2 additions to P5, cross-referenced via SS6.6 rather than
+  rewriting the P5 gate text directly -- missed when the AC/DoD document marked P5.G2/G3/G5
+  "unchanged from v4.1." Fix: `actionabilityStatus` field, demotion-propagation, render-time
+  re-validation, and correction-sets-`USER_REJECTED` all added to P5.G2/G3/G5.
+- AC-M01..M08, AC-m01 -- all accepted without dispute and fixed mechanically (P0.G5/G6 conditional
+  tasks; P1 Epic no longer silently requires optional P1.G4; P1.G1's vector-index/session-mutation
+  tasks moved to their real owners P4.G1/P2.G3; P4.G1 gained a real simple-retriever baseline;
+  P4.G3's calibration strata now freeze before fitting instead of assuming "4 identity levels" = 4
+  curves; P6.G1's shadow target must freeze before the first counted sample; a uniform
+  rollback-artifact requirement added to the DoD legend for every Story; P6.G3's `NOT_SUPPORTED`
+  wording no longer conflates with a healthy `ABSTAIN`).
+
+GPT-PM's own recommended `TO_BE_FROZEN_AT_GATE_OPEN` meta-invariant (an AC parameter that depends on
+predecessor evidence may carry that status instead of a fabricated concrete value; freezing it later
+requires a new gate-contract version + rationale and invalidates affected evidence) was adopted as
+this document's standing convention, cited explicitly at P0.G5/P0.G6, P4.G3, and P6.G1.
+
+Not yet done: round-2 confirmation from GPT-PM that these fixes actually close the round-1 findings,
+per the operator's round-cap-of-3 instruction ("увелич до 3 раундов перед тем как отправлять мне").
+The document is committed as round-2 DRAFT status, not yet implementation-ready.
+

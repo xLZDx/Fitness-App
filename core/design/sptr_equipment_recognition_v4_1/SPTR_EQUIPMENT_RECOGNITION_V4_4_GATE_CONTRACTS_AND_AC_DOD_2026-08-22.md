@@ -1,9 +1,15 @@
 # SPTR Equipment Recognition v4.4 — full AC/DoD reference (Epic / Story / Task)
 
-**Status:** DRAFT, pending a GPT-PM review round before it may be treated as ready for
-implementation (operator instruction, 2026-08-22: "а потом еще раунд ревью AC/DoD с гпт и только
-потом мы можем закрыть это как готово к имплементации" — a GPT-PM review round comes after this
-draft, and only after that verdict can this be closed as implementation-ready). Supersedes the
+**Status:** DRAFT, round 2 of a 3-round cap (operator instruction, 2026-08-22: "увелич до 3 раундов
+перед тем как отправлять мне" — up to 3 rounds before escalating to the operator). Round 1: GPT-PM's
+devil's-advocate review found **VERDICT: BLOCKER-equivalent findings — NOT IMPLEMENTATION-READY**
+(4 BLOCKER-equivalent, 8 MAJOR, 1 MINOR). All findings addressed below, inline at each affected
+gate, cited by ID (AC-B01..B04, AC-M01..M08, AC-m01) — 3 BLOCKERs and all MAJOR/MINOR findings
+independently re-verified against the actual v4.1-v4.4 source text before the fix was written; the
+4th (AC-B02) went through exactly one rebuttal, which GPT-PM did not accept, with a clear mechanical
+fix supplied. Not yet implementation-ready — pending GPT-PM's confirmation that these fixes actually
+close the findings (round 2), per the operator's requirement that a GPT-PM verdict, not just
+Claude's own fix, gates this document's implementation-ready status. Supersedes the
 first draft of this file (two-tier: full AC/DoD for P0+P1.G1 only, lightweight contracts for the
 rest). Operator instruction, 2026-08-22, verbatim: "ты должен слушать меня, я говорю что твой
 воркфлоу должен включать AC/DoD для всего документа и гейтов/подгейтов как в жире — эпик, стори,
@@ -35,6 +41,19 @@ this pass, unless the operator asks to extend it.
 - **Definition of Done (DoD)** — everything that must be true before the item is considered closed,
   including AC passing, review sign-off, and (at Story level) the rollback/failure-mode plan being
   documented. DoD is always AC plus process, never AC alone.
+
+**Standing rule, every Story DoD (added — GPT-PM devil's-advocate review round, 2026-08-22, AC-M08:
+the legend above already defined DoD as including "the rollback/failure-mode plan being documented,"
+but most individual Story DoD checklists below never actually checked for it — the `Rollback /
+failure mode` line existed as prose per gate, with nothing forcing it to be an executable, reviewed
+artifact rather than a sentence nobody has to act on):** every Story DoD in this document is bound
+by one uniform, additional item, whether or not it is repeated as its own bullet in that Story's
+checklist: **the gate's `Rollback / failure mode` text must correspond to a linked, reviewed
+artifact (a runbook, a feature flag with a tested disable path, a documented revert procedure) —
+not prose alone.** A rehearsed drill (an actual, dated, re-run exercise) is required only where
+rollback is operationally significant — release-blocking and production-promotion gates
+(`P0.G0`, `P2.G3`, `P6.G0`–`P6.G3`, and any gate marked `RELEASE-BLOCKING`) — not for every
+foundation/adapter gate, where "the artifact exists and was reviewed" is sufficient.
 
 ---
 
@@ -232,12 +251,16 @@ duplicates the existing region for already-deployed payment/account functions.
 - [ ] Firebase/backend + security + architecture review signed off.
 - [ ] Decision log entry recorded.
 
-**Tasks:**
+**Tasks** (T1/T2 made conditional — GPT-PM devil's-advocate review round, 2026-08-22, AC-M01: the
+original unconditional KNN/App-Check tasks made outcome (c) "stay OCR/text-only" impossible to
+reach cleanly when it's specifically the unavailability/unviability of visual infrastructure that
+leads to it):
 
 | Task | Acceptance Criteria | Definition of Done |
 | --- | --- | --- |
-| T1 — Real staging-project KNN smoke test | Smoke test runs against a real staging project, not just emulator | Result recorded with latency/cost numbers |
-| T2 — App Check callable smoke test | Callable path tested under both enforcement states relevant to shadow/production | Pass/fail recorded per state |
+| T0 — Always-required decision evidence | Cost/complexity/data-residency review sufficient to choose among (a)/(b)/(c) | Decision documented regardless of which outcome is chosen |
+| T1 — Real staging-project KNN smoke test | Runs against a real staging project — **only if (a)/(b) remain viable after T0** | Result recorded with latency/cost numbers, or explicitly skipped with reason under (c) |
+| T2 — App Check callable smoke test | Tested under both enforcement states — **only if (a)/(b) remain viable after T0** | Pass/fail recorded per state, or explicitly skipped with reason under (c) |
 | T3 — Region outcome decision | One of (a) colocated / (b) split-region with latency budget / (c) OCR/text-only defer chosen | Decision documented with the evidence that drove it |
 
 ### P0.G6 — Functions deployment isolation decision
@@ -267,13 +290,16 @@ architectural assertion.
 - [ ] Backend/architecture + release engineering review signed off.
 - [ ] Decision log entry recorded.
 
-**Tasks:**
+**Tasks** (T2 made conditional — GPT-PM devil's-advocate review round, 2026-08-22, AC-M02: an
+unconditional `IDENTITY` scaling profile task made no sense if strategy (a), a fully separate
+codebase, was chosen; conversely, choosing (b) without T3 actually passing forces a fallback to (a),
+per the corrected T1 below):
 
 | Task | Acceptance Criteria | Definition of Done |
 | --- | --- | --- |
-| T1 — Isolation strategy decision | (a) or (b) chosen with evidence, not by default | Decision documented with the regression test proving it |
-| T2 — New `IDENTITY` scaling profile | Profile has its own `maxInstances`/memory override in `scaling.ts` | Profile merged and referenced by identity Functions |
-| T3 — Stripe regression check wired to identity deploys | A deliberately-broken identity module does not block `stripeWebhook` | CI/deploy pipeline demonstrates this live, not by inspection only |
+| T1 — Isolation strategy decision | (a) or (b) chosen with evidence, not by default; **if (b) is chosen but does not pass T3's deliberately-broken-module test, the gate must fall back to (a) rather than exit on a failing (b)** | Decision documented with the regression test proving it |
+| T2 — New `IDENTITY` scaling profile | **Applies only under strategy (b)** — profile has its own `maxInstances`/memory override in `scaling.ts` | Profile merged and referenced by identity Functions; `NOT_APPLICABLE` under strategy (a) |
+| T3 — Stripe regression check wired to identity deploys | A deliberately-broken identity module does not block `stripeWebhook` | CI/deploy pipeline demonstrates this live, not by inspection only, for whichever strategy was actually chosen |
 
 ---
 
@@ -282,8 +308,13 @@ architectural assertion.
 **Epic AC:** ontology/schema (P1.G1) is in place and access-controlled before any adapter (P1.G2-4)
 writes to it; reconciliation (P1.G5) resolves the pilot catalog; the publish pipeline (P1.G6) is the
 only path any status reaches `VERIFIED`/`ACTIVE`.
-**Epic DoD:** all 6 gates closed; P1.G1's mutation-test suites both green in CI; no adapter or
-pipeline bypasses `firestore.rules`'s authority boundary.
+**Epic DoD:** P1.G1, P1.G2, P1.G3, P1.G5, P1.G6 closed (mandatory); P1.G4 (WGER ingestion) closed OR
+explicitly marked `DEFERRED_NOT_REQUIRED` — **corrected, GPT-PM devil's-advocate review round,
+2026-08-22, AC-M03: the original "all 6 gates closed" wording silently turned P1.G4, which its own
+gate text calls OPTIONAL/PARALLEL and explicitly says "does not block P2," into a hidden mandatory
+prerequisite for this Epic's own exit. P1.G5 (reconciliation) must be provably able to run and close
+using only P1.G1-G3 output when P1.G4 is `NOT_APPLICABLE`.** P1.G1's mutation-test suites both green
+in CI; no adapter or pipeline bypasses `firestore.rules`'s authority boundary.
 
 ### P1.G1 — Equipment identity ontology & Firestore schema
 
@@ -302,13 +333,21 @@ Rollback / failure mode. Schema changes remain additive; no migration of exercis
 unpassed mutation-test suite blocks this gate's exit, full stop.
 
 **Story AC:** the emulator mutation-test suite passes (client CREATE/UPDATE authority fields →
-DENY, server/admin write → ALLOW, cross-account → DENY, using the existing `test:rules` npm script);
-a session-mutation test proves no code path can update a pinned `RecognitionAuthorityTuple` field
-once written — only replace the whole session via a new `recognitionSessionId`.
+DENY, server/admin write → ALLOW, cross-account → DENY, using the existing `test:rules` npm script).
+**Scope corrected — GPT-PM devil's-advocate review round, 2026-08-22, AC-M04: the original AC/T3/T4
+required vector indexes and a session-runtime mutation test before P4.G1's retriever decision and
+P2.G3's session runtime even exist, forcing speculative work that would likely need rebuilding.
+P1.G1 now covers schema/rules/indexes for queries P1 itself actually issues; vector indexes move to
+P4.G1 (their real owner), and the `RecognitionAuthorityTuple` session-mutation test moves to P2.G3
+(where session runtime is first introduced) — P1.G1 keeps only the schema/rules-level authority
+invariant (the field is declared immutable in the schema/rules layer even before any runtime session
+exists to test against).**
 
 **Story DoD:**
 - [ ] Can represent 50 pilot models without changing `equipmentId` semantics.
-- [ ] Both mutation-test suites (rules + session-authority) pass in CI.
+- [ ] The rules mutation-test suite (client/server/cross-account DENY/ALLOW/DENY) passes in CI.
+- [ ] Schema/rules declare `RecognitionAuthorityTuple` fields immutable post-write; the *runtime*
+      session-mutation test itself is P2.G3's DoD item, not P1.G1's — see P2.G3.
 - [ ] Flutter/architecture + ontology + Firebase/backend + security review signed off.
 - [ ] Decision log entry recorded.
 
@@ -318,8 +357,8 @@ once written — only replace the whole session via a new `recognitionSessionId`
 | --- | --- | --- |
 | T1 — Schemas, converters, validators, indexes | Schema validation + multi-function model tests pass | `modelId`/`canonicalSlug` uniqueness enforced |
 | T2 — `firestore.rules` authority exclusions | `recognised_models`/`equipment_identity_sessions`/identity telemetry excluded from `users/{uid}/**` client-write wildcard | `test:rules` suite proves DENY/ALLOW/DENY as specified |
-| T3 — `firestore.indexes.json` entries | Every new query pattern (including vector indexes) has an index | Queries run without missing-index errors |
-| T4 — Pinned `RecognitionAuthorityTuple` immutability | No code path can mutate a pinned field post-write | Session-mutation test in CI, added per v4.4 |
+| T3 — `firestore.indexes.json` entries for P1 queries only | Index covers every query pattern P1 itself issues | Queries run without missing-index errors; **vector indexes deferred to P4.G1**, not built speculatively here |
+| T4 — Schema/rules-level `RecognitionAuthorityTuple` immutability declaration | Field is declared immutable at the schema/rules layer | **Runtime session-mutation test itself lives at P2.G3** (see that gate's T5), once session runtime exists to test |
 
 ### P1.G2 — Official P0 brand adapters
 
@@ -393,11 +432,15 @@ Rollback / failure mode. Delete staging/import output without product impact.
 test both pass.
 
 **Story DoD:**
-- [ ] Staging snapshot and mapping report reproducible with per-object provenance.
+- [ ] Staging snapshot and mapping report reproducible with per-object provenance — **OR this gate
+      is formally marked `DEFERRED_NOT_REQUIRED` (GPT-PM devil's-advocate review round, 2026-08-22,
+      AC-M03: this gate does not block P2 or the P1 Epic's own exit; `DEFERRED_NOT_REQUIRED` makes
+      that skip an explicit, recorded state rather than a forced fictitious closure).**
 - [ ] Production reuse is separately license-gated (explicitly not unlocked by this gate).
-- [ ] Gate confirmed OPTIONAL/PARALLEL — does not block P2 machine identity.
-- [ ] Ontology + content/safety + provenance review signed off.
-- [ ] Decision log entry recorded.
+- [ ] Gate confirmed OPTIONAL/PARALLEL — does not block P2 machine identity, and P1's own Epic exit
+      does not require this gate closed (see the corrected P1 Epic DoD above).
+- [ ] Ontology + content/safety + provenance review signed off (only if not `DEFERRED_NOT_REQUIRED`).
+- [ ] Decision log entry recorded either way.
 
 **Tasks:**
 
@@ -413,7 +456,9 @@ CLASSIFICATION: POST_MVP_HIGH · Source: v4.1 §9, unchanged
 
 Purpose. Compare the SPTR functional catalog, exact models, and external exercise/source data.
 
-Inputs. P1.G1-G4 outputs.
+Inputs. P1.G1-G3 outputs (mandatory); P1.G4 output **only if not `DEFERRED_NOT_REQUIRED`** —
+corrected, GPT-PM devil's-advocate review round, 2026-08-22, AC-M03: reconciliation must be provably
+runnable and closeable from P1.G1-G3 alone when wger ingestion was deferred.
 
 Required review. Ontology curator + product/data review.
 
@@ -563,9 +608,22 @@ production: inherits the platform's staged rollout, never independently asserted
 limiting goes through the existing `abuse_guard.ts`/`users/{uid}/usage/{day}` mechanism — never a
 new competing `rate_limit.ts`.
 
-**Story DoD:**
-- [ ] Verified text-supported (P6-T `VERIFIED`) pilot models return shadow exact IDs with full
-      evidence/versioning, including `textPolicyVersion`.
+**Story DoD** (corrected — GPT-PM devil's-advocate review round, 2026-08-22, AC-B02: the earlier
+"(P6-T `VERIFIED`)" wording created a real circular dependency, since P1.G6 deliberately gates
+`VERIFIED` behind P6-T's own promotion pipeline and only ever hands P2 an `EXPERIMENTAL` status —
+P2.G3 closing on `VERIFIED` would require P6-T, which itself requires P2 to already exist. Fix is
+wording-only, no architecture change; GPT-PM confirmed rebuttal NOT ACCEPTED, finding CONFIRMED,
+required change mechanical):
+- [ ] Pilot models with an auditable `textSupportStatus: EXPERIMENTAL` (from P1.G6) can produce
+      shadow-only exact identity candidates with full evidence and pinned authority/versioning,
+      including `textPolicyVersion`.
+- [ ] P2.G3 does **not** require `textSupportStatus: VERIFIED` for gate closure, and does not
+      grant or imply production authorization — the `EXPERIMENTAL` → `VERIFIED` transition is owned
+      exclusively by P6-T after its own calibration + sealed evaluation + model-by-model promotion
+      gates pass (see P6.G2/P6.G3).
+- [ ] Runtime policy split is explicit: SHADOW — `EXPERIMENTAL` may produce exact candidate
+      evidence; PRODUCTION — an `EXACT_MODEL` claim still requires `VERIFIED` (v4.1 §6.2's
+      production cheap-exact-path condition remains binding for production, unaffected by this fix).
 - [ ] No second, incompatible quota store exists.
 - [ ] Backend/security + ontology review signed off.
 - [ ] Decision log entry recorded.
@@ -578,10 +636,14 @@ new competing `rate_limit.ts`.
 | T2 — Identity-scan quota class in `abuse_guard.ts` | No new competing rate-limit store created | Quota class added to the existing mechanism only |
 | T3 — App Check conditional enforcement | Enforcement state follows P0.G0's status, not a hardcoded flag | Shadow/production behavior both tested |
 | T4 — `textPolicyVersion` field | Every response carries the policy version used | Field present and versioned in evidence records |
+| T5 — Shadow-only on `EXPERIMENTAL`, never `VERIFIED` required | P2.G3 accepts `EXPERIMENTAL` catalog status, never blocks on `VERIFIED` | Test proves an `EXPERIMENTAL`-only model still produces a shadow exact candidate |
+| T6 — Runtime `RecognitionAuthorityTuple` session-mutation test (moved here from P1.G1, AC-M04) | No code path can mutate a pinned field once a real session exists | Session-mutation test in CI, at the point session runtime actually exists |
 
 ### P2.G4 — Additive mobile identity contract & progressive UX plumbing
 
-CLASSIFICATION: POST_MVP_HIGH · Source: v4.1 §9 (Purpose) + v4.2 rewrite (Deliverables, per §7.1)
+CLASSIFICATION: POST_MVP_HIGH · Source: v4.1 §9 (Purpose) + v4.2 rewrite (Deliverables, per §7.1) +
+v4.3 correction (closes N-MAJOR-2's mobile-side half — GPT-PM devil's-advocate review round,
+2026-08-22, AC-B01: this document's first draft still carried v4.2's since-reversed exclusion rule)
 
 Purpose. Add `EquipmentIdentity` to the result UI without changing `VisualMatch` or generic scanner
 history.
@@ -595,14 +657,17 @@ identical.
 
 **Story AC:** `EquipmentIdentity` is served by a separate `family(scanId)` provider, never merged
 into `ScanResult` (binding rule, §7.1); `NEED_MORE_VIEW` renders as a plain re-scan prompt until
-P5.G1 ships guided multi-view, and is excluded from P2.G5's value-checkpoint arithmetic until then;
-widget/state tests cover type-only/brand/exact/needMoreView/unknown/cancelled/unavailable states;
+P5.G1 ships guided multi-view, **and — v4.3 binding, reversing v4.2's original interim rule —
+remains IN P2.G5's value-checkpoint denominator, counted as "OCR unresolved" and shown separately
+only as a recoverable UX outcome, never excluded from the arithmetic**; widget/state tests cover
+type-only/brand/exact/needMoreView/unknown/cancelled/unavailable states;
 **`scanner_page_test.dart` and `scan_controller_test.dart` pass completely unmodified** — this is
 the literal, testable definition of "additive" for this gate.
 
 **Story DoD:**
 - [ ] Exact identity shown in non-production/shadow UI without blocking exercises.
 - [ ] Both pre-existing generic test files pass byte-for-byte unmodified.
+- [ ] `NEED_MORE_VIEW` scans are present and counted in P2.G5's denominator (not filtered out).
 - [ ] Flutter/product UX + safety review signed off.
 - [ ] Decision log entry recorded.
 
@@ -612,13 +677,14 @@ the literal, testable definition of "additive" for this gate.
 | --- | --- | --- |
 | T1 — `family(scanId)` provider | Not merged into `ScanResult` | Verified by code review against §7.1's binding rule |
 | T2 — Progressive type-first rendering | No spinner dependency on exact identity | UI renders type result before identity resolves |
-| T3 — `NEED_MORE_VIEW` interim prompt | Plain re-scan prompt, excluded from P2.G5 arithmetic | Excluded flag verified in the value-checkpoint report |
+| T3 — `NEED_MORE_VIEW` interim prompt, counted not excluded | Plain re-scan prompt; scan stays in P2.G5's denominator as "OCR unresolved" | Denominator-integrity assertion in P2.G5's report shows the scan counted, not dropped |
 | T4 — Regression proof | `scanner_page_test.dart`/`scan_controller_test.dart` unmodified | Diff shows zero changes to those two files |
 
 ### P2.G5 — OCR-only shadow & value checkpoint
 
-CLASSIFICATION: POST_MVP_HIGH / GO-NO-GO · Source: v4.1 §9, unchanged (now explicitly feeds the
-P6-T lane per v4.2, rather than being a dead end)
+CLASSIFICATION: POST_MVP_HIGH / GO-NO-GO · Source: v4.1 §9 (Purpose/Deliverables) + v4.3 correction
+(closes N-MAJOR-2 — denominator includes `NEED_MORE_VIEW`, GPT-PM devil's-advocate review round,
+2026-08-22, AC-B01) — now explicitly feeds the P6-T lane per v4.2, rather than being a dead end
 
 Purpose. Prove that Brand → Line → Model catalog + structured OCR creates enough real user value to
 justify the more expensive visual-retrieval phases now.
@@ -631,11 +697,14 @@ Required review. Product + ML/data + architecture.
 Rollback / failure mode. No sunk-cost escalation — catalog/OCR value remains useful either way.
 
 **Story AC:** no production exact claim is made unless `textSupportStatus` and policy gates already
-pass; comparison against the current generic scanner never uses sealed blind-test labels.
+pass; comparison against the current generic scanner never uses sealed blind-test labels; **the
+value checkpoint is computed over all eligible scans, including `NEED_MORE_VIEW` — v4.2's original
+exclusion is binding-reversed by v4.3 and must not resurface as an "interim" carve-out.**
 
 **Story DoD:**
 - [ ] GO_VISUAL / DEFER_VISUAL decision explicitly recorded, not implied.
 - [ ] GO only if visual retrieval has a measured unmet need.
+- [ ] The report's denominator integrity is checked: total eligible scans = resolved + `NEED_MORE_VIEW` (OCR unresolved) + other terminal outcomes, with no silent drop.
 - [ ] Product + ML/data + architecture review signed off.
 - [ ] Decision log entry recorded.
 
@@ -643,8 +712,8 @@ pass; comparison against the current generic scanner never uses sealed blind-tes
 
 | Task | Acceptance Criteria | Definition of Done |
 | --- | --- | --- |
-| T1 — OCR-only quality/value report | Report built from real shadow data, not projections | Report reviewed by product + ML/data |
-| T2 — GO_VISUAL / DEFER_VISUAL decision | Decision explicit, evidence-backed | Recorded in decision log with the evidence cited |
+| T1 — OCR-only quality/value report | Report built from real shadow data, not projections; `NEED_MORE_VIEW` counted as OCR-unresolved, not excluded | Report reviewed by product + ML/data |
+| T2 — GO_VISUAL / DEFER_VISUAL decision | Decision explicit, evidence-backed, using the corrected (inclusive) denominator | Recorded in decision log with the evidence cited |
 
 ---
 
@@ -774,10 +843,16 @@ Required review. Backend/security + ML review.
 Rollback / failure mode. Turn off visual path; OCR/type path remains.
 
 **Story AC:** version/dimension compatibility and `catalogVersion` filtering checked; top-K
-correctness verified; latency/cost benchmarked; no protected exemplar leaks to the client.
+correctness verified; latency/cost benchmarked; no protected exemplar leaks to the client; **a
+simple cached/brute-force retriever baseline is actually built and measured, not assumed inferior —
+GPT-PM devil's-advocate review round, 2026-08-22, AC-M05: the Purpose text says "choose the
+simplest retriever that meets the bar," but the original Tasks jumped straight to Vertex + Firestore
+KNN with no simple comparator, letting Firestore win by default because nothing simpler was ever
+measured.**
 
 **Story DoD:**
-- [ ] Retriever choice justified by benchmark; Firestore stays preferred if it clears the bar.
+- [ ] Retriever choice justified by benchmark against the simple baseline, not asserted; Firestore
+      stays preferred only if it actually clears the bar the simple baseline sets.
 - [ ] Backend/security + ML review signed off.
 - [ ] Decision log entry recorded.
 
@@ -785,9 +860,10 @@ correctness verified; latency/cost benchmarked; no protected exemplar leaks to t
 
 | Task | Acceptance Criteria | Definition of Done |
 | --- | --- | --- |
+| T0 — Simple cached/brute-force baseline | A real, working brute-force/cached comparator exists behind the same `VectorRetriever` interface | Compared on quality/top-K, p50/p95 latency, cost, and operational complexity against Firestore KNN |
 | T1 — `EmbeddingProvider`/`VectorRetriever` interfaces | Interfaces implemented against Vertex + Firestore KNN | Interchangeable without touching callers |
 | T2 — Top-K correctness + no-leakage test | Top-K matches expected; no exemplar data reaches the client | Both tests pass in CI |
-| T3 — Latency/cost benchmark | Real numbers recorded at pilot scale | Benchmark reviewed against P0.G5's region decision |
+| T3 — Latency/cost benchmark | Real numbers recorded at pilot scale, **for both the simple baseline and Firestore KNN** | Benchmark reviewed against P0.G5's region decision |
 
 ### P4.G2 — Evidence fusion
 
@@ -844,11 +920,19 @@ TYPE_ONLY / BRAND+TYPE remain available.
 and sensitivity/threshold stability all checked; no sealed-test tuning occurs; the exact one-sided
 Clopper-Pearson method is explicitly named.
 
-**Story DoD:**
+**Story DoD** (corrected — GPT-PM devil's-advocate review round, 2026-08-22, AC-M06: "~20
+images/model" and "4 identity levels" were not actually a checkable DoD, since calibration also
+varies by evidence class, TEXT_ONLY/VISUAL lane, verifier-invoked state, and the specific
+calibration model chosen — a gate could formally close with an insufficient effective N per real
+stratum, forcing a full recalibration once segmentation appears):
 - [ ] Calibration artifact explicitly names the fusion→calibration split (which function produces
       the raw score, which calibrates it).
-- [ ] Curve count checked against the calibration set's minimum ~20-images/model target — revisited
-      if inadequate for the number of curves actually required (4 identity levels).
+- [ ] Calibration strata/model and the minimum independent-encounters-per-stratum (or an explicit
+      pooling rule) are frozen **before fitting**, not asserted after the fact. "4 identity levels"
+      is never auto-assumed to mean 4 curves — the actual curve count is derived from the frozen
+      strata definition.
+- [ ] An insufficient effective N for any frozen stratum blocks this gate's exit outright — it is
+      not revisited later as an informal note.
 - [ ] A frozen calibrated policy version is ready for shadow and later sealed P6 evaluation;
       production exact-model claim remains blocked until P6.
 - [ ] ML/data + adversarial reviewer signed off.
@@ -859,7 +943,8 @@ Clopper-Pearson method is explicitly named.
 | Task | Acceptance Criteria | Definition of Done |
 | --- | --- | --- |
 | T1 — Calibration artifact (fusion/calibration split named) | Reliability/ECE/Brier reported per evidence class | Artifact reviewed and versioned |
-| T2 — Thresholds by identity level/evidence class | Curve count matches actual identity-level count | Sample-size adequacy explicitly checked, not assumed |
+| T0 — Freeze calibration strata before fitting | Strata defined by identity level × evidence class × lane × verifier-invoked state, not assumed | Frozen strata list committed before any curve is fit |
+| T2 — Thresholds by identity level/evidence class | Curve count matches the frozen strata list, not an assumed "4" | Sample-size adequacy explicitly checked per stratum, not assumed; insufficient N blocks exit |
 | T3 — One-sided Clopper-Pearson method named | Method explicitly stated, not implied | Referenced identically in P6.G2/P6.G3 |
 | T4 — Frozen policy version | Policy version locked before any sealed evaluation | Version ID recorded, immutable from this point |
 
@@ -932,7 +1017,9 @@ abstention, not a forced pick.
 
 ### P5.G2 — Exact-model equipment page & verified setup
 
-CLASSIFICATION: POST_MVP_HIGH · Source: v4.1 §9, unchanged
+CLASSIFICATION: POST_MVP_HIGH · Source: v4.1 §9 (base) + v4.2 §7.3 extension (render-time
+re-validation — GPT-PM devil's-advocate review round, 2026-08-22, AC-B04: this document's first
+draft carried only v4.1's original text and missed the phase table's own flagged v4.2 extension)
 
 Purpose. Enrich the existing `EquipmentDetailPage` rather than create a second product.
 
@@ -943,10 +1030,16 @@ Required review. Flutter/product + safety review.
 Rollback / failure mode. Strip model context; generic page still works.
 
 **Story AC:** exact vs. ambiguous vs. type-only UI states tested; setup facts never render if not
-verified.
+verified; **§7.3's binding render-time rule holds: displaying a *stored* setup fact re-checks the
+model's *current* `catalogStatus`/`textSupportStatus`/`visionSupportStatus`/SetupSpec verification
+state at render time, not only at capture time — if any has changed unfavorably since capture, the
+UI shows an explicit "this recommendation has since been withdrawn — needs reconfirmation" state
+instead of silently continuing to display retracted guidance.**
 
 **Story DoD:**
 - [ ] Exact identity enriches the page but cannot change vetted exercise/safety eligibility.
+- [ ] A stored setup fact is re-validated against current status at every render, not just at
+      capture time — a withdrawn/demoted status shows the explicit reconfirmation-needed state.
 - [ ] Flutter/product + safety review signed off.
 - [ ] Decision log entry recorded.
 
@@ -956,10 +1049,12 @@ verified.
 | --- | --- | --- |
 | T1 — Route/optional model context | Page works with and without model context | No regression to the generic page |
 | T2 — Source-qualified setup facts | Only shown when verified | Test proves no setup fact renders for unverified identity |
+| T3 — Render-time re-validation (§7.3) | Current status checked at every render, not cached from capture | Test: demote status after capture, confirm the withdrawal state renders, not the stale fact |
 
 ### P5.G3 — Exact history
 
-CLASSIFICATION: POST_MVP_HIGH · Source: v4.1 §9, unchanged
+CLASSIFICATION: POST_MVP_HIGH · Source: v4.1 §9 (base) + v4.2 §7.4 extension (`actionabilityStatus`
+— GPT-PM devil's-advocate review round, 2026-08-22, AC-B04, same root cause as P5.G2 above)
 
 Purpose. Remember exact models separately from generic equipment history.
 
@@ -969,11 +1064,21 @@ Required review. Privacy/security + Flutter review.
 
 Rollback / failure mode. Disable exact history writes.
 
-**Story AC:** account isolation, delete/logout behavior, and duplicate/update semantics all tested.
+**Story AC:** account isolation, delete/logout behavior, and duplicate/update semantics all tested;
+**every `recognised_models/{modelId}` record carries a mutable `actionabilityStatus: ACTIVE |
+USER_REJECTED | POLICY_REVOKED | SUPERSEDED` field, separate from its immutable provenance fields
+(`catalogVersion`, `fusionPolicyVersion`, evidence class at capture — these are never erased by a
+later demotion or correction); a server-side demotion of the model's support status immediately
+sets `POLICY_REVOKED` on every affected record (a trigger/batch job on demotion, not a lazy
+client-side check) and on the corresponding `PhysicalMachineInstance` reference; only
+`actionabilityStatus == ACTIVE` records may be rendered as current/actionable — the rest stay
+visible in history for provenance but are never shown as trustworthy guidance.**
 
 **Story DoD:**
 - [ ] No cross-account leak.
 - [ ] Ambiguous/alternative results are never remembered as exact.
+- [ ] `actionabilityStatus` is present, mutable, and idempotent under repeated demotion/correction
+      events (re-applying the same demotion doesn't corrupt or duplicate state).
 - [ ] Privacy/security + Flutter review signed off.
 - [ ] Decision log entry recorded.
 
@@ -983,6 +1088,8 @@ Rollback / failure mode. Disable exact history writes.
 | --- | --- | --- |
 | T1 — `users/{uid}/recognised_models` records | Versions + evidence summary present; no raw photo by default | Schema matches P1.G1's authority rules |
 | T2 — Account isolation test | Cross-account read/write denied | Emulator test proves DENY |
+| T3 — `actionabilityStatus` field + demotion propagation | Server-side demotion sets `POLICY_REVOKED` on every affected record and instance reference | Trigger/batch job test, not a lazy client-only check |
+| T4 — Idempotent exact-history semantics | Re-applying the same demotion/correction event doesn't duplicate or corrupt state | Test replays the same event twice, asserts identical resulting state |
 
 ### P5.G4 — Private PhysicalMachineInstance memory
 
@@ -1014,7 +1121,9 @@ Rollback / failure mode. Fall back to model/type memory only.
 
 ### P5.G5 — User correction / misidentification feedback
 
-CLASSIFICATION: RELEASE PREP · Source: v4.1 §9, unchanged
+CLASSIFICATION: RELEASE PREP · Source: v4.1 §9 (base) + v4.2 §7.4 extension (correction sets
+`actionabilityStatus: USER_REJECTED` — GPT-PM devil's-advocate review round, 2026-08-22, AC-B04,
+same root cause as P5.G2/P5.G3 above)
 
 Purpose. Give the user an explicit, safe correction path before public exact-model promotion.
 
@@ -1025,11 +1134,16 @@ Required review. Product/UX + privacy + ML governance.
 Rollback / failure mode. Disable feedback collection while retaining safe generic fallback.
 
 **Story AC:** correction cannot silently mutate the global catalog or become ground-truth training
-data; a11y/l10n and account/privacy behavior tested.
+data; a11y/l10n and account/privacy behavior tested; **a "Not this model" correction immediately
+sets `actionabilityStatus: USER_REJECTED` on the specific `recognised_models` record being
+corrected — mandatory, per §7.4 — so the corrected record stops being rendered as current guidance
+without being deleted (provenance is preserved).**
 
 **Story DoD:**
 - [ ] Public exact identity has a visible recovery path.
 - [ ] Feedback is quarantined as evidence, not truth.
+- [ ] A correction is mechanically proven to set `USER_REJECTED` on the corrected record, not just
+      logged as an event with no effect on `actionabilityStatus`.
 - [ ] Product/UX + privacy + ML governance review signed off.
 - [ ] Decision log entry recorded.
 
@@ -1040,6 +1154,7 @@ data; a11y/l10n and account/privacy behavior tested.
 | T1 — "Not this model" flow | Reachable from every exact-result state | a11y/l10n tested |
 | T2 — Quarantined telemetry event | Not an automatic training label | Test proves no auto-promotion to training data |
 | T3 — Optional guided rescan | Offered after a correction | Reuses P5.G1's guided multi-view |
+| T4 — `USER_REJECTED` on correction | Correction sets `actionabilityStatus: USER_REJECTED` on the specific record | Test: correct a record, assert its status and that it no longer renders as ACTIVE guidance |
 
 ---
 
@@ -1059,7 +1174,10 @@ N-BLOCKER-1) — already the reference-format gate this whole document imitates
 Purpose. Prove, mechanically, that the P6-T text-only promotion lane cannot produce an
 `EXACT_MODEL` claim contaminated by visual exact-identity evidence.
 
-Inputs. §6.4.1's `evidenceLane` derivation rule; P4.G2's fusion implementation.
+Inputs. §6.4.1's `evidenceLane` derivation rule; P4.G2's fusion implementation **if it exists —
+lane-conditional (GPT-PM devil's-advocate review round, 2026-08-22, AC-B03): if P2.G5 legitimately
+chose `DEFER_VISUAL`, P4 is never built and there is no visual discriminator to contaminate
+anything with. This gate does not block on P4.G2's existence** — see the lane split below.
 
 Required review. Backend/ML + release review.
 
@@ -1074,7 +1192,9 @@ report `evidenceLane: VISUAL` and abstain/downgrade.
 
 **Story DoD:**
 - [ ] Mutation test exists, is wired into CI, and passes — a manual code-review sign-off does not
-      satisfy this gate.
+      satisfy this gate. **Under `DEFER_VISUAL`, the test still exists and still runs (proving no
+      visual discriminator is silently wired in), but its own contamination scenario is vacuously
+      satisfied — no P4.G2 build is required to reach that pass.**
 - [ ] Backend/ML + release review signed off.
 - [ ] Decision log entry recorded.
 
@@ -1082,8 +1202,8 @@ report `evidenceLane: VISUAL` and abstain/downgrade.
 
 | Task | Acceptance Criteria | Definition of Done |
 | --- | --- | --- |
-| T1 — CI mutation test | Forces contamination scenario, asserts correct abstention | Blocking in CI, not advisory |
-| T2 — `evidenceLane` field wired through fusion | Field present on every response, derived server-side | Cannot be set/overridden by client input |
+| T1 — CI mutation test | Forces contamination scenario, asserts correct abstention; under `DEFER_VISUAL`, asserts no visual discriminator is reachable at all | Blocking in CI, not advisory, in either lane state |
+| T2 — `evidenceLane` field wired through fusion | Field present on every response, derived server-side; always `TEXT_ONLY` under `DEFER_VISUAL` | Cannot be set/overridden by client input |
 
 ### P6.G1 — Shadow deployment
 
@@ -1094,7 +1214,11 @@ reclassification + v4.4 extension (App-Check-transition evidence-freshness sub-c
 Purpose. Run the identity backend on real scans without changing the production generic result, to
 surface production-traffic failure modes a sealed evaluation cannot.
 
-Inputs. P2-P4 runtime, current scanner, P0.G0's readiness status.
+Inputs. P2 runtime (mandatory), current scanner, P0.G0's readiness status; **P3/P4 runtime only if
+`GO_VISUAL` was chosen at P2.G5 — lane-conditional (GPT-PM devil's-advocate review round,
+2026-08-22, AC-B03: the original unconditional "P2-P4 runtime" input made this gate impossible to
+close under a legitimate `DEFER_VISUAL` decision, recreating the C-01 gap v4.2/v4.3 had already
+closed).**
 
 Required review. Release/ML/privacy review.
 
@@ -1106,8 +1230,14 @@ terminal-outcome completeness check confirms every attempt resolves to exactly o
 evidence counted toward the minimum-volume requirement excludes any auth/availability sample
 invalidated by a P0.G0 App-Check-mode transition.
 
-**Story DoD:**
-- [ ] Defined minimum shadow volume/duration/SLO met (target set once P2-P4 land).
+**Story DoD** (T0 added — GPT-PM devil's-advocate review round, 2026-08-22, AC-M07: leaving the
+shadow target as `TBD` was honest, but the original DoD didn't say it must be **frozen before the
+first counted sample** — without that second rule, the target could be picked after the fact to fit
+whatever data happened to look convenient):
+- [ ] Volume, duration, terminal-completeness definition, App Check/rate-limit SLO, and the
+      evidence-invalidation rules are fixed and versioned **before the first sample that will count
+      toward this gate's exit** — `TBD` is allowed only up to that freeze point, never after.
+- [ ] Defined minimum shadow volume/duration/SLO met.
 - [ ] Zero unresolved privacy/security MAJOR.
 - [ ] This gate's exit formally recorded before P6.G2 may begin — an exception requires an
       explicit, documented release waiver, never a default skip.
@@ -1118,9 +1248,11 @@ invalidated by a P0.G0 App-Check-mode transition.
 
 | Task | Acceptance Criteria | Definition of Done |
 | --- | --- | --- |
-| T1 — Shadow telemetry at minimum volume | Volume/duration target explicitly set and met | Terminal-outcome completeness check passes |
+| T0 — Freeze pre-shadow target before first counted sample | Volume/duration/SLO/invalidation rules versioned and committed | Timestamp of freeze precedes the first counted sample's timestamp |
+| T1 — Shadow telemetry at minimum volume | Volume/duration target explicitly set and met, for whichever lane(s) actually run | Terminal-outcome completeness check passes |
 | T2 — App Check/rate-limit error SLO | SLO defined and measured | Met before P6.G2 opens |
 | T3 — Evidence-freshness exclusion (v4.4) | Pre-transition auth/availability samples excluded | Exclusion demonstrated against a real or simulated transition |
+| T4 — Lane-scoped exit under `DEFER_VISUAL` | Gate exit is provable from P2-only shadow telemetry alone | No dependency on P3/P4 telemetry that was never generated |
 
 ### P6.G2 — Independent real-gym evaluation
 
@@ -1130,8 +1262,13 @@ Purpose. Measure exact claims on blind real gyms/physical instances, run separat
 independently sealed) for the P6-T text lane and the P6-V visual lane, using the pre-registered
 per-model candidate set and multiplicity-corrected significance level.
 
-Inputs. Frozen artifacts/policy (P4.G3) + sealed blind real-gym and sealed OOD sets (P3.G2).
-Thresholds are already locked.
+Inputs. **P6-T lane:** P2 text runtime + frozen text calibration/policy (from a text-only slice of
+P4.G3, or an equivalent text-only calibration pass if P4 was never built) + sealed blind real-gym
+and sealed OOD sets (P3.G2). **P6-V lane:** frozen artifacts/policy (P4.G3) + the same sealed sets —
+**`NOT_APPLICABLE` if `DEFER_VISUAL` was chosen** (lane split added — GPT-PM devil's-advocate review
+round, 2026-08-22, AC-B03: the original undivided "Frozen artifacts/policy (P4.G3)" input made the
+whole gate impossible to close under `DEFER_VISUAL`, since P4.G3 never exists in that world).
+Thresholds are already locked, per lane.
 
 Required review. ML/data + adversarial + release reviewer.
 
@@ -1145,10 +1282,12 @@ lens.
 
 **Story DoD:**
 - [ ] Point metrics plus one-sided 95% confidence bounds, cluster-aware/physical-instance analysis,
-      calibration, abstention, latency/cost, confusion matrices produced.
-- [ ] P6-T and P6-V lanes evaluated separately, both sealed independently.
-- [ ] Statistical confidence gates pass for the defined promoted model set — otherwise remain
-      shadow/text-only/type-only.
+      calibration, abstention, latency/cost, confusion matrices produced, for whichever lane(s) are
+      applicable.
+- [ ] P6-T evaluated sealed and independently; P6-V evaluated the same way **only if `GO_VISUAL`
+      was chosen — `NOT_APPLICABLE` and not a blocking prerequisite under `DEFER_VISUAL`.**
+- [ ] Statistical confidence gates pass for the defined promoted model set, per applicable lane —
+      otherwise remain shadow/text-only/type-only.
 - [ ] ML/data + adversarial + release reviewer signed off.
 - [ ] Decision log entry recorded.
 
@@ -1156,9 +1295,10 @@ lens.
 
 | Task | Acceptance Criteria | Definition of Done |
 | --- | --- | --- |
-| T1 — P6-T sealed evaluation run | Independent custodian, frozen text-lane artifacts | Confidence bounds computed |
-| T2 — P6-V sealed evaluation run | Independent custodian, frozen visual-lane artifacts | Confidence bounds computed |
+| T1 — P6-T sealed evaluation run | Independent custodian, frozen text-lane artifacts | Confidence bounds computed — required in every lane state |
+| T2 — P6-V sealed evaluation run | Independent custodian, frozen visual-lane artifacts | Confidence bounds computed — `NOT_APPLICABLE` and skipped under `DEFER_VISUAL`, required under `GO_VISUAL` |
 | T3 — Independent-encounter precondition | Minimum time/context separation + per-instance sample-share cap enforced | Enforced as pass/fail gate, not analysis-only |
+| T4 — Lane applicability recorded | `DEFER_VISUAL`/`GO_VISUAL` decision from P2.G5 is cited explicitly | P6-V's `NOT_APPLICABLE` status is a recorded fact, not a silent gap |
 
 ### P6.G3 — Model-by-model promotion
 
@@ -1175,8 +1315,11 @@ Required review. Release + safety + ontology + GPT-PM independent review (per §
 Rollback / failure mode. Demote model to SHADOW/SUPPORTED/CATALOG_ONLY within the runbook's stated
 latency target — a measured SLA, not an unmeasured capability claim.
 
-**Story AC:** promotion mutation test — an unsupported model must abstain (`NOT_SUPPORTED`, per
-§6.5); the rollback drill is actually re-run on the stated cadence, not only once.
+**Story AC:** promotion mutation test — an unsupported model's decision is literally `NOT_SUPPORTED`
+— **never `MATCH` and never a healthy `ABSTAIN`** (corrected wording, GPT-PM devil's-advocate
+review round, 2026-08-22, AC-m01: v4.4 deliberately splits these two terminal states — see §6.5 —
+so that observability doesn't fold unsupported cases into a "normal" abstention rate); the rollback
+drill is actually re-run on the stated cadence, not only once.
 
 **Story DoD:**
 - [ ] A promotion decision exists per pre-registered candidate model, each with its own
@@ -1196,7 +1339,7 @@ latency target — a measured SLA, not an unmeasured capability claim.
 | T1 — Per-model promotion decision | Pre-registered candidate set only, no post-hoc addition | Individually-corrected confidence bound attached |
 | T2 — Named rollback runbook | Trigger metric, owner, latency target all named | Not a placeholder "alert exists" statement |
 | T3 — Rehearsed rollback drill | Drill actually run, not only designed | Re-run on the stated cadence, dated pass recorded |
-| T4 — Promotion mutation test | Unsupported model abstains as `NOT_SUPPORTED` | Test passes in CI |
+| T4 — Promotion mutation test | Unsupported model's decision is `NOT_SUPPORTED` — never `MATCH`, never healthy `ABSTAIN` | Test passes in CI |
 
 ---
 
@@ -1217,6 +1360,17 @@ latency target — a measured SLA, not an unmeasured capability claim.
   will need revisiting when their gate actually opens, which is exactly the rework risk GPT-PM
   flagged. Recorded here rather than hidden, per the operator's own standing evidence-over-inference
   rule — this is a known, accepted tradeoff, not an oversight.
+- **GPT-PM's round-1 devil's-advocate review already happened** (2026-08-22): VERDICT
+  BLOCKER-equivalent findings, NOT IMPLEMENTATION-READY, 4 BLOCKER-equivalent + 8 MAJOR + 1 MINOR.
+  Every finding is fixed inline above, cited by ID at its gate. GPT-PM's own recommended
+  `TO_BE_FROZEN_AT_GATE_OPEN` meta-invariant (any AC parameter that objectively depends on
+  predecessor evidence may carry that status instead of pretending an unknown value is already
+  known; changing it after freeze requires a new gate-contract version + rationale and invalidates
+  affected evidence) is adopted as this document's standing convention for exactly the kind of
+  stale-spec risk GPT-PM flagged in the prior paragraph — used explicitly at P0.G5/P0.G6, P4.G3, and
+  P6.G1 above.
 - **Not yet done, and required before this document may be treated as ready for implementation**
-  (operator instruction, 2026-08-22): a GPT-PM review round on this document itself. Only after
-  that verdict — and any resulting revision — may this be closed as implementation-ready.
+  (operator instruction, 2026-08-22, round cap raised to 3): GPT-PM's confirmation, in a follow-up
+  round, that these fixes actually close the round-1 findings. Only after that verdict — and any
+  further resulting revision, within the 3-round cap — may this be closed as implementation-ready;
+  an unresolved disagreement past round 3 escalates to the operator rather than looping further.
