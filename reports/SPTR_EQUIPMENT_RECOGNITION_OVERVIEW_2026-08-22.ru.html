@@ -1,0 +1,359 @@
+<title>SPTR Equipment Recognition</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #17212b;
+    --ink-soft: #46586b;
+    --ink-faint: #7a8b9c;
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --surface-sunken: #eef2f4;
+    --line: #dce3e7;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --amber: #a86a06;
+    --amber-soft: #fbf0dc;
+    --red: #a83a34;
+    --red-soft: #fbeae8;
+    --violet: #5b4b9e;
+    --violet-soft: #ece8f7;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Sora", "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+      --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+      --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+      --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+      --violet: #9c8ce0; --violet-soft: #241f3a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+    --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+    --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+    --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+    --violet: #9c8ce0; --violet-soft: #241f3a;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 28px 100px; }
+
+  header { padding: 52px 0 8px; }
+  .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 16px; }
+  h1 { font-family: var(--display); font-size: clamp(28px, 4.6vw, 44px); font-weight: 700; line-height: 1.16; margin: 0 0 16px; text-wrap: balance; letter-spacing: -0.005em; }
+  .lede { font-size: 18px; color: var(--ink-soft); max-width: 68ch; margin: 0 0 30px; }
+
+  .hero-stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 40px; }
+  .hero-pill { font-family: var(--mono); font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft); }
+  .hero-pill.hot { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+
+  h2 { font-family: var(--display); font-size: 24px; font-weight: 700; margin: 60px 0 8px; letter-spacing: -0.005em; }
+  h2 .num { font-family: var(--mono); color: var(--accent); font-weight: 600; margin-right: 10px; font-size: 17px; }
+  h3 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 30px 0 10px; }
+  .section-note { color: var(--ink-soft); font-size: 15.5px; margin: 0 0 24px; max-width: 72ch; }
+  p { margin: 0 0 16px; }
+  p.body { color: var(--ink-soft); font-size: 15.5px; max-width: 74ch; }
+
+  .diagram-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; margin: 20px 0 32px; overflow-x: auto; }
+  .diagram-card .cap { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
+  pre.mermaid { margin: 0; display: flex; justify-content: center; min-width: 480px; }
+
+  .callout { background: var(--surface-sunken); border-left: 4px solid var(--red); border-radius: var(--radius); padding: 18px 22px; margin: 24px 0; }
+  .callout.good { border-left-color: var(--accent); }
+  .callout p { margin: 0; color: var(--ink-soft); font-size: 15px; }
+  .callout b { color: var(--ink); }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 20px 0 32px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; }
+  .card .k { font-family: var(--mono); font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 8px; }
+  .card p { font-size: 14.5px; color: var(--ink-soft); margin: 0; }
+
+  .layer-list { display: flex; flex-direction: column; gap: 10px; margin: 20px 0 32px; }
+  .layer-row { display: grid; grid-template-columns: 34px 180px 1fr; gap: 16px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; }
+  .layer-row .badge { font-family: var(--mono); font-weight: 700; font-size: 15px; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--accent-soft); color: var(--accent); }
+  .layer-row .name { font-family: var(--display); font-weight: 600; font-size: 15px; }
+  .layer-row .desc { font-size: 14px; color: var(--ink-soft); }
+
+  .outcome-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 32px; }
+  .outcome { font-family: var(--mono); font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 999px; }
+  .outcome.exact { background: var(--accent-soft); color: var(--accent); }
+  .outcome.partial { background: var(--amber-soft); color: var(--amber); }
+  .outcome.unknown { background: var(--surface-sunken); color: var(--ink-faint); }
+
+  table.roadmap { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 14px; }
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); }
+  table.roadmap th, table.roadmap td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.roadmap th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); background: var(--surface-sunken); font-weight: 600; }
+  table.roadmap tr:last-child td { border-bottom: none; }
+  table.roadmap td.phase { font-family: var(--mono); font-weight: 700; white-space: nowrap; }
+  table.roadmap td.g { color: var(--ink-soft); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+  .pill.done { background: var(--accent-soft); color: var(--accent); }
+  .pill.done::before { background: var(--accent); }
+  .pill.next { background: var(--amber-soft); color: var(--amber); }
+  .pill.next::before { background: var(--amber); }
+  .pill.future { background: var(--surface-sunken); color: var(--ink-faint); }
+  .pill.future::before { background: var(--ink-faint); }
+
+  .closing { margin-top: 60px; padding: 26px 28px; background: var(--surface-sunken); border-radius: var(--radius); font-size: 15px; color: var(--ink-soft); }
+  .closing b { color: var(--ink); }
+  a { color: var(--accent); }
+  code { font-family: var(--mono); font-size: 0.92em; background: var(--surface-sunken); padding: 1px 5px; border-radius: 4px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">SPTR &middot; Fitness App &middot; Обзор продукта и архитектуры</div>
+    <h1>Распознавание оборудования: от &laquo;похоже на тренажёр&raquo; до &laquo;это ваш Nautilus Inspiration, позиция сиденья 4&raquo;</h1>
+    <p class="lede">Что мы строим, почему текущего сканера недостаточно, и как точная идентификация оборудования превращается в более безопасные и точные тренировки &mdash; без замедления пользователя и без выдумывания фактов, которые приложение не может подтвердить.</p>
+    <div class="hero-stats">
+      <span class="hero-pill hot">Фаза P0 закрыта сегодня</span>
+      <span class="hero-pill">7 фаз, 30 гейтов всего</span>
+      <span class="hero-pill">Аддитивно &mdash; ничего существующего не заменяется</span>
+    </div>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 524e0a7</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <h2><span class="num">01</span>Что мы строим</h2>
+  <p class="body">Сегодня сканер приложения может сказать пользователю: &laquo;это жим ногами&raquo; &mdash; общая функциональная категория, один из десяти обученных классов. Он не может сказать, <i>чей именно</i> это жим ногами, а это важнее, чем звучит: позиция сиденья, соотношение блока, регулировка ручек и предупреждения по безопасности &mdash; всё это специфично для конкретной модели, а не для категории. Мы добавляем второй, аддитивный слой поверх существующего сканера: <b>точную идентификацию оборудования</b> &mdash; бренд, продуктовую линейку и модель, построенную на лицензированной, юридически проверенной базе знаний, а не на догадках.</p>
+  <p class="body">Общий сканер продолжает работать ровно так же, как сегодня. Точная идентификация &mdash; это обогащение, которое приходит чуть позже, параллельно, и только добавляет детали &mdash; она никогда не блокирует тренировку и никогда не переопределяет существующее правило безопасности.</p>
+
+  <div class="diagram-card">
+    <div class="cap">Сегодня vs. с точной идентификацией</div>
+    <pre class="mermaid">
+flowchart LR
+    A["Скан камерой"] --> B["Классификатор на устройстве<br/>10 обученных классов"]
+    B --> C["Общий тип<br/>напр. 'жим ногами'"]
+    C --> D["Упражнения и безопасность<br/>(без изменений, всегда работает)"]
+
+    A --> E["+ Текстовый якорь<br/>читает табличку самого тренажёра"]
+    E --> F["Движок точной идентификации<br/>каталог + эмбеддинги + фьюжн"]
+    F --> G["Бренд / Модель / Факты настройки<br/>(новое, аддитивное, никогда не блокирует)"]
+    G --> D
+
+    classDef existing fill:#0e7c86,color:#fff,stroke:none;
+    classDef addition fill:#a86a06,color:#fff,stroke:none;
+    class B,C existing
+    class E,F,G addition
+    </pre>
+  </div>
+
+  <h2><span class="num">02</span>Почему текущего сканера недостаточно</h2>
+  <p class="body">Это не догадка &mdash; это измерено. Набор из 30 фото реального зала (зафиксирован как историческое свидетельство) показал, что встроенная модель на 10 классов даёт <b>ноль правильных ответов из тридцати</b> на реальном оборудовании, на котором её не обучали &mdash; и делает это <i>уверенно</i>: она не говорит &laquo;не знаю&raquo;, она сообщает неверный класс с уверенностью до 90%. Это и есть реальный режим отказа, который порог уверенности не может исправить: модель не сомневается, она уверена и ошибается, потому что реальный тренажёр просто не входит в её десять классов.</p>
+  <div class="grid-2">
+    <div class="card"><div class="k">Правильные подсказки</div><p>Высота сиденья, соотношение блока и позиция ручек различаются по конкретной модели &mdash; общий ответ &laquo;жим ногами&raquo; не может дать верные инструкции по настройке.</p></div>
+    <div class="card"><div class="k">Безопасность</div><p>Предупреждения и диапазоны регулировок берутся из документации производителя для конкретной модели, а не из общей догадки по категории.</p></div>
+    <div class="card"><div class="k">Доверие</div><p>Уверенно неверный ответ хуже честного &laquo;я не уверен&raquo; &mdash; это ровно тот режим отказа, для устранения которого построен весь этот дизайн.</p></div>
+    <div class="card"><div class="k">Глубина продукта</div><p>История по точной модели, страница с проверенной настройкой и память по конкретному залу возможны только когда идентификация идёт дальше &laquo;это какой-то жим ногами&raquo;.</p></div>
+  </div>
+
+  <h2><span class="num">03</span>Пять слоёв под идентификацией</h2>
+  <p class="section-note">Дизайн намеренно слоистый, чтобы работа над точной моделью никогда не могла незаметно изменить то, на что уже опираются упражнения и безопасность.</p>
+  <div class="layer-list">
+    <div class="layer-row"><span class="badge">A</span><span class="name">Тип оборудования</span><span class="desc">Существующая функциональная категория (&laquo;жим ногами&raquo;), на которой уже работают упражнения, безопасность и программы &mdash; без изменений, неизменная семантика.</span></div>
+    <div class="layer-row"><span class="badge">B</span><span class="name">Бренд / Модель</span><span class="desc">Идентичность производителя &mdash; каждая точная модель привязана к Типу, но никогда его не заменяет.</span></div>
+    <div class="layer-row"><span class="badge">C</span><span class="name">Доказательства распознавания</span><span class="desc">Фото, эмбеддинги и политика сопоставления &mdash; повышают уверенность в догадке об идентичности, но никогда не переопределяют онтологию.</span></div>
+    <div class="layer-row"><span class="badge">D</span><span class="name">Конкретный физический экземпляр</span><span class="desc">&laquo;Именно этот тренажёр в моём зале&raquo; &mdash; приватная, опциональная память, всегда производная от модели, никогда не доказательство сама по себе.</span></div>
+    <div class="layer-row"><span class="badge">E</span><span class="name">Граф знаний упражнений</span><span class="desc">Существующий проверенный каталог упражнений/безопасности плюс обогащение из внешних источников только для чтения &mdash; единственное, что точная идентификация никогда не может обойти.</span></div>
+  </div>
+
+  <h2><span class="num">04</span>Как это выглядит для пользователя</h2>
+  <p class="section-note">Общий ответ никогда не ждёт точного. Точная идентификация разрешается в фоне и только добавляет &mdash; пользователь никогда не блокируется и никогда не получает молча неверную модель.</p>
+  <div class="diagram-card">
+    <div class="cap">Путь пользователя, один скан</div>
+    <pre class="mermaid">
+flowchart TD
+    S["Пользователь наводит камеру на оборудование"] --> T{"Тип распознан?"}
+    T -- "да, мгновенно" --> U["Упражнения и безопасность доступны сразу"]
+    T -- "точная идентификация разрешается параллельно" --> V{"Результат"}
+    V -- "уникальное совпадение текст/изображение" --> W["Карточка обогащена: бренд, модель,<br/>проверенные факты настройки"]
+    V -- "более одной вероятной модели" --> X["Запрошен второй наводящий скан<br/>(табличка / логотип / вид сбоку)"]
+    V -- "нет надёжного сигнала" --> Y["Остаётся общим &mdash; честно,<br/>догадка не выдаётся за факт"]
+    W --> U
+    X --> U
+    Y --> U
+    </pre>
+  </div>
+  <p class="section-note" style="margin-top:-8px">Каждое распознавание заканчивается одним из небольшого набора честных исходов &mdash; нет состояния, означающего &laquo;вероятно верно, показано как точно&raquo;:</p>
+  <div class="outcome-row">
+    <span class="outcome exact">EXACT_MODEL</span>
+    <span class="outcome partial">PRODUCT_LINE</span>
+    <span class="outcome partial">BRAND+TYPE</span>
+    <span class="outcome partial">TYPE_ONLY</span>
+    <span class="outcome unknown">NEED_MORE_VIEW</span>
+    <span class="outcome unknown">UNKNOWN</span>
+  </div>
+
+  <div class="callout">
+    <p><b>Правило, которое никогда не нарушается:</b> точная идентификация модели может только <i>выбирать</i> из уже существующего, проверенного каталога упражнений и безопасности приложения &mdash; она никогда не может сама генерировать новые упражнения или указания по безопасности. ИИ может пересказать уже проверенный факт настройки для читабельности; он не может его выдумать.</p>
+  </div>
+
+  <h2><span class="num">05</span>Где живут части системы</h2>
+  <p class="section-note">Построено аддитивно поверх существующего стека &mdash; ничего здесь не заменяет Stripe/аккаунтные Functions, текущий сканер или Firestore.</p>
+  <div class="diagram-card">
+    <div class="cap">Форма системы</div>
+    <pre class="mermaid">
+flowchart TD
+    subgraph Mobile["Flutter-приложение"]
+      Cam["Камера / поток сканирования"]
+      UI["UI результата: сначала тип,<br/>идентичность обогащает на месте"]
+    end
+
+    subgraph FB["Firebase &mdash; две изолированные кодовые базы Functions"]
+      Default["default кодовая база<br/>(существующая: Stripe, аккаунт, видео)"]
+      Identity["equipment-identity кодовая база<br/>(новая: поиск в каталоге, фьюжн, эмбеддинги)"]
+    end
+
+    subgraph Data["Firestore"]
+      Catalog["Бренды / Модели / Источники / Ассеты<br/>(управляются правами, только сервер)"]
+      Active["Активная версия каталога<br/>(атомарная публикация + откат)"]
+    end
+
+    Cam --> Identity
+    Identity --> Catalog
+    Identity --> Active
+    Identity --> UI
+    Default -. нет общего пути сборки или деплоя .- Identity
+
+    classDef iso stroke-dasharray: 4 3;
+    class Default,Identity iso
+    </pre>
+  </div>
+  <p class="body">Строка &laquo;нет общего пути сборки или деплоя&raquo; &mdash; не украшение диаграммы, а решение, закрытое сегодня (P0.G6): доказано реальной сборкой, что кодовая база идентификации не может сломать деплой хотфикса Stripe, даже если её собственный код сломан.</p>
+
+  <h2><span class="num">06</span>Дорога отсюда</h2>
+  <p class="section-note">Семь фаз, тридцать гейтов, каждый независимо проверяемый и обратимый. P0 (основа) закрыта сегодня; P1 следующая и нуждается в собственном старте.</p>
+  <div class="table-scroll">
+  <table class="roadmap">
+    <thead><tr><th>Фаза</th><th>Что поставляет</th><th>Гейтов</th><th>Статус</th></tr></thead>
+    <tbody>
+      <tr><td class="phase">P0</td><td class="g">Основа: заморозить текущую базовую линию, закрыть пробелы происхождения ML-моделей, построить реестр прав с отказом по умолчанию, детерминированный снимок каталога, доказать облачную осуществимость, изолировать риск деплоя.</td><td class="g">7</td><td><span class="pill done">Закрыта</span></td></tr>
+      <tr><td class="phase">P1</td><td class="g">Канонический справочник оборудования &mdash; реальная схема Бренд/Модель/Источник в Firestore, первые реальные данные по брендам и конвейер публикации, превращающий сырые источники в проверенный версионированный каталог.</td><td class="g">6</td><td><span class="pill next">Следующая</span></td></tr>
+      <tr><td class="phase">P2</td><td class="g">Идентификация по тексту в первую очередь: прочитать собственный печатный код модели тренажёра и сопоставить с каталогом &mdash; самый дешёвый и точный путь идентификации, поставляется до любой работы с визуальным поиском по камере.</td><td class="g">5</td><td><span class="pill future">Запланирована</span></td></tr>
+      <tr><td class="phase">P3</td><td class="g">Лицензированный корпус фото и по-настоящему запечатанный тестовый набор реальных залов &mdash; база доказательств, на которой измеряются последующие фазы, независимая от настройки.</td><td class="g">3</td><td><span class="pill future">Запланирована</span></td></tr>
+      <tr><td class="phase">P4</td><td class="g">Визуальный поиск: эмбеддинги изображений, слияние доказательств, калиброванная уверенность и политика &laquo;не знаю&raquo; для открытого множества, плюс ограниченный ИИ-верификатор для спорных случаев.</td><td class="g">4</td><td><span class="pill future">Запланирована</span></td></tr>
+      <tr><td class="phase">P5</td><td class="g">Продуктовая поверхность: направленная съёмка с нескольких ракурсов, настоящая страница точной модели с проверенной настройкой, история по точным моделям, приватная память по залу, путь пользовательской коррекции.</td><td class="g">5</td><td><span class="pill future">Запланирована</span></td></tr>
+      <tr><td class="phase">P6</td><td class="g">Теневой трафик, независимая слепая оценка на реальных залах и продвижение модель-за-моделью &mdash; ничто не попадает в продакшен без измеренных доказательств.</td><td class="g">4</td><td><span class="pill future">Запланирована</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="diagram-card">
+    <div class="cap">Дорожная карта целиком</div>
+    <pre class="mermaid">
+flowchart LR
+    P0["P0 Основа<br/>7 гейтов &mdash; ЗАКРЫТА"]:::done --> P1["P1 База знаний<br/>6 гейтов &mdash; СЛЕДУЮЩАЯ"]:::next
+    P1 --> P2["P2 Идентификация по тексту<br/>5 гейтов"]:::future
+    P2 --> P3["P3 Лицензированный корпус<br/>3 гейта"]:::future
+    P3 --> P4["P4 Визуальный поиск<br/>4 гейта"]:::future
+    P4 --> P5["P5 Продуктовый UX<br/>5 гейтов"]:::future
+    P5 --> P6["P6 Тень и продвижение<br/>4 гейта"]:::future
+
+    classDef done fill:#0e7c86,color:#fff,stroke:none;
+    classDef next fill:#a86a06,color:#fff,stroke:none;
+    classDef future fill:#7a8b9c,color:#fff,stroke:none;
+    </pre>
+  </div>
+
+  <h3>Одно решение, уже принятое по пути</h3>
+  <p class="body">P0.G5 спрашивал, можно ли начать визуальное (по фото камеры) распознавание уже сейчас. Честный ответ, проверенный по реальной инфраструктуре, а не предположенный: сейчас нет безопасного непроизводственного окружения, чтобы протестировать это без риска для живого приложения. Вместо тестирования на проде или догадок, этот путь явно отложен &mdash; текстовая идентификация (чтение собственного печатного кода модели тренажёра, фаза P2) поставляется первой, поскольку вообще не требует инфраструктуры сопоставления изображений и в любом случае является более дешёвым и точным путём.</p>
+
+  <div class="closing">
+    <b>Где мы находимся:</b> P0 закрыта сегодня с полным следом доказательств (шесть гейтов, независимое ревью, финальный сквозной аудит, который нашёл и устранил один реальный дефект перед итоговым подтверждением). P1 &mdash; справочник знаний, от которого зависит всё дальнейшее &mdash; авторизована к началу, но нуждается в собственном отдельном старте, согласно процессу проверки на границах фаз, которому следует эта программа.
+  </div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

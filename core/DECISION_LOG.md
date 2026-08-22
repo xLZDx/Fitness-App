@@ -24406,3 +24406,17 @@ adversarial review results, deviations from plan, and residual items carried int
 program-mode close-out report for the whole P0 chunk -- per the report skill's own instructions, this
 session stops here and waits for the operator rather than starting P1, which GPT-PM also explicitly
 says needs its own separate implementation prompt.
+
+## 2026-08-22 -- Explainer report: what/why/how for the whole SPTR Equipment Recognition feature
+
+Operator asked (post-P0-report, a genuine new message): build an HTML report explaining what this
+whole feature actually is, why, and how it will be used, with diagrams -- not an implementation
+request. Wrote `reports/SPTR_EQUIPMENT_RECOGNITION_OVERVIEW_2026-08-22.ru.html` + `.html` (mermaid
+diagrams, RU published as an Artifact) grounded entirely in the existing design docs
+(`SPTR_EQUIPMENT_RECOGNITION_MASTER_TECHNICAL_PLAN_v4.1_CONSENSUS_2026-08-21.md` and the v4.4 gate
+contracts doc) plus this session's own P0.G1 measurement (0/30 correct on real-gym photos, confident
+wrong answers) -- no invented claims. Covers: the additive identity-layer design (five layers,
+A-E), the progressive UX that never blocks on exact identity, the safety invariant (exact identity
+may only select from the existing vetted exercise/safety catalog, never generate new guidance), the
+two-Firebase-codebase architecture P0.G6 just built, and the full P0-P6/30-gate roadmap with P0
+marked closed and P1 marked next.

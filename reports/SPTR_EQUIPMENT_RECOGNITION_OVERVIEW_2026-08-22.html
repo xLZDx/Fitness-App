@@ -1,0 +1,359 @@
+<title>SPTR Equipment Recognition</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #17212b;
+    --ink-soft: #46586b;
+    --ink-faint: #7a8b9c;
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --surface-sunken: #eef2f4;
+    --line: #dce3e7;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --amber: #a86a06;
+    --amber-soft: #fbf0dc;
+    --red: #a83a34;
+    --red-soft: #fbeae8;
+    --violet: #5b4b9e;
+    --violet-soft: #ece8f7;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Sora", "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+      --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+      --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+      --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+      --violet: #9c8ce0; --violet-soft: #241f3a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+    --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+    --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+    --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+    --violet: #9c8ce0; --violet-soft: #241f3a;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 28px 100px; }
+
+  header { padding: 52px 0 8px; }
+  .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 16px; }
+  h1 { font-family: var(--display); font-size: clamp(30px, 4.6vw, 46px); font-weight: 700; line-height: 1.1; margin: 0 0 16px; text-wrap: balance; letter-spacing: -0.01em; }
+  .lede { font-size: 18px; color: var(--ink-soft); max-width: 66ch; margin: 0 0 30px; }
+
+  .hero-stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 40px; }
+  .hero-pill { font-family: var(--mono); font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft); }
+  .hero-pill.hot { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+
+  h2 { font-family: var(--display); font-size: 24px; font-weight: 700; margin: 60px 0 8px; letter-spacing: -0.005em; }
+  h2 .num { font-family: var(--mono); color: var(--accent); font-weight: 600; margin-right: 10px; font-size: 17px; }
+  h3 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 30px 0 10px; }
+  .section-note { color: var(--ink-soft); font-size: 15.5px; margin: 0 0 24px; max-width: 70ch; }
+  p { margin: 0 0 16px; }
+  p.body { color: var(--ink-soft); font-size: 15.5px; max-width: 72ch; }
+
+  .diagram-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; margin: 20px 0 32px; overflow-x: auto; }
+  .diagram-card .cap { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px; }
+  pre.mermaid { margin: 0; display: flex; justify-content: center; min-width: 480px; }
+
+  .callout { background: var(--surface-sunken); border-left: 4px solid var(--red); border-radius: var(--radius); padding: 18px 22px; margin: 24px 0; }
+  .callout.good { border-left-color: var(--accent); }
+  .callout p { margin: 0; color: var(--ink-soft); font-size: 15px; }
+  .callout b { color: var(--ink); }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 20px 0 32px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; }
+  .card .k { font-family: var(--mono); font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 8px; }
+  .card p { font-size: 14.5px; color: var(--ink-soft); margin: 0; }
+
+  .layer-list { display: flex; flex-direction: column; gap: 10px; margin: 20px 0 32px; }
+  .layer-row { display: grid; grid-template-columns: 34px 160px 1fr; gap: 16px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; }
+  .layer-row .badge { font-family: var(--mono); font-weight: 700; font-size: 15px; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--accent-soft); color: var(--accent); }
+  .layer-row .name { font-family: var(--display); font-weight: 600; font-size: 15px; }
+  .layer-row .desc { font-size: 14px; color: var(--ink-soft); }
+
+  .outcome-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 32px; }
+  .outcome { font-family: var(--mono); font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 999px; }
+  .outcome.exact { background: var(--accent-soft); color: var(--accent); }
+  .outcome.partial { background: var(--amber-soft); color: var(--amber); }
+  .outcome.unknown { background: var(--surface-sunken); color: var(--ink-faint); }
+
+  table.roadmap { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 14px; }
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); }
+  table.roadmap th, table.roadmap td { padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.roadmap th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); background: var(--surface-sunken); font-weight: 600; }
+  table.roadmap tr:last-child td { border-bottom: none; }
+  table.roadmap td.phase { font-family: var(--mono); font-weight: 700; white-space: nowrap; }
+  table.roadmap td.g { color: var(--ink-soft); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+  .pill.done { background: var(--accent-soft); color: var(--accent); }
+  .pill.done::before { background: var(--accent); }
+  .pill.next { background: var(--amber-soft); color: var(--amber); }
+  .pill.next::before { background: var(--amber); }
+  .pill.future { background: var(--surface-sunken); color: var(--ink-faint); }
+  .pill.future::before { background: var(--ink-faint); }
+
+  .closing { margin-top: 60px; padding: 26px 28px; background: var(--surface-sunken); border-radius: var(--radius); font-size: 15px; color: var(--ink-soft); }
+  .closing b { color: var(--ink); }
+  a { color: var(--accent); }
+  code { font-family: var(--mono); font-size: 0.92em; background: var(--surface-sunken); padding: 1px 5px; border-radius: 4px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">SPTR &middot; Fitness App &middot; Product &amp; architecture overview</div>
+    <h1>Equipment Recognition: from &ldquo;this looks like a machine&rdquo; to &ldquo;this is your Nautilus Inspiration, seat position 4&rdquo;</h1>
+    <p class="lede">What we're building, why the current scanner isn't good enough, and how exact equipment identity turns into safer, more precise workouts &mdash; without ever slowing the user down or inventing a fact the app can't prove.</p>
+    <div class="hero-stats">
+      <span class="hero-pill hot">Phase P0 closed today</span>
+      <span class="hero-pill">7 phases, 30 gates total</span>
+      <span class="hero-pill">Additive &mdash; nothing existing gets replaced</span>
+    </div>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 524e0a7</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+  <h2><span class="num">01</span>What we're building</h2>
+  <p class="body">Today the app's scanner can tell a user &ldquo;this is a leg press&rdquo; &mdash; a generic functional category, one of ten trained classes. It can't tell them <i>whose</i> leg press it is, which matters more than it sounds: seat position, pulley ratio, handle adjustment and safety warnings are all specific to the exact model, not the category. We're adding a second, additive layer on top of the existing scanner: <b>exact equipment identity</b> &mdash; brand, product line, and model &mdash; built from a licensed, rights-cleared knowledge base instead of guesswork.</p>
+  <p class="body">The generic scanner keeps working exactly as it does today. Exact identity is enrichment that arrives a moment later, in parallel, and only ever adds detail &mdash; it never blocks a workout, and it never overrides an existing safety rule.</p>
+
+  <div class="diagram-card">
+    <div class="cap">Today vs. with exact identity</div>
+    <pre class="mermaid">
+flowchart LR
+    A["Camera scan"] --> B["On-device classifier<br/>10 trained classes"]
+    B --> C["Generic type<br/>e.g. 'leg press'"]
+    C --> D["Exercises &amp; safety<br/>(unchanged, always works)"]
+
+    A --> E["+ Text anchor<br/>reads the machine's own placard"]
+    E --> F["Exact Identity Engine<br/>catalog + embeddings + fusion"]
+    F --> G["Brand / Model / Setup facts<br/>(new, additive, never a blocker)"]
+    G --> D
+
+    classDef existing fill:#0e7c86,color:#fff,stroke:none;
+    classDef addition fill:#a86a06,color:#fff,stroke:none;
+    class B,C existing
+    class E,F,G addition
+    </pre>
+  </div>
+
+  <h2><span class="num">02</span>Why the current scanner isn't enough</h2>
+  <p class="body">This isn't a hunch &mdash; it's measured. A 30-photo real-gym evaluation set (recorded and frozen as historical evidence) showed the bundled 10-class model gets <b>zero out of thirty correct</b> on real equipment it wasn't trained on, and it does so <i>confidently</i> &mdash; it doesn't say &ldquo;I don't know,&rdquo; it reports a wrong class with up to 90% confidence. That's the actual failure mode a confidence threshold can't fix: the model isn't unsure, it's sure and wrong, because the real machine simply isn't one of its ten classes.</p>
+  <div class="grid-2">
+    <div class="card"><div class="k">Correct guidance</div><p>Seat height, pulley ratio and handle position differ by exact model &mdash; a generic &ldquo;leg press&rdquo; answer can't give correct setup instructions.</p></div>
+    <div class="card"><div class="k">Safety</div><p>Warnings and adjustment ranges come from the manufacturer's own documentation for that specific model, not a generic category guess.</p></div>
+    <div class="card"><div class="k">Trust</div><p>A confidently wrong answer is worse than an honest &ldquo;I'm not sure&rdquo; &mdash; it's the single failure mode this whole design is built to eliminate.</p></div>
+    <div class="card"><div class="k">Product depth</div><p>Exact-model history, verified setup pages and gym-specific memory are only possible once identity goes beyond &ldquo;it's some kind of leg press.&rdquo;</p></div>
+  </div>
+
+  <h2><span class="num">03</span>The five layers underneath identity</h2>
+  <p class="section-note">The design is deliberately layered so exact-model work can never quietly change what the app already relies on for exercises and safety.</p>
+  <div class="layer-list">
+    <div class="layer-row"><span class="badge">A</span><span class="name">Equipment Type</span><span class="desc">The existing functional category (&ldquo;leg press&rdquo;) that exercises, safety and programmes already run on &mdash; untouched, immutable semantics.</span></div>
+    <div class="layer-row"><span class="badge">B</span><span class="name">Brand / Model</span><span class="desc">Manufacturer identity &mdash; every exact model maps back to a Type, it never replaces one.</span></div>
+    <div class="layer-row"><span class="badge">C</span><span class="name">Recognition evidence</span><span class="desc">Photos, embeddings and matching policy &mdash; improves confidence in an identity guess, never redefines the ontology.</span></div>
+    <div class="layer-row"><span class="badge">D</span><span class="name">Physical machine instance</span><span class="desc">&ldquo;This specific unit at my gym&rdquo; &mdash; private, optional memory, always downstream of the model, never proof by itself.</span></div>
+    <div class="layer-row"><span class="badge">E</span><span class="name">Exercise knowledge graph</span><span class="desc">The existing verified exercise/safety catalog, plus read-only enrichment from external sources &mdash; the one thing exact identity is never allowed to bypass.</span></div>
+  </div>
+
+  <h2><span class="num">04</span>How it plays out for the user</h2>
+  <p class="section-note">The generic answer never waits on the exact one. Exact identity resolves in the background and only ever adds &mdash; the user is never blocked and never given a silently wrong model.</p>
+  <div class="diagram-card">
+    <div class="cap">User journey, one scan</div>
+    <pre class="mermaid">
+flowchart TD
+    S["User points camera at equipment"] --> T{"Type recognized?"}
+    T -- "yes, instantly" --> U["Exercises &amp; safety available right away"]
+    T -- "exact identity resolves in parallel" --> V{"Result"}
+    V -- "unique brand+model text/visual match" --> W["Card enriched: brand, model,<br/>verified setup facts"]
+    V -- "more than one plausible model" --> X["Guided second scan requested<br/>(placard / logo / side view)"]
+    V -- "no reliable signal" --> Y["Stays generic &mdash; honest,<br/>no guess presented as fact"]
+    W --> U
+    X --> U
+    Y --> U
+    </pre>
+  </div>
+  <p class="section-note" style="margin-top:-8px">Every recognition ends in one of a small set of honest outcomes &mdash; there is no state that means &ldquo;probably right, shown as certain&rdquo;:</p>
+  <div class="outcome-row">
+    <span class="outcome exact">EXACT_MODEL</span>
+    <span class="outcome partial">PRODUCT_LINE</span>
+    <span class="outcome partial">BRAND+TYPE</span>
+    <span class="outcome partial">TYPE_ONLY</span>
+    <span class="outcome unknown">NEED_MORE_VIEW</span>
+    <span class="outcome unknown">UNKNOWN</span>
+  </div>
+
+  <div class="callout">
+    <p><b>The one rule that never bends:</b> exact model identity can only ever <i>select</i> from the app's existing, vetted exercise and safety catalog &mdash; it can never generate new exercises or safety guidance on its own. An AI model may rephrase an already-verified setup fact for readability; it may not invent one.</p>
+  </div>
+
+  <h2><span class="num">05</span>Where the pieces live</h2>
+  <p class="section-note">Built additively on the existing stack &mdash; nothing here replaces the Stripe/account Functions, the current scanner, or Firestore.</p>
+  <div class="diagram-card">
+    <div class="cap">System shape</div>
+    <pre class="mermaid">
+flowchart TD
+    subgraph Mobile["Flutter app"]
+      Cam["Camera / scan flow"]
+      UI["Result UI: type-first,<br/>identity enriches in place"]
+    end
+
+    subgraph FB["Firebase &mdash; two isolated Functions codebases"]
+      Default["default codebase<br/>(existing: Stripe, account, video)"]
+      Identity["equipment-identity codebase<br/>(new: catalog lookup, fusion, embeddings)"]
+    end
+
+    subgraph Data["Firestore"]
+      Catalog["Brands / Models / Sources / Assets<br/>(rights-governed, server-only)"]
+      Active["Active catalog version<br/>(atomic publish + rollback)"]
+    end
+
+    Cam --> Identity
+    Identity --> Catalog
+    Identity --> Active
+    Identity --> UI
+    Default -. no shared build or deploy path .- Identity
+
+    classDef iso stroke-dasharray: 4 3;
+    class Default,Identity iso
+    </pre>
+  </div>
+  <p class="body">The &ldquo;no shared build/deploy path&rdquo; line isn't a diagram flourish &mdash; it's a decision closed today (P0.G6): the identity codebase is proven, with a real build run, to be unable to break a Stripe hotfix deploy even if its own code is broken.</p>
+
+  <h2><span class="num">06</span>The road from here</h2>
+  <p class="section-note">Seven phases, thirty gates, each independently reviewable and reversible. P0 (foundation) closed today; P1 is next and needs its own kickoff.</p>
+  <div class="table-scroll">
+  <table class="roadmap">
+    <thead><tr><th>Phase</th><th>What it delivers</th><th>Gates</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="phase">P0</td><td class="g">Foundation: freeze the current baseline, fix ML provenance gaps, build a fail-closed rights registry, a deterministic catalog snapshot, prove cloud feasibility, isolate deployment risk.</td><td class="g">7</td><td><span class="pill done">Closed</span></td></tr>
+      <tr><td class="phase">P1</td><td class="g">Canonical Machine Knowledge Base &mdash; the actual Brand/Model/Source schema in Firestore, first real brand data, and the publish pipeline that turns raw sources into a reviewed, versioned catalog.</td><td class="g">6</td><td><span class="pill next">Next</span></td></tr>
+      <tr><td class="phase">P2</td><td class="g">OCR-first identity: read the machine's own printed model code and resolve it against the catalog &mdash; the cheapest, most precise identity path, shipped before any camera-vision retrieval work.</td><td class="g">5</td><td><span class="pill future">Planned</span></td></tr>
+      <tr><td class="phase">P3</td><td class="g">Licensed photo corpus and a genuinely sealed real-gym test set &mdash; the evidence base later phases get measured against, kept independent from tuning.</td><td class="g">3</td><td><span class="pill future">Planned</span></td></tr>
+      <tr><td class="phase">P4</td><td class="g">Visual retrieval: image embeddings, evidence fusion, calibrated confidence and an open-set &ldquo;don't know&rdquo; policy, plus a bounded AI verifier for close calls.</td><td class="g">4</td><td><span class="pill future">Planned</span></td></tr>
+      <tr><td class="phase">P5</td><td class="g">Product surface: guided multi-view capture, a real exact-model equipment page with verified setup, exact-model history, private per-gym memory, and a user correction path.</td><td class="g">5</td><td><span class="pill future">Planned</span></td></tr>
+      <tr><td class="phase">P6</td><td class="g">Shadow traffic, independent blind evaluation on real gyms, and model-by-model promotion &mdash; nothing reaches production without measured evidence.</td><td class="g">4</td><td><span class="pill future">Planned</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="diagram-card">
+    <div class="cap">Roadmap at a glance</div>
+    <pre class="mermaid">
+flowchart LR
+    P0["P0 Foundation<br/>7 gates &mdash; CLOSED"]:::done --> P1["P1 Knowledge Base<br/>6 gates &mdash; NEXT"]:::next
+    P1 --> P2["P2 OCR Identity<br/>5 gates"]:::future
+    P2 --> P3["P3 Licensed Corpus<br/>3 gates"]:::future
+    P3 --> P4["P4 Visual Retrieval<br/>4 gates"]:::future
+    P4 --> P5["P5 Product UX<br/>5 gates"]:::future
+    P5 --> P6["P6 Shadow &amp; Promotion<br/>4 gates"]:::future
+
+    classDef done fill:#0e7c86,color:#fff,stroke:none;
+    classDef next fill:#a86a06,color:#fff,stroke:none;
+    classDef future fill:#7a8b9c,color:#fff,stroke:none;
+    </pre>
+  </div>
+
+  <h3>One decision already made along the way</h3>
+  <p class="body">P0.G5 asked whether visual (camera-image) recognition could start now. The honest answer, checked against the real infrastructure rather than assumed: there is currently no safe non-production environment to test it in without risking the live app. Rather than test on production or guess, that path is explicitly deferred &mdash; text-based identity (reading the machine's own printed model code, phase P2) ships first, since it needs no image-matching infrastructure at all and is the cheaper, more precise path regardless.</p>
+
+  <div class="closing">
+    <b>Where things stand:</b> P0 closed today with a full evidence trail (six gates, independent review, a final cross-phase audit that caught and fixed one real defect before sign-off). P1 &mdash; the knowledge base that everything downstream depends on &mdash; is authorized to begin but needs its own dedicated kickoff, per the phase-boundary review process this program follows.
+  </div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
