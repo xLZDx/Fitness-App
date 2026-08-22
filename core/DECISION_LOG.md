@@ -24521,3 +24521,62 @@ so no further consensus round was required before proceeding to P1.
 Committed as a follow-up to `c8671ae`. P1 implementation (P1.G1-G6 + P1_AGGREGATE) begins next,
 under the operator's "ГО P1 kickoff" authorization, program mode in effect (report only at the end
 of the whole P1 chunk).
+
+## 2026-08-22 -- P1.G1 CLOSED: equipment identity ontology & Firestore schema
+
+First P1 gate. Built the additive canonical identity schema layer (zod contracts, P0.G4
+type-reference server-side validator, catalog-level uniqueness checks, RecognitionAuthorityTuple
+schema/rules-layer immutability) and the Firestore access-control boundary (`recognised_models`,
+`equipment_identity_sessions`, `equipment_identity_telemetry` carved out of the per-user wildcard;
+10 new top-level `equipment_*` catalog-authority collections, all server/admin-only). Full detail:
+`core/equipment_identity/p1/P1_G1_SCHEMA.md`.
+
+**Review**: 4 independent parallel reviewers (`database-reviewer`, `security-reviewer`,
+`type-design-analyzer`, `silent-failure-hunter`) against the real diff. 3 MAJOR + several MINOR
+findings, all fixed and regression-tested:
+- Ambiguous space-joined composite keys in `validateCatalogUniqueness` could false-positive a
+  duplicate report for two structurally different records whose free-text fields (catalogVersion,
+  modelCode) happened to contain spaces that realigned the joined string. Fixed with
+  `JSON.stringify`-encoded key parts; regression-proven with the reviewer's own example collision.
+- `mappingId`/`setupSpecId`/`assetId`/`jobId` had zero Firestore-docId-safety validation, feeding
+  straight into unescaped path construction. Fixed with a new `EntityIdSchema` plus a runtime
+  backstop guard in every `firestore_paths.ts` path builder.
+- `catalogVersion`/slug fields could legally contain `--`, ambiguous against the
+  `{catalogVersion}--{entityId}` composite docId scheme's own separator, before any real data
+  exists. Fixed with a new `CatalogVersionSchema` and a tightened `SlugSchema`.
+- MINORs: missing `.strict()` on two schemas, a dual null/undefined encoding for
+  `productLineId`/`generation` that would have broken deterministic content hashing at P1.G6,
+  `ids.ts` having zero test coverage (added 18 tests), an unenforced `\n`-delimiter collision
+  invariant in `deriveCandidateId`.
+- `security-reviewer`/`silent-failure-hunter`: no BLOCKER/MAJOR; confirmed via repo-wide grep that
+  `rights.py`'s `eligible_for()` hardening (§6.8, below) has no existing caller that could regress.
+
+**Self-caught defect (not from the reviewer panel — found by running the full
+`scripts/equipment_identity/` regression suite before commit, per gate discipline)**: P1.G1's new
+`check:p0-snapshot` build step broke P0.G6's `verify_deployment_isolation.py` isolation-probe test
+harness, which copies only `functions-equipment-identity` into a disposable temp directory and
+expects it to build standalone there — it no longer could, since `check:p0-snapshot` needs
+`core/equipment_identity/p0/functional_type_snapshot_v1.json` alongside it, which a real checkout
+always has but the temp copy didn't. Fixed by copying that one file into the temp root at the
+matching relative path (read-only, tracked file never touched). Does not weaken P0.G6's actual
+isolation guarantee — only fixes the test harness's own temp-copy fidelity, which P1.G1 was the
+first gate to actually exercise since P0.G6 closed.
+
+**P0.G3 rights hardening (§6.8, two accepted forward notes closed)**: `rights.py`'s `eligible_for()`
+now validates the source record before dispatching to any eligibility function (closes an
+untyped-KeyError-risk gap); 5 new schema/code drift tests make a future `rights_decision.schema.json`
+↔ `rights.py` constant mismatch CI-visible instead of silently possible. P0.G3's own CLOSED status
+is not reopened.
+
+**Tests**: `functions-equipment-identity` 152/152 (was 15). `functions` `test:rules` 107/107 (was
+61). `scripts/equipment_identity/` (full suite) 104/104 (was 90 pre-P1.G1 plus P0.G6's fixed 10).
+`npm run build` clean in both Functions codebases.
+
+**Scope discipline honored**: no `equipmentId` migration, no Flutter/mobile runtime change, no
+production Firebase write, no production Cloud Function export
+(`functions-equipment-identity/src/index.ts` still `export {}`), no vector/embedding/AI-platform
+SDK introduced, P0.G0 still external-blocked, P0.G5 still OCR_TEXT_ONLY_DEFER_VISUAL -- all
+confirmed by the security-reviewer pass, not just asserted.
+
+Next: P1.G2 (official P0 brand adapters -- Technogym, Life Fitness/Hammer Strength, Matrix,
+Core Health & Fitness/Nautilus), under the same operator GO and program-mode reporting.

@@ -140,6 +140,23 @@ def run_broken_identity_probe() -> dict[str, Any]:
         shutil.copytree(
             IDENTITY_DIR, temp_identity, ignore=shutil.ignore_patterns(".git", "lib", "node_modules")
         )
+        # P1.G1 (§5.14): `npm run build` now runs `check:p0-snapshot` first,
+        # which reads core/equipment_identity/p0/functional_type_snapshot_
+        # v1.json via a path relative to functions-equipment-identity's own
+        # location (REPO_ROOT = two levels up from scripts/). That file is a
+        # real, intentional build-time dependency in every actual checkout
+        # (functions-equipment-identity never deploys without the rest of
+        # the repo present alongside it) -- this probe's temp copy must
+        # mirror that same relative layout, or `check:p0-snapshot` fails on
+        # a missing file that has nothing to do with the isolation property
+        # being tested here. Read-only P0 source, not the tracked file
+        # itself -- never modified.
+        temp_p0_dir = tmp_root / "core" / "equipment_identity" / "p0"
+        temp_p0_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(
+            P0_DIR / "functional_type_snapshot_v1.json",
+            temp_p0_dir / "functional_type_snapshot_v1.json",
+        )
 
         install = _run([NPM, "ci"], temp_identity)
         if install.returncode != 0:

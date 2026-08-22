@@ -324,6 +324,18 @@ ELIGIBILITY_BY_USE: dict[str, Any] = {
 
 
 def eligible_for(record: dict[str, Any], use: str) -> bool:
+    """P1.G1 §6.8 hardening (forward note accepted at P0.G3 close): every
+    caller reaches the individual `eligible_for_*` functions through this
+    one chokepoint, so validating the record here — before any eligibility
+    field is even read — means a malformed/inconsistent record can never
+    silently produce a `True` (or a wrong `False`) by having its fields
+    misread. Previously each `eligible_for_*` trusted its `record` argument
+    structurally; a record that skipped `validate_source_record` (e.g. a
+    hand-built dict in a future caller, not one of P0's registry-loaded
+    records) could raise a bare `KeyError`/`TypeError` instead of the
+    typed `RightsValidationError` every other rights failure raises, or —
+    worse — could have a booleanish-but-wrong value read as truthy."""
+    validate_source_record(record)
     if use not in ELIGIBILITY_BY_USE:
         raise RightsValidationError(f"unknown use {use!r}, expected one of {sorted(ELIGIBILITY_BY_USE)}")
     return ELIGIBILITY_BY_USE[use](record)

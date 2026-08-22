@@ -1,0 +1,60 @@
+{
+  "$comment": "P1.G1 T5 (SPTR Equipment Recognition v4.4) -- shared cross-language fixture cases proving scripts/equipment_identity/type_snapshot.py's validate_type_reference and functions-equipment-identity/src/p1/type_snapshot.ts's validateTypeReference stay behaviorally identical. Consumed by scripts/equipment_identity/test_type_snapshot.py and functions-equipment-identity/src/p1/__tests__/p1_type_snapshot.test.ts.",
+  "schemaVersion": 1,
+  "snapshot": {
+    "types": [
+      { "id": "leg_press" },
+      { "id": "chest_press" },
+      { "id": "lat_pulldown" }
+    ]
+  },
+  "cases": [
+    {
+      "name": "valid_single_type",
+      "primaryTypeId": "leg_press",
+      "supportedTypeIds": ["leg_press"],
+      "valid": true
+    },
+    {
+      "name": "valid_multi_function",
+      "primaryTypeId": "leg_press",
+      "supportedTypeIds": ["leg_press", "chest_press"],
+      "valid": true
+    },
+    {
+      "name": "unknown_primary_type",
+      "primaryTypeId": "does_not_exist",
+      "supportedTypeIds": ["leg_press"],
+      "valid": false,
+      "errorContains": "does not exist in the type snapshot"
+    },
+    {
+      "name": "unknown_supported_type",
+      "primaryTypeId": "leg_press",
+      "supportedTypeIds": ["leg_press", "does_not_exist"],
+      "valid": false,
+      "errorContains": "do not exist in the type snapshot"
+    },
+    {
+      "name": "primary_not_in_supported",
+      "primaryTypeId": "leg_press",
+      "supportedTypeIds": ["chest_press"],
+      "valid": false,
+      "errorContains": "must be present in supportedTypeIds"
+    },
+    {
+      "name": "duplicate_supported_type_id",
+      "primaryTypeId": "leg_press",
+      "supportedTypeIds": ["leg_press", "leg_press"],
+      "valid": false,
+      "errorContains": "duplicate type id"
+    },
+    {
+      "name": "empty_primary_type_id",
+      "primaryTypeId": "",
+      "supportedTypeIds": ["leg_press"],
+      "valid": false,
+      "errorContains": "non-empty string"
+    }
+  ]
+}

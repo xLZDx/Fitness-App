@@ -2,10 +2,12 @@
   "name": "functions-equipment-identity",
   "description": "The equipment-identity Cloud Functions codebase, isolated from the default (Stripe) codebase per P0.G6 -- see core/equipment_identity/p0/P0_G6_DEPLOYMENT_ISOLATION.md. No production identity function is exported yet -- see core/equipment_identity/p0/P0_G5_CLOUD_FEASIBILITY.md for why.",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run check:p0-snapshot && tsc",
     "build:watch": "tsc --watch",
     "deploy": "firebase deploy --only functions:equipment-identity",
-    "test": "jest"
+    "test": "jest",
+    "sync:p0-snapshot": "node scripts/sync_p0_type_snapshot.js",
+    "check:p0-snapshot": "node scripts/sync_p0_type_snapshot.js --check"
   },
   "engines": {
     "node": "20"
@@ -13,7 +15,8 @@
   "main": "lib/index.js",
   "dependencies": {
     "firebase-admin": "^12.6.0",
-    "firebase-functions": "^6.0.0"
+    "firebase-functions": "^6.0.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",

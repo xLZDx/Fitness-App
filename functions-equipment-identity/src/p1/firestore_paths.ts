@@ -1,0 +1,116 @@
+/**
+ * P1.G1 §5.15 — Firestore physical layout (SPTR Equipment Recognition
+ * v4.4). Versioned entity docs use a `{catalogVersion}--{entityId}`
+ * composite docId so immutable old versions coexist without ever being
+ * overwritten; the business primary key remains the entity's own id
+ * (modelId, brandId, ...), the version prefix exists only so Firestore's
+ * flat docId namespace can hold every version at once. See
+ * firestore.rules for the matching security-rule collection names -- this
+ * module is the single place both the reader/writer code and the rules
+ * comments should trace back to if a collection name ever changes.
+ */
+
+/** Runtime backstop, independent of zod schema validation: this module's
+ * functions can be called directly with a raw string that never passed
+ * through contracts.ts's schemas (e.g. an ad-hoc reader call), so the
+ * `{catalogVersion}--{entityId}` scheme's own safety invariants -- no `/`
+ * (would nest an unintended subcollection), no bare `--` inside either
+ * half (would make the composite ambiguous to any future prefix-range
+ * read) -- are enforced here too, not only in CatalogVersionSchema/
+ * SlugSchema/EntityIdSchema (reviewer-found gap, P1.G1 database review,
+ * 2026-08-22). */
+function assertFirestoreSafeIdPart(label: string, value: string): void {
+  if (value.includes("/")) {
+    throw new Error(`versionedDocId: ${label} must not contain '/', got ${JSON.stringify(value)}`);
+  }
+  if (value.includes("--")) {
+    throw new Error(
+      `versionedDocId: ${label} must not contain '--' (reserved as the {catalogVersion}--{entityId} separator), got ${JSON.stringify(value)}`,
+    );
+  }
+}
+
+export function versionedDocId(catalogVersion: string, entityId: string): string {
+  if (!catalogVersion) throw new Error("versionedDocId: catalogVersion must be non-empty");
+  if (!entityId) throw new Error("versionedDocId: entityId must be non-empty");
+  assertFirestoreSafeIdPart("catalogVersion", catalogVersion);
+  assertFirestoreSafeIdPart("entityId", entityId);
+  return `${catalogVersion}--${entityId}`;
+}
+
+export const CollectionPaths = {
+  brands: "equipment_brands",
+  productLines: "equipment_product_lines",
+  models: "equipment_models",
+  setupSpecs: "equipment_model_setup_specs",
+  externalMappings: "equipment_external_mappings",
+  sources: "equipment_sources",
+  assets: "equipment_assets",
+  publishJobs: "equipment_catalog_publish_jobs",
+  catalogVersions: "equipment_catalog_versions",
+  catalogActive: "equipment_catalog_active",
+} as const;
+
+export function brandDocPath(catalogVersion: string, brandId: string): string {
+  return `${CollectionPaths.brands}/${versionedDocId(catalogVersion, brandId)}`;
+}
+
+export function productLineDocPath(catalogVersion: string, productLineId: string): string {
+  return `${CollectionPaths.productLines}/${versionedDocId(catalogVersion, productLineId)}`;
+}
+
+export function modelDocPath(catalogVersion: string, modelId: string): string {
+  return `${CollectionPaths.models}/${versionedDocId(catalogVersion, modelId)}`;
+}
+
+export function setupSpecDocPath(catalogVersion: string, setupSpecId: string): string {
+  return `${CollectionPaths.setupSpecs}/${versionedDocId(catalogVersion, setupSpecId)}`;
+}
+
+export function externalMappingDocPath(catalogVersion: string, mappingId: string): string {
+  return `${CollectionPaths.externalMappings}/${versionedDocId(catalogVersion, mappingId)}`;
+}
+
+export function sourceDocPath(sourceId: string): string {
+  if (!sourceId) throw new Error("sourceDocPath: sourceId must be non-empty");
+  assertFirestoreSafeIdPart("sourceId", sourceId);
+  return `${CollectionPaths.sources}/${sourceId}`;
+}
+
+export function assetDocPath(catalogVersion: string, assetId: string): string {
+  return `${CollectionPaths.assets}/${versionedDocId(catalogVersion, assetId)}`;
+}
+
+export function publishJobDocPath(jobId: string): string {
+  if (!jobId) throw new Error("publishJobDocPath: jobId must be non-empty");
+  assertFirestoreSafeIdPart("jobId", jobId);
+  return `${CollectionPaths.publishJobs}/${jobId}`;
+}
+
+export function catalogVersionDocPath(catalogVersion: string): string {
+  if (!catalogVersion) throw new Error("catalogVersionDocPath: catalogVersion must be non-empty");
+  assertFirestoreSafeIdPart("catalogVersion", catalogVersion);
+  return `${CollectionPaths.catalogVersions}/${catalogVersion}`;
+}
+
+export const CATALOG_ACTIVE_POINTER_DOC_PATH = `${CollectionPaths.catalogActive}/current`;
+
+export function userRecognisedModelDocPath(uid: string, modelDocId: string): string {
+  if (!uid) throw new Error("userRecognisedModelDocPath: uid must be non-empty");
+  if (!modelDocId) throw new Error("userRecognisedModelDocPath: modelDocId must be non-empty");
+  return `users/${uid}/recognised_models/${modelDocId}`;
+}
+
+export function userEquipmentIdentitySessionDocPath(uid: string, sessionId: string): string {
+  if (!uid) throw new Error("userEquipmentIdentitySessionDocPath: uid must be non-empty");
+  if (!sessionId) {
+    throw new Error("userEquipmentIdentitySessionDocPath: sessionId must be non-empty");
+  }
+  return `users/${uid}/equipment_identity_sessions/${sessionId}`;
+}
+
+export function userEquipmentIdentityTelemetryDocPath(uid: string, docId: string): string {
+  if (!uid) throw new Error("userEquipmentIdentityTelemetryDocPath: uid must be non-empty");
+  if (!docId) throw new Error("userEquipmentIdentityTelemetryDocPath: docId must be non-empty");
+  return `users/${uid}/equipment_identity_telemetry/${docId}`;
+}

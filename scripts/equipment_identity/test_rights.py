@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import sys
 from pathlib import Path
 
@@ -13,6 +14,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import rights  # noqa: E402
+
+P0_DIR = Path(__file__).resolve().parents[2] / "core" / "equipment_identity" / "p0"
 
 
 def _base_rights(**overrides) -> dict:
@@ -178,9 +181,16 @@ def test_royalty_free_string_alone_cannot_grant_training():
     record = _base_record(rights=r)
     assert rights.eligible_for(record, "TRAINING") is False
     # Also true even if legalReviewState were REVIEWED but trainingAllowed
-    # was never actually set true by that review.
+    # was never actually set true by that review. termsCaptured=True here
+    # only makes the fixture itself schema-valid (REVIEWED requires it,
+    # per validate_rights) -- P1.G1 §6.8 hardening made eligible_for()
+    # validate the record before reading any eligibility field, so an
+    # inconsistent REVIEWED-without-termsCaptured fixture would now raise
+    # RightsValidationError here rather than silently reaching the
+    # trainingAllowed=False check this test actually means to exercise.
     r2 = _base_rights(
         legalReviewState="REVIEWED", reviewedAt="2026-08-22T00:00:00Z",
+        termsCaptured=True,
         trainingAllowed=False, noAiRestriction=False,
         decisionBasis="royalty free per provider marketing page",
     )
@@ -294,3 +304,80 @@ def test_load_registry_does_not_mutate_input_records():
         for use in rights.ELIGIBILITY_BY_USE:
             rights.eligible_for(record, use)
     assert sources == snapshot
+
+
+# --- P1.G1 §6.8 hardening: eligible_for() validates before deciding -------
+
+def test_eligible_for_rejects_a_record_that_never_passed_validate_source_record():
+    # Before this hardening, a hand-built record that skipped
+    # validate_source_record (e.g. missing a required field, or REVIEWED
+    # without termsCaptured) could reach an eligibility function directly
+    # and either raise an untyped KeyError or silently read a wrong value.
+    # eligible_for() must now refuse it the same way validate_source_record
+    # itself would, with the same typed error.
+    malformed = _base_record(
+        rights=_base_rights(legalReviewState="REVIEWED", reviewedAt="2026-08-22T00:00:00Z"),
+        # termsCaptured left False -- REVIEWED requires it true.
+    )
+    with pytest.raises(rights.RightsValidationError, match="termsCaptured"):
+        rights.eligible_for(malformed, "DISPLAY")
+
+
+def test_eligible_for_rejects_a_record_missing_a_required_field():
+    malformed = _base_record()
+    del malformed["canonicalUrl"]
+    with pytest.raises(rights.RightsValidationError, match="canonicalUrl"):
+        rights.eligible_for(malformed, "DISPLAY")
+
+
+# --- P1.G1 §6.8 hardening: schema/code consistency (drift becomes CI-visible) ---
+#
+# rights.py's constants are hand-maintained copies of what
+# rights_decision.schema.json and source_registry.schema.json declare (see
+# both schema files' own top-of-file comments: "this module is the
+# executable enforcement those schemas can only describe"). Nothing before
+# this test caught the two drifting apart -- e.g. a future
+# `termsCaptured`-class field added to one schema and not the other, or to
+# a schema but not rights.py's REQUIRED_*_FIELDS/enums. This test is that
+# CI-visible tripwire.
+
+def _load_schema(name: str) -> dict:
+    return json.loads((P0_DIR / name).read_text(encoding="utf-8"))
+
+
+def test_rights_decision_schema_required_fields_match_rights_py():
+    schema = _load_schema("rights_decision.schema.json")
+    assert set(schema["required"]) == set(rights.REQUIRED_RIGHTS_FIELDS)
+
+
+def test_rights_decision_schema_legal_review_state_enum_matches_rights_py():
+    schema = _load_schema("rights_decision.schema.json")
+    assert set(schema["properties"]["legalReviewState"]["enum"]) == set(rights.LEGAL_REVIEW_STATES)
+
+
+def test_source_registry_schema_required_fields_match_rights_py():
+    schema = _load_schema("source_registry.schema.json")
+    assert set(schema["required"]) == set(rights.REQUIRED_SOURCE_FIELDS)
+
+
+def test_source_registry_schema_source_class_enum_matches_rights_py():
+    schema = _load_schema("source_registry.schema.json")
+    assert set(schema["properties"]["sourceClass"]["enum"]) == set(rights.SOURCE_CLASSES)
+
+
+def test_source_registry_schema_priority_enum_matches_rights_py():
+    schema = _load_schema("source_registry.schema.json")
+    assert set(schema["properties"]["priority"]["enum"]) == set(rights.PRIORITIES)
+
+
+def test_canonical_priorities_by_source_class_covers_every_declared_class():
+    # Every sourceClass the schema knows about must have a canonical
+    # priority mapping in rights.py -- a class present in the schema but
+    # absent from CANONICAL_PRIORITIES_BY_SOURCE_CLASS would KeyError the
+    # first time validate_source_record saw a record of that class, rather
+    # than failing loudly ahead of time.
+    schema = _load_schema("source_registry.schema.json")
+    schema_classes = set(schema["properties"]["sourceClass"]["enum"])
+    assert schema_classes == set(rights.CANONICAL_PRIORITIES_BY_SOURCE_CLASS.keys())
+    for allowed in rights.CANONICAL_PRIORITIES_BY_SOURCE_CLASS.values():
+        assert allowed.issubset(rights.PRIORITIES)

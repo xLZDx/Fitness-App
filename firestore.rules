@@ -21,17 +21,34 @@ service cloud.firestore {
     // still grants the same request — Firestore allows a request if ANY
     // matching rule permits it, so a blanket read grant here would have kept
     // overriding a stricter one there.
+    // P1.G1 T2 (SPTR Equipment Recognition v4.4): `recognised_models`,
+    // `equipment_identity_sessions` and `equipment_identity_telemetry` join
+    // the carve-out list for the same reason `usage`/`receipts`/`profile`
+    // did — each is server-authored and the wildcard's blanket client-write
+    // grant would let a client forge or erase server-computed identity
+    // state. `equipment_identity_sessions`/`equipment_identity_telemetry`
+    // are excluded from read too (no client reads either directly, same
+    // rationale as `usage`/`receipts`); `recognised_models` keeps its read
+    // grant here removed as well and re-added explicitly below so its
+    // read/write pair lives in one self-contained block a reviewer (or a
+    // mutation test) can point at without cross-referencing this wildcard.
     match /users/{uid}/{coll}/{document=**} {
       allow read: if request.auth != null
                   && request.auth.uid == uid
                   && coll != 'usage'
-                  && coll != 'receipts';
+                  && coll != 'receipts'
+                  && coll != 'recognised_models'
+                  && coll != 'equipment_identity_sessions'
+                  && coll != 'equipment_identity_telemetry';
       allow write: if request.auth != null
                    && request.auth.uid == uid
                    && coll != 'subscription'
                    && coll != 'usage'
                    && coll != 'receipts'
-                   && coll != 'profile';
+                   && coll != 'profile'
+                   && coll != 'recognised_models'
+                   && coll != 'equipment_identity_sessions'
+                   && coll != 'equipment_identity_telemetry';
     }
 
     // F005: `abuse_guard.ts`'s daily quota lives at
@@ -237,6 +254,79 @@ service cloud.firestore {
     // these directly: a booking names BOTH parties and carries a
     // payment-intent id (`index.ts:1154-1164`).
     match /coach_bookings/{bookingId} {
+      allow read, write: if false;
+    }
+
+    // P1.G1 T2/T4 (SPTR Equipment Recognition v4.4, core/design/
+    // sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_
+    // CONTRACTS_AND_AC_DOD_2026-08-22.md). A user's resolved exact-model
+    // recognitions — server-written only (`functions-equipment-identity`'s
+    // Admin SDK write path, once one exists), never client-authored. Owner
+    // can read their own history; nobody can create/update/delete it from a
+    // client, which is also how T4's authority-field immutability holds at
+    // this layer: there is no client mutation surface at all, so a
+    // `RecognitionAuthorityTuple` embedded in a resolved record can never be
+    // altered post-write by anything but the server that wrote it.
+    match /users/{uid}/recognised_models/{modelId} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // In-flight identity resolution session state (P2.G3 introduces the
+    // runtime that actually writes these; the collection is carved out of
+    // client reach here, ahead of that gate, so no client build can ever
+    // have depended on writing or reading it directly). Entirely
+    // server-internal — no client read, no client write.
+    match /users/{uid}/equipment_identity_sessions/{sessionId} {
+      allow read, write: if false;
+    }
+
+    // Recognition telemetry (latency, outcome counts, model/version tags
+    // used for shadow evaluation in P6). Written by the server pipeline
+    // only; a client that could edit or delete its own telemetry would make
+    // it worthless as an evaluation signal.
+    match /users/{uid}/equipment_identity_telemetry/{docId} {
+      allow read, write: if false;
+    }
+
+    // P1.G1 T2: top-level canonical-catalog authority collections. All
+    // server/admin-only for the whole of P1 — no P1 app screen or Flutter
+    // provider reads this catalog (see P1.G6 §11.14), so client access is
+    // closed outright rather than opened read-only for a caller that does
+    // not exist yet. `equipment_catalog_active/current` stays server-only
+    // too until a real P2 client requirement earns it a narrower read grant
+    // — see P1.G1 evidence doc for why that is deliberate, not an oversight.
+    // Versioned entity docs use a `{catalogVersion}--{id}` composite docId
+    // (see P1.G1 §5.15), so a single `{docId}` wildcard per collection
+    // covers every version without a subcollection.
+    match /equipment_brands/{docId} {
+      allow read, write: if false;
+    }
+    match /equipment_product_lines/{docId} {
+      allow read, write: if false;
+    }
+    match /equipment_models/{docId} {
+      allow read, write: if false;
+    }
+    match /equipment_model_setup_specs/{docId} {
+      allow read, write: if false;
+    }
+    match /equipment_external_mappings/{docId} {
+      allow read, write: if false;
+    }
+    match /equipment_sources/{sourceId} {
+      allow read, write: if false;
+    }
+    match /equipment_assets/{docId} {
+      allow read, write: if false;
+    }
+    match /equipment_catalog_publish_jobs/{jobId} {
+      allow read, write: if false;
+    }
+    match /equipment_catalog_versions/{catalogVersion} {
+      allow read, write: if false;
+    }
+    match /equipment_catalog_active/{docId} {
       allow read, write: if false;
     }
   }

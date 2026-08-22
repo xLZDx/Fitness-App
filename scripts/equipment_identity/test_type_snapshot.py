@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import random
+import re
 import sys
 from pathlib import Path
 
@@ -197,3 +198,33 @@ def test_validate_type_reference_against_the_real_current_snapshot():
     ts.validate_type_reference(a, [a, b], snapshot)  # multi-function model
     with pytest.raises(ts.TypeSnapshotError, match="primaryTypeId"):
         ts.validate_type_reference("nonexistent_equipment_id", [a], snapshot)
+
+
+# --- P1.G1 T5: cross-language behavioral-parity fixtures ------------------
+# The same cases in core/equipment_identity/p1/type_reference_validation_
+# fixtures.json also drive functions-equipment-identity/src/p1/__tests__/
+# p1_type_snapshot.test.ts's validateTypeReference (the TS port). Both
+# languages must agree case-by-case, not just "both raise on invalid input."
+
+_FIXTURES_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "core" / "equipment_identity" / "p1" / "type_reference_validation_fixtures.json"
+)
+
+
+def _load_shared_fixtures() -> dict:
+    return json.loads(_FIXTURES_PATH.read_text(encoding="utf-8"))
+
+
+@pytest.mark.parametrize(
+    "case",
+    _load_shared_fixtures()["cases"],
+    ids=lambda case: case["name"],
+)
+def test_shared_type_reference_validation_fixture_case(case: dict) -> None:
+    snapshot = _load_shared_fixtures()["snapshot"]
+    if case["valid"]:
+        ts.validate_type_reference(case["primaryTypeId"], case["supportedTypeIds"], snapshot)
+    else:
+        with pytest.raises(ts.TypeSnapshotError, match=re.escape(case["errorContains"])):
+            ts.validate_type_reference(case["primaryTypeId"], case["supportedTypeIds"], snapshot)

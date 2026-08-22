@@ -662,3 +662,216 @@ describe("re-attack: ownership cannot be transferred or forged", () => {
     await assertSucceeds(getDoc(doc(asAlice(), `users/${ALICE}/workouts/w1`)));
   });
 });
+
+// P1.G1 T2/T4 (SPTR Equipment Recognition v4.4). This is the gate's Story AC
+// mutation-test suite: client CREATE/UPDATE of authority fields DENY,
+// server/admin write ALLOW, cross-account DENY. `recognised_models` is the
+// one collection here with a client-read grant; the other two are closed to
+// the client on both axes.
+describe("P1.G1: recognised_models — server-written, owner-readable only", () => {
+  const recognition = (extra: Record<string, unknown> = {}) => ({
+    modelId: "11111111-1111-4111-8111-111111111111",
+    canonicalSlug: "technogym-selection-leg-press",
+    recognitionAuthorityTuple: {
+      catalogVersion: "catalog-v1-deadbeef",
+      ocrVersion: "ocr-1",
+      textPolicyVersion: "text-1",
+      fusionPolicyVersion: "fusion-1",
+      identityPolicyVersion: "identity-1",
+    },
+    ...extra,
+  });
+
+  test("client create is refused, even under the owner's own uid", async () => {
+    await assertFails(
+      setDoc(
+        doc(asAlice(), `users/${ALICE}/recognised_models/m1`),
+        recognition(),
+      ),
+    );
+  });
+
+  test("server/admin write succeeds (Admin SDK bypasses rules, as expected)", async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(
+        doc(ctx.firestore(), `users/${ALICE}/recognised_models/m1`),
+        recognition(),
+      );
+    });
+    await assertSucceeds(
+      getDoc(doc(asAlice(), `users/${ALICE}/recognised_models/m1`)),
+    );
+  });
+
+  test("owner can read a server-written record", async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(
+        doc(ctx.firestore(), `users/${ALICE}/recognised_models/m1`),
+        recognition(),
+      );
+    });
+    await assertSucceeds(
+      getDoc(doc(asAlice(), `users/${ALICE}/recognised_models/m1`)),
+    );
+  });
+
+  test("cross-account read is refused", async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(
+        doc(ctx.firestore(), `users/${ALICE}/recognised_models/m1`),
+        recognition(),
+      );
+    });
+    await assertFails(
+      getDoc(doc(asBob(), `users/${ALICE}/recognised_models/m1`)),
+    );
+  });
+
+  test("client update of the authority tuple is refused, even by the owner", async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(
+        doc(ctx.firestore(), `users/${ALICE}/recognised_models/m1`),
+        recognition(),
+      );
+    });
+    await assertFails(
+      updateDoc(doc(asAlice(), `users/${ALICE}/recognised_models/m1`), {
+        "recognitionAuthorityTuple.catalogVersion": "catalog-v2-forged",
+      }),
+    );
+  });
+
+  test("client delete is refused, even by the owner", async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(
+        doc(ctx.firestore(), `users/${ALICE}/recognised_models/m1`),
+        recognition(),
+      );
+    });
+    await assertFails(
+      deleteDoc(doc(asAlice(), `users/${ALICE}/recognised_models/m1`)),
+    );
+  });
+
+  test("the per-user wildcard cannot override this denial", async () => {
+    // Firestore grants a request if ANY matching rule permits it, so the
+    // carve-out in the wildcard match itself is what this test actually
+    // proves — a wildcard that forgot `coll != 'recognised_models'` would
+    // pass every test above except this one, since the specific block's own
+    // `allow write: if false` never GRANTS anything either way.
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/recognised_models/m2`), {
+        modelId: "forged",
+      }),
+    );
+  });
+});
+
+describe("P1.G1: equipment_identity_sessions — fully server-internal", () => {
+  test("client read is refused", async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(
+        doc(ctx.firestore(), `users/${ALICE}/equipment_identity_sessions/s1`),
+        { status: "RESOLVING" },
+      );
+    });
+    await assertFails(
+      getDoc(doc(asAlice(), `users/${ALICE}/equipment_identity_sessions/s1`)),
+    );
+  });
+
+  test("client create is refused", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/equipment_identity_sessions/s1`), {
+        status: "RESOLVING",
+      }),
+    );
+  });
+
+  test("server/admin write succeeds", async () => {
+    await assertSucceeds(
+      env.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(
+          doc(ctx.firestore(), `users/${ALICE}/equipment_identity_sessions/s1`),
+          { status: "RESOLVING" },
+        );
+      }),
+    );
+  });
+});
+
+describe("P1.G1: equipment_identity_telemetry — fully server-internal", () => {
+  test("client read is refused", async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(
+        doc(ctx.firestore(), `users/${ALICE}/equipment_identity_telemetry/t1`),
+        { latencyMs: 240 },
+      );
+    });
+    await assertFails(
+      getDoc(doc(asAlice(), `users/${ALICE}/equipment_identity_telemetry/t1`)),
+    );
+  });
+
+  test("client create is refused", async () => {
+    await assertFails(
+      setDoc(
+        doc(asAlice(), `users/${ALICE}/equipment_identity_telemetry/t1`),
+        { latencyMs: 240 },
+      ),
+    );
+  });
+
+  test("server/admin write succeeds", async () => {
+    await assertSucceeds(
+      env.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(
+          doc(ctx.firestore(), `users/${ALICE}/equipment_identity_telemetry/t1`),
+          { latencyMs: 240 },
+        );
+      }),
+    );
+  });
+});
+
+describe("P1.G1: top-level catalog authority collections — server/admin only", () => {
+  const catalogCollections = [
+    "equipment_brands",
+    "equipment_product_lines",
+    "equipment_models",
+    "equipment_model_setup_specs",
+    "equipment_external_mappings",
+    "equipment_sources",
+    "equipment_assets",
+    "equipment_catalog_publish_jobs",
+    "equipment_catalog_versions",
+    "equipment_catalog_active",
+  ];
+
+  for (const coll of catalogCollections) {
+    test(`${coll}: client read is refused`, async () => {
+      await env.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(doc(ctx.firestore(), `${coll}/catalog-v1--seed`), {
+          seeded: true,
+        });
+      });
+      await assertFails(getDoc(doc(asAlice(), `${coll}/catalog-v1--seed`)));
+    });
+
+    test(`${coll}: client write is refused`, async () => {
+      await assertFails(
+        setDoc(doc(asAlice(), `${coll}/catalog-v1--seed`), { seeded: true }),
+      );
+    });
+
+    test(`${coll}: server/admin write succeeds`, async () => {
+      await assertSucceeds(
+        env.withSecurityRulesDisabled(async (ctx) => {
+          await setDoc(doc(ctx.firestore(), `${coll}/catalog-v1--seed`), {
+            seeded: true,
+          });
+        }),
+      );
+    });
+  }
+});
