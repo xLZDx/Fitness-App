@@ -246,7 +246,7 @@ def apply() -> int:
         changed = grant_token_creator(token, sa)
         print(f"{'granted' if changed else 'already had'} {TOKEN_CREATOR}: {sa}")
 
-    print("\nNext: firebase deploy --only functions")
+    print("\nNext: firebase deploy --only functions:default")
     return 0
 
 

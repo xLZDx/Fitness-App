@@ -10,6 +10,15 @@ through `users/{uid}/subscription/main` via a webhook.
 These commands need your terminal because they write secrets to Google
 Secret Manager and your Firebase auth.
 
+**Two Functions codebases exist since P0.G6 (2026-08-22):** this runbook's
+`functions/` (`default` codebase, everything below) and a separate
+`functions-equipment-identity/` (`equipment-identity` codebase) added for
+the equipment-recognition ML feature -- currently exports nothing, not yet
+production-deployed. Every command below is deliberately scoped to
+`functions:default` so it can never touch the identity codebase, even once
+that codebase ships real functions. See
+`core/equipment_identity/p0/P0_G6_DEPLOYMENT_ISOLATION.md` for why.
+
 ### 1. Install Functions dependencies
 
 ```powershell
@@ -41,7 +50,7 @@ firebase functions:secrets:set STRIPE_WEBHOOK_SECRET
 ### 3. First deploy
 
 ```powershell
-firebase deploy --only firestore:rules,functions
+firebase deploy --only firestore:rules,functions:default
 ```
 
 Two things happen:
@@ -71,7 +80,7 @@ Two things happen:
 firebase functions:secrets:set STRIPE_WEBHOOK_SECRET
 # paste the whsec_... from step 4
 
-firebase deploy --only functions
+firebase deploy --only functions:default
 ```
 
 ### 6. Smoke test on the emulator
@@ -221,7 +230,7 @@ slot stays empty for now; we set it after the first deploy in step 5.
 
 ### 5. After my code lands — deploy and configure the webhook
 
-1. `firebase deploy --only functions` from `D:\Repo\Fitness_App`.
+1. `firebase deploy --only functions:default` from `D:\Repo\Fitness_App`.
 2. Copy the deployed `stripeWebhook` URL from the deploy output (looks
    like `https://us-central1-traidingbot-b4061.cloudfunctions.net/stripeWebhook`).
 3. Stripe dashboard → Developers → Webhooks → Add endpoint:
@@ -235,8 +244,8 @@ slot stays empty for now; we set it after the first deploy in step 5.
    - Reveal **Signing secret** (`whsec_...`).
 4. `firebase functions:secrets:set STRIPE_WEBHOOK_SECRET` → paste the
    `whsec_...`.
-5. `firebase deploy --only functions` again so the function picks up
-   the new secret.
+5. `firebase deploy --only functions:default` again so the function
+   picks up the new secret.
 
 ### 6. Smoke test on the emulator
 
@@ -272,6 +281,6 @@ Endpoint → "Send test event" + check the function logs in
 | `firebase init functions` + secrets | me | no (waits on the two above) |
 | Functions code               | me | no |
 | `flutter_stripe` wiring      | me | no |
-| `firebase deploy`            | you | yes (need your auth) |
+| `firebase deploy --only functions:default` | you | yes (need your auth) |
 | Webhook endpoint + signing secret | you + me | yes |
 | Smoke test                   | you | — |

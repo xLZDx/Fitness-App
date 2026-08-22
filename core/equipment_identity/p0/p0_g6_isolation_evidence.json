@@ -1,0 +1,24 @@
+{
+  "strategy": "SEPARATE_FIREBASE_CODEBASE",
+  "defaultCodebase": "default",
+  "identityCodebase": "equipment-identity",
+  "defaultSource": "functions",
+  "identitySource": "functions-equipment-identity",
+  "firebaseCliVersion": "15.17.0",
+  "normalDefaultBuild": "PASS",
+  "normalIdentityBuild": "PASS",
+  "brokenIdentityBuildExpectedFailure": "PASS -- the deliberately-broken temp copy failed tsc compilation as expected (returncode=1)",
+  "defaultBuildWhileIdentityBroken": "PASS -- functions/ still built clean (returncode=0) while the broken identity copy existed on disk",
+  "defaultFunctionsTests": "PASS -- `npm --prefix functions test` (Jest, mocked firebase-admin/stripe, no emulator)",
+  "rulesTests": "PASS -- `npm --prefix functions run test:rules`, 64/64, via the Firestore emulator (JDK 17 available locally)",
+  "e2eTests": "PASS -- `npm --prefix functions run test:e2e`, 11/11, via the Firestore+Auth emulator (JDK 17 available locally)",
+  "productionDeployPerformed": false,
+  "rollback": "Remove the equipment-identity entry from firebase.json's functions array; the default codebase is untouched by that removal. The identity codebase was never production-deployed in P0 -- its src/index.ts exports nothing (`export {}`), so even a deploy attempt against it today would publish zero functions.",
+  "sourceCommit": "e0483c1b0007bbc2f2b8e6b8ba28c9d96b6073bf",
+  "targetedDeployCommands": [
+    "firebase deploy --only functions:default",
+    "firebase deploy --only functions:equipment-identity"
+  ],
+  "noCrossImportFromDefaultToIdentity": true,
+  "independentPackageLocks": true
+}

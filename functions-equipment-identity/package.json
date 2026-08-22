@@ -1,9 +1,10 @@
 {
   "name": "functions-equipment-identity",
-  "description": "P0 feasibility scaffold for the equipment-identity Cloud Functions codebase. No production identity function is exported yet -- see core/equipment_identity/p0/P0_G5_CLOUD_FEASIBILITY.md for why, and P0.G6 for when this package gets wired into firebase.json.",
+  "description": "The equipment-identity Cloud Functions codebase, isolated from the default (Stripe) codebase per P0.G6 -- see core/equipment_identity/p0/P0_G6_DEPLOYMENT_ISOLATION.md. No production identity function is exported yet -- see core/equipment_identity/p0/P0_G5_CLOUD_FEASIBILITY.md for why.",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
+    "deploy": "firebase deploy --only functions:equipment-identity",
     "test": "jest"
   },
   "engines": {

@@ -24204,3 +24204,107 @@ that activity at any point checked (`git rev-list --left-right --count HEAD...or
 **Next**: commit, push, verify remote sync, `pm_set_gate` for P0.G5. Continue directly to P0.G6
 (Functions deployment isolation) per the standing authorization -- no further operator check-in before
 P0.G6 closes (P0.G6 is itself the close of this phase).
+
+## 2026-08-22 -- P0.G6 CLOSED: Functions deployment isolation, strategy SEPARATE_FIREBASE_CODEBASE
+
+Final P0 gate. Story AC: "a deliberately-broken identity-module TypeScript error does NOT block a
+`stripeWebhook` hotfix deploy under the chosen design." Strategy was already fixed by the gate
+contract's own task wording plus GPT-PM's P0.G5 reply: a wholly separate Firebase Functions codebase
+(`equipment-identity`, source `functions-equipment-identity/`), not selective-deploy inside the
+existing `functions/` codebase -- a shared codebase would still run the identity module and the
+default module through the same `tsc` invocation before Firebase decides what to deploy, so a broken
+identity file would block everything including a Stripe hotfix. Only a genuinely separate `tsc` unit,
+dependency tree, and CI job makes that structurally impossible.
+
+`firebase.json` now declares two `functions` entries (`default` -> `functions`, `equipment-identity`
+-> `functions-equipment-identity`). New `.github/workflows/equipment-identity-functions.yml` is a
+wholly separate workflow file from `flutter.yml`'s `functions-build` job, so a break here cannot
+block or share a job with the default Functions pipeline.
+
+**The real isolation proof** (`scripts/equipment_identity/verify_deployment_isolation.py`, 8 steps,
+all real subprocess `npm`/`tsc` runs, none a string assertion standing in for a build): firebase.json
+codebase mapping check; independent package-locks check; no-cross-import check;
+`functions`/`functions-equipment-identity` both build clean independently; the core invariant --
+`functions-equipment-identity` copied to a disposable temp dir, a deterministic TS compile error
+injected into the temp copy only, that copy proven to fail (`returncode != 0`, with the injected
+identifier actually present in `tsc`'s own output), then -- while the broken copy still exists on
+disk -- the REAL `functions/` codebase proven to still build clean (`returncode == 0`); firebase CLI
+version recorded (no deploy ever invoked); existing default Stripe/account Jest suite proven to still
+pass unmodified. Measured locally: broken-copy build returned 1, default build while it existed
+returned 0 -- the literal Story AC, proven not asserted.
+
+**A real, live accidental-dual-deploy risk was found and fixed, not hypothetical**: grepping for the
+bare `firebase deploy --only functions` (no `:default`/`:equipment-identity` suffix) found it genuinely
+live in `functions/package.json`'s own `deploy` script plus three references in
+`core/PHASE_4B_STRIPE_SETUP.md`/`scripts/catalog/provision_video_bucket.py`. Once `firebase.json`
+declares both codebases, running any of these as originally written would deploy `equipment-identity`
+alongside `default` on every routine Stripe-only hotfix -- exactly the risk this gate exists to
+prevent, sitting in the very docs a maintainer would actually follow. All narrowed to
+`functions:default` explicitly; `functions-equipment-identity/package.json` gained a matching
+`functions:equipment-identity` deploy script.
+
+**Review round**: `security-reviewer`, `silent-failure-hunter`, and `code-reviewer` standing in for an
+unavailable project-scoped backend/release reviewer -- `code-reviewer`'s first completion notification
+arrived with no findings text; a follow-up asking it to restate succeeded on the second attempt (same
+recovery pattern already used once on P0.G5's `security-reviewer`). Zero BLOCKER across all three.
+
+`silent-failure-hunter` found 3 MAJOR, all fixed: (1) the broken-identity probe treated *any* non-zero
+build return code as proof the injected error caused the failure, with no pre-injection baseline build
+and no check that the injected identifier actually appeared in the build output -- fixed by requiring
+a successful baseline build before injection and requiring the injected marker to appear in the
+post-injection build's own output; (2) `main()` itself was never exercised by any test, only its
+constituent functions in isolation -- fixed with a new subprocess-level test that runs the script
+itself and asserts exit code 0 plus all eight step markers in stdout; (3) the "no production deploy
+command anywhere" test did a source-text grep for two literal spellings of a deploy call, trivially
+defeated by any differently-shaped call site -- fixed at the root by making `_run()` itself refuse any
+command whose args contain `"deploy"` (every subprocess call in the module funnels through `_run()`,
+so this is unbypassable by refactoring), and rewriting the test to assert that runtime refusal instead
+of grepping source text. Also flagged (fixed): the isolation-verification CI job's 10-minute timeout
+was tight against the module's own 300s per-subprocess timeout across several sequential builds --
+bumped to 15 minutes.
+
+`code-reviewer` found 1 MAJOR (fixed): `PHASE_4B_STRIPE_SETUP.md`'s "First deploy" step still read
+`firebase deploy --only firestore:rules,functions` (bare `functions`) in the same doc where a later
+step was already correctly narrowed -- a real gap my own earlier grep had missed since the substring
+didn't match; fixed. Plus 2 MINOR fixed (CI convention parity against the closer sibling
+`functions.yml`, not `flutter.yml` -- added a matching `audit` job and fixed the concurrency-group
+name to match that sibling's convention; release-process discoverability -- added a paragraph to
+`PHASE_4B_STRIPE_SETUP.md` pointing at the second codebase and this gate's doc) and 1 NO ISSUE
+(`firebase.json`'s `ignore` arrays aren't what provides isolation -- the two `functions` entries point
+at distinct sibling source directories, so isolation comes from that directory scoping regardless of
+`ignore` contents).
+
+Both remaining reviewers' MINORs are accepted and documented as deferred, not fixed: `security-reviewer`
+noted step 6 proves npm/tsc-level compile isolation, not Firebase CLI's own predeploy-hook scoping (no
+real/dry-run `firebase deploy` is ever run by this gate, by design); `code-reviewer` noted the same
+kind of gap for cross-codebase function-deletion detection (Firebase's documented `--only
+functions:<codebase>` scoping is the mitigation used consistently throughout, but is asserted, not
+empirically dry-run-tested). Both genuinely require the identity codebase to actually export a real
+function before a dry-run deploy against it would prove anything -- out of scope for P0, since the
+identity codebase still exports nothing by design. A one-line scope note was added to the gate doc's
+isolation-proof section recording this as an open, accepted gap rather than silently claiming more
+than was tested.
+
+**A real bug was found and fixed during test-writing, independent of any reviewer**: adding a
+subprocess-level test for `main()` surfaced that the broken-identity probe's `shutil.copytree` of
+`functions-equipment-identity` (including `node_modules`) does not reliably reproduce npm's own
+`node_modules` layout on Windows -- observed as a corrupted `typescript` install (`tsc.js` missing)
+in the temp copy on a real run, which would have made the probe fail for the wrong reason. Fixed by
+excluding `node_modules` from the copy entirely and always running a fresh `npm ci` in the temp
+directory instead of reusing whatever copytree produced.
+
+10 tests in `test_deployment_isolation.py` (grew from 9: one test rewritten to assert the new `_run()`
+runtime guard instead of grepping source text, one new test added for `main()`). Full combined suite
+(`scripts/ml scripts/ct1 scripts/equipment_identity`) at 408 passed, rerun after all review-round fixes.
+Full detail and evidence in `core/equipment_identity/p0/P0_G6_DEPLOYMENT_ISOLATION.md` and
+`core/equipment_identity/p0/p0_g6_isolation_evidence.json`.
+
+**Concurrency note**: an unidentified concurrent session/process continued producing untracked
+`reports/*.html` files during this gate's work (a citation-verification pair plus several marketing/
+site-build reports, none related to this gate). No commit had landed from that activity at any point
+checked; left untouched, not included in this gate's commit.
+
+**Next**: commit, push, verify remote sync, `pm_set_gate` for P0.G6 -- this closes P0. Then P0 aggregate
+verification (evidence index across G1-G6, combined test run, a final adversarial review pass, and
+confirming the P0.G4 gate-contract repair is genuinely closed) before any decision on starting P1, per
+GPT-PM's own stated close-out sequence. No P1 work starts in this run.

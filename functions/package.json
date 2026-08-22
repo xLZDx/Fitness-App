@@ -6,7 +6,7 @@
     "build:watch": "tsc --watch",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
-    "deploy": "firebase deploy --only functions",
+    "deploy": "firebase deploy --only functions:default",
     "logs": "firebase functions:log",
     "test": "jest",
     "test:rules": "node scripts/run_emulator_tests.js jest.rules.config.js firestore demo-fitness-rules",
