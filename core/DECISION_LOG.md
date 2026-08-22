@@ -24476,3 +24476,48 @@ prompt for the P1 chunk (P1.G1-G6, Canonical Machine Knowledge Base) and begin e
 operator's GO, following the same implement-test-review-document-commit-push-pm_set_gate discipline
 established for P0. Program-mode reporting stays in effect -- report only at the true end of the P1
 chunk, not per sub-gate.
+
+## 2026-08-22 -- GPT-PM consensus round on OP-01/OP-02 patch: design intent approved, three mechanical corrections applied
+
+GPT-PM's consensus round on the `c8671ae` patch verdict: "OP-01/OP-02 DESIGN INTENT: APPROVED."
+P2.G4's OP-01/OP-02 wording was confirmed correct with no changes needed. Three mechanical
+corrections were required elsewhere in the same patch, each verified against the real file/design-
+doc text before being applied (per §3 evidence-over-inference -- a GPT-PM finding is not accepted
+until independently checked):
+
+1. **P2.G2 (IdentityTextParser), T4** -- the first-pass wording described the new zero-text hard
+   case as resolving "exactly like OCR failure does," which conflates two states the v4.4 doc's own
+   `UNAVAILABLE_*`/`failureCode` taxonomy already keeps structurally distinct: a successful OCR pass
+   that legitimately finds no readable text (normal, common, "empty evidence") versus an actual
+   OCR/plugin infrastructure failure (its own `failureCode`/`UNAVAILABLE_*` state). Rewrote Story AC,
+   Story DoD, and task T4 so the no-placard case parses through the same code path as any other
+   zero-candidate result (e.g. brand-only text with no model code) and is explicitly tested as
+   DISTINCT from a genuine OCR/plugin failure, which must keep surfacing its own failureCode. Also
+   fixed a stale count: T1's row still said "all 5 hard cases" after the Story AC had already grown
+   to 6 -- corrected to 6.
+2. **P5.G1 (Guided multi-view), Story AC/DoD/T3** -- the first-pass wording was too absolute: "a
+   no-placard machine must never be routed into this guided-capture flow." That overreaches --
+   PLACARD specifically must never be a mandatory step, but the flow itself can still legitimately
+   fire via LOGO/SIDE/FULL views if genuine ambiguity (`NEED_MORE_VIEW`) arises from a different
+   signal, e.g. two visually similar sibling models. Rewrote so the trigger condition is "genuine
+   multi-candidate ambiguity, from whatever signal produced it," with "no text/placard found" alone
+   staying a distinct, silent, non-triggering outcome owned by P2.G4 -- and added a second test
+   proving a no-placard machine WITH a genuine sibling-model conflict still correctly enters the flow
+   and can complete it without ever being forced through a PLACARD step.
+3. **P5.G2 (Exact-model equipment page)** -- the first-pass provenance line attributed the page's
+   collapsed-by-default extension directly to "Operator product review, 2026-08-22, OP-02," as if
+   the operator had said this about that specific page. GPT-PM correctly flagged that the operator's
+   actual OP-02 statement was about the workout screen's density; extending the same rule to this
+   separate detail page is my own derived-for-consistency decision, not a literal operator statement.
+   Reworded to "Derived from OP-02 ... not a literal operator statement about this specific page,"
+   attributing the extension to consistency reasoning rather than to the operator's exact words.
+
+All three corrections are content fixes to the same `SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_
+AND_AC_DOD_2026-08-22.md` gate-contracts document patched in the entry above -- no code touched
+(P1 has zero UX surface; these are all P2/P5 gates, phases away). GPT-PM's own P1 implementation
+prompt states it had already folded the corrected versions into the P1 authority stack's preflight,
+so no further consensus round was required before proceeding to P1.
+
+Committed as a follow-up to `c8671ae`. P1 implementation (P1.G1-G6 + P1_AGGREGATE) begins next,
+under the operator's "ГО P1 kickoff" authorization, program mode in effect (report only at the end
+of the whole P1 chunk).

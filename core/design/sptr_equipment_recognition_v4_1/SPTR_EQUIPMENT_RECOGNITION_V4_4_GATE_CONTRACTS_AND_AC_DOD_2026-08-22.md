@@ -596,18 +596,24 @@ Required review. Flutter + ontology + adversarial QA.
 Rollback / failure mode. Parser failure yields no identity evidence; generic scan unaffected.
 
 **Story AC:** hard cases pass — two machines in frame, neighbour placard, two model codes, OCR
-noise, brand-only text, **and — operator product review, 2026-08-22, OP-01: a SIXTH hard case is
-now mandatory — zero readable text anywhere in frame (no placard/nameplate exists on the machine
-at all, a common real-gym case, not an edge case). This must parse to "no text evidence" through
-the exact same code path as any other zero-candidate result, never a distinct error/failure state.**
+noise, brand-only text, **and — operator product review, 2026-08-22, OP-01, corrected per GPT-PM
+consensus round (mechanical fix, same day — the original wording conflated "OCR ran successfully
+with zero candidates" with "OCR provider/plugin failed," which the v4.4 UNAVAILABLE_*/failureCode
+taxonomy already keeps as distinct categories): a SIXTH hard case is now mandatory — OCR runs
+successfully but finds zero readable text anywhere in frame (no placard/nameplate exists on the
+machine at all, a common real-gym case, not an edge case). This is a normal, successful
+zero-evidence result and must parse through the exact same code path as any other zero-candidate
+case (e.g. brand-only text with no model code) — it is explicitly NOT the same code path as an
+actual OCR/plugin infrastructure failure, which keeps its own distinct failureCode.**
 
 **Story DoD:**
 - [ ] No silent exact selection with conflicting codes.
 - [ ] Deterministic evidence output.
-- [ ] **OP-01: "no text found" and "no placard exists" are proven to be indistinguishable to every
-      downstream consumer — both produce the identical empty-evidence output, verified by a test
-      that asserts the two inputs (garbled/no OCR candidates vs. a frame with genuinely no
-      printed text) yield byte-identical parser output.**
+- [ ] **OP-01 (corrected): a successful OCR pass that finds no readable text produces the identical
+      empty-evidence output as any other zero-candidate case (verified by a test comparing "no
+      placard present" against "brand-only text with no code" — both empty-evidence, byte-identical
+      shape) — and is verified DISTINCT from an actual OCR/plugin failure, which must still surface
+      its own failureCode/UNAVAILABLE_* state, not be silently folded into empty-evidence.**
 - [ ] Flutter + ontology + adversarial QA review signed off.
 - [ ] Decision log entry recorded.
 
@@ -615,10 +621,10 @@ the exact same code path as any other zero-candidate result, never a distinct er
 
 | Task | Acceptance Criteria | Definition of Done |
 | --- | --- | --- |
-| T1 — Pure parser + normalized tokens | Parser is pure (no side effects), tokens normalized | Unit-tested against all 5 hard cases |
+| T1 — Pure parser + normalized tokens | Parser is pure (no side effects), tokens normalized | Unit-tested against all 6 hard cases |
 | T2 — Conflict detection | Two conflicting codes never silently resolve to one | Conflict surfaced as evidence, not hidden |
 | T3 — Centrality/placard heuristics | Placard-vs-neighbour-machine text is distinguishable | Heuristic tested against the neighbour-placard hard case |
-| T4 — No-text-at-all case (OP-01) | A frame with zero printed text anywhere produces the same empty-evidence output as any other no-candidate case | Test: machine with no placard/nameplate resolves to type-only exactly like OCR failure does — no special-cased error |
+| T4 — No-text-at-all case (OP-01, corrected) | A successful zero-candidate OCR pass produces the same empty-evidence output as any other no-candidate case, and stays distinct from an OCR/plugin failureCode | Test: no-placard machine resolves to the same empty-evidence shape as brand-only text; a separate test confirms an actual OCR failure still surfaces its own failureCode, not silently reclassified as empty-evidence |
 
 ### P2.G3 — Server exact text lookup
 
@@ -1063,15 +1069,23 @@ Required review. Flutter/UX + QA review.
 Rollback / failure mode. Cancel multi-view and keep generic type.
 
 **Story AC:** widget/device flow tests pass; stale scans cancel correctly; conflicting views cause
-abstention, not a forced pick. **Operator product review, 2026-08-22, OP-01: this flow triggers
-ONLY on genuine multi-candidate ambiguity (`NEED_MORE_VIEW`) — never on "no text/placard found,"
-which is a distinct, silent, non-triggering outcome owned by P2.G4. A machine with no placard at
-all must never be routed into this guided-capture flow.**
+abstention, not a forced pick. **Operator product review, 2026-08-22, OP-01, corrected per GPT-PM
+consensus round (mechanical fix, same day — the original wording overreached: "no placard" alone
+must never trigger this flow, but a no-placard machine can still legitimately need it if a
+DIFFERENT signal produces genuine `NEED_MORE_VIEW`, e.g. two visually similar sibling models):
+this flow triggers ONLY on genuine multi-candidate ambiguity (`NEED_MORE_VIEW`), from whatever
+signal produced it — never as a direct response to "no text/placard found" by itself, which is a
+distinct, silent, non-triggering outcome owned by P2.G4. Absence of a placard never by itself
+causes this flow to fire, but does not exempt a machine from it either — if genuine ambiguity
+exists for another reason, a no-placard machine may still receive guided LOGO/SIDE/FULL capture
+(just never a forced/mandatory PLACARD step, since one may not exist).**
 
 **Story DoD:**
 - [ ] Ambiguous sibling models can request a useful second view without losing the generic result.
-- [ ] **OP-01: test proves a no-placard machine (zero text evidence, not ambiguous) never enters
-      this flow — only a genuine multiple-candidate conflict does.**
+- [ ] **OP-01 (corrected): test proves "no text found" alone never triggers this flow (must stay on
+      P2.G4's silent empty-evidence path); a separate test proves a no-placard machine WITH a
+      genuine sibling-model conflict still correctly enters this flow and can complete it via
+      LOGO/SIDE/FULL without ever being forced through a PLACARD step.**
 - [ ] Flutter/UX + QA review signed off.
 - [ ] Decision log entry recorded.
 
@@ -1081,7 +1095,7 @@ all must never be routed into this guided-capture flow.**
 | --- | --- | --- |
 | T1 — Guided PLACARD/LOGO/SIDE/FULL capture | Each view type has a distinct capture flow | Widget tests cover all four |
 | T2 — Multi-view evidence aggregation | Conflicting views produce abstention | Tested with a deliberately conflicting pair |
-| T3 — No-placard machines never enter this flow (OP-01) | Zero-evidence is not ambiguity | Test: no-text scan stays on P2.G4's silent path, guided capture never offered |
+| T3 — No-placard alone never triggers; genuine ambiguity still can (OP-01, corrected) | "No text" alone is not ambiguity; a real sibling-model conflict still routes here regardless of placard presence | Two tests: (a) no-text-only scan stays on P2.G4's silent path; (b) no-placard + genuine ambiguity still enters this flow via non-PLACARD views |
 
 ### P5.G2 — Exact-model equipment page & verified setup
 
@@ -1102,11 +1116,14 @@ verified; **§7.3's binding render-time rule holds: displaying a *stored* setup 
 model's *current* `catalogStatus`/`textSupportStatus`/`visionSupportStatus`/SetupSpec verification
 state at render time, not only at capture time — if any has changed unfavorably since capture, the
 UI shows an explicit "this recommendation has since been withdrawn — needs reconfirmation" state
-instead of silently continuing to display retracted guidance.** **Operator product review,
-2026-08-22, OP-02: this page inherits P2.G4's collapsed-by-default rule — full setup detail (seat
-position, pulley ratio, adjustment ranges) renders inside a tap-to-expand section, not as text that
-is always visible on page load. Applies even here, on a dedicated detail page with more room than
-the workout screen, so the two surfaces stay behaviorally consistent for the user.**
+instead of silently continuing to display retracted guidance.** **Derived from OP-02 (operator
+product review, 2026-08-22), not a literal operator statement about this specific page — the
+operator's own OP-02 concern was about the workout screen; this gate inherits the same
+collapsed-by-default rule for consistency between the two surfaces, per GPT-PM's consensus-round
+note that this extension should be labeled as a derived design choice, not attributed to the
+operator verbatim: full setup detail (seat position, pulley ratio, adjustment ranges) renders inside
+a tap-to-expand section, not as text that is always visible on page load, even here where there is
+more room than on the workout screen.**
 
 **Story DoD:**
 - [ ] Exact identity enriches the page but cannot change vetted exercise/safety eligibility.
