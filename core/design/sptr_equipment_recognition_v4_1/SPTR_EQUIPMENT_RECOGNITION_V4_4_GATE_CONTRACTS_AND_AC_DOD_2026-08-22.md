@@ -596,11 +596,18 @@ Required review. Flutter + ontology + adversarial QA.
 Rollback / failure mode. Parser failure yields no identity evidence; generic scan unaffected.
 
 **Story AC:** hard cases pass — two machines in frame, neighbour placard, two model codes, OCR
-noise, brand-only text.
+noise, brand-only text, **and — operator product review, 2026-08-22, OP-01: a SIXTH hard case is
+now mandatory — zero readable text anywhere in frame (no placard/nameplate exists on the machine
+at all, a common real-gym case, not an edge case). This must parse to "no text evidence" through
+the exact same code path as any other zero-candidate result, never a distinct error/failure state.**
 
 **Story DoD:**
 - [ ] No silent exact selection with conflicting codes.
 - [ ] Deterministic evidence output.
+- [ ] **OP-01: "no text found" and "no placard exists" are proven to be indistinguishable to every
+      downstream consumer — both produce the identical empty-evidence output, verified by a test
+      that asserts the two inputs (garbled/no OCR candidates vs. a frame with genuinely no
+      printed text) yield byte-identical parser output.**
 - [ ] Flutter + ontology + adversarial QA review signed off.
 - [ ] Decision log entry recorded.
 
@@ -611,6 +618,7 @@ noise, brand-only text.
 | T1 — Pure parser + normalized tokens | Parser is pure (no side effects), tokens normalized | Unit-tested against all 5 hard cases |
 | T2 — Conflict detection | Two conflicting codes never silently resolve to one | Conflict surfaced as evidence, not hidden |
 | T3 — Centrality/placard heuristics | Placard-vs-neighbour-machine text is distinguishable | Heuristic tested against the neighbour-placard hard case |
+| T4 — No-text-at-all case (OP-01) | A frame with zero printed text anywhere produces the same empty-evidence output as any other no-candidate case | Test: machine with no placard/nameplate resolves to type-only exactly like OCR failure does — no special-cased error |
 
 ### P2.G3 — Server exact text lookup
 
@@ -687,12 +695,33 @@ remains IN P2.G5's value-checkpoint denominator, counted as "OCR unresolved" and
 only as a recoverable UX outcome, never excluded from the arithmetic**; widget/state tests cover
 type-only/brand/exact/needMoreView/unknown/cancelled/unavailable states;
 **`scanner_page_test.dart` and `scan_controller_test.dart` pass completely unmodified** — this is
-the literal, testable definition of "additive" for this gate.
+the literal, testable definition of "additive" for this gate. **Operator product review,
+2026-08-22 (OP-01/OP-02), binding on this gate specifically because this is the gate that actually
+decides what the user sees:**
+**OP-01 — no forced placard/text capture.** No UI state introduced by this gate may ask the user to
+photograph a placard/nameplate as a precondition for the type-first result. `EquipmentIdentity`
+resolving to empty (no text evidence, no visual match) is a silent, normal terminal state — the
+scan UI looks identical to a scan where identity enrichment was never attempted. A guided second
+capture (P5.G1) is offered ONLY on genuine multi-candidate ambiguity (`NEED_MORE_VIEW`), never as a
+response to "no evidence found" — those are different states and must never be rendered the same
+way or trigger the same prompt.
+**OP-02 — compact, tap-to-expand, never competing with the primary UI.** Whatever surface shows
+`EquipmentIdentity` enrichment (brand/model/setup hint) renders by default as a small, non-blocking
+indicator (e.g. a badge/icon anchored to the equipment photo or result card) — never an
+always-expanded text panel. Full model/setup detail appears only after an explicit user tap, and
+only inside that expanded state. This applies with no exception inside an active workout/exercise
+screen, where UI density is already a constraint this gate must not make worse.
 
 **Story DoD:**
 - [ ] Exact identity shown in non-production/shadow UI without blocking exercises.
 - [ ] Both pre-existing generic test files pass byte-for-byte unmodified.
 - [ ] `NEED_MORE_VIEW` scans are present and counted in P2.G5's denominator (not filtered out).
+- [ ] **OP-01: widget test proves a zero-evidence scan (no placard, no visual match) renders
+      identically to a scan where `EquipmentIdentity` was never requested — no placard prompt, no
+      distinct "couldn't read" state.**
+- [ ] **OP-02: widget test proves the identity indicator renders collapsed by default and expands
+      only on explicit tap; a snapshot/golden test on the in-workout surface confirms the collapsed
+      indicator's footprint does not exceed a small fixed badge size.**
 - [ ] Flutter/product UX + safety review signed off.
 - [ ] Decision log entry recorded.
 
@@ -704,6 +733,8 @@ the literal, testable definition of "additive" for this gate.
 | T2 — Progressive type-first rendering | No spinner dependency on exact identity | UI renders type result before identity resolves |
 | T3 — `NEED_MORE_VIEW` interim prompt, counted not excluded | Plain re-scan prompt; scan stays in P2.G5's denominator as "OCR unresolved" | Denominator-integrity assertion in P2.G5's report shows the scan counted, not dropped |
 | T4 — Regression proof | `scanner_page_test.dart`/`scan_controller_test.dart` unmodified | Diff shows zero changes to those two files |
+| T5 — No-evidence renders as silently generic (OP-01) | Empty `EquipmentIdentity` never prompts for a placard photo | Widget test: zero-evidence scan UI is pixel/state-identical to identity-disabled scan |
+| T6 — Collapsed badge, tap-to-expand (OP-02) | Default state is a small indicator, not an expanded panel, including in-workout | Golden test bounds the collapsed indicator's size; separate test proves expansion only on tap |
 
 ### P2.G5 — OCR-only shadow & value checkpoint
 
@@ -1032,10 +1063,15 @@ Required review. Flutter/UX + QA review.
 Rollback / failure mode. Cancel multi-view and keep generic type.
 
 **Story AC:** widget/device flow tests pass; stale scans cancel correctly; conflicting views cause
-abstention, not a forced pick.
+abstention, not a forced pick. **Operator product review, 2026-08-22, OP-01: this flow triggers
+ONLY on genuine multi-candidate ambiguity (`NEED_MORE_VIEW`) — never on "no text/placard found,"
+which is a distinct, silent, non-triggering outcome owned by P2.G4. A machine with no placard at
+all must never be routed into this guided-capture flow.**
 
 **Story DoD:**
 - [ ] Ambiguous sibling models can request a useful second view without losing the generic result.
+- [ ] **OP-01: test proves a no-placard machine (zero text evidence, not ambiguous) never enters
+      this flow — only a genuine multiple-candidate conflict does.**
 - [ ] Flutter/UX + QA review signed off.
 - [ ] Decision log entry recorded.
 
@@ -1045,6 +1081,7 @@ abstention, not a forced pick.
 | --- | --- | --- |
 | T1 — Guided PLACARD/LOGO/SIDE/FULL capture | Each view type has a distinct capture flow | Widget tests cover all four |
 | T2 — Multi-view evidence aggregation | Conflicting views produce abstention | Tested with a deliberately conflicting pair |
+| T3 — No-placard machines never enter this flow (OP-01) | Zero-evidence is not ambiguity | Test: no-text scan stays on P2.G4's silent path, guided capture never offered |
 
 ### P5.G2 — Exact-model equipment page & verified setup
 
@@ -1065,12 +1102,18 @@ verified; **§7.3's binding render-time rule holds: displaying a *stored* setup 
 model's *current* `catalogStatus`/`textSupportStatus`/`visionSupportStatus`/SetupSpec verification
 state at render time, not only at capture time — if any has changed unfavorably since capture, the
 UI shows an explicit "this recommendation has since been withdrawn — needs reconfirmation" state
-instead of silently continuing to display retracted guidance.**
+instead of silently continuing to display retracted guidance.** **Operator product review,
+2026-08-22, OP-02: this page inherits P2.G4's collapsed-by-default rule — full setup detail (seat
+position, pulley ratio, adjustment ranges) renders inside a tap-to-expand section, not as text that
+is always visible on page load. Applies even here, on a dedicated detail page with more room than
+the workout screen, so the two surfaces stay behaviorally consistent for the user.**
 
 **Story DoD:**
 - [ ] Exact identity enriches the page but cannot change vetted exercise/safety eligibility.
 - [ ] A stored setup fact is re-validated against current status at every render, not just at
       capture time — a withdrawn/demoted status shows the explicit reconfirmation-needed state.
+- [ ] **OP-02: setup facts render inside a collapsed/expandable section, not always-visible body
+      text; widget test confirms the collapsed state is the initial render.**
 - [ ] Flutter/product + safety review signed off.
 - [ ] Decision log entry recorded.
 
@@ -1081,6 +1124,7 @@ instead of silently continuing to display retracted guidance.**
 | T1 — Route/optional model context | Page works with and without model context | No regression to the generic page |
 | T2 — Source-qualified setup facts | Only shown when verified | Test proves no setup fact renders for unverified identity |
 | T3 — Render-time re-validation (§7.3) | Current status checked at every render, not cached from capture | Test: demote status after capture, confirm the withdrawal state renders, not the stale fact |
+| T4 — Collapsed-by-default setup section (OP-02) | Setup facts start collapsed, expand only on tap | Widget test: initial render shows no setup body text until expanded |
 
 ### P5.G3 — Exact history
 

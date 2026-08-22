@@ -24420,3 +24420,59 @@ A-E), the progressive UX that never blocks on exact identity, the safety invaria
 may only select from the existing vetted exercise/safety catalog, never generate new guidance), the
 two-Firebase-codebase architecture P0.G6 just built, and the full P0-P6/30-gate roadmap with P0
 marked closed and P1 marked next.
+
+## 2026-08-22 -- Operator product corrections OP-01/OP-02, gate contracts patched before P1 kickoff
+
+Operator gave GO for P1 kickoff and, in the same message, flagged two real product concerns while
+reacting to the explainer report's diagrams:
+
+**OP-01 (regression risk):** requiring the user to photograph a machine's placard/nameplate would
+be a regression -- many real gym machines have no placard at all, and that must never be an
+unacceptable/blocking condition.
+
+**OP-02 (UI overload risk):** an always-visible setup-detail panel (seat height, pulley ratio, etc.)
+would overload the workout screen, which is already dense -- this should be a small tappable
+icon/badge on the equipment photo, expanding only on explicit tap.
+
+Verified against the actual design docs before treating either as a real gap, per the evidence-over-
+inference rule (grepped the gate-contracts doc and the v4.1 master plan's D1/D4/D7 decisions and
+Progressive UX section):
+
+- OP-01 was ALREADY architecturally correct -- OCR reads whatever text is in the same photo already
+  taken for the generic scan; a dedicated guided PLACARD capture (P5.G1) is only ever offered on
+  genuine multi-candidate ambiguity (`NEED_MORE_VIEW`), never as a response to "no text found." But
+  no AC anywhere made this explicit or testable -- a future implementer could plausibly have
+  conflated "no OCR candidates" with "needs a guided rescan" since both gates only listed OCR-
+  *noise* hard cases, never an explicit zero-text case. Real documentation gap, not a design flaw.
+- OP-02 was a genuine, unaddressed gap: P2.G4's Story AC already correctly keeps `EquipmentIdentity`
+  in a separate provider "never merged into `ScanResult`," but nothing anywhere specified UI density
+  or default collapsed/expanded state -- a compliant implementation could still have rendered an
+  always-expanded panel.
+
+**Fixed by patching the gate contracts doc** (not by touching any code -- P1 itself has zero UX
+surface, these gates are all P2/P5, phases away):
+- P2.G2 (IdentityTextParser): added a mandatory sixth hard case -- zero readable text anywhere in
+  frame must parse through the identical empty-evidence code path as any other no-candidate result,
+  never a distinct failure state (new task T4).
+- P2.G4 (mobile identity contract -- the gate that actually owns what the user sees): added OP-01
+  (no UI state may ask for a placard photo as a precondition; empty evidence renders silently
+  identical to identity-disabled) and OP-02 (default collapsed badge/indicator, tap-to-expand only,
+  no exception inside an active workout screen) as binding AC/DoD with new tasks T5/T6.
+- P5.G1 (Guided multi-view): added an explicit AC that this flow triggers ONLY on genuine ambiguity,
+  never on "no placard found" -- a no-placard machine must never be routed into guided capture (new
+  task T3).
+- P5.G2 (Exact-model equipment page): added OP-02's collapsed-by-default rule to the detail page too,
+  so the two surfaces (workout screen and equipment detail page) stay behaviorally consistent for
+  the user even though the detail page has more room (new task T4).
+
+Citation tag `OP-01`/`OP-02` used (not a GPT-PM `AC-Bxx`/`AC-Mxx` tag) to keep the provenance
+distinct in the audit trail: this correction originates from a direct operator product review, not
+a GPT-PM devil's-advocate round, even though it follows the exact same "mechanical patch to the gate
+contract, not a code change" pattern already used for every prior correction in this document.
+
+**Next**: send this patch to GPT-PM for consensus/record (per the standing PM-reviewer workflow this
+program follows for product decisions), then request GPT-PM's detailed autonomous implementation
+prompt for the P1 chunk (P1.G1-G6, Canonical Machine Knowledge Base) and begin executing it under the
+operator's GO, following the same implement-test-review-document-commit-push-pm_set_gate discipline
+established for P0. Program-mode reporting stays in effect -- report only at the true end of the P1
+chunk, not per sub-gate.
