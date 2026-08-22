@@ -1,0 +1,33 @@
+{
+  "sourceCommit": "0e4316f87db4ecff64e8fe072841ac71da5e28ce",
+  "existingFunctionsRegion": "europe-west1",
+  "firestoreLocation": "eur3",
+  "vertexLocationTested": null,
+  "providerSelectionStatus": "DEFERRED_NO_SAFE_STAGING",
+  "embeddingProvider": null,
+  "embeddingModel": null,
+  "embeddingDimension": null,
+  "firestoreSdkVersion": null,
+  "vertexSdkVersion": null,
+  "firestoreVectorProbe": "NOT_ATTEMPTED",
+  "vertexEmbeddingProbe": "NOT_ATTEMPTED",
+  "appCheckCallableProbe": "NOT_ATTEMPTED",
+  "iamAssessment": "PARTIAL",
+  "latencyMs": null,
+  "costEvidence": null,
+  "dataResidencyAssessment": "No new residency decision was made or needed. Firestore stays eur3 (measured via `gcloud firestore databases describe`); functions/src/scaling.ts's REGION constant (europe-west1) is untouched by this gate.",
+  "outcome": "OCR_TEXT_ONLY_DEFER_VISUAL",
+  "blockers": [
+    "PRIMARY: no safe non-production Firebase/GCP project exists. .firebaserc declares only \"default\" (fitness-app-korostelev, the same production project stripeWebhook runs in) and one unrelated \"legacy-shared\" alias (a different application). The active gcloud account is a production admin-SDK service account on fitness-app-korostelev itself. Per this gate's own policy, a live KNN/Vertex/App Check probe may only run against an already-configured non-production project -- none exists, so T1/T2 are skipped, not simulated against production.",
+    "SECONDARY (platform-lifecycle risk, not a hard blocker on its own): Google's Vertex AI documentation set is actively migrating to a new \"Gemini Enterprise Agent Platform\" surface, and the older high-level Python Vertex AI Generative AI SDK modules (including vertexai.vision_models) were deprecated 2026-06-24. multimodalembedding@001 itself remains documented with a 2027-04-01 retirement date and the underlying Vertex AI Prediction API (aiplatform.googleapis.com) remains current, so this is a staleness/re-verification risk for the design's SDK assumptions, not proof the API is gone. No provider SDK is selected or pinned by this gate as a result -- see providerSelectionStatus."
+  ],
+  "evidence": [
+    "functions/src/scaling.ts:70 -- const REGION = \"europe-west1\" (unchanged by this gate).",
+    "`gcloud firestore databases describe --project=fitness-app-korostelev` -- locationId=eur3, type=FIRESTORE_NATIVE.",
+    "functions/package.json -- engines.node=20, firebase-functions ^6.0.0, firebase-admin ^12.6.0 (mirrored in the new functions-equipment-identity/ package).",
+    ".firebaserc -- projects.default=fitness-app-korostelev; projects.legacy-shared=traidingbot-b4061 (a different, unrelated application -- not a usable staging alias for this project).",
+    "`gcloud auth list` -- active account is the project's default Firebase Admin SDK service account (production), plus the operator's own Google account. No non-production account/project configured. Exact identities intentionally not printed here (public repo; see security-reviewer's P0.G5 finding).",
+    "`gcloud projects list` (accessible to the active credentials) returns exactly one project: fitness-app-korostelev.",
+    "WebSearch/WebFetch, 2026-08-22 -- Vertex AI's generative-AI docs site banners \"Vertex AI documentation is no longer being updated,\" redirecting to Gemini Enterprise Agent Platform docs; a search result states the older Python Vertex AI SDK's vision_models module (not the underlying API or the Node @google-cloud/aiplatform client) was deprecated 2026-06-24; multimodalembedding@001 itself is documented through a 2027-04-01 retirement date."
+  ]
+}

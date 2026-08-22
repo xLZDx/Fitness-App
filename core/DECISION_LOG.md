@@ -24131,3 +24131,76 @@ reply asked for, referenced by evidence in the next gate-status check-in.
 
 **Next**: continue directly to P0.G5 (Cloud feasibility, IAM, region & SDK spike) per the standing
 authorization.
+
+## 2026-08-22 -- P0.G5 CLOSED: cloud feasibility, outcome OCR_TEXT_ONLY_DEFER_VISUAL
+
+Investigated real state before writing any code: `.firebaserc` declares only `default` ->
+`fitness-app-korostelev` (the same production project `stripeWebhook` runs in) and one unrelated
+`legacy-shared` alias (a different app entirely) -- no safe non-production Firebase/GCP project
+exists. `gcloud auth list`'s active account is even a production admin-SDK service account on that
+same project. Per the gate's own real-probe policy ("only against an already-configured
+NON-PRODUCTION project"), this alone rules out any live Firestore KNN / Vertex embedding / App Check
+probe -- T1/T2 skipped with this reason, not simulated against production.
+
+Secondary finding, verified with GPT-PM via PM Bridge before recording (2026-08-22 exchange) to avoid
+overclaiming: my first-pass reading of a WebSearch result ("Vertex AI SDK access ends 2026-06-24")
+was corrected -- that cutoff applies to the older Python `vertexai.vision_models` module, not the
+underlying API or the Node `@google-cloud/aiplatform` client; `multimodalembedding@001` itself remains
+documented through 2027-04-01. Recorded as a real but secondary platform-lifecycle/staleness risk, not
+proof the API is dead -- GPT-PM's own phrasing, adopted verbatim in the evidence doc to avoid the
+overclaim.
+
+**Decision (outcome)**: `OCR_TEXT_ONLY_DEFER_VISUAL`, jointly reached with GPT-PM. The no-safe-project
+finding alone is sufficient; `COLOCATED_VECTOR_FEASIBLE` was unreachable (requires a genuine passing
+probe, none attempted), and `SPLIT_REGION_REQUIRES_OPERATOR` was not chosen either since nothing in
+evidence actually proves Vertex requires a different region -- only that there's nowhere safe to test
+it, which would have been an overclaim in the other direction. Per GPT-PM's explicit recommendation,
+`@google-cloud/aiplatform`/`@google-cloud/firestore` were deliberately NOT installed in the new
+`functions-equipment-identity/` package -- pinning a provider SDK now would lock in an unverified
+architecture and leave a stale lockfile choice for whoever reopens this gate for real visual work.
+Package stays minimal: `firebase-admin`/`firebase-functions` only, `index.ts` exports nothing, real
+`npm install` (498 packages, no hand-authored lock entries).
+
+Built `p0_g5_probe_result.json`'s typed `P0CloudFeasibilityResult` model with no boolean `cloudWorks`
+field -- three-way `NOT_ATTEMPTED|PASS|FAIL` probe status is the only shape that can express "no
+evidence" without lying. `assertValidP0CloudFeasibilityResult` mechanically enforces the outcome
+invariants.
+
+**Review round**: `security-reviewer`, `database-reviewer`, `silent-failure-hunter` -- all three
+confirmed available (no substitution needed this time). `silent-failure-hunter` found one BLOCKER and
+four MAJOR, each independently verified by direct code inspection before being fixed: `iamAssessment`
+was never validated against its own enum or cross-checked (a `COLOCATED` result with both probes
+`PASS` but `iamAssessment: UNKNOWN` passed silently -- fixed); `OCR_TEXT_ONLY_DEFER_VISUAL` never
+checked `providerSelectionStatus` (a result could claim visual is simultaneously "deferred" and
+`SELECTED_AND_PROBED` -- fixed); `blockers: []` was legal under that same outcome even though a named
+blocker is its entire premise (fixed); `vertexLocationTested` was never cross-checked against
+`vertexEmbeddingProbe`, so a region could be claimed "tested" with no probe having run (fixed); and no
+structural guarantee existed against a future real SDK-call regression -- "no production touched" was
+prose-only (fixed with a new `no_production_calls.test.ts` that greps every source file for a Google
+Cloud SDK import or raw network call and asserts `index.ts` still exports nothing). `database-reviewer`
+found one more MINOR (`COLOCATED` never required `firestoreSdkVersion`/`vertexSdkVersion` to be
+recorded -- fixed) plus two forward-looking, not-fix-now items (the three-way probe enum can't express
+a timed-out/caveated probe; the doc could note today's zero-index `firestore.indexes.json`).
+`security-reviewer`'s first attempt got stuck in a citation-checking loop across three resumes and
+never delivered its actual findings -- a fresh cold retry with a narrower prompt succeeded and found
+one more MINOR (`COLOCATED` didn't require `appCheckCallableProbe: PASS` despite the gate's own T2
+expecting it to run and pass -- fixed) plus a genuinely valuable catch: the production Admin SDK
+service-account email and the operator's personal Google account were both being recorded verbatim in
+this gate's committed evidence files, which live in a PUBLIC GitHub repo (confirmed via
+`.github/workflows/flutter.yml`'s own comment) -- fixed by genericizing both references in
+`P0_G5_CLOUD_FEASIBILITY.md` and `p0_g5_probe_result.json`. One NIT accepted as-is (the secret-pattern
+regex would miss GitHub/Slack/AWS token shapes if reused elsewhere, not required for this module's
+narrow current use).
+
+10 regression/new tests added; `functions-equipment-identity` suite 18 -> 28 passed. Full detail and
+evidence in `core/equipment_identity/p0/P0_G5_CLOUD_FEASIBILITY.md`.
+
+**Concurrency note**: a concurrent, unidentified session/process continued producing new report files
+(`reports/citation_verification_report.{html,ru.html}`) during this gate's work, on top of the
+`equipment_identity_citation_review.*` pair noted in the P0.G4 entry above. No commit had landed from
+that activity at any point checked (`git rev-list --left-right --count HEAD...origin/master` stayed
+`0 0` throughout this gate too). Left untouched, not included in this gate's commit.
+
+**Next**: commit, push, verify remote sync, `pm_set_gate` for P0.G5. Continue directly to P0.G6
+(Functions deployment isolation) per the standing authorization -- no further operator check-in before
+P0.G6 closes (P0.G6 is itself the close of this phase).

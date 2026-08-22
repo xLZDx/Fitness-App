@@ -1,0 +1,24 @@
+{
+  "name": "functions-equipment-identity",
+  "description": "P0 feasibility scaffold for the equipment-identity Cloud Functions codebase. No production identity function is exported yet -- see core/equipment_identity/p0/P0_G5_CLOUD_FEASIBILITY.md for why, and P0.G6 for when this package gets wired into firebase.json.",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "jest"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.4.0"
+  },
+  "private": true
+}
