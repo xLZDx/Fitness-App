@@ -41,7 +41,10 @@ def test_snippet_only_candidate_is_not_eligible():
 def test_candidate_with_direct_official_corroboration_may_become_eligible_when_preconditions_pass():
     candidate = _candidate(
         brandId="precor", modelCode="RSL0602",
-        provenance=[{"sourceId": "s", "sourceUrl": "u", "retrievalMethod": "DIRECT_FETCH", "fixtureSha256": "a" * 64}],
+        provenance=[{
+            "sourceId": "life_fitness_hammer_strength_product_catalog", "sourceUrl": "u",
+            "retrievalMethod": "DIRECT_FETCH", "fixtureSha256": "a" * 64,
+        }],
     )
     corroboration = cse.direct_corroboration_for(candidate, {})
     assert corroboration is not None
@@ -153,9 +156,11 @@ def test_unmatched_fixture_entry_is_rejected_loudly_not_silently_dropped(monkeyp
     bad_fixture.write_text(
         json.dumps({
             "sourceId": "matrix_johnsonfit_pdf_corroboration",  # real, registered -- isolates this test to the unmatched-key path
+            "retrievalMethod": "DIRECT_FETCH",
             "corroborations": [
-                {"brandId": "matrix", "modelCode": "G7-S7O", "sourceUrl": "u",  # letter O, not zero -- real typo shape
-                 "documentSha256": "a" * 64, "locator": "l"},
+                {"brandId": "matrix", "modelCode": "G7-S7O",  # letter O, not zero -- real typo shape
+                 "sourceUrl": "https://content.johnsonfit.com/x.pdf", "documentSha256": "a" * 64,
+                 "documentBytes": 100, "retrievedAt": "2026-08-22T18:41:00Z", "locator": "l"},
             ]
         }),
         encoding="utf-8",
@@ -174,6 +179,7 @@ def test_fixture_entry_with_null_modelcode_is_rejected(monkeypatch, tmp_path):
     path.write_text(
         json.dumps({
             "sourceId": "matrix_johnsonfit_pdf_corroboration",
+            "retrievalMethod": "DIRECT_FETCH",
             "corroborations": [{"brandId": "matrix", "modelCode": None, "sourceUrl": "u"}],
         }),
         encoding="utf-8",
@@ -181,6 +187,127 @@ def test_fixture_entry_with_null_modelcode_is_rejected(monkeypatch, tmp_path):
     monkeypatch.setattr(cse, "MATRIX_PDF_CORROBORATION_PATH", path)
     with pytest.raises(cse.EligibilityError, match="no modelCode"):
         cse.load_matrix_pdf_corroboration()
+
+
+def test_original_provenance_with_unregistered_source_id_is_rejected():
+    # Reviewer-found gap (GPT-PM devil's-advocate review round 2,
+    # 2026-08-22): the original-adapter-provenance path previously trusted
+    # the literal string retrievalMethod=="DIRECT_FETCH" with no registry
+    # check at all -- asymmetric with the PDF-fixture path, which already
+    # had one. Today's real P1.G2/G3 adapters enforce this at generation
+    # time (registry_check.ts), but this module must not depend on that.
+    candidate = _candidate(
+        provenance=[{"sourceId": "definitely_not_a_registered_source_id", "sourceUrl": "u", "retrievalMethod": "DIRECT_FETCH"}]
+    )
+    with pytest.raises(cse.EligibilityError, match="not a registered source"):
+        cse.direct_corroboration_for(candidate, {})
+
+
+def test_original_provenance_with_non_official_manufacturer_source_is_rejected():
+    registry = rights.load_registry()
+    non_official = next((r for r in registry if r["sourceClass"] != "OFFICIAL_MANUFACTURER"), None)
+    if non_official is None:
+        pytest.skip("no non-OFFICIAL_MANUFACTURER source exists in the real registry to test against")
+    candidate = _candidate(
+        provenance=[{"sourceId": non_official["sourceId"], "sourceUrl": "u", "retrievalMethod": "DIRECT_FETCH"}]
+    )
+    with pytest.raises(cse.EligibilityError, match="not OFFICIAL_MANUFACTURER"):
+        cse.direct_corroboration_for(candidate, {})
+
+
+# --- corroboration-entry validation (GPT-PM devil's-advocate review round 2, 2026-08-22) ---
+# Prior state: the loader checked only modelCode presence/uniqueness, then
+# direct_corroboration_for() unconditionally stamped every match as real
+# DIRECT_FETCH evidence -- a future row with a fake/incomplete evidence
+# shape would still count toward the per-brand/total floors.
+
+
+def _valid_matrix_fixture(**overrides):
+    entry = {
+        "brandId": "matrix", "modelCode": "X",
+        "sourceUrl": "https://content.johnsonfit.com/x.pdf",
+        "documentSha256": "a" * 64, "documentBytes": 100,
+        "retrievedAt": "2026-08-22T18:41:00Z", "locator": "l",
+    }
+    entry.update(overrides)
+    return {
+        "sourceId": "matrix_johnsonfit_pdf_corroboration",
+        "retrievalMethod": "DIRECT_FETCH",
+        "corroborations": [entry],
+    }
+
+
+def test_fixture_retrieval_method_other_than_direct_fetch_is_rejected(monkeypatch, tmp_path):
+    path = tmp_path / "snippet.json"
+    fixture = _valid_matrix_fixture()
+    fixture["retrievalMethod"] = "SEARCH_INDEX_SNIPPET"
+    path.write_text(json.dumps(fixture), encoding="utf-8")
+    monkeypatch.setattr(cse, "MATRIX_PDF_CORROBORATION_PATH", path)
+    with pytest.raises(cse.EligibilityError, match="not DIRECT_FETCH"):
+        cse.load_matrix_pdf_corroboration()
+
+
+def test_corroboration_entry_wrong_domain_url_is_rejected(monkeypatch, tmp_path):
+    path = tmp_path / "wrong_domain.json"
+    fixture = _valid_matrix_fixture(sourceUrl="https://evil-mirror.example/x.pdf")
+    path.write_text(json.dumps(fixture), encoding="utf-8")
+    monkeypatch.setattr(cse, "MATRIX_PDF_CORROBORATION_PATH", path)
+    with pytest.raises(cse.EligibilityError, match="does not match"):
+        cse.load_matrix_pdf_corroboration()
+
+
+def test_corroboration_entry_malformed_sha256_is_rejected(monkeypatch, tmp_path):
+    path = tmp_path / "bad_hash.json"
+    fixture = _valid_matrix_fixture(documentSha256="not-a-real-hash")
+    path.write_text(json.dumps(fixture), encoding="utf-8")
+    monkeypatch.setattr(cse, "MATRIX_PDF_CORROBORATION_PATH", path)
+    with pytest.raises(cse.EligibilityError, match="documentSha256"):
+        cse.load_matrix_pdf_corroboration()
+
+
+def test_corroboration_entry_missing_bytes_is_rejected(monkeypatch, tmp_path):
+    path = tmp_path / "no_bytes.json"
+    fixture = _valid_matrix_fixture(documentBytes=0)
+    path.write_text(json.dumps(fixture), encoding="utf-8")
+    monkeypatch.setattr(cse, "MATRIX_PDF_CORROBORATION_PATH", path)
+    with pytest.raises(cse.EligibilityError, match="documentBytes"):
+        cse.load_matrix_pdf_corroboration()
+
+
+def test_corroboration_entry_missing_locator_is_rejected(monkeypatch, tmp_path):
+    path = tmp_path / "no_locator.json"
+    fixture = _valid_matrix_fixture(locator="")
+    path.write_text(json.dumps(fixture), encoding="utf-8")
+    monkeypatch.setattr(cse, "MATRIX_PDF_CORROBORATION_PATH", path)
+    with pytest.raises(cse.EligibilityError, match="locator"):
+        cse.load_matrix_pdf_corroboration()
+
+
+def test_corroboration_entry_unparseable_retrieved_at_is_rejected(monkeypatch, tmp_path):
+    path = tmp_path / "bad_timestamp.json"
+    fixture = _valid_matrix_fixture(retrievedAt="not-a-date")
+    path.write_text(json.dumps(fixture), encoding="utf-8")
+    monkeypatch.setattr(cse, "MATRIX_PDF_CORROBORATION_PATH", path)
+    with pytest.raises(cse.EligibilityError, match="not parseable"):
+        cse.load_matrix_pdf_corroboration()
+
+
+def test_rejection_reasons_include_pool_precondition_even_when_no_direct_evidence():
+    # Reviewer-found gap (GPT-PM devil's-advocate review round 2,
+    # 2026-08-22): the pool-wide precondition gates EVERY candidate, but
+    # rejectionReasons previously recorded that only when has_direct was
+    # already true -- a snippet-only candidate's own rejectionReasons said
+    # nothing about the pool-wide blocker also in effect.
+    artifact = cse.build_eligibility_artifact()
+    assert artifact["overallPreconditionsMet"] is False
+    snippet_only = [
+        e for e in artifact["entries"]
+        if e["directCorroboration"] is None
+    ]
+    assert snippet_only, "fixture must contain at least one candidate with no direct evidence"
+    for e in snippet_only:
+        assert "NO_DIRECT_FETCH_CORROBORATION" in e["rejectionReasons"]
+        assert any("POOL_PRECONDITION_NOT_MET" in r for r in e["rejectionReasons"])
 
 
 def test_original_direct_fetch_provenance_rejects_more_than_one_direct_fetch_record():
@@ -227,7 +354,10 @@ def test_every_real_candidate_appears_exactly_once():
 def test_direct_corroboration_for_prefers_original_provenance_over_pdf_pass():
     candidate = _candidate(
         brandId="matrix", modelCode="G7-S70",
-        provenance=[{"sourceId": "s", "sourceUrl": "u", "retrievalMethod": "DIRECT_FETCH", "fixtureSha256": "b" * 64}],
+        provenance=[{
+            "sourceId": "life_fitness_hammer_strength_product_catalog", "sourceUrl": "u",
+            "retrievalMethod": "DIRECT_FETCH", "fixtureSha256": "b" * 64,
+        }],
     )
     matrix_pdf_corroboration = cse.load_matrix_pdf_corroboration()
     result = cse.direct_corroboration_for(candidate, matrix_pdf_corroboration)
@@ -262,6 +392,7 @@ def test_unregistered_source_id_cannot_back_any_corroboration(monkeypatch, tmp_p
     path.write_text(
         json.dumps({
             "sourceId": "definitely_not_a_registered_source_id",
+            "retrievalMethod": "DIRECT_FETCH",
             "corroborations": [
                 {"brandId": "matrix", "modelCode": "X", "sourceUrl": "u", "documentSha256": "a" * 64, "locator": "l"},
             ],
@@ -286,6 +417,7 @@ def test_non_official_manufacturer_source_cannot_back_corroboration(monkeypatch,
     path.write_text(
         json.dumps({
             "sourceId": non_official["sourceId"],
+            "retrievalMethod": "DIRECT_FETCH",
             "corroborations": [
                 {"brandId": "matrix", "modelCode": "X", "sourceUrl": "u", "documentSha256": "a" * 64, "locator": "l"},
             ],
@@ -314,11 +446,17 @@ def test_duplicate_model_key_across_two_candidates_is_rejected_not_double_counte
     # inflate a brand's floor or the total.
     a = _candidate(
         brandId="precor", modelCode="RSL0602", candidateId="dup-a",
-        provenance=[{"sourceId": "s", "sourceUrl": "u", "retrievalMethod": "DIRECT_FETCH"}],
+        provenance=[{
+            "sourceId": "life_fitness_hammer_strength_product_catalog", "sourceUrl": "u",
+            "retrievalMethod": "DIRECT_FETCH",
+        }],
     )
     b = _candidate(
         brandId="precor", modelCode="RSL0602", candidateId="dup-b",
-        provenance=[{"sourceId": "s", "sourceUrl": "u", "retrievalMethod": "DIRECT_FETCH"}],
+        provenance=[{
+            "sourceId": "life_fitness_hammer_strength_product_catalog", "sourceUrl": "u",
+            "retrievalMethod": "DIRECT_FETCH",
+        }],
     )
     with pytest.raises(cse.EligibilityError, match="duplicate \\(brandId, modelCode\\)"):
         cse.direct_corroboration_counts_by_brand([a, b], {})
@@ -336,9 +474,12 @@ def test_load_matrix_pdf_corroboration_rejects_a_duplicate_entry(tmp_path, monke
     dup_path.write_text(
         json.dumps({
             "sourceId": "matrix_johnsonfit_pdf_corroboration",
+            "retrievalMethod": "DIRECT_FETCH",
             "corroborations": [
-                {"brandId": "matrix", "modelCode": "X", "sourceUrl": "u1", "documentSha256": "a" * 64, "locator": "l1"},
-                {"brandId": "matrix", "modelCode": "X", "sourceUrl": "u2", "documentSha256": "b" * 64, "locator": "l2"},
+                {"brandId": "matrix", "modelCode": "X", "sourceUrl": "https://content.johnsonfit.com/u1.pdf",
+                 "documentSha256": "a" * 64, "documentBytes": 100, "retrievedAt": "2026-08-22T18:41:00Z", "locator": "l1"},
+                {"brandId": "matrix", "modelCode": "X", "sourceUrl": "https://content.johnsonfit.com/u2.pdf",
+                 "documentSha256": "b" * 64, "documentBytes": 200, "retrievedAt": "2026-08-22T18:44:00Z", "locator": "l2"},
             ]
         }),
         encoding="utf-8",

@@ -99,9 +99,12 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 REPO = Path(__file__).resolve().parents[2]
 P1_CANDIDATES_DIR = REPO / "core" / "equipment_identity" / "p1" / "candidates"
@@ -128,6 +131,9 @@ class EligibilityError(RuntimeError):
     this module would compute from it."""
 
 
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+
+
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -136,7 +142,7 @@ def load_combined_pool() -> list[dict[str, Any]]:
     return _load_json(COMBINED_POOL_PATH)["candidates"]
 
 
-def _assert_registered_official_manufacturer_source(source_id: str) -> None:
+def _assert_registered_official_manufacturer_source(source_id: str) -> dict[str, Any]:
     """Mechanically enforces first-party status against the real, tracked
     `source_registry.json` -- reviewer-found gap (GPT-PM devil's-advocate
     review, 2026-08-22): a corroboration fixture previously only ASSERTED
@@ -146,7 +152,9 @@ def _assert_registered_official_manufacturer_source(source_id: str) -> None:
     `assertRegisteredOfficialManufacturerSource` on the TypeScript side).
     Mirrors that check here on the Python side, reusing `rights.py`'s own
     `load_registry()` rather than re-reading/re-validating the registry a
-    second way."""
+    second way. Returns the matched registry entry (its `canonicalUrl` is
+    used by callers to bound where a corroborating document may actually
+    live)."""
     registry = rights.load_registry()
     matches = [r for r in registry if r["sourceId"] == source_id]
     if not matches:
@@ -155,13 +163,60 @@ def _assert_registered_official_manufacturer_source(source_id: str) -> None:
             "core/equipment_identity/p0/source_registry.json -- a corroboration source must be "
             "registered before it can back any candidate's eligibility"
         )
-    source_class = matches[0]["sourceClass"]
+    entry = matches[0]
+    source_class = entry["sourceClass"]
     if source_class != "OFFICIAL_MANUFACTURER":
         raise EligibilityError(
             f"sourceId={source_id!r} is registered but as sourceClass={source_class!r}, not "
             "OFFICIAL_MANUFACTURER -- only an official-manufacturer-class source may back "
             "DIRECT_FETCH corroboration for canonical selection"
         )
+    return entry
+
+
+def _assert_valid_corroboration_entry(entry: dict[str, Any], allowed_origin: str) -> None:
+    """Validates that a single fixture corroboration record actually carries
+    real DIRECT_FETCH-class evidence, rather than trusting the fixture's
+    shape on faith -- reviewer-found gap (GPT-PM devil's-advocate review
+    round 2, 2026-08-22): the loader previously checked only that
+    `modelCode` was present and non-duplicate, then `direct_corroboration_
+    for()` unconditionally stamped every match as `retrievalMethod:
+    DIRECT_FETCH` regardless of what the record actually contained. A
+    future edit could add a row under this already-registered source
+    pointing `sourceUrl` at an unrelated/non-first-party location, or with
+    no real hash/byte-count/timestamp/locator, and it would still count
+    toward the per-brand/total floors. This is checked once per entry, at
+    load time, so nothing downstream can ever see an unvalidated record."""
+    brand_model = f"{entry.get('brandId')!r}/{entry.get('modelCode')!r}"
+    source_url = entry.get("sourceUrl")
+    if not isinstance(source_url, str) or not source_url:
+        raise EligibilityError(f"corroboration entry {brand_model} has no sourceUrl")
+    parsed = urlparse(source_url)
+    if parsed.scheme != "https":
+        raise EligibilityError(f"corroboration entry {brand_model} sourceUrl is not https: {source_url!r}")
+    allowed = urlparse(allowed_origin)
+    if parsed.netloc != allowed.netloc:
+        raise EligibilityError(
+            f"corroboration entry {brand_model} sourceUrl origin {parsed.netloc!r} does not match "
+            f"the registered source's canonicalUrl origin {allowed.netloc!r} -- a corroborating "
+            "document must actually live at the registered first-party source"
+        )
+    document_sha256 = entry.get("documentSha256")
+    if not isinstance(document_sha256, str) or not _SHA256_RE.match(document_sha256):
+        raise EligibilityError(f"corroboration entry {brand_model} has no well-formed 64-hex-char documentSha256")
+    document_bytes = entry.get("documentBytes")
+    if not isinstance(document_bytes, int) or isinstance(document_bytes, bool) or document_bytes <= 0:
+        raise EligibilityError(f"corroboration entry {brand_model} has no positive integer documentBytes")
+    retrieved_at = entry.get("retrievedAt")
+    if not isinstance(retrieved_at, str) or not retrieved_at:
+        raise EligibilityError(f"corroboration entry {brand_model} has no retrievedAt timestamp")
+    try:
+        datetime.fromisoformat(retrieved_at.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise EligibilityError(f"corroboration entry {brand_model} retrievedAt is not parseable: {retrieved_at!r}") from exc
+    locator = entry.get("locator")
+    if not isinstance(locator, str) or not locator.strip():
+        raise EligibilityError(f"corroboration entry {brand_model} has no non-empty locator")
 
 
 def load_matrix_pdf_corroboration() -> dict[tuple[str, str | None], dict[str, Any]]:
@@ -179,9 +234,23 @@ def load_matrix_pdf_corroboration() -> dict[tuple[str, str | None], dict[str, An
     The fixture's own top-level `sourceId` must be a real, registered
     OFFICIAL_MANUFACTURER-class source (see
     `_assert_registered_official_manufacturer_source`) -- checked once,
-    covering every entry in the fixture, since they all share one source."""
+    covering every entry in the fixture, since they all share one source.
+    The fixture's own top-level `retrievalMethod` must literally be
+    `DIRECT_FETCH` -- a `SEARCH_INDEX_SNIPPET`-labelled fixture must never
+    reach `direct_corroboration_for()`, which unconditionally treats
+    anything it returns as direct evidence. Every individual entry is then
+    validated by `_assert_valid_corroboration_entry` against the
+    registered source's own `canonicalUrl` origin (see that function's
+    docstring for what a real record must contain)."""
     raw = _load_json(MATRIX_PDF_CORROBORATION_PATH)
-    _assert_registered_official_manufacturer_source(raw["sourceId"])
+    if raw.get("retrievalMethod") != "DIRECT_FETCH":
+        raise EligibilityError(
+            f"{MATRIX_PDF_CORROBORATION_PATH.name} declares retrievalMethod="
+            f"{raw.get('retrievalMethod')!r}, not DIRECT_FETCH -- only a fixture that is itself "
+            "labelled DIRECT_FETCH may back direct corroboration"
+        )
+    registry_entry = _assert_registered_official_manufacturer_source(raw["sourceId"])
+    allowed_origin = registry_entry["canonicalUrl"]
     by_key: dict[tuple[str, str | None], dict[str, Any]] = {}
     for entry in raw["corroborations"]:
         if not entry.get("modelCode"):
@@ -189,6 +258,7 @@ def load_matrix_pdf_corroboration() -> dict[tuple[str, str | None], dict[str, An
                 f"corroboration fixture entry for brandId={entry.get('brandId')!r} has no "
                 "modelCode -- every entry must name the one real model it corroborates"
             )
+        _assert_valid_corroboration_entry(entry, allowed_origin)
         key = (entry["brandId"], entry["modelCode"])
         if key in by_key:
             raise EligibilityError(f"duplicate corroboration entry for {key}")
@@ -220,9 +290,22 @@ def direct_corroboration_for(
     """The real evidence backing this candidate's eligibility, or None if it
     has no direct-corroboration evidence at all yet (SEARCH_INDEX_SNIPPET-only).
     Never fabricates a value -- returns exactly what the real provenance
-    array or the real PDF-corroboration fixture actually contains."""
+    array or the real PDF-corroboration fixture actually contains.
+
+    An original adapter-generated DIRECT_FETCH record is routed through the
+    same `_assert_registered_official_manufacturer_source` check as the PDF
+    corroboration fixture -- reviewer-found gap (GPT-PM devil's-advocate
+    review round 2, 2026-08-22): this path previously trusted the string
+    `retrievalMethod == "DIRECT_FETCH"` alone, with no registry check, while
+    the new PDF-fixture path got one. Today's real P1.G2/G3 adapters already
+    enforce this at generation time (`registry_check.ts`'s own
+    `assertRegisteredOfficialManufacturerSource`, called by every adapter via
+    `adapter_runner.ts`), so no real candidate fails this -- but this module
+    is the eligibility gate itself and must not rely on a different layer
+    having already checked what it claims to enforce."""
     original = _original_direct_fetch_provenance(candidate)
     if original is not None:
+        _assert_registered_official_manufacturer_source(original["sourceId"])
         return {
             "sourceId": original["sourceId"],
             "sourceUrl": original["sourceUrl"],
@@ -330,10 +413,18 @@ def build_eligibility_artifact() -> dict[str, Any]:
         corroboration = direct_corroboration_for(c, matrix_pdf_corroboration)
         has_direct = corroboration is not None
         eligible = has_direct and preconditions_met
+        # Reviewer-found gap (GPT-PM devil's-advocate review round 2,
+        # 2026-08-22): the pool-wide precondition gates EVERY candidate
+        # (see the module docstring's fail-closed design), but this used to
+        # record that reason only when has_direct was already true -- a
+        # snippet-only candidate's own rejectionReasons then said nothing
+        # about the pool-wide blocker also in effect, understating why it's
+        # ineligible. Both reason classes are independent and both are
+        # recorded whenever they apply.
         rejection_reasons: list[str] = []
         if not has_direct:
             rejection_reasons.append("NO_DIRECT_FETCH_CORROBORATION")
-        if has_direct and not preconditions_met:
+        if not preconditions_met:
             rejection_reasons.extend(f"POOL_PRECONDITION_NOT_MET: {r}" for r in precondition_failure_reasons)
         entries.append(
             {

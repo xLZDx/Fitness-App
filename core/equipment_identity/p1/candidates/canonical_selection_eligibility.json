@@ -21,7 +21,10 @@
       "directCorroboration": null,
       "modelCode": "MNAP",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -31,7 +34,10 @@
       "directCorroboration": null,
       "modelCode": "C99400-ANVK",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -41,7 +47,10 @@
       "directCorroboration": null,
       "modelCode": "MNAC",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -51,7 +60,10 @@
       "directCorroboration": null,
       "modelCode": "MNFP",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -61,7 +73,10 @@
       "directCorroboration": null,
       "modelCode": "MNFC",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -71,7 +86,10 @@
       "directCorroboration": null,
       "modelCode": "C97000-ANVK",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -81,7 +99,10 @@
       "directCorroboration": null,
       "modelCode": "MNLP",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -91,7 +112,10 @@
       "directCorroboration": null,
       "modelCode": "MNLC",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -101,7 +125,10 @@
       "directCorroboration": null,
       "modelCode": "C91200-ANVK",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -130,7 +157,10 @@
       "directCorroboration": null,
       "modelCode": "G7-S70B",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -140,7 +170,10 @@
       "directCorroboration": null,
       "modelCode": "GO-S70",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -150,7 +183,10 @@
       "directCorroboration": null,
       "modelCode": "MD-S70",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -160,7 +196,10 @@
       "directCorroboration": null,
       "modelCode": "VS-S70",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -170,7 +209,10 @@
       "directCorroboration": null,
       "modelCode": "MG-PL70",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -199,7 +241,10 @@
       "directCorroboration": null,
       "modelCode": "G3-S71",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -228,7 +273,10 @@
       "directCorroboration": null,
       "modelCode": "G3-S30",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -238,7 +286,10 @@
       "directCorroboration": null,
       "modelCode": "GO-S33",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -248,7 +299,10 @@
       "directCorroboration": null,
       "modelCode": "MG-946",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -258,7 +312,10 @@
       "directCorroboration": null,
       "modelCode": "MG-PL33",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -268,7 +325,10 @@
       "directCorroboration": null,
       "modelCode": "MG-921",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -278,7 +338,10 @@
       "directCorroboration": null,
       "modelCode": "G3-S10",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -307,7 +370,10 @@
       "directCorroboration": null,
       "modelCode": "GO-S13",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -1001,7 +1067,10 @@
       "directCorroboration": null,
       "modelCode": "1FW035",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -1011,7 +1080,10 @@
       "directCorroboration": null,
       "modelCode": "1FE037",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -1021,7 +1093,10 @@
       "directCorroboration": null,
       "modelCode": "1FE095",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -1031,7 +1106,10 @@
       "directCorroboration": null,
       "modelCode": "1MTH085",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -1041,7 +1119,10 @@
       "directCorroboration": null,
       "modelCode": "1SC081",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -1051,7 +1132,10 @@
       "directCorroboration": null,
       "modelCode": "1SC083",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -1061,7 +1145,10 @@
       "directCorroboration": null,
       "modelCode": "1MTH001",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -1071,7 +1158,10 @@
       "directCorroboration": null,
       "modelCode": "1SC001",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -1081,7 +1171,10 @@
       "directCorroboration": null,
       "modelCode": "1MTH002",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -1091,7 +1184,10 @@
       "directCorroboration": null,
       "modelCode": "1MTH007",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -1101,7 +1197,10 @@
       "directCorroboration": null,
       "modelCode": "1FE002",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     },
     {
@@ -1111,7 +1210,10 @@
       "directCorroboration": null,
       "modelCode": "1MTH006",
       "rejectionReasons": [
-        "NO_DIRECT_FETCH_CORROBORATION"
+        "NO_DIRECT_FETCH_CORROBORATION",
+        "POOL_PRECONDITION_NOT_MET: technogym direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: panatta direct count 0 < 4",
+        "POOL_PRECONDITION_NOT_MET: total direct pool 40 < 50"
       ]
     }
   ],

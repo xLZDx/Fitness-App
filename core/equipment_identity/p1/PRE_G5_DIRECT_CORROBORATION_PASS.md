@@ -227,6 +227,69 @@ generated-file/format tests (`test_matrix_pdf_corroboration_sha256_values_
 are_well_formed`) were always honestly scoped to format validation only,
 never claimed content re-verification.
 
+## 6c. GPT-PM devil's-advocate review (round 2, commit-scoped, via `review.js --scope commit`)
+
+Round 1's BLOCKER (diff truncation, 485,783 chars over `review.js`'s
+`MAX_DIFF_CHARS`) required a smaller, commit-scoped follow-up before
+`--final`/push. The automated Playwright transport failed repeatedly this
+round (browser/tab issues, documented in
+`feedback-pmbridge-never-more-than-one-tab.md`); the operator manually
+pasted the prepared commit-scoped diff+prompt into the working ChatGPT tab,
+and the reply was retrieved via the safe `clipboard` transport (no browser
+interaction). Real, substantive review: 3 MAJOR, no BLOCKER, no rubber
+stamp.
+
+**3 MAJOR findings, all real, all fixed:**
+
+- The PDF-corroboration fixture loader validated `sourceId`/`sourceClass`
+  (registered, OFFICIAL_MANUFACTURER) but nothing about each individual
+  corroboration ROW -- `direct_corroboration_for()` unconditionally
+  stamped every matching row as `retrievalMethod: DIRECT_FETCH` regardless
+  of what it actually contained. A future row added under the
+  already-registered Matrix source with an unrelated/wrong-domain
+  `sourceUrl` or no real hash/byte-count/timestamp/locator would still
+  count toward the per-brand/50-model floors. Fixed:
+  `_assert_valid_corroboration_entry()` now validates, per row, that
+  `sourceUrl` is `https` and shares its origin with the registered
+  source's own `canonicalUrl`; `documentSha256` is 64 lowercase hex chars;
+  `documentBytes` is a positive integer; `retrievedAt` is a parseable
+  timestamp; `locator` is non-empty. The fixture's own top-level
+  `retrievalMethod` field is now also checked (`== "DIRECT_FETCH"`) before
+  any of its rows can be treated as direct evidence at all.
+- The ORIGINAL P1.G2/G3 adapter-provenance path (36 of the 40 real direct
+  candidates) was never routed through the same
+  `_assert_registered_official_manufacturer_source()` check the new PDF
+  path got -- it trusted the literal string `retrievalMethod ==
+  "DIRECT_FETCH"` alone. Today's real adapters already enforce this at
+  generation time (`registry_check.ts`'s own
+  `assertRegisteredOfficialManufacturerSource`, called by every adapter
+  via `adapter_runner.ts` -- verified by reading both files), so no real
+  candidate was actually exploitable today; the finding stands because
+  this Python module is itself the eligibility gate and must not depend
+  on a different layer having already checked what it claims to enforce.
+  Fixed: `direct_corroboration_for()` now calls the same registry check on
+  `original["sourceId"]` before returning it.
+- `rejectionReasons` under-reported why a snippet-only candidate was
+  ineligible while the pool gate was also closed -- the pool-precondition
+  reasons were appended only when `has_direct` was already true, so a
+  candidate with zero evidence got only `NO_DIRECT_FETCH_CORROBORATION`,
+  with no mention that the pool-wide floors (which gate every candidate,
+  per §4 above) were also unmet. Fixed: both reason classes are now
+  recorded independently whenever they apply.
+
+Re-ran `canonical_selection_eligibility.py` after the fix: real counts
+unchanged (`matrix: 4, hammer-strength: 4, life-fitness: 5, nautilus: 13,
+precor: 14`, total 40) -- the stricter validation rejects nothing in
+today's real, already-well-formed data; it only closes the door on future
+malformed/fabricated rows. 9 new tests added (negative cases for each
+validation rule, plus the two new registry-check paths and the
+rejection-reasons completeness fix).
+
+**Tests**: `scripts/equipment_identity/` 177/177 (was 168; 9 new).
+
+Round 2 verdict: no BLOCKER, no unresolved MAJOR after fixes -- `--final`
+can be passed for this round's receipt, clearing the push gate.
+
 ## 7. Close conditions
 
 - [x] Real, genuine attempts made for all 3 named brands (Technogym,
@@ -240,14 +303,18 @@ never claimed content re-verification.
       conflict -- verified structurally (`assignsPrimaryTypeIdOrModelId:
       false`, `resolvesConflicts: false` in the artifact itself, plus a
       test asserting no entry carries either field).
-- [x] `python -m pytest scripts/equipment_identity/ -q` -- 168/168.
+- [x] `python -m pytest scripts/equipment_identity/ -q` -- 177/177.
 - [x] 2 independent agent reviews (silent-failure-hunter, python-reviewer),
       1 MAJOR fixed, 4 MINOR fixed.
 - [x] GPT-PM devil's-advocate review, round 1: 3 MAJOR real and fixed, 1
       MAJOR confabulated (verified false, not fixed), 1 MAJOR a review-tool
       diff-scope artifact (not a commit defect), 1 MINOR doc-language fix.
-      BLOCKER (diff truncation) still open -- satisfies commit, not push;
-      a commit-scoped follow-up round is required before `--final`/push.
+      BLOCKER (diff truncation) resolved by round 2 (commit-scoped diff).
+- [x] GPT-PM devil's-advocate review, round 2 (commit-scoped): 3 MAJOR real
+      and fixed (per-row corroboration-evidence validation, original-
+      provenance registry enforcement, rejectionReasons completeness). No
+      BLOCKER, no unresolved MAJOR -- receipt marked `--final`, clearing
+      the push gate.
 - [x] Decision log entry recorded (`core/DECISION_LOG.md`).
 - [x] Outcome reported to GPT-PM directly (not via `pm_set_gate` -- this
       is not a gate).

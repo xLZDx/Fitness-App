@@ -24990,3 +24990,40 @@ required).
 
 Push withheld pending a clean, commit-scoped GPT-PM round (the BLOCKER above) -- committing now
 satisfies the commit gate; push waits for `--final`.
+
+## 2026-08-22 -- GPT-PM devil's-advocate review round 2 (commit-scoped): 3 MAJOR real and fixed, no BLOCKER
+
+Full evidence: `core/equipment_identity/p1/PRE_G5_DIRECT_CORROBORATION_PASS.md` §6c.
+
+Round 1's BLOCKER was diff truncation (485,783 chars over `review.js`'s limit); this round sent a
+commit-scoped diff (`git show 4a2f319`, 6 reviewable files, the 2 generated JSON artifacts excluded)
+instead. Automated `review.js --scope commit` failed repeatedly on browser/tab issues this round
+(see `feedback-pmbridge-never-more-than-one-tab.md`); the operator manually pasted the prepared
+prompt into the working ChatGPT tab and the reply was retrieved via the safe `clipboard` transport.
+
+**3 MAJOR, real, fixed:**
+
+- `load_matrix_pdf_corroboration()` validated only the fixture's top-level `sourceId`/`sourceClass`
+  and each row's `modelCode` -- nothing checked a row's `sourceUrl` origin, `documentSha256` format,
+  `documentBytes`, `retrievedAt`, or `locator`, and `direct_corroboration_for()` unconditionally
+  stamped every match as `DIRECT_FETCH`. A future row under the already-registered Matrix source
+  with a fabricated/wrong-domain URL or missing evidence would still count toward the floors. Fixed:
+  `_assert_valid_corroboration_entry()` validates every row (https + same-origin as the registered
+  source's `canonicalUrl`, 64-hex sha256, positive byte count, parseable timestamp, non-empty
+  locator); the fixture's own top-level `retrievalMethod` is now also checked.
+- The original P1.G2/G3 adapter-provenance path (36/40 real direct candidates) trusted the literal
+  string `retrievalMethod == "DIRECT_FETCH"` with no registry check, asymmetric with the new PDF
+  path. Verified via `registry_check.ts`/`adapter_runner.ts` that every real adapter already enforces
+  this at generation time, so no real candidate was exploitable today -- fixed anyway, because this
+  module is the eligibility gate itself and must not depend on another layer's enforcement.
+- `rejectionReasons` only recorded the pool-precondition failure when a candidate already had direct
+  evidence -- a snippet-only candidate's reasons said nothing about the pool-wide blocker also in
+  effect. Fixed: both reason classes now recorded independently.
+
+Re-ran the generator after fixing: real counts unchanged (40 total, same per-brand breakdown) --
+stricter validation rejected nothing in today's real data, only closes the door on future bad rows.
+
+**Tests**: `scripts/equipment_identity/` 177/177 (was 168; 9 new).
+
+No BLOCKER, no unresolved MAJOR after fixes -- this round's receipt is marked `--final`, clearing
+the push gate for commit `4a2f319`.
