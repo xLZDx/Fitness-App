@@ -23965,3 +23965,55 @@ generation vs. ML provenance), out of scope for P0.G2, not fixed here.
 **Next**: commit, push, verify remote sync, `pm_set_gate` for P0.G2. Continue directly to P0.G3
 (Source & rights registry) per the standing authorization -- no further operator check-in before
 P0.G6 closes.
+
+## 2026-08-22 -- P0.G3 CLOSED: source & rights registry
+
+Built `core/equipment_identity/p0/{source_registry.schema.json,rights_decision.schema.json,
+source_registry.json,SOURCE_PRIORITY.md,P0_G3_RIGHTS_GOVERNANCE.md}` and
+`scripts/equipment_identity/{rights.py,test_rights.py}`. Fail-closed source/license governance:
+every eligibility function (`eligible_for_display/_recognition_processing/_training/_derivative/
+_redistribution`) requires `legalReviewState==REVIEWED` before inspecting any permission boolean,
+and a `SEARCH_DISCOVERY`-priority record is refused structurally regardless of its rights booleans
+(`priority` is itself constrained per-`sourceClass` by `CANONICAL_PRIORITIES_BY_SOURCE_CLASS`, so
+`SEARCH_DISCOVERY` cannot even declare a non-`DISCOVERY_ONLY` priority). Seeded 12 real sources
+from the v4.1 design doc's citation ledger, all `UNREVIEWED` with every `*Allowed` boolean `false`
+and `noAiRestriction` defaulted `true` -- no asset fetched, no live legal conclusion made, per the
+gate contract's explicit "do not make a live legal conclusion from memory" instruction.
+`DISTRIBUTOR`/`REFURBISHED_USED`/`OFFICIAL_BIM` deliberately left unseeded (class-level policy
+exists, no real provider identified yet in the design docs).
+
+**Review round**: three independent cold reviewers -- `security-reviewer`, `silent-failure-hunter`,
+and `code-reviewer` substituting for the still-unavailable project-scoped
+`regulatory-compliance-reviewer` (same substitution pattern as P0.G1/G2, flagged again for a future
+session to re-check agent availability). Two MAJOR findings, each independently verified against
+the real code before being accepted:
+
+- `security-reviewer` + `silent-failure-hunter` independently found the same defect (treated as
+  corroboration): `legalReviewState=REVIEWED` did not require `termsCaptured=true`, even though
+  `rights_decision.schema.json`'s own field description already documented that invariant. A hand
+  edit could mark a source REVIEWED and grant real eligibility with zero evidence terms were ever
+  captured. Reproduced by reading `rights.py` directly -- the project's own
+  `test_reviewed_and_allowed_grants_the_specific_use_only` test built exactly this
+  under-evidenced record. Fixed: `validate_rights` now raises unless `termsCaptured is True`
+  whenever `legalReviewState=="REVIEWED"`.
+- `security-reviewer`: `commercialAllowed` was a required rights field that no eligibility function
+  actually read -- a REVIEWED+displayAllowed source with `commercialAllowed=false` (e.g.
+  "editorial-only" terms) was still reported eligible for display in a commercial app. Reproduced
+  by reading all five `eligible_for_*` functions -- confirmed none referenced the field. Fixed:
+  every `eligible_for_*` function now also requires `commercialAllowed`.
+
+One MINOR fixed (`silent-failure-hunter`: `BLOCKED` state could carry a true permission boolean
+without being rejected at validation -- the "zero fake permissions" check now covers `BLOCKED` too,
+not just `UNREVIEWED`), two MINOR documentation gaps fixed (`SOURCE_PRIORITY.md`'s `MARKETPLACE_3D`
+row now states a marketplace rights record covers the platform, not any per-asset license;
+`OFFICIAL_BIM` added to the "deliberately not seeded" list), two MINOR items accepted as documented
+known limitations rather than fixed (`eligible_for_*` doesn't re-validate field types -- currently
+safe since no production caller of `rights.py` exists yet; no automated test keeps `rights.py`'s
+constants in sync with the two `.schema.json` files -- the `termsCaptured` MAJOR above is a concrete
+instance of that drift risk). Full detail and evidence in `P0_G3_RIGHTS_GOVERNANCE.md` section 6.
+Three regression tests added for the fixed findings; `test_rights.py` 19 -> 22 passed; full
+`scripts/ml scripts/ct1 scripts/equipment_identity` suite 378 -> 381 passed.
+
+**Next**: commit, push, verify remote sync, `pm_set_gate` for P0.G3. Continue directly to P0.G4
+(Catalog version & type snapshot) per the standing authorization -- no further operator check-in
+before P0.G6 closes.

@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "rights_decision.schema.json",
+  "title": "Rights decision",
+  "description": "The rights state attached to one source_registry.json record. Structural shape only -- scripts/equipment_identity/rights.py's eligibility helpers are the actual fail-closed enforcement (a static schema cannot express 'legalReviewState must equal REVIEWED before displayAllowed is trusted', only that the field exists and has the right type).",
+  "type": "object",
+  "required": [
+    "legalReviewState",
+    "commercialAllowed", "displayAllowed", "recognitionProcessingAllowed",
+    "trainingAllowed", "derivativeAllowed", "redistributionAllowed",
+    "attributionRequired", "shareAlike", "noAiRestriction", "termsCaptured"
+  ],
+  "properties": {
+    "legalReviewState": {
+      "type": "string",
+      "enum": ["UNREVIEWED", "REVIEWED", "BLOCKED"],
+      "description": "UNREVIEWED is the default and the only state a source may seed at without captured, reviewed terms evidence. REVIEWED means a human reviewed actual captured terms (termsCaptured=true, ideally with termsSnapshotSha256). BLOCKED means review happened and the answer was no -- distinct from UNREVIEWED, which just means nobody has looked yet."
+    },
+    "commercialAllowed": { "type": "boolean" },
+    "displayAllowed": { "type": "boolean" },
+    "recognitionProcessingAllowed": { "type": "boolean" },
+    "trainingAllowed": { "type": "boolean" },
+    "derivativeAllowed": { "type": "boolean" },
+    "redistributionAllowed": { "type": "boolean" },
+    "attributionRequired": { "type": "boolean" },
+    "shareAlike": { "type": "boolean" },
+    "noAiRestriction": {
+      "type": "boolean",
+      "description": "true means the source's terms explicitly forbid AI/ML use (a 'No AI' clause or equivalent). This is a HARD block on recognition processing, training and derivative use regardless of any other permission boolean -- see rights.py's eligibility helpers."
+    },
+    "termsCaptured": {
+      "type": "boolean",
+      "description": "true only if the actual terms text has been captured (a snapshot exists), never inferred from a source's reputation or category."
+    },
+    "termsSnapshotSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "sha256 of the captured terms snapshot, when one exists. Required in practice (by rights.py, not this schema) whenever termsCaptured=true."
+    },
+    "licenseIdOrTermsVersion": { "type": "string" },
+    "reviewedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601. Required in practice whenever legalReviewState != UNREVIEWED."
+    },
+    "recheckAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601. When this decision should be re-reviewed (terms can change)."
+    },
+    "decisionBasis": {
+      "type": "string",
+      "description": "Free-text note on why the decision was made. Never itself a source of permission -- a string like 'royalty free' here grants nothing; the boolean fields are the only thing rights.py reads for eligibility."
+    }
+  },
+  "additionalProperties": false
+}
