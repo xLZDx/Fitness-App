@@ -23543,3 +23543,49 @@ Report published in the house RU/EN format:
 https://claude.ai/code/artifact/b2a9c2aa-f832-4397-b5e8-438a797e2c81) and the English durable copy
 `reports/blank_home_navigation_fix_2026-08-22.html`, both conformed via `report_conform.py --check`.
 
+## SPTR Equipment Recognition: full AC/DoD (Epic/Story/Task) authored for all 34 P0-P6 gates,
+## overriding the earlier two-tier scheme -- pending a GPT-PM review round before implementation-ready
+
+Following v4.4 CONSENSUS, GPT-PM was asked a process question (see
+`core/review/SPTR_EQUIPMENT_RECOGNITION_V4_4_ACDOD_TIMING_QUESTION_2026-08-22.md`) about when to
+author full Acceptance Criteria / Definition of Done for the plan's gates. GPT-PM proposed, and the
+operator initially endorsed, a two-tier scheme: full AC/DoD now only for Phase P0 + the next
+executable gate (P1.G1), a lightweight "Gate Contract" (Purpose/prerequisites/blocks/deliverable
+class/reviewers/exit/rollback/known deps) for every other gate, full detail authored just-in-time
+immediately before each remaining gate opens. A first document implementing exactly that scheme was
+written and committed to
+`core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md`.
+
+Operator then explicitly overrode this mid-task, verbatim: "ты должен слушать меня, я говорю что
+твой воркфлоу должен включать AC/DoD для всего документа и гейтов/подгейтов как в жире — эпик,
+стори, таск, и для всего есть AC/DoD" (2026-08-22) -- full AC/DoD, structured as a Jira-style
+Epic (Phase) -> Story (Gate) -> Task (deliverable) hierarchy, for every one of the 34 P0-P6 gates,
+immediately, not deferred. The same file was rewritten in place to this expanded scope: every Phase
+now carries an Epic-level AC/DoD, every one of the 34 gates carries a full Story-level AC/DoD
+(Purpose/Inputs/Deliverables/Verification/Required review/Exit/Rollback, restated as checkable AC
+and DoD bullets, in the same format `P6.G0` already used), and every gate's Deliverables are broken
+into individual Task rows each with their own one-line AC/DoD. All content was built from verbatim
+source text re-read from `SPTR_EQUIPMENT_RECOGNITION_MASTER_TECHNICAL_PLAN_v4.1_CONSENSUS_2026-08-21.md`
+(lines 600-1153, the full v4.1 base gate definitions for all 30 original P0-P6 gates) plus the
+specific v4.2/v4.3/v4.4 amendment sections for gates that were rewritten, extended, corrected, or
+newly added (P0.G0, P0.G5, P0.G6, P1.G1, P1.G6, P2.G1/G3/G4, P4.G2-G4, P6.G0-G3) -- no AC/DoD text
+was fabricated from the earlier draft's condensed one-line summaries.
+
+The document's own Part 3 records the tradeoff honestly: this abandons GPT-PM's stated rework-risk
+rationale for JIT deferral (several Story-level ACs -- P4.G3's calibration-curve count vs.
+sample-size adequacy, P0.G5/P0.G6's architecture decisions, P6.G1's minimum-volume target -- are
+necessarily open checks today because their real values won't be known until earlier gates close,
+exactly the staleness risk GPT-PM warned about). This was a direct, explicit operator instruction
+overriding the previously agreed process, not a design decision requiring re-litigation with GPT-PM
+before acting -- but the operator separately required, same message exchange: "а потом еще раунд
+ревью AC/DoD с гпт и только потом мы можем закрыть это как готово к имплементации" -- a GPT-PM
+review round on this document is required next, and only after that verdict (and any resulting
+revision) may this be marked implementation-ready. That review round has not yet been sent as of
+this entry -- it is the immediate next step.
+
+Also saved as standing memory (`feedback-full-acdod-jira-hierarchy-every-gate.md`): for future
+gate/phase-based project plans, default to full Epic/Story/Task AC/DoD immediately rather than
+proposing or silently applying a lightweight/JIT-deferred scheme, even when an external reviewer
+recommends the lighter approach -- surface that recommendation's tradeoff to the operator and let
+them decide.
+
