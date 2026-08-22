@@ -240,6 +240,14 @@ jobs:
       - name: ML lifecycle, dataset registry and training-run manifests
         run: python -m pytest scripts/ml/test_ml_contracts.py -q
 
+      # P0 equipment-identity gates (recognition baseline, ML provenance,
+      # source rights registry, functional-type snapshot). Includes the
+      # deliberately-broken-input cases T3 of P0.G4 requires: a fixture
+      # exact-model referencing a nonexistent primaryTypeId/supportedTypeId
+      # must fail the suite, not pass silently.
+      - name: Equipment identity — P0 baseline, provenance, rights, type snapshot
+        run: python -m pytest scripts/equipment_identity/ -q
+
       # ML-2a. Runs everywhere; the cases needing D:/tools/equipment-model skip
       # with a stated reason rather than asserting nothing quietly.
       - name: Scanner provenance -- the pin, and what it cannot verify here

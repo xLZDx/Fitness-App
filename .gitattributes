@@ -8,3 +8,14 @@
 # were not edited. Marking them -text is what makes that true on Windows too.
 # Verified by tools/evidence/validate_csv_evidence.py.
 core/audit/** -text
+
+# P0.G4's type_snapshot.py hashes mobile/assets/data/equipment.json's raw
+# bytes as sourceSha256 (canonical_json.file_sha256). Without a pinned eol,
+# core.autocrlf=true (this repo's setting) checks this file out as CRLF on
+# Windows and LF on a default Linux CI runner -- same content, two
+# different hashes, which would fail test_generated_files_on_disk_match_a_
+# fresh_build in CI for a reason that has nothing to do with the snapshot
+# actually being stale. Pinning eol=lf makes every checkout produce the
+# same bytes regardless of platform. Flagged in P0.G4's review round.
+mobile/assets/data/equipment.json text eol=lf
+core/equipment_identity/p0/*.json text eol=lf

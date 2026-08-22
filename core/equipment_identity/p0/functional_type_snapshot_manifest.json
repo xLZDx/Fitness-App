@@ -1,0 +1,10 @@
+{
+  "generatedBy": "scripts/equipment_identity/type_snapshot.py",
+  "schemaVersion": 1,
+  "snapshotId": "equipment-types-v1-94525e4edbffcd0a",
+  "snapshotPath": "core/equipment_identity/p0/functional_type_snapshot_v1.json",
+  "snapshotSha256": "94525e4edbffcd0a9d4e808c3368f6edd172a69df0b862f3d90d50a8033e8382",
+  "sourcePath": "mobile/assets/data/equipment.json",
+  "sourceSha256": "c9e1706cb935627c66a539db1db3e918423f12a309ac4e4431ca7e61ced2cff5",
+  "typeCount": 69
+}

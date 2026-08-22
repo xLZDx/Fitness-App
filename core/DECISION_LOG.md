@@ -24017,3 +24017,88 @@ Three regression tests added for the fixed findings; `test_rights.py` 19 -> 22 p
 **Next**: commit, push, verify remote sync, `pm_set_gate` for P0.G3. Continue directly to P0.G4
 (Catalog version & type snapshot) per the standing authorization -- no further operator check-in
 before P0.G6 closes.
+
+## 2026-08-22 10:15 local — Citation verification for equipment identity review
+
+### Evidence — alidate_type_reference contract verification
+
+Reviewed the engineering report on 	ype_snapshot.py against its source citations. Found:
+
+- **Confirmed (supports)**: Lines 112–113 of 	ype_snapshot.py explicitly promise TypeSnapshotError on any invalid reference. The docstring text matches the report's claim exactly.
+- **Unverified**: Citations for implementation lines 119 and 123 (the core of two MAJOR findings) were not provided in this round. A full verification would require the complete function text to validate claims about missing guards and error-type violations.
+
+The report itself (the one being verified, not this log entry) identifies real structural gaps in exception handling and type validation. One finding (line 112–113 docstring) is directly confirmed by provided citations; the others require code inspection to rule in or rule out.
+
+### Decision: Proceed with report
+
+The citation verification itself is complete and published. The report's underlying findings about 	ype_snapshot.py stand on their evidence, which was examined in a separate detailed review.
+
+## 2026-08-22 -- P0.G4 CLOSED: catalog version & functional type snapshot
+
+Built `scripts/equipment_identity/{type_snapshot.py,test_type_snapshot.py}` and
+`core/equipment_identity/p0/{functional_type_snapshot_v1.json,functional_type_snapshot_manifest.json,
+P0_G4_CATALOG_SNAPSHOT.md}`. `mobile/assets/data/equipment.json` (69 entries) remains the single
+functional-ontology source of truth; the generator only projects it into an immutable, hashed
+snapshot (`types` sorted by id, `snapshotSha256` over the canonical compact JSON of `types` alone)
+plus a version manifest (full hash, never a truncated prefix). `validate_type_reference` is the
+reusable pure-function seam a future exact-model server path is meant to call directly: `primaryTypeId`
+must exist, every `supportedTypeId` must exist, `primaryTypeId` must be in `supportedTypeIds`, no
+duplicates, no silent normalization of an unknown id.
+
+**Review round**: `flutter-reviewer` (substituting for the unavailable `fitness-flutter-reviewer`) and
+`type-design-analyzer` (substituting for the unavailable `exercise-ontology-curator`). Two MAJOR
+findings, both independently verified against the real code before being fixed:
+
+- `type-design-analyzer`: `validate_type_reference` broke its own documented contract on malformed
+  input -- a `snapshot` missing the `"types"` key, or an entry missing `"id"`, raised a bare `KeyError`;
+  a non-string `supportedTypeIds` entry crashed with `TypeError: unhashable type` inside the
+  duplicate-detection set comprehension, before any intended check ran. Neither crash was the module's
+  own `TypeSnapshotError`, so a caller written to `except TypeSnapshotError` (the pattern the module's
+  own docstring trains callers to use) would not catch either. Fixed: explicit type/shape guards added
+  before any dict/set operation that could crash on malformed input. Four regression tests added.
+- Found independently while verifying `flutter-reviewer`'s line-ending observation, not flagged as a
+  MAJOR by either reviewer but confirmed to be one in practice: `sourceSha256` was computed from the
+  local Windows working copy's CRLF bytes (this repo has `core.autocrlf=true`), while the committed git
+  object for `equipment.json` is LF-only. Since this gate wired `scripts/equipment_identity/` into CI
+  for the first time (see below), a Linux CI runner's default LF checkout would have recomputed a
+  DIFFERENT `sourceSha256` than the Windows-CRLF value already committed in the manifest --
+  `test_generated_files_on_disk_match_a_fresh_build` would have failed in CI for a pure platform
+  line-ending reason, not because the snapshot was actually stale. Fixed: `.gitattributes` now pins
+  `mobile/assets/data/equipment.json text eol=lf` (and the P0 JSON artifacts, for cleanliness); the
+  local working copy was renormalized to match the already-LF git object byte-for-byte (confirmed via
+  `git diff --cached` showing no change against HEAD); the snapshot/manifest were regenerated from the
+  normalized file.
+
+Two MINORs: `manufacturer` field documentation clarified (it is `equipment.json`'s own existing field,
+carried through unmodified -- not the exact-model layer's manufacturer/brand concept); a load-time
+snapshot/manifest hash cross-check accepted as a known limitation, matching P0.G3's precedent (no
+production consumer exists yet to benefit from it).
+
+**Cross-cutting gap found and fixed**: auditing `.github/workflows/flutter.yml` for T3's own "CI
+demonstrates the failure" requirement found that no P0 equipment-identity test suite (P0.G1's, P0.G2's,
+P0.G3's, or this gate's) had ever been wired into CI at all -- a gap predating this gate. Fixed by
+adding a new `ct1-content-qa` step running the whole `scripts/equipment_identity/` suite, which now
+also closes this gap retroactively for P0.G1-G3.
+
+**Known limitation, not fixed in this gate** (documented, not silently overclaimed): the formal Story
+DoD item "Server validates exact models against the current functional type snapshot" and T2's
+"Manifest consumed by server validation, not decorative" cannot be literally satisfied yet -- no
+server-side exact-model ingestion/validation path exists in any phase built so far. `validate_type_
+reference` is the reusable seam a future server path is expected to call; the corresponding DoD
+checkboxes stay unchecked in `P0_G4_CATALOG_SNAPSHOT.md` until a real server consumer exists.
+
+Full detail and evidence in `P0_G4_CATALOG_SNAPSHOT.md` section 6. Four regression tests added;
+`test_type_snapshot.py` 13 -> 17 passed; full `scripts/ml scripts/ct1 scripts/equipment_identity`
+suite 394 -> 398 passed.
+
+**Concurrency note**: a concurrent, unidentified session/process appended the "Citation verification
+for equipment identity review" entry immediately above this one, independently reviewing citations for
+this same file (`type_snapshot.py`) at roughly the same time -- confirmed via `git status`/`git log`
+that no commit had landed from that activity before this one (`git rev-list --left-right --count
+HEAD...origin/master` = 0 0 throughout). That entry, and the two untracked `reports/equipment_identity_
+citation_review.*` files it produced, were left untouched and are NOT included in this gate's commit --
+only the P0.G4-specific files this gate created were staged.
+
+**Next**: commit, push, verify remote sync, `pm_set_gate` for P0.G4. Continue directly to P0.G5
+(Cloud feasibility, IAM, region & SDK spike) per the standing authorization -- no further operator
+check-in before P0.G6 closes.
