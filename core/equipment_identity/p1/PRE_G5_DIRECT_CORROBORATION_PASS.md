@@ -290,6 +290,80 @@ rejection-reasons completeness fix).
 Round 2 verdict: no BLOCKER, no unresolved MAJOR after fixes -- `--final`
 can be passed for this round's receipt, clearing the push gate.
 
+## 6d. GPT-PM devil's-advocate review (round 3, commit-scoped, via `review.js --commit`)
+
+Ran `review.js --scope commit --commit 99f529f --final` directly (single,
+isolated call -- confirmed no lingering node process first) against the
+round-2 fix commit. The call itself opened a second tab in a stale
+Playwright browser profile left over from an earlier dead process
+(`browserLock: reclaiming lock (dead pid 8860)`), duplicating the visible
+"Fitness app" conversation -- exactly the tab-duplication problem the
+operator had already told this session to stop causing. Confirmed live and
+corrected: automated `review.js`/Playwright calls are not run again for
+the rest of this pass; any further round goes through manual relay.
+
+Despite the tab issue, the actual review that came back was real and
+substantive -- not a rubber stamp, and not resolved by the earlier fixes:
+2 new MAJOR findings, no BLOCKER. (The CLI's own `--final` flag was passed
+before the reply was read -- an error on this session's part; the receipt
+that call wrote is not treated as a real close, per the "verify before
+accepting, every round" discipline this whole pass already follows.)
+
+**2 MAJOR, both real, both fixed:**
+
+- **No source-to-brand binding.** `_assert_registered_official_manufacturer_
+  source()` proved a sourceId was registered and OFFICIAL_MANUFACTURER-
+  class, but nothing checked that the source was actually authorized for
+  the CANDIDATE'S brand. GPT-PM demonstrated this directly against this
+  module's own test suite: `test_candidate_with_direct_official_
+  corroboration_may_become_eligible_when_preconditions_pass()` built a
+  `brandId="precor"` candidate backed by
+  `life_fitness_hammer_strength_product_catalog` and expected it accepted
+  -- a real hole. Fixed: `SOURCE_ALLOWED_BRAND_IDS`, a static table
+  mirroring the real, already-reviewed `brandIdByRawName` map each
+  TypeScript P1.G2/G3 adapter declares (verified by reading
+  `life_fitness_hammer_strength_adapter.ts` and the other 5 adapter files
+  directly -- Life Fitness + Hammer Strength is the one genuinely
+  multi-brand source, every other real source backs exactly one brand),
+  plus this pass's own Matrix/Johnson Health Tech PDF source.
+  `_assert_source_authorized_for_brand()` checks both the original-
+  adapter-provenance path and every PDF-corroboration fixture row against
+  it -- fail-closed: a source absent from the table is refused outright,
+  not treated as unrestricted.
+- **Original-provenance evidence shape still unvalidated.** Round 2 added
+  the registry-class check to this path but nothing equivalent to round
+  2's own `_assert_valid_corroboration_entry()` -- `sourceUrl: "u"` and a
+  missing `fixtureSha256` (silently defaulted to `None` via
+  `original.get("fixtureSha256")`) still counted as genuine direct
+  evidence, an asymmetry GPT-PM again demonstrated against the test suite
+  directly. Fixed: `_assert_valid_original_provenance()` requires an https
+  URL sharing its origin with the registered source's own `canonicalUrl`,
+  a well-formed 64-hex `fixtureSha256`, and a parseable `retrievedAt` --
+  no `locator` requirement, since real adapter-generated provenance never
+  carried one and `evidenceType: ORIGINAL_ADAPTER_PROVENANCE`'s
+  `locator: None` is an honest reflection of that, not a gap.
+
+Re-ran the generator after both fixes: real counts unchanged (`matrix: 4,
+hammer-strength: 4, life-fitness: 5, nautilus: 13, precor: 14`, total 40)
+-- verified directly against every real DIRECT_FETCH provenance record in
+`p0_brand_candidates.json` (`sourceUrl`, `fixtureSha256` length, and
+`retrievedAt` for all 3 real DIRECT_FETCH sources checked by hand before
+writing the validator) that today's real data already satisfies both new
+checks; the stricter validation rejects nothing real. 7 new tests added
+(wrong-brand rejection for both evidence paths, unmapped-source rejection,
+placeholder-URL/missing-hash/wrong-domain rejection for original
+provenance, and one test confirming the real 40-candidate pool still
+passes cleanly end to end).
+
+**Tests**: `scripts/equipment_identity/` 184/184 (was 177; 7 new).
+
+Round 3 findings are now genuinely fixed and verified by inline `Read`/
+`Grep` evidence (the real TS adapter files, the real registry entries, the
+real provenance records), not just review-tool trust. A round-4
+confirmation from GPT-PM is still owed before treating the push gate as
+honestly satisfied -- the automated-transport ban above means that round
+goes through manual relay, not another `review.js` call.
+
 ## 7. Close conditions
 
 - [x] Real, genuine attempts made for all 3 named brands (Technogym,
@@ -303,7 +377,7 @@ can be passed for this round's receipt, clearing the push gate.
       conflict -- verified structurally (`assignsPrimaryTypeIdOrModelId:
       false`, `resolvesConflicts: false` in the artifact itself, plus a
       test asserting no entry carries either field).
-- [x] `python -m pytest scripts/equipment_identity/ -q` -- 177/177.
+- [x] `python -m pytest scripts/equipment_identity/ -q` -- 184/184.
 - [x] 2 independent agent reviews (silent-failure-hunter, python-reviewer),
       1 MAJOR fixed, 4 MINOR fixed.
 - [x] GPT-PM devil's-advocate review, round 1: 3 MAJOR real and fixed, 1
@@ -312,12 +386,17 @@ can be passed for this round's receipt, clearing the push gate.
       BLOCKER (diff truncation) resolved by round 2 (commit-scoped diff).
 - [x] GPT-PM devil's-advocate review, round 2 (commit-scoped): 3 MAJOR real
       and fixed (per-row corroboration-evidence validation, original-
-      provenance registry enforcement, rejectionReasons completeness). No
-      BLOCKER, no unresolved MAJOR -- receipt marked `--final`, clearing
-      the push gate.
+      provenance registry enforcement, rejectionReasons completeness).
+- [x] GPT-PM devil's-advocate review, round 3 (commit-scoped): 2 MAJOR real
+      and fixed (source-to-brand binding, original-provenance evidence-shape
+      validation). Receipt from this round was marked `--final` before the
+      reply was read (a process error, not a real close) -- NOT treated as
+      satisfying the push gate.
+- [ ] **Round 4 (manual relay, no further automated `review.js` calls this
+      session) still owed before push is honestly justified.**
 - [x] Decision log entry recorded (`core/DECISION_LOG.md`).
-- [x] Outcome reported to GPT-PM directly (not via `pm_set_gate` -- this
-      is not a gate).
+- [ ] Outcome reported to GPT-PM directly (not via `pm_set_gate` -- this
+      is not a gate) -- pending round 4.
 
 ## Rollback
 

@@ -133,6 +133,49 @@ class EligibilityError(RuntimeError):
 
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
+#: Mirrors the real, reviewed `brandIdByRawName` map each P1.G2/G3
+#: TypeScript adapter already declares (see adapter_runner.ts /
+#: life_fitness_hammer_strength_adapter.ts, the one genuinely multi-brand
+#: source -- Life Fitness + Hammer Strength share one corporate source;
+#: every other real source backs exactly one brand) plus this pass's own
+#: new Matrix/Johnson Health Tech PDF source. Reviewer-found gap (GPT-PM
+#: devil's-advocate review round 3, 2026-08-22): nothing previously bound a
+#: registered OFFICIAL_MANUFACTURER source to the brand(s) it actually
+#: documents -- demonstrated directly against this module's own test
+#: suite, where a brandId="precor" candidate backed by
+#: life_fitness_hammer_strength_product_catalog was silently accepted.
+SOURCE_ALLOWED_BRAND_IDS: dict[str, frozenset[str]] = {
+    "technogym_product_catalog": frozenset({"technogym"}),
+    "matrix_fitness_product_catalog": frozenset({"matrix"}),
+    "matrix_johnsonfit_pdf_corroboration": frozenset({"matrix"}),
+    "life_fitness_hammer_strength_product_catalog": frozenset({"life-fitness", "hammer-strength"}),
+    "core_health_fitness_nautilus_product_catalog": frozenset({"nautilus"}),
+    "precor_spec_tables": frozenset({"precor"}),
+    "panatta_official_product_pages": frozenset({"panatta"}),
+}
+
+
+def _assert_source_authorized_for_brand(source_id: str, brand_id: str) -> None:
+    """A source with no entry in `SOURCE_ALLOWED_BRAND_IDS` is refused
+    outright -- fail-closed, never "no restriction" by omission. A source
+    that IS known but does not list this brand is refused just as loudly:
+    being a real, registered, OFFICIAL_MANUFACTURER-class source is
+    necessary but not sufficient -- it must also actually document THIS
+    candidate's brand."""
+    allowed = SOURCE_ALLOWED_BRAND_IDS.get(source_id)
+    if not allowed:
+        raise EligibilityError(
+            f"sourceId={source_id!r} has no known brand authorization in SOURCE_ALLOWED_BRAND_IDS "
+            "-- a source must be explicitly bound to the brand(s) it may back before its evidence "
+            "can count toward that brand's eligibility"
+        )
+    if brand_id not in allowed:
+        raise EligibilityError(
+            f"sourceId={source_id!r} is not authorized for brandId={brand_id!r} (authorized for "
+            f"{sorted(allowed)!r}) -- a source's evidence may only back the brand(s) it actually "
+            "documents"
+        )
+
 
 def _load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -219,6 +262,46 @@ def _assert_valid_corroboration_entry(entry: dict[str, Any], allowed_origin: str
         raise EligibilityError(f"corroboration entry {brand_model} has no non-empty locator")
 
 
+def _assert_valid_original_provenance(original: dict[str, Any], allowed_origin: str) -> None:
+    """Validates an original adapter-generated DIRECT_FETCH provenance
+    record with the same rigor `_assert_valid_corroboration_entry` applies
+    to the PDF-corroboration fixture -- reviewer-found gap (GPT-PM devil's-
+    advocate review round 3, 2026-08-22): round 2 added a registry-class
+    check for this path (`_assert_registered_official_manufacturer_source`)
+    but no evidence-shape check, so a record with `sourceUrl: "u"` or a
+    missing `fixtureSha256` (silently accepted as `None` via
+    `original.get("fixtureSha256")`) still counted as genuine direct
+    evidence -- demonstrated directly by this module's own test suite. No
+    `locator` requirement here: real adapter-generated provenance never
+    carried one; `direct_corroboration_for()`'s `locator: None` for this
+    evidenceType is an honest reflection of that, not a gap."""
+    source_id = original.get("sourceId")
+    source_url = original.get("sourceUrl")
+    if not isinstance(source_url, str) or not source_url:
+        raise EligibilityError(f"original provenance for sourceId={source_id!r} has no sourceUrl")
+    parsed = urlparse(source_url)
+    if parsed.scheme != "https":
+        raise EligibilityError(f"original provenance sourceUrl is not https: {source_url!r}")
+    allowed = urlparse(allowed_origin)
+    if parsed.netloc != allowed.netloc:
+        raise EligibilityError(
+            f"original provenance sourceUrl origin {parsed.netloc!r} does not match the "
+            f"registered source's canonicalUrl origin {allowed.netloc!r}"
+        )
+    fixture_sha256 = original.get("fixtureSha256")
+    if not isinstance(fixture_sha256, str) or not _SHA256_RE.match(fixture_sha256):
+        raise EligibilityError(
+            f"original provenance for sourceId={source_id!r} has no well-formed 64-hex-char fixtureSha256"
+        )
+    retrieved_at = original.get("retrievedAt")
+    if not isinstance(retrieved_at, str) or not retrieved_at:
+        raise EligibilityError(f"original provenance for sourceId={source_id!r} has no retrievedAt timestamp")
+    try:
+        datetime.fromisoformat(retrieved_at.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise EligibilityError(f"original provenance retrievedAt is not parseable: {retrieved_at!r}") from exc
+
+
 def load_matrix_pdf_corroboration() -> dict[tuple[str, str | None], dict[str, Any]]:
     """Keyed by (brandId, modelCode) -> the corroboration record, so lookup
     against a candidate is a single dict access, not a linear scan.
@@ -258,6 +341,7 @@ def load_matrix_pdf_corroboration() -> dict[tuple[str, str | None], dict[str, An
                 f"corroboration fixture entry for brandId={entry.get('brandId')!r} has no "
                 "modelCode -- every entry must name the one real model it corroborates"
             )
+        _assert_source_authorized_for_brand(raw["sourceId"], entry["brandId"])
         _assert_valid_corroboration_entry(entry, allowed_origin)
         key = (entry["brandId"], entry["modelCode"])
         if key in by_key:
@@ -305,7 +389,9 @@ def direct_corroboration_for(
     having already checked what it claims to enforce."""
     original = _original_direct_fetch_provenance(candidate)
     if original is not None:
-        _assert_registered_official_manufacturer_source(original["sourceId"])
+        registry_entry = _assert_registered_official_manufacturer_source(original["sourceId"])
+        _assert_source_authorized_for_brand(original["sourceId"], candidate["brandId"])
+        _assert_valid_original_provenance(original, registry_entry["canonicalUrl"])
         return {
             "sourceId": original["sourceId"],
             "sourceUrl": original["sourceUrl"],

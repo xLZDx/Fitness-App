@@ -26,6 +26,19 @@ def _candidate(brandId="matrix", modelCode="X1", candidateId="cid1", provenance=
     }
 
 
+def _direct_fetch_provenance(sourceId, sourceUrl, sha_fill="a"):
+    # A real, registered, brand-authorized, well-formed DIRECT_FETCH
+    # provenance record -- sourceId/sourceUrl must be an actually-matching
+    # pair from SOURCE_ALLOWED_BRAND_IDS (GPT-PM devil's-advocate review
+    # round 3, 2026-08-22: source-brand authorization is now enforced, so a
+    # mismatched pair like precor+life_fitness_hammer_strength no longer
+    # passes even for tests targeting an unrelated condition).
+    return {
+        "sourceId": sourceId, "sourceUrl": sourceUrl, "retrievalMethod": "DIRECT_FETCH",
+        "fixtureSha256": sha_fill * 64, "retrievedAt": "2026-08-22T00:00:00Z",
+    }
+
+
 # --- GPT-PM's own explicit test scenarios ----------------------------------
 
 
@@ -41,10 +54,9 @@ def test_snippet_only_candidate_is_not_eligible():
 def test_candidate_with_direct_official_corroboration_may_become_eligible_when_preconditions_pass():
     candidate = _candidate(
         brandId="precor", modelCode="RSL0602",
-        provenance=[{
-            "sourceId": "life_fitness_hammer_strength_product_catalog", "sourceUrl": "u",
-            "retrievalMethod": "DIRECT_FETCH", "fixtureSha256": "a" * 64,
-        }],
+        provenance=[_direct_fetch_provenance(
+            "precor_spec_tables", "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+        )],
     )
     corroboration = cse.direct_corroboration_for(candidate, {})
     assert corroboration is not None
@@ -310,6 +322,86 @@ def test_rejection_reasons_include_pool_precondition_even_when_no_direct_evidenc
         assert any("POOL_PRECONDITION_NOT_MET" in r for r in e["rejectionReasons"])
 
 
+def test_source_backing_the_wrong_brand_is_rejected_for_original_provenance():
+    # GPT-PM devil's-advocate review round 3, 2026-08-22: this is the exact
+    # hole GPT-PM demonstrated against this module's own test suite -- a
+    # real, registered, OFFICIAL_MANUFACTURER source backing a brand it
+    # does not actually document.
+    candidate = _candidate(
+        brandId="precor",
+        provenance=[_direct_fetch_provenance(
+            "life_fitness_hammer_strength_product_catalog", "https://www.lifefitness.com/en-us/catalog/strength-training",
+        )],
+    )
+    with pytest.raises(cse.EligibilityError, match="not authorized for brandId"):
+        cse.direct_corroboration_for(candidate, {})
+
+
+def test_source_with_no_known_brand_authorization_is_rejected():
+    candidate = _candidate(
+        brandId="matrix",
+        provenance=[_direct_fetch_provenance("some_unmapped_but_registered_source", "https://example.com/")],
+    )
+    with pytest.raises(cse.EligibilityError, match="no known brand authorization"):
+        cse._assert_source_authorized_for_brand("some_unmapped_but_registered_source", "matrix")
+
+
+def test_matrix_pdf_fixture_row_backing_the_wrong_brand_is_rejected(monkeypatch, tmp_path):
+    path = tmp_path / "wrong_brand.json"
+    fixture = _valid_matrix_fixture(brandId="technogym")
+    path.write_text(json.dumps(fixture), encoding="utf-8")
+    monkeypatch.setattr(cse, "MATRIX_PDF_CORROBORATION_PATH", path)
+    with pytest.raises(cse.EligibilityError, match="not authorized for brandId"):
+        cse.load_matrix_pdf_corroboration()
+
+
+def test_original_provenance_with_placeholder_sourceurl_is_rejected():
+    # GPT-PM devil's-advocate review round 3, 2026-08-22: round 2 added a
+    # registry-class check for original provenance but no evidence-shape
+    # check -- a real registered+authorized source with sourceUrl:"u" still
+    # counted as genuine direct evidence.
+    candidate = _candidate(
+        brandId="matrix",
+        provenance=[{
+            "sourceId": "matrix_fitness_product_catalog", "sourceUrl": "u",
+            "retrievalMethod": "DIRECT_FETCH", "fixtureSha256": "a" * 64, "retrievedAt": "2026-08-22T00:00:00Z",
+        }],
+    )
+    with pytest.raises(cse.EligibilityError, match="sourceUrl is not https"):
+        cse.direct_corroboration_for(candidate, {})
+
+
+def test_original_provenance_with_missing_fixture_sha256_is_rejected():
+    candidate = _candidate(
+        brandId="matrix",
+        provenance=[{
+            "sourceId": "matrix_fitness_product_catalog", "sourceUrl": "https://us.matrixfitness.com/",
+            "retrievalMethod": "DIRECT_FETCH", "retrievedAt": "2026-08-22T00:00:00Z",
+        }],
+    )
+    with pytest.raises(cse.EligibilityError, match="fixtureSha256"):
+        cse.direct_corroboration_for(candidate, {})
+
+
+def test_original_provenance_with_wrong_domain_url_is_rejected():
+    candidate = _candidate(
+        brandId="matrix",
+        provenance=[{
+            "sourceId": "matrix_fitness_product_catalog", "sourceUrl": "https://evil-mirror.example/",
+            "retrievalMethod": "DIRECT_FETCH", "fixtureSha256": "a" * 64, "retrievedAt": "2026-08-22T00:00:00Z",
+        }],
+    )
+    with pytest.raises(cse.EligibilityError, match="does not match"):
+        cse.direct_corroboration_for(candidate, {})
+
+
+def test_all_real_p0_brand_candidates_direct_provenance_passes_round3_validation():
+    # Confirms the round-3 fixes reject nothing in today's real, already-
+    # well-formed data -- only future fabricated/mismatched rows.
+    counts = cse.direct_corroboration_counts_by_brand(cse.load_combined_pool(), cse.load_matrix_pdf_corroboration())
+    assert sum(counts.values()) == 40
+
+
 def test_original_direct_fetch_provenance_rejects_more_than_one_direct_fetch_record():
     # Reviewer-found gap (python-reviewer): asymmetric with the fixture
     # loader's own duplicate guard -- a candidate with two DIRECT_FETCH
@@ -354,10 +446,7 @@ def test_every_real_candidate_appears_exactly_once():
 def test_direct_corroboration_for_prefers_original_provenance_over_pdf_pass():
     candidate = _candidate(
         brandId="matrix", modelCode="G7-S70",
-        provenance=[{
-            "sourceId": "life_fitness_hammer_strength_product_catalog", "sourceUrl": "u",
-            "retrievalMethod": "DIRECT_FETCH", "fixtureSha256": "b" * 64,
-        }],
+        provenance=[_direct_fetch_provenance("matrix_fitness_product_catalog", "https://us.matrixfitness.com/", sha_fill="b")],
     )
     matrix_pdf_corroboration = cse.load_matrix_pdf_corroboration()
     result = cse.direct_corroboration_for(candidate, matrix_pdf_corroboration)
@@ -444,19 +533,16 @@ def test_duplicate_model_key_across_two_candidates_is_rejected_not_double_counte
     # precondition counts distinct corroborated MODELS, not candidate rows
     # -- two rows for the same (brandId, modelCode) must not silently
     # inflate a brand's floor or the total.
+    precor_provenance = lambda: _direct_fetch_provenance(
+        "precor_spec_tables", "https://static.precor.com/spec-tables/en-us/Precor-2022-NA-Spec-Tables.pdf",
+    )
     a = _candidate(
         brandId="precor", modelCode="RSL0602", candidateId="dup-a",
-        provenance=[{
-            "sourceId": "life_fitness_hammer_strength_product_catalog", "sourceUrl": "u",
-            "retrievalMethod": "DIRECT_FETCH",
-        }],
+        provenance=[precor_provenance()],
     )
     b = _candidate(
         brandId="precor", modelCode="RSL0602", candidateId="dup-b",
-        provenance=[{
-            "sourceId": "life_fitness_hammer_strength_product_catalog", "sourceUrl": "u",
-            "retrievalMethod": "DIRECT_FETCH",
-        }],
+        provenance=[precor_provenance()],
     )
     with pytest.raises(cse.EligibilityError, match="duplicate \\(brandId, modelCode\\)"):
         cse.direct_corroboration_counts_by_brand([a, b], {})
