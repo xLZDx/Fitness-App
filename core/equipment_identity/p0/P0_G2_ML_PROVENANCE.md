@@ -291,4 +291,6 @@ ran (§5, the module-name collision) was fixed immediately, not deferred.
       disk untouched (§4/§6, `test_validator_never_rewrites_registry`).
 - [x] No unresolved BLOCKER/MAJOR — 1 BLOCKER + 3 MAJOR/MINOR found and
       fixed in round 1, see §6.
-- [ ] Exact commit pushed/synced — pending, see the close-out step below.
+- [x] Exact commit pushed/synced — done at gate close time and
+      re-confirmed at the P0 aggregate verification (`git fetch origin` +
+      `git rev-list --left-right --count HEAD...origin/master` = `0 0`).

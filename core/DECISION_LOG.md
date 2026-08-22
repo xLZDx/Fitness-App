@@ -24314,3 +24314,84 @@ gate's own closing commit at write time (the hash didn't exist yet), so it brief
 commit (`e0483c1`) instead -- a chicken-and-egg limitation of git, same shape as P0.G4's own
 gate-contract repair earlier in this phase. Updated in a small follow-up commit to the actual P0.G6
 commit hash (`4c97d7e`) now that it exists.
+
+## 2026-08-22 -- P0 aggregate verification: 1 MAJOR found and fixed, P0 COMPLETE / P1 MAY START
+
+Per GPT-PM's own explicit request after P0.G6 closed: an evidence index across all 6 closeable gates
+(`core/equipment_identity/p0/P0_EVIDENCE_INDEX.md`, new), a full regression rerun on final HEAD rather
+than trusting each gate's own now-stale commit-time results, an artifact-drift check, a P0.G0/P0.G5
+scope-abuse check, and a final devil's-advocate adversarial review across the WHOLE P0 diff range
+(`f23130b~1..f6315dd`, all 9 commits) rather than just the last gate's diff.
+
+**Regression rerun on final HEAD**: Python (`scripts/ml scripts/ct1 scripts/equipment_identity`) 408
+passed, then 410 after this entry's own fix added 2 tests; default Functions Jest 240 passed; Firestore
+rules emulator 64/64; e2e emulator 11/11; identity codebase build clean + Jest 28 passed;
+`verify_deployment_isolation.py`'s own suite 10/10; Flutter `analyze` 16 pre-existing issues (0
+errors, none in any P0-touched file); Flutter `test` 3242 passed, 1 failed. That one failure
+(`app_semantic_colors_test.dart`'s hardcoded-white-count ratchet, expected 61 got 58) is pre-existing
+drift unrelated to P0 -- every file in its whitelist is a `mobile/lib/features/**` UI file, and no P0
+commit ever touched `mobile/lib`. Not fixed here, flagged for whoever owns that audit lineage.
+
+**Drift check**: every generated P0 artifact has a paired test that re-derives/re-validates it against
+current generator code, and all of those suites passed on final HEAD -- except one, caught by this
+round (see below). Grepped the full repo for every `P0.G0` reference: none marks it passed/ready,
+all correctly describe it blocked/external. Grepped for `OCR_TEXT_ONLY_DEFER_VISUAL`/
+`COLOCATED_VECTOR_FEASIBLE`: both strings stay confined to P0.G5's own evidence/type files, nothing in
+`mobile/lib` or any P4/visual code path branches on this outcome; `functions-equipment-identity/src/
+index.ts` still exports nothing.
+
+**Final adversarial round**: 3 independent cold-read agents against the whole P0 diff --
+`security-reviewer` (hidden production mutation / accidental dual deploy / secrets-PII / rights
+fail-open: NO ISSUE on all 4, each re-verified independently, not taken on a prior session's word),
+`code-reviewer` (invented provenance/baseline authenticity / legacy-set mislabeling / P0.G1-P0.G2
+AC-DoD-vs-doc / generator code review: NO ISSUE on all 4 + 1 MINOR fixed -- P0_G1_BASELINE.md's and
+P0_G2_ML_PROVENANCE.md's own close-condition checklists still showed "commit pushed/synced" as `[ ]`
+even though it was true, deliberately left unchecked at gate-close time to avoid a second source of
+truth vs this log; checked now since independently re-verified as of this exact HEAD), and
+`silent-failure-hunter` (invented/false cloud feasibility / stale evidence hashes / ontology drift /
+AC-DoD vs recorded status -- see the real finding below; 1 area NO ISSUE; 2 areas left explicitly
+UNKNOWN by the agent itself rather than guessed, partially closed by this session's own direct
+follow-up: `functional_type_snapshot_v1.json`'s on-disk shape confirmed to match exactly what
+`validate_type_reference`/P1.G1 T5/P1.G6 T5 expect; P0.G3-P0.G6's AC/DoD-vs-doc consistency not
+re-verified by a fresh cold agent this round, flagged honestly as weaker evidence than the P0.G1/G2
+check code-reviewer did, not silently upgraded to "confirmed"). Two of the three agents' first
+completion notifications arrived with no findings text (one needed a third resume before it delivered
+substance); both recovered via the established restatement pattern.
+
+**The one real MAJOR, independently reproduced before being trusted, then fixed**:
+`recognition_baseline_v1.json` (P0.G1, committed first, `f23130b`, 09:18) still recorded
+`equipment.json`'s PRE-`.gitattributes`-LF-fix CRLF-based SHA-256. P0.G4 (`eac45bb`, ~13:22, ~4h
+later) fixed exactly this class of drift for its OWN snapshot artifact by pinning `text eol=lf` for
+the same source file -- but nothing regenerated P0.G1's baseline afterward, so it silently kept the
+stale pre-fix hash. Reproduced directly, not taken on the agent's word: ran `recognition_baseline.py
+--check --target baseline` and watched it fail for real; computed the current file's SHA-256 from
+both the working copy and the git object at HEAD and confirmed both match P0.G4's already-recorded
+value, not P0.G1's. Root cause of why nothing caught it: every existing `test_baseline.py` test built
+a FRESH payload and compared it to a FRESH hash of the current file in the same test run -- a
+tautology that stays green even when the real committed file on disk is stale, since it never loads
+and checks the actual committed JSON; CI's `flutter.yml` `ct1-content-qa` step only runs `pytest`,
+never `--check` against the real file, so nothing in CI would have caught this either. Fixed:
+regenerated `recognition_baseline_v1.json` for real (diff is exactly `functionalCatalog.sha256` +
+`sourceCommit`; `typeCount` unchanged, confirming the catalog's real content never changed, only the
+CRLF-vs-LF byte representation the hash was computed over); added
+`test_10_committed_baseline_matches_a_fresh_build` and
+`test_10b_committed_legacy_inventory_matches_a_fresh_build`, which load the real committed files via
+the same `--check` code path instead of a freshly-built temp copy -- closing the exact tautology gap
+that let this drift land silently. `--check` now passes for both targets. Scoped this drift class to
+P0.G1 only: P0.G4's type-snapshot generator already had the non-tautological equivalent test since
+its own close; P0.G2's provenance contract and P0.G3's source registry are hand-authored/curated data,
+not hash-derived-from-source artifacts, so this drift class doesn't apply to them.
+
+**Verdict**: P0 COMPLETE. P1 MAY START. No BLOCKER, no unresolved MAJOR anywhere in P0's scope (the
+one MAJOR found here was fixed within this same pass, suite rerun to confirm before writing this
+verdict). Full detail, the complete gate-by-gate index, and every residual/deferred item carried
+forward into P1 in `core/equipment_identity/p0/P0_EVIDENCE_INDEX.md`.
+
+**Concurrency note**: same unidentified concurrent session/process as prior entries continues
+producing untracked `reports/*.html` files; no commit landed from it at any point checked; left
+untouched.
+
+**Next**: commit, push, verify remote sync, notify GPT-PM of the aggregate verdict. Then the final
+program-mode report to the operator (repository state, full gate matrix, per-gate evidence, deviations,
+open findings) per the standing authorization -- stop after that report, per the report skill's own
+instructions. No P1 work starts in this run.

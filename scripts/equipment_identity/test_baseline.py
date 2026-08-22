@@ -175,3 +175,22 @@ def test_write_then_check_round_trips_cleanly(tmp_path):
     assert rc_write2 == 0
     rc_check2 = baseline.main(["--check", "--target", "legacy", "--out", str(out_legacy)])
     assert rc_check2 == 0
+
+
+def test_10_committed_baseline_matches_a_fresh_build():
+    # Every test above builds a fresh payload and compares it to a fresh
+    # hash of the current source -- a tautology that stays green even if
+    # the REAL committed recognition_baseline_v1.json on disk is stale
+    # relative to source (found in the P0 aggregate review: the committed
+    # file still recorded equipment.json's pre-.gitattributes-LF-fix CRLF
+    # hash from P0.G1, never regenerated after P0.G4's later fix touched
+    # the same source file). This loads the actual committed file -- the
+    # same thing `recognition_baseline.py --check` does -- and is the one
+    # test that would have caught that drift.
+    rc = baseline.main(["--check", "--target", "baseline"])
+    assert rc == 0
+
+
+def test_10b_committed_legacy_inventory_matches_a_fresh_build():
+    rc = baseline.main(["--check", "--target", "legacy"])
+    assert rc == 0

@@ -1,7 +1,7 @@
 {
   "functionalCatalog": {
     "path": "mobile/assets/data/equipment.json",
-    "sha256": "6e72adcd800e503b555629b5b481977f9bdf7e5e5a360572b5246884f0fa80d9",
+    "sha256": "c9e1706cb935627c66a539db1db3e918423f12a309ac4e4431ca7e61ced2cff5",
     "typeCount": 69
   },
   "generatedBy": "scripts/equipment_identity/recognition_baseline.py",
@@ -128,5 +128,5 @@
     }
   ],
   "schemaVersion": 1,
-  "sourceCommit": "f23130bb6dd24f0e533e4c8e03ee9fb0a0e98f63"
+  "sourceCommit": "f6315dd8b43c158871b1fb7778fa65d8269c36c7"
 }

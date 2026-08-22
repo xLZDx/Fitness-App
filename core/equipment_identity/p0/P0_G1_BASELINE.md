@@ -312,7 +312,12 @@ or unresolved MAJOR/MINOR remains. 1 of the allowed 5 fix/review loops used.
       project agents — see §7 above). 2 MAJOR + 3 MINOR found and fixed in
       round 1; no unresolved BLOCKER/MAJOR/MINOR.
 - [x] Rollback/failure handling documented (§6 above).
-- [ ] Commit pushed and remote exact SHA verified (`git fetch origin` +
+- [x] Commit pushed and remote exact SHA verified (`git fetch origin` +
       `git rev-list --left-right --count HEAD...origin/master` = `0 0`) —
-      done at gate close time, recorded in `core/DECISION_LOG.md`, not
-      duplicated here to avoid a second source of truth that can drift.
+      done at gate close time and re-confirmed at the P0 aggregate
+      verification (both against the same check), recorded in
+      `core/DECISION_LOG.md`. (This box was left unchecked at gate-close
+      time to avoid a second source of truth that could drift from the
+      log; flagged during the aggregate review as reading like "still
+      pending" instead — checked now since the underlying fact is
+      independently re-verified as of this HEAD, not assumed.)
