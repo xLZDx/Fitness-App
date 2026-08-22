@@ -74,6 +74,17 @@ export const EntityIdSchema = z
 
 // --- provenance ---------------------------------------------------------
 
+/** P1.G2 (§5.9): how `sourceUrl`'s content was actually obtained.
+ * DIRECT_FETCH = the page itself was retrieved and read. SEARCH_INDEX_SNIPPET
+ * = only located via a search-engine index (e.g. a domain that blocks
+ * direct retrieval outright) -- still legitimate discovery-based provenance
+ * under §5.9 as long as `sourceUrl` points at the verified official domain,
+ * but honestly distinguished from a page an adapter actually fetched.
+ * Optional so P1.G1-era provenance refs (predating this distinction) stay
+ * valid without a migration. */
+export const RetrievalMethodSchema = z.enum(["DIRECT_FETCH", "SEARCH_INDEX_SNIPPET"]);
+export type RetrievalMethod = z.infer<typeof RetrievalMethodSchema>;
+
 export const ProvenanceRefSchema = z.object({
   sourceId: SlugSchema,
   sourceUrl: z.string().url(),
@@ -86,6 +97,7 @@ export const ProvenanceRefSchema = z.object({
   adapterId: z.string().min(1),
   adapterVersion: z.string().min(1),
   sourceLocator: z.string().min(1).optional(),
+  retrievalMethod: RetrievalMethodSchema.optional(),
   fields: z.array(z.string().min(1)).nonempty(),
 });
 export type ProvenanceRef = z.infer<typeof ProvenanceRefSchema>;

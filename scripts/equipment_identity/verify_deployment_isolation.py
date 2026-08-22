@@ -157,6 +157,21 @@ def run_broken_identity_probe() -> dict[str, Any]:
             P0_DIR / "functional_type_snapshot_v1.json",
             temp_p0_dir / "functional_type_snapshot_v1.json",
         )
+        # P1.G2: `npm run build` also now runs `check:p1-generated`, which
+        # reads core/equipment_identity/p0/source_registry.json and every
+        # core/equipment_identity/p1/source_captures/*.json fixture, by the
+        # exact same relative-path convention as the P1.G1 snapshot check
+        # above -- same self-caught-bug class, same fix. Read-only sources,
+        # never modified.
+        shutil.copy2(
+            P0_DIR / "source_registry.json",
+            temp_p0_dir / "source_registry.json",
+        )
+        temp_p1_captures_dir = tmp_root / "core" / "equipment_identity" / "p1" / "source_captures"
+        temp_p1_captures_dir.mkdir(parents=True, exist_ok=True)
+        p1_captures_dir = REPO / "core" / "equipment_identity" / "p1" / "source_captures"
+        for fixture_path in sorted(p1_captures_dir.glob("*.json")):
+            shutil.copy2(fixture_path, temp_p1_captures_dir / fixture_path.name)
 
         install = _run([NPM, "ci"], temp_identity)
         if install.returncode != 0:

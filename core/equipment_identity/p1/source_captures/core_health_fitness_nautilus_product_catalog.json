@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "core_health_fitness_nautilus_product_catalog",
+  "capturedAt": "2026-08-22T00:00:00Z",
+  "records": [
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Leverage Chest Press",
+      "modelCodeRaw": "9NP-L2002",
+      "productLineRaw": "Leverage",
+      "typeHintsRaw": ["chest_press_machine"],
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Leverage Incline Press",
+      "modelCodeRaw": "9NP-L2003",
+      "productLineRaw": "Leverage",
+      "typeHintsRaw": ["chest_press_machine"],
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Leverage Decline Press",
+      "modelCodeRaw": "9NP-L2004",
+      "productLineRaw": "Leverage",
+      "typeHintsRaw": ["chest_press_machine"],
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Leverage Lat Pull Down",
+      "modelCodeRaw": "9NP-L3003",
+      "productLineRaw": "Leverage",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Leverage High Row",
+      "modelCodeRaw": "9NP-L3005",
+      "productLineRaw": "Leverage",
+      "typeHintsRaw": ["seated_row_machine"],
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Leverage Low Row",
+      "modelCodeRaw": "9NP-L3004",
+      "productLineRaw": "Leverage",
+      "typeHintsRaw": ["seated_row_machine"],
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Leverage Shoulder Press",
+      "modelCodeRaw": "9NP-L4002",
+      "productLineRaw": "Leverage",
+      "typeHintsRaw": ["shoulder_press_machine"],
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Leverage Biceps Curl",
+      "modelCodeRaw": "9NP-L5002",
+      "productLineRaw": "Leverage",
+      "typeHintsRaw": ["bicep_curl_machine"],
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Leverage Abdominal Crunch",
+      "modelCodeRaw": "9NP-L5003",
+      "productLineRaw": "Leverage",
+      "typeHintsRaw": ["ab_crunch_machine"],
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Leverage Deadlift Shrug",
+      "modelCodeRaw": "9NP-L3006",
+      "productLineRaw": "Leverage",
+      "typeHintsRaw": [],
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Angled Leg Press",
+      "modelCodeRaw": "NP-L1141",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Standing Calf",
+      "modelCodeRaw": "9NP-L1112",
+      "typeHintsRaw": ["calf_raise_machine"],
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Nautilus",
+      "productNameRaw": "Instinct Leg Extension",
+      "modelCodeRaw": "9NL-S1010",
+      "productLineRaw": "Instinct",
+      "typeHintsRaw": ["leg_extension"],
+      "specsRaw": {
+        "dimensions": "37 x 41 x 55 in",
+        "stack": "190 lb",
+        "weight": "436 lb"
+      },
+      "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+      "retrievalMethod": "DIRECT_FETCH"
+    }
+  ]
+}

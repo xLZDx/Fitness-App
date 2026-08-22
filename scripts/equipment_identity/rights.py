@@ -228,13 +228,27 @@ def validate_source_record(record: dict[str, Any]) -> None:
 
 def load_registry(path: Path = SOURCE_REGISTRY) -> list[dict[str, Any]]:
     """Load and fully validate every entry. Raises on the first invalid
-    record rather than returning a partially-trustworthy list."""
+    record rather than returning a partially-trustworthy list.
+
+    Also enforces sourceId uniqueness across the whole registry (reviewer-
+    found gap, P1.G2 review, 2026-08-22): neither this function nor the
+    JSON Schema previously checked for a duplicate sourceId, so a future
+    copy-paste record (e.g. cloning an existing entry and only editing
+    canonicalUrl/decisionBasis, leaving sourceId stale) would pass every
+    per-record check and then silently shadow the original in any consumer
+    that builds a {sourceId: record} map -- exactly the kind of silent
+    provenance loss this registry exists to prevent."""
     data = json.loads(path.read_text(encoding="utf-8"))
     sources = data.get("sources", [])
     if not sources:
         raise RightsValidationError(f"{path}: registry has no sources")
+    seen_ids: set[str] = set()
     for record in sources:
         validate_source_record(record)
+        source_id = record["sourceId"]
+        if source_id in seen_ids:
+            raise RightsValidationError(f"{path}: duplicate sourceId {source_id!r}")
+        seen_ids.add(source_id)
     return sources
 
 

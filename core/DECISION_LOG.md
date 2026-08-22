@@ -24580,3 +24580,74 @@ confirmed by the security-reviewer pass, not just asserted.
 
 Next: P1.G2 (official P0 brand adapters -- Technogym, Life Fitness/Hammer Strength, Matrix,
 Core Health & Fitness/Nautilus), under the same operator GO and program-mode reporting.
+
+## 2026-08-22 -- P1.G2 CLOSED: official P0 brand adapters (Technogym, Matrix, Life Fitness/Hammer Strength, Nautilus)
+
+Full evidence: `core/equipment_identity/p1/P1_G2_OFFICIAL_P0_ADAPTERS.md`.
+
+Built a zod-validated adapter pipeline (`functions-equipment-identity/src/p1/adapters/`) that ingests
+4 real, hand-authored source-capture fixtures (48 records, all with a real manufacturer model code,
+honestly labeled `retrievalMethod: DIRECT_FETCH | SEARCH_INDEX_SNIPPET`) and emits
+`StagedEquipmentModelCandidate` records only -- P1.G1's own contract structurally forbids an adapter
+from ever assigning `primaryTypeId`. Real data gathered live during this gate: Technogym (9, via
+search-snippet discovery only -- technogym.com blocks direct retrieval site-wide, confirmed via 5
+separate 403s), Matrix Fitness (17, search-snippet only -- us.matrixfitness.com serves an empty
+client-rendered shell), Life Fitness (5) + Hammer Strength (4), and Nautilus (13) -- both directly
+fetched with real server-rendered content and full technical specs for several models. 4 new
+`UNREVIEWED` `source_registry.json` entries added for the real product-catalog domains (the 4
+original P0.G3 entries point at stale interior-design/planning pages); existing P0.G3 entries left
+untouched per §7.2.
+
+**Review (4 independent parallel specialists, no BLOCKER from any): 1 MAJOR fixed, 8 MINOR fixed
+(4 code, 1 pre-existing rights.py gap, 1 doc-comment correction), 2 explicitly deferred.**
+
+- **MAJOR** (silent-failure-hunter + type-design-analyzer, same defect from two angles): lifecycle
+  status drift was silently swallowed two ways -- `provenance[0].fields` claimed
+  `catalogStatusCandidate` was sourced even when the raw value was unrecognized and fell back to
+  `UNKNOWN`; and `detectRecordDrift`'s per-record detail was discarded to a bare count before ever
+  reaching a persisted artifact, making the whole drift mechanism unusable by any real downstream
+  consumer. Fixed: `fields` now only claims `catalogStatusCandidate` on an actual match;
+  `source_drift.ts` now also flags an unrecognized `lifecycleStatusRaw`; `capture_manifest.json` now
+  carries full per-issue detail linked to a `candidateId`, not just a count.
+- MINORs fixed: `candidateId` could theoretically collide across two brands sharing one multi-brand
+  source (Life Fitness + Hammer Strength) on a coincidental shared model code -- fixed by folding
+  `brandId` into the hash input; the within-fixture duplicate guard used exact-string comparison and
+  was fixture-wide rather than per-brand -- fixed to normalize and scope by `(brandId, modelCode)`,
+  so a legitimate cross-brand coincidence no longer hard-crashes the whole run; `capturedAt` was
+  validated far more weakly than the timestamp schema it flows into -- tightened to fail at
+  fixture-load time; `generate_p1_g2_artifacts.js`'s 3 sequential non-atomic writes -- fixed via
+  temp-file+rename; `rights.py`'s `load_registry` had no `sourceId` uniqueness check (python-reviewer;
+  pre-existing gap, this gate's own 4 new entries confirmed unique) -- fixed with a check + 2 tests;
+  a doc-comment in `source_capture.ts` overclaimed `JSON.parse` "preserves key order" -- corrected
+  (no functional change, the hash never actually needed that property).
+- Confirmed clean by multiple reviewers independently: no path lets an adapter emit `primaryTypeId`
+  (structurally impossible, `.strict()`); no adapter reads/upgrades `UNREVIEWED` rights data; zero
+  swallowed exceptions anywhere in the pipeline; `verify_deployment_isolation.py`'s isolation-probe
+  fix (same self-caught-bug class as P1.G1's own -- `npm run build` gained a second
+  `check:p1-generated` step reading files the temp copy didn't have) is complete, traced against
+  `tsconfig.json`'s actual `include` set.
+- Deferred, documented as known residual: `rights.py` is more permissive than the JSON Schemas it
+  mirrors (no unknown-key rejection, no real URI-format check on `canonicalUrl`) -- pre-existing,
+  no live defect, would need a real `jsonschema` dependency to close, out of this gate's scope.
+
+**Tests**: `functions-equipment-identity` 213/213 (was 202 before review fixes; 6 new test files,
+including regression tests reproducing every fixed reviewer finding). `scripts/equipment_identity/`
+106/106 (was 104). `npm run build` clean, including the new `pretest` hook (review-found gap,
+code-reviewer: `npm test` had no `pretest` wired to `check:p0-snapshot`/`check:p1-generated`, so it
+could silently run against a stale generated copy).
+
+**Determinism verified, not assumed**: two independent runs of `runAllP0BrandAdapters()` against the
+unchanged committed fixtures produce byte-identical output. Real committed data: 0 conflicts, 0 drift
+issues.
+
+**Scope discipline honored**: no exercise-catalog/safety-filter/scanner-history migration, no
+production Firebase write, no production Cloud Function export
+(`functions-equipment-identity/src/index.ts` still `export {}`), no vector/Vertex/embedding SDK, no
+raw manufacturer media (images/PDFs) acquisition -- only text metadata, no unresolved conflict
+auto-resolved by source priority, no source flipped UNREVIEWED->REVIEWED.
+
+`pm_set_gate` called with project="Fitness_App", gate_id="P1.G2". GPT-PM notification pending as of
+this entry.
+
+Next: P1.G3 (Precor/Panatta adapters), same operator GO and program-mode reporting (no interim
+report to the operator until the whole P1.G1-G6 + P1_AGGREGATE chunk closes).

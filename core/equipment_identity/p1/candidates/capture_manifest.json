@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "sourceId": "technogym_product_catalog",
+      "fixtureSha256": "656fef527cf75c2fbfae109371af30d35224f358a1db6705eb66403ff414236b",
+      "capturedAt": "2026-08-22T00:00:00Z",
+      "candidateCount": 9,
+      "driftIssueCount": 0,
+      "driftIssues": []
+    },
+    {
+      "sourceId": "matrix_fitness_product_catalog",
+      "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+      "capturedAt": "2026-08-22T00:00:00Z",
+      "candidateCount": 17,
+      "driftIssueCount": 0,
+      "driftIssues": []
+    },
+    {
+      "sourceId": "life_fitness_hammer_strength_product_catalog",
+      "fixtureSha256": "c7c8c8bb00801c259f94a99d75eaa78d0b0c24d51c99d0e1739d915a996cd448",
+      "capturedAt": "2026-08-22T00:00:00Z",
+      "candidateCount": 9,
+      "driftIssueCount": 0,
+      "driftIssues": []
+    },
+    {
+      "sourceId": "core_health_fitness_nautilus_product_catalog",
+      "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+      "capturedAt": "2026-08-22T00:00:00Z",
+      "candidateCount": 13,
+      "driftIssueCount": 0,
+      "driftIssues": []
+    }
+  ]
+}

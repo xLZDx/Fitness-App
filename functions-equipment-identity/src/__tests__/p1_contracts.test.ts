@@ -50,6 +50,29 @@ describe("ProvenanceRefSchema", () => {
     expect(() => ProvenanceRefSchema.parse(VALID_PROVENANCE)).not.toThrow();
   });
 
+  // P1.G2 (2026-08-22): retrievalMethod added as an optional field so a
+  // P0.G2-era provenance ref (predating this distinction) stays valid
+  // without a migration.
+  test("accepts a provenance ref with no retrievalMethod at all (P1.G1-era compatibility)", () => {
+    expect(() => ProvenanceRefSchema.parse(VALID_PROVENANCE)).not.toThrow();
+    expect(ProvenanceRefSchema.parse(VALID_PROVENANCE).retrievalMethod).toBeUndefined();
+  });
+
+  test("accepts a provenance ref with retrievalMethod=DIRECT_FETCH or SEARCH_INDEX_SNIPPET", () => {
+    expect(() =>
+      ProvenanceRefSchema.parse({ ...VALID_PROVENANCE, retrievalMethod: "DIRECT_FETCH" }),
+    ).not.toThrow();
+    expect(() =>
+      ProvenanceRefSchema.parse({ ...VALID_PROVENANCE, retrievalMethod: "SEARCH_INDEX_SNIPPET" }),
+    ).not.toThrow();
+  });
+
+  test("rejects an invalid retrievalMethod value", () => {
+    expect(() =>
+      ProvenanceRefSchema.parse({ ...VALID_PROVENANCE, retrievalMethod: "GUESSED" }),
+    ).toThrow(z.ZodError);
+  });
+
   test("rejects a fixtureSha256 that is not 64 lowercase hex chars", () => {
     expect(() =>
       ProvenanceRefSchema.parse({ ...VALID_PROVENANCE, fixtureSha256: "not-a-hash" }),

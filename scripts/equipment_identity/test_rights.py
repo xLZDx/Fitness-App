@@ -306,6 +306,45 @@ def test_load_registry_does_not_mutate_input_records():
     assert sources == snapshot
 
 
+# --- P1.G2 review: duplicate sourceId ------------------------------------
+
+def test_load_registry_rejects_a_duplicate_source_id(tmp_path):
+    # Reviewer-found gap (P1.G2 review, 2026-08-22): neither load_registry
+    # nor the JSON Schema previously checked sourceId uniqueness -- a
+    # duplicate would pass every per-record check and silently shadow the
+    # original in any consumer keying a {sourceId: record} map.
+    duplicate_id = "duplicate_source_for_test"
+    registry_path = tmp_path / "source_registry.json"
+    registry_path.write_text(
+        json.dumps({
+            "schemaVersion": 1,
+            "sources": [
+                _base_record(sourceId=duplicate_id),
+                _base_record(sourceId=duplicate_id, providerName="Different Provider"),
+            ],
+        }),
+        encoding="utf-8",
+    )
+    with pytest.raises(rights.RightsValidationError, match="duplicate sourceId"):
+        rights.load_registry(registry_path)
+
+
+def test_load_registry_accepts_distinct_source_ids(tmp_path):
+    registry_path = tmp_path / "source_registry.json"
+    registry_path.write_text(
+        json.dumps({
+            "schemaVersion": 1,
+            "sources": [
+                _base_record(sourceId="source_one"),
+                _base_record(sourceId="source_two"),
+            ],
+        }),
+        encoding="utf-8",
+    )
+    sources = rights.load_registry(registry_path)
+    assert len(sources) == 2
+
+
 # --- P1.G1 §6.8 hardening: eligible_for() validates before deciding -------
 
 def test_eligible_for_rejects_a_record_that_never_passed_validate_source_record():

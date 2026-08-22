@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "technogym_product_catalog",
+  "capturedAt": "2026-08-22T00:00:00Z",
+  "records": [
+    {
+      "brandNameRaw": "Technogym",
+      "productNameRaw": "Selection 900 Leg Press",
+      "modelCodeRaw": "MNAP",
+      "productLineRaw": "Selection",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://www.technogym.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Technogym",
+      "productNameRaw": "Selection Leg Press MED",
+      "modelCodeRaw": "C99400-ANVK",
+      "productLineRaw": "Selection MED",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://www.technogym.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Technogym",
+      "productNameRaw": "Selection 700 Leg Press",
+      "modelCodeRaw": "MNAC",
+      "productLineRaw": "Selection",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://www.technogym.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Technogym",
+      "productNameRaw": "Selection 900 Chest Press",
+      "modelCodeRaw": "MNFP",
+      "productLineRaw": "Selection",
+      "typeHintsRaw": ["chest_press_machine"],
+      "sourceUrl": "https://www.technogym.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Technogym",
+      "productNameRaw": "Selection 700 Chest Press",
+      "modelCodeRaw": "MNFC",
+      "productLineRaw": "Selection",
+      "typeHintsRaw": ["chest_press_machine"],
+      "sourceUrl": "https://www.technogym.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Technogym",
+      "productNameRaw": "Selection Chest Press MED",
+      "modelCodeRaw": "C97000-ANVK",
+      "productLineRaw": "Selection MED",
+      "typeHintsRaw": ["chest_press_machine"],
+      "sourceUrl": "https://www.technogym.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Technogym",
+      "productNameRaw": "Selection 900 Lat Machine",
+      "modelCodeRaw": "MNLP",
+      "productLineRaw": "Selection",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://www.technogym.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Technogym",
+      "productNameRaw": "Selection 700 Lat Machine",
+      "modelCodeRaw": "MNLC",
+      "productLineRaw": "Selection",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://www.technogym.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Technogym",
+      "productNameRaw": "Selection Lat Machine MED",
+      "modelCodeRaw": "C91200-ANVK",
+      "productLineRaw": "Selection MED",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://www.technogym.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    }
+  ]
+}

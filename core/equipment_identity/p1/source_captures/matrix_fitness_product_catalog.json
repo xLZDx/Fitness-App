@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "matrix_fitness_product_catalog",
+  "capturedAt": "2026-08-22T00:00:00Z",
+  "records": [
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Ultra Leg Press",
+      "modelCodeRaw": "G7-S70",
+      "productLineRaw": "Ultra",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Ultra Leg Press Base Trim",
+      "modelCodeRaw": "G7-S70B",
+      "productLineRaw": "Ultra",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Go Leg Press",
+      "modelCodeRaw": "GO-S70",
+      "productLineRaw": "Go",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Leg Press MD-S70",
+      "modelCodeRaw": "MD-S70",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Versa Leg Press",
+      "modelCodeRaw": "VS-S70",
+      "productLineRaw": "Versa",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Magnum Plate-Loaded Leg Press",
+      "modelCodeRaw": "MG-PL70",
+      "productLineRaw": "Magnum",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Aura Leg Press",
+      "modelCodeRaw": "G3-S70",
+      "productLineRaw": "Aura",
+      "typeHintsRaw": ["leg_press"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Aura Leg Extension",
+      "modelCodeRaw": "G3-S71",
+      "productLineRaw": "Aura",
+      "typeHintsRaw": ["leg_extension"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Ultra Lat Pulldown",
+      "modelCodeRaw": "G7-S33",
+      "productLineRaw": "Ultra",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Aura Lat Pulldown",
+      "modelCodeRaw": "G3-S30",
+      "productLineRaw": "Aura",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Go Lat Pulldown",
+      "modelCodeRaw": "GO-S33",
+      "productLineRaw": "Go",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Magnum Lat Pulldown 946",
+      "modelCodeRaw": "MG-946",
+      "productLineRaw": "Magnum",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Magnum Plate-Loaded Lat Pulldown",
+      "modelCodeRaw": "MG-PL33",
+      "productLineRaw": "Magnum",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Magnum Lat Pulldown 921",
+      "modelCodeRaw": "MG-921",
+      "productLineRaw": "Magnum",
+      "typeHintsRaw": ["lat_pulldown"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Aura Chest Press",
+      "modelCodeRaw": "G3-S10",
+      "productLineRaw": "Aura",
+      "typeHintsRaw": ["chest_press_machine"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Ultra Chest Press",
+      "modelCodeRaw": "G7-S13",
+      "productLineRaw": "Ultra",
+      "typeHintsRaw": ["chest_press_machine"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    },
+    {
+      "brandNameRaw": "Matrix Fitness",
+      "productNameRaw": "Go Chest Press",
+      "modelCodeRaw": "GO-S13",
+      "productLineRaw": "Go",
+      "typeHintsRaw": ["chest_press_machine"],
+      "sourceUrl": "https://us.matrixfitness.com/",
+      "retrievalMethod": "SEARCH_INDEX_SNIPPET"
+    }
+  ]
+}

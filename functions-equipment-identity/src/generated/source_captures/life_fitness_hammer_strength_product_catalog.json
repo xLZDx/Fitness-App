@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "sourceId": "life_fitness_hammer_strength_product_catalog",
+  "capturedAt": "2026-08-22T00:00:00Z",
+  "records": [
+    {
+      "brandNameRaw": "Hammer Strength",
+      "productNameRaw": "Plate-Loaded Iso-Lateral Leg Press",
+      "modelCodeRaw": "IL-LP",
+      "productLineRaw": "Hammer Strength Plate-Loaded",
+      "lifecycleStatusRaw": "Discontinued",
+      "typeHintsRaw": ["leg_press"],
+      "specsRaw": {
+        "dimensions": "71 x 62 x 59 in",
+        "weight": "605 lb",
+        "weightHorns": "4",
+        "frame": "11-gauge steel",
+        "replacement": "Plate Loaded Linear Leg Press"
+      },
+      "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Hammer Strength",
+      "productNameRaw": "Plate Loaded Iso-Lateral Chest/Back",
+      "modelCodeRaw": "IL-CB",
+      "productLineRaw": "Hammer Strength Plate-Loaded",
+      "lifecycleStatusRaw": "Active/Current product",
+      "typeHintsRaw": ["chest_press_machine", "lat_pulldown"],
+      "specsRaw": {
+        "dimensions": "78 x 54 x 90 in",
+        "weight": "390 lb",
+        "maxLoadPerArm": "4 x 45 lb plates",
+        "startingResistancePerArm": "7 lb",
+        "weightHorns": "6"
+      },
+      "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training/plate-loaded/plate-loaded-iso-lateral-chest-back",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Hammer Strength",
+      "productNameRaw": "Select Lat Pulldown",
+      "modelCodeRaw": "HS-PD",
+      "productLineRaw": "Hammer Strength Select",
+      "lifecycleStatusRaw": "Active",
+      "typeHintsRaw": ["lat_pulldown"],
+      "specsRaw": {
+        "dimensions": "54 x 33 x 89 in",
+        "machineWeight": "545 lb",
+        "stack": "295 lb",
+        "maxUserWeight": "300 lb"
+      },
+      "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Hammer Strength",
+      "productNameRaw": "Select Chest Press",
+      "modelCodeRaw": "HS-CP",
+      "productLineRaw": "Hammer Strength Select",
+      "lifecycleStatusRaw": "Active",
+      "typeHintsRaw": ["chest_press_machine"],
+      "specsRaw": {
+        "dimensions": "41 x 57 x 64 in",
+        "weight": "560 lb",
+        "stack": "295 lb"
+      },
+      "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Life Fitness",
+      "productNameRaw": "Insignia Series Seated Leg Press",
+      "modelCodeRaw": "SS-SLP",
+      "productLineRaw": "Life Fitness Insignia",
+      "lifecycleStatusRaw": "Discontinued",
+      "typeHintsRaw": ["leg_press"],
+      "specsRaw": {
+        "dimensions": "79.1 x 44.8 x 64.7 in",
+        "weight": "1001 lb",
+        "replacement": "Insignia Series Arc Leg Press"
+      },
+      "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Life Fitness",
+      "productNameRaw": "Insignia Series Arc Leg Press",
+      "modelCodeRaw": "SS-LP",
+      "productLineRaw": "Life Fitness Insignia",
+      "lifecycleStatusRaw": "New Product",
+      "typeHintsRaw": ["leg_press"],
+      "specsRaw": {
+        "dimensions": "79.5 x 44.8 x 64.7 in",
+        "weight": "936 lb"
+      },
+      "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Life Fitness",
+      "productNameRaw": "Axiom Series Leg Press",
+      "modelCodeRaw": "OP-LP",
+      "productLineRaw": "Life Fitness Axiom",
+      "lifecycleStatusRaw": "Active",
+      "typeHintsRaw": ["leg_press"],
+      "specsRaw": {
+        "dimensions": "86 x 40 x 53 in",
+        "weight": "594 lb",
+        "stack": "262.5 lb"
+      },
+      "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Life Fitness",
+      "productNameRaw": "Axiom Series Chest Press",
+      "modelCodeRaw": "OP-CP",
+      "productLineRaw": "Life Fitness Axiom",
+      "lifecycleStatusRaw": "Active",
+      "typeHintsRaw": ["chest_press_machine"],
+      "specsRaw": {
+        "dimensions": "44 x 51 x 53 in",
+        "weight": "462 lb",
+        "stack": "202.5 lb"
+      },
+      "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+      "retrievalMethod": "DIRECT_FETCH"
+    },
+    {
+      "brandNameRaw": "Life Fitness",
+      "productNameRaw": "Axiom Series Lat Pulldown",
+      "modelCodeRaw": "OP-PD",
+      "productLineRaw": "Life Fitness Axiom",
+      "lifecycleStatusRaw": "Active",
+      "typeHintsRaw": ["lat_pulldown"],
+      "specsRaw": {
+        "dimensions": "60 x 55 x 73 in",
+        "machineWeight": "459 lb",
+        "stack": "202.5 lb",
+        "maxUserWeight": "300 lb"
+      },
+      "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training/selectorized/axiom-series-lat-pulldown",
+      "retrievalMethod": "DIRECT_FETCH"
+    }
+  ]
+}

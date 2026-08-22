@@ -1,0 +1,1640 @@
+{
+  "schemaVersion": 1,
+  "generatedFromCapturedAt": "2026-08-22T00:00:00Z",
+  "candidateCount": 48,
+  "candidates": [
+    {
+      "schemaVersion": 1,
+      "candidateId": "cbd05b6881b47312b7a54b77b31111cea2e699625eb9841b89022de498006a42",
+      "brandId": "technogym",
+      "productLineCandidate": "technogym-selection",
+      "canonicalNameCandidate": "Selection 900 Leg Press",
+      "modelCode": "MNAP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "technogym_product_catalog",
+          "sourceUrl": "https://www.technogym.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "656fef527cf75c2fbfae109371af30d35224f358a1db6705eb66403ff414236b",
+          "adapterId": "technogym-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "MNAP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "9ff1ab7d6a18a7c09c93eb9729c81a88b0ead2a0e772eba1369af431a69d2b5e",
+      "brandId": "technogym",
+      "productLineCandidate": "technogym-selection-med",
+      "canonicalNameCandidate": "Selection Leg Press MED",
+      "modelCode": "C99400-ANVK",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "technogym_product_catalog",
+          "sourceUrl": "https://www.technogym.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "656fef527cf75c2fbfae109371af30d35224f358a1db6705eb66403ff414236b",
+          "adapterId": "technogym-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "C99400-ANVK"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "1f01b777cc2900be1ad7a6d0ad3727df7d8a78255555c754d9be69088995bb90",
+      "brandId": "technogym",
+      "productLineCandidate": "technogym-selection",
+      "canonicalNameCandidate": "Selection 700 Leg Press",
+      "modelCode": "MNAC",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "technogym_product_catalog",
+          "sourceUrl": "https://www.technogym.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "656fef527cf75c2fbfae109371af30d35224f358a1db6705eb66403ff414236b",
+          "adapterId": "technogym-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "MNAC"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "040b50ca86d8d53c68ae99954ff479fe9064d9d61d5c5dc6d8f6422ddf333b9c",
+      "brandId": "technogym",
+      "productLineCandidate": "technogym-selection",
+      "canonicalNameCandidate": "Selection 900 Chest Press",
+      "modelCode": "MNFP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "technogym_product_catalog",
+          "sourceUrl": "https://www.technogym.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "656fef527cf75c2fbfae109371af30d35224f358a1db6705eb66403ff414236b",
+          "adapterId": "technogym-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "MNFP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "876951161e9c918d5bef2fbb46acec58c4fc92bbfb4f8fa737c51663d7e35db9",
+      "brandId": "technogym",
+      "productLineCandidate": "technogym-selection",
+      "canonicalNameCandidate": "Selection 700 Chest Press",
+      "modelCode": "MNFC",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "technogym_product_catalog",
+          "sourceUrl": "https://www.technogym.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "656fef527cf75c2fbfae109371af30d35224f358a1db6705eb66403ff414236b",
+          "adapterId": "technogym-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "MNFC"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "c0d4090562ddac70bcda52eb054c1a3c2b55377596b6a588f25687fea5be3cf0",
+      "brandId": "technogym",
+      "productLineCandidate": "technogym-selection-med",
+      "canonicalNameCandidate": "Selection Chest Press MED",
+      "modelCode": "C97000-ANVK",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "technogym_product_catalog",
+          "sourceUrl": "https://www.technogym.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "656fef527cf75c2fbfae109371af30d35224f358a1db6705eb66403ff414236b",
+          "adapterId": "technogym-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "C97000-ANVK"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "d2e5af5cb48e905a2e457b05f1d5bca5405ab8e91335458e6f5efd91225a74a8",
+      "brandId": "technogym",
+      "productLineCandidate": "technogym-selection",
+      "canonicalNameCandidate": "Selection 900 Lat Machine",
+      "modelCode": "MNLP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "technogym_product_catalog",
+          "sourceUrl": "https://www.technogym.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "656fef527cf75c2fbfae109371af30d35224f358a1db6705eb66403ff414236b",
+          "adapterId": "technogym-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "MNLP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "e5a58b78a103b22b32cfd956d5ae6e53259811e58144df5b6484acde97fee1cf",
+      "brandId": "technogym",
+      "productLineCandidate": "technogym-selection",
+      "canonicalNameCandidate": "Selection 700 Lat Machine",
+      "modelCode": "MNLC",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "technogym_product_catalog",
+          "sourceUrl": "https://www.technogym.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "656fef527cf75c2fbfae109371af30d35224f358a1db6705eb66403ff414236b",
+          "adapterId": "technogym-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "MNLC"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "7fc11016036b1271572c06aeed2f3b240333831a8cd27b77736552cb06ee2143",
+      "brandId": "technogym",
+      "productLineCandidate": "technogym-selection-med",
+      "canonicalNameCandidate": "Selection Lat Machine MED",
+      "modelCode": "C91200-ANVK",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "technogym_product_catalog",
+          "sourceUrl": "https://www.technogym.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "656fef527cf75c2fbfae109371af30d35224f358a1db6705eb66403ff414236b",
+          "adapterId": "technogym-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "C91200-ANVK"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "9fa53357ef4eacf18c6b3b53625bf7c989af9e707f09779a7693dc1bfd5fee3b",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-ultra",
+      "canonicalNameCandidate": "Ultra Leg Press",
+      "modelCode": "G7-S70",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "G7-S70"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "51f69d379205c00d6b191aa70dfd4af4a25e9708e04a514ff52194f2a42ebb66",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-ultra",
+      "canonicalNameCandidate": "Ultra Leg Press Base Trim",
+      "modelCode": "G7-S70B",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "G7-S70B"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "8bf361ea023339afc3eaa8f1c90dd53cece9a87ddf7b41df80307824c5945120",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-go",
+      "canonicalNameCandidate": "Go Leg Press",
+      "modelCode": "GO-S70",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "GO-S70"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "c3c7a0b3b0e08d76e5d050722442066ffdcfb6da3cd899bef85d66cf9c43ab61",
+      "brandId": "matrix",
+      "canonicalNameCandidate": "Leg Press MD-S70",
+      "modelCode": "MD-S70",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "MD-S70"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "f6d3ce651ec1b6d45af5ec5bf684713d0fb6774138cb37adad6582745c1e4a2d",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-versa",
+      "canonicalNameCandidate": "Versa Leg Press",
+      "modelCode": "VS-S70",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "VS-S70"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "879c845724f2b0cc06f32ced81aa158d25b7ba373db96d1bd9df55e4826ec84f",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-magnum",
+      "canonicalNameCandidate": "Magnum Plate-Loaded Leg Press",
+      "modelCode": "MG-PL70",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "MG-PL70"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "457e3a95ca15bcc4d5f0dc01cc954be0af06afee475a2db236cd875fea144628",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-aura",
+      "canonicalNameCandidate": "Aura Leg Press",
+      "modelCode": "G3-S70",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "G3-S70"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "86494107c5031646529bdfa758c045976d4fb022f47d76ba7e9b2fc780e944aa",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-aura",
+      "canonicalNameCandidate": "Aura Leg Extension",
+      "modelCode": "G3-S71",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_extension"
+      ],
+      "sourceStableKey": "G3-S71"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "c1b781bec861301271432c901b0a3eabc1ba5d87023313fb09149a17ff0d5910",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-ultra",
+      "canonicalNameCandidate": "Ultra Lat Pulldown",
+      "modelCode": "G7-S33",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "G7-S33"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "720a119103f0334c990987a8b7071b0019d604db39fa64f0eec93d0d5a68b3f7",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-aura",
+      "canonicalNameCandidate": "Aura Lat Pulldown",
+      "modelCode": "G3-S30",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "G3-S30"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "f693750bf2e2ecab1134703b53ef19e325b5248e300f87b80e314d970e4e95bc",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-go",
+      "canonicalNameCandidate": "Go Lat Pulldown",
+      "modelCode": "GO-S33",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "GO-S33"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "2b485e61196eaed370db10b1bebc8e36986c9b20192688df69e5d6b90652d205",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-magnum",
+      "canonicalNameCandidate": "Magnum Lat Pulldown 946",
+      "modelCode": "MG-946",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "MG-946"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "f4c9fccdac6b74ad27e493894c669490e5885a134c449abccf72be75db2cfb12",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-magnum",
+      "canonicalNameCandidate": "Magnum Plate-Loaded Lat Pulldown",
+      "modelCode": "MG-PL33",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "MG-PL33"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "03684e9ade0bec9de1269ca87ad9013d144750d7e404ef2717322350131d9f1d",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-magnum",
+      "canonicalNameCandidate": "Magnum Lat Pulldown 921",
+      "modelCode": "MG-921",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "MG-921"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "51570c454803336954cb912de1fa98bf223b6306e5e8c98e3998bce42bf63e98",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-aura",
+      "canonicalNameCandidate": "Aura Chest Press",
+      "modelCode": "G3-S10",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "G3-S10"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "8f575032b8953a7ddb202fcb2058b902255f40c03a2a59d2c2682feaec0d88ca",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-ultra",
+      "canonicalNameCandidate": "Ultra Chest Press",
+      "modelCode": "G7-S13",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "G7-S13"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "98de9dcf6e8aa92dfd25d2bdc9250d16e989cce1e5b03846960a4de57768e643",
+      "brandId": "matrix",
+      "productLineCandidate": "matrix-go",
+      "canonicalNameCandidate": "Go Chest Press",
+      "modelCode": "GO-S13",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "matrix_fitness_product_catalog",
+          "sourceUrl": "https://us.matrixfitness.com/",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "6ea3220a90eebe0fa268fc0c56fc52355c338c482e69eee52e04563244e7ec67",
+          "adapterId": "matrix-fitness-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "SEARCH_INDEX_SNIPPET",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "GO-S13"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "ba5ac300f0ee100072615da418e9acb236b56ba05dcb8420b2b1ad8265c760a3",
+      "brandId": "hammer-strength",
+      "productLineCandidate": "hammer-strength-hammer-strength-plate-loaded",
+      "canonicalNameCandidate": "Plate-Loaded Iso-Lateral Leg Press",
+      "modelCode": "IL-LP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "DISCONTINUED",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "life_fitness_hammer_strength_product_catalog",
+          "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "c7c8c8bb00801c259f94a99d75eaa78d0b0c24d51c99d0e1739d915a996cd448",
+          "adapterId": "life-fitness-hammer-strength-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "catalogStatusCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "IL-LP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "c11c8c0f655e525c1e8e626a219a2f84759d0be1c35c361147cb16fcd5ed1881",
+      "brandId": "hammer-strength",
+      "productLineCandidate": "hammer-strength-hammer-strength-plate-loaded",
+      "canonicalNameCandidate": "Plate Loaded Iso-Lateral Chest/Back",
+      "modelCode": "IL-CB",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "ACTIVE",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "life_fitness_hammer_strength_product_catalog",
+          "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training/plate-loaded/plate-loaded-iso-lateral-chest-back",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "c7c8c8bb00801c259f94a99d75eaa78d0b0c24d51c99d0e1739d915a996cd448",
+          "adapterId": "life-fitness-hammer-strength-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "catalogStatusCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine",
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "IL-CB"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "b07ddc104f5edca4f7b2670e883b2832a110254a4e5c4b743eaf318460a04a59",
+      "brandId": "hammer-strength",
+      "productLineCandidate": "hammer-strength-hammer-strength-select",
+      "canonicalNameCandidate": "Select Lat Pulldown",
+      "modelCode": "HS-PD",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "ACTIVE",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "life_fitness_hammer_strength_product_catalog",
+          "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "c7c8c8bb00801c259f94a99d75eaa78d0b0c24d51c99d0e1739d915a996cd448",
+          "adapterId": "life-fitness-hammer-strength-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "catalogStatusCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "HS-PD"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "b5a20a7f23019139f1a707f2a8d9dfe74edbaa2b788bacc93df633e98559a86b",
+      "brandId": "hammer-strength",
+      "productLineCandidate": "hammer-strength-hammer-strength-select",
+      "canonicalNameCandidate": "Select Chest Press",
+      "modelCode": "HS-CP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "ACTIVE",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "life_fitness_hammer_strength_product_catalog",
+          "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "c7c8c8bb00801c259f94a99d75eaa78d0b0c24d51c99d0e1739d915a996cd448",
+          "adapterId": "life-fitness-hammer-strength-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "catalogStatusCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "HS-CP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "3d1f5bf82a402c274800b7a61db4ed4030747f3edb253c5261927a09d8952094",
+      "brandId": "life-fitness",
+      "productLineCandidate": "life-fitness-life-fitness-insignia",
+      "canonicalNameCandidate": "Insignia Series Seated Leg Press",
+      "modelCode": "SS-SLP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "DISCONTINUED",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "life_fitness_hammer_strength_product_catalog",
+          "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "c7c8c8bb00801c259f94a99d75eaa78d0b0c24d51c99d0e1739d915a996cd448",
+          "adapterId": "life-fitness-hammer-strength-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "catalogStatusCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "SS-SLP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "bc6bddb84f612d03e0f55db6b84499fbaf3ad2fc0ba8262f6c8be25fb8be7d44",
+      "brandId": "life-fitness",
+      "productLineCandidate": "life-fitness-life-fitness-insignia",
+      "canonicalNameCandidate": "Insignia Series Arc Leg Press",
+      "modelCode": "SS-LP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "ACTIVE",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "life_fitness_hammer_strength_product_catalog",
+          "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "c7c8c8bb00801c259f94a99d75eaa78d0b0c24d51c99d0e1739d915a996cd448",
+          "adapterId": "life-fitness-hammer-strength-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "catalogStatusCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "SS-LP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "a37901c90a663852967164d72ceac44c16e8107df521264f83522aba12b3bea2",
+      "brandId": "life-fitness",
+      "productLineCandidate": "life-fitness-life-fitness-axiom",
+      "canonicalNameCandidate": "Axiom Series Leg Press",
+      "modelCode": "OP-LP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "ACTIVE",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "life_fitness_hammer_strength_product_catalog",
+          "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "c7c8c8bb00801c259f94a99d75eaa78d0b0c24d51c99d0e1739d915a996cd448",
+          "adapterId": "life-fitness-hammer-strength-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "catalogStatusCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "OP-LP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "abbcb2e964c9c093e4f1b6274ef2bfed07776773131af47d125e503d2249144b",
+      "brandId": "life-fitness",
+      "productLineCandidate": "life-fitness-life-fitness-axiom",
+      "canonicalNameCandidate": "Axiom Series Chest Press",
+      "modelCode": "OP-CP",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "ACTIVE",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "life_fitness_hammer_strength_product_catalog",
+          "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "c7c8c8bb00801c259f94a99d75eaa78d0b0c24d51c99d0e1739d915a996cd448",
+          "adapterId": "life-fitness-hammer-strength-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "catalogStatusCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "OP-CP"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "0db0c2f048b6956ab975c4fce85bd2608c9446b61cb495e0d76beec4c53bda29",
+      "brandId": "life-fitness",
+      "productLineCandidate": "life-fitness-life-fitness-axiom",
+      "canonicalNameCandidate": "Axiom Series Lat Pulldown",
+      "modelCode": "OP-PD",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "ACTIVE",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "life_fitness_hammer_strength_product_catalog",
+          "sourceUrl": "https://www.lifefitness.com/en-us/catalog/strength-training/selectorized/axiom-series-lat-pulldown",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "c7c8c8bb00801c259f94a99d75eaa78d0b0c24d51c99d0e1739d915a996cd448",
+          "adapterId": "life-fitness-hammer-strength-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "catalogStatusCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "OP-PD"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "dd724731983974840ef18e078a9e5d8d2a551ee21c31382b62ee5cbbac3599c2",
+      "brandId": "nautilus",
+      "productLineCandidate": "nautilus-leverage",
+      "canonicalNameCandidate": "Leverage Chest Press",
+      "modelCode": "9NP-L2002",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "9NP-L2002"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "21e2696204ec87d098b7fa3ff04cf6fe3cf76cb16b70b0212dca5583acea125f",
+      "brandId": "nautilus",
+      "productLineCandidate": "nautilus-leverage",
+      "canonicalNameCandidate": "Leverage Incline Press",
+      "modelCode": "9NP-L2003",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "9NP-L2003"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "23add0cc034191b74ba2f00b9eda0a5f630be9468392910334614d2837779f2e",
+      "brandId": "nautilus",
+      "productLineCandidate": "nautilus-leverage",
+      "canonicalNameCandidate": "Leverage Decline Press",
+      "modelCode": "9NP-L2004",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "chest_press_machine"
+      ],
+      "sourceStableKey": "9NP-L2004"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "045eeff8b4f3511e4ac58663a97b9017ef43548e202d8be6754a91a6008d0ccd",
+      "brandId": "nautilus",
+      "productLineCandidate": "nautilus-leverage",
+      "canonicalNameCandidate": "Leverage Lat Pull Down",
+      "modelCode": "9NP-L3003",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "lat_pulldown"
+      ],
+      "sourceStableKey": "9NP-L3003"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "704bc3923c1a41b8c50874adc183ecfce2170f4cd3ac48e4c6133265862196dc",
+      "brandId": "nautilus",
+      "productLineCandidate": "nautilus-leverage",
+      "canonicalNameCandidate": "Leverage High Row",
+      "modelCode": "9NP-L3005",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "seated_row_machine"
+      ],
+      "sourceStableKey": "9NP-L3005"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "90fd2a82aa61fd6adb6533febbb2e27e2a818be6c690dcf06b4a80db155be9d0",
+      "brandId": "nautilus",
+      "productLineCandidate": "nautilus-leverage",
+      "canonicalNameCandidate": "Leverage Low Row",
+      "modelCode": "9NP-L3004",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "seated_row_machine"
+      ],
+      "sourceStableKey": "9NP-L3004"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "3319b0ec09fa9e2efaf5e753291cc18d95bd0228b9e7d8a9e855440db5318448",
+      "brandId": "nautilus",
+      "productLineCandidate": "nautilus-leverage",
+      "canonicalNameCandidate": "Leverage Shoulder Press",
+      "modelCode": "9NP-L4002",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "shoulder_press_machine"
+      ],
+      "sourceStableKey": "9NP-L4002"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "5d4d60613973d9c00cc489afc4869adafc054ca3182c20f31b95f412f6359332",
+      "brandId": "nautilus",
+      "productLineCandidate": "nautilus-leverage",
+      "canonicalNameCandidate": "Leverage Biceps Curl",
+      "modelCode": "9NP-L5002",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "bicep_curl_machine"
+      ],
+      "sourceStableKey": "9NP-L5002"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "200d61cd067464c86edd3459e33c8ab5cbec73681bea767df1352966675d1b91",
+      "brandId": "nautilus",
+      "productLineCandidate": "nautilus-leverage",
+      "canonicalNameCandidate": "Leverage Abdominal Crunch",
+      "modelCode": "9NP-L5003",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "ab_crunch_machine"
+      ],
+      "sourceStableKey": "9NP-L5003"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "df67fbabd6678fe4d355071e38e55a1ad174f0c46c04e87ab92f4455d8b8fbc9",
+      "brandId": "nautilus",
+      "productLineCandidate": "nautilus-leverage",
+      "canonicalNameCandidate": "Leverage Deadlift Shrug",
+      "modelCode": "9NP-L3006",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate"
+          ]
+        }
+      ],
+      "typeHints": [],
+      "sourceStableKey": "9NP-L3006"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "b1a7a29258aed8e53698b535198724138ca563dcfba4b3fbfe297bc4bb172ca5",
+      "brandId": "nautilus",
+      "canonicalNameCandidate": "Angled Leg Press",
+      "modelCode": "NP-L1141",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_press"
+      ],
+      "sourceStableKey": "NP-L1141"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "9d64a7572c4eea54c613ac5c8b025e2c07781d6dbf83a2a607b30c4dd08f881b",
+      "brandId": "nautilus",
+      "canonicalNameCandidate": "Standing Calf",
+      "modelCode": "9NP-L1112",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "calf_raise_machine"
+      ],
+      "sourceStableKey": "9NP-L1112"
+    },
+    {
+      "schemaVersion": 1,
+      "candidateId": "652924493e21ce21f6c73e023baf1ff10f1b2d82fdce7ecfd89e3660b1bf5a85",
+      "brandId": "nautilus",
+      "productLineCandidate": "nautilus-instinct",
+      "canonicalNameCandidate": "Instinct Leg Extension",
+      "modelCode": "9NL-S1010",
+      "skuAliases": [],
+      "aliases": [],
+      "catalogStatusCandidate": "UNKNOWN",
+      "sourceConfidence": "OFFICIAL",
+      "provenance": [
+        {
+          "sourceId": "core_health_fitness_nautilus_product_catalog",
+          "sourceUrl": "https://www.corehandf.com/collections/nautilus",
+          "retrievedAt": "2026-08-22T00:00:00Z",
+          "fixtureSha256": "46247e3435c6a592a6388af5bc2d75dedae1f63c5d085daa543e9573247555ec",
+          "adapterId": "nautilus-adapter",
+          "adapterVersion": "1.0.0",
+          "retrievalMethod": "DIRECT_FETCH",
+          "fields": [
+            "canonicalNameCandidate",
+            "modelCode",
+            "brandId",
+            "productLineCandidate",
+            "typeHints"
+          ]
+        }
+      ],
+      "typeHints": [
+        "leg_extension"
+      ],
+      "sourceStableKey": "9NL-S1010"
+    }
+  ]
+}
