@@ -24651,3 +24651,26 @@ this entry.
 
 Next: P1.G3 (Precor/Panatta adapters), same operator GO and program-mode reporting (no interim
 report to the operator until the whole P1.G1-G6 + P1_AGGREGATE chunk closes).
+
+## 2026-08-22 -- GPT-PM forward requirement for P1.G5: SEARCH_INDEX_SNIPPET alone cannot select a canonical model
+
+GPT-PM accepted P1.G2 as CLOSED/PASS (commit 645190e) without reopening it, but flagged that 26 of
+the 48 candidates (Technogym 9, Matrix 17) currently have only SEARCH_INDEX_SNIPPET provenance --
+honestly labeled, sourceUrl still points at the real official domain, no candidate published or
+mislabeled as DIRECT_FETCH, so G2 itself is not at fault. The binding forward requirement for P1.G5
+(canonical 50-model pilot selection), verbatim from GPT-PM: a model may not be selected into the
+canonical 50 on SEARCH_INDEX_SNIPPET evidence alone -- every selected model needs at least one
+DIRECT_FETCH manufacturer page, an official PDF/spec sheet, an official API/data feed, or another
+directly-retrievable first-party document. Search-snippet evidence may remain
+discovery/staging-only. `sourceConfidence: "OFFICIAL"` stays as-is (it characterizes the source
+class, not the retrieval method) -- no P1.G1 enum change needed for this.
+
+GPT-PM's own guidance for P1.G3 (Precor/Panatta): prioritize direct first-party evidence (Precor has
+an official spec-table PDF already registered in source_registry.json; Panatta has official product
+pages) over maximizing candidate count -- 15-20 well-corroborated records beat 40 where half is
+snippet-only. Before P1.G5 starts, build a dedicated canonical-selection-eligibility check that
+automatically excludes snippet-only candidates from the selected 50 until direct corroboration
+exists -- tracked as a forward requirement for that gate, not something P1.G2/G3 need to implement.
+
+Status confirmed by GPT-PM: P1.G1 CLOSED, P1.G2 CLOSED, P1.G3 NEXT/AUTHORIZED, P1.G4-G6 NOT STARTED.
+Proceeding directly to P1.G3 under the same operator GO and program-mode reporting.
