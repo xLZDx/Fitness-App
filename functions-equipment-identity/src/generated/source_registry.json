@@ -168,6 +168,29 @@
       }
     },
     {
+      "sourceId": "matrix_johnsonfit_pdf_corroboration",
+      "providerName": "Matrix Fitness (Johnson Health Tech content CDN)",
+      "sourceClass": "OFFICIAL_MANUFACTURER",
+      "priority": "P1",
+      "canonicalUrl": "https://content.johnsonfit.com/",
+      "retrievedAt": "2026-08-22T18:41:00Z",
+      "termsUrl": null,
+      "rights": {
+        "legalReviewState": "UNREVIEWED",
+        "commercialAllowed": false,
+        "displayAllowed": false,
+        "recognitionProcessingAllowed": false,
+        "trainingAllowed": false,
+        "derivativeAllowed": false,
+        "redistributionAllowed": false,
+        "attributionRequired": false,
+        "shareAlike": false,
+        "noAiRestriction": true,
+        "termsCaptured": false,
+        "decisionBasis": "Pre-P1.G5 direct-corroboration pass (2026-08-22): GPT-PM's own review of this pass flagged that the new content.johnsonfit.com corroboration source was never registered, so nothing mechanically enforced it as first-party -- a real, valid gap (the module's own runtime enforcement lived in prose, not a registry check). Matrix Fitness's status as a Johnson Health Tech brand is independently confirmed via Johnson Health Tech's own 'Our Brands' page and Matrix Fitness's own corporate LinkedIn presence ('A brand of Johnson Health Tech'), not assumed. content.johnsonfit.com is Johnson Health Tech's real, live, first-party document CDN -- 2 real PDFs were downloaded and pypdf-parsed from it for this pass (a 187-page G7 Strength Service Manual and a G3-S70 sell sheet), both genuinely Matrix-branded. Provenance only, no terms reviewed."
+      }
+    },
+    {
       "sourceId": "life_fitness_hammer_strength_product_catalog",
       "providerName": "Life Fitness / Hammer Strength",
       "sourceClass": "OFFICIAL_MANUFACTURER",

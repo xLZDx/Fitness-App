@@ -1,0 +1,52 @@
+{
+  "sourceId": "matrix_johnsonfit_pdf_corroboration",
+  "providerName": "Matrix Fitness (Johnson Health Tech content CDN)",
+  "note": "Independent, additional DIRECT_FETCH corroboration for candidates whose original P1.G2 adapter provenance was SEARCH_INDEX_SNIPPET-only (us.matrixfitness.com's product pages return HTTP 200 but an empty client-side-JS-rendered shell -- documented in core/equipment_identity/p0/source_registry.json's matrix_fitness_product_catalog entry). content.johnsonfit.com is Matrix Fitness's own first-party document CDN (Matrix Fitness is a brand of Johnson Health Tech Co.) -- both PDFs below were genuinely downloaded (not summarized by a tool) and their real, printed spec-table text extracted with pypdf, the same tool and method P1.G3 used for Precor's spec-table PDF. This fixture does NOT modify or replace the original adapter-generated candidate provenance in core/equipment_identity/p1/candidates/p0_brand_candidates.json -- it is a separate, additive corroboration record layered on top, matched by brandId+modelCode.",
+  "retrievalMethod": "DIRECT_FETCH",
+  "corroborations": [
+    {
+      "brandId": "matrix",
+      "modelCode": "G7-S70",
+      "sourceUrl": "https://content.johnsonfit.com/inc/uploaded_media/a66e00f9d5eeb88649293cebf1c7bcfc/service_guide/e4897c25ca2f2460d1e93ae0a79b0a6c.pdf",
+      "documentTitle": "G7 Strength Service Manual",
+      "documentSha256": "7cc826fbc486e1a90021407de6ba2529df2fa9de2f38977462fe811548246a3b",
+      "documentBytes": 48735275,
+      "retrievedAt": "2026-08-22T18:41:00Z",
+      "locator": "PDF page 21 of 187 (printed page 17), section 4.13 \"G7-S70 LEG PRESS\", chapter 4 \"PRODUCT SPECIFICATION & WARRANTY INFO\"",
+      "extractedSpecSnippet": "4.13 G7-S70 leG PreSS\nteChnICAl SPeCIfICAtIonS\nOverall Dimensions 75\"L x 43\"W x 52\"H\nWeight 882 lbs\nShipping Weight 946 lbs"
+    },
+    {
+      "brandId": "matrix",
+      "modelCode": "G7-S13",
+      "sourceUrl": "https://content.johnsonfit.com/inc/uploaded_media/a66e00f9d5eeb88649293cebf1c7bcfc/service_guide/e4897c25ca2f2460d1e93ae0a79b0a6c.pdf",
+      "documentTitle": "G7 Strength Service Manual",
+      "documentSha256": "7cc826fbc486e1a90021407de6ba2529df2fa9de2f38977462fe811548246a3b",
+      "documentBytes": 48735275,
+      "retrievedAt": "2026-08-22T18:41:00Z",
+      "locator": "PDF page 10 of 187 (printed page 6), section 4.2 \"G7-S13 CHEST PRESS\", chapter 4",
+      "extractedSpecSnippet": "teChnICAl SPeCIfICAtIonS\nOverall Dimensions 63\"L x 57\"W x 52\"H\nWeight 827 lbs\nShipping Weight 870 lbs\n4.2 G7-S13 CheSt PreSS"
+    },
+    {
+      "brandId": "matrix",
+      "modelCode": "G7-S33",
+      "sourceUrl": "https://content.johnsonfit.com/inc/uploaded_media/a66e00f9d5eeb88649293cebf1c7bcfc/service_guide/e4897c25ca2f2460d1e93ae0a79b0a6c.pdf",
+      "documentTitle": "G7 Strength Service Manual",
+      "documentSha256": "7cc826fbc486e1a90021407de6ba2529df2fa9de2f38977462fe811548246a3b",
+      "documentBytes": 48735275,
+      "retrievedAt": "2026-08-22T18:41:00Z",
+      "locator": "PDF page 13 of 187 (printed page 9), section 4.5 \"G7-S33 LAT PULL DOWN\", chapter 4",
+      "extractedSpecSnippet": "4.5 G7-S33 lAt PUll DoWn\nteChnICAl SPeCIfICAtIonS\nOverall Dimensions 61\"L x 47\"W x 77\"H\nWeight 858 lbs\nShipping Weight 914 lbs"
+    },
+    {
+      "brandId": "matrix",
+      "modelCode": "G3-S70",
+      "sourceUrl": "https://content.johnsonfit.com/inc/uploaded_media/5ec3aedd19719178fa24245b7d963881/sell_sheet/8535508be8b66b6e73a72e74f13ce9e1.pdf",
+      "documentTitle": "G3-S70 Leg Press Sell Sheet, Rev 2.0",
+      "documentSha256": "b0cefedaa3be4fdcaa484d880b163dc59a4e6ecda6ee9843c4c37fd1df904594",
+      "documentBytes": 339451,
+      "retrievedAt": "2026-08-22T18:44:00Z",
+      "locator": "PDF page 1 of 1, \"TECH SPECS\" table",
+      "extractedSpecSnippet": "TECH SPECS\nDimensions 79”L x 42”W x 72”H\nNet Weight 920 lbs\nWeight Stack 385 lbs\n...\nShipping Weight 1040 lbs\nG3-S70 Leg Press"
+    }
+  ]
+}

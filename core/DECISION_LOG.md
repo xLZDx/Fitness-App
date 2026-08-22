@@ -24835,3 +24835,158 @@ fixed, 2 MINOR fixed, 1 MINOR explicitly deferred.**
 Next: the GPT-PM-required direct-corroboration pass for Technogym/Matrix/Panatta (each needs >=4
 DIRECT_FETCH-class models, total pool needs >=50 -- see the entry above), before P1.G5 (catalogue
 reconciliation) may start. Same operator GO and program-mode reporting.
+
+## 2026-08-22 -- GPT-PM: pre-G5 corroboration pass spec (not a new gate) + eligibility artifact contract
+
+GPT-PM accepted P1.G4 as CLOSED/PASS (commit 8e76da7) without reopening it, explicitly praising the
+`license: null` fail-closed provenance handling as the right approach for an optional enrichment
+source. Confirmed status: P1.G1-G4 CLOSED, P1.G5 NOT YET STARTED (precondition pending), P1.G6 NOT
+STARTED.
+
+GPT-PM frames the next step as "pre-G5 evidence remediation/corroboration pass under the already-
+issued GO" -- explicitly NOT a new gate. Mechanical exit condition, unchanged from the earlier
+precondition (see the two prior entries above): direct-first-party eligible pool >=50 AND each of
+Technogym/Matrix/Panatta independently >=4 direct-corroborated models. At today's pool (36 direct)
+this needs >=14 additional direct-first-party corroborations, at least 4 per brand. Only directly-
+retrievable first-party artifacts count (manufacturer product/support page, official PDF/catalog/
+spec sheet, manufacturer API/feed, or another directly-retrieved first-party document) --
+SEARCH_INDEX_SNIPPET evidence may stay as supplementary provenance but can never be retroactively
+reclassified as DIRECT_FETCH or counted toward the threshold on its own.
+
+GPT-PM specifies a new generated artifact to produce as part of this pass:
+`core/equipment_identity/p1/candidates/canonical_selection_eligibility.json`, one entry per
+candidate: `candidateId`, `brandId`, `modelCode`, `canonicalSelectionEligible` (bool),
+`directCorroboration` (`sourceId`/`sourceUrl`/`retrievalMethod`/`evidenceType`/optional
+`sourceContentSha256`/optional `locator`), `rejectionReasons[]`. Required test coverage: a
+snippet-only candidate must resolve `canonicalSelectionEligible=false`; a candidate with real direct
+corroboration may resolve `true` (contingent on the remaining G5-level conditions); a scenario with
+all 50 selected resolves `true`; per-brand direct counts (Technogym/Matrix/Panatta each >=4) and the
+overall eligible total (>=50) are directly tested. Explicit scope boundary: this pass must NOT assign
+`primaryTypeId`/`modelId` or resolve conflicts -- those stay P1.G5 reconciliation's own job.
+
+GPT-PM's fallback, restated and unchanged: if the pool or any brand's floor cannot be met after a
+genuine search for official sources, the correct state is P1.G5 BLOCKED_ON_SOURCE_EVIDENCE -- never
+a lowered provenance threshold just to reach the number 50. If the precondition is met, G5 may start
+immediately without a further operator check-in (program mode already covers this).
+
+Proceeding directly to the corroboration pass under the same operator GO and program-mode reporting.
+
+## 2026-08-22 -- Pre-P1.G5 corroboration pass CLOSED: P1.G5 BLOCKED_ON_SOURCE_EVIDENCE
+
+Full evidence: `core/equipment_identity/p1/PRE_G5_DIRECT_CORROBORATION_PASS.md`.
+
+Not a gate (GPT-PM's own framing) -- no `pm_set_gate` call. Genuine, repeated direct-fetch attempts
+made against Technogym, Matrix, and Panatta's real official domains/subdomains/PDF paths (not a
+re-classification of existing SEARCH_INDEX_SNIPPET evidence).
+
+**Matrix: floor MET (4/4).** `content.johnsonfit.com` (Matrix Fitness is a Johnson Health Tech
+brand) is a genuinely reachable first-party document CDN, unlike `us.matrixfitness.com`'s
+JS-shell-only product pages. Downloaded and `pypdf`-parsed 2 real PDFs (a 187-page G7 Strength
+Service Manual, 48.7MB, sha256 recorded; a G3-S70 sell sheet, 339KB, sha256 recorded) -- real
+printed spec tables for G7-S70, G7-S13, G7-S33, G3-S70, all 4 matching existing P1.G2 candidates
+exactly.
+
+**Technogym: floor NOT MET (0/4).** `www.technogym.com` returns a blanket CloudFront 403 across
+every path tried (site root, en-US/en-INT product pages including the real MNAP-coded page, 2
+separate PDF download paths). `corporate.technogym.com` is reachable but carries no product specs.
+Third-party dealer mirrors of Technogym-authored PDFs exist but were deliberately not counted --
+GPT-PM's contract requires first-party retrieval, not a re-hosted copy.
+
+**Panatta: floor NOT MET (0/4).** `panattasport.com` blanket 403 (matches P1.G3, reconfirmed).
+`panattafitness.com` (tried by analogy with Matrix's johnsonfit.com finding) dead-ends at a 404.
+
+**Total direct pool: 40 (was 36), still short of the 50 floor.**
+
+Built `scripts/equipment_identity/canonical_selection_eligibility.py` (GPT-PM's requested artifact
+contract) computing, per real candidate in the 74-candidate pool, a fail-closed two-factor
+`canonicalSelectionEligible`: real DIRECT_FETCH evidence AND pool-wide floors both met. Assigns no
+`primaryTypeId`/`modelId`, resolves no conflict (verified structurally + tested) -- both stay
+P1.G5's own job per GPT-PM's explicit scope boundary. Today's real, computed output:
+`p1G5Status: BLOCKED_ON_SOURCE_EVIDENCE` -- even Matrix's 4 newly-corroborated candidates are
+`canonicalSelectionEligible: false`, since the pool-wide floors (Technogym/Panatta still 0/4) gate
+every candidate, not just the ones lacking evidence.
+
+**Review (2 independent parallel specialists -- silent-failure-hunter, python-reviewer): 1 MAJOR
+fixed, 4 MINOR fixed.**
+
+- MAJOR fixed: every real-data test ran against today's state where the pool gate is always closed
+  -- a regression collapsing the two-factor AND to just the pool-gate factor would have passed the
+  whole suite silently, surfacing only the day the pool genuinely clears 50 (at which point every
+  candidate, evidenced or not, would incorrectly flip eligible in one commit). Fixed: a new test
+  forces the pool gate open via monkeypatch and proves both factors are independently load-bearing
+  through the real artifact-building pipeline.
+- 2 MINOR fixed: an unmatched PDF-corroboration fixture entry (typo'd modelCode, or a candidate
+  removed upstream) previously failed silently with just a quietly lower brand count -- now raises
+  loudly, naming the orphaned entry. A `modelCode: null` fixture entry (which would collide with any
+  real candidate lacking a modelCode) is now rejected at load time.
+- 2 MINOR fixed: the original-provenance picker had no duplicate-DIRECT_FETCH guard (asymmetric
+  with the PDF-fixture loader's own check) -- now raises rather than silently picking the first of
+  two. A harmless static-typing key-type mismatch was also corrected.
+- Both reviewers independently confirmed clean: no swallowed exceptions; the atomic-write pattern
+  correctly reuses the exact fix applied to wger_ingestion.py earlier this session, neither of that
+  module's 2 MAJOR bugs reintroduced; all 4 real sha256 values verified well-formed by exact-length
+  regex, not eyeballed.
+
+**Tests**: `scripts/equipment_identity/` 163/163 (was 141 before this pass; 22 new).
+
+Per GPT-PM's own explicit fallback: a floor genuinely unmet after real effort means
+P1.G5 BLOCKED_ON_SOURCE_EVIDENCE -- never a lowered threshold or a padded count to reach 50.
+Outcome to be reported to GPT-PM directly. P1.G5 (catalogue reconciliation) does not start until
+Technogym and Panatta each independently reach real, first-party direct corroboration for >=4
+models and the total pool reaches >=50 -- no further attempt made in this pass once both domains'
+official infrastructure was confirmed blanket-blocked after multiple genuine, distinct real attempts
+each.
+
+## 2026-08-22 -- GPT-PM devil's-advocate review round 1 on the corroboration pass: 3 MAJOR real, 1 confabulated, 1 a tool-scope artifact
+
+Operator instruction earlier this session: GPT-PM should take a devil's-advocate stance on every
+request/response, not just the manual escalation-ladder case. `review.js`'s commit/push prompt was
+extended accordingly (see `D:\Repo\pm-bridge\core\DECISION_LOG.md`, same day). This was the first
+round to exercise it, on the pre-P1.G5 corroboration pass -- and it delivered a real, substantive
+review, not a rubber stamp: 1 BLOCKER, 5 MAJOR, 1 MINOR.
+
+**BLOCKER (real, still open):** the diff sent (485,783 chars) exceeded `review.js`'s truncation
+limit -- GPT-PM correctly refused to certify a change it couldn't fully see. Satisfies the commit
+gate (attempt made) per the gate's own "attempt, not success" policy; does NOT satisfy `--final` for
+push. A commit-scoped follow-up round (`--scope commit`, far smaller than the full uncommitted diff)
+is required before push.
+
+**3 MAJOR, real, fixed:**
+- First-party status was only asserted in prose -- `content.johnsonfit.com` was never registered in
+  `source_registry.json`, so nothing mechanically enforced it the way every P1.G2/G3 adapter source
+  already is. Fixed: registered `matrix_johnsonfit_pdf_corroboration` as OFFICIAL_MANUFACTURER (Matrix
+  Fitness's status as a Johnson Health Tech brand independently re-confirmed via JHT's own "Our
+  Brands" page and Matrix Fitness's corporate LinkedIn), and added a registry cross-check
+  (`_assert_registered_official_manufacturer_source`, via `rights.load_registry()`) that runs every
+  time the corroboration fixture loads.
+- The precondition counts distinct corroborated MODELS, not candidate rows -- no dedup guard
+  existed. Fixed: raises loudly on any duplicate `(brandId, modelCode)` rather than silently
+  double-counting (today's real pool: 74 candidates, 74 distinct pairs, verified).
+- `sourceId` was set equal to `sourceUrl` in the corroboration record -- never actually a stable
+  identifier. Fixed to use the fixture's own real, stable top-level `sourceId`.
+
+**1 MAJOR, confabulated -- verified false, not fixed:** GPT-PM claimed the fixture stores `sourceUrl`
+as Markdown link syntax. Direct grep of the real committed file and the real generated artifact: both
+contain clean, unwrapped URL strings throughout, no brackets anywhere. Likely ChatGPT's own reply UI
+auto-linkifying the URL when echoing it back, misread as file content. Recorded per this project's
+"verify a citation before accepting it" discipline, not silently dropped.
+
+**1 MAJOR, real observation, not a commit defect:** GPT-PM flagged unrelated stale `reports/*.html`
+files (including a `.local-untracked-backup.html`) in the reviewed diff. True of what `review.js`
+sent -- its `buildDiff()` sweeps in every untracked file in the whole repo, not just staged ones.
+Those reports are untracked leftovers from other/earlier sessions; confirmed via `git status
+--porcelain` + `git diff --cached --stat` immediately before committing that the staged set was
+exactly the 6 intended files. A real limitation of the review tool's diff scope, not a defect in the
+actual commit -- logged in `D:\Repo\pm-bridge\core\DECISION_LOG.md` as a forward note for that repo.
+
+**1 MINOR, real, fixed (doc language):** the evidence doc implied all 4 sha256 values were
+independently re-verified; actually 3 of 4 share one document's hash (2 unique PDFs downloaded), and
+the hashes are the ones computed at download time, not re-hashed from a second fetch. Doc reworded to
+say this precisely.
+
+**Tests**: `scripts/equipment_identity/` 168/168 (was 163; 5 new tests covering the registry
+enforcement, sourceId stability, and duplicate-model-key rejection this round's real findings
+required).
+
+Push withheld pending a clean, commit-scoped GPT-PM round (the BLOCKER above) -- committing now
+satisfies the commit gate; push waits for `--final`.
