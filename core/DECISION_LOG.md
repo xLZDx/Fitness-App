@@ -25068,3 +25068,87 @@ a process error on this session's part (passing `--final` on the command line, a
 than after judging the reply resolved). NOT treated as a real close despite the file marking. Push
 remains withheld pending a genuine round-4 confirmation via manual relay (no further automated
 `review.js` calls this session, per the operator instruction above).
+
+## 2026-08-26 -- whole-project master plan consolidated; OBS-1 observability gate added and agent-reviewed
+
+Operator asked for every decision/design/plan across the project's whole history (not just the
+GUI/HUD redesign, corrected twice from an initially too-narrow scope) consolidated into one document
+and shown as text, then asked to save it as a master plan, add observability as its own priority
+gate, and run it through agents.
+
+Five parallel research agents read primary sources directly (`DECISION_LOG.md`, `core/plans/`,
+`core/*.md`, the HUD design-handoff package) rather than trusting prior self-reports, covering:
+foundation era (07-28..08-07), GUI/HUD design lineage (Figma-Make superseded by the shipped HUD-glass
+system), onboarding/safety/catalog remediation (08-08..08-16), the ML equipment-recognition platform
+(P0-P6, distinct from the unbuilt recognize.ts/evidence_fusion.ts engine the SPTR audit found at 0%),
+and release/business/governance. Synthesized into `core/MASTER_PLAN_2026-08-26.md`.
+
+Added a new priority gate, **OBS-1 (Observability & Alerting)**, motivated by a real recurring
+pattern in this project's own history: production Auth disabled for weeks undetected, a Stripe
+API-version drift that would have silently reset every subscriber to free, the Cloud Functions Jest
+suite never having actually run in this worktree, and App Check's enforcement picture still unknown
+even after the 08-25 independent audit -- every one of these was caught by a one-off manual audit,
+never by any monitoring mechanism.
+
+Routed to three independent specialist agents (architect, security-reviewer, flutter-reviewer;
+cross-domain per this workspace's R2/R3 routing rule) for a cold, independent read against current
+HEAD, not against the document's own citations. All three returned truncated on their first pass
+(one sentence of narration, no findings) and had to be explicitly resumed via `SendMessage` to
+produce their actual reports -- worth remembering as a real failure mode of this session's
+background-agent tooling, not just a one-off.
+
+Findings adjudicated and applied in full:
+- Two of the three §4 safety-blocker claims (no pregnancy path; B5d bypassing SafetyContext) were
+  found **already fixed** at current HEAD (F014 `ProfessionalGuidanceNeed`, F015's `SafetyContext`
+  hoist), both with real bilingual regression tests -- the master plan's first draft had carried them
+  forward from the 08-16 audit as still-open without re-checking code. The third (injury filter fails
+  open by design, 360/1,887 untagged) was confirmed still current, exact number match.
+- `targetSdk` 35 vs. Play's API-36 deadline (2026-08-31, 5 days out at document date) was
+  re-prioritized above OBS-1 -- the only item in the table with a hard external submission
+  deadline. (Round 2 below corrected the original "non-negotiable" framing: Play Console offers
+  an extension to 2026-11-01, availability for this account unchecked.)
+- OBS-1 grew from 7 to 13 items: added a safety-invariant regression guard (the item that actually
+  delivers OBS-1's stated "protects the safety paths" rationale, which none of the original 7 did),
+  client-runtime/ML telemetry (no `firebase_performance`-equivalent exists), a Gemini/Firebase-AI-Logic
+  client-direct-call abuse/cost monitor (no Cloud Functions intermediary, no rate limiter -- a real
+  gap security review found, not in the first draft), a `kCanonicalMachines` <-> `equipment.json`
+  parity check (closes the drift *mechanism*, not just the one 08-03 instance), mobile/Dart SCA
+  scanning (backend already has `npm audit` in CI, mobile side doesn't), and composed-screen golden
+  coverage (existing `hud_golden_test.dart` explicitly excludes composed screens). Rescoped the
+  RU/EN-parity item down to semantic-drift-only once flutter-reviewer found structural parity is
+  already CI-enforced (`exercise_translations_test.dart`, `catalog_description_coverage_test.dart`,
+  `catalog_corrections_test.dart`). Split the 13 items into `[CI]` (merge-blocking) vs. `[RUNTIME]`
+  (production monitor, needs an alert owner) tracks per architect review, rather than one atomic GO.
+- Corrected a materially wrong count: `GlassCard` legacy-widget usage is 142 occurrences across 46
+  files (~138 real call sites), not "~40" as first stated -- the HUD-migration debt is larger than
+  originally reported.
+
+OBS-1 remains **design only** -- no code written, needs its own GO per item. The `[CI]` items
+(functions test-health, RU/EN semantic-drift check, mobile SCA scanning, the safety-invariant guard,
+`kCanonicalMachines` parity, secret scanning, composed-screen goldens) can each proceed independently
+-- only the `[RUNTIME]` items (auth canary, enforcement dashboard, billing monitor, lifecycle sweep,
+Gemini abuse monitor, client telemetry) are additionally gated on deciding who owns alerting/on-call
+(currently no evidence any such structure exists for this pre-launch app). The RU/EN item is the one
+`[CI]` exception -- it separately needs a baseline/grandfather-list against 1,368 unreviewed rows
+before it can run without being permanently red.
+
+House HTML report published: `reports/MASTER_PLAN_2026-08-26.ru.html` /
+`reports/MASTER_PLAN_2026-08-26.html`, provenance-conformed, RU published as artifact.
+
+**Same-day addendum, GPT-PM external review rounds 1-2:** the commit carrying this document went
+through this workspace's mandatory GPT-PM pre-commit review (§15). Round 1: 4 MAJOR + 2 MINOR, all
+verified against the real repo and applied -- most consequential: OBS-1's untagged-catalog-row
+exclusion item was unilaterally pre-empting the still-open external clinical authority decision
+(`D1`/`H3` in `CURRENT_STATE.md`, not engineering-closeable) and was rescoped to an engineering-only
+`SafetyContext`-presence invariant; §9 was renamed to a non-exhaustive selection with an explicit
+`D1`/`H3` row added, since it had silently omitted several live `CURRENT_STATE.md` rows and reused
+the identifier `H3` for an unrelated bug-batch item; P0's status was corrected from "closed, 6/6" to
+G1-G6 closed / G0 externally blocked. Round 2: 3 MAJOR + 2 MINOR -- confirmed round 1's fixes landed
+correctly, then found the `targetSdk`/Play-API-36 deadline was overstated as non-negotiable (an
+extension to 2026-11-01 is available via Play Console -- independently verified via `WebSearch`
+against Google's own help page, not taken on GPT-PM's citation alone), this decision-log entry's own
+wording still contradicted the corrected `[CI]`/`[RUNTIME]` split (fixed by this addendum), the
+review payload swept in unrelated untracked report files from other sessions (confirmed harmless --
+the actual `git add` scope was always exact, not `-A`), and two internal-consistency slips in the
+master plan's own §11a (a 3+2 vs. 4+2 miscount, a prerequisites-list self-contradiction). Full
+per-finding detail in `core/MASTER_PLAN_2026-08-26.md` §11a/§11b. Not yet `--final`; round 3 pending.

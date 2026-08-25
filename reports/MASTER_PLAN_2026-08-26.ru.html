@@ -1,0 +1,325 @@
+<title>Мастер-план Fitness_App</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #17212b;
+    --ink-soft: #46586b;
+    --ink-faint: #7a8b9c;
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --surface-sunken: #eef2f4;
+    --line: #dce3e7;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --amber: #a86a06;
+    --amber-soft: #fbf0dc;
+    --red: #a83a34;
+    --red-soft: #fbeae8;
+    --green: #1c7a52;
+    --green-soft: #e3f3ea;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Sora", "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(23,33,43,0.06), 0 8px 24px -12px rgba(23,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+      --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+      --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+      --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+      --green: #4fce9a; --green-soft: #103326;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+    --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+    --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+    --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+    --green: #4fce9a; --green-soft: #103326;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 56px 28px 96px; }
+  header { padding-bottom: 8px; }
+  .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 14px; }
+  h1 { font-family: var(--display); font-size: clamp(28px, 4.4vw, 40px); font-weight: 600; line-height: 1.16; margin: 0 0 14px; text-wrap: balance; letter-spacing: -0.005em; }
+  .lede { font-size: 17px; color: var(--ink-soft); max-width: 70ch; margin: 0 0 28px; }
+  .verdict-band { display: flex; align-items: center; gap: 16px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--radius); padding: 20px 24px; margin: 8px 0 44px; }
+  .verdict-band .mark { width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 18px; }
+  .verdict-band .text b { font-family: var(--display); font-size: 17px; display: block; }
+  .verdict-band .text span { color: var(--ink-soft); font-size: 14.5px; }
+  h2 { font-family: var(--display); font-size: 22px; font-weight: 600; margin: 56px 0 6px; letter-spacing: -0.005em; }
+  h2 .num { font-family: var(--mono); color: var(--accent); font-weight: 600; margin-right: 10px; font-size: 16px; }
+  .section-note { color: var(--ink-soft); font-size: 15px; margin: 0 0 22px; max-width: 74ch; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 24px 0 40px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .stat .n { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  .era-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 20px 0 36px; }
+  .era { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+  .era .when { font-family: var(--mono); font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 600; }
+  .era h3 { font-family: var(--display); font-size: 16px; margin: 0 0 8px; font-weight: 600; }
+  .era p { font-size: 14px; color: var(--ink-soft); margin: 0; }
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); }
+  table.items { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 13.5px; }
+  table.items th, table.items td { padding: 11px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.items th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); background: var(--surface-sunken); font-weight: 600; white-space: nowrap; }
+  table.items tr:last-child td { border-bottom: none; }
+  table.items td.n { font-family: var(--mono); font-weight: 600; color: var(--ink-faint); }
+  table.items code { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+  .pill.blocker { background: var(--red-soft); color: var(--red); }
+  .pill.blocker::before { background: var(--red); }
+  .pill.high { background: var(--amber-soft); color: var(--amber); }
+  .pill.high::before { background: var(--amber); }
+  .pill.medium { background: var(--surface-sunken); color: var(--ink-soft); }
+  .pill.medium::before { background: var(--ink-faint); }
+  .pill.low { background: var(--surface-sunken); color: var(--ink-faint); }
+  .pill.low::before { background: var(--ink-faint); }
+  .pill.closed { background: var(--green-soft); color: var(--green); }
+  .pill.closed::before { background: var(--green); }
+  .obs-box { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--radius); padding: 22px 24px; margin: 20px 0 36px; }
+  .obs-box h3 { font-family: var(--display); font-size: 17px; margin: 0 0 10px; }
+  .obs-box p { font-size: 14.5px; color: var(--ink-soft); margin: 0 0 14px; }
+  .track-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  .track { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+  .track .tag { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; display: block; }
+  .track ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-soft); }
+  .track li { margin-bottom: 6px; }
+  .reviewer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 20px 0 36px; }
+  .reviewer { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+  .reviewer .role { font-family: var(--mono); font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 600; }
+  .reviewer p { font-size: 14px; color: var(--ink-soft); margin: 6px 0; }
+  .reviewer .verdict { color: var(--ink); font-weight: 600; }
+  ul.plain { padding-left: 20px; margin: 12px 0; }
+  ul.plain li { margin-bottom: 10px; font-size: 15px; color: var(--ink-soft); }
+  ul.plain li b { color: var(--ink); }
+  ul.plain li code { font-family: var(--mono); font-size: 13.5px; }
+  .closing { margin-top: 56px; padding: 24px 26px; background: var(--surface-sunken); border-radius: var(--radius); font-size: 15px; color: var(--ink-soft); }
+  .closing b { color: var(--ink); }
+  a { color: var(--accent); }
+  @media (max-width: 700px) { .track-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness_App &middot; Мастер-план проекта</div>
+    <h1>Мастер-план: все решения, дизайны и планы проекта, сведённые воедино</h1>
+    <p class="lede">Шесть параллельных линий работы (28.07&ndash;25.08.2026), сведённые в один документ пятью параллельными исследовательскими проходами по первоисточникам &mdash; не по самоотчётам в decision log. Отдельным приоритетным гейтом добавлена обзервабилити (OBS&#8209;1). Документ прошёл независимое ревью тремя специализированными агентами и скорректирован по их находкам.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ c3ae71c</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+
+
+  <div class="verdict-band">
+    <div class="mark">&#10003;</div>
+    <div class="text">
+      <b>МАСТЕР-ПЛАН СОБРАН И ПРОВЕРЕН АГЕНТАМИ</b>
+      <span>Полный текст: <code>D:\Repo\Fitness_App\core\MASTER_PLAN_2026-08-26.md</code>. Ревью 26.08.2026: architect, security-reviewer, flutter-reviewer &mdash; независимо, против текущего HEAD.</span>
+    </div>
+  </div>
+
+  <h2><span class="num">01</span>Коротко</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="n">6</div><div class="l">эпох работы, 28.07&ndash;25.08</div></div>
+    <div class="stat"><div class="n">70+</div><div class="l">первичных файлов-источников</div></div>
+    <div class="stat"><div class="n">20</div><div class="l">пунктов в сводной таблице приоритетов</div></div>
+    <div class="stat"><div class="n">2</div><div class="l">блокера закрыты ревью как уже исправленные</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">жёсткий внешний дедлайн (Play API&nbsp;36, 31.08)</div></div>
+    <div class="stat"><div class="n">13</div><div class="l">пунктов в новом гейте OBS&#8209;1</div></div>
+  </div>
+
+  <h2><span class="num">02</span>Шесть эпох проекта</h2>
+  <div class="era-grid">
+    <div class="era"><div class="when">28.07 &ndash; 07.08</div><h3>Фундамент</h3><p>Инструментарий, дефекты устройств, виртуальный тренер V0&ndash;V5, персонализация, реестр оборудования, лицензии каталога, миграция WorkoutSession. Находка: Firebase Auth не была включена в проде &mdash; ни одни данные не доходили до Firestore.</p></div>
+    <div class="era"><div class="when">05.08 &ndash; 21.08</div><h3>GUI-дизайн: Figma &rarr; HUD-стекло</h3><p>Прототип Figma-Make (R1&ndash;R11) заменён системой &laquo;парящего HUD-стекла&raquo; (M1&ndash;M9) &mdash; она и попала в прод, но закрыта без верификации на устройстве, со старой стеклянной системой всё ещё живой в 46 файлах.</p></div>
+    <div class="era"><div class="when">08.08 &ndash; 16.08</div><h3>Онбординг, безопасность, каталог</h3><p>Крупнейший блок работы. Аудит 11.08 (BLOCK) закрыт в тот же день. Сага контентного долга каталога: 1&nbsp;484/1&nbsp;887 упражнений без поля purpose. Независимый аудит 16.08 нашёл 3 блокера безопасности &mdash; 2 из них с тех пор исправлены (см. ревью).</p></div>
+    <div class="era"><div class="when">с 07.07, открыто</div><h3>ML-платформа распознавания</h3><p>Гейты P0&ndash;P6, отдельно от движка recognize.ts/evidence_fusion.ts, найденного в аудите SPTR нереализованным на 0%. P0/P1 закрыты, P2/P4/P6 не начаты &mdash; решение обосновано измерениями 07.08.</p></div>
+    <div class="era"><div class="when">весь период</div><h3>Релиз, бизнес, governance</h3><p>Приложение никогда не публиковалось в сторе. Живое противоречие nonprofit/подписка в строках. Утёкший ключ Roboflow, статус переиздания не подтверждён. Статус App Check неизвестен даже после аудита 25.08.</p></div>
+    <div class="era"><div class="when">25.08</div><h3>Независимый аудит SPTR</h3><p>4 раунда согласования (внутренние + GPT&#8209;PM). Консенсус по качеству аудита достигнут; продуктовый релиз-статус отдельно &mdash; NOT_RELEASE_READY по клинической авторитетности.</p></div>
+  </div>
+
+  <h2><span class="num">03</span>OBS&#8209;1 &mdash; обзервабилити как приоритетный гейт</h2>
+  <div class="obs-box">
+    <h3>Почему это отдельный гейт, а не строчка в списке</h3>
+    <p>Каждый серьёзный дефект в истории проекта был найден разовым ручным аудитом &mdash; недели или месяцы спустя, ни разу не системой мониторинга: Auth не включена в проде неделями; версия Stripe API разошлась с вебхуками (чуть не сбросила всех подписчиков на free); Jest-сьют функций ни разу не запускался; статус App Check неизвестен до сих пор; дедлайн Play API&nbsp;36 найден вручную за 15 дней до истечения.</p>
+    <p>После ревью гейт вырос с 7 до 13 пунктов, разделённых по зоне поражения:</p>
+    <div class="track-grid">
+      <div class="track">
+        <span class="tag">[CI] &middot; блокирует мёрдж, дешёвый откат</span>
+        <ul>
+          <li>Проверка, что тесты functions/ реально запускались</li>
+          <li>Проверка семантического дрейфа RU/EN (структурный паритет уже есть)</li>
+          <li>SCA-сканирование зависимостей Dart/Flutter (у backend уже есть)</li>
+          <li>Инвариант: путь без SafetyContext невозможен (без политики по нетегированным строкам &mdash; это решение D1/H3, не инженерное)</li>
+          <li>Парность kCanonicalMachines &harr; equipment.json</li>
+          <li>Сканирование секретов &mdash; расширено на git-историю</li>
+          <li>Golden-тесты составных экранов (расширение существующего CI-харнесса)</li>
+        </ul>
+      </div>
+      <div class="track">
+        <span class="tag">[RUNTIME] &middot; продакшн-монитор, нужен получатель алертов</span>
+        <ul>
+          <li>Канарейка auth + запись/чтение Firestore</li>
+          <li>Дашборд статуса App Check / Firestore rules / Identity Toolkit</li>
+          <li>Монитор целостности биллинга (Stripe)</li>
+          <li>Мониторинг прямых вызовов Gemini с клиента (нет rate-limit)</li>
+          <li>Проверка полноты sweep удаления/экспорта данных</li>
+          <li>Телеметрия камеры/ML/frame-timing</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <p class="section-note"><b style="color:var(--ink)">Приоритет:</b> High, параллельно клинической авторитетности (D1/H3) &mdash; но НЕ выше жёсткого дедлайна Play API&nbsp;36 (5 дней на момент документа). Предпосылки, блокирующие RUNTIME-часть: кто получает алерты, модель аттестации канарейки, базовая линия RU/EN.</p>
+
+  <h2><span class="num">04</span>Сводная таблица приоритетов (после ревью)</h2>
+  <p class="section-note">Полная таблица с колонкой зависимостей &mdash; в исходном документе, §9. Здесь &mdash; top-8 по приоритету.</p>
+  <div class="table-scroll">
+  <table class="items">
+    <thead><tr><th>#</th><th>Пункт</th><th>Приоритет</th><th>Статус</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td>targetSdk 35 vs Play API&nbsp;36 (дедлайн 31.08, продление до 01.11 возможно через Play Console &mdash; не проверено)</td><td><span class="pill blocker">Блокер подачи в стор</span></td><td>Открыт (G7)</td></tr>
+      <tr><td class="n">2</td><td>Фильтр травм &laquo;отказывает открыто&raquo; (360/1887 без тегов)</td><td><span class="pill blocker">Релиз-блокер</span></td><td>Открыт, покрытие 80.9%</td></tr>
+      <tr><td class="n">3</td><td>Путь для беременности</td><td><span class="pill closed">Закрыт ревью</span></td><td>ИСПРАВЛЕНО (F014)</td></tr>
+      <tr><td class="n">4</td><td>B5d обходит SafetyContext</td><td><span class="pill closed">Закрыт ревью</span></td><td>ИСПРАВЛЕНО (F015)</td></tr>
+      <tr><td class="n">5</td><td>OBS&#8209;1 &mdash; обзервабилити (13 пунктов)</td><td><span class="pill high">High, параллельно</span></td><td>Спроектирован, нужен GO</td></tr>
+      <tr><td class="n">9</td><td>Text-anchor распознавание не в live-режиме</td><td><span class="pill high">Medium-High</span></td><td>Открыт с 07.08</td></tr>
+      <tr><td class="n">16</td><td>Gemini-вызовы с клиента без rate-limit</td><td><span class="pill high">Medium-High</span></td><td>Открыт, найдено ревью</td></tr>
+      <tr><td class="n">13</td><td>Утёкший ключ Roboflow</td><td><span class="pill medium">Medium</span></td><td>Переиздание не подтверждено</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2><span class="num">05</span>Независимое ревью тремя агентами</h2>
+  <p class="section-note">Раунд 1 независим &mdash; ни один агент не видел выводы другого. Все находки адъюдицированы и применены в документе; полный протокол &mdash; §11 исходного файла.</p>
+  <div class="reviewer-grid">
+    <div class="reviewer">
+      <div class="role">Architect</div>
+      <p class="verdict">Вердикт: требуются изменения</p>
+      <p>Дедлайн targetSdk ранжирован ниже OBS&#8209;1 &mdash; исправлено. OBS&#8209;1 не защищал безопасные пути, которые сам же заявлял приоритетом &mdash; добавлен инвариант-гард. Нулевая клиентская телеметрия для camera+ML продукта. CI-гейты и runtime-мониторы смешаны в одном GO &mdash; разделено по зоне поражения. Счётчик GlassCard занижен в ~3.5 раза.</p>
+    </div>
+    <div class="reviewer">
+      <div class="role">Security-reviewer</div>
+      <p class="verdict">Вердикт: 2 из 3 претензий по безопасности устарели</p>
+      <p>Путь для беременности и обход B5d &mdash; оба уже исправлены (F014/F015) с регрессионными тестами, в первой версии документа ошибочно значились открытыми. Фильтр травм подтверждён открытым, число 360 точное. Найден реальный незакрытый риск: прямые вызовы Gemini с клиента без rate-limit &mdash; не отражён в первой версии OBS&#8209;1.</p>
+    </div>
+    <div class="reviewer">
+      <div class="role">Flutter-reviewer</div>
+      <p class="verdict">Вердикт: без блокеров, одна фактическая поправка</p>
+      <p>Crashlytics уже подключён &mdash; формулировка &laquo;мониторинга не существует&raquo; была неточной. RU/EN-паритет уже частично автоматизирован и покрыт CI &mdash; пункт OBS&#8209;1 переформулирован под семантический дрейф. Golden-тесты HUD существуют, но явно исключают составные экраны &mdash; добавлен отдельный пункт.</p>
+    </div>
+  </div>
+
+  <h2><span class="num">06</span>Внешнее ревью GPT&#8209;PM (2 раунда)</h2>
+  <p class="section-note"><b style="color:var(--ink)">Раунд 1:</b> 4 MAJOR + 2 MINOR при холодном чтении &mdash; все проверены против реального репозитория (<code>git ls-files</code>, <code>grep</code> по <code>CURRENT_STATE.md</code>) и применены. Главное: пункт OBS&#8209;1 про исключение нетегированных строк подменял собой ещё не принятое решение внешней клинической авторитетности (<code>D1</code>/<code>H3</code> в <code>CURRENT_STATE.md</code>) &mdash; сужен до инженерного инварианта; таблица §9 переименована в &laquo;неполный список&raquo; с явной строкой для <code>D1</code>/<code>H3</code>; статус P0 скорректирован (G1&ndash;G6 закрыты, G0 заблокирован внешне).</p>
+  <p class="section-note"><b style="color:var(--ink)">Раунд 2:</b> подтвердил, что раунд 1 применён верно, и нашёл ещё 3 MAJOR + 2 MINOR. Главное: формулировка дедлайна targetSdk как &laquo;непереносимого&raquo; была завышена &mdash; независимая проверка через веб-поиск против справки Google Play подтвердила, что продление до 01.11.2026 доступно через Play Console (доступность для конкретного аккаунта не проверялась); формулировка исправлена. Раунд ещё не <code>--final</code>.</p>
+
+  <div class="closing">
+    <b>Что дальше:</b> документ сохранён в проект (<code>core/MASTER_PLAN_2026-08-26.md</code>). OBS&#8209;1 спроектирован, но не реализован &mdash; [CI]-пункты можно начинать независимо, [RUNTIME]-пункты ждут решения по получателю алертов и владению on-call. Коммит проходит обязательное ревью GPT&#8209;PM (раунды без ограничения количества, до консенсуса) перед пушем.
+  </div>
+</div>
+
+
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

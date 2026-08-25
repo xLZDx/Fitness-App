@@ -1,0 +1,325 @@
+<title>Fitness_App Master Plan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #17212b;
+    --ink-soft: #46586b;
+    --ink-faint: #7a8b9c;
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --surface-sunken: #eef2f4;
+    --line: #dce3e7;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --amber: #a86a06;
+    --amber-soft: #fbf0dc;
+    --red: #a83a34;
+    --red-soft: #fbeae8;
+    --green: #1c7a52;
+    --green-soft: #e3f3ea;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Sora", "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(23,33,43,0.06), 0 8px 24px -12px rgba(23,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+      --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+      --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+      --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+      --green: #4fce9a; --green-soft: #103326;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+    --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+    --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+    --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+    --green: #4fce9a; --green-soft: #103326;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 56px 28px 96px; }
+  header { padding-bottom: 8px; }
+  .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 14px; }
+  h1 { font-family: var(--display); font-size: clamp(28px, 4.4vw, 40px); font-weight: 600; line-height: 1.16; margin: 0 0 14px; text-wrap: balance; letter-spacing: -0.005em; }
+  .lede { font-size: 17px; color: var(--ink-soft); max-width: 70ch; margin: 0 0 28px; }
+  .verdict-band { display: flex; align-items: center; gap: 16px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--radius); padding: 20px 24px; margin: 8px 0 44px; }
+  .verdict-band .mark { width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 18px; }
+  .verdict-band .text b { font-family: var(--display); font-size: 17px; display: block; }
+  .verdict-band .text span { color: var(--ink-soft); font-size: 14.5px; }
+  h2 { font-family: var(--display); font-size: 22px; font-weight: 600; margin: 56px 0 6px; letter-spacing: -0.005em; }
+  h2 .num { font-family: var(--mono); color: var(--accent); font-weight: 600; margin-right: 10px; font-size: 16px; }
+  .section-note { color: var(--ink-soft); font-size: 15px; margin: 0 0 22px; max-width: 74ch; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 24px 0 40px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .stat .n { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  .era-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 20px 0 36px; }
+  .era { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+  .era .when { font-family: var(--mono); font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 600; }
+  .era h3 { font-family: var(--display); font-size: 16px; margin: 0 0 8px; font-weight: 600; }
+  .era p { font-size: 14px; color: var(--ink-soft); margin: 0; }
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); }
+  table.items { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 13.5px; }
+  table.items th, table.items td { padding: 11px 12px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.items th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); background: var(--surface-sunken); font-weight: 600; white-space: nowrap; }
+  table.items tr:last-child td { border-bottom: none; }
+  table.items td.n { font-family: var(--mono); font-weight: 600; color: var(--ink-faint); }
+  table.items code { font-family: var(--mono); font-size: 12px; color: var(--ink-soft); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+  .pill.blocker { background: var(--red-soft); color: var(--red); }
+  .pill.blocker::before { background: var(--red); }
+  .pill.high { background: var(--amber-soft); color: var(--amber); }
+  .pill.high::before { background: var(--amber); }
+  .pill.medium { background: var(--surface-sunken); color: var(--ink-soft); }
+  .pill.medium::before { background: var(--ink-faint); }
+  .pill.low { background: var(--surface-sunken); color: var(--ink-faint); }
+  .pill.low::before { background: var(--ink-faint); }
+  .pill.closed { background: var(--green-soft); color: var(--green); }
+  .pill.closed::before { background: var(--green); }
+  .obs-box { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--radius); padding: 22px 24px; margin: 20px 0 36px; }
+  .obs-box h3 { font-family: var(--display); font-size: 17px; margin: 0 0 10px; }
+  .obs-box p { font-size: 14.5px; color: var(--ink-soft); margin: 0 0 14px; }
+  .track-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+  .track { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+  .track .tag { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; display: block; }
+  .track ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-soft); }
+  .track li { margin-bottom: 6px; }
+  .reviewer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 20px 0 36px; }
+  .reviewer { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+  .reviewer .role { font-family: var(--mono); font-size: 12px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 600; }
+  .reviewer p { font-size: 14px; color: var(--ink-soft); margin: 6px 0; }
+  .reviewer .verdict { color: var(--ink); font-weight: 600; }
+  ul.plain { padding-left: 20px; margin: 12px 0; }
+  ul.plain li { margin-bottom: 10px; font-size: 15px; color: var(--ink-soft); }
+  ul.plain li b { color: var(--ink); }
+  ul.plain li code { font-family: var(--mono); font-size: 13.5px; }
+  .closing { margin-top: 56px; padding: 24px 26px; background: var(--surface-sunken); border-radius: var(--radius); font-size: 15px; color: var(--ink-soft); }
+  .closing b { color: var(--ink); }
+  a { color: var(--accent); }
+  @media (max-width: 700px) { .track-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness_App &middot; Project Master Plan</div>
+    <h1>Master Plan: every decision, design, and plan in the project, consolidated</h1>
+    <p class="lede">Six parallel lines of work (2026-07-28 through 2026-08-25), consolidated into one document via five parallel research passes against primary sources &mdash; not decision-log self-reports. A new priority gate, Observability (OBS&#8209;1), was added on explicit instruction. The document was independently reviewed by three specialist agents and corrected against their findings.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ c3ae71c</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+
+
+  <div class="verdict-band">
+    <div class="mark">&#10003;</div>
+    <div class="text">
+      <b>MASTER PLAN COMPILED &amp; AGENT-REVIEWED</b>
+      <span>Full text: <code>D:\Repo\Fitness_App\core\MASTER_PLAN_2026-08-26.md</code>. Review 2026-08-26: architect, security-reviewer, flutter-reviewer &mdash; independent, against current HEAD.</span>
+    </div>
+  </div>
+
+  <h2><span class="num">01</span>At a glance</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="n">6</div><div class="l">eras of work, 07-28 &ndash; 08-25</div></div>
+    <div class="stat"><div class="n">70+</div><div class="l">primary source files</div></div>
+    <div class="stat"><div class="n">20</div><div class="l">rows in the consolidated priority table</div></div>
+    <div class="stat"><div class="n">2</div><div class="l">blockers closed by review as already fixed</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">hard external deadline (Play API&nbsp;36, 08-31)</div></div>
+    <div class="stat"><div class="n">13</div><div class="l">items in the new OBS&#8209;1 gate</div></div>
+  </div>
+
+  <h2><span class="num">02</span>Six project eras</h2>
+  <div class="era-grid">
+    <div class="era"><div class="when">07-28 &ndash; 08-07</div><h3>Foundation</h3><p>Tooling, device-defect fixes, virtual trainer V0&ndash;V5, personalization, equipment registry, catalog licensing, WorkoutSession migration. Found: production Firebase Auth had never been enabled &mdash; no data ever reached Firestore.</p></div>
+    <div class="era"><div class="when">08-05 &ndash; 08-21</div><h3>GUI design: Figma &rarr; HUD glass</h3><p>Figma-Make prototype (R1&ndash;R11) superseded by the &quot;floating HUD glass&quot; system (M1&ndash;M9) &mdash; the one that shipped, but closed without device verification, with the legacy glass system still live in 46 files.</p></div>
+    <div class="era"><div class="when">08-08 &ndash; 08-16</div><h3>Onboarding, safety, catalog</h3><p>Largest body of work. 08-11 audit (BLOCK) remediated same day. Catalog content-debt saga: 1,484/1,887 exercises missing a purpose field. Independent audit 08-16 found 3 safety blockers &mdash; 2 have since been fixed (see review).</p></div>
+    <div class="era"><div class="when">since 07-07, open</div><h3>ML recognition platform</h3><p>Gates P0&ndash;P6, distinct from the recognize.ts/evidence_fusion.ts engine found 0%-implemented by the SPTR audit. P0/P1 closed, P2/P4/P6 not started &mdash; the decision is grounded in 08-07 measurements.</p></div>
+    <div class="era"><div class="when">throughout</div><h3>Release, business, governance</h3><p>App has never been published to any store. Live nonprofit/subscription contradiction in shipped strings. Leaked Roboflow key, reissue unconfirmed. App Check status still unknown even after the 08-25 audit.</p></div>
+    <div class="era"><div class="when">08-25</div><h3>Independent SPTR audit</h3><p>4 consensus rounds (internal + GPT&#8209;PM). Review-process consensus reached; product release status separately NOT_RELEASE_READY on clinical authority.</p></div>
+  </div>
+
+  <h2><span class="num">03</span>OBS&#8209;1 &mdash; Observability as a priority gate</h2>
+  <div class="obs-box">
+    <h3>Why this is its own gate, not a line item</h3>
+    <p>Every serious defect in this project's history was caught by a one-off manual audit &mdash; weeks or months later, never by a monitoring system: Auth disabled in production for weeks; Stripe API version drifted from its webhooks (would have reset every subscriber to free); the Functions Jest suite never actually ran; App Check enforcement status is still unknown; the Play API&nbsp;36 deadline was found manually 15 days before it hit.</p>
+    <p>After review the gate grew from 7 to 13 items, split by blast radius:</p>
+    <div class="track-grid">
+      <div class="track">
+        <span class="tag">[CI] &middot; merge-blocking, cheap rollback</span>
+        <ul>
+          <li>Verify functions/ tests actually ran</li>
+          <li>RU/EN semantic-drift check (structural parity already exists)</li>
+          <li>Dart/Flutter dependency (SCA) scanning (backend already has it)</li>
+          <li>Invariant: no path without SafetyContext (untagged-row policy stays out of scope &mdash; that's a D1/H3 decision, not engineering)</li>
+          <li>kCanonicalMachines &harr; equipment.json parity</li>
+          <li>Secret scanning &mdash; extended to git history</li>
+          <li>Composed-screen golden tests (extends the existing CI harness)</li>
+        </ul>
+      </div>
+      <div class="track">
+        <span class="tag">[RUNTIME] &middot; production monitor, needs an alert owner</span>
+        <ul>
+          <li>Auth + Firestore write/read canary</li>
+          <li>App Check / Firestore rules / Identity Toolkit enforcement dashboard</li>
+          <li>Billing integrity monitor (Stripe)</li>
+          <li>Client-direct Gemini call monitoring (no rate limit today)</li>
+          <li>Data deletion/export sweep-coverage check</li>
+          <li>Camera/ML/frame-timing telemetry</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <p class="section-note"><b style="color:var(--ink)">Priority:</b> High, parallel to the clinical-authority path (D1/H3) &mdash; but NOT above the hard Play API&nbsp;36 deadline (5 days out at document date). Prerequisites gating the RUNTIME half: who owns alerts, the canary's attestation model, the RU/EN baseline.</p>
+
+  <h2><span class="num">04</span>Consolidated priority table (post-review)</h2>
+  <p class="section-note">Full table with a dependency column lives in the source document, §9. Top 8 by priority shown here.</p>
+  <div class="table-scroll">
+  <table class="items">
+    <thead><tr><th>#</th><th>Item</th><th>Priority</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="n">1</td><td>targetSdk 35 vs Play API&nbsp;36 (deadline 08-31, extension to 11-01 may be available via Play Console &mdash; unchecked)</td><td><span class="pill blocker">Store-submission blocker</span></td><td>Open (G7)</td></tr>
+      <tr><td class="n">2</td><td>Injury filter fails open (360/1887 untagged)</td><td><span class="pill blocker">Release-blocking</span></td><td>Open, 80.9% coverage</td></tr>
+      <tr><td class="n">3</td><td>Pregnancy path</td><td><span class="pill closed">Closed by review</span></td><td>FIXED (F014)</td></tr>
+      <tr><td class="n">4</td><td>B5d bypasses SafetyContext</td><td><span class="pill closed">Closed by review</span></td><td>FIXED (F015)</td></tr>
+      <tr><td class="n">5</td><td>OBS&#8209;1 &mdash; observability (13 items)</td><td><span class="pill high">High, parallel</span></td><td>Designed, needs GO</td></tr>
+      <tr><td class="n">9</td><td>Text-anchor recognition not wired into live</td><td><span class="pill high">Medium-High</span></td><td>Open since 08-07</td></tr>
+      <tr><td class="n">16</td><td>Client-direct Gemini calls, no rate limit</td><td><span class="pill high">Medium-High</span></td><td>Open, found by review</td></tr>
+      <tr><td class="n">13</td><td>Leaked Roboflow key</td><td><span class="pill medium">Medium</span></td><td>Reissue unconfirmed</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2><span class="num">05</span>Independent three-agent review</h2>
+  <p class="section-note">Round 1 was independent &mdash; no agent saw another's findings. All findings adjudicated and applied; full record in §11 of the source file.</p>
+  <div class="reviewer-grid">
+    <div class="reviewer">
+      <div class="role">Architect</div>
+      <p class="verdict">Verdict: changes required</p>
+      <p>targetSdk deadline ranked below OBS&#8209;1 &mdash; fixed. OBS&#8209;1 didn't actually protect the safety paths it claimed to prioritize &mdash; added an invariant guard. Zero client telemetry for a camera+ML product. CI gates and runtime monitors bundled under one GO &mdash; split by blast radius. GlassCard count understated by ~3.5x.</p>
+    </div>
+    <div class="reviewer">
+      <div class="role">Security-reviewer</div>
+      <p class="verdict">Verdict: 2 of 3 safety claims stale</p>
+      <p>Pregnancy path and the B5d bypass are both already fixed (F014/F015) with regression tests &mdash; the first draft wrongly listed them open. The injury filter is confirmed still open, 360 is exact. Found a real open gap: client-direct Gemini calls with no rate limit, missing from OBS&#8209;1's first draft.</p>
+    </div>
+    <div class="reviewer">
+      <div class="role">Flutter-reviewer</div>
+      <p class="verdict">Verdict: no blockers, one factual correction</p>
+      <p>Crashlytics is already wired &mdash; "no monitoring exists" was inaccurate. RU/EN parity is already partly automated and CI-enforced &mdash; the OBS&#8209;1 item was rescoped to semantic drift. HUD golden tests exist but explicitly exclude composed screens &mdash; added as its own item.</p>
+    </div>
+  </div>
+
+  <h2><span class="num">06</span>External review &mdash; GPT&#8209;PM (2 rounds)</h2>
+  <p class="section-note"><b style="color:var(--ink)">Round 1:</b> 4 MAJOR + 2 MINOR on a cold read &mdash; all independently verified against the real repo (<code>git ls-files</code>, <code>grep</code> against <code>CURRENT_STATE.md</code>) and applied. Headline: OBS&#8209;1's untagged-row-exclusion item pre-empted a still-open external clinical-authority decision (<code>D1</code>/<code>H3</code> in <code>CURRENT_STATE.md</code>) &mdash; rescoped to an engineering-only invariant; §9 renamed to a non-exhaustive list with an explicit <code>D1</code>/<code>H3</code> row added; P0's status corrected (G1&ndash;G6 closed, G0 blocked externally).</p>
+  <p class="section-note"><b style="color:var(--ink)">Round 2:</b> confirmed round 1 landed correctly, then found 3 more MAJOR + 2 MINOR. Headline: the <code>targetSdk</code> deadline was overstated as non-negotiable &mdash; independently verified via web search against Google Play's own help page that an extension to 2026-11-01 is available via Play Console (availability for this specific account unchecked); wording corrected. Not yet <code>--final</code>.</p>
+
+  <div class="closing">
+    <b>Next:</b> the document is saved into the project (<code>core/MASTER_PLAN_2026-08-26.md</code>). OBS&#8209;1 is designed, not built &mdash; <code>[CI]</code> items can start independently, <code>[RUNTIME]</code> items wait on the alert-ownership/on-call decision. The commit is going through the mandatory GPT&#8209;PM review (rounds uncapped, until consensus) before push.
+  </div>
+</div>
+
+
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
