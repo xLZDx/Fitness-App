@@ -25173,3 +25173,23 @@ own §11 still quoted the architect's original "non-negotiable" wording for `tar
 forward pointer to the round-2 correction (fixed with an inline note). Full detail in
 `core/MASTER_PLAN_2026-08-26.md` §11c. **Not yet `--final`; a short governance/finality pass
 remains, then push still needs a separate operator push-GO regardless of GPT-PM's state.**
+
+**Round 5, closing:** run as the requested short governance pass. Its own receipt reported
+`correlated: false` -- a known PM Bridge transport risk (unconfirmed reply attribution), so its
+2 MAJOR findings were verified directly against the repo rather than trusted on the reply's word,
+per this workspace's round policy. (1) HTML/Markdown parity concern: `grep` across all three
+committed files confirmed the highest-stakes corrected fact (`targetSdk` wording) matches
+identically in `core/MASTER_PLAN_2026-08-26.md`, `reports/MASTER_PLAN_2026-08-26.html`, and
+`reports/MASTER_PLAN_2026-08-26.ru.html` -- no stale language survives in either report. (2) Claimed
+violation of a "no further automated review.js calls" instruction: **verified false** -- that
+instruction (this file, ~line 25038, dated 2026-08-22) is explicitly scoped "for the rest of this
+session," a prior, now-ended session, not a durable restriction on this one.
+
+**Closing this thread without a round 6.** Rounds 1-4 (all `correlated: true`) surfaced and closed
+14 real findings, none rejected as wrong. Round 5's findings were closed by direct manual evidence
+instead of chasing further rounds against a transport with a documented, open cross-session
+contamination gap. No round produced `--final` -- `review.js` auto-downgrades `--final` on any
+MAJOR-or-above verdict, and every round surfaced at least one. This has no bearing on the commit
+already made (`cdfd7cc`) -- only on push, which remains withheld pending a separate, explicit
+operator push-GO, per this workspace's standing contract, independent of GPT-PM's state. Full
+detail in `core/MASTER_PLAN_2026-08-26.md` §11d.
