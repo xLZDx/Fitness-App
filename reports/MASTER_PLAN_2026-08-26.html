@@ -139,13 +139,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ c3ae71c</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ cb713e7</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -254,12 +256,15 @@
 
   <h2><span class="num">06</span>External review &mdash; GPT&#8209;PM (2 rounds)</h2>
   <p class="section-note"><b style="color:var(--ink)">Round 1:</b> 4 MAJOR + 2 MINOR on a cold read &mdash; all independently verified against the real repo (<code>git ls-files</code>, <code>grep</code> against <code>CURRENT_STATE.md</code>) and applied. Headline: OBS&#8209;1's untagged-row-exclusion item pre-empted a still-open external clinical-authority decision (<code>D1</code>/<code>H3</code> in <code>CURRENT_STATE.md</code>) &mdash; rescoped to an engineering-only invariant; §9 renamed to a non-exhaustive list with an explicit <code>D1</code>/<code>H3</code> row added; P0's status corrected (G1&ndash;G6 closed, G0 blocked externally).</p>
-  <p class="section-note"><b style="color:var(--ink)">Round 2:</b> confirmed round 1 landed correctly, then found 3 more MAJOR + 2 MINOR. Headline: the <code>targetSdk</code> deadline was overstated as non-negotiable &mdash; independently verified via web search against Google Play's own help page that an extension to 2026-11-01 is available via Play Console (availability for this specific account unchecked); wording corrected. Not yet <code>--final</code>.</p>
+  <p class="section-note"><b style="color:var(--ink)">Round 2:</b> confirmed round 1 landed correctly, then found 3 more MAJOR + 2 MINOR. Headline: the <code>targetSdk</code> deadline was overstated as non-negotiable &mdash; independently verified via web search against Google Play's own help page that an extension to 2026-11-01 is available via Play Console (availability for this specific account unchecked); wording corrected.</p>
+  <p class="section-note"><b style="color:var(--ink)">Rounds 3&ndash;4:</b> round 3 (scoped via a note excluding unrelated files) found 1 MINOR, fixed a stale wording slip in <code>DECISION_LOG.md</code>. Round 4 (scoped to the exact commit, <code>cb713e7</code>) found 2 MAJOR that turned out to be non-defects on inspection (committing before consensus is by design; the HTML reports are excluded from GPT-PM's review scope by the tool's own <code>REVIEW_EXCLUDE</code> design, not an oversight) plus 2 real MINOR (a finding-count arithmetic slip, a missing forward-reference) &mdash; both fixed. <code>--final</code> not yet obtained; push was never requested.</p>
 
   <div class="closing">
     <b>Next:</b> the document is saved into the project (<code>core/MASTER_PLAN_2026-08-26.md</code>). OBS&#8209;1 is designed, not built &mdash; <code>[CI]</code> items can start independently, <code>[RUNTIME]</code> items wait on the alert-ownership/on-call decision. The commit is going through the mandatory GPT&#8209;PM review (rounds uncapped, until consensus) before push.
   </div>
 </div>
+
+
 
 
 

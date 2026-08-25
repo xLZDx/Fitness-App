@@ -25151,4 +25151,25 @@ wording still contradicted the corrected `[CI]`/`[RUNTIME]` split (fixed by this
 review payload swept in unrelated untracked report files from other sessions (confirmed harmless --
 the actual `git add` scope was always exact, not `-A`), and two internal-consistency slips in the
 master plan's own §11a (a 3+2 vs. 4+2 miscount, a prerequisites-list self-contradiction). Full
-per-finding detail in `core/MASTER_PLAN_2026-08-26.md` §11a/§11b. Not yet `--final`; round 3 pending.
+per-finding detail in `core/MASTER_PLAN_2026-08-26.md` §11a/§11b.
+
+**Round 3** (scoped via `--scope-note` to exclude unrelated untracked files): 1 MINOR -- this
+addendum's own first draft still called the `targetSdk` deadline "hard, non-negotiable" in its main
+body while correcting that same claim two paragraphs later. Fixed by rewording the bullet above
+before committing (no "recreate the exact sequencing error" left for a future reader to find).
+
+**Round 4** (scoped to the actual commit, `git show cb713e7`, as an intended final check): VERDICT
+MAJOR, `--final` not honored. Two MAJOR findings, both resolved as non-defects on inspection rather
+than requiring a content fix: (a) the commit was made while this addendum still said "round 3
+pending" -- re-reading this workspace's own §15 policy confirms commit-on-attempt/push-on-consensus
+is the actual by-design contract, not a violation, so the commit was correct to proceed and was not
+amended; (b) GPT-PM's `git show`-scoped read never saw the two `reports/*.html` files -- verified
+directly in `review.js` source that `REVIEW_EXCLUDE = [":(exclude)reports"]` deliberately excludes
+the whole `reports/` directory from every review, by design (to not burn the diff budget on
+bilingual narrative) -- confirmed via `git show cb713e7 --stat` that the commit genuinely contains
+all 4 files regardless. Two MINOR, both real and fixed: this addendum's own "3 rounds, 7 findings
+total" undercounted (actual: 6 + 5 + 1 = 12 across rounds 1-3, corrected here), and the master plan's
+own §11 still quoted the architect's original "non-negotiable" wording for `targetSdk` without a
+forward pointer to the round-2 correction (fixed with an inline note). Full detail in
+`core/MASTER_PLAN_2026-08-26.md` §11c. **Not yet `--final`; a short governance/finality pass
+remains, then push still needs a separate operator push-GO regardless of GPT-PM's state.**
