@@ -26691,3 +26691,84 @@ silently proceeding or silently ignoring the suggestion. Proceeding with the liv
 API-36-verified emulator as G2's primary verification environment per the approved plan; the S23
 remains a welcome additional real-device confirmation if the operator connects it later, but is
 not currently available and does not block this gate.
+
+**Operator pushed back twice** ("я вроде сказал запустить на с8 и с23", then a bare "?" prompting
+a status update) after the S8-hardware-ceiling explanation above. Did not silently re-assert the
+same conclusion or silently comply -- re-stated the live evidence (S8 = `SM-G950F`, Android 9/SDK
+28, confirmed via `adb shell getprop` moments earlier, Samsung's official ceiling for this
+model), asked directly whether the S23 was physically present and could have wireless debugging
+enabled, and kept the release build running in the background regardless since the same artifact
+serves either device.
+
+**S23 connected and verified, operator's suggestion vindicated for this device**: `adb devices -l`
+now shows `R5CW142SASR` (`SM-S918B`). Live-checked: `ro.build.version.release`=`16`,
+`ro.build.version.sdk`=`36`, `ro.product.cpu.abi`=`arm64-v8a`. This is a genuine, real
+Android-16 device -- stronger evidence than the emulator per the plan's own DoD priority (live
+API-36 environment, ABI-matched artifact). Revising G2's verification priority: S23 (real
+hardware, arm64-v8a) as primary, `Pixel_API_36` emulator (x86_64) as secondary/backup coverage.
+The canonical release script's default `--split-per-abi` output includes an `arm64-v8a` split,
+which is exactly the ABI S23 needs -- no `-Fat` build required for this device.
+
+**Step 3 complete: canonical release APK built and verified.** `scripts/dev/build_release.ps1`
+(default split-per-abi, from clean HEAD `0ccd484`): `GIT_SHA=0ccd484`, `BUILT_AT=2026-08-26T22:40:28Z`,
+`BUILD No=734` (arm64 split versionCode 2734). Produced `app-arm64-v8a-release.apk` (113,079,774
+bytes, SHA-256 `6c49209aa2bd8f55625d7483d3d0ed8b36e8a739cb4d94c08a46e1c2d928ba55`) and
+`app-x86_64-release.apk` (114,119,374 bytes, SHA-256
+`bbe9de2f2a7abeba46095346393272e9f27a70727e84f3d39fb41b2baca4908c`), plus an unused
+`app-armeabi-v7a-release.apk`. Manifest verified via `aapt dump badging`:
+`targetSdkVersion='36'`, `compileSdkVersion='36'`, `package='com.fitnessapp.fitness_app.sptr'`,
+`versionCode='2734'` -- no `application-debuggable` flag present. Signing verified via
+`apksigner verify --print-certs`: `CN=Ivan Korostelev` (the real upload key from
+`android/key.properties`, not the Android debug fallback certificate) -- confirms
+`hasRealSigningConfig` took the release-signing branch in `build.gradle`.
+
+**Both devices: installed, launched, no crash.** `adb install -r` succeeded on both S23
+(`R5CW142SASR`, arm64-v8a APK) and the `Pixel_API_36` emulator (x86_64 APK). Launched via
+`monkey -c android.intent.category.LAUNCHER` on each; `ps -A` confirms
+`com.fitnessapp.fitness_app.sptr` running on both (S23 PID 8281, emulator PID 7698); `logcat -d`
+grepped for `FATAL EXCEPTION`/`AndroidRuntime` found none on either device. AAB (`-Bundle`) build
+and its independent signature verification still pending -- next before Step 4's full smoke
+matrix, per the plan's Step 3 requirement to produce both artifacts.
+
+**AAB built** (`app-release.aab`, 135,640,625 bytes) but stamped `0ccd484-dirty` -- the tree had
+uncommitted Step-3/4 DECISION_LOG additions at build time. Not independently verified: it will be
+superseded by Step 6's mandatory post-fix rebuild regardless (see below), so verifying a build
+that is about to be thrown away is wasted effort -- the final AAB gets full verification.
+
+**Step 4: 11-screen smoke matrix on S23 (real HW, primary) -- one regression found.**
+Screenshots in `D:/Temp/claude/.../scratchpad/g2_smoke/`. Launch (resumed session): PASS, no
+overlap. Home: PASS. Workouts (Programs + Library tabs): PASS. Profile: PASS. Settings: PASS.
+Subscription/mission screen: PASS. Health questionnaire (multi-step form, 8/10): PASS. Form Coach
+intro/consent: PASS. All of the above show correct status-bar/nav-bar clearance -- no overlap, no
+insets clipped.
+
+**FAIL, real API-36 edge-to-edge regression: scanner low-light banner.** Opening Скан
+(`scanner_page.dart`) with low ambient light showed the `scannerLowLight` warning banner
+("Слишком темно для распознавания...") rendered flush against the physical top edge, overlapping
+where the status bar should be -- no status bar visible at all in that region, unlike every other
+screen tested. Root-caused by reading the source: the banner
+(`ValueListenableBuilder<bool>`, `session.isLowLight`, lines ~460-476) was
+`Align(topCenter) > Padding(12)` directly in the edge-to-edge camera Stack, with NO `SafeArea`,
+unlike its sibling `ScanTopBar` two Stack children below it which correctly wraps
+`SafeArea(bottom: false)`. Explanation: below targetSdk 35 the OS auto-pads non-edge-to-edge
+content, masking a missing SafeArea; targeting 36 makes edge-to-edge mandatory, so the same latent
+bug now visibly draws under the status bar. Exactly the "primary known risk" category GPT-PM
+named for this gate.
+
+**Fix-the-class, not the instance (CLAUDE.md \u00a717)**: grepped the rest of the app for the same
+shape (`Positioned`/`Align(topCenter)` with a hardcoded `top:` offset over a full-bleed camera
+Stack, no SafeArea) before treating this as isolated. Found one more: `form_check_page.dart`'s
+`CoachTopStrip` (`Тренер по технике` / Form Coach live-camera screen) -- `Positioned(left: 12,
+right: 12, top: 12, child: CoachTopStrip(...))`, same missing-SafeArea shape, same latent-until-36
+mechanism. Confirmed no third instance: `exercise_reference.dart`'s analogous top overlay
+(back button, muscle-group chip) already correctly derives its offset from
+`MediaQuery.paddingOf(context).top` -- an existing, different, already-correct pattern, not a
+third bug.
+
+**Step 5 fix, both instances, same shape, scoped strictly to the observed defect (no redesign)**:
+wrapped each in `SafeArea(bottom: false)` following the exact pattern `ScanTopBar` already used
+correctly. `scanner_page.dart`: `Align(topCenter, child: SafeArea(bottom: false, child:
+Padding(...)))`. `form_check_page.dart`: changed `Positioned(left:12,right:12,top:12)` to
+`Positioned(left:0,right:0,top:0, child: SafeArea(bottom:false, child: Padding(all:12, ...)))` --
+preserves the original 12px visual padding on all sides while letting SafeArea supply the correct
+top inset instead of a fixed guess.

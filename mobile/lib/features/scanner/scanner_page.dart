@@ -462,13 +462,24 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                       builder: (context, dark, _) => dark
                           ? Align(
                               alignment: Alignment.topCenter,
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: _ViewfinderBanner(
-                                  key: const Key('scan-low-light'),
-                                  icon: Icons.light_mode_outlined,
-                                  text: AppLocalizations.of(context)
-                                      .scannerLowLight,
+                              // MVP1.G2: this Align sits directly in the
+                              // edge-to-edge camera Stack, same as
+                              // `ScanTopBar` a few lines below -- but unlike
+                              // it, had no `SafeArea`. Below targetSdk 35 the
+                              // OS still padded non-edge-to-edge content
+                              // automatically, which hid the gap; targeting
+                              // 36 made edge-to-edge mandatory and the
+                              // banner started drawing under the status bar.
+                              child: SafeArea(
+                                bottom: false,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: _ViewfinderBanner(
+                                    key: const Key('scan-low-light'),
+                                    icon: Icons.light_mode_outlined,
+                                    text: AppLocalizations.of(context)
+                                        .scannerLowLight,
+                                  ),
                                 ),
                               ),
                             )

@@ -506,13 +506,25 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                               // three independently positioned children of this Stack,
                               // and two of them claimed the same corner -- see
                               // `CoachTopStrip`.
+                              // MVP1.G2: was `top: 12` with no SafeArea --
+                              // masked below targetSdk 35 by the OS's own
+                              // automatic system-bar padding, exposed once
+                              // targeting 36 made edge-to-edge mandatory
+                              // (same defect and same fix as `ScanTopBar`'s
+                              // sibling in scanner_page.dart).
                               Positioned(
-                                left: 12,
-                                right: 12,
-                                top: 12,
-                                child: CoachTopStrip(
-                                  session: session,
-                                  showRepCount: showRepCount,
+                                left: 0,
+                                right: 0,
+                                top: 0,
+                                child: SafeArea(
+                                  bottom: false,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: CoachTopStrip(
+                                      session: session,
+                                      showRepCount: showRepCount,
+                                    ),
+                                  ),
                                 ),
                               ),
                               // Silent while the strip above is telling the user the
