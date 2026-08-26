@@ -26379,5 +26379,18 @@ pipeline, not a scope leak). This report itself was written specifically to reso
 (1); the plan is being re-closed immediately after this entry with the corrected changed-set
 and the full bucket breakdown from finding (3).
 
-**Not yet done**: re-closure of Rosetta plan v3 with `result: "passed"` and corrected
-evidence (in progress, next), then G2-G8 per PM mode's "continue after report" instruction.
+**Report review** (`gpt_send_and_await`, since `review.js` cannot see `reports/`): sent the
+full English report body directly. `VERDICT: MAJOR` -- (1) RU report still not directly
+verified, asked for its content too; (2) MINOR, the hero paragraph undercounted the first
+Rosetta closure attempt as "one finding" when section 09 records 2 MAJOR + 1 MINOR, three
+findings; (3) MINOR, the self-caught-defects incident box described the pre-review
+single-quote-only import regex ambiguously, readable as claiming the FINAL guard was still
+single-quote-only after round 1 fixed it to quote-agnostic. Both MINORs verified true by
+re-reading the report text; fixed in both language files (hero paragraph now says "one
+failed Rosetta closure attempt, which returned 2 MAJOR + 1 MINOR"; incident box now states
+explicitly that the pre-review fix used a single-quote pattern and that round 1 subsequently
+generalized it).
+
+**Not yet done**: RU-content verification round with GPT-PM, `--final` for this report
+commit, push, re-closure of Rosetta plan v3 with `result: "passed"` and corrected evidence,
+then G2-G8 per PM mode's "continue after report" instruction.

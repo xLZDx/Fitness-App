@@ -117,7 +117,7 @@
   <header>
     <div class="eyebrow">Fitness_App &middot; MVP1 / SPTR &middot; Gate G1 &middot; Rosetta-governed gate &middot; last of four slices</div>
     <h1>G1, fourth and final slice: exercise generation moves server-side</h1>
-    <p class="lede">The fallback exercise generator for equipment not matched in the catalog was the last of the app's four AI surfaces still calling Gemini directly from the client. It now goes through a new Cloud Function, <code>aiExerciseGeneration</code>. The plan went through 3 revisions (v1 and v2 rejected by GPT&#8209;PM at GO review, v3 approved), two self-caught defects before review, 4 rounds of GPT&#8209;PM code review (1 MINOR&times;2 + 1 MINOR&times;1, then APPROVE, then exact-SHA final), a push to <code>origin/master</code>, and one finding on the first Rosetta plan-closure attempt &mdash; all covered below.</p>
+    <p class="lede">The fallback exercise generator for equipment not matched in the catalog was the last of the app's four AI surfaces still calling Gemini directly from the client. It now goes through a new Cloud Function, <code>aiExerciseGeneration</code>. The plan went through 3 revisions (v1 and v2 rejected by GPT&#8209;PM at GO review, v3 approved), two self-caught defects before review, 4 rounds of GPT&#8209;PM code review (1 MINOR&times;2 + 1 MINOR&times;1, then APPROVE, then exact-SHA final), a push to <code>origin/master</code>, and one failed Rosetta plan-closure attempt, which returned 2 MAJOR + 1 MINOR &mdash; all covered below.</p>
   </header>
 
 <!-- report-conform:begin -->
@@ -145,13 +145,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 5ecc1c6</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 999c73f</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
   <div class="verdict-band">
     <div class="mark">&#10003;</div>
@@ -208,7 +210,7 @@
   <div class="incident">
     <h3>Two defects self-caught before review</h3>
     <p><b>The hand-typed equipment map was wrong.</b> The first draft of <code>EQUIPMENT_NAMES_EN</code>/<code>_RU</code> was typed from memory and confused with a separate, differently-sized list, <code>CANONICAL_MACHINES</code>, in another file &mdash; several ids were simply wrong or invented. Caught before commit: a one-off Node script was written to read the live JSON assets directly, the map regenerated programmatically, and the hand-typed draft replaced wholesale.</p>
-    <p><b>A false positive in the structural guard test.</b> An early version of the "zero direct Gemini calls" check also scanned for the literal string <code>FirebaseAI.googleAI()</code> &mdash; which appears verbatim in all four migrated files' own doc comments describing what they NO LONGER do. Caught by running the new test locally before committing &mdash; it failed on 4 false matches. Fixed by narrowing the scan to <code>generativeModel(</code> (the real constructor call, never appearing in prose) and requiring a regex matching exactly <code>import '...'</code>.</p>
+    <p><b>A false positive in the structural guard test.</b> An early version of the "zero direct Gemini calls" check also scanned for the literal string <code>FirebaseAI.googleAI()</code> &mdash; which appears verbatim in all four migrated files' own doc comments describing what they NO LONGER do. Caught by running the new test locally before committing &mdash; it failed on 4 false matches. Fixed, at that point, by narrowing the scan to <code>generativeModel(</code> (the real constructor call, never appearing in prose) and requiring an <code>import '...'</code>-prefixed match for the <code>package:firebase_ai</code> import check &mdash; a single-quote-only pattern that was itself still incomplete: round 1 (section 04) caught that it missed a valid double-quoted import and generalized it to a quote-agnostic regex.</p>
   </div>
 
   <h2><span class="num">04</span>Round 1 &mdash; full adversarial sweep of the implementation</h2>
@@ -310,6 +312,8 @@
 
   <div class="closing"><b>Next:</b> all four G1 AI surfaces are migrated and pushed. Right after this report publishes &mdash; a re-issued closure of Rosetta plan v3 with a corrected changed-set and the ungoverned-act breakdown, then on to G2&ndash;G8 per PM mode's instruction not to stop after a report.</div>
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>
