@@ -26537,11 +26537,11 @@ Asked GPT-PM for G2's exact scope before starting, rather than trust a possibly-
 carried-over summary ("G2 doc/test-hygiene fixes") from before this session's context
 compaction. GPT-PM searched the repo and its own retained session material and found **no
 authoritative MVP1.G2 definition exists** -- the G1 history only said "continue G2-G8"
-without defining G2, and the repo's OWN `core/DECISION_LOG.md` contains a different,
-unrelated "G2" from 2026-08-16 (first Android release build) under a completely different
-gate-numbering scheme, where the `targetSdk 35` finding is tracked as G7, not G2, in the
-current master plan. Reviving that old G2 label would have silently mixed two numbering
-systems.
+without defining G2, and the repo contains a different, unrelated "G2" in
+`core/RELEASE_BUILD_2026-08-16.md` (titled "Android release build -- 2026-08-16 (gate G2)",
+the first Android release build) under a completely different gate-numbering scheme, where
+the `targetSdk 35` finding is tracked as G7, not G2, in the current master plan. Reviving
+that old G2 label would have silently mixed two numbering systems.
 
 GPT-PM set the new canonical **MVP1.G2 = Android 16 / Play API-36 Release Readiness**,
 citing the master plan's own priority ordering (D1/H3 clinical authority outranks
