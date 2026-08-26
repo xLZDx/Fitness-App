@@ -26444,7 +26444,35 @@ CLAUDE.md sec2's "be explicit about blockers." The report content itself (both l
 GPT-PM-approved and safe -- only the exact-SHA final receipt for `c0f3bc7` and the resulting
 push/Rosetta re-closure are blocked, nothing already committed is at risk.
 
-**Not yet done**: `--final` for `c0f3bc7` (blocked on PM Bridge transport, needs either the
-transport to recover on its own or an operator-authorized restart of the shared orchestrator),
-push, re-closure of Rosetta plan v3 with `result: "passed"` and corrected evidence, then
-G2-G8 per PM mode's "continue after report" instruction.
+**Transport recovered after an operator-authorized restart**: per CLAUDE.md sec16, routed the
+"what next" question to GPT-PM first (`[GPT-ASKED]` marker, since GPT-PM was itself
+unreachable through the same broken transport, honestly disclosed) via `AskUserQuestion`
+directly to the operator, who chose "restart the pm-bridge browser." Restarted via the
+sanctioned mechanism (`pm_bridge_mode_off` then `pm_bridge_mode_on`), not raw process kills --
+new orchestrator pid 25148 replaced the stale pid 48544. First send after restart succeeded
+immediately.
+
+**GPT-PM round with the exact diff**: sent the real `git diff 999c73f..c0f3bc7` content.
+`VERDICT: MINOR` -- the three substantive corrections matched exactly what was approved, but
+the exact diff exposed a real inconsistency invisible in the earlier stripped-body reviews:
+the EN provenance bar showed `master @ 999c73f` while RU showed `master @ f469265` at that
+same commit -- verified true via `git show c0f3bc7:<path> | grep "master @"` for both files.
+Root cause: `report_conform.py` was run on both files together after the RU section-fix, but
+the subsequent `git add`/commit for `c0f3bc7` only staged the RU file -- the EN file's
+already-regenerated provenance stamp was left uncommitted, so RU picked up the newer SHA
+while EN's last COMMITTED stamp stayed one commit behind. `git status`/`git diff` confirmed
+an uncommitted EN change matching this exactly.
+
+GPT-PM's fix recommendation: stop letting `report_conform.py` re-stamp the provenance SHA to
+"current commit at conform-time" on every report-fix round -- that field chasing its own tail
+across successive commits is the same self-referential staleness class already documented
+twice for DECISION_LOG entries in this gate. Pinned both files' Git provenance line to the
+stable implementation SHA `5ecc1c6` (the actual code state this report describes) instead,
+manually, without rerunning `report_conform.py` (which would have reverted the pin to live
+HEAD). Verified `report_conform.py <dir> --check` raises nothing for either file after the
+manual edit.
+
+**Not yet done**: send the corrected exact diff to GPT-PM for final verification of this one
+change, `--final` for the resulting commit, push, re-closure of Rosetta plan v3 with
+`result: "passed"` and corrected evidence, then G2-G8 per PM mode's "continue after report"
+instruction.
