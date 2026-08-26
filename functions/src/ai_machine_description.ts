@@ -50,10 +50,16 @@ interface MachineDescriptionInput {
 
 function parseInput(data: unknown): MachineDescriptionInput {
   const d = (data ?? {}) as Record<string, unknown>;
-  return {
-    image: validateImageInput(d.mimeType, d.imageBase64),
-    languageName: resolveLanguageName(d.languageCode),
-  };
+  // Language resolved BEFORE the image is validated, deliberately -- GPT-PM's G1 round-2 review
+  // caught that writing `image` first in the returned object literal (its property evaluates
+  // first, by source order) ran the full base64-decode/file-signature-sniff work before an
+  // invalid languageCode was ever checked, a real regression against 6e52bd6's own ordering
+  // (mimeType/base64/languageCode type checks, all cheap, all before the byte-level work). An
+  // authenticated caller could otherwise burn decode/sniff CPU on every request just by pairing a
+  // large valid image with a garbage languageCode.
+  const languageName = resolveLanguageName(d.languageCode);
+  const image = validateImageInput(d.mimeType, d.imageBase64);
+  return { image, languageName };
 }
 
 /** Exact copy of `GeminiMachineDescriber.buildPrompt()`, with `language` already resolved to a

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -157,13 +158,6 @@ class GeminiMachineDescriber implements MachineDescriber {
   static Future<Uint8List> _resize(String path) =>
       compute(resizeForCloud, path);
 
-  /// Resize, then ask — as one future, so [timeout] bounds both stages
-  /// together rather than only the network call.
-  Future<String?> _resizeAndAsk(String path, String languageCode) async {
-    final bytes = await _photoBytes(path);
-    return _cloud(bytes, languageCode);
-  }
-
   @override
   Future<MachineCard?> describe({
     required String path,
@@ -174,7 +168,25 @@ class GeminiMachineDescriber implements MachineDescriber {
   }) async {
     final String? text;
     try {
-      text = await _resizeAndAsk(path, languageCode).timeout(timeout);
+      // Sequenced, not one composite `.timeout()` over both stages — GPT-PM's
+      // G1 round-2 review caught why that shape was still wrong even though it
+      // fixed round-1's "resize is unbounded" gap: `Future.timeout()` does NOT
+      // cancel the source future, it only stops waiting on it — the original
+      // computation keeps running to completion in the background regardless.
+      // With one composite future, a resize alone overrunning [timeout] would
+      // still let `_cloud` start (and spend real quota/provider cost) once
+      // resize finally finished, for an answer this method had already given
+      // up on and returned null for. Timing resize on its own first — and only
+      // starting the network call at all if resize left real budget — means
+      // the network call is simply never initiated once the deadline is
+      // already spent, rather than started and then abandoned.
+      final started = DateTime.now();
+      final bytes = await _photoBytes(path).timeout(timeout);
+      final remaining = timeout - DateTime.now().difference(started);
+      if (remaining <= Duration.zero) {
+        throw TimeoutException('resize left no budget for the network call');
+      }
+      text = await _cloud(bytes, languageCode).timeout(remaining);
     } catch (e) {
       debugPrint('could not describe the unknown machine: $e');
       return null;

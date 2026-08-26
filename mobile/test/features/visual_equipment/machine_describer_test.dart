@@ -169,6 +169,39 @@ void main() {
       );
       expect(await svc.describe(path: '/tmp/a.jpg'), isNotNull);
     });
+
+    test(
+        'a resize that alone overruns the deadline never starts the network '
+        'call, even after resize eventually finishes', () async {
+      // GPT-PM's G1 round-2 review caught a real Dart gotcha in the round-1
+      // fix: `Future.timeout()` does not cancel the source future, so a
+      // single composite `.timeout()` over resize+network would still let a
+      // slow-but-eventually-finishing resize lead to `_cloud` starting (and
+      // spending real quota/provider cost) AFTER `describe()` had already
+      // given up and returned null — a zombie network call for an answer
+      // nobody is waiting for. Sequencing resize on its own bounded await
+      // first, and only starting the network call if real budget remains,
+      // means the network call must never fire at all in this scenario.
+      var askCalls = 0;
+      final svc = GeminiMachineDescriber(
+        photoBytes: (_) => Future.delayed(
+            const Duration(milliseconds: 60), () => Uint8List(0)),
+        ask: (_, __) {
+          askCalls++;
+          return Future.value(good);
+        },
+        timeout: const Duration(milliseconds: 30),
+      );
+
+      expect(await svc.describe(path: '/tmp/a.jpg'), isNull);
+      // Wait past the point where the delayed photoBytes future itself
+      // resolves (60ms) — if the network call were still going to fire once
+      // resize finished, it would have happened by now.
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+      expect(askCalls, 0,
+          reason: 'the network call must never start once the deadline is '
+              'already spent, not merely go unobserved');
+    });
   });
 
   group('the shape of "uses"', () {

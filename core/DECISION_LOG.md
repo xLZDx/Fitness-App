@@ -25926,7 +25926,52 @@ discipline):**
    adjacent test files as three when four were named. **Fixed:** this entry (both the prior paragraph
    and this one) replaces that language; the miscount is corrected above.
 
-**Verified after the round-1 fixes:** `tsc --noEmit` clean. Functions Jest: 335 baseline tests plus
-5 (`constructor`/etc.) + 3 (image-validation ordering) = 343 total, all green (exact count to be
-re-confirmed at the next full run before the round-2 send). `flutter analyze` and the touched Dart
-test files to be re-run before sending round 2.
+**Verified after the round-1 fixes:** `tsc --noEmit` clean; Functions Jest 343/343; `flutter
+analyze` same 16 pre-existing issues, zero new; touched/adjacent Dart tests 135/135; full `flutter
+test` 3242/3243 (the same known `app_semantic_colors_test.dart` failure, count grew by the 2 new
+Dart tests round 1 added). Committed as `f1f7f40`. Sent for round 2 (`review.js --commit f1f7f40
+--round 2`, narrow scope note per CLAUDE.md §17: verify only the 4 round-1 fixes and any direct
+regression they introduce) -- first attempt failed with a plain transport `fetch failed` (fail-open
+receipt written, no reply), second attempt succeeded.
+
+**GPT-PM round 2: `VERDICT: MAJOR`, correlated -- 1 MAJOR + 1 MINOR, both DIRECT REGRESSIONS from
+the round-1 remediation itself (not new unrelated findings -- exactly the class §17 permits a round
+3 to address), both independently verified true before fixing:**
+
+1. **MAJOR, confirmed against documented Dart semantics** -- round 1's `_resizeAndAsk` fix
+   (combining resize + network into one future before applying a single composite `.timeout()`)
+   closed the "resize is unbounded" gap but introduced a subtler one: `Future.timeout()` does not
+   cancel the SOURCE future, it only stops waiting on it -- the original computation keeps running
+   in the background regardless of whether the outer `.timeout()` already fired. So if resize alone
+   took longer than `timeout` (30s), `describe()` would correctly return `null` at the 30s mark, but
+   the underlying `_photoBytes` future would keep running, and once it finally resolved, execution
+   would proceed straight into `_cloud(...)` -- starting a real, quota-charged network call for an
+   answer nobody was waiting for any more. Round 1's own regression test (`_DelayedDescriber`-style,
+   one flat delay) could not have caught this: it has no separate resize/network phases to expose a
+   race that only exists BETWEEN the two stages. **Fixed:** replaced the composite future with an
+   explicit two-stage sequence -- `_photoBytes` gets its own `.timeout(timeout)`, then the REMAINING
+   budget (`timeout` minus elapsed) is computed and only used to bound `_cloud` if positive; if
+   resize alone exhausts the budget, a `TimeoutException` is thrown before `_cloud` is ever called,
+   so the network call structurally cannot start once the deadline is already spent. New test: a
+   60ms resize against a 30ms timeout, then an explicit wait past 60ms, asserting the injected `ask`
+   callback's call count is still zero -- proving absence, not merely that `describe()` itself
+   returned null.
+2. **MINOR, confirmed via plain JS/TS object-literal evaluation order** -- round 1's
+   `image_validation.ts` fix (making `validateImageInput` own both raw type checks, restoring the
+   original mimeType-before-imageBase64 order) was itself applied inside `ai_machine_description
+   .ts`'s `parseInput` by writing `{ image: validateImageInput(...), languageName:
+   resolveLanguageName(...) }` -- and object literal properties evaluate in the order they are
+   WRITTEN in source, so `image` (the expensive base64-decode + file-signature-sniff path) always
+   ran before `languageName` (the cheap direct-equality check), regardless of which one was actually
+   invalid. In commit `6e52bd6` (before either round-1 or round-2 fixes), languageCode was checked
+   before the byte-level image work; this was a real, direct regression against that ordering
+   introduced by round 1's own remediation, not present in the original slice. **Fixed:** reordered
+   `parseInput` to resolve `languageName` first, then validate the image. New test pairs an invalid
+   languageCode with a payload that also fails as an image (`NOT_AN_IMAGE_BASE64`), asserting the
+   thrown message is the languageCode one -- proving the cheap check runs first.
+
+**Verified after the round-2 fixes:** `tsc --noEmit` clean; Functions Jest 344/344 (343 + 1 new
+ordering test); `flutter analyze` on the touched directories clean (0 issues); the two
+directly-touched Dart test files 39/39; full `flutter test` 3243 total (3242 + the 1 new zombie-call
+test), 1 failure -- the same known pre-existing `app_semantic_colors_test.dart` signature, re-run and
+re-confirmed unchanged from round 1.

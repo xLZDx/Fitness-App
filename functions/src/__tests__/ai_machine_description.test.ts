@@ -117,6 +117,19 @@ describe("aiMachineDescription", () => {
     expect(prompt).not.toContain("in en");
   });
 
+  test("checks languageCode before doing any image decode/sniff work", async () => {
+    // GPT-PM's round-2 review caught a regression in the round-1 fix: the language check must run
+    // BEFORE the (more expensive) image validation, matching the original commit's ordering. This
+    // pairs an invalid languageCode with a payload that is invalid as an IMAGE too -- if image
+    // validation ran first, the error would be the image one, not the language one.
+    await expect(
+      aiMachineDescription.run(
+        req({ mimeType: "image/jpeg", imageBase64: NOT_AN_IMAGE_BASE64, languageCode: "fr" }),
+      ),
+    ).rejects.toThrow(/languageCode/);
+    expect(generate).not.toHaveBeenCalled();
+  });
+
   test("shares image_validation.ts with aiEquipmentRecognition: a non-image payload is rejected", async () => {
     await expect(
       aiMachineDescription.run(
