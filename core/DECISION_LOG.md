@@ -26588,4 +26588,106 @@ assuming device availability.
 
 **Not yet done**: G2's own Inspect phase (current `targetSdk`/`compileSdk` state, device
 Android-version check, Play Console preflight if reachable), then a Rosetta plan for G2
+
+## MVP1.G2 -- Inspect phase, Rosetta plan v1 (rejected), v2 (approved), Act phase begins
+
+**Inspect phase (free/unrecorded per Rosetta protocol):**
+- `mobile/android/app/build.gradle`: `compileSdk = 36` already pinned (line 87), but for an
+  *unrelated* reason -- two plugins (`flutter_secure_storage`, `flutter_tts`) require compiling
+  against SDK 36; the file's own comment (lines 82-86) explicitly notes "Raising compileSdk is
+  not the same as raising targetSdk." `targetSdk = flutter.targetSdkVersion` (line 126) is still
+  unpinned, resolving to Flutter's current default of 35 per the same file's comment (line 72).
+  `minSdk = 26` (line 125, health-package requirement), `ndkVersion = "27.0.12077973"` (line 91,
+  separate plugin-requirement pin). This confirms exactly what G2 needs to change: only
+  `targetSdk`.
+- Device check: `adb devices -l` (adb at `D:\android-sdk\platform-tools\adb.exe`, not on PATH) --
+  the one connected device (`ce0417141997e4640c`, the workspace's documented S8) is `offline`.
+  `adb kill-server`/`start-server` did not clear it. Moot regardless: the S8's official support
+  ceiling is Android 9, so it cannot run Android 16 even once reconnected.
+- Emulator check: `emulator -list-avds` showed only `Pixel_API_34` (API 34, no API-36 AVD yet).
+  `sdkmanager --list_installed` confirmed platform 36 already installed but no API-36 *system
+  image*. `sdkmanager --list` confirmed `system-images;android-36;google_apis_playstore;x86_64`
+  is available to install.
+
+**Rosetta plan v1** (`Fitness_App-2026-08-26T22-19-24-346Z-e80d38`, base `c55877c`, hash
+`a1db0fe6...`): 6 steps -- install API-36 emulator/AVD, raise targetSdk, canonical release build,
+smoke-test 11 screens, fix regressions, analyze+test. Sent to GPT-PM for GO.
+
+**GPT-PM verdict: 4 MAJOR findings, GO refused for Act-phase mutation** (GO given only for
+continued non-mutating Inspect):
+1. Plan dropped the G2 scope's own Play Console preflight item (item 1 above) -- would let G2
+   pass while the external policy-urgency fact stays silently unknown.
+2. Plan did not bind the build to the repo's canonical `scripts/dev/build_release.ps1` (GIT_SHA/
+   BUILT_AT/build-number provenance) -- a plain `flutter build apk --release` could satisfy
+   manifest/signing checks while bypassing the project's own provenance mechanism.
+3. Emulator ABI vs release-artifact ABI unspecified -- the canonical script defaults to
+   `--split-per-abi` (arm64 by default); an x86_64 Windows AVD installing the wrong split would
+   fail for an environmental reason that could be misdiagnosed as an API-36 regression.
+4. No requirement that the *final*, post-fix artifact is the one actually smoke-tested -- a
+   defect could be found and fixed after Step 4's smoke pass with nothing forcing a re-smoke of
+   the corrected build, letting G2 close on superseded evidence.
+
+GPT-PM additionally set a binding 12-point DoD (base/scope integrity; Play preflight
+attempted+honestly recorded; minimal source change; live-verified API level + recorded ABI, S8
+excluded as Android-16 evidence; canonical artifact provenance for both APK and AAB with
+filename/size/SHA-256; release verification incl. no Play-acceptance claim; full 11-screen
+smoke matrix with PASS/FAIL/NOT_VERIFIED + evidence; mandatory post-fix rebuild+re-smoke
+invariant; analyze/test regression gates; adversarial-review+exact-SHA governance; closure
+report separating "API-36 verified on emulator" from "Play publication: NOT PERFORMED/NOT
+CLAIMED"; final PASS criterion).
+
+**Verification before accepting**: read `scripts/dev/build_release.ps1` directly -- confirmed it
+exists and supports exactly the flags GPT-PM described (`-Bundle`, `-Fat`, default
+`--split-per-abi`, `-Bundle`+`-Fat` mutually exclusive by an explicit `throw`). All 4 findings
+were fact-grounded, not speculative.
+
+**Rosetta plan v2** (`Fitness_App-2026-08-26T22-26-50-898Z-c6680c`, base `c55877c` unchanged,
+hash `bdeb4b08...`) -- supersedes v1, incorporates all 4 amendments as explicit steps (0:Play
+preflight non-blocking; 1:AVD ABI recorded live via adb; 3:both APK+AAB via
+`build_release.ps1` with SHA-256; 6:mandatory rebuild+reinstall+full re-smoke after any Step-5
+fix), 9 steps total plus the 12-point DoD carried into `verification` field.
+
+**GPT-PM verdict on v2: APPROVE, GO AUTHORIZED for Act-phase mutation.** Confirmed: "I do not need
+a word-for-word reproduction merely to create another review round, provided those semantics
+remain binding." One caveat GPT-PM stated honestly: it cannot independently inspect the Rosetta
+plan object or recompute the hash with its own tools -- the GO verifies the amended plan content
+as presented, not an unseen serialization. Also explicit: this GO covers implementation + local
+commits only; the eventual push still needs its own adversarial review -> exact-SHA
+`--final=true` sequence, same as G1, not advance-approved by this GO.
+
+`pm_rosetta_go` called, plan bound: `in-progress`, approved against hash
+`bdeb4b083c4188749425083d06e2691d03fc8fd9dee174e91a45cedb5b888645`.
+
+**Step 0 result (Play Console preflight): `inaccessible`.** Searched the repo for any Play
+Console access path (fastlane, service-account JSON, android-publisher API config) --
+`find`/`grep` found none; the only Play-related repo content is a public-docs citation (download
+size limits) in `core/RELEASE_BUILD_2026-08-16.md`, not account access. No browser/credentialed
+path to Play Console is available in this session. Per Step 0's own spec this is UNVERIFIED, not
+a pass, and does not block the technical steps -- recorded honestly rather than silently
+skipped. Proceeding to Step 1 (Android-16 emulator provisioning).
 before any Act-phase mutation.
+
+**Step 1 complete: Android-16 emulator provisioned and verified.** Installed
+`system-images;android-36;google_apis_playstore;x86_64` via `sdkmanager` (exit 0). Created AVD
+`Pixel_API_36` (device profile `pixel`, Google Play target, API 36, x86_64) via `avdmanager`,
+confirmed via `avdmanager list avd`. Booted (`emulator -avd Pixel_API_36 -no-snapshot
+-no-boot-anim`); `adb shell getprop sys.boot_completed` = `1`, `ro.build.version.sdk` = `36`,
+`ro.product.cpu.abi` = `x86_64`, `ro.product.model` = `sdk_gphone64_x86_64` -- live-verified API
+level and ABI, not inferred from the AVD name, per the plan's own requirement.
+
+**Operator interjection, mid-Act-phase**: "используй с8 вместо имулятора" / "он всегда
+подключен" / "или с23 по вайфай если рядом" (use the S8 instead of the emulator, it's always
+connected, or the S23 over wifi if nearby). Checked live rather than deferring to either the
+operator's suggestion or the Inspect-phase note unverified: `adb -s ce0417141997e4640c shell
+getprop ro.build.version.release`/`ro.build.version.sdk` -> `9`/`28` -- the S8 (`SM-G950F`,
+`dreamltexx`) is confirmed live, right now, running Android 9. This is a hardware ceiling
+(Samsung's official S8 support ended at Android 9/One UI 1.0), not a connectivity problem the
+operator's "always connected" note could fix -- consistent with the Inspect-phase finding and
+already built into the GPT-PM-approved plan's own DoD ("S8 not counted as Android-16 evidence").
+S23 was not visible over `adb devices` at check time (only the S8, wired, and the emulator) --
+connecting it over wifi needs the operator to enable wireless debugging/pairing on the device
+itself, which cannot be done remotely. Told the operator this directly in-session rather than
+silently proceeding or silently ignoring the suggestion. Proceeding with the live-booted,
+API-36-verified emulator as G2's primary verification environment per the approved plan; the S23
+remains a welcome additional real-device confirmation if the operator connects it later, but is
+not currently available and does not block this gate.

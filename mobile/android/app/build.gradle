@@ -123,7 +123,13 @@ android {
         // itself ships from 14+ but the plugin auto-falls back to
         // Google Fit on 26–33.
         minSdk = 26
-        targetSdk = flutter.targetSdkVersion
+        // MVP1.G2. Pinned explicitly, not `flutter.targetSdkVersion` (currently resolves to
+        // 35) -- Google requires new app updates to target API 36 (Android 16) from
+        // 2026-08-31, with an extension path to 2026-11-01. Raising targetSdk (unlike
+        // compileSdk above) changes the runtime behaviour Android applies to the app; the
+        // primary expected regression category is edge-to-edge/inset handling, audited and
+        // verified separately under this gate.
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
