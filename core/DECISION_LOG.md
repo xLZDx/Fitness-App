@@ -25300,3 +25300,48 @@ positioning copy, G5's own separate technical-plan-then-review-then-GO gate). A 
 against real Vertex AI with real ADC credentials has not been performed from this sandboxed session
 and remains an explicitly flagged, NOT YET closed pre-deployment verification gap -- stated plainly
 in `ai_gateway.ts`'s own comments rather than implied as done.
+
+**Addendum -- staleness correction, same day.** The paragraph above was staged and this entry
+committed (as `9c06ede`) before round 3's response had actually come back, and was never updated
+once it did -- "round 3's response, the commit itself" was still marked "not yet done" inside a
+commit that WAS round 3's response and WAS the commit. Round 4's exact-SHA `--final` review
+(`--commit 9c06ede`) caught this as its one MINOR finding: a real defect in this file, not in the
+G1 code, since a future session reading this record could wrongly conclude governance was
+unfinished and re-run review rounds already closed. GPT-PM's own suggested remedy was to `amend`
+the commit -- not applied: this workspace's git discipline reserves amend-authorization to the
+operator (`~/.claude/CLAUDE.md`, "Always create NEW commits rather than amending... unless the user
+explicitly requests it"), and GPT-PM's deputy authority covers architecture/content/approval
+decisions, not this repo's own git-history-editing contract. Fixed the same way the master-plan
+thread's own "Round 4 commit-message arithmetic error" (above, `MASTER_PLAN_2026-08-26.md`'s
+history) fixed an identical after-the-fact staleness: a new, purely documentary follow-up commit
+correcting the record, never touching `9c06ede` itself.
+
+**Actual round-3 outcome, for the record:** VERDICT APPROVE. GPT-PM independently re-verified both
+round-2 fixes against the round-3 diff (re-counted `ai_gateway.test.ts`/`ai_coach_advice.test.ts` at
+18/22 tests, matching my corrected numbers exactly) and additionally checked `@google/genai`'s
+`"node": ">=20"` engine requirement against this project's own `functions/package.json` pin
+(`"node": "20"`) -- no incompatibility. `COMMIT: AUTHORIZED`. `PUSH: NOT AUTHORIZED YET` -- an
+exact-SHA `--final` pass was still required before push, independent of the round-3 working-tree
+approval, because committed content can in principle differ from what was reviewed pre-commit (the
+same reasoning the master-plan thread's own round 4 established).
+
+**Round 4** (`--commit 9c06ede --final`, first attempt): `NOT_RUN_LOCK_CONTENTION` -- the shared PM
+Bridge browser profile was in use by another session (this machine routinely runs concurrent
+sessions across sibling `D:\Repo\*` projects, a known, documented transport limitation). Fail-open,
+receipt written, did not block anything; retried once after waiting rather than hammering the lock,
+per this workspace's own established guidance for exactly this condition.
+
+**Round 4, retry:** `VERDICT: MINOR`, `correlated: true`, `final: true`. The one finding is the
+decision-log staleness this addendum exists to fix -- described above. On the actual G1 code,
+re-verified directly against the exact committed tree (not the round-3 working-directory diff):
+`maxOutputTokens: 512` genuinely reaches `aiCoachAdvice`'s `generate()` call; `AI_METERED` genuinely
+carries `maxInstances: 15` x `concurrency: 10`; `VERTEX_AI_LOCATION` default genuinely remains
+`"global"`; `ai_coach_service.dart` genuinely calls `httpsCallable('aiCoachAdvice')` rather than
+`FirebaseAI.googleAI()`. No new architecture or code finding opened. GPT-PM's own stated expectation:
+once this addendum lands in a follow-up commit limited to this mechanical correction, a short
+exact-SHA verification of that new commit should be sufficient for `APPROVE`/`--final` without
+re-litigating G1's code a second time.
+
+**Next**: commit this addendum alone (no code changes), then request a short round-5 `--final` pass
+scoped to the new commit. Push remains gated on that `--final` landing AND a separate, explicit
+operator push-GO regardless -- unchanged from every prior statement of this contract in this file.
