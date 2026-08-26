@@ -26824,3 +26824,21 @@ of the 16 touch a file this gate modified, G2 introduces 0 new analyze issues by
 confirmed additionally by the earlier isolated-file analyze (0 issues on just the two touched
 files). Full `flutter test` suite now running in the background to check against the inherited
 3242/3243 baseline.
+
+**Step 7, second half: full `flutter test`.** 3243/3244 -- one failure. Traced its exact origin
+(`test/widgets/app_buttons_test.dart:173`, `EXCEPTION CAUGHT BY SCHEDULER LIBRARY`, `!_needsLayout`
+assertion during a later test's semantics flush, no frame anywhere in `scanner_page.dart` or
+`form_check_page.dart`) and grepped this log: this EXACT flake (same file, same line, same
+assertion) is already recorded pre-existing at ~15 separate prior gates going back to at least
+2026-08-17 ("Gap -- an unrelated pre-existing test flake observed, not caused", and every M1-M9
+gate log entry after it), always order-dependent, always clean in isolation. Re-ran
+`app_buttons_test.dart` + `widget_test.dart` + `glass_nav_bar_test.dart` together (its usual
+neighbor cluster from prior recurrences): 29/29 clean, consistent with every documented
+recurrence. Confirmed not caused by this gate -- 0 new test failures. (The 3243/3244 vs the
+`~3242/3243` figure carried into G2's plan from a prior summary is normal baseline drift from
+other work in this actively developed repo, not a discrepancy caused by this gate; the invariant
+that matters -- exactly one failure, always the same documented flake -- holds.)
+
+**Step 7 verdict: PASS.** 0 new analyze issues, 0 new test failures. G2's implementation
+(`0ccd484`..`fc53b37`: targetSdk pin, both SafeArea fixes, the collision-merge fix, all decision
+log entries) is ready for Step 8's adversarial GPT-PM review before exact-SHA final and push.
