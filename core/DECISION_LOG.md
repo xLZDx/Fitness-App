@@ -25700,5 +25700,22 @@ self-contradicting tripwire comment rewritten to state the actual contract (exac
 **Verified after the round-2 fixes:** Functions Jest 307/307 (unchanged count -- these were fixes to
 existing tests/logic, not new test cases), `tsc --noEmit` clean.
 
-**Not yet done:** GPT-PM round 3 (verification of the round-2 fixes only, per GPT-PM's own request:
-"I would review only those deltas" -- no broad re-review), commit, and the remaining two AI surfaces.
+**GPT-PM round 3** (`--uncommitted`, correlated, narrow verification of only the 3 round-2 deltas,
+per GPT-PM's own request): `VERDICT: APPROVE`, `COMMIT: AUTHORIZED`. No new findings; all three
+round-2 fixes (pre-decode length guard, decision-log staleness, self-contradicting tripwire
+comment) confirmed closed. Committed as `f98e6aaf0cd944a6f4e1dbe3c5b254a11369f667`.
+
+**GPT-PM round 4** (exact-SHA `--final` on `f98e6aa`, correlated): `VERDICT: MINOR` -- the exact same
+staleness pattern as the first G1 slice's own round 4: this decision-log entry's own "Not yet done"
+line (just replaced above) still said round 3 and the commit were outstanding, even though the
+commit carrying that very text already recorded both having happened. GPT-PM's own words: "CODE:
+APPROVED... COMMIT f98e6aa...: technically approved, but --final withheld solely for the stale
+DECISION_LOG terminal state." No code re-review requested. This paragraph, plus the two immediately
+above it, are the fix -- a new documentary commit, not an amend, per this workspace's git discipline.
+
+**Not yet done:** send this exact new SHA back for the narrow final-state verification GPT-PM asked
+for, then push (pending the same operator delegation already established for the first slice), then
+the remaining two AI surfaces (machine description, exercise generation). Noted in round 4's own
+reply: the ChatGPT conversation thread PM Bridge routes through is nearing its length limit --
+future rounds in this same thread may need a fresh conversation; not yet hit, but worth carrying
+forward.
