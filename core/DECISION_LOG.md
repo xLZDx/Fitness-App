@@ -26527,3 +26527,65 @@ permanent structural guard test.
 
 **Not yet done**: push this wording-fix commit, then G2-G8 per PM mode's "continue after
 report" instruction.
+
+Pushed as `d70099d`. `pm_set_gate(MVP1.G1, passed)` recorded, independently confirmed by
+GPT-PM against `origin/master`.
+
+## 2026-08-26 -- MVP1.G2 scope: no authoritative definition existed, re-baselined by GPT-PM
+
+Asked GPT-PM for G2's exact scope before starting, rather than trust a possibly-stale
+carried-over summary ("G2 doc/test-hygiene fixes") from before this session's context
+compaction. GPT-PM searched the repo and its own retained session material and found **no
+authoritative MVP1.G2 definition exists** -- the G1 history only said "continue G2-G8"
+without defining G2, and the repo's OWN `core/DECISION_LOG.md` contains a different,
+unrelated "G2" from 2026-08-16 (first Android release build) under a completely different
+gate-numbering scheme, where the `targetSdk 35` finding is tracked as G7, not G2, in the
+current master plan. Reviving that old G2 label would have silently mixed two numbering
+systems.
+
+GPT-PM set the new canonical **MVP1.G2 = Android 16 / Play API-36 Release Readiness**,
+citing the master plan's own priority ordering (D1/H3 clinical authority outranks
+everything but isn't engineering-closeable; API-36 release readiness is the next
+engineering-closeable priority, ahead of OBS-1, because it blocks Play submission).
+
+Scope (verbatim from GPT-PM, GO authorized for planning/inspection):
+1. Preflight: check current Play Console state/deadline-extension availability (urgency
+   only, does not weaken acceptance criteria).
+2. Raise `targetSdk` to explicit 36 (Flutter's current default is 35). No unrelated
+   `compileSdk`/`minSdk`/package-identity/signing/dependency changes unless evidence proves
+   API-36 compatibility requires it.
+3. Audit Android-16 behavior changes before declaring success -- primary known risk is
+   edge-to-edge/layout (system-bar/inset handling). No speculative visual redesign.
+4. **Real Android-16 device/emulator verification is mandatory** -- build+install the
+   release artifact, exercise at minimum: launch/auth, onboarding shell, Home, Workouts,
+   scanner/camera entry, exercise/video surface, Form Coach, Settings/subscription, keyboard/
+   text-entry screens, dialogs/bottom sheets, navigation. Specifically verify status/nav-bar
+   overlap, safe areas, keyboards/IME, modal positioning, tappability near system UI.
+5. Release-artifact verification: canonical release-build path, `targetSdkVersion=36`,
+   release signing identity, non-debuggable manifest, correct package ID/version metadata,
+   successful install/start.
+6. Regression evidence: `flutter analyze` 0 new issues; touched tests green; full suite at
+   or above the inherited baseline; any pre-existing unrelated failure stays explicitly
+   inherited, not silently normalized.
+7. **Explicitly out of scope**: OBS-1, the D1/H3 clinical decision, the 360 untagged-exercise
+   disposition, HUD redesign, general visual cleanup, Wear signing, Stripe work,
+   equipment-recognition P2/P4/P6, and Play Store submission itself.
+8. Closure: adversarial GPT-PM review -> remediation of findings/direct regressions only ->
+   exact-SHA final, same discipline as G1.
+
+Exit criterion: a release artifact targeting API 36 builds, is cryptographically/release
+verified, installs and runs on Android 16, and the defined critical-screen smoke pass finds
+no API-36-induced functional/layout regression. Does NOT require Play publication.
+Publication-vs-compatibility must be stated as two separate claims in the closure report,
+never conflated.
+
+Sequencing note from GPT-PM: OBS-1 follows G2, is not folded into it.
+
+Device note: this workspace's own memory records an S8 permanently connected via `adb` for
+real-device tests, and an S23 reachable over network/distribution (path TBD) -- neither is
+confirmed to run Android 16 yet; this needs checking in G2's own Inspect phase before
+assuming device availability.
+
+**Not yet done**: G2's own Inspect phase (current `targetSdk`/`compileSdk` state, device
+Android-version check, Play Console preflight if reachable), then a Rosetta plan for G2
+before any Act-phase mutation.
