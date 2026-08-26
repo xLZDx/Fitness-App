@@ -1,0 +1,530 @@
+<title>G1: AI-тренер на сервере</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #17212b;
+    --ink-soft: #46586b;
+    --ink-faint: #7a8b9c;
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --surface-sunken: #eef2f4;
+    --line: #dce3e7;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --amber: #a86a06;
+    --amber-soft: #fbf0dc;
+    --red: #a83a34;
+    --red-soft: #fbeae8;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Sora", "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(23,33,43,0.06), 0 8px 24px -12px rgba(23,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8edf0;
+      --ink-soft: #a9b8c4;
+      --ink-faint: #74879a;
+      --paper: #0f1620;
+      --surface: #161f2b;
+      --surface-sunken: #101720;
+      --line: #263241;
+      --accent: #3fbcc4;
+      --accent-ink: #06222a;
+      --accent-soft: #10333a;
+      --amber: #e0a83f;
+      --amber-soft: #392c10;
+      --red: #e0756e;
+      --red-soft: #3a1a17;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8edf0;
+    --ink-soft: #a9b8c4;
+    --ink-faint: #74879a;
+    --paper: #0f1620;
+    --surface: #161f2b;
+    --surface-sunken: #101720;
+    --line: #263241;
+    --accent: #3fbcc4;
+    --accent-ink: #06222a;
+    --accent-soft: #10333a;
+    --amber: #e0a83f;
+    --amber-soft: #392c10;
+    --red: #e0756e;
+    --red-soft: #3a1a17;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 28px 96px; }
+
+  header { padding-bottom: 8px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(28px, 4.4vw, 40px);
+    font-weight: 600;
+    line-height: 1.16;
+    margin: 0 0 14px;
+    text-wrap: balance;
+    letter-spacing: -0.005em;
+  }
+  .lede {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 66ch;
+    margin: 0 0 28px;
+  }
+
+  .verdict-band {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 8px 0 44px;
+  }
+  .verdict-band .mark {
+    width: 40px; height: 40px; flex: none;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 700; font-size: 18px;
+  }
+  .verdict-band .text b {
+    font-family: var(--display);
+    font-size: 17px;
+    display: block;
+  }
+  .verdict-band .text span {
+    color: var(--ink-soft);
+    font-size: 14.5px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 56px 0 6px;
+    letter-spacing: -0.005em;
+  }
+  h2 .num {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 10px;
+    font-size: 16px;
+  }
+  .section-note { color: var(--ink-soft); font-size: 15px; margin: 0 0 22px; max-width: 72ch; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 24px 0 40px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .stat .n {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  table.gates {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    font-size: 14.5px;
+  }
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); }
+  table.gates th, table.gates td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.gates th {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    background: var(--surface-sunken);
+    font-weight: 600;
+  }
+  table.gates tr:last-child td { border-bottom: none; }
+  table.gates td.gate { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+  table.gates code { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 8px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+  .pill.closed { background: var(--accent-soft); color: var(--accent); }
+  .pill.closed::before { background: var(--accent); }
+  .pill.blocked { background: var(--surface-sunken); color: var(--ink-faint); }
+  .pill.blocked::before { background: var(--ink-faint); }
+  .pill.pending { background: var(--amber-soft); color: var(--amber); }
+  .pill.pending::before { background: var(--amber); }
+
+  .suite-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+    margin: 20px 0 36px;
+  }
+  .suite {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .suite .name { font-size: 14px; color: var(--ink-soft); }
+  .suite .result { font-family: var(--mono); font-weight: 600; font-size: 14px; }
+  .suite.pass .result { color: var(--accent); }
+
+  .finding {
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--ink-faint);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 0 0 16px;
+    background: var(--surface);
+  }
+  .finding.blocker { border-left-color: var(--red); }
+  .finding.major { border-left-color: var(--red); }
+  .finding.minor { border-left-color: var(--amber); }
+  .finding .tag {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  .finding.blocker .tag { background: var(--red-soft); color: var(--red); }
+  .finding.major .tag { background: var(--red-soft); color: var(--red); }
+  .finding.minor .tag { background: var(--amber-soft); color: var(--amber); }
+  .finding h3 { font-family: var(--display); font-size: 16.5px; margin: 0 0 8px; font-weight: 600; }
+  .finding p { margin: 0 0 10px; color: var(--ink-soft); font-size: 14.5px; }
+  .finding p:last-child { margin-bottom: 0; }
+  .finding .fixed-tag { color: var(--accent); font-weight: 600; }
+  .finding .verify-tag { color: var(--ink-faint); font-style: italic; }
+
+  ul.plain { padding-left: 20px; margin: 12px 0; }
+  ul.plain li { margin-bottom: 10px; font-size: 15px; color: var(--ink-soft); }
+  ul.plain li b { color: var(--ink); }
+  ul.plain li code { font-family: var(--mono); font-size: 13.5px; }
+
+  .deviation {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .deviation:last-child { border-bottom: none; }
+  .deviation .gate-tag { font-family: var(--mono); font-weight: 600; color: var(--accent); font-size: 13.5px; }
+  .deviation p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+
+  .closing {
+    margin-top: 56px;
+    padding: 24px 26px;
+    background: var(--surface-sunken);
+    border-radius: var(--radius);
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .closing b { color: var(--ink); }
+
+  a { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .deviation { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness_App &middot; MVP1 / SPTR &middot; Гейт G1</div>
+    <h1>G1, первый срез: AI-тренер переведён на серверный вызов</h1>
+    <p class="lede">Первый из четырёх ИИ-путей приложения (совет тренера) снят с прямого клиентского вызова Gemini и переведён на выделенную Cloud Function с квотой, лимитом токенов и явным потолком параллелизма. Шесть раундов проверки GPT&#8209;PM нашли и закрыли один BLOCKER, три MAJOR и один MINOR по коду, затем ещё три находки &mdash; по собственной записи в журнале решений, а не по коду.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 8d831fb</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="verdict-band">
+    <div class="mark">&#10003;</div>
+    <div class="text">
+      <b>КОД ЗАКОММИЧЕН И ОДОБРЕН GPT&#8209;PM &mdash; PUSH ЖДЁТ ОТДЕЛЬНОГО GO ОПЕРАТОРА</b>
+      <span>Раунд 3 (сверенный диф): VERDICT APPROVE, COMMIT: AUTHORIZED. Пуш не выполнялся ни разу.</span>
+    </div>
+  </div>
+
+  <h2><span class="num">01</span>Коротко</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="n">1 / 4</div><div class="l">ИИ-путей мигрировано (тренер)</div></div>
+    <div class="stat"><div class="n">6</div><div class="l">раундов проверки GPT&#8209;PM</div></div>
+    <div class="stat"><div class="n">1+3+1</div><div class="l">BLOCKER / MAJOR / MINOR по коду, все закрыты</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">локальных коммита, 0 запушено</div></div>
+    <div class="stat"><div class="n">284 / 265</div><div class="l">тестов Functions / Flutter проходят</div></div>
+  </div>
+
+  <h2><span class="num">02</span>Что изменилось</h2>
+  <p class="section-note">Мобильный клиент раньше сам строил промпт и звал <code>FirebaseAI.googleAI()</code> напрямую &mdash; без квоты, без серверной проверки. Теперь запрос идёт через <code>aiCoachAdvice</code>.</p>
+  <div class="table-scroll">
+  <table class="gates">
+    <thead><tr><th>Компонент</th><th>Роль</th><th>Статус</th></tr></thead>
+    <tbody>
+      <tr><td class="gate">ai_gateway.ts</td><td>Общий исполнитель Gemini (Vertex AI, ADC, без ключей) &mdash; единственное место, откуда сервер зовёт модель</td><td><span class="pill closed">Новый</span></td></tr>
+      <tr><td class="gate">ai_coach_advice.ts</td><td>Первый из четырёх именованных callable&#8209;ов; переносит промпт из Dart на сервер</td><td><span class="pill closed">Новый</span></td></tr>
+      <tr><td class="gate">abuse_guard.ts</td><td>+4 независимые дневные квоты, по одной на ИИ-путь</td><td><span class="pill closed">Расширен</span></td></tr>
+      <tr><td class="gate">scaling.ts</td><td>Новый профиль <code>AI_METERED</code>: 15 инстансов &times; параллелизм 10 = потолок 150 одновременных платных вызовов</td><td><span class="pill closed">Расширен</span></td></tr>
+      <tr><td class="gate">ai_coach_service.dart</td><td>Больше не зовёт Gemini напрямую &mdash; вызывает <code>httpsCallable('aiCoachAdvice')</code></td><td><span class="pill closed">Мигрирован</span></td></tr>
+      <tr><td class="gate">ai_coach_context.dart</td><td>Клиентский <code>buildCoachPrompt</code> удалён как неиспользуемый дубликат &mdash; логика теперь только на сервере</td><td><span class="pill closed">Очищен</span></td></tr>
+      <tr><td class="gate">Распознавание, описание, генерация</td><td>Оставшиеся три ИИ-пути &mdash; тот же паттерн, отдельными коммитами</td><td><span class="pill blocked">Не начато</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2><span class="num">03</span>Что нашла проверка GPT&#8209;PM &mdash; по коду</h2>
+  <p class="section-note">Каждая находка проверена независимо перед принятием: поиск в официальной документации Google Cloud, прямая проверка файлов типов SDK в <code>node_modules</code>, точный подсчёт тестов через <code>grep</code> &mdash; ни одна не принята на слово.</p>
+
+  <div class="finding blocker">
+    <span class="tag">Blocker &middot; исправлено</span>
+    <h3>Регион Vertex AI не поддерживает выбранную модель</h3>
+    <p>Шлюз по умолчанию слал запросы в <code>europe-west1</code>, но <code>gemini-3-flash-preview</code> &mdash; модель только с глобальной точкой входа на Vertex AI, и вдобавок устаревшая (Google рекомендует переход на <code>gemini-3.5-flash</code>).</p>
+    <p><span class="verify-tag">Проверено:</span> веб-поиском напрямую по документации Google Cloud перед принятием &mdash; подтверждено на обоих пунктах.</p>
+    <p><span class="fixed-tag">Исправлено:</span> регион по умолчанию сменён на <code>"global"</code> (переопределяется через переменную окружения). Модель намеренно оставлена как есть &mdash; замена модели это отдельное решение о поведении/стоимости/задержке, а не часть чистой миграции транспорта; оставлен явный TODO.</p>
+  </div>
+
+  <div class="finding major">
+    <span class="tag">Major &middot; исправлено (частично, осознанно)</span>
+    <h3>Название снаряда/упражнения &mdash; реальный вектор prompt injection</h3>
+    <p>Поле <code>subjectName</code> от клиента подставлялось в промпт с проверкой только длины. Заголовок модуля заявлял закрытую границу &laquo;только структурированный ввод&raquo;, что было неточно для этого конкретного поля.</p>
+    <p><span class="fixed-tag">Исправлено:</span> запрет кавычек и управляющих символов, явная инструкция модели игнорировать команды внутри названия, 3 состязательных теста. <b>Честно задокументировано как защита в глубину, а не полное закрытие</b> &mdash; полное решение требует серверного справочника оборудования (<code>subjectId</code> &rarr; каноническое имя), которого в Functions пока нет; вынесено отдельной будущей задачей.</p>
+  </div>
+
+  <div class="finding major">
+    <span class="tag">Major &middot; исправлено</span>
+    <h3>Потолок параллелизма не задан явно &mdash; случайные 1&nbsp;200 платных вызовов одновременно</h3>
+    <p>Профиль <code>AI_METERED</code> оставлял параллелизм на платформенном значении по умолчанию (80). При потолке в 15 инстансов это давало 1&nbsp;200 одновременных платных вызовов Gemini &mdash; тот же потолок, что и для дешёвых операций с Firestore, применённый к тому, что теперь стоит денег за каждый вызов.</p>
+    <p><span class="fixed-tag">Исправлено:</span> явный <code>concurrency: 10</code> &rarr; потолок 150 вызовов на весь парк инстансов, закреплён тестом.</p>
+  </div>
+
+  <div class="finding major">
+    <span class="tag">Major &middot; исправлено</span>
+    <h3>Не было потолка на длину ответа модели</h3>
+    <p>Инструкция &laquo;до 180 слов&raquo; в самом промпте &mdash; просьба, а не гарантия. Название снаряда, обошедшее защиту от injection без запрещённых символов, всё ещё могло вызвать сколь угодно длинный, сколь угодно дорогой ответ.</p>
+    <p><span class="verify-tag">Проверено:</span> прямой проверкой <code>node_modules/@google/genai/dist/genai.d.ts</code>, что поле <code>maxOutputTokens</code> действительно существует в нужном интерфейсе конфигурации.</p>
+    <p><span class="fixed-tag">Исправлено:</span> поле сделано ОБЯЗАТЕЛЬНЫМ в опциях шлюза (нельзя забыть), для тренера задан лимит 512 токенов.</p>
+  </div>
+
+  <div class="finding minor">
+    <span class="tag">Minor &middot; исправлено</span>
+    <h3>У шлюза не было отдельных тестов</h3>
+    <p><code>ai_gateway.ts</code> был полностью замокан в тестах callable&#8209;а &mdash; именно поэтому ошибку с регионом не поймал ни один тест.</p>
+    <p><span class="fixed-tag">Исправлено:</span> новый файл тестов напрямую мокает SDK <code>@google/genai</code> и проверяет модель, регион, безопасность, сборку запроса и обработку ошибок.</p>
+  </div>
+
+  <h2><span class="num">04</span>Что нашла проверка &mdash; по собственной записи в журнале решений</h2>
+  <p class="section-note">После одобрения кода в раунде 3 точная сверка diff&#8209;а закоммиченного состояния (<code>--commit</code>, а не рабочей копии) нашла, что запись в <code>DECISION_LOG.md</code> устарела ещё до коммита &mdash; и первая попытка её исправить сама содержала две неточности. Ни одна из этих находок не касалась кода G1.</p>
+  <div class="finding minor">
+    <span class="tag">Minor &middot; исправлено</span>
+    <h3>Запись в журнале решений противоречила собственному коммиту</h3>
+    <p>Текст был застейджен до ответа раунда 3 и не обновлён после того, как раунд 3 вернул APPROVE &mdash; коммит утверждал &laquo;ответ раунда 3 ещё не получен&raquo;, хотя сам являлся этим ответом.</p>
+    <p><span class="fixed-tag">Исправлено:</span> отдельным, чисто документальным коммитом (не правкой существующего &mdash; правила репозитория оставляют такое решение оператору, а не GPT&#8209;PM).</p>
+  </div>
+  <div class="finding minor">
+    <span class="tag">Minor &middot; исправлено</span>
+    <h3>Первая попытка исправления сама перепутала хронологию и смысл поля <code>final</code></h3>
+    <p>Раунд 5 (не привязанный уверенно к своему запросу, но проверенный напрямую и подтверждённый) поймал: (1) черновик утверждал, что коммит предшествовал ответу раунда 3 &mdash; неверно, коммит был СОЗДАН ПОСЛЕ; (2) черновик процитировал техническое поле <code>final: true</code> как одобрение, хотя сам текст GPT&#8209;PM в том раунде прямо говорил, что финальное одобрение придержано.</p>
+    <p><span class="fixed-tag">Исправлено:</span> хронология сверена напрямую с <code>git log</code>, формулировка про <code>final</code> переписана, чтобы отличать техническое поле транспорта от фактического решения проверяющего.</p>
+  </div>
+
+  <h2><span class="num">05</span>Состояние тестов и сборки</h2>
+  <div class="suite-grid">
+    <div class="suite pass"><span class="name">Functions &middot; Jest, весь набор</span><span class="result">284 / 284</span></div>
+    <div class="suite pass"><span class="name">Functions &middot; tsc --noEmit</span><span class="result">чисто</span></div>
+    <div class="suite pass"><span class="name">Functions &middot; npm run build</span><span class="result">чисто</span></div>
+    <div class="suite pass"><span class="name">Flutter &middot; ai_coach + exercise_page + visual_equipment</span><span class="result">265 / 265</span></div>
+    <div class="suite pass"><span class="name">Flutter &middot; flutter analyze (весь проект)</span><span class="result">0 новых замечаний</span></div>
+  </div>
+
+  <h2><span class="num">06</span>Что осталось открытым &mdash; честно, не скрыто</h2>
+  <ul class="plain">
+    <li><b>Живой smoke-тест против настоящего Vertex AI</b> с реальными учётными данными ADC не выполнялся из этой изолированной сессии &mdash; явный, названный пробел перед деплоем, а не заявленный как готовый.</li>
+    <li><b>Защита от prompt injection через <code>subjectName</code></b> &mdash; это защита в глубину (запрет символов + инструкция модели), не полное закрытие. Полное решение требует серверного справочника оборудования, которого пока нет.</li>
+    <li><b>Модель <code>gemini-3-flash-preview</code> устарела</b> на Vertex AI. Оставлена намеренно на время этой миграции транспорта; переход на замену &mdash; отдельная, отдельно проверяемая задача.</li>
+    <li><b>Три из четырёх ИИ-путей</b> (распознавание оборудования, описание снаряда, генерация упражнений) ещё не мигрированы &mdash; тот же паттерн, следующими отдельными коммитами.</li>
+    <li><b>Раунды 5&ndash;6</b> проверки журнала решений пришли с флагом <code>correlated: false</code> &mdash; известное, задокументированное ограничение общего браузерного транспорта PM&nbsp;Bridge. Обе находки в этих раундах проверены напрямую и оказались верны; цепочка закрыта на раунде 6 без раунда 7, по той же логике, что и более ранняя ветка мастер-плана в этом же журнале.</li>
+  </ul>
+
+  <h2><span class="num">07</span>Ход ревью GPT&#8209;PM</h2>
+  <div class="deviation">
+    <span class="gate-tag">Раунд 1</span>
+    <p>Рабочая копия. VERDICT BLOCKER. 4 находки (см. раздел 03). Все исправлены до отправки раунда 2.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">Раунд 2</span>
+    <p>Рабочая копия. VERDICT MAJOR. Подтвердил закрытие BLOCKER и 2 MAJOR раунда 1; нашёл 1 новый MAJOR (лимит токенов) и уточнил подсчёт тестов.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">Раунд 3</span>
+    <p>Рабочая копия. VERDICT APPROVE. COMMIT: AUTHORIZED. Коммит <code>9c06ede</code> создан после этого ответа.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">Раунд 4</span>
+    <p>Точный коммит <code>9c06ede --final</code>. Первая попытка &mdash; занятость общего браузерного профиля другой сессией, ожидаемо неблокирующе. Повтор: VERDICT MINOR &mdash; устаревшая запись в журнале решений (раздел 04); по коду G1 новых находок нет.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">Раунды 5&ndash;6</span>
+    <p>Два чисто документальных коммита, исправляющих запись журнала. Оба раунда пришли с <code>correlated: false</code>; обе находки проверены напрямую и приняты. Раунд 6: VERDICT APPROVE в тексте, но механический шлюз транспорта корректно придержал <code>--final</code> из-за отсутствия привязки &mdash; не ошибка, а рабочая защита самого инструмента.</p>
+  </div>
+
+  <div class="closing">
+    <b>Далее:</b> код G1 (первый срез) закоммичен и одобрен GPT&#8209;PM на привязанной, проверяемой переписке (раунды 3&ndash;4). <b>Пуш не выполнялся</b> и требует отдельного явного разрешения оператора вне зависимости от состояния GPT&#8209;PM &mdash; таково правило этого рабочего пространства, и оно не запрашивалось в этой сессии. Следующий шаг после решения по пушу &mdash; перенести тот же паттерн на оставшиеся три ИИ-пути (распознавание оборудования, описание снаряда, генерация упражнений), каждый отдельным коммитом со своим циклом проверки.
+  </div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

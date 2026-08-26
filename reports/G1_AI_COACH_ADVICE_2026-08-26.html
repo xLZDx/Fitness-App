@@ -1,0 +1,530 @@
+<title>G1: Server-Side AI Coach</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #17212b;
+    --ink-soft: #46586b;
+    --ink-faint: #7a8b9c;
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --surface-sunken: #eef2f4;
+    --line: #dce3e7;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --amber: #a86a06;
+    --amber-soft: #fbf0dc;
+    --red: #a83a34;
+    --red-soft: #fbeae8;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Sora", "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(23,33,43,0.06), 0 8px 24px -12px rgba(23,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8edf0;
+      --ink-soft: #a9b8c4;
+      --ink-faint: #74879a;
+      --paper: #0f1620;
+      --surface: #161f2b;
+      --surface-sunken: #101720;
+      --line: #263241;
+      --accent: #3fbcc4;
+      --accent-ink: #06222a;
+      --accent-soft: #10333a;
+      --amber: #e0a83f;
+      --amber-soft: #392c10;
+      --red: #e0756e;
+      --red-soft: #3a1a17;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8edf0;
+    --ink-soft: #a9b8c4;
+    --ink-faint: #74879a;
+    --paper: #0f1620;
+    --surface: #161f2b;
+    --surface-sunken: #101720;
+    --line: #263241;
+    --accent: #3fbcc4;
+    --accent-ink: #06222a;
+    --accent-soft: #10333a;
+    --amber: #e0a83f;
+    --amber-soft: #392c10;
+    --red: #e0756e;
+    --red-soft: #3a1a17;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 28px 96px; }
+
+  header { padding-bottom: 8px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(28px, 4.4vw, 40px);
+    font-weight: 600;
+    line-height: 1.16;
+    margin: 0 0 14px;
+    text-wrap: balance;
+    letter-spacing: -0.005em;
+  }
+  .lede {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 66ch;
+    margin: 0 0 28px;
+  }
+
+  .verdict-band {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 8px 0 44px;
+  }
+  .verdict-band .mark {
+    width: 40px; height: 40px; flex: none;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 700; font-size: 18px;
+  }
+  .verdict-band .text b {
+    font-family: var(--display);
+    font-size: 17px;
+    display: block;
+  }
+  .verdict-band .text span {
+    color: var(--ink-soft);
+    font-size: 14.5px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 56px 0 6px;
+    letter-spacing: -0.005em;
+  }
+  h2 .num {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 10px;
+    font-size: 16px;
+  }
+  .section-note { color: var(--ink-soft); font-size: 15px; margin: 0 0 22px; max-width: 72ch; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 24px 0 40px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .stat .n {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  table.gates {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    font-size: 14.5px;
+  }
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); }
+  table.gates th, table.gates td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.gates th {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    background: var(--surface-sunken);
+    font-weight: 600;
+  }
+  table.gates tr:last-child td { border-bottom: none; }
+  table.gates td.gate { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+  table.gates code { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 8px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+  .pill.closed { background: var(--accent-soft); color: var(--accent); }
+  .pill.closed::before { background: var(--accent); }
+  .pill.blocked { background: var(--surface-sunken); color: var(--ink-faint); }
+  .pill.blocked::before { background: var(--ink-faint); }
+  .pill.pending { background: var(--amber-soft); color: var(--amber); }
+  .pill.pending::before { background: var(--amber); }
+
+  .suite-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+    margin: 20px 0 36px;
+  }
+  .suite {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .suite .name { font-size: 14px; color: var(--ink-soft); }
+  .suite .result { font-family: var(--mono); font-weight: 600; font-size: 14px; }
+  .suite.pass .result { color: var(--accent); }
+
+  .finding {
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--ink-faint);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 0 0 16px;
+    background: var(--surface);
+  }
+  .finding.blocker { border-left-color: var(--red); }
+  .finding.major { border-left-color: var(--red); }
+  .finding.minor { border-left-color: var(--amber); }
+  .finding .tag {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  .finding.blocker .tag { background: var(--red-soft); color: var(--red); }
+  .finding.major .tag { background: var(--red-soft); color: var(--red); }
+  .finding.minor .tag { background: var(--amber-soft); color: var(--amber); }
+  .finding h3 { font-family: var(--display); font-size: 16.5px; margin: 0 0 8px; font-weight: 600; }
+  .finding p { margin: 0 0 10px; color: var(--ink-soft); font-size: 14.5px; }
+  .finding p:last-child { margin-bottom: 0; }
+  .finding .fixed-tag { color: var(--accent); font-weight: 600; }
+  .finding .verify-tag { color: var(--ink-faint); font-style: italic; }
+
+  ul.plain { padding-left: 20px; margin: 12px 0; }
+  ul.plain li { margin-bottom: 10px; font-size: 15px; color: var(--ink-soft); }
+  ul.plain li b { color: var(--ink); }
+  ul.plain li code { font-family: var(--mono); font-size: 13.5px; }
+
+  .deviation {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .deviation:last-child { border-bottom: none; }
+  .deviation .gate-tag { font-family: var(--mono); font-weight: 600; color: var(--accent); font-size: 13.5px; }
+  .deviation p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+
+  .closing {
+    margin-top: 56px;
+    padding: 24px 26px;
+    background: var(--surface-sunken);
+    border-radius: var(--radius);
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .closing b { color: var(--ink); }
+
+  a { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .deviation { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness_App &middot; MVP1 / SPTR &middot; Gate G1</div>
+    <h1>G1, first slice: AI coach moved to a server-owned callable</h1>
+    <p class="lede">The first of the app's four AI surfaces (coach advice) is off the direct client-side Gemini call and behind a dedicated Cloud Function with a quota, a token-output cap, and an explicit concurrency ceiling. Six rounds of GPT&#8209;PM review found and closed one BLOCKER, three MAJOR, and one MINOR against the code, then three more findings against the decision log itself, not the code.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 8d831fb</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="verdict-band">
+    <div class="mark">&#10003;</div>
+    <div class="text">
+      <b>CODE COMMITTED AND GPT&#8209;PM-APPROVED &mdash; PUSH AWAITS A SEPARATE OPERATOR GO</b>
+      <span>Round 3 (exact-diff pass): VERDICT APPROVE, COMMIT: AUTHORIZED. Nothing has been pushed.</span>
+    </div>
+  </div>
+
+  <h2><span class="num">01</span>At a glance</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="n">1 / 4</div><div class="l">AI surfaces migrated (coach)</div></div>
+    <div class="stat"><div class="n">6</div><div class="l">GPT&#8209;PM review rounds</div></div>
+    <div class="stat"><div class="n">1+3+1</div><div class="l">BLOCKER / MAJOR / MINOR on the code, all closed</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">local commits, 0 pushed</div></div>
+    <div class="stat"><div class="n">284 / 265</div><div class="l">Functions / Flutter tests passing</div></div>
+  </div>
+
+  <h2><span class="num">02</span>What changed</h2>
+  <p class="section-note">The mobile client used to build its own prompt and call <code>FirebaseAI.googleAI()</code> directly &mdash; no quota, no server-side validation. The request now goes through <code>aiCoachAdvice</code>.</p>
+  <div class="table-scroll">
+  <table class="gates">
+    <thead><tr><th>Component</th><th>Role</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="gate">ai_gateway.ts</td><td>Shared Gemini executor (Vertex AI, ADC, no API keys) &mdash; the only place server code calls the model</td><td><span class="pill closed">New</span></td></tr>
+      <tr><td class="gate">ai_coach_advice.ts</td><td>First of four named callables; ports the prompt from Dart to the server</td><td><span class="pill closed">New</span></td></tr>
+      <tr><td class="gate">abuse_guard.ts</td><td>+4 independent daily quotas, one per AI surface</td><td><span class="pill closed">Extended</span></td></tr>
+      <tr><td class="gate">scaling.ts</td><td>New <code>AI_METERED</code> profile: 15 instances &times; concurrency 10 = 150 max in-flight paid calls</td><td><span class="pill closed">Extended</span></td></tr>
+      <tr><td class="gate">ai_coach_service.dart</td><td>No longer calls Gemini directly &mdash; calls <code>httpsCallable('aiCoachAdvice')</code></td><td><span class="pill closed">Migrated</span></td></tr>
+      <tr><td class="gate">ai_coach_context.dart</td><td>Client-side <code>buildCoachPrompt</code> deleted as an unused duplicate &mdash; the logic now lives server-side only</td><td><span class="pill closed">Cleaned up</span></td></tr>
+      <tr><td class="gate">Recognition, description, generation</td><td>The remaining three AI surfaces &mdash; same pattern, separate commits</td><td><span class="pill blocked">Not started</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2><span class="num">03</span>What GPT&#8209;PM's review found &mdash; against the code</h2>
+  <p class="section-note">Every finding was checked independently before being accepted: a direct search against Google Cloud's own documentation, a direct read of the SDK's own type definitions in <code>node_modules</code>, an exact test count via <code>grep</code> &mdash; none taken on the reply's word alone.</p>
+
+  <div class="finding blocker">
+    <span class="tag">Blocker &middot; fixed</span>
+    <h3>The Vertex AI location did not support the chosen model</h3>
+    <p>The gateway defaulted to <code>europe-west1</code>, but <code>gemini-3-flash-preview</code> is a global-endpoint-only model on Vertex AI, and separately deprecated (Google recommends migrating to <code>gemini-3.5-flash</code>).</p>
+    <p><span class="verify-tag">Verified:</span> via a direct web search against Google Cloud's own documentation before accepting &mdash; confirmed on both counts.</p>
+    <p><span class="fixed-tag">Fixed:</span> the default location changed to <code>"global"</code> (still env-overridable). The model was deliberately kept as-is &mdash; swapping it is a separate behavior/cost/latency decision, not part of a pure transport migration; a loud TODO tracks it.</p>
+  </div>
+
+  <div class="finding major">
+    <span class="tag">Major &middot; fixed (partially, deliberately)</span>
+    <h3>The equipment/exercise name was a real prompt-injection surface</h3>
+    <p>The client-controlled <code>subjectName</code> field was interpolated into the prompt with only a length check. The module's own header claimed a closed "structured input only" boundary, which was not fully accurate for this one field.</p>
+    <p><span class="fixed-tag">Fixed:</span> quotes and control characters rejected, an explicit instruction added telling the model to ignore commands inside the name, 3 adversarial tests added. <b>Honestly documented as defense-in-depth, not a full close</b> &mdash; a full close needs a server-side equipment catalogue (<code>subjectId</code> &rarr; canonical name) that does not exist in Functions yet; tracked as its own future gate.</p>
+  </div>
+
+  <div class="finding major">
+    <span class="tag">Major &middot; fixed</span>
+    <h3>No explicit concurrency ceiling &mdash; an accidental 1,200 simultaneous paid calls</h3>
+    <p>The <code>AI_METERED</code> profile left concurrency at the platform default (80). At a maxInstances ceiling of 15, that implied 1,200 simultaneous paid Gemini calls &mdash; the same ceiling used for cheap Firestore work, applied to something that now bills per call.</p>
+    <p><span class="fixed-tag">Fixed:</span> explicit <code>concurrency: 10</code> &rarr; a 150-call fleet-wide ceiling, pinned by a test.</p>
+  </div>
+
+  <div class="finding major">
+    <span class="tag">Major &middot; fixed</span>
+    <h3>No cap on response length</h3>
+    <p>The prompt's own "under 180 words" line is a request, not a guarantee. A subject name crafted to defeat the injection defense without a forbidden character could still trigger an arbitrarily long, arbitrarily billed response.</p>
+    <p><span class="verify-tag">Verified:</span> by directly inspecting <code>node_modules/@google/genai/dist/genai.d.ts</code> to confirm <code>maxOutputTokens</code> genuinely exists on the right config interface.</p>
+    <p><span class="fixed-tag">Fixed:</span> the field is now REQUIRED on the gateway's options (cannot be forgotten), set to 512 tokens for the coach.</p>
+  </div>
+
+  <div class="finding minor">
+    <span class="tag">Minor &middot; fixed</span>
+    <h3>The gateway had no test coverage of its own</h3>
+    <p><code>ai_gateway.ts</code> was fully mocked out in the callable's own test suite &mdash; exactly why the location bug was invisible to any test.</p>
+    <p><span class="fixed-tag">Fixed:</span> a new test file mocks the <code>@google/genai</code> SDK directly and pins model, location, safety, request shape, and error mapping.</p>
+  </div>
+
+  <h2><span class="num">04</span>What the review found &mdash; against the decision-log record itself</h2>
+  <p class="section-note">After round 3 approved the code, an exact-commit re-read (<code>--commit</code>, not the working tree) found the <code>DECISION_LOG.md</code> entry had gone stale before the commit &mdash; and the first attempt to fix it introduced two errors of its own. Neither finding touched G1's code.</p>
+  <div class="finding minor">
+    <span class="tag">Minor &middot; fixed</span>
+    <h3>The decision-log entry contradicted its own commit</h3>
+    <p>The text had been staged before round 3's response arrived and was never refreshed once it returned APPROVE &mdash; the commit claimed "round 3's response not yet available" while being that very response.</p>
+    <p><span class="fixed-tag">Fixed:</span> in a separate, purely documentary commit (not an amend &mdash; this repo's rules reserve that call to the operator, not GPT&#8209;PM).</p>
+  </div>
+  <div class="finding minor">
+    <span class="tag">Minor &middot; fixed</span>
+    <h3>The first correction itself got the chronology and the <code>final</code> field wrong</h3>
+    <p>Round 5 (not confidently correlated to its own request, but independently verified before acting) caught: (1) the draft said the commit predated round 3's response &mdash; wrong, the commit was created AFTER; (2) the draft quoted the mechanical <code>final: true</code> transport field as approval, when GPT&#8209;PM's own prose in that round explicitly said final approval was withheld.</p>
+    <p><span class="fixed-tag">Fixed:</span> chronology checked directly against <code>git log</code>, the <code>final</code>-field wording rewritten to distinguish the mechanical transport field from the reviewer's actual stated judgment.</p>
+  </div>
+
+  <h2><span class="num">05</span>Test and build state</h2>
+  <div class="suite-grid">
+    <div class="suite pass"><span class="name">Functions &middot; Jest, full suite</span><span class="result">284 / 284</span></div>
+    <div class="suite pass"><span class="name">Functions &middot; tsc --noEmit</span><span class="result">clean</span></div>
+    <div class="suite pass"><span class="name">Functions &middot; npm run build</span><span class="result">clean</span></div>
+    <div class="suite pass"><span class="name">Flutter &middot; ai_coach + exercise_page + visual_equipment</span><span class="result">265 / 265</span></div>
+    <div class="suite pass"><span class="name">Flutter &middot; flutter analyze (whole project)</span><span class="result">0 new issues</span></div>
+  </div>
+
+  <h2><span class="num">06</span>What's still open &mdash; stated plainly, not hidden</h2>
+  <ul class="plain">
+    <li><b>A live smoke test against real Vertex AI</b> with real ADC credentials has not been run from this sandboxed session &mdash; an explicit, named gap before deployment, not claimed as done.</li>
+    <li><b>The <code>subjectName</code> prompt-injection defense</b> is defense-in-depth (character rejection + a model-level instruction), not a full close. A full close needs a server-side equipment catalogue that does not exist yet.</li>
+    <li><b>The model, <code>gemini-3-flash-preview</code>, is deprecated</b> on Vertex AI. Kept deliberately for the duration of this transport migration; moving off it is its own, separately reviewed change.</li>
+    <li><b>Three of the four AI surfaces</b> (equipment recognition, machine description, exercise generation) are not yet migrated &mdash; same pattern, in separate follow-up commits.</li>
+    <li><b>Rounds 5&ndash;6</b> of the decision-log review both came back flagged <code>correlated: false</code> &mdash; a known, documented limitation of PM Bridge's shared-browser transport. Both rounds' findings were independently verified and turned out correct; the thread was closed at round 6 without a round 7, on the same reasoning the master-plan thread in this same log used earlier.</li>
+  </ul>
+
+  <h2><span class="num">07</span>GPT&#8209;PM review timeline</h2>
+  <div class="deviation">
+    <span class="gate-tag">Round 1</span>
+    <p>Working tree. VERDICT BLOCKER. 4 findings (section 03). All fixed before round 2 was sent.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">Round 2</span>
+    <p>Working tree. VERDICT MAJOR. Confirmed round 1's BLOCKER and 2 MAJORs closed; found 1 new MAJOR (token cap) and corrected a test count.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">Round 3</span>
+    <p>Working tree. VERDICT APPROVE. COMMIT: AUTHORIZED. Commit <code>9c06ede</code> was created after this response.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">Round 4</span>
+    <p>Exact commit <code>9c06ede --final</code>. First attempt: shared browser profile busy with another session, expected non-blocking fail-open. Retry: VERDICT MINOR &mdash; the stale decision-log entry (section 04); no new finding on G1's code.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">Rounds 5&ndash;6</span>
+    <p>Two purely documentary commits correcting the log entry. Both rounds came back <code>correlated: false</code>; both findings were independently verified and accepted. Round 6: VERDICT APPROVE in prose, but the transport's own mechanical gate correctly withheld <code>--final</code> for the missing correlation &mdash; not a bug, the tool working as designed.</p>
+  </div>
+
+  <div class="closing">
+    <b>Next:</b> G1's first slice code is committed and GPT&#8209;PM-approved on a correlated, verifiable transcript (rounds 3&ndash;4). <b>Nothing has been pushed</b>, and push requires a separate, explicit operator go-ahead regardless of GPT&#8209;PM's state &mdash; this workspace's own standing rule, not yet requested this session. Once a push decision is made, the next step is replicating the same pattern to the remaining three AI surfaces (equipment recognition, machine description, exercise generation), each as its own commit with its own review cycle.
+  </div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

@@ -25406,3 +25406,9 @@ transcript (`9c06ede`, round 3/4); decision-log documentation corrected across t
 rounds. `PUSH: NOT YET` -- unchanged, and not decided by any of rounds 5/6: push requires a separate,
 explicit operator push-GO regardless of GPT-PM's state, per `~/.claude/CLAUDE.md` §4/§8/§15, and that
 has not been asked for yet in this session.
+
+**Report published:** `reports/G1_AI_COACH_ADVICE_2026-08-26.{html,ru.html}`, per the mandatory
+house `html-report` format -- provenance-conformed, RU published as an Artifact
+(`https://claude.ai/code/artifact/76a9f27f-6b3a-4024-ba88-1de970ccf12a`), both committed to the repo.
+Handed over to the operator in-session per that skill's own process; stopping here rather than
+starting the remaining three AI surfaces without a fresh operator turn.
