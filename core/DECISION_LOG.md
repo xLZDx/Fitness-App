@@ -25974,4 +25974,40 @@ the round-1 remediation itself (not new unrelated findings -- exactly the class 
 ordering test); `flutter analyze` on the touched directories clean (0 issues); the two
 directly-touched Dart test files 39/39; full `flutter test` 3243 total (3242 + the 1 new zombie-call
 test), 1 failure -- the same known pre-existing `app_semantic_colors_test.dart` signature, re-run and
-re-confirmed unchanged from round 1.
+re-confirmed unchanged from round 1. Committed as `93ee288`. Sent for round 3 (`review.js --commit
+93ee288 --round 3`, narrow scope note per CLAUDE.md §17); first attempt again hit a plain transport
+`fetch failed` (fail-open, no reply), second attempt succeeded.
+
+**GPT-PM round 3: `VERDICT: MINOR`, correlated -- 2 MINOR, both direct regressions/refinements of
+the round-2 remediation, both independently verified true before fixing:**
+
+1. **MINOR, confirmed against documented Dart API guidance** -- round 2's remaining-budget
+   computation used `DateTime.now()` subtraction (`timeout - DateTime.now().difference(started)`),
+   which is wall-clock time, not monotonic: an NTP sync, DST transition, or a user changing the
+   device clock mid-call could over- or under-state real elapsed time, expanding or collapsing the
+   intended 30s budget. Not a security bypass (the server enforces its own independent 20s deadline
+   regardless), but it breaks the timeout invariant this remediation exists to enforce.
+   **Fixed:** replaced with `Stopwatch()..start()` / `stopwatch.elapsed`, which measures real
+   elapsed time unaffected by wall-clock adjustments.
+2. **MINOR, confirmed by re-deriving the original ordering from `6e52bd6`** -- round 2's "resolve
+   language before validating the image" fix overshot: it ran `resolveLanguageName` before even the
+   CHEAP `mimeType`/`imageBase64` type checks, whereas `6e52bd6`'s actual original order was
+   mimeType, then imageBase64, then languageCode -- all cheap -- before any byte-level image work.
+   A compound-invalid request (missing mimeType + invalid languageCode) now reported the languageCode
+   error where the original reported the mimeType one -- the same class of observable ordering drift
+   round 1's own MINOR was about, reintroduced one level deeper. **Fixed:** split
+   `image_validation.ts`'s `validateImageInput` into `checkImageFieldTypes` (the cheap half:
+   mimeType + imageBase64 type/allowlist checks, in the original order) and
+   `decodeAndValidateImageBytes` (the expensive half: length guard, decode, sniff, MIME match).
+   `ai_equipment_recognition.ts` keeps calling the still-exported composed `validateImageInput`
+   unchanged (its own 20+ tests still pass, proving no behavior moved there either).
+   `ai_machine_description.ts`'s `parseInput` now calls `checkImageFieldTypes`, then
+   `resolveLanguageName`, then `decodeAndValidateImageBytes` -- reproducing the exact original
+   three-cheap-checks-then-expensive-work order. New test: missing mimeType + invalid languageCode
+   now correctly reports the mimeType error.
+
+**Verified after the round-3 fixes:** `tsc --noEmit` clean; Functions Jest 345/345 (344 + 1 new
+compound-order test); `flutter analyze` on the touched directories clean; the two directly-touched
+Dart test files 39/39 (unchanged count -- round 3's Dart fix was internal to the timing mechanism,
+no new Dart test needed since the existing zombie-call test already exercises the corrected path);
+full `flutter test` 3243/3243 attempted, 1 failure, same known pre-existing signature.

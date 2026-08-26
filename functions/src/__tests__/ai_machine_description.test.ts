@@ -117,6 +117,17 @@ describe("aiMachineDescription", () => {
     expect(prompt).not.toContain("in en");
   });
 
+  test("checks mimeType before languageCode, matching the original commit's cheap-check order", async () => {
+    // GPT-PM's round-3 review caught that round 2's "language first" fix overshot: the true
+    // original order (commit 6e52bd6, before either fix) was mimeType, then imageBase64, then
+    // languageCode -- all cheap type checks -- before any byte-level image work. A missing mimeType
+    // paired with an invalid languageCode must still report the mimeType problem.
+    await expect(
+      aiMachineDescription.run(req({ imageBase64: JPEG_BASE64, languageCode: "fr" })),
+    ).rejects.toThrow(/mimeType/);
+    expect(generate).not.toHaveBeenCalled();
+  });
+
   test("checks languageCode before doing any image decode/sniff work", async () => {
     // GPT-PM's round-2 review caught a regression in the round-1 fix: the language check must run
     // BEFORE the (more expensive) image validation, matching the original commit's ordering. This

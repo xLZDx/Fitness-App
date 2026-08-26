@@ -21,7 +21,7 @@ import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https
 import { AI_METERED } from "./scaling";
 import { QUOTAS, enforceDailyQuota, noteAppCheck, quotaFor } from "./abuse_guard";
 import { generate, InlineImage } from "./ai_gateway";
-import { validateImageInput } from "./image_validation";
+import { checkImageFieldTypes, decodeAndValidateImageBytes } from "./image_validation";
 
 /** Matches every other callable's `signInProvider` extraction. */
 function signInProvider(request: CallableRequest): string | undefined {
@@ -50,15 +50,16 @@ interface MachineDescriptionInput {
 
 function parseInput(data: unknown): MachineDescriptionInput {
   const d = (data ?? {}) as Record<string, unknown>;
-  // Language resolved BEFORE the image is validated, deliberately -- GPT-PM's G1 round-2 review
-  // caught that writing `image` first in the returned object literal (its property evaluates
-  // first, by source order) ran the full base64-decode/file-signature-sniff work before an
-  // invalid languageCode was ever checked, a real regression against 6e52bd6's own ordering
-  // (mimeType/base64/languageCode type checks, all cheap, all before the byte-level work). An
-  // authenticated caller could otherwise burn decode/sniff CPU on every request just by pairing a
-  // large valid image with a garbage languageCode.
+  // Reproduces `6e52bd6`'s original three-step cheap order -- mimeType, then imageBase64, then
+  // languageCode -- before any byte-level image work runs. GPT-PM's G1 round-2 review caught a
+  // version that checked language before even the cheap image-field type checks (overshooting the
+  // fix for round-1's "expensive image work before language" gap); round-3 review is what named
+  // the actual original ordering this now restores exactly. `checkImageFieldTypes`/
+  // `decodeAndValidateImageBytes` are `image_validation.ts`'s split of the cheap and expensive
+  // halves for exactly this reason -- see that module's own header.
+  const checkedImage = checkImageFieldTypes(d.mimeType, d.imageBase64);
   const languageName = resolveLanguageName(d.languageCode);
-  const image = validateImageInput(d.mimeType, d.imageBase64);
+  const image = decodeAndValidateImageBytes(checkedImage.mimeType, checkedImage.base64);
   return { image, languageName };
 }
 

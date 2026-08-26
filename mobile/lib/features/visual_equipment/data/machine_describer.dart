@@ -180,9 +180,15 @@ class GeminiMachineDescriber implements MachineDescriber {
       // starting the network call at all if resize left real budget — means
       // the network call is simply never initiated once the deadline is
       // already spent, rather than started and then abandoned.
-      final started = DateTime.now();
+      // `Stopwatch`, not `DateTime.now()` subtraction — GPT-PM's G1 round-3
+      // review caught that wall-clock time is not monotonic (NTP sync, DST,
+      // a user changing the device clock), so a `DateTime`-based elapsed
+      // measurement could over- or under-state the real remaining budget.
+      // `Stopwatch` measures real elapsed time regardless of wall-clock
+      // adjustments.
+      final stopwatch = Stopwatch()..start();
       final bytes = await _photoBytes(path).timeout(timeout);
-      final remaining = timeout - DateTime.now().difference(started);
+      final remaining = timeout - stopwatch.elapsed;
       if (remaining <= Duration.zero) {
         throw TimeoutException('resize left no budget for the network call');
       }
