@@ -81,42 +81,16 @@ export function sniffImageMimeType(bytes: Buffer): string | null {
 }
 
 /**
- * The cheap half of validation: type checks and the MIME allowlist, in the exact order
- * `ai_equipment_recognition.ts`'s pre-extraction original checked them -- mimeType (type +
- * allowlist) before imageBase64 (type + non-empty). No decoding, no byte-level work.
- *
- * Split out from the byte-level checks (`decodeAndValidateImageBytes` below) specifically so a
- * caller with its OWN cheap field to check -- `aiMachineDescription`'s `languageCode` -- can run
- * that check between this and the expensive half, without regressing this ordering. GPT-PM's G1
- * round-3 review caught that folding language resolution and image validation into one call (both
- * the original single-function `validateImageInput` shape, and a naive "language first" reordering
- * of it) could only ever get ONE of two orderings right: either the byte-level image work ran before
- * an invalid language was ever checked (round 1's shape), or the cheap mimeType/base64 type checks
- * themselves ran AFTER language (round 2's "fix", which overshot -- `6e52bd6`'s original order was
- * mimeType, then base64, then languageCode, all cheap, all before the byte-level work). Splitting
- * cheap from expensive lets a caller reproduce that exact three-step cheap order, then do the
- * expensive part last, for any number of its own cheap fields.
+ * The byte-level work shared by both entry points below: cheap pre-decode length guard, strict
+ * base64 decode, decoded-size cap (defense-in-depth -- provably unreachable given the pre-decode
+ * guard, kept in case the two constants ever drift apart), file-signature sniff, and MIME/signature
+ * equality. Assumes `mimeType` is already known to be an allowlisted string and `base64` a
+ * non-empty string -- both entry points check that themselves, in their own different orders, before
+ * calling in here. Not exported: this is the one place the actual security-sensitive logic lives,
+ * and it must not be reachable except through a caller that has already done its own allowlist/
+ * empty checks.
  */
-export function checkImageFieldTypes(
-  mimeType: unknown,
-  base64: unknown,
-): { mimeType: string; base64: string } {
-  if (typeof mimeType !== "string" || !ALLOWED_MIME_TYPES.has(mimeType)) {
-    throw new HttpsError("invalid-argument", "mimeType must be one of image/jpeg, image/png, image/webp.");
-  }
-  if (typeof base64 !== "string" || base64.length === 0) {
-    throw new HttpsError("invalid-argument", "imageBase64 is required.");
-  }
-  return { mimeType, base64 };
-}
-
-/**
- * The expensive half: cheap pre-decode length guard, strict base64 decode, decoded-size cap
- * (defense-in-depth -- provably unreachable given the pre-decode guard, kept in case the two
- * constants ever drift apart), file-signature sniff, and MIME/signature equality. Takes already
- * type-checked strings -- call `checkImageFieldTypes` first.
- */
-export function decodeAndValidateImageBytes(mimeType: string, base64: string): InlineImage {
+function validateImageBytes(mimeType: string, base64: string): InlineImage {
   if (base64.length > MAX_IMAGE_BASE64_LENGTH) {
     throw new HttpsError("invalid-argument", "imageBase64 is larger than this endpoint accepts.");
   }
@@ -137,12 +111,68 @@ export function decodeAndValidateImageBytes(mimeType: string, base64: string): I
 }
 
 /**
- * Validates a raw `{mimeType, imageBase64}` pair in one call -- `checkImageFieldTypes` then
- * `decodeAndValidateImageBytes` -- for a caller with no OWN cheap field to interleave between the
- * two halves. `aiEquipmentRecognition` uses this form; `aiMachineDescription` calls the two halves
- * separately so it can check `languageCode` in between -- see `checkImageFieldTypes`'s own header.
+ * The RAW type checks only -- `typeof mimeType === "string"`, `typeof base64 === "string"` -- and
+ * nothing else. No allowlist check, no empty-string check, no decoding.
+ *
+ * For `aiMachineDescription`'s `parseInput`, which needs to check its OWN cheap field --
+ * `languageCode` -- in between this and `decodeAndValidateImageBytes`, reproducing `6e52bd6`'s
+ * exact original three-phase order (raw type checks, then language, then everything else about the
+ * image). GPT-PM's G1 review took three rounds to pin this boundary down precisely: round 1 treated
+ * the WHOLE image validation as "cheap" and ran it all before language; round 2's fix bundled the
+ * MIME allowlist AND empty-base64 checks in with the raw type checks and ran that whole bundle
+ * before language, when the true original only ran the two bare `typeof` checks there -- the
+ * allowlist and empty-string checks lived inside the original `validateImageInput` and ran AFTER
+ * language. Deliberately narrower than it might look: ONLY the two `typeof` checks, because that is
+ * all that ran before `languageCode` in the commit this reproduces.
+ *
+ * NOT used by `validateImageInput` below -- `aiEquipmentRecognition` has no third field to
+ * interleave, and its own original ordering combined the type-check and the allowlist-check for
+ * EACH field into one condition (see that function's own header for why composing this function
+ * with `decodeAndValidateImageBytes` would have gotten that different, coarser ordering wrong).
+ */
+export function checkImageFieldsAreStrings(
+  mimeType: unknown,
+  base64: unknown,
+): { mimeType: string; base64: string } {
+  if (typeof mimeType !== "string") {
+    throw new HttpsError("invalid-argument", "mimeType must be one of image/jpeg, image/png, image/webp.");
+  }
+  if (typeof base64 !== "string") {
+    throw new HttpsError("invalid-argument", "imageBase64 is required.");
+  }
+  return { mimeType, base64 };
+}
+
+/**
+ * The allowlist check, the empty-base64 check, and the byte-level work (`validateImageBytes`) --
+ * everything `aiMachineDescription`'s `parseInput` runs AFTER `languageCode`. Takes strings already
+ * passed through `checkImageFieldsAreStrings`.
+ */
+export function decodeAndValidateImageBytes(mimeType: string, base64: string): InlineImage {
+  if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+    throw new HttpsError("invalid-argument", "mimeType must be one of image/jpeg, image/png, image/webp.");
+  }
+  if (base64.length === 0) {
+    throw new HttpsError("invalid-argument", "imageBase64 is required.");
+  }
+  return validateImageBytes(mimeType, base64);
+}
+
+/**
+ * Validates a raw `{mimeType, imageBase64}` pair for `aiEquipmentRecognition`, which has no third
+ * field to interleave a check between -- so this reproduces that callable's own original,
+ * COARSER ordering directly, rather than composing `checkImageFieldsAreStrings` +
+ * `decodeAndValidateImageBytes` (which would run the two fields' type checks as two separate
+ * conditions ahead of BOTH fields' allowlist/empty checks -- not what the original single-function
+ * `validateImageInput` did, which combined each field's type-check and content-check into one
+ * condition, mimeType entirely before base64).
  */
 export function validateImageInput(mimeType: unknown, base64: unknown): InlineImage {
-  const checked = checkImageFieldTypes(mimeType, base64);
-  return decodeAndValidateImageBytes(checked.mimeType, checked.base64);
+  if (typeof mimeType !== "string" || !ALLOWED_MIME_TYPES.has(mimeType)) {
+    throw new HttpsError("invalid-argument", "mimeType must be one of image/jpeg, image/png, image/webp.");
+  }
+  if (typeof base64 !== "string" || base64.length === 0) {
+    throw new HttpsError("invalid-argument", "imageBase64 is required.");
+  }
+  return validateImageBytes(mimeType, base64);
 }

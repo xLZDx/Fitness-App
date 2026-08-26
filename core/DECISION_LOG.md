@@ -26010,4 +26010,46 @@ the round-2 remediation, both independently verified true before fixing:**
 compound-order test); `flutter analyze` on the touched directories clean; the two directly-touched
 Dart test files 39/39 (unchanged count -- round 3's Dart fix was internal to the timing mechanism,
 no new Dart test needed since the existing zombie-call test already exercises the corrected path);
-full `flutter test` 3243/3243 attempted, 1 failure, same known pre-existing signature.
+full `flutter test` 3243/3243 attempted, 1 failure, same known pre-existing signature. Committed as
+`4ab397c`. Sent for round 4 (`review.js --commit 4ab397c --round 4`), first attempt succeeded (no
+transport failure this time).
+
+**GPT-PM round 4: `VERDICT: MINOR`, correlated -- 1 MINOR, a further refinement of round 3's own
+fix, verified true by re-deriving the exact original check order from `6e52bd6` line by line:**
+
+1. **MINOR, confirmed by re-reading `6e52bd6`'s actual `parseInput`/`validateImageInput` pair
+   together** -- round 3's `checkImageFieldTypes` bundled the MIME allowlist check AND the
+   empty-base64 check in with the raw `typeof` checks, and ran that WHOLE bundle before
+   `languageCode`. The true original only ran the two bare `typeof mimeType`/`typeof base64` checks
+   before `languageCode` -- the allowlist check and the empty-string check lived inside the
+   original `validateImageInput`, which `parseInput` called LAST, i.e. AFTER `languageCode` had
+   already passed. Two concrete compound-invalid cases proved the drift:
+   `{mimeType: "image/gif", imageBase64: <valid>, languageCode: "fr"}` originally reported
+   `languageCode` (mimeType's type check passes; the allowlist check hadn't run yet); round 3's code
+   reported `mimeType`. `{mimeType: "image/jpeg", imageBase64: "", languageCode: "fr"}` originally
+   reported `languageCode`; round 3's code reported `imageBase64`. **Fixed:** re-split
+   `checkImageFieldsAreStrings` down to ONLY the two raw `typeof` checks (renamed from
+   `checkImageFieldTypes` to make that narrower scope explicit); moved the allowlist and
+   empty-string checks into `decodeAndValidateImageBytes`, which `ai_machine_description.ts`'s
+   `parseInput` now calls strictly after `languageCode`. **Self-caught before sending to review:**
+   applying this exact same finer split to `ai_equipment_recognition.ts`'s own composed
+   `validateImageInput` (by naively building it from `checkImageFieldsAreStrings` +
+   `decodeAndValidateImageBytes`) broke THAT callable's own, DIFFERENT original ordering -- its
+   pre-existing, already-shipped behavior combined each field's type-check and content-check into
+   ONE condition (mimeType type+allowlist together, entirely before base64 type+empty together),
+   which is coarser than the three-phase split `aiMachineDescription` needs. Caught by running the
+   existing `image_validation.test.ts` suite before sending round 4's reply -- one test failed
+   (`"checks mimeType before imageBase64, even when imageBase64 is entirely missing"`, itself a
+   round-1 regression guard). Fixed by extracting the actual security-sensitive byte-level work
+   (length guard, decode, sniff, MIME match) into a private, unexported `validateImageBytes`, and
+   giving `validateImageInput` (for `aiEquipmentRecognition`) and the
+   `checkImageFieldsAreStrings`/`decodeAndValidateImageBytes` pair (for `aiMachineDescription`) each
+   their OWN correct pre-check ordering on top of that one shared expensive core -- rather than
+   trying to force one shared composition to reproduce two callables' genuinely different original
+   orderings. Two new tests in `ai_machine_description.test.ts` pin both compound-invalid cases
+   above; the existing `image_validation.test.ts` suite (unchanged) continues to hold
+   `aiEquipmentRecognition`'s own ordering.
+
+**Verified after the round-4 fixes:** `tsc --noEmit` clean; Functions Jest 347/347 (345 + 2 new
+compound-order tests, no Dart changes this round). `flutter`/mobile side untouched by this round's
+fix, so not re-run.

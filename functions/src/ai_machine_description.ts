@@ -21,7 +21,7 @@ import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https
 import { AI_METERED } from "./scaling";
 import { QUOTAS, enforceDailyQuota, noteAppCheck, quotaFor } from "./abuse_guard";
 import { generate, InlineImage } from "./ai_gateway";
-import { checkImageFieldTypes, decodeAndValidateImageBytes } from "./image_validation";
+import { checkImageFieldsAreStrings, decodeAndValidateImageBytes } from "./image_validation";
 
 /** Matches every other callable's `signInProvider` extraction. */
 function signInProvider(request: CallableRequest): string | undefined {
@@ -50,14 +50,12 @@ interface MachineDescriptionInput {
 
 function parseInput(data: unknown): MachineDescriptionInput {
   const d = (data ?? {}) as Record<string, unknown>;
-  // Reproduces `6e52bd6`'s original three-step cheap order -- mimeType, then imageBase64, then
-  // languageCode -- before any byte-level image work runs. GPT-PM's G1 round-2 review caught a
-  // version that checked language before even the cheap image-field type checks (overshooting the
-  // fix for round-1's "expensive image work before language" gap); round-3 review is what named
-  // the actual original ordering this now restores exactly. `checkImageFieldTypes`/
-  // `decodeAndValidateImageBytes` are `image_validation.ts`'s split of the cheap and expensive
-  // halves for exactly this reason -- see that module's own header.
-  const checkedImage = checkImageFieldTypes(d.mimeType, d.imageBase64);
+  // Reproduces `6e52bd6`'s exact original three-phase order: the RAW typeof checks on mimeType and
+  // imageBase64 (nothing more -- see `checkImageFieldsAreStrings`'s own header for the two rounds
+  // of review it took to pin this boundary down precisely), then languageCode, THEN everything
+  // else about the image (allowlist, empty-check, decode, sniff, MIME match) in
+  // `decodeAndValidateImageBytes`.
+  const checkedImage = checkImageFieldsAreStrings(d.mimeType, d.imageBase64);
   const languageName = resolveLanguageName(d.languageCode);
   const image = decodeAndValidateImageBytes(checkedImage.mimeType, checkedImage.base64);
   return { image, languageName };

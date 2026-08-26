@@ -117,14 +117,38 @@ describe("aiMachineDescription", () => {
     expect(prompt).not.toContain("in en");
   });
 
-  test("checks mimeType before languageCode, matching the original commit's cheap-check order", async () => {
+  test("a missing mimeType is reported before languageCode -- the raw typeof check runs first", async () => {
     // GPT-PM's round-3 review caught that round 2's "language first" fix overshot: the true
-    // original order (commit 6e52bd6, before either fix) was mimeType, then imageBase64, then
-    // languageCode -- all cheap type checks -- before any byte-level image work. A missing mimeType
-    // paired with an invalid languageCode must still report the mimeType problem.
+    // original order (commit 6e52bd6) was the RAW typeof checks on mimeType/imageBase64, then
+    // languageCode, before any byte-level image work. A missing mimeType fails that raw typeof
+    // check, so it must still be reported before languageCode.
     await expect(
       aiMachineDescription.run(req({ imageBase64: JPEG_BASE64, languageCode: "fr" })),
     ).rejects.toThrow(/mimeType/);
+    expect(generate).not.toHaveBeenCalled();
+  });
+
+  test("an out-of-allowlist (but string) mimeType is reported AFTER languageCode, matching the original", async () => {
+    // GPT-PM's round-4 review caught that round 3's split still drew the cheap/expensive boundary
+    // in the wrong place: the MIME ALLOWLIST check (as opposed to the raw typeof check) lived
+    // inside the original validateImageInput, which ran AFTER languageCode in 6e52bd6 -- so a
+    // string-but-invalid mimeType paired with an invalid language must report languageCode first.
+    await expect(
+      aiMachineDescription.run(
+        req({ mimeType: "image/gif", imageBase64: JPEG_BASE64, languageCode: "fr" }),
+      ),
+    ).rejects.toThrow(/languageCode/);
+    expect(generate).not.toHaveBeenCalled();
+  });
+
+  test("an empty imageBase64 is reported AFTER languageCode, matching the original", async () => {
+    // The other half of the same round-4 finding: the empty-string check also lived inside the
+    // original validateImageInput, after languageCode.
+    await expect(
+      aiMachineDescription.run(
+        req({ mimeType: "image/jpeg", imageBase64: "", languageCode: "fr" }),
+      ),
+    ).rejects.toThrow(/languageCode/);
     expect(generate).not.toHaveBeenCalled();
   });
 
