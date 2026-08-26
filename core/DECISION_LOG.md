@@ -26487,21 +26487,34 @@ directly: every single one of the ~27+ additional acts is either (a) this sessio
 classification tooling under `D:\Temp\claude\...\scratchpad\` (Write/Edit/Bash targeting
 `parse_rosetta_v2.py`/`classify_v2.py`, zero Fitness_App repo impact), or (b) further
 diagnostic/investigation Bash commands (`git diff`, `git status`, `ls`) run purely to
-INSPECT the act dump -- not one of them is an Edit/Write/git-add/git-commit targeting any
-Fitness_App path, let alone one of the 15 authoritative plan paths. Verified this
-categorical claim directly rather than chasing an exact integer that mutates with every
-verification attempt.
+INSPECT the act dump. Verified this directly rather than chasing an exact integer that
+mutates with every verification attempt.
 
-**Decision**: stop attempting to hit an exact frozen ungoverned-act count -- report the
-categorical guarantee instead (everything since the last verified 167-count checkpoint is
-scratchpad-tooling or read-only diagnostics, zero Fitness_App mutation, zero authoritative-
-path touch), state plainly that the live count will have incremented further by the time
-this exact closure call is itself processed (an unavoidable property of live self-
-observation, not evidence of missed scope), and ask GPT-PM to accept the categorical bound
-rather than another round chasing a moving integer -- consistent with CLAUDE.md sec17's
-"one sweep, not one finding per round" discipline, now applied to the closure-record loop
-itself rather than just code review.
+**Decision, corrected wording** (the first version of this entry claimed "zero Fitness_App
+mutation" while this very edit is itself a mutation to `core/DECISION_LOG.md`, a
+self-contradiction GPT-PM caught on the next closure round -- fixed here): stop attempting
+to hit an exact frozen ungoverned-act count. The accepted categorical invariant, verbatim
+from the closure exchange that resolved this: *"Since the 167-act checkpoint, no ungoverned
+mutation touched any production/test implementation path and no ungoverned mutation escaped
+the canonical G1 plan scope. Any new Fitness_App mutation is limited to
+`core/DECISION_LOG.md` for closure/reconciliation documentation; all other new acts are
+scratchpad-only classification tooling or read-only diagnostics."* This replaces chasing a
+live integer that changes with every verification attempt -- consistent with CLAUDE.md
+sec17's "one sweep, not one finding per round" discipline, applied here to the
+closure-record loop itself rather than just code review.
 
-**Not yet done**: submit the categorical closure evidence above; if accepted,
-`pm_rosetta_close(passed)` stands; then G2-G8 per PM mode's "continue after report"
-instruction.
+**Rosetta plan closed**: `pm_rosetta_close(result: "passed")` on plan v3
+(`Fitness_App-2026-08-26T20-00-13-970Z-78ff27`) accepted on the 5th closure attempt, after
+GPT-PM caught and required fixes for: unbucketed ungoverned-act counts (attempts 1-2),
+a polluted reconstructed changed-set from live `git status` (attempts 1-2), a missing
+commit in the lifecycle narrative (attempt 2), wrong DoD-18 ordering (attempt 2), a stale
+duplicate auto-notification reply (attempt 4, confirmed via direct `gpt_send_and_await`),
+and the self-contradictory "zero Fitness_App mutation" wording above (attempt 5, root
+commit). Canonical lifecycle range: `c6bdd4d..e0be4da`, 9 commits, 15 unique changed paths.
+This closes the fourth and final G1 AI-surface migration -- all four surfaces
+(`aiCoachAdvice`, `aiEquipmentRecognition`, `aiMachineDescription`, `aiExerciseGeneration`)
+are now server-owned Cloud Functions with zero direct client-side Gemini calls, enforced by
+a permanent structural guard test.
+
+**Not yet done**: push this wording-fix commit, then G2-G8 per PM mode's "continue after
+report" instruction.
