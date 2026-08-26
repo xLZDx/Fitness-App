@@ -1,0 +1,329 @@
+<title>G1: Equipment Recognition</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #17212b;
+    --ink-soft: #46586b;
+    --ink-faint: #7a8b9c;
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --surface-sunken: #eef2f4;
+    --line: #dce3e7;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --amber: #a86a06;
+    --amber-soft: #fbf0dc;
+    --red: #a83a34;
+    --red-soft: #fbeae8;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Sora", "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(23,33,43,0.06), 0 8px 24px -12px rgba(23,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+      --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+      --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+      --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+    --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+    --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+    --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 28px 96px; }
+  header { padding-bottom: 8px; }
+  .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 14px; }
+  h1 { font-family: var(--display); font-size: clamp(28px, 4.4vw, 40px); font-weight: 600; line-height: 1.16; margin: 0 0 14px; text-wrap: balance; letter-spacing: -0.005em; }
+  .lede { font-size: 17px; color: var(--ink-soft); max-width: 66ch; margin: 0 0 28px; }
+  .verdict-band { display: flex; align-items: center; gap: 16px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--radius); padding: 20px 24px; margin: 8px 0 44px; }
+  .verdict-band .mark { width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 18px; }
+  .verdict-band .text b { font-family: var(--display); font-size: 17px; display: block; }
+  .verdict-band .text span { color: var(--ink-soft); font-size: 14.5px; }
+  h2 { font-family: var(--display); font-size: 22px; font-weight: 600; margin: 56px 0 6px; letter-spacing: -0.005em; }
+  h2 .num { font-family: var(--mono); color: var(--accent); font-weight: 600; margin-right: 10px; font-size: 16px; }
+  .section-note { color: var(--ink-soft); font-size: 15px; margin: 0 0 22px; max-width: 72ch; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 24px 0 40px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .stat .n { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  table.gates { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 14.5px; }
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); }
+  table.gates th, table.gates td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.gates th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); background: var(--surface-sunken); font-weight: 600; }
+  table.gates tr:last-child td { border-bottom: none; }
+  table.gates td.gate { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+  table.gates code { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+  .pill.closed { background: var(--accent-soft); color: var(--accent); }
+  .pill.closed::before { background: var(--accent); }
+  .pill.blocked { background: var(--surface-sunken); color: var(--ink-faint); }
+  .pill.blocked::before { background: var(--ink-faint); }
+  .pill.pending { background: var(--amber-soft); color: var(--amber); }
+  .pill.pending::before { background: var(--amber); }
+  .suite-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin: 20px 0 36px; }
+  .suite { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .suite .name { font-size: 14px; color: var(--ink-soft); }
+  .suite .result { font-family: var(--mono); font-weight: 600; font-size: 14px; }
+  .suite.pass .result { color: var(--accent); }
+  .suite.warn .result { color: var(--amber); }
+  .finding { border: 1px solid var(--line); border-left: 4px solid var(--ink-faint); border-radius: var(--radius); padding: 18px 20px; margin: 0 0 16px; background: var(--surface); }
+  .finding.blocker { border-left-color: var(--red); }
+  .finding.major { border-left-color: var(--red); }
+  .finding.minor { border-left-color: var(--amber); }
+  .finding .tag { font-family: var(--mono); font-size: 11.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 5px; display: inline-block; margin-bottom: 10px; }
+  .finding.blocker .tag { background: var(--red-soft); color: var(--red); }
+  .finding.major .tag { background: var(--red-soft); color: var(--red); }
+  .finding.minor .tag { background: var(--amber-soft); color: var(--amber); }
+  .finding h3 { font-family: var(--display); font-size: 16.5px; margin: 0 0 8px; font-weight: 600; }
+  .finding p { margin: 0 0 10px; color: var(--ink-soft); font-size: 14.5px; }
+  .finding p:last-child { margin-bottom: 0; }
+  .finding .fixed-tag { color: var(--accent); font-weight: 600; }
+  .finding .verify-tag { color: var(--ink-faint); font-style: italic; }
+  ul.plain { padding-left: 20px; margin: 12px 0; }
+  ul.plain li { margin-bottom: 10px; font-size: 15px; color: var(--ink-soft); }
+  ul.plain li b { color: var(--ink); }
+  ul.plain li code { font-family: var(--mono); font-size: 13.5px; }
+  .deviation { display: grid; grid-template-columns: 130px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .deviation:last-child { border-bottom: none; }
+  .deviation .gate-tag { font-family: var(--mono); font-weight: 600; color: var(--accent); font-size: 13.5px; }
+  .deviation p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+  .incident { border: 1px solid var(--amber); background: var(--amber-soft); border-radius: var(--radius); padding: 20px 22px; margin: 20px 0 36px; }
+  .incident h3 { font-family: var(--display); font-size: 16px; margin: 0 0 8px; color: var(--ink); }
+  .incident p { margin: 0 0 10px; font-size: 14.5px; color: var(--ink-soft); }
+  .incident p:last-child { margin-bottom: 0; }
+  .closing { margin-top: 56px; padding: 24px 26px; background: var(--surface-sunken); border-radius: var(--radius); font-size: 15px; color: var(--ink-soft); }
+  .closing b { color: var(--ink); }
+  a { color: var(--accent); }
+  @media (max-width: 600px) { .deviation { grid-template-columns: 1fr; gap: 4px; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness_App &middot; MVP1 / SPTR &middot; Gate G1</div>
+    <h1>G1, second slice: equipment recognition moved server-side</h1>
+    <p class="lede">The camera-based equipment classifier &mdash; the second of the app's four AI surfaces &mdash; is off the direct client-side Gemini call and behind a dedicated <code>aiEquipmentRecognition</code> Cloud Function. Five rounds of GPT&#8209;PM review found and closed two MAJOR and four MINOR issues, including a client/server timeout race and an image-validation gap that let non-image bytes reach the paid model, before authorizing push.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ c45b90f</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="verdict-band">
+    <div class="mark">&#10003;</div>
+    <div class="text">
+      <b>PUSHED &mdash; LIVE ON ORIGIN/MASTER</b>
+      <span>Round 5 (exact-SHA final): VERDICT APPROVE, --final: APPROVED, PUSH: AUTHORIZED. Pushed as <code>1decbc5..fc97493</code>; verified zero divergence after push.</span>
+    </div>
+  </div>
+
+  <h2><span class="num">01</span>At a glance</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="n">2 / 4</div><div class="l">AI surfaces migrated (coach, equipment)</div></div>
+    <div class="stat"><div class="n">5</div><div class="l">GPT&#8209;PM review rounds</div></div>
+    <div class="stat"><div class="n">2 + 4</div><div class="l">MAJOR / MINOR found, all closed</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">commits, all pushed</div></div>
+    <div class="stat"><div class="n">307 / 307</div><div class="l">Functions tests passing</div></div>
+  </div>
+
+  <h2><span class="num">02</span>What changed</h2>
+  <p class="section-note">The classifier's prompt has no caller-controlled text at all &mdash; a fixed instruction plus a fixed 70-item machine list, with only the photo varying &mdash; so unlike the first slice's <code>subjectName</code>, there was no prompt-injection surface of that specific kind to defend. The review instead centered on request validation and timing.</p>
+  <div class="table-scroll">
+  <table class="gates">
+    <thead><tr><th>File</th><th>What</th></tr></thead>
+    <tbody>
+      <tr><td class="gate"><code>ai_equipment_recognition.ts</code></td><td>New. The second callable: validates the image, enforces quota, calls the shared Gemini gateway, returns the model's raw JSON text unchanged.</td></tr>
+      <tr><td class="gate"><code>ai_equipment_recognition.test.ts</code></td><td>New, 20 tests: validation, quota, exact generation-config pinning, and a two-directional registry-parity tripwire against the real alias/equipment JSON.</td></tr>
+      <tr><td class="gate"><code>index.ts</code>, <code>scaling.test.ts</code></td><td>Export added; entrypoint registered in the scaling-ceiling inventory (fourteen &rarr; fifteen).</td></tr>
+      <tr><td class="gate"><code>gemini_equipment_service.dart</code></td><td>Migrated: calls <code>httpsCallable('aiEquipmentRecognition')</code> instead of building a prompt and calling Gemini directly. <code>buildPrompt()</code>/<code>kCanonicalMachines</code> deleted &mdash; dead once the model call moved server-side.</td></tr>
+      <tr><td class="gate"><code>gemini_equipment_service_test.dart</code></td><td>Updated for the new one-arg injectable signature; 3 tests exercising the deleted client-side prompt logic removed (superseded by the TS suite); 4 new tests pin the wire contract itself.</td></tr>
+      <tr><td class="gate"><code>machine_describer.dart</code></td><td>Untouched, deliberately. Still calls Gemini directly &mdash; its own migration is a separate future gate.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2><span class="num">03</span>Round 1 &mdash; what GPT&#8209;PM's review found</h2>
+  <p class="section-note">Every finding checked independently before accepting: re-reading the actual source, re-deriving the math, or reproducing the exact test fixture named.</p>
+
+  <div class="finding major">
+    <span class="tag">Major &middot; fixed</span>
+    <h3>Client and server owned the same 20-second deadline</h3>
+    <p>The mobile client's timeout and the server's model-call budget were both exactly 20s &mdash; but the server's clock starts only after auth, validation, and a Firestore quota transaction have already run. A legitimate ~18s answer plus that overhead could exceed the client's budget, silently discarding a paid, quota-charged answer for a weaker on-device fallback.</p>
+    <p><span class="fixed-tag">Fixed:</span> client default raised 20s &rarr; 30s, with a comment cross-referencing the server's own 20s (left as-is, already tuned against measured latency).</p>
+  </div>
+
+  <div class="finding major">
+    <span class="tag">Major &middot; fixed</span>
+    <h3>The claimed image validation did not validate an image</h3>
+    <p>Server-side input checking accepted any non-empty base64 string under a length cap, labelled with one of three allowed MIME strings &mdash; never decoding or sniffing the bytes. The test suite's own &ldquo;valid&rdquo; fixture was literally the base64 for the plain text <code>hello</code>, and it passed straight through, labelled <code>image/jpeg</code>.</p>
+    <p><span class="fixed-tag">Fixed:</span> strict base64 decode (rejects malformed/non-canonical encoding), a decoded-byte size cap, real JPEG/PNG/WebP file-signature sniffing, and a mismatch check between the declared and the actual MIME type. 4 new tests, including the exact <code>hello</code> case.</p>
+  </div>
+
+  <div class="finding minor">
+    <span class="tag">Minor &middot; fixed</span>
+    <h3>&ldquo;No prompt-injection surface&rdquo; overclaimed</h3>
+    <p>True for caller-controlled text (there is none), not true in general &mdash; multimodal models can be steered by text rendered inside an image, a real if lower-severity residual risk.</p>
+    <p><span class="fixed-tag">Fixed:</span> wording narrowed to &ldquo;no caller-controlled TEXT field,&rdquo; with an honest paragraph recording the multimodal risk as tracked, not solved.</p>
+  </div>
+
+  <div class="finding minor">
+    <span class="tag">Minor &middot; fixed</span>
+    <h3>Production wiring never exercised by mobile tests</h3>
+    <p>Every mobile test injected the network call directly, bypassing the real <code>httpsCallable</code> wiring &mdash; a typo in the function name or a JSON key would compile and ship unnoticed.</p>
+    <p><span class="fixed-tag">Fixed:</span> verified <code>FirebaseFunctions</code>/<code>HttpsCallable</code> have private constructors in the installed SDK (a direct fake is genuinely not possible without heavier test scaffolding this project doesn't have), then extracted the request-building and response-extraction into two pure, independently-tested functions plus a named constant. 4 new tests pin the exact contract.</p>
+  </div>
+
+  <div class="finding minor">
+    <span class="tag">Minor &middot; fixed</span>
+    <h3>The registry-parity test's normalisation was a simplified approximation</h3>
+    <p>The new TS tripwire used a bare lowercase-and-trim, not the real Dart algorithm (also folds &euml;&rarr;&#1077; and collapses punctuation) &mdash; harmless against the current list, but a weaker guarantee than claimed.</p>
+    <p><span class="fixed-tag">Fixed:</span> replaced with an exact port of the real algorithm.</p>
+  </div>
+
+  <h2><span class="num">04</span>Round 2 &mdash; a defect in the fix itself</h2>
+  <p class="section-note">Sending the round-1 fixes back for verification surfaced a real problem in one of them.</p>
+
+  <div class="finding major">
+    <span class="tag">Major &middot; fixed</span>
+    <h3>The new size check ran after the expensive part</h3>
+    <p>The image-validation fix decoded the full base64 string before checking its length &mdash; so an oversized payload paid the decode/allocation cost, unmetered and before quota was even touched, en route to being refused.</p>
+    <p><span class="fixed-tag">Fixed:</span> a cheap string-length guard added before decoding, sized to the exact ceiling for the decoded-byte cap. The post-decode check is now provably unreachable given the pre-check, but kept as defense in depth.</p>
+  </div>
+  <p class="section-note">Two further MINORs &mdash; the decision log describing the round-1 (not round-2) state, and a leftover comment contradicting the fix it sat beside &mdash; were also found and fixed the same round.</p>
+
+  <h2><span class="num">05</span>Rounds 3&ndash;5 &mdash; verification, commit, push</h2>
+  <ul class="plain">
+    <li><b>Round 3</b> (narrow re-verification of only the round&#8209;2 deltas, as GPT&#8209;PM requested): <code>VERDICT: APPROVE</code>, <code>COMMIT: AUTHORIZED</code>. Committed as <code>f98e6aa</code>.</li>
+    <li><b>Round 4</b> (exact-SHA on <code>f98e6aa</code>): one more MINOR &mdash; the decision log's own &ldquo;not yet done&rdquo; line was already stale by the time of the commit it lived in. Fixed as a small documentary commit, <code>fc97493</code>.</li>
+    <li><b>Round 5</b> (exact-SHA on <code>fc97493</code>, after two lock-contention retries on the shared review transport): <code>VERDICT: APPROVE</code>, correlated, genuine <code>--final: true</code>. <code>PUSH: AUTHORIZED</code>.</li>
+  </ul>
+
+  <div class="incident">
+    <h3>A process note, not a code finding: a cross-session git collision</h3>
+    <p>While updating an unrelated PM Bridge config file (routing this project to a fresh ChatGPT conversation after the previous thread hit its length limit), a plain <code>git commit</code> in the <code>pm-bridge</code> repository swept in four files another concurrent session had already staged there &mdash; a &ldquo;Rosetta R0&rdquo; feature, unrelated to Fitness_App. Nothing was lost or overwritten; the content is intact inside the resulting commit. But the commit message doesn't describe most of what it contains, and that session's own staged state was consumed by someone else's commit.</p>
+    <p>No further git surgery was attempted there: the other session was visibly still writing to the same file when this was noticed, and reset/rewrite against a live concurrent edit would have been the riskier move. Flagged transparently to the operator instead of quietly worked around.</p>
+  </div>
+
+  <h2><span class="num">06</span>Test and build state</h2>
+  <div class="suite-grid">
+    <div class="suite pass"><span class="name">Functions Jest, full suite</span><span class="result">307 / 307</span></div>
+    <div class="suite pass"><span class="name"><code>tsc --noEmit</code></span><span class="result">clean</span></div>
+    <div class="suite pass"><span class="name">Mobile, touched files</span><span class="result">34 / 34</span></div>
+    <div class="suite warn"><span class="name">Mobile, full <code>flutter test</code></span><span class="result">3230 / 3231</span></div>
+    <div class="suite pass"><span class="name"><code>flutter analyze</code>, whole project</span><span class="result">0 new issues</span></div>
+  </div>
+  <p class="section-note">The one full-suite failure (<code>app_semantic_colors_test.dart</code>, a hardcoded-white-color count drift across files this gate never touched &mdash; <code>form_check_page.dart</code>, <code>celebrity_plans_page.dart</code>, and others) pre-dates this session's changes, confirmed by <code>git diff</code> on the touched-file set.</p>
+
+  <h2><span class="num">07</span>What's still open</h2>
+  <ul class="plain">
+    <li>No live smoke test against real Vertex AI/ADC credentials has been run from this sandboxed session &mdash; a named gap carried from the first slice, applying here too.</li>
+    <li>The multimodal image-embedded-instruction risk is tracked, not closed &mdash; unchanged from before this migration.</li>
+    <li>Two of the four AI surfaces (machine description, exercise generation) are not yet migrated.</li>
+    <li>The registry-list duplication between Dart and TypeScript (documented in both files) remains a real, tracked drift risk &mdash; not solved in this transport-only gate.</li>
+  </ul>
+
+  <h2><span class="num">08</span>GPT&#8209;PM review timeline</h2>
+  <div class="deviation"><span class="gate-tag">Round 1</span><p>Working tree. <code>VERDICT: MAJOR</code> &mdash; 2 MAJOR + 3 MINOR, all fixed before round 2.</p></div>
+  <div class="deviation"><span class="gate-tag">Round 2</span><p>Working tree. <code>VERDICT: MAJOR</code> &mdash; confirmed round 1's fixes, found 1 new MAJOR (pre-decode allocation) + 2 new MINOR.</p></div>
+  <div class="deviation"><span class="gate-tag">Round 3</span><p>Working tree, narrow scope. <code>VERDICT: APPROVE</code>, <code>COMMIT: AUTHORIZED</code> &mdash; committed as <code>f98e6aa</code>.</p></div>
+  <div class="deviation"><span class="gate-tag">Round 4</span><p>Exact commit <code>f98e6aa --final</code>. <code>VERDICT: MINOR</code> &mdash; decision-log terminal-state staleness, no code finding. Fixed as <code>fc97493</code>.</p></div>
+  <div class="deviation"><span class="gate-tag">Round 5</span><p>Exact commit <code>fc97493 --final</code>, after two lock-contention retries. <code>VERDICT: APPROVE</code>, correlated, genuine final. <code>PUSH: AUTHORIZED</code>.</p></div>
+
+  <div class="closing"><b>Next:</b> this slice is committed, reviewed, and pushed. Remaining per the standing MVP1 gate sequence: replicate the same pattern to the two remaining AI surfaces (machine description, exercise generation), then continue G2&ndash;G8.</div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

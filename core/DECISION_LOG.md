@@ -25744,3 +25744,22 @@ live (coach advice, equipment recognition). Remaining: machine description
 (G2-G8). Noted in round 4's own reply and still true: the ChatGPT conversation thread PM Bridge
 routes through is nearing its length limit -- a future round in this same thread may need a fresh
 conversation; not yet hit, but worth carrying forward.
+
+**A duplicate/replayed copy of GPT-PM's round-5 `APPROVE`/`PUSH: AUTHORIZED` for the same exact SHA
+(`fc9749326e929eb797813d82360810b679ff3f20`) arrived again after the push above had already
+completed.** Content matches what's already recorded two paragraphs up (same INFO items: round-3/
+round-4 chronology correctly fixed, no code regression in the documentary-only diff). No new action
+taken -- the push it authorizes was already done, verified `0 0` against `origin/master`.
+
+**Mandatory bilingual HTML report for this second slice, per the workspace `html-report` skill**
+(`report_gate.py`'s three-commits-since-`reports/`-touching-commit threshold had been crossed: four
+commits -- `2c9f3e2`, `f98e6aa`, `fc97493`, `c45b90f` -- since the last `reports/`-touching commit
+`66ebff2`). Wrote `reports/G1_EQUIPMENT_RECOGNITION_2026-08-26.{html,ru.html}`, reusing the house
+design system from the first slice's own report for visual consistency. Ran
+`report_conform.py` on both (provenance block injected into both). Published the Russian file as an
+artifact: `https://claude.ai/code/artifact/9f752a0b-deb2-475d-86ba-e3d97cd90d5d`. Both files
+committed alongside this entry.
+
+PM Bridge orchestrator mode is currently OFF (confirmed via `pm_bridge_mode_status` earlier in this
+gate) -- the standard `html-report` rule applies: stop after handing over this report, rather than
+the PM-mode "continue to the next gate" inversion.
