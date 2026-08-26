@@ -59,6 +59,26 @@ class _HangingDescriber implements MachineDescriber {
       Completer<MachineCard?>().future;
 }
 
+/// Answers, but not immediately -- the shape of the race this file's
+/// `describeTimeoutProvider` amendment exists to close. See the test using
+/// this below.
+class _DelayedDescriber implements MachineDescriber {
+  _DelayedDescriber(this.delay, this.card);
+
+  final Duration delay;
+  final MachineCard? card;
+
+  @override
+  Future<MachineCard?> describe({
+    required String path,
+    String languageCode = 'ru',
+    String? recognisedAs,
+    double? confidence,
+    DateTime? now,
+  }) =>
+      Future.delayed(delay, () => card);
+}
+
 class _ThrowingDescriber implements MachineDescriber {
   @override
   Future<MachineCard?> describe({
@@ -83,9 +103,15 @@ void main() {
   ProviderContainer containerWith(List<Override> overrides) {
     final c = ProviderContainer(overrides: [
       // Short enough that proving the timeout fires costs milliseconds, not
-      // the twenty real seconds production waits.
+      // the twenty/thirty-five real seconds production waits. Kept in the
+      // same relative order as production (recognise < describe) even though
+      // nothing in this file depends on that ordering directly -- a test
+      // relying on the wrong one being larger would itself be the kind of
+      // silent drift this pair of providers exists to prevent.
       recogniseTimeoutProvider
           .overrideWithValue(const Duration(milliseconds: 40)),
+      describeTimeoutProvider
+          .overrideWithValue(const Duration(milliseconds: 80)),
       ...overrides,
     ]);
     addTearDown(c.dispose);
@@ -194,6 +220,33 @@ void main() {
       final state = c.read(visualEquipmentControllerProvider);
       expect(state.isLoading, isFalse);
       expect(state.requireValue.outcome, ScanOutcome.noEquipment);
+    });
+
+    test(
+        'a description answering after the recognition-timeout-equivalent '
+        'window still survives, because it has its own longer budget',
+        () async {
+      // The exact regression GPT-PM's GO review on the machine-description
+      // slice caught before this code existed: reusing recogniseTimeoutProvider
+      // (here, 40ms) for the describer call would have discarded this 60ms
+      // answer as a timeout. With describeTimeoutProvider (80ms) wired to only
+      // this call site, it survives instead.
+      final c = containerWith([
+        visualEquipmentServiceProvider.overrideWithValue(_EmptyService()),
+        machineDescriberProvider.overrideWithValue(
+          _DelayedDescriber(const Duration(milliseconds: 60), _card()),
+        ),
+      ]);
+
+      await c
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/abcd.jpg');
+
+      final state = c.read(visualEquipmentControllerProvider);
+      expect(state.requireValue.outcome, ScanOutcome.unknown,
+          reason: 'a 60ms answer must survive a 40ms recognise timeout when '
+              'describeTimeoutProvider (80ms) is what actually gates it');
+      expect(c.read(lastMachineCardProvider), isNotNull);
     });
 
     test('a thrown recognition error is a rendered outcome, not a raw error',

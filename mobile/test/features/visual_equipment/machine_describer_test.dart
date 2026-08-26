@@ -175,22 +175,43 @@ void main() {
     });
   });
 
-  group('the question itself', () {
-    test('asks in the user language', () async {
-      expect(GeminiMachineDescriber.buildPrompt('ru'),
-          contains('in Russian'));
-      expect(GeminiMachineDescriber.buildPrompt('en'),
-          contains('in English'));
+  // The question itself (language selection, no machine list to choose from)
+  // moved server-side with G1's migration to `aiMachineDescription`
+  // (`functions/src/ai_machine_description.ts`) and is now covered there —
+  // see `functions/src/__tests__/ai_machine_description.test.ts`. This suite
+  // keeps the wire-contract group below instead, mirroring
+  // `gemini_equipment_service_test.dart`'s own precedent from the second G1
+  // slice.
+  group('the aiMachineDescription wire contract', () {
+    test('calls the function by its exact name', () {
+      expect(kMachineDescriptionFunctionName, 'aiMachineDescription');
     });
 
-    test('offers no list to choose from', () async {
-      // The classifier pins the answer to our 48 machines so it cannot invent
-      // a page we do not have. Here there is no page by definition, and a
-      // constrained vocabulary would return the wrong name for the machine the
-      // user is standing in front of.
-      final prompt = GeminiMachineDescriber.buildPrompt('ru');
-      expect(prompt, isNot(contains('lat pulldown')));
-      expect(prompt, contains('isGymEquipment'));
+    test('the request carries the image and the language code', () {
+      final bytes = Uint8List.fromList([1, 2, 3]);
+      final body = buildMachineDescriptionRequest(bytes, 'ru');
+      expect(body, {
+        'mimeType': 'image/jpeg',
+        'imageBase64': base64Encode(bytes),
+        'languageCode': 'ru',
+      });
+    });
+
+    test('a different language code passes through unchanged', () {
+      final body =
+          buildMachineDescriptionRequest(Uint8List.fromList([1]), 'en');
+      expect(body['languageCode'], 'en');
+    });
+
+    test('the response text is read from the "text" field', () {
+      expect(
+        extractMachineDescriptionText({'text': 'hello'}),
+        'hello',
+      );
+    });
+
+    test('a reply with no "text" field extracts to null', () {
+      expect(extractMachineDescriptionText({'other': 1}), isNull);
     });
   });
 

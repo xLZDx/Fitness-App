@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/foundation.dart'
     show compute, debugPrint, visibleForTesting;
 import 'package:image/image.dart' as img;
@@ -12,62 +11,22 @@ import '../../../core/firebase/functions_region.dart';
 import '../../equipment/data/equipment_alias_index.dart';
 import 'visual_equipment_match.dart';
 import 'visual_equipment_service.dart';
-import '../../ai_coach/provider_safety_settings.dart';
-
-/// Signature of "send an image + prompt to the cloud model, get text back".
-/// Injectable so every piece of this service is testable without Firebase.
-typedef CloudAsk = Future<String?> Function(Uint8List imageBytes, String prompt);
-
-/// Verified live 2026-07-30: gemini-2.5-flash returns 404 'no longer available
-/// to new users' on this project; 3-flash-preview answered the operator's
-/// power-cage photo with {"machine":"squat rack", 0.9}.
-const String kVisionModel = 'gemini-3-flash-preview';
-
-/// The Firebase AI caller every vision path in the app shares.
-///
-/// JSON only, temperature 0, and thinking switched OFF: with the model's
-/// default thinking a single photo took 25-31s, without it 2-5s (verified live
-/// 2026-07-30). Two callers now send a photo — the classifier and the machine
-/// describer — and a second copy of this configuration is a second place for
-/// that 25-second regression to come back.
-///
-/// The model is built on first use and kept, so the second question about the
-/// same photo does not pay the setup again. No deadline is applied here; the
-/// caller owns its own timeout so there is exactly one.
-CloudAsk firebaseCloudAsk({String modelName = kVisionModel}) {
-  GenerativeModel? model;
-  return (Uint8List bytes, String prompt) {
-    model ??= FirebaseAI.googleAI().generativeModel(
-      model: modelName,
-      // F026 — provider moderation, not domain safety.
-      safetySettings: kProviderSafetySettings,
-      generationConfig: GenerationConfig(
-        responseMimeType: 'application/json',
-        temperature: 0,
-        thinkingConfig: ThinkingConfig(thinkingBudget: 0),
-      ),
-    );
-    return model!.generateContent([
-      Content.multi([
-        InlineDataPart('image/jpeg', bytes),
-        TextPart(prompt),
-      ]),
-    ]).then((r) => r.text);
-  };
-}
 
 /// Signature of "send an already-resized photo to the equipment recognizer,
 /// get its raw JSON text back" — injectable for tests, so the suite never
 /// needs a real `FirebaseFunctions`.
 ///
-/// One arg, not two: unlike [CloudAsk] (still used by `GeminiMachineDescriber`
-/// in `machine_describer.dart`, which is not yet migrated), there is no
-/// client-built prompt to pass any more — G1's `aiEquipmentRecognition`
-/// Cloud Function builds the whole prompt server-side
-/// (`functions/src/ai_equipment_recognition.ts`, which
-/// carries its own copy of the canonical machine list this file used to
-/// export as `kCanonicalMachines`/`buildPrompt()` — both deleted here since
-/// they no longer drive anything a real call sends).
+/// One arg, not two: there is no client-built prompt to pass any more — G1's
+/// `aiEquipmentRecognition` Cloud Function builds the whole prompt server-side
+/// (`functions/src/ai_equipment_recognition.ts`, which carries its own copy
+/// of the canonical machine list this file used to export as
+/// `kCanonicalMachines`/`buildPrompt()` — both deleted here since they no
+/// longer drive anything a real call sends). `machine_describer.dart`'s
+/// `CloudDescriptionAsk` is the same shape one file over, migrated the same
+/// way once `GeminiMachineDescriber` moved server-side too — this file no
+/// longer has any direct-Gemini call site of its own (the old two-arg
+/// `CloudAsk`/`firebaseCloudAsk()` this typedef used to sit beside are gone,
+/// dead once `GeminiMachineDescriber` stopped being their only caller).
 typedef CloudRecognitionAsk = Future<String?> Function(Uint8List imageBytes);
 
 /// The Cloud Function name this surface calls. Named once so

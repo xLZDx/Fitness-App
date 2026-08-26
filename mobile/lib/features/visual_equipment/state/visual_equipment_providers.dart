@@ -37,6 +37,29 @@ final machineTextRecogniserProvider =
 final recogniseTimeoutProvider =
     Provider<Duration>((_) => const Duration(seconds: 20));
 
+/// How long the SECOND question -- "what is this, if it's not in our
+/// catalogue" -- may run before the user is told it did not answer.
+///
+/// Deliberately its OWN provider, not a reuse of [recogniseTimeoutProvider].
+/// GPT-PM's G1 GO review of the `machine_describer.dart` migration caught
+/// that reusing the 20s recognition budget here would have silently defeated
+/// `GeminiMachineDescriber.timeout`'s own 30s fix for the client/server
+/// timeout race (see that class's own doc comment): this call site wraps the
+/// WHOLE `describe()` call, timeout included, in a further `.timeout()` of
+/// its own, so a 20s outer clamp fires before the describer's internal 30s
+/// deadline ever gets a chance to. 35s keeps the invariant this app now
+/// relies on across three layers:
+///
+///   server model deadline (20s, `ai_machine_description.ts`)
+/// < describer/service deadline (30s, `GeminiMachineDescriber.timeout`)
+/// < this controller deadline (35s)
+///
+/// A test can still prove the timeout fires without spending 35 real seconds
+/// doing it, exactly like [recogniseTimeoutProvider] — see
+/// `scan_controller_test.dart`.
+final describeTimeoutProvider =
+    Provider<Duration>((_) => const Duration(seconds: 35));
+
 class VisualEquipmentController extends Notifier<AsyncValue<ScanResult>> {
   @override
   AsyncValue<ScanResult> build() =>
@@ -95,7 +118,8 @@ class VisualEquipmentController extends Notifier<AsyncValue<ScanResult>> {
       // catalogue" or "there is no machine in this photo" is the describer's
       // answer to give, not ours to assume — so the state is only settled
       // after asking.
-      final named = await _describeInstead(path, timeout);
+      final named =
+          await _describeInstead(path, ref.read(describeTimeoutProvider));
       state = AsyncValue.data(
           named ? const ScanResult.unknown() : const ScanResult.noEquipment());
     } on TimeoutException {

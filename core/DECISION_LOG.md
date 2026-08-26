@@ -25763,3 +25763,118 @@ committed alongside this entry.
 PM Bridge orchestrator mode is currently OFF (confirmed via `pm_bridge_mode_status` earlier in this
 gate) -- the standard `html-report` rule applies: stop after handing over this report, rather than
 the PM-mode "continue to the next gate" inversion.
+
+## G1 third vertical slice: GeminiMachineDescriber -> aiMachineDescription
+
+Operator instruction ("продолжай автономно через пм бридж") authorized continuing the standing
+MVP1 autonomous mandate. PM Bridge mode was re-enabled (`/pm-bridge-mode on`), hit two separate
+instability incidents (a build-hash mismatch from a concurrent session, then a `pm_bridge_mode_status`
+reporting OFF while the daemon was actually live -- both reported plainly to the operator rather
+than papered over), then this gate's own Rosetta plan flow ran into three consecutive
+`browserContext.newPage` failures through the orchestrator, worked around by `/pm-bridge-mode off`
+and sending directly (documented pre-Gate-9 fallback).
+
+**Rosetta retrospective closure first.** The second-slice report work (previous entries above) had
+run without an open plan. Opened `Fitness_App-2026-08-26T17-09-11-548Z-f22d80`, sent it to GPT-PM,
+got `APPROVE WITH CHANGES` requiring the exact `a6404fb` SHA/parent/file-list as evidence (its
+GitHub lookup for the abbreviated SHA found nothing, correctly -- the commit was local-only, never
+pushed, which the plan's own LOCAL declaration never claimed it would be). Supplied that evidence,
+bound the GO, closed `passed`. `pm_rosetta_close` reported 42 acts in the session still ran
+ungoverned (everything before/around that retrospective plan) -- expected and accurate; the fix is
+opening plans BEFORE acting going forward, which is what the rest of this entry does.
+
+**Plan v1 rejected on scope, not on the idea.** Opened `Fitness_App-2026-08-26T17-15-42-040Z-cbe2db`
+for this third slice, scoped identically to the first two (new callable, mobile migration, dead-code
+cleanup). GPT-PM's GO review found a real MAJOR before any code was written: `_describeInstead`
+(`visual_equipment_providers.dart:172-181`) wraps the whole `MachineDescriber.describe()` call in an
+OUTER `.timeout(timeout)`, where `timeout` is `recogniseTimeoutProvider` = 20s, read once at the top
+of `classifyFilePath` and reused for both `classifyFile` and `_describeInstead`. Raising only
+`GeminiMachineDescriber`'s own internal timeout to 30s (the plan's original fix, mirroring the
+equipment-recognition slice) would have been silently defeated by this outer 20s clamp firing first.
+Verified independently by reading the file directly before accepting the finding -- confirmed exactly
+as GPT-PM described. Also required: an explicit ru/en allowlist on `languageCode` (never interpolate
+the caller's raw string), removing `GeminiMachineDescriber`'s own now-dead `modelName` parameter
+alongside the `gemini_equipment_service.dart` cleanup already planned, and making the auth/App-Check/
+quota boundary and generation-config pinning explicit acceptance criteria rather than implied.
+
+Opened a successor plan, `Fitness_App-2026-08-26T17-35-38-423Z-64078b`, recording v1 as superseded
+and folding in all five amendments. GPT-PM's GO review on v2: clean `APPROVE`, no further scope
+objections, DoD carried forward from v1 with two additions (the new `describeTimeoutProvider` must
+not extend the existing recognition/OCR budget; a behavioral regression test must prove a description
+answering after the recognition-timeout-equivalent window but before the new controller deadline
+survives).
+
+**What shipped**, all against v2's approved scope:
+
+- `functions/src/image_validation.ts` (new): extracted the base64 strict-decode / size-cap /
+  file-signature-sniff logic that used to live only in `ai_equipment_recognition.ts` into a shared
+  module. `ai_equipment_recognition.ts` refactored to import it -- pure refactor, its existing
+  20-test suite passed unchanged after the change, proving no behavior moved.
+- `functions/src/ai_machine_description.ts` (new): the `aiMachineDescription` callable. Ports
+  `GeminiMachineDescriber.buildPrompt` server-side unchanged; `languageCode` is validated against an
+  explicit `{ru: "Russian", en: "English"}` map -- any other value is rejected with `invalid-argument`
+  before the prompt is ever built, so the raw caller string never reaches the model. Reproduces the
+  full G1 boundary: `request.auth` check, `noteAppCheck`, `quotaFor(QUOTAS.aiMachineDescription, ...)`,
+  `enforceDailyQuota`. Generation config pinned: JSON mode, temperature 0, thinking disabled, image
+  forwarded, 20s model timeout, 384 max output tokens (headroom over `aiEquipmentRecognition`'s 256
+  for the longer summary/uses fields).
+- `functions/src/__tests__/ai_machine_description.test.ts` (new, 15 tests) and
+  `functions/src/__tests__/image_validation.test.ts` (new, 10 tests, unit-level on the extracted
+  module).
+- `functions/src/index.ts` export; `functions/src/__tests__/scaling.test.ts` registration
+  (fifteen -> sixteen callables, `SOURCES` array updated for the attestation-coverage scan).
+- `mobile/lib/features/visual_equipment/state/visual_equipment_providers.dart`: new
+  `describeTimeoutProvider` (35s), wired ONLY into `_describeInstead`'s outer `.timeout()` call.
+  `recogniseTimeoutProvider` (20s) untouched, still used for `classifyFile` and the OCR text anchor.
+  Invariant now held across three layers: server model (20s) < `GeminiMachineDescriber.timeout`
+  (30s) < `describeTimeoutProvider` (35s).
+- `mobile/lib/.../machine_describer.dart`: migrated to `cloudFunctionsMachineDescriptionAsk` via a
+  new `CloudDescriptionAsk` typedef (bytes + languageCode, not the old full-prompt signature), with
+  `buildMachineDescriptionRequest`/`extractMachineDescriptionText` pure helpers mirroring the
+  equipment-recognition precedent (independently unit-tested, since `FirebaseFunctions`/
+  `HttpsCallable` have private constructors and cannot be faked directly). `buildPrompt()` deleted
+  (moved server-side); `modelName` constructor parameter deleted (dead once the class stopped
+  calling `firebaseCloudAsk(modelName: modelName)`). Client timeout default raised 20s -> 30s.
+- `mobile/lib/.../gemini_equipment_service.dart`: deleted `CloudAsk`/`kVisionModel`/
+  `firebaseCloudAsk()` -- grep-confirmed zero remaining consumers anywhere in `mobile/lib` once
+  `machine_describer.dart` stopped calling them. The `firebase_ai` and `provider_safety_settings.dart`
+  imports this code was the only user of are also removed from this file.
+- `mobile/test/.../machine_describer_test.dart`: injected `ask` callback shape unchanged (still
+  2 positional args, second one now `languageCode` rather than the full prompt string, so existing
+  `(_, __) async => answer`-style test doubles needed no signature edits); the 2 tests exercising
+  the now-server-side `buildPrompt()` removed, replaced with a 5-test wire-contract group mirroring
+  `gemini_equipment_service_test.dart`'s own G1 precedent.
+- `mobile/test/features/ai_coach/provider_safety_settings_test.dart`: `gemini_equipment_service.dart`
+  removed from the direct-Gemini-call-site allowlist (`sites` is now just
+  `ai_exercise_generator.dart`, the 4th and last unmigrated surface); added mirror
+  "no longer calls Gemini directly" tests for both `gemini_equipment_service.dart` and
+  `machine_describer.dart`.
+- `mobile/test/.../scan_controller_test.dart`: added a `_DelayedDescriber` fixture and a regression
+  test proving the exact race GPT-PM's GO review caught: a description answering at 60ms (between a
+  40ms `recogniseTimeoutProvider` test override and an 80ms `describeTimeoutProvider` test override)
+  now survives as `ScanOutcome.unknown`, where before this gate's fix it would have been discarded as
+  a timeout by the shared 40ms clamp.
+
+**Verified.** Starting `HEAD` matched the plan's declared `base_head` (`a6404fb`) exactly, confirmed
+via `git rev-parse HEAD` before any edit. Functions: `tsc --noEmit` clean; full Jest suite
+335/335 (307 baseline + 15 `ai_machine_description` + 10 `image_validation`, with
+`ai_equipment_recognition`'s own 20 unchanged). Mobile: `flutter analyze` found the same 16
+pre-existing issues as before this gate, zero in any touched file; the three directly-touched test
+files (`machine_describer_test.dart`, `scan_controller_test.dart`, `provider_safety_settings_test.dart`)
+plus three adjacent files sharing the same providers/services (`gemini_equipment_service_test.dart`,
+`machine_card_flow_test.dart`, `text_anchor_pipeline_test.dart`, `scanner_page_test.dart`) all green;
+full `flutter test` 3239/3240 -- the one failure is `test/theme/app_semantic_colors_test.dart`'s
+"the hardcoded whites that survived G1.2b stay accounted for" (a hardcoded-white-color count drift,
+`Expected: <61> Actual: <58>`, entirely in files this gate never touched -- `form_check_page.dart`,
+`celebrity_plans_page.dart`, `posture_page.dart`, and others), the same pre-existing failure signature
+already documented for slice 2. `grep` confirms zero remaining code/test references to
+`CloudAsk`/`kVisionModel`/`firebaseCloudAsk`/the deleted `modelName` parameter (only explanatory
+comments documenting the deletion remain, which the DoD's "historical text is exempt" language
+covers). Diffstat: 9 files changed (271 insertions, 226 deletions) + 4 new files -- exactly the
+plan's declared scope, no leakage.
+
+**Not yet done:** send this diff to GPT-PM for the one-sweep adversarial review (workspace
+CLAUDE.md §17), remediate whatever it finds, get a verification round, then an exact-SHA final round
+before commit is pushed. Commit itself has not happened yet either -- this entry is being written
+first, per this workspace's own commit-time decision-log requirement, and will be committed together
+with the code.

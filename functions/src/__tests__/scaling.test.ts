@@ -6,9 +6,10 @@
  * all twelve entrypoints ran on the same platform default and any one of them
  * could consume the regional pool — including starving `stripeWebhook`, the
  * only function here whose failure loses money. G1 added a fourteenth,
- * `aiCoachAdvice`, and a fifteenth, `aiEquipmentRecognition`, both on the
- * shared `AI_METERED` profile — registered here for the same reason
- * `exportAccountData` was: this list IS the registration.
+ * `aiCoachAdvice`, a fifteenth, `aiEquipmentRecognition`, and a sixteenth,
+ * `aiMachineDescription`, all on the shared `AI_METERED` profile —
+ * registered here for the same reason `exportAccountData` was: this list IS
+ * the registration.
  *
  * The assertion is on `__endpoint`, the deployment descriptor
  * `firebase-functions` builds from the options object, rather than on the
@@ -65,6 +66,7 @@ const ENTRYPOINTS: Record<string, unknown> = {
   // G1. Same discipline: added in the same change that exported it.
   aiCoachAdvice: index.aiCoachAdvice,
   aiEquipmentRecognition: index.aiEquipmentRecognition,
+  aiMachineDescription: index.aiMachineDescription,
 };
 
 describe("scaling ceilings", () => {
@@ -74,8 +76,8 @@ describe("scaling ceilings", () => {
     expect(admin.initializeApp).toHaveBeenCalledTimes(1);
   });
 
-  test("the deployed surface is exactly these fifteen", () => {
-    // A fifteenth function added without a ceiling is the regression this
+  test("the deployed surface is exactly these sixteen", () => {
+    // A sixteenth function added without a ceiling is the regression this
     // whole file exists to catch, and it can only be caught by noticing the
     // count moved.
     const exported = Object.keys(index).filter(
@@ -155,7 +157,7 @@ describe("scaling ceilings", () => {
     // fan-out rather than instance-pool starvation. See that profile's own
     // header for why it is the deliberate exception.
     for (const [name, fn] of Object.entries(ENTRYPOINTS)) {
-      if (name === "aiCoachAdvice" || name === "aiEquipmentRecognition") continue;
+      if (name === "aiCoachAdvice" || name === "aiEquipmentRecognition" || name === "aiMachineDescription") continue;
       expect(endpointOf(fn).concurrency).not.toEqual(expect.any(Number));
     }
   });
@@ -264,6 +266,7 @@ describe("every callable reports its attestation", () => {
     "account_export.ts",
     "ai_coach_advice.ts",
     "ai_equipment_recognition.ts",
+    "ai_machine_description.ts",
   ];
 
   const sources = SOURCES.map((name) => ({
@@ -281,7 +284,7 @@ describe("every callable reports its attestation", () => {
 
   test("the inventory is not empty", () => {
     // Otherwise the loop below asserts nothing and passes for ever.
-    expect(callables.length).toBeGreaterThanOrEqual(15);
+    expect(callables.length).toBeGreaterThanOrEqual(16);
   });
 
   test.each(callables.map((c) => [c.fn, c]))(

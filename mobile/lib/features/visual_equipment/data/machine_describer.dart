@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart'
     show compute, debugPrint, visibleForTesting;
 
+import '../../../core/firebase/functions_region.dart';
 import 'gemini_equipment_service.dart';
 import 'machine_card.dart';
 
@@ -38,29 +40,104 @@ abstract class MachineDescriber {
 /// Loads a photo as the bytes to upload. Injectable so tests never need a file.
 typedef PhotoBytes = Future<Uint8List> Function(String path);
 
-/// [MachineDescriber] over Gemini, through the same Firebase AI wiring and the
-/// same resize the classifier uses.
+/// Signature of "send an already-resized photo plus a language code to the
+/// machine describer, get its raw JSON text back" — injectable for tests, so
+/// the suite never needs a real `FirebaseFunctions`.
+///
+/// Two args, not the old [CloudAsk]'s (bytes, full prompt): unlike before G1's
+/// migration of this class, there is no client-built prompt to pass any more
+/// — the `aiMachineDescription` Cloud Function builds the whole prompt
+/// server-side (`functions/src/ai_machine_description.ts`) from a fixed
+/// template plus the language code, which it also validates against an
+/// explicit ru/en allowlist rather than trusting it as free text.
+typedef CloudDescriptionAsk = Future<String?> Function(
+    Uint8List imageBytes, String languageCode);
+
+/// The Cloud Function name this surface calls. Named once so
+/// [cloudFunctionsMachineDescriptionAsk] and its test cannot drift apart on a
+/// typo.
+const String kMachineDescriptionFunctionName = 'aiMachineDescription';
+
+/// Builds the request body sent to [kMachineDescriptionFunctionName].
+///
+/// Pulled out of [cloudFunctionsMachineDescriptionAsk] and independently
+/// unit-tested, mirroring [buildEquipmentRecognitionRequest]'s own precedent
+/// in `gemini_equipment_service.dart`: `FirebaseFunctions`/`HttpsCallable`
+/// have private constructors, so this is what makes the request shape
+/// testable without the SDK.
+@visibleForTesting
+Map<String, dynamic> buildMachineDescriptionRequest(
+        Uint8List imageBytes, String languageCode) =>
+    {
+      'mimeType': 'image/jpeg',
+      'imageBase64': base64Encode(imageBytes),
+      'languageCode': languageCode,
+    };
+
+/// Extracts the answer text from [kMachineDescriptionFunctionName]'s reply.
+/// The other half of the same testable-without-the-SDK split as
+/// [buildMachineDescriptionRequest].
+@visibleForTesting
+String? extractMachineDescriptionText(Map<String, dynamic> data) =>
+    data['text'] as String?;
+
+/// The default [CloudDescriptionAsk]: routes through the
+/// `aiMachineDescription` Cloud Function rather than calling
+/// `FirebaseAI.googleAI()` directly.
+///
+/// G1: the third of the four mobile call sites migrated off a direct
+/// client-side Gemini call (see `gemini_equipment_service.dart` for the
+/// second). The photo is already resized to a small JPEG by
+/// `resizeForCloud` before this runs.
+CloudDescriptionAsk cloudFunctionsMachineDescriptionAsk(
+    {FirebaseFunctions? functions}) {
+  final fns = functions ?? functionsForRegion;
+  return (Uint8List bytes, String languageCode) async {
+    final result = await fns
+        .httpsCallable(kMachineDescriptionFunctionName)
+        .call<Map<String, dynamic>>(
+            buildMachineDescriptionRequest(bytes, languageCode));
+    return extractMachineDescriptionText(result.data);
+  };
+}
+
+/// [MachineDescriber] over Gemini, through the `aiMachineDescription` Cloud
+/// Function and the same resize the classifier uses.
 class GeminiMachineDescriber implements MachineDescriber {
   GeminiMachineDescriber({
-    CloudAsk? ask,
+    CloudDescriptionAsk? ask,
     PhotoBytes? photoBytes,
-    this.modelName = kVisionModel,
-    this.timeout = const Duration(seconds: 20),
+    FirebaseFunctions? functions,
+    this.timeout = const Duration(seconds: 30),
   })  : _ask = ask,
+        _injected = functions,
         _photoBytes = photoBytes ?? _resize;
 
-  final String modelName;
-
-  /// Same deadline as recognition. This is the user's second wait on one
-  /// photo, so a stalled request must give up rather than spin — the failure
-  /// the operator reported ("долго ждёт и ничего") was exactly a call with no
-  /// deadline at all.
+  /// 30s, not 20s: mirrors `GeminiVisualEquipmentService.timeout`'s own fix
+  /// (`gemini_equipment_service.dart`) for the identical client/server
+  /// timeout-race GPT-PM's G1 review caught on that slice first. G1's
+  /// `aiMachineDescription` Cloud Function bounds the MODEL call itself at
+  /// 20s (`functions/src/ai_machine_description.ts`), but that budget only
+  /// starts after auth, request validation, and the quota-ledger transaction
+  /// have already run server-side — none of which this client-side clock
+  /// accounts for. 30s gives real margin over the server's own 20s model
+  /// budget rather than racing it.
+  ///
+  /// This is the SERVICE-level deadline, one layer inside the controller's
+  /// own budget: `visual_equipment_providers.dart`'s `_describeInstead` wraps
+  /// the whole `describe()` call (this timeout included) in a further outer
+  /// `.timeout()` of its own — see `describeTimeoutProvider` there for why a
+  /// THIRD, still-larger number exists above this one, and why reusing the
+  /// classifier's `recogniseTimeoutProvider` for both would have silently
+  /// defeated this fix.
   final Duration timeout;
 
-  final CloudAsk? _ask;
+  final CloudDescriptionAsk? _ask;
+  final FirebaseFunctions? _injected;
   final PhotoBytes _photoBytes;
 
-  late final CloudAsk _cloud = _ask ?? firebaseCloudAsk(modelName: modelName);
+  late final CloudDescriptionAsk _cloud =
+      _ask ?? cloudFunctionsMachineDescriptionAsk(functions: _injected);
 
   static Future<Uint8List> _resize(String path) =>
       compute(resizeForCloud, path);
@@ -76,7 +153,7 @@ class GeminiMachineDescriber implements MachineDescriber {
     final String? text;
     try {
       final bytes = await _photoBytes(path);
-      text = await _cloud(bytes, buildPrompt(languageCode)).timeout(timeout);
+      text = await _cloud(bytes, languageCode).timeout(timeout);
     } catch (e) {
       debugPrint('could not describe the unknown machine: $e');
       return null;
@@ -89,38 +166,6 @@ class GeminiMachineDescriber implements MachineDescriber {
       confidence: confidence,
       now: now,
     );
-  }
-
-  /// The question. Note what it does NOT do: it offers no list to choose from.
-  /// The classifier's list exists so the model cannot invent a machine we have
-  /// no page for; here there is no page by definition, and constraining the
-  /// answer to our vocabulary would produce the wrong name for the thing the
-  /// user is standing in front of.
-  @visibleForTesting
-  static String buildPrompt(String languageCode) {
-    // Same mapping the AI exercise generator uses
-    // (features/ai_coach/ai_exercise_generator.dart) so both cloud answers
-    // land in one language rather than two.
-    final language = languageCode == 'ru' ? 'Russian' : 'English';
-    return '''
-A gym app user photographed a piece of equipment the app has no page for. Look
-ONLY at the machine closest to the centre of the photo; ignore what is at the
-edges.
-
-Answer with JSON only:
-{"isGymEquipment": true or false,
- "name": "<short everyday name of this machine>",
- "summary": "<1-2 sentences: what it is and what it trains>",
- "uses": ["<one short exercise done on it>", "..."]}
-
-Rules:
-- Write "name", "summary" and every line of "uses" in $language.
-- If the photo is not gym equipment at all — a person, a pet, a room, a meal —
-  answer {"isGymEquipment": false} and nothing else. Do not describe it.
-- Name the machine by what it is, not by a brand you think you recognise.
-- 3 to 5 lines in "uses", each a real exercise performed on THIS machine, at
-  most about six words.
-- No markdown, no commentary.''';
   }
 
   /// Turns the model's JSON into a card, or into nothing.

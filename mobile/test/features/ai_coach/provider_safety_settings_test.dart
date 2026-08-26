@@ -56,18 +56,21 @@ void main() {
 
   group('every direct Gemini call site actually passes them', () {
     // The finding is that no call site configured this. Three existed; G1
-    // moved one of them (`ai_coach_service.dart`) behind the `aiCoachAdvice`
-    // Cloud Function, so it no longer calls `generativeModel(` at all — its
-    // safety settings now live server-side in `functions/src/ai_gateway.ts`'s
-    // own `SAFETY_SETTINGS` (same four categories, same `medium` threshold,
-    // ported deliberately rather than re-derived; see that file). This group
-    // only has jurisdiction over what still calls the SDK directly from the
-    // phone. A fourth direct call site added later without the settings is
-    // the regression, and it is invisible to any behavioural test because it
-    // only shows up in a network request.
+    // has now moved two of them (`ai_coach_service.dart`, then
+    // `machine_describer.dart`) behind their own Cloud Functions
+    // (`aiCoachAdvice`, `aiMachineDescription`), so `gemini_equipment_service.dart`
+    // -- the third, which never called Gemini directly itself; it only hosted
+    // the shared `firebaseCloudAsk()` helper `machine_describer.dart` used --
+    // no longer calls `generativeModel(` at all either. Their safety settings
+    // now live server-side in `functions/src/ai_gateway.ts`'s own
+    // `SAFETY_SETTINGS` (same four categories, same `medium` threshold, ported
+    // deliberately rather than re-derived; see that file). This group only has
+    // jurisdiction over what still calls the SDK directly from the phone. A
+    // second direct call site added later without the settings is the
+    // regression, and it is invisible to any behavioural test because it only
+    // shows up in a network request.
     const sites = [
       'lib/features/ai_coach/ai_exercise_generator.dart',
-      'lib/features/visual_equipment/data/gemini_equipment_service.dart',
     ];
 
     for (final path in sites) {
@@ -90,7 +93,29 @@ void main() {
       expect(src, contains("httpsCallable('aiCoachAdvice')"));
     });
 
-    test('there are exactly two direct call sites, so the list above is complete',
+    test('gemini_equipment_service.dart no longer calls Gemini directly', () {
+      // The same mirror, for the third G1 surface: this file used to host
+      // `firebaseCloudAsk()`, the shared direct-Gemini helper
+      // `machine_describer.dart` called (`GeminiVisualEquipmentService`
+      // itself never called Gemini directly -- it always went through this
+      // file's own callable-first `cloudFunctionsEquipmentAsk`). Both
+      // `CloudAsk`/`firebaseCloudAsk()` are deleted now that
+      // `GeminiMachineDescriber` stopped calling them; this file has no
+      // remaining consumer that would reintroduce them.
+      final src = File('lib/features/visual_equipment/data/gemini_equipment_service.dart')
+          .readAsStringSync();
+      expect(src, isNot(contains('generativeModel(')));
+      expect(src, contains("httpsCallable(kEquipmentRecognitionFunctionName)"));
+    });
+
+    test('machine_describer.dart calls the aiMachineDescription callable', () {
+      final src = File('lib/features/visual_equipment/data/machine_describer.dart')
+          .readAsStringSync();
+      expect(src, isNot(contains('generativeModel(')));
+      expect(src, contains("httpsCallable(kMachineDescriptionFunctionName)"));
+    });
+
+    test('there is exactly one direct call site left, so the list above is complete',
         () {
       final found = <String>[];
       for (final f in Directory('lib').listSync(recursive: true)) {
