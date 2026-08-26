@@ -26165,3 +26165,17 @@ retroactive-governance requirement, stayed bounded to the plan's eventual approv
 has now been reviewed and reconciled -- not erased and not inflated to the full 72. No reopening of
 the 8 substantive GPT-PM review rounds, no code changes, and no test re-run were required or
 performed for this reconciliation, per GPT-PM's own explicit statement.
+
+## G1 third-slice report published
+
+`reports/G1_MACHINE_DESCRIPTION_2026-08-26.html`/`.ru.html` written per the `html-report` skill:
+same design system as the second-slice report (reused, not redesigned, per "honor what's already
+there"), all 10 GPT-PM review rounds (6 code rounds 1-6, documentary rounds 7-8, the Rosetta closure
+reconciliation exchange, documentary rounds 9-10), and -- per the `rosetta` skill's transparency
+requirement #4 -- a dedicated section giving every planned item the Definition of Done GPT-PM itself
+set at the plan's GO review, plus its status: done / not done / partial-with-tail. Ten of eleven DoD
+items are done; "decision log accurate" is recorded as partial (closed by round 10, after two
+documentary correction rounds); "live deployment/runtime smoke test" is recorded as not done, the
+same honestly-carried gap already documented for slice 2. `report_conform.py` run on both files
+(provenance block refreshed, not injected fresh -- template reused from the second-slice report).
+Published the Russian file as an artifact: https://claude.ai/code/artifact/b651b107-e324-4f1b-922b-26977ad4efcc

@@ -1,0 +1,411 @@
+<title>G1: Unknown Machine Description</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #17212b;
+    --ink-soft: #46586b;
+    --ink-faint: #7a8b9c;
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --surface-sunken: #eef2f4;
+    --line: #dce3e7;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --amber: #a86a06;
+    --amber-soft: #fbf0dc;
+    --red: #a83a34;
+    --red-soft: #fbeae8;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Sora", "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(23,33,43,0.06), 0 8px 24px -12px rgba(23,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+      --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+      --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+      --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+    --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+    --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+    --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 28px 96px; }
+  header { padding-bottom: 8px; }
+  .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 14px; }
+  h1 { font-family: var(--display); font-size: clamp(28px, 4.4vw, 40px); font-weight: 600; line-height: 1.16; margin: 0 0 14px; text-wrap: balance; letter-spacing: -0.005em; }
+  .lede { font-size: 17px; color: var(--ink-soft); max-width: 66ch; margin: 0 0 28px; }
+  .verdict-band { display: flex; align-items: center; gap: 16px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--radius); padding: 20px 24px; margin: 8px 0 44px; }
+  .verdict-band .mark { width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 18px; }
+  .verdict-band .text b { font-family: var(--display); font-size: 17px; display: block; }
+  .verdict-band .text span { color: var(--ink-soft); font-size: 14.5px; }
+  h2 { font-family: var(--display); font-size: 22px; font-weight: 600; margin: 56px 0 6px; letter-spacing: -0.005em; }
+  h2 .num { font-family: var(--mono); color: var(--accent); font-weight: 600; margin-right: 10px; font-size: 16px; }
+  .section-note { color: var(--ink-soft); font-size: 15px; margin: 0 0 22px; max-width: 72ch; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 24px 0 40px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .stat .n { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  table.gates { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 14.5px; }
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); }
+  table.gates th, table.gates td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.gates th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); background: var(--surface-sunken); font-weight: 600; }
+  table.gates tr:last-child td { border-bottom: none; }
+  table.gates td.gate { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+  table.gates code { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+  .pill.closed { background: var(--accent-soft); color: var(--accent); }
+  .pill.closed::before { background: var(--accent); }
+  .pill.blocked { background: var(--surface-sunken); color: var(--ink-faint); }
+  .pill.blocked::before { background: var(--ink-faint); }
+  .pill.pending { background: var(--amber-soft); color: var(--amber); }
+  .pill.pending::before { background: var(--amber); }
+  .suite-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin: 20px 0 36px; }
+  .suite { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .suite .name { font-size: 14px; color: var(--ink-soft); }
+  .suite .result { font-family: var(--mono); font-weight: 600; font-size: 14px; }
+  .suite.pass .result { color: var(--accent); }
+  .suite.warn .result { color: var(--amber); }
+  .finding { border: 1px solid var(--line); border-left: 4px solid var(--ink-faint); border-radius: var(--radius); padding: 18px 20px; margin: 0 0 16px; background: var(--surface); }
+  .finding.blocker { border-left-color: var(--red); }
+  .finding.major { border-left-color: var(--red); }
+  .finding.minor { border-left-color: var(--amber); }
+  .finding .tag { font-family: var(--mono); font-size: 11.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 5px; display: inline-block; margin-bottom: 10px; }
+  .finding.blocker .tag { background: var(--red-soft); color: var(--red); }
+  .finding.major .tag { background: var(--red-soft); color: var(--red); }
+  .finding.minor .tag { background: var(--amber-soft); color: var(--amber); }
+  .finding h3 { font-family: var(--display); font-size: 16.5px; margin: 0 0 8px; font-weight: 600; }
+  .finding p { margin: 0 0 10px; color: var(--ink-soft); font-size: 14.5px; }
+  .finding p:last-child { margin-bottom: 0; }
+  .finding .fixed-tag { color: var(--accent); font-weight: 600; }
+  .finding .verify-tag { color: var(--ink-faint); font-style: italic; }
+  ul.plain { padding-left: 20px; margin: 12px 0; }
+  ul.plain li { margin-bottom: 10px; font-size: 15px; color: var(--ink-soft); }
+  ul.plain li b { color: var(--ink); }
+  ul.plain li code { font-family: var(--mono); font-size: 13.5px; }
+  .deviation { display: grid; grid-template-columns: 130px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .deviation:last-child { border-bottom: none; }
+  .deviation .gate-tag { font-family: var(--mono); font-weight: 600; color: var(--accent); font-size: 13.5px; }
+  .deviation p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+  .incident { border: 1px solid var(--amber); background: var(--amber-soft); border-radius: var(--radius); padding: 20px 22px; margin: 20px 0 36px; }
+  .incident h3 { font-family: var(--display); font-size: 16px; margin: 0 0 8px; color: var(--ink); }
+  .incident p { margin: 0 0 10px; font-size: 14.5px; color: var(--ink-soft); }
+  .incident p:last-child { margin-bottom: 0; }
+  .dod-item { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; margin: 0 0 12px; background: var(--surface); }
+  .dod-item .row1 { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .dod-item h4 { font-family: var(--display); font-size: 15px; margin: 0; font-weight: 600; }
+  .dod-item p { margin: 4px 0 0; font-size: 14px; color: var(--ink-soft); }
+  .dod-item p b { color: var(--ink); font-weight: 600; }
+  .closing { margin-top: 56px; padding: 24px 26px; background: var(--surface-sunken); border-radius: var(--radius); font-size: 15px; color: var(--ink-soft); }
+  .closing b { color: var(--ink); }
+  a { color: var(--accent); }
+  @media (max-width: 600px) { .deviation { grid-template-columns: 1fr; gap: 4px; } .dod-item .row1 { flex-direction: column; align-items: flex-start; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness_App &middot; MVP1 / SPTR &middot; Gate G1 &middot; Rosetta-governed gate</div>
+    <h1>G1, third slice: unknown-machine description moved server-side</h1>
+    <p class="lede">The "what is this" fallback shown when a photo matches nothing in the catalog is the third of four AI surfaces in the app. It no longer calls Gemini directly from the client &mdash; it now goes through a new Cloud Function, <code>aiMachineDescription</code>. Ten GPT&#8209;PM review rounds (6 code, 4 documentary/governance) found and closed 3 MAJOR + 9 MINOR, including a JS prototype-chain bypass and a race with a "zombie" network call that <code>Future.timeout()</code> does not actually cancel. This is the first gate in the project run end-to-end under the Rosetta protocol (Plan&nbsp;&rarr;&nbsp;GO&nbsp;&rarr;&nbsp;Act&nbsp;&rarr;&nbsp;Validate&nbsp;&rarr;&nbsp;Document), including a retroactive closure reconciliation.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 44c0a2f</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+  <div class="verdict-band">
+    <div class="mark">&#10003;</div>
+    <div class="text">
+      <b>PUSHED, GATE CLOSED, ROSETTA PLAN PASSED</b>
+      <span>Code: round 6 (exact-SHA final on <code>4aa9862</code>) &mdash; APPROVE, PUSH: AUTHORIZED. Documentation: rounds 7&ndash;10 plus a separate Rosetta closure reconciliation &mdash; final push authorized for <code>44c0a2f</code>. Divergence from origin verified twice, both times 0/0.</span>
+    </div>
+  </div>
+
+  <h2><span class="num">01</span>At a glance</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="n">3 / 4</div><div class="l">AI surfaces migrated</div></div>
+    <div class="stat"><div class="n">10</div><div class="l">GPT&#8209;PM review rounds (6 code + 4 docs)</div></div>
+    <div class="stat"><div class="n">3 + 9</div><div class="l">MAJOR / MINOR found, all closed</div></div>
+    <div class="stat"><div class="n">9</div><div class="l">commits, all pushed</div></div>
+    <div class="stat"><div class="n">347 / 347</div><div class="l">Functions tests passing</div></div>
+  </div>
+
+  <h2><span class="num">02</span>What shipped</h2>
+  <p class="section-note">The only caller-controlled field besides the photo is <code>languageCode</code>, and it is never interpolated as free text: the server accepts only the exact strings <code>"ru"</code>/<code>"en"</code> and maps them to fixed literals (<code>"Russian"</code>/<code>"English"</code>) before anything reaches the prompt. Turning the model's JSON into a <code>MachineCard</code> stays client-side, unchanged &mdash; it never touched the network to begin with.</p>
+  <div class="table-scroll">
+  <table class="gates">
+    <thead><tr><th>File</th><th>What</th></tr></thead>
+    <tbody>
+      <tr><td class="gate"><code>ai_machine_description.ts</code></td><td>New. Third callable: resolves ru/en by direct string equality (not an object/map lookup), validates the image through the shared module, enforces quota, calls the shared Gemini gateway, returns the model's raw JSON text unchanged.</td></tr>
+      <tr><td class="gate"><code>image_validation.ts</code></td><td>New, extracted from <code>ai_equipment_recognition.ts</code>. Shared logic for both callables, but with a different check order for each: a private <code>validateImageBytes</code> core plus two independently-correct entry points &mdash; round 4's rule below.</td></tr>
+      <tr><td class="gate"><code>ai_machine_description.test.ts</code>, <code>image_validation.test.ts</code></td><td>New, ~34 tests: prototype-chain bypass, exact check-order regressions, quota, generation config, wire contract.</td></tr>
+      <tr><td class="gate"><code>index.ts</code>, <code>scaling.test.ts</code></td><td>Export added; entrypoint registered in the scaling-ceiling inventory (fifteen &rarr; sixteen).</td></tr>
+      <tr><td class="gate"><code>machine_describer.dart</code></td><td>Migrated: <code>GeminiMachineDescriber</code> calls <code>httpsCallable('aiMachineDescription')</code>. <code>buildPrompt()</code>/<code>modelName</code> deleted &mdash; moved server-side.</td></tr>
+      <tr><td class="gate"><code>gemini_equipment_service.dart</code></td><td>Dead code from the prior slice finished off: <code>CloudAsk</code>, <code>kVisionModel</code>, <code>firebaseCloudAsk()</code> and unused <code>firebase_ai</code> imports deleted, grep-confirmed zero remaining consumers.</td></tr>
+      <tr><td class="gate"><code>visual_equipment_providers.dart</code></td><td>New <code>describeTimeoutProvider</code> (35s) &mdash; the third, outermost timeout layer above <code>GeminiMachineDescriber</code>'s own 30s and the server's 20s.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2><span class="num">03</span>Round 1 &mdash; what GPT&#8209;PM's review found</h2>
+  <p class="section-note">Every finding was independently verified before fixing: a Node.js repro for the prototype-chain bypass, a direct code re-read for the timeout gap, a <code>git show</code> diff against the parent for the check-order regression.</p>
+
+  <div class="finding major">
+    <span class="tag">Major &middot; fixed</span>
+    <h3><code>languageCode in LANGUAGE_NAMES</code> was bypassable via the prototype chain</h3>
+    <p>The <code>in</code> operator against a plain object literal walks the ENTIRE prototype chain, not just own keys: <code>"constructor"</code>, <code>"toString"</code>, <code>"__proto__"</code> all satisfied the check and resolved to real (non-string) members of <code>Object.prototype</code>, which would then have been interpolated into the prompt as <code>function Object() { [native code] }</code>.</p>
+    <p><span class="fixed-tag">Fixed:</span> direct string equality (<code>=== "ru"</code> / <code>=== "en"</code>) &mdash; equality has no prototype chain to walk. 5 regression tests, one per discovered bypass value.</p>
+  </div>
+
+  <div class="finding major">
+    <span class="tag">Major &middot; fixed</span>
+    <h3>The timeout hierarchy was not structurally enforced</h3>
+    <p><code>.timeout()</code> wrapped only the network call, not the photo resize &mdash; so a slow resize plus a legitimate network round trip could together exceed the controller's outer budget even though the network leg's own sub-timer had not fired.</p>
+    <p><span class="fixed-tag">Fixed (round 1):</span> resize and network combined into one composite future under a single <code>.timeout()</code>. <span class="verify-tag">Turned out incomplete &mdash; see round 2.</span></p>
+  </div>
+
+  <div class="finding minor">
+    <span class="tag">Minor &middot; fixed</span>
+    <h3><code>image_validation.ts</code>'s extraction wasn't fully behavior-preserving</h3>
+    <p>A compound-invalid case (<code>{mimeType:"image/gif"}</code> with no image field) got a different error message after the extraction than before it.</p>
+    <p><span class="fixed-tag">Fixed:</span> <code>validateImageInput</code> owns both raw type checks in the original order. <span class="verify-tag">The boundary was refined twice more &mdash; rounds 3&ndash;4.</span></p>
+  </div>
+
+  <div class="finding minor">
+    <span class="tag">Minor &middot; fixed</span>
+    <h3>Decision log staleness; miscounted adjacent test files</h3>
+    <p>Minor factual inaccuracies in the log entry.</p>
+    <p><span class="fixed-tag">Fixed:</span> text corrected.</p>
+  </div>
+
+  <h2><span class="num">04</span>Round 2 &mdash; the zombie network call</h2>
+  <div class="finding major">
+    <span class="tag">Major &middot; fixed</span>
+    <h3><code>Future.timeout()</code> does not cancel the source future</h3>
+    <p>Round 1's composite future (resize+network under one <code>.timeout()</code>) could still let the network call start &mdash; spending real quota/provider cost &mdash; after <code>describe()</code> had already given up and returned <code>null</code>, because Dart's <code>Future.timeout()</code> does not cancel the source computation; it only stops waiting on it, and the computation keeps running in the background.</p>
+    <p><span class="fixed-tag">Fixed:</span> resize is timed on its own first; the network call is simply never started if resize left no budget &mdash; instead of "start it, then abandon it."</p>
+  </div>
+  <p class="section-note">Same round, 1 MINOR: JS/TS object-literal property evaluation order &mdash; properties evaluate in the order WRITTEN in source, not declaration order, so the expensive image check ran before the cheap language check. Fixed by switching to sequential <code>const</code> statements instead of an object literal with function calls as values.</p>
+
+  <h2><span class="num">05</span>Rounds 3&ndash;4 &mdash; pinning the cheap/expensive boundary</h2>
+  <p class="section-note">Three rounds in a row, GPT&#8209;PM checked the check-order against the EXACT order of the original commit <code>6e52bd6</code> &mdash; each round narrowed the boundary a little more precisely, until round 4 reproduced it exactly.</p>
+  <ul class="plain">
+    <li><b>Round 3, MINOR:</b> <code>DateTime.now()</code> is not monotonic (NTP sync, DST, a user changing the device clock) &mdash; replaced with <code>Stopwatch</code>.</li>
+    <li><b>Round 3, MINOR:</b> round 2's "language first" fix overshot &mdash; it checked language before even the cheap image-field type checks. Split into <code>checkImageFieldTypes</code> / <code>decodeAndValidateImageBytes</code>.</li>
+    <li><b>Round 4, MINOR:</b> round 3's boundary was still in the wrong place &mdash; the MIME allowlist check and the empty-base64 check belong AFTER language, not before. Re-split into <code>checkImageFieldsAreStrings</code> (only the two raw <code>typeof</code> checks) and <code>decodeAndValidateImageBytes</code> (everything else).</li>
+  </ul>
+  <div class="incident">
+    <h3>A regression self-caught before sending to round 4</h3>
+    <p>The same finer split, applied naively, would have broken <code>aiEquipmentRecognition.validateImageInput</code>'s own, coarser check ordering (type and allowlist checks combined into one condition per field). Caught by running the existing <code>image_validation.test.ts</code> suite before sending the round-4 fix for review &mdash; one test failed. Fixed structurally: the shared byte-level work was extracted into a private <code>validateImageBytes</code> core, with each callable given its own independently-correct sequence of checks on top of it.</p>
+  </div>
+
+  <h2><span class="num">06</span>Rounds 5&ndash;6 &mdash; verification, final, push</h2>
+  <ul class="plain">
+    <li><b>Round 5</b>: <code>VERDICT: APPROVE</code>, correlated. All prior findings confirmed closed.</li>
+    <li><b>Round 6</b> (exact SHA <code>4aa9862</code>): <code>VERDICT: APPROVE</code>, correlated, genuine <code>--final: true</code>. <code>PUSH: AUTHORIZED</code>. Pushed <code>fc97493..4aa9862</code>, divergence 0/0.</li>
+  </ul>
+
+  <h2><span class="num">07</span>Rounds 7&ndash;8 &mdash; documentary findings</h2>
+  <div class="finding minor">
+    <span class="tag">Minor &times; 2 &middot; fixed</span>
+    <h3>The decision log contradicted itself</h3>
+    <p>Its own push summary said "all four" commits while listing five; summed rounds 1&ndash;4 findings as "2 MAJOR+4 MINOR" when the actual total is 3 MAJOR + 6 MINOR; and said "migrated and live" when a git push only proves the code landed in the repository, not that it was deployed.</p>
+    <p><span class="fixed-tag">Fixed (round 7):</span> all three corrected. <span class="fixed-tag">Round 8 (exact SHA):</span> <code>VERDICT: APPROVE</code>, <code>PUSH: AUTHORIZED</code>. Pushed <code>4aa9862..08820e5</code>, divergence 0/0.</p>
+  </div>
+
+  <h2><span class="num">08</span>Rosetta: plan, DoD, and status per item</h2>
+  <p class="section-note">This is the first gate in the project run end-to-end under the Rosetta protocol (Plan&nbsp;&rarr;&nbsp;GO&nbsp;&rarr;&nbsp;Act&nbsp;&rarr;&nbsp;Validate&nbsp;&rarr;&nbsp;Document). Plan v1 was rejected by GPT&#8209;PM at the GO-review step and reworked into plan v2 with five amendments; v2 received the GO and is the sole plan authorizing this gate. Below is every planned item against the Definition of Done GPT&#8209;PM itself set &mdash; not one the session set for itself.</p>
+
+  <div class="dod-item">
+    <div class="row1"><h4>New callable <code>aiMachineDescription</code> replicates <code>aiEquipmentRecognition</code>'s pattern</h4><span class="pill closed">Done</span></div>
+    <p><b>DoD:</b> callable exists, registered in <code>index.ts</code> and the scaling inventory, covered by tests.</p>
+  </div>
+  <div class="dod-item">
+    <div class="row1"><h4>Language boundary: ru/en only, no free text reaches the prompt</h4><span class="pill closed">Done</span></div>
+    <p><b>DoD:</b> allowlist via direct string equality, prototype-chain bypass closed and covered by a test. Required 1 MAJOR fix (round 1).</p>
+  </div>
+  <div class="dod-item">
+    <div class="row1"><h4>Shared image validator reused, not duplicated</h4><span class="pill closed">Done</span></div>
+    <p><b>DoD:</b> <code>aiEquipmentRecognition</code>'s own behavior unchanged &mdash; its 20-test suite stayed green, unchanged, across all 4 rounds of the validator's own refactoring.</p>
+  </div>
+  <div class="dod-item">
+    <div class="row1"><h4>Timeout hierarchy (server 20s &lt; client-service 30s &lt; outer provider 35s) structurally enforced</h4><span class="pill closed">Done</span></div>
+    <p><b>DoD:</b> not merely described by numbers but actually enforced &mdash; the network call cannot start if resize already spent the budget; covered by regression tests. Required 1 MAJOR (round 1) + 1 MAJOR (round 2, zombie call) + 1 MINOR (round 3, <code>Stopwatch</code>).</p>
+  </div>
+  <div class="dod-item">
+    <div class="row1"><h4>Mobile wire protocol tested</h4><span class="pill closed">Done</span></div>
+    <p><b>DoD:</b> request/response covered by tests without touching the real Firebase SDK (private constructors make a direct fake impossible).</p>
+  </div>
+  <div class="dod-item">
+    <div class="row1"><h4>Dead interface from the prior slice removed</h4><span class="pill closed">Done</span></div>
+    <p><b>DoD:</b> <code>CloudAsk</code>, <code>kVisionModel</code>, <code>firebaseCloudAsk()</code> deleted, grep-confirmed zero consumers.</p>
+  </div>
+  <div class="dod-item">
+    <div class="row1"><h4>Exactly one direct Gemini call site left in mobile code</h4><span class="pill closed">Done</span></div>
+    <p><b>DoD:</b> a test explicitly asserts the count is 1 (<code>ai_exercise_generator.dart</code>), not just "we didn't forget one."</p>
+  </div>
+  <div class="dod-item">
+    <div class="row1"><h4>Scope stayed narrow (no leakage)</h4><span class="pill closed">Done</span></div>
+    <p><b>DoD:</b> confirmed twice &mdash; first via <code>git diff</code> over the plan's exact commit range, then independently by GPT&#8209;PM through its own GitHub access. Both counted exactly 14 files. See section 09.</p>
+  </div>
+  <div class="dod-item">
+    <div class="row1"><h4>Tests and build green</h4><span class="pill closed">Done</span></div>
+    <p><b>DoD:</b> Functions Jest 347/347, <code>tsc --noEmit</code> clean, touched Flutter tests green; the one red test in the whole suite is inherited from prior sessions, in files this gate never touched (section 10).</p>
+  </div>
+  <div class="dod-item">
+    <div class="row1"><h4>Decision log accurate</h4><span class="pill pending">Partial, tail closed</span></div>
+    <p><b>DoD:</b> zero factual inaccuracies by the time the gate closes. Required 2 documentary correction rounds (round 7 &mdash; commit count and finding totals; round 9 &mdash; the wording around the 72 ungoverned acts). Tail: closed by round 10, <code>VERDICT: APPROVE</code>.</p>
+  </div>
+  <div class="dod-item">
+    <div class="row1"><h4>Live deployment / runtime smoke test</h4><span class="pill blocked">Not done</span></div>
+    <p><b>DoD:</b> a call through real Vertex AI/ADC credentials. Unavailable from this sandbox &mdash; the same honestly-carried gap as slice 2. Not a required DoD condition for this gate specifically.</p>
+  </div>
+
+  <h2><span class="num">09</span>Rosetta closure reconciliation: MAJOR + MINOR, both resolved</h2>
+  <p class="section-note">At plan closure (<code>pm_rosetta_close</code>), Rosetta's own reconstruction ("changed set" derived from <code>git status</code> in this shared, concurrently-used repository rather than the plan's own commit range) reported "27 paths" and "72 ungoverned acts" with no explanation. GPT&#8209;PM, given that closure record, returned <code>VERDICT: MAJOR findings</code>.</p>
+  <div class="finding major">
+    <span class="tag">Major &middot; resolved</span>
+    <h3>"No leakage" contradicted the closure's own changed set</h3>
+    <p>The closure claimed the diff "exactly matched the plan's declared scope, no leakage," but the listed "27 paths" additionally included unrelated marketing/citation report files nowhere in this plan's scope.</p>
+    <p><span class="fixed-tag">Resolved:</span> <code>git diff --stat</code> over the plan's exact commit range (<code>a6404fb..08820e5</code>, all 7 commits) returned exactly 14 files &mdash; all within the declared scope. The marketing files were confirmed as <code>??</code> untracked in the working tree, never committed by any of the 7 commits &mdash; leftovers from concurrent work in this shared repository. GPT&#8209;PM independently re-verified through its own GitHub access (<code>ahead_by: 7, behind_by: 0</code>, the same 14-file list) and confirmed.</p>
+  </div>
+  <div class="finding minor">
+    <span class="tag">Minor &middot; resolved, then refined once more</span>
+    <h3>72 ungoverned acts with no classification</h3>
+    <p>Acts were classified from the raw Rosetta ledger into three buckets: some belong to the already-closed second slice, some are read-only verification commands (tsc, jest, flutter test/analyze, git status/diff, grep) that Rosetta's classifier conservatively flags as "mutating," and the rest are genuine edits in the transitional window between plan v2's draft and its GO.</p>
+    <p><span class="fixed-tag">Resolved (round 9):</span> the decision log's closing wording mistakenly equated ALL 72 acts with "debt" &mdash; GPT&#8209;PM caught that as a separate MINOR. <span class="fixed-tag">Fixed, round 10:</span> wording narrowed to the explicit subset, with the exact count inside it noted as not separately tallied. <code>VERDICT: APPROVE</code>, <code>PUSH: AUTHORIZED</code> for <code>44c0a2f</code>.</p>
+  </div>
+
+  <h2><span class="num">10</span>Test and build state</h2>
+  <div class="suite-grid">
+    <div class="suite pass"><span class="name">Functions Jest, full suite</span><span class="result">347 / 347</span></div>
+    <div class="suite pass"><span class="name"><code>tsc --noEmit</code></span><span class="result">clean</span></div>
+    <div class="suite pass"><span class="name"><code>flutter analyze</code>, whole project</span><span class="result">same 16 pre-existing, 0 new</span></div>
+    <div class="suite warn"><span class="name">Mobile, full <code>flutter test</code></span><span class="result">3243 / 3244 (1 inherited)</span></div>
+  </div>
+  <p class="section-note">The one red test in the whole suite (<code>app_semantic_colors_test.dart</code>, a hardcoded-white-color count drift in files this gate never touched) predates this session &mdash; the same signature already documented for slice 2, confirmed via <code>git diff</code>.</p>
+
+  <h2><span class="num">11</span>What's still open</h2>
+  <ul class="plain">
+    <li>No live smoke test against real Vertex AI/ADC credentials has run for any of the three migrated surfaces &mdash; "landed in the repository," not "deployed and exercised live."</li>
+    <li>One AI surface remains unmigrated: <code>AiExerciseGenerator</code>/<code>ai_exercise_generator.dart</code>.</li>
+    <li>Rosetta runs in audit mode (R0): it records but does not block. Enforcement turns on after pm-bridge's Gate B infrastructure.</li>
+    <li>The exact count of acts within the "genuine pre-GO debt" bucket (of the 72 ungoverned) was not separately tallied &mdash; see section 09.</li>
+  </ul>
+
+  <h2><span class="num">12</span>GPT&#8209;PM review timeline (10 rounds)</h2>
+  <div class="deviation"><span class="gate-tag">Round 1</span><p>Commit <code>6e52bd6</code>. <code>VERDICT: MAJOR</code> &mdash; 2 MAJOR + 2 MINOR.</p></div>
+  <div class="deviation"><span class="gate-tag">Round 2</span><p>Commit <code>f1f7f40</code>. <code>VERDICT: MAJOR</code> &mdash; 1 MAJOR + 1 MINOR.</p></div>
+  <div class="deviation"><span class="gate-tag">Round 3</span><p>Commit <code>93ee288</code>. <code>VERDICT: MINOR</code> &mdash; 2 MINOR.</p></div>
+  <div class="deviation"><span class="gate-tag">Round 4</span><p>Commit <code>4ab397c</code>. <code>VERDICT: MINOR</code> &mdash; 1 MINOR + a self-caught regression.</p></div>
+  <div class="deviation"><span class="gate-tag">Round 5</span><p>Commit <code>4aa9862</code>. <code>VERDICT: APPROVE</code>, correlated.</p></div>
+  <div class="deviation"><span class="gate-tag">Round 6</span><p>Exact SHA <code>4aa9862 --final</code>. <code>VERDICT: APPROVE</code>. <code>PUSH: AUTHORIZED</code>.</p></div>
+  <div class="deviation"><span class="gate-tag">Round 7</span><p>Commit <code>d22ca63 --final</code>. <code>VERDICT: MINOR</code> &mdash; 2 documentary.</p></div>
+  <div class="deviation"><span class="gate-tag">Round 8</span><p>Exact SHA <code>08820e5 --final</code>. <code>VERDICT: APPROVE</code>. <code>PUSH: AUTHORIZED</code>.</p></div>
+  <div class="deviation"><span class="gate-tag">Rosetta recon.</span><p><code>gpt_send_and_await</code>, full closure text. <code>VERDICT: APPROVE</code> with one condition (don't relabel debt as authorized).</p></div>
+  <div class="deviation"><span class="gate-tag">Round 9</span><p>Commit <code>34c60b8 --final</code>. <code>VERDICT: MINOR</code> &mdash; closing wording equated all debt with 72.</p></div>
+  <div class="deviation"><span class="gate-tag">Round 10</span><p>Exact SHA <code>44c0a2f --final</code>. <code>VERDICT: APPROVE</code>. <code>PUSH: AUTHORIZED</code>.</p></div>
+
+  <div class="closing"><b>Next:</b> three of four AI surfaces are migrated and pushed. Continuing the same pattern (Plan&nbsp;&rarr;&nbsp;GO&nbsp;&rarr;&nbsp;Act&nbsp;&rarr;&nbsp;Validate&nbsp;&rarr;&nbsp;Document via Rosetta, GPT&#8209;PM review to consensus) on the fourth surface &mdash; <code>AiExerciseGenerator</code> &mdash; then G2&ndash;G8, per PM-mode's instruction not to stop after a report.</div>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
