@@ -25301,10 +25301,15 @@ against real Vertex AI with real ADC credentials has not been performed from thi
 and remains an explicitly flagged, NOT YET closed pre-deployment verification gap -- stated plainly
 in `ai_gateway.ts`'s own comments rather than implied as done.
 
-**Addendum -- staleness correction, same day.** The paragraph above was staged and this entry
-committed (as `9c06ede`) before round 3's response had actually come back, and was never updated
-once it did -- "round 3's response, the commit itself" was still marked "not yet done" inside a
-commit that WAS round 3's response and WAS the commit. Round 4's exact-SHA `--final` review
+**Addendum -- staleness correction, same day.** The paragraph above had been staged BEFORE round 3's
+response arrived and was never refreshed once round 3 actually returned `APPROVE`/`COMMIT:
+AUTHORIZED` -- commit `9c06ede` was then created, AFTER round 3 had already approved, with that
+stale staged paragraph still present: "round 3's response, the commit itself" was marked "not yet
+done" inside a commit created after both had already happened. (First draft of this very addendum
+got this chronology wrong too -- said the commit predated round 3's response, when the actual defect
+was the unrefreshed staged text surviving into a post-approval commit. Caught by round 5, verified
+directly against `9c06ede`'s own timestamp before accepting the correction.) Round 4's exact-SHA
+`--final` review
 (`--commit 9c06ede`) caught this as its one MINOR finding: a real defect in this file, not in the
 G1 code, since a future session reading this record could wrongly conclude governance was
 unfinished and re-run review rounds already closed. GPT-PM's own suggested remedy was to `amend`
@@ -25331,8 +25336,16 @@ sessions across sibling `D:\Repo\*` projects, a known, documented transport limi
 receipt written, did not block anything; retried once after waiting rather than hammering the lock,
 per this workspace's own established guidance for exactly this condition.
 
-**Round 4, retry:** `VERDICT: MINOR`, `correlated: true`, `final: true`. The one finding is the
-decision-log staleness this addendum exists to fix -- described above. On the actual G1 code,
+**Round 4, retry:** `VERDICT: MINOR`, `correlated: true`. Transport/receipt metadata says
+`final: true` -- but that field only reflects `review.js`'s own mechanical downgrade rule, which
+fires on a MAJOR/BLOCKER verdict and does NOT fire on MINOR; it is not a parsed reading of GPT-PM's
+actual judgment (this workspace's own documented gap: "`--final` is a claim by the caller, not a
+parsed verdict"). GPT-PM's own prose in that same round said the opposite of "approved": "exact-SHA
+final receipt withheld solely for the stale decision-log state... PUSH: NOT AUTHORIZED YET." Treated
+here as NOT final/NOT approved for push, per GPT-PM's stated words, not per the mechanical field --
+round 5 caught this addendum's first draft quoting the field at face value instead. The one
+substantive finding is the decision-log staleness this addendum exists to fix -- described above. On
+the actual G1 code,
 re-verified directly against the exact committed tree (not the round-3 working-directory diff):
 `maxOutputTokens: 512` genuinely reaches `aiCoachAdvice`'s `generate()` call; `AI_METERED` genuinely
 carries `maxInstances: 15` x `concurrency: 10`; `VERTEX_AI_LOCATION` default genuinely remains
@@ -25342,6 +25355,21 @@ once this addendum lands in a follow-up commit limited to this mechanical correc
 exact-SHA verification of that new commit should be sufficient for `APPROVE`/`--final` without
 re-litigating G1's code a second time.
 
-**Next**: commit this addendum alone (no code changes), then request a short round-5 `--final` pass
-scoped to the new commit. Push remains gated on that `--final` landing AND a separate, explicit
-operator push-GO regardless -- unchanged from every prior statement of this contract in this file.
+**Round 5** (`--commit af7bbb5 --final`, the addendum commit above): `VERDICT: MINOR`,
+`correlated: false` -- a known PM Bridge transport risk, same as the master-plan thread's own round
+5. Per this workspace's round policy, its 2 findings were independently verified against real
+evidence rather than trusted on the reply's word: (1) confirmed via `git log --format=%ai 9c06ede`
+that the commit genuinely postdates round 3's approval, proving the addendum's first-draft
+chronology (commit predating round 3's response) was itself wrong -- fixed above; (2) confirmed via
+re-reading round 4's own raw JSON receipt that `final: true` was the literal transport field while
+GPT-PM's own round-4 prose explicitly said the final receipt was "withheld" -- a real conflation in
+the addendum's first draft between the mechanical field and GPT-PM's actual stated judgment, also
+fixed above. Both findings held up under independent verification despite the low-confidence
+correlation flag, so both were accepted and acted on -- consistent with this thread's standing
+practice of verifying rather than either blindly trusting or blindly dismissing an uncorrelated
+reply.
+
+**Next**: commit this second correction, then request a short round-6 `--final` pass scoped to that
+commit. Push remains gated on an actual `--final` landing (read from GPT-PM's stated words, not
+assumed from a transport field) AND a separate, explicit operator push-GO regardless -- unchanged
+from every prior statement of this contract in this file.
