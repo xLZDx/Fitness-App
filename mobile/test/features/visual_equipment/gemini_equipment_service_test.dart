@@ -32,6 +32,37 @@ class _FixedService implements VisualEquipmentService {
 void main() {
   final index = loadIndex();
 
+  // Pins the request/response wiring the injected-`ask` tests below cannot
+  // see: `FirebaseFunctions`/`HttpsCallable` have private constructors (no
+  // fake possible without heavier Firebase test scaffolding this project
+  // does not have), so every other test in this file bypasses
+  // `cloudFunctionsEquipmentAsk` entirely via the injected `ask` seam. GPT-PM's
+  // G1 round-1 review named the resulting blind spot directly: a typo in the
+  // function name or either JSON key would compile and ship unnoticed. These
+  // pin the pure halves that function is built from instead.
+  group('the aiEquipmentRecognition wire contract', () {
+    test('calls the function by its exact name', () {
+      expect(kEquipmentRecognitionFunctionName, 'aiEquipmentRecognition');
+    });
+
+    test('the request carries a fixed JPEG mimeType and the base64 of the bytes given', () {
+      final body = buildEquipmentRecognitionRequest(Uint8List.fromList([1, 2, 3]));
+      expect(body, {
+        'mimeType': 'image/jpeg',
+        'imageBase64': base64Encode([1, 2, 3]),
+      });
+    });
+
+    test('the response text is read from the "text" field', () {
+      expect(extractEquipmentRecognitionText({'text': '{"machine": "treadmill"}'}),
+          '{"machine": "treadmill"}');
+    });
+
+    test('a response with no "text" field extracts null, not a crash', () {
+      expect(extractEquipmentRecognitionText({'somethingElse': 1}), isNull);
+    });
+  });
+
   group('GeminiVisualEquipmentService.parseResponse', () {
     test('plain JSON answer resolves through the registry', () {
       final out = GeminiVisualEquipmentService.parseResponse(
@@ -88,46 +119,16 @@ void main() {
     });
   });
 
-  test('every canonical prompt name resolves in the alias index', () {
-    // The prompt offers these names to the model; if a registry rename
-    // orphans one, the model's correct answer would silently become
-    // "no match". This is the tripwire.
-    for (final name in GeminiVisualEquipmentService.kCanonicalMachines) {
-      expect(index.resolve(name), isNotNull,
-          reason: 'prompt offers "$name" but the registry cannot resolve it');
-    }
-  });
-
-  test('every registry machine is reachable through the prompt', () {
-    // The other direction of the check above. 2026-08-03: `equipment.json`
-    // grew to 52 while `kCanonicalMachines` stayed at 48 for an unknown
-    // number of commits -- the check above never caught it because it only
-    // ever walked the (smaller, stale) prompt list. Four machines
-    // (stability ball, skipping rope, ab wheel, parallettes) had real pages
-    // the camera could never return. This walks the registry instead, so a
-    // future rename or addition that forgets the prompt fails here first.
-    final equipmentIds =
-        (jsonDecode(File('assets/data/equipment.json').readAsStringSync())
-                as List)
-            .cast<Map<String, dynamic>>()
-            .map((e) => e['id'] as String)
-            .toSet();
-    final reachable = GeminiVisualEquipmentService.kCanonicalMachines
-        .map(index.resolve)
-        .whereType<String>()
-        .toSet();
-    final unreachable = equipmentIds.difference(reachable).toList()..sort();
-    expect(unreachable, isEmpty,
-        reason: 'the camera can never return these machines: $unreachable');
-  });
-
-  test('the prompt tells the model to look at the CENTER of the frame', () {
-    // Operator: machines stand shoulder to shoulder in a real gym; framing
-    // one alone is impossible. The center rule is the contract.
-    final prompt = GeminiVisualEquipmentService.buildPrompt();
-    expect(prompt, contains('center'));
-    expect(prompt, contains('unknown'));
-  });
+  // The three tests that used to live here (`kCanonicalMachines` vs. the
+  // alias registry, both directions, and "the prompt mentions the CENTER of
+  // the frame") moved to
+  // `functions/src/__tests__/ai_equipment_recognition.test.ts` in G1:
+  // `buildPrompt()`/`kCanonicalMachines` were deleted from this file once the
+  // model call moved server-side, since a Dart-side copy would no longer
+  // drive what a real call actually sends — see
+  // `functions/src/ai_equipment_recognition.ts`'s `CANONICAL_MACHINES` for
+  // the list that is now live, and its own test file for the same
+  // two-directional registry tripwire run against it instead.
 
   group('classifyFile with an injected cloud', () {
     test('reads the file and returns resolved matches', () async {
@@ -137,7 +138,7 @@ void main() {
       Uint8List? sent;
       final svc = GeminiVisualEquipmentService(
         index: Future.value(index),
-        ask: (bytes, prompt) async {
+        ask: (bytes) async {
           sent = bytes;
           return '{"machine": "lat pulldown", "confidence": 0.77}';
         },
@@ -153,7 +154,7 @@ void main() {
       tmp.writeAsBytesSync([1]);
       final svc = GeminiVisualEquipmentService(
         index: Future.value(index),
-        ask: (_, __) async => '',
+        ask: (_) async => '',
       );
       expect(() => svc.classifyFile(path: tmp.path),
           throwsA(isA<VisualEquipmentException>()));
@@ -169,7 +170,7 @@ void main() {
       final svc = GeminiVisualEquipmentService(
         index: Future.value(index),
         timeout: const Duration(milliseconds: 50),
-        ask: (_, __) => Future.delayed(
+        ask: (_) => Future.delayed(
             const Duration(seconds: 5), () => '{"machine": "treadmill"}'),
       );
       await expectLater(
@@ -189,7 +190,7 @@ void main() {
       Uint8List? sent;
       final svc = GeminiVisualEquipmentService(
         index: Future.value(index),
-        ask: (bytes, _) async {
+        ask: (bytes) async {
           sent = bytes;
           return '{"machine": "treadmill"}';
         },
@@ -208,7 +209,7 @@ void main() {
       Uint8List? sent;
       final svc = GeminiVisualEquipmentService(
         index: Future.value(index),
-        ask: (bytes, _) async {
+        ask: (bytes) async {
           sent = bytes;
           return '{"machine": "treadmill"}';
         },

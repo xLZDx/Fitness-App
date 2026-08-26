@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/foundation.dart'
     show compute, debugPrint, visibleForTesting;
 import 'package:image/image.dart' as img;
 
+import '../../../core/firebase/functions_region.dart';
 import '../../equipment/data/equipment_alias_index.dart';
 import 'visual_equipment_match.dart';
 import 'visual_equipment_service.dart';
@@ -54,29 +56,87 @@ CloudAsk firebaseCloudAsk({String modelName = kVisionModel}) {
   };
 }
 
-/// Cloud recogniser: Gemini through Firebase AI Logic.
+/// Signature of "send an already-resized photo to the equipment recognizer,
+/// get its raw JSON text back" — injectable for tests, so the suite never
+/// needs a real `FirebaseFunctions`.
+///
+/// One arg, not two: unlike [CloudAsk] (still used by `GeminiMachineDescriber`
+/// in `machine_describer.dart`, which is not yet migrated), there is no
+/// client-built prompt to pass any more — G1's `aiEquipmentRecognition`
+/// Cloud Function builds the whole prompt server-side
+/// (`functions/src/ai_equipment_recognition.ts`, which
+/// carries its own copy of the canonical machine list this file used to
+/// export as `kCanonicalMachines`/`buildPrompt()` — both deleted here since
+/// they no longer drive anything a real call sends).
+typedef CloudRecognitionAsk = Future<String?> Function(Uint8List imageBytes);
+
+/// The Cloud Function name this surface calls. Named once so
+/// [cloudFunctionsEquipmentAsk] and its test cannot drift apart on a typo.
+const String kEquipmentRecognitionFunctionName = 'aiEquipmentRecognition';
+
+/// Builds the request body sent to [kEquipmentRecognitionFunctionName].
+///
+/// Pulled out of [cloudFunctionsEquipmentAsk] and independently unit-tested:
+/// `FirebaseFunctions`/`HttpsCallable` have private constructors (verified
+/// against `cloud_functions`' own source), so unlike most other injectable
+/// seams in this codebase they cannot be faked in a plain unit test without
+/// heavier Firebase test scaffolding this project does not have. GPT-PM's G1
+/// round-1 review named the resulting gap directly: every existing test for
+/// this class injects `ask` and never exercises this function's real request/
+/// response shape, so a typo in the function name or either JSON key here
+/// would compile, ship, and only fail in production. Splitting the shape
+/// into its own pure function is what makes it testable without the SDK.
+@visibleForTesting
+Map<String, dynamic> buildEquipmentRecognitionRequest(Uint8List imageBytes) => {
+      'mimeType': 'image/jpeg',
+      'imageBase64': base64Encode(imageBytes),
+    };
+
+/// Extracts the answer text from [kEquipmentRecognitionFunctionName]'s reply.
+/// The other half of the same testable-without-the-SDK split as
+/// [buildEquipmentRecognitionRequest].
+@visibleForTesting
+String? extractEquipmentRecognitionText(Map<String, dynamic> data) => data['text'] as String?;
+
+/// The default [CloudRecognitionAsk]: routes through the `aiEquipmentRecognition`
+/// Cloud Function rather than calling `FirebaseAI.googleAI()` directly.
+///
+/// G1: this is the second of the four mobile call sites migrated off a direct
+/// client-side Gemini call (see `ai_coach_service.dart` for the first). The
+/// photo is already resized to a small JPEG by [resizeForCloud] before this
+/// runs, so base64-encoding it here does not undo that saving.
+CloudRecognitionAsk cloudFunctionsEquipmentAsk({FirebaseFunctions? functions}) {
+  final fns = functions ?? functionsForRegion;
+  return (Uint8List bytes) async {
+    final result = await fns
+        .httpsCallable(kEquipmentRecognitionFunctionName)
+        .call<Map<String, dynamic>>(buildEquipmentRecognitionRequest(bytes));
+    return extractEquipmentRecognitionText(result.data);
+  };
+}
+
+/// Cloud recogniser: Gemini through the `aiEquipmentRecognition` Cloud Function.
 ///
 /// Why this exists: the on-device model is 10 catalogue-trained classes and
 /// on a real gym floor it misfired badly enough to call two flat benches a
-/// treadmill. Gemini sees the actual machine. The API key lives server-side
-/// in Firebase — nothing is embedded in the app.
-///
-/// The prompt pins the answer to the registry's canonical names, and the
-/// reply is resolved through [EquipmentAliasIndex], so the model cannot
-/// invent a machine we have no page for: an unresolvable answer degrades to
-/// "no match", never to a guess.
+/// treadmill. Gemini sees the actual machine. G1 moved the model call itself
+/// server-side; the reply is still resolved through [EquipmentAliasIndex]
+/// entirely client-side (that logic never touched the network), so the model
+/// cannot invent a machine we have no page for: an unresolvable answer
+/// degrades to "no match", never to a guess.
 class GeminiVisualEquipmentService implements VisualEquipmentService {
   GeminiVisualEquipmentService({
     Future<EquipmentAliasIndex>? index,
-    CloudAsk? ask,
-    this.modelName = kVisionModel,
-    this.timeout = const Duration(seconds: 20),
+    CloudRecognitionAsk? ask,
+    FirebaseFunctions? functions,
+    this.timeout = const Duration(seconds: 30),
   })  : _index = index ?? EquipmentAliasIndex.load(),
-        _ask = ask;
+        _ask = ask,
+        _injected = functions;
 
-  final String modelName;
   final Future<EquipmentAliasIndex> _index;
-  final CloudAsk? _ask;
+  final CloudRecognitionAsk? _ask;
+  final FirebaseFunctions? _injected;
 
   /// Verified live 2026-07-30: with the model's default "thinking" a single
   /// photo took 25-31s; with thinking disabled, 2-5s typically (occasional
@@ -84,12 +144,28 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
   /// waits, then nothing after several tries — is this combined with a
   /// classifyFile call that had NO deadline: a genuinely stalled request just
   /// spun the spinner forever and never reached the on-device fallback below.
+  ///
+  /// 30s, not 20s: G1's `aiEquipmentRecognition` Cloud Function bounds the
+  /// MODEL call itself at 20s (`functions/src/ai_equipment_recognition.ts`),
+  /// but that budget only starts after auth, request validation and the
+  /// quota-ledger transaction have already run server-side — none of which
+  /// this client-side clock accounts for. GPT-PM's G1 round-1 review of this
+  /// migration caught the two clocks matching exactly: a cold Functions
+  /// instance plus that overhead could legitimately take the total past 20s
+  /// while the model call itself is still on track to succeed, and this
+  /// timer firing first would discard a paid, quota-charged answer and fall
+  /// back to the much weaker on-device recognizer for no real reason. 30s
+  /// gives real margin over the server's own 20s model budget rather than
+  /// racing it — shrinking the server's budget instead was rejected because
+  /// it was already tuned against measured real latency (see above), and
+  /// cutting it would turn some of those legitimate 15-18s answers into
+  /// timeouts instead.
   final Duration timeout;
 
-  late final CloudAsk _cloud = _ask ?? firebaseCloudAsk(modelName: modelName);
+  late final CloudRecognitionAsk _cloud =
+      _ask ?? cloudFunctionsEquipmentAsk(functions: _injected);
 
-  Future<String?> _askCloud(Uint8List bytes, String prompt) =>
-      _cloud(bytes, prompt).timeout(timeout);
+  Future<String?> _askCloud(Uint8List bytes) => _cloud(bytes).timeout(timeout);
 
   @override
   Future<List<VisualMatch>> classifyFile({
@@ -104,7 +180,7 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
     final bytes = await compute(resizeForCloud, path);
     final String? text;
     try {
-      text = await _askCloud(bytes, buildPrompt());
+      text = await _askCloud(bytes);
     } catch (e) {
       throw VisualEquipmentException('cloud recognition failed: $e');
     }
@@ -113,63 +189,6 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
     }
     return parseResponse(text, index, topK: topK);
   }
-
-  /// The machine list is embedded so the model answers in OUR vocabulary.
-  /// "unknown" is explicitly offered — a model told it must pick something
-  /// picks something, which is exactly the failure mode this app is curing.
-  @visibleForTesting
-  static String buildPrompt() => '''
-You identify gym equipment. Look ONLY at the machine closest to the center of
-the photo; ignore machines at the edges — gyms are crowded and the user aimed
-the center of the frame at the one they mean.
-
-Answer with JSON only:
-{"machine": "<name from the list below, or unknown>", "confidence": <0.0-1.0>,
- "alternatives": [{"machine": "<name>", "confidence": <0.0-1.0>}]}
-
-"confidence" is YOUR honest certainty; use low values when unsure. Give up to
-2 alternatives only when they are genuinely plausible. Machine list:
-${kCanonicalMachines.join(', ')}''';
-
-  /// Canonical EN names the prompt offers. Kept in one place and asserted
-  /// against the alias index by the test suite, so a registry rename cannot
-  /// silently break the prompt.
-  ///
-  /// 2026-08-03: 4 machines (`stability ball` .. `parallettes`) had been in
-  /// `equipment.json` for a while without ever being added here -- the camera
-  /// could not recognise them even though their pages already existed. Found
-  /// while re-syncing this list for the batch below; fixed in the same pass.
-  @visibleForTesting
-  static const List<String> kCanonicalMachines = [
-    'treadmill', 'rowing machine', 'squat rack', 'bench press station',
-    'cable machine', 'leg press', 'lat pulldown', 'barbell', 'dumbbells',
-    'kettlebell', 'elliptical trainer', 'exercise bike', 'recumbent bike',
-    'stair climber', 'air bike', 'ski erg', 'smith machine',
-    'hack squat machine', 'leg extension machine', 'leg curl machine',
-    'hip abductor machine', 'glute kickback machine', 'calf raise machine',
-    'chest press machine', 'pec deck', 'shoulder press machine',
-    'seated row machine', 't-bar row', 'assisted pull-up machine',
-    'pull-up bar', 'dip station', 'preacher curl bench',
-    'biceps curl machine', 'triceps extension machine', 'ab crunch machine',
-    'rotary torso machine', 'back extension bench', "captain's chair",
-    'flat bench', 'ez curl bar', 'weight plates', 'resistance bands',
-    'suspension trainer', 'medicine ball', 'battle ropes', 'plyo box',
-    'punching bag', 'foam roller',
-    // previously missing (2026-08-03 drift fix)
-    'stability ball', 'skipping rope', 'ab wheel', 'parallettes',
-    // new, 2026-08-03: real equipment found in the vendor pack's own clips
-    // (core/EQUIPMENT_GAP_ITEMS_2026-08-03.csv), not external stock names
-    'seated dip machine', 'multi hip machine', 'lateral raise machine',
-    'sissy squat machine', 'agility ladder', 'mini trampoline',
-    'balance board', 'yoga blocks', 'weighted sled', 'ab mat', 'bosu ball',
-    'sliding discs', 'sandbag', 'gymnastic rings', 'tyre',
-    // new, 2026-08-04: the last 2 of the 4 groups left open in batch 3
-    'vertical pole', 'outdoor air walker',
-    // alias-only: these two resolve to parallettes / plyo box respectively
-    // (see build_registry.py) rather than owning a separate id, but the
-    // model still needs the words offered to recognise them by sight
-    'push-up blocks', 'aerobic step',
-  ];
 
   /// Parses the model's JSON (tolerating ```json fences) and resolves every
   /// named machine through the alias index. Unresolvable names are dropped

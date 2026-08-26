@@ -25535,3 +25535,170 @@ this session's report-fix commit) are now on `origin/master`. G1's first vertica
 report's own "Next" section: replicate the pattern to the other three AI surfaces (equipment
 recognition, machine description, exercise generation), then continue the MVP1 gate sequence
 (G2-G8).
+
+## G1 -- second vertical slice: GeminiVisualEquipmentService -> aiEquipmentRecognition (2026-08-26)
+
+Replicated the G1 pattern to the equipment-recognition surface (camera classifier), the second of
+the four AI call sites named in `ai_gateway.ts`'s own header. Deliberately narrower in scope than
+the coach-advice slice: this prompt has NO caller-controlled text at all (fixed instructions plus a
+fixed 70-item machine list; the only per-call input is the photo itself), so there is no
+prompt-injection surface to defend here the way `subjectName` needed one.
+
+**What shipped:**
+- `functions/src/ai_equipment_recognition.ts` (new) -- the second callable. Ports
+  `GeminiVisualEquipmentService.buildPrompt()`/`kCanonicalMachines`
+  (`gemini_equipment_service.dart`) server-side unchanged, as `CANONICAL_MACHINES`. Validates
+  `mimeType` (allowlist: jpeg/png/webp) and `imageBase64` (required, <=12MB), enforces
+  `QUOTAS.aiEquipmentRecognition` (60/day, already provisioned in an earlier round), calls
+  `generate()` with `jsonResponse: true, temperature: 0, disableThinking: true, timeoutMs: 20_000,
+  maxOutputTokens: 256` -- an exact match to `GeminiVisualEquipmentService`'s own
+  `generationConfig` and `timeout` field. Returns the model's raw JSON text unchanged; deliberately
+  does NOT resolve machine names to catalog ids server-side -- `EquipmentAliasIndex`/`parseResponse`
+  stay entirely client-side, since porting that logic would need the ~1,887-row equipment registry
+  to exist in Functions, which it does not, and is a real, separate change out of scope for a
+  transport-only migration (matching G1's own established precedent for what counts as in-scope).
+- `functions/src/__tests__/ai_equipment_recognition.test.ts` (new, 16 tests) -- validation,
+  quota enforcement, exact generationConfig/timeout/token-cap pinning, and a two-directional
+  registry-parity tripwire (every `CANONICAL_MACHINES` entry resolves against
+  `mobile/assets/data/equipment_aliases.json`, and every `equipment.json` id is reachable through
+  it) ported from the Dart suite's own tripwire, now run against the copy that is actually live.
+- `functions/src/index.ts` -- `export { aiEquipmentRecognition }` added.
+- `functions/src/__tests__/scaling.test.ts` -- `aiEquipmentRecognition` added to `ENTRYPOINTS`
+  (fourteen -> fifteen), the `AI_METERED`-concurrency-exception list, and the attestation-coverage
+  `SOURCES` array; inventory-count assertion raised to `>= 15`.
+- `mobile/lib/features/visual_equipment/data/gemini_equipment_service.dart` -- `GeminiVisualEquipmentService`
+  migrated to call `httpsCallable('aiEquipmentRecognition')` (base64 JPEG + fixed mimeType) instead
+  of building a prompt and calling `FirebaseAI.googleAI()` directly. `buildPrompt()`/
+  `kCanonicalMachines` deleted from this class (dead once the model call moved server-side). New
+  `CloudRecognitionAsk` typedef (one arg, no prompt) used only by this class -- the existing
+  two-arg `CloudAsk` typedef and `firebaseCloudAsk()` are UNTOUCHED and still used by
+  `GeminiMachineDescriber` (`machine_describer.dart`), which is not migrated in this gate and still
+  calls Gemini directly. `modelName` constructor param dropped (unused once the server owns the
+  model choice), matching `AiCoachService`'s own precedent from the first slice.
+- `mobile/test/features/visual_equipment/gemini_equipment_service_test.dart` -- the 3 tests that
+  exercised the now-deleted `buildPrompt()`/`kCanonicalMachines` (both registry-parity directions
+  plus the "mentions the CENTER of the frame" check) removed, superseded by the TS suite's own
+  parity tests against the copy that is actually live. Injected `ask` callback call sites updated
+  from the two-arg to the one-arg signature.
+- `mobile/test/features/ai_coach/provider_safety_settings_test.dart` -- **unchanged**, verified
+  rather than assumed: `gemini_equipment_service.dart` correctly remains in the F026 tripwire's
+  `sites` list because `firebaseCloudAsk()` (still used by the unmigrated describer) still calls
+  `generativeModel(` with `safetySettings: kProviderSafetySettings` in that same file. The
+  "exactly two direct call sites" scan still finds exactly `ai_exercise_generator.dart` and
+  `gemini_equipment_service.dart`. Ran the suite to confirm rather than reasoning it through.
+
+**A verification pitfall caught and fixed before it reached GPT-PM:** the new registry-parity test
+initially reported CANONICAL_MACHINES entry `"hip abductor machine"` as unresolved MAJOR drift
+against the alias registry. Investigated before accepting it as a real defect: `equipment_aliases.json`
+has no exact alias `"hip abductor machine"` for id `hip_abductor_adductor`, but does have the
+shorter alias `"hip abductor"`. `EquipmentAliasIndex.resolve()` (the real, live Dart algorithm) has
+a SECOND pass beyond exact match -- whole-word substring, longest alias wins -- which resolves this
+correctly in production. My first test port only implemented pass 1 (direct lookup), so it was
+reporting a false defect in the TEST, not in the shipped list. Fixed by porting both of
+`resolve()`'s passes into the test rather than just the first. This is the kind of self-check this
+workspace's evidence discipline exists for -- verify a test failure against the real algorithm
+before treating it as proof of drift.
+
+**Test/build state:** Functions Jest 303/303 (287 pre-existing/G1-coach + 16 new). `tsc --noEmit`
+clean. Mobile: `flutter analyze` whole project -- 16 pre-existing issues, 0 new, none in touched
+files. Full `flutter test` -- 3230/3231. The one failure
+(`test/theme/app_semantic_colors_test.dart`, "the hardcoded whites that survived G1.2b stay
+accounted for", expected 61 got 58) is a pre-existing hardcoded-white-color count drift across
+files this gate never touched (`form_check_page.dart`, `celebrity_plans_page.dart`,
+`equipment_detail_page.dart` and others -- none of them `gemini_equipment_service.dart` or
+`machine_describer.dart`), stated here rather than silently reported as a clean run. Not
+investigated further -- unrelated to this gate's own scope, and pre-dates this session's changes
+(confirmed via `git diff` on the touched-file set, which does not include any file in the failing
+test's per-file breakdown).
+
+**Not yet done:** GPT-PM review (queued next, PM Bridge orchestrator mode is ON as of this session
+-- `/pm-bridge-mode on`, pid 33088 port 8765), commit, and the remaining two AI surfaces (machine
+description, exercise generation).
+
+## G1 second slice -- GPT-PM review rounds 1-2, orchestrator instability, and the round-2 fixes (2026-08-26)
+
+**Orchestrator transport instability, worked around rather than fixed:** the first review attempt
+(`review.js --round 1`) failed with a bare `"fetch failed"` while PM Bridge orchestrator mode was
+on (pid 33088, then 7368 after an apparent unexplained restart). A plain `gpt_send_and_await` probe
+failed too (`"This operation was aborted"`), confirming the failure was orchestrator-wide, not
+specific to `review.js`. Restarting the orchestrator (`/pm-bridge-mode off` then `on`, fresh pid
+16764) cleared it and round 1 ran successfully. Later, requesting round 2 hit a NEW failure mode:
+the running orchestrator (pid 16764, then 33348 after another unexplained restart) reported a build
+hash mismatch against the calling process's own `review.js` build -- i.e. pm-bridge's own source is
+being actively modified by another concurrent session on this machine right now (matches this
+workspace's own documented "concurrent sessions" pattern), so the long-lived orchestrator process
+was running stale code. Two `/pm-bridge-mode off`/`on` cycles did not resolve it (the daemon kept
+restarting into ANOTHER stale build, consistent with a live rebuild racing the restart). Rather than
+keep chasing a moving target, turned orchestrator mode off entirely and called `review.js` directly
+(the documented pre-Gate-9 fallback path, "unchanged behavior") -- round 2 ran successfully on the
+first attempt. Not a defect in this gate's own work; recorded because a future session hitting the
+same build-mismatch message should reach for this same fallback rather than looping restarts.
+
+**GPT-PM round 1** (`--uncommitted`, correlated): `VERDICT: MAJOR`. Two MAJOR + three MINOR, all
+independently verified before accepting:
+- MAJOR, verified true by re-reading `ai_equipment_recognition.ts` and `gemini_equipment_service.dart`
+  directly: client (`GeminiVisualEquipmentService.timeout`, 20s) and server (`generate()`'s
+  `timeoutMs: 20_000`) carried the SAME budget, but the server's clock starts only after auth,
+  `parseInput`, and the quota Firestore transaction already ran -- a legitimate ~18s model answer
+  plus a few seconds of that overhead could exceed the client's 20s and get discarded as an offline
+  fallback despite the paid call succeeding and quota already being charged.
+- MAJOR, verified true by re-reading `parseInput`: it validated only that `mimeType` was one of
+  three allowed strings and `imageBase64` was a non-empty string under a length cap -- never decoded
+  or sniffed the actual bytes. The test suite's own "valid" fixture (`aGVsbG8=`, base64 for the
+  plain text "hello") proved the hole live: it passed validation and would have reached the paid
+  model labelled `image/jpeg`.
+- MINOR, verified true by re-reading this file's own header: "there is no prompt-injection surface
+  here" overclaimed against the caller-controlled-TEXT case specifically; multimodal (image-embedded
+  text) injection is a real, separate class this claim did not carve out.
+- MINOR, verified true: every mobile test for `GeminiVisualEquipmentService` injects `ask` directly,
+  never exercising `cloudFunctionsEquipmentAsk`'s real request/response wiring -- a typo in the
+  function name or either JSON key would compile and ship unnoticed.
+- MINOR, verified true by re-reading the new TS test's `normalise`: it was `toLowerCase().trim()`
+  only, not the real Dart `EquipmentAliasIndex.normalise` (ё→е, non-alphanumeric collapse) --
+  currently harmless against the present ~70-entry English-only list but a weaker tripwire than
+  claimed.
+
+**Fixed, all five in one batch** (per this workspace's own review-shape rule, §17): client timeout
+raised 20s -> 30s with a comment explaining the overhead margin; server `parseInput` rewritten to
+strictly decode base64 (regex + round-trip check), enforce the size cap on DECODED bytes, sniff the
+real JPEG/PNG/WebP file signature, and reject a mimeType/signature mismatch (4 new tests, including
+the exact `aGVsbG8=` case); header comment narrowed to "no caller-controlled TEXT field" with an
+honest residual-risk paragraph on multimodal injection; `buildEquipmentRecognitionRequest`/
+`extractEquipmentRecognitionText` extracted as pure, independently-tested functions (verified first
+that `FirebaseFunctions`/`HttpsCallable` have PRIVATE constructors in the installed
+`cloud_functions-6.2.0` source, so a direct fake is genuinely not possible here, matching the same
+constraint `AiCoachService`'s own tests already live with -- not a gap unique to this slice); TS
+`normalise()` replaced with an exact port of the real Dart algorithm.
+
+**GPT-PM round 2** (`--uncommitted`, correlated, direct path): `VERDICT: MAJOR`. One new MAJOR +
+two new MINOR against the round-1 fixes themselves, all verified before accepting:
+- MAJOR, verified true by re-reading `parseInput`: the new `decodeStrictBase64` call ran BEFORE the
+  decoded-length check, so `Buffer.from` fully allocated and decoded an oversized base64 string
+  before it was refused -- and before `enforceDailyQuota` ran, so this cost was entirely unmetered.
+  The fix for round 1's validation MAJOR had accidentally removed the cheap pre-allocation guard the
+  original (wrong) base64-string-length check had at least provided by accident.
+- MINOR, verified true: this very decision-log entry (the "what shipped" section above) still
+  described the ROUND-1 state (20s/20s timeout, base64-length-only cap, "no prompt-injection
+  surface", 16 tests, 303/303) as if it were final, which it was not by the time of round 2's
+  request.
+- MINOR, verified true by re-reading the TS test file: a leftover header comment above the registry
+  -parity `describe` block still claimed every `CANONICAL_MACHINES` entry "is meant to BE a
+  registered alias outright, not a free-text phrase needing the substring-match passes" -- directly
+  contradicted by the `resolve()` helper and its own doc comment a few lines below, which exists
+  specifically because "hip abductor machine" is NOT an exact alias.
+
+**Fixed:** added `MAX_IMAGE_BASE64_LENGTH` (`Math.ceil(MAX_IMAGE_BYTES / 3) * 4` = 12,000,000) as a
+cheap pre-decode string-length guard, checked before `decodeStrictBase64` is ever called; the
+post-decode `bytes.length > MAX_IMAGE_BYTES` check is now mathematically unreachable given the
+pre-check (any encoded length within the ceiling provably decodes to at most `MAX_IMAGE_BYTES`) and
+is kept anyway as defense in depth against the two constants drifting apart, documented as such. The
+existing oversized-payload test (`"a".repeat(12_000_004)`) now exercises the cheap guard specifically
+and its comment says so. This decision-log entry itself is the fix for the staleness MINOR. The
+self-contradicting tripwire comment rewritten to state the actual contract (exact + whole-word
+-longest-match, matching production) instead of the disproven pass-1-only claim.
+
+**Verified after the round-2 fixes:** Functions Jest 307/307 (unchanged count -- these were fixes to
+existing tests/logic, not new test cases), `tsc --noEmit` clean.
+
+**Not yet done:** GPT-PM round 3 (verification of the round-2 fixes only, per GPT-PM's own request:
+"I would review only those deltas" -- no broad re-review), commit, and the remaining two AI surfaces.

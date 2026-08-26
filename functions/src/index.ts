@@ -2216,6 +2216,7 @@ export const deleteAccount = onCall(
 // rather than a feature request — see the header of video_urls.ts.
 export { clipUrl, clipUrls } from "./video_urls";
 export { aiCoachAdvice } from "./ai_coach_advice";
+export { aiEquipmentRecognition } from "./ai_equipment_recognition";
 
 // A3. Separate module for the same reason as the clip signer: it exists to
 // satisfy a written promise (`public/privacy.html:89`) rather than a feature
