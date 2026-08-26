@@ -1,0 +1,369 @@
+<title>G1: Генерация упражнений для неизвестного тренажёра</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #17212b;
+    --ink-soft: #46586b;
+    --ink-faint: #7a8b9c;
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --surface-sunken: #eef2f4;
+    --line: #dce3e7;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --amber: #a86a06;
+    --amber-soft: #fbf0dc;
+    --red: #a83a34;
+    --red-soft: #fbeae8;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Sora", "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(23,33,43,0.06), 0 8px 24px -12px rgba(23,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+      --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+      --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+      --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8edf0; --ink-soft: #a9b8c4; --ink-faint: #74879a;
+    --paper: #0f1620; --surface: #161f2b; --surface-sunken: #101720;
+    --line: #263241; --accent: #3fbcc4; --accent-ink: #06222a; --accent-soft: #10333a;
+    --amber: #e0a83f; --amber-soft: #392c10; --red: #e0756e; --red-soft: #3a1a17;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 28px 96px; }
+  header { padding-bottom: 8px; }
+  .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 14px; }
+  h1 { font-family: var(--display); font-size: clamp(28px, 4.4vw, 40px); font-weight: 600; line-height: 1.16; margin: 0 0 14px; text-wrap: balance; letter-spacing: -0.005em; }
+  .lede { font-size: 17px; color: var(--ink-soft); max-width: 66ch; margin: 0 0 28px; }
+  .verdict-band { display: flex; align-items: center; gap: 16px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--radius); padding: 20px 24px; margin: 8px 0 44px; }
+  .verdict-band .mark { width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 700; font-size: 18px; }
+  .verdict-band .text b { font-family: var(--display); font-size: 17px; display: block; }
+  .verdict-band .text span { color: var(--ink-soft); font-size: 14.5px; }
+  h2 { font-family: var(--display); font-size: 22px; font-weight: 600; margin: 56px 0 6px; letter-spacing: -0.005em; }
+  h2 .num { font-family: var(--mono); color: var(--accent); font-weight: 600; margin-right: 10px; font-size: 16px; }
+  .section-note { color: var(--ink-soft); font-size: 15px; margin: 0 0 22px; max-width: 72ch; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 24px 0 40px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .stat .n { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 12.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+  table.gates { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; font-size: 14.5px; }
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); }
+  table.gates th, table.gates td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.gates th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); background: var(--surface-sunken); font-weight: 600; }
+  table.gates tr:last-child td { border-bottom: none; }
+  table.gates td.gate { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+  table.gates code { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+  .pill.closed { background: var(--accent-soft); color: var(--accent); }
+  .pill.closed::before { background: var(--accent); }
+  .pill.blocked { background: var(--surface-sunken); color: var(--ink-faint); }
+  .pill.blocked::before { background: var(--ink-faint); }
+  .pill.pending { background: var(--amber-soft); color: var(--amber); }
+  .pill.pending::before { background: var(--amber); }
+  .suite-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin: 20px 0 36px; }
+  .suite { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .suite .name { font-size: 14px; color: var(--ink-soft); }
+  .suite .result { font-family: var(--mono); font-weight: 600; font-size: 14px; }
+  .suite.pass .result { color: var(--accent); }
+  .suite.warn .result { color: var(--amber); }
+  .finding { border: 1px solid var(--line); border-left: 4px solid var(--ink-faint); border-radius: var(--radius); padding: 18px 20px; margin: 0 0 16px; background: var(--surface); }
+  .finding.blocker { border-left-color: var(--red); }
+  .finding.major { border-left-color: var(--red); }
+  .finding.minor { border-left-color: var(--amber); }
+  .finding .tag { font-family: var(--mono); font-size: 11.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 5px; display: inline-block; margin-bottom: 10px; }
+  .finding.blocker .tag { background: var(--red-soft); color: var(--red); }
+  .finding.major .tag { background: var(--red-soft); color: var(--red); }
+  .finding.minor .tag { background: var(--amber-soft); color: var(--amber); }
+  .finding h3 { font-family: var(--display); font-size: 16.5px; margin: 0 0 8px; font-weight: 600; }
+  .finding p { margin: 0 0 10px; color: var(--ink-soft); font-size: 14.5px; }
+  .finding p:last-child { margin-bottom: 0; }
+  .finding .fixed-tag { color: var(--accent); font-weight: 600; }
+  .finding .verify-tag { color: var(--ink-faint); font-style: italic; }
+  ul.plain { padding-left: 20px; margin: 12px 0; }
+  ul.plain li { margin-bottom: 10px; font-size: 15px; color: var(--ink-soft); }
+  ul.plain li b { color: var(--ink); }
+  ul.plain li code { font-family: var(--mono); font-size: 13.5px; }
+  .deviation { display: grid; grid-template-columns: 130px 1fr; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .deviation:last-child { border-bottom: none; }
+  .deviation .gate-tag { font-family: var(--mono); font-weight: 600; color: var(--accent); font-size: 13.5px; }
+  .deviation p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+  .incident { border: 1px solid var(--amber); background: var(--amber-soft); border-radius: var(--radius); padding: 20px 22px; margin: 20px 0 36px; }
+  .incident h3 { font-family: var(--display); font-size: 16px; margin: 0 0 8px; color: var(--ink); }
+  .incident p { margin: 0 0 10px; font-size: 14.5px; color: var(--ink-soft); }
+  .incident p:last-child { margin-bottom: 0; }
+  .dod-item { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; margin: 0 0 12px; background: var(--surface); }
+  .dod-item .row1 { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .dod-item h4 { font-family: var(--display); font-size: 15px; margin: 0; font-weight: 600; }
+  .dod-item p { margin: 4px 0 0; font-size: 14px; color: var(--ink-soft); }
+  .dod-item p b { color: var(--ink); font-weight: 600; }
+  .closing { margin-top: 56px; padding: 24px 26px; background: var(--surface-sunken); border-radius: var(--radius); font-size: 15px; color: var(--ink-soft); }
+  .closing b { color: var(--ink); }
+  a { color: var(--accent); }
+  @media (max-width: 600px) { .deviation { grid-template-columns: 1fr; gap: 4px; } .dod-item .row1 { flex-direction: column; align-items: flex-start; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness_App &middot; MVP1 / SPTR &middot; Гейт G1 &middot; Rosetta-управляемый гейт &middot; последний из четырёх срезов</div>
+    <h1>G1, четвёртый и последний срез: генерация упражнений переехала на сервер</h1>
+    <p class="lede">Фолбэк-генератор упражнений для тренажёра, не найденного в каталоге, &mdash; последняя из четырёх AI-поверхностей приложения, всё ещё вызывавшая Gemini напрямую с клиента. Теперь идёт через новую Cloud Function <code>aiExerciseGeneration</code>. План прошёл через 3 редакции (v1 и v2 отклонены GPT&#8209;PM на этапе GO-ревью, v3 получил GO), два самостоятельно пойманных до отправки на ревью дефекта, 4 раунда ревью GPT&#8209;PM (1 MINOR&times;2 + 1 MINOR&times;1, затем APPROVE, затем финал по точному SHA), запуш в <code>origin/master</code> и одну найденную GPT&#8209;PM ошибку в первой попытке закрытия Rosetta-плана &mdash; все разобраны ниже.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 5ecc1c6</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="verdict-band">
+    <div class="mark">&#10003;</div>
+    <div class="text">
+      <b>ЗАПУШЕНО. ROSETTA-ПЛАН В ПРОЦЕССЕ ФИНАЛЬНОГО ЗАКРЫТИЯ</b>
+      <span>Код: раунд 4 (финал по точному SHA <code>5ecc1c6</code>) &mdash; APPROVE, PUSH: AUTHORIZED. Запушено <code>c6bdd4d..5ecc1c6</code>, расхождение с origin проверено &mdash; 0/0. Первая попытка закрыть Rosetta-план вернула MAJOR (раздел 09) &mdash; переоформляется вместе с публикацией этого отчёта.</span>
+    </div>
+  </div>
+
+  <h2><span class="num">01</span>Коротко</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="n">4 / 4</div><div class="l">AI-поверхности мигрированы &mdash; последняя закрыта</div></div>
+    <div class="stat"><div class="n">3</div><div class="l">редакции Rosetta-плана до GO (v1, v2 отклонены)</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">раунда ревью кода: 2 MINOR + APPROVE + финал</div></div>
+    <div class="stat"><div class="n">2</div><div class="l">дефекта, пойманных самостоятельно до отправки на ревью</div></div>
+    <div class="stat"><div class="n">382 / 382</div><div class="l">тестов Functions проходят (347 базовых + 35 новых)</div></div>
+    <div class="stat"><div class="n">3</div><div class="l">коммита, все запушены</div></div>
+  </div>
+
+  <h2><span class="num">02</span>Что изменилось</h2>
+  <p class="section-note">Клиент отправляет только <code>equipmentId</code> и <code>languageCode</code> &mdash; ни промпта, ни имени тренажёра. Сервер сам резолвит имя тренажёра по <code>equipmentId</code> через настоящий JS <code>Map</code> (не объектный литерал &mdash; см. раунд ревью плана v1 в разделе 07) и сам решает, на каком языке писать промпт. Разбор ответа модели (<code>parseResponse</code>, фильтрация по словарю мышц) остаётся на клиенте без изменений &mdash; в сеть эта часть никогда не ходила.</p>
+  <div class="table-scroll">
+  <table class="gates">
+    <thead><tr><th>Файл</th><th>Что</th></tr></thead>
+    <tbody>
+      <tr><td class="gate"><code>ai_exercise_generation.ts</code></td><td>Новый. Четвёртый и последний callable: <code>EQUIPMENT_NAMES_EN</code>/<code>EQUIPMENT_NAMES_RU</code> &mdash; два настоящих <code>Map</code>, сгенерированных программно из живых <code>equipment.json</code>/<code>equipment.ru.json</code> (не вручную). Строгий allowlist <code>ru</code>/<code>en</code>, квота, промпт полностью на сервере, generation-config закреплён (temperature 0.4, 25с, 1024 токена).</td></tr>
+      <tr><td class="gate"><code>ai_exercise_generation.test.ts</code></td><td>Новый, 35 тестов: auth, обход allowlist языка и цепочки прототипов Map (<code>constructor</code>/<code>toString</code>/<code>__proto__</code>/<code>hasOwnProperty</code>/<code>valueOf</code>/<code>size</code>/<code>get</code> как <code>equipmentId</code> &mdash; все корректно отклонены), квота, config, плюс 3 живых теста на дрейф: EN-карта, RU-карта и словарь мышц сверяются напрямую с реальными файлами-активами и реальным Dart-исходником в момент запуска теста.</td></tr>
+      <tr><td class="gate"><code>index.ts</code>, <code>scaling.test.ts</code></td><td>Экспорт добавлен; entrypoint зарегистрирован (шестнадцать &rarr; семнадцать, последняя из четырёх).</td></tr>
+      <tr><td class="gate"><code>ai_gateway.ts</code></td><td>Комментарий про <code>SAFETY_SETTINGS</code> обновлён &mdash; больше не ссылается на удалённый <code>provider_safety_settings.dart</code>.</td></tr>
+      <tr><td class="gate"><code>ai_exercise_generator.dart</code></td><td>Мигрирован: <code>generate()</code> больше не принимает <code>machineName</code> (сервер резолвит сам по <code>equipmentId</code>), вызывает <code>httpsCallable(kExerciseGenerationFunctionName)</code>. <code>_buildPrompt</code>/<code>buildPromptForTest</code>/<code>modelName</code> удалены. Новый внешний таймаут 35с, строго больше серверных 25с.</td></tr>
+      <tr><td class="gate"><code>provider_safety_settings.dart</code></td><td>Удалён &mdash; production-файл, полностью мёртвый после этой миграции (ноль оставшихся потребителей <code>kProviderSafetySettings</code>).</td></tr>
+      <tr><td class="gate"><code>provider_safety_settings_test.dart</code></td><td>Не удалён &mdash; переработан в постоянный структурный guard: ноль прямых вызовов <code>generativeModel(</code> и ноль импортов <code>package:firebase_ai</code> во всём <code>mobile/lib</code>, плюс явная проверка callable-имени для каждой из четырёх мигрированных поверхностей.</td></tr>
+      <tr><td class="gate"><code>equipment_providers.dart</code></td><td>Единственный call site обновлён &mdash; больше не передаёт <code>machine.name</code> в <code>generate()</code>.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2><span class="num">03</span>Rosetta: план прошёл 3 редакции до GO</h2>
+  <p class="section-note">GPT&#8209;PM утверждает план, а не оператор (согласно правилам проекта); оператор остаётся единственным утверждающим только для необратимых операций. План v1 и v2 были отклонены на этапе запроса GO &mdash; каждая редакция отвечала на конкретные находки предыдущей.</p>
+  <div class="finding major">
+    <span class="tag">План v1 &middot; отклонён &mdash; 4 MAJOR + 2 MINOR</span>
+    <h3>Небезопасный поиск по прототипам, отсутствие guard&#8209;теста на дрейф, неверная иерархия таймаутов</h3>
+    <p>Поиск имени тренажёра по <code>equipmentId</code> не был явно специфицирован как защищённый от цепочки прототипов; не было теста, защищающего карту id&rarr;имя от дрейфа с живыми ассетами; таймаут сервера 25с был предложен РАВНЫМ клиентскому 25с &mdash; воспроизводило бы уже дважды исправленную гонку клиент/сервер; пункт решения 7 предлагал удалить структурный regression-тест вместе с мёртвым production-файлом (GPT&#8209;PM постановил: файл удалить, тест &mdash; переработать); не было guard&#8209;а на словарь мышц.</p>
+    <p><span class="fixed-tag">Исправлено в v2:</span> настоящие <code>Map</code> вместо объектного литерала; живой parity-тест против ассетов; клиентский таймаут поднят до 35с, строго больше серверных 25с; тест сохранён и переработан; добавлен parity-тест на словарь мышц.</p>
+  </div>
+  <div class="finding major">
+    <span class="tag">План v2 &middot; отклонён &mdash; 1 MAJOR + 2 MINOR</span>
+    <h3>Русская семантика имени тренажёра терялась бы молча</h3>
+    <p>v2 резолвил бы только английское базовое имя независимо от языка &mdash; для русскоязычных пользователей поведение тихо изменилось бы. Проверено напрямую: <code>equipment.ru.json</code> содержит реально переведённые 69 записей, а не копию английских. Кроме того: словарь мышц всё ещё сверялся только с двумя независимо захардкоженными golden-копиями, которые могли бы дрейфовать синхронно и незаметно; <code>ai_gateway.ts</code> всё ещё ссылался на скоро удаляемый <code>provider_safety_settings.dart</code>.</p>
+    <p><span class="fixed-tag">Исправлено в v3:</span> два отдельных <code>Map</code> (EN/RU), выбор по валидированному <code>languageCode</code>; TS-тест теперь читает РЕАЛЬНЫЙ Dart-исходник регулярным выражением и сравнивает поэлементно, а не второй захардкоженный список; комментарий в <code>ai_gateway.ts</code> обновлён.</p>
+  </div>
+  <p class="section-note">План v3 (<code>Fitness_App-2026-08-26T20-00-13-970Z-78ff27</code>) получил GO вместе с обязывающим списком из 18 пунктов критерия готовности (DoD) &mdash; раздел 08.</p>
+
+  <div class="incident">
+    <h3>Два дефекта, пойманных самостоятельно до отправки на ревью</h3>
+    <p><b>Карта тренажёров, напечатанная вручную, оказалась неверной.</b> Первый черновик <code>EQUIPMENT_NAMES_EN</code>/<code>_RU</code> был набран по памяти и перепутан с отдельным, отличающимся по составу списком <code>CANONICAL_MACHINES</code> из другого файла &mdash; несколько id были попросту неверны или выдуманы. Поймано до коммита: написан одноразовый Node-скрипт, читающий живые JSON-ассеты напрямую, карта перегенерирована программно и заменена целиком.</p>
+    <p><b>Ложное срабатывание в структурном guard-тесте.</b> Ранняя версия проверки «ноль прямых вызовов Gemini» также искала строку <code>FirebaseAI.googleAI()</code> &mdash; она буквально встречается в doc-комментариях всех четырёх мигрированных файлов, описывающих, что они БОЛЬШЕ ТАК не делают. Поймано прогоном нового теста локально до коммита &mdash; тест падал на 4 ложных совпадениях. Исправлено сужением до <code>generativeModel(</code> (реальный вызов конструктора, никогда не встречается в прозе) и regex, требующего именно <code>import '...'</code>.</p>
+  </div>
+
+  <h2><span class="num">04</span>Раунд 1 &mdash; полный адверсариальный проход по имплементации</h2>
+  <p class="section-note">Коммит <code>1f57def</code>. Запрошен полный проход за один раунд (правило проекта &laquo;один проход, не одна находка за раунд&raquo;), явно со сверкой против 18-пунктного DoD плана v3. <code>VERDICT: MINOR</code> &mdash; 2 находки в рамках раунда + 1 вне рамок, ни одного BLOCKER/MAJOR.</p>
+  <div class="finding minor">
+    <span class="tag">Minor &middot; исправлено</span>
+    <h3>Guard на <code>package:firebase_ai</code> ловил только одинарные кавычки</h3>
+    <p>Проверка искала <code>import 'package:firebase_ai...'</code>, пропуская валидный вариант в двойных кавычках.</p>
+    <p><span class="fixed-tag">Исправлено:</span> regex, независимый от типа кавычек.</p>
+  </div>
+  <div class="finding minor">
+    <span class="tag">Minor &middot; исправлено</span>
+    <h3>Тест на иерархию таймаутов не пинил реальное production-значение</h3>
+    <p>Существующий тест доказывал только общую механику <code>Future.timeout()</code> против искусственно маленького инжектированного значения (200мс), а не то, что реальный дефолт действительно 35с. Регресс до &le;25с (воспроизвёл бы уже дважды исправленную гонку клиент/сервер) остался бы незамеченным.</p>
+    <p><span class="fixed-tag">Исправлено:</span> прямое утверждение <code>AiExerciseGenerator().timeout == Duration(seconds: 35)</code>.</p>
+  </div>
+  <p class="section-note">Вне рамок раунда, но тоже исправлено: собственная запись журнала решений говорила «имплементация, коммит в ожидании» в момент, когда коммит уже существовал &mdash; та же закономерность устаревания текста, что уже дважды документировалась для первого и третьего срезов.</p>
+
+  <h2><span class="num">05</span>Раунды 2&ndash;3 &mdash; тот же паттерн устаревания текста, пойманный дважды подряд</h2>
+  <div class="finding minor">
+    <span class="tag">Minor &middot; раунд 2, исправлено</span>
+    <h3>Коммит-исправление сам содержал устаревшую формулировку внутри себя</h3>
+    <p>Коммит <code>798a541</code> исправил находки раунда 1 &mdash; включая устаревшую фразу «коммит в ожидании». Но новый абзац журнала решений, добавленный этим же коммитом, гласил: «Не сделано: коммит-исправление для двух находок раунда 1» &mdash; описывая сам себя как ещё не существующий, находясь при этом внутри уже существующего коммита.</p>
+    <p><span class="fixed-tag">Исправлено (коммит <code>5ecc1c6</code>):</span> абзац переписан с явным указанием SHA коммита-исправления вместо описания его как ожидаемого.</p>
+  </div>
+  <p class="section-note">Раунд 3 (коммит <code>5ecc1c6</code>, максимально узкая область &mdash; только эта правка): <code>VERDICT: APPROVE</code>, находок нет. Раунд явно проверил, что тот же паттерн не повторился в третий раз.</p>
+
+  <h2><span class="num">06</span>Раунд 4 &mdash; финал по точному SHA, push</h2>
+  <p class="section-note">Точный SHA <code>5ecc1c6e903168a8cf9b051d2c776135cd7115ff --final</code>: <code>VERDICT: APPROVE</code>, коррелировано. <code>PUSH: AUTHORIZED</code> для этого точного SHA. HEAD сверен с авторизованным SHA перед push; расхождение с origin проверено &mdash; 0 позади / 3 впереди (ровно три коммита этого гейта) до push, 0/0 после. Запушено <code>c6bdd4d..5ecc1c6</code>.</p>
+
+  <h2><span class="num">08</span>Rosetta: план, DoD и статус по пунктам</h2>
+  <p class="section-note">18-пунктный обязывающий DoD, заданный GPT&#8209;PM при одобрении плана v3 (не сессией самой себе).</p>
+  <div class="dod-item"><div class="row1"><h4>Точная база <code>c6bdd4d</code></h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> план стартует от подтверждённого коммита, без незамеченного дрейфа базы.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Auth + App Check + учёт анонимных пользователей в квоте</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> callable отклоняет неаутентифицированные вызовы; квота учитывает <code>signInProvider</code>.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Запрос содержит только <code>equipmentId</code> + <code>languageCode</code></h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> wire-контракт протестирован явно, никакого свободного текста от клиента.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Поиск имени тренажёра защищён от цепочки прототипов</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> настоящий <code>Map.get()</code>, не объектный литерал; 7 регрессионных тестов на конкретные обходы.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Паритет имён EN/RU</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> два отдельных <code>Map</code>, живые parity-тесты против <code>equipment.json</code>/<code>equipment.ru.json</code>. Потребовало 1 MAJOR-исправления на этапе плана v2.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Строгая граница ru/en</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> <code>resolveLanguageCode</code> отклоняет всё, кроме точных строк <code>"ru"</code>/<code>"en"</code>.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Промпт полностью на сервере</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> <code>_buildPrompt</code> удалён из мобильного кода, ноль клиентского текста промпта.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Generation-config закреплён</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> temperature 0.4, jsonResponse, 25с, 1024 токена &mdash; протестировано напрямую.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Иерархия таймаутов 25с сервер &lt; 35с мобильный, с поведенческим покрытием</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> не просто числа &mdash; тест на «ответ после задержки, но до дедлайна принимается», тест на «ответ позже дедлайна бросает исключение», плюс прямое утверждение на реальный дефолт 35с (раунд 1).</p></div>
+  <div class="dod-item"><div class="row1"><h4>Чистые wire-контракт тесты</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> <code>buildExerciseGenerationRequest</code>/<code>extractExerciseGenerationText</code> протестированы без обращения к реальному Firebase SDK.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Семантика <code>parseResponse</code>/id упражнений не изменена</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> код не тронут, остаётся клиентским, существующие тесты зелёные без изменений.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Настоящий паритет словаря мышц TS&harr;Dart</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> TS-тест читает реальный Dart-исходник через regex, а не второй независимый golden-список. Потребовало 1 MINOR на этапе плана v2.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Миграция без реактивации дремлющего фолбэка</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> <code>exercisesForEquipmentWithAiFallbackProvider</code> подтверждённо не тронут, решение C14 остаётся в силе. «Мигрировано» &ne; «активно для пользователей», явно оговорено.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Структурное доказательство «ноль прямых вызовов Gemini»</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> постоянный guard, не разовая проверка; поймал и исправил собственное ложное срабатывание до отправки на ревью.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Мёртвый файл удалён, тест переработан, комментарий в <code>ai_gateway.ts</code> исправлен</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> все три подпункта выполнены, согласно явному постановлению GPT&#8209;PM на плане v1.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Удаление <code>firebase_ai</code> из pubspec.yaml явно отложено</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> задокументировано как сознательно отложенное (требует отдельного подтверждения оператора по §4), не тихо забыто.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Регистрация в потолке масштабирования 16 &rarr; 17</h4><span class="pill closed">Готово</span></div><p><b>DoD:</b> <code>scaling.test.ts</code> обновлён, инвентарный порог поднят.</p></div>
+  <div class="dod-item"><div class="row1"><h4>Чистая верификация &rarr; ревью &rarr; финал по точному SHA &rarr; push &rarr; закрытие Rosetta &rarr; отчёт</h4><span class="pill pending">В процессе</span></div><p><b>DoD:</b> верификация/ревью/финал/push выполнены (разделы 04&ndash;06). Этот отчёт &mdash; предпоследний шаг. Первая попытка закрыть Rosetta-план вернула MAJOR (раздел 09) именно потому, что план был бы помечен <code>passed</code> раньше, чем этот отчёт существовал бы &mdash; переоформляется сразу вслед за публикацией.</p></div>
+
+  <h2><span class="num">09</span>Сверка закрытия Rosetta: найдено 2 MAJOR + 1 MINOR</h2>
+  <p class="section-note">Первый вызов <code>pm_rosetta_close(result: "passed")</code> был отправлен ДО написания этого отчёта. GPT&#8209;PM, получив автоматическое уведомление о закрытии, вернул <code>VERDICT: MAJOR findings</code>.</p>
+  <div class="finding major">
+    <span class="tag">Major &middot; в процессе разрешения</span>
+    <h3>План помечен <code>passed</code> раньше, чем все 18 пунктов DoD реально выполнены</h3>
+    <p>Пункт 18 DoD явно требует закрытие Rosetta И двуязычный отчёт. Закрытие утверждало «DoD выполнен полностью», одновременно признавая в том же абзаце, что отчёт ещё не написан.</p>
+    <p><span class="fixed-tag">Разрешается:</span> именно поэтому этот отчёт написан и публикуется сейчас, до повторного закрытия плана финальным <code>passed</code>.</p>
+  </div>
+  <div class="finding major">
+    <span class="tag">Major &middot; тот же паттерн, что и в третьем срезе</span>
+    <h3>Changed-set закрытия смешал co-present untracked-файлы других сессий с диапазоном коммитов плана</h3>
+    <p>Собственная реконструкция Rosetta («changed set» из <code>git status</code> в этом общем, параллельно используемом репозитории) выдала 26 путей вместо 13 &mdash; включая маркетинговые/citation-отчёты, не относящиеся к этому плану. <code>git diff --stat c6bdd4d..5ecc1c6</code>, проверенный напрямую, даёт ровно 13 файлов &mdash; полностью совпадает с заявленной областью плана.</p>
+    <p><span class="fixed-tag">Разрешено:</span> авторитетным changed-set для этого плана является именно диапазон коммитов (13 файлов), а не живой <code>git status</code>; посторонние файлы &mdash; untracked наследие параллельных сессий в общем репозитории, ноль коммитов в диапазоне этого плана.</p>
+  </div>
+  <div class="finding minor">
+    <span class="tag">Minor &middot; классифицировано подагентом</span>
+    <h3>115 негавернед-актов не были разложены по корзинам</h3>
+    <p>Полный разбор (программный парсинг дампа Rosetta, не ручной): 35 &mdash; read-only команды, консервативно помеченные классификатором как «мутация» (git status/diff/log, grep, tsc --noEmit, jest, flutter test/analyze, wait-циклы); 17 &mdash; вызовы <code>review.js</code>, которые вообще не трогают этот репозиторий; 63 &mdash; настоящие мутации, из которых 60 относятся к уже закрытым первому&ndash;третьему срезам (включая уже задокументированную в третьем срезе сверку на 72 акта), и ровно 3 &mdash; к этому гейту: три <code>Edit</code>-правки в 15-секундном окне между черновым коммитом раунда 1 и его прогоном тестов, зажатые между гавернед-актами с обеих сторон (похоже на короткий разрыв атрибуции в конвейере Rosetta, а не на утечку области).</p>
+    <p><span class="fixed-tag">Разрешено:</span> точная разбивка передана в обновлённую запись закрытия плана.</p>
+  </div>
+
+  <h2><span class="num">10</span>Состояние тестов и сборки</h2>
+  <div class="suite-grid">
+    <div class="suite pass"><span class="name">Functions Jest, весь набор</span><span class="result">382 / 382</span></div>
+    <div class="suite pass"><span class="name"><code>tsc --noEmit</code></span><span class="result">чисто</span></div>
+    <div class="suite pass"><span class="name"><code>flutter analyze</code>, весь проект</span><span class="result">те же 16 существующих, 0 новых</span></div>
+    <div class="suite warn"><span class="name">Мобильные, весь <code>flutter test</code></span><span class="result">3242 / 3243 (1 унаследованный)</span></div>
+  </div>
+  <p class="section-note">Единственный красный тест во всём наборе (<code>app_semantic_colors_test.dart</code>) &mdash; та же сигнатура, что и у второго и третьего срезов, в файлах, которых этот гейт не касался.</p>
+
+  <h2><span class="num">11</span>Что ещё открыто</h2>
+  <ul class="plain">
+    <li>Живой smoke-тест против реальных Vertex AI/ADC-креденшлов не запускался ни для одной из четырёх мигрированных поверхностей &mdash; «попало в репозиторий», не «развёрнуто и проверено вживую».</li>
+    <li>Удаление <code>firebase_ai</code> из <code>pubspec.yaml</code> сознательно отложено, требует отдельного подтверждения оператора.</li>
+    <li>Rosetta работает в режиме аудита (R0): фиксирует, но не блокирует. Enforcement включится после Gate B инфраструктуры pm-bridge.</li>
+    <li>Все четыре AI-поверхности G1 теперь мигрированы &mdash; следующий шаг: финальное переоформление закрытия Rosetta-плана этим отчётом, затем переход к G2&ndash;G8 согласно правилу ПМ-режима «не останавливаться после отчёта».</li>
+  </ul>
+
+  <h2><span class="num">12</span>Хронология ревью GPT&#8209;PM</h2>
+  <div class="deviation"><span class="gate-tag">План v1</span><p>Отклонён на GO-ревью. 4 MAJOR + 2 MINOR.</p></div>
+  <div class="deviation"><span class="gate-tag">План v2</span><p>Отклонён на GO-ревью. 1 MAJOR + 2 MINOR.</p></div>
+  <div class="deviation"><span class="gate-tag">План v3</span><p>GO одобрен, 18-пунктный обязывающий DoD.</p></div>
+  <div class="deviation"><span class="gate-tag">Раунд 1</span><p>Коммит <code>1f57def</code>. <code>VERDICT: MINOR</code> &mdash; 2 в рамках + 1 вне рамок.</p></div>
+  <div class="deviation"><span class="gate-tag">Раунд 2</span><p>Коммит <code>798a541</code>. <code>VERDICT: MINOR</code> &mdash; 1 (устаревшая формулировка внутри собственного исправления).</p></div>
+  <div class="deviation"><span class="gate-tag">Раунд 3</span><p>Коммит <code>5ecc1c6</code>, максимально узкая область. <code>VERDICT: APPROVE</code>.</p></div>
+  <div class="deviation"><span class="gate-tag">Раунд 4</span><p>Точный SHA <code>5ecc1c6 --final</code>. <code>VERDICT: APPROVE</code>. <code>PUSH: AUTHORIZED</code>.</p></div>
+  <div class="deviation"><span class="gate-tag">Rosetta-закрытие #1</span><p><code>pm_rosetta_close</code>, автоуведомление. <code>VERDICT: MAJOR findings</code> &mdash; раздел 09.</p></div>
+
+  <div class="closing"><b>Далее:</b> все четыре AI-поверхности G1 мигрированы и запушены. Сразу вслед за публикацией этого отчёта &mdash; повторное закрытие Rosetta-плана v3 с исправленным changed-set и разбивкой негавернед-актов, затем переход к G2&ndash;G8 согласно инструкции ПМ-режима не останавливаться после отчёта.</div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

@@ -26354,3 +26354,30 @@ This gate explicitly completes the architectural migration (last of the four AI 
 `exercisesForEquipmentWithAiFallbackProvider` for users -- it remains dormant per the pre-existing,
 unrelated C14 decision, untouched by this gate. "Migrated" is not "active for users," stated
 explicitly per amendment 6 / GPT-PM's binding DoD.
+
+**Bilingual report published**: `reports/G1_EXERCISE_GENERATION_2026-08-26.ru.html` /
+`.html`. Published as Artifact (RU only, per house rule):
+https://claude.ai/code/artifact/961f005d-9ad9-4376-8d29-6fe144787a8f. Covers plan v1/v2
+rejections, the two self-caught defects, all 4 code-review rounds, push, and the 18-item DoD
+per item.
+
+**Rosetta closure attempt 1** (`pm_rosetta_close(result: "passed")` on plan v3, sent BEFORE
+this report existed): GPT-PM returned `VERDICT: MAJOR findings` -- (1) DoD item 18 requires
+both closure and the bilingual report, so marking `passed` while the report didn't exist yet
+was premature; (2) the closure's own reconstructed changed-set mixed 13 unrelated co-present
+untracked marketing/citation files from other concurrent sessions into the plan's actual
+13-file commit range (`git diff --stat c6bdd4d..5ecc1c6`, independently verified), the same
+provenance-class error already caught and fixed during the third slice's own closure
+reconciliation; (3, MINOR) the 115 ungoverned acts recorded against this session were not
+broken into buckets. A subagent parsed the full Rosetta act dump programmatically and
+classified all 115: 35 non-mutating commands conservatively flagged as "mutation" by the
+shell classifier, 17 `review.js` calls (never touch this repo), 63 genuine mutations of which
+60 belong to the already-closed first-third slices and exactly 3 are this gate's own (three
+`Edit`s in a 15-second window between the round-1 draft commit and its test run, sandwiched
+between governed acts on both sides -- reads as a brief attribution gap in the Rosetta
+pipeline, not a scope leak). This report itself was written specifically to resolve finding
+(1); the plan is being re-closed immediately after this entry with the corrected changed-set
+and the full bucket breakdown from finding (3).
+
+**Not yet done**: re-closure of Rosetta plan v3 with `result: "passed"` and corrected
+evidence (in progress, next), then G2-G8 per PM mode's "continue after report" instruction.
