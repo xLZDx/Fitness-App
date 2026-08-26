@@ -26772,3 +26772,24 @@ Padding(...)))`. `form_check_page.dart`: changed `Positioned(left:12,right:12,to
 `Positioned(left:0,right:0,top:0, child: SafeArea(bottom:false, child: Padding(all:12, ...)))` --
 preserves the original 12px visual padding on all sides while letting SafeArea supply the correct
 top inset instead of a fixed guess.
+
+**Step 6 re-verification (first pass) found a second, self-inflicted regression.** Rebuilt
+(`6180453`, build 735, manifest/signing re-verified: `targetSdkVersion=36`, real release cert),
+reinstalled on S23, relaunched, reopened Скан: the status-bar overlap was gone, but the low-light
+banner now visually collided with `ScanTopBar`'s title pill/Live toggle -- both text strings
+rendered on top of each other. Cause: `SafeArea` was added to the banner in isolation, so it now
+starts at the SAME safe-area-adjusted top position as `ScanTopBar`, which is a separate `Positioned`
+painted immediately after it in the Stack. This is exactly the anti-pattern
+`form_check_page.dart`'s own `CoachTopStrip` comment already documents from an earlier incident:
+"Two siblings positioned independently from the same edge will collide again the moment either
+one's height changes... Laid out in a column, they cannot overlap at all."
+
+**Second fix, applying that documented lesson instead of another isolated patch**: merged
+`ScanTopBar` and the low-light banner into one `Column` under one shared `Positioned(top:0,
+left:0, right:0) > SafeArea(bottom:false)`, removing the banner's now-redundant standalone
+`Align`/`SafeArea`. Verified `ScanTopBar`'s internal `Row(mainAxisAlignment: spaceBetween)` has no
+`mainAxisSize` override (default `MainAxisSize.max`), so it still fills the full available width
+under a Column's loose constraints exactly as it did under the old Positioned's tight ones --
+`scan_strip_overflow_test.dart`'s narrow-width regression coverage is not affected by this
+structural change. `flutter analyze` on both touched files: 0 issues. Rebuilding again
+(build 736) to re-verify on-device before continuing the rest of the smoke matrix.

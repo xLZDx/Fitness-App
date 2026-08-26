@@ -453,38 +453,6 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                     )
                   else ...[
                     LiveEquipmentPreview(session: session),
-                    // R2.2 state 9. Over the viewfinder, not instead of it:
-                    // the guidance is "add light", and a user who cannot see
-                    // what the camera sees cannot tell whether they followed
-                    // it. Non-blocking by construction.
-                    ValueListenableBuilder<bool>(
-                      valueListenable: session.isLowLight,
-                      builder: (context, dark, _) => dark
-                          ? Align(
-                              alignment: Alignment.topCenter,
-                              // MVP1.G2: this Align sits directly in the
-                              // edge-to-edge camera Stack, same as
-                              // `ScanTopBar` a few lines below -- but unlike
-                              // it, had no `SafeArea`. Below targetSdk 35 the
-                              // OS still padded non-edge-to-edge content
-                              // automatically, which hid the gap; targeting
-                              // 36 made edge-to-edge mandatory and the
-                              // banner started drawing under the status bar.
-                              child: SafeArea(
-                                bottom: false,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: _ViewfinderBanner(
-                                    key: const Key('scan-low-light'),
-                                    icon: Icons.light_mode_outlined,
-                                    text: AppLocalizations.of(context)
-                                        .scannerLowLight,
-                                  ),
-                                ),
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
                     // Only over a live viewfinder. An aiming frame drawn on
                     // top of "camera access is blocked" tells the user to aim
                     // at something that is not there — and, being the topmost
@@ -515,16 +483,50 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
           // button sits. No back arrow -- the design's returns to Home, and
           // here Scan IS a root tab, so the bottom nav already does that. A
           // second control doing the same thing is one more thing to explain.
+          //
+          // MVP1.G2: the low-light banner used to be a second, independently
+          // `Align(topCenter)`-ed overlay inside the camera Stack below.
+          // Fixing its missing SafeArea in isolation made it collide with
+          // this bar instead -- both then started at the same safe-area-
+          // adjusted top. Same defect `CoachTopStrip` documents in
+          // form_check_page.dart: two Stack children positioned
+          // independently from the same edge collide the moment either
+          // one's height changes. One Column under one SafeArea instead, so
+          // they cannot overlap by construction.
           Positioned(
             top: 0,
             left: 0,
             right: 0,
             child: SafeArea(
               bottom: false,
-              child: ScanTopBar(
-                live: liveOn,
-                onLive: (on) =>
-                    ref.read(liveModeEnabledProvider.notifier).state = on,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ScanTopBar(
+                    live: liveOn,
+                    onLive: (on) =>
+                        ref.read(liveModeEnabledProvider.notifier).state =
+                            on,
+                  ),
+                  // R2.2 state 9. Over the viewfinder, not instead of it:
+                  // the guidance is "add light", and a user who cannot see
+                  // what the camera sees cannot tell whether they followed
+                  // it. Non-blocking by construction.
+                  ValueListenableBuilder<bool>(
+                    valueListenable: session.isLowLight,
+                    builder: (context, dark, _) => dark
+                        ? Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                            child: _ViewfinderBanner(
+                              key: const Key('scan-low-light'),
+                              icon: Icons.light_mode_outlined,
+                              text: AppLocalizations.of(context)
+                                  .scannerLowLight,
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
               ),
             ),
           ),
