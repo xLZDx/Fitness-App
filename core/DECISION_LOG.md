@@ -26507,14 +26507,17 @@ closure-record loop itself rather than just code review.
 (`Fitness_App-2026-08-26T20-00-13-970Z-78ff27`) accepted on the 5th closure attempt, after
 GPT-PM caught and required fixes for: unbucketed ungoverned-act counts (attempts 1-2),
 a polluted reconstructed changed-set from live `git status` (attempts 1-2), a missing
-commit in the lifecycle narrative (attempt 2), wrong DoD-18 ordering (attempt 2), a stale
-duplicate auto-notification reply (attempt 4, confirmed via direct `gpt_send_and_await`),
-and the self-contradictory "zero Fitness_App mutation" wording above (attempt 5, root
-commit). Canonical lifecycle range: `c6bdd4d..e0be4da`, 9 commits, 15 unique changed paths.
-This closes the fourth and final G1 AI-surface migration -- all four surfaces
-(`aiCoachAdvice`, `aiEquipmentRecognition`, `aiMachineDescription`, `aiExerciseGeneration`)
-are now server-owned Cloud Functions with zero direct client-side Gemini calls, enforced by
-a permanent structural guard test.
+commit in the lifecycle narrative (attempt 2), wrong DoD-18 ordering (attempt 2), and a
+stale duplicate auto-notification reply (attempt 4, confirmed via direct
+`gpt_send_and_await`). Attempt 5, using the corrected categorical invariant, was APPROVED.
+The self-contradictory "zero Fitness_App mutation" wording above was stale text still
+present in the root documentary commit `e0be4da`, caught separately during that commit's
+post-closure exact-SHA push review -- not a failure of closure attempt 5 itself. Canonical
+lifecycle range: `c6bdd4d..13fe392`, 10 commits, 15 unique changed paths (this
+documentary-only commit modifies no new path). This closes the fourth and final G1
+AI-surface migration -- all four surfaces (`aiCoachAdvice`, `aiEquipmentRecognition`,
+`aiMachineDescription`, `aiExerciseGeneration`) are now server-owned Cloud Functions with
+zero direct client-side Gemini calls, enforced by a permanent structural guard test.
 
 **Not yet done**: push this wording-fix commit, then G2-G8 per PM mode's "continue after
 report" instruction.
