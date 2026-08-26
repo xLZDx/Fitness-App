@@ -26513,11 +26513,17 @@ stale duplicate auto-notification reply (attempt 4, confirmed via direct
 The self-contradictory "zero Fitness_App mutation" wording above was stale text still
 present in the root documentary commit `e0be4da`, caught separately during that commit's
 post-closure exact-SHA push review -- not a failure of closure attempt 5 itself. Canonical
-lifecycle range: `c6bdd4d..13fe392`, 10 commits, 15 unique changed paths (this
-documentary-only commit modifies no new path). This closes the fourth and final G1
-AI-surface migration -- all four surfaces (`aiCoachAdvice`, `aiEquipmentRecognition`,
-`aiMachineDescription`, `aiExerciseGeneration`) are now server-owned Cloud Functions with
-zero direct client-side Gemini calls, enforced by a permanent structural guard test.
+lifecycle range: `c6bdd4d` through the exact pushed HEAD of this gate (verify via
+`git log c6bdd4d..origin/master` at push time rather than a SHA asserted here in prose --
+every prior attempt to name that terminal SHA inside a commit describing itself went stale
+the moment a further documentary fix landed; this paragraph stops repeating that pattern).
+15 unique changed paths throughout (implementation/test files plus `core/DECISION_LOG.md`
+and the two G1_EXERCISE_GENERATION report files); this and any further purely-documentary
+commit only edits the already-counted `DECISION_LOG.md`, adding no new path. This closes
+the fourth and final G1 AI-surface migration -- all four surfaces (`aiCoachAdvice`,
+`aiEquipmentRecognition`, `aiMachineDescription`, `aiExerciseGeneration`) are now
+server-owned Cloud Functions with zero direct client-side Gemini calls, enforced by a
+permanent structural guard test.
 
 **Not yet done**: push this wording-fix commit, then G2-G8 per PM mode's "continue after
 report" instruction.
