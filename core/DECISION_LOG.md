@@ -26052,4 +26052,33 @@ fix, verified true by re-deriving the exact original check order from `6e52bd6` 
 
 **Verified after the round-4 fixes:** `tsc --noEmit` clean; Functions Jest 347/347 (345 + 2 new
 compound-order tests, no Dart changes this round). `flutter`/mobile side untouched by this round's
-fix, so not re-run.
+fix, so not re-run. Committed as `4aa9862`.
+
+**GPT-PM round 5** (`review.js --commit 4aa9862 --round 5`, narrow scope; first two attempts hit a
+plain transport `fetch failed`, fail-open, no reply; third attempt after a ~60s wait succeeded):
+`VERDICT: APPROVE`, correlated. Confirmed the round-4 fix reproduces `6e52bd6`'s exact original
+ordering, confirmed the self-caught `aiEquipmentRecognition` regression is genuinely absent from the
+reviewed result, confirmed the shared byte-level validation core remains centralized and reachable
+only through the two entry points' own correct pre-checks. No further findings. Explicit instruction
+to proceed directly to the exact-SHA final round.
+
+**GPT-PM round 6, exact-SHA final** (`review.js --commit 4aa9862 --round 6 --final`): `VERDICT:
+APPROVE`, correlated, genuine `--final: true` (`final_overridden: false`). Confirmed SHA identity,
+confirmed all findings across all 5 prior rounds remain closed on this exact commit, confirmed the
+recorded verification evidence (tsc clean, 347/347) matches this SHA. `PUSH: AUTHORIZED for this
+exact SHA`.
+
+**Pushed:** `git push origin master` -- `fc97493..4aa9862`. Verified after push: `git fetch origin`
++ `git rev-list --left-right --count origin/master...HEAD` = `0 0`. All four G1 third-slice commits
+(`6e52bd6`, `f1f7f40`, `93ee288`, `4ab397c`, `4aa9862`) are now on `origin/master`, on top of the
+already-pushed second slice.
+
+**Result:** three of the four AI surfaces named in `ai_gateway.ts`'s own header are now migrated and
+live (coach advice, equipment recognition, machine description). Remaining: exercise generation
+(`AiExerciseGenerator`/`ai_exercise_generator.dart`), then the rest of the MVP1 gate sequence
+(G2-G8). This slice's own review took 6 rounds (vs. slice 2's 5) -- entirely findings that got
+progressively narrower and more precise (2 MAJOR+4 MINOR across rounds 1-4, then pure verification),
+never a reopened or contested item, consistent with the workspace's own "one sweep, not one finding
+per round" guidance being harder to fully achieve on a genuinely novel cross-layer timeout
+invariant than on a more contained validation change -- worth noting for the next slice's own review
+framing rather than treating as a process failure.
