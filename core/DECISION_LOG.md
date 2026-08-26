@@ -26155,8 +26155,13 @@ changed-set reconstruction, expanded this plan's actual scope beyond its declare
 
 **Corrected final status of plan `Fitness_App-2026-08-26T17-35-38-423Z-64078b`:** PASSED.
 Implementation scope: clean, no leakage, confirmed against the exact commit range by both parties
-independently. Governance history: pre-authorization debt existed (72 acts, see above), was
-detected by this session's own Stop-hook-driven retroactive-governance requirement, stayed bounded
-to the plan's eventual approved changed-set, and has now been reviewed and reconciled -- not erased.
-No reopening of the 8 substantive GPT-PM review rounds, no code changes, and no test re-run were
-required or performed for this reconciliation, per GPT-PM's own explicit statement.
+independently. Governance history: 72 acts were classified as ungoverned by Rosetta; within those,
+a subset constituted genuine pre-authorization mutation debt (real `Edit`/`Write`/`git commit` acts
+in the v1-to-v2 transitional window before GO), while the rest were prior-slice activity (outside
+this plan's scope entirely) or read-only commands the shell classifier conservatively flagged as
+mutating -- see the three-bucket breakdown above; the exact count within the genuine-debt bucket was
+not separately tallied. That debt was detected by this session's own Stop-hook-driven
+retroactive-governance requirement, stayed bounded to the plan's eventual approved changed-set, and
+has now been reviewed and reconciled -- not erased and not inflated to the full 72. No reopening of
+the 8 substantive GPT-PM review rounds, no code changes, and no test re-run were required or
+performed for this reconciliation, per GPT-PM's own explicit statement.
