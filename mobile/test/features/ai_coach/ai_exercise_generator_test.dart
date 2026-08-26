@@ -126,6 +126,19 @@ void main() {
     });
   });
 
+  test('the production default timeout is 35s, strictly above the server\'s own 25s model budget',
+      () {
+    // GPT-PM's round-1 review caught that the earlier "slow response still
+    // accepted" test only proved generic Future.timeout() behavior against
+    // an INJECTED 200ms timeout -- it would stay green even if the real
+    // default silently regressed to something at or below the server's own
+    // 25s model budget (functions/src/ai_exercise_generation.ts), recreating
+    // the exact client/server race already fixed on the other three
+    // callables. This pins the actual production default directly.
+    expect(AiExerciseGenerator().timeout, const Duration(seconds: 35));
+    expect(AiExerciseGenerator().timeout.inSeconds, greaterThan(25));
+  });
+
   group('AiExerciseGenerator.generate with an injected ask', () {
     test('sends equipmentId and languageCode, not a client-built prompt', () async {
       String? seenEquipmentId;

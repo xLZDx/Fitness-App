@@ -26235,7 +26235,8 @@ Plan v3 (`Fitness_App-2026-08-26T20-00-13-970Z-78ff27`, hash
 `2915df9b1784407ca209593906f1252188c4288e525be146e90af94cecbe89ea`) received GO with an 18-item
 binding DoD. `pm_rosetta_go` recorded against that hash.
 
-**Implementation, commit pending.** `functions/src/ai_exercise_generation.ts` (new): two real
+**Implementation, commit `1f57def31391b493bc8628a2420c8bdafe4f4722`.**
+`functions/src/ai_exercise_generation.ts` (new): two real
 `Map<string,string>` instances (not object literals -- `Map.get()` has no prototype chain, closing
 the same bypass class slice 3 found on `languageCode in LANGUAGE_NAMES`), `MUSCLE_VOCAB` (15
 entries), `resolveMachineName`/`resolveLanguageCode`, `buildPrompt` (exact port of Dart's
@@ -26314,8 +26315,23 @@ files: 57/57. Full `flutter test`: 3242/3243, the one failure being the same
 `app_semantic_colors_test.dart` signature already documented for slices 2 and 3, in files this gate
 never touched, confirmed pre-existing.
 
-**Not yet done**: GPT-PM adversarial review of this diff, exact-SHA final, push, Rosetta plan
-closure with evidence against the 18-item binding DoD, and the bilingual report.
+**GPT-PM round 1** (`review.js --commit 1f57def --round 1`, full adversarial sweep per
+CLAUDE.md sec17): `VERDICT: MINOR` -- 2 scoped MINOR + 1 out-of-scope MINOR, no BLOCKER/MAJOR.
+(1) The permanent zero-direct-Gemini structural guard's `package:firebase_ai` import check only
+matched a single-quote import, missing a valid double-quoted `import "package:firebase_ai/...";`.
+Verified true, fixed with a quote-agnostic regex. (2) The mobile timeout-hierarchy regression test
+only proved generic `Future.timeout()` behavior against an injected 200ms value, not the actual
+production 35s default -- a real regression to <=25s (recreating the exact client/server race
+already fixed twice on other callables) would have stayed green. Fixed with a test pinning
+`AiExerciseGenerator().timeout` to exactly 35s. (3, out-of-scope, still fixed) this entry's own
+"Implementation, commit pending" wording was stale the moment the implementation commit existed --
+corrected to name `1f57def` directly, the same staleness pattern already documented for the first
+G1 slice's round 4 and the third slice's round 7.
+
+**Not yet done**: remediation commit for the two round-1 findings, round 2 (narrow verification of
+those findings only, per GPT-PM's own instruction not to reopen the rest of the gate), exact-SHA
+final, push, Rosetta plan closure with evidence against the 18-item binding DoD, and the bilingual
+report.
 
 This gate explicitly completes the architectural migration (last of the four AI surfaces named in
 `ai_gateway.ts`'s own header comment moved off direct client-side Gemini access) WITHOUT reactivating

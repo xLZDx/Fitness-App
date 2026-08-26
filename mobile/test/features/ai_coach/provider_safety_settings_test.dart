@@ -41,7 +41,10 @@ void main() {
       if (src.contains('generativeModel(')) {
         foundGenerativeModel.add(path);
       }
-      if (src.contains("import 'package:firebase_ai")) {
+      // Matches both quote styles (`import 'package:firebase_ai...'` and
+      // `import "package:firebase_ai..."`) -- a single-quote-only substring
+      // check would miss a perfectly valid double-quoted import.
+      if (RegExp(r'''import\s+['"]package:firebase_ai''').hasMatch(src)) {
         foundFirebaseAiImport.add(path);
       }
     }
