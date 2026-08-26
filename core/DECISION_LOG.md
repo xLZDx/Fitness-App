@@ -26069,16 +26069,30 @@ recorded verification evidence (tsc clean, 347/347) matches this SHA. `PUSH: AUT
 exact SHA`.
 
 **Pushed:** `git push origin master` -- `fc97493..4aa9862`. Verified after push: `git fetch origin`
-+ `git rev-list --left-right --count origin/master...HEAD` = `0 0`. All four G1 third-slice commits
++ `git rev-list --left-right --count origin/master...HEAD` = `0 0`. All five G1 third-slice commits
 (`6e52bd6`, `f1f7f40`, `93ee288`, `4ab397c`, `4aa9862`) are now on `origin/master`, on top of the
 already-pushed second slice.
 
 **Result:** three of the four AI surfaces named in `ai_gateway.ts`'s own header are now migrated and
-live (coach advice, equipment recognition, machine description). Remaining: exercise generation
-(`AiExerciseGenerator`/`ai_exercise_generator.dart`), then the rest of the MVP1 gate sequence
-(G2-G8). This slice's own review took 6 rounds (vs. slice 2's 5) -- entirely findings that got
-progressively narrower and more precise (2 MAJOR+4 MINOR across rounds 1-4, then pure verification),
-never a reopened or contested item, consistent with the workspace's own "one sweep, not one finding
-per round" guidance being harder to fully achieve on a genuinely novel cross-layer timeout
-invariant than on a more contained validation change -- worth noting for the next slice's own review
-framing rather than treating as a process failure.
+landed on `origin/master` (coach advice, equipment recognition, machine description) -- "landed,"
+not "live": this push establishes the implementation is in the repository, not that it has been
+deployed or exercised against production; no live-deployment or runtime smoke-test evidence exists
+for this slice, the same honestly-carried gap already named for slice 2. Remaining: exercise
+generation (`AiExerciseGenerator`/`ai_exercise_generator.dart`), then the rest of the MVP1 gate
+sequence (G2-G8). This slice's own review took 6 rounds (vs. slice 2's 5): round 1 = 2 MAJOR + 2
+MINOR, round 2 = 1 MAJOR + 1 MINOR, round 3 = 2 MINOR, round 4 = 1 MINOR (3 MAJOR + 6 MINOR total
+across rounds 1-4), round 5 = pure verification (APPROVE), round 6 = exact-SHA final. Every round's
+findings were progressively narrower and more precise, never a reopened or contested item --
+consistent with the workspace's own "one sweep, not one finding per round" guidance being harder to
+fully achieve on a genuinely novel cross-layer timeout invariant than on a more contained validation
+change, worth noting for the next slice's own review framing rather than treating as a process
+failure.
+
+**GPT-PM round 7, exact-SHA final on this documentary follow-up itself** (`review.js --commit
+d22ca63 --round 7 --final`): `VERDICT: MINOR` -- 2 findings, both confirmed true by direct
+recount/re-reading before fixing: (1) this entry's own prior paragraph said "All four" while listing
+five commits; (2) it summed round 1-4 findings as "2 MAJOR+4 MINOR" when the actual recorded totals
+are 3 MAJOR + 6 MINOR (2+2, 1+1, 0+2, 0+1). Also flagged "migrated and live" as overstating what a
+`git push` actually proves. **Fixed:** both corrected above -- "five" commits, the correct 3
+MAJOR + 6 MINOR breakdown per round, and "landed on `origin/master`" replacing "live," with the
+no-deployment-evidence caveat stated explicitly rather than implied.
