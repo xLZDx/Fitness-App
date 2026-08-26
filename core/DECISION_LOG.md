@@ -26391,6 +26391,12 @@ failed Rosetta closure attempt, which returned 2 MAJOR + 1 MINOR"; incident box 
 explicitly that the pre-review fix used a single-quote pattern and that round 1 subsequently
 generalized it).
 
+**Self-caught before sending the RU content to GPT-PM**: the RU report's own section-02 lede
+referenced "разделе 07" for the plan-v1 review, which lives in section 03 -- no section 07
+exists in this report. The EN mirror correctly says "section 03." Caught by re-reading the RU
+file before pasting its content into the verification message; fixed to "разделе 03" in the
+RU file, re-conformed, artifact republished.
+
 **Not yet done**: RU-content verification round with GPT-PM, `--final` for this report
 commit, push, re-closure of Rosetta plan v3 with `result: "passed"` and corrected evidence,
 then G2-G8 per PM mode's "continue after report" instruction.
