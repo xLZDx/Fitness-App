@@ -26173,9 +26173,33 @@ same design system as the second-slice report (reused, not redesigned, per "hono
 there"), all 10 GPT-PM review rounds (6 code rounds 1-6, documentary rounds 7-8, the Rosetta closure
 reconciliation exchange, documentary rounds 9-10), and -- per the `rosetta` skill's transparency
 requirement #4 -- a dedicated section giving every planned item the Definition of Done GPT-PM itself
-set at the plan's GO review, plus its status: done / not done / partial-with-tail. Ten of eleven DoD
-items are done; "decision log accurate" is recorded as partial (closed by round 10, after two
+set at the plan's GO review, plus its status: done / not done / partial-with-tail. Of the 11 DoD
+items, 9 are done; "decision log accurate" is recorded as partial (closed by round 10, after two
 documentary correction rounds); "live deployment/runtime smoke test" is recorded as not done, the
 same honestly-carried gap already documented for slice 2. `report_conform.py` run on both files
 (provenance block refreshed, not injected fresh -- template reused from the second-slice report).
 Published the Russian file as an artifact: https://claude.ai/code/artifact/b651b107-e324-4f1b-922b-26977ad4efcc
+
+**GPT-PM round 11, exact-SHA on `ffab42a`**: `VERDICT: MAJOR findings` -- (1) MAJOR: `review.js`
+excludes `reports/` from the reviewed diff by design (`REVIEW_EXCLUDE = [":(exclude)reports"]`,
+`pm-bridge/src/cli/review.js`), so the two report files this commit actually adds were invisible to
+the review even though the commit message and this log described them; GPT-PM correctly refused to
+issue `--final` for content it could not see. (2) MINOR: this entry's own DoD arithmetic was
+internally impossible as written ("ten of eleven... done" plus a separate partial plus a separate
+not-done sums to 12, not 11) -- verified true by direct recount of the report's own 11 `dod-item`
+blocks (9 done, 1 partial, 1 not done). **Fixed:** the "10/11" wording corrected to "9 of 11" above
+and in both report files' stat grids; the report content itself sent to GPT-PM directly via
+`gpt_send_and_await` (bypassing `review.js`'s reports/ exclusion) for the review this finding
+required.
+
+**Same exchange, follow-up `VERDICT: MINOR findings`**: the report's own headline ("3 MAJOR + 9
+MINOR found and closed") is correct for the 10 numbered review rounds alone (rounds 1-4: 3 MAJOR + 6
+MINOR; round 7: 2 MINOR; round 9: 1 MINOR; rounds 5/6/8/10: APPROVE) but reads as the report's
+all-inclusive total when the report's own section 09 also documents the separate Rosetta closure
+reconciliation review's 1 MAJOR + 1 MINOR -- true all-inclusive total is 4 MAJOR + 10 MINOR.
+**Fixed:** both report files' hero paragraph and at-a-glance stat now read "3 MAJOR + 9 MINOR ...
+across the 10 numbered review rounds ... plus a further 1 MAJOR + 1 MINOR from the separate Rosetta
+closure reconciliation review ... for 4 MAJOR + 10 MINOR overall." GPT-PM confirmed the report-
+content MAJOR resolved (full English report text supplied directly) and the DoD 9/1/1 correction
+accurate; the RU file's own translation/structure was asserted, not independently inspected by
+GPT-PM, which it noted without treating as a defect.

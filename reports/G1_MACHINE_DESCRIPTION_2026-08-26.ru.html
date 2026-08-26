@@ -117,7 +117,7 @@
   <header>
     <div class="eyebrow">Fitness_App &middot; MVP1 / SPTR &middot; Гейт G1 &middot; Rosetta-управляемый гейт</div>
     <h1>G1, третий срез: описание неизвестного тренажёра переехало на сервер</h1>
-    <p class="lede">«Что это за железка» &mdash; фолбэк, показываемый когда фото не совпало ни с чем в каталоге, &mdash; третья из четырёх AI-поверхностей приложения. Больше не вызывает Gemini напрямую с клиента, а идёт через новую Cloud Function <code>aiMachineDescription</code>. Десять раундов ревью GPT&#8209;PM (6 по коду, 4 документальных/по управлению) нашли и закрыли 3 MAJOR + 9 MINOR, включая обход JS-цепочки прототипов и гонку с «зомби»-сетевым вызовом, который <code>Future.timeout()</code> не отменяет. Впервые в этом проекте гейт целиком проведён по протоколу Rosetta (План&nbsp;&rarr;&nbsp;GO&nbsp;&rarr;&nbsp;Act&nbsp;&rarr;&nbsp;Validate&nbsp;&rarr;&nbsp;Document) с ретроактивной сверкой закрытия.</p>
+    <p class="lede">«Что это за железка» &mdash; фолбэк, показываемый когда фото не совпало ни с чем в каталоге, &mdash; третья из четырёх AI-поверхностей приложения. Больше не вызывает Gemini напрямую с клиента, а идёт через новую Cloud Function <code>aiMachineDescription</code>. Десять пронумерованных раундов ревью GPT&#8209;PM (6 по коду, 4 документальных/по управлению) нашли и закрыли 3 MAJOR + 9 MINOR, включая обход JS-цепочки прототипов и гонку с «зомби»-сетевым вызовом, который <code>Future.timeout()</code> не отменяет &mdash; плюс ещё 1 MAJOR + 1 MINOR из отдельной сверки закрытия Rosetta (раздел 09), итого 4 MAJOR + 10 MINOR в целом. Впервые в этом проекте гейт целиком проведён по протоколу Rosetta (План&nbsp;&rarr;&nbsp;GO&nbsp;&rarr;&nbsp;Act&nbsp;&rarr;&nbsp;Validate&nbsp;&rarr;&nbsp;Document), включая эту ретроактивную сверку закрытия.</p>
   </header>
 
 <!-- report-conform:begin -->
@@ -145,13 +145,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 44c0a2f</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ ffab42a</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -166,10 +168,11 @@
   <h2><span class="num">01</span>Коротко</h2>
   <div class="stat-grid">
     <div class="stat"><div class="n">3 / 4</div><div class="l">AI-поверхности мигрированы</div></div>
-    <div class="stat"><div class="n">10</div><div class="l">раундов ревью GPT&#8209;PM (6 код + 4 документ.)</div></div>
-    <div class="stat"><div class="n">3 + 9</div><div class="l">MAJOR / MINOR найдено, все закрыты</div></div>
+    <div class="stat"><div class="n">10</div><div class="l">пронумерованных раундов (6 код + 4 документ.)</div></div>
+    <div class="stat"><div class="n">4 + 10</div><div class="l">MAJOR / MINOR найдено всего, все закрыты</div></div>
     <div class="stat"><div class="n">9</div><div class="l">коммитов, все запушены</div></div>
     <div class="stat"><div class="n">347 / 347</div><div class="l">тестов Functions проходят</div></div>
+    <div class="stat"><div class="n">9 / 1 / 1</div><div class="l">DoD-пунктов: готово / частично / не сделано</div></div>
   </div>
 
   <h2><span class="num">02</span>Что изменилось</h2>
@@ -350,6 +353,8 @@
 
   <div class="closing"><b>Далее:</b> три из четырёх AI-поверхностей мигрированы и запушены. Продолжаю тем же паттерном (План&nbsp;&rarr;&nbsp;GO&nbsp;&rarr;&nbsp;Act&nbsp;&rarr;&nbsp;Validate&nbsp;&rarr;&nbsp;Document через Rosetta, ревью GPT&#8209;PM до консенсуса) на четвёртой поверхности &mdash; <code>AiExerciseGenerator</code> &mdash; затем G2&ndash;G8, согласно инструкции ПМ-режима не останавливаться после отчёта.</div>
 </div>
+
+
 
 
 

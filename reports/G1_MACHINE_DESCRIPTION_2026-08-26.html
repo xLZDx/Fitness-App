@@ -117,7 +117,7 @@
   <header>
     <div class="eyebrow">Fitness_App &middot; MVP1 / SPTR &middot; Gate G1 &middot; Rosetta-governed gate</div>
     <h1>G1, third slice: unknown-machine description moved server-side</h1>
-    <p class="lede">The "what is this" fallback shown when a photo matches nothing in the catalog is the third of four AI surfaces in the app. It no longer calls Gemini directly from the client &mdash; it now goes through a new Cloud Function, <code>aiMachineDescription</code>. Ten GPT&#8209;PM review rounds (6 code, 4 documentary/governance) found and closed 3 MAJOR + 9 MINOR, including a JS prototype-chain bypass and a race with a "zombie" network call that <code>Future.timeout()</code> does not actually cancel. This is the first gate in the project run end-to-end under the Rosetta protocol (Plan&nbsp;&rarr;&nbsp;GO&nbsp;&rarr;&nbsp;Act&nbsp;&rarr;&nbsp;Validate&nbsp;&rarr;&nbsp;Document), including a retroactive closure reconciliation.</p>
+    <p class="lede">The "what is this" fallback shown when a photo matches nothing in the catalog is the third of four AI surfaces in the app. It no longer calls Gemini directly from the client &mdash; it now goes through a new Cloud Function, <code>aiMachineDescription</code>. Ten numbered GPT&#8209;PM review rounds (6 code, 4 documentary/governance) found and closed 3 MAJOR + 9 MINOR, including a JS prototype-chain bypass and a race with a "zombie" network call that <code>Future.timeout()</code> does not actually cancel &mdash; plus a further 1 MAJOR + 1 MINOR from the separate Rosetta closure reconciliation review (section 09), for 4 MAJOR + 10 MINOR overall. This is the first gate in the project run end-to-end under the Rosetta protocol (Plan&nbsp;&rarr;&nbsp;GO&nbsp;&rarr;&nbsp;Act&nbsp;&rarr;&nbsp;Validate&nbsp;&rarr;&nbsp;Document), including that retroactive closure reconciliation.</p>
   </header>
 
 <!-- report-conform:begin -->
@@ -145,13 +145,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 44c0a2f</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ ffab42a</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -166,10 +168,11 @@
   <h2><span class="num">01</span>At a glance</h2>
   <div class="stat-grid">
     <div class="stat"><div class="n">3 / 4</div><div class="l">AI surfaces migrated</div></div>
-    <div class="stat"><div class="n">10</div><div class="l">GPT&#8209;PM review rounds (6 code + 4 docs)</div></div>
-    <div class="stat"><div class="n">3 + 9</div><div class="l">MAJOR / MINOR found, all closed</div></div>
+    <div class="stat"><div class="n">10</div><div class="l">numbered GPT&#8209;PM rounds (6 code + 4 docs)</div></div>
+    <div class="stat"><div class="n">4 + 10</div><div class="l">MAJOR / MINOR found overall, all closed</div></div>
     <div class="stat"><div class="n">9</div><div class="l">commits, all pushed</div></div>
     <div class="stat"><div class="n">347 / 347</div><div class="l">Functions tests passing</div></div>
+    <div class="stat"><div class="n">9 / 1 / 1</div><div class="l">DoD items: done / partial / not done</div></div>
   </div>
 
   <h2><span class="num">02</span>What shipped</h2>
@@ -350,6 +353,8 @@
 
   <div class="closing"><b>Next:</b> three of four AI surfaces are migrated and pushed. Continuing the same pattern (Plan&nbsp;&rarr;&nbsp;GO&nbsp;&rarr;&nbsp;Act&nbsp;&rarr;&nbsp;Validate&nbsp;&rarr;&nbsp;Document via Rosetta, GPT&#8209;PM review to consensus) on the fourth surface &mdash; <code>AiExerciseGenerator</code> &mdash; then G2&ndash;G8, per PM-mode's instruction not to stop after a report.</div>
 </div>
+
+
 
 
 
