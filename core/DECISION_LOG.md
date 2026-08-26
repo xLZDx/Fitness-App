@@ -26793,3 +26793,34 @@ under a Column's loose constraints exactly as it did under the old Positioned's 
 `scan_strip_overflow_test.dart`'s narrow-width regression coverage is not affected by this
 structural change. `flutter analyze` on both touched files: 0 issues. Rebuilding again
 (build 736) to re-verify on-device before continuing the rest of the smoke matrix.
+
+**Build 736 re-verification: both fixes confirmed correct on real hardware.** Manifest/signing
+re-checked (`targetSdkVersion=36`, real release cert, versionCode 2736). Reinstalled on S23,
+relaunched, reopened Скан: status bar clear AND `ScanTopBar`/low-light banner no longer collide
+-- banner now renders cleanly below the "Распознавание / Живой режим" row. Form Coach: code-level
+confirmed safe (only one top-anchored `Positioned` in that Stack, `_CueCard` is bottom-anchored --
+no collision risk existed there, unlike the scanner's two independent top overlays), but the live
+coaching view itself was not reached in this session -- "Начать" from the intro screen did not
+advance after several attempts (likely needs an in-progress exercise/pose-detection precondition
+this account state doesn't have). Recorded honestly as NOT_VERIFIED for that specific live-camera
+view, not silently passed, per the plan's own rule.
+
+**Remaining Step 4 items, completing the matrix**: Home, Workouts (Programs + Library tabs),
+Profile, Settings, Subscription/mission, Health questionnaire (8/10): all PASS, confirmed earlier
+(pre-fix, and these screens are untouched by the fix so remain valid). Dialogs/bottom sheets:
+PASS -- a health-screening gate sheet ("Это упражнение придержано") rendered correctly, status
+bar clear. Exercise/video detail: NOT_VERIFIED -- blocked by that same pre-existing health-gate on
+this test account (unrelated to G2, did not attempt to bypass it on the operator's real account).
+Navigation (bottom nav): PASS, exercised throughout every screen transition above. Auth/login
+(fresh) and onboarding shell: PASS, confirmed on the emulator (fresh install, no session) --
+"Добро пожаловать" welcome/sign-in screen rendered cleanly in both idle and Google-sign-in-loading
+states, no status-bar overlap.
+
+**Step 7, first half: `flutter analyze` (full project)**: 16 pre-existing issues (warnings/info),
+none in `scanner_page.dart`, `form_check_page.dart`, or `build.gradle` -- all in unrelated files
+(`subscription_providers.dart`, `progression.dart`, `scheduled_session_providers.dart`,
+`workout_log_providers.dart`, `workout_session_providers.dart`, and five test files). Since none
+of the 16 touch a file this gate modified, G2 introduces 0 new analyze issues by construction --
+confirmed additionally by the earlier isolated-file analyze (0 issues on just the two touched
+files). Full `flutter test` suite now running in the background to check against the inherited
+3242/3243 baseline.
