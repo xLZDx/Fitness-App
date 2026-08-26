@@ -26328,8 +26328,24 @@ already fixed twice on other callables) would have stayed green. Fixed with a te
 corrected to name `1f57def` directly, the same staleness pattern already documented for the first
 G1 slice's round 4 and the third slice's round 7.
 
-**Not yet done**: remediation commit for the two round-1 findings, round 2 (narrow verification of
-those findings only, per GPT-PM's own instruction not to reopen the rest of the gate), exact-SHA
+**Remediation commit `798a5416b2c4a203c0751f301aefbeed53dfbd8f`** fixed both round-1 findings (the
+quote-agnostic import regex; the 35s production-default timeout assertion) plus the stale wording
+this same paragraph itself was still exhibiting one paragraph up the moment this commit existed --
+`flutter test`, both touched files: 21/21 passing before commit.
+
+**GPT-PM round 2** (`review.js --commit 798a541 --round 2`, scoped to verifying only the two round-1
+fixes and any direct regression): `VERDICT: MINOR` -- 1 MINOR, no BLOCKER/MAJOR. Both round-1 fixes
+confirmed closed (the quote-agnostic regex correctly matches both quote styles; the new test directly
+pins the production default and would catch a regression to <=25s that the earlier injected-value
+test alone would have missed). The one new finding: this exact paragraph, inside remediation commit
+`798a541` itself, still read "Not yet done: remediation commit for the two round-1 findings..." --
+the identical lifecycle-staleness pattern the round-1 fix (item 3) had just corrected one entry
+above, recurring in the same commit that fixed it. Verified true by inspection; fixed by rewriting
+this paragraph to name the remediation commit explicitly instead of describing it as pending.
+`PUSH: NOT AUTHORIZED for 798a5416...`; round 3 to verify only this correction and its direct
+regressions, per the same non-reopening instruction as round 2.
+
+**Not yet done**: round 3 (narrow verification of this documentary correction only), exact-SHA
 final, push, Rosetta plan closure with evidence against the 18-item binding DoD, and the bilingual
 report.
 
