@@ -507,11 +507,14 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                               // and two of them claimed the same corner -- see
                               // `CoachTopStrip`.
                               // MVP1.G2: was `top: 12` with no SafeArea --
-                              // masked below targetSdk 35 by the OS's own
-                              // automatic system-bar padding, exposed once
-                              // targeting 36 made edge-to-edge mandatory
-                              // (same defect and same fix as `ScanTopBar`'s
-                              // sibling in scanner_page.dart).
+                              // a latent missing-inset defect surfaced during
+                              // this gate's Android-16 verification, not
+                              // necessarily created by the 35->36 move itself
+                              // (Android already enforces edge-to-edge by
+                              // default from API 35; API 36 additionally
+                              // removes the app's own opt-out). Same defect
+                              // and same fix as `ScanTopBar`'s sibling in
+                              // scanner_page.dart.
                               Positioned(
                                 left: 0,
                                 right: 0,

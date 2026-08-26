@@ -26842,3 +26842,50 @@ that matters -- exactly one failure, always the same documented flake -- holds.)
 **Step 7 verdict: PASS.** 0 new analyze issues, 0 new test failures. G2's implementation
 (`0ccd484`..`fc53b37`: targetSdk pin, both SafeArea fixes, the collision-merge fix, all decision
 log entries) is ready for Step 8's adversarial GPT-PM review before exact-SHA final and push.
+
+## Step 8, round 1: GPT-PM adversarial review -- 3 MAJOR + 2 MINOR, all verified before acting
+
+Sent the full `c55877c..fc53b37` diff via `review.js --base c55877c`. `VERDICT: MAJOR`.
+Per-finding independent verification (CLAUDE.md §3/§17 -- never accept or dismiss a finding
+without checking real evidence):
+
+- **MAJOR (CONFIRMED), final-candidate smoke incomplete/partly stale**: correct -- Form Coach
+  live-camera and exercise/video stayed NOT_VERIFIED, and untouched-screen evidence was inherited
+  from a pre-final build, violating the plan's own post-fix re-verification invariant. Accepted;
+  full final re-smoke scheduled before the next review round.
+- **MAJOR (CONFIRMED), no verified final AAB**: correct -- the only AAB built was stamped
+  `0ccd484-dirty` and explicitly never verified. Accepted; canonical `-Bundle` rebuild+verify
+  scheduled with the final APK rebuild.
+- **MAJOR (independently verified, NOT a regression)**: predictive back / target-36 back-gesture
+  dispatch. GPT-PM's underlying platform claim is correct and the repo has direct history bearing
+  it out -- `main_shell.dart`'s `PopScope`/`_AnnounceShellCanPop` mechanism exists specifically
+  because this exact class of bug (`SystemNavigator.setFrameworkHandlesBack` receiving a stale
+  `false` from a nested Navigator) already hit this app on the operator's own S23 once, per that
+  file's own dated (2026-08-13) comment. Given that history, treated this as worth live device
+  verification rather than a code-only read. Tested all three scenarios live on S23 (build 736,
+  gesture-nav mode): (1) system back from a pushed sub-flow screen (health-screening step 9/10)
+  correctly pops one level; (2) system back from a non-Home tab (Тренировки/Library) correctly
+  navigates to Home, does not exit; (3) system back from Home correctly exits to the launcher
+  (`mCurrentFocus` confirmed via `dumpsys window`). All three PASS -- the existing fix holds under
+  targetSdk 36. No code change required; findings this thorough, verified against real behavior
+  rather than dismissed on "the code looks fine," are exactly what CLAUDE.md §3 asks for.
+- **MINOR (CONFIRMED), overstated root-cause claim**: correct -- the Inspect-phase evidence
+  itself already showed the pre-change target resolved to 35, not below 35, so "masked below
+  targetSdk 35" was imprecise; Android enforces edge-to-edge by default from API 35 already, 36
+  only removes the remaining opt-out. The defect may have been latent since whatever point
+  Flutter's own default crossed 35, not something this gate's 35->36 move itself created. Fixed
+  the `form_check_page.dart` comment (the `scanner_page.dart` version of this claim had already
+  been superseded by the collision-fix comment). Not re-litigating whether it predates this
+  session entirely -- no A/B evidence either way, and the corrected wording no longer asserts one.
+- **MINOR (CONFIRMED), no geometry regression test**: correct -- the existing
+  `scanner_page_test.dart` low-light test only asserted the banner's presence, which stayed green
+  through both the original bug AND its first (colliding) fix attempt. Added
+  `'the low-light banner clears the status bar and never overlaps ScanTopBar'`: sets
+  `tester.view.padding = FakeViewPadding(top: 94)` (a zero-inset harness can't reproduce either
+  defect), asserts the banner's top Y is both `>= 94` (clears the simulated status bar) and
+  `>= ScanTopBar`'s bottom Y (no overlap). `flutter test test/features/scanner_page_test.dart`:
+  49/49 green including the new test.
+
+All 5 accepted findings addressed in one batch (CLAUDE.md §17 -- remediate the whole reported
+package at once, not one finding per cycle). `flutter analyze` on both touched files: 0 issues.
+Proceeding to the final full smoke re-run + clean AAB build before round 2.

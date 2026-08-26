@@ -1146,6 +1146,35 @@ void main() {
       expect(find.byKey(const Key('scan-low-light')), findsNothing);
     });
 
+    testWidgets(
+        'the low-light banner clears the status bar and never overlaps ScanTopBar',
+        (tester) async {
+      // MVP1.G2 regression guard. The prior widget test above only asserted
+      // the banner's presence, not its geometry -- which is exactly how a
+      // missing-SafeArea defect (drawing under the status bar) and its own
+      // first fix (colliding with ScanTopBar once both were independently
+      // safe-area-aligned) both stayed invisible to this suite while live
+      // on a real Android-16 device. A non-zero top inset is required to
+      // reproduce either: on the test harness's default zero inset,
+      // SafeArea is a no-op and both defects are unobservable here too.
+      tester.view.padding = const FakeViewPadding(top: 94);
+      addTearDown(tester.view.resetPadding);
+
+      final session = _LightSession()..dark.value = true;
+      await pumpScan(tester,
+          overrides: [scanCameraSessionProvider.overrideWithValue(session)]);
+      await tester.pump();
+
+      final topBarBottom = tester.getBottomLeft(find.byType(ScanTopBar)).dy;
+      final bannerTop =
+          tester.getTopLeft(find.byKey(const Key('scan-low-light'))).dy;
+
+      expect(bannerTop, greaterThanOrEqualTo(94),
+          reason: 'the banner must clear the simulated status bar inset');
+      expect(bannerTop, greaterThanOrEqualTo(topBarBottom),
+          reason: 'the banner must not overlap ScanTopBar above it');
+    });
+
     testWidgets('an offline answer says it came from the device',
         (tester) async {
       // R2.2 state 12. The fallback used to be invisible: the user got the
