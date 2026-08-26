@@ -25713,9 +25713,34 @@ APPROVED... COMMIT f98e6aa...: technically approved, but --final withheld solely
 DECISION_LOG terminal state." No code re-review requested. This paragraph, plus the two immediately
 above it, are the fix -- a new documentary commit, not an amend, per this workspace's git discipline.
 
-**Not yet done:** send this exact new SHA back for the narrow final-state verification GPT-PM asked
-for, then push (pending the same operator delegation already established for the first slice), then
-the remaining two AI surfaces (machine description, exercise generation). Noted in round 4's own
-reply: the ChatGPT conversation thread PM Bridge routes through is nearing its length limit --
-future rounds in this same thread may need a fresh conversation; not yet hit, but worth carrying
-forward.
+**GPT-PM round 5** (exact-SHA `--final` on `fc97493`, correlated, after two lock-contention retries
+-- see below): `VERDICT: APPROVE`. Documentary fix confirmed correct; no chronology contradiction.
+`--final: APPROVED`, `PUSH: AUTHORIZED for exact HEAD fc9749326e929eb797813d82360810b679ff3f20`.
+
+**Lock contention on the exact-SHA round, worked around by waiting, not by bypassing:** the first
+two attempts at round 5 both failed with `NOT_RUN_LOCK_CONTENTION` (280s timeout each, ~60s wait
+between) -- the shared PM Bridge browser profile was genuinely held by another process (most likely
+the same concurrent pm-bridge-development session already inferred from the round-2 build-hash
+mismatch earlier in this gate). Unlike the correlation-detector bug that justified excluding
+Fitness_App from the push gate's final-receipt check on the FIRST G1 slice (§15's
+`EXCLUDED_REPO_ROOTS`), this was zero answers, not an uncorrelated real answer -- there was no
+content to lean on, so the workaround used there did not apply here. Per operator instruction 2026-
+08-26 (workspace CLAUDE.md §16), routed the "how to proceed" choice to GPT-PM via
+`gpt_send_and_await` rather than asking the operator directly; that channel was ALSO down (same
+contention), so retried with the `[GPT-ASKED]` escape-hatch marker per that section's own documented
+exception for genuine unreachability. Chose "wait longer and retry" (~3.5 minutes total across both
+waits) over "push without a final receipt" or "proceed uncommitted-only" -- the third attempt
+succeeded with a genuine, correlated `APPROVE`/`PUSH: AUTHORIZED`.
+
+**Pushed:** `git push origin master` -- `1decbc5..fc97493`. Verified after push: `git fetch origin`
++ `git rev-list --left-right --count origin/master...HEAD` = `0 0`. Both G1 second-slice commits
+(`f98e6aaf0cd944a6f4e1dbe3c5b254a11369f667`, `fc9749326e929eb797813d82360810b679ff3f20`) are now on
+`origin/master`, on top of the already-pushed first slice.
+
+**Result:** two of the four AI surfaces named in `ai_gateway.ts`'s own header are now migrated and
+live (coach advice, equipment recognition). Remaining: machine description
+(`GeminiMachineDescriber`/`machine_describer.dart`) and exercise generation
+(`AiExerciseGenerator`/`ai_exercise_generator.dart`), then the rest of the MVP1 gate sequence
+(G2-G8). Noted in round 4's own reply and still true: the ChatGPT conversation thread PM Bridge
+routes through is nearing its length limit -- a future round in this same thread may need a fresh
+conversation; not yet hit, but worth carrying forward.
