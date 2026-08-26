@@ -180,11 +180,15 @@ final exercisesForEquipmentWithAiFallbackProvider =
   final cached = await genRepo.get(equipmentId, lang);
   if (cached != null) return cached;
 
+  // The server now resolves the canonical machine name from equipmentId
+  // itself (functions/src/ai_exercise_generation.ts) -- this lookup is kept
+  // only as a client-side short-circuit against calling the AI for an
+  // equipmentId that isn't even in the local catalog, redundant-but-harmless
+  // against the server's own independent unknown-id rejection.
   final machine = await ref.watch(equipmentByIdProvider(equipmentId).future);
   if (machine == null) return const [];
   final generated = await ref.watch(aiExerciseGeneratorProvider).generate(
         equipmentId: equipmentId,
-        machineName: machine.name,
         languageCode: lang,
       );
   try {

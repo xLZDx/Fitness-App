@@ -73,11 +73,13 @@ import { HttpsError } from "firebase-functions/v2/https";
 export const AI_MODEL = "gemini-3-flash-preview";
 
 /**
- * Same provider-moderation policy the mobile clients set directly, ported
- * unchanged. See `mobile/lib/features/ai_coach/provider_safety_settings.dart`
- * for the full reasoning this is a copy of — provider moderation only, not
- * this product's own injury/eligibility safety layer, which lives entirely in
- * `features/safety/` on the client and is never touched by this module.
+ * Same provider-moderation policy the mobile clients used to set directly
+ * (originally ported unchanged from a client-side `provider_safety_settings.dart`,
+ * deleted once G1's fourth slice moved the last direct client-side Gemini call
+ * server-side — see `core/DECISION_LOG.md` for that history). Provider
+ * moderation only, not this product's own injury/eligibility safety layer,
+ * which lives entirely in `features/safety/` on the client and is never
+ * touched by this module.
  */
 const SAFETY_SETTINGS = [
   HarmCategory.HARM_CATEGORY_HARASSMENT,

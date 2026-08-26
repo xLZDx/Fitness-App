@@ -523,12 +523,11 @@ void main() {
       // the way production builds them, every feed drops them — which is why
       // the machine page no longer pays Gemini to make one.
       final built = await AiExerciseGenerator(
-        ask: (_) async => '[{"title": "Invented movement", "steps": ["a"], '
+        ask: (_, __) async => '[{"title": "Invented movement", "steps": ["a"], '
             '"muscles": ["quads"], "difficulty": "beginner", '
             '"durationMinutes": 10}]',
       ).generate(
         equipmentId: 'rack',
-        machineName: 'Rack',
         languageCode: 'en',
       );
       expect(built.single.id, 'ai::rack::0',

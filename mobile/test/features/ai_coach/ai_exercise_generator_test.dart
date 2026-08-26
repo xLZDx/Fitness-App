@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/ai_coach/ai_exercise_generator.dart';
@@ -94,36 +96,93 @@ void main() {
     });
   });
 
-  test('the prompt embeds the machine name, the language and the muscle vocabulary',
-      () {
-    final prompt = AiExerciseGenerator.buildPromptForTest('Elliptical trainer', 'ru');
-    expect(prompt, contains('Elliptical trainer'));
-    expect(prompt, contains('Russian'));
-    for (final m in AiExerciseGenerator.kMuscleVocab) {
-      expect(prompt, contains(m));
-    }
+  group('kMuscleVocab', () {
+    test('matches the server copy in ai_exercise_generation.ts exactly', () {
+      // The Dart-side half of the cross-tree parity guard: the TS test
+      // (functions/src/__tests__/ai_exercise_generation.test.ts) reads THIS
+      // file's actual kMuscleVocab source and asserts it equals the real TS
+      // MUSCLE_VOCAB. This test is the mirror -- both sides assert against
+      // the exact same 15-value literal, so either side drifting from that
+      // shared expectation fails locally, even though this suite alone
+      // cannot read the TS source the way the Functions suite can read this
+      // one.
+      expect(AiExerciseGenerator.kMuscleVocab, const [
+        'adductors', 'back', 'biceps', 'calves', 'chest', 'core', 'forearms',
+        'glutes', 'hamstrings', 'lats', 'lower_back', 'quads', 'shoulders',
+        'traps', 'triceps',
+      ]);
+    });
+  });
+
+  group('the aiExerciseGeneration wire contract', () {
+    test('buildExerciseGenerationRequest sends equipmentId and languageCode only', () {
+      final body = buildExerciseGenerationRequest('elliptical', 'ru');
+      expect(body, {'equipmentId': 'elliptical', 'languageCode': 'ru'});
+    });
+
+    test('extractExerciseGenerationText reads the text field', () {
+      expect(extractExerciseGenerationText({'text': 'hello'}), 'hello');
+      expect(extractExerciseGenerationText({}), isNull);
+    });
   });
 
   group('AiExerciseGenerator.generate with an injected ask', () {
-    test('returns parsed exercises from the injected response', () async {
-      String? seenPrompt;
-      final gen = AiExerciseGenerator(ask: (p) async {
-        seenPrompt = p;
+    test('sends equipmentId and languageCode, not a client-built prompt', () async {
+      String? seenEquipmentId;
+      String? seenLanguageCode;
+      final gen = AiExerciseGenerator(ask: (equipmentId, languageCode) async {
+        seenEquipmentId = equipmentId;
+        seenLanguageCode = languageCode;
         return '[{"title": "X", "steps": ["a"], "muscles": ["quads"], '
             '"primaryMuscles": ["quads"], "difficulty": "beginner", "durationMinutes": 8}]';
       });
-      final out = await gen.generate(
-          equipmentId: 'elliptical', machineName: 'Elliptical', languageCode: 'en');
+      final out = await gen.generate(equipmentId: 'elliptical', languageCode: 'en');
       expect(out.single.equipmentId, 'elliptical');
-      expect(seenPrompt, contains('Elliptical'));
+      expect(seenEquipmentId, 'elliptical');
+      expect(seenLanguageCode, 'en');
     });
 
     test('an empty answer throws rather than caching nothing', () {
-      final gen = AiExerciseGenerator(ask: (_) async => '');
+      final gen = AiExerciseGenerator(ask: (_, __) async => '');
       expect(
-        () => gen.generate(
-            equipmentId: 'x', machineName: 'X', languageCode: 'en'),
+        () => gen.generate(equipmentId: 'x', languageCode: 'en'),
         throwsException,
+      );
+    });
+
+    test('a response arriving after the model call would take but before the '
+        'outer deadline is still accepted, not discarded', () async {
+      // Regression for the timeout hierarchy: the server's own model budget
+      // is 25s (functions/src/ai_exercise_generation.ts), and this class's
+      // outer deadline is deliberately larger (35s) so a legitimately slow
+      // -- but real -- answer isn't thrown away by a client timer racing the
+      // server's own. Simulated with a short injected delay well under the
+      // real 35s so the test itself stays fast; what matters is that
+      // `.timeout()` waits for `_cloud` rather than firing early.
+      final gen = AiExerciseGenerator(
+        timeout: const Duration(milliseconds: 200),
+        ask: (_, __) async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          return '[{"title": "X", "steps": ["a"], "muscles": [], '
+              '"primaryMuscles": [], "difficulty": "beginner", "durationMinutes": 6}]';
+        },
+      );
+      final out = await gen.generate(equipmentId: 'elliptical', languageCode: 'en');
+      expect(out, hasLength(1));
+    });
+
+    test('a response that never arrives within the outer deadline throws, not hangs',
+        () async {
+      final gen = AiExerciseGenerator(
+        timeout: const Duration(milliseconds: 50),
+        ask: (_, __) async {
+          await Future<void>.delayed(const Duration(milliseconds: 500));
+          return '[]';
+        },
+      );
+      await expectLater(
+        gen.generate(equipmentId: 'elliptical', languageCode: 'en'),
+        throwsA(isA<TimeoutException>()),
       );
     });
   });

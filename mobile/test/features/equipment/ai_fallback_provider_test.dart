@@ -48,7 +48,7 @@ const _genJson = '[{"title": "AI Elliptical Warm-up", "steps": ["a", "b"], '
 ProviderContainer _makeContainer({
   required int Function() askCallCount,
   GeneratedExerciseRepository? generatedRepo,
-  Future<String> Function(String prompt)? ask,
+  Future<String> Function(String equipmentId, String languageCode)? ask,
   UserProfile? profile,
 }) {
   final repo = AssetEquipmentRepository()
@@ -68,9 +68,10 @@ ProviderContainer _makeContainer({
     screeningProfileProvider.overrideWith((ref) async => profile),
     generatedExerciseRepositoryProvider
         .overrideWithValue(generatedRepo ?? MockGeneratedExerciseRepository()),
-    aiExerciseGeneratorProvider.overrideWithValue(AiExerciseGenerator(ask: (p) async {
+    aiExerciseGeneratorProvider.overrideWithValue(
+        AiExerciseGenerator(ask: (equipmentId, languageCode) async {
       askCallCount();
-      if (ask != null) return ask(p);
+      if (ask != null) return ask(equipmentId, languageCode);
       return _genJson;
     })),
   ]);
@@ -298,7 +299,7 @@ void main() {
       var calls = 0;
       final container = _makeContainer(
         askCallCount: () => calls++,
-        ask: (_) async => throw Exception('quota exhausted'),
+        ask: (_, __) async => throw Exception('quota exhausted'),
       );
 
       final rec = await container.read(recommendedExercisesProvider('elliptical').future);

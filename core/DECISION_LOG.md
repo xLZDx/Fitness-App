@@ -26203,3 +26203,122 @@ closure reconciliation review ... for 4 MAJOR + 10 MINOR overall." GPT-PM confir
 content MAJOR resolved (full English report text supplied directly) and the DoD 9/1/1 correction
 accurate; the RU file's own translation/structure was asserted, not independently inspected by
 GPT-PM, which it noted without treating as a defect.
+
+## G1 fourth vertical slice: AiExerciseGenerator -> aiExerciseGeneration
+
+Plan v1 (`Fitness_App-2026-08-26T19-31-50-038Z-da1b77`) rejected at GO review: 4 MAJOR (equipmentId
+lookup not specified as prototype-safe; no durable drift guard for the ported id->name map; timeout
+hierarchy proposed 25s server == 25s client, recreating the exact race already fixed twice in prior
+slices; decision point 7 proposed deleting the structural regression test along with the dead
+production file) + 2 MINOR (no cross-tree muscle-vocab parity guard; no explicit "migrated != active
+for users" wording, since `exercisesForEquipmentWithAiFallbackProvider` has had zero `lib/` consumers
+since C14). Two of the GO-review replies opened with "This is the same plan id/hash I already
+rejected" despite this session having sent each plan exactly once -- consistent with this
+workspace's already-documented pm-bridge stale-turn-count/duplicate-tab transport issue, not
+re-investigated here since the substance of each reply was independently verifiable regardless of
+how many times it was actually generated.
+
+Verified two of GPT-PM's factual claims directly before accepting them, per this workspace's
+evidence discipline: (1) `equipment_providers.dart`'s own doc comment does say, verbatim, "This
+provider has no consumer in `lib/`, deliberately, since C14" -- confirmed true by direct grep/read.
+(2) At v2's GO review, GPT-PM raised a further MAJOR: the plan's ported id->name map only covered
+the English base catalog, but the mobile client currently resolves a LOCALIZED name
+(`equipment.ru.json` overlay) for Russian users, so serving only the English name server-side would
+have been an unreviewed behavior change, not a pure transport migration. Verified true by reading
+`mobile/assets/data/equipment.ru.json` directly: 69 entries, genuinely translated (e.g. "treadmill"
+-> "Беговая дорожка", not a transliteration), same id set as the English asset. v3 resolved this by
+resolving the canonical name from whichever of two separate `Map<string,string>` instances
+(`EQUIPMENT_NAMES_EN`/`EQUIPMENT_NAMES_RU`) matches the validated `languageCode`, each independently
+parity-tested against its own live asset.
+
+Plan v3 (`Fitness_App-2026-08-26T20-00-13-970Z-78ff27`, hash
+`2915df9b1784407ca209593906f1252188c4288e525be146e90af94cecbe89ea`) received GO with an 18-item
+binding DoD. `pm_rosetta_go` recorded against that hash.
+
+**Implementation, commit pending.** `functions/src/ai_exercise_generation.ts` (new): two real
+`Map<string,string>` instances (not object literals -- `Map.get()` has no prototype chain, closing
+the same bypass class slice 3 found on `languageCode in LANGUAGE_NAMES`), `MUSCLE_VOCAB` (15
+entries), `resolveMachineName`/`resolveLanguageCode`, `buildPrompt` (exact port of Dart's
+`_buildPrompt`), the `aiExerciseGeneration` callable itself (temperature 0.4, matching the mobile
+source's own config -- the one callable of four with a non-zero temperature, since exercise
+generation wants variety across calls rather than one deterministic answer; `timeoutMs: 25_000`
+bounding only the model call; `maxOutputTokens: 1024`, larger than the other callables' since up to
+4 exercises x 3-5 steps is more content per response than a single machine description).
+
+**Self-caught error before this went to review**: a first draft of `EQUIPMENT_NAMES_EN`/`_RU` was
+hand-typed from memory and confused `CANONICAL_MACHINES` (a separate, 71-entry, hand-curated list in
+`ai_equipment_recognition.ts` with its own documented drift risk) with the actual 69-entry
+`equipment.json` catalog -- several ids were simply wrong (`leg_extension_machine` guessed vs the
+real `leg_extension`, `flat_bench` guessed vs the real `adjustable_bench`, `suspension_trainer`
+guessed vs the real `trx`, two entries invented that don't exist in the real catalog at all
+(`pushup_blocks`, `aerobic_step`) while omitting several that do). Caught before commit by writing a
+one-off Node generator script that reads the live `equipment.json`/`equipment.ru.json` assets
+directly and emits the exact TS map literal, then replacing the hand-typed draft with that verified
+output wholesale -- exactly the transcription-safety problem amendment 2 of plan v2 (and GPT-PM's own
+review) was written to prevent, demonstrated live on the very first attempt at writing this file.
+
+`functions/src/__tests__/ai_exercise_generation.test.ts` (new, 35 tests): auth, languageCode
+allowlist + prototype-chain-bypass regressions, equipmentId Map.get()-prototype-safety regressions
+(`constructor`/`toString`/`__proto__`/`hasOwnProperty`/`valueOf`/`size`/`get` as equipmentId values,
+all correctly rejected as unrecognised rather than resolving to a real `Map` member), quota, config
+pinning -- plus three durable parity tests reading the live mobile assets/source directly at test
+time: `EQUIPMENT_NAMES_EN` vs `equipment.json`, `EQUIPMENT_NAMES_RU` vs `equipment.ru.json`, and
+`MUSCLE_VOCAB` vs a regex-extracted `kMuscleVocab` from the actual Dart source (failing loudly, per
+GPT-PM's own implementation note, if the extraction finds zero or more than one `kMuscleVocab`
+declaration). `index.ts`/`scaling.test.ts` registration, sixteen -> seventeen entrypoints.
+
+Mobile: `ai_exercise_generator.dart` migrated -- `generate()` drops `machineName` entirely (the
+server resolves it from `equipmentId`), new `CloudGenerateAsk` typedef mirroring
+`machine_describer.dart`'s `CloudDescriptionAsk`, `_buildPrompt`/`buildPromptForTest`/`modelName`
+deleted (moved server-side), `kMuscleVocab`/`parseResponse` unchanged (still used client-side to
+filter the model's muscle-name output). New outer service-level `timeout` (35s, up from implicitly
+sharing the old 25s network-only timer) -- amendment 3's fix, verified structurally simple here
+compared to `GeminiMachineDescriber`'s own two-stage resize+network timeout hierarchy: this callable
+has no client-side pre-processing stage before the network call, so there is no "zombie call started
+after abandonment" class of bug to guard against the way slice 3 needed to; the single `.timeout()`
+wrap is sufficient, verified by a regression test proving a response landing after a simulated delay
+inside the deadline is still accepted, and a second proving a response past the deadline throws
+`TimeoutException` rather than hanging.
+
+`equipment_providers.dart`'s one call site updated to stop passing `machine.name`; the
+`machine == null` early-exit is kept as a client-side short-circuit, documented as
+redundant-but-harmless against the server's own independent unknown-id rejection.
+
+`provider_safety_settings.dart` (production) deleted per GPT-PM's explicit ruling on plan v1's
+decision point 7 -- fully dead once this migration lands, zero remaining consumers of
+`kProviderSafetySettings` anywhere in `mobile/lib`. Its test file was NOT deleted, per the same
+ruling -- rewritten into a permanent structural regression guard
+(`provider_safety_settings_test.dart`) scanning all of `mobile/lib` for `generativeModel(` and any
+`import 'package:firebase_ai` line, asserting both counts are exactly zero, replacing the old
+per-file "these N sites are the allowlist" shape now that the allowlist is empty. **Self-caught false
+positive**: an early version of this scan also checked for the bare string `FirebaseAI.googleAI()`,
+which produced 4 false matches -- every one of the four migrated files' own doc comments narrates
+"...rather than calling `FirebaseAI.googleAI()` directly" as prose describing what is NOT done any
+more, and a naive substring scan cannot distinguish that from a real call site. Caught by running the
+test locally before considering the slice done; fixed by narrowing the scan to `generativeModel(`
+alone (the actual instantiation call, with its parenthesis, which does not appear in prose form in
+any of these files) and by requiring `package:firebase_ai` imports to match the `import '` prefix
+rather than a bare substring, for the same reason.
+
+`ai_gateway.ts`'s `SAFETY_SETTINGS` doc comment updated (amendment 3) to no longer reference the
+now-deleted `provider_safety_settings.dart` path, while preserving the "provider moderation, not this
+product's own injury/eligibility safety layer" rationale inline.
+
+Also updated for the new `generate()` signature (equipmentId+languageCode, no machineName):
+`ai_fallback_provider_test.dart` (the injected `ask` callback's signature and all call sites),
+`catalog_boundary_test.dart` (one direct `AiExerciseGenerator(...).generate(...)` call).
+
+**Verification so far**: `tsc --noEmit` clean. Functions Jest: 382/382 (347 baseline + 35 new).
+`flutter analyze`: same 16 pre-existing issues, 0 new in any touched file. `flutter test`, touched
+files: 57/57. Full `flutter test`: 3242/3243, the one failure being the same
+`app_semantic_colors_test.dart` signature already documented for slices 2 and 3, in files this gate
+never touched, confirmed pre-existing.
+
+**Not yet done**: GPT-PM adversarial review of this diff, exact-SHA final, push, Rosetta plan
+closure with evidence against the 18-item binding DoD, and the bilingual report.
+
+This gate explicitly completes the architectural migration (last of the four AI surfaces named in
+`ai_gateway.ts`'s own header comment moved off direct client-side Gemini access) WITHOUT reactivating
+`exercisesForEquipmentWithAiFallbackProvider` for users -- it remains dormant per the pre-existing,
+unrelated C14 decision, untouched by this gate. "Migrated" is not "active for users," stated
+explicitly per amendment 6 / GPT-PM's binding DoD.
