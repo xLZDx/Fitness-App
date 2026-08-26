@@ -77,10 +77,11 @@ class ExercisePage extends ConsumerWidget {
 /// `AiCoachSource.exercise` existed from the day the enum was written and had
 /// no caller: both production entry points (`equipment_detail_page.dart`,
 /// `scanner_page.dart`) pass `AiCoachSource.equipment`, so the second branch of
-/// every switch in `buildCoachPrompt` — including the one that tells the model
-/// to explain how to judge a starting load instead of naming a weight — was
-/// reachable only from its own tests. A prompt no screen can ask is not a
-/// feature, it is a claim.
+/// every switch in the coach prompt — including the one that tells the model
+/// to explain how to judge a starting load instead of naming a weight (now
+/// built server-side, see `functions/src/ai_coach_advice.ts`) — was reachable
+/// only from its own tests. A prompt no screen can ask is not a feature, it is
+/// a claim.
 ///
 /// It sits inside [ExerciseResolutionView]'s builder deliberately. That builder
 /// runs only for an exercise the eligibility layer allows, so an exercise

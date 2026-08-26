@@ -17,6 +17,7 @@
   },
   "main": "lib/index.js",
   "dependencies": {
+    "@google/genai": "^2.19.0",
     "firebase-admin": "^12.6.0",
     "firebase-functions": "^6.0.0",
     "stripe": "^17.4.0"

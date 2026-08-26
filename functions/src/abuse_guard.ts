@@ -201,6 +201,24 @@ export const QUOTAS = {
    * once-in-a-while action; three a day is already indulgent.
    */
   accountExport: 3,
+  /**
+   * AI coach advice requests per user per day.
+   *
+   * G1. This is the first of four independent AI-surface quotas — one per
+   * `ai_gateway.ts` callable, not a shared pool — because the four surfaces
+   * have unrelated usage shapes (a coach question is a deliberate ask; an
+   * equipment scan can fire once per machine in a session) and a shared pool
+   * would let one surface starve another. Sized against a real workout
+   * session: a handful of coach questions per visit, with room for a curious
+   * user asking many more.
+   */
+  aiCoachAdvice: 40,
+  /** AI equipment-recognition requests (camera scan) per user per day. */
+  aiEquipmentRecognition: 60,
+  /** AI machine-description requests per user per day. */
+  aiMachineDescription: 60,
+  /** AI exercise-generation requests per user per day. */
+  aiExerciseGeneration: 40,
 } as const;
 
 /**

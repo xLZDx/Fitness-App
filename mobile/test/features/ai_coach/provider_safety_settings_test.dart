@@ -54,12 +54,18 @@ void main() {
     });
   });
 
-  group('every Gemini call site actually passes them', () {
-    // The finding is that no call site configured this. Three exist; a fourth
-    // added later without the settings is the regression, and it is invisible
-    // to any behavioural test because it only shows up in a network request.
+  group('every direct Gemini call site actually passes them', () {
+    // The finding is that no call site configured this. Three existed; G1
+    // moved one of them (`ai_coach_service.dart`) behind the `aiCoachAdvice`
+    // Cloud Function, so it no longer calls `generativeModel(` at all — its
+    // safety settings now live server-side in `functions/src/ai_gateway.ts`'s
+    // own `SAFETY_SETTINGS` (same four categories, same `medium` threshold,
+    // ported deliberately rather than re-derived; see that file). This group
+    // only has jurisdiction over what still calls the SDK directly from the
+    // phone. A fourth direct call site added later without the settings is
+    // the regression, and it is invisible to any behavioural test because it
+    // only shows up in a network request.
     const sites = [
-      'lib/features/ai_coach/ai_coach_service.dart',
       'lib/features/ai_coach/ai_exercise_generator.dart',
       'lib/features/visual_equipment/data/gemini_equipment_service.dart',
     ];
@@ -73,7 +79,18 @@ void main() {
       });
     }
 
-    test('there are exactly three call sites, so the list above is complete',
+    test('ai_coach_service.dart no longer calls Gemini directly', () {
+      // The mirror of the "moved" case above: if this ever starts matching
+      // `generativeModel(` again, either G1's migration was reverted or a
+      // second, undocumented direct call was added alongside the callable —
+      // both need this suite's attention, not a silent pass.
+      final src =
+          File('lib/features/ai_coach/ai_coach_service.dart').readAsStringSync();
+      expect(src, isNot(contains('generativeModel(')));
+      expect(src, contains("httpsCallable('aiCoachAdvice')"));
+    });
+
+    test('there are exactly two direct call sites, so the list above is complete',
         () {
       final found = <String>[];
       for (final f in Directory('lib').listSync(recursive: true)) {
@@ -86,7 +103,8 @@ void main() {
           reason: 'a Gemini call site appeared or moved. It needs '
               'safetySettings, and it needs the same question asked of it that '
               'F016 asked of MachineDescriber: can its output become an '
-              'actionable exercise?');
+              'actionable exercise? A call site that moved server-side needs '
+              'the equivalent question asked of ai_gateway.ts instead.');
     });
   });
 

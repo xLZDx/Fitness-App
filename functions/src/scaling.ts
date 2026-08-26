@@ -15,14 +15,18 @@
  *
  * WHAT IS DELIBERATELY NOT SET
  *
- * `concurrency`. The default is already 80, not 1 — the type docs are
- * explicit: "default concurrency (80 when CPU >= 1, 1 otherwise)"
- * (`firebase-functions/lib/v2/options.d.ts:67`) and CPU "defaults to 1 for
- * functions with <= 2GB RAM" (`:76`). At 256 MiB that is 1 CPU, so 80
+ * `concurrency`, EXCEPT on `AI_METERED`. The default is already 80, not 1 —
+ * the type docs are explicit: "default concurrency (80 when CPU >= 1, 1
+ * otherwise)" (`firebase-functions/lib/v2/options.d.ts:67`) and CPU "defaults
+ * to 1 for functions with <= 2GB RAM" (`:76`). At 256 MiB that is 1 CPU, so 80
  * requests share each instance. 30 instances x 80 = 2,400 in flight for the
  * hot path. Instance capacity was never the constraint at 1,000 concurrent
- * users; writing `concurrency: 80` here would only restate a default and
- * invite someone to "tune" it.
+ * users for Firestore-cheap traffic; writing `concurrency: 80` here would
+ * only restate a default and invite someone to "tune" it. `AI_METERED` is the
+ * one profile where that reasoning does not hold: each request there bills a
+ * Vertex AI call rather than doing cheap I/O, so its ceiling is about paid
+ * fan-out, not instance-pool starvation, and it sets `concurrency`
+ * explicitly for exactly that reason — see that profile's own header.
  *
  * THE ARITHMETIC BEHIND THE NUMBERS
  *
@@ -124,6 +128,16 @@ export const APP_CHECK_ENFORCED_VIDEO =
   envFlag("APP_CHECK_ENFORCED_VIDEO") || APP_CHECK_ENFORCED;
 
 /**
+ * Stage for the four G1 AI callables. Its own flag, not folded into
+ * `APP_CHECK_ENFORCED_VIDEO` or `APP_CHECK_ENFORCED`: the day video
+ * enforcement is healthy says nothing about whether the AI surfaces' App
+ * Check attestation rate is — they are a separate migration, shipped later,
+ * and deserve their own measured rollout rather than inheriting one.
+ */
+export const APP_CHECK_ENFORCED_AI =
+  envFlag("APP_CHECK_ENFORCED_AI") || APP_CHECK_ENFORCED;
+
+/**
  * `clipUrl` — every clip play, on every screen, for every user.
  *
  * `minInstances: 0`, and it should stay there. Do not "restore" it to 1.
@@ -210,4 +224,44 @@ export const RARE: Capped<CallableOptions> = {
   region: REGION,
   maxInstances: 5,
   enforceAppCheck: APP_CHECK_ENFORCED,
+};
+
+/**
+ * The four G1 AI callables: coach advice, exercise generation, equipment
+ * recognition, machine description.
+ *
+ * A deliberately conservative ceiling, separate from every other profile:
+ * this is the first traffic in this backend that pays for an LLM call rather
+ * than a Firestore read or a signed URL, and a runaway loop against it is a
+ * runaway Vertex AI bill, not just a starved instance pool.
+ *
+ * `concurrency` is set explicitly here, unlike every other profile in this
+ * file — read the module header's "WHAT IS DELIBERATELY NOT SET" note before
+ * assuming that is an oversight; it is the opposite kind of decision. The
+ * first draft of this profile left `concurrency` at the platform default
+ * (80) with a comment computing "15 instances at 80 concurrency is 1,200
+ * in-flight AI calls, already generous" — which was true arithmetic in
+ * service of the wrong conclusion: 1,200 concurrent PAID Gemini calls is not
+ * a conservative ceiling for a brand-new cost surface, it is the same
+ * Firestore-sized default this file uses for cheap reads, applied to
+ * something that bills per call. GPT-PM's G1 round-1 review caught this
+ * self-contradiction — the paragraph above already names the real risk
+ * ("a runaway Vertex AI bill") and then the profile did nothing to bound it
+ * differently from `INTERACTIVE`'s Firestore-cheap traffic.
+ *
+ * `concurrency: 10` × `maxInstances: 15` is a deliberately chosen fleet-wide
+ * ceiling of 150 in-flight paid AI calls — still generous against the
+ * per-user daily quotas in `abuse_guard.ts`'s `QUOTAS.aiCoachAdvice` and its
+ * three siblings (those bound a single user across a whole day; this bounds
+ * simultaneous fleet-wide spend), and an order of magnitude below the
+ * previous accidental 1,200. Revisit either number upward only against a
+ * measured latency/cost number, the same discipline `VIDEO_HOT`'s header
+ * describes for `minInstances`.
+ */
+export const AI_METERED: Capped<CallableOptions> = {
+  region: REGION,
+  maxInstances: 15,
+  minInstances: 0,
+  concurrency: 10,
+  enforceAppCheck: APP_CHECK_ENFORCED_AI,
 };

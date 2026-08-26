@@ -5,7 +5,9 @@
  * "maxInstances|minInstances|concurrency|memory" src/` returned nothing, so
  * all twelve entrypoints ran on the same platform default and any one of them
  * could consume the regional pool — including starving `stripeWebhook`, the
- * only function here whose failure loses money.
+ * only function here whose failure loses money. G1 added a fourteenth,
+ * `aiCoachAdvice`, on its own `AI_METERED` profile — registered here for the
+ * same reason `exportAccountData` was: this list IS the registration.
  *
  * The assertion is on `__endpoint`, the deployment descriptor
  * `firebase-functions` builds from the options object, rather than on the
@@ -34,7 +36,7 @@ jest.mock("firebase-functions/logger", () => ({
 
 import * as index from "../index";
 import { clipUrl, clipUrls } from "../video_urls";
-import { INTERACTIVE, RARE, VIDEO_BATCH, VIDEO_HOT, WEBHOOK } from "../scaling";
+import { AI_METERED, INTERACTIVE, RARE, VIDEO_BATCH, VIDEO_HOT, WEBHOOK } from "../scaling";
 import { noteAppCheck } from "../abuse_guard";
 
 /** `__endpoint` is internal to firebase-functions and untyped for consumers. */
@@ -59,6 +61,8 @@ const ENTRYPOINTS: Record<string, unknown> = {
   // registration, and the count test below is what refuses a function that
   // ships without a ceiling.
   exportAccountData: index.exportAccountData,
+  // G1. Same discipline: added in the same change that exported it.
+  aiCoachAdvice: index.aiCoachAdvice,
 };
 
 describe("scaling ceilings", () => {
@@ -68,8 +72,8 @@ describe("scaling ceilings", () => {
     expect(admin.initializeApp).toHaveBeenCalledTimes(1);
   });
 
-  test("the deployed surface is exactly these thirteen", () => {
-    // A fourteenth function added without a ceiling is the regression this
+  test("the deployed surface is exactly these fourteen", () => {
+    // A fifteenth function added without a ceiling is the regression this
     // whole file exists to catch, and it can only be caught by noticing the
     // count moved.
     const exported = Object.keys(index).filter(
@@ -141,13 +145,28 @@ describe("scaling ceilings", () => {
     expect(RARE.maxInstances).toBeLessThan(INTERACTIVE.maxInstances);
   });
 
-  test("concurrency is left at the platform default on purpose", () => {
+  test("concurrency is left at the platform default on purpose, except the AI surface", () => {
     // The default is 80 (options.d.ts: "80 when CPU >= 1", and CPU defaults
     // to 1 at <= 2GB RAM). Setting it here would restate a default and invite
-    // someone to lower it, which is the change that would actually hurt.
-    for (const fn of Object.values(ENTRYPOINTS)) {
+    // someone to lower it, which is the change that would actually hurt --
+    // for every profile except AI_METERED, whose ceiling is about paid
+    // fan-out rather than instance-pool starvation. See that profile's own
+    // header for why it is the deliberate exception.
+    for (const [name, fn] of Object.entries(ENTRYPOINTS)) {
+      if (name === "aiCoachAdvice") continue;
       expect(endpointOf(fn).concurrency).not.toEqual(expect.any(Number));
     }
+  });
+
+  test("the AI surface bounds fleet-wide paid fan-out with an explicit concurrency", () => {
+    // GPT-PM's G1 round-1 review caught the profile leaving concurrency at
+    // the platform default of 80: maxInstances(15) x 80 is 1,200 in-flight
+    // paid Gemini calls, which is the same Firestore-cheap-traffic ceiling
+    // this file uses everywhere else, applied to something that bills per
+    // call. Pinned as a real number rather than just "is set" so a future
+    // edit that quietly raises it back toward the default fails here first.
+    expect(AI_METERED.concurrency).toBe(10);
+    expect(AI_METERED.maxInstances * Number(AI_METERED.concurrency)).toBeLessThan(200);
   });
 });
 
@@ -237,7 +256,7 @@ describe("App Check enforcement flags", () => {
  * behavioural test of the existing ones can see.
  */
 describe("every callable reports its attestation", () => {
-  const SOURCES = ["index.ts", "video_urls.ts", "account_export.ts"];
+  const SOURCES = ["index.ts", "video_urls.ts", "account_export.ts", "ai_coach_advice.ts"];
 
   const sources = SOURCES.map((name) => ({
     name,
@@ -254,7 +273,7 @@ describe("every callable reports its attestation", () => {
 
   test("the inventory is not empty", () => {
     // Otherwise the loop below asserts nothing and passes for ever.
-    expect(callables.length).toBeGreaterThanOrEqual(13);
+    expect(callables.length).toBeGreaterThanOrEqual(14);
   });
 
   test.each(callables.map((c) => [c.fn, c]))(

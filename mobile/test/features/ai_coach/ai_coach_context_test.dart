@@ -58,98 +58,14 @@ void main() {
     });
   });
 
-  group('the prompt', () {
-    test('names the subject', () {
-      expect(buildCoachPrompt(_ctx(name: 'Leg Press')), contains('Leg Press'));
-    });
-
-    test('asks in Russian when the interface is Russian', () {
-      expect(buildCoachPrompt(_ctx(lang: 'ru')), contains('In Russian'));
-      expect(buildCoachPrompt(_ctx(lang: 'en')), contains('In English'));
-    });
-
-    test('an exercise is performed, not stood at', () {
-      // The old prompt opened with "The user is standing at:" for every subject.
-      // Correct for a leg press, wrong for a Romanian deadlift — and the model
-      // answers the question it was asked.
-      final machine = buildCoachPrompt(_ctx(source: AiCoachSource.equipment));
-      final movement = buildCoachPrompt(
-        _ctx(source: AiCoachSource.exercise, name: 'Romanian Deadlift'),
-      );
-
-      expect(machine, contains('standing at the machine'));
-      expect(movement, contains('about to perform the exercise'));
-      expect(movement, isNot(contains('standing at')));
-    });
-
-    test('it still carries the safety close', () {
-      // The sheet shows a "not medical advice" disclaimer, but the disclaimer
-      // is not the safety instruction — this line is, and it is inside the
-      // generated text where the user is actually reading.
-      expect(buildCoachPrompt(_ctx()), contains('stop on sharp pain'));
-    });
-
-    test('it does not ask the model for a weight it cannot know', () {
-      // RE-B02. The prompt asked for "a starting load cue" and nothing
-      // validated the answer — `ai_coach_service.dart` guards only against an
-      // empty one. A cloud model naming a starting weight for a beginner whose
-      // strength the app has never measured is an injury path, and there is no
-      // reference in the app to validate such a number against, so it cannot
-      // be checked after the fact either.
-      final prompt = buildCoachPrompt(_ctx(source: AiCoachSource.exercise));
-
-      expect(prompt, isNot(contains('starting load cue')));
-      expect(prompt, contains('never a specific weight'),
-          reason: 'the instruction has to be IN the prompt: removing the '
-              'request alone leaves a model free to volunteer a number');
-    });
-
-    test('but it still tells the user how to pick one', () {
-      // The fix is not "say nothing about load". A beginner asking how to
-      // start does need an answer; it has to be a method they apply to
-      // themselves rather than a figure handed down.
-      expect(
-        buildCoachPrompt(_ctx(source: AiCoachSource.exercise)),
-        contains('how to judge a starting load'),
-      );
-    });
-
-    test('sets and reps are deliberately kept', () {
-      // Bounded by convention, and a wrong rep count is a wasted set where a
-      // wrong load is an injury. If this ever needs to go too, it goes as its
-      // own decision rather than as collateral of the one above.
-      expect(buildCoachPrompt(_ctx(source: AiCoachSource.exercise)),
-          contains('sets x reps'));
-      expect(buildCoachPrompt(_ctx(source: AiCoachSource.equipment)),
-          contains('sets x reps or minutes'));
-    });
-
-    test('a Cyrillic subject name survives into the prompt', () {
-      // Carried over from the old location. Worth keeping separately from the
-      // "names the subject" case: the interesting failure is an encoding one,
-      // and an ASCII fixture cannot show it.
-      final prompt = buildCoachPrompt(_ctx(name: 'Гакк-машина', lang: 'ru'));
-      expect(prompt, contains('Гакк-машина'));
-      expect(prompt, contains('In Russian'));
-    });
-
-    test('it carries no health payload', () {
-      // Gate H1a moved injuries, conditions, medications, smoking and alcohol
-      // off the server and onto the phone. This prompt is the shortest path
-      // back off it, so the absence is asserted rather than assumed.
-      final prompt = buildCoachPrompt(_ctx()).toLowerCase();
-      for (final leak in const [
-        'injur',
-        'medication',
-        'condition',
-        'smok',
-        'alcohol',
-        'diagnos',
-      ]) {
-        expect(prompt, isNot(contains(leak)), reason: 'leaked "$leak"');
-      }
-    });
-  });
+  // The prompt itself — subject phrasing, the Russian/English switch, the
+  // no-starting-load-weight and no-health-data invariants, the safety close —
+  // used to be pinned here against a pure `buildCoachPrompt(AiCoachContext)`
+  // function. G1 moved prompt construction server-side; that coverage now
+  // lives in `functions/src/__tests__/ai_coach_advice.test.ts`, against the
+  // code that actually builds the prompt today. See `ai_coach_context.dart`'s
+  // doc comment for why the Dart function was deleted rather than kept as an
+  // untested duplicate.
 
   group('the service', () {
     test('returns the model text, trimmed', () async {
@@ -170,19 +86,21 @@ void main() {
       expect(() => svc.advise(_ctx()), throwsA(isA<Exception>()));
     });
 
-    test('it sends exactly the built prompt', () async {
-      // Pins the seam: the service is transport, the prompt is data. If someone
-      // re-inlines the prompt here, the pure-function tests above stop covering
-      // what actually goes over the wire.
-      String? sent;
-      final svc = AiCoachService(ask: (p) async {
-        sent = p;
+    test('it sends exactly the context, not a client-built prompt', () async {
+      // Pins the G1 seam: this service is transport only, and what crosses it
+      // is the structured context the callable validates
+      // (`ai_coach_advice.ts`'s `parseInput`) — never a free-form string the
+      // phone assembled, which is exactly the arbitrary-prompt proxy that
+      // gate was written to close off.
+      AiCoachContext? sent;
+      final svc = AiCoachService(ask: (ctx) async {
+        sent = ctx;
         return 'ok';
       });
       final ctx = _ctx(source: AiCoachSource.exercise, name: 'Goblet Squat');
       await svc.advise(ctx);
 
-      expect(sent, buildCoachPrompt(ctx));
+      expect(sent, ctx);
     });
   });
 }

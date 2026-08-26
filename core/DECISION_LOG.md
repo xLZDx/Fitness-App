@@ -25193,3 +25193,110 @@ MAJOR-or-above verdict, and every round surfaced at least one. This has no beari
 already made (`cdfd7cc`) -- only on push, which remains withheld pending a separate, explicit
 operator push-GO, per this workspace's standing contract, independent of GPT-PM's state. Full
 detail in `core/MASTER_PLAN_2026-08-26.md` §11d.
+
+## 2026-08-26 -- G1 first vertical slice: AiCoachService -> aiCoachAdvice Cloud Function
+
+Operator instruction (this session): work MVP1 (the SPTR_GATE_MAP G1-G8 gate sequence) fully
+autonomously, routing architecture/scope/approve decisions through GPT-PM as de facto deputy
+authority (subject to independent fact-checking of every claim, never blind trust), with new-branch
+creation and push still reserved for the operator's own separate consent per `CLAUDE.md` §14/§4.
+GPT-PM's own G1 architecture spec (prior session) named four server-owned callables sharing one
+`ai_gateway.ts` executor, independent per-action quotas, a new `AI_METERED` scaling profile, and an
+official server-side Gemini SDK via ADC -- no API keys. `GO: AUTHORIZED -- G1 IMPLEMENTATION MAY
+START NOW` / `COMMIT: AUTHORIZED` / `NEW BRANCH: NOT AUTHORIZED BY ME` (GPT-PM, prior session).
+
+Built the first of the four call sites -- `AiCoachService` (mobile) -> `aiCoachAdvice` (Cloud
+Function) -- as a complete, testable unit before replicating the pattern to the other three
+(equipment recognition, machine description, exercise generation), each its own follow-up commit.
+
+**Dependency choice:** `@google/genai` v2.19.0 in Vertex AI mode (`vertexai: true`), not
+`@google-cloud/vertexai` v1.12.0 -- both confirmed resolvable via `npm view` in a prior session;
+`@google/genai` chosen as the unified, actively-developed SDK. Installed clean (`npm install`, 14
+packages added, no new vulnerabilities beyond the pre-existing 10 moderate).
+
+**What shipped:** `functions/src/ai_gateway.ts` (shared executor -- 4 named callables only, no
+generic `askGemini(prompt)` proxy), `functions/src/ai_coach_advice.ts` (first callable, ports
+`ai_coach_context.dart`'s deleted `buildCoachPrompt` server-side), 4 new independent per-action
+quotas in `abuse_guard.ts` (`aiCoachAdvice: 40`, plus placeholders for the other three surfaces), a
+new `AI_METERED` scaling profile and `APP_CHECK_ENFORCED_AI` flag in `scaling.ts`, mobile
+`ai_coach_service.dart` migrated to call the Cloud Function instead of `FirebaseAI.googleAI()`
+directly (no more direct Gemini call from that file; `firebase_ai` import removed from it, kept in
+the other 3 not-yet-migrated services).
+
+**Root-cause cleanup, not left as a stale duplicate:** `ai_coach_context.dart`'s `buildCoachPrompt`
+function deleted rather than kept unused after prompt-building moved server-side -- two copies of
+the same prompt is exactly the drift risk a port is supposed to remove. Its ~10 pinning tests
+(subject phrasing, RU/EN switch, no-starting-load-weight invariant, no-health-data invariant,
+safety close, Cyrillic passthrough) ported into `ai_gateway.test.ts`/`ai_coach_advice.test.ts`
+rather than deleted outright, so coverage moved with the code it actually protects.
+`provider_safety_settings_test.dart`'s call-site tripwire (F026) updated from "three direct Gemini
+call sites" to "two, plus one now-server-side" -- caught this migration for real when run (correctly
+failed before the fix, confirming the test does what it claims).
+
+**GPT-PM review, 3 rounds so far (uncapped per this workspace's round policy, `~/.claude/CLAUDE.md`
+§15):**
+
+**Round 1** (`--uncommitted`, scope-noted to exclude unrelated untracked `reports/*.html` and the
+not-yet-built other 3 surfaces): VERDICT BLOCKER, 4 findings, `correlated: true`. (1) BLOCKER --
+`ai_gateway.ts` defaulted `VERTEX_AI_LOCATION` to `europe-west1`, but `gemini-3-flash-preview` is
+documented as a global-endpoint-only model on Vertex AI and is separately deprecated (migrate to
+`gemini-3.5-flash`). **Independently verified via `WebSearch` against Google Cloud's own model and
+release-notes documentation** before accepting -- confirmed accurate on both counts. Fixed: default
+changed to `"global"` (still env-overridable); model id deliberately kept as-is with a loud tracked
+TODO rather than silently swapped, since a model swap is a real behavior/cost/latency change, not a
+transport-only migration -- GPT-PM later confirmed this reasoning as sound rather than dodging the
+finding. (2) MAJOR -- `subjectName` is caller-controlled text interpolated into the prompt with only
+a length/non-empty check, a real prompt-injection surface the module's own header overclaimed as
+closed. Fixed: `FORBIDDEN_SUBJECT_NAME_CHARS` rejects quotes/control characters, an explicit
+inert-label instruction added to the prompt, the module header corrected to a narrower, accurate
+claim, and 3 adversarial tests added -- documented explicitly as defense-in-depth, NOT a full close
+(full closure needs a server-side equipment catalogue resolving `subjectId` -> canonical name, which
+does not exist in this Functions codebase yet; tracked as its own future gate). (3) MAJOR --
+`AI_METERED` left `concurrency` at the platform default (80), so `maxInstances: 15` implied 1,200
+in-flight PAID Gemini calls -- the same Firestore-cheap-traffic ceiling as every other profile,
+applied to something that now bills per call, self-contradicting the profile's own stated purpose.
+Fixed: explicit `concurrency: 10` (150 max fleet-wide), `scaling.test.ts` updated to pin the number
+and to exclude `aiCoachAdvice` from the "no explicit concurrency" tripwire it now deliberately
+violates. (4) MINOR -- `ai_gateway.ts` had no dedicated unit test (fully mocked out in
+`ai_coach_advice.test.ts`), so exactly this class of bug was invisible to the suite. Fixed: new
+`ai_gateway.test.ts` mocking `@google/genai` directly, pinning model/location/safety/config/
+abort-signal wiring and error-code mapping.
+
+**Round 2** (same scope-note): VERDICT MAJOR, `correlated: true`. Confirmed round 1's BLOCKER and
+both MAJORs CLOSED; gateway-test MINOR "functionally CLOSED" but flagged the reported count (21) was
+wrong -- **verified via direct `grep -c` count: actually 17** (I had transposed it with
+`ai_coach_advice.test.ts`'s own count of 21). New MAJOR: no `maxOutputTokens` cap, so a `subjectName`
+phrased to defeat the inert-label guard without using a forbidden character could still induce an
+arbitrarily long, arbitrarily billed response -- the prompt's own "under 180 words" line is a
+request, not an enforced ceiling. **Verified the field exists** via direct inspection of
+`node_modules/@google/genai/dist/genai.d.ts` (`GenerateContentConfig.maxOutputTokens?: number`,
+confirmed inside that interface, not a different one) before accepting the claim. Fixed: made
+`maxOutputTokens` a REQUIRED field on `GenerateOptions` (not opt-in -- no future `ai_*.ts` callable
+can forget it), set to 512 for `aiCoachAdvice` (~2x the 180-word target, headroom for Cyrillic token
+density, tightened later against measured real responses), pinned in both test files, test-count
+correction folded into the round-3 send rather than silently repeated.
+
+**Round 3** sent, response pending -- asks GPT-PM to verify both round-2 fixes land as claimed and,
+if so, to state `COMMIT: AUTHORIZED` plus its own push/`--final` status, per this session's standing
+reminder to GPT-PM (deputy authority for approve/push/decision-making after review rounds, per
+direct operator instruction this session) that it holds that authority once genuinely satisfied --
+not merely a critic role. Push itself still requires GPT-PM's own `--final` receipt AND a separate
+operator push-GO regardless, per `~/.claude/CLAUDE.md` §4/§8/§15, reaffirmed explicitly in this
+round's own scope-note.
+
+**Verification discipline applied throughout, consistent with this log's established pattern:**
+every GPT-PM claim checked against a primary source before being accepted or acted on (Google's own
+docs for the model/location claim, the SDK's own `.d.ts` for the `maxOutputTokens` claim, direct
+`grep` for the test-count claim) -- none of the 6 findings across rounds 1-2 were taken on the
+reply's word alone. Local test/build state at time of round-3 send: 284/284 Functions tests passing
+(was 279 before round-2 fixes, +2 for `maxOutputTokens` coverage; was 282 before round-1's coverage
+gap fix), `tsc --noEmit` and `npm run build` clean, 265/265 relevant mobile tests passing (`ai_coach`,
+`exercise_page`, `visual_equipment`), `flutter analyze` clean with zero new issues.
+
+Not yet done: round 3's response, the commit itself, replicating the pattern to the other 3 AI
+surfaces (equipment recognition, machine description, exercise generation), and everything after G1
+in the MVP1 sequence (G2 doc/test-hygiene fixes, G3 branch-protection escalation to the operator, G4
+positioning copy, G5's own separate technical-plan-then-review-then-GO gate). A live smoke test
+against real Vertex AI with real ADC credentials has not been performed from this sandboxed session
+and remains an explicitly flagged, NOT YET closed pre-deployment verification gap -- stated plainly
+in `ai_gateway.ts`'s own comments rather than implied as done.

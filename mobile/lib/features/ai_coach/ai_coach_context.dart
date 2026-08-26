@@ -89,49 +89,15 @@ class AiCoachContext {
       'AiCoachContext(${source.name}, $subjectId, $languageCode)';
 }
 
-/// The question, built from the context.
+/// Where the question is actually built, post-G1.
 ///
-/// A pure function on purpose: the prompt is the part of this feature most
-/// likely to be edited and the part hardest to see the effect of, and this is
-/// the only way to assert on it without a network call or a fake model.
-String buildCoachPrompt(AiCoachContext ctx) {
-  final language = ctx.languageCode == 'ru' ? 'Russian' : 'English';
-  final subject = switch (ctx.source) {
-    // "Standing at" is right for a machine and wrong for a movement — the
-    // distinction this type was introduced to make.
-    AiCoachSource.equipment => 'The user is standing at the machine:',
-    AiCoachSource.exercise => 'The user is about to perform the exercise:',
-  };
-  // No number the app cannot check.
-  //
-  // This asked for "a starting load cue" until 2026-08-15, and a cloud model
-  // answered it with a weight — for a person whose strength the app has never
-  // measured, in prose nothing validates. `ai_coach_service.dart` guards only
-  // against an empty answer. A validator is not the fix either: there is no
-  // reference to validate a starting load AGAINST, which is exactly why this
-  // could not be made correct while it stayed a number.
-  //
-  // The guidance itself is kept — a beginner asking how to start does need an
-  // answer — but as a method they apply to themselves rather than a figure
-  // handed down. Sets and reps stay: those are bounded by convention and a
-  // wrong rep count is a wasted set, where a wrong load is an injury.
-  final third = switch (ctx.source) {
-    AiCoachSource.equipment =>
-      'A sensible beginner volume (sets x reps or minutes).',
-    AiCoachSource.exercise => 'A sensible beginner volume (sets x reps), and '
-        'how to judge a starting load for themselves — never a specific '
-        'weight in kg or lb, which you cannot know for this person.',
-  };
-  return '''
-You are a concise, safety-first gym coach. $subject
-"${ctx.subjectName}".
-
-In $language, give:
-1. Correct setup and technique (3-5 short bullet points).
-2. The 2-3 most common mistakes and how to avoid them.
-3. $third
-
-Plain text with simple dashes for bullets — no markdown headers, no tables.
-Under 180 words. Do not invent features or variations it does not have. End
-with one line reminding to stop on sharp pain.''';
-}
+/// The prompt used to be built here as a pure `buildCoachPrompt(AiCoachContext)`
+/// function, asserted on directly in `ai_coach_context_test.dart` with no
+/// network call. G1 moved prompt construction server-side — see
+/// `functions/src/ai_coach_advice.ts`, which ports the exact same template
+/// (subject phrasing, the no-starting-load-weight invariant, the no-health-data
+/// invariant, the safety close) and is now the one place it can be edited. The
+/// Dart function was deleted rather than kept as an unused duplicate: two
+/// copies of the same prompt is exactly the drift risk a port like this one is
+/// supposed to remove, and the invariants it used to pin are now asserted in
+/// `functions/src/__tests__/ai_coach_advice.test.ts` instead.
