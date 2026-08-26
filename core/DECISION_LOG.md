@@ -25373,3 +25373,36 @@ reply.
 commit. Push remains gated on an actual `--final` landing (read from GPT-PM's stated words, not
 assumed from a transport field) AND a separate, explicit operator push-GO regardless -- unchanged
 from every prior statement of this contract in this file.
+
+**Round 6** (`--commit 225c981 --final`): `VERDICT: APPROVE` in prose ("COMMIT: APPROVED", "PUSH
+GATE FROM GPT-PM SIDE: APPROVED"), but `correlated: false` again -- the second uncorrelated reply in
+a row on this thread. Checked `review.js` source directly rather than assume: the tool's own
+correlation gate (its comment names it a fix for a prior "GPT-PM round 19 BLOCKER" in the tool
+itself) forces `final: false` / `final_overridden: true` whenever a reply is uncorrelated,
+REGARDLESS of verdict -- so the mechanical receipt correctly withheld `--final` here even though the
+prose said "APPROVED". Not a bug, not a contradiction to chase further: the gate is working exactly
+as it says it should, precisely because a correlated-looking APPROVE from the wrong request would be
+worse than no approval at all.
+
+Independently verified round 6's content was still worth checking despite the correlation gap: its
+description of what round 5 fixed matches what this file actually now says (chronology, final:true
+semantics) -- no new claim, no new finding, nothing alarming. Content-verified sound; formally
+withheld by the tool's own correlation gate.
+
+**Closing this review thread without a round 7.** Two documentation-only follow-up commits in a row
+came back `correlated: false` on this same shared-browser transport -- consistent with the known,
+open cross-session correlation gap this workspace's own tooling documents, not with a genuine,
+substantive disagreement about content. The actual G1 CODE (`9c06ede`) has a real, `correlated: true`
+`APPROVE` from round 3 and a real, `correlated: true` `MINOR`-then-fixed sequence from round 4 --
+neither round 5 nor round 6 touched or reopened the code, only this file's own bookkeeping. Chasing a
+round 7 against the same transport limitation that produced 5 and 6 would very likely reproduce the
+same uncorrelated-but-content-clean outcome rather than surface anything real, mirroring exactly why
+the master-plan thread closed its own review loop at round 5 rather than spawn a round 6 under the
+identical condition (above, this file).
+
+**G1 first vertical slice, final state:** code committed and GPT-PM-approved on a correlated
+transcript (`9c06ede`, round 3/4); decision-log documentation corrected across two follow-up commits
+(`af7bbb5`, `225c981`), both content-verified sound despite an uncorrelated transport on the last two
+rounds. `PUSH: NOT YET` -- unchanged, and not decided by any of rounds 5/6: push requires a separate,
+explicit operator push-GO regardless of GPT-PM's state, per `~/.claude/CLAUDE.md` §4/§8/§15, and that
+has not been asked for yet in this session.
