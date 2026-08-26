@@ -136,6 +136,39 @@ void main() {
       );
       expect(await svc.describe(path: '/tmp/a.jpg'), isNull);
     });
+
+    test(
+        'the deadline covers resize AND the network call together, not the '
+        'network call alone', () async {
+      // GPT-PM's G1 round-1 review caught an earlier version applying
+      // [timeout] to the cloud call only, leaving `photoBytes` unbounded from
+      // this class's own perspective. Neither delay below exceeds [timeout]
+      // on its own, but their SUM does — proving the fix wraps both stages in
+      // one deadline rather than only the network leg.
+      final svc = GeminiMachineDescriber(
+        photoBytes: (_) =>
+            Future.delayed(const Duration(milliseconds: 20), () => Uint8List(0)),
+        ask: (_, __) =>
+            Future.delayed(const Duration(milliseconds: 20), () => good),
+        timeout: const Duration(milliseconds: 30),
+      );
+      expect(await svc.describe(path: '/tmp/a.jpg'), isNull);
+    });
+
+    test('a combined resize+network time within the deadline still succeeds',
+        () async {
+      // The other half of the same proof: this is not a stricter timeout in
+      // disguise. A total under [timeout] still answers, even though the sum
+      // of the two stages — not either one alone — is what is being checked.
+      final svc = GeminiMachineDescriber(
+        photoBytes: (_) =>
+            Future.delayed(const Duration(milliseconds: 10), () => Uint8List(0)),
+        ask: (_, __) =>
+            Future.delayed(const Duration(milliseconds: 10), () => good),
+        timeout: const Duration(milliseconds: 100),
+      );
+      expect(await svc.describe(path: '/tmp/a.jpg'), isNotNull);
+    });
   });
 
   group('the shape of "uses"', () {

@@ -38,6 +38,24 @@ describe("validateImageInput", () => {
     expect(() => validateImageInput("image/gif", JPEG_BASE64)).toThrow(/mimeType/);
   });
 
+  test("checks mimeType before imageBase64, even when imageBase64 is entirely missing", () => {
+    // GPT-PM's round-1 review of this slice caught that an earlier extraction of this logic
+    // (each callable type-checking mimeType and imageBase64 itself, in that order, before calling
+    // in here) silently reordered this exact case: pre-extraction production code checked the
+    // mimeType allowlist FIRST, so `{mimeType: "image/gif"}` with no image field at all failed on
+    // the mimeType message, not the imageBase64 one. This function now owns both raw type checks,
+    // in the original order, so no caller-side split can reintroduce that drift.
+    expect(() => validateImageInput("image/gif", undefined)).toThrow(/mimeType/);
+  });
+
+  test("a non-string mimeType is rejected the same way as an out-of-allowlist one", () => {
+    expect(() => validateImageInput(123, JPEG_BASE64)).toThrow(/mimeType/);
+  });
+
+  test("a non-string imageBase64 is rejected once mimeType is valid", () => {
+    expect(() => validateImageInput("image/jpeg", undefined)).toThrow(/imageBase64/);
+  });
+
   test("rejects an empty base64 string", () => {
     expect(() => validateImageInput("image/jpeg", "")).toThrow(/imageBase64/);
   });

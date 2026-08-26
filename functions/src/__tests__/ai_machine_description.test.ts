@@ -81,6 +81,22 @@ describe("aiMachineDescription", () => {
     expect(generate).not.toHaveBeenCalled();
   });
 
+  test.each(["constructor", "toString", "__proto__", "hasOwnProperty", "valueOf"])(
+    "rejects the JS-prototype-chain languageCode %j rather than resolving it to Object.prototype's own member",
+    async (languageCode) => {
+      // The exact bypass GPT-PM's round-1 review found in an earlier version of this file: an `in`
+      // check against a plain object literal walks the prototype chain, so these values used to
+      // satisfy "languageCode in LANGUAGE_NAMES" and resolve to a real (non-string) prototype
+      // member, which would then have been template-interpolated into the prompt.
+      await expect(
+        aiMachineDescription.run(
+          req({ mimeType: "image/jpeg", imageBase64: JPEG_BASE64, languageCode }),
+        ),
+      ).rejects.toThrow(/languageCode/);
+      expect(generate).not.toHaveBeenCalled();
+    },
+  );
+
   test("rejects an injected-instruction languageCode the same way as any other invalid value", async () => {
     await expect(
       aiMachineDescription.run(

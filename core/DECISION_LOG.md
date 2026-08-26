@@ -25861,7 +25861,7 @@ via `git rev-parse HEAD` before any edit. Functions: `tsc --noEmit` clean; full 
 `ai_equipment_recognition`'s own 20 unchanged). Mobile: `flutter analyze` found the same 16
 pre-existing issues as before this gate, zero in any touched file; the three directly-touched test
 files (`machine_describer_test.dart`, `scan_controller_test.dart`, `provider_safety_settings_test.dart`)
-plus three adjacent files sharing the same providers/services (`gemini_equipment_service_test.dart`,
+plus four adjacent files sharing the same providers/services (`gemini_equipment_service_test.dart`,
 `machine_card_flow_test.dart`, `text_anchor_pipeline_test.dart`, `scanner_page_test.dart`) all green;
 full `flutter test` 3239/3240 -- the one failure is `test/theme/app_semantic_colors_test.dart`'s
 "the hardcoded whites that survived G1.2b stay accounted for" (a hardcoded-white-color count drift,
@@ -25873,8 +25873,60 @@ comments documenting the deletion remain, which the DoD's "historical text is ex
 covers). Diffstat: 9 files changed (271 insertions, 226 deletions) + 4 new files -- exactly the
 plan's declared scope, no leakage.
 
-**Not yet done:** send this diff to GPT-PM for the one-sweep adversarial review (workspace
-CLAUDE.md §17), remediate whatever it finds, get a verification round, then an exact-SHA final round
-before commit is pushed. Commit itself has not happened yet either -- this entry is being written
-first, per this workspace's own commit-time decision-log requirement, and will be committed together
-with the code.
+**Committed as `6e52bd6` (parent `a6404fb`).** Sent to GPT-PM for the one-sweep adversarial review
+(workspace CLAUDE.md §17) via `review.js --commit 6e52bd6`, with a scope note declaring the 4th AI
+surface, the other two callables' behavior, and MachineCard/F016 out of scope.
+
+**GPT-PM round 1: `VERDICT: MAJOR`, correlated -- 2 MAJOR + 2 MINOR, all independently verified true
+before fixing (never accepted on the reviewer's word alone, per this workspace's standing evidence
+discipline):**
+
+1. **MAJOR, confirmed live** -- `ai_machine_description.ts`'s `languageCode in LANGUAGE_NAMES` check
+   (against a plain object literal) walks the WHOLE prototype chain, not just own keys. Verified
+   with a throwaway Node script: `"constructor" in {ru:1,en:1}` is `true`, and
+   `({ru:"Russian",en:"English"})["constructor"]` returns the real `Object` constructor function --
+   which would have been template-interpolated into the prompt as
+   `function Object() { [native code] }` for a caller sending `languageCode: "constructor"`.
+   **Fixed:** replaced the object-lookup allowlist with direct string equality
+   (`resolveLanguageName`: `if (languageCode === "ru") ... else if (languageCode === "en") ... else
+   throw`) -- no prototype chain to walk. 5 new tests (`constructor`, `toString`, `__proto__`,
+   `hasOwnProperty`, `valueOf`) assert rejection and that `generate()` is never called.
+2. **MAJOR, confirmed by re-reading the code** -- the advertised `server(20s) < service(30s) <
+   controller(35s)` timeout hierarchy was not a true nesting invariant: `GeminiMachineDescriber
+   .describe()` awaited `_photoBytes(path)` (the resize) BEFORE applying `.timeout(timeout)`, so the
+   30s deadline covered only the network leg, leaving resize time unbounded from the describer's own
+   perspective. A slow resize plus a legitimate near-30s network round trip could together exceed the
+   controller's 35s budget even though the network call's own sub-timer had not fired -- discarding a
+   paid, quota-charged answer, the exact race this whole amendment exists to close, one layer further
+   out than where it was first found. The round-1 regression test (`_DelayedDescriber`, one monolithic
+   delay) could not have caught this, because it has no separate resize/network phases to expose the
+   gap -- GPT-PM named this limitation directly and asked for a test using the real composition
+   instead. **Fixed:** `_resizeAndAsk` combines both stages into one future before `.timeout()` is
+   applied, so the 30s deadline now genuinely covers resize + network together, matching what the
+   doc comment always claimed. 2 new tests in `machine_describer_test.dart` prove it: two 20ms delays
+   (resize + network) against a 30ms timeout now correctly time out (neither delay alone would have),
+   and two 10ms delays against a 100ms timeout still succeed (proving this is not simply a stricter
+   timeout in disguise).
+3. **MINOR, confirmed by diffing against the pre-refactor source** (`git show 6e52bd6~1:functions/
+   src/ai_equipment_recognition.ts`) -- the `image_validation.ts` extraction was not fully
+   behavior-preserving: the original combined check (`typeof mimeType !== "string" ||
+   !ALLOWED_MIME_TYPES.has(mimeType)`, checked before `imageBase64`) got split across the callable's
+   own `parseInput` (type checks) and the shared validator (allowlist), silently reordering the case
+   where `mimeType` is an invalid-but-string value AND `imageBase64` is absent:
+   `{mimeType: "image/gif"}` used to fail on the mimeType message, now failed on the imageBase64 one
+   first. The existing 20-test suite missed this because its own "outside the allowlist" test always
+   supplied a present `imageBase64` too. **Fixed:** `validateImageInput` now takes `unknown` for both
+   fields and owns BOTH raw type checks itself, in the original order -- both callables' `parseInput`
+   now just extract the raw fields and call in, so no caller-side split can reorder this again. 3 new
+   tests pin the exact case plus the two type-check branches individually.
+4. **MINOR** -- this entry's own previous paragraph said "commit itself has not happened yet" and
+   "not yet done: send this diff" while being reviewed AT the exact commit (`6e52bd6`) it claimed was
+   still pending -- the identical staleness pattern already hit and fixed on both prior slices, this
+   time inside the SAME commit rather than needing a round-4-style follow-up. Also miscounted the
+   adjacent test files as three when four were named. **Fixed:** this entry (both the prior paragraph
+   and this one) replaces that language; the miscount is corrected above.
+
+**Verified after the round-1 fixes:** `tsc --noEmit` clean. Functions Jest: 335 baseline tests plus
+5 (`constructor`/etc.) + 3 (image-validation ordering) = 343 total, all green (exact count to be
+re-confirmed at the next full run before the round-2 send). `flutter analyze` and the touched Dart
+test files to be re-run before sending round 2.

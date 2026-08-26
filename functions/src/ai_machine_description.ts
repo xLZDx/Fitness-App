@@ -29,9 +29,19 @@ function signInProvider(request: CallableRequest): string | undefined {
 }
 
 /** The only two languages the app ships (`languageCode == 'ru' ? 'Russian' : 'English'` in the
- * mobile source this ports). Server-owned map, not a caller-supplied string -- see this file's
- * header. */
-const LANGUAGE_NAMES: Record<string, string> = { ru: "Russian", en: "English" };
+ * mobile source this ports), resolved by direct equality rather than an object/map lookup.
+ *
+ * GPT-PM's round-1 review of this slice caught the original version, `languageCode in
+ * LANGUAGE_NAMES` against a plain object literal: the `in` operator walks the WHOLE prototype
+ * chain, not just own keys, so `"constructor"`, `"toString"`, or `"__proto__"` all satisfy it and
+ * resolve to `Object.prototype`'s own members -- `LANGUAGE_NAMES["constructor"]` is the `Object`
+ * constructor function, which would then be template-interpolated into the prompt as
+ * `function Object() { [native code] }`. Direct string equality has no prototype chain to walk. */
+function resolveLanguageName(languageCode: unknown): string {
+  if (languageCode === "ru") return "Russian";
+  if (languageCode === "en") return "English";
+  throw new HttpsError("invalid-argument", 'languageCode must be exactly "ru" or "en".');
+}
 
 interface MachineDescriptionInput {
   image: InlineImage;
@@ -40,21 +50,9 @@ interface MachineDescriptionInput {
 
 function parseInput(data: unknown): MachineDescriptionInput {
   const d = (data ?? {}) as Record<string, unknown>;
-  const mimeType = d.mimeType;
-  const base64 = d.imageBase64;
-  const languageCode = d.languageCode;
-  if (typeof mimeType !== "string") {
-    throw new HttpsError("invalid-argument", "mimeType must be one of image/jpeg, image/png, image/webp.");
-  }
-  if (typeof base64 !== "string") {
-    throw new HttpsError("invalid-argument", "imageBase64 is required.");
-  }
-  if (typeof languageCode !== "string" || !(languageCode in LANGUAGE_NAMES)) {
-    throw new HttpsError("invalid-argument", 'languageCode must be exactly "ru" or "en".');
-  }
   return {
-    image: validateImageInput(mimeType, base64),
-    languageName: LANGUAGE_NAMES[languageCode],
+    image: validateImageInput(d.mimeType, d.imageBase64),
+    languageName: resolveLanguageName(d.languageCode),
   };
 }
 

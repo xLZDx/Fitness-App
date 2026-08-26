@@ -123,13 +123,28 @@ class GeminiMachineDescriber implements MachineDescriber {
   /// accounts for. 30s gives real margin over the server's own 20s model
   /// budget rather than racing it.
   ///
-  /// This is the SERVICE-level deadline, one layer inside the controller's
-  /// own budget: `visual_equipment_providers.dart`'s `_describeInstead` wraps
-  /// the whole `describe()` call (this timeout included) in a further outer
-  /// `.timeout()` of its own — see `describeTimeoutProvider` there for why a
-  /// THIRD, still-larger number exists above this one, and why reusing the
-  /// classifier's `recogniseTimeoutProvider` for both would have silently
-  /// defeated this fix.
+  /// This is the SERVICE-level deadline, and it covers the WHOLE operation —
+  /// resize (`_photoBytes`) AND the network call — not just the network leg.
+  /// GPT-PM's G1 round-1 review of this class caught an earlier version that
+  /// applied this timeout to the cloud call alone, leaving `_photoBytes`
+  /// unbounded from this class's own perspective: a slow resize plus a
+  /// legitimate near-30s network round trip could together exceed the
+  /// controller's outer budget even though the network leg's OWN sub-timer
+  /// had not fired, discarding a paid, quota-charged answer for no real
+  /// reason — the exact race this whole timeout hierarchy exists to close,
+  /// one layer further out than where it was first found. Wrapping the
+  /// entire operation here is what makes the documented invariant
+  /// (server 20s < this 30s < the controller's still-larger budget) actually
+  /// hold, rather than merely describe an ordering of numbers that isn't
+  /// structurally enforced.
+  ///
+  /// One layer further out still: `visual_equipment_providers.dart`'s
+  /// `_describeInstead` wraps the whole `describe()` call (this timeout
+  /// included) in a further outer `.timeout()` of its own — see
+  /// `describeTimeoutProvider` there for why a THIRD, still-larger number
+  /// exists above this one, and why reusing the classifier's
+  /// `recogniseTimeoutProvider` for both would have silently defeated this
+  /// fix.
   final Duration timeout;
 
   final CloudDescriptionAsk? _ask;
@@ -142,6 +157,13 @@ class GeminiMachineDescriber implements MachineDescriber {
   static Future<Uint8List> _resize(String path) =>
       compute(resizeForCloud, path);
 
+  /// Resize, then ask — as one future, so [timeout] bounds both stages
+  /// together rather than only the network call.
+  Future<String?> _resizeAndAsk(String path, String languageCode) async {
+    final bytes = await _photoBytes(path);
+    return _cloud(bytes, languageCode);
+  }
+
   @override
   Future<MachineCard?> describe({
     required String path,
@@ -152,8 +174,7 @@ class GeminiMachineDescriber implements MachineDescriber {
   }) async {
     final String? text;
     try {
-      final bytes = await _photoBytes(path);
-      text = await _cloud(bytes, languageCode).timeout(timeout);
+      text = await _resizeAndAsk(path, languageCode).timeout(timeout);
     } catch (e) {
       debugPrint('could not describe the unknown machine: $e');
       return null;

@@ -81,20 +81,29 @@ export function sniffImageMimeType(bytes: Buffer): string | null {
 }
 
 /**
- * Validates a `{mimeType, imageBase64}` pair the way both vision callables receive it: allowed
- * MIME allowlist, non-empty, cheap pre-decode length guard, strict base64 decode, decoded-size cap
- * (defense-in-depth -- provably unreachable given the pre-decode guard, kept in case the two
- * constants ever drift apart), file-signature sniff, and MIME/signature equality.
+ * Validates a raw `{mimeType, imageBase64}` pair exactly the way both vision callables receive it
+ * from `request.data` -- type checks, allowed-MIME allowlist, non-empty, cheap pre-decode length
+ * guard, strict base64 decode, decoded-size cap (defense-in-depth -- provably unreachable given the
+ * pre-decode guard, kept in case the two constants ever drift apart), file-signature sniff, and
+ * MIME/signature equality.
  *
- * `mimeType`/`base64` are read from the caller's raw input by each callable's own `parseInput` --
- * this function only validates values already typed as strings, so a caller passing a non-string
- * or missing field gets its own "required" error from the callable, not a generic one from here.
+ * Takes `unknown` for both fields -- not `string` -- and owns the type checks itself, rather than
+ * leaving each callable's own `parseInput` to type-check before calling in. GPT-PM's round-1 review
+ * of this slice caught the gap that split created: `ai_equipment_recognition.ts`'s original,
+ * pre-extraction code checked the mimeType allowlist BEFORE checking whether `imageBase64` was even
+ * present (`{mimeType: "image/gif"}` with no image failed on the mimeType message). The first
+ * version of this extraction had each callable's `parseInput` check `typeof mimeType === "string"`
+ * and `typeof base64 === "string"` itself, in that order, before ever calling this function --
+ * which silently reordered that exact case to fail on the base64 message instead, an observable
+ * behavior change the "pure refactor" claim did not actually hold to. Owning both type checks here,
+ * in the original order, is what makes both callables share the true original ordering permanently
+ * rather than by each caller happening to type-check in the same sequence.
  */
-export function validateImageInput(mimeType: string, base64: string): InlineImage {
-  if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+export function validateImageInput(mimeType: unknown, base64: unknown): InlineImage {
+  if (typeof mimeType !== "string" || !ALLOWED_MIME_TYPES.has(mimeType)) {
     throw new HttpsError("invalid-argument", "mimeType must be one of image/jpeg, image/png, image/webp.");
   }
-  if (base64.length === 0) {
+  if (typeof base64 !== "string" || base64.length === 0) {
     throw new HttpsError("invalid-argument", "imageBase64 is required.");
   }
   if (base64.length > MAX_IMAGE_BASE64_LENGTH) {

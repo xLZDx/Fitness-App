@@ -43,21 +43,13 @@ interface EquipmentRecognitionInput {
   image: InlineImage;
 }
 
-/** Image validation itself (base64 strict-decode, size caps, file-signature sniff) lives in
- * `image_validation.ts`, shared with `aiMachineDescription` -- see that module's header for the
- * two GPT-PM review rounds that hardened it. This function only extracts and types the raw
- * fields from `data` before handing them to the shared validator. */
+/** Image validation itself -- type checks, base64 strict-decode, size caps, file-signature sniff
+ * -- lives entirely in `image_validation.ts`, shared with `aiMachineDescription`. See that
+ * module's own header for why `validateImageInput` owns the raw type checks too, not just the
+ * byte-level validation. */
 function parseInput(data: unknown): EquipmentRecognitionInput {
   const d = (data ?? {}) as Record<string, unknown>;
-  const mimeType = d.mimeType;
-  const base64 = d.imageBase64;
-  if (typeof mimeType !== "string") {
-    throw new HttpsError("invalid-argument", "mimeType must be one of image/jpeg, image/png, image/webp.");
-  }
-  if (typeof base64 !== "string") {
-    throw new HttpsError("invalid-argument", "imageBase64 is required.");
-  }
-  return { image: validateImageInput(mimeType, base64) };
+  return { image: validateImageInput(d.mimeType, d.imageBase64) };
 }
 
 /**
