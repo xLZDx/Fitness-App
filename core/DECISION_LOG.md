@@ -26472,7 +26472,36 @@ manually, without rerunning `report_conform.py` (which would have reverted the p
 HEAD). Verified `report_conform.py <dir> --check` raises nothing for either file after the
 manual edit.
 
-**Not yet done**: send the corrected exact diff to GPT-PM for final verification of this one
-change, `--final` for the resulting commit, push, re-closure of Rosetta plan v3 with
-`result: "passed"` and corrected evidence, then G2-G8 per PM mode's "continue after report"
+**Pushed `e70245d`** after exact-SHA final APPROVE for the provenance fix. Verified 0/0
+against origin post-push.
+
+**Rosetta re-closure spiral, root-caused and broken**: closure attempts 1-2 each triggered
+fresh GPT-PM MAJOR findings on the closure RECORD itself (unbucketed ungoverned-act counts,
+polluted reconstructed changed-set, missing commit in the lifecycle narrative, wrong DoD-18
+ordering) -- all legitimate, all fixed. But the ungoverned-act count kept growing between
+attempts (115 -> 167 -> 194) because the reconciliation WORK ITSELF (subagent classification
+runs, diagnostic `git`/`grep` commands, this very DECISION_LOG edit) is Bash/Edit activity
+the shell classifier records as new ungoverned acts in real time -- a live system cannot
+produce a frozen exact count of its own still-running observation. Traced the post-167 delta
+directly: every single one of the ~27+ additional acts is either (a) this session's own
+classification tooling under `D:\Temp\claude\...\scratchpad\` (Write/Edit/Bash targeting
+`parse_rosetta_v2.py`/`classify_v2.py`, zero Fitness_App repo impact), or (b) further
+diagnostic/investigation Bash commands (`git diff`, `git status`, `ls`) run purely to
+INSPECT the act dump -- not one of them is an Edit/Write/git-add/git-commit targeting any
+Fitness_App path, let alone one of the 15 authoritative plan paths. Verified this
+categorical claim directly rather than chasing an exact integer that mutates with every
+verification attempt.
+
+**Decision**: stop attempting to hit an exact frozen ungoverned-act count -- report the
+categorical guarantee instead (everything since the last verified 167-count checkpoint is
+scratchpad-tooling or read-only diagnostics, zero Fitness_App mutation, zero authoritative-
+path touch), state plainly that the live count will have incremented further by the time
+this exact closure call is itself processed (an unavoidable property of live self-
+observation, not evidence of missed scope), and ask GPT-PM to accept the categorical bound
+rather than another round chasing a moving integer -- consistent with CLAUDE.md sec17's
+"one sweep, not one finding per round" discipline, now applied to the closure-record loop
+itself rather than just code review.
+
+**Not yet done**: submit the categorical closure evidence above; if accepted,
+`pm_rosetta_close(passed)` stands; then G2-G8 per PM mode's "continue after report"
 instruction.
