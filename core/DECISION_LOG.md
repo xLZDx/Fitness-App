@@ -26397,6 +26397,54 @@ exists in this report. The EN mirror correctly says "section 03." Caught by re-r
 file before pasting its content into the verification message; fixed to "разделе 03" in the
 RU file, re-conformed, artifact republished.
 
-**Not yet done**: RU-content verification round with GPT-PM, `--final` for this report
-commit, push, re-closure of Rosetta plan v3 with `result: "passed"` and corrected evidence,
-then G2-G8 per PM mode's "continue after report" instruction.
+**RU verification round**: sent full RU report body (HEAD `c0f3bc7` at send time). GPT-PM:
+`VERDICT: APPROVE` on report CONTENT (both languages), but explicitly declined
+`--final=true` for `c0f3bc7` -- its GitHub connector could not resolve that SHA (unpushed,
+expected) and it had no diff to correlate the approved text against. Asked for the raw
+`git diff 999c73f..c0f3bc7` payload (reports/ included, bypassing `REVIEW_EXCLUDE`) before
+issuing a final receipt -- correctly refusing to certify a commit range it could not see,
+consistent with this project's evidence discipline.
+
+**Transport failure blocking the exact-SHA final request**: 7 consecutive
+`gpt_send_and_await` attempts to deliver that diff failed identically --
+`browserContext.newPage: Target page, context or browser has been closed`. Escalation
+ladder followed: retry once (fail) -> checked `pm_bridge_mode_status` (orchestrator alive,
+pid 48544, queue depth 0, handled-count climbing 36->40 from OTHER sessions' traffic during
+the wait, so not a stuck-queue signature) -> two backoffs (60s, then 120s) with retries
+between them (both fail) -> tried a much shorter payload in case message size was the
+trigger (still fails) -> `pm_bridge_session_start` returned "orchestrator already holds a
+permanent session, no-op," confirming the orchestrator IS the intended sole browser owner,
+not a competing process -> inspected `pm-bridge/state/orchestrator.log` directly: no
+matching `newPage`/crash entry near these timestamps, only routine
+`sendViaPlaywright`/`awaitReplyViaPlaywright` non-blocking-policy notices from other
+sessions' traffic and several historical `orchestrator: listening on ... pid N` restart
+lines (the daemon has restarted multiple times over this workspace's history, not just now).
+4 other interactive Claude Code sessions were confirmed active on this machine via
+`ListAgents` at the time of the first failures.
+
+**Working theory, not confirmed**: `gpt_send_and_await`'s Playwright automation may hold a
+handle to a browser context that crashed/closed at some point without the orchestrator's own
+health check (`pm_bridge_mode_status`) or log detecting it -- consistent with the
+already-documented gap in `~/.claude/CLAUDE.md` sec15 ("a genuinely hung/crashed browser
+process could still stall a commit until the per-call timeout elapses") and the concurrent-
+session collision risk documented in the same section. Not independently proven from this
+session; restarting the shared `pm-bridge` orchestrator process was considered and
+deliberately NOT done unilaterally -- it is shared infrastructure 4+ other live sessions
+depend on right now, and killing/restarting it without their knowledge risks disrupting
+their work mid-flight. Editing `pm-bridge/src/` was also ruled out per this workspace's own
+memory (`pm-bridge-src-edit-desyncs-every-session` -- any src/ edit stops routing everywhere
+until a restart).
+
+**Decision**: stop retrying after 7 failed attempts rather than keep hammering a shared,
+struggling resource. Do NOT fabricate a `--final` receipt to unblock push -- per sec15's own
+Gate A postmortem, "a gate whose only remaining satisfaction path is fabricating its own
+evidence is not providing the guarantee it appears to." Report this transport blocker to the
+operator directly rather than silently retrying indefinitely or silently giving up, per
+CLAUDE.md sec2's "be explicit about blockers." The report content itself (both languages) IS
+GPT-PM-approved and safe -- only the exact-SHA final receipt for `c0f3bc7` and the resulting
+push/Rosetta re-closure are blocked, nothing already committed is at risk.
+
+**Not yet done**: `--final` for `c0f3bc7` (blocked on PM Bridge transport, needs either the
+transport to recover on its own or an operator-authorized restart of the shared orchestrator),
+push, re-closure of Rosetta plan v3 with `result: "passed"` and corrected evidence, then
+G2-G8 per PM mode's "continue after report" instruction.
