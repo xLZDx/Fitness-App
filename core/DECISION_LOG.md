@@ -25412,3 +25412,71 @@ house `html-report` format -- provenance-conformed, RU published as an Artifact
 (`https://claude.ai/code/artifact/76a9f27f-6b3a-4024-ba88-1de970ccf12a`), both committed to the repo.
 Handed over to the operator in-session per that skill's own process; stopping here rather than
 starting the remaining three AI surfaces without a fresh operator turn.
+
+## G1 -- operator push delegation, and GPT-PM round 7 (2026-08-26)
+
+**Operator instruction, verbatim, immediately after the report handover above:** "GPT-PM имеет
+право апрувить все что угодно от моего имени" ("GPT-PM has the right to approve anything on my
+behalf"). Read together with an existing precedent in this workspace's memory ("PM Bridge: GPT push
+authority, not real-money" -- GPT-PM's explicit `final:true`/authorization already counted as
+push-GO once delegated) and with `~/.claude/CLAUDE.md` §4/§14, which state that destructive/
+irreversible ops, branch creation (double operator consent, §14), and real-money/production/
+external-publishing actions require action-specific confirmation "even if a broader GO exists" and
+that "no reviewer recommendation may substitute for the two [branch] approvals." Interpreted this
+delegation as covering **push authorization specifically** -- not branch creation, not destructive
+git ops, not real-money actions -- and stated that scope interpretation back to the operator in the
+same reply rather than stopping to ask, per this session's standing practice of transparent,
+non-blocking clarification. Then sought an actual push authorization from GPT-PM under the new
+delegation instead of asking the operator directly.
+
+**GPT-PM round 7 (exact-HEAD full-range push review, `66ebff2c2853ab6726fd1dcd192964aa5d8b3157`,
+11 commits ahead of `origin/master`):** correlated, `VERDICT: BLOCKER`. Finding: the requested
+full-range push review is structurally incomplete because `review.js`'s `REVIEW_EXCLUDE =
+[":(exclude)reports"]` means every reviewed diff/show payload has always excluded `reports/*`
+content -- including the two new G1 report files in this exact push range -- so no round has ever
+actually inspected committed report HTML for stale claims, secrets, wrong URLs, or incorrect
+approval-state text. Required change: supply `git rev-parse HEAD`, `git log --oneline
+origin/master..HEAD`, `git diff --stat origin/master..HEAD`, and the full contents of every
+committed `reports/*` file in range, outside `review.js`'s own exclusion.
+
+Verified the exclusion claim independently before treating it as fact: direct re-read of
+`review.js`'s own `REVIEW_EXCLUDE` constant confirms the exclusion is real and total, not
+GPT-PM editorializing.
+
+Gathered exactly the requested evidence (git SHA/log/diffstat, plus the full semantic content --
+CSS/JS stripped -- of all 4 committed `reports/*.html` files: both `G1_AI_COACH_ADVICE_2026-08-26`
+and both `MASTER_PLAN_2026-08-26` files) and sent it via `gpt_send_and_await` (playwright, single
+continuous session) as a direct, narrow response to the round-7 BLOCKER.
+
+**GPT-PM's reply, correlated: `VERDICT: MAJOR` (the structural BLOCKER is explicitly closed --
+"you supplied the exact HEAD, full 11-commit list, the complete reports/ diff inventory, and the
+substantive content of all four excluded report files ... I am no longer withholding because
+review.js hides reports/").** New finding: the Master Plan HTML report (both languages) states "P0/
+P1 closed, P2/P4/P6 not started," contradicting the reviewed canonical
+`core/MASTER_PLAN_2026-08-26.md`, which explicitly records `P0.G1-G6 CLOSED` with
+`P0.G0` still `BLOCKED_EXTERNAL_PLATFORM_MIGRATION`, and `P1.G1-G4 closed`, `P1.G5
+BLOCKED_ON_SOURCE_EVIDENCE`, `P1.G6 not started` -- itself a correction the canonical markdown
+already carries from an earlier GPT-PM round-1 pass over that same document (see the `MASTER_PLAN`
+entries above, "the original 'closed, 6/6' overstated this"). Failure scenario given: a reader of
+the executive HTML (rather than the long markdown) would conclude ontology/catalog prerequisites
+were fully finished and start downstream P2/P4/P6 work without carrying the App Check migration
+precondition or the source-evidence block forward -- exactly the status drift the Master Plan
+exists to prevent.
+
+Verified directly against `core/MASTER_PLAN_2026-08-26.md` lines 105-107 before accepting: confirmed
+true. The HTML report's flat "P0/P1 closed" line was a real regression against the canonical
+document's own already-corrected wording -- the earlier correction had landed in the markdown but
+not been carried into the HTML executive summary written afterward.
+
+**Fixed** (no G1 code touched, per GPT-PM's own scope note: "No G1/P1 code re-review is needed"):
+`reports/MASTER_PLAN_2026-08-26.html` and `.ru.html`, the "ML recognition platform" era-card line,
+corrected in both languages to state `P0.G1-G6 closed, P0.G0 blocked on external platform
+migration; P1.G1-G4 closed, P1.G5 blocked on source evidence, P1.G6 not started; P2/P4/P6 not
+started`. Re-ran `report_conform.py` on both files to refresh the provenance block against the new
+content; `--check` passes clean across `reports/`.
+
+GPT-PM's own closing line: "PUSH: NOT AUTHORIZED for HEAD 66ebff2c... because of the report-status
+MAJOR above ... After the two-language Master Plan report correction, I only need a short exact-HEAD
+verification of those corrected lines. I will not reopen the 11-commit code review." Next: commit
+this documentary fix, then send the new exact HEAD plus the corrected lines back for that narrow
+verification pass before push.
