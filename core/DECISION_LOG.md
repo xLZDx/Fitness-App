@@ -28083,3 +28083,80 @@ the schedule, prove live delivery) waits on `FA-D1`, still `PENDING` as of this 
 **Cost:** zero new spend. `runCanaryProbe()` is not deployed as any triggerable resource by this
 change (no `onCall`/`onSchedule`/`onRequest` wrapper exists yet) -- it is source code and tests only,
 callable exclusively from Step 9B's own future wrapper or from a test file that imports it directly.
+
+## MVP1.G3 Step 9A remediation round: GPT-PM found 2 real MAJORs at closure -- both fixed -- 2026-08-27 03:57 UTC
+
+Called `pm_rosetta_close` on the plan above with `passed`/full evidence; GPT-PM's own adversarial
+review of the closure (it independently verified the commit range, the dependency move, and the E2E
+proof rather than trusting the green counts) returned `VERDICT: MAJOR findings` -- 2 real, valid
+issues, both accepted without dispute since they were correct on inspection. Everything else in the
+review was explicitly APPROVED (architecture, Auth/Rules E2E proof, security isolation, dependency
+packaging, no public endpoint, clean commit scope) and GPT-PM explicitly scoped remediation as narrow
+-- these 2 findings only, nothing else reopened.
+
+**MAJOR 1 -- bounded execution was incomplete.** The original `withTimeout` bounded only the 5
+happy-path steps (mint/exchange/write/read/delete); the `finally` block's cleanup delete, `signOut`,
+`terminate`, and `deleteApp` had no timeout at all, so a hung cleanup call could make a function whose
+entire purpose is "never run unboundedly on a schedule" do exactly that. GPT-PM additionally required:
+represent cleanup as unknown rather than claiming success/failure when its outcome cannot actually be
+confirmed, and add a mechanism so a late-completing (non-cancelled) write cannot become durable
+residue across runs. Fixed, all three:
+1. Every cleanup/teardown call now has its own FIXED budget, independent of the main steps'
+   `remaining()` (`CLEANUP_TIMEOUT_MS` = 5s for the delete, `TEARDOWN_TIMEOUT_MS` = 3s each for
+   signOut/terminate/deleteApp) -- so cleanup is still genuinely attempted even when the main steps
+   already consumed the entire main budget.
+2. An OUTER `OVERALL_HARD_DEADLINE_MS` (45s, generous headroom over the ~29s sum of every inner
+   budget) races the ENTIRE function body -- main steps, cleanup, and teardown together -- via
+   `Promise.race` in the exported `runCanaryProbe()`, which now just wraps an inner
+   `runCanaryProbeBody()`. `runCanaryProbe()` is now guaranteed to RETURN by that deadline regardless
+   of what is stuck inside. `cleanupSucceeded`'s type changed from `boolean` to `boolean | "unknown"`
+   -- the outer-deadline path reports `"unknown"`, not `false`, since the inner body may still be
+   running unobserved and a definite failure claim would be unsupported.
+3. Added a bounded pre-flight cleanup (`attemptCleanup`, shared with the post-run cleanup path) right
+   after AUTH_EXCHANGE succeeds and before the write: deletes any leftover `_canary/{CANARY_UID}`
+   document from a PREVIOUS run whose own cleanup was cut off by ITS hard deadline, so residue cannot
+   compound across repeated scheduled invocations (Step 9B's whole use case).
+
+**MAJOR 2 -- the production API-key fallback failed open.** The original
+`FIREBASE_WEB_API_KEY ?? "demo-emulator-key"` substituted the placeholder UNCONDITIONALLY, including
+outside emulator mode -- a real deployment that forgot to set the env var would not fail at startup,
+it would silently run with a fake key and report what looks like an ordinary Auth failure, hiding a
+configuration mistake behind a misleading failure class. Fixed: `resolveFirebaseWebApiKey()` now
+permits the placeholder ONLY when `FIRESTORE_EMULATOR_HOST` or `FIREBASE_AUTH_EMULATOR_HOST` is
+actually set; otherwise a missing key returns an explicit `CONFIG` failure (new `CanaryFailureClass`
+member) before `initializeApp` is even called -- no network call attempted, no app/auth/db objects
+created, `cleanupAttempted: false`/`cleanupSucceeded: true` trivially since nothing existed to clean
+up. `FIREBASE_WEB_API_KEY` still has no real value configured anywhere (unchanged proof gap -- this
+sandboxed session has no live GCP credentials to obtain the project's real Web API key), but the
+probe now fails SAFE on that gap instead of failing silently-wrong.
+
+**Positive proof for both fixes, added to `functions/src/__e2e__/canary_probe.e2e.test.ts`:**
+- "a write that never resolves times out": `runCanaryProbe({ injectNeverResolvingWrite: true })` --
+  a REAL 15-second wait against the actual per-step timeout mechanism, not a mocked one. Confirms
+  `success: false`, `stage: "FIRESTORE_WRITE"`, `failureClass: "TIMEOUT"`, and wall-clock time under
+  30s (comfortably inside the 45s hard deadline) -- proving the function actually returns within its
+  advertised budget, not merely that the mechanism is reasoned about in a comment. This is the
+  specific gap the original closure had explicitly flagged as unproven.
+- "missing FIREBASE_WEB_API_KEY outside emulator mode is refused immediately": temporarily unsets
+  both emulator-host env vars and the key, calls `runCanaryProbe()`, confirms `failureClass: "CONFIG"`,
+  no `stage` reached (never got past the config check), and wall-clock time under 1 second (no network
+  attempted) -- env vars restored in `finally` so no other test in the file is affected.
+- "emulator mode still works with no FIREBASE_WEB_API_KEY set": pins the OTHER half of the same
+  branch -- the common case (real emulator env, no key configured) must still succeed exactly as
+  before, distinguishing "emulator-mode detection permits the placeholder" from "any missing key is
+  now an error everywhere".
+- All 3 EXISTING negative-security/positive/injected-failure tests re-run unchanged and still pass,
+  confirming the remediation did not regress anything GPT-PM had already approved.
+
+**Full re-verification:** `npm run build` clean. `npm run test:e2e`: 20/20 (11 existing + 6 from the
+first round + 3 new this round), including the real 15s timeout wait. `npx jest` (mocked suite):
+388/388, unaffected. `npm run test:rules`: 113/113, unaffected. Same temporary
+`firebase.json`/`jest.e2e.setup.js` port workaround as every prior local verification this gate,
+confirmed reverted (`git diff --stat` empty) before this commit.
+
+**Status, using GPT-PM's own vocabulary and its explicit suggestion for the API-key gap specifically:**
+bounded-execution dimension is now genuinely `READY_TO_ACTIVATE` (implemented, tested against a real
+induced hang, not just reasoned about). The production-Auth-connectivity dimension remains
+`IMPLEMENTED`/`TESTED`/`BLOCKED_CONFIG` -- correctly refuses to run unsafely, but is still not
+deployable against real production Auth until `FIREBASE_WEB_API_KEY` is set to the project's real
+key, which requires live GCP access this session does not have.

@@ -154,6 +154,77 @@ describe("runCanaryProbe — the real thing, end to end", () => {
     const snap = await db.doc(`_canary/${CANARY_UID}`).get();
     expect(snap.exists).toBe(false);
   });
+
+  // GPT-PM's first remediation round (2026-08-27): a hung step must not
+  // become a hung function. This is a real 15s wait, not a mocked one --
+  // the whole point is proving `runCanaryProbe()` actually returns within
+  // its own advertised budget against the real per-step timeout mechanism,
+  // not that the mechanism is merely reasoned about in a comment.
+  test(
+    "a write that never resolves times out -- the function returns within budget, not indefinitely",
+    async () => {
+      const before = Date.now();
+      const result = await runCanaryProbe({ injectNeverResolvingWrite: true });
+      const wallClockMs = Date.now() - before;
+
+      expect(result.success).toBe(false);
+      expect(result.stage).toBe("FIRESTORE_WRITE");
+      expect(result.failureClass).toBe("TIMEOUT");
+      // PROBE_TIMEOUT_MS (15s) plus real margin for the cleanup/teardown
+      // that still runs afterward -- comfortably under OVERALL_HARD_
+      // DEADLINE_MS (45s), which is the actual guarantee this test exists
+      // to prove is real and not just documented.
+      expect(wallClockMs).toBeLessThan(30_000);
+    },
+    35_000,
+  );
+
+  test("missing FIREBASE_WEB_API_KEY outside emulator mode is refused immediately, not silently substituted", async () => {
+    // Temporarily simulate "this is not an emulator run": the whole point of
+    // GPT-PM's second finding was that the OLD code could not tell the
+    // difference and would run anyway with a fake key. Restored in `finally`
+    // so every other test in this file keeps talking to the real emulators.
+    const savedFirestoreHost = process.env.FIRESTORE_EMULATOR_HOST;
+    const savedAuthHost = process.env.FIREBASE_AUTH_EMULATOR_HOST;
+    const savedWebApiKey = process.env.FIREBASE_WEB_API_KEY;
+    delete process.env.FIRESTORE_EMULATOR_HOST;
+    delete process.env.FIREBASE_AUTH_EMULATOR_HOST;
+    delete process.env.FIREBASE_WEB_API_KEY;
+    try {
+      const before = Date.now();
+      const result = await runCanaryProbe();
+      const wallClockMs = Date.now() - before;
+
+      expect(result.success).toBe(false);
+      expect(result.failureClass).toBe("CONFIG");
+      expect(result.stage).toBeUndefined(); // never even reached TOKEN_MINT
+      expect(result.cleanupAttempted).toBe(false); // nothing was ever created
+      expect(result.cleanupSucceeded).toBe(true);
+      // Refused essentially instantly -- no network call was ever attempted.
+      expect(wallClockMs).toBeLessThan(1_000);
+    } finally {
+      if (savedFirestoreHost !== undefined) {
+        process.env.FIRESTORE_EMULATOR_HOST = savedFirestoreHost;
+      }
+      if (savedAuthHost !== undefined) {
+        process.env.FIREBASE_AUTH_EMULATOR_HOST = savedAuthHost;
+      }
+      if (savedWebApiKey !== undefined) process.env.FIREBASE_WEB_API_KEY = savedWebApiKey;
+    }
+  });
+
+  test("emulator mode still works with no FIREBASE_WEB_API_KEY set -- the placeholder path is unaffected", async () => {
+    // The fix must not have broken the common case: no real key is ever
+    // configured in this test suite, and every other test in this file
+    // already proves the emulator path succeeds. This test exists only to
+    // pin that emulator-mode detection, not "any key present", is what
+    // permits the placeholder -- distinguishing it from the test above.
+    expect(process.env.FIREBASE_WEB_API_KEY).toBeUndefined();
+    expect(process.env.FIRESTORE_EMULATOR_HOST).toBeDefined();
+    const result = await runCanaryProbe();
+    expect(result.success).toBe(true);
+    expect(result.failureClass).toBeUndefined();
+  });
 });
 
 describe("runCanaryProbe — negative proofs (the real client path denies what it must)", () => {
