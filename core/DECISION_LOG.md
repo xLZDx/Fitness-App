@@ -28922,3 +28922,97 @@ Pushing both commits (`b9d1e9a`, `216c870`) next, then resuming the live activat
 create `CANARY_WEB_API_KEY`, deploy `runProductionCanary` (scoped deploy only), reconfirm its real
 Cloud Run service name, complete the FA-D1 delivery-proof cleanup, activate the four permanent
 policies and five approved metrics, final cleanup.
+
+## MVP1.G3 Step 9B, Step 2 live actions: pushed, secret created, deploy in progress -- 2026-08-27
+
+Pushed `b9d1e9a`/`216c870`/`2fdc4bb` to `origin/master` (fast-forward, `892dc4f..2fdc4bb`) --
+exactly the 3 expected commits, confirmed via `git log origin/master..HEAD` before pushing.
+
+`firebase functions:secrets:set CANARY_WEB_API_KEY --project=fitness-app-korostelev --data-file=-`,
+piped non-interactively from the scratchpad file, value never printed: `Created a new secret
+version projects/988522745882/secrets/CANARY_WEB_API_KEY/versions/1`.
+
+`firebase deploy --only functions:runProductionCanary --project=fitness-app-korostelev` launched --
+scoped to exactly this one function, per GPT-PM's binding constraint; the four AI Gateway callables
+are not named and stay undeployed. Result to be recorded once it completes.
+
+## MVP1.G3 Step 9B: deploy complete, service name and undeployed-AI-surface both live-verified -- 2026-08-27
+
+`firebase deploy --only functions:runProductionCanary`: `Successful create operation.` `Deploy
+complete!` -- one function created, matching the scoped-deploy constraint exactly.
+
+- `gcloud run services list --region=europe-west1`: **`runproductioncanary`** -- byte-for-byte match
+  with `toCloudRunServiceName("runProductionCanary")`'s output, the name `alert_definitions.ts`'s
+  `CANARY_PROBE_FUNCTION_NAME` and the alert filter already assumed. Comment updated from
+  "must be reconfirmed" to confirmed, with today's date.
+- `gcloud scheduler jobs list --location=europe-west1`: `firebase-schedule-runProductionCanary-
+  europe-west1`, schedule `every 30 minutes`, state `ENABLED` -- the real trigger exists and is
+  live, matching `canary_schedule.ts`'s declared cadence.
+- `gcloud functions list`: 15 functions total (14 pre-existing + `runProductionCanary`), zero
+  matches for any AI Gateway callable name -- confirms `aiCoachAdvice`/`aiEquipmentRecognition`/
+  `aiMachineDescription`/`aiExerciseGeneration` remain undeployed, exactly as GPT-PM's binding
+  constraint required.
+
+Not yet done: a real invocation/production proof of the deployed function (Step 4), the FA-D1
+delivery-proof cleanup (Step 3, still waiting on the operator's own email check), the four permanent
+alert policies, the five approved live metrics, final cleanup.
+
+## CRITICAL, out-of-scope finding: live Firestore rules are 22 days stale, missing real protections -- 2026-08-27
+
+Step 4's own real-production-proof step (`gcloud scheduler jobs run
+firebase-schedule-runProductionCanary-europe-west1`) is what surfaced this -- the canary's own
+purpose (catch a real rules regression) working exactly as designed, on its very first live run.
+
+**What happened:** the manual trigger returned HTTP 500. Cloud Run logs show the real cause:
+`failureClass: "RULES_DENIED"`, stage `FIRESTORE_WRITE`, underlying gRPC `PERMISSION_DENIED:
+Missing or insufficient permissions.` on the write to `_canary/{CANARY_UID}`. The
+`SCHEDULE_HANDLER`/captured-failure paths both worked exactly as built -- this is the monitor
+correctly reporting a real failure, not a bug in this session's own code.
+
+**Root cause, verified via the live Firebase Security Rules REST API
+(`firebaserules.googleapis.com`, `X-Goog-User-Project` header)**: the ACTIVE production Firestore
+ruleset (`projects/fitness-app-korostelev/rulesets/298949ea-bc19-4f70-a72c-c7a343510ebf`) was
+created **2026-08-05T12:32:12Z** -- before Step 9A's `firestore.rules` changes (commit `6e91b10`,
+the `_canary/` block and `isCanaryToken()`) even existed, and before a long list of OTHER approved,
+tested, "closed" gates' own rules changes. **The repo's `firestore.rules` was never actually
+deployed to production after those gates closed -- only ever proven against the local emulator.**
+
+**This is materially larger than "the canary can't run."** Diffing the live ruleset against the
+repo's current `firestore.rules` line by line, the live rules are missing:
+- The entire `/_canary/{canaryUid}` block and the `isCanaryToken()` exclusion (expected -- this is
+  what broke the canary).
+- **The `usage`/`receipts`/`profile`/`recognised_models`/`equipment_identity_sessions`/
+  `equipment_identity_telemetry` carve-outs from the `/users/{uid}/{coll}/{document=**}` wildcard.**
+  The live wildcard only excludes `subscription`. This means, IN PRODUCTION, RIGHT NOW, a client can
+  still directly write to all six of those collections through the blanket per-user wildcard grant:
+  - `usage` -- defeats `abuse_guard.ts`'s transactional daily-quota enforcement (F005); a client can
+    reset or inflate its own quota counter directly.
+  - `receipts` -- a client can edit or delete `generateAnnualReceipt`'s Stripe-sourced figures after
+    the fact (F006), the exact tampering that function's own design doc calls out as unacceptable
+    for "the one document a user might hand to a tax authority."
+  - **`profile` -- the live rules have NO `healthIsStripped()` enforcement at all (N03). A client
+    can currently write real, unstripped health data (conditions, allergies, medications, injuries,
+    blood pressure, smoking/alcohol) directly to Firestore.** This directly contradicts
+    `public/privacy.html`'s published claim that "health answers stay on your phone" -- the
+    server-side backstop built specifically to make that promise structurally true, independent of
+    client behavior, has never actually been live.
+  - `recognised_models`/`equipment_identity_sessions`/`equipment_identity_telemetry` -- a client can
+    forge or erase server-computed equipment-identity state (P1.G1 T2/T4).
+- `donor_wall` read (functional bug, not a security gap -- default-deny broke a public feature
+  rather than exposing anything).
+- Several collections that are ENTIRELY ABSENT from the live rules and therefore currently
+  default-denied (safe by Firestore's own deny-by-default model, not a live gap, but also not
+  explicitly documented in what's actually running): `equipment_reports`, `debug_sessions`,
+  `coach_bookings`, `coach_listings`, and the whole `equipment_brands`/`equipment_product_lines`/
+  `equipment_models`/`equipment_model_setup_specs`/`equipment_external_mappings`/`equipment_sources`/
+  `equipment_assets`/`equipment_catalog_publish_jobs`/`equipment_catalog_versions`/
+  `equipment_catalog_active` P1.G1 catalog family.
+
+**This is a real, live gap in the privacy-policy-backed health-data protection, not a hypothetical
+one, and it predates this session's own work by weeks.** Stopping here rather than deploying
+`firestore.rules` unilaterally: this is materially outside MVP1.G3 Step 9B's own scope, touches
+production security/privacy for every live user, and a rules deploy this size needs verification
+this session has not yet done (confirming no currently-shipped mobile client version relies on
+write patterns the new, stricter rules would now reject) before it should go live. Reporting
+directly to the operator now, per the severity, rather than treating this as a routine GPT-PM
+routing question or quietly proceeding under the existing Step 9B GO, which never covered this.

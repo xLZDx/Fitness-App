@@ -60,11 +60,10 @@ const EXPORT_ACCOUNT_FUNCTION_NAME = "exportAccountData";
  * MVP1.G3 Step 9B. `runProductionCanary` (`canary_schedule.ts`) is a
  * scheduled function, not a callable, but it produces the same Gen2
  * `resource.labels.service_name` shape as every other function here --
- * `toCloudRunServiceName` derives `runproductioncanary`. Written before the
- * function was deployed: this name must be reconfirmed against the real
- * `gcloud run services list` output once deployed (Step 9B's own preflight
- * discipline, `core/DECISION_LOG.md`), the same live check the other three
- * names in this file already received.
+ * `toCloudRunServiceName` derives `runproductioncanary`. Confirmed against
+ * the real deployment, 2026-08-27: `gcloud run services list` returns
+ * exactly `runproductioncanary` for this function -- the same live check
+ * the other three names in this file already received.
  */
 const CANARY_PROBE_FUNCTION_NAME = "runProductionCanary";
 
