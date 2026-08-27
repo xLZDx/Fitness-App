@@ -160,20 +160,22 @@ const OVERALL_HARD_DEADLINE_MS = 45_000;
  * GPT-PM's second Step 9A remediation finding: the first version fell back
  * to the emulator placeholder (`?? "demo-emulator-key"`) UNCONDITIONALLY,
  * including outside emulator mode — meaning a real deployment that forgot to
- * set `FIREBASE_WEB_API_KEY` would not fail at startup, it would silently
+ * set `CANARY_WEB_API_KEY` would not fail at startup, it would silently
  * run with a fake key and report what looks like an ordinary Auth failure,
  * hiding a configuration mistake behind a misleading failure class. Fixed:
  * the placeholder is now permitted ONLY when emulator env vars are actually
  * present; otherwise, a missing key is refused as an explicit, immediate
  * `CONFIG` failure — see the call site in `runCanaryProbe` below.
  *
- * NOT YET RESOLVED, stated rather than silently guessed: this sandboxed
- * session has no live GCP credentials to fetch or verify this project's real
- * Web API key against (same limitation `ai_gateway.ts` already documents for
- * its own Vertex location default). `FIREBASE_WEB_API_KEY` must be set to
- * that real key before this probe can ever run against production Auth —
- * until it is, this probe correctly refuses to run there at all rather than
- * running with a value that would not work.
+ * RESOLVED in Step 9B (2026-08-27): bound as a real Secret Manager secret
+ * via `canary_schedule.ts`'s `defineSecret`, not `FIREBASE_WEB_API_KEY` as
+ * originally planned in Step 9A — Firebase's own secret-name validation
+ * rejects any secret starting with `FIREBASE_`, `X_GOOGLE_`, or `EXT_`
+ * (reserved prefixes, discovered live via `firebase functions:secrets:set`
+ * refusing to create it), so the env var this function reads was renamed to
+ * `CANARY_WEB_API_KEY` at the same time. Purely a name change — the
+ * resolution logic and every other behavior below is unchanged from what
+ * Step 9A's own review already approved.
  */
 function resolveFirebaseWebApiKey():
   | { ok: true; apiKey: string }
@@ -204,13 +206,13 @@ function resolveFirebaseWebApiKey():
   }
   const bothEmulatorHostsSet = firestoreEmulator && authEmulator;
 
-  const configured = process.env.FIREBASE_WEB_API_KEY;
+  const configured = process.env.CANARY_WEB_API_KEY;
   if (configured) return { ok: true, apiKey: configured };
   if (bothEmulatorHostsSet) return { ok: true, apiKey: "demo-emulator-key" };
   return {
     ok: false,
     message:
-      "FIREBASE_WEB_API_KEY is not set and this is not an emulator run " +
+      "CANARY_WEB_API_KEY is not set and this is not an emulator run " +
       "(neither FIRESTORE_EMULATOR_HOST nor FIREBASE_AUTH_EMULATOR_HOST is set) " +
       "-- refusing to silently substitute an emulator placeholder against what looks like production",
   };

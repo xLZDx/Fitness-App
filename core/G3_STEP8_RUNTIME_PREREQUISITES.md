@@ -572,6 +572,15 @@ configured anywhere, since this sandboxed session has no live GCP credentials to
 **Not built:** the Cloud Scheduler job, any `onSchedule` deployment, or any alert/notification
 channel -- Step 9B, waiting on `FA-D1`, per GPT-PM's explicit scope split.
 
+**Update, Step 9B activation, 2026-08-27:** both stated gaps above are resolved. Live GCP access
+was confirmed to exist (this session's earlier "no live GCP credentials" claim was an unverified
+assumption, corrected -- see `core/DECISION_LOG.md`'s "CORRECTION" entry), `FA-D1` was answered by
+the operator, and the Cloud Scheduler job/`onSchedule` deployment/notification channel are being
+built under a Rosetta plan. The env var itself is no longer `FIREBASE_WEB_API_KEY` -- renamed to
+`CANARY_WEB_API_KEY` after Firebase's Secret Manager naming rules rejected the `FIREBASE_` prefix;
+see `functions/src/monitoring/README.md`'s "Step 9B: production activation" section for the full
+detail.
+
 **9A final status, after 2 remediation rounds (full detail in `core/DECISION_LOG.md`): FINAL-APPROVED,
 CLOSED.** GPT-PM's independent adversarial review of the initial closure found 2 real MAJORs --
 unbounded cleanup/teardown, and an API-key placeholder that fell open unconditionally including

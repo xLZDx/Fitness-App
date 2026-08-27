@@ -64,7 +64,7 @@ const db = admin.firestore();
 async function signInAs(uid: string, claims: Record<string, unknown>) {
   const app: FirebaseApp = initializeApp(
     // Any non-empty apiKey satisfies the SDK against the emulator -- see
-    // canary_probe.ts's own FIREBASE_WEB_API_KEY comment for why this is
+    // canary_probe.ts's own CANARY_WEB_API_KEY comment for why this is
     // required at all and why it must NOT be reused as-is against production.
     { apiKey: "demo-emulator-key", projectId: process.env.GCLOUD_PROJECT },
     `test-client-${uid}-${Math.random().toString(36).slice(2)}`,
@@ -179,17 +179,17 @@ describe("runCanaryProbe — the real thing, end to end", () => {
     35_000,
   );
 
-  test("missing FIREBASE_WEB_API_KEY outside emulator mode is refused immediately, not silently substituted", async () => {
+  test("missing CANARY_WEB_API_KEY outside emulator mode is refused immediately, not silently substituted", async () => {
     // Temporarily simulate "this is not an emulator run": the whole point of
     // GPT-PM's second finding was that the OLD code could not tell the
     // difference and would run anyway with a fake key. Restored in `finally`
     // so every other test in this file keeps talking to the real emulators.
     const savedFirestoreHost = process.env.FIRESTORE_EMULATOR_HOST;
     const savedAuthHost = process.env.FIREBASE_AUTH_EMULATOR_HOST;
-    const savedWebApiKey = process.env.FIREBASE_WEB_API_KEY;
+    const savedWebApiKey = process.env.CANARY_WEB_API_KEY;
     delete process.env.FIRESTORE_EMULATOR_HOST;
     delete process.env.FIREBASE_AUTH_EMULATOR_HOST;
-    delete process.env.FIREBASE_WEB_API_KEY;
+    delete process.env.CANARY_WEB_API_KEY;
     try {
       const before = Date.now();
       const result = await runCanaryProbe();
@@ -209,17 +209,17 @@ describe("runCanaryProbe — the real thing, end to end", () => {
       if (savedAuthHost !== undefined) {
         process.env.FIREBASE_AUTH_EMULATOR_HOST = savedAuthHost;
       }
-      if (savedWebApiKey !== undefined) process.env.FIREBASE_WEB_API_KEY = savedWebApiKey;
+      if (savedWebApiKey !== undefined) process.env.CANARY_WEB_API_KEY = savedWebApiKey;
     }
   });
 
-  test("emulator mode still works with no FIREBASE_WEB_API_KEY set -- the placeholder path is unaffected", async () => {
+  test("emulator mode still works with no CANARY_WEB_API_KEY set -- the placeholder path is unaffected", async () => {
     // The fix must not have broken the common case: no real key is ever
     // configured in this test suite, and every other test in this file
     // already proves the emulator path succeeds. This test exists only to
     // pin that emulator-mode detection, not "any key present", is what
     // permits the placeholder -- distinguishing it from the test above.
-    expect(process.env.FIREBASE_WEB_API_KEY).toBeUndefined();
+    expect(process.env.CANARY_WEB_API_KEY).toBeUndefined();
     expect(process.env.FIRESTORE_EMULATOR_HOST).toBeDefined();
     const result = await runCanaryProbe();
     expect(result.success).toBe(true);
@@ -234,9 +234,9 @@ describe("runCanaryProbe — the real thing, end to end", () => {
   // refused, not just the "neither set" case already covered above.
   test("only FIRESTORE_EMULATOR_HOST set (Auth would be real) is refused as CONFIG", async () => {
     const savedAuthHost = process.env.FIREBASE_AUTH_EMULATOR_HOST;
-    const savedWebApiKey = process.env.FIREBASE_WEB_API_KEY;
+    const savedWebApiKey = process.env.CANARY_WEB_API_KEY;
     delete process.env.FIREBASE_AUTH_EMULATOR_HOST;
-    delete process.env.FIREBASE_WEB_API_KEY;
+    delete process.env.CANARY_WEB_API_KEY;
     try {
       expect(process.env.FIRESTORE_EMULATOR_HOST).toBeDefined();
       expect(process.env.FIREBASE_AUTH_EMULATOR_HOST).toBeUndefined();
@@ -251,15 +251,15 @@ describe("runCanaryProbe — the real thing, end to end", () => {
       if (savedAuthHost !== undefined) {
         process.env.FIREBASE_AUTH_EMULATOR_HOST = savedAuthHost;
       }
-      if (savedWebApiKey !== undefined) process.env.FIREBASE_WEB_API_KEY = savedWebApiKey;
+      if (savedWebApiKey !== undefined) process.env.CANARY_WEB_API_KEY = savedWebApiKey;
     }
   });
 
   test("only FIREBASE_AUTH_EMULATOR_HOST set (Firestore would be real) is refused as CONFIG", async () => {
     const savedFirestoreHost = process.env.FIRESTORE_EMULATOR_HOST;
-    const savedWebApiKey = process.env.FIREBASE_WEB_API_KEY;
+    const savedWebApiKey = process.env.CANARY_WEB_API_KEY;
     delete process.env.FIRESTORE_EMULATOR_HOST;
-    delete process.env.FIREBASE_WEB_API_KEY;
+    delete process.env.CANARY_WEB_API_KEY;
     try {
       expect(process.env.FIRESTORE_EMULATOR_HOST).toBeUndefined();
       expect(process.env.FIREBASE_AUTH_EMULATOR_HOST).toBeDefined();
@@ -274,7 +274,7 @@ describe("runCanaryProbe — the real thing, end to end", () => {
       if (savedFirestoreHost !== undefined) {
         process.env.FIRESTORE_EMULATOR_HOST = savedFirestoreHost;
       }
-      if (savedWebApiKey !== undefined) process.env.FIREBASE_WEB_API_KEY = savedWebApiKey;
+      if (savedWebApiKey !== undefined) process.env.CANARY_WEB_API_KEY = savedWebApiKey;
     }
   });
 });

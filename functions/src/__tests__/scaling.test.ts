@@ -155,15 +155,23 @@ describe("scaling ceilings", () => {
     expect(RARE.maxInstances).toBeLessThan(INTERACTIVE.maxInstances);
   });
 
-  test("concurrency is left at the platform default on purpose, except the AI surface", () => {
+  test("concurrency is left at the platform default on purpose, except the AI surface and the canary", () => {
     // The default is 80 (options.d.ts: "80 when CPU >= 1", and CPU defaults
     // to 1 at <= 2GB RAM). Setting it here would restate a default and invite
     // someone to lower it, which is the change that would actually hurt --
     // for every profile except AI_METERED, whose ceiling is about paid
-    // fan-out rather than instance-pool starvation. See that profile's own
-    // header for why it is the deliberate exception.
+    // fan-out rather than instance-pool starvation (see that profile's own
+    // header), and runProductionCanary, which needs single-flight execution
+    // against its own fixed document (see the next test).
+    const explicitConcurrency = [
+      "aiCoachAdvice",
+      "aiEquipmentRecognition",
+      "aiMachineDescription",
+      "aiExerciseGeneration",
+      "runProductionCanary",
+    ];
     for (const [name, fn] of Object.entries(ENTRYPOINTS)) {
-      if (name === "aiCoachAdvice" || name === "aiEquipmentRecognition" || name === "aiMachineDescription" || name === "aiExerciseGeneration") continue;
+      if (explicitConcurrency.includes(name)) continue;
       expect(endpointOf(fn).concurrency).not.toEqual(expect.any(Number));
     }
   });
@@ -177,6 +185,19 @@ describe("scaling ceilings", () => {
     // edit that quietly raises it back toward the default fails here first.
     expect(AI_METERED.concurrency).toBe(10);
     expect(AI_METERED.maxInstances * Number(AI_METERED.concurrency)).toBeLessThan(200);
+  });
+
+  test("the production canary is genuinely single-flight: maxInstances 1 AND concurrency 1", () => {
+    // GPT-PM's review of the first version (b9d1e9a) found maxInstances: 1
+    // alone does not prevent two overlapping invocations from racing each
+    // other inside that one instance -- the platform default concurrency
+    // (80) still allows up to 80 concurrent requests into it. Both
+    // dimensions are pinned here so a future edit that drops either one
+    // fails this test first, before it ever reaches production and races
+    // against the fixed _canary/{CANARY_UID} document.
+    const ep = endpointOf(index.runProductionCanary);
+    expect(ep.maxInstances).toBe(1);
+    expect(ep.concurrency).toBe(1);
   });
 });
 

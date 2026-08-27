@@ -115,12 +115,38 @@ export const EXPORT_ACCOUNT_FAILURE_FILTER: LogMatchFilterSpec = {
  * same way any other operational failure in this file is: by matching the
  * structured log line, not by inferring failure from a missing success
  * signal. GPT-PM's Step 9B GO required this as a 4th policy, distinct from
- * the three business-failure alerts: this one alerts on the MONITOR itself
- * going quiet or erroring, not on a business outcome.
+ * the three business-failure alerts: it alerts on the MONITOR itself
+ * failing, not just on a business outcome.
+ *
+ * SCOPE, stated precisely after GPT-PM's round-2 review corrected an
+ * overclaim in this comment's own earlier wording ("going quiet or
+ * erroring"): this policy fires only when `runProductionCanary` actually
+ * EXECUTES and either its probe reports failure or its handler's own
+ * SCHEDULE_HANDLER backstop catches an unexpected rejection
+ * (`canary_schedule.ts`). It CANNOT detect the Scheduler job itself being
+ * disabled/deleted, a Scheduler-to-Cloud-Run auth/delivery failure, or any
+ * other case where the function never runs at all -- no structured log
+ * exists to match if the function never executes. Genuine Scheduler-
+ * execution-health monitoring (e.g. Cloud Scheduler's own AttemptFinished
+ * failure signal) is a materially different, larger scope than this Step
+ * 9B GO asked for and is not built here -- a known, stated gap, not a
+ * silently assumed one.
+ *
+ * Deliberately does NOT include `PLATFORM_UNHANDLED_ERROR`, unlike the three
+ * business-failure filters above. GPT-PM's review of the first version
+ * (`b9d1e9a`) found that message is specific to the onCall platform wrapper
+ * (`https.js`) -- `runProductionCanary` is an `onSchedule` function, whose
+ * own wrapper (`firebase-functions/lib/v2/providers/scheduler.js:71-73`)
+ * catches an unexpected rejection with `logger.error(err.message)`, never
+ * the literal string `"Unhandled error"`. Confirmed by reading that source
+ * directly. The equivalent backstop for THIS function is
+ * `canary_schedule.ts`'s own try/catch around `runCanaryProbe()`, which
+ * emits `CANARY_PROBE_FAILED_EVENT` itself on an unexpected rejection --
+ * that path is already covered by this filter's one message.
  */
 export const CANARY_PROBE_FAILURE_FILTER: LogMatchFilterSpec = {
   exportName: CANARY_PROBE_FUNCTION_NAME,
-  messageEquals: [CANARY_PROBE_FAILED_EVENT, PLATFORM_UNHANDLED_ERROR],
+  messageEquals: [CANARY_PROBE_FAILED_EVENT],
 };
 
 export function stripeReconciliationAlertFilterString(): string {

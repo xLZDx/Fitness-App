@@ -187,19 +187,27 @@ describe("exportAccountData operational-failure alert filter", () => {
 });
 
 describe("production canary probe-failure alert filter", () => {
-  it("matches the canary's own thrown-failure log and the platform backstop", () => {
+  it("matches the canary's own thrown-failure log", () => {
     expect(
       matchesLogMatchFilter(
         CANARY_PROBE_FAILURE_FILTER,
         entry("runproductioncanary", signals.CANARY_PROBE_FAILED_EVENT),
       ),
     ).toBe(true);
-    expect(
-      matchesLogMatchFilter(
-        CANARY_PROBE_FAILURE_FILTER,
-        entry("runproductioncanary", signals.PLATFORM_UNHANDLED_ERROR),
-      ),
-    ).toBe(true);
+  });
+
+  it("does not match PLATFORM_UNHANDLED_ERROR -- onSchedule's own wrapper never logs it", () => {
+    // Unlike deleteAccount/exportAccountData (onCall functions, where
+    // https.js's platform wrapper genuinely does log this exact message),
+    // runProductionCanary is onSchedule -- its wrapper
+    // (scheduler.js:71-73) logs only `err.message`, never the literal
+    // string "Unhandled error". Including it here would be a filter clause
+    // that can never match anything real. GPT-PM's review of b9d1e9a caught
+    // this; canary_schedule.ts's own try/catch is the real backstop for
+    // this function, and it emits CANARY_PROBE_FAILED_EVENT itself.
+    expect(CANARY_PROBE_FAILURE_FILTER.messageEquals).not.toContain(
+      signals.PLATFORM_UNHANDLED_ERROR,
+    );
   });
 
   it("does not match an identical-shaped failure from a different service", () => {

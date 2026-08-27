@@ -240,21 +240,41 @@ incident, not silently stop proving anything.
   (built and approved in Step 9A, deliberately left without a trigger --
   see that file's own header) to a real `onSchedule` Cloud Function,
   `runProductionCanary`, every 30 minutes, `europe-west1`, bound to a
-  `FIREBASE_WEB_API_KEY` secret via `defineSecret` -- the same pattern
-  `index.ts` already uses for `STRIPE_SECRET_KEY`. `canary_probe.ts` itself
-  needed no change: `resolveFirebaseWebApiKey()` already reads
-  `process.env.FIREBASE_WEB_API_KEY`, the exact name Cloud Functions v2
-  injects a secret under at runtime.
+  `CANARY_WEB_API_KEY` secret via `defineSecret` -- the same pattern
+  `index.ts` already uses for `STRIPE_SECRET_KEY`. **Not** `FIREBASE_WEB_
+  API_KEY`, Step 9A's original working name: discovered live during Step 9B
+  that Firebase's secret-name validation rejects `FIREBASE_`/`X_GOOGLE_`/
+  `EXT_` as reserved prefixes, so both the secret and the env var
+  `resolveFirebaseWebApiKey()` reads (`canary_probe.ts`) were renamed to
+  `CANARY_WEB_API_KEY` in the same change -- a mechanical rename, no logic
+  change, also applied to `__e2e__/canary_probe.e2e.test.ts`.
 - A probe failure is thrown (not just logged), so it also surfaces as a
   genuine Cloud Run/Functions execution failure, on top of the structured
-  `CANARY_PROBE_FAILED_EVENT` log line the new alert filter keys on.
-- **`CANARY_PROBE_ALERT_POLICY`** (`alert_definitions.ts`) follows the exact
-  same `LogMatchFilterSpec`/`AlertPolicySpec` shape as the three
-  business-failure policies, including the `PLATFORM_UNHANDLED_ERROR`
-  backstop for anything the scheduled handler itself doesn't explicitly
-  catch. `notificationChannels: []` until the FA-D1 channel is attached as
-  a live, separate step (Step 3 of the Rosetta plan), same posture as the
-  other three policies before this activation.
+  `CANARY_PROBE_FAILED_EVENT` log line the new alert filter keys on. An
+  unexpected REJECTION from `runCanaryProbe()` itself (a bug, not a
+  captured failure -- that function is documented to never throw) is caught
+  by the handler's own `SCHEDULE_HANDLER` backstop, which emits the same
+  event before re-throwing -- covered by a direct regression test
+  (`__tests__/canary_schedule.test.ts`, added in GPT-PM's round-2 review;
+  round 1 had the fix but no test proving it).
+- **`CANARY_PROBE_ALERT_POLICY`** (`alert_definitions.ts`) follows the same
+  `LogMatchFilterSpec`/`AlertPolicySpec` shape as the three business-failure
+  policies, matching only `CANARY_PROBE_FAILED_EVENT` -- deliberately NOT
+  `PLATFORM_UNHANDLED_ERROR`, unlike those three: that message is specific
+  to the onCall platform wrapper (`https.js`), and `runProductionCanary` is
+  `onSchedule`, whose own wrapper never emits it (GPT-PM's round-1 finding,
+  confirmed by reading both wrapper sources). `notificationChannels: []`
+  until the FA-D1 channel is attached as a live, separate step (Step 3 of
+  the Rosetta plan), same posture as the other three policies before this
+  activation.
+- **Scope limit, stated after GPT-PM's round-2 review corrected an
+  overclaim**: this alert fires only when `runProductionCanary` actually
+  EXECUTES and either the probe reports failure or the handler's own
+  backstop catches an unexpected rejection. It cannot detect the Scheduler
+  job being disabled/deleted or a Scheduler-to-Cloud-Run delivery failure --
+  no function log exists to match if the function never runs at all. Real
+  Scheduler-execution-health monitoring is a larger, separate scope, not
+  built here.
 - **Registered in `__tests__/scaling.test.ts`'s `ENTRYPOINTS`**, the same
   ceiling guard every other deployed function goes through, even though it
   is a scheduled function rather than a callable -- it still produces a v2
