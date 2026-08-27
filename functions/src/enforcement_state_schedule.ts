@@ -71,11 +71,17 @@ export const runEnforcementStateCheck = onSchedule(
         `enforcement state check ${result.status}: ${unavailableSections.join(", ")}`,
       );
     }
+    // `result.sections` is safe to log in full: every section's `data` was
+    // individually constructed to be safe (Identity Toolkit's own strict
+    // allowlist in particular never carries the raw response through -- see
+    // `enforcement_state.ts`'s module header). GPT-PM's remediation-round
+    // finding: logging only counts here proved the read succeeded but threw
+    // away the one thing a human/alert would actually need to act on --
+    // which release, which functions, which App Check services are (not)
+    // enforced.
     logger.info("enforcement_state_schedule: check succeeded", {
       generatedAt: result.generatedAt,
-      functionsCount: result.sections.functions.data?.count,
-      firestoreRulesCount: result.sections.firestoreRules.data?.count,
-      appCheckServicesCount: result.sections.appCheck.data?.count,
+      sections: result.sections,
     });
   },
 );

@@ -312,6 +312,9 @@ describe("runEnforcementStateProbe — section extraction shape", () => {
   });
 
   test("app check section derives anyEnforcementOff from the returned services", async () => {
+    // "UNENFORCED" is the real API value (confirmed live during the round-2
+    // remediation) -- round 1's code compared against "OFF", which no real
+    // response ever returns, so this is also the regression test for that.
     const fetchJson = jest
       .fn()
       .mockResolvedValueOnce(okJson(oneFunction))
@@ -319,8 +322,8 @@ describe("runEnforcementStateProbe — section extraction shape", () => {
       .mockResolvedValueOnce(
         okJson({
           services: [
-            { name: "projects/p/services/x", enforcementMode: "ENFORCED" },
-            { name: "projects/p/services/y", enforcementMode: "OFF" },
+            { name: "projects/p/services/firestore.googleapis.com", enforcementMode: "ENFORCED" },
+            { name: "projects/p/services/y", enforcementMode: "UNENFORCED" },
           ],
         }),
       )
@@ -330,6 +333,182 @@ describe("runEnforcementStateProbe — section extraction shape", () => {
       fetchJson,
     });
     expect(result.sections.appCheck.data?.anyEnforcementOff).toBe(true);
+    // firestore.googleapis.com is explicitly ENFORCED here, so it must not
+    // be reported as an unenforced intended service -- isolates this
+    // assertion from the "y" service, which is the thing actually driving
+    // anyEnforcementOff in this fixture.
+    expect(result.sections.appCheck.data?.unenforcedIntendedServices).toEqual([]);
+  });
+
+  test("an App Check services list that never mentions firestore.googleapis.com "
+    + "flags it as an unenforced intended service (GPT-PM round-2 remediation)", async () => {
+    const fetchJson = jest
+      .fn()
+      .mockResolvedValueOnce(okJson(oneFunction))
+      .mockResolvedValueOnce(okJson(oneRelease))
+      .mockResolvedValueOnce(okJson(emptyServices))
+      .mockResolvedValueOnce(okJson(validIdentityConfig));
+    const result = await runEnforcementStateProbe({
+      getAccessToken: async () => "fake-token",
+      fetchJson,
+    });
+    // Still OK -- the read itself succeeded and the (empty) data is
+    // structurally valid; see this file's own module header for why status
+    // does not mean "the observed state is the desired one."
+    expect(result.sections.appCheck.status).toBe("OK");
+    expect(result.sections.appCheck.data?.unenforcedIntendedServices).toEqual([
+      "firestore.googleapis.com",
+    ]);
+    expect(result.sections.appCheck.data?.anyEnforcementOff).toBe(true);
+  });
+
+  test("a function row missing its required state field is UNAVAILABLE, not \"?\" (GPT-PM round-2)", async () => {
+    const fetchJson = jest
+      .fn()
+      .mockResolvedValueOnce(
+        okJson({ functions: [{ name: "projects/p/locations/x/functions/a" }] }), // no state
+      )
+      .mockResolvedValueOnce(okJson(oneRelease))
+      .mockResolvedValueOnce(okJson(emptyServices))
+      .mockResolvedValueOnce(okJson(validIdentityConfig));
+    const result = await runEnforcementStateProbe({
+      getAccessToken: async () => "fake-token",
+      fetchJson,
+    });
+    expect(result.sections.functions.status).toBe("UNAVAILABLE");
+    expect(result.sections.functions.error).toMatch(/name\/state/);
+  });
+
+  test("a rule release row missing its required rulesetName field is UNAVAILABLE (GPT-PM round-2)", async () => {
+    const fetchJson = jest
+      .fn()
+      .mockResolvedValueOnce(okJson(oneFunction))
+      .mockResolvedValueOnce(
+        okJson({ releases: [{ name: "projects/p/releases/cloud.firestore" }] }), // no rulesetName
+      )
+      .mockResolvedValueOnce(okJson(emptyServices))
+      .mockResolvedValueOnce(okJson(validIdentityConfig));
+    const result = await runEnforcementStateProbe({
+      getAccessToken: async () => "fake-token",
+      fetchJson,
+    });
+    expect(result.sections.firestoreRules.status).toBe("UNAVAILABLE");
+    expect(result.sections.firestoreRules.error).toMatch(/name\/rulesetName/);
+  });
+
+  test("a non-empty releases list with no cloud.firestore release is UNAVAILABLE (GPT-PM round-2)", async () => {
+    const fetchJson = jest
+      .fn()
+      .mockResolvedValueOnce(okJson(oneFunction))
+      .mockResolvedValueOnce(
+        okJson({
+          releases: [
+            {
+              name: "projects/p/releases/some.other.release",
+              rulesetName: "projects/p/rulesets/xyz",
+              updateTime: "2026-08-01T00:00:00Z",
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(okJson(emptyServices))
+      .mockResolvedValueOnce(okJson(validIdentityConfig));
+    const result = await runEnforcementStateProbe({
+      getAccessToken: async () => "fake-token",
+      fetchJson,
+    });
+    expect(result.sections.firestoreRules.status).toBe("UNAVAILABLE");
+    expect(result.sections.firestoreRules.error).toMatch(/cloud\.firestore/);
+    // Partial evidence is retained, not thrown away.
+    expect(result.sections.firestoreRules.data?.count).toBe(1);
+  });
+
+  test("an App Check service row missing its required enforcementMode field is UNAVAILABLE (GPT-PM round-2)", async () => {
+    const fetchJson = jest
+      .fn()
+      .mockResolvedValueOnce(okJson(oneFunction))
+      .mockResolvedValueOnce(okJson(oneRelease))
+      .mockResolvedValueOnce(okJson({ services: [{ name: "projects/p/services/x" }] })) // no enforcementMode
+      .mockResolvedValueOnce(okJson(validIdentityConfig));
+    const result = await runEnforcementStateProbe({
+      getAccessToken: async () => "fake-token",
+      fetchJson,
+    });
+    expect(result.sections.appCheck.status).toBe("UNAVAILABLE");
+    expect(result.sections.appCheck.error).toMatch(/name\/enforcementMode/);
+  });
+
+  test("a non-empty unreachable[] on the Functions list makes the section UNAVAILABLE, "
+    + "retaining what was read (GPT-PM round-2)", async () => {
+    const fetchJson = jest
+      .fn()
+      .mockResolvedValueOnce(
+        okJson({ ...oneFunction, unreachable: ["projects/p/locations/us-central1"] }),
+      )
+      .mockResolvedValueOnce(okJson(oneRelease))
+      .mockResolvedValueOnce(okJson(emptyServices))
+      .mockResolvedValueOnce(okJson(validIdentityConfig));
+    const result = await runEnforcementStateProbe({
+      getAccessToken: async () => "fake-token",
+      fetchJson,
+    });
+    expect(result.sections.functions.status).toBe("UNAVAILABLE");
+    expect(result.sections.functions.error).toMatch(/unreachable/);
+    expect(result.sections.functions.error).toContain("us-central1");
+    expect(result.sections.functions.data?.count).toBe(1);
+  });
+
+  test("an already-exhausted probe deadline fails every section closed before any request (GPT-PM round-2)", async () => {
+    // First call (computing `deadlineAt` in runEnforcementStateProbe) sees 0;
+    // every call after that -- every section's own deadline check -- sees a
+    // value already past the deadline, regardless of call order.
+    let calls = 0;
+    const now = () => (calls++ === 0 ? 0 : 100_000);
+    const fetchJson = jest.fn();
+    const result = await runEnforcementStateProbe({
+      getAccessToken: async () => "fake-token",
+      fetchJson,
+      now,
+    });
+    expect(result.status).toBe("FAILED");
+    for (const section of Object.values(result.sections)) {
+      expect(section.status).toBe("UNAVAILABLE");
+      expect(section.error).toMatch(/probe deadline exceeded/);
+    }
+    expect(fetchJson).not.toHaveBeenCalled();
+  });
+
+  test("a probe deadline that expires between pages stops issuing further page requests (GPT-PM round-2)", async () => {
+    let expired = false;
+    const now = () => (expired ? 999_999_999 : 0);
+    const page1 = {
+      functions: [{ name: "projects/p/locations/x/functions/a", state: "ACTIVE" }],
+      nextPageToken: "page-2-token",
+    };
+    const fetchJson = jest.fn(async (url: string) => {
+      if (url.includes("cloudfunctions.googleapis.com")) {
+        if (url.includes("pageToken=page-2-token")) {
+          throw new Error("should never reach page 2 -- the deadline must stop pagination first");
+        }
+        expired = true; // simulate the clock crossing the deadline while page 1 was "in flight"
+        return okJson(page1);
+      }
+      if (url.includes("firebaserules.googleapis.com")) return okJson(oneRelease);
+      if (url.includes("firebaseappcheck.googleapis.com")) return okJson(emptyServices);
+      if (url.includes("identitytoolkit.googleapis.com")) return okJson(validIdentityConfig);
+      throw new Error(`unexpected URL in test: ${url}`);
+    });
+    const result = await runEnforcementStateProbe({
+      getAccessToken: async () => "fake-token",
+      fetchJson,
+      now,
+    });
+    expect(result.sections.functions.status).toBe("UNAVAILABLE");
+    expect(result.sections.functions.error).toMatch(/probe deadline exceeded/);
+    const functionsCalls = fetchJson.mock.calls.filter(([url]) =>
+      String(url).includes("cloudfunctions.googleapis.com"),
+    );
+    expect(functionsCalls.length).toBe(1);
   });
 
   test("firestore rules and identity toolkit calls carry the X-Goog-User-Project header", async () => {

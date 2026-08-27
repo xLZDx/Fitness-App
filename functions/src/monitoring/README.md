@@ -409,3 +409,60 @@ other test in this file relies on safely because each section made exactly one c
 once the Functions section could make two. `npm run build` was clean but `npx jest` caught it
 immediately (count 1 instead of 2). Rewritten to dispatch on the request URL instead of call order,
 which is stable regardless of interleaving; full suite reconfirmed green (489/489) afterward.
+
+### Step 10A remediation round 2 (2026-08-27, same day)
+
+GPT-PM re-reviewed the round-1 commit and found the same 4 original findings still open in a
+deeper form -- not new scope, the acceptance criterion for each wasn't actually met yet
+(`core/DECISION_LOG.md` has the full exchange):
+
+1. **App Check enforcement checking was silently dead on arrival.** Round 1's `anyEnforcementOff`
+   compared `enforcementMode` against the literal `"OFF"` -- a live probe this round confirmed the
+   real API only ever returns `"ENFORCED"`/`"UNENFORCED"`, so the comparison could never match
+   anything real. Fixed to treat anything other than `"ENFORCED"` as not-enforced. Separately, an
+   empty/partial `services.list` result was being treated as an unremarkable state regardless of
+   what this project's OWN architecture actually needs enforced -- `firestore.rules` grants
+   authenticated clients direct read/write access to `/users/{uid}/...` with no App-Check gate of
+   its own, so backing-service-level enforcement on `firestore.googleapis.com` is the only control
+   that can require attestation on that path at all. Added
+   `APP_CHECK_INTENDED_ENFORCED_SERVICES = ["firestore.googleapis.com"]` and
+   `unenforcedIntendedServices`, which now correctly flags this service whether it's present-but-
+   unenforced or entirely absent from the list. A live probe during this round confirmed
+   `firestore.googleapis.com` is currently, actually `UNENFORCED` in production -- exactly the state
+   this fix makes visible that round 1 could not have caught even if the row had been missing
+   outright.
+2. **Row-level fields were still defaulting to `"?"` instead of being rejected.** A non-empty,
+   well-formed list could still contain a row missing the field this file actually needs (function
+   `state`, rule `rulesetName`, App Check `enforcementMode`); round 1's `?? "?"` fallback reported
+   that as `OK`. Every section now rejects the WHOLE section (not a silently shrunk item count) on
+   any row missing its required identifying fields. Firestore Rules additionally requires that one
+   of the valid rows specifically be the `cloud.firestore` release (confirmed live:
+   `projects/{project}/releases/cloud.firestore`) -- a non-empty list containing some other release
+   but not this project's actual ruleset used to read as `OK`.
+3. **Cloud Functions' `unreachable[]` was silently discarded.** The v2 list API can return locations
+   it could not query, with functions there simply missing from `functions[]` and no other signal.
+   `fetchAllPages()` now accumulates `unreachable` across every page; a non-empty result makes the
+   Functions section `UNAVAILABLE` while retaining the partial data it did read.
+4. **The per-request timeout didn't bound the whole probe.** `fetchAllPages` can make up to 20
+   sequential calls for one section; enough near-timeout pages could still exhaust the function's own
+   60s platform budget before this file's own try/catch/log ever ran -- silently recreating the exact
+   gap the per-request timeout was meant to close. Added a single `PROBE_BUDGET_MS = 45_000` deadline
+   computed once (before token acquisition, so that counts too) and threaded into every section and
+   every page: each request checks remaining budget first and fails closed instead of firing with no
+   real chance to matter, with its own timeout capped to whatever budget remains. Read through the
+   same injectable `deps.now` seam as everything else, so tests simulate the clock crossing the
+   deadline without real elapsed time or fake system timers.
+
+Also addressed, called out by name in GPT-PM's reply as a real gap even though not one of the 4
+MAJORs: the scheduled function's success path still only logged 3 counts, not the actual
+ruleset/App-Check/function state a human or alert would need to act on. `enforcement_state_schedule.ts`
+now logs `result.sections` in full on success -- safe to do wholesale because every section's `data`
+was already individually constructed to be safe (Identity Toolkit's strict allowlist in particular).
+
+**Verification**: `npm run build` clean. Full suite: **21 suites, 497 tests, all passed** (up from
+489, +8: App Check intended-service tests, 3 row-validation tests, the `cloud.firestore`-required
+test, the `unreachable[]` test, and 2 probe-deadline tests).
+
+**Still not done**: no deploy, no live resource creation, no positive/negative proof -- unchanged
+from round 1's own note above. This commit goes back to GPT-PM, scoped to exactly these findings
+plus any direct regressions.

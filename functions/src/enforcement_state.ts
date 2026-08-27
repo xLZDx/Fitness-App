@@ -92,11 +92,104 @@
  * WHY THIS IS TESTABLE WITHOUT LIVE GCP CREDENTIALS
  *
  * `runEnforcementStateProbe()` takes an optional `deps` object (token getter
- * + JSON fetcher); the real implementation (`realDeps`, used by the
- * production default) calls `google-auth-library` and the real REST APIs,
- * but every unit test injects a fake `deps` instead — same principle as
- * `canary_probe.ts`'s emulator-env-var detection: production code has no
- * test-only branch, tests substitute the actual seam.
+ * + JSON fetcher + clock); the real implementation (`realDeps`, used by the
+ * production default) calls `google-auth-library`, the real REST APIs and
+ * `Date.now`, but every unit test injects a fake `deps` instead — same
+ * principle as `canary_probe.ts`'s emulator-env-var detection: production
+ * code has no test-only branch, tests substitute the actual seam.
+ *
+ * ROUND 2 (2026-08-27, same day): GPT-PM re-reviewed the round-1 remediation
+ * commit and found the same four original findings still open in a deeper
+ * form, plus this file's own App Check enforcement-mode comparison was
+ * checking a string (`"OFF"`) the real API never returns. Each is documented
+ * where it's fixed; the summary:
+ *
+ * WHY APP CHECK NOW COMPARES AGAINST "ENFORCED", NOT "OFF"
+ *
+ * A live probe during this remediation round
+ * (`https://firebaseappcheck.googleapis.com/v1/projects/{p}/services`)
+ * returned real `enforcementMode` values of `"UNENFORCED"` and `"ENFORCED"`
+ * -- never `"OFF"`/`"ON"`. Round 1's `anyEnforcementOff` check compared
+ * against the literal `"OFF"`, which no real response can ever equal, so the
+ * signal was silently dead on arrival regardless of actual state. Every
+ * comparison in this file now treats anything other than the literal
+ * `"ENFORCED"` as not-enforced, which is also safer against a future enum
+ * value this file has never seen (fail toward flagging, not toward silence).
+ *
+ * WHY APP CHECK ALSO CHECKS A NAMED LIST OF INTENDED SERVICES, NOT JUST
+ * WHATEVER services.list HAPPENS TO RETURN
+ *
+ * `services.list` only returns a row for a backing service that has ever had
+ * its enforcement mode explicitly set; a service Firebase has never heard an
+ * opinion about is simply absent from the list, which round 1's code (and
+ * `production_manifest.py`'s own comment) treated as an unremarkable empty
+ * state. That reasoning is right for a service this project doesn't rely on
+ * App Check for at all, and wrong for one it does: `firestore.rules`
+ * (`D:\Repo\Fitness_App\firestore.rules`) grants an authenticated client
+ * direct read/write access to its own `/users/{uid}/...` subtree with no
+ * App-Check gate written into the rules themselves -- backing-service-level
+ * enforcement on `firestore.googleapis.com` is the ONLY control that can
+ * require App Check attestation on that direct path at all (the callables'
+ * own `enforceAppCheck: true` option, `scaling.ts`, is a completely separate
+ * mechanism enforced by the Functions runtime and never appears in this API
+ * response either way). A live probe during this remediation round confirmed
+ * `firestore.googleapis.com` is currently present and `UNENFORCED` -- a real,
+ * current state this check now actually surfaces via
+ * `unenforcedIntendedServices`, where round 1 could not have caught it even
+ * if the row had been entirely absent. No `storage.rules` file exists in
+ * this repo (confirmed by its absence), so Cloud Storage direct client
+ * access is not part of this project's architecture today and is
+ * deliberately not in `APP_CHECK_INTENDED_ENFORCED_SERVICES`. This section's
+ * `status` still means "the read succeeded and the data is structurally
+ * valid," same as every other section in this file -- it does not mean "the
+ * observed state is the desired one." Whether an unenforced intended service
+ * should itself page someone is a monitoring-policy decision for whoever
+ * consumes `unenforcedIntendedServices`, deliberately left out of this
+ * step's scope.
+ *
+ * WHY EVERY ROW IS VALIDATED, NOT JUST THE ENVELOPE
+ *
+ * Round 1 fixed a non-object body, a non-array list and a zero-length list
+ * where this project can never legitimately be empty -- but a row inside a
+ * genuinely non-empty, well-formed list could still be missing the specific
+ * field this file depends on (`f.state`, `r.rulesetName`, `s.enforcementMode`),
+ * and round 1's `?? "?"` fallback would quietly report `state: "?"` as `OK`
+ * rather than surface that the read didn't actually return what this file
+ * needs. Every section now rejects (not filters -- the whole section, so a
+ * shrunk-but-silent count can't happen either) on any row missing its
+ * required identifying fields. Firestore Rules additionally requires that
+ * one of the valid rows be specifically the `cloud.firestore` release (its
+ * real name, confirmed live: `projects/{project}/releases/cloud.firestore`)
+ * -- a non-empty releases list that happens to contain some other release
+ * but not this project's actual Firestore ruleset used to read as `OK`.
+ *
+ * WHY A NON-EMPTY unreachable[] MAKES THE FUNCTIONS SECTION UNAVAILABLE
+ *
+ * The Cloud Functions v2 `locations/-/functions` list contract can return an
+ * `unreachable` array naming locations the API could not query for this
+ * call -- functions deployed there are simply missing from `functions[]`,
+ * with no other signal. `fetchAllPages()` now accumulates `unreachable`
+ * across every page; if it's ever non-empty, the Functions section reports
+ * `UNAVAILABLE` (keeping the partial `data` it already read, per this file's
+ * existing "retain what was read" convention) instead of a silently
+ * incomplete `OK`.
+ *
+ * WHY THERE IS A WHOLE-PROBE DEADLINE, NOT JUST A PER-REQUEST TIMEOUT
+ *
+ * A per-request `AbortSignal.timeout` bounds one call, but `fetchAllPages`
+ * can make up to `MAX_PAGES` of them for one section -- several near-timeout
+ * pages in a row could still exhaust the function's own 60-second platform
+ * budget before `runEnforcementStateProbe()` ever returns, which silently
+ * recreates the exact "platform kills the instance before our own
+ * try/catch/log runs" gap the per-request timeout was meant to close.
+ * `PROBE_BUDGET_MS` is a single deadline computed once, before token
+ * acquisition, and threaded into every section and every page: each fetch
+ * checks the remaining budget first and fails closed
+ * (`"probe deadline exceeded..."`) instead of firing a request that has no
+ * real chance to matter, and each request's own timeout is capped to
+ * whatever budget actually remains. The deadline is read through the same
+ * injectable `deps.now` seam as everything else, so a test can simulate the
+ * clock crossing it without real elapsed time or fake system timers.
  */
 import { GoogleAuth } from "google-auth-library";
 
@@ -133,6 +226,7 @@ export type JsonFetcher = (
   url: string,
   token: string,
   extraHeaders?: Record<string, string>,
+  timeoutMs?: number,
 ) => Promise<JsonFetchResult>;
 
 export type TokenGetter = () => Promise<string>;
@@ -141,11 +235,19 @@ export interface EnforcementStateDeps {
   project: string;
   getAccessToken: TokenGetter;
   fetchJson: JsonFetcher;
+  /** Wall-clock source for the whole-probe deadline -- defaults to `Date.now`.
+   *  Injectable so a test can simulate the clock advancing between calls
+   *  without real elapsed time or fake system timers. */
+  now: () => number;
 }
 
 const DEFAULT_PROJECT = "fitness-app-korostelev";
 const REQUEST_TIMEOUT_MS = 20_000;
 const MAX_PAGES = 20;
+// Headroom under the deployed function's own 60s platform timeout
+// (`enforcement_state_schedule.ts`) -- see this file's module header, "WHY
+// THERE IS A WHOLE-PROBE DEADLINE".
+const PROBE_BUDGET_MS = 45_000;
 
 async function realGetAccessToken(): Promise<string> {
   const auth = new GoogleAuth({
@@ -163,10 +265,11 @@ async function realFetchJson(
   url: string,
   token: string,
   extraHeaders: Record<string, string> = {},
+  timeoutMs: number = REQUEST_TIMEOUT_MS,
 ): Promise<JsonFetchResult> {
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}`, ...extraHeaders },
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    signal: AbortSignal.timeout(timeoutMs),
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -177,31 +280,41 @@ async function realFetchJson(
 }
 
 function realDeps(project: string): EnforcementStateDeps {
-  return { project, getAccessToken: realGetAccessToken, fetchJson: realFetchJson };
+  return { project, getAccessToken: realGetAccessToken, fetchJson: realFetchJson, now: Date.now };
 }
 
 /**
- * Fetches every page of a `{ [listKey]: T[], nextPageToken?: string }`-shaped
- * list endpoint, accumulating items across pages. Fails closed (returns
- * `ok: false`) on a non-2xx response, a non-object body, or a body whose
- * `listKey` is present but not an array -- see this file's module header
- * ("WHY A SECTION FAILS CLOSED...") for why a malformed 200 is not treated
- * as an empty success.
+ * Fetches every page of a `{ [listKey]: T[], nextPageToken?: string,
+ * unreachable?: string[] }`-shaped list endpoint, accumulating items AND any
+ * `unreachable` entries across pages. Fails closed (returns `ok: false`) on
+ * a non-2xx response, a non-object body, a body whose `listKey` is present
+ * but not an array, or the whole-probe `deadlineAt` having passed -- see
+ * this file's module header ("WHY A SECTION FAILS CLOSED...",
+ * "WHY THERE IS A WHOLE-PROBE DEADLINE...") for why.
  */
 async function fetchAllPages(
   deps: EnforcementStateDeps,
   token: string,
   baseUrl: string,
   listKey: string,
+  deadlineAt: number,
   extraHeaders?: Record<string, string>,
-): Promise<{ ok: true; items: unknown[] } | { ok: false; error: string }> {
+): Promise<
+  { ok: true; items: unknown[]; unreachable: string[] } | { ok: false; error: string }
+> {
   const items: unknown[] = [];
+  const unreachable: string[] = [];
   let pageToken: string | undefined;
   for (let page = 0; page < MAX_PAGES; page++) {
+    const remaining = deadlineAt - deps.now();
+    if (remaining <= 0) {
+      return { ok: false, error: "probe deadline exceeded before all pages could be read" };
+    }
     const url = pageToken
       ? `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}pageToken=${encodeURIComponent(pageToken)}`
       : baseUrl;
-    const res = await deps.fetchJson(url, token, extraHeaders);
+    const timeoutMs = Math.max(1_000, Math.min(REQUEST_TIMEOUT_MS, remaining));
+    const res = await deps.fetchJson(url, token, extraHeaders, timeoutMs);
     if (!res.ok) {
       return { ok: false, error: `HTTP ${res.status}: ${res.errorText ?? ""}`.trim() };
     }
@@ -217,47 +330,76 @@ async function fetchAllPages(
       };
     }
     if (Array.isArray(list)) items.push(...list);
+    const bodyUnreachable = body.unreachable;
+    if (Array.isArray(bodyUnreachable)) {
+      for (const u of bodyUnreachable) if (typeof u === "string") unreachable.push(u);
+    }
     const next = body.nextPageToken;
     if (typeof next === "string" && next.length > 0) {
       pageToken = next;
       continue;
     }
-    return { ok: true, items };
+    return { ok: true, items, unreachable };
   }
   return { ok: false, error: `pagination did not terminate within ${MAX_PAGES} pages` };
 }
 
-async function checkFunctions(deps: EnforcementStateDeps, token: string): Promise<SectionResult> {
+/** True only when every required field is a non-empty string on every row. */
+function everyRowHas(rows: Record<string, any>[], fields: string[]): boolean {
+  return rows.every((row) => fields.every((f) => typeof row[f] === "string" && row[f].length > 0));
+}
+
+async function checkFunctions(
+  deps: EnforcementStateDeps,
+  token: string,
+  deadlineAt: number,
+): Promise<SectionResult> {
   const url =
     `https://cloudfunctions.googleapis.com/v2/projects/${deps.project}` +
     `/locations/-/functions`;
-  const pages = await fetchAllPages(deps, token, url, "functions");
+  const pages = await fetchAllPages(deps, token, url, "functions", deadlineAt);
   if (!pages.ok) return { status: "UNAVAILABLE", error: pages.error };
   if (pages.items.length === 0) {
     // This project always has deployed functions; a genuinely empty result
     // is far more likely to be a permission/API regression than reality.
     return { status: "UNAVAILABLE", error: "empty result: 0 functions returned" };
   }
-  const items = pages.items.map((raw) => {
-    const f = raw as Record<string, any>;
+  const rawItems = pages.items as Record<string, any>[];
+  if (!everyRowHas(rawItems, ["name", "state"])) {
     return {
-      name: String(f.name ?? "?").split("/").pop(),
-      state: f.state ?? "?",
+      status: "UNAVAILABLE",
+      error: "malformed response: one or more function rows are missing name/state",
+    };
+  }
+  const items = rawItems
+    .map((f) => ({
+      name: String(f.name).split("/").pop(),
+      state: f.state,
       environment: f.environment ?? "?",
       updateTime: f.updateTime ?? "?",
       revision: f.serviceConfig?.revision ?? "?",
+    }))
+    .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  if (pages.unreachable.length > 0) {
+    // Functions in an unreachable location are simply missing from `items`
+    // above with no other signal -- see this file's module header, "WHY A
+    // NON-EMPTY unreachable[]...". Retain what was read as partial evidence.
+    return {
+      status: "UNAVAILABLE",
+      error: `partial result: unreachable location(s): ${pages.unreachable.join(", ")}`,
+      data: { count: items.length, functions: items },
     };
-  });
-  items.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  }
   return { status: "OK", data: { count: items.length, functions: items } };
 }
 
 async function checkFirestoreRules(
   deps: EnforcementStateDeps,
   token: string,
+  deadlineAt: number,
 ): Promise<SectionResult> {
   const url = `https://firebaserules.googleapis.com/v1/projects/${deps.project}/releases`;
-  const pages = await fetchAllPages(deps, token, url, "releases", {
+  const pages = await fetchAllPages(deps, token, url, "releases", deadlineAt, {
     "X-Goog-User-Project": deps.project,
   });
   if (!pages.ok) return { status: "UNAVAILABLE", error: pages.error };
@@ -267,42 +409,80 @@ async function checkFirestoreRules(
     // returned -- no ruleset is published" is itself a red flag there too).
     return { status: "UNAVAILABLE", error: "empty result: 0 rule releases returned" };
   }
-  const items = pages.items.map((raw) => {
-    const r = raw as Record<string, any>;
+  const rawItems = pages.items as Record<string, any>[];
+  if (!everyRowHas(rawItems, ["name", "rulesetName"])) {
     return {
-      release: String(r.name ?? "?").split("/").pop(),
-      ruleset: String(r.rulesetName ?? "?").split("/").pop(),
-      updateTime: r.updateTime ?? "?",
+      status: "UNAVAILABLE",
+      error: "malformed response: one or more rule release rows are missing name/rulesetName",
     };
-  });
+  }
+  const items = rawItems.map((r) => ({
+    release: String(r.name).split("/").pop(),
+    ruleset: String(r.rulesetName).split("/").pop(),
+    updateTime: r.updateTime ?? "?",
+  }));
+  if (!items.some((i) => i.release === "cloud.firestore")) {
+    // A non-empty, well-formed releases list that simply doesn't contain
+    // THIS project's actual Firestore ruleset used to read as OK -- see
+    // module header, "WHY EVERY ROW IS VALIDATED...".
+    return {
+      status: "UNAVAILABLE",
+      error: "no cloud.firestore release present among returned releases",
+      data: { count: items.length, releases: items },
+    };
+  }
   return { status: "OK", data: { count: items.length, releases: items } };
 }
 
-async function checkAppCheck(deps: EnforcementStateDeps, token: string): Promise<SectionResult> {
+/**
+ * Backing services this project's OWN architecture proves it depends on App
+ * Check to protect, beyond whatever `services.list` happens to return -- see
+ * module header, "WHY APP CHECK ALSO CHECKS A NAMED LIST...".
+ */
+const APP_CHECK_INTENDED_ENFORCED_SERVICES = ["firestore.googleapis.com"];
+
+async function checkAppCheck(
+  deps: EnforcementStateDeps,
+  token: string,
+  deadlineAt: number,
+): Promise<SectionResult> {
   const url = `https://firebaseappcheck.googleapis.com/v1/projects/${deps.project}/services`;
   // Needs the same quota-project header as Firestore Rules and Identity
-  // Toolkit -- confirmed live during this remediation round (a local
-  // `gcloud auth print-access-token` call without it returns the identical
+  // Toolkit -- confirmed live during round 1 (a local `gcloud auth
+  // print-access-token` call without it returns the identical
   // SERVICE_DISABLED/quota-project 403 App Check returns without it).
-  const pages = await fetchAllPages(deps, token, url, "services", {
+  const pages = await fetchAllPages(deps, token, url, "services", deadlineAt, {
     "X-Goog-User-Project": deps.project,
   });
   if (!pages.ok) return { status: "UNAVAILABLE", error: pages.error };
   // Deliberately NOT failing closed on zero services -- see this file's
   // module header. An empty list is a real, meaningful App Check state for
   // this project, not evidence the read itself failed.
-  const items = pages.items.map((raw) => {
-    const s = raw as Record<string, any>;
+  const rawItems = pages.items as Record<string, any>[];
+  if (!everyRowHas(rawItems, ["name", "enforcementMode"])) {
     return {
-      service: String(s.name ?? "?").split("/").pop(),
-      enforcementMode: s.enforcementMode ?? "?",
-      updateTime: s.updateTime ?? "?",
+      status: "UNAVAILABLE",
+      error: "malformed response: one or more App Check service rows are missing "
+        + "name/enforcementMode",
     };
-  });
-  const anyEnforcementOff = items.some((i) => i.enforcementMode === "OFF");
+  }
+  const items = rawItems.map((s) => ({
+    service: String(s.name).split("/").pop() as string,
+    enforcementMode: s.enforcementMode as string,
+    updateTime: s.updateTime ?? "?",
+  }));
+  // The real API's values are "ENFORCED" / "UNENFORCED" (confirmed live this
+  // round) -- never "ON"/"OFF". See module header, "WHY APP CHECK NOW
+  // COMPARES AGAINST 'ENFORCED'".
+  const byService = new Map(items.map((i) => [i.service, i.enforcementMode]));
+  const unenforcedIntendedServices = APP_CHECK_INTENDED_ENFORCED_SERVICES.filter(
+    (svc) => byService.get(svc) !== "ENFORCED",
+  );
+  const anyEnforcementOff =
+    items.some((i) => i.enforcementMode !== "ENFORCED") || unenforcedIntendedServices.length > 0;
   return {
     status: "OK",
-    data: { count: items.length, services: items, anyEnforcementOff },
+    data: { count: items.length, services: items, anyEnforcementOff, unenforcedIntendedServices },
   };
 }
 
@@ -331,9 +511,23 @@ function extractIdentityToolkitState(raw: Record<string, any>): Record<string, u
 async function checkIdentityToolkit(
   deps: EnforcementStateDeps,
   token: string,
+  deadlineAt: number,
 ): Promise<SectionResult> {
+  const remaining = deadlineAt - deps.now();
+  if (remaining <= 0) {
+    return {
+      status: "UNAVAILABLE",
+      error: "probe deadline exceeded before Identity Toolkit could be read",
+    };
+  }
+  const timeoutMs = Math.max(1_000, Math.min(REQUEST_TIMEOUT_MS, remaining));
   const url = `https://identitytoolkit.googleapis.com/v2/projects/${deps.project}/config`;
-  const res = await deps.fetchJson(url, token, { "X-Goog-User-Project": deps.project });
+  const res = await deps.fetchJson(
+    url,
+    token,
+    { "X-Goog-User-Project": deps.project },
+    timeoutMs,
+  );
   if (!res.ok) {
     return { status: "UNAVAILABLE", error: `HTTP ${res.status}: ${res.errorText ?? ""}`.trim() };
   }
@@ -364,6 +558,9 @@ export async function runEnforcementStateProbe(
 ): Promise<EnforcementStateResult> {
   const deps: EnforcementStateDeps = { ...realDeps(DEFAULT_PROJECT), ...overrides };
   const generatedAt = new Date().toISOString();
+  // Started before token acquisition so that time counts against the budget
+  // too -- see module header, "WHY THERE IS A WHOLE-PROBE DEADLINE".
+  const deadlineAt = deps.now() + PROBE_BUDGET_MS;
 
   let token: string;
   try {
@@ -387,16 +584,16 @@ export async function runEnforcementStateProbe(
 
   const [functionsResult, firestoreRulesResult, appCheckResult, identityToolkitResult] =
     await Promise.all([
-      checkFunctions(deps, token).catch(
+      checkFunctions(deps, token, deadlineAt).catch(
         (e): SectionResult => ({ status: "UNAVAILABLE", error: String(e) }),
       ),
-      checkFirestoreRules(deps, token).catch(
+      checkFirestoreRules(deps, token, deadlineAt).catch(
         (e): SectionResult => ({ status: "UNAVAILABLE", error: String(e) }),
       ),
-      checkAppCheck(deps, token).catch(
+      checkAppCheck(deps, token, deadlineAt).catch(
         (e): SectionResult => ({ status: "UNAVAILABLE", error: String(e) }),
       ),
-      checkIdentityToolkit(deps, token).catch(
+      checkIdentityToolkit(deps, token, deadlineAt).catch(
         (e): SectionResult => ({ status: "UNAVAILABLE", error: String(e) }),
       ),
     ]);

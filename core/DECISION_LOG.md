@@ -29662,3 +29662,120 @@ cases).
 creation, no positive/negative proof. This remediation commit goes to GPT-PM next, scoped to
 exactly these 5 findings plus any direct regressions -- GPT-PM's own stated scope for the next
 round.
+
+---
+
+## MVP1.G3 Step 10A -- remediation round 2 (2026-08-27, same day)
+
+Sent commit `206e1dd` (round 1's remediation) to GPT-PM via `review.js --commit 206e1dd --project
+Fitness_App`. The send itself returned a local `{"ok":false,"error":"fetch failed"}` -- per this
+session's standing discipline, verified via `pm_bridge_status` before concluding anything: the
+outbound message (containing the exact diff of `206e1dd`) was logged at 17:47:36, confirming the
+send genuinely reached GPT-PM and only the local reply-capture step failed. Retrieved the reply via
+`gpt_session_peek` (PM Bridge orchestrator mode was ON, counting as an active session) after the
+shared-browser queue -- 3 requests deep across 2 concurrent projects (AI_trading_assistance and
+another) at the time -- drained on its own; no duplicate send was issued.
+
+GPT-PM's verdict: **4 MAJOR findings**, all re-opening the SAME 4 original findings from round 1 in
+a deeper form GPT-PM stated explicitly ("finding #1 is not closed", "finding #3 remains open") --
+not new scope, the round-1 fixes hadn't actually closed the acceptance criterion yet. The original
+MINOR (README self-contradiction) was explicitly confirmed CLOSED and not reopened. Each of the 4
+was independently verified against real code/live API state before being accepted, not taken at
+GPT-PM's word (per this session's standing discipline) -- GPT-PM's reply also carried a confusing
+"same implementation as before" framing implying a prior round that a `pm_bridge_status` grep did
+not actually show happened for this exact exchange; noted as a likely conversation-memory artifact
+on GPT-PM's side and kept separate from judging the findings, which were all confirmed real on
+their own technical merit:
+
+**1. MAJOR -- App Check enforcement checking was silently dead on arrival, and empty/absent still
+meant nothing.** Two compounding defects. First, independently discovered before even reading
+GPT-PM's evidence in detail: a live probe (`curl` against
+`https://firebaseappcheck.googleapis.com/v1/projects/fitness-app-korostelev/services`) showed the
+real API returns `enforcementMode: "UNENFORCED"` / `"ENFORCED"` -- round 1's code compared against
+the literal `"OFF"`, a value the real API never returns, so `anyEnforcementOff` could never have
+fired in production regardless of actual state. Second, GPT-PM's actual point: App Check's
+`services.list` only ever returns a row for a backing service someone has explicitly set an
+enforcement mode on; a service this project's own architecture needs protected but nobody ever
+configured is simply absent, and round 1 (following `production_manifest.py`'s own stated
+reasoning) treated that as an unremarkable, meaningful empty state across the board. Verified this
+project's own client-Firestore architecture directly before accepting the finding:
+`firestore.rules` (read via `Read`) grants an authenticated client direct read/write access to its
+own `/users/{uid}/...` subtree with no App-Check gate written into the rules themselves --
+backing-service enforcement on `firestore.googleapis.com` is the ONLY control that can require App
+Check attestation on that specific path (the callables' own `enforceAppCheck: true` option,
+`scaling.ts`, is a completely separate mechanism enforced by the Functions runtime and never
+appears in this API response either way). Confirmed no `storage.rules` file exists in this repo, so
+Cloud Storage direct client access is not part of this project's architecture and was deliberately
+left out of scope. A live probe during this round additionally confirmed `firestore.googleapis.com`
+is CURRENTLY, ACTUALLY `UNENFORCED` in production right now -- a real, present state round 1's code
+could not have surfaced even if the row had been entirely missing. Fixed: every comparison now
+treats anything other than the literal `"ENFORCED"` as not-enforced (fail toward flagging an
+unknown future value, not toward silence); added
+`APP_CHECK_INTENDED_ENFORCED_SERVICES = ["firestore.googleapis.com"]` and a derived
+`unenforcedIntendedServices` field that correctly flags the service whether it's present-but-
+unenforced or absent outright. Deliberately did NOT redefine what `status: "OK"` means for this
+section (still "the read succeeded and the data is structurally valid," not "the observed state is
+desired") -- documented as a scoping choice in `enforcement_state.ts`'s own module header, since
+GPT-PM explicitly offered both options ("if OK is meant to mean expected enforcement, encode those
+invariants; otherwise remove that claim") and nothing in this file ever claimed OK meant "healthy."
+
+**2. MAJOR -- row-level fields still silently defaulted to `"?"` instead of being rejected, on
+Functions AND App Check too, not just Firestore Rules.** Round 1 fixed the ENVELOPE (non-object
+body, non-array list, zero-length list where empty is impossible) but a genuinely non-empty,
+well-formed list could still contain a row missing the one field this file actually depends on, and
+the `?? "?"` fallback would report `state: "?"` (or `rulesetName`/`enforcementMode` equivalently) as
+a clean `OK`. Fixed: every section now rejects the WHOLE section -- not a silently shrunk item
+count, which would recreate its own silent-partial-data problem -- on any row missing its required
+identifying fields (`name`+`state` for Functions, `name`+`rulesetName` for Firestore Rules,
+`name`+`enforcementMode` for App Check). Firestore Rules additionally now requires that one of the
+valid rows specifically be the `cloud.firestore` release -- verified its real name live before
+implementing (`projects/fitness-app-korostelev/releases/cloud.firestore`, via direct probe against
+`firebaserules.googleapis.com/v1/projects/{p}/releases`) -- since a non-empty releases list
+containing some unrelated release but not this project's actual Firestore ruleset used to read as
+`OK`.
+
+**3. MAJOR -- Cloud Functions v2's `unreachable[]` was silently discarded.** `fetchAllPages()`
+extracted only the requested list key and `nextPageToken`, dropping every other response field.
+Google's own v2 list contract can return an `unreachable` array naming locations the call could not
+query; functions deployed there are simply missing from `functions[]` with no other signal --
+confirmed this is a documented, real field of the API contract, not a hypothetical. Fixed:
+`fetchAllPages()` now accumulates `unreachable` across every page; a non-empty result makes the
+Functions section `UNAVAILABLE` (`"partial result: unreachable location(s): ..."`) while retaining
+the partial `data` it did manage to read, matching this file's existing "retain what was read"
+convention rather than throwing the evidence away.
+
+**4. MAJOR -- the per-request timeout never bounded the whole probe.** `AbortSignal.timeout` bounds
+one HTTP call, but `fetchAllPages` can make up to `MAX_PAGES = 20` of them sequentially for one
+section; several near-timeout pages in a row could still exhaust the deployed function's own 60s
+platform timeout before `runEnforcementStateProbe()` ever returns -- silently recreating the exact
+"platform kills the instance before our own try/catch/log runs" gap the per-request timeout was
+built to close. Fixed: added `PROBE_BUDGET_MS = 45_000`, a single deadline computed once at the very
+start of `runEnforcementStateProbe()` -- deliberately BEFORE token acquisition, so that time counts
+against the budget too, per GPT-PM's explicit requirement -- and threaded into every section and
+every page of `fetchAllPages` and into `checkIdentityToolkit`'s single call. Each request checks
+remaining budget first and fails closed (`"probe deadline exceeded..."`) instead of firing a request
+with no real chance to matter, with its own per-request timeout capped to whatever budget actually
+remains. The deadline clock is read through a new injectable `deps.now` seam (defaults to
+`Date.now`, same dependency-injection discipline as `getAccessToken`/`fetchJson`), so both "already
+expired at start" and "expires mid-pagination" are fully deterministic in tests with no real elapsed
+time or fake system timers required.
+
+**Also fixed, called out by GPT-PM as a real gap even though not counted as one of the 4 MAJORs**:
+the scheduled function's success path (`enforcement_state_schedule.ts`) still only logged 3 bare
+counts, not the actual ruleset/App-Check/function state a human or the alert layer would need to act
+on -- round 1's remediation had not touched this path at all. Fixed to log `result.sections` in
+full on success; safe to do wholesale because every section's own `data` was already individually
+constructed to be safe (Identity Toolkit's strict allowlist in particular never carries the raw
+response through).
+
+**Verification**: `npm run build` -- clean, zero TypeScript errors both immediately after the code
+changes and again after the test additions. Full suite: `npx jest --json --outputFile=jest_result.json`
++ `node scripts/assert_test_health.js jest_result.json` -- **21 suites, 497 tests, all passed** (up
+from 489 before this round, +8: 2 App-Check-intended-service tests, 3 row-validation tests, the
+`cloud.firestore`-required-release test, the `unreachable[]` test, and 2 probe-deadline tests --
+one for an already-exhausted deadline at start, one for a deadline crossed mid-pagination that
+proves the second page request is never issued).
+
+**Still not done, unchanged**: no deploy, no live resource creation, no positive/negative proof.
+This remediation commit goes back to GPT-PM next, scoped to exactly these 4 MAJOR findings plus any
+direct regressions.
