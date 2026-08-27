@@ -345,4 +345,54 @@ for:
 
 None of these require touching production data or spending real money to
 prove; each is either a test/emulator-context injection or a reversible
-temporary state change (6.1's claim revoke) with an explicit reset step.
+temporary state change with an explicit reset step.
+
+## 9. GPT-PM round 2 rulings (2026-08-27) -- binding amendments
+
+Full exchange in `core/DECISION_LOG.md`'s "GPT-PM round 2" entry. Summary of
+what changes in Sec 6-8 above, superseding the affected parts of those
+sections rather than duplicating them:
+
+- **6.4 does not move to roadmap.** Becomes **G3-CI-8 "Data Lifecycle
+  Coverage Drift Guard"**, built inside this gate: mechanical discovery of
+  Firestore collections in use, each requiring an explicit
+  `DELETE`/`EXPORT`/`BOTH`/`EXEMPT` + reason classification; a new
+  unclassified collection fails CI. The Step 9 error-rate monitor on
+  `deleteAccount`/`exportAccountData` is still built, but as a supplemental
+  signal, not a substitute.
+- **6.5's Crashlytics wiring has real design constraints, not a bare
+  `recordError()` drop-in:** dedupe/rate-limit the OCR-loop error path;
+  expected camera-permission-denied must not alert as an incident; the
+  Gemini catch logs non-fatal with `(error, stackTrace)` ONLY -- no
+  photo/prompt/health/profile content, then rethrows unchanged. Also
+  requires a bounded latency/performance signal for the camera/inference
+  path, since the original OBS-1 item was failures AND performance, not
+  failures alone.
+- **6.6 needs a structured per-call observability event, not the
+  error-rate/quota-exhaustion metrics alone:** operation (bounded to exactly
+  the 4 callable names), outcome, latencyMs, timeout, quota-exhaustion, and
+  the provider's own `usageMetadata`/token counts when available -- NOT a
+  hand-built dollar ledger or hardcoded pricing. Requires adding an
+  `operation` identifier parameter to `ai_gateway.ts::generate()`, which
+  does not currently accept one.
+- **Sec 6.1 canary design, 2 corrections:** Security Rules must EXPLICITLY
+  exclude the canary identity from `/users/{uid}` and other real-data paths,
+  not merely add a `_canary/` allow-clause; the Sec 8 negative-proof test
+  ("revoke the custom claim") is invalid as designed since
+  `createCustomToken` re-mints the claim fresh every call -- corrected to
+  minting a token with no `canary` claim (or the wrong UID) and confirming
+  that is denied.
+- **Cost claims tightened:** "log-based metrics are free at this volume" was
+  too general -- prefer direct log-match alerting (no metric ingestion)
+  where possible; any genuinely chargeable custom metric needs its real
+  recurring cost computed before being claimed as acceptable, not asserted
+  free by default.
+
+**Authority (GPT-PM's own words):** these are the RESULT of Step 8's
+already-authorized investigation, not new scope -- no new Rosetta re-plan
+needed. GO: AUTHORIZED for G3-CI-8, canary rules/tests (corrected), Crashlytics/
+performance instrumentation (constrained), AI Gateway observability plumbing,
+log/metric definitions, and all other reversible implementation work. HOLD
+unchanged on binding a human alert recipient (FA-D1). HOLD (new): deploying
+any monitoring with confirmed nonzero recurring custom-metric cost after
+minimization -- that becomes its own named operator cost decision.

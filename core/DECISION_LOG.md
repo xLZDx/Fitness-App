@@ -27611,3 +27611,71 @@ and a consolidated alert-path test-plan table (8.12) into
 `core/G3_STEP8_RUNTIME_PREREQUISITES.md` Sec 6-8. Every "controlled failure" entry is either a
 test/emulator-context injection or a reversible temporary state change with an explicit reset --
 none require touching production data or spending real money to prove.
+
+## MVP1.G3 Step 8: GPT-PM round 2 -- scope rulings on 3 open design questions -- 2026-08-27
+
+Sent the 3 open design questions from Sec 6.4/6.5/6.6 to GPT-PM (first `gpt_send_and_await` attempt
+failed transport, "fetch failed" -- retried once, succeeded; not treated as a clean pass on the
+first silent failure per fail-open discipline). **VERDICT: APPROVE WITH BINDING AMENDMENTS**:
+
+1. **Data-deletion/export coverage (6.4) -- does NOT get scoped down to roadmap.** GPT-PM: `deleteAccount`
+   can return 200/OK for years while silently missing a new collection -- this is exactly the silent-
+   failure class G3 exists to close, so deferring it defeats the gate's purpose. Ruling: build
+   **G3-CI-8 "Data Lifecycle Coverage Drift Guard"** inside the current G3 gate, not a future item --
+   a mechanical check that discovers Firestore collections actually in use and requires an explicit
+   policy classification per collection (`DELETE` / `EXPORT` / `BOTH` / `EXEMPT` + a reason); a new
+   unclassified user-data collection must fail CI. Negative proof required: a fixture collection with
+   no policy must FAIL; removing an existing collection's coverage must FAIL. The runtime error-rate
+   monitor on `deleteAccount`/`exportAccountData` still gets built in Step 9, but explicitly as a
+   SUPPLEMENTAL operational signal, not a substitute for the CI completeness guard.
+2. **Telemetry (6.5) -- stays in Step 9, with real design constraints, not a bare `recordError` drop-in.**
+   Wiring `Crashlytics.recordError()` into the 3 named catches is necessary but not itself "the
+   monitor" -- GPT-PM requires: OCR-loop errors must be deduped/rate-limited (a per-frame retry loop
+   would spam Crashlytics otherwise); an expected user-denied camera permission must NOT become an
+   operational incident (needs separate, non-alerting handling from a genuine failure); the Gemini
+   exception path logs a non-fatal report with sanitized context (error + stackTrace only -- no
+   photo/prompt/health/profile content or PII) then rethrows unchanged, preserving existing behavior.
+   Also: the original OBS-1 item was "client/camera/inference/**performance**" telemetry --
+   Crashlytics only covers failures, so at least one bounded latency/performance signal for the
+   camera/inference path is still required, not optional. Acceptance: a controlled failure produces
+   an actionable notification AND a controlled degradation shows up in the performance signal.
+3. **AI Gateway (6.6) -- cost PRESSURE stays in scope, exact-dollar accounting does not.** Error-rate +
+   quota-exhaustion alone is insufficient. Required: a minimal structured observability event per call
+   to the 4 G1 callables (operation, outcome, latencyMs, timeout, quota-exhaustion, and the provider's
+   own `usageMetadata`/token counts when the provider returns them) -- NOT a hand-built per-call dollar
+   ledger, NOT hardcoded pricing. Requires adding a compile-time-bounded `operation` identifier
+   (exactly 4 values: `aiCoachAdvice` / `aiEquipmentRecognition` / `aiMachineDescription` /
+   `aiExerciseGeneration`) as new plumbing into the shared `ai_gateway.ts::generate()`, which does not
+   currently have one. The existing $20/month Blaze budget remains the fiscal backstop; this gives an
+   earlier, per-callable operational signal, not a replacement for it.
+
+**Correction to my own "everything else is ready once FA-D1 clears" claim** -- GPT-PM caught two real
+gaps in the Sec 6.1 canary design before I could ship it as final:
+- The Firestore Security Rules design needs to EXPLICITLY exclude the canary identity from the normal
+  `/users/{uid}` (and other real-data) rules, not just grant it `_canary/` access -- a rule that only
+  ADDS a `_canary/` allow-clause without an explicit denial/scope on the rest is not the same
+  guarantee as one that structurally cannot reach real data.
+- The negative-proof test in Sec 8's failure-injection plan was wrong as designed: "revoke the canary
+  UID's custom claim temporarily" doesn't work as a controlled-failure probe, because `createCustomToken`
+  re-mints the claim fresh on every call -- there is nothing durable to "revoke". Corrected to: mint a
+  token with no `canary` claim, or for the wrong UID, and confirm THAT is denied -- a same-mechanism
+  negative case instead of a stateful toggle that doesn't actually exist in this design.
+- Cost claims across Sec 6 ("log-based metrics are free at this volume") were accepted too generally --
+  GPT-PM's correction: prefer direct log-match alerting policies (no metric ingestion) where possible,
+  and for any genuinely chargeable custom metric, compute the real recurring cost before claiming it,
+  rather than asserting "free" as a blanket default.
+
+**Authority, stated explicitly by GPT-PM:** these rulings are the RESULT of Step 8's already-authorized
+investigation, not new scope -- no new Rosetta re-plan required to act on them.
+- **GO: AUTHORIZED** for G3-CI-8 (build now, inside G3), canary Security Rules + tests (with the two
+  corrections above), Crashlytics/performance instrumentation (with the dedupe/rate-limit/PII
+  constraints above), AI Gateway observability plumbing (the 4-value `operation` identifier + the
+  structured event), log/metric definitions, and all other reversible implementation work.
+- **HOLD (unchanged):** binding a production alert to a human recipient, still gated on `FA-D1`.
+- **HOLD (new):** deploying any monitoring whose real recurring cost, after minimization, is
+  confirmed nonzero -- that becomes its own named operator cost decision, not something to fold into
+  FA-D1 or decide unilaterally.
+
+Proceeding to build G3-CI-8 first (self-contained, mirrors the established `[CI]` item pattern from
+items 1-7), then the canary Security Rules/tests, then the Crashlytics/performance instrumentation,
+then the AI Gateway observability plumbing -- in that order, each independently committed and pushed.
