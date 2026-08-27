@@ -235,6 +235,30 @@
  * all confirmed `GEN_2`), so requiring it now would be encoding an unverified
  * assumption rather than a proven contract -- kept as best-effort (`?? "?"`)
  * and left as a scoping call GPT-PM can contest next round if it disagrees.
+ *
+ * ROUND 4 (2026-08-27, same day -- live activation, GPT-PM review of the
+ * `--base 84d5ec8` diff): `extractIdentityToolkitState()` was serializing
+ * whole CONTAINER objects (`raw.multiTenant`, `raw.monitoring.requestLogging`,
+ * `raw.smsRegionConfig.allowlistOnly`) as if they were the meaningful values.
+ * Directly visible in the already-committed positive-proof evidence
+ * (`core/evidence/step10a_positive_proof_2026-08-27.json`): all three came
+ * back `{}` for this project (none of the three has ever been configured
+ * here), which reads as "no signal" regardless of whether the container or
+ * the real nested field is read -- so the bug was invisible in this
+ * project's own live data and had to be confirmed against Google's schema,
+ * not this project's evidence. Confirmed via the Identity Platform / Config
+ * Connector REST reference
+ * (https://docs.cloud.google.com/config-connector/docs/reference/resource-docs/identityplatform/identityplatformconfig)
+ * and the SMS-regions guide
+ * (https://docs.cloud.google.com/identity-platform/docs/admin/sms-regions):
+ * the real scalar/meaningful fields are `multiTenant.allowTenants` (boolean),
+ * `monitoring.requestLogging.enabled` (boolean), and `smsRegionConfig` is a
+ * oneof -- `{ allowlistOnly: { allowedRegions: string[] } }` XOR
+ * `{ allowByDefault: { disallowedRegions: string[] } }` -- never a bare
+ * boolean or a container to serialize directly. `extractIdentityToolkitState`
+ * now reads the actual nested scalars and represents the SMS-region policy
+ * as an explicit `{ mode, regionCount }` rather than dumping whichever
+ * sub-object happened to be present.
  */
 import { GoogleAuth } from "google-auth-library";
 
@@ -585,6 +609,33 @@ async function checkAppCheck(
   };
 }
 
+export type SmsRegionMode = "ALLOWLIST_ONLY" | "ALLOW_BY_DEFAULT" | "NONE";
+
+export interface SmsRegionPolicy {
+  mode: SmsRegionMode;
+  /** Length of the mode's region array (`allowedRegions`/`disallowedRegions`); `null` if absent/malformed. */
+  regionCount: number | null;
+}
+
+/**
+ * `smsRegionConfig` is a oneof, not a boolean or a container to serialize
+ * directly -- see module header, "ROUND 4". Confirmed against Google's own
+ * SMS-regions guide: `{ allowlistOnly: { allowedRegions: [...] } }` XOR
+ * `{ allowByDefault: { disallowedRegions: [...] } }`.
+ */
+function extractSmsRegionPolicy(raw: Record<string, any>): SmsRegionPolicy {
+  const cfg = raw?.smsRegionConfig;
+  if (cfg?.allowlistOnly && typeof cfg.allowlistOnly === "object") {
+    const regions = cfg.allowlistOnly.allowedRegions;
+    return { mode: "ALLOWLIST_ONLY", regionCount: Array.isArray(regions) ? regions.length : null };
+  }
+  if (cfg?.allowByDefault && typeof cfg.allowByDefault === "object") {
+    const regions = cfg.allowByDefault.disallowedRegions;
+    return { mode: "ALLOW_BY_DEFAULT", regionCount: Array.isArray(regions) ? regions.length : null };
+  }
+  return { mode: "NONE", regionCount: null };
+}
+
 /**
  * STRICT ALLOWLIST — see this file's module header. Never spread/pass the
  * raw response through; every field here was individually chosen as safe.
@@ -595,13 +646,13 @@ function extractIdentityToolkitState(raw: Record<string, any>): Record<string, u
     signInMethodsConfigured: signInMethods,
     anonymousEnabled: raw?.signIn?.anonymous?.enabled ?? null,
     mfaState: raw?.mfa?.state ?? null,
-    multiTenant: raw?.multiTenant ?? null,
+    multiTenantAllowTenants: raw?.multiTenant?.allowTenants ?? null,
     authorizedDomainsCount: Array.isArray(raw?.authorizedDomains)
       ? raw.authorizedDomains.length
       : null,
-    smsRegionAllowlistOnly: raw?.smsRegionConfig?.allowlistOnly ?? null,
+    smsRegionPolicy: extractSmsRegionPolicy(raw),
     emailPrivacyImproved: raw?.emailPrivacyConfig?.enableImprovedEmailPrivacy ?? null,
-    monitoringRequestLogging: raw?.monitoring?.requestLogging ?? null,
+    monitoringRequestLoggingEnabled: raw?.monitoring?.requestLogging?.enabled ?? null,
     blockingFunctionsConfigured: !!raw?.blockingFunctions
       && Object.keys(raw.blockingFunctions).length > 0,
   };
@@ -714,4 +765,4 @@ export async function runEnforcementStateProbe(
 }
 
 // Exported for tests only -- not part of the module's real runtime seam.
-export const _internal = { extractIdentityToolkitState, overallStatus };
+export const _internal = { extractIdentityToolkitState, extractSmsRegionPolicy, overallStatus };

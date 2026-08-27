@@ -303,6 +303,18 @@ describe("enforcement-state Scheduler staleness policy (metric-absence, GPT-PM r
     expect(filter).not.toContain("cloudscheduler.googleapis.com");
   });
 
+  it("requires a 2xx response class, so a crashing checker doesn't read as fresh", () => {
+    // Round-4 correction, GPT-PM live-activation review: request_count alone counts
+    // failed/5xx invocations too -- Cloud Run still emits a request_count point for a
+    // crashing checker, defeating the staleness check. Confirmed live: `response_code_class`
+    // is a real label on this exact metric/resource combination.
+    const policy = enforcementStateStalenessPolicyJson() as {
+      conditions: Array<{ conditionAbsent?: { filter: string } }>;
+    };
+    const filter = policy.conditions[0].conditionAbsent?.filter ?? "";
+    expect(filter).toContain('metric.labels.response_code_class="2xx"');
+  });
+
   it("has an empty notificationChannels list, same posture as every other policy before FA-D1/activation", () => {
     const policy = enforcementStateStalenessPolicyJson() as { notificationChannels: unknown[] };
     expect(policy.notificationChannels).toEqual([]);

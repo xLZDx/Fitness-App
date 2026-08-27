@@ -672,6 +672,65 @@ describe("extractIdentityToolkitState — secret-shaped fields never pass throug
     expect(extracted.anonymousEnabled).toBeNull();
     expect(extracted.authorizedDomainsCount).toBeNull();
     expect(extracted.signInMethodsConfigured).toEqual([]);
+    expect(extracted.multiTenantAllowTenants).toBeNull();
+    expect(extracted.monitoringRequestLoggingEnabled).toBeNull();
+    expect(extracted.smsRegionPolicy).toEqual({ mode: "NONE", regionCount: null });
+  });
+
+  // Round-4 (GPT-PM live-activation review): the extractor used to serialize whole
+  // CONTAINER objects (`raw.multiTenant`, `raw.monitoring.requestLogging`,
+  // `raw.smsRegionConfig.allowlistOnly`) instead of the actual nested scalar fields --
+  // invisible against this project's own live data because every container happens to
+  // be empty (`{}`) in this project's never-configured state, so these fixtures use
+  // realistic NON-EMPTY API-shaped values to actually exercise the extraction depth,
+  // confirmed against Google's Identity Platform / SMS-regions REST schema.
+  test("extracts the real nested scalar fields, not their containers, when actually configured", () => {
+    const raw = {
+      multiTenant: { allowTenants: true, defaultTenantLocationRef: { locationId: "us-central1" } },
+      monitoring: { requestLogging: { enabled: true } },
+      smsRegionConfig: { allowlistOnly: { allowedRegions: ["US", "IN", "GB"] } },
+    };
+    const extracted = _internal.extractIdentityToolkitState(raw);
+    expect(extracted.multiTenantAllowTenants).toBe(true);
+    expect(extracted.monitoringRequestLoggingEnabled).toBe(true);
+    expect(extracted.smsRegionPolicy).toEqual({ mode: "ALLOWLIST_ONLY", regionCount: 3 });
+  });
+
+  test("multiTenant/monitoring container present but scalar false is preserved, not lost as falsy", () => {
+    const raw = {
+      multiTenant: { allowTenants: false },
+      monitoring: { requestLogging: { enabled: false } },
+    };
+    const extracted = _internal.extractIdentityToolkitState(raw);
+    expect(extracted.multiTenantAllowTenants).toBe(false);
+    expect(extracted.monitoringRequestLoggingEnabled).toBe(false);
+  });
+});
+
+describe("extractSmsRegionPolicy — real oneof shape, never a bare container", () => {
+  test("allowlistOnly mode reports the allowed-region count", () => {
+    const policy = _internal.extractSmsRegionPolicy({
+      smsRegionConfig: { allowlistOnly: { allowedRegions: ["US", "IN"] } },
+    });
+    expect(policy).toEqual({ mode: "ALLOWLIST_ONLY", regionCount: 2 });
+  });
+
+  test("allowByDefault mode reports the disallowed-region count", () => {
+    const policy = _internal.extractSmsRegionPolicy({
+      smsRegionConfig: { allowByDefault: { disallowedRegions: ["RU"] } },
+    });
+    expect(policy).toEqual({ mode: "ALLOW_BY_DEFAULT", regionCount: 1 });
+  });
+
+  test("no smsRegionConfig at all -> NONE with a null count, never throws", () => {
+    expect(_internal.extractSmsRegionPolicy({})).toEqual({ mode: "NONE", regionCount: null });
+  });
+
+  test("empty allowlistOnly container (this project's real current state) -> ALLOWLIST_ONLY, count null", () => {
+    // Confirmed live this round: this project's real smsRegionConfig.allowlistOnly is `{}`
+    // (SMS regions never configured) -- `allowedRegions` is absent, not an empty array.
+    const policy = _internal.extractSmsRegionPolicy({ smsRegionConfig: { allowlistOnly: {} } });
+    expect(policy).toEqual({ mode: "ALLOWLIST_ONLY", regionCount: null });
   });
 });
 

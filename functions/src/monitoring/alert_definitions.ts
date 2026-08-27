@@ -325,11 +325,20 @@ export function enforcementStateAlertPolicyJson(): object {
  */
 export const ENFORCEMENT_STATE_STALENESS_POLICY: MetricAbsenceAlertPolicySpec = {
   displayName: "Enforcement-state check: stopped receiving Scheduler triggers",
-  conditionDisplayName: "run.googleapis.com/request_count absent for 18h",
+  conditionDisplayName: "run.googleapis.com/request_count (2xx) absent for 18h",
+  // GPT-PM round 4 (2026-08-27, live-activation review): request_count alone
+  // counts EVERY invocation including failed/5xx ones -- Cloud Run still
+  // emits a request_count point for a crashing checker, so a genuinely
+  // broken function would still read as "fresh" without this constraint,
+  // defeating the staleness check's whole purpose. Confirmed live (this
+  // fix): `metric.labels.response_code_class` is a real label on this exact
+  // metric/resource combination (`D:/Temp/.../scratchpad/request_count_ts.json`,
+  // observed value `"2xx"` on a genuine successful invocation).
   filter:
     `metric.type="run.googleapis.com/request_count" ` +
     `AND resource.type="cloud_run_revision" ` +
-    `AND resource.labels.service_name="${toCloudRunServiceName(ENFORCEMENT_STATE_CHECK_FUNCTION_NAME)}"`,
+    `AND resource.labels.service_name="${toCloudRunServiceName(ENFORCEMENT_STATE_CHECK_FUNCTION_NAME)}" ` +
+    `AND metric.labels.response_code_class="2xx"`,
   absentFor: "64800s",
   alignmentPeriodSeconds: 3600,
   autoClose: AUTO_CLOSE,

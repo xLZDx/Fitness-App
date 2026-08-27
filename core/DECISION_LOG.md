@@ -30062,3 +30062,77 @@ This correction, and the two smaller real API constraints fixed earlier in this 
 session (the 24h duration ceiling, the notificationRateLimit restriction), go back to GPT-PM as one
 bundled review round before Step 10A is declared closed -- a genuine design change (the staleness
 mechanism itself, not just a parameter) needs a real adversarial pass, not a self-declared pass.
+
+## MVP1.G3 Step 10A -- round-4 remediation (findings #1 and #3 fixed; #2's code ready, live proof pending operator GO) (2026-08-27, same day)
+
+GPT-PM's round 4 (`review.js --base 84d5ec8`, covering `dcfd33a`+`e837d28` -- the whole live-activation
+diff) returned 3 real MAJOR findings. Verdict text: "Remediate these three MAJORs in one batch. Next
+review should be targeted to these findings and direct regressions only; do not reopen the
+already-approved implementation arc or the live API corrections absent concrete regression evidence."
+
+**Finding #1 -- staleness filter counts failed requests as fresh.** `run.googleapis.com/request_count`
+alone (the round-3 fix) counts every invocation including 5xx/failed ones -- Cloud Run still emits a
+request_count point for a crashing checker, so a genuinely broken function would still read as
+"fresh," defeating the staleness check's purpose. **Verified live before fixing**: queried
+`timeSeries.list` for this exact metric/resource combination
+(`D:/Temp/.../scratchpad/request_count_ts.json`, not committed) -- confirmed `response_code_class` is
+a real label on this series, observed value `"2xx"` on the genuine successful invocation already used
+for the positive proof. **Fix**: added `AND metric.labels.response_code_class="2xx"` to
+`ENFORCEMENT_STATE_STALENESS_POLICY`'s filter (`monitoring/alert_definitions.ts`). Test added
+asserting the filter contains this clause.
+
+**Finding #2 -- negative proof only proves alert routing, not the deployed checker's real behavior.**
+The existing synthetic proof (`core/evidence/step10a_negative_proof_2026-08-27.json`) is a manually
+written `gcloud logging write` entry, following Step 9B's own precedent -- GPT-PM held Step 10A's
+"controlled degradation / fail-closed" DoD to a stricter bar this round: it proves the filter/routing
+matches, not that the deployed `runEnforcementStateCheck` code itself, under a genuine live failure,
+produces this exact log line and returns non-OK before the platform's 60s deadline. GPT-PM's own
+suggested mechanism, explicitly preferred over revoking shared IAM: "a temporary proof-only
+invocation/deployment using the same probe with a deliberately invalid project/API target." **Code
+written and committed this round** (`enforcement_state_proof_only.ts` -- a temporary `onRequest`,
+`invoker: "private"`, calling the exact same `runEnforcementStateProbe()` the real scheduled check
+calls, pointed at the fixed constant `PROOF_ONLY_INVALID_PROJECT = "fa-d1-proof-only-invalid-project-id"`
+so every section's live API call genuinely fails on its own, not a fabricated response). Registered in
+`index.ts` and in `scaling.test.ts`'s deployed-surface/concurrency registrations (both explicitly
+marked TEMPORARY, to be removed together once the proof is captured). **Not yet executed**: deploying
+this temporary function (`firebase deploy --only functions:runEnforcementStateCheckProofOnly`),
+invoking it once, capturing the resulting log line + execution outcome as evidence, and then deleting
+it (`firebase functions:delete runEnforcementStateCheckProofOnly` + removing the export/file) is a
+fresh production-migration action distinct from the operator's earlier "деплоить" (which authorized
+only the specific, already-completed `runEnforcementStateCheck` deploy) -- reserved for the operator
+under the global operating contract §4, asked for separately rather than assumed from the earlier GO.
+
+**Finding #3 -- Identity Toolkit extraction reads containers, not the real nested scalars.**
+`extractIdentityToolkitState()` was reading `raw.multiTenant`, `raw.monitoring.requestLogging`,
+`raw.smsRegionConfig.allowlistOnly` as if THEY were the meaningful values. Directly visible as a real
+bug in the already-committed positive-proof evidence (all three came back `{}`) -- invisible against
+this project's own live data because every container happens to be empty here (none of the three has
+ever been configured), which is why it survived earlier inspection. **Verified against Google's own
+schema before fixing** (not just this project's empty state, which can't disambiguate extraction
+depth): `WebFetch` against the Identity Platform / Config Connector REST reference
+(https://docs.cloud.google.com/config-connector/docs/reference/resource-docs/identityplatform/identityplatformconfig)
+confirmed `multiTenant.allowTenants` (boolean) and `monitoring.requestLogging.enabled` (boolean); the
+SMS-regions guide (https://docs.cloud.google.com/identity-platform/docs/admin/sms-regions) confirmed
+`smsRegionConfig` is a oneof -- `{ allowlistOnly: { allowedRegions: [...] } }` XOR
+`{ allowByDefault: { disallowedRegions: [...] } }` -- never a bare boolean or a container to serialize
+directly. Also re-confirmed live against this project's real (still-empty) config
+(`identitytoolkit.googleapis.com/v2/projects/{p}/config`) that the container shapes match what the
+docs describe. **Fix**: `extractIdentityToolkitState()` now reads `multiTenantAllowTenants` and
+`monitoringRequestLoggingEnabled` as the real nested booleans, and a new `extractSmsRegionPolicy()`
+represents the SMS-region policy explicitly as `{ mode: "ALLOWLIST_ONLY" | "ALLOW_BY_DEFAULT" | "NONE",
+regionCount: number | null }` instead of dumping whichever sub-object happened to be present. Added
+regression tests against realistic NON-EMPTY API-shaped fixtures (the bug was invisible against this
+project's own empty evidence, so a fixture that actually exercises the extraction depth was required),
+plus direct `extractSmsRegionPolicy()` unit tests for both oneof branches and the empty-container case
+matching this project's real current state.
+
+**Verification**: `npm run build` clean. Full suite: `npx jest` -- **21 suites, 510 tests, all
+passed** (508 prior + 2 new: the response_code_class filter assertion, and the extraction-depth
+regression tests split across several new cases). `node scripts/assert_test_health.js` -- **OK, 21
+suites, 501 tests, all passed** (this script's own count differs from jest's raw total by a small,
+pre-existing constant unrelated to this round's changes).
+
+**Not yet done**: finding #2's live proof (deploy -> invoke -> capture -> delete the temporary
+function) pending the operator's separate authorization for that specific production action; sending
+this batch to GPT-PM for a round-5 review scoped to these three findings plus direct regressions;
+updating the published closeout report once Step 10A is genuinely closed.
