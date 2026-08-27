@@ -1,0 +1,553 @@
+<title>G2: переход на Android 16 (API 36)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600;700&display=swap">
+<style>
+  :root {
+    --ink: #17212b;
+    --ink-soft: #46586b;
+    --ink-faint: #7a8b9c;
+    --paper: #f6f8f9;
+    --surface: #ffffff;
+    --surface-sunken: #eef2f4;
+    --line: #dce3e7;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --amber: #a86a06;
+    --amber-soft: #fbf0dc;
+    --red: #a83a34;
+    --red-soft: #fbeae8;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    --display: "Sora", "IBM Plex Sans", system-ui, sans-serif;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(23,33,43,0.06), 0 8px 24px -12px rgba(23,33,43,0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8edf0;
+      --ink-soft: #a9b8c4;
+      --ink-faint: #74879a;
+      --paper: #0f1620;
+      --surface: #161f2b;
+      --surface-sunken: #101720;
+      --line: #263241;
+      --accent: #3fbcc4;
+      --accent-ink: #06222a;
+      --accent-soft: #10333a;
+      --amber: #e0a83f;
+      --amber-soft: #392c10;
+      --red: #e0756e;
+      --red-soft: #3a1a17;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8edf0;
+    --ink-soft: #a9b8c4;
+    --ink-faint: #74879a;
+    --paper: #0f1620;
+    --surface: #161f2b;
+    --surface-sunken: #101720;
+    --line: #263241;
+    --accent: #3fbcc4;
+    --accent-ink: #06222a;
+    --accent-soft: #10333a;
+    --amber: #e0a83f;
+    --amber-soft: #392c10;
+    --red: #e0756e;
+    --red-soft: #3a1a17;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 56px 28px 96px; }
+
+  header { padding-bottom: 8px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(28px, 4.4vw, 40px);
+    font-weight: 600;
+    line-height: 1.16;
+    margin: 0 0 14px;
+    text-wrap: balance;
+    letter-spacing: -0.005em;
+  }
+  .lede {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 66ch;
+    margin: 0 0 28px;
+  }
+
+  .verdict-band {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 8px 0 44px;
+  }
+  .verdict-band .mark {
+    width: 40px; height: 40px; flex: none;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--display); font-weight: 700; font-size: 18px;
+  }
+  .verdict-band .text b {
+    font-family: var(--display);
+    font-size: 17px;
+    display: block;
+  }
+  .verdict-band .text span {
+    color: var(--ink-soft);
+    font-size: 14.5px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 600;
+    margin: 56px 0 6px;
+    letter-spacing: -0.005em;
+  }
+  h2 .num {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 10px;
+    font-size: 16px;
+  }
+  .section-note { color: var(--ink-soft); font-size: 15px; margin: 0 0 22px; max-width: 72ch; }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin: 24px 0 40px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .stat .n {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  table.gates {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    font-size: 14.5px;
+  }
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); }
+  table.gates th, table.gates td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.gates th {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    background: var(--surface-sunken);
+    font-weight: 600;
+  }
+  table.gates tr:last-child td { border-bottom: none; }
+  table.gates td.gate { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+  table.gates code { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 8px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+  .pill.closed { background: var(--accent-soft); color: var(--accent); }
+  .pill.closed::before { background: var(--accent); }
+  .pill.blocked { background: var(--surface-sunken); color: var(--ink-faint); }
+  .pill.blocked::before { background: var(--ink-faint); }
+  .pill.pending { background: var(--amber-soft); color: var(--amber); }
+  .pill.pending::before { background: var(--amber); }
+
+  .suite-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+    margin: 20px 0 36px;
+  }
+  .suite {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .suite .name { font-size: 14px; color: var(--ink-soft); }
+  .suite .result { font-family: var(--mono); font-weight: 600; font-size: 14px; }
+  .suite.pass .result { color: var(--accent); }
+  .suite.warn .result { color: var(--amber); }
+
+  .finding {
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--ink-faint);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 0 0 16px;
+    background: var(--surface);
+  }
+  .finding.blocker { border-left-color: var(--red); }
+  .finding.major { border-left-color: var(--red); }
+  .finding.minor { border-left-color: var(--amber); }
+  .finding .tag {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  .finding.blocker .tag { background: var(--red-soft); color: var(--red); }
+  .finding.major .tag { background: var(--red-soft); color: var(--red); }
+  .finding.minor .tag { background: var(--amber-soft); color: var(--amber); }
+  .finding h3 { font-family: var(--display); font-size: 16.5px; margin: 0 0 8px; font-weight: 600; }
+  .finding p { margin: 0 0 10px; color: var(--ink-soft); font-size: 14.5px; }
+  .finding p:last-child { margin-bottom: 0; }
+  .finding .fixed-tag { color: var(--accent); font-weight: 600; }
+  .finding .verify-tag { color: var(--ink-faint); font-style: italic; }
+  .finding .disproven-tag { color: var(--accent); font-weight: 600; }
+
+  ul.plain { padding-left: 20px; margin: 12px 0; }
+  ul.plain li { margin-bottom: 10px; font-size: 15px; color: var(--ink-soft); }
+  ul.plain li b { color: var(--ink); }
+  ul.plain li code { font-family: var(--mono); font-size: 13.5px; }
+
+  .deviation {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .deviation:last-child { border-bottom: none; }
+  .deviation .gate-tag { font-family: var(--mono); font-weight: 600; color: var(--accent); font-size: 13.5px; }
+  .deviation p { margin: 0; font-size: 14.5px; color: var(--ink-soft); }
+
+  .closing {
+    margin-top: 56px;
+    padding: 24px 26px;
+    background: var(--surface-sunken);
+    border-radius: var(--radius);
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .closing b { color: var(--ink); }
+
+  a { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .deviation { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness_App &middot; MVP1 / SPTR &middot; Гейт G2</div>
+    <h1>G2: приложение переведено на обязательный таргет Android 16 (API 36)</h1>
+    <p class="lede">Google требует targetSdk&nbsp;36 для новых обновлений к 1 ноября 2026&nbsp;года. Гейт закрепил <code>targetSdk=36</code>, живым тестированием на реальном устройстве нашёл и исправил два регресса edge-to-edge вёрстки (один &mdash; побочный эффект собственного первого фикса), подтвердил корректность предиктивного жеста "назад" и прошёл два раунда проверки GPT&#8209;PM.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 6a633dc</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+  <div class="verdict-band">
+    <div class="mark">&#10003;</div>
+    <div class="text">
+      <b>ЗАКОММИЧЕНО, ОДОБРЕНО GPT&#8209;PM И ЗАПУШЕНО</b>
+      <span>Раунд 2 (по финальному кандидату): VERDICT APPROVE, --final=true, PUSH: AUTHORIZED. Запушено в origin/master: c55877c&nbsp;&rarr;&nbsp;6a633dc.</span>
+    </div>
+  </div>
+
+  <h2><span class="num">01</span>Коротко</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="n">36</div><div class="l">targetSdk (было flutter.targetSdkVersion)</div></div>
+    <div class="stat"><div class="n">2</div><div class="l">раунда проверки GPT&#8209;PM, оба закрыты</div></div>
+    <div class="stat"><div class="n">3+2</div><div class="l">MAJOR / MINOR раунда 1, все закрыты</div></div>
+    <div class="stat"><div class="n">2</div><div class="l">edge-to-edge регресса найдено живым тестом и исправлено</div></div>
+    <div class="stat"><div class="n">3243 / 3244</div><div class="l">тестов Flutter, 1 &mdash; известный флейк</div></div>
+    <div class="stat"><div class="n">11 / 11</div><div class="l">пунктов smoke-матрицы PASS на финальном кандидате</div></div>
+  </div>
+
+  <h2><span class="num">02</span>Что изменилось</h2>
+  <p class="section-note">До гейта <code>targetSdk</code> наследовался от версии Flutter (уже был 35, не ниже). Android с API&nbsp;35 по умолчанию включает edge-to-edge; API&nbsp;36 убирает последнюю возможность приложения отказаться от этого поведения &mdash; и вместе с этим убирает автоматические системные отступы, которые до сих пор маскировали недостающие <code>SafeArea</code>.</p>
+  <div class="table-scroll">
+  <table class="gates">
+    <thead><tr><th>Компонент</th><th>Изменение</th><th>Статус</th></tr></thead>
+    <tbody>
+      <tr><td class="gate">build.gradle</td><td>Явный <code>targetSdk = 36</code> вместо наследуемого значения, с комментарием про дедлайн Google (31 авг / 1 ноя 2026)</td><td><span class="pill closed">Закреплено</span></td></tr>
+      <tr><td class="gate">scanner_page.dart</td><td>Баннер низкой освещённости уходил под статус-бар &mdash; обёрнут в <code>SafeArea</code>; затем перестроен в общий <code>Column</code> с <code>ScanTopBar</code>, чтобы не столкнуться с ним</td><td><span class="pill closed">Исправлено (2 шага)</span></td></tr>
+      <tr><td class="gate">form_check_page.dart</td><td><code>CoachTopStrip</code> без <code>SafeArea</code> &mdash; тот же класс дефекта, найден целенаправленным поиском по кодовой базе</td><td><span class="pill closed">Исправлено</span></td></tr>
+      <tr><td class="gate">exercise_reference.dart</td><td>Похожий паттерн проверен отдельно &mdash; уже корректен, изменений не потребовалось</td><td><span class="pill closed">Подтверждено чистым</span></td></tr>
+      <tr><td class="gate">scanner_page_test.dart</td><td>Новый регресс-тест геометрии на <code>FakeViewPadding</code>, закрывающий MINOR&nbsp;#5 раунда 1</td><td><span class="pill closed">Добавлен</span></td></tr>
+      <tr><td class="gate">Предиктивный жест "назад"</td><td>Живая проверка на API&nbsp;36 (3 сценария) &mdash; регресса не найдено</td><td><span class="pill closed">Подтверждено</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2><span class="num">03</span>Rosetta-план: первая версия отклонена GPT&#8209;PM</h2>
+  <p class="section-note">Как и полагается протоколу Plan &rarr; GO &rarr; Act &rarr; Validate: план не является разрешением, пока GPT&#8209;PM его не одобрил.</p>
+  <div class="finding major">
+    <span class="tag">4&times;MAJOR &middot; план v1 отклонён</span>
+    <h3>Первая версия плана не выдержала проверку GPT&#8209;PM</h3>
+    <p>Отсутствовал предварительный чек Play-политик, привязка к каноническому скрипту сборки (<code>build_release.ps1</code>), гарантия покрытия обеих ABI и обязательный повторный smoke-прогон после любого фикса.</p>
+    <p><span class="fixed-tag">Исправлено:</span> заявленные факты GPT&#8209;PM независимо проверены (сам скрипт сборки прочитан напрямую, флаги <code>-Bundle</code>/<code>-Fat</code> подтверждены), выпущена версия&nbsp;v2 плана со всеми четырьмя пунктами как явными шагами. GPT&#8209;PM одобрил v2.</p>
+  </div>
+
+  <h2><span class="num">04</span>Живое тестирование нашло два регресса &mdash; второй порождён первым фиксом</h2>
+  <p class="section-note">План v2 требовал обязательного пересобора и повторного smoke-теста после любого фикса именно для такого случая. Он сработал: собственная перепроверка (а не GPT&#8209;PM) поймала регресс, который внёс первый же фикс.</p>
+  <div class="finding minor">
+    <span class="tag">Найдено живым тестом &middot; исправлено</span>
+    <h3>Баннер низкой освещённости в сканере уходил под статус-бар</h3>
+    <p>На реальном устройстве с API&nbsp;36 отступ статус-бара для этого <code>Positioned</code>-баннера больше не подставлялся автоматически (в отличие от соседнего <code>ScanTopBar</code>, у которого <code>SafeArea</code> уже был).</p>
+    <p><span class="fixed-tag">Исправлено:</span> баннер обёрнут в <code>SafeArea(bottom:false)</code>.</p>
+  </div>
+  <div class="finding minor">
+    <span class="tag">Самостоятельно порождённый регресс &middot; исправлено</span>
+    <h3>Первый фикс сам вызвал наложение баннера на <code>ScanTopBar</code></h3>
+    <p>После первого фикса оба элемента получили независимое позиционирование от одного и того же безопасного отступа &mdash; ровно тот антипаттерн, что уже был задокументирован в комментарии к <code>CoachTopStrip</code>: два независимо позиционированных <code>Positioned</code>-элемента в одном Stack сталкиваются, как только меняется высота одного из них.</p>
+    <p><span class="fixed-tag">Исправлено:</span> оба элемента объединены в один <code>Column</code> под общим <code>SafeArea</code> вместо независимого позиционирования.</p>
+  </div>
+  <div class="finding minor">
+    <span class="tag">Найдено поиском по классу дефекта &middot; исправлено</span>
+    <h3><code>CoachTopStrip</code> в Form Coach &mdash; тот же класс бага</h3>
+    <p>По правилу "чинить класс, а не экземпляр" (CLAUDE.md §17) кодовая база проверена на такой же паттерн ещё до того, как баг сканера был сочтён изолированным. Найден второй реальный случай.</p>
+    <p><span class="fixed-tag">Исправлено:</span> обёрнут в <code>SafeArea(bottom:false)</code>. Третий похожий кандидат (<code>exercise_reference.dart</code>) проверен и оказался уже корректным.</p>
+  </div>
+
+  <h2><span class="num">05</span>Что нашла проверка GPT&#8209;PM &mdash; раунд 1</h2>
+  <p class="section-note">Каждая находка проверена независимо перед принятием, включая живую проверку на устройстве там, где кодового чтения было недостаточно.</p>
+  <div class="finding major">
+    <span class="tag">Major &middot; исправлено</span>
+    <h3>Финальная smoke-матрица была неполной/устаревшей</h3>
+    <p>Промежуточная evidence не покрывала финального кандидата целиком.</p>
+    <p><span class="fixed-tag">Исправлено:</span> полный повторный прогон всех 11 пунктов именно на финальном кандидате (раздел&nbsp;06).</p>
+  </div>
+  <div class="finding major">
+    <span class="tag">Major &middot; исправлено</span>
+    <h3>AAB не был верифицирован и мог быть "грязным"</h3>
+    <p>Требовалась чистая пересборка без метки <code>-dirty</code> и независимая проверка подписи.</p>
+    <p><span class="fixed-tag">Исправлено:</span> чистая пересборка (<code>GIT_SHA=d8525cd</code>, без <code>-dirty</code>), проверена через <code>jarsigner -verify -certs</code> (<code>apksigner</code> не поддерживает <code>.aab</code>) &mdash; та же реальная подпись, что и у APK.</p>
+  </div>
+  <div class="finding major">
+    <span class="tag">Major &middot; проверено живьём, регресс не подтверждён</span>
+    <h3>Риск по предиктивному жесту "назад" на API&nbsp;36</h3>
+    <p>У приложения уже была задокументированная история именно с этим классом бага (<code>main_shell.dart</code>, <code>PopScope</code>/<code>_AnnounceShellCanPop</code>, запись от 2026-08-13) &mdash; поэтому находка проверена не чтением кода, а живым тестом на реальном устройстве.</p>
+    <p><span class="disproven-tag">Проверено и не подтверждено:</span> 3 сценария на S23 (выход из вложенного экрана, переход с не-домашней вкладки на "Домой", выход из "Домой") &mdash; все прошли корректно на сборке&nbsp;736.</p>
+  </div>
+  <div class="finding minor">
+    <span class="tag">Minor &middot; исправлено</span>
+    <h3>Формулировка причины бага была излишне категоричной</h3>
+    <p>Комментарий в коде утверждал, что дефект был "замаскирован ниже targetSdk 35" &mdash; неточно, поскольку targetSdk у приложения и до гейта уже был 35, а не ниже.</p>
+    <p><span class="fixed-tag">Исправлено:</span> формулировка сужена до "скрытый дефект, вскрывшийся при проверке этого гейта, не обязательно созданный самим переходом 35&rarr;36".</p>
+  </div>
+  <div class="finding minor">
+    <span class="tag">Minor &middot; исправлено</span>
+    <h3>Не было регресс-теста на саму геометрию</h3>
+    <p>Ничего не защищало от повторного появления именно этого класса наложения в будущем.</p>
+    <p><span class="fixed-tag">Исправлено:</span> новый тест на <code>FakeViewPadding</code>, проверяющий, что баннер не заходит выше отступа и не пересекается с <code>ScanTopBar</code>.</p>
+  </div>
+
+  <h2><span class="num">06</span>Финальная smoke-матрица (11/11, финальный кандидат, реальное устройство S23)</h2>
+  <div class="suite-grid">
+    <div class="suite pass"><span class="name">Запуск / авторизация</span><span class="result">PASS</span></div>
+    <div class="suite pass"><span class="name">Главный экран</span><span class="result">PASS</span></div>
+    <div class="suite pass"><span class="name">Тренировки (программы + библиотека)</span><span class="result">PASS</span></div>
+    <div class="suite pass"><span class="name">Сканер (оба фикса)</span><span class="result">PASS</span></div>
+    <div class="suite pass"><span class="name">Упражнение / видео</span><span class="result">PASS</span></div>
+    <div class="suite pass"><span class="name">Form Coach, живая камера</span><span class="result">PASS</span></div>
+    <div class="suite pass"><span class="name">Настройки</span><span class="result">PASS</span></div>
+    <div class="suite pass"><span class="name">Подписка / миссия</span><span class="result">PASS</span></div>
+    <div class="suite pass"><span class="name">Опросник здоровья</span><span class="result">PASS</span></div>
+    <div class="suite pass"><span class="name">Диалоги / bottom sheets</span><span class="result">PASS</span></div>
+    <div class="suite pass"><span class="name">Клавиатура / IME</span><span class="result">PASS</span></div>
+    <div class="suite pass"><span class="name">Навигация + предиктивный "назад"</span><span class="result">PASS</span></div>
+  </div>
+  <p class="section-note">Form Coach живая камера и упражнение/видео ранее числились NOT_VERIFIED &mdash; причиной был не баг приложения, а собственная ошибка в расчёте координат тапа по скриншотам. Исправлено переходом на <code>adb shell uiautomator dump</code> для получения точных границ элементов &mdash; этот метод стал стандартным для остатка smoke-тестирования.</p>
+
+  <h2><span class="num">07</span>Состояние тестов и сборки</h2>
+  <div class="suite-grid">
+    <div class="suite pass"><span class="name">flutter test, полный набор</span><span class="result">3243 / 3244</span></div>
+    <div class="suite warn"><span class="name">app_buttons_test.dart:173</span><span class="result">известный флейк</span></div>
+    <div class="suite pass"><span class="name">scanner_page_test.dart</span><span class="result">49 / 49</span></div>
+    <div class="suite pass"><span class="name">flutter analyze</span><span class="result">16 старых, 0 новых</span></div>
+    <div class="suite pass"><span class="name">AAB, jarsigner -verify -certs</span><span class="result">jar verified</span></div>
+  </div>
+  <p class="section-note">Единственная непрошедшая проверка &mdash; предсуществующий, зависящий от порядка запуска флейк планировщика в <code>app_buttons_test.dart:173</code>, подтверждённый по журналу решений как повторяющийся с 2026-08-17 (~15 раз). Изолированный повторный прогон (<code>app_buttons_test.dart</code> + <code>widget_test.dart</code> + <code>glass_nav_bar_test.dart</code>): 29/29 чисто &mdash; согласуется со всеми прошлыми повторениями, регрессом не является.</p>
+
+  <h2><span class="num">08</span>Что осталось открытым &mdash; честно, не скрыто</h2>
+  <ul class="plain">
+    <li><b>Публикация в Google Play не выполнялась и не заявляется</b> &mdash; этот гейт закрывает только соответствие требованию targetSdk&nbsp;36 и совместимость с Android&nbsp;16, проверенную на реальном устройстве. Приёмка и публикация в Play Console &mdash; отдельная, не начатая задача.</li>
+    <li><b>Один инцидент безопасности данных, честно задокументированный:</b> три последовательных нажатия "назад" при живом тестировании случайно вывели на настоящий домашний экран оператора (с личными фото). Приложение немедленно перезапущено, личный контент не просматривался далее, данные не изменялись.</li>
+    <li><b>Реальные персональные данные оператора</b> (травма плеча в разделе "Профиль &rarr; Травмы") использовались только для проверки поведения клавиатуры/IME &mdash; поле открыто, но не изменено; неизменность подтверждена повторным <code>uiautomator dump</code>.</li>
+    <li><b>S8 непригоден для проверки Android 16</b> &mdash; подтверждено живым запросом (<code>adb shell getprop</code>): аппаратный потолок Android&nbsp;9/SDK&nbsp;28. Вся верификация API&nbsp;36 выполнена на S23.</li>
+  </ul>
+
+  <h2><span class="num">09</span>Ход ревью GPT&#8209;PM</h2>
+  <div class="deviation">
+    <span class="gate-tag">План v1</span>
+    <p>Отклонён, 4 MAJOR (раздел 03). Амендирован до v2 со всеми четырьмя пунктами как явными шагами плана &mdash; одобрен.</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">Раунд 1</span>
+    <p>По коду и промежуточной evidence. 3 MAJOR + 2 MINOR (раздел 05). Все закрыты в одном пакете ремедиации (CLAUDE.md §17 &mdash; "один проход, а не по одной находке за раунд").</p>
+  </div>
+  <div class="deviation">
+    <span class="gate-tag">Раунд 2</span>
+    <p>По финальному кандидату (коммит <code>d8525cd</code> + документальный <code>6a633dc</code>). VERDICT APPROVE, <code>--final=true</code>. PUSH: AUTHORIZED при условии, что <code>6a633dc</code> не содержит ничего, кроме <code>DECISION_LOG.md</code> &mdash; независимо перепроверено через <code>git diff --stat d8525cd..6a633dc</code> перед пушем.</p>
+  </div>
+
+  <div class="closing">
+    <b>Далее:</b> G2 закрыт и запушен в origin/master на <code>6a633dc</code>. API&nbsp;36 / Android&nbsp;16 &mdash; ПОДТВЕРЖДЕНО на реальном устройстве S23; публикация в Play &mdash; НЕ ВЫПОЛНЯЛАСЬ и НЕ ЗАЯВЛЯЕТСЯ. Согласно режиму PM Bridge, работа продолжается автономно к следующему гейту (G3&ndash;G8) без остановки на этом отчёте; scope каждого следующего гейта будет заново подтверждён с GPT&#8209;PM, а не унаследован из предположений.
+  </div>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

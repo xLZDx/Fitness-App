@@ -26959,3 +26959,48 @@ device by this gate's testing.
 
 Ready for GPT-PM review round 2: final-candidate smoke matrix complete, verified AAB, all round-1
 findings addressed.
+
+## G2 round 2 (GPT-PM), push, and closure
+
+Sent the final candidate to GPT-PM scoped exactly to what round 1 asked for: full smoke matrix on
+the final candidate, clean AAB verification, predictive-back re-confirmation, direct remediation
+regressions -- explicitly not reopening targetSdk architecture or the Scanner layout approach.
+
+GPT-PM verdict: **APPROVE**, `--final=true`. All three round-1 MAJORs confirmed closed (smoke
+matrix, AAB, predictive back) and both MINORs confirmed closed (wording, geometry test). No
+remaining scoped BLOCKER/MAJOR/MINOR. Push authorized for exact HEAD `6a633dc`, conditional on
+that commit containing no mutation outside `core/DECISION_LOG.md` after `d8525cd` -- GPT-PM could
+not independently inspect `6a633dc` (not yet on the remote at review time) and relied on the stated
+claim.
+
+Verified the condition myself before trusting it (CLAUDE.md Sec3 -- do not act on an unverified
+claim, even a favorable one): `git diff --stat d8525cd..6a633dc` -> exactly 1 file,
+`core/DECISION_LOG.md`, 70 insertions. Condition held. Pushed to origin/master:
+`c55877c..6a633dc`.
+
+Closure scope note (GPT-PM's own wording, carried into the report): API 36 / Android 16
+compatibility -- VERIFIED on real S23 hardware. Play publication/acceptance -- NOT PERFORMED / NOT
+CLAIMED.
+
+**First Rosetta closure attempt was premature.** Called `pm_rosetta_close(passed)` and
+`pm_set_gate(MVP1.G2, passed)` immediately after the push, without having produced the mandatory
+bilingual HTML closure report the plan's own binding DoD required. GPT-PM caught this on the
+auto-notify from both calls (2x MAJOR, same finding): the report was missing from the pushed range,
+and Rosetta's own reconstructed changed-set (18 paths) was polluted by unrelated pre-existing
+untracked workspace files (old marketing/citation reports never part of this plan), while the
+authoritative Git range `c55877c..6a633dc` is exactly 7 commits / 5 paths. GPT-PM did not reopen
+any code/test/device finding -- explicitly confirmed the technical implementation remains approved
+and pushed; the defect was closure-process completeness only.
+
+Remediation: wrote the bilingual closure report (`reports/G2_ANDROID16_TARGETSDK36_2026-08-27.ru.html`
++ `.html`, house html-report format, provenance-conformed via `report_conform.py`), published the
+Russian version as a Claude Artifact, and this entry itself documents that remediation before
+re-closing the Rosetta plan and the gate. Per GPT-PM's own instruction: mark the Rosetta live
+changed-set as non-authoritative for scope purposes on this plan (polluted by unrelated untracked
+workspace files); the canonical range is Git-verified `c55877c..6a633dc` through the implementation,
+extended to include this report's commit for the re-closure.
+
+Commits this gate, in order: `0ccd484` (pin targetSdk=36), `6180453` (edge-to-edge fix, 2 sites),
+`8ec2d31` (scanner collision fix), `fc53b37`, `1f927a0` (test-result records), `d8525cd` (round-1
+remediation), `6a633dc` (final verification log) -- pushed as a block. Report commit follows
+separately.
