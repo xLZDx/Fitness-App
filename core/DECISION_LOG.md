@@ -29086,3 +29086,29 @@ Monitoring's incident/notification pipeline has no simple `gcloud` list command 
 to check server-side; the only genuine confirmation is the operator's own inbox, the same limitation
 already stated for the FA-D1 temp-policy proof earlier this session. Asked the operator to check for
 both emails.
+
+## Real root cause of the missing FA-D1 emails found: the channel was never verified -- 2026-08-27
+
+The operator's own Gmail screenshots (two, on request) confirmed: no Google Cloud Monitoring alert
+email had arrived from either trigger, and separately confirmed this session's earlier "CI is
+broken" finding is real but account-wide (GitHub Actions failing identically on `Fitness-App`,
+`db_test_tool_clean` and `Virtual_marketing_company` since before this session started -- a billing/
+minutes-quota issue on the operator's GitHub account, not a Fitness_App code defect; nothing to fix
+in this repo, verified via the GitHub Actions REST API using the credential from `git credential
+fill` -- every recent job across all 4 workflow files completes in ~3s with `runner_id: 0` and an
+empty `steps` array, the exact signature of a job that never got a runner, not a real test/build
+failure. `.github/workflows/*.yml` and this repo's own CI health are out of scope for this
+session's own work either way).
+
+**Root cause of the missing alert emails, confirmed via Google's own documentation (WebSearch)**: a
+notification channel created via `gcloud`/API starts `UNVERIFIED`, and "this means unverified email
+channels will not deliver notifications" -- the channel silently drops everything sent to it until
+verified. This explains both earlier non-deliveries without needing to distrust the AlertPolicy/log
+matching, which had already been independently confirmed correct.
+
+**Fixed**: `notificationChannels.sendVerificationCode` (empty POST body) -- Google emailed a code to
+`korostelevivan@gmail.com`; operator provided it (`G-100977`); `notificationChannels.verify` with
+that code returned `"verificationStatus": "VERIFIED"`. Immediately re-triggered the FA-D1 temp-policy
+proof with a second, clearly-marked synthetic log entry (noting explicitly in its own payload that
+the first two attempts predate verification and were likely dropped). Awaiting the operator's
+confirmation that this one actually arrives -- the definitive proof GPT-PM's DoD requires.
