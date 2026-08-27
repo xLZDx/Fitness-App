@@ -17,8 +17,7 @@
  * actually reads, so a profile that is defined but wired to nothing still
  * fails here.
  */
-import { readFileSync } from "fs";
-import { join } from "path";
+import { discoverOnCallExports } from "./discover_callables";
 
 import * as admin from "firebase-admin";
 
@@ -261,28 +260,7 @@ describe("App Check enforcement flags", () => {
  * behavioural test of the existing ones can see.
  */
 describe("every callable reports its attestation", () => {
-  const SOURCES = [
-    "index.ts",
-    "video_urls.ts",
-    "account_export.ts",
-    "ai_coach_advice.ts",
-    "ai_equipment_recognition.ts",
-    "ai_machine_description.ts",
-    "ai_exercise_generation.ts",
-  ];
-
-  const sources = SOURCES.map((name) => ({
-    name,
-    text: readFileSync(join(__dirname, "..", name), "utf8"),
-  }));
-
-  const callables = sources.flatMap(({ name, text }) =>
-    [...text.matchAll(/export const (\w+) = onCall/g)].map((m) => ({
-      fn: m[1],
-      file: name,
-      text,
-    })),
-  );
+  const callables = discoverOnCallExports();
 
   test("the inventory is not empty", () => {
     // Otherwise the loop below asserts nothing and passes for ever.

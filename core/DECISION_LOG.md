@@ -28547,3 +28547,34 @@ __tests__/alert_definitions.test.ts,README.md}` changed.
 This closes out GPT-PM's entire alert-independent Step 9 groundwork batch, including its own
 flagged follow-up. Sending to GPT-PM for a final confirmation pass before considering Step 9
 groundwork fully done pending DECISION FA-D1.
+
+## Step 9 groundwork follow-up review: 1 real MAJOR, fixed -- 2026-08-27
+
+GPT-PM's review of `8a1c00a` found `APP_CHECK_KNOWN_CALLABLES` had no mechanical parity guard: a
+future callable could pass `scaling.test.ts`'s "every callable reports its attestation" test
+(calls `noteAppCheck` correctly) while still being silently excluded from the App Check metric's
+bounded filter -- exactly the historical failure (`scaling.test.ts`'s own header: "coverage was
+six of thirteen callables") this whole groundwork exists to prevent. Also caught, correctly, two
+smaller inaccuracies in this entry's own prior wording: the "index.ts x9" callable count was wrong
+(recounted from the grep evidence: 10, not 9 -- fixed) and "would never match" for the unquoted-
+boolean fix overclaimed what Google's docs establish (Cloud Logging converts the filter's
+right-hand value to the field's own type before comparing, so the old quoted form wasn't proven to
+fail -- the fix is about using the type-correct form, not fixing a demonstrated bug).
+
+**Fixed, reusing existing logic per GPT-PM's own instruction** ("reusing/extracting the existing
+source-scanning logic is preferable to creating a third independent inventory"): extracted
+`scaling.test.ts`'s inline callable-discovery regex/file-scan into a shared
+`__tests__/discover_callables.ts` helper (`discoverOnCallExports()`), refactored `scaling.test.ts`
+to use it (behavior-preserving -- diff-reviewed, only the discovery block became a function call).
+Added `__tests__/app_check_metric_parity.test.ts`: compares `discoverOnCallExports()`'s real
+inventory against `APP_CHECK_KNOWN_CALLABLES` as exact sets in both directions (missing callable
+-> fail; stale entry -> fail; size mismatch -> fail). Fixed the x9->x10 comment and the
+boolean-matching wording in both `alert_definitions.ts`'s comment and `README.md`.
+
+**Verification:** `npm run build` clean. `npx jest`: 436/436 (432 + 4 new parity tests). No
+application/producer file touched -- confirmed via `git status`: only
+`__tests__/scaling.test.ts` (refactor), `monitoring/{alert_definitions.ts,README.md}` (wording),
+plus the two new files.
+
+Sent back to GPT-PM with the exact commit. If approved, the entire alert-independent Step 9
+groundwork batch -- including both of its own follow-up findings -- is closed.

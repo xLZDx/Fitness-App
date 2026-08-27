@@ -157,12 +157,15 @@ export function exportAccountAlertPolicyJson(): object {
 
 /**
  * Log-based metric for App Check attestation ratio. Grep-verified 17 call
- * sites of `noteAppCheck` (`index.ts` x9, `video_urls.ts` x2,
+ * sites of `noteAppCheck` (`index.ts` x10, `video_urls.ts` x2,
  * `account_export.ts` x1, the 4 `ai_*.ts` callables x1 each), each passing
  * a compile-time string literal -- never user-supplied -- so `fn`'s real
  * cardinality only grows via a deliberate code change, not per-request or
  * per-user traffic. `attested` is a genuine boolean (`request.app !==
- * undefined`), rendered unquoted by `boundedLabelFilterClause`'s BOOL case.
+ * undefined`), rendered unquoted by `boundedLabelFilterClause`'s BOOL case
+ * -- Cloud Logging converts the filter's right-hand value to the field's
+ * own type before comparing, so an unquoted `true`/`false` is simply the
+ * type-correct form for a boolean field, not a fix for a proven mismatch.
  * No uid or other per-user field is a label, matching `noteAppCheck`'s own
  * privacy design (abuse_guard.ts:49-51).
  *
@@ -170,16 +173,17 @@ export function exportAccountAlertPolicyJson(): object {
  * one runtime tuple, so the type system itself keeps the bounding list
  * exhaustive): `noteAppCheck`'s `fn` parameter is a plain `string`, not a
  * union -- there is no compile-time source of truth to derive this list
- * from. `APP_CHECK_KNOWN_CALLABLES` below is therefore a maintained list,
- * same class of risk GPT-PM's review flagged for the AI Gateway operation
- * list before that fix. The actual coverage guarantee that every real
- * callable calls `noteAppCheck` at all is a SEPARATE test
- * (`__tests__/scaling.test.ts`'s "every callable reports its attestation",
- * which scans the real source files) -- it does not, and cannot by
- * itself, keep THIS metric's `allowedValues` list in sync. A new callable
- * added later will not appear in this metric's data until this list is
- * updated by hand. Stated as a known limitation, not silently assumed
- * solved by analogy to the AI Gateway fix.
+ * from. `APP_CHECK_KNOWN_CALLABLES` below is a maintained list, the same
+ * class of risk GPT-PM's review flagged for the AI Gateway operation list
+ * before that fix. Closed the same way that fix was preferred: not by a
+ * comment, but by `__tests__/app_check_metric_parity.test.ts`, which
+ * mechanically compares this list against `discoverOnCallExports()` (the
+ * SAME real-source-scanning inventory `__tests__/scaling.test.ts`'s
+ * "every callable reports its attestation" test already uses) as exact
+ * sets in both directions -- a callable missing from this list, or a
+ * stale entry with no matching callable, both fail that test. A new
+ * callable is therefore caught at test time, not left to page nobody in
+ * production because its logs were silently excluded from the metric.
  */
 export const APP_CHECK_KNOWN_CALLABLES = [
   "aiCoachAdvice",

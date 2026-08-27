@@ -37,12 +37,20 @@ current, in `alert_definitions.ts`'s own comment), the same class of risk
 the AI Gateway operation list had before its fix -- a new callable added
 later will not appear in this metric until the list is updated by hand.
 The separate guarantee that every real callable calls `noteAppCheck` at all
-is `__tests__/scaling.test.ts`'s own source-scanning test, which does not
-and cannot keep this metric's bounding list in sync by itself. `attested`
-needed one more real fix: it is a genuine boolean, and the shared
-`boundedLabelFilterClause` renderer originally quoted every value as a
-string (`="true"`), which would never match a real boolean log field --
-fixed to render BOOL-typed labels unquoted (`=true`).
+is `__tests__/scaling.test.ts`'s own source-scanning test -- extracted
+(2026-08-27) into a shared `__tests__/discover_callables.ts` helper so it
+has exactly one implementation, reused by
+`__tests__/app_check_metric_parity.test.ts`, which mechanically compares
+that discovered inventory against `APP_CHECK_KNOWN_CALLABLES` as exact
+sets in both directions: a callable missing from the list, or a stale
+entry with none discovered, both fail the test. `attested` needed one more
+fix: it is a genuine boolean, and the shared `boundedLabelFilterClause`
+renderer originally quoted every value as a string (`="true"`); GPT-PM's
+correction (2026-08-27) on this file's own earlier wording: Cloud
+Logging converts a filter's right-hand value to the field's own type
+before comparing, so the quoted form was not established as failing to
+match -- rendering BOOL-typed labels unquoted (`=true`) is the
+type-correct form, not a fix for a proven mismatch.
 
 ## Resource shape: Gen2 (Cloud Run), corrected 2026-08-27
 
