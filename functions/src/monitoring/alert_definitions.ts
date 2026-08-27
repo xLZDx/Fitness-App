@@ -29,11 +29,20 @@ import {
   PLATFORM_UNHANDLED_ERROR,
   APP_CHECK_EVENT,
 } from "./log_signals";
-import type { LogMatchFilterSpec, LogBasedMetricSpec } from "./types";
-import { toGcpFilterString } from "./types";
+import type {
+  LogMatchFilterSpec,
+  LogBasedMetricSpec,
+  AlertPolicySpec,
+} from "./types";
+import { toGcpFilterString, toAlertPolicyJson } from "./types";
 
 /**
- * Deployed Cloud Run/Functions service name for the Stripe webhook handler.
+ * TypeScript export names of the enclosing deployed Cloud Functions.
+ * `toCloudRunServiceName` (types.ts) derives the actual Gen2 Cloud Run
+ * service name from these at render/match time -- kept as the source
+ * export name here, not the derived name, so a function rename in index.ts
+ * changes both the filter and its tests together.
+ *
  * `reconcileDuplicateSubscriptions` (index.ts:1862) is a plain function
  * called from inside `stripeWebhook` (index.ts:1019, an `onRequest`
  * export) -- it has no function identity of its own in Cloud Logging, so
@@ -42,6 +51,10 @@ import { toGcpFilterString } from "./types";
 const STRIPE_WEBHOOK_FUNCTION_NAME = "stripeWebhook";
 const DELETE_ACCOUNT_FUNCTION_NAME = "deleteAccount";
 const EXPORT_ACCOUNT_FUNCTION_NAME = "exportAccountData";
+
+/** Standard rate limit/auto-close for every log-match policy defined here. */
+const NOTIFICATION_RATE_LIMIT_PERIOD = "300s"; // 5 min: avoid renotifying on every raw log line
+const AUTO_CLOSE = "604800s"; // 7 days: Google Cloud Monitoring's own default
 
 /**
  * Every duplicate-subscription reconciliation failure inside the Stripe
@@ -53,7 +66,7 @@ const EXPORT_ACCOUNT_FUNCTION_NAME = "exportAccountData";
  * exactly why this log line is the only remaining signal of the failure.
  */
 export const STRIPE_RECONCILIATION_FAILURE_FILTER: LogMatchFilterSpec = {
-  functionName: STRIPE_WEBHOOK_FUNCTION_NAME,
+  exportName: STRIPE_WEBHOOK_FUNCTION_NAME,
   messageEquals: [STRIPE_RECONCILE_CANCEL_FAILED, STRIPE_RECONCILE_FAILED],
 };
 
@@ -65,7 +78,7 @@ export const STRIPE_RECONCILIATION_FAILURE_FILTER: LogMatchFilterSpec = {
  * explicit catch names).
  */
 export const DELETE_ACCOUNT_FAILURE_FILTER: LogMatchFilterSpec = {
-  functionName: DELETE_ACCOUNT_FUNCTION_NAME,
+  exportName: DELETE_ACCOUNT_FUNCTION_NAME,
   messageEquals: [
     DELETE_ACCOUNT_STRIPE_CANCEL_FAILED,
     DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED,
@@ -76,7 +89,7 @@ export const DELETE_ACCOUNT_FAILURE_FILTER: LogMatchFilterSpec = {
 
 /** Same shape as delete, for the export path's one explicit failure log. */
 export const EXPORT_ACCOUNT_FAILURE_FILTER: LogMatchFilterSpec = {
-  functionName: EXPORT_ACCOUNT_FUNCTION_NAME,
+  exportName: EXPORT_ACCOUNT_FUNCTION_NAME,
   messageEquals: [EXPORT_ACCOUNT_FAILED, PLATFORM_UNHANDLED_ERROR],
 };
 
@@ -90,6 +103,52 @@ export function deleteAccountAlertFilterString(): string {
 
 export function exportAccountAlertFilterString(): string {
   return toGcpFilterString(EXPORT_ACCOUNT_FAILURE_FILTER);
+}
+
+/**
+ * The full, deployable-shaped `AlertPolicy` JSON for each log-match monitor
+ * -- not just a filter string (see `types.ts`'s `AlertPolicySpec` doc for
+ * why a filter alone was insufficient per GPT-PM's review). Each has
+ * `notificationChannels: []`: safe by construction even if applied today,
+ * since a policy with no channels notifies nobody. Attaching a channel is
+ * the deliberate, separate step gated on `DECISION FA-D1`.
+ */
+export const STRIPE_RECONCILIATION_ALERT_POLICY: AlertPolicySpec = {
+  displayName: "Stripe duplicate-subscription reconciliation failure",
+  conditionDisplayName: "Any reconciliation failure log in stripeWebhook",
+  filter: STRIPE_RECONCILIATION_FAILURE_FILTER,
+  notificationRateLimitPeriod: NOTIFICATION_RATE_LIMIT_PERIOD,
+  autoClose: AUTO_CLOSE,
+};
+
+export const DELETE_ACCOUNT_ALERT_POLICY: AlertPolicySpec = {
+  displayName: "deleteAccount operational failure",
+  conditionDisplayName:
+    "Any named failure or unhandled error in deleteAccount",
+  filter: DELETE_ACCOUNT_FAILURE_FILTER,
+  notificationRateLimitPeriod: NOTIFICATION_RATE_LIMIT_PERIOD,
+  autoClose: AUTO_CLOSE,
+};
+
+export const EXPORT_ACCOUNT_ALERT_POLICY: AlertPolicySpec = {
+  displayName: "exportAccountData operational failure",
+  conditionDisplayName:
+    "Any named failure or unhandled error in exportAccountData",
+  filter: EXPORT_ACCOUNT_FAILURE_FILTER,
+  notificationRateLimitPeriod: NOTIFICATION_RATE_LIMIT_PERIOD,
+  autoClose: AUTO_CLOSE,
+};
+
+export function stripeReconciliationAlertPolicyJson(): object {
+  return toAlertPolicyJson(STRIPE_RECONCILIATION_ALERT_POLICY);
+}
+
+export function deleteAccountAlertPolicyJson(): object {
+  return toAlertPolicyJson(DELETE_ACCOUNT_ALERT_POLICY);
+}
+
+export function exportAccountAlertPolicyJson(): object {
+  return toAlertPolicyJson(EXPORT_ACCOUNT_ALERT_POLICY);
 }
 
 /**

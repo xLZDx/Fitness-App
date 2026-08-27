@@ -6,30 +6,51 @@ import {
   stripeReconciliationAlertFilterString,
   deleteAccountAlertFilterString,
   exportAccountAlertFilterString,
+  stripeReconciliationAlertPolicyJson,
+  deleteAccountAlertPolicyJson,
+  exportAccountAlertPolicyJson,
 } from "../alert_definitions";
-import { matchesLogMatchFilter, type LogEntryFixture } from "../types";
+import {
+  matchesLogMatchFilter,
+  toCloudRunServiceName,
+  type LogEntryFixture,
+} from "../types";
 import * as signals from "../log_signals";
 
 function entry(
-  functionName: string,
+  serviceName: string,
   message: string,
   severity: LogEntryFixture["severity"] = "ERROR",
 ): LogEntryFixture {
-  return { functionName, message, severity };
+  return { serviceName, message, severity };
 }
 
+describe("toCloudRunServiceName", () => {
+  it("lowercases and hyphenates a camelCase export name", () => {
+    expect(toCloudRunServiceName("deleteAccount")).toBe("deleteaccount");
+    expect(toCloudRunServiceName("exportAccountData")).toBe(
+      "exportaccountdata",
+    );
+    expect(toCloudRunServiceName("stripeWebhook")).toBe("stripewebhook");
+  });
+
+  it("replaces underscores with hyphens", () => {
+    expect(toCloudRunServiceName("some_fn_name")).toBe("some-fn-name");
+  });
+});
+
 describe("Stripe reconciliation-failure alert filter", () => {
-  it("matches both real failure log lines from the webhook", () => {
+  it("matches both real failure log lines from the webhook's deployed service", () => {
     expect(
       matchesLogMatchFilter(
         STRIPE_RECONCILIATION_FAILURE_FILTER,
-        entry("stripeWebhook", signals.STRIPE_RECONCILE_CANCEL_FAILED),
+        entry("stripewebhook", signals.STRIPE_RECONCILE_CANCEL_FAILED),
       ),
     ).toBe(true);
     expect(
       matchesLogMatchFilter(
         STRIPE_RECONCILIATION_FAILURE_FILTER,
-        entry("stripeWebhook", signals.STRIPE_RECONCILE_FAILED),
+        entry("stripewebhook", signals.STRIPE_RECONCILE_FAILED),
       ),
     ).toBe(true);
   });
@@ -38,29 +59,31 @@ describe("Stripe reconciliation-failure alert filter", () => {
     expect(
       matchesLogMatchFilter(
         STRIPE_RECONCILIATION_FAILURE_FILTER,
-        entry("stripeWebhook", signals.STRIPE_RECONCILE_DUPLICATE_FOUND, "WARNING"),
+        entry("stripewebhook", signals.STRIPE_RECONCILE_DUPLICATE_FOUND, "WARNING"),
       ),
     ).toBe(false);
     expect(
       matchesLogMatchFilter(
         STRIPE_RECONCILIATION_FAILURE_FILTER,
-        entry("stripeWebhook", signals.STRIPE_RECONCILE_CANCEL_OK, "INFO"),
+        entry("stripewebhook", signals.STRIPE_RECONCILE_CANCEL_OK, "INFO"),
       ),
     ).toBe(false);
   });
 
-  it("does not match the identical message from a different function", () => {
+  it("does not match the identical message from a different service", () => {
     expect(
       matchesLogMatchFilter(
         STRIPE_RECONCILIATION_FAILURE_FILTER,
-        entry("deleteAccount", signals.STRIPE_RECONCILE_FAILED),
+        entry("deleteaccount", signals.STRIPE_RECONCILE_FAILED),
       ),
     ).toBe(false);
   });
 
-  it("renders a filter string scoped to the stripeWebhook function", () => {
+  it("renders a Gen2-shaped filter string scoped to the stripewebhook Cloud Run service", () => {
     const filter = stripeReconciliationAlertFilterString();
-    expect(filter).toContain('resource.labels.function_name="stripeWebhook"');
+    expect(filter).toContain('resource.type="cloud_run_revision"');
+    expect(filter).toContain('resource.labels.service_name="stripewebhook"');
+    expect(filter).not.toContain("function_name");
     expect(filter).toContain(signals.STRIPE_RECONCILE_CANCEL_FAILED);
     expect(filter).toContain(signals.STRIPE_RECONCILE_FAILED);
   });
@@ -76,7 +99,7 @@ describe("deleteAccount operational-failure alert filter", () => {
       expect(
         matchesLogMatchFilter(
           DELETE_ACCOUNT_FAILURE_FILTER,
-          entry("deleteAccount", message),
+          entry("deleteaccount", message),
         ),
       ).toBe(true);
     }
@@ -90,7 +113,7 @@ describe("deleteAccount operational-failure alert filter", () => {
     expect(
       matchesLogMatchFilter(
         DELETE_ACCOUNT_FAILURE_FILTER,
-        entry("deleteAccount", signals.PLATFORM_UNHANDLED_ERROR),
+        entry("deleteaccount", signals.PLATFORM_UNHANDLED_ERROR),
       ),
     ).toBe(true);
   });
@@ -111,14 +134,15 @@ describe("deleteAccount operational-failure alert filter", () => {
     expect(
       matchesLogMatchFilter(
         DELETE_ACCOUNT_FAILURE_FILTER,
-        entry("exportAccountData", signals.PLATFORM_UNHANDLED_ERROR),
+        entry("exportaccountdata", signals.PLATFORM_UNHANDLED_ERROR),
       ),
     ).toBe(false);
   });
 
-  it("renders a filter string scoped to the deleteAccount function", () => {
+  it("renders a Gen2-shaped filter string scoped to the deleteaccount Cloud Run service", () => {
     const filter = deleteAccountAlertFilterString();
-    expect(filter).toContain('resource.labels.function_name="deleteAccount"');
+    expect(filter).toContain('resource.type="cloud_run_revision"');
+    expect(filter).toContain('resource.labels.service_name="deleteaccount"');
     expect(filter).toContain(signals.PLATFORM_UNHANDLED_ERROR);
   });
 });
@@ -128,13 +152,13 @@ describe("exportAccountData operational-failure alert filter", () => {
     expect(
       matchesLogMatchFilter(
         EXPORT_ACCOUNT_FAILURE_FILTER,
-        entry("exportAccountData", signals.EXPORT_ACCOUNT_FAILED),
+        entry("exportaccountdata", signals.EXPORT_ACCOUNT_FAILED),
       ),
     ).toBe(true);
     expect(
       matchesLogMatchFilter(
         EXPORT_ACCOUNT_FAILURE_FILTER,
-        entry("exportAccountData", signals.PLATFORM_UNHANDLED_ERROR),
+        entry("exportaccountdata", signals.PLATFORM_UNHANDLED_ERROR),
       ),
     ).toBe(true);
   });
@@ -143,16 +167,54 @@ describe("exportAccountData operational-failure alert filter", () => {
     expect(
       matchesLogMatchFilter(
         EXPORT_ACCOUNT_FAILURE_FILTER,
-        entry("deleteAccount", signals.PLATFORM_UNHANDLED_ERROR),
+        entry("deleteaccount", signals.PLATFORM_UNHANDLED_ERROR),
       ),
     ).toBe(false);
   });
 
-  it("renders a filter string scoped to the exportAccountData function", () => {
+  it("renders a Gen2-shaped filter string scoped to the exportaccountdata Cloud Run service", () => {
     const filter = exportAccountAlertFilterString();
+    expect(filter).toContain('resource.type="cloud_run_revision"');
     expect(filter).toContain(
-      'resource.labels.function_name="exportAccountData"',
+      'resource.labels.service_name="exportaccountdata"',
     );
+  });
+});
+
+describe("AlertPolicy JSON shape (Cloud Monitoring projects.alertPolicies REST shape)", () => {
+  it.each([
+    ["Stripe reconciliation", stripeReconciliationAlertPolicyJson()],
+    ["deleteAccount", deleteAccountAlertPolicyJson()],
+    ["exportAccountData", exportAccountAlertPolicyJson()],
+  ])("%s policy has the full deployable shape, not a bare filter", (_label, policy) => {
+    const p = policy as {
+      displayName: string;
+      combiner: string;
+      conditions: Array<{ conditionMatchedLog?: { filter: string } }>;
+      alertStrategy: {
+        notificationRateLimit: { period: string };
+        autoClose: string;
+      };
+      notificationChannels: unknown[];
+    };
+    expect(typeof p.displayName).toBe("string");
+    expect(p.displayName.length).toBeGreaterThan(0);
+    expect(p.combiner).toBe("OR");
+    expect(p.conditions).toHaveLength(1);
+    expect(p.conditions[0].conditionMatchedLog?.filter).toEqual(
+      expect.stringContaining('resource.type="cloud_run_revision"'),
+    );
+    expect(p.alertStrategy.notificationRateLimit.period).toMatch(/^\d+s$/);
+    expect(p.alertStrategy.autoClose).toMatch(/^\d+s$/);
+  });
+
+  it.each([
+    ["Stripe reconciliation", stripeReconciliationAlertPolicyJson()],
+    ["deleteAccount", deleteAccountAlertPolicyJson()],
+    ["exportAccountData", exportAccountAlertPolicyJson()],
+  ])("%s policy has an empty notificationChannels list (no live paging until FA-D1)", (_label, policy) => {
+    const p = policy as { notificationChannels: unknown[] };
+    expect(p.notificationChannels).toEqual([]);
   });
 });
 

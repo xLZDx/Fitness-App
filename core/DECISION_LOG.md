@@ -28326,3 +28326,57 @@ plan/GO/close cycle. Flagging this judgment call explicitly rather than silently
 Status: all three items `DEFINED`/`TESTED`. Stripe and delete/export alerts `READY_TO_ACTIVATE`
 (blocked only on FA-D1). App Check metric definition `READY_TO_ACTIVATE`; live metric `HOLD`
 pending real cost data this session cannot supply (see README.md's cost-model section).
+
+## Step 9 groundwork, items 1-3: GPT-PM review round 1 -- 2 real MAJORs, both fixed -- 2026-08-27
+
+Pushed commit `41cb872` (report + monitoring batch, 2 commits ahead of origin) so GPT-PM's
+GitHub-connector review could actually see it -- its first review attempt correctly returned a
+BLOCKER for "not independently retrievable" before the push, which was itself a real finding (I
+had asked for review of an unpushed local commit). Per the standing "GPT-PM push authority"
+delegation and its own prior "PUSH: AUTHORIZED по действующей G3 policy" for this batch, pushed
+without a separate ask.
+
+Second round, against the actual pushed diff, returned 2 real MAJOR findings (both independently
+verified before accepting, per the standing evidence-over-assumption rule -- not taken on GPT-PM's
+word alone):
+
+1. **Wrong Cloud Logging resource shape.** The filters used `resource.labels.function_name` --
+   the Gen1 shape. This project's functions all deploy via `firebase-functions/v2` (Gen2, Cloud
+   Run-based; confirmed `index.ts:44-45`), whose log entries carry `resource.type=
+   "cloud_run_revision"` + `resource.labels.service_name`, never `function_name`. Confirmed via
+   two independent web searches against Google's own docs/community reports (not GPT-PM's claim
+   alone). A Gen1-shaped filter against a Gen2 function would match zero real log entries -- a
+   monitor silently green during an actual failure, the exact failure mode this groundwork exists
+   to prevent.
+2. **Filter string is not a deployable AlertPolicy.** GPT-PM's original DoD asked for a
+   "JSON/YAML/Terraform/renderer producing a valid LogMatch policy," and the first version only
+   produced the bare filter string. Confirmed the real `google.monitoring.v3.AlertPolicy` REST
+   shape via `WebFetch` against Google's own REST reference: `displayName`, `combiner`,
+   `conditions[].conditionMatchedLog.filter`, `alertStrategy.{notificationRateLimit.period,
+   autoClose}`, `notificationChannels`.
+
+**Fixed, both narrowly per GPT-PM's own scoped remediation instruction** ("correct the Gen2
+resource scoping + turn the three filter specs into actual source-controlled LogMatch AlertPolicy
+definitions + direct tests only. No application logging changes should be necessary" -- true, this
+round touched only `functions/src/monitoring/`, zero further changes to index.ts/account_export.ts/
+abuse_guard.ts):
+- `types.ts`: added `toCloudRunServiceName()` (uppercase->lowercase, underscore->hyphen -- sourced
+  from firebase-tools' documented Gen2 deploy transform via WebSearch, explicitly flagged in both
+  the code comment and README.md as NOT independently confirmed against this project's live
+  deployment, since this session has no gcloud/Cloud Logging access). `LogMatchFilterSpec` now
+  stores the TS export name (`exportName`), not a pre-guessed service name, so the transform is
+  the single source of truth for both rendering and test matching. Added `AlertPolicySpec` +
+  `toAlertPolicyJson()` producing the real REST shape, `notificationChannels: []` always.
+- `alert_definitions.ts`: three new `*_ALERT_POLICY` specs + `*AlertPolicyJson()` exports.
+- `__tests__/alert_definitions.test.ts`: added `toCloudRunServiceName` unit tests, updated all
+  fixtures to use lowercase service names (matching what a real Gen2 log entry would contain), and
+  added AlertPolicy schema/shape tests (full REST shape present, `notificationChannels` always
+  empty) for all three policies.
+- `README.md`: new "Resource shape: Gen2 (Cloud Run), corrected 2026-08-27" section with the full
+  reasoning and the explicit caveat about the unverified service-name transform.
+
+**Verification:** `npm run build` clean. `npx jest`: 410/410 (402 + 8 new). No changes to any
+production log call site in this round.
+
+Sent back to GPT-PM with the exact commit for its own re-verification, per its own instruction
+("the next review remains scoped to this commit only").

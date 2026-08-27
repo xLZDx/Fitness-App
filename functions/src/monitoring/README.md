@@ -14,10 +14,38 @@ change. See `core/DECISION_LOG.md` for the full exchange.
 | Delete/export operational-failure alert | `DEFINED`/`TESTED`, see audit below | `READY_TO_ACTIVATE` -- same, blocked only on `FA-D1` |
 | App Check attested-ratio metric | `DEFINED`/`TESTED` | `HOLD` -- blocked on a real (not estimated) incremental-cost figure, see below |
 
-None of the three has a notification channel attached in its definition
-(`notificationChannels: []` is the intended shape when one is eventually
-rendered to a real `google_monitoring_alert_policy`) -- attaching a channel is
-exactly the FA-D1-gated step.
+Every alert policy renders the real `google.monitoring.v3.AlertPolicy` REST
+shape (`toAlertPolicyJson` in `types.ts`) with `notificationChannels: []` --
+attaching a channel is exactly the FA-D1-gated step, and a policy with no
+channels notifies nobody even if it were applied today.
+
+## Resource shape: Gen2 (Cloud Run), corrected 2026-08-27
+
+GPT-PM's review of the first version of this module (commit `41cb872`) found
+it used `resource.labels.function_name` -- the Gen1 Cloud Functions Cloud
+Logging shape. Every function in this project deploys via
+`firebase-functions/v2` (Gen2, confirmed: `index.ts:44-45` imports `onCall`/
+`onRequest` from `firebase-functions/v2/https`), which runs on Cloud Run.
+Independently verified (not taken on GPT-PM's word alone, per the standing
+evidence-over-assumption rule) via Google's own documentation and community
+reports: Gen2 function log entries carry `resource.type="cloud_run_revision"`
+and `resource.labels.service_name`, never `function_name` -- that shape is
+Gen1-only. A Gen1-shaped filter against a Gen2 function matches zero real log
+entries: a monitor that is silently green during an actual failure, the
+precise failure mode this groundwork exists to prevent.
+
+`toCloudRunServiceName` (`types.ts`) derives the Cloud Run service name from
+each function's TypeScript export name using firebase-tools' documented
+Gen2 deploy-time transform: uppercase -> lowercase, underscore -> hyphen
+(Cloud Run service names are RFC1035 labels, which permit neither). E.g.
+`deleteAccount` -> `deleteaccount`. **This transform is sourced from
+firebase-tools' own release notes and issue tracker, not independently
+confirmed against this project's live deployment** -- this session has no
+`gcloud`/Cloud Logging access to read the actual deployed service names.
+Treat the three service names used here as `READY_TO_ACTIVATE`, not as
+already proven correct in production: before wiring a notification channel
+(the FA-D1-gated step), confirm the real service names with one
+`gcloud logging read` or a Cloud Console lookup against the live project.
 
 ## Failure-path inventory audit: `deleteAccount` / `exportAccountData`
 
@@ -59,9 +87,10 @@ This is Option A from GPT-PM's DoD: an existing platform-level signal, proven
 (not merely believed) to catch every path the three-plus-one named messages do
 not. No new application log line was needed (Option B). Both alert filters
 therefore include `PLATFORM_UNHANDLED_ERROR` alongside their function's own
-named messages, scoped by `resource.labels.function_name` so `deleteAccount`'s
-backstop entry never matches `exportAccountData`'s and vice versa (see the
-negative-proof tests in `__tests__/alert_definitions.test.ts`).
+named messages, scoped by `resource.labels.service_name` (see "Resource
+shape" above) so `deleteAccount`'s backstop entry never matches
+`exportAccountData`'s and vice versa (see the negative-proof tests in
+`__tests__/alert_definitions.test.ts`).
 
 **Residual, stated rather than hidden:** this backstop depends on
 `firebase-functions`' own internal implementation not changing shape on a
