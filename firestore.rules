@@ -32,9 +32,24 @@ service cloud.firestore {
     // grant here removed as well and re-added explicitly below so its
     // read/write pair lives in one self-contained block a reviewer (or a
     // mutation test) can point at without cross-referencing this wildcard.
+    //
+    // MVP1.G3 Step 8/9: `isCanaryToken()` excludes the synthetic canary
+    // identity (core/G3_STEP8_RUNTIME_PREREQUISITES.md Sec 3/9) from this
+    // wildcard explicitly, regardless of what uid it is minted for. Without
+    // this, a request authenticated as the canary's own uid would get the
+    // SAME blanket grant any real user gets over `/users/{that uid}/...` --
+    // relying on "no real data happens to live there in practice" instead of
+    // a structural guarantee, exactly the gap GPT-PM's review of the canary
+    // design required closing before Step 9 builds against it. The canary's
+    // only grant is the dedicated `/_canary/{canaryUid}` block below.
+    function isCanaryToken() {
+      return request.auth != null
+          && request.auth.token.get('canary', false) == true;
+    }
     match /users/{uid}/{coll}/{document=**} {
       allow read: if request.auth != null
                   && request.auth.uid == uid
+                  && !isCanaryToken()
                   && coll != 'usage'
                   && coll != 'receipts'
                   && coll != 'recognised_models'
@@ -42,6 +57,7 @@ service cloud.firestore {
                   && coll != 'equipment_identity_telemetry';
       allow write: if request.auth != null
                    && request.auth.uid == uid
+                   && !isCanaryToken()
                    && coll != 'subscription'
                    && coll != 'usage'
                    && coll != 'receipts'
@@ -49,6 +65,22 @@ service cloud.firestore {
                    && coll != 'recognised_models'
                    && coll != 'equipment_identity_sessions'
                    && coll != 'equipment_identity_telemetry';
+    }
+
+    // The canary's ENTIRE grant. A synthetic identity minted via
+    // `admin.auth().createCustomToken(canaryUid, {canary: true})`
+    // (server-side), exchanged for a real ID token via the Client SDK's
+    // `signInWithCustomToken()` (never the Admin SDK, which would bypass
+    // these rules and prove nothing about the real client path) can
+    // read/write/delete ONLY its own `_canary/{that same uid}` document --
+    // both the custom claim AND uid-equals-docId are required, so even a
+    // second canary identity (if one is ever minted) could not reach the
+    // first one's document. No other collection grants this claim anything;
+    // see `isCanaryToken()`'s exclusion above for the one place that
+    // matters most (it looks like ordinary per-user data).
+    match /_canary/{canaryUid} {
+      allow read, write, delete: if isCanaryToken()
+                                  && request.auth.uid == canaryUid;
     }
 
     // F005: `abuse_guard.ts`'s daily quota lives at

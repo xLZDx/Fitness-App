@@ -27758,3 +27758,45 @@ passing. Restored, `firebase.json`'s emulator port reverted to 8080, full rules 
 **Wired into `.github/workflows/functions.yml`** as a new `data-lifecycle-coverage` job, mirroring
 item 4's `equipment-registry-parity` job precedent (repo-root working directory override, no npm
 install needed -- Node built-ins only).
+
+## MVP1.G3 Step 8/9: canary Security Rules + tests -- built, corrections applied -- 2026-08-27
+
+Implemented the Sec 3 canary design (`core/G3_STEP8_RUNTIME_PREREQUISITES.md`) in `firestore.rules`,
+applying both corrections GPT-PM's round-2 review required (Sec 9):
+
+1. **Explicit exclusion from ordinary per-user data, not reliance on absence of data.** Added
+   `isCanaryToken()` (`request.auth.token.get('canary', false) == true`) as an additional
+   `&& !isCanaryToken()` condition on both the read and write clauses of the generic
+   `/users/{uid}/{coll}/{document=**}` wildcard. Without this, a request authenticated as the
+   canary's own fixed uid would inherit the SAME blanket per-user grant any real user gets, relying
+   on "no real data happens to live there" rather than a structural guarantee -- exactly the gap
+   flagged before it shipped as final.
+2. **The canary's entire grant** lives in one new block: `match /_canary/{canaryUid} { allow read,
+   write, delete: if isCanaryToken() && request.auth.uid == canaryUid; }` -- both the custom claim
+   AND uid-equals-docId required, so a hypothetical second canary identity could not reach the
+   first one's document.
+3. **Corrected the negative-proof test design.** The originally-planned "revoke the custom claim"
+   probe was invalid, since `createCustomToken` re-mints the claim fresh on every call -- there is
+   nothing durable to revoke. Replaced with: mint a token with NO `canary` claim (an ordinary
+   authenticated user) and confirm it is denied on `_canary/`.
+
+**Positive proof:** `npm run test:rules` (real Firestore emulator, `firebase.json`'s port
+temporarily repointed to 8098 for local verification since 8080 was occupied by an unrelated Docker
+process, reverted after, `git diff --stat firebase.json` confirmed empty) -- 113/113 pass (108
+existing + 5 new: own-document read/write/delete succeeds; an ordinary user without the claim is
+denied; a canary-claimed token cannot reach a different canary uid's document; the wildcard
+exclusion is denied for both the canary's own uid and a real user's uid).
+
+**Negative proof -- the load-bearing one:** temporarily replaced both `&& !isCanaryToken()`
+conditions with `&& true` (i.e., no exclusion at all) and re-ran the full suite -- exactly 1 test
+failed ("cannot read or write under /users/{canaryUid}/... via the general wildcard"), the other
+112 stayed green. This is concrete, executable proof that the exclusion actually matters: before it
+existed, a canary request against its own uid's ordinary user-data path would have SUCCEEDED --
+precisely the gap GPT-PM's review named. Restored via `sed`, confirmed 113/113 green again, and
+`grep -c "TEMP negative" firestore.rules` returned 0 before committing.
+
+**Deliberately not built yet:** the Cloud Function that mints the custom token
+(`admin.auth().createCustomToken(canaryUid, {canary: true})`) and any Cloud Scheduler job invoking
+it. GPT-PM's GO named "canary rules/tests" as the Step-8-authorized item specifically; assembling
+the full scheduled monitor is Step 9's job and waits on `FA-D1` regardless -- a canary with no alert
+destination to report failure to is incomplete even once it runs.

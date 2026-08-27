@@ -349,6 +349,69 @@ describe("coach listings are closed to clients", () => {
   });
 });
 
+// MVP1.G3 Step 8/9 -- the synthetic canary identity's whole permission
+// surface (core/G3_STEP8_RUNTIME_PREREQUISITES.md Sec 3/9). `canary: true`
+// mirrors the custom claim `admin.auth().createCustomToken(uid, {canary:
+// true})` sets in production; `authenticatedContext`'s second argument sets
+// the same claim in the emulator, so this exercises the real rule text, not
+// a stand-in for it.
+const CANARY_UID = "canary-fixed-uid";
+const asCanary = () =>
+  env.authenticatedContext(CANARY_UID, { canary: true }).firestore();
+
+describe("canary identity: _canary/ namespace", () => {
+  test("can read, write and delete its own document", async () => {
+    await assertSucceeds(
+      setDoc(doc(asCanary(), `_canary/${CANARY_UID}`), { probe: true }),
+    );
+    await assertSucceeds(getDoc(doc(asCanary(), `_canary/${CANARY_UID}`)));
+    await assertSucceeds(deleteDoc(doc(asCanary(), `_canary/${CANARY_UID}`)));
+  });
+
+  test("an ordinary authenticated user (no canary claim) is denied", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), `_canary/${ALICE}`), { probe: true }),
+    );
+    await assertFails(getDoc(doc(asAlice(), `_canary/${ALICE}`)));
+  });
+
+  test("a canary-claimed token cannot reach a DIFFERENT canary document", async () => {
+    // Guards against a future second canary identity reading/overwriting the
+    // first one's probe doc -- uid-equals-docId is required, not the claim
+    // alone.
+    await assertFails(
+      setDoc(doc(asCanary(), "_canary/some-other-canary-uid"), {
+        probe: true,
+      }),
+    );
+  });
+});
+
+// This is the test that matters most, per GPT-PM's own review: proving the
+// canary claim does NOT quietly inherit the ordinary per-user grant just
+// because `request.auth.uid` happens to equal the wildcard's `{uid}`
+// segment. Before `isCanaryToken()`'s exclusion existed, this would have
+// SUCCEEDED (the canary uid looks like any other authenticated uid to the
+// wildcard) -- the fix's whole point is that this must fail instead.
+describe("canary identity: excluded from ordinary per-user data", () => {
+  test("cannot read or write under /users/{canaryUid}/... via the general wildcard", async () => {
+    await assertFails(
+      setDoc(doc(asCanary(), `users/${CANARY_UID}/workout_logs/w1`), {
+        reps: 8,
+      }),
+    );
+    await assertFails(
+      getDoc(doc(asCanary(), `users/${CANARY_UID}/workout_logs/w1`)),
+    );
+  });
+
+  test("cannot read or write another real user's data either", async () => {
+    await assertFails(
+      setDoc(doc(asCanary(), `users/${ALICE}/workout_logs/w1`), { reps: 8 }),
+    );
+  });
+});
+
 describe("debug sessions", () => {
   test("a signed-in user creates one stamped with their own uid", async () => {
     await assertSucceeds(

@@ -396,3 +396,61 @@ log/metric definitions, and all other reversible implementation work. HOLD
 unchanged on binding a human alert recipient (FA-D1). HOLD (new): deploying
 any monitoring with confirmed nonzero recurring custom-metric cost after
 minimization -- that becomes its own named operator cost decision.
+
+## 10. G3-CI-8 -- built (see core/DECISION_LOG.md for the full entry)
+
+Data Lifecycle Coverage Drift Guard shipped in commit `2e739a3`:
+`scripts/ci/check_data_lifecycle_coverage.js` + `data_lifecycle_policy.json`,
+wired into `.github/workflows/functions.yml`. Found and fixed 2 real gaps
+(`equipment_setup_notes`, `receipts` missing from `exportAccountData`) and 1
+rules gap (`coach_listings` had no `firestore.rules` entry at all). 34/34
+collections classified; 108/108 (then 113/113 after the canary rules below)
+rules-emulator tests pass; 382/382 functions unit tests pass.
+
+## 11. Canary Security Rules + tests -- built, corrections applied
+
+Implemented the Sec 3 canary design in `firestore.rules`, with GPT-PM's two
+required corrections from Sec 9 both applied:
+
+- **Explicit exclusion, not reliance on absence of data:** `isCanaryToken()`
+  (`request.auth.token.get('canary', false) == true`) is added as an
+  additional `&& !isCanaryToken()` condition on BOTH the read and write
+  clauses of the generic `/users/{uid}/{coll}/{document=**}` wildcard --
+  so a request authenticated as the canary's own uid cannot inherit the
+  ordinary per-user grant, structurally, not just because no real data
+  happens to live under that path today.
+- **The canary's entire grant** lives in one new block:
+  `match /_canary/{canaryUid} { allow read, write, delete: if
+  isCanaryToken() && request.auth.uid == canaryUid; }` -- both the custom
+  claim AND uid-equals-docId are required, so a second canary identity (if
+  one is ever minted) could not reach the first one's document.
+- **Corrected negative-proof test** per Sec 9's second finding: rather than
+  the originally-planned "revoke the claim" (invalid, since
+  `createCustomToken` re-mints it fresh every call), the test suite mints a
+  token with NO `canary` claim (an ordinary authenticated user) and confirms
+  it is denied on `_canary/`, and separately confirms a canary-claimed token
+  cannot reach a DIFFERENT canary uid's document.
+
+**Positive proof:** `npm run test:rules` -- 113/113 pass (108 existing + 5
+new: own-document read/write/delete succeeds, ordinary-user denied,
+cross-canary-uid denied, wildcard-exclusion denied for both the canary's own
+uid and another real user's uid).
+
+**Negative proof -- the one that matters most, per GPT-PM's own framing:**
+temporarily replaced both `&& !isCanaryToken()` conditions on the wildcard
+rule with `&& true` (functionally: no exclusion at all) and re-ran the
+suite -- exactly 1 test failed
+("cannot read or write under /users/{canaryUid}/... via the general
+wildcard"), the other 112 stayed green. This is the concrete, executable
+proof that the exclusion is load-bearing: before it existed, a canary
+request against its own uid's ordinary user-data path would have
+**succeeded**, exactly the gap GPT-PM's review required closing. Restored
+immediately, re-confirmed 113/113 green.
+
+**Not yet built:** the actual Cloud Function that mints the custom token
+(`admin.auth().createCustomToken(canaryUid, {canary: true})`) and any
+Cloud Scheduler job invoking it. GPT-PM's GO named "canary rules/tests" as
+the Step-8-authorized item; assembling the full scheduled monitor (the
+function, its registration, and the Scheduler job) is Step 9's job, and
+waits on `FA-D1` regardless -- a canary with no alert destination to report
+to is incomplete even once it runs.
