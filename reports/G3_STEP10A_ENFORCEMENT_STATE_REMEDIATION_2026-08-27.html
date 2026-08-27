@@ -1,4 +1,4 @@
-<title>Enforcement-state visibility: code approved, deploy paused</title>
+<title>Enforcement-state visibility: Step 10A closed</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
@@ -112,11 +112,13 @@
 <div class="wrap">
   <header>
     <div class="eyebrow">Fitness App · MVP1.G3 · Step 10A</div>
-    <h1>Enforcement-state visibility: GPT-PM approved the code, live deploy paused for the operator</h1>
-    <p class="lede">An automated live-state check for Functions/Firestore Rules/App Check/Identity
-    Toolkit was built, tested, and went through three rounds of adversarial GPT-PM review —
-    ending in <b>APPROVE</b> with a final receipt. No live deploy has happened yet: the last
-    step — creating a real production resource — was deliberately left for the operator to decide.</p>
+    <h1>Enforcement-state visibility: live deploy complete, Step 10A closed after 10 review rounds</h1>
+    <p class="lede">The operator granted standing authorization to deploy this project's functions
+    and infrastructure. What followed: a real live deploy, six new rounds of adversarial GPT-PM
+    review (5–10), each with a real finding closed in the same batch, one systemic bug that would
+    have kept a production alert silent even on a genuine failure, and one real near-miss: a
+    premature "closed" declaration caught on a retry of the same receipt. End state at round 10:
+    <b>Step 10A closed</b>, confirmed live.</p>
   </header>
 
 <!-- report-conform:begin -->
@@ -144,7 +146,7 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ c19aea9</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 2acd73d</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
@@ -152,157 +154,172 @@
 </div>
 <!-- report-conform:end -->
 
+
+
   <div class="stat-strip">
-    <div class="stat"><div class="n">4</div><div class="l">remediation commits</div></div>
-    <div class="stat"><div class="n">3</div><div class="l">review rounds to APPROVE</div></div>
-    <div class="stat"><div class="n">501</div><div class="l">tests passing (up from 476)</div></div>
-    <div class="stat"><div class="n">APPROVE</div><div class="l">final verdict, final:true</div></div>
+    <div class="stat"><div class="n">10</div><div class="l">GPT-PM review rounds total</div></div>
+    <div class="stat"><div class="n">10</div><div class="l">remediation commits since last report</div></div>
+    <div class="stat"><div class="n">522</div><div class="l">tests green (was 501)</div></div>
+    <div class="stat"><div class="n">CLOSED</div><div class="l">Step 10A final status</div></div>
   </div>
 
   <section>
-    <h2><span class="h2-num">01</span> What was built</h2>
-    <p class="section-sub">An automated, Scheduler-deployed (every 6 hours) counterpart to the human
-    script <code>production_manifest.py</code> — four live state sections, each honestly
-    <code>OK</code> or <code>UNAVAILABLE</code>, never invented.</p>
-
-    <div class="card">
-      <div class="card-head"><h3>enforcement_state.ts — four sections</h3><span class="pill pill-good">Code ready</span></div>
-      <p>Functions (inventory + state), Firestore Rules (active release + ruleset), App Check
-      (per-service enforcement mode), Identity Toolkit (field allowlist — secrets like
-      <code>signerKey</code>/<code>apiKey</code> never pass through). Pagination bounded to 20 pages,
-      a timeout on every request, one shared budget for the whole probe (45s, under the platform's
-      60s limit, including token acquisition).</p>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h3>5th alert policy — independent "is the scheduler still running" check</h3><span class="pill pill-good">Code ready</span></div>
-      <p><code>ENFORCEMENT_STATE_STALENESS_POLICY</code> -- not a LogMatch, a <code>conditionAbsent</code>
-      on <code>cloudscheduler.googleapis.com/job/execution_count</code>, a metric the platform emits
-      on its own regardless of this file's code. The first non-LogMatch alert condition type in the
-      project.</p>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h3>Nothing deployed</h3><span class="pill pill-warn">Pending</span></div>
-      <p>Neither the function, nor the metric, nor the policies exist as live GCP resources yet --
-      per the "zero live mutation until a clean review round" rule in effect since the prior Step
-      9B.</p>
-    </div>
+    <h2><span class="h2-num">01</span> Operator authorization and live deploy</h2>
+    <p class="section-sub">The previous report left the code fully APPROVEd by GPT-PM but the live
+    deploy deliberately paused for the operator — global-contract §4 reserves production mutations
+    separately, even under a broader GO from a delegated reviewer.</p>
+    <div class="decision-note"><b>Operator:</b> "I authorize deploying functions and all
+    infrastructure for this project, GO, and don't ask again — no clients, no load, budget-loss risk
+    essentially zero." Standing authorization, logged in <code>DECISION_LOG.md</code> with an
+    explicit scope note: deploy/infra actions only — not destructive git operations, not branch
+    creation, not secrets, not real-money actions (those remain under §4/§14 regardless).</div>
+    <p>What followed: a targeted (not blanket)
+    <code>firebase deploy --only functions:runEnforcementStateCheck</code>, a confirmed Scheduler
+    job, and six further review rounds — each with its own genuine finding.</p>
   </section>
 
   <section>
-    <h2><span class="h2-num">02</span> Three rounds to APPROVE</h2>
-    <p class="section-sub">Each remediation round closed a batch of findings at once -- never one
-    finding per round -- and the next round verified exactly that closure rather than hunting for a
-    new perimeter.</p>
+    <h2><span class="h2-num">02</span> Rounds 4–10: every finding batch closed whole</h2>
+    <p class="section-sub">The project's rule held: remediation closes a round in one batch, and the
+    next round verifies exactly that closure rather than sweeping a new perimeter.</p>
     <div class="cycle">
       <div class="cycle-step crit">
-        <div class="ct">Round 1 · 4 MAJOR + 1 MINOR</div>
-        <div class="cd">Reachability was mistaken for correctness (an empty list wasn't an error).
-        A malformed HTTP 200 body read as success. Pagination didn't exist. Staleness detection
-        depended entirely on the function's own log. Plus: the README's own status table
-        contradicted itself about App Check.</div>
-      </div>
-      <div class="cycle-step fix">
-        <div class="ct">Remediation 1</div>
-        <div class="cd">Fail closed on empty/malformed results. <code>fetchAllPages()</code> with
-        pagination. An independent staleness policy via <code>conditionAbsent</code>. A timeout on
-        every request. Found and fixed along the way: a missing <code>X-Goog-User-Project</code>
-        header on the App Check call -- not a GPT-PM finding, caught by a direct live curl probe.</div>
+        <div class="ct">Round 4 · MAJOR: Identity Toolkit extraction depth</div>
+        <div class="cd">Verified against real Google documentation (not just live, empty-at-the-time
+        data). Plus: the staleness policy did not scope to real 2xx traffic — added
+        <code>metric.labels.response_code_class="2xx"</code>, live PATCH confirmed by SHA-256
+        source==live.</div>
       </div>
       <div class="cycle-step crit">
-        <div class="ct">Round 2 · 4 MAJOR (the same 4, deeper)</div>
-        <div class="cd">App Check's enforcement-mode comparison used the literal string
-        <code>"OFF"</code> -- the real API never returns it
-        (<code>"ENFORCED"</code>/<code>"UNENFORCED"</code>), so the signal was dead on arrival.
-        Row fields silently defaulted to <code>"?"</code> instead of failing the section. Cloud
-        Functions v2's <code>unreachable[]</code> was silently discarded. A per-request timeout
-        didn't bound the whole probe.</div>
-      </div>
-      <div class="cycle-step fix">
-        <div class="ct">Remediation 2</div>
-        <div class="cd">Comparison against <code>"ENFORCED"</code> only. A named list of services
-        THIS project actually needs enforced (<code>firestore.googleapis.com</code> -- live-confirmed
-        currently, actually <code>UNENFORCED</code> in production). Required fields at the row level,
-        not just the envelope. One shared budget for the whole probe, not per request.</div>
+        <div class="ct">Round 5 · MAJOR: fail-open on malformed fields</div>
+        <div class="cd"><code>extractIdentityToolkitState</code>/<code>extractSmsRegionPolicy</code>
+        accepted any present value with no type check — a string where a boolean was expected
+        silently passed through as real state. Fixed via a discriminated
+        <code>Extracted&lt;T&gt;</code> result: any malformed field fails the whole section closed to
+        <code>UNAVAILABLE</code>. Plus MINOR: <code>assert_test_health.js</code> run with no argument
+        read a stale <code>jest_result.json</code> — now always an explicit path to a fresh run.</div>
       </div>
       <div class="cycle-step crit">
-        <div class="ct">Round 3 · 2 MAJOR (the last two)</div>
-        <div class="cd">The shared budget was computed before token acquisition but never actually
-        applied to it -- a hung call could still exhaust the whole platform timeout. A
-        <code>cloud.firestore</code> release could stay <code>OK</code> with no real
-        <code>updateTime</code> -- Step 10A's own DoD requires exactly that field.</div>
+        <div class="ct">Round 6 · MAJOR: the same gap one level up</div>
+        <div class="cd">Round 5 validated leaf fields but not the container objects above them:
+        <code>multiTenant: "corrupt"</code> (a string, not an object) makes
+        <code>raw?.multiTenant?.allowTenants</code> resolve to <code>undefined</code> via optional
+        chaining through a primitive — indistinguishable from genuine absence. Added
+        <code>isPlainObject()</code> validation at every container boundary. Plus MINOR: my own
+        DECISION_LOG entry claimed a mathematically impossible 510→517 test-count delta — corrected
+        via a new append-only entry backed by the real <code>git diff</code>.</div>
       </div>
       <div class="cycle-step good">
-        <div class="ct">Remediation 3 → GPT-PM: APPROVE</div>
-        <div class="cd">Token acquisition now races against the SAME budget (never a second,
-        independent timer) via a new injectable <code>raceDeadline()</code>, clearing its timer on
-        either outcome. <code>updateTime</code> is required for <code>cloud.firestore</code> and for
-        every function. <code>revision</code> was deliberately left best-effort -- its presence is
-        generation-dependent (GEN_1/GEN_2), and the project has no live GEN_1 deployment to verify
-        that against.</div>
+        <div class="ct">Round 7 · clean APPROVE, first push</div>
+        <div class="cd">No new findings. First push under the standing GPT-PM push delegation.</div>
+      </div>
+      <div class="cycle-step crit">
+        <div class="ct">Round 8 · MAJOR: the failure alert's match path never fired</div>
+        <div class="cd">The most significant discovery this segment. <code>firebase-functions/logger</code>
+        unconditionally rewrites <code>jsonPayload.message</code> into <code>"Error: EVENT\n&lt;stack&gt;"</code>
+        for ERROR severity whenever none of the passed arguments is already an <code>Error</code>
+        instance — confirmed by reading the library's own source directly, not inferred. That means
+        the exact-equality <code>messageEquals</code> filter never matched the function's real log
+        line — the checker was genuinely fail-closed, but the alert meant to page someone about it
+        could not fire.</div>
+      </div>
+      <div class="cycle-step fix">
+        <div class="ct">Remediation 8 → the eventEquals mechanism</div>
+        <div class="cd">Added <code>LogMatchFilterSpec.eventEquals</code>, matching the metadata's own
+        <code>jsonPayload.event</code> field, which the logger never rewrites. Applied only to Step
+        10A's own alert — a second live proof-only cycle confirmed the semantics live, live policy
+        PATCH confirmed by SHA-256 source==live.</div>
       </div>
     </div>
   </section>
 
   <section>
-    <h2><span class="h2-num">03</span> Real bugs found beyond GPT-PM's own findings</h2>
-    <p class="section-sub">Not for show -- each one confirmed by a direct check (a curl probe, a
-    live API call, a live test run), not an assumption.</p>
+    <h2><span class="h2-num">03</span> Systemic finding, filed as separate backlog</h2>
+    <div class="crit-note"><b>The same bug lives in 4 already-deployed alerts</b> — both Stripe
+    reconciliation alerts, both delete-account alerts (plus export-account), and the canary probe.
+    Each uses the same <code>logger.error(EVENT, {…})</code> + <code>messageEquals</code> pattern
+    and has very likely been silently unable to fire since deployment — including alerts adjacent to
+    financial correctness (Stripe reconciliation).</div>
+    <p style="color:var(--ink-soft);font-size:14.5px;">GPT-PM's explicit scope decision: "do not
+    reopen Step 10A, but open an urgent dedicated remediation item immediately." Filed as row 21 in
+    <code>core/MASTER_PLAN_2026-08-26.md</code> §9's priority table, "High — urgent,
+    financial-correctness-adjacent." The fix mechanism is already proven and shipped for Step 10A's
+    own alert; the other four are a separate future item, not part of 10A/10B/10C.</p>
+  </section>
 
+  <section>
+    <h2><span class="h2-num">04</span> Near-miss: a premature "closed," caught on a retry</h2>
+    <p class="section-sub">Round 9 first returned a clean APPROVE and the text "Step 10A: CLOSED" —
+    that entry turned out to be <b>premature</b>. Not edited after the fact, but corrected with a new
+    append-only "CORRECTION" entry in <code>DECISION_LOG.md</code>, per the project's own evidence
+    discipline.</p>
     <div class="card">
-      <div class="card-head"><h3>App Check is genuinely UNENFORCED right now, in production</h3><span class="pill pill-crit">Live fact</span></div>
-      <p>A direct curl probe against <code>firebaseappcheck.googleapis.com</code> confirmed:
-      <code>firestore.googleapis.com</code> is currently, actually <code>UNENFORCED</code>.
-      <code>firestore.rules</code> grants an authenticated client direct access to its own
-      <code>/users/{uid}/...</code> subtree with no App-Check gate in the rules themselves -- making
-      this the ONLY control that can require attestation on that path. Round-1 code could not have
-      surfaced this even if the row had been entirely absent.</p>
+      <div class="card-head"><h3>What happened</h3><span class="pill pill-crit">Live gap</span></div>
+      <p>The live alert policy had already been PATCHed for the new <code>jsonPayload.event</code>
+      field (round 8), but the real deployed <code>runEnforcementStateCheck</code> function was never
+      redeployed across the whole remediation cycle — it remained on its original build,
+      <code>2026-08-27T18:40:09Z</code>, revision <code>runenforcementstatecheck-00001-caj</code>,
+      even though <code>enforcement_state.ts</code> and <code>enforcement_state_schedule.ts</code>
+      changed substantially across rounds 4–8. At that moment the live alert was actually <b>worse</b>
+      than before round 8's fix: the old code could never produce the field the policy now required.</p>
     </div>
-
     <div class="card">
-      <div class="card-head"><h3>A real bug in the new pagination test itself</h3><span class="pill pill-warn">Caught by tests</span></div>
-      <p>The four check sections run concurrently (<code>Promise.all</code>) -- a positional mock
-      chain in the test broke because the sections' first calls interleave before any of them
-      resolves. <code>npm run build</code> was clean, <code>npx jest</code> caught it immediately
-      (count 1 instead of 2). Rewritten to dispatch on the request URL instead, stable regardless of
-      call order.</p>
+      <div class="card-head"><h3>How it was caught</h3><span class="pill pill-warn">--final retry</span></div>
+      <p>The first attempt to send the <code>--final</code> receipt left no trace in the send log —
+      verified via <code>pm_bridge_status</code>, the send genuinely never went out. A retry landed
+      and triggered a fresh, independent adversarial re-review — not a rubber stamp of the prior
+      verdict, but a real re-check of live state that caught the gap.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Fix</h3><span class="pill pill-good">Confirmed live</span></div>
+      <p>Targeted <code>firebase deploy --only functions:runEnforcementStateCheck</code>. Revision
+      <code>-00001-caj</code> → <code>-00002-hit</code>, new Cloud Build ID
+      <code>50a68942-…</code>, new timestamp <code>2026-08-27T21:01:25Z</code> — evidence of a
+      genuine redeploy, not a metadata-only touch. Separately confirmed: the four AI Gateway
+      callables remain undeployed — the targeted deploy did not touch them.</p>
     </div>
   </section>
 
   <section>
-    <h2><span class="h2-num">04</span> Checkpoint: live deploy needs a separate operator decision</h2>
-    <div class="decision-note"><b>GPT-PM issued a full APPROVE plus explicit "GO: proceed to Step
-    10A live activation" and "PUSH: AUTHORIZED under the current Gate policy."</b> Even so, the
-    actual <code>firebase deploy --only functions:runEnforcementStateCheck</code> command creates a
-    real, live resource in the production Firebase project. The global operating contract §4
-    reserves "production migrations" for the operator's own separate confirmation --
-    <i>"even if a broader GO exists"</i> -- explicitly including a delegated reviewer's own GO. So
-    this session did not deploy on its own; it records this checkpoint as the decision the operator
-    needs to make.</div>
-    <p style="color:var(--ink-soft);font-size:14.5px;">The next step once decided, in GPT-PM's own
-    words: a targeted (not blanket) deploy, a live sanitized state snapshot, a confirmed Scheduler
-    job identity, positive execution proof, a controlled degradation/fail-closed proof, an
-    independent staleness-policy proof, and confirmation that the four AI Gateway callables remain
-    undeployed.</p>
+    <h2><span class="h2-num">05</span> Round 10 · final</h2>
+    <div class="decision-note"><b>GPT-PM, round 10, <code>final:true</code>:</b> "No supported
+    BLOCKER, MAJOR, or MINOR remains in commit <code>2acd73d</code>. Step 10A: CLOSED. Proceed with
+    Step 10B Android/device telemetry E2E, then Step 10C 13-item OBS-1 reconciliation, followed by
+    the final adversarial MVP1.G3 closure review before marking G3 PASSED. PUSH: AUTHORIZED under
+    the current Gate policy." Push <code>92b5016..2acd73d</code> completed.</div>
   </section>
 
   <section>
-    <h2><span class="h2-num">05</span> Plan → DoD → status</h2>
+    <h2><span class="h2-num">06</span> Plan → DoD → status</h2>
     <div class="table-wrap"><table>
       <tr><th>Plan item</th><th>Definition of Done</th><th>Status</th></tr>
-      <tr><td>enforcement_state.ts -- 4 sections</td><td>Code+tests, fail closed on empty/malformed/stale</td><td><span class="pill pill-good">done</span></td></tr>
-      <tr><td>5th policy (Scheduler staleness)</td><td>conditionAbsent definition, covered by tests</td><td><span class="pill pill-good">done</span></td></tr>
-      <tr><td>Three GPT-PM review rounds</td><td>Each round closes a batch; final is APPROVE with no open BLOCKER/MAJOR</td><td><span class="pill pill-good">done</span></td></tr>
-      <tr><td>Final review receipt</td><td><code>final:true</code>, verdict APPROVE, satisfies the push gate</td><td><span class="pill pill-good">done</span></td></tr>
-      <tr><td>Live deploy of the function + resources</td><td>Targeted deploy, not blanket</td><td><span class="pill pill-warn">awaiting operator decision</span></td></tr>
-      <tr><td>Positive proof (a real run)</td><td>Live sanitized snapshot in the logs</td><td><span class="pill pill-warn">not started</span></td></tr>
-      <tr><td>Negative/staleness proof</td><td>Controlled degradation → alert actually fires</td><td><span class="pill pill-warn">not started</span></td></tr>
-      <tr><td>Scheduler job ID confirmation</td><td><code>gcloud scheduler jobs list</code> against the live deploy</td><td><span class="pill pill-warn">not started</span></td></tr>
+      <tr><td>enforcement_state.ts — 4 sections</td><td>Code+tests, fail closed on empty/broken/stale/malformed</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>5th alert policy (Scheduler staleness)</td><td>conditionAbsent definition + real 2xx-traffic scoping</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>10 GPT-PM review rounds</td><td>Each round closes in a batch, final APPROVE, final:true</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Live function + resource deploy</td><td>Targeted deploy, confirmed Scheduler job</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Positive proof (real run)</td><td>Live sanitized snapshot in logs</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Negative failure proof</td><td>Controlled degradation → real failure log, event field present</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Live staleness policy (2xx)</td><td>PATCH confirmed by SHA-256 source==live</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Live failure policy (eventEquals)</td><td>PATCH confirmed by SHA-256 source==live + live Cloud Logging match</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Real function redeployed with fixes</td><td>Revision/build ID changed after the source fix</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>4 AI Gateway callables remain undeployed</td><td><code>gcloud functions list | grep -i ai</code> — 0 matches</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr class="neg"><td>Same bug in the other 4 alerts</td><td>Backlog item, not part of Step 10A</td><td><span class="pill pill-warn">row 21, MASTER_PLAN</span></td></tr>
     </table></div>
   </section>
 
+  <section>
+    <h2><span class="h2-num">07</span> Next</h2>
+    <p class="section-sub">Per GPT-PM's own round-10 direction and PM-mode's "report is a checkpoint,
+    not a stop" rule:</p>
+    <ol style="color:var(--ink-soft);font-size:15px;">
+      <li><b>Step 10B</b> — real Android device telemetry (S8, permanently connected via adb).</li>
+      <li><b>Step 10C</b> — reconciliation of all 13 original OBS-1 items.</li>
+      <li>Final adversarial GPT-PM review of the whole of MVP1.G3 before <code>pm_set_gate(passed)</code>.</li>
+    </ol>
+  </section>
+
 </div>
+
 
 
 

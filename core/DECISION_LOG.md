@@ -30517,3 +30517,35 @@ always be checked against real transport state before either (a) assuming the se
 second, independent adversarial pass that caught a real live-deployment gap the first pass's own
 "APPROVE" text had missed. Sending this fix to GPT-PM for confirmation before treating Step 10A as
 genuinely closed this time.
+
+## GPT-PM round 10 -- APPROVE, Step 10A genuinely CLOSED
+
+Round 10 (`final:true`, correlated) confirmed the redeploy fix: production
+`runenforcementstatecheck` moved `-00001-caj` (2026-08-27T18:40:09Z) ->
+`-00002-hit` (2026-08-27T21:01:25Z), new Cloud Build id `50a68942-...`, targeted deploy
+only (`gcloud functions list | grep -i ai` still zero matches). No supported
+BLOCKER/MAJOR/MINOR remains in commit `2acd73dd763b7365b61de5fe0d0a7784f2dc3f53`.
+Verdict text: *"Step 10A: CLOSED. Proceed with Step 10B Android/device telemetry E2E,
+then Step 10C 13-item OBS-1 reconciliation, followed by the final adversarial MVP1.G3
+closure review before marking G3 PASSED. PUSH: AUTHORIZED under the current Gate
+policy."* Pushed `92b5016..2acd73d` to `origin/master`.
+
+Unlike the round-9 "CLOSED" text, this one is accepted at face value: it responds to a
+specific, named prior finding (the redeploy gap) with concrete before/after evidence
+(revision name, timestamp, build id) rather than a general absence of new findings --
+the exact distinction the round-9 correction above says to check for.
+
+## Report published: Step 10A closeout, updated for the full deploy + rounds 4-10 arc
+
+Rewrote both `reports/G3_STEP10A_ENFORCEMENT_STATE_REMEDIATION_2026-08-27.ru.html` and
+the `.html` counterpart to replace the stale "code approved, deploy paused" framing
+with the actual closure arc: the operator's standing deploy authorization, rounds 4-10
+(each with a real finding closed in the same batch), the round-8 logger-decoration
+discovery (`eventEquals` mechanism) and the row-21 backlog item for the other 4
+already-deployed alerts sharing the same bug, and the round-9-then-10 near-miss
+(premature "CLOSED", caught on a `--final` retry, fixed via the real redeploy). Ran
+`report_conform.py` on both (provenance refreshed to `master @ 2acd73d`). Published the
+RU file to the existing artifact URL (same URL, updated in place):
+https://claude.ai/code/artifact/db849619-6eb6-4d22-b0b0-559f9f9c1e37. Per PM mode
+(`~/.claude/CLAUDE.md` §18): this report is a checkpoint, not a stop -- continuing to
+Step 10B (Android/device telemetry on the S8) in this same session.

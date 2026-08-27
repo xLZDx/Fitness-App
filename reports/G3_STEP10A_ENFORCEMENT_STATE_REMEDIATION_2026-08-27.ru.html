@@ -1,4 +1,4 @@
-<title>Видимость состояния защиты: код одобрен, деплой на паузе</title>
+<title>Видимость состояния защиты: Шаг 10A закрыт</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
@@ -112,11 +112,13 @@
 <div class="wrap">
   <header>
     <div class="eyebrow">Fitness App · MVP1.G3 · Шаг 10A</div>
-    <h1>Видимость состояния защиты: код одобрен GPT-PM, живой деплой — на паузе для оператора</h1>
-    <p class="lede">Автоматическая проверка живого состояния Functions/Firestore Rules/App Check/
-    Identity Toolkit построена, покрыта тестами и прошла три раунда адверсариального ревью GPT-PM —
-    итог: <b>APPROVE</b> с финальной квитанцией. Живого деплоя ещё не было: последний шаг —
-    создание реального ресурса в проде — сознательно оставлен на решение оператора.</p>
+    <h1>Видимость состояния защиты: живой деплой завершён, Шаг 10A закрыт после 10 раундов ревью</h1>
+    <p class="lede">Оператор дал постоянное разрешение на деплой функций и инфраструктуры этого проекта.
+    После этого — реальный live-деплой, шесть новых раундов адверсариального ревью GPT-PM (5–10), в
+    каждом реальная находка, закрытая тем же пакетом, один системный баг, из-за которого боевой алерт
+    молчал бы даже при реальном отказе, и один настоящий промах: преждевременное объявление «закрыто»,
+    пойманное на повторной отправке той же квитанции. Итог на конец раунда 10: <b>Шаг 10A закрыт</b>,
+    подтверждено вживую.</p>
   </header>
 
 <!-- report-conform:begin -->
@@ -144,7 +146,7 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ c19aea9</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 2acd73d</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
@@ -152,153 +154,173 @@
 </div>
 <!-- report-conform:end -->
 
+
+
   <div class="stat-strip">
-    <div class="stat"><div class="n">4</div><div class="l">коммита ремедиации</div></div>
-    <div class="stat"><div class="n">3</div><div class="l">раунда ревью до APPROVE</div></div>
-    <div class="stat"><div class="n">501</div><div class="l">тестов зелёных (было 476)</div></div>
-    <div class="stat"><div class="n">APPROVE</div><div class="l">финальный вердикт, final:true</div></div>
+    <div class="stat"><div class="n">10</div><div class="l">раундов ревью GPT-PM всего</div></div>
+    <div class="stat"><div class="n">10</div><div class="l">коммитов ремедиации с прошлого отчёта</div></div>
+    <div class="stat"><div class="n">522</div><div class="l">тестов зелёных (было 501)</div></div>
+    <div class="stat"><div class="n">CLOSED</div><div class="l">финальный статус Шага 10A</div></div>
   </div>
 
   <section>
-    <h2><span class="h2-num">01</span> Что построено</h2>
-    <p class="section-sub">Автоматический, задеплоенный на Cloud Scheduler (раз в 6 часов) аналог
-    человеческого скрипта <code>production_manifest.py</code> — четыре живые секции состояния, каждая
-    честно <code>OK</code> либо <code>UNAVAILABLE</code>, никогда не выдуманная.</p>
-
-    <div class="card">
-      <div class="card-head"><h3>enforcement_state.ts — четыре секции</h3><span class="pill pill-good">Код готов</span></div>
-      <p>Functions (инвентарь + состояние), Firestore Rules (активный релиз + ruleset), App Check
-      (режим защиты по сервисам), Identity Toolkit (allowlist полей — секреты вроде
-      <code>signerKey</code>/<code>apiKey</code> никогда не проходят). Пагинация с ограничением в 20
-      страниц, таймаут на каждый запрос, единый бюджет на весь пробник (45с под платформенным
-      лимитом в 60с), включая получение токена.</p>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h3>5-я политика алертов — независимая проверка "не завис ли планировщик"</h3><span class="pill pill-good">Код готов</span></div>
-      <p><code>ENFORCEMENT_STATE_STALENESS_POLICY</code> — не LogMatch, а <code>conditionAbsent</code>
-      на метрике <code>cloudscheduler.googleapis.com/job/execution_count</code>, которую платформа
-      пишет сама вне зависимости от кода этого файла. Первый несобственный (не LogMatch) тип условия
-      алерта в проекте.</p>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h3>Ничего не задеплоено</h3><span class="pill pill-warn">Ожидает</span></div>
-      <p>Ни функция, ни метрика, ни политики не созданы как живые ресурсы GCP — по правилу «ноль
-      живых мутаций до чистого раунда ревью», действующему в проекте с предыдущего Шага 9B.</p>
-    </div>
+    <h2><span class="h2-num">01</span> Разрешение оператора и живой деплой</h2>
+    <p class="section-sub">Предыдущий отчёт зафиксировал код с полным APPROVE от GPT-PM, но живой
+    деплой был сознательно оставлен на решение оператора — §4 глобального контракта резервирует
+    production-мутации отдельно, даже при наличии GO от делегированного ревьюера.</p>
+    <div class="decision-note"><b>Оператор:</b> «я даю своё разрешение на деплой фанкшенс и всей
+    инфраструктуры ГО и больше не спрашивай, клиентов нет, нагрузки нет, шанс потери бюджета
+    практически 0». Разрешение постоянное, зафиксировано в <code>DECISION_LOG.md</code> с явной
+    границей охвата: только деплой функций/инфраструктуры — не деструктивные git-операции, не
+    создание веток, не секреты и не real-money действия (те остаются под §4/§14 в любом случае).</div>
+    <p>После этого: целевой (не blanket) <code>firebase deploy --only functions:runEnforcementStateCheck</code>,
+    подтверждённый Scheduler job, и шесть новых раундов ревью — каждый со своей реальной находкой.</p>
   </section>
 
   <section>
-    <h2><span class="h2-num">02</span> Три раунда до APPROVE</h2>
-    <p class="section-sub">Каждый раунд ремедиации закрывал часть находок одним пакетом — не
-    по одной находке за раунд — и следующий раунд GPT-PM проверял именно закрытие, а не искал
-    новый периметр.</p>
+    <h2><span class="h2-num">02</span> Раунды 4–10: каждый пакет находок закрыт целиком</h2>
+    <p class="section-sub">Правило проекта не изменилось: ремедиация закрывает раунд одним пакетом,
+    следующий раунд GPT-PM проверяет именно закрытие, а не ищет новый периметр.</p>
     <div class="cycle">
       <div class="cycle-step crit">
-        <div class="ct">Раунд 1 · 4 MAJOR + 1 MINOR</div>
-        <div class="cd">Доступность API путали с корректностью данных (пустой список — не ошибка).
-        HTTP 200 с битым телом читался как успех. Пагинация не работала вовсе. Устаревание проверки
-        зависело только от собственного лога функции. Плюс: таблица статуса в README сама себе
-        противоречила про App Check.</div>
-      </div>
-      <div class="cycle-step fix">
-        <div class="ct">Ремедиация 1</div>
-        <div class="cd">Отказ закрытым на пустом/битом результате. <code>fetchAllPages()</code> с
-        пагинацией. Независимая политика устаревания через <code>conditionAbsent</code>. Таймаут на
-        каждый запрос. Попутно найдено и исправлено: отсутствовал заголовок
-        <code>X-Goog-User-Project</code> на вызове App Check — не находка GPT-PM, обнаружено прямым
-        curl-пробом вживую.</div>
+        <div class="ct">Раунд 4 · MAJOR: глубина разбора Identity Toolkit</div>
+        <div class="cd">Проверено против реальной документации Google (не только живых, пустых на
+        тот момент данных). Плюс: политика устаревания не покрывала реальный 2xx-трафик — добавлено
+        <code>metric.labels.response_code_class="2xx"</code>, живой PATCH подтверждён SHA-256
+        source==live.</div>
       </div>
       <div class="cycle-step crit">
-        <div class="ct">Раунд 2 · 4 MAJOR (те же 4, глубже)</div>
-        <div class="cd">Сравнение режима защиты App Check со строкой <code>"OFF"</code> — реальный API
-        никогда её не возвращает (<code>"ENFORCED"</code>/<code>"UNENFORCED"</code>), сигнал был мёртв
-        с рождения. Поля строк молча подставлялись как <code>"?"</code> вместо отказа секции.
-        <code>unreachable[]</code> у Cloud Functions v2 отбрасывался молча. Таймаут на один запрос не
-        ограничивал весь пробник целиком.</div>
-      </div>
-      <div class="cycle-step fix">
-        <div class="ct">Ремедиация 2</div>
-        <div class="cd">Сравнение только с <code>"ENFORCED"</code>. Список сервисов, которые ЭТОТ
-        проект обязан защищать (<code>firestore.googleapis.com</code> — подтверждено вживую: сейчас
-        реально <code>UNENFORCED</code> в проде). Обязательные поля на уровне строки, не всей секции.
-        Единый бюджет на весь пробник, а не на один запрос.</div>
+        <div class="ct">Раунд 5 · MAJOR: fail-open на малформированных полях</div>
+        <div class="cd"><code>extractIdentityToolkitState</code>/<code>extractSmsRegionPolicy</code>
+        принимали любое присутствующее значение без проверки типа — строка вместо boolean тихо
+        проходила как реальное состояние. Исправлено дискриминированным результатом
+        <code>Extracted&lt;T&gt;</code>: любое малформенное поле валит всю секцию в
+        <code>UNAVAILABLE</code>. Плюс MINOR: <code>assert_test_health.js</code> без аргумента читал
+        устаревший <code>jest_result.json</code> — теперь всегда явный путь к свежему прогону.</div>
       </div>
       <div class="cycle-step crit">
-        <div class="ct">Раунд 3 · 2 MAJOR (последние два)</div>
-        <div class="cd">Единый бюджет считался ДО получения токена, но получение токена им самим не
-        ограничивалось — зависший вызов мог съесть весь платформенный лимит. Релиз
-        <code>cloud.firestore</code> мог остаться <code>OK</code> без реального
-        <code>updateTime</code> — а DoD Шага 10A требует именно его.</div>
+        <div class="ct">Раунд 6 · MAJOR: та же дыра на уровне контейнера</div>
+        <div class="cd">Раунд 5 проверил листовые поля, но не объекты-контейнеры на уровень выше:
+        <code>multiTenant: "corrupt"</code> (строка вместо объекта) делает
+        <code>raw?.multiTenant?.allowTenants</code> равным <code>undefined</code> через optional
+        chaining сквозь примитив — неотличимо от настоящего отсутствия. Добавлена
+        <code>isPlainObject()</code>-проверка на каждой границе контейнера. Плюс MINOR: моя же запись
+        в DECISION_LOG про дельту тестов 510→517 была математически невозможной — исправлено новой
+        append-only записью с реальным <code>git diff</code>.</div>
       </div>
       <div class="cycle-step good">
-        <div class="ct">Ремедиация 3 → GPT-PM: APPROVE</div>
-        <div class="cd">Получение токена гонится против ТОГО ЖЕ бюджета (не второго независимого
-        таймера) через новый инъецируемый <code>raceDeadline()</code>, с очисткой таймера в любом
-        исходе. <code>updateTime</code> обязателен для <code>cloud.firestore</code> и для каждой
-        функции. <code>revision</code> сознательно оставлен best-effort — его наличие зависит от
-        поколения (GEN_1/GEN_2), а в проекте нет живого GEN_1 для проверки.</div>
+        <div class="ct">Раунд 7 · чистый APPROVE, первый push</div>
+        <div class="cd">Ни одной новой находки. Первый push под постоянным делегированием
+        push-права GPT-PM.</div>
+      </div>
+      <div class="cycle-step crit">
+        <div class="ct">Раунд 8 · MAJOR: путь боевого алерта никогда не срабатывал</div>
+        <div class="cd">Самое значимое открытие сегмента. <code>firebase-functions/logger</code>
+        безусловно переписывает <code>jsonPayload.message</code> в <code>"Error: EVENT\n&lt;stack&gt;"</code>
+        для severity ERROR, если ни один переданный аргумент не является instance <code>Error</code> —
+        подтверждено прямым чтением исходника библиотеки, не предположением. Значит фильтр алерта
+        <code>messageEquals</code> с точным сравнением никогда не совпадал с реальным логом функции —
+        проверка была честно fail-closed, но алерт, который должен был об этом сообщить, сработать не
+        мог.</div>
+      </div>
+      <div class="cycle-step fix">
+        <div class="ct">Ремедиация 8 → механизм eventEquals</div>
+        <div class="cd">Добавлено <code>LogMatchFilterSpec.eventEquals</code>, матчащее собственное
+        поле метаданных <code>jsonPayload.event</code>, которое логгер не переписывает. Применено
+        только к алерту Шага 10A — живой второй proof-only цикл подтвердил семантику вживую, живой
+        PATCH политики подтверждён SHA-256 source==live.</div>
       </div>
     </div>
   </section>
 
   <section>
-    <h2><span class="h2-num">03</span> Реальные баги, найденные помимо находок GPT-PM</h2>
-    <p class="section-sub">Не для галочки — каждый подтверждён прямой проверкой (curl-проб, живой
-    API-вызов, живой прогон тестов), не предположением.</p>
+    <h2><span class="h2-num">03</span> Системная находка, вынесена в отдельный backlog</h2>
+    <div class="crit-note"><b>Тот же баг живёт ещё в 4 уже задеплоенных алертах</b> — оба
+    Stripe-reconciliation, оба delete-account (плюс export-account), canary probe. Каждый из них
+    использует тот же паттерн <code>logger.error(EVENT, {…})</code> + <code>messageEquals</code> и,
+    по всей вероятности, тихо не мог сработать с момента деплоя — включая алерты, смежные с
+    финансовой корректностью (Stripe reconciliation).</div>
+    <p style="color:var(--ink-soft);font-size:14.5px;">GPT-PM дал явное решение по объёму: «не
+    переоткрывать Шаг 10A, но завести срочный отдельный пункт ремедиации немедленно». Внесено строкой
+    21 в таблицу приоритетов <code>core/MASTER_PLAN_2026-08-26.md</code> §9, приоритет
+    «High — срочно, смежно с финансовой корректностью». Механизм исправления уже доказан и
+    задеплоен для алерта Шага 10A; для остальных четырёх — отдельная будущая задача, не часть 10A/10B/10C.</p>
+  </section>
 
+  <section>
+    <h2><span class="h2-num">04</span> Промах: преждевременное «закрыто», пойманное повторной отправкой</h2>
+    <p class="section-sub">Раунд 9 сначала вернул чистый APPROVE и текст «Step 10A: CLOSED» — эта
+    запись оказалась <b>преждевременной</b>. Не исправлена задним числом, а зафиксирована новой
+    append-only записью «CORRECTION» в <code>DECISION_LOG.md</code>, как того требует дисциплина
+    проекта.</p>
     <div class="card">
-      <div class="card-head"><h3>App Check реально <code>UNENFORCED</code> сейчас в проде</h3><span class="pill pill-crit">Живой факт</span></div>
-      <p>Прямой curl-проб к <code>firebaseappcheck.googleapis.com</code> подтвердил:
-      <code>firestore.googleapis.com</code> сейчас, по-настоящему, <code>UNENFORCED</code>.
-      <code>firestore.rules</code> даёт аутентифицированному клиенту прямой доступ к своей
-      <code>/users/{uid}/...</code> ветке без собственной проверки App Check в самих правилах — значит
-      это единственный контроль, способный требовать аттестацию на этом пути. Раунд-1 код не смог бы
-      это увидеть, даже если бы строка вовсе отсутствовала.</p>
+      <div class="card-head"><h3>Что произошло</h3><span class="pill pill-crit">Живой пробел</span></div>
+      <p>Живая политика алерта уже была PATCH-нута под новое поле <code>jsonPayload.event</code>
+      (раунд 8), но реальная задеплоенная функция <code>runEnforcementStateCheck</code> ни разу не
+      передеплоивалась за весь цикл ремедиации — она оставалась на исходной сборке
+      <code>2026-08-27T18:40:09Z</code>, ревизия <code>runenforcementstatecheck-00001-caj</code>,
+      несмотря на то что <code>enforcement_state.ts</code> и
+      <code>enforcement_state_schedule.ts</code> менялись существенно на раундах 4–8. В этот момент
+      живой алерт был фактически <b>хуже</b>, чем до раунда 8: старый код не мог произвести поле,
+      которое политика уже требовала.</p>
     </div>
-
     <div class="card">
-      <div class="card-head"><h3>Собственный баг в новом тесте на пагинацию</h3><span class="pill pill-warn">Найдено тестами</span></div>
-      <p>Четыре секции проверки идут параллельно (<code>Promise.all</code>) — позиционная цепочка
-      моков в тесте ломалась из-за перемешивания первых вызовов до того, как хоть один резолвится.
-      <code>npm run build</code> прошёл чисто, <code>npx jest</code> поймал сразу (count 1 вместо 2).
-      Переписано на диспетчеризацию по URL — устойчиво независимо от порядка.</p>
+      <div class="card-head"><h3>Как поймано</h3><span class="pill pill-warn">--final ретрай</span></div>
+      <p>Первая попытка отправить квитанцию <code>--final</code> не оставила следов в логе
+      отправки — проверено через <code>pm_bridge_status</code>, реальная отправка не состоялась.
+      Повторная попытка дошла и вызвала независимое повторное адверсариальное ревью — не
+      штамп прежнего вердикта, а свежая проверка живого состояния, которая и поймала разрыв.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Исправление</h3><span class="pill pill-good">Подтверждено вживую</span></div>
+      <p>Целевой <code>firebase deploy --only functions:runEnforcementStateCheck</code>. Ревизия
+      <code>-00001-caj</code> → <code>-00002-hit</code>, новый Cloud Build ID
+      <code>50a68942-…</code>, новый timestamp <code>2026-08-27T21:01:25Z</code> — доказательство
+      настоящего редеплоя, не косметического касания метаданных. Отдельно подтверждено: 4 колбэка AI
+      Gateway остаются НЕ задеплоенными — целевой деплой не задел их.</p>
     </div>
   </section>
 
   <section>
-    <h2><span class="h2-num">04</span> Чек-пойнт: живой деплой требует отдельного решения оператора</h2>
-    <div class="decision-note"><b>GPT-PM выдал полный APPROVE и явное «GO: proceed to Step 10A live
-    activation» + «PUSH: AUTHORIZED under the current Gate policy».</b> Тем не менее реальный
-    <code>firebase deploy --only functions:runEnforcementStateCheck</code> создаёт живой ресурс в
-    боевом проекте Firebase. §4 глобального контракта резервирует «production migrations» за
-    оператором отдельно — <i>«even if a broader GO exists»</i> — явно включая одобрение делегированного
-    ревьюера вроде GPT-PM. Поэтому сессия не деплоит сама, а фиксирует этот чек-пойнт как решение,
-    которое должен принять оператор.</div>
-    <p style="color:var(--ink-soft);font-size:14.5px;">Следующий шаг после решения — по формулировке
-    самого GPT-PM: целевой (не blanket) деплой, живой санитизированный снепшот состояния, подтверждённый
-    ID job'а Scheduler, позитивное доказательство исполнения, контролируемое доказательство деградации/
-    fail-closed, независимое доказательство политики устаревания, подтверждение что 4 колбэка AI Gateway
-    остаются НЕ задеплоенными.</p>
+    <h2><span class="h2-num">05</span> Раунд 10 · финал</h2>
+    <div class="decision-note"><b>GPT-PM, round 10, <code>final:true</code>:</b> «No supported
+    BLOCKER, MAJOR, or MINOR remains in commit <code>2acd73d</code>. Step 10A: CLOSED. Proceed with
+    Step 10B Android/device telemetry E2E, then Step 10C 13-item OBS-1 reconciliation, followed by
+    the final adversarial MVP1.G3 closure review before marking G3 PASSED. PUSH: AUTHORIZED under
+    the current Gate policy.» Push <code>92b5016..2acd73d</code> выполнен.</div>
   </section>
 
   <section>
-    <h2><span class="h2-num">05</span> План → DoD → статус</h2>
+    <h2><span class="h2-num">06</span> План → DoD → статус</h2>
     <div class="table-wrap"><table>
       <tr><th>Пункт плана</th><th>Definition of Done</th><th>Статус</th></tr>
-      <tr><td>enforcement_state.ts — 4 секции</td><td>Код+тесты, отказ закрытым на пустом/битом/просроченном</td><td><span class="pill pill-good">done</span></td></tr>
-      <tr><td>5-я политика (устаревание Scheduler)</td><td>conditionAbsent-определение, покрыто тестами</td><td><span class="pill pill-good">done</span></td></tr>
-      <tr><td>Три раунда ревью GPT-PM</td><td>Каждый раунд закрывает пакетом, финал — APPROVE без BLOCKER/MAJOR</td><td><span class="pill pill-good">done</span></td></tr>
-      <tr><td>Финальная квитанция ревью</td><td><code>final:true</code>, verdict APPROVE, спутник push-гейта</td><td><span class="pill pill-good">done</span></td></tr>
-      <tr><td>Живой деплой функции + ресурсов</td><td>Целевой деплой, не blanket</td><td><span class="pill pill-warn">ждёт решения оператора</span></td></tr>
-      <tr><td>Позитивное доказательство (реальный прогон)</td><td>Живой санитизированный снепшот в логах</td><td><span class="pill pill-warn">не начато</span></td></tr>
-      <tr><td>Негативное/устаревания доказательство</td><td>Контролируемая деградация → алерт сработал</td><td><span class="pill pill-warn">не начато</span></td></tr>
-      <tr><td>Подтверждение ID Scheduler job</td><td><code>gcloud scheduler jobs list</code> против живого деплоя</td><td><span class="pill pill-warn">не начато</span></td></tr>
+      <tr><td>enforcement_state.ts — 4 секции</td><td>Код+тесты, отказ закрытым на пустом/битом/просроченном/малформенном</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>5-я политика (устаревание Scheduler)</td><td>conditionAbsent-определение + покрытие реального 2xx-трафика</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>10 раундов ревью GPT-PM</td><td>Каждый раунд закрывает пакетом, финал — APPROVE, final:true</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Живой деплой функции + ресурсов</td><td>Целевой деплой, подтверждённый Scheduler job</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Позитивное доказательство (реальный прогон)</td><td>Живой санитизированный снепшот в логах</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Негативное доказательство отказа</td><td>Контролируемая деградация → реальный лог отказа, поле event присутствует</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Живая политика устаревания (2xx)</td><td>PATCH подтверждён SHA-256 source==live</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Живая политика отказа (eventEquals)</td><td>PATCH подтверждён SHA-256 source==live + живой матч в Cloud Logging</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Реальная функция передеплоена с фиксами</td><td>Ревизия/build ID сменились после источника</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>4 колбэка AI Gateway остаются НЕ задеплоенными</td><td><code>gcloud functions list | grep -i ai</code> — 0 совпадений</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr class="neg"><td>Тот же баг в 4 остальных алертах</td><td>Backlog-пункт, не часть Шага 10A</td><td><span class="pill pill-warn">строка 21, MASTER_PLAN</span></td></tr>
     </table></div>
   </section>
 
+  <section>
+    <h2><span class="h2-num">07</span> Дальше</h2>
+    <p class="section-sub">По направлению самого GPT-PM (раунд 10) и правилу PM-режима «отчёт —
+    чек-пойнт, не точка остановки»:</p>
+    <ol style="color:var(--ink-soft);font-size:15px;">
+      <li><b>Шаг 10B</b> — телеметрия реального Android-устройства (S8, постоянно подключён по adb).</li>
+      <li><b>Шаг 10C</b> — сверка всех 13 исходных пунктов OBS-1.</li>
+      <li>Финальное адверсариальное ревью GPT-PM по всему MVP1.G3 перед <code>pm_set_gate(passed)</code>.</li>
+    </ol>
+  </section>
+
 </div>
+
 
 
 
