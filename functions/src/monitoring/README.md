@@ -13,11 +13,28 @@ change. See `core/DECISION_LOG.md` for the full exchange.
 | Stripe reconciliation-failure alert | `DEFINED`/`TESTED` | `READY_TO_ACTIVATE` -- blocked only on `FA-D1` (who owns the notification channel), not on cost |
 | Delete/export operational-failure alert | `DEFINED`/`TESTED`, see audit below | `READY_TO_ACTIVATE` -- same, blocked only on `FA-D1` |
 | App Check attested-ratio metric | `DEFINED`/`TESTED` | `HOLD` -- blocked on a real (not estimated) incremental-cost figure, see below |
+| AI Gateway metrics (calls, latency, tokens, quota exhaustions) | `DEFINED`/`TESTED` | `HOLD_LIVE_CREATION_COST` -- same cost posture as the App Check metric |
+| AI Gateway investigation queries (7, `ai_gateway_definitions.ts`) | `DEFINED`/`TESTED` | `READY_TO_USE` -- plain filter strings, no GCP resource to create |
 
 Every alert policy renders the real `google.monitoring.v3.AlertPolicy` REST
 shape (`toAlertPolicyJson` in `types.ts`) with `notificationChannels: []` --
 attaching a channel is exactly the FA-D1-gated step, and a policy with no
-channels notifies nobody even if it were applied today.
+channels notifies nobody even if it were applied today. Every counter/
+distribution metric (App Check's older shape aside, see the note below)
+renders the real `google.logging.v2.LogMetric` REST shape
+(`toCounterLogMetricJson`/`toDistributionLogMetricJson` in `types.ts`) with
+`metricDescriptor.labels` + `labelExtractors`, not a bare filter string.
+
+**Known inconsistency, flagged rather than silently left:**
+`APP_CHECK_ATTESTED_RATIO_METRIC` (`alert_definitions.ts`) still uses the
+older, simplified `LogBasedMetricSpec` shape (name/filter/labelKeys only),
+which predates `CounterLogMetricSpec` and does not itself produce a real,
+deployable `LogMetric` JSON (no `metricDescriptor.labels`, no
+`labelExtractors`). It was approved in that shape before this shape existed.
+Retrofitting it onto `CounterLogMetricSpec` was deliberately left out of this
+batch (out of the AI Gateway groundwork's own scope) rather than expanded
+into unilaterally -- worth a short follow-up item if a reviewer wants
+consistency across every metric in this directory.
 
 ## Resource shape: Gen2 (Cloud Run), corrected 2026-08-27
 
@@ -132,3 +149,59 @@ someone with GCP Console/billing access either confirms the incremental cost
 is genuinely $0, or brings a nonzero/unknown figure to the operator as its own
 cost decision -- per the global contract's standing rule that no monitoring
 with confirmed-nonzero recurring cost ships without that decision.
+
+## AI Gateway metrics and investigation queries (`ai_gateway_definitions.ts`)
+
+GPT-PM's binding DoD (2026-08-27) named five dimensions the G3 AI Gateway
+scope had already committed to covering: request rate, failures, timeout/
+latency, quota-exhaustion pressure, and token/usage pressure. All five are
+sourced from `ai_gateway.ts:312`'s single structured `ai_gateway: call` event
+plus `abuse_guard.ts`'s two quota-enforcement log lines -- no new application
+log line was needed.
+
+- **`ai_gateway_calls`** (counter): `operation` x `outcome`, 4 x 3 = 12 max
+  time series. Source for request rate, success rate, error rate, and
+  timeout rate without choosing a threshold.
+- **`ai_gateway_latency_ms`** (distribution): explicit buckets centered on
+  this codebase's own configured per-operation timeouts (20s for equipment
+  recognition/machine description, 25s for exercise generation, 45s for
+  coach advice -- grep-verified against each callable's `timeoutMs`), with
+  headroom to 90s to see genuine overshoot before the AbortSignal lands.
+- **`ai_gateway_total_tokens_per_call`** (distribution): deliberately NOT
+  filtered to `outcome="success"`. Verified by reading `ai_gateway.ts:278-
+  286` directly: `usage = result.usageMetadata` is captured BEFORE the
+  empty-answer check that can still throw and leave the final event at
+  `outcome:"error"` -- a call that spent real tokens on an unusable response
+  is exactly the pressure this metric exists to surface, not hide. The
+  `jsonPayload.totalTokenCount:*` existence clause means "no usage field
+  present" (a timeout before any response) is excluded rather than counted
+  as zero.
+- **`ai_gateway_quota_exhaustions`** (counter): reads `abuse_guard.ts:103`'s
+  `"quota exceeded"` line, not the gateway event -- `generate()` cannot see
+  a quota refusal because `enforceDailyQuota` runs and can throw BEFORE
+  `generate()` is ever called (verified: grepped every `ai_*.ts` callable's
+  call order). Bounded to exactly the four AI actions; `enforceDailyQuota`
+  is also called for non-AI actions (`accountExport`, `clipUrl`, etc.),
+  excluded by the filter itself, not just by comment.
+- **7 investigation queries** (`queryAllCalls`, `queryFailures`,
+  `queryTimeoutsFor(operation)`, `queryErrorsFor(operation)`,
+  `queryUsagePresent`, `queryQuotaExhausted`, `queryQuotaCheckFailed`) --
+  plain filter strings for Log Explorer / `gcloud logging read`, not metrics
+  and not alert policies. `queryQuotaCheckFailed` is deliberately separate
+  from `queryQuotaExhausted`: the former is the quota-enforcement backend
+  itself failing (`abuse_guard.ts:124`, fails closed), not a caller
+  legitimately over their limit.
+
+**Drift resistance:** `"ai_gateway: call"`, `"quota exceeded"`, and `"quota
+check failed"` now source from `log_signals.ts` the same way the Stripe/
+delete/export literals do -- `ai_gateway.ts` and `abuse_guard.ts` import the
+constants instead of retyping the strings. Purely mechanical, confirmed via
+diff review: only the string literal became a named import at each call
+site.
+
+**Deliberately not built:** any threshold-based `AlertPolicy` (error rate,
+p99 latency, token-cost paging). GPT-PM's own words: values like "alert if
+error rate > 5%" or "latency > 8s" with no production baseline would be
+invented. That is a separate, later operating-policy decision once real
+traffic gives a baseline to set a threshold against -- not something to
+guess a number for here.

@@ -39,3 +39,16 @@ export const PLATFORM_UNHANDLED_ERROR = "Unhandled error";
 
 /** `abuse_guard.ts:66` -- `noteAppCheck`'s structured attestation event. */
 export const APP_CHECK_EVENT = "appcheck";
+
+/** `ai_gateway.ts:312` -- the per-call structured observability event. */
+export const AI_GATEWAY_CALL_EVENT = "ai_gateway: call";
+
+/** `abuse_guard.ts:103` -- a caller was refused for exceeding its daily quota. */
+export const QUOTA_EXCEEDED_EVENT = "quota exceeded";
+
+/**
+ * `abuse_guard.ts:124` -- the quota-enforcement check itself failed (fails
+ * closed), distinct from `QUOTA_EXCEEDED_EVENT`: this is the backend being
+ * unable to evaluate the quota at all, not a caller legitimately over it.
+ */
+export const QUOTA_CHECK_FAILED_EVENT = "quota check failed";

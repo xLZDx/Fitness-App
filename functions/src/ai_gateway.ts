@@ -50,6 +50,7 @@ import {
 } from "@google/genai";
 import * as logger from "firebase-functions/logger";
 import { HttpsError } from "firebase-functions/v2/https";
+import { AI_GATEWAY_CALL_EVENT } from "./monitoring/log_signals";
 
 /**
  * `gemini-2.5-flash` 404s for this project; `gemini-3-flash-preview` answers
@@ -309,7 +310,7 @@ export async function generate(opts: GenerateOptions): Promise<string> {
     // `AiGatewayOperation` name as `enforceDailyQuota`'s `action` argument),
     // so the two log lines are joinable into one picture without this event
     // duplicating that check's own logic.
-    logger.info("ai_gateway: call", {
+    logger.info(AI_GATEWAY_CALL_EVENT, {
       operation: opts.operation,
       outcome,
       latencyMs: Date.now() - startedAtMs,

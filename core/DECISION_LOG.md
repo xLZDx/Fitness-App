@@ -28380,3 +28380,77 @@ production log call site in this round.
 
 Sent back to GPT-PM with the exact commit for its own re-verification, per its own instruction
 ("the next review remains scoped to this commit only").
+
+## Step 9 groundwork, items 1-3: FINAL APPROVED -- 2026-08-27
+
+GPT-PM's verdict on commit `6185d11`: `VERDICT: APPROVE`. Both MAJORs from the `41cb872` review
+CLOSED -- Gen2 resource scoping and the AlertPolicy JSON shape both independently confirmed
+against Google's own current documentation (cited in its reply), not just accepted on the
+remediation's word. Explicitly did not treat "no live gcloud confirmation of the derived service
+names" as a defect of this definition-only step -- correctly scoped it as an activation-preflight
+concern instead, matching how this entry's own remediation already framed it.
+
+**Final status, GPT-PM's own words:** Stripe/deleteAccount/exportAccountData LogMatch definitions
+-- APPROVED/DEFINED/TESTED/READY_TO_ACTIVATE. Gen2 resource scoping -- CLOSED. Full AlertPolicy
+JSON -- CLOSED. Remaining scoped BLOCKER/MAJOR/MINOR -- NONE. Live service-name confirmation --
+activation preflight, not a remediation blocker. Live policies/channels -- HOLD until FA-D1. App
+Check live metric -- separate pre-existing HOLD until cost proof. "6185d11 can be considered
+final-approved for this remediation scope. Do not reopen these two findings without concrete
+regression evidence."
+
+Items 1-3 of the alert-independent Step 9 groundwork batch are closed. Remaining from GPT-PM's
+original ruling: AI Gateway log-based metric/query definitions reading the structured
+`ai_gateway: call` event built earlier this gate (Sec 13) -- next.
+
+## Step 9 groundwork, item 4: AI Gateway metrics/queries -- DoD requested and expanded -- 2026-08-27
+
+Asked GPT-PM for a DoD before building, same discipline as items 1-3 (Rosetta's own "ask for a
+Definition of Done, don't write your own"). My working assumption (one counter metric + a handful
+of manual queries) was accepted as directionally right on the "no threshold-based alert" call, but
+expanded: GPT-PM named 5 required dimensions the G3 AI Gateway scope had already committed to --
+request rate, failures, timeout/latency, quota-exhaustion pressure, token/usage pressure -- and
+required 4 metrics (not 1) plus 7 named queries, all against the real `LogMetric` REST shape
+(`metricDescriptor.labels` + `labelExtractors`, not the simplified `{name,filter,labelKeys}` shape
+the App Check metric still uses), with distribution metrics needing real `valueExtractor` +
+`bucketOptions`. Verified the load-bearing factual claims before building, not on GPT-PM's word
+alone: grepped `enforceDailyQuota(...)` call order in all 4 `ai_*.ts` callables (confirmed it
+precedes `generate()` in every one, so the gateway event genuinely cannot see a quota refusal);
+read `ai_gateway.ts:278-286` directly (confirmed `usage = result.usageMetadata` is captured BEFORE
+the empty-answer throw, so a token metric filtered to `outcome="success"` would hide exactly the
+"spent tokens on an unusable response" pressure it exists to show).
+
+**Built**, all in `functions/src/monitoring/`:
+- `types.ts`: added `LogMetricLabel`, `BoundedLabel` (cardinality bound lives IN the rendered
+  filter itself, not only as a comment), `CounterLogMetricSpec`/`toCounterLogMetricJson`,
+  `DistributionLogMetricSpec`/`toDistributionLogMetricJson` (`explicitBuckets` only -- sufficient
+  for this codebase's small, known threshold sets). Both render the real
+  `google.logging.v2.LogMetric` REST shape, fields confirmed via `WebFetch` against Google's own
+  REST reference before writing the renderer, not guessed.
+- `ai_gateway_definitions.ts` (new): `AI_GATEWAY_CALLS_METRIC` (operation x outcome counter, 4x3=12
+  max series), `AI_GATEWAY_LATENCY_METRIC` (distribution, explicit buckets centered on this
+  codebase's own configured timeouts -- 20s/25s/45s, grep-verified per callable), `AI_GATEWAY_
+  TOKENS_METRIC` (distribution, deliberately NOT filtered to outcome=success per the verified
+  capture-order finding above), `AI_GATEWAY_QUOTA_EXHAUSTIONS_METRIC` (counter reading `abuse_
+  guard.ts`'s `"quota exceeded"` line, bounded to exactly the 4 AI actions -- `enforceDailyQuota`
+  is also called for non-AI actions like `accountExport`/`clipUrl`, excluded by the filter itself).
+  Plus 7 named investigation query functions (`queryAllCalls`, `queryFailures`,
+  `queryTimeoutsFor`/`queryErrorsFor` per operation, `queryUsagePresent`, `queryQuotaExhausted`,
+  `queryQuotaCheckFailed`).
+- `log_signals.ts`: added `AI_GATEWAY_CALL_EVENT`, `QUOTA_EXCEEDED_EVENT`, `QUOTA_CHECK_FAILED_
+  EVENT`. `ai_gateway.ts` and `abuse_guard.ts` now import these instead of retyping the literals
+  (mechanical, diff-reviewed, byte-identical values) -- same drift guard already applied to
+  Stripe/delete/export.
+- `README.md`: new "AI Gateway metrics and investigation queries" section with the full reasoning,
+  plus a flagged (not silently left) known inconsistency: the pre-existing App Check metric still
+  uses the older, simplified `LogBasedMetricSpec` shape rather than the new `CounterLogMetricSpec`
+  -- deliberately left out of this batch's scope rather than unilaterally expanded into.
+- `__tests__/ai_gateway_definitions.test.ts`: 18 new tests -- filter/bounding correctness per
+  metric, real LogMetric shape assertions, the token-metric outcome-inclusion proof, cardinality
+  caps, and all 7 queries.
+
+**Verification:** `npm run build` clean. `npx jest`: 428/428 (410 + 18 new). `node scripts/ci/
+check_data_lifecycle_coverage.js`: unaffected (no Firestore collections touched).
+
+**Not built, deliberately:** any threshold-based AlertPolicy (error rate, p99 latency, token-cost
+paging) -- GPT-PM's own ruling: a threshold with no production baseline would be invented, and
+stays a separate, later operating-policy decision once real traffic exists.

@@ -1,7 +1,11 @@
 import * as admin from "firebase-admin";
 import { HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { APP_CHECK_EVENT } from "./monitoring/log_signals";
+import {
+  APP_CHECK_EVENT,
+  QUOTA_EXCEEDED_EVENT,
+  QUOTA_CHECK_FAILED_EVENT,
+} from "./monitoring/log_signals";
 
 /**
  * A6-lite — the two cheap halves of abuse protection: see whether App Check is
@@ -100,7 +104,7 @@ export async function enforceDailyQuota(
       const snap = await tx.get(ref);
       const used = (snap.data()?.[action] as number | undefined) ?? 0;
       if (used + cost > limit) {
-        logger.warn("quota exceeded", { uid, action, used, cost, limit });
+        logger.warn(QUOTA_EXCEEDED_EVENT, { uid, action, used, cost, limit });
         throw new HttpsError(
           "resource-exhausted",
           "You have reached today's limit for this action. It resets tomorrow.",
@@ -121,7 +125,7 @@ export async function enforceDailyQuota(
     // transaction is atomic, so nothing was charged, and the caller does not
     // get its metered resource.
     if (e instanceof HttpsError) throw e;
-    logger.error("quota check failed", { uid, action, cost, limit, err: String(e) });
+    logger.error(QUOTA_CHECK_FAILED_EVENT, { uid, action, cost, limit, err: String(e) });
     throw new HttpsError("internal", "Could not check your usage limit.");
   }
 }

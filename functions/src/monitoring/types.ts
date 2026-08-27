@@ -88,12 +88,161 @@ export function matchesLogMatchFilter(
  * signal). Rendered separately from an alert filter because a metric
  * descriptor and an alert policy are different GCP resource kinds even
  * though both start from a Cloud Logging filter.
+ *
+ * NOTE: this is a simplified shape (name/filter/labelKeys only), predating
+ * `CounterLogMetricSpec`/`DistributionLogMetricSpec` below. GPT-PM's review
+ * of the AI Gateway metrics batch (2026-08-27) established that a real,
+ * deployable `LogMetric` needs `metricDescriptor.labels` +
+ * `labelExtractors`, which this shape does not produce -- flagged in
+ * `README.md` as a known inconsistency with the App Check metric still
+ * using this older shape, not silently left unmentioned.
  */
 export interface LogBasedMetricSpec {
   name: string;
   description: string;
   filter: string;
   labelKeys: string[];
+}
+
+/** One label on a real `google.logging.v2.LogMetric`. */
+export interface LogMetricLabel {
+  key: string;
+  valueType: "STRING" | "BOOL" | "INT64";
+  description: string;
+  /** The `jsonPayload` field this label is extracted from, e.g. `"jsonPayload.operation"`. */
+  sourceField: string;
+}
+
+export interface BoundedLabel {
+  label: LogMetricLabel;
+  /**
+   * The exact allowed values for this label. ANDed into the metric's
+   * `filter` as an OR-of-equality clause -- so cardinality is capped by
+   * the filter itself, not only by an out-of-band comment listing known
+   * values. An unexpected value (a typo, a future 5th operation added
+   * without updating this list) is simply excluded from the metric rather
+   * than silently creating a new, unbounded time series.
+   */
+  allowedValues: string[];
+}
+
+/**
+ * Explicit histogram buckets only. `linearBuckets`/`exponentialBuckets`
+ * exist on the real API but are not needed here -- every distribution this
+ * codebase defines has a small, known set of meaningful thresholds (e.g.
+ * this project's own AI Gateway timeout values) that read more clearly as
+ * an explicit list than as a generated curve. See each spec's `bounds` for
+ * the reasoning behind its specific values.
+ */
+export interface BucketOptionsSpec {
+  bounds: number[];
+}
+
+function boundedLabelFilterClause(bl: BoundedLabel): string {
+  return (
+    "(" +
+    bl.allowedValues.map((v) => `${bl.label.sourceField}="${v}"`).join(" OR ") +
+    ")"
+  );
+}
+
+function metricDescriptorLabels(
+  labels: LogMetricLabel[],
+): Array<{ key: string; valueType: string; description: string }> {
+  return labels.map((l) => ({
+    key: l.key,
+    valueType: l.valueType,
+    description: l.description,
+  }));
+}
+
+function labelExtractors(labels: LogMetricLabel[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const l of labels) out[l.key] = `EXTRACT(${l.sourceField})`;
+  return out;
+}
+
+/**
+ * A counter (`metricKind: DELTA`, `valueType: INT64`) log-based metric,
+ * bounded on every label by `boundedLabels`.
+ */
+export interface CounterLogMetricSpec {
+  name: string;
+  description: string;
+  message: string;
+  boundedLabels: BoundedLabel[];
+  /** Extra AND-ed filter clauses with no associated label, e.g. an existence check. */
+  extraFilterClauses?: string[];
+}
+
+export function counterLogMetricFilterString(
+  spec: CounterLogMetricSpec,
+): string {
+  return [
+    `jsonPayload.message="${spec.message}"`,
+    ...spec.boundedLabels.map(boundedLabelFilterClause),
+    ...(spec.extraFilterClauses ?? []),
+  ].join(" AND ");
+}
+
+export function toCounterLogMetricJson(spec: CounterLogMetricSpec): object {
+  const labels = spec.boundedLabels.map((bl) => bl.label);
+  return {
+    name: spec.name,
+    description: spec.description,
+    filter: counterLogMetricFilterString(spec),
+    metricDescriptor: {
+      metricKind: "DELTA",
+      valueType: "INT64",
+      labels: metricDescriptorLabels(labels),
+    },
+    labelExtractors: labelExtractors(labels),
+  };
+}
+
+/**
+ * A distribution (`metricKind: DELTA`, `valueType: DISTRIBUTION`)
+ * log-based metric: a histogram of `valueField`'s numeric value across
+ * matching log entries, bounded on every label by `boundedLabels`.
+ */
+export interface DistributionLogMetricSpec {
+  name: string;
+  description: string;
+  message: string;
+  boundedLabels: BoundedLabel[];
+  /** The `jsonPayload` field holding the numeric value, e.g. `"jsonPayload.latencyMs"`. */
+  valueField: string;
+  bucketOptions: BucketOptionsSpec;
+  extraFilterClauses?: string[];
+}
+
+export function distributionLogMetricFilterString(
+  spec: DistributionLogMetricSpec,
+): string {
+  return [
+    `jsonPayload.message="${spec.message}"`,
+    ...spec.boundedLabels.map(boundedLabelFilterClause),
+    ...(spec.extraFilterClauses ?? []),
+  ].join(" AND ");
+}
+
+export function toDistributionLogMetricJson(
+  spec: DistributionLogMetricSpec,
+): object {
+  const labels = spec.boundedLabels.map((bl) => bl.label);
+  return {
+    name: spec.name,
+    description: spec.description,
+    filter: distributionLogMetricFilterString(spec),
+    metricDescriptor: {
+      metricKind: "DELTA",
+      valueType: "DISTRIBUTION",
+      labels: metricDescriptorLabels(labels),
+    },
+    labelExtractors: labelExtractors(labels),
+    valueExtractor: `EXTRACT(${spec.valueField})`,
+    bucketOptions: { explicitBuckets: { bounds: spec.bucketOptions.bounds } },
+  };
 }
 
 /**
