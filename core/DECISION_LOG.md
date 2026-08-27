@@ -29854,3 +29854,55 @@ leaked timer handles -- clean.
 **Still not done, unchanged**: no deploy, no live resource creation, no positive/negative proof.
 This remediation commit goes back to GPT-PM next, scoped to exactly these 2 MAJOR findings plus any
 direct regressions.
+
+---
+
+## MVP1.G3 Step 10A -- GPT-PM final closure verdict: APPROVE (2026-08-27, same day)
+
+Sent commit `40e855b` (round 3's remediation) to GPT-PM via `review.js --commit 40e855b --project
+Fitness_App --round 3`. Send and reply both landed cleanly this time (no transport retry needed).
+
+**VERDICT: APPROVE.** All 4 original MAJOR findings (round 1) plus the round-2 and round-3
+residuals are confirmed CLOSED, with explicit reasoning for each:
+- Token-acquisition-bounded-by-deadline: CLOSED -- "the previous ADC/metadata hang could consume
+  the entire 60-second platform timeout before the handler could log anything. With this change the
+  token stage loses to the same 45-second probe deadline, leaving handler headroom to emit/throw
+  the stable failure signal."
+- Required live-state (`updateTime`) evidence: CLOSED -- "the former OK snapshot with '?' instead
+  of the evidence required by Step 10A is no longer possible through these paths."
+- `revision` staying best-effort (not required alongside `updateTime`): explicitly ACCEPTED as
+  correctly scoped -- "treating revision as mandatory without a proven GEN_1 contract could create
+  false degradation for a representation difference rather than detect missing required enforcement
+  evidence... if revision becomes a canonical deployment-integrity invariant later, handle it
+  generation-specifically rather than globally requiring serviceConfig.revision."
+- No regression in any previously closed finding (App Check intended-service handling,
+  `unreachable[]`, full sanitized success-state logging, pagination, independent Scheduler-absence
+  policy) -- explicitly checked and confirmed unchanged.
+
+GPT-PM's own words: "I specifically tried to invalidate the deadline implementation via timer
+leakage, a second independent budget, unresolved-token rejection behavior, and loss of handler
+headroom; none yields a supported BLOCKER/MAJOR in the submitted code... I found no remaining
+BLOCKER, MAJOR, or MINOR in this targeted remediation round."
+
+**Step 10A definitions/remediation code: APPROVED. GO: AUTHORIZED to proceed to the planned Step
+10A live activation/proof phase. PUSH: AUTHORIZED under the current Gate policy.**
+
+Re-ran `review.js` with `--final` (no new content -- GPT-PM correctly recognized the resubmission
+as the same already-approved commit and re-confirmed APPROVE) to produce a genuine `final:true`
+receipt, satisfying `gpt_review_gate.py`'s push-gate requirement per this session's standing
+discipline that a commit merely being reviewed is not the same as the loop having concluded.
+Receipt written, `final:true`, `verdict:"APPROVE"`.
+
+GPT-PM's own stated next checkpoint, quoted verbatim so it isn't silently reinterpreted: "targeted
+deployment only, live sanitized state, confirmed Scheduler identity, positive execution proof,
+controlled degradation/fail-closed proof, independent staleness-alert proof, and confirmation that
+the four AI Gateway callables remain undeployed."
+
+**Not yet done, and deliberately paused here rather than proceeding on GPT-PM's authorization
+alone**: the actual `firebase deploy --only functions:runEnforcementStateCheck` command creates a
+real, live Cloud Functions/Scheduler/Monitoring resource in the production Firebase project.
+`~/.claude/CLAUDE.md` §4 reserves "production migrations" for the operator's own separate
+confirmation "even if a broader GO exists" -- explicitly including a GO from a delegated review
+authority like GPT-PM. Per §18, PM mode continues a session past a report EXCEPT when blocked on an
+operator-only §4/§14 decision, which this is. Surfaced to the operator as the current checkpoint
+rather than deploying unasked.
