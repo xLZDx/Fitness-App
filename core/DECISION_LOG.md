@@ -29999,3 +29999,66 @@ minutes") proved optimistic in practice for a combination that has never emitted
 retrying; will append the resolution (policy ID once created, or a documented longer delay if it
 takes materially longer) to this same entry or a follow-up one rather than leaving this silently
 unresolved.
+
+---
+
+## MVP1.G3 Step 10A -- staleness-alert metric was fictional, corrected (2026-08-27, same day)
+
+**What looked like a propagation delay was a real design defect.** After waiting (two background
+waits, ~18 minutes total real time) and retrying `alertPolicies.create` for the staleness policy
+with no change in the `404 Cannot find metric(s)` error, checked independently rather than waiting
+further: `metricDescriptors.list` filtered on `metric.type = starts_with("cloudscheduler.googleapis.com")`
+returned ZERO results for this project -- not "no recent data," a genuinely empty list. Checked
+against the canary's own Scheduler job (`firebase-schedule-runProductionCanary-europe-west1`,
+running every 30 minutes for multiple days, hundreds of real executions): also zero data under that
+prefix. Confirmed the `metricDescriptors.list` filter syntax itself was correct by running the
+identical query against `cloudfunctions.googleapis.com` (a service known to have data) and getting 7
+real results back.
+
+**Web search confirmed the root cause**: Cloud Scheduler does not publish platform-level metrics
+into Cloud Monitoring the way Cloud Functions, Cloud Run, and most other GCP services do. No search
+result, including Google's own metrics reference pages, documents a
+`cloudscheduler.googleapis.com/job/execution_count` metric type. This was a plausible-sounding but
+never-independently-verified assumption written into the original round-1 remediation
+(`core/DECISION_LOG.md`'s own earlier Step 10A remediation-round entry) -- and it survived THREE
+full GPT-PM adversarial review rounds (all APPROVE-track) without being caught, because nothing in
+any of those rounds made a real API call against it. GPT-PM's own round-2 language even anticipated
+this exact gap: "I am not adding a separate finding merely because its exact job ID/metric filter
+has not yet been live-proven... that belongs in the Step 10A activation proof" -- which is exactly
+where it surfaced.
+
+**Fix**: replaced the metric entirely, not just its filter value. `run.googleapis.com/request_count`
+scoped to the function's own `cloud_run_revision` resource (`resource.labels.service_name`, derived
+via the same `toCloudRunServiceName()` helper this file's LogMatch filters already use) -- Cloud
+Scheduler's HTTP target is a real HTTP request against this Cloud Run service, and `request_count` is
+a genuine, documented Cloud Run platform metric. Verified BEFORE writing the fix: a direct
+`timeSeries.list` query for this exact metric+resource combination, following the manual Scheduler
+trigger used for the positive proof above, showed one real data point
+(`response_code_class="2xx"`, count 1) inside the same minute -- populated immediately, no
+propagation delay at all, unlike the abandoned metric which never populated in ~18 minutes of
+waiting.
+
+**Verification**: updated `enforcementStateStalenessPolicyJson()`'s test to assert the new filter
+(`run.googleapis.com/request_count` / `cloud_run_revision` / the real service name) and to assert
+the old, wrong prefix is genuinely absent (`expect(filter).not.toContain("cloudscheduler.googleapis.com")`).
+`npm run build` clean, full suite **21 suites, 501 tests, all passed**.
+
+**Live resource created and verified**: `alertPolicies/4280278487088483247` ("Enforcement-state
+check: stopped receiving Scheduler triggers"), `enabled: true`, FA-D1 channel attached. Both this
+policy and the failure policy created earlier confirmed source==live via SHA-256 comparison (same
+normalization discipline as Step 9B's own live-readback evidence -- resource `name`,
+`creationRecord`, `mutationRecord` and per-condition `name` fields stripped before hashing, since
+those are server-assigned and not part of the source definition): both `match: true`. Evidence
+committed: `core/evidence/step10a_live_readback_2026-08-27.json`.
+
+**All 5 Step 10A live resources now exist and are verified**: the deployed function
+(`runEnforcementStateCheck`), the failure alert policy, the corrected staleness alert policy, the
+positive-proof log entry, and the negative-proof log entry. The four AI Gateway callables remain
+confirmed undeployed. This closes GPT-PM's full live-activation checklist from its round-3 APPROVE
+except for the operator's own email confirmation (same standing limitation every synthetic proof in
+this project has carried since Step 9B).
+
+This correction, and the two smaller real API constraints fixed earlier in this same live-activation
+session (the 24h duration ceiling, the notificationRateLimit restriction), go back to GPT-PM as one
+bundled review round before Step 10A is declared closed -- a genuine design change (the staleness
+mechanism itself, not just a parameter) needs a real adversarial pass, not a self-declared pass.

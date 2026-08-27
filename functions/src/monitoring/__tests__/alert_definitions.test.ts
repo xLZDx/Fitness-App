@@ -287,16 +287,20 @@ describe("enforcement-state Scheduler staleness policy (metric-absence, GPT-PM r
     expect(policy.conditions[0].conditionAbsent?.duration).toBe("64800s");
   });
 
-  it("filters on the Scheduler job's own execution-count metric, not a custom log", () => {
+  it("filters on the deployed function's own Cloud Run request_count, not a custom log", () => {
+    // Round-2 correction, live activation: `cloudscheduler.googleapis.com/job/execution_count`
+    // does not exist -- Cloud Scheduler does not publish platform metrics into Cloud
+    // Monitoring at all (confirmed live: zero metric descriptors under that prefix for this
+    // project, even for the long-running canary job). `run.googleapis.com/request_count` on
+    // the function's own `cloud_run_revision` is real and confirmed populated immediately.
     const policy = enforcementStateStalenessPolicyJson() as {
       conditions: Array<{ conditionAbsent?: { filter: string } }>;
     };
     const filter = policy.conditions[0].conditionAbsent?.filter ?? "";
-    expect(filter).toContain(
-      'metric.type="cloudscheduler.googleapis.com/job/execution_count"',
-    );
-    expect(filter).toContain('resource.type="cloud_scheduler_job"');
-    expect(filter).toContain("runEnforcementStateCheck");
+    expect(filter).toContain('metric.type="run.googleapis.com/request_count"');
+    expect(filter).toContain('resource.type="cloud_run_revision"');
+    expect(filter).toContain('resource.labels.service_name="runenforcementstatecheck"');
+    expect(filter).not.toContain("cloudscheduler.googleapis.com");
   });
 
   it("has an empty notificationChannels list, same posture as every other policy before FA-D1/activation", () => {

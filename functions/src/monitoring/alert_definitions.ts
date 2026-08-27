@@ -42,6 +42,7 @@ import {
   toAlertPolicyJson,
   toCounterLogMetricJson,
   toMetricAbsenceAlertPolicyJson,
+  toCloudRunServiceName,
 } from "./types";
 
 /**
@@ -72,10 +73,9 @@ const CANARY_PROBE_FUNCTION_NAME = "runProductionCanary";
 /**
  * MVP1.G3 Step 10A. `runEnforcementStateCheck` (`enforcement_state_schedule.ts`)
  * is a scheduled function, same Gen2 shape as the canary above --
- * `toCloudRunServiceName` derives `runenforcementstatecheck`. Not yet
- * confirmed against a live deployment (unlike the canary's name above,
- * which was); to be verified via `gcloud run services list` once this
- * function is actually deployed, same check the other four names received.
+ * `toCloudRunServiceName` derives `runenforcementstatecheck`, confirmed live
+ * at Step 10A activation (`gcloud run services list`, 2026-08-27) -- exact
+ * match, same check every other name here already received.
  */
 const ENFORCEMENT_STATE_CHECK_FUNCTION_NAME = "runEnforcementStateCheck";
 
@@ -281,13 +281,39 @@ export function enforcementStateAlertPolicyJson(): object {
 /**
  * MVP1.G3 Step 10A remediation (GPT-PM's 2nd finding: "an independent
  * freshness/absence mechanism able to detect missed execution without
- * relying on this function's own custom log"). The Scheduler job ID follows
- * Firebase's documented `onSchedule` naming convention,
- * `firebase-schedule-<functionName>-<region>` -- confirmed live at Step 10A
- * activation (`gcloud scheduler jobs list`, 2026-08-27): the real job ID
- * matches this constant exactly, no correction needed.
+ * relying on this function's own custom log").
  *
- * `absentFor` was originally `"86400s"` (24h) -- rejected live at activation:
+ * ROUND 2 CORRECTION, live activation (2026-08-27): the original design
+ * filtered on `cloudscheduler.googleapis.com/job/execution_count`, a metric
+ * type this file assumed existed but never independently verified before
+ * writing it -- exactly the gap this file's own "not yet independently
+ * confirmed" comments existed to flag for everything else. Live activation
+ * caught it for real: `alertPolicies.create` returned
+ * `404 Cannot find metric(s)`, and a direct `metricDescriptors.list` filtered
+ * on `cloudscheduler.googleapis.com` returned ZERO results for this project
+ * -- not a propagation delay, Cloud Scheduler genuinely does not publish
+ * platform metrics into Cloud Monitoring the way Cloud Functions/Cloud Run
+ * do (confirmed by web search finding no such metric documented anywhere,
+ * and by the project's own long-running canary Scheduler job, which has
+ * executed hundreds of times over multiple days, ALSO having zero data under
+ * that prefix).
+ *
+ * Replaced with `run.googleapis.com/request_count` on the deployed function's
+ * own `cloud_run_revision` resource -- Cloud Scheduler's HTTP target IS a
+ * real HTTP request against this Cloud Run service, and that metric is a
+ * genuine, documented Cloud Run platform metric. Confirmed live: a manual
+ * `gcloud scheduler jobs run` trigger showed up as exactly one
+ * `request_count` data point with `response_code_class="2xx"` within the
+ * same minute, with real data available immediately (no propagation delay
+ * at all, unlike the abandoned metric). Same `conditionAbsent` mechanism,
+ * same absence duration and rationale as before -- only the metric type and
+ * resource filter changed. The Cloud Run service name comes from
+ * `toCloudRunServiceName()`, the same derivation this file's LogMatch
+ * filters already use, so a function rename changes this filter too instead
+ * of leaving a stale name behind.
+ *
+ * `absentFor` was originally `"86400s"` (24h) -- also rejected live, and
+ * still correct after the metric-type fix above:
  * `conditionAbsent.duration` has an undocumented (not in the public API
  * reference at the time this was written) real ceiling of 23h30m
  * (`"Durations longer than 23h30m are not supported"`, confirmed via the
@@ -297,17 +323,13 @@ export function enforcementStateAlertPolicyJson(): object {
  * rationale as the original 24h value, just under the real cap instead of
  * an assumed one.
  */
-const ENFORCEMENT_STATE_SCHEDULER_JOB_ID =
-  "firebase-schedule-runEnforcementStateCheck-europe-west1";
-
 export const ENFORCEMENT_STATE_STALENESS_POLICY: MetricAbsenceAlertPolicySpec = {
-  displayName: "Enforcement-state check: Scheduler job stopped executing",
-  conditionDisplayName:
-    "cloudscheduler.googleapis.com/job/execution_count absent for 18h",
+  displayName: "Enforcement-state check: stopped receiving Scheduler triggers",
+  conditionDisplayName: "run.googleapis.com/request_count absent for 18h",
   filter:
-    `metric.type="cloudscheduler.googleapis.com/job/execution_count" ` +
-    `AND resource.type="cloud_scheduler_job" ` +
-    `AND resource.label.job_id="${ENFORCEMENT_STATE_SCHEDULER_JOB_ID}"`,
+    `metric.type="run.googleapis.com/request_count" ` +
+    `AND resource.type="cloud_run_revision" ` +
+    `AND resource.labels.service_name="${toCloudRunServiceName(ENFORCEMENT_STATE_CHECK_FUNCTION_NAME)}"`,
   absentFor: "64800s",
   alignmentPeriodSeconds: 3600,
   autoClose: AUTO_CLOSE,

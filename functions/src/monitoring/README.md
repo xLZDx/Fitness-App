@@ -533,10 +533,20 @@ with a broader GO -- authorized explicitly ("деплоить") after the checkp
   `core/evidence/step10a_negative_proof_2026-08-27.json`. Same limitation as every prior synthetic
   proof in this project: no server-side incident/notification API this session has found, so real
   email delivery needs the operator's own confirmation.
-- **Independent staleness-alert proof**: the failure policy
-  (`alertPolicies/17310925602537777726`) created and verified live. The staleness policy's own
-  creation initially failed with `404 Cannot find metric(s)` -- `cloudscheduler.googleapis.com/job/execution_count`
-  had never been emitted for this specific job before the manual trigger above, and propagation for a
-  brand-new metric+resource combination took longer than the API's own "up to 10 minutes" message.
-  [Status of this specific item -- filled in once the metric propagates and the policy is created;
-  see the entry immediately following this one, or `core/DECISION_LOG.md` if this note is stale.]
+- **Independent staleness-alert proof, resolved by a real design correction, not a wait**: the
+  failure policy (`alertPolicies/17310925602537777726`) created and verified live first. The
+  staleness policy's creation then failed with `404 Cannot find metric(s)` for
+  `cloudscheduler.googleapis.com/job/execution_count` -- initially treated as a propagation delay,
+  but a direct `metricDescriptors.list` filtered on `cloudscheduler.googleapis.com` returned ZERO
+  results project-wide, including for the canary's own Scheduler job (running for days, hundreds of
+  executions). **Cloud Scheduler does not publish platform metrics into Cloud Monitoring at all** --
+  the original metric type was a plausible-sounding assumption this file never independently verified
+  before writing it, and neither round 1's author nor GPT-PM's three review rounds caught it, because
+  nothing forced a real API call against it until live activation. Corrected to
+  `run.googleapis.com/request_count` on the function's own `cloud_run_revision` -- Cloud Scheduler's
+  HTTP trigger IS a real Cloud Run request, and this metric is genuine, documented, and populated
+  immediately (confirmed: a manual trigger showed up as one `request_count` data point with
+  `response_code_class="2xx"` inside the same minute, no propagation delay). Rebuilt, retested
+  (21/21 suites, 501/501 tests), the corrected policy created live
+  (`alertPolicies/4280278487088483247`), and both policies' source-vs-live shape confirmed identical
+  by SHA-256 (`core/evidence/step10a_live_readback_2026-08-27.json`).
