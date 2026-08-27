@@ -30358,3 +30358,86 @@ tests, all passed**.
 **Step 10A's two remaining live obligations, both now done.** Sending this batch (staleness-policy
 live fix + proof-only deploy/invoke/capture/delete + code cleanup) to GPT-PM for a final targeted
 review before declaring Step 10A closed.
+
+## MVP1.G3 Step 10A -- GPT-PM round 8: real MAJOR (silent-alert path), fixed; wider systemic discovery reported, not silently expanded (2026-08-27, same day)
+
+Sent `review.js --commit 454acff --round 8`. Correlated reply, **`VERDICT: MAJOR findings -- 1
+MAJOR`**: confirmed findings #1 and #2 both genuinely CLOSED (staleness policy, proof-only fail-closed
+behavior) -- but the real captured failure log from finding #2's own proof exposed that the FAILURE
+alert's filter never matches a genuine logger-produced failure, so the checker fails closed but the
+alert that should page someone about it cannot fire.
+
+**Verified before accepting**, per this project's standing discipline:
+- Confirmed `ENFORCEMENT_STATE_FAILURE_FILTER.messageEquals` renders to exact equality
+  (`jsonPayload.message="..."`, `types.ts`'s `toGcpFilterString`).
+- Confirmed the real captured log entry's `jsonPayload.message` is
+  `"Error: enforcement state check degraded or failed\n    at entryFromArgs (...)..."` -- not equal to
+  the bare event string.
+- Read `firebase-functions`' own logger source directly
+  (`node_modules/firebase-functions/lib/logger/index.js`, `entryFromArgs()`): confirmed
+  **unconditional** rewrite for ERROR severity when no argument is already an `Error` instance --
+  `message = new Error(message).stack`. Not an edge case; every `logger.error(EVENT_STRING, {...})`
+  call in this codebase produces this shape.
+- Confirmed `enforcement_state_schedule.ts`'s real scheduled function uses the identical call shape.
+
+**Fix, root-cause level**: extended the shared `LogMatchFilterSpec` (`types.ts`) with an optional
+`eventEquals` alternative to `messageEquals`, matching a caller-populated `jsonPayload.event` field
+(never rewritten by the logger, unlike `message`) instead of the decorated message. Switched
+`ENFORCEMENT_STATE_FAILURE_FILTER` to `eventEquals`; added `event: ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT`
+to both `logger.error()` call sites in `enforcement_state_schedule.ts`. Added regression tests
+modeling the REAL decorated logger output (not the intended input string), including a test proving
+the OLD message-based match would have failed and the NEW event-based match succeeds -- per GPT-PM's
+explicit requirement.
+
+**Re-verified live, not just at the unit level**: the already-captured evidence predates this fix and
+has no `event` field to test against, so redeployed the temporary proof-only harness a second time
+(same mechanism as finding #2, now also carrying the `event:` fix), invoked it once more (HTTP 500,
+same genuine fail-closed behavior), captured a FRESH real log entry with `jsonPayload.event =
+"enforcement state check degraded or failed"` populated. Ran a live Cloud Logging `entries:list` query
+using the exact corrected filter syntax (`jsonPayload.event="..."`, scoped to the proof-only service)
+against it -- **1 entry matched**, confirming the corrected filter genuinely matches a real
+logger-produced failure, not just a hand-constructed one. Deleted the temporary function again,
+revoked the temporary IAM grant again. Evidence:
+`core/evidence/step10a_proof_only_real_failure_log_round8_eventfix_2026-08-27.json` (the fresh entry)
+and `core/evidence/step10a_eventequals_filter_live_verification_2026-08-27.json` (the query result).
+
+**PATCHed the live failure alert policy** (`alertPolicies/17310925602537777726`) in place with the
+corrected filter; SHA-256 source==live -- **match: true**. Evidence:
+`core/evidence/step10a_failure_policy_eventfix_patch_2026-08-27.json`.
+
+**Verification**: `npm run build` clean. `npx jest --json --outputFile=jest_result.json`: **21
+suites, 522 tests, all passed**. `assert_test_health.js` against that file: **OK, 522 tests**.
+
+### Wider discovery, reported rather than silently expanded
+
+The SAME root cause (`logger.error(EVENT_STRING, {...metadata})` + a `messageEquals`-based
+LogMatch filter) is used by four other ALREADY-DEPLOYED, already-approved failure alerts, none of
+which were touched by this fix:
+
+| Alert | Call site(s) | Filter |
+| --- | --- | --- |
+| Stripe reconciliation (cancel) | `index.ts:1913` `STRIPE_RECONCILE_CANCEL_FAILED` | `STRIPE_RECONCILIATION_FAILURE_FILTER` |
+| Stripe reconciliation | `index.ts:1921` `STRIPE_RECONCILE_FAILED` | `STRIPE_RECONCILIATION_FAILURE_FILTER` |
+| Delete account (Stripe cancel) | `index.ts:2134` `DELETE_ACCOUNT_STRIPE_CANCEL_FAILED` | `DELETE_ACCOUNT_FAILURE_FILTER` |
+| Delete account (Firestore) | `index.ts:2171` `DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED` | `DELETE_ACCOUNT_FAILURE_FILTER` |
+| Delete account (Auth) | `index.ts:2193` `DELETE_ACCOUNT_AUTH_DELETE_FAILED` | `DELETE_ACCOUNT_FAILURE_FILTER` |
+| Export account | `account_export.ts:317` `EXPORT_ACCOUNT_FAILED` | `EXPORT_ACCOUNT_FAILURE_FILTER` |
+| Canary probe | `canary_schedule.ts:99,110` `CANARY_PROBE_FAILED_EVENT` | `CANARY_PROBE_FAILURE_FILTER` |
+
+If this analysis is right, every one of these alerts -- including the two Stripe-reconciliation
+alerts, which are financial-correctness-adjacent -- has been silently unable to fire since it was
+deployed, for the identical reason Step 10A's own alert just failed the same way. **Not fixed in this
+gate.** GPT-PM's round-8 instruction was explicit: "Remediate only this one residual MAJOR and its
+direct regression proof. No general implementation sweep is needed again" -- these four alerts are
+outside that scope, are not part of Step 10A's own diff, and touch already-shipped, already-reviewed
+gates (financial correctness is R3 territory per this project's own agent-routing rubric). Rather than
+either (a) silently leaving a known, evidence-backed defect unreported, or (b) unilaterally expanding
+a Step 10A remediation into a multi-gate rewrite of already-approved alerting code on my own
+initiative, this table plus the recommendation to fix the root cause across all five call sites is
+being sent to GPT-PM in the round-9 submission for an explicit scope decision -- widen now (same
+mechanism, same one-line fix per site, likely fast) or open as a dedicated backlog/gate item. Logged
+here regardless of GPT-PM's answer, since the underlying fact (these alerts are currently silent) is
+true either way.
+
+**Step 10A's own scope, complete**: sending this round-8 remediation (event-field fix, live
+verification, live policy patch) to GPT-PM for round 9, alongside the wider-discovery report above.

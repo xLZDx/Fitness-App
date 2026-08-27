@@ -161,17 +161,38 @@ export const CANARY_PROBE_FAILURE_FILTER: LogMatchFilterSpec = {
 };
 
 /**
- * MVP1.G3 Step 10A. `enforcement_state_schedule.ts` logs this exact message
+ * MVP1.G3 Step 10A. `enforcement_state_schedule.ts` logs this event
  * whenever its own check finds any section it could not read (DEGRADED) or
  * could read none of (FAILED) -- never on a clean read, same silence-is-OK
  * convention as every filter above. No `PLATFORM_UNHANDLED_ERROR` backstop
  * needed here for the same documented reason as the canary: `onSchedule`'s
  * wrapper never logs that literal, and this function's own top-level
  * try/catch already logs this exact event on any uncaught rejection too.
+ *
+ * WHY `eventEquals`, NOT `messageEquals` (GPT-PM round-8 finding, fixed
+ * 2026-08-27 same day as discovered): confirmed via a real captured
+ * production-shaped log entry from the temporary proof-only deploy
+ * (`core/evidence/step10a_proof_only_real_failure_log_2026-08-27.json`) that
+ * `firebase-functions/logger`'s `logger.error(EVENT, {...metadata})`
+ * unconditionally rewrites `jsonPayload.message` into
+ * `"Error: EVENT\n    at ..."` for ERROR severity -- a `messageEquals`
+ * filter built from the literal event string therefore NEVER matches this
+ * function's own real failure log; the checker was genuinely fail-closed
+ * (proven separately) but the alert that was supposed to page someone about
+ * it could not have fired. `enforcement_state_schedule.ts` now explicitly
+ * sets `event: ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT` in the metadata
+ * object it passes to `logger.error()`, which `entryFromArgs` spreads
+ * directly into `jsonPayload` untouched -- `eventEquals` matches that field,
+ * never rewritten. See `types.ts`'s `LogMatchFilterSpec.messageEquals` doc
+ * for the full mechanism and why the four other already-deployed
+ * `messageEquals`-based failure filters (Stripe reconciliation, delete
+ * account, export account, canary probe) are NOT touched here -- same root
+ * cause, reported to GPT-PM for a scope decision rather than silently
+ * expanded into this gate.
  */
 export const ENFORCEMENT_STATE_FAILURE_FILTER: LogMatchFilterSpec = {
   exportName: ENFORCEMENT_STATE_CHECK_FUNCTION_NAME,
-  messageEquals: [ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT],
+  eventEquals: [ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT],
 };
 
 export function stripeReconciliationAlertFilterString(): string {

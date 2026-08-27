@@ -30,8 +30,9 @@ function entry(
   serviceName: string,
   message: string,
   severity: LogEntryFixture["severity"] = "ERROR",
+  event?: string,
 ): LogEntryFixture {
-  return { serviceName, message, severity };
+  return { serviceName, message, severity, ...(event !== undefined ? { event } : {}) };
 }
 
 describe("toCloudRunServiceName", () => {
@@ -234,20 +235,63 @@ describe("production canary probe-failure alert filter", () => {
 });
 
 describe("enforcement-state check failure alert filter", () => {
-  it("matches the check's own degraded-or-failed log", () => {
+  it("matches the check's own degraded-or-failed log via the event field", () => {
     expect(
       matchesLogMatchFilter(
         ENFORCEMENT_STATE_FAILURE_FILTER,
-        entry("runenforcementstatecheck", signals.ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT),
+        entry(
+          "runenforcementstatecheck",
+          "irrelevant -- this filter no longer keys on message",
+          "ERROR",
+          signals.ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT,
+        ),
       ),
     ).toBe(true);
+  });
+
+  // GPT-PM round-8 finding (Step 10A live-activation, real-failure proof,
+  // 2026-08-27): confirmed via `firebase-functions/logger`'s own source that
+  // `logger.error(EVENT, {...})` unconditionally rewrites `jsonPayload.message`
+  // into `"Error: EVENT\n    at ..."` for ERROR severity. This fixture models
+  // that REAL decorated shape (not the intended input string) using the exact
+  // text from the captured production log entry
+  // (`core/evidence/step10a_proof_only_real_failure_log_2026-08-27.json`) --
+  // proving the filter matches the actual logger output, not a hypothetical
+  // undecorated one.
+  it("matches the REAL firebase-functions logger output (Error-prefixed, stack-suffixed), not the raw event string", () => {
+    const realDecoratedMessage =
+      "Error: enforcement state check degraded or failed\n" +
+      "    at entryFromArgs (/workspace/node_modules/firebase-functions/lib/logger/index.js:144:19)\n" +
+      "    at Object.error (/workspace/node_modules/firebase-functions/lib/logger/index.js:131:11)";
+    const realEntry = entry(
+      "runenforcementstatecheck",
+      realDecoratedMessage,
+      "ERROR",
+      signals.ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT,
+    );
+    expect(matchesLogMatchFilter(ENFORCEMENT_STATE_FAILURE_FILTER, realEntry)).toBe(true);
+  });
+
+  it("does NOT match on the raw undecorated event string as a message (the bug this round fixed)", () => {
+    // Proves the old messageEquals-based filter's failure mode: an entry
+    // whose `message` equals the raw event string but has no `event` field
+    // (what messageEquals actually needed) must NOT match via eventEquals.
+    const undecoratedOnlyEntry = entry(
+      "runenforcementstatecheck",
+      signals.ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT,
+      "ERROR",
+      // no event field -- simulates the pre-fix log shape
+    );
+    expect(matchesLogMatchFilter(ENFORCEMENT_STATE_FAILURE_FILTER, undecoratedOnlyEntry)).toBe(
+      false,
+    );
   });
 
   it("does not match PLATFORM_UNHANDLED_ERROR -- onSchedule's own wrapper never logs it", () => {
     // Same documented reason as the canary's own filter above: this is an
     // onSchedule function, not onCall, so https.js's platform backstop
     // never applies to it.
-    expect(ENFORCEMENT_STATE_FAILURE_FILTER.messageEquals).not.toContain(
+    expect(ENFORCEMENT_STATE_FAILURE_FILTER.eventEquals).not.toContain(
       signals.PLATFORM_UNHANDLED_ERROR,
     );
   });
@@ -256,18 +300,26 @@ describe("enforcement-state check failure alert filter", () => {
     expect(
       matchesLogMatchFilter(
         ENFORCEMENT_STATE_FAILURE_FILTER,
-        entry("runproductioncanary", signals.ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT),
+        entry(
+          "runproductioncanary",
+          "irrelevant",
+          "ERROR",
+          signals.ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT,
+        ),
       ),
     ).toBe(false);
   });
 
-  it("renders a Gen2-shaped filter string scoped to the runenforcementstatecheck Cloud Run service", () => {
+  it("renders a Gen2-shaped filter string scoped to the runenforcementstatecheck Cloud Run service, keyed on jsonPayload.event", () => {
     const filter = enforcementStateAlertFilterString();
     expect(filter).toContain('resource.type="cloud_run_revision"');
     expect(filter).toContain(
       'resource.labels.service_name="runenforcementstatecheck"',
     );
-    expect(filter).toContain(signals.ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT);
+    expect(filter).toContain(
+      `jsonPayload.event="${signals.ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT}"`,
+    );
+    expect(filter).not.toContain("jsonPayload.message=");
   });
 });
 

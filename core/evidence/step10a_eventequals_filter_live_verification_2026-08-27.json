@@ -1,0 +1,22 @@
+{
+  "context": "GPT-PM round-8 finding: the failure alert filter (messageEquals) never matched the real decorated logger message. Fixed by adding an explicit event metadata field and switching the filter to eventEquals/jsonPayload.event=. Re-ran the proof-only harness to capture a fresh real failure with the event field populated, then ran a live Cloud Logging query using the exact corrected filter syntax against it.",
+  "invocation": {
+    "url": "https://europe-west1-fitness-app-korostelev.cloudfunctions.net/runEnforcementStateCheckProofOnly",
+    "httpStatus": 500,
+    "responseBody": {
+      "status": "FAILED",
+      "unavailableSections": [
+        "functions",
+        "firestoreRules",
+        "appCheck",
+        "identityToolkit"
+      ]
+    }
+  },
+  "correctedFilterVerification": {
+    "filterQueried": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"runenforcementstatecheckproofonly\" AND jsonPayload.event=\"enforcement state check degraded or failed\"",
+    "note": "service_name scoped to the proof-only service (not the real runenforcementstatecheck service, a different deployed resource) -- this isolates verification of the event= clause itself against a genuine logger-produced entry.",
+    "entriesMatched": 1,
+    "match": true
+  }
+}

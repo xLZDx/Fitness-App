@@ -1,0 +1,61 @@
+{
+  "insertId": "6a90a01b0004a6c52ba25485",
+  "jsonPayload": {
+    "sections": {
+      "appCheck": {
+        "error": "HTTP 400: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"Project 'projects/fa-d1-proof-only-invalid-project-id' not found or deleted.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"USER_PROJECT_DENIED\",\n        \"dom",
+        "status": "UNAVAILABLE"
+      },
+      "firestoreRules": {
+        "error": "HTTP 400: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"Project 'projects/fa-d1-proof-only-invalid-project-id' not found or deleted.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"USER_PROJECT_DENIED\",\n        \"dom",
+        "status": "UNAVAILABLE"
+      },
+      "functions": {
+        "error": "HTTP 403: {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"Permission denied on resource project fa-d1-proof-only-invalid-project-id.\",\n    \"status\": \"PERMISSION_DENIED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"CONSUMER_INVALID\",\n        \"domain\"",
+        "status": "UNAVAILABLE"
+      },
+      "identityToolkit": {
+        "status": "UNAVAILABLE",
+        "error": "HTTP 400: {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"Project 'projects/fa-d1-proof-only-invalid-project-id' not found or deleted.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"USER_PROJECT_DENIED\",\n        \"dom"
+      }
+    },
+    "overallStatus": "FAILED",
+    "event": "enforcement state check degraded or failed",
+    "message": "Error: enforcement state check degraded or failed\n    at entryFromArgs (/workspace/node_modules/firebase-functions/lib/logger/index.js:144:19)\n    at Object.error (/workspace/node_modules/firebase-functions/lib/logger/index.js:131:11)\n    at /workspace/lib/enforcement_state_proof_only.js:113:16\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)",
+    "proofOnly": true,
+    "unavailableSections": [
+      "functions",
+      "firestoreRules",
+      "appCheck",
+      "identityToolkit"
+    ]
+  },
+  "resource": {
+    "type": "cloud_run_revision",
+    "labels": {
+      "service_name": "runenforcementstatecheckproofonly",
+      "project_id": "fitness-app-korostelev",
+      "revision_name": "runenforcementstatecheckproofonly-00001-mey",
+      "location": "europe-west1",
+      "configuration_name": "runenforcementstatecheckproofonly"
+    }
+  },
+  "timestamp": "2026-08-27T20:37:47.304837Z",
+  "severity": "ERROR",
+  "labels": {
+    "run.googleapis.com/base_image_versions": "us-docker.pkg.dev/serverless-runtimes/google-22-full/runtimes/nodejs20:nodejs20_20260819_20_20_2_RC00",
+    "execution_id": "bzib32xu4cy2",
+    "goog-managed-by": "cloudfunctions",
+    "firebase-functions-hash": "c9187b4ff63e3181c0686dc34e4925fd1cf80571",
+    "instanceId": "00a41e8c1da6d06fcb51b73e0844bfd92ae2cfcd8e6f4bdb1345c466b286982575212b32f4cf2b7ad0eec4b84ad1319f244c9dd00a0980aef138bab98a47f1f73ead54956216dc29d1c5ec081f97"
+  },
+  "logName": "projects/fitness-app-korostelev/logs/run.googleapis.com%2Fstderr",
+  "trace": "projects/fitness-app-korostelev/traces/2abb96cf58fb960b8468e9bf8b45e4b4",
+  "receiveTimestamp": "2026-08-27T20:37:47.309782376Z",
+  "spanId": "7472546838395549459",
+  "errorGroups": [
+    {
+      "id": "CILekJ3Ci5m0Kw"
+    }
+  ]
+}

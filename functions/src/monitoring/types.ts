@@ -29,6 +29,12 @@ export interface LogEntryFixture {
   /** The deployed Cloud Run service name, as it appears in a real log entry. */
   serviceName: string;
   message: string;
+  /**
+   * `jsonPayload.event`, when the entry was logged with an explicit `event`
+   * metadata field -- see `LogMatchFilterSpec.eventEquals`'s own doc for why
+   * this exists and `message` alone is not always safe to match on.
+   */
+  event?: string;
   severity: "DEFAULT" | "INFO" | "WARNING" | "ERROR";
 }
 
@@ -40,8 +46,41 @@ export interface LogMatchFilterSpec {
    * its tests together instead of leaving a stale service name behind.
    */
   exportName: string;
-  /** Matches if the log entry's message equals ANY of these, exactly. */
-  messageEquals: string[];
+  /**
+   * Matches if the log entry's `jsonPayload.message` equals ANY of these,
+   * exactly.
+   *
+   * DANGER, confirmed live 2026-08-27 (Step 10A GPT-PM round-8 finding,
+   * real-failure proof): `firebase-functions/logger`'s `entryFromArgs()`
+   * (`node_modules/firebase-functions/lib/logger/index.js`) UNCONDITIONALLY
+   * rewrites `message` for `ERROR` severity when no argument is already an
+   * `Error` instance: `message = new Error(message).stack`. A call shaped
+   * `logger.error(SOME_EVENT_STRING, {...metadata})` -- the pattern used
+   * throughout this codebase for every LogMatch-backed failure alert -- never
+   * produces a `jsonPayload.message` equal to `SOME_EVENT_STRING`; it produces
+   * `"Error: SOME_EVENT_STRING\n    at entryFromArgs (...)\n    at ..."`
+   * instead. Confirmed against a real captured production log entry, not
+   * inferred (`core/evidence/step10a_proof_only_real_failure_log_2026-08-27.json`).
+   * A `messageEquals` filter built from the same string a `logger.error(...)`
+   * call passes as its first argument will therefore never match that call's
+   * own real output -- prefer `eventEquals` below for any new ERROR-severity
+   * LogMatch filter. `messageEquals` remains correct for non-`ERROR`
+   * severities (`logger.info`/`warn` do not apply this rewrite) and is left
+   * as-is on every already-deployed `ERROR`-severity filter that has not yet
+   * been re-verified against this finding (out of scope for the Step 10A
+   * gate that discovered it -- see `core/DECISION_LOG.md`, same date).
+   */
+  messageEquals?: string[];
+  /**
+   * Matches if the log entry's `jsonPayload.event` field equals ANY of
+   * these, exactly. Requires the logging call site to explicitly include
+   * `event: THE_SAME_CONSTANT` in its metadata object (the second argument
+   * to `logger.error(...)`) -- unlike `message`, `event` is a caller-chosen
+   * field name and firebase-functions' logger never rewrites it. Use this,
+   * not `messageEquals`, for any ERROR-severity LogMatch filter -- see
+   * `messageEquals`'s own doc for why.
+   */
+  eventEquals?: string[];
 }
 
 /**
@@ -61,13 +100,19 @@ export function toCloudRunServiceName(exportName: string): string {
 
 export function toGcpFilterString(spec: LogMatchFilterSpec): string {
   const serviceName = toCloudRunServiceName(spec.exportName);
-  const messageClause = spec.messageEquals
-    .map((m) => `jsonPayload.message="${m}"`)
-    .join(" OR ");
+  const clauses = [
+    ...(spec.messageEquals ?? []).map((m) => `jsonPayload.message="${m}"`),
+    ...(spec.eventEquals ?? []).map((e) => `jsonPayload.event="${e}"`),
+  ];
+  if (clauses.length === 0) {
+    throw new Error(
+      `LogMatchFilterSpec for "${spec.exportName}" has neither messageEquals nor eventEquals -- a filter with no match clause would match nothing, silently.`,
+    );
+  }
   return (
     `resource.type="cloud_run_revision" ` +
     `AND resource.labels.service_name="${serviceName}" ` +
-    `AND (${messageClause})`
+    `AND (${clauses.join(" OR ")})`
   );
 }
 
@@ -75,10 +120,10 @@ export function matchesLogMatchFilter(
   spec: LogMatchFilterSpec,
   entry: LogEntryFixture,
 ): boolean {
-  return (
-    entry.serviceName === toCloudRunServiceName(spec.exportName) &&
-    spec.messageEquals.includes(entry.message)
-  );
+  if (entry.serviceName !== toCloudRunServiceName(spec.exportName)) return false;
+  if (spec.messageEquals?.includes(entry.message)) return true;
+  if (entry.event !== undefined && spec.eventEquals?.includes(entry.event)) return true;
+  return false;
 }
 
 /** One label on a real `google.logging.v2.LogMetric`. */

@@ -1,0 +1,65 @@
+{
+  "generatedAt": "2026-08-27",
+  "project": "fitness-app-korostelev",
+  "policy": "enforcement_state_failure_policy",
+  "policyId": "17310925602537777726",
+  "context": "GPT-PM round-8 finding fix: messageEquals -> eventEquals (jsonPayload.event=), so the filter matches the real firebase-functions logger output instead of the undecorated intended string. PATCHed the existing live policy (not recreated).",
+  "sourceCanonicalSha256": "d82048da40832365e16dc9ccec299db10dd20b481e84de4995cc0ab8e4a17073",
+  "liveCanonicalSha256": "d82048da40832365e16dc9ccec299db10dd20b481e84de4995cc0ab8e4a17073",
+  "sourceCanonicalJson": {
+    "displayName": "Enforcement-state check degraded or failed",
+    "combiner": "OR",
+    "enabled": true,
+    "conditions": [
+      {
+        "displayName": "Any degraded or failed section in runEnforcementStateCheck",
+        "conditionMatchedLog": {
+          "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"runenforcementstatecheck\" AND (jsonPayload.event=\"enforcement state check degraded or failed\")"
+        }
+      }
+    ],
+    "alertStrategy": {
+      "notificationRateLimit": {
+        "period": "300s"
+      },
+      "autoClose": "604800s",
+      "notificationPrompts": [
+        "OPENED"
+      ]
+    },
+    "notificationChannels": [
+      "projects/fitness-app-korostelev/notificationChannels/6584417736576854237"
+    ]
+  },
+  "liveCanonicalJson": {
+    "displayName": "Enforcement-state check degraded or failed",
+    "combiner": "OR",
+    "enabled": true,
+    "conditions": [
+      {
+        "displayName": "Any degraded or failed section in runEnforcementStateCheck",
+        "conditionMatchedLog": {
+          "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"runenforcementstatecheck\" AND (jsonPayload.event=\"enforcement state check degraded or failed\")"
+        }
+      }
+    ],
+    "alertStrategy": {
+      "notificationRateLimit": {
+        "period": "300s"
+      },
+      "autoClose": "604800s",
+      "notificationPrompts": [
+        "OPENED"
+      ]
+    },
+    "notificationChannels": [
+      "projects/fitness-app-korostelev/notificationChannels/6584417736576854237"
+    ]
+  },
+  "normalizationApplied": [
+    "excluded server-generated fields: name, creationRecord, mutationRecord, condition.name"
+  ],
+  "diffCount": 0,
+  "diffs": [],
+  "match": true
+}

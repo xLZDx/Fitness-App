@@ -48,7 +48,14 @@ export const runEnforcementStateCheck = onSchedule(
       // (`onSchedule`'s own wrapper never logs "Unhandled error" -- that
       // literal is `onCall`-specific, confirmed by reading both wrapper
       // sources directly, not assumed).
+      // `event` is what `ENFORCEMENT_STATE_FAILURE_FILTER` (eventEquals)
+      // actually matches -- see that filter's own doc: `logger.error`'s
+      // first argument lands in `jsonPayload.message`, but ERROR severity
+      // unconditionally rewrites `message` into `"Error: ...\n<stack>"`,
+      // so the alert cannot key on it. `event` is a plain metadata field,
+      // never rewritten.
       logger.error(ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT, {
+        event: ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT,
         stage: "SCHEDULE_HANDLER",
         failureClass: "UNEXPECTED",
         message: e instanceof Error ? e.message : String(e),
@@ -63,6 +70,7 @@ export const runEnforcementStateCheck = onSchedule(
         .filter(([, s]) => s.status === "UNAVAILABLE")
         .map(([name]) => name);
       logger.error(ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT, {
+        event: ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT,
         overallStatus: result.status,
         unavailableSections,
         sections: result.sections,
