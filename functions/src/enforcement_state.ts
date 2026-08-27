@@ -629,6 +629,11 @@ function isStringArray(v: unknown): v is string[] {
   return Array.isArray(v) && v.every((x) => typeof x === "string");
 }
 
+/** A real API container is a plain object -- never an array, never a primitive. */
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
 /**
  * `smsRegionConfig` is a oneof, not a boolean or a container to serialize
  * directly -- see module header, "ROUND 4". Confirmed against Google's own
@@ -643,12 +648,26 @@ function isStringArray(v: unknown): v is string[] {
  * somehow present, which can only mean the response is malformed (a real
  * oneof never sets both). Both cases now fail closed with an explicit error
  * instead of a plausible-looking but wrong value.
+ *
+ * ROUND 4, PART 3 (GPT-PM round-6 review of round-5's own fix): "presence"
+ * used to be gated on `typeof x === "object"`, so a malformed PRIMITIVE
+ * branch -- `smsRegionConfig.allowlistOnly: "US"` -- made `hasAllowlist`
+ * false and fell all the way through to `{mode:"NONE"}`, the exact same
+ * "malformed reads as not-configured" failure mode this whole round exists
+ * to close, just one level lower than the fields round 4/5 already covered.
+ * Presence is now `!== undefined` (any value at all counts as present); a
+ * present value that ISN'T a plain object fails closed explicitly, same bar
+ * `extractIdentityToolkitState` below now applies to `multiTenant` and
+ * `monitoring`/`monitoring.requestLogging`.
  */
 function extractSmsRegionPolicy(raw: Record<string, any>): Extracted<SmsRegionPolicy> {
   const cfg = raw?.smsRegionConfig;
-  const hasAllowlist = cfg?.allowlistOnly !== undefined && typeof cfg.allowlistOnly === "object";
-  const hasAllowByDefault =
-    cfg?.allowByDefault !== undefined && typeof cfg.allowByDefault === "object";
+  if (cfg === undefined) return { ok: true, value: { mode: "NONE", regionCount: null } };
+  if (!isPlainObject(cfg)) {
+    return { ok: false, error: "malformed response: smsRegionConfig is present but not an object" };
+  }
+  const hasAllowlist = cfg.allowlistOnly !== undefined;
+  const hasAllowByDefault = cfg.allowByDefault !== undefined;
   if (hasAllowlist && hasAllowByDefault) {
     return {
       ok: false,
@@ -656,6 +675,12 @@ function extractSmsRegionPolicy(raw: Record<string, any>): Extracted<SmsRegionPo
     };
   }
   if (hasAllowlist) {
+    if (!isPlainObject(cfg.allowlistOnly)) {
+      return {
+        ok: false,
+        error: "malformed response: smsRegionConfig.allowlistOnly is present but not an object",
+      };
+    }
     const regions = cfg.allowlistOnly.allowedRegions;
     if (regions !== undefined && !isStringArray(regions)) {
       return {
@@ -669,6 +694,12 @@ function extractSmsRegionPolicy(raw: Record<string, any>): Extracted<SmsRegionPo
     };
   }
   if (hasAllowByDefault) {
+    if (!isPlainObject(cfg.allowByDefault)) {
+      return {
+        ok: false,
+        error: "malformed response: smsRegionConfig.allowByDefault is present but not an object",
+      };
+    }
     const regions = cfg.allowByDefault.disallowedRegions;
     if (regions !== undefined && !isStringArray(regions)) {
       return {
@@ -695,22 +726,50 @@ function extractSmsRegionPolicy(raw: Record<string, any>): Extracted<SmsRegionPo
  * published that malformed value as though it were the real state, section
  * still `OK`. Both are now validated when present; a non-boolean present
  * value fails the whole section closed, same bar as `extractSmsRegionPolicy`.
+ *
+ * ROUND 4, PART 3 (GPT-PM round-6 review): part 2 validated the LEAF scalars
+ * but not the CONTAINERS one level up -- `multiTenant: "corrupt"` makes
+ * `raw?.multiTenant?.allowTenants` read as `undefined` (optional chaining
+ * through a primitive is simply `undefined`, not an error), so the malformed
+ * container was indistinguishable from "multiTenant genuinely never sent".
+ * Same gap for `monitoring: {requestLogging: "bad"}`. `multiTenant`,
+ * `monitoring`, and `monitoring.requestLogging` are now themselves validated
+ * as plain objects when present, before their children are ever read --
+ * closing the same "malformed reads as absent" failure class at every level,
+ * not just the leaf.
  */
 function extractIdentityToolkitState(raw: Record<string, any>): Extracted<Record<string, unknown>> {
-  const rawAllowTenants = raw?.multiTenant?.allowTenants;
+  const multiTenantRaw = raw?.multiTenant;
+  if (multiTenantRaw !== undefined && !isPlainObject(multiTenantRaw)) {
+    return { ok: false, error: "malformed response: multiTenant is present but not an object" };
+  }
+  const rawAllowTenants = multiTenantRaw?.allowTenants;
   if (rawAllowTenants !== undefined && typeof rawAllowTenants !== "boolean") {
     return {
       ok: false,
       error: "malformed response: multiTenant.allowTenants is present but not a boolean",
     };
   }
-  const rawRequestLoggingEnabled = raw?.monitoring?.requestLogging?.enabled;
+
+  const monitoringRaw = raw?.monitoring;
+  if (monitoringRaw !== undefined && !isPlainObject(monitoringRaw)) {
+    return { ok: false, error: "malformed response: monitoring is present but not an object" };
+  }
+  const requestLoggingRaw = monitoringRaw?.requestLogging;
+  if (requestLoggingRaw !== undefined && !isPlainObject(requestLoggingRaw)) {
+    return {
+      ok: false,
+      error: "malformed response: monitoring.requestLogging is present but not an object",
+    };
+  }
+  const rawRequestLoggingEnabled = requestLoggingRaw?.enabled;
   if (rawRequestLoggingEnabled !== undefined && typeof rawRequestLoggingEnabled !== "boolean") {
     return {
       ok: false,
       error: "malformed response: monitoring.requestLogging.enabled is present but not a boolean",
     };
   }
+
   const smsRegionPolicy = extractSmsRegionPolicy(raw);
   if (!smsRegionPolicy.ok) return smsRegionPolicy;
 

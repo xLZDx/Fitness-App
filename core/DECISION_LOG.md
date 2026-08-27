@@ -30199,3 +30199,49 @@ temporary function and its export/registration, then also complete finding #1's 
 existing staleness alert policy with the `response_code_class="2xx"` filter and re-verify source==live
 plus a real 2xx time series) -- both are what GPT-PM named as the remaining path to a genuine Step 10A
 closure.
+
+## MVP1.G3 Step 10A -- GPT-PM round 6: 1 real MAJOR + 1 real MINOR, both fixed (2026-08-27, same day)
+
+Sent `review.js --commit 1ef6e0f --round 6`. Reply landed cleanly this round (no local reply-capture
+failure). **Verdict: MAJOR findings -- 1 MAJOR, 1 MINOR**, plus two INFO items confirming the round-5
+fix's scalar/oneof portion is correctly closed and that no other previously-closed finding reopened.
+
+**MAJOR (real, verified before fixing) -- round 5's fail-closed validation covered LEAF scalars but
+not the CONTAINERS one level up.** Re-read the current code before accepting the claim, confirmed both
+sub-cases live:
+- `extractSmsRegionPolicy`'s `hasAllowlist`/`hasAllowByDefault` were gated on
+  `typeof x === "object"` as the PRESENCE check itself -- so a malformed primitive branch
+  (`smsRegionConfig.allowlistOnly: "US"`, GPT-PM's own example) made `hasAllowlist` false and fell
+  through all the way to `{mode:"NONE"}`, the identical "malformed reads as not-configured" failure
+  round 4/5 already fixed for the leaf fields, just one level lower.
+- `extractIdentityToolkitState`: `multiTenant: "corrupt"` makes `raw?.multiTenant?.allowTenants`
+  evaluate to `undefined` via optional chaining through a primitive (not an error, not a throw) --
+  indistinguishable from "multiTenant genuinely never sent". Same gap for
+  `monitoring: {requestLogging: "bad"}`.
+
+**Fix**: added `isPlainObject()` and validate every container (`multiTenant`, `monitoring`,
+`monitoring.requestLogging`, `smsRegionConfig`, and whichever oneof branch is present) as a plain
+object BEFORE reading any child field -- a present value that isn't a plain object now fails the
+section closed with an explicit error, at every level, not just the leaves. 5 new regression tests:
+`multiTenant`/`monitoring`/`monitoring.requestLogging` as malformed primitives, `smsRegionConfig`
+itself as a malformed primitive, and `allowlistOnly: "US"` (GPT-PM's own named case).
+
+**MINOR (real, verified before fixing) -- the round-5 entry's test-count explanation was itself
+internally impossible.** It attributed 510->517 to "8 new tests minus 1 net from consolidating two
+`expect()` calls into one guarded block" -- consolidating assertions inside an existing `test()` never
+changes `numTotalTests`, which counts test cases, not assertions. Re-checked the actual diff
+(`git diff bac28d2 1ef6e0f`): the apparent "8 added / 1 removed" `test(` lines were 7 genuinely NEW
+test cases plus 1 RENAMED test (`"missing/malformed input degrades..."` -> `"missing input
+degrades..."`, same test, edited title and body, which a line-level diff counts as one remove + one
+add of the same case) -- net +7, 510+7=517, matching what actually ran. No test was removed; the
+prior "minus 1" language was simply wrong.
+
+**Verification**: `npm run build` clean. `npx jest --json --outputFile=jest_result.json`: **21
+suites, 522 tests, all passed** (517 + this round's 5 new container-validation tests).
+`node scripts/assert_test_health.js jest_result.json`: **OK, 522 tests, all passed**, read from that
+same freshly-generated file.
+
+**Not yet done, unchanged**: finding #1's live policy update (add `response_code_class="2xx"` to the
+deployed staleness alert policy, re-verify source==live) and finding #2's live proof (deploy the
+temporary `runEnforcementStateCheckProofOnly`, invoke once, capture evidence, delete it) both remain
+pending the operator's separate authorization for those specific production actions.

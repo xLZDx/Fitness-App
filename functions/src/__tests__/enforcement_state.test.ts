@@ -732,6 +732,32 @@ describe("extractIdentityToolkitState — secret-shaped fields never pass throug
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toContain("allowedRegions");
   });
+
+  // Round-4 PART 3 (GPT-PM round-6 review): part 2 validated leaf scalars but not the
+  // CONTAINERS one level up -- a malformed primitive container reads as `undefined`
+  // through optional chaining, indistinguishable from genuine absence, so these cases
+  // used to silently pass as "not configured" instead of failing closed.
+  test("multiTenant is a malformed primitive (not an object) -> fails closed, not read as absent", () => {
+    const result = _internal.extractIdentityToolkitState({ multiTenant: "corrupt" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("malformed response: multiTenant is present but not an object");
+  });
+
+  test("monitoring is a malformed primitive -> fails closed", () => {
+    const result = _internal.extractIdentityToolkitState({ monitoring: "bad" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe("malformed response: monitoring is present but not an object");
+  });
+
+  test("monitoring.requestLogging is a malformed primitive -> fails closed", () => {
+    const result = _internal.extractIdentityToolkitState({ monitoring: { requestLogging: "bad" } });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe(
+        "malformed response: monitoring.requestLogging is present but not an object",
+      );
+    }
+  });
 });
 
 describe("extractSmsRegionPolicy — real oneof shape, never a bare container", () => {
@@ -796,6 +822,27 @@ describe("extractSmsRegionPolicy — real oneof shape, never a bare container", 
     });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toContain("both allowlistOnly and allowByDefault");
+  });
+
+  // Round-4 PART 3 (GPT-PM round-6 review): "presence" used to be gated on
+  // `typeof x === "object"`, so a malformed PRIMITIVE branch fell through to NONE
+  // instead of failing closed -- the exact case GPT-PM named directly.
+  test("allowlistOnly is a malformed primitive (not an object) -> fails closed, not read as NONE", () => {
+    const result = _internal.extractSmsRegionPolicy({ smsRegionConfig: { allowlistOnly: "US" } });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe(
+        "malformed response: smsRegionConfig.allowlistOnly is present but not an object",
+      );
+    }
+  });
+
+  test("smsRegionConfig itself is a malformed primitive -> fails closed", () => {
+    const result = _internal.extractSmsRegionPolicy({ smsRegionConfig: "corrupt" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe("malformed response: smsRegionConfig is present but not an object");
+    }
   });
 });
 
