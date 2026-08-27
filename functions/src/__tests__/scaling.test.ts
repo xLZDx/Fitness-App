@@ -12,6 +12,10 @@
  * `exportAccountData` was: this list IS the registration. Step 9B added an
  * eighteenth, `runProductionCanary` — a scheduled function, not a callable,
  * but still deployed with the same v2 `__endpoint` shape this file guards.
+ * Step 10A added a nineteenth, `runEnforcementStateCheck`, same scheduled
+ * shape, single-flight for the same reason (no benefit to two overlapping
+ * live-state reads racing each other, even without a shared document to
+ * corrupt).
  *
  * The assertion is on `__endpoint`, the deployment descriptor
  * `firebase-functions` builds from the options object, rather than on the
@@ -74,6 +78,8 @@ const ENTRYPOINTS: Record<string, unknown> = {
   // shape, so it still belongs in this registration and this file's ceiling
   // guard still applies to it.
   runProductionCanary: index.runProductionCanary,
+  // MVP1.G3 Step 10A. Same registration discipline.
+  runEnforcementStateCheck: index.runEnforcementStateCheck,
 };
 
 describe("scaling ceilings", () => {
@@ -83,7 +89,7 @@ describe("scaling ceilings", () => {
     expect(admin.initializeApp).toHaveBeenCalledTimes(1);
   });
 
-  test("the deployed surface is exactly these eighteen", () => {
+  test("the deployed surface is exactly these nineteen", () => {
     // A function added without a ceiling is the regression this whole file
     // exists to catch, and it can only be caught by noticing the count moved.
     const exported = Object.keys(index).filter(
@@ -155,20 +161,21 @@ describe("scaling ceilings", () => {
     expect(RARE.maxInstances).toBeLessThan(INTERACTIVE.maxInstances);
   });
 
-  test("concurrency is left at the platform default on purpose, except the AI surface and the canary", () => {
+  test("concurrency is left at the platform default on purpose, except the AI surface and the scheduled functions", () => {
     // The default is 80 (options.d.ts: "80 when CPU >= 1", and CPU defaults
     // to 1 at <= 2GB RAM). Setting it here would restate a default and invite
     // someone to lower it, which is the change that would actually hurt --
     // for every profile except AI_METERED, whose ceiling is about paid
     // fan-out rather than instance-pool starvation (see that profile's own
-    // header), and runProductionCanary, which needs single-flight execution
-    // against its own fixed document (see the next test).
+    // header), and the two scheduled functions, which are pinned single-flight
+    // (see the next tests).
     const explicitConcurrency = [
       "aiCoachAdvice",
       "aiEquipmentRecognition",
       "aiMachineDescription",
       "aiExerciseGeneration",
       "runProductionCanary",
+      "runEnforcementStateCheck",
     ];
     for (const [name, fn] of Object.entries(ENTRYPOINTS)) {
       if (explicitConcurrency.includes(name)) continue;
@@ -196,6 +203,14 @@ describe("scaling ceilings", () => {
     // fails this test first, before it ever reaches production and races
     // against the fixed _canary/{CANARY_UID} document.
     const ep = endpointOf(index.runProductionCanary);
+    expect(ep.maxInstances).toBe(1);
+    expect(ep.concurrency).toBe(1);
+  });
+
+  test("the enforcement-state check is genuinely single-flight: maxInstances 1 AND concurrency 1", () => {
+    // Same pinned-both-dimensions discipline as the canary above, so a
+    // future edit dropping either one fails here first.
+    const ep = endpointOf(index.runEnforcementStateCheck);
     expect(ep.maxInstances).toBe(1);
     expect(ep.concurrency).toBe(1);
   });

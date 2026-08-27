@@ -29,6 +29,7 @@ import {
   PLATFORM_UNHANDLED_ERROR,
   APP_CHECK_EVENT,
   CANARY_PROBE_FAILED_EVENT,
+  ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT,
 } from "./log_signals";
 import type {
   LogMatchFilterSpec,
@@ -66,6 +67,15 @@ const EXPORT_ACCOUNT_FUNCTION_NAME = "exportAccountData";
  * the other three names in this file already received.
  */
 const CANARY_PROBE_FUNCTION_NAME = "runProductionCanary";
+/**
+ * MVP1.G3 Step 10A. `runEnforcementStateCheck` (`enforcement_state_schedule.ts`)
+ * is a scheduled function, same Gen2 shape as the canary above --
+ * `toCloudRunServiceName` derives `runenforcementstatecheck`. Not yet
+ * confirmed against a live deployment (unlike the canary's name above,
+ * which was); to be verified via `gcloud run services list` once this
+ * function is actually deployed, same check the other four names received.
+ */
+const ENFORCEMENT_STATE_CHECK_FUNCTION_NAME = "runEnforcementStateCheck";
 
 /** Standard rate limit/auto-close for every log-match policy defined here. */
 const NOTIFICATION_RATE_LIMIT_PERIOD = "300s"; // 5 min: avoid renotifying on every raw log line
@@ -148,6 +158,20 @@ export const CANARY_PROBE_FAILURE_FILTER: LogMatchFilterSpec = {
   messageEquals: [CANARY_PROBE_FAILED_EVENT],
 };
 
+/**
+ * MVP1.G3 Step 10A. `enforcement_state_schedule.ts` logs this exact message
+ * whenever its own check finds any section it could not read (DEGRADED) or
+ * could read none of (FAILED) -- never on a clean read, same silence-is-OK
+ * convention as every filter above. No `PLATFORM_UNHANDLED_ERROR` backstop
+ * needed here for the same documented reason as the canary: `onSchedule`'s
+ * wrapper never logs that literal, and this function's own top-level
+ * try/catch already logs this exact event on any uncaught rejection too.
+ */
+export const ENFORCEMENT_STATE_FAILURE_FILTER: LogMatchFilterSpec = {
+  exportName: ENFORCEMENT_STATE_CHECK_FUNCTION_NAME,
+  messageEquals: [ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT],
+};
+
 export function stripeReconciliationAlertFilterString(): string {
   return toGcpFilterString(STRIPE_RECONCILIATION_FAILURE_FILTER);
 }
@@ -162,6 +186,10 @@ export function exportAccountAlertFilterString(): string {
 
 export function canaryProbeAlertFilterString(): string {
   return toGcpFilterString(CANARY_PROBE_FAILURE_FILTER);
+}
+
+export function enforcementStateAlertFilterString(): string {
+  return toGcpFilterString(ENFORCEMENT_STATE_FAILURE_FILTER);
 }
 
 /**
@@ -226,6 +254,26 @@ export function exportAccountAlertPolicyJson(): object {
 
 export function canaryProbeAlertPolicyJson(): object {
   return toAlertPolicyJson(CANARY_PROBE_ALERT_POLICY);
+}
+
+/**
+ * MVP1.G3 Step 10A. Permanent alert on the enforcement-state check itself
+ * being unable to read (part of, or all of) live production state -- so a
+ * degraded/failed visibility mechanism reads as an incident rather than
+ * silently stops proving anything, same rationale GPT-PM required for the
+ * canary's own 4th policy.
+ */
+export const ENFORCEMENT_STATE_ALERT_POLICY: AlertPolicySpec = {
+  displayName: "Enforcement-state check degraded or failed",
+  conditionDisplayName:
+    "Any degraded or failed section in runEnforcementStateCheck",
+  filter: ENFORCEMENT_STATE_FAILURE_FILTER,
+  notificationRateLimitPeriod: NOTIFICATION_RATE_LIMIT_PERIOD,
+  autoClose: AUTO_CLOSE,
+};
+
+export function enforcementStateAlertPolicyJson(): object {
+  return toAlertPolicyJson(ENFORCEMENT_STATE_ALERT_POLICY);
 }
 
 /**

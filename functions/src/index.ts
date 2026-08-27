@@ -2240,3 +2240,10 @@ export { exportAccountData } from "./account_export";
 // see canary_schedule.ts's own header for why a blanket functions deploy is
 // forbidden here.
 export { runProductionCanary } from "./canary_schedule";
+
+// MVP1.G3 Step 10A — the enforcement-state visibility check's scheduled
+// trigger. Deploy ONLY this function by name (`firebase deploy --only
+// functions:runEnforcementStateCheck`); see enforcement_state_schedule.ts's
+// own header for why a blanket functions deploy is forbidden here (the four
+// AI Gateway callables above must stay undeployed).
+export { runEnforcementStateCheck } from "./enforcement_state_schedule";

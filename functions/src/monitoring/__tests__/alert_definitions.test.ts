@@ -3,15 +3,18 @@ import {
   DELETE_ACCOUNT_FAILURE_FILTER,
   EXPORT_ACCOUNT_FAILURE_FILTER,
   CANARY_PROBE_FAILURE_FILTER,
+  ENFORCEMENT_STATE_FAILURE_FILTER,
   APP_CHECK_ATTESTED_RATIO_METRIC,
   stripeReconciliationAlertFilterString,
   deleteAccountAlertFilterString,
   exportAccountAlertFilterString,
   canaryProbeAlertFilterString,
+  enforcementStateAlertFilterString,
   stripeReconciliationAlertPolicyJson,
   deleteAccountAlertPolicyJson,
   exportAccountAlertPolicyJson,
   canaryProbeAlertPolicyJson,
+  enforcementStateAlertPolicyJson,
   appCheckAttestedRatioMetricJson,
 } from "../alert_definitions";
 import {
@@ -229,12 +232,51 @@ describe("production canary probe-failure alert filter", () => {
   });
 });
 
+describe("enforcement-state check failure alert filter", () => {
+  it("matches the check's own degraded-or-failed log", () => {
+    expect(
+      matchesLogMatchFilter(
+        ENFORCEMENT_STATE_FAILURE_FILTER,
+        entry("runenforcementstatecheck", signals.ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT),
+      ),
+    ).toBe(true);
+  });
+
+  it("does not match PLATFORM_UNHANDLED_ERROR -- onSchedule's own wrapper never logs it", () => {
+    // Same documented reason as the canary's own filter above: this is an
+    // onSchedule function, not onCall, so https.js's platform backstop
+    // never applies to it.
+    expect(ENFORCEMENT_STATE_FAILURE_FILTER.messageEquals).not.toContain(
+      signals.PLATFORM_UNHANDLED_ERROR,
+    );
+  });
+
+  it("does not match an identical-shaped failure from a different service", () => {
+    expect(
+      matchesLogMatchFilter(
+        ENFORCEMENT_STATE_FAILURE_FILTER,
+        entry("runproductioncanary", signals.ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT),
+      ),
+    ).toBe(false);
+  });
+
+  it("renders a Gen2-shaped filter string scoped to the runenforcementstatecheck Cloud Run service", () => {
+    const filter = enforcementStateAlertFilterString();
+    expect(filter).toContain('resource.type="cloud_run_revision"');
+    expect(filter).toContain(
+      'resource.labels.service_name="runenforcementstatecheck"',
+    );
+    expect(filter).toContain(signals.ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT);
+  });
+});
+
 describe("AlertPolicy JSON shape (Cloud Monitoring projects.alertPolicies REST shape)", () => {
   it.each([
     ["Stripe reconciliation", stripeReconciliationAlertPolicyJson()],
     ["deleteAccount", deleteAccountAlertPolicyJson()],
     ["exportAccountData", exportAccountAlertPolicyJson()],
     ["production canary probe", canaryProbeAlertPolicyJson()],
+    ["enforcement-state check", enforcementStateAlertPolicyJson()],
   ])("%s policy has the full deployable shape, not a bare filter", (_label, policy) => {
     const p = policy as {
       displayName: string;
@@ -262,6 +304,7 @@ describe("AlertPolicy JSON shape (Cloud Monitoring projects.alertPolicies REST s
     ["deleteAccount", deleteAccountAlertPolicyJson()],
     ["exportAccountData", exportAccountAlertPolicyJson()],
     ["production canary probe", canaryProbeAlertPolicyJson()],
+    ["enforcement-state check", enforcementStateAlertPolicyJson()],
   ])("%s policy has an empty notificationChannels list (no live paging until FA-D1)", (_label, policy) => {
     const p = policy as { notificationChannels: unknown[] };
     expect(p.notificationChannels).toEqual([]);

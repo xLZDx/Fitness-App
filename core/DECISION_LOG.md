@@ -29494,3 +29494,87 @@ authorized, not canonical until G3 actually closes.
 in-progress)` with the full scope above in notes; `pm_set_gate(Fitness_App, MVP1.G3.Step9B, passed)`
 with evidence pointers. Proceeding directly to Step 10A per the standing autonomous mandate and PM
 mode ("a report is a checkpoint, not a stopping point") -- opening a Rosetta plan for it next.
+
+---
+
+## MVP1.G3 Step 10 -- Rosetta plan opened and GO'd -- 2026-08-27
+
+Plan `Fitness_App-2026-08-27T16-53-07-360Z-414246`, "MVP1.G3 Step 10 -- Final Runtime Proof & G3
+Reconciliation", hash `fba15c43418286a0879ac886abb33123b3cd3e9b756b311947d19f780964f6c7`, base
+`3f7acad`. Steps/scope/verification formalize GPT-PM's own two-round Step-10 scope definition
+verbatim -- no material change from what GPT-PM specified. Sent for GO via `gpt_send_and_await`
+(project routing recovered cleanly this round, no transport issue). GPT-PM's reply, quoted: "Plan
+... faithfully formalizes the Step 10 scope and DoD I specified. No changes required. ... GO:
+AUTHORIZED for this exact Rosetta plan hash. PUSH: AUTHORIZED under the current Gate policy.
+Proceed autonomously with 10A -> 10B -> 10C -> final G3 closure review." `pm_rosetta_go` called,
+bound against the exact hash above.
+
+## MVP1.G3 Step 10A -- enforcement-state visibility, built and unit-tested -- 2026-08-27
+
+Built the automated counterpart to `scripts/dev/production_manifest.py` (a human-run script) that
+GPT-PM's Step 10A DoD requires: a repeatable, scheduled, mechanically-stale-detectable check.
+
+**Real-state investigation before writing any code** (CLAUDE.md Sec3): checked the deployed
+functions' own ambient service-account IAM (`988522745882-compute@developer.gserviceaccount.com`)
+via `gcloud projects get-iam-policy` -- already holds `roles/editor` project-wide, so no new IAM
+grant is needed for this check to read Functions/Firestore-rules/App-Check/Identity-Toolkit state.
+Probed `identitytoolkit.googleapis.com/v2/projects/{project}/config` directly (the one section
+`production_manifest.py` did not already cover) before designing the extraction: the raw response
+carries `signIn.hashConfig.signerKey` (password-hashing signer key, a real secret) and
+`client.apiKey` (this project's Web API key -- the same value already held as `CANARY_WEB_API_KEY`
+in Secret Manager). Also probed `cloudfunctions.googleapis.com/v2/.../functions` to confirm the
+real v2 list-API response shape before writing the extraction code against it (15 functions
+currently deployed, up from 14 at the earlier CORRECTION entry -- `runProductionCanary` accounts
+for the +1).
+
+**Built**: `functions/src/enforcement_state.ts` (the check logic, `runEnforcementStateProbe()`,
+injectable `deps` seam for testing -- no live credentials needed in unit tests) and
+`functions/src/enforcement_state_schedule.ts` (the Cloud Scheduler wiring, exported as
+`runEnforcementStateCheck`, every 6 hours, `maxInstances:1`+`concurrency:1`, same SCHEDULE_HANDLER
+backstop pattern as `canary_schedule.ts`). Identity Toolkit extraction is a STRICT ALLOWLIST (9
+named fields: which sign-in methods are configured, MFA state, multi-tenant flag, authorized-domain
+count, SMS-region-allowlist flag, email-privacy flag, request-logging flag, blocking-functions-
+configured flag) -- never the raw response, so a future field Google adds to that API cannot leak
+into evidence the way a denylist would. Overall status: `OK`/`DEGRADED`/`FAILED` computed from how
+many of the 4 sections are unavailable (0 / some / all), matching GPT-PM's explicit DoD wording.
+
+Added the 5th monitor definition (`ENFORCEMENT_STATE_FAILURE_FILTER`/`_ALERT_POLICY` in
+`alert_definitions.ts`, `ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT` in `log_signals.ts`), same
+LogMatchFilterSpec/AlertPolicySpec shape and same "not `PLATFORM_UNHANDLED_ERROR`, this is
+`onSchedule` not `onCall`" discipline as the canary's own 4th policy. Not yet a live GCP resource --
+DEFINED/TESTED only, same posture the other alert definitions started at before their own
+activation steps.
+
+Added `google-auth-library` as an explicit `functions/package.json` dependency (`^9.15.1` -- was
+already present hoisted via `firebase-admin`, so this pins an already-resolved version rather than
+introducing a new one) -- used for the check's own ambient-credential access token, the same way
+`gcloud auth print-access-token` supplies one to `production_manifest.py`'s human-run path.
+
+**Registration/tests**: `functions/src/index.ts` exports `runEnforcementStateCheck` from
+`enforcement_state_schedule.ts` (deploy constraint identical to the canary's: only
+`firebase deploy --only functions:runEnforcementStateCheck`, never a blanket deploy, since the 4 AI
+Gateway callables must stay undeployed). `scaling.test.ts`'s `ENTRYPOINTS` gained a 19th entry, its
+own single-flight (`maxInstances:1`+`concurrency:1`) test, and the "deployed surface is exactly
+these N" count updated. New `enforcement_state.test.ts` (14 tests: overall-status computation for
+all four OK/DEGRADED/FAILED/token-failure/thrown-fetcher cases; per-section extraction shape for
+Functions and Firestore rules; `X-Goog-User-Project` header presence on the two calls that need it;
+the Identity Toolkit allowlist's secret-exclusion guarantee, asserted by serializing the extracted
+object and confirming neither `signerKey` nor `apiKey` -- nor the actual fake secret VALUES used in
+the fixture -- ever appear in it; malformed-input resilience). New
+`enforcement_state_schedule.test.ts` (7 tests, mirroring `canary_schedule.test.ts`'s coverage shape:
+SCHEDULE_HANDLER backstop for Error and non-Error rejections, FAILED/DEGRADED/OK result handling).
+`alert_definitions.test.ts` gained a 5th filter-behavior `describe` block and the new policy added
+to both existing AlertPolicy-JSON-shape parametrized tests.
+
+**Verification**: `npm run build` -- clean, zero TypeScript errors. Full suite:
+`npx jest --json --outputFile=jest_result.json` + `node scripts/assert_test_health.js
+jest_result.json` -- **21 suites, 476 tests, all passed** (up from 436 at Step 9B's own closure; +40
+from this change: 14 + 7 new-file tests, 5 new alert_definitions.test.ts cases, plus the scaling.ts
+additions -- exact count not hand-verified further since the health-check script's own explicit
+`numPassedTests===numTotalTests` assertion already proves no test silently didn't run).
+
+**Not yet done, deliberately, per this session's own "zero live GCP mutation until a clean review
+round" rule** (established after the Step 9B review-hold breach finding, held for the rest of that
+session and continuing here): no deploy, no live resource creation, no positive/negative proof yet.
+Sending this build to GPT-PM for review before any live action, same discipline Step 9B's code
+received.

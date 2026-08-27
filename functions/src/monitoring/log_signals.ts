@@ -55,3 +55,13 @@ export const QUOTA_CHECK_FAILED_EVENT = "quota check failed";
 
 /** `canary_schedule.ts` -- the Step 9B production canary's scheduled run failed. */
 export const CANARY_PROBE_FAILED_EVENT = "production canary probe failed";
+
+/**
+ * `enforcement_state_schedule.ts` -- MVP1.G3 Step 10A's live production
+ * enforcement-state check found at least one section it could not read
+ * (DEGRADED) or could read none at all (FAILED). Never fires for a clean
+ * read -- silence is the "everything visible and enforced as expected" case,
+ * exactly like every other monitor in this module.
+ */
+export const ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT =
+  "enforcement state check degraded or failed";

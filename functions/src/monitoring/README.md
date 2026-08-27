@@ -8,14 +8,21 @@ change. See `core/DECISION_LOG.md` for the full exchange.
 
 ## Status per item
 
+**Table below is not yet the authoritative status** -- MVP1.G3 Step 10C (`core/DECISION_LOG.md`,
+2026-08-27) is a dedicated reconciliation pass over all 13 original OBS-1 items against current
+HEAD + live production, and is the actual source of truth once it runs. The rows below are updated
+opportunistically (Step 9B's closure, this file's own Step 10A addition) but have not all been
+independently re-verified since Step 9B closed.
+
 | Item | Definition | Live resource |
 | --- | --- | --- |
-| Stripe reconciliation-failure alert | `DEFINED`/`TESTED` | `READY_TO_ACTIVATE` -- blocked only on `FA-D1` (who owns the notification channel), not on cost |
-| Delete/export operational-failure alert | `DEFINED`/`TESTED`, see audit below | `READY_TO_ACTIVATE` -- same, blocked only on `FA-D1` |
-| App Check attested-ratio metric | `DEFINED`/`TESTED` | `HOLD` -- blocked on a real (not estimated) incremental-cost figure, see below |
-| AI Gateway metrics (calls, latency, tokens, quota exhaustions) | `DEFINED`/`TESTED` | `HOLD_LIVE_CREATION_COST` -- same cost posture as the App Check metric |
+| Stripe reconciliation-failure alert | `DEFINED`/`TESTED` | **LIVE** -- permanent policy active, FA-D1 channel attached and verified, real end-to-end proof (`core/DECISION_LOG.md`, Step 9B closure remediation) |
+| Delete/export operational-failure alert | `DEFINED`/`TESTED`, see audit below | **LIVE** -- same, both permanent policies active with real end-to-end proof |
+| App Check attested-ratio metric | `DEFINED`/`TESTED` | `HOLD` -- blocked on a real (not estimated) incremental-cost figure, see below; not part of Step 9B's activation scope |
+| AI Gateway metrics (calls, latency, tokens, quota exhaustions) | `DEFINED`/`TESTED` | **LIVE_METRIC_CREATED / NO_PRODUCTION_PRODUCER** -- 4 metrics created in Step 9B without generating synthetic AI traffic; the 4 AI Gateway callables remain undeployed |
 | AI Gateway investigation queries (7, `ai_gateway_definitions.ts`) | `DEFINED`/`TESTED` | `READY_TO_USE` -- plain filter strings, no GCP resource to create |
-| Production canary probe-failure alert | `DEFINED`/`TESTED` | Step 9B activation in progress, see "Step 9B: production activation" below |
+| Production canary probe-failure alert | `DEFINED`/`TESTED` | **LIVE** -- `runProductionCanary` deployed and scheduled, permanent policy active with real end-to-end proof |
+| Enforcement-state check degraded/failed alert | `DEFINED`/`TESTED` (this entry) | Not yet activated -- see "Step 10A: enforcement-state visibility" below |
 
 Every alert policy renders the real `google.monitoring.v3.AlertPolicy` REST
 shape (`toAlertPolicyJson` in `types.ts`) with `notificationChannels: []` --
@@ -291,3 +298,56 @@ incident, not silently stop proving anything.
   (secret creation, scoped deploy, FA-D1 notification-channel proof, live
   metric/policy creation, cleanup) -- see `core/DECISION_LOG.md` for
   per-step evidence as each one completes.
+
+## Step 10A: enforcement-state visibility (2026-08-27)
+
+GPT-PM's ruling on what remains of MVP1.G3 after Step 9B (`core/DECISION_LOG.md`, 2026-08-27):
+OBS-1 item #3 (enforcement-status visibility) was left `PARTIAL` at the original G3 re-baseline --
+`scripts/dev/production_manifest.py` already reads live Functions/Firestore-rules/App-Check/Hosting
+state honestly, but it is a **human-run script**, not a repeatable automated check with mechanically
+detectable staleness.
+
+- **`functions/src/enforcement_state.ts`** -- the automated counterpart. Reads four live sections
+  with the deployed function's own ambient service-account credentials (confirmed to already hold
+  `roles/editor` on this project, per `gcloud projects get-iam-policy` -- no new IAM grant needed):
+  deployed Cloud Functions inventory (`cloudfunctions.googleapis.com` v2 list), the active Firestore
+  ruleset release (`firebaserules.googleapis.com`, same endpoint `production_manifest.py` already
+  uses), App Check enforcement mode per service (`firebaseappcheck.googleapis.com`), and a strict
+  ALLOWLIST of Identity Toolkit/Auth config fields (`identitytoolkit.googleapis.com/v2/.../config`).
+  Every REST call is behind an injectable `deps` seam (`getAccessToken`/`fetchJson`), so
+  `enforcement_state.test.ts` exercises every section's success/failure/degraded path without any
+  live GCP credentials or network access.
+- **Why Identity Toolkit only extracts an allowlist, never the raw response**: probed live before
+  writing this file (`core/DECISION_LOG.md` has the field inventory). The raw config response
+  carries `signIn.hashConfig.signerKey` (the project's password-hashing signer key -- a real secret)
+  and `client.apiKey` (the same Web API key value this project already treats as a secret,
+  `CANARY_WEB_API_KEY` in Secret Manager). `extractIdentityToolkitState()` reads only 9 specific,
+  independently-chosen-safe fields (which sign-in methods are configured, MFA state, multi-tenant
+  flag, authorized-domain count, SMS region allowlist flag, email-privacy flag, request-logging
+  flag, whether blocking functions are configured) -- a denylist would leak the next secret-shaped
+  field Google adds to that API; an allowlist cannot. Covered by a direct regression test asserting
+  neither `signerKey` nor `apiKey` ever appears in the serialized output.
+- **Overall status computation**: `OK` when all four sections read cleanly, `DEGRADED` when some but
+  not all fail, `FAILED` when none can be read at all (including the case where even the access
+  token itself cannot be obtained) -- GPT-PM's explicit DoD requirement that "a failed/stale
+  collection becomes FAILED/DEGRADED, not silently green."
+- **`functions/src/enforcement_state_schedule.ts`** -- the Cloud Scheduler wiring, same
+  one-export-nothing-else shape and SCHEDULE_HANDLER backstop pattern as `canary_schedule.ts`
+  (`runEnforcementStateCheck()` is documented to never throw; the backstop covers a genuinely
+  unexpected rejection). Runs every 6 hours (config/rules state moves far slower than the canary's
+  user-facing path, so the canary's 30-minute cadence is unnecessary cost here).
+  `maxInstances: 1` + `concurrency: 1`, same single-flight discipline as the canary, registered in
+  `scaling.test.ts`'s `ENTRYPOINTS` (nineteenth entry) with its own dedicated single-flight test.
+  Any non-`OK` result is both logged under `ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT` (the literal
+  the new `ENFORCEMENT_STATE_ALERT_POLICY` keys on, same 4th-policy-style pattern GPT-PM required
+  for the canary) AND thrown, so it also surfaces as a genuine Scheduler execution failure --
+  `gcloud scheduler jobs describe` then gives a second, GCP-native way to mechanically check
+  "did the last run even succeed" without needing any new Firestore/storage write target.
+- **Deploy constraint, same as Step 9B**: only
+  `firebase deploy --only functions:runEnforcementStateCheck` may be used -- never a blanket
+  Functions deploy, for the same reason (the four AI Gateway callables must stay undeployed).
+- **Not yet done as of this entry**: the live deploy itself, the positive proof (a real run against
+  live production), and the negative/staleness proof (a deliberately induced failure reading as
+  DEGRADED/FAILED) -- see `core/DECISION_LOG.md` for evidence as each completes. `google-auth-library`
+  added as an explicit `functions/package.json` dependency (was already present hoisted via
+  `firebase-admin`, pinned at the already-resolved `9.15.1`).
