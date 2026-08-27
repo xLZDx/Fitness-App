@@ -496,3 +496,47 @@ no leaked timer handles from the new `setTimeout`-based race (`npx jest --detect
 
 **Still not done**: no deploy, no live resource creation, no positive/negative proof. This commit
 goes back to GPT-PM, scoped to exactly these 2 findings plus any direct regressions.
+
+### Step 10A live activation (2026-08-27, same day, operator-authorized)
+
+GPT-PM's round-3 review returned APPROVE with `final:true`; the actual live deploy is a production
+migration reserved for the operator's own separate confirmation (`~/.claude/CLAUDE.md` §4) even
+with a broader GO -- authorized explicitly ("деплоить") after the checkpoint was surfaced.
+
+- **Deploy**: `firebase deploy --only functions:runEnforcementStateCheck` -- targeted, not blanket.
+  Live functions list confirmed 16 total, the four AI Gateway callables (`aiCoachAdvice`,
+  `aiEquipmentRecognition`, `aiExerciseGeneration`, `aiMachineDescription`) absent, exactly as
+  required.
+- **Scheduler job ID confirmed live, no correction needed**:
+  `firebase-schedule-runEnforcementStateCheck-europe-west1` (`gcloud scheduler jobs list`) matches
+  `ENFORCEMENT_STATE_SCHEDULER_JOB_ID` exactly.
+- **Real API constraints found live, both fixed at the source, neither known before hitting them**:
+  1. `conditionAbsent.duration` rejects anything over 23h30m -- the original `absentFor: "86400s"`
+     (24h) was never valid; changed to `"64800s"` (18h), still >=3 missed 6-hour cycles before firing.
+  2. `notificationRateLimit` is rejected outright on a metric-absence (`conditionAbsent`) policy --
+     "only log-based alert policies may specify" one. Removed `notificationRateLimitPeriod` from
+     `MetricAbsenceAlertPolicySpec` and its renderer entirely (`types.ts`); `LogMatchAlertPolicySpec`
+     keeps it, since only that type is actually allowed to have it.
+- **Positive proof**: the Scheduler job was triggered manually (`gcloud scheduler jobs run`) for a
+  genuine execution rather than waiting up to 6h for the next natural cycle. Log line
+  `"enforcement_state_schedule: check succeeded"` confirmed with the full sanitized state snapshot
+  attached -- all 4 sections `OK`, 16 functions inventoried, App Check's live
+  `unenforcedIntendedServices: ["firestore.googleapis.com"]` visible exactly as the round-2/3 code
+  was built to surface, no secret-shaped field present anywhere in the Identity Toolkit section.
+  Evidence: `core/evidence/step10a_positive_proof_2026-08-27.json`.
+- **Negative proof**: one synthetic, clearly-marked log entry
+  (`test_marker: "step10a_synthetic_enforcement_state_proof_2026_08_27"`, `synthetic: true`, an
+  explicit `purpose` string) written via `gcloud logging write` to log `fa-d1-policy-proof`, carrying
+  the REAL deployed Cloud Run resource labels (`service_name=runenforcementstatecheck`, the actual
+  revision name) -- not a fabricated resource. Confirmed to match
+  `ENFORCEMENT_STATE_FAILURE_FILTER` byte-for-byte via `gcloud logging read`. Evidence:
+  `core/evidence/step10a_negative_proof_2026-08-27.json`. Same limitation as every prior synthetic
+  proof in this project: no server-side incident/notification API this session has found, so real
+  email delivery needs the operator's own confirmation.
+- **Independent staleness-alert proof**: the failure policy
+  (`alertPolicies/17310925602537777726`) created and verified live. The staleness policy's own
+  creation initially failed with `404 Cannot find metric(s)` -- `cloudscheduler.googleapis.com/job/execution_count`
+  had never been emitted for this specific job before the manual trigger above, and propagation for a
+  brand-new metric+resource combination took longer than the API's own "up to 10 minutes" message.
+  [Status of this specific item -- filled in once the metric propagates and the policy is created;
+  see the entry immediately following this one, or `core/DECISION_LOG.md` if this note is stale.]

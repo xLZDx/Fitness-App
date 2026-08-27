@@ -29914,3 +29914,88 @@ Published the mandatory RU+EN closeout report pair for this arc
 remediation arc to APPROVE, the two self-found bugs beyond GPT-PM's own findings (App Check
 `firestore.googleapis.com` confirmed live `UNENFORCED` in production; the pagination test's own
 positional-mock race), and this section's own checkpoint -- live deploy paused for the operator.
+
+---
+
+## MVP1.G3 Step 10A -- live activation (2026-08-27, same day, operator-authorized)
+
+**Operator authorization**: asked directly whether to proceed with the actual
+`firebase deploy --only functions:runEnforcementStateCheck` (a production migration reserved for
+the operator under `~/.claude/CLAUDE.md` §4, "even if a broader GO exists" -- including GPT-PM's
+own). Operator replied "деплоить" (deploy). Proceeding.
+
+**Deploy**: `firebase deploy --only functions:runEnforcementStateCheck` -- clean, targeted deploy,
+`+ Deploy complete!`. Live functions list confirmed via direct API probe
+(`cloudfunctions.googleapis.com/v2/.../functions`): 16 functions total (15 prior + this one), the
+four AI Gateway callables (`aiCoachAdvice`, `aiEquipmentRecognition`, `aiExerciseGeneration`,
+`aiMachineDescription`) confirmed ABSENT -- exactly the constraint this whole Step 10A build has
+carried from the start.
+
+**Scheduler job ID confirmed live**: `gcloud scheduler jobs list --location=europe-west1` shows
+`firebase-schedule-runEnforcementStateCheck-europe-west1`, matching
+`ENFORCEMENT_STATE_SCHEDULER_JOB_ID` in `alert_definitions.ts` exactly -- no correction needed,
+unlike the two real API constraints below.
+
+**Two real Cloud Monitoring API constraints discovered live, neither documented anywhere this
+session found before hitting them, both fixed at the source (not worked around in the live JSON
+alone)**:
+1. `conditionAbsent.duration` rejects any value over 23h30m
+   (`"Durations longer than 23h30m are not supported"`). The staleness policy's `absentFor` was
+   `"86400s"` (24h) -- genuinely invalid, not just untested. Fixed to `"64800s"` (18h), still >=3
+   missed 6-hour Scheduler cycles before firing, same tolerance rationale as the original value.
+2. `notificationRateLimit` is rejected outright on a `conditionAbsent` (metric-absence) policy --
+   `"only log-based alert policies may specify a notification rate limit"`. Removed
+   `notificationRateLimitPeriod` from `MetricAbsenceAlertPolicySpec` and its JSON renderer entirely
+   (`monitoring/types.ts`) rather than special-casing it per-call; `LogMatchAlertPolicySpec` and its
+   own renderer are untouched, since that's the only policy shape actually permitted to have it.
+
+Rebuilt and re-tested after both fixes: `npm run build` clean, full suite
+**21 suites, 501 tests, all passed** (the staleness-duration test updated to assert `"64800s"`, not
+`"86400s"`).
+
+**Positive proof**: the Scheduler job was triggered manually (`gcloud scheduler jobs run
+firebase-schedule-runEnforcementStateCheck-europe-west1`) for a genuine execution now rather than
+waiting up to 6h for its next natural cycle. `gcloud scheduler jobs describe` confirms
+`lastAttemptTime: 2026-08-27T18:47:17Z` with an empty `status` (success). Cloud Logging confirms
+`"enforcement_state_schedule: check succeeded"` at the matching timestamp, carrying the FULL
+sanitized state snapshot this round's own remediation added (§ "Also fixed" in the round-2 entry
+above): all 4 sections `OK`; 16 functions inventoried (the same list confirmed above); Firestore
+Rules shows the real `cloud.firestore` release with its real `updateTime`
+(`2026-08-27T12:48:33.184493Z`, matching the live probe from Step 10A's own build entry earlier);
+App Check shows `anyEnforcementOff: true` and `unenforcedIntendedServices: ["firestore.googleapis.com"]`
+-- independently re-confirming, from the DEPLOYED function's own ambient credentials rather than a
+local `gcloud` probe, that this service really is `UNENFORCED` in production right now; Identity
+Toolkit's output was inspected directly and confirmed to carry none of the secret-shaped fields
+(`signerKey`, `apiKey`) the allowlist exists to keep out. Evidence committed:
+`core/evidence/step10a_positive_proof_2026-08-27.json`.
+
+**Negative proof**: one synthetic, clearly-marked log entry written via `gcloud logging write` to
+log `fa-d1-policy-proof` (the same synthetic-proof log stream Step 9B used), carrying
+`synthetic: true`, an explicit `purpose` string naming it as a Step 10A proof and never a real
+failure, and a `test_marker` unique to this proof. Written with the REAL deployed Cloud Run resource
+labels (`service_name=runenforcementstatecheck`, the actual live `revision_name`,
+`configuration_name`, `location`, `project_id` -- read directly off the positive-proof log entry
+above, not fabricated). `gcloud logging read` confirms the entry matches
+`ENFORCEMENT_STATE_FAILURE_FILTER` (`resource.type="cloud_run_revision" AND
+resource.labels.service_name="runenforcementstatecheck" AND (jsonPayload.message="enforcement state
+check degraded or failed")`) byte-for-byte. Evidence committed:
+`core/evidence/step10a_negative_proof_2026-08-27.json`. Same limitation as every prior synthetic
+proof in this project (Step 9B's own entries said the same): no server-side incident/notification
+API this session has found to confirm delivery mechanically -- the only genuine confirmation is the
+operator's own inbox, asked for separately.
+
+**Failure alert policy created live**: `alertPolicies/17310925602537777726`
+("Enforcement-state check degraded or failed"), `enabled: true`, notification channel FA-D1
+attached (`notificationChannels/6584417736576854237`, the same already-`VERIFIED` channel from Step
+9B). Filter/shape confirmed via direct `GET` against the created resource, matches source exactly.
+
+**Independent staleness-alert proof -- in progress, not yet closed as of this entry**: after fixing
+both real API constraints above, `alertPolicies.create` for the staleness policy still returned
+`404 Cannot find metric(s) that match type = "cloudscheduler.googleapis.com/job/execution_count"`.
+`gcloud scheduler jobs describe` independently confirms the job DID execute (`lastAttemptTime`
+matches the log timestamp exactly), so this is a metric-propagation delay for a brand-new
+metric+resource combination, not a code or policy defect -- the API's own error message ("up to 10
+minutes") proved optimistic in practice for a combination that has never emitted before. Waiting and
+retrying; will append the resolution (policy ID once created, or a documented longer delay if it
+takes materially longer) to this same entry or a follow-up one rather than leaving this silently
+unresolved.

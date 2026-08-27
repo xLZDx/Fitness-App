@@ -282,7 +282,9 @@ describe("enforcement-state Scheduler staleness policy (metric-absence, GPT-PM r
     expect(policy.conditions).toHaveLength(1);
     expect(policy.conditions[0].conditionMatchedLog).toBeUndefined();
     expect(policy.conditions[0].conditionAbsent).toBeDefined();
-    expect(policy.conditions[0].conditionAbsent?.duration).toBe("86400s");
+    // 18h, not the original 24h -- the real API rejects any conditionAbsent
+    // duration over 23h30m (confirmed live at Step 10A activation).
+    expect(policy.conditions[0].conditionAbsent?.duration).toBe("64800s");
   });
 
   it("filters on the Scheduler job's own execution-count metric, not a custom log", () => {

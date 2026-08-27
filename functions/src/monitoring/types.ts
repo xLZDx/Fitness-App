@@ -296,10 +296,13 @@ export interface MetricAbsenceAlertPolicySpec {
   conditionDisplayName: string;
   /** e.g. `metric.type="cloudscheduler.googleapis.com/job/execution_count" AND resource.type="cloud_scheduler_job" AND resource.label.job_id="..."` */
   filter: string;
-  /** Duration string, e.g. "86400s" -- how long the metric may be absent before this fires. */
+  /** Duration string, e.g. "64800s" -- how long the metric may be absent before this
+   *  fires. The real Monitoring API rejects anything over 23h30m ("86400s"/24h was
+   *  tried and rejected live at Step 10A activation: "Durations longer than 23h30m
+   *  are not supported"), a ceiling not documented anywhere this file could find
+   *  before hitting it for real. */
   absentFor: string;
   alignmentPeriodSeconds: number;
-  notificationRateLimitPeriod: string;
   autoClose: string;
 }
 
@@ -326,8 +329,13 @@ export function toMetricAbsenceAlertPolicyJson(
         },
       },
     ],
+    // NO `notificationRateLimit` here -- the real API rejects it on a
+    // metric-absence policy ("only log-based alert policies may specify a
+    // notification rate limit", confirmed live at Step 10A activation,
+    // same undocumented-until-hit category as the duration ceiling above).
+    // `LogMatchAlertPolicySpec`'s own renderer keeps it; this type deliberately
+    // does not.
     alertStrategy: {
-      notificationRateLimit: { period: spec.notificationRateLimitPeriod },
       autoClose: spec.autoClose,
       notificationPrompts: ["OPENED"],
     },

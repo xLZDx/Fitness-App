@@ -283,17 +283,19 @@ export function enforcementStateAlertPolicyJson(): object {
  * freshness/absence mechanism able to detect missed execution without
  * relying on this function's own custom log"). The Scheduler job ID follows
  * Firebase's documented `onSchedule` naming convention,
- * `firebase-schedule-<functionName>-<region>` -- NOT YET independently
- * confirmed against a live deployment (this function has not been deployed
- * yet), unlike every Cloud Run service name in this file, which was.
- * Verify via `gcloud scheduler jobs list` once deployed, same live-check
- * discipline every other identity in this file received.
+ * `firebase-schedule-<functionName>-<region>` -- confirmed live at Step 10A
+ * activation (`gcloud scheduler jobs list`, 2026-08-27): the real job ID
+ * matches this constant exactly, no correction needed.
  *
- * `absentFor: "86400s"` (24h) against a 6-hour schedule tolerates up to 3
- * consecutive missed runs (transient Scheduler retry/backoff, a redeploy
- * window) before firing -- deliberately looser than a hair-trigger on one
- * missed cycle, matching this check's own "config/rules state moves slowly"
- * cadence reasoning in `enforcement_state_schedule.ts`.
+ * `absentFor` was originally `"86400s"` (24h) -- rejected live at activation:
+ * `conditionAbsent.duration` has an undocumented (not in the public API
+ * reference at the time this was written) real ceiling of 23h30m
+ * (`"Durations longer than 23h30m are not supported"`, confirmed via the
+ * actual `alertPolicies.create` error). `"64800s"` (18h) against a 6-hour
+ * schedule still tolerates up to 3 consecutive missed runs (transient
+ * Scheduler retry/backoff, a redeploy window) before firing -- the same
+ * rationale as the original 24h value, just under the real cap instead of
+ * an assumed one.
  */
 const ENFORCEMENT_STATE_SCHEDULER_JOB_ID =
   "firebase-schedule-runEnforcementStateCheck-europe-west1";
@@ -301,14 +303,13 @@ const ENFORCEMENT_STATE_SCHEDULER_JOB_ID =
 export const ENFORCEMENT_STATE_STALENESS_POLICY: MetricAbsenceAlertPolicySpec = {
   displayName: "Enforcement-state check: Scheduler job stopped executing",
   conditionDisplayName:
-    "cloudscheduler.googleapis.com/job/execution_count absent for 24h",
+    "cloudscheduler.googleapis.com/job/execution_count absent for 18h",
   filter:
     `metric.type="cloudscheduler.googleapis.com/job/execution_count" ` +
     `AND resource.type="cloud_scheduler_job" ` +
     `AND resource.label.job_id="${ENFORCEMENT_STATE_SCHEDULER_JOB_ID}"`,
-  absentFor: "86400s",
+  absentFor: "64800s",
   alignmentPeriodSeconds: 3600,
-  notificationRateLimitPeriod: NOTIFICATION_RATE_LIMIT_PERIOD,
   autoClose: AUTO_CLOSE,
 };
 

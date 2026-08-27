@@ -1,0 +1,29 @@
+[
+  {
+    "insertId": "1aea1w2efqzrr",
+    "jsonPayload": {
+      "message": "enforcement state check degraded or failed",
+      "overallStatus": "DEGRADED",
+      "purpose": "Step 10A negative-proof entry -- not a real failure",
+      "synthetic": true,
+      "test_marker": "step10a_synthetic_enforcement_state_proof_2026_08_27",
+      "unavailableSections": [
+        "appCheck"
+      ]
+    },
+    "logName": "projects/fitness-app-korostelev/logs/fa-d1-policy-proof",
+    "receiveTimestamp": "2026-08-27T18:50:03.910762342Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "runenforcementstatecheck",
+        "location": "europe-west1",
+        "project_id": "fitness-app-korostelev",
+        "revision_name": "runenforcementstatecheck-00001-caj",
+        "service_name": "runenforcementstatecheck"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "ERROR",
+    "timestamp": "2026-08-27T18:50:03.910762342Z"
+  }
+]

@@ -1,0 +1,197 @@
+{
+  "timestamp": "2026-08-27T18:47:18.737718Z",
+  "severity": "INFO",
+  "logName": "projects/fitness-app-korostelev/logs/run.googleapis.com%2Fstdout",
+  "resource": {
+    "labels": {
+      "configuration_name": "runenforcementstatecheck",
+      "location": "europe-west1",
+      "project_id": "fitness-app-korostelev",
+      "revision_name": "runenforcementstatecheck-00001-caj",
+      "service_name": "runenforcementstatecheck"
+    },
+    "type": "cloud_run_revision"
+  },
+  "jsonPayload": {
+    "generatedAt": "2026-08-27T18:47:17.620Z",
+    "message": "enforcement_state_schedule: check succeeded",
+    "sections": {
+      "appCheck": {
+        "data": {
+          "anyEnforcementOff": true,
+          "count": 3,
+          "services": [
+            {
+              "enforcementMode": "UNENFORCED",
+              "service": "firebaseml.googleapis.com",
+              "updateTime": "2026-08-07T22:18:33.818415Z"
+            },
+            {
+              "enforcementMode": "UNENFORCED",
+              "service": "firestore.googleapis.com",
+              "updateTime": "2026-08-05T14:26:48.336431Z"
+            },
+            {
+              "enforcementMode": "UNENFORCED",
+              "service": "identitytoolkit.googleapis.com",
+              "updateTime": "2026-08-05T14:26:47.403167Z"
+            }
+          ],
+          "unenforcedIntendedServices": [
+            "firestore.googleapis.com"
+          ]
+        },
+        "status": "OK"
+      },
+      "firestoreRules": {
+        "data": {
+          "count": 1,
+          "releases": [
+            {
+              "release": "cloud.firestore",
+              "ruleset": "28f058a8-7d5c-4dff-9139-64a350cb7870",
+              "updateTime": "2026-08-27T12:48:33.184493Z"
+            }
+          ]
+        },
+        "status": "OK"
+      },
+      "functions": {
+        "data": {
+          "count": 16,
+          "functions": [
+            {
+              "environment": "GEN_2",
+              "name": "bookCoachSession",
+              "revision": "bookcoachsession-00002-luk",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:24.600569038Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "clipUrl",
+              "revision": "clipurl-00002-nij",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:23.912871349Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "clipUrls",
+              "revision": "clipurls-00002-rik",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:24.145322153Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "createCheckoutSession",
+              "revision": "createcheckoutsession-00002-qoz",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:24.738860574Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "createPortalSession",
+              "revision": "createportalsession-00002-cit",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:24.707561276Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "deleteAccount",
+              "revision": "deleteaccount-00002-fac",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:17.410498206Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "exportAccountData",
+              "revision": "exportaccountdata-00001-kag",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:15.245958652Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "generateAnnualReceipt",
+              "revision": "generateannualreceipt-00003-kup",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:27.606166542Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "optInDonorWall",
+              "revision": "optindonorwall-00002-lij",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:24.472415715Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "optOutDonorWall",
+              "revision": "optoutdonorwall-00002-qik",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:17.148376072Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "reportEquipment",
+              "revision": "reportequipment-00002-jac",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:28.376361777Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "runEnforcementStateCheck",
+              "revision": "runenforcementstatecheck-00001-caj",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-27T18:40:22.616114324Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "runProductionCanary",
+              "revision": "runproductioncanary-00001-pec",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-27T08:42:48.507112983Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "startCoachOnboarding",
+              "revision": "startcoachonboarding-00002-xib",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:24.018823005Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "startFreeTrial",
+              "revision": "startfreetrial-00002-nip",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:17.234498240Z"
+            },
+            {
+              "environment": "GEN_2",
+              "name": "stripeWebhook",
+              "revision": "stripewebhook-00004-wiw",
+              "state": "ACTIVE",
+              "updateTime": "2026-08-11T14:49:17.761447168Z"
+            }
+          ]
+        },
+        "status": "OK"
+      },
+      "identityToolkit": {
+        "data": {
+          "anonymousEnabled": true,
+          "authorizedDomainsCount": 3,
+          "blockingFunctionsConfigured": false,
+          "emailPrivacyImproved": true,
+          "mfaState": "DISABLED",
+          "monitoringRequestLogging": {},
+          "multiTenant": {},
+          "signInMethodsConfigured": [
+            "anonymous"
+          ],
+          "smsRegionAllowlistOnly": {}
+        },
+        "status": "OK"
+      }
+    }
+  }
+}
