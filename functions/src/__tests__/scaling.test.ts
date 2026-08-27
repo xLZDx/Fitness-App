@@ -17,8 +17,9 @@
  * live-state reads racing each other, even without a shared document to
  * corrupt). Step 10A's round-4 remediation temporarily added a twentieth,
  * `runEnforcementStateCheckProofOnly` (GPT-PM finding #2's real-failure
- * proof) -- see its own header; both the entrypoint and this registration
- * are removed together once the proof is captured.
+ * proof, deployed/invoked/deleted the same day -- see
+ * `core/evidence/step10a_proof_only_*_2026-08-27.json`); both the entrypoint
+ * and this registration were removed together once the proof was captured.
  *
  * The assertion is on `__endpoint`, the deployment descriptor
  * `firebase-functions` builds from the options object, rather than on the
@@ -83,10 +84,6 @@ const ENTRYPOINTS: Record<string, unknown> = {
   runProductionCanary: index.runProductionCanary,
   // MVP1.G3 Step 10A. Same registration discipline.
   runEnforcementStateCheck: index.runEnforcementStateCheck,
-  // MVP1.G3 Step 10A — TEMPORARY, proof-only (GPT-PM round-4 finding #2).
-  // Same registration discipline while it exists; removed from here in the
-  // same change that removes the export once the proof is captured.
-  runEnforcementStateCheckProofOnly: index.runEnforcementStateCheckProofOnly,
 };
 
 describe("scaling ceilings", () => {
@@ -96,7 +93,7 @@ describe("scaling ceilings", () => {
     expect(admin.initializeApp).toHaveBeenCalledTimes(1);
   });
 
-  test("the deployed surface is exactly these twenty (one temporary)", () => {
+  test("the deployed surface is exactly these nineteen", () => {
     // A function added without a ceiling is the regression this whole file
     // exists to catch, and it can only be caught by noticing the count moved.
     const exported = Object.keys(index).filter(
@@ -183,7 +180,6 @@ describe("scaling ceilings", () => {
       "aiExerciseGeneration",
       "runProductionCanary",
       "runEnforcementStateCheck",
-      "runEnforcementStateCheckProofOnly",
     ];
     for (const [name, fn] of Object.entries(ENTRYPOINTS)) {
       if (explicitConcurrency.includes(name)) continue;

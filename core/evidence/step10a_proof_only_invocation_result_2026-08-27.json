@@ -1,0 +1,17 @@
+{
+  "context": "GPT-PM round-4 finding #2: real fail-closed proof through the DEPLOYED runEnforcementStateCheckProofOnly (not a synthetic log entry), invoked once against the fixed invalid project fa-d1-proof-only-invalid-project-id, then deleted.",
+  "invocation": {
+    "url": "https://europe-west1-fitness-app-korostelev.cloudfunctions.net/runEnforcementStateCheckProofOnly",
+    "httpStatus": 500,
+    "responseBody": {
+      "status": "FAILED",
+      "unavailableSections": [
+        "functions",
+        "firestoreRules",
+        "appCheck",
+        "identityToolkit"
+      ]
+    }
+  },
+  "note": "HTTP 500 + overallStatus FAILED confirms the deployed checker code itself, under a genuine live GCP API failure (real 400/403 responses from cloudfunctions/firebaserules/firebaseappcheck/identitytoolkit APIs against the invalid project), returns non-OK -- not a fabricated response. See step10a_proof_only_real_failure_log_2026-08-27.json for the matching structured ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT log line, same invocation."
+}

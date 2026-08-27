@@ -30270,3 +30270,91 @@ original definitions commit through all three remediation rounds this segment).
 **Still not done**: finding #1's live policy update and finding #2's live proof, both still pending
 the operator's separate production-action authorization named earlier this segment -- code review
 being clean and pushed does not substitute for that.
+
+## MVP1.G3 Step 10A -- operator standing deploy authorization (2026-08-27, same day)
+
+**Operator instruction, verbatim, in direct response to the blocker named at the end of the previous
+report/status turn:** "я даю свое разрешение на деплой фанкшенс и всей инфраструктуры ГО и больше не
+спрашивай, клиентов нет, нагруски нет, шанс потери бюджета практически 0" -- explicit GO for
+deploying functions and all infrastructure for this project, explicit instruction to stop asking for
+this class of action going forward, with the operator's own stated reasoning (no real users, no
+load, near-zero budget-loss risk) -- consistent with the standing project memory that Fitness_App has
+no real users yet and carries a correspondingly lower escalation bar for live-project changes until
+real production traffic exists.
+
+**Scope of this authorization, as actually used**: function deploys and the infrastructure changes
+that go with them (Cloud Monitoring alert policies, Cloud Scheduler-triggered Cloud Functions) for
+this project. Does not touch the separate categories `~/.claude/CLAUDE.md` §4/§14 reserve regardless
+of any GO -- destructive git operations, branch creation's double consent, secrets/credentials,
+real-money actions -- none of which this segment's remaining work involves.
+
+**Unblocks, immediately**: finding #1's live staleness-policy update (`response_code_class="2xx"`
+filter) and finding #2's live proof (deploy `runEnforcementStateCheckProofOnly`, invoke, capture,
+delete) -- both proceeding now under this authorization.
+
+## MVP1.G3 Step 10A -- finding #1 live fix: staleness policy PATCHed, verified (2026-08-27, same day)
+
+Rebuilt (`npm run build`), regenerated `enforcementStateStalenessPolicyJson()` from the current
+compiled source (already carrying the `response_code_class="2xx"` filter fix from round 4/`bac28d2`).
+**PATCHed the existing live policy in place** (`alertPolicies/4280278487088483247`,
+`updateMask=conditions`) rather than deleting/recreating -- `mutationRecord.mutateTime` moved to
+`2026-08-27T20:06:05Z`, everything else (channel, autoClose, enabled) unchanged.
+
+**Verified the corrected filter actually matches real data** before treating this as done: direct
+`timeSeries.list` against the exact PATCHed filter (`metric.type="run.googleapis.com/request_count"
+AND resource.type="cloud_run_revision" AND resource.labels.service_name="runenforcementstatecheck"
+AND metric.labels.response_code_class="2xx"`) returned 1 real series with real counts (19 and 2
+requests across two hourly buckets) -- the fix genuinely captures live successful-invocation traffic,
+not just a syntactically valid filter.
+
+**SHA-256 source==live**: normalized both (server-assigned `name`/`creationRecord`/`mutationRecord`/
+condition `name` stripped, same discipline as every prior Step 10A/9B live-readback), hashed --
+**`match: true`**, `sourceCanonicalSha256 == liveCanonicalSha256 == fb87c23e0f7b48c0...`. Evidence:
+`core/evidence/step10a_staleness_2xx_patch_2026-08-27.json`.
+
+## MVP1.G3 Step 10A -- finding #2 live proof: real fail-closed evidence captured, temporary function deleted (2026-08-27, same day)
+
+Deployed `firebase deploy --only functions:runEnforcementStateCheckProofOnly` (clean create, Node.js
+20 Gen2, `europe-west1`).
+
+**Invocation required two extra IAM grants, both temporary and both revoked/removed after use**:
+`invoker: "private"` (Cloud Run IAM, not just Cloud Functions IAM) meant no identity could call it
+without an explicit binding -- granted `roles/run.invoker` to the calling identity. Minting an
+audience-scoped identity token (`gcloud auth print-identity-token --audiences=...`) turned out to
+require a SERVICE ACCOUNT identity -- the active user account (`korostelevivan@gmail.com`, Owner)
+cannot do this directly; every early attempt silently sent an empty/error string as the bearer token,
+producing a wall of misleading 401s that looked like an IAM-propagation delay but was actually a
+different, unrelated root cause (`gcloud`'s own stderr, only found by redirecting stdout/stderr
+separately: `"Invalid account type for --audiences. Requires valid service account."`). Fixed by
+impersonating `firebase-adminsdk-fbsvc@fitness-app-korostelev.iam.gserviceaccount.com` (granted
+`roles/iam.serviceAccountTokenCreator` on that SA, and `roles/run.invoker` to the SA itself on the
+Cloud Run service) -- both real IAM propagation delays after that (`iam.serviceAccounts.getAccessToken`
+denied on the first couple of polls) before succeeding.
+
+**Real invocation, HTTP 500**, response body `{"status":"FAILED","unavailableSections":["functions",
+"firestoreRules","appCheck","identityToolkit"]}` -- every section genuinely failed against the fixed
+invalid project `fa-d1-proof-only-invalid-project-id` via real GCP API responses (403 PERMISSION_DENIED
+from Cloud Functions, 400 INVALID_ARGUMENT/`USER_PROJECT_DENIED` from Firebase Rules/App Check/Identity
+Toolkit -- not fabricated). Captured the matching structured log line from Cloud Logging directly
+(`severity: ERROR`, `resource.type: cloud_run_revision`, message `"Error: enforcement state check
+degraded or failed"`, same `ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT` this deployed checker's real
+scheduled sibling logs on a genuine failure) -- this is the exact gap GPT-PM's finding #2 named: proof
+through the DEPLOYED code under a real failure, not a hand-written synthetic log entry. Evidence:
+`core/evidence/step10a_proof_only_real_failure_log_2026-08-27.json` (the full log entry) and
+`core/evidence/step10a_proof_only_invocation_result_2026-08-27.json` (the HTTP response).
+
+**Cleanup, same session**: `firebase functions:delete runEnforcementStateCheckProofOnly` (confirmed
+deleted); revoked the temporary `roles/iam.serviceAccountTokenCreator` grant (the Cloud Run invoker
+bindings disappeared automatically with the deleted service); removed
+`enforcement_state_proof_only.ts`, its `index.ts` export, and its `scaling.test.ts` registration
+(both the `ENTRYPOINTS` entry and the `explicitConcurrency` entry -- `test.each(Object.keys(
+ENTRYPOINTS))` generates 2 tests per entry, so removing it dropped the total from 522 to 520, not a
+regression).
+
+**Verification**: `npm run build` clean. `npx jest --json --outputFile=jest_result.json`: **21
+suites, 520 tests, all passed**. `node scripts/assert_test_health.js jest_result.json`: **OK, 520
+tests, all passed**.
+
+**Step 10A's two remaining live obligations, both now done.** Sending this batch (staleness-policy
+live fix + proof-only deploy/invoke/capture/delete + code cleanup) to GPT-PM for a final targeted
+review before declaring Step 10A closed.

@@ -2247,11 +2247,3 @@ export { runProductionCanary } from "./canary_schedule";
 // own header for why a blanket functions deploy is forbidden here (the four
 // AI Gateway callables above must stay undeployed).
 export { runEnforcementStateCheck } from "./enforcement_state_schedule";
-
-// MVP1.G3 Step 10A — TEMPORARY, proof-only (GPT-PM round-4 finding #2, see
-// enforcement_state_proof_only.ts's own header). Deploy ONLY this function
-// by name (`firebase deploy --only functions:runEnforcementStateCheckProofOnly`)
-// once operator-authorized; delete this export and the file it points to,
-// then `firebase functions:delete runEnforcementStateCheckProofOnly`, once
-// the proof is captured. Never part of a blanket deploy.
-export { runEnforcementStateCheckProofOnly } from "./enforcement_state_proof_only";
