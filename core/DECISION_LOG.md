@@ -26889,3 +26889,73 @@ without checking real evidence):
 All 5 accepted findings addressed in one batch (CLAUDE.md §17 -- remediate the whole reported
 package at once, not one finding per cycle). `flutter analyze` on both touched files: 0 issues.
 Proceeding to the final full smoke re-run + clean AAB build before round 2.
+
+## Final candidate: clean rebuild, verified AAB, complete 11-item smoke matrix
+
+**Clean rebuild at `d8525cd`** (tree clean, no `-dirty` stamp): APK build 739
+(`app-arm64-v8a-release.apk`, 107.8MB, SHA-256
+`e6043d9f3d9735c601894147cec474e409ed95b000f1079d67ce0351caa718fb`;
+`app-x86_64-release.apk`, 108.8MB, SHA-256
+`ced6e623f8ba424f547324c828c98a9d72b87841020469d9dd9b4bb4f1d69a24`). Manifest/signing
+re-verified: `targetSdkVersion=36`, `versionCode=2739`, real release cert. Installed on both S23
+and the emulator.
+
+**AAB built clean** (`app-release.aab`, 135,641,091 bytes, SHA-256
+`0f0e8c71e30d7a2ba35ac436a30df5f3f58edb463278bd38cbfc474b2707797e`, GIT_SHA `d8525cd`, no `-dirty`
+stamp) via `-Bundle`, closing the MAJOR gap from round 1. Verified independently with `jarsigner`
+(not `apksigner`, which doesn't handle `.aab`): `jar verified`, signer `CN=Ivan Korostelev,
+OU=Ivan Korostelev II, O=Ivan Korostelev II, L=Chisinau, ST=Chisinau, C=MD` -- same identity as
+the APK's release cert, confirming one real key signs both artifacts. Standard jarsigner warnings
+only (self-signed cert, no timestamp, POSIX-permission/JarFile-vs-JarInputStream entry-listing
+differences from AGP's own post-signing metadata additions) -- none indicate a signing defect. No
+claim of Play acceptance; this AAB was built and verified, never uploaded.
+
+**Complete 11-item smoke matrix, re-run against this exact final candidate** (closing round 1's
+other MAJOR gap):
+1. Launch/auth (resumed session, S23): PASS.
+2. Home: PASS.
+3. Workouts (Programs + Library): PASS.
+4. Scanner: PASS -- re-confirmed clean (no status-bar overlap, no ScanTopBar collision).
+5. Exercise/video: PASS -- reached via the Library's exercise-card list (thumbnails + duration +
+   instructions, e.g. "Чатуранга на трёх точках опоры") and independently via Form Coach's own
+   exercise-chip picker; no crash, correct layout.
+6. **Form Coach live-camera view: PASS (upgraded from NOT_VERIFIED)**. Root cause of the earlier
+   failure to reach it: bad tap coordinates from my own screenshot-pixel math, not an app defect
+   -- confirmed via `adb shell uiautomator dump`, which gives real on-device widget bounds instead
+   of an eyeballed estimate; the intro "Начать" button's actual bounds were `[56,1939][1024,2091]`
+   (center ~540,2015), nowhere near my prior guess of (466,1830). Navigated intro -> prep ->
+   live camera successfully. Confirmed via source read that `form_check_page.dart`'s `Scaffold` is
+   `FrostedScaffold` with `extendBodyBehindAppBar: true` (`shared/widgets/glass.dart:210`) -- the
+   body genuinely extends behind the status bar despite having a visible `GlassAppBar`, which is
+   exactly why `CoachTopStrip`'s bare `Positioned(top:12)` was reachable by the physical status
+   bar in the first place, and confirms the fix was addressing a real coordinate space, not a
+   hypothetical one. Live screenshot: rep-badge ("0") and instruction bubble ("Отойдите, чтобы в
+   кадр попало всё тело") render cleanly below the GlassAppBar row, no overlap with it or the
+   status bar.
+7. Settings: PASS (re-confirmed).
+8. Subscription/mission: PASS (re-confirmed).
+9. Health questionnaire: PASS (re-confirmed) -- also incidentally exercised a real mid-flow
+   system-back pop (see predictive-back verification above).
+10. Dialogs/bottom sheets: PASS (re-confirmed) -- health-gate sheet.
+11. Keyboard/text-entry/IME: PASS -- opened the real "Часть тела" text field on Профиль ->
+    Травмы (an existing injury record, "Shoulder"/"Разрыв мениска"). IME opened correctly, the
+    field stayed visible above the keyboard (no obscuring), status bar stayed clear. Dismissed via
+    system back without typing or saving -- confirmed via a second `uiautomator dump` that the
+    field's text was unchanged, so the operator's real health-profile data was not touched.
+12. Navigation (bottom nav + system back/predictive-back): PASS, see the dedicated verification
+    above (3 scenarios, all live on S23, build 736 then re-implicitly exercised again on 739 via
+    the health-questionnaire pop above).
+
+**Every one of the 11 required surfaces now closes PASS. Zero remaining NOT_VERIFIED.** Emulator
+(x86_64) spot-checked for Scanner/auth-onboarding earlier in this gate; S23 (arm64-v8a, real
+Android 16 hardware) is the primary evidence throughout, per the plan's own priority.
+
+**Operator's own device, handled carefully**: this device is the operator's real, personally used
+S23 (personal photos visible on its home screen, real health/injury data in the app). Two
+over-eager back-presses briefly exited to the real home screen -- relaunched the app immediately,
+did not linger on or screenshot personal content beyond what was unavoidably captured mid-transition,
+did not modify the real injury record while testing IME. No data was changed or deleted on this
+device by this gate's testing.
+
+Ready for GPT-PM review round 2: final-candidate smoke matrix complete, verified AAB, all round-1
+findings addressed.
