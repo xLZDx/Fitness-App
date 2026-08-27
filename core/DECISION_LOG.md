@@ -29016,3 +29016,31 @@ this session has not yet done (confirming no currently-shipped mobile client ver
 write patterns the new, stricter rules would now reject) before it should go live. Reporting
 directly to the operator now, per the severity, rather than treating this as a routine GPT-PM
 routing question or quietly proceeding under the existing Step 9B GO, which never covered this.
+
+## Operator decision: deploy the corrected Firestore rules now -- 2026-08-27
+
+Operator, verbatim, in direct reply to the escalation above: "щас нет пользователей и не будет до
+реального продакшена после того как мы полностью закончим весь девелопмнгт и тестинг, го деплоить"
+-- there are no real users on this project right now, and there won't be until real production,
+which only begins once development and testing are fully finished. GO to deploy.
+
+This changes the risk calculus stated in the escalation: the compatibility-verification concern
+(whether a currently-shipped client relies on the old, more permissive rules) does not apply when
+there is no live client traffic to break. Recorded as a durable project fact in auto-memory
+(`project-fitness-app-no-real-users-yet`) so future sessions do not re-escalate a config/rules
+change on this project purely on "affects production" grounds while this remains true.
+
+**Deployed**: `firebase deploy --only firestore:rules --project=fitness-app-korostelev` --
+`released rules firestore.rules to cloud.firestore`. Verified live via the Firebase Security Rules
+REST API: new ruleset `projects/fitness-app-korostelev/rulesets/28f058a8-7d5c-4dff-9139-64a350cb7870`,
+`updateTime: 2026-08-27T12:48:33Z`; fetched content confirmed to contain `isCanaryToken()`, the
+`/_canary/{canaryUid}` block, and `healthIsStripped()` -- the exact protections that were missing.
+
+**Re-ran the real production canary proof** (`gcloud scheduler jobs run
+firebase-schedule-runProductionCanary-europe-west1`): scheduler `AttemptFinished` HTTP 200 (was 500
+before the rules deploy). Function's own structured log: `canary_schedule: production canary probe
+succeeded`, `cleanupSucceeded: true`, `latencyMs: 957`. Independently confirmed via a direct
+Firestore REST read of `_canary/canary-fixed-uid` -- `404 NOT_FOUND`, i.e. no residue, not just
+trusting the function's own self-report. **Step 4 (real production canary proof, both the
+mint->exchange->write->read->delete->verify cycle and the earlier real RULES_DENIED failure this
+session already captured as the induced-failure proof) is complete.**
