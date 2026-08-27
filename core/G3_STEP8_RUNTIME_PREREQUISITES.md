@@ -148,3 +148,201 @@ Per GPT-PM's authority ruling: Step 8's design/investigation/reversible
 infrastructure-prep work may continue without it (this document is exactly
 that work), but Step 8 cannot be marked fully DONE, and no production alert
 policy may be bound to a human recipient, until this is explicitly confirmed.
+
+## 6. Step 9 monitor mapping (DoD 8.10) -- per-monitor technical surface
+
+Real technical surface for each of the 6 Step 9 monitors, gathered by direct
+investigation of `functions/src/` and `mobile/lib/` (not invented), per
+GPT-PM's required columns. `owner`/`channel` for every row is the same
+FA-D1-pending destination (Sec 5) -- not repeated per row below.
+
+### 6.1 Auth -> Firestore canary
+- **Signal source:** the canary's own scripted run (Sec 3 design).
+- **Execution mechanism:** one Cloud Scheduler job -> Cloud Function ->
+  `createCustomToken` (Admin SDK) -> `signInWithCustomToken` (Client SDK,
+  real token exchange) -> Firestore read/write/delete on `/_canary/<uid>`.
+- **Identity:** dedicated fixed canary UID, custom claim `canary: true`.
+- **Real-path fidelity confirmed:** investigated what a genuine sign-in
+  actually touches -- `firebase_auth_repository.dart`'s `signInAnonymously`/
+  `signInWithGoogle` touch ONLY Firebase Auth, no Firestore import in that
+  file at all; `users/{uid}` is created later, on demand, only by
+  `firestore_profile_repository.dart:188`'s `saveProfile`. So a bare Auth
+  canary with no Firestore write would already match a real anonymous
+  sign-in's footprint faithfully; the `_canary/` Firestore write is
+  deliberately ADDED beyond that baseline specifically to also exercise
+  Security Rules enforcement, which a pure Auth-only canary would not touch.
+- **Data written:** one `_canary/<uid>` doc, deleted same run.
+- **Threshold / controlled failure:** alert if the run doesn't complete
+  (auth failure, rules-denial, or timeout) within N consecutive scheduled
+  runs. Controlled-failure test: revoke the canary UID's custom claim
+  temporarily and confirm the Firestore step is denied and alerts.
+- **Cost:** 1 of the 3 free Scheduler jobs (Sec 2); Function invocation,
+  Auth verification and Firestore ops all within Blaze free-tier volume at
+  a low run frequency (e.g. every 15-30 min).
+
+### 6.2 App Check / enforcement visibility
+- **Signal source:** `abuse_guard.ts:48-67`'s existing `noteAppCheck(request,
+  fn)` -- ALREADY logs `{ fn, attested: request.app !== undefined }` at
+  `info` level on every call to a callable that invokes it. This is a
+  measurement mechanism, not a rejection log: enforcement itself is
+  currently OFF everywhere (`scaling.ts:120,127-128,137-138`'s
+  `APP_CHECK_ENFORCED*` flags default false; `main.dart:238` states no
+  callable currently sets `enforceAppCheck: true`; `abuse_guard.ts:38-41`
+  documents this as an already-audited finding from 2026-08-11).
+  There is nothing to "reject" today, so a rejection-count monitor would be
+  vacuous -- the honest monitor for THIS gate is an attested-ratio metric
+  (share of calls with `attested: true` over time), which is exactly the
+  visibility needed before enforcement is ever flipped on, and a distinct,
+  separate monitor to add the day enforcement actually turns on.
+- **Execution mechanism:** a log-based Cloud Monitoring metric over the
+  existing `noteAppCheck` log line (no new code in the callables).
+- **Data written:** none new -- reads existing Cloud Logging entries.
+- **Threshold:** informational dashard for now (attested-ratio trend); a
+  hard alert threshold only makes sense once enforcement is scheduled,
+  which is a separate, not-yet-approved decision.
+- **Controlled failure:** call a metered callable from a debug-provider
+  client with App Check intentionally misconfigured and confirm the
+  `attested: false` log line appears and the metric moves.
+- **Cost:** log-based metrics are free at this project's volume.
+
+### 6.3 Stripe billing-integrity
+- **Signal source:** two concrete existing silent-failure spots in
+  `functions/src/index.ts`'s `reconcileDuplicateSubscriptions` (:1862-1917):
+  `logger.error("could not cancel duplicate subscription", ...)` (:1904-1908)
+  and `logger.error("duplicate reconciliation failed", ...)` (:1911-1915) --
+  both already fire today but nothing currently reads them. A third, lower-
+  severity signal: the `default:` branch (:1115-1116) that silently drops
+  any Stripe event type not explicitly handled (e.g. a future
+  `charge.refunded`) with only a `debug` log -- worth a LOW-severity watch
+  since a debug-level silent drop is easy to miss even by a human reading
+  logs directly.
+- **Execution mechanism:** log-based metrics + alerting policies over the
+  two existing `logger.error` call sites (no new code needed for those two);
+  optionally bump the `default:` branch's log level or add a distinct
+  metric if unmatched-event coverage becomes a real concern later --
+  flagged as a design option, not decided here.
+- **Real gap this does NOT close:** there is no standalone reconciliation
+  job that independently polls Stripe as ground truth -- reconciliation is
+  purely reactive, triggered only by an incoming `customer.subscription.*`
+  webhook. A customer whose webhooks stop arriving entirely (Stripe-side
+  delivery failure) has no detection path today. Recording this as a real,
+  named residual gap rather than silently treating "watch the two log
+  lines" as if it were full coverage.
+- **Threshold:** alert on ANY occurrence of either `logger.error` (both are
+  already rare-path, unswallow-worthy failures per their own doc comment).
+- **Controlled failure:** in a test/emulator context, force
+  `cancelSubscriptionItem` to throw and confirm the metric/alert fires.
+- **Cost:** log-based metric, free at this volume.
+
+### 6.4 Data-deletion / export coverage
+- **Signal source:** none exists today beyond point-in-time human review.
+  `deleteAccount` (`index.ts:2060`) covers `users/{uid}`, `donor_wall/{uid}`,
+  `coach_listings/{uid}` (`recursiveDelete`, :2151-2156) plus
+  `sweepSharedRecords` for `coach_bookings`, `equipment_reports`,
+  `debug_sessions` (:1985-2058) -- based on the "A0" shared-data inventory
+  (`core/DECISION_LOG.md:2389-2437`), not an enforced, self-updating
+  invariant. **No CI or runtime check currently verifies that every
+  Firestore collection actually in use is covered** -- a new collection
+  added later without updating `deleteAccount`/`sweepSharedRecords` would
+  not be caught by anything that exists today.
+- **What this means for Step 9 scope:** a true "coverage" monitor needs a
+  canonical, machine-readable list of collections-containing-user-data
+  compared against `sweepSharedRecords`' hardcoded list -- structurally a
+  `[CI]` drift check (like item 4's equipment-registry parity), not a
+  runtime probe, since the failure mode is "code changed, deletion coverage
+  didn't," not "something broke at runtime." Recommending this be logged as
+  a roadmap item for a future `[CI]` gate rather than force-fit into Step 9
+  as a runtime monitor it structurally isn't -- flagging for GPT-PM's
+  review rather than deciding unilaterally.
+- **What Step 9 CAN honestly cover as a runtime monitor:** error-rate/
+  failure alerting on the `deleteAccount` and `exportAccountData` callables
+  themselves (did an invocation throw), using the same log-based-metric
+  pattern as 6.3 -- narrower than "coverage" but real and buildable now.
+
+### 6.5 Client/camera/inference/performance telemetry
+- **Signal source, confirmed absent today:** `firebase_crashlytics` IS a
+  dependency (`pubspec.yaml:95`) but is NOT called anywhere inside the
+  three feature areas that most need it. Exact swallowed catches found:
+  `mlkit_live_equipment_service.dart:178-180` (`debugPrint` only, returns
+  null, continues silently), `scanner_page.dart:179-186` (sets UI error
+  state, no Crashlytics report), `gemini_equipment_service.dart:141-145`
+  (rethrows without first logging to Crashlytics). `firebase_performance`
+  is confirmed absent from `pubspec.yaml` entirely (re-verified, zero
+  matches).
+- **What this means for Step 9 scope:** there is currently NO signal to
+  monitor here at all -- this "monitor" is actually a small, targeted CODE
+  CHANGE (wire `FirebaseCrashlytics.instance.recordError` into these three
+  named catch blocks, matching the pattern `main.dart:132-218` already
+  established for the app's top-level error handling) followed by a
+  Crashlytics-issue-velocity alert. Flagging this distinction explicitly
+  for GPT-PM rather than quietly scoping Step 9 down to "add an alert on
+  nothing" -- the fix has to land before the monitor has anything to watch.
+- **Cost:** Crashlytics is already a free-tier Firebase product in use.
+
+### 6.6 AI Gateway monitor (4 G1 callables)
+- **The 4 callables, confirmed by name and location:** `aiCoachAdvice`
+  (`ai_coach_advice.ts:128`), `aiEquipmentRecognition`
+  (`ai_equipment_recognition.ts:108`), `aiExerciseGeneration`
+  (`ai_exercise_generation.ts:260`), `aiMachineDescription`
+  (`ai_machine_description.ts:87`) -- all route through the shared
+  `ai_gateway.ts::generate()` (:213-261) and all already enforce a
+  per-user/per-UTC-day quota via `enforceDailyQuota`
+  (`abuse_guard.ts:84-`, storage at `users/{uid}/usage/{yyyy-mm-dd}`).
+- **Real gap:** no token-usage or dollar-cost accounting anywhere in
+  `generate()` -- quota LIMITS calls per user but nothing tracks actual
+  spend. No per-callable error-rate metric either; only generic
+  `logger.warn`/`logger.error` inside the shared gateway itself
+  (:253-257), not attributed per calling function.
+- **Execution mechanism:** log-based metrics on `generate()`'s existing
+  warn/error log lines, labeled by the calling function name (already
+  passed into `generate()` -- confirm exact parameter name before
+  implementing); a quota-exhaustion-rate metric off `enforceDailyQuota`'s
+  own rejection path.
+- **Threshold:** alert on an error-rate spike (e.g. >X% of calls to
+  `generate()` failing in a rolling window) and separately on sustained
+  quota exhaustion (a signal that per-user limits may need revisiting, a
+  product decision, not something this monitor should auto-adjust).
+- **Controlled failure:** force `generate()`'s underlying Vertex call to
+  fail in a test context (bad model name / injected timeout) and confirm
+  the metric/alert fires.
+- **Cost:** log-based metrics, free at this volume; no new Cloud Monitoring
+  custom-metric ingestion needed if built on existing log lines.
+
+## 7. IAM / secrets (DoD 8.11)
+
+- **Canary identity:** the custom-token-minting Cloud Function's own service
+  account needs `firebaseauth.customTokenMinter` (or equivalent minimal
+  Auth-admin scope) and NOTHING else beyond default Functions execution
+  permissions -- no broader Firestore/Storage admin role, since the
+  Firestore step deliberately goes through the Client SDK under Security
+  Rules, not the Admin SDK.
+- **No credential in source:** the canary UID and its custom claim value are
+  not secrets (a UID is not sensitive, and the claim is boolean); nothing
+  about this design requires a password, API key, or refresh token to be
+  stored anywhere -- `createCustomToken` uses the Function's own runtime
+  service-account identity, already how every other Admin SDK call in this
+  codebase authenticates.
+- **Log-based metrics (6.2-6.6):** read existing Cloud Logging entries via
+  the Function/Console's own IAM, no new permission surface.
+- **Notification channel:** Cloud Monitoring's own IAM (`roles/monitoring.
+  notificationChannelEditor` or equivalent) for whoever creates it manually
+  or via `gcloud` -- not a runtime credential, a one-time admin action.
+
+## 8. Alert-path test plan (DoD 8.12)
+
+Each monitor's own "controlled failure" cell in Sec 6.1-6.6 IS this item's
+per-monitor entry; consolidated here as the batch-level plan GPT-PM asked
+for:
+
+| monitor | controlled failure | expected signal | reset |
+|---|---|---|---|
+| 6.1 canary | revoke canary UID's custom claim temporarily | Firestore step denied, alert fires | restore claim |
+| 6.2 App Check | call from debug-provider client with App Check misconfigured | `attested:false` log line, metric moves | none needed (no state changed) |
+| 6.3 Stripe | force `cancelSubscriptionItem` to throw (test/emulator) | `logger.error` metric/alert fires | none (test env only) |
+| 6.4 deletion/export | force `deleteAccount`/`exportAccountData` to throw (test/emulator) | error-rate metric/alert fires | none (test env only) |
+| 6.5 telemetry | throw inside one of the 3 named catch blocks (test build) | Crashlytics issue appears, velocity alert fires | none (test build only) |
+| 6.6 AI Gateway | inject a bad model name / forced timeout in `generate()` (test env) | error-rate metric/alert fires | none (test env only) |
+
+None of these require touching production data or spending real money to
+prove; each is either a test/emulator-context injection or a reversible
+temporary state change (6.1's claim revoke) with an explicit reset step.

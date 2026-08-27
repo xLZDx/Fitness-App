@@ -27559,3 +27559,55 @@ Scheduler API on `fitness-app-korostelev` (`gcloud services enable cloudschedule
 confirmed via a follow-up `gcloud services list --enabled | grep cloudscheduler`. This is reversible,
 costs nothing by itself (no jobs created yet), and does not bind any alert to a human recipient --
 it stays cleanly on the authorized side of GPT-PM's HOLD boundary.
+
+## MVP1.G3 Step 8: per-monitor technical-surface investigation and DoD 8.10/8.11/8.12 -- 2026-08-27
+
+While `FA-D1` (G3-RUNTIME-OWNER) is pending, continued with the design/investigation work GPT-PM's
+GO already covers. Dispatched a read-only Explore agent to gather concrete, cited evidence (not
+invented) for each of Step 9's 6 planned monitors, across `functions/src/` and `mobile/lib/`. Real
+findings, each independently informing the design in `core/G3_STEP8_RUNTIME_PREREQUISITES.md` Sec
+6-8:
+
+- **Stripe (6.3):** `reconcileDuplicateSubscriptions` (`functions/src/index.ts:1862-1917`) already
+  has two silent-failure log lines (`logger.error` at :1904-1908 and :1911-1915) nothing currently
+  reads -- a real, buildable, zero-new-code monitor target. Also found a genuine residual gap this
+  monitor does NOT close: reconciliation is purely reactive (triggered only by an incoming Stripe
+  webhook), so a customer whose webhooks stop arriving entirely has no detection path today --
+  recorded honestly as an accepted gap, not silently treated as covered.
+- **Data-deletion/export (6.4):** confirmed no CI or runtime check verifies deletion coverage stays
+  complete as new Firestore collections are added -- coverage today is a point-in-time human
+  inventory ("A0", `core/DECISION_LOG.md:2389-2437`), not an enforced invariant. Concluded this is
+  structurally a `[CI]` drift check (same shape as item 4's equipment-registry parity), not a
+  runtime probe -- flagged for GPT-PM's own scoping call rather than force-fit into Step 9 or
+  silently dropped.
+- **AI Gateway (6.6):** confirmed the exact 4 G1 callables by file:line (`ai_coach_advice.ts:128`,
+  `ai_equipment_recognition.ts:108`, `ai_exercise_generation.ts:260`,
+  `ai_machine_description.ts:87`), all routing through `ai_gateway.ts::generate()`. Confirmed a real
+  gap: per-user quota exists (`abuse_guard.ts`'s `enforceDailyQuota`) but NO token-usage/dollar-cost
+  tracking exists anywhere -- quota limits call COUNT, not spend.
+- **App Check (6.2):** confirmed enforcement is OFF everywhere today (matches the earlier
+  `abuse_guard.ts:38-41` 2026-08-11 audit) -- concluded a "rejection" monitor would be vacuous right
+  now (nothing is being rejected) and designed an attested-RATIO visibility metric off the already-
+  existing `noteAppCheck` log line instead, honestly scoped as pre-enforcement visibility, not
+  enforcement monitoring.
+- **Telemetry (6.5):** re-confirmed (independently, not just citing the earlier re-baseline) that
+  Crashlytics is a real dependency but is not called inside the 3 specific catch blocks that most
+  need it (`mlkit_live_equipment_service.dart:178-180`, `scanner_page.dart:179-186`,
+  `gemini_equipment_service.dart:141-145`, all cited by line). Concluded honestly: there is currently
+  NO signal to monitor here -- this "monitor" item is actually a small code change (wire Crashlytics
+  into those 3 catches) that must land before any alert has anything to watch, not silently scoped
+  down to "add an alert on nothing."
+- **Canary target fidelity (6.1):** verified what a genuine sign-in actually touches --
+  `firebase_auth_repository.dart`'s sign-in paths touch ONLY Firebase Auth, no Firestore at all;
+  `users/{uid}` is created later, on demand. Confirms the Sec 3 canary design's `_canary/` Firestore
+  write is a deliberate ADDITION beyond real-path fidelity (to also exercise Security Rules), not an
+  inaccuracy -- worth stating plainly rather than leaving it as an unexamined assumption.
+
+Wrote the full per-monitor mapping table (signal source -> execution mechanism -> identity ->
+permissions -> data written -> threshold -> controlled failure -> cost, per GPT-PM's DoD 8.10),
+IAM/secrets design (8.11 -- canary Function needs only `firebaseauth.customTokenMinter`-equivalent
+scope, no credential in source since `createCustomToken` uses the Function's own runtime identity),
+and a consolidated alert-path test-plan table (8.12) into
+`core/G3_STEP8_RUNTIME_PREREQUISITES.md` Sec 6-8. Every "controlled failure" entry is either a
+test/emulator-context injection or a reversible temporary state change with an explicit reset --
+none require touching production data or spending real money to prove.
