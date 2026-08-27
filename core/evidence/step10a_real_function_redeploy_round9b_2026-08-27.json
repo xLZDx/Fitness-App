@@ -1,0 +1,20 @@
+{
+  "context": "GPT-PM round-9 (retry-of-final) finding: the round-8 event: fix was only ever deployed to the temporary proof-only harness, never to the real runEnforcementStateCheck function -- the live failure alert had already been PATCHed to require jsonPayload.event, but the real deployed code still only produced the old decorated jsonPayload.message with no event field, so a genuine production failure would have remained silent.",
+  "before": {
+    "revision": "runenforcementstatecheck-00001-caj",
+    "revisionCreationTimestamp": "2026-08-27T18:40:09.633220Z",
+    "note": "the original live-activation deploy, before every round 1-9 remediation fix -- confirmed still the latestReadyRevision immediately before this redeploy, i.e. this function was never redeployed across the entire remediation arc despite enforcement_state.ts and enforcement_state_schedule.ts changing substantially."
+  },
+  "action": "firebase deploy --only functions:runEnforcementStateCheck",
+  "after": {
+    "revision": "runenforcementstatecheck-00002-hit",
+    "revisionCreationTimestamp": "2026-08-27T21:01:25.131136Z",
+    "buildName": "projects/988522745882/locations/europe-west1/builds/50a68942-ea38-46a4-83ed-a5114c54d0e7",
+    "buildImageUri": "europe-west1-docker.pkg.dev/fitness-app-korostelev/gcf-artifacts/fitness--app--korostelev__europe--west1__run_enforcement_state_check:version_1"
+  },
+  "aiGatewayCalleblesCheck": {
+    "command": "gcloud functions list --project=fitness-app-korostelev --format=\"value(name)\" | grep -i ai",
+    "result": "zero matches -- aiCoachAdvice/aiEquipmentRecognition/aiMachineDescription/aiExerciseGeneration remain undeployed, confirming the targeted deploy did not touch them"
+  },
+  "note": "Per GPT-PM's own required change: 'The existing proof-only real-failure evidence is sufficient to prove eventEquals semantics; it does not need another general redesign. Once the real scheduled service is demonstrably on the new revision, this finding closes.' Revision name incremented (00001 -> 00002) and a new build ID/timestamp is proof of a genuine new deploy, not a metadata-only touch."
+}

@@ -30477,3 +30477,43 @@ filed for it. Final test count: 21 suites, 522 tests, all passing.
 from the pre-existing plan): Step 10B (Android device telemetry proof, S8 test device), Step 10C
 (reconciliation of all 13 original OBS-1 items), then a final adversarial GPT-PM review of the whole
 of MVP1.G3 before `pm_set_gate(Fitness_App, MVP1.G3, passed)`.
+
+## CORRECTION -- the "Step 10A is CLOSED" declaration above was premature (2026-08-27, same day, minutes later)
+
+Requesting the `--final` receipt for round 9's APPROVE hit a genuine PM Bridge send failure on the
+first attempt (verified via `pm_bridge_status`: zero matching new outbound entry -- not a
+reply-capture failure, an actual unsent message). Retried once, per standing "wait through genuine
+congestion, verify before retrying" discipline (`pm_bridge_mode_status` showed queue depth 4 across 3
+projects at the time). **The retry landed and GPT-PM re-reviewed the same diff fresh -- and this time
+found a real, serious gap the first pass missed**: `VERDICT: MAJOR findings -- 1 MAJOR`.
+
+**The finding, verified independently before accepting**: round 8's `event:` fix
+(`enforcement_state_schedule.ts`) and the live failure-policy PATCH (requiring `jsonPayload.event=`)
+were both real -- but the ACTUAL deployed `runEnforcementStateCheck` function was never redeployed
+with that source change. Every fix across rounds 1-9 (fail-closed validation, container-level
+validation, the event field) existed only in source/tests/the proof-only harness; the real production
+function was still running its ORIGINAL 2026-08-27T18:40 build. Confirmed with hard evidence before
+accepting the claim: `gcloud run services describe runenforcementstatecheck` showed
+`latestReadyRevisionName: runenforcementstatecheck-00001-caj` (exactly one deploy, ever) immediately
+before the fix. **This meant the live alert was, at that moment, WORSE than before round 8**: the
+policy now required a field the deployed code could never produce, so a genuine production failure
+would have stayed silent -- the exact failure mode this whole remediation arc exists to prevent, now
+freshly reintroduced by the live-fix half of round 8 outrunning the live-deploy half.
+
+**Fixed immediately**: `firebase deploy --only functions:runEnforcementStateCheck` (targeted, per this
+project's standing constraint -- never a blanket deploy). Confirmed via live readback: revision moved
+`runenforcementstatecheck-00001-caj` -> `runenforcementstatecheck-00002-hit`
+(`2026-08-27T21:01:25Z`, new build id `50a68942-ea38-46a4-83ed-a5114c54d0e7`) -- a genuine new deploy,
+not a metadata touch. Confirmed the four AI Gateway callables remain undeployed (`gcloud functions
+list | grep -i ai` -> zero matches), per GPT-PM's own required-change checklist. Evidence:
+`core/evidence/step10a_real_function_redeploy_round9b_2026-08-27.json`. Per GPT-PM's own words, no
+further live-failure re-proof is needed for this specific finding: *"The existing proof-only
+real-failure evidence is sufficient to prove eventEquals semantics; it does not need another general
+redesign. Once the real scheduled service is demonstrably on the new revision, this finding closes."*
+
+**What this incident actually demonstrates**: a `--final` receipt attempt that fails locally must
+always be checked against real transport state before either (a) assuming the send failed, or
+(b) assuming the prior APPROVE still stands unchallenged. Here the retry was not redundant -- it was a
+second, independent adversarial pass that caught a real live-deployment gap the first pass's own
+"APPROVE" text had missed. Sending this fix to GPT-PM for confirmation before treating Step 10A as
+genuinely closed this time.
