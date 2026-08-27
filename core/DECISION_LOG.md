@@ -27884,3 +27884,18 @@ wiring itself, not just its surrounding logic, is correct).
 
 **Cost:** zero new spend. No new dependency added; Crashlytics is the same free-tier product already
 integrated and already covered by Sec 6.5's own cost line.
+
+**Full-suite confirmation run, unrelated finding logged, not fixed.** After the targeted suites
+above, ran the WHOLE mobile suite twice (`flutter test`, ~3253 tests) to check for any wider
+regression. Both runs: exactly 1 pre-existing failure, unrelated to this change --
+`test/theme/app_semantic_colors_test.dart`: "the hardcoded whites that survived G1.2b stay accounted
+for" expects 61 hardcoded-white-color literals across a fixed file list, finds 58. Confirmed NOT
+caused by this commit: `git show a5999e8 -- mobile/lib/features/scanner/scanner_page.dart | grep -i
+"white\|Colors\."` returns nothing -- this change touched zero color-related lines. The files in the
+test's own per-file breakdown with the largest counts (`form_check_page.dart:18`,
+`exercise_reference.dart:9`, `posture_page.dart:6`, `glass.dart`) last changed in commits from well
+before MVP1.G3 Step 8 (`git log` on those paths: `d8525cd`, `6180453`, `1dc1fbf`, and older) -- this
+is pre-existing drift, not something this session's Step 8 work introduced. Logged here rather than
+fixed: out of this item's scope, and a closed gate item does not get reopened for an unrelated
+pre-existing debt-tracker drift discovered while confirming it -- belongs on the roadmap/technical
+debt list instead.
