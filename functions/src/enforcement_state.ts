@@ -618,43 +618,119 @@ export interface SmsRegionPolicy {
 }
 
 /**
+ * Discriminated result for a field/section that must FAIL CLOSED on a
+ * malformed-but-present value, not merely on absence -- see "ROUND 4,
+ * PART 2" below. `ok: false` always means "the whole Identity Toolkit
+ * section must report UNAVAILABLE", never a value to still publish.
+ */
+type Extracted<T> = { ok: true; value: T } | { ok: false; error: string };
+
+function isStringArray(v: unknown): v is string[] {
+  return Array.isArray(v) && v.every((x) => typeof x === "string");
+}
+
+/**
  * `smsRegionConfig` is a oneof, not a boolean or a container to serialize
  * directly -- see module header, "ROUND 4". Confirmed against Google's own
  * SMS-regions guide: `{ allowlistOnly: { allowedRegions: [...] } }` XOR
  * `{ allowByDefault: { disallowedRegions: [...] } }`.
+ *
+ * ROUND 4, PART 2 (GPT-PM round-5 review of the round-4 remediation): the
+ * first pass accepted any object-shaped branch and silently coerced a
+ * malformed `allowedRegions`/`disallowedRegions` (present but not a string
+ * array) to `regionCount: null` -- indistinguishable from "genuinely absent"
+ * -- and silently preferred `allowlistOnly` if BOTH oneof branches were
+ * somehow present, which can only mean the response is malformed (a real
+ * oneof never sets both). Both cases now fail closed with an explicit error
+ * instead of a plausible-looking but wrong value.
  */
-function extractSmsRegionPolicy(raw: Record<string, any>): SmsRegionPolicy {
+function extractSmsRegionPolicy(raw: Record<string, any>): Extracted<SmsRegionPolicy> {
   const cfg = raw?.smsRegionConfig;
-  if (cfg?.allowlistOnly && typeof cfg.allowlistOnly === "object") {
+  const hasAllowlist = cfg?.allowlistOnly !== undefined && typeof cfg.allowlistOnly === "object";
+  const hasAllowByDefault =
+    cfg?.allowByDefault !== undefined && typeof cfg.allowByDefault === "object";
+  if (hasAllowlist && hasAllowByDefault) {
+    return {
+      ok: false,
+      error: "malformed response: smsRegionConfig has both allowlistOnly and allowByDefault set",
+    };
+  }
+  if (hasAllowlist) {
     const regions = cfg.allowlistOnly.allowedRegions;
-    return { mode: "ALLOWLIST_ONLY", regionCount: Array.isArray(regions) ? regions.length : null };
+    if (regions !== undefined && !isStringArray(regions)) {
+      return {
+        ok: false,
+        error: "malformed response: smsRegionConfig.allowlistOnly.allowedRegions is present but not a string array",
+      };
+    }
+    return {
+      ok: true,
+      value: { mode: "ALLOWLIST_ONLY", regionCount: Array.isArray(regions) ? regions.length : null },
+    };
   }
-  if (cfg?.allowByDefault && typeof cfg.allowByDefault === "object") {
+  if (hasAllowByDefault) {
     const regions = cfg.allowByDefault.disallowedRegions;
-    return { mode: "ALLOW_BY_DEFAULT", regionCount: Array.isArray(regions) ? regions.length : null };
+    if (regions !== undefined && !isStringArray(regions)) {
+      return {
+        ok: false,
+        error: "malformed response: smsRegionConfig.allowByDefault.disallowedRegions is present but not a string array",
+      };
+    }
+    return {
+      ok: true,
+      value: { mode: "ALLOW_BY_DEFAULT", regionCount: Array.isArray(regions) ? regions.length : null },
+    };
   }
-  return { mode: "NONE", regionCount: null };
+  return { ok: true, value: { mode: "NONE", regionCount: null } };
 }
 
 /**
  * STRICT ALLOWLIST — see this file's module header. Never spread/pass the
  * raw response through; every field here was individually chosen as safe.
+ *
+ * ROUND 4, PART 2: `multiTenant.allowTenants` and
+ * `monitoring.requestLogging.enabled` used to pass through with `?? null`
+ * regardless of their actual type -- a present-but-non-boolean value (e.g.
+ * an upstream/proxy regression returning `"false"` as a string) would have
+ * published that malformed value as though it were the real state, section
+ * still `OK`. Both are now validated when present; a non-boolean present
+ * value fails the whole section closed, same bar as `extractSmsRegionPolicy`.
  */
-function extractIdentityToolkitState(raw: Record<string, any>): Record<string, unknown> {
+function extractIdentityToolkitState(raw: Record<string, any>): Extracted<Record<string, unknown>> {
+  const rawAllowTenants = raw?.multiTenant?.allowTenants;
+  if (rawAllowTenants !== undefined && typeof rawAllowTenants !== "boolean") {
+    return {
+      ok: false,
+      error: "malformed response: multiTenant.allowTenants is present but not a boolean",
+    };
+  }
+  const rawRequestLoggingEnabled = raw?.monitoring?.requestLogging?.enabled;
+  if (rawRequestLoggingEnabled !== undefined && typeof rawRequestLoggingEnabled !== "boolean") {
+    return {
+      ok: false,
+      error: "malformed response: monitoring.requestLogging.enabled is present but not a boolean",
+    };
+  }
+  const smsRegionPolicy = extractSmsRegionPolicy(raw);
+  if (!smsRegionPolicy.ok) return smsRegionPolicy;
+
   const signInMethods = Object.keys(raw?.signIn ?? {}).filter((k) => k !== "hashConfig");
   return {
-    signInMethodsConfigured: signInMethods,
-    anonymousEnabled: raw?.signIn?.anonymous?.enabled ?? null,
-    mfaState: raw?.mfa?.state ?? null,
-    multiTenantAllowTenants: raw?.multiTenant?.allowTenants ?? null,
-    authorizedDomainsCount: Array.isArray(raw?.authorizedDomains)
-      ? raw.authorizedDomains.length
-      : null,
-    smsRegionPolicy: extractSmsRegionPolicy(raw),
-    emailPrivacyImproved: raw?.emailPrivacyConfig?.enableImprovedEmailPrivacy ?? null,
-    monitoringRequestLoggingEnabled: raw?.monitoring?.requestLogging?.enabled ?? null,
-    blockingFunctionsConfigured: !!raw?.blockingFunctions
-      && Object.keys(raw.blockingFunctions).length > 0,
+    ok: true,
+    value: {
+      signInMethodsConfigured: signInMethods,
+      anonymousEnabled: raw?.signIn?.anonymous?.enabled ?? null,
+      mfaState: raw?.mfa?.state ?? null,
+      multiTenantAllowTenants: rawAllowTenants ?? null,
+      authorizedDomainsCount: Array.isArray(raw?.authorizedDomains)
+        ? raw.authorizedDomains.length
+        : null,
+      smsRegionPolicy: smsRegionPolicy.value,
+      emailPrivacyImproved: raw?.emailPrivacyConfig?.enableImprovedEmailPrivacy ?? null,
+      monitoringRequestLoggingEnabled: rawRequestLoggingEnabled ?? null,
+      blockingFunctionsConfigured: !!raw?.blockingFunctions
+        && Object.keys(raw.blockingFunctions).length > 0,
+    },
   };
 }
 
@@ -692,7 +768,9 @@ async function checkIdentityToolkit(
   if (typeof body.name !== "string" || body.name.length === 0) {
     return { status: "UNAVAILABLE", error: "malformed response: missing config resource name" };
   }
-  return { status: "OK", data: extractIdentityToolkitState(body) };
+  const extracted = extractIdentityToolkitState(body);
+  if (!extracted.ok) return { status: "UNAVAILABLE", error: extracted.error };
+  return { status: "OK", data: extracted.value };
 }
 
 function overallStatus(sections: EnforcementStateResult["sections"]): OverallStatus {

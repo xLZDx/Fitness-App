@@ -652,29 +652,31 @@ describe("extractIdentityToolkitState — secret-shaped fields never pass throug
       monitoring: { requestLogging: { enabled: false } },
     };
 
-    const extracted = _internal.extractIdentityToolkitState(raw);
-    const serialized = JSON.stringify(extracted);
+    const result = _internal.extractIdentityToolkitState(raw);
+    if (!result.ok) throw new Error(`expected ok, got error: ${result.error}`);
+    const serialized = JSON.stringify(result.value);
 
     expect(serialized).not.toContain("super-secret-signer-key-value");
     expect(serialized).not.toContain("AIzaSy-fake-secret-web-api-key");
     expect(serialized).not.toContain("signerKey");
     expect(serialized).not.toContain("apiKey");
 
-    expect(extracted.anonymousEnabled).toBe(true);
-    expect(extracted.mfaState).toBe("DISABLED");
-    expect(extracted.authorizedDomainsCount).toBe(2);
-    expect(extracted.signInMethodsConfigured).toEqual(["anonymous"]);
+    expect(result.value.anonymousEnabled).toBe(true);
+    expect(result.value.mfaState).toBe("DISABLED");
+    expect(result.value.authorizedDomainsCount).toBe(2);
+    expect(result.value.signInMethodsConfigured).toEqual(["anonymous"]);
   });
 
-  test("missing/malformed input degrades to nulls, never throws", () => {
+  test("missing input degrades to nulls, never throws", () => {
     expect(() => _internal.extractIdentityToolkitState({})).not.toThrow();
-    const extracted = _internal.extractIdentityToolkitState({});
-    expect(extracted.anonymousEnabled).toBeNull();
-    expect(extracted.authorizedDomainsCount).toBeNull();
-    expect(extracted.signInMethodsConfigured).toEqual([]);
-    expect(extracted.multiTenantAllowTenants).toBeNull();
-    expect(extracted.monitoringRequestLoggingEnabled).toBeNull();
-    expect(extracted.smsRegionPolicy).toEqual({ mode: "NONE", regionCount: null });
+    const result = _internal.extractIdentityToolkitState({});
+    if (!result.ok) throw new Error(`expected ok, got error: ${result.error}`);
+    expect(result.value.anonymousEnabled).toBeNull();
+    expect(result.value.authorizedDomainsCount).toBeNull();
+    expect(result.value.signInMethodsConfigured).toEqual([]);
+    expect(result.value.multiTenantAllowTenants).toBeNull();
+    expect(result.value.monitoringRequestLoggingEnabled).toBeNull();
+    expect(result.value.smsRegionPolicy).toEqual({ mode: "NONE", regionCount: null });
   });
 
   // Round-4 (GPT-PM live-activation review): the extractor used to serialize whole
@@ -690,10 +692,11 @@ describe("extractIdentityToolkitState — secret-shaped fields never pass throug
       monitoring: { requestLogging: { enabled: true } },
       smsRegionConfig: { allowlistOnly: { allowedRegions: ["US", "IN", "GB"] } },
     };
-    const extracted = _internal.extractIdentityToolkitState(raw);
-    expect(extracted.multiTenantAllowTenants).toBe(true);
-    expect(extracted.monitoringRequestLoggingEnabled).toBe(true);
-    expect(extracted.smsRegionPolicy).toEqual({ mode: "ALLOWLIST_ONLY", regionCount: 3 });
+    const result = _internal.extractIdentityToolkitState(raw);
+    if (!result.ok) throw new Error(`expected ok, got error: ${result.error}`);
+    expect(result.value.multiTenantAllowTenants).toBe(true);
+    expect(result.value.monitoringRequestLoggingEnabled).toBe(true);
+    expect(result.value.smsRegionPolicy).toEqual({ mode: "ALLOWLIST_ONLY", regionCount: 3 });
   });
 
   test("multiTenant/monitoring container present but scalar false is preserved, not lost as falsy", () => {
@@ -701,36 +704,98 @@ describe("extractIdentityToolkitState — secret-shaped fields never pass throug
       multiTenant: { allowTenants: false },
       monitoring: { requestLogging: { enabled: false } },
     };
-    const extracted = _internal.extractIdentityToolkitState(raw);
-    expect(extracted.multiTenantAllowTenants).toBe(false);
-    expect(extracted.monitoringRequestLoggingEnabled).toBe(false);
+    const result = _internal.extractIdentityToolkitState(raw);
+    if (!result.ok) throw new Error(`expected ok, got error: ${result.error}`);
+    expect(result.value.multiTenantAllowTenants).toBe(false);
+    expect(result.value.monitoringRequestLoggingEnabled).toBe(false);
+  });
+
+  // Round-4 PART 2 (GPT-PM round-5 review): a present-but-malformed value used to pass
+  // through silently (e.g. a string coerced through `?? null` as-is) instead of failing
+  // the section closed -- these fixtures simulate an upstream/proxy schema regression.
+  test("multiTenant.allowTenants present but not a boolean -> fails closed, not silently coerced", () => {
+    const result = _internal.extractIdentityToolkitState({ multiTenant: { allowTenants: "false" } });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain("multiTenant.allowTenants");
+  });
+
+  test("monitoring.requestLogging.enabled present but not a boolean -> fails closed", () => {
+    const result = _internal.extractIdentityToolkitState({ monitoring: { requestLogging: { enabled: {} } } });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain("monitoring.requestLogging.enabled");
+  });
+
+  test("malformed nested smsRegionPolicy propagates as a whole-section failure", () => {
+    const result = _internal.extractIdentityToolkitState({
+      smsRegionConfig: { allowlistOnly: { allowedRegions: "US" } },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain("allowedRegions");
   });
 });
 
 describe("extractSmsRegionPolicy — real oneof shape, never a bare container", () => {
   test("allowlistOnly mode reports the allowed-region count", () => {
-    const policy = _internal.extractSmsRegionPolicy({
+    const result = _internal.extractSmsRegionPolicy({
       smsRegionConfig: { allowlistOnly: { allowedRegions: ["US", "IN"] } },
     });
-    expect(policy).toEqual({ mode: "ALLOWLIST_ONLY", regionCount: 2 });
+    expect(result).toEqual({ ok: true, value: { mode: "ALLOWLIST_ONLY", regionCount: 2 } });
   });
 
   test("allowByDefault mode reports the disallowed-region count", () => {
-    const policy = _internal.extractSmsRegionPolicy({
+    const result = _internal.extractSmsRegionPolicy({
       smsRegionConfig: { allowByDefault: { disallowedRegions: ["RU"] } },
     });
-    expect(policy).toEqual({ mode: "ALLOW_BY_DEFAULT", regionCount: 1 });
+    expect(result).toEqual({ ok: true, value: { mode: "ALLOW_BY_DEFAULT", regionCount: 1 } });
   });
 
   test("no smsRegionConfig at all -> NONE with a null count, never throws", () => {
-    expect(_internal.extractSmsRegionPolicy({})).toEqual({ mode: "NONE", regionCount: null });
+    expect(_internal.extractSmsRegionPolicy({})).toEqual({
+      ok: true,
+      value: { mode: "NONE", regionCount: null },
+    });
   });
 
   test("empty allowlistOnly container (this project's real current state) -> ALLOWLIST_ONLY, count null", () => {
     // Confirmed live this round: this project's real smsRegionConfig.allowlistOnly is `{}`
     // (SMS regions never configured) -- `allowedRegions` is absent, not an empty array.
-    const policy = _internal.extractSmsRegionPolicy({ smsRegionConfig: { allowlistOnly: {} } });
-    expect(policy).toEqual({ mode: "ALLOWLIST_ONLY", regionCount: null });
+    const result = _internal.extractSmsRegionPolicy({ smsRegionConfig: { allowlistOnly: {} } });
+    expect(result).toEqual({ ok: true, value: { mode: "ALLOWLIST_ONLY", regionCount: null } });
+  });
+
+  // Round-4 PART 2 (GPT-PM round-5 review): a present-but-malformed regions field, or
+  // both oneof branches set at once, used to silently degrade to `regionCount: null` or
+  // silently prefer allowlistOnly -- both are now explicit failures.
+  test("allowedRegions present but not an array -> fails closed", () => {
+    const result = _internal.extractSmsRegionPolicy({
+      smsRegionConfig: { allowlistOnly: { allowedRegions: "US" } },
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  test("allowedRegions array with a non-string element -> fails closed", () => {
+    const result = _internal.extractSmsRegionPolicy({
+      smsRegionConfig: { allowlistOnly: { allowedRegions: ["US", 42] } },
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  test("disallowedRegions present but not an array -> fails closed", () => {
+    const result = _internal.extractSmsRegionPolicy({
+      smsRegionConfig: { allowByDefault: { disallowedRegions: { US: true } } },
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  test("both allowlistOnly and allowByDefault set at once -> fails closed, never silently prefers one", () => {
+    const result = _internal.extractSmsRegionPolicy({
+      smsRegionConfig: {
+        allowlistOnly: { allowedRegions: ["US"] },
+        allowByDefault: { disallowedRegions: ["RU"] },
+      },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain("both allowlistOnly and allowByDefault");
   });
 });
 
