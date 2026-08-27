@@ -273,3 +273,64 @@ export function toAlertPolicyJson(spec: AlertPolicySpec): object {
     notificationChannels: [],
   };
 }
+
+/**
+ * MVP1.G3 Step 10A remediation. A log-match alert only fires while the
+ * checking FUNCTION ITSELF runs and logs a failure -- it says nothing if
+ * Cloud Scheduler's job is disabled/deleted, or a request hangs past the
+ * function's own timeout with nothing ever logged. GPT-PM's review of the
+ * first Step 10A submission: "add an independent freshness/absence
+ * mechanism able to detect missed execution without relying on this
+ * function's own custom log."
+ *
+ * `conditionAbsent` is Cloud Monitoring's own built-in mechanism for exactly
+ * this ("this metric stopped reporting") -- watched here against
+ * `cloudscheduler.googleapis.com/job/execution_count`, a metric the
+ * PLATFORM emits automatically for every Scheduler job execution attempt,
+ * independent of whether this codebase's own logging code ever runs at
+ * all. This is the "already-available production mechanism, no unnecessary
+ * infrastructure" GPT-PM's original Step 10A DoD asked to prefer.
+ */
+export interface MetricAbsenceAlertPolicySpec {
+  displayName: string;
+  conditionDisplayName: string;
+  /** e.g. `metric.type="cloudscheduler.googleapis.com/job/execution_count" AND resource.type="cloud_scheduler_job" AND resource.label.job_id="..."` */
+  filter: string;
+  /** Duration string, e.g. "86400s" -- how long the metric may be absent before this fires. */
+  absentFor: string;
+  alignmentPeriodSeconds: number;
+  notificationRateLimitPeriod: string;
+  autoClose: string;
+}
+
+export function toMetricAbsenceAlertPolicyJson(
+  spec: MetricAbsenceAlertPolicySpec,
+): object {
+  return {
+    displayName: spec.displayName,
+    combiner: "OR",
+    enabled: false,
+    conditions: [
+      {
+        displayName: spec.conditionDisplayName,
+        conditionAbsent: {
+          filter: spec.filter,
+          duration: spec.absentFor,
+          aggregations: [
+            {
+              alignmentPeriod: `${spec.alignmentPeriodSeconds}s`,
+              perSeriesAligner: "ALIGN_COUNT",
+              crossSeriesReducer: "REDUCE_SUM",
+            },
+          ],
+        },
+      },
+    ],
+    alertStrategy: {
+      notificationRateLimit: { period: spec.notificationRateLimitPeriod },
+      autoClose: spec.autoClose,
+      notificationPrompts: ["OPENED"],
+    },
+    notificationChannels: [],
+  };
+}

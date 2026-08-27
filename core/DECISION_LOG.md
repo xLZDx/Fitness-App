@@ -29578,3 +29578,87 @@ round" rule** (established after the Step 9B review-hold breach finding, held fo
 session and continuing here): no deploy, no live resource creation, no positive/negative proof yet.
 Sending this build to GPT-PM for review before any live action, same discipline Step 9B's code
 received.
+
+---
+
+## MVP1.G3 Step 10A -- remediation round (2026-08-27, same day)
+
+GPT-PM reviewed commit `4d4d35f` (the Step 10A build above) and returned 4 real MAJOR findings and
+1 real MINOR, evaluated independently against the actual code/repo state before accepting any of
+them (GPT-PM's reply also carried an internally inconsistent "same implementation as before"
+framing that a `pm_bridge_status` grep showed was not backed by any earlier round for this commit --
+noted as a likely conversation-memory artifact on GPT-PM's side, but this was kept separate from
+judging the findings themselves, which were assessed purely on technical merit). All 5 fixed in one
+batch, per this project's "one sweep, remediate complete batch" review discipline -- not argued
+over, not fixed one at a time with a resubmission after each.
+
+**1. MAJOR -- reachability was being reported as correctness.** `checkFunctions()` and
+`checkFirestoreRules()` treated any 2xx response as `OK`, including a genuinely empty list -- this
+project always has deployed Functions and a published Firestore ruleset, so a zero-length result is
+far more likely to be a permission regression, a wrong project ID, or an API behavior change than
+reality. Both now fail closed (`UNAVAILABLE`, `"empty result: ..."`) on an empty list. App Check is
+deliberately exempt (zero services is a real, legitimate state for this project) but now derives an
+explicit `anyEnforcementOff` boolean from whatever services it does see, so "nothing came back" and
+"something came back with enforcement off" are both visible instead of collapsing into a bare `OK`.
+
+**2. MAJOR -- malformed HTTP-200 responses failed open.** A non-object body, or a list key present
+but not an array, previously defaulted silently to an empty list and reported `OK`. Both now return
+`UNAVAILABLE` with a named reason. Identity Toolkit additionally requires its own `name` field to be
+a non-empty string before being accepted -- the cheapest signal that the body is actually a real
+config object and not some other 2xx-status payload.
+
+**3. MAJOR -- pagination was entirely unhandled.** Every list call only ever read page 1. Added
+`fetchAllPages()` (`enforcement_state.ts`), which follows `nextPageToken` for Functions, Firestore
+Rules and App Check, bounded to `MAX_PAGES = 20` so a malfunctioning API returning a repeating token
+cannot loop the function forever (`UNAVAILABLE`, `"pagination did not terminate within 20 pages"`).
+Confirmed by direct probe before this remediation that no endpoint currently returns a second page
+at this project's live scale (15 functions, well under a single page) -- not currently exercised in
+production, but no longer a silent gap if the deployed surface grows.
+
+**4. MAJOR -- staleness detection depended entirely on this function's own execution.** If
+`runEnforcementStateCheck` itself stopped running (crashed before logging, got orphaned by a
+Scheduler misconfiguration, etc.), nothing would ever notice, because every existing signal in this
+module is a LogMatch condition keyed on that same function's own log line. Added
+`ENFORCEMENT_STATE_STALENESS_POLICY` (`monitoring/alert_definitions.ts`) -- a genuinely independent,
+GCP-platform-native `conditionAbsent` alert on `cloudscheduler.googleapis.com/job/execution_count`,
+a metric Cloud Scheduler itself emits per execution regardless of whether this codebase's code or
+logging ever runs at all. Required extending `monitoring/types.ts` with a new
+`MetricAbsenceAlertPolicySpec` interface and `toMetricAbsenceAlertPolicyJson()` -- the first
+non-LogMatch alert condition type in this codebase. Also added a per-request timeout
+(`REQUEST_TIMEOUT_MS = 20_000`, via `AbortSignal.timeout`) to every outbound REST call, well under
+the function's own 60s platform timeout, so one hung request can no longer silently consume the
+entire execution budget with nothing logged before Cloud Functions kills the instance.
+
+**5. MINOR -- this file's own status table was self-contradicting.** `monitoring/README.md`'s
+status table still listed the App Check attested-ratio metric as `HOLD` after Step 9B had already
+created and live-verified it (Step 9B's own SHA-256 evidence table lists `appcheck_attestation` as
+one of the 9 confirmed-live resources). Independently re-confirmed against the Step 9B evidence
+before fixing, not just trusted at face value. Corrected the table row and the cost-model section's
+framing to "(historical -- resolved, metric is now LIVE)".
+
+**Found independently during this remediation, not one of GPT-PM's 5 named findings**: a direct
+curl probe against `firebaseappcheck.googleapis.com` (same `SERVICE_DISABLED`/quota-project 403
+pattern already confirmed for Identity Toolkit and Firestore Rules) showed `checkAppCheck()` was
+the one section still missing the `X-Goog-User-Project` header. Fixed, with a dedicated regression
+test asserting the header is present on that call.
+
+**Verification, and a real bug the verification itself caught**: `npm run build` was clean.
+`npx jest --json --outputFile=jest_result.json` initially reported **1 failed test** --
+`enforcement_state.test.ts`'s new pagination test expected `functions.data.count === 2` and got `1`.
+Root cause: the four check sections run concurrently (`Promise.all` in `runEnforcementStateProbe`),
+so their first-page `fetchJson` calls interleave before any of them resolves. Every other test in
+this file relies safely on a positional `mockResolvedValueOnce` chain because each section made
+exactly one call; the new pagination test was the first case where one section (Functions) made
+two, and the second call landed on whichever mock value was next in the shared queue -- not
+necessarily the second page. Fixed by rewriting the mock to dispatch on the request URL instead of
+call order (`fetchJson.mock.calls.filter(([url]) => url.includes("cloudfunctions.googleapis.com"))`
+etc.), which is correct regardless of interleaving. Re-ran the full suite:
+**21 suites, 489 tests, all passed** (`node scripts/assert_test_health.js jest_result.json` --
+`OK`), up from 476 before this remediation round (+13: 6 fails-closed cases, 2 pagination cases, 1
+`anyEnforcementOff` case, 1 App-Check-header case, plus the staleness-policy `describe` block's 3
+cases).
+
+**Still not done, unchanged from Step 10A's own entry above**: no deploy, no live resource
+creation, no positive/negative proof. This remediation commit goes to GPT-PM next, scoped to
+exactly these 5 findings plus any direct regressions -- GPT-PM's own stated scope for the next
+round.

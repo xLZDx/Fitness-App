@@ -35,11 +35,13 @@ import type {
   LogMatchFilterSpec,
   AlertPolicySpec,
   CounterLogMetricSpec,
+  MetricAbsenceAlertPolicySpec,
 } from "./types";
 import {
   toGcpFilterString,
   toAlertPolicyJson,
   toCounterLogMetricJson,
+  toMetricAbsenceAlertPolicyJson,
 } from "./types";
 
 /**
@@ -274,6 +276,44 @@ export const ENFORCEMENT_STATE_ALERT_POLICY: AlertPolicySpec = {
 
 export function enforcementStateAlertPolicyJson(): object {
   return toAlertPolicyJson(ENFORCEMENT_STATE_ALERT_POLICY);
+}
+
+/**
+ * MVP1.G3 Step 10A remediation (GPT-PM's 2nd finding: "an independent
+ * freshness/absence mechanism able to detect missed execution without
+ * relying on this function's own custom log"). The Scheduler job ID follows
+ * Firebase's documented `onSchedule` naming convention,
+ * `firebase-schedule-<functionName>-<region>` -- NOT YET independently
+ * confirmed against a live deployment (this function has not been deployed
+ * yet), unlike every Cloud Run service name in this file, which was.
+ * Verify via `gcloud scheduler jobs list` once deployed, same live-check
+ * discipline every other identity in this file received.
+ *
+ * `absentFor: "86400s"` (24h) against a 6-hour schedule tolerates up to 3
+ * consecutive missed runs (transient Scheduler retry/backoff, a redeploy
+ * window) before firing -- deliberately looser than a hair-trigger on one
+ * missed cycle, matching this check's own "config/rules state moves slowly"
+ * cadence reasoning in `enforcement_state_schedule.ts`.
+ */
+const ENFORCEMENT_STATE_SCHEDULER_JOB_ID =
+  "firebase-schedule-runEnforcementStateCheck-europe-west1";
+
+export const ENFORCEMENT_STATE_STALENESS_POLICY: MetricAbsenceAlertPolicySpec = {
+  displayName: "Enforcement-state check: Scheduler job stopped executing",
+  conditionDisplayName:
+    "cloudscheduler.googleapis.com/job/execution_count absent for 24h",
+  filter:
+    `metric.type="cloudscheduler.googleapis.com/job/execution_count" ` +
+    `AND resource.type="cloud_scheduler_job" ` +
+    `AND resource.label.job_id="${ENFORCEMENT_STATE_SCHEDULER_JOB_ID}"`,
+  absentFor: "86400s",
+  alignmentPeriodSeconds: 3600,
+  notificationRateLimitPeriod: NOTIFICATION_RATE_LIMIT_PERIOD,
+  autoClose: AUTO_CLOSE,
+};
+
+export function enforcementStateStalenessPolicyJson(): object {
+  return toMetricAbsenceAlertPolicyJson(ENFORCEMENT_STATE_STALENESS_POLICY);
 }
 
 /**

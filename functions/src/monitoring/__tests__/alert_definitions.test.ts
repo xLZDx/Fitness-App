@@ -15,6 +15,7 @@ import {
   exportAccountAlertPolicyJson,
   canaryProbeAlertPolicyJson,
   enforcementStateAlertPolicyJson,
+  enforcementStateStalenessPolicyJson,
   appCheckAttestedRatioMetricJson,
 } from "../alert_definitions";
 import {
@@ -267,6 +268,38 @@ describe("enforcement-state check failure alert filter", () => {
       'resource.labels.service_name="runenforcementstatecheck"',
     );
     expect(filter).toContain(signals.ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT);
+  });
+});
+
+describe("enforcement-state Scheduler staleness policy (metric-absence, GPT-PM remediation)", () => {
+  it("renders a conditionAbsent condition, not conditionMatchedLog", () => {
+    const policy = enforcementStateStalenessPolicyJson() as {
+      conditions: Array<{
+        conditionAbsent?: { filter: string; duration: string; aggregations: unknown[] };
+        conditionMatchedLog?: unknown;
+      }>;
+    };
+    expect(policy.conditions).toHaveLength(1);
+    expect(policy.conditions[0].conditionMatchedLog).toBeUndefined();
+    expect(policy.conditions[0].conditionAbsent).toBeDefined();
+    expect(policy.conditions[0].conditionAbsent?.duration).toBe("86400s");
+  });
+
+  it("filters on the Scheduler job's own execution-count metric, not a custom log", () => {
+    const policy = enforcementStateStalenessPolicyJson() as {
+      conditions: Array<{ conditionAbsent?: { filter: string } }>;
+    };
+    const filter = policy.conditions[0].conditionAbsent?.filter ?? "";
+    expect(filter).toContain(
+      'metric.type="cloudscheduler.googleapis.com/job/execution_count"',
+    );
+    expect(filter).toContain('resource.type="cloud_scheduler_job"');
+    expect(filter).toContain("runEnforcementStateCheck");
+  });
+
+  it("has an empty notificationChannels list, same posture as every other policy before FA-D1/activation", () => {
+    const policy = enforcementStateStalenessPolicyJson() as { notificationChannels: unknown[] };
+    expect(policy.notificationChannels).toEqual([]);
   });
 });
 

@@ -19,8 +19,10 @@
  * function's own ambient service-account credentials rather than a human's
  * `gcloud`/`firebase` CLI session, wired to a Cloud Scheduler trigger by
  * `enforcement_state_schedule.ts` so "did anyone check recently" becomes a
- * question Cloud Scheduler's own execution history can answer instead of a
- * question about a human's memory.
+ * question Cloud Scheduler's own execution history (and, since GPT-PM's
+ * remediation round, an independent metric-absence alert -- see
+ * `alert_definitions.ts`'s `ENFORCEMENT_STATE_STALENESS_POLICY`) can answer
+ * instead of a question about a human's memory.
  *
  * WHY HOSTING IS NOT INCLUDED
  *
@@ -46,6 +48,46 @@
  * denylist: it reads only the specific fields this check needs and never
  * passes the raw response through, so a future field Google adds to that
  * API cannot silently leak into committed evidence the way a denylist would.
+ *
+ * WHY A SECTION FAILS CLOSED ON A MALFORMED OR EMPTY RESULT
+ *
+ * GPT-PM's remediation-round finding: an HTTP 200 with a missing/malformed
+ * body, or a genuinely empty list where this specific project always has a
+ * nonzero real count (Functions, Firestore rules releases), used to still
+ * be reported `OK` -- proving only that the API call succeeded, not that
+ * the returned state was real. `readListSection()` below now treats a
+ * non-object body, a present-but-non-array list key, AND (for the two
+ * sections where this project can never legitimately be empty) a
+ * zero-length list as `UNAVAILABLE`, not silent success. App Check is
+ * deliberately exempt from the zero-length rule: `production_manifest.py`'s
+ * own comment already documents that an empty App Check services list is a
+ * MEANINGFUL state (no service has a non-default enforcement mode), not an
+ * error -- flagging it as `UNAVAILABLE` would be a false alarm on the
+ * common case, not a real robustness improvement.
+ *
+ * WHY LIST CALLS FOLLOW PAGINATION
+ *
+ * None of the three list endpoints this file calls needs more than one page
+ * at this project's current scale (confirmed live: no `nextPageToken` in
+ * any of the three real responses probed before writing this remediation).
+ * But all three APIs support it, and silently reading only page one while a
+ * genuine future page two exists is exactly the kind of "reachable but
+ * incomplete" gap GPT-PM's review flagged -- `fetchAllPages()` follows
+ * `nextPageToken` for every list section, bounded to `MAX_PAGES` so a
+ * malfunctioning API returning an ever-repeating token cannot loop this
+ * function forever.
+ *
+ * WHY EVERY REQUEST HAS ITS OWN TIMEOUT, SHORTER THAN THE FUNCTION'S
+ *
+ * The deployed function itself has `timeoutSeconds: 60`
+ * (`enforcement_state_schedule.ts`) -- without a per-request bound, one
+ * hung network call could silently consume the whole budget with nothing
+ * logged before Cloud Functions kills the instance, which is itself a
+ * silent-failure gap (GPT-PM's review named this directly: "an outbound
+ * request hangs until platform timeout"). `REQUEST_TIMEOUT_MS` bounds each
+ * individual call well under that ceiling, so a hang on one section still
+ * lets the others complete and still lets this function's own
+ * try/catch/log run before the platform would ever intervene.
  *
  * WHY THIS IS TESTABLE WITHOUT LIVE GCP CREDENTIALS
  *
@@ -102,6 +144,8 @@ export interface EnforcementStateDeps {
 }
 
 const DEFAULT_PROJECT = "fitness-app-korostelev";
+const REQUEST_TIMEOUT_MS = 20_000;
+const MAX_PAGES = 20;
 
 async function realGetAccessToken(): Promise<string> {
   const auth = new GoogleAuth({
@@ -122,6 +166,7 @@ async function realFetchJson(
 ): Promise<JsonFetchResult> {
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}`, ...extraHeaders },
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -135,17 +180,65 @@ function realDeps(project: string): EnforcementStateDeps {
   return { project, getAccessToken: realGetAccessToken, fetchJson: realFetchJson };
 }
 
+/**
+ * Fetches every page of a `{ [listKey]: T[], nextPageToken?: string }`-shaped
+ * list endpoint, accumulating items across pages. Fails closed (returns
+ * `ok: false`) on a non-2xx response, a non-object body, or a body whose
+ * `listKey` is present but not an array -- see this file's module header
+ * ("WHY A SECTION FAILS CLOSED...") for why a malformed 200 is not treated
+ * as an empty success.
+ */
+async function fetchAllPages(
+  deps: EnforcementStateDeps,
+  token: string,
+  baseUrl: string,
+  listKey: string,
+  extraHeaders?: Record<string, string>,
+): Promise<{ ok: true; items: unknown[] } | { ok: false; error: string }> {
+  const items: unknown[] = [];
+  let pageToken: string | undefined;
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const url = pageToken
+      ? `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}pageToken=${encodeURIComponent(pageToken)}`
+      : baseUrl;
+    const res = await deps.fetchJson(url, token, extraHeaders);
+    if (!res.ok) {
+      return { ok: false, error: `HTTP ${res.status}: ${res.errorText ?? ""}`.trim() };
+    }
+    if (res.json === null || typeof res.json !== "object") {
+      return { ok: false, error: "malformed response: body is not a JSON object" };
+    }
+    const body = res.json as Record<string, unknown>;
+    const list = body[listKey];
+    if (list !== undefined && !Array.isArray(list)) {
+      return {
+        ok: false,
+        error: `malformed response: "${listKey}" is present but not an array`,
+      };
+    }
+    if (Array.isArray(list)) items.push(...list);
+    const next = body.nextPageToken;
+    if (typeof next === "string" && next.length > 0) {
+      pageToken = next;
+      continue;
+    }
+    return { ok: true, items };
+  }
+  return { ok: false, error: `pagination did not terminate within ${MAX_PAGES} pages` };
+}
+
 async function checkFunctions(deps: EnforcementStateDeps, token: string): Promise<SectionResult> {
   const url =
     `https://cloudfunctions.googleapis.com/v2/projects/${deps.project}` +
     `/locations/-/functions`;
-  const res = await deps.fetchJson(url, token);
-  if (!res.ok) {
-    return { status: "UNAVAILABLE", error: `HTTP ${res.status}: ${res.errorText ?? ""}`.trim() };
+  const pages = await fetchAllPages(deps, token, url, "functions");
+  if (!pages.ok) return { status: "UNAVAILABLE", error: pages.error };
+  if (pages.items.length === 0) {
+    // This project always has deployed functions; a genuinely empty result
+    // is far more likely to be a permission/API regression than reality.
+    return { status: "UNAVAILABLE", error: "empty result: 0 functions returned" };
   }
-  const body = res.json as { functions?: unknown[] } | null;
-  const fns = Array.isArray(body?.functions) ? body!.functions : [];
-  const items = fns.map((raw) => {
+  const items = pages.items.map((raw) => {
     const f = raw as Record<string, any>;
     return {
       name: String(f.name ?? "?").split("/").pop(),
@@ -164,13 +257,17 @@ async function checkFirestoreRules(
   token: string,
 ): Promise<SectionResult> {
   const url = `https://firebaserules.googleapis.com/v1/projects/${deps.project}/releases`;
-  const res = await deps.fetchJson(url, token, { "X-Goog-User-Project": deps.project });
-  if (!res.ok) {
-    return { status: "UNAVAILABLE", error: `HTTP ${res.status}: ${res.errorText ?? ""}`.trim() };
+  const pages = await fetchAllPages(deps, token, url, "releases", {
+    "X-Goog-User-Project": deps.project,
+  });
+  if (!pages.ok) return { status: "UNAVAILABLE", error: pages.error };
+  if (pages.items.length === 0) {
+    // Same reasoning as Functions -- this project always has a published
+    // ruleset (`production_manifest.py`'s own comment: "no releases
+    // returned -- no ruleset is published" is itself a red flag there too).
+    return { status: "UNAVAILABLE", error: "empty result: 0 rule releases returned" };
   }
-  const body = res.json as { releases?: unknown[] } | null;
-  const releases = Array.isArray(body?.releases) ? body!.releases : [];
-  const items = releases.map((raw) => {
+  const items = pages.items.map((raw) => {
     const r = raw as Record<string, any>;
     return {
       release: String(r.name ?? "?").split("/").pop(),
@@ -183,13 +280,18 @@ async function checkFirestoreRules(
 
 async function checkAppCheck(deps: EnforcementStateDeps, token: string): Promise<SectionResult> {
   const url = `https://firebaseappcheck.googleapis.com/v1/projects/${deps.project}/services`;
-  const res = await deps.fetchJson(url, token);
-  if (!res.ok) {
-    return { status: "UNAVAILABLE", error: `HTTP ${res.status}: ${res.errorText ?? ""}`.trim() };
-  }
-  const body = res.json as { services?: unknown[] } | null;
-  const services = Array.isArray(body?.services) ? body!.services : [];
-  const items = services.map((raw) => {
+  // Needs the same quota-project header as Firestore Rules and Identity
+  // Toolkit -- confirmed live during this remediation round (a local
+  // `gcloud auth print-access-token` call without it returns the identical
+  // SERVICE_DISABLED/quota-project 403 App Check returns without it).
+  const pages = await fetchAllPages(deps, token, url, "services", {
+    "X-Goog-User-Project": deps.project,
+  });
+  if (!pages.ok) return { status: "UNAVAILABLE", error: pages.error };
+  // Deliberately NOT failing closed on zero services -- see this file's
+  // module header. An empty list is a real, meaningful App Check state for
+  // this project, not evidence the read itself failed.
+  const items = pages.items.map((raw) => {
     const s = raw as Record<string, any>;
     return {
       service: String(s.name ?? "?").split("/").pop(),
@@ -197,7 +299,11 @@ async function checkAppCheck(deps: EnforcementStateDeps, token: string): Promise
       updateTime: s.updateTime ?? "?",
     };
   });
-  return { status: "OK", data: { count: items.length, services: items } };
+  const anyEnforcementOff = items.some((i) => i.enforcementMode === "OFF");
+  return {
+    status: "OK",
+    data: { count: items.length, services: items, anyEnforcementOff },
+  };
 }
 
 /**
@@ -231,7 +337,17 @@ async function checkIdentityToolkit(
   if (!res.ok) {
     return { status: "UNAVAILABLE", error: `HTTP ${res.status}: ${res.errorText ?? ""}`.trim() };
   }
-  const body = (res.json ?? {}) as Record<string, any>;
+  if (res.json === null || typeof res.json !== "object") {
+    return { status: "UNAVAILABLE", error: "malformed response: body is not a JSON object" };
+  }
+  const body = res.json as Record<string, any>;
+  // A real config response always names its own resource; its absence is
+  // the cheapest possible signal that something other than a real config
+  // object came back (an empty `{}`, a differently-shaped error body that
+  // still happened to carry a 2xx status, etc.).
+  if (typeof body.name !== "string" || body.name.length === 0) {
+    return { status: "UNAVAILABLE", error: "malformed response: missing config resource name" };
+  }
   return { status: "OK", data: extractIdentityToolkitState(body) };
 }
 

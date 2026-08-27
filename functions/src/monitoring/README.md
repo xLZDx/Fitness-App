@@ -18,7 +18,7 @@ independently re-verified since Step 9B closed.
 | --- | --- | --- |
 | Stripe reconciliation-failure alert | `DEFINED`/`TESTED` | **LIVE** -- permanent policy active, FA-D1 channel attached and verified, real end-to-end proof (`core/DECISION_LOG.md`, Step 9B closure remediation) |
 | Delete/export operational-failure alert | `DEFINED`/`TESTED`, see audit below | **LIVE** -- same, both permanent policies active with real end-to-end proof |
-| App Check attested-ratio metric | `DEFINED`/`TESTED` | `HOLD` -- blocked on a real (not estimated) incremental-cost figure, see below; not part of Step 9B's activation scope |
+| App Check attested-ratio metric | `DEFINED`/`TESTED` | **LIVE** -- corrected 2026-08-27 (GPT-PM's Step 10A review MINOR: this row wrongly still said `HOLD`, contradicting Step 9B's own logged evidence). `appcheck_attestation` is one of the 5 metrics Step 9B created and live-verified (SHA-256 source==live match, `core/evidence/step9b_live_readback_2026-08-27.json`); the cost-model section below is now historical context for that earlier decision, not the current gating status |
 | AI Gateway metrics (calls, latency, tokens, quota exhaustions) | `DEFINED`/`TESTED` | **LIVE_METRIC_CREATED / NO_PRODUCTION_PRODUCER** -- 4 metrics created in Step 9B without generating synthetic AI traffic; the 4 AI Gateway callables remain undeployed |
 | AI Gateway investigation queries (7, `ai_gateway_definitions.ts`) | `DEFINED`/`TESTED` | `READY_TO_USE` -- plain filter strings, no GCP resource to create |
 | Production canary probe-failure alert | `DEFINED`/`TESTED` | **LIVE** -- `runProductionCanary` deployed and scheduled, permanent policy active with real end-to-end proof |
@@ -143,9 +143,14 @@ today), the backstop silently stops working and only the three-plus-one named
 paths would still fire. Re-verify this specific behavior against the then-
 current `firebase-functions` version at the next major dependency bump.
 
-## App Check attested-ratio metric: cost model
+## App Check attested-ratio metric: cost model (historical -- resolved, metric is now LIVE)
 
-GPT-PM's ruling: a log-based metric DEFINITION may be written now (no CEO
+**Superseded 2026-08-27**: Step 9B's own production activation created this metric live
+(`appcheck_attestation`, one of 5 metrics, SHA-256-verified against source in
+`core/evidence/step9b_live_readback_2026-08-27.json`). The reasoning below is kept for the
+record of how that HOLD was originally justified, not because the HOLD is still in effect.
+
+GPT-PM's original ruling: a log-based metric DEFINITION may be written immediately (no CEO
 decision needed for the definition itself), but creating the live GCP metric
 resource requires either a real incremental-cost figure of $0 within the
 current billing account's existing Monitoring allowance, or a separate
@@ -351,3 +356,56 @@ detectable staleness.
   DEGRADED/FAILED) -- see `core/DECISION_LOG.md` for evidence as each completes. `google-auth-library`
   added as an explicit `functions/package.json` dependency (was already present hoisted via
   `firebase-admin`, pinned at the already-resolved `9.15.1`).
+
+### Step 10A remediation round (2026-08-27, same day)
+
+GPT-PM's review of the first Step 10A submission found 4 real MAJORs and 1 real MINOR, all fixed
+in one batch rather than argued over (`core/DECISION_LOG.md` has the full exchange):
+
+1. **Reachability was being reported as correctness.** `OK` used to mean only "the API call
+   succeeded," not "the returned state is actually what a healthy production should look like." Now
+   `checkFunctions`/`checkFirestoreRules` fail closed (`UNAVAILABLE`) on a genuinely empty result --
+   this project always has deployed functions and a published ruleset, so zero of either is far more
+   likely to be a permission/API regression than reality. App Check is deliberately exempt (zero
+   services is a real, meaningful state here, not an error) but now derives an explicit
+   `anyEnforcementOff` signal from whatever services it does see.
+2. **Malformed HTTP-200 responses used to fail open.** A non-object body, or a list key present but
+   not an array, is now `UNAVAILABLE` with a named reason instead of silently defaulting to an empty
+   list. Identity Toolkit additionally requires its own `name` field to be present -- the cheapest
+   signal that a real config object, not some other 2xx-status body, actually came back.
+3. **Pagination was unhandled.** `fetchAllPages()` now follows every list endpoint's
+   `nextPageToken`, bounded to 20 pages so a malfunctioning API returning a repeating token cannot
+   loop the function forever. Not currently exercised at this project's live scale (no endpoint
+   returns a second page today, confirmed by direct probe before this remediation) but no longer a
+   silent gap if that changes.
+4. **Staleness detection relied entirely on this function's own log/execution.** Added
+   `ENFORCEMENT_STATE_STALENESS_POLICY` (`alert_definitions.ts`) -- a genuinely independent,
+   GCP-native `conditionAbsent` alert on `cloudscheduler.googleapis.com/job/execution_count`, a
+   metric the PLATFORM emits automatically per Scheduler execution regardless of whether this
+   codebase's own code or logging ever runs. Required extending `types.ts` with a
+   `MetricAbsenceAlertPolicySpec`/`toMetricAbsenceAlertPolicyJson()` -- the first non-LogMatch alert
+   condition type in this module. Also added per-request timeouts (`REQUEST_TIMEOUT_MS = 20_000`,
+   via `AbortSignal.timeout`) well under the function's own 60s platform timeout, so one hung
+   request can no longer silently consume the whole budget.
+5. **MINOR, self-contradicting evidence**: this file's own status table said the App Check metric
+   was still `HOLD` after Step 9B had already created and live-verified it -- fixed, see the table
+   above and the cost-model section's new "superseded" note.
+
+Found independently during this remediation, not one of GPT-PM's 5 named findings: a direct curl
+probe against `firebaseappcheck.googleapis.com` (same `SERVICE_DISABLED`/quota-project 403 pattern
+already known from Identity Toolkit and Firestore Rules) showed `checkAppCheck()` was the one
+section missing the `X-Goog-User-Project` header. Fixed, with a dedicated regression test.
+
+The Scheduler job ID `ENFORCEMENT_STATE_STALENESS_POLICY` filters on
+(`firebase-schedule-runEnforcementStateCheck-europe-west1`) follows Firebase's documented naming
+convention but is **not yet independently confirmed against a live deployment** -- this function has
+not been deployed yet. Verify via `gcloud scheduler jobs list` once it is, same live-check
+discipline every other identity in this file received before being treated as proven.
+
+Also caught during verification (not a GPT-PM finding, a real bug in the new pagination test
+itself): the four sections run concurrently (`Promise.all`), so their first-page `fetchJson` calls
+interleave before any of them resolves -- a positional `mockResolvedValueOnce` chain, which every
+other test in this file relies on safely because each section made exactly one call, silently broke
+once the Functions section could make two. `npm run build` was clean but `npx jest` caught it
+immediately (count 1 instead of 2). Rewritten to dispatch on the request URL instead of call order,
+which is stable regardless of interleaving; full suite reconfirmed green (489/489) afterward.
