@@ -27067,3 +27067,56 @@ hand-authored, so it cannot go stale the same way.
 
 This is, structurally, the correct terminal statement: the actual full-gate range, computed after
 this commit lands, is recorded here rather than inside the report.
+
+## MVP1.G2 closed end-to-end; MVP1.G3 opened (OBS-1: Continuous Reliability Guardrails)
+
+GPT-PM confirmed G2 fully closed, `--final=true`: technical implementation, Rosetta plan, and
+`pm_set_gate` all PASSED. Canonical external closure per GPT-PM's own words: base `c55877c`,
+terminal HEAD `1a8bf816ce7c1bd976ed4143d57d3761fbd64527`, range `c55877c..1a8bf81` = 10 commits, 7
+unique paths. `pm_set_gate(Fitness_App, MVP1.G2, passed)` recorded.
+
+Per the standing autonomous mandate and PM Bridge orchestrator mode ("a report is a checkpoint, not
+a stopping point" -- CLAUDE.md Sec18), continued directly to MVP1.G3 rather than stopping. Checked
+`pm_gate_status` first: no MVP1.G3-G8 definition existed anywhere in this project's gate history --
+confirmed this before assuming anything from the informal "SPTR_GATE_MAP G1-G8" phrasing in this
+session's own opening instruction (`core/DECISION_LOG.md` ~line 25199), which turns out not to
+correspond to any actual file in the repo. Asked GPT-PM fresh for G3's scope rather than guessing,
+per the explicit lesson from G2 (a carried-over prior-session summary about G2's scope had also
+turned out wrong, per MVP1.G1's own closing note).
+
+**GPT-PM's answer: MVP1.G3 = OBS-1 (Continuous Reliability Guardrails), the 13-item observability
+gate already designed in `core/MASTER_PLAN_2026-08-26.md` Sec8**, re-baselined for G1's closure.
+Verified GPT-PM's two load-bearing factual claims independently before accepting the scope (CLAUDE.md
+Sec3): (1) OBS-1 exists in the master plan and is sequenced immediately after targetSdk -- confirmed,
+`MASTER_PLAN_2026-08-26.md:6,132,158`. (2) The pre-G1 premise for old item 9 (client-direct Gemini
+calls) is now stale -- confirmed live: `gemini_equipment_service.dart` routes through
+`aiEquipmentRecognition` via `httpsCallable`, no `FirebaseAI.googleAI()`/`GenerativeModel(` call
+sites remain anywhere in `mobile/lib/`. Also independently confirmed the CANONICAL_MACHINES
+duplication GPT-PM cited for item 10's re-base: `functions/src/ai_equipment_recognition.ts:67`
+exports it server-side.
+
+Opened Rosetta plan `Fitness_App-2026-08-27T00-46-51-806Z-3135e2` (hash
+`d39fd2e21d3926ff0ed770150ea945ec0020ea7644b1b0cd5596cac3f045b8c4`, base `1a8bf816`), printed in
+full to the session per Rosetta's transparency requirement, 12 steps mirroring GPT-PM's scope
+exactly: re-baseline, 7 [CI] items, 2 [RUNTIME] steps (prerequisites then monitors), final
+validation, bilingual closure. Asked GPT-PM for the batch-level and per-step Definition of Done
+before requesting GO, per Rosetta's "ask for a DoD, do not write your own" rule -- GPT-PM returned
+an extensive, genuinely binding DoD per step (positive+negative proof for every CI check;
+failure-injected-to-alert-delivered proof for every runtime monitor; explicit REJECT conditions per
+item, e.g. item 8 must not decide the 360 untagged rows' clinical disposition, item 4 must not add a
+third manually-maintained equipment list, item 7's translation baseline must be expiry-dated not
+permanent). Confirmed the proposed execution sequencing (CI items first, self-contained; then
+runtime prerequisites; then monitors) as acceptable. `GO: AUTHORIZED`, `PUSH: AUTHORIZED under the
+standing Gate policy`. `pm_rosetta_go` called, bound against the exact hash above.
+
+**Step 0 (OBS-1 re-baseline evidence ledger): complete.** Full 13-item table in
+`core/OBS1_G3_REBASELINE_2026-08-27.md`, every item independently re-verified against current HEAD
+(not accepted from the master plan's own text), via 3 parallel Explore-agent sweeps plus one direct
+check (item 5). Summary: 2 items STALE/REPLACED (9, 10 -- both premised on pre-G1 architecture), 3
+PARTIAL-unproven (2, 8, 12 -- underlying mechanism already sound but no positive+negative proof
+exists yet), 2 PARTIAL-incomplete (3, 5 -- real infra exists, doesn't cover full stated scope), 6
+OPEN/genuinely absent (1, 4, 6, 7, 11, 13). No item accepted on the master plan's word alone -- every
+row cites current file:line evidence, matching Step 0's own reject condition.
+
+Proceeding directly to the 7 [CI] items per the approved sequencing, no interim stop required per
+GPT-PM's explicit "progress updates are informational, not approval gates" instruction.
