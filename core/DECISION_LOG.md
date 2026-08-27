@@ -27549,4 +27549,13 @@ ruling, Step 8's design/investigation/reversible-infrastructure-prep work contin
 (this entry and the design doc above ARE that work), but Step 8 cannot be marked fully DONE, and no
 production alert policy may be bound to a human recipient, until this is explicitly confirmed.
 Escalating to the operator directly now (CLAUDE.md Sec4: this is a human on-call obligation, not a
-routine technical call GPT-PM or I can settle alone).
+routine technical call GPT-PM or I can settle alone). Logged as `pm_log_decision` `FA-D1` (PENDING)
+and surfaced via a direct push notification, per CLAUDE.md Sec16's escalation format -- recommendation
+stated, GPT-PM's consensus/refusal-to-infer quoted, explicit accept/reject ask.
+
+**Continued with the reversible infrastructure-prep GPT-PM did explicitly authorize** (its own GO
+names "Scheduler/API readiness" alongside investigation/design/repository work): enabled the Cloud
+Scheduler API on `fitness-app-korostelev` (`gcloud services enable cloudscheduler.googleapis.com`),
+confirmed via a follow-up `gcloud services list --enabled | grep cloudscheduler`. This is reversible,
+costs nothing by itself (no jobs created yet), and does not bind any alert to a human recipient --
+it stays cleanly on the authorized side of GPT-PM's HOLD boundary.

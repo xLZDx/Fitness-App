@@ -39,7 +39,7 @@ billing account (`019944-23376A-5C1743`):
 
 | project | Scheduler API enabled | jobs (any region checked) |
 |---|---|---|
-| `fitness-app-korostelev` | No (confirmed via `gcloud services list`) | 0 |
+| `fitness-app-korostelev` | Was No; **enabled 2026-08-27** (`gcloud services enable cloudscheduler.googleapis.com`, per GPT-PM's explicit "Scheduler/API readiness" GO -- reversible, zero cost, does not bind any alert to a human recipient) | 0 |
 | `traidingbot-b4061` | No | 0 |
 | `trading-bot-496818` | No | 0 |
 | `erp-moldova-staging-20260819` | Yes | 0 (checked `us-central1`) |
