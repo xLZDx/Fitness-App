@@ -29149,3 +29149,204 @@ temporary left over:
 **MVP1.G3 Step 9B production activation is complete.** Closing the Rosetta plan next and sending the
 full evidence bundle to GPT-PM for its adversarial closure review, per the plan's own closing
 instruction.
+
+---
+
+## Step 9B closure remediation round (2026-08-27)
+
+GPT-PM's adversarial closure review returned two MAJOR findings against the "complete" claim above.
+Verdict was not APPROVE. Findings, verbatim substance:
+
+1. Live-readback verification of the 5 metrics + 4 alert policies was never actually performed --
+   the plan asserted the deployed resources matched source, without checking.
+2. The 3 permanent business-failure policies (`stripe_reconciliation_failure`,
+   `delete_account_failure`, `export_account_failure`) were never proven end-to-end. Only a filter
+   match was ever shown for the canary policy; no synthetic proof existed for the other three, and
+   the only confirmed real email delivery was from the TEMPORARY delivery-proof policy (deleted),
+   never from a permanent one.
+
+GPT-PM's own stated remediation requirement, quoted directly: "Capture proofId, log
+timestamp/insertId, permanent policy ID/name, and either a Cloud Monitoring incident proof or
+received email identifying that permanent policy," plus, for the canary policy specifically, "emit
+a new positive proof and obtain an actual notification/incident whose policy name is Production
+canary probe failure, not the temporary policy." GPT-PM scoped its own re-review narrowly: "I will
+review only these findings and direct regressions -- no reopening of the already-closed Step 9B
+implementation." No code changes were made in this round -- this is a pure verification/evidence
+round against the already-committed `cea0198` implementation.
+
+### Part A -- live-readback verification (finding 1)
+
+Script: `verify_live_defs.js` (scratchpad, not committed to the repo -- a diagnostic tool, not a
+project artifact). For each of the 5 `gcloud logging metrics describe` and 4
+`gcloud alpha monitoring policies describe` results, deep-compared the live JSON against the
+compiled source definitions (`functions/lib/monitoring/alert_definitions.js`,
+`functions/lib/monitoring/ai_gateway_definitions.js`), after two justified normalizations:
+
+- `metricDescriptor.labels[].valueType`: proto3 omits a zero-value enum from JSON output.
+  `google.api.LabelDescriptor.ValueType.STRING = 0` is therefore absent on the wire, not a
+  mismatch -- defaulted missing `valueType` to `"STRING"` on the live side before comparing.
+- Label array order: not semantically meaningful on either metrics or policies (the actual
+  key -> extraction mapping is `labelExtractors`, compared separately and found identical
+  unsorted); sorted both sides by `key` before comparing so a harmless reorder doesn't read as a
+  diff.
+
+Server-only fields excluded from comparison as expected additions, not omissions: `name`
+(full resource path), `createTime`, `metricDescriptor.name/type/unit/monitoredResourceTypes/metadata`
+on metrics; all `condition.conditionMatchedLog` fields except `filter` and all
+`alertStrategy` fields except `notificationRateLimit`/`autoClose`/`notificationPrompts` on policies
+(server assigns condition names and default strategy scaffolding not present in source).
+
+Result -- all 9 resources: **MATCH, zero diffs** after normalization.
+
+```
+appcheck_attestation: MATCH
+ai_gateway_calls: MATCH
+ai_gateway_latency_ms: MATCH
+ai_gateway_total_tokens_per_call: MATCH
+ai_gateway_quota_exhaustions: MATCH
+stripe_reconciliation_failure (6432583742343399434): MATCH -- enabled:true, FA-D1 channel attached
+delete_account_failure (1018850201032278331): MATCH -- enabled:true, FA-D1 channel attached
+export_account_failure (11269446106306914871): MATCH -- enabled:true, FA-D1 channel attached
+canary_probe_failure (13193555522289224138): MATCH -- enabled:true, FA-D1 channel attached
+```
+
+Full raw output saved to `D:/Temp/claude/d--Repo/61e7dfec-d8b3-4a63-a048-387194650f47/scratchpad/live_defs_verification.txt`
+(session scratchpad -- ephemeral, not a repo artifact; this log entry is the durable record).
+
+### Part B -- per-policy negative/positive proof, all 4 permanent policies (finding 2)
+
+Real Cloud Run revision names retrieved via `gcloud run revisions list` (not guessed):
+`stripewebhook-00004-wiw`, `deleteaccount-00002-fac`, `exportaccountdata-00001-kag`,
+`runproductioncanary-00001-pec`.
+
+7 synthetic entries written to log `fa-d1-policy-proof` via `gcloud logging write`, each carrying
+real `cloud_run_revision` monitored-resource labels (`service_name`, `location=europe-west1`,
+`project_id=fitness-app-korostelev`, `configuration_name`, `revision_name`) matching an actual
+deployed service/revision -- no service was actually invoked. Every payload self-marked
+`"synthetic": true` with an explanatory `"purpose"` string and a unique `proofId`. 3 negative
+entries used a real-shaped but non-matching message (the sibling "this operation succeeded" log
+line each function actually emits); 4 positive entries used the exact `messageEquals` string each
+policy's filter requires.
+
+Before relying on real-world delivery, each (service, message) pair was independently checked
+against the compiled `matchesLogMatchFilter()` function from the project's own filter-definition
+code (not hand-reasoned) -- all 7 matched/did-not-match exactly as intended:
+
+| policy | kind | proofId | insertId | timestamp (UTC) | filter match (predicted) |
+|---|---|---|---|---|---|
+| stripe_reconciliation_failure | negative | proof-stripe-negative-2026-08-27 | jzfcccf93z05g | 2026-08-27T15:22:11.529Z | false (correct) |
+| stripe_reconciliation_failure | positive | proof-stripe-positive-2026-08-27 | chj9j1f7k48rz | 2026-08-27T15:22:22.212Z | true (correct) |
+| delete_account_failure | negative | proof-deleteaccount-negative-2026-08-27 | i3bwdtfaqdlyr | 2026-08-27T15:22:32.895Z | false (correct) |
+| delete_account_failure | positive | proof-deleteaccount-positive-2026-08-27 | 12c0jmjf9sxbqd | 2026-08-27T15:22:43.475Z | true (correct) |
+| export_account_failure | negative | proof-exportaccount-negative-2026-08-27 | ptnqrxf9pmolc | 2026-08-27T15:22:54.980Z | false (correct) |
+| export_account_failure | positive | proof-exportaccount-positive-2026-08-27 | m73urqf9okl4r | 2026-08-27T15:23:05.881Z | true (correct) |
+| canary_probe_failure | positive (fresh, verified channel) | proof-canary-positive-verified-channel-2026-08-27 | 17vmg1lfamiwb1 | 2026-08-27T15:23:16.356Z | true (correct) |
+
+All 7 timestamp/insertId pairs independently confirmed present via
+`gcloud logging read 'logName="projects/fitness-app-korostelev/logs/fa-d1-policy-proof"'`.
+
+**Real-world delivery confirmation** -- operator checked the destination inbox
+(korostelevivan@gmail.com, the verified FA-D1 channel) and supplied a screenshot of the actual
+Gmail inbox filtered on "Google Cloud Monitoring", showing four distinct alert emails, each from
+"Google Cloud Alerti." and each naming its own permanent policy:
+
+- `[ALERT - No severity] Production canary probe failure for Cloud Run Revision with {configuration_name=runproductioncanary, location=europe-west1, project_id=fitness-app-korostelev, revision_nam...}` -- 6:23PM (local) -- matches the fresh canary positive proof, and is **explicitly distinct from** the earlier `[ALERT - No severity] TEMPORARY -- FA-D1 delivery proof (delete after use)` email (6:06PM, from the deleted temporary policy, retained in the inbox as history but not evidence for this finding).
+- `[ALERT - No severity] exportAccountData operational failure for Cloud Run Revision with {configuration_name=exportaccountdata, location=europe-west1, project_id=fitness-app-korostelev, revision_...}` -- 6:23PM -- matches the export_account_failure positive proof.
+- `[ALERT - No severity] Stripe duplicate-subscription reconciliation failure for Cloud Run Revision with {configuration_name=stripewebhook, location=europe-west1, project_id=fitness-app-korostelev, re...}` -- 6:22PM -- matches the stripe_reconciliation_failure positive proof.
+- `[ALERT - No severity] deleteAccount operational failure for Cloud Run Revision with {configuration_name=deleteaccount, location=europe-west1, project_id=fitness-app-korostelev, revision_name=del...}` -- 6:23PM -- matches the delete_account_failure positive proof.
+
+No email exists for any of the 3 negative proofs (stripe/deleteAccount/exportAccountData negative
+entries, 6:22PM window) -- consistent with the predicted `false` filter match for each, and
+confirming the policies do not fire on the normal-operation sibling log lines.
+
+**Conclusion**: all 4 permanent AlertPolicy resources are now proven end-to-end -- real Cloud
+Logging entry, carrying real Cloud Run resource labels, correctly not matching a negative sibling
+and correctly matching (and producing a real, distinctly-named, delivered notification for) a
+positive synthetic failure signal. Both of GPT-PM's closure-review MAJORs are remediated with
+durable evidence. Sending this evidence back to GPT-PM via `gpt_send_and_await` for its promised
+narrow re-review (findings 1 and 2, plus any direct regression from this remediation -- not a
+reopening of the underlying Step 9B implementation).
+
+---
+
+## Step 9B closure remediation, round 2 (2026-08-27, same day)
+
+Sent the round-1 remediation (above) to GPT-PM via `review.js --uncommitted`. Verdict: **MAJOR**,
+two new findings, both accepted without argument -- both real, both cheap to fix, remediated in
+one batch rather than argued over:
+
+1. The live-readback MATCH result (Part A) was asserted in `DECISION_LOG.md` but the underlying
+   comparison output existed only in the session scratchpad -- described in the entry itself as
+   "ephemeral, not a repository artifact." A later reader of the durable record could not
+   independently verify the MATCH claim; a bug in the comparison script, a wrong input file, or
+   stale `gcloud describe` output could have produced the same nine `MATCH` lines with no way to
+   tell the difference after the scratchpad disappeared.
+2. The three business-policy negative/positive pairs (Part B) were temporally too close (~10-11s
+   apart: stripe 15:22:11.529Z -> 15:22:22.212Z, delete 15:22:32.895Z -> 15:22:43.475Z, export
+   15:22:54.980Z -> 15:23:05.881Z) relative to the policies' own `notificationRateLimitPeriod =
+   "300s"`. GPT-PM's point, verified as logically sound: if a negative had unexpectedly matched
+   (contrary to the code-level `matchesLogMatchFilter()` check already run), the resulting incident
+   could have opened first and the positive's own notification could have been rate-limited/
+   coalesced into that same window -- the single observed email per policy could not, from minute-
+   level inbox timestamps alone, be conclusively attributed to the positive rather than the
+   negative. GPT-PM explicitly did not reopen the positive half of this finding (four fresh
+   positives against real Cloud Run labels, four distinctly-named delivered emails including
+   "Production canary probe failure" distinct from the deleted temporary policy) -- only the
+   negative side needed re-proof with genuine temporal isolation.
+
+**Remediation, finding 1** -- `verify_live_defs.js`'s logic was re-run as `dump_evidence.js`, adding
+canonical (key-sorted) JSON serialization and SHA-256 hashing of both the source and live definition
+for each of the 9 resources, and writing the full result -- canonical source JSON, canonical live
+JSON, both hashes, the exact normalization list applied, per-resource diff count -- to a committed
+repo artifact: `core/evidence/step9b_live_readback_2026-08-27.json`. Re-run independently (not a
+copy of the earlier scratchpad run) against live GCP state at re-verification time. Result,
+unchanged from round 1 but now durably re-provable by any future reader without re-running gcloud:
+
+| resource | source SHA-256 (first 12) | live SHA-256 (first 12) | match |
+|---|---|---|---|
+| appcheck_attestation | a9308769bd5e | a9308769bd5e | yes |
+| ai_gateway_calls | 2c080d812d7e | 2c080d812d7e | yes |
+| ai_gateway_latency_ms | 9e8281739cd9 | 9e8281739cd9 | yes |
+| ai_gateway_total_tokens_per_call | 02cd2ab864d5 | 02cd2ab864d5 | yes |
+| ai_gateway_quota_exhaustions | 517a476e1aa1 | 517a476e1aa1 | yes |
+| stripe_reconciliation_failure (6432583742343399434) | 4a9285483490 | 4a9285483490 | yes |
+| delete_account_failure (1018850201032278331) | b02ca8840019 | b02ca8840019 | yes |
+| export_account_failure (11269446106306914871) | e4eb7fd13abd | e4eb7fd13abd | yes |
+| canary_probe_failure (13193555522289224138) | 1a16ce0cdef8 | 1a16ce0cdef8 | yes |
+
+Identical source/live hash per resource is, by construction, a zero-diff result -- stronger than
+the round-1 "MATCH" text claim because a future reader can recompute or directly inspect the
+canonical JSON committed in the evidence file, not just trust a log line.
+
+**Remediation, finding 2** -- re-ran only the 3 business-policy negative proofs, this time with
+genuine temporal isolation and no paired positive emitted anywhere near the rate-limit window:
+
+| policy | proofId | insertId | timestamp (UTC) |
+|---|---|---|---|
+| stripe_reconciliation_failure | proof-stripe-negative-ISOLATED-2026-08-27 | 1lqpiqpf9zyo89 | 2026-08-27T15:40:05.242853098Z |
+| delete_account_failure | proof-deleteaccount-negative-ISOLATED-2026-08-27 | xb0xzbf9mc1mm | 2026-08-27T15:40:11.974126628Z |
+| export_account_failure | proof-exportaccount-negative-ISOLATED-2026-08-27 | 1io7338fa82v90 | 2026-08-27T15:40:19.100065211Z |
+
+Same real Cloud Run resource labels as the round-1 proofs (`stripewebhook-00004-wiw`,
+`deleteaccount-00002-fac`, `exportaccountdata-00001-kag`), same synthetic self-marking. No positive
+was emitted for any of these three policies during or after this window -- the round-1 positive
+proofs and their four confirmed emails stand as already-sufficient evidence for the positive half
+(per GPT-PM's own scoping).
+
+Waited 360s (`sleep 360` in background, exit 0 at completion) from the session's side -- past the
+300s `notificationRateLimitPeriod` measured from the latest (15:40:19.100Z) of the three isolated
+writes, giving >40s margin. Independently confirmed via `gcloud logging read` on
+`resource.type="cloud_run_revision"` filtered to the three service names, `--freshness=10m`, run
+after the wait completed: **zero additional log entries** beyond the three isolated writes
+themselves -- no application traffic, no incidental activity that could confound the result.
+Operator then checked the destination inbox (korostelevivan@gmail.com) after the wait and confirmed
+verbatim: **"ничего не пришло"** (nothing arrived) -- no new Google Cloud Monitoring email appeared
+after the four confirmed positive-proof emails from round 1 (~18:22-18:23 local time).
+
+**Conclusion**: the three business-policy negative proofs are now proven quiet under genuine
+temporal isolation (>300s clear window, independently confirmed both via Cloud Logging absence and
+real inbox absence), removing the rate-limit-coalescing confound GPT-PM identified. Combined with
+the already-solid positive proofs from round 1 and the code-level `matchesLogMatchFilter()`
+pre-check, all 4 permanent policies' negative/positive behavior is now proven end-to-end without any
+remaining ambiguity GPT-PM raised. Both round-1-remediation MAJORs are closed with durable evidence.
+Sending this round-2 evidence back to GPT-PM via `gpt_send_and_await` for its narrow re-review.

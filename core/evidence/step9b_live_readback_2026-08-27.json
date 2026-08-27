@@ -1,0 +1,640 @@
+{
+  "generatedAt": "2026-08-27",
+  "project": "fitness-app-korostelev",
+  "metrics": {
+    "appcheck_attestation": {
+      "sourceCanonicalSha256": "a9308769bd5e996e64d60100d0a5f46b2a6937343262d61615a39b08e615cade",
+      "liveCanonicalSha256": "a9308769bd5e996e64d60100d0a5f46b2a6937343262d61615a39b08e615cade",
+      "sourceCanonicalJson": {
+        "description": "Count of callable invocations by function and whether the call carried a verified App Check token. attested-ratio = sum(attested=true) / sum(all), grouped by fn.",
+        "filter": "jsonPayload.message=\"appcheck\" AND (jsonPayload.fn=\"aiCoachAdvice\" OR jsonPayload.fn=\"aiEquipmentRecognition\" OR jsonPayload.fn=\"aiExerciseGeneration\" OR jsonPayload.fn=\"aiMachineDescription\" OR jsonPayload.fn=\"bookCoachSession\" OR jsonPayload.fn=\"clipUrl\" OR jsonPayload.fn=\"clipUrls\" OR jsonPayload.fn=\"createCheckoutSession\" OR jsonPayload.fn=\"createPortalSession\" OR jsonPayload.fn=\"deleteAccount\" OR jsonPayload.fn=\"exportAccountData\" OR jsonPayload.fn=\"generateAnnualReceipt\" OR jsonPayload.fn=\"optInDonorWall\" OR jsonPayload.fn=\"optOutDonorWall\" OR jsonPayload.fn=\"reportEquipment\" OR jsonPayload.fn=\"startCoachOnboarding\" OR jsonPayload.fn=\"startFreeTrial\") AND (jsonPayload.attested=true OR jsonPayload.attested=false)",
+        "metricDescriptor": {
+          "metricKind": "DELTA",
+          "valueType": "INT64",
+          "labels": [
+            {
+              "key": "attested",
+              "valueType": "BOOL",
+              "description": "Whether the call carried a verified App Check token."
+            },
+            {
+              "key": "fn",
+              "valueType": "STRING",
+              "description": "Which callable this attestation measurement is for."
+            }
+          ]
+        },
+        "labelExtractors": {
+          "fn": "EXTRACT(jsonPayload.fn)",
+          "attested": "EXTRACT(jsonPayload.attested)"
+        }
+      },
+      "liveCanonicalJson": {
+        "description": "Count of callable invocations by function and whether the call carried a verified App Check token. attested-ratio = sum(attested=true) / sum(all), grouped by fn.",
+        "filter": "jsonPayload.message=\"appcheck\" AND (jsonPayload.fn=\"aiCoachAdvice\" OR jsonPayload.fn=\"aiEquipmentRecognition\" OR jsonPayload.fn=\"aiExerciseGeneration\" OR jsonPayload.fn=\"aiMachineDescription\" OR jsonPayload.fn=\"bookCoachSession\" OR jsonPayload.fn=\"clipUrl\" OR jsonPayload.fn=\"clipUrls\" OR jsonPayload.fn=\"createCheckoutSession\" OR jsonPayload.fn=\"createPortalSession\" OR jsonPayload.fn=\"deleteAccount\" OR jsonPayload.fn=\"exportAccountData\" OR jsonPayload.fn=\"generateAnnualReceipt\" OR jsonPayload.fn=\"optInDonorWall\" OR jsonPayload.fn=\"optOutDonorWall\" OR jsonPayload.fn=\"reportEquipment\" OR jsonPayload.fn=\"startCoachOnboarding\" OR jsonPayload.fn=\"startFreeTrial\") AND (jsonPayload.attested=true OR jsonPayload.attested=false)",
+        "metricDescriptor": {
+          "metricKind": "DELTA",
+          "valueType": "INT64",
+          "labels": [
+            {
+              "key": "attested",
+              "valueType": "BOOL",
+              "description": "Whether the call carried a verified App Check token."
+            },
+            {
+              "key": "fn",
+              "valueType": "STRING",
+              "description": "Which callable this attestation measurement is for."
+            }
+          ]
+        },
+        "labelExtractors": {
+          "attested": "EXTRACT(jsonPayload.attested)",
+          "fn": "EXTRACT(jsonPayload.fn)"
+        }
+      },
+      "normalizationApplied": [
+        "excluded server-only fields: name, createTime, metricDescriptor.{name,type,unit,monitoredResourceTypes,metadata}",
+        "metricDescriptor.labels[].valueType defaulted to STRING when absent (proto3 zero-value enum omission)",
+        "metricDescriptor.labels[] sorted by key (order not semantically meaningful; labelExtractors is the real key->extraction mapping and is compared unsorted)"
+      ],
+      "diffCount": 0,
+      "diffs": [],
+      "match": true
+    },
+    "ai_gateway_calls": {
+      "sourceCanonicalSha256": "2c080d812d7e927996c557b4e4daf805d04674bd6a3edc01a37954748073ef4d",
+      "liveCanonicalSha256": "2c080d812d7e927996c557b4e4daf805d04674bd6a3edc01a37954748073ef4d",
+      "sourceCanonicalJson": {
+        "description": "Count of AI Gateway calls by operation and outcome. Source for request rate, success rate, error rate, and timeout rate -- no threshold chosen here.",
+        "filter": "jsonPayload.message=\"ai_gateway: call\" AND (jsonPayload.operation=\"aiCoachAdvice\" OR jsonPayload.operation=\"aiEquipmentRecognition\" OR jsonPayload.operation=\"aiMachineDescription\" OR jsonPayload.operation=\"aiExerciseGeneration\") AND (jsonPayload.outcome=\"success\" OR jsonPayload.outcome=\"timeout\" OR jsonPayload.outcome=\"error\")",
+        "metricDescriptor": {
+          "metricKind": "DELTA",
+          "valueType": "INT64",
+          "labels": [
+            {
+              "key": "operation",
+              "valueType": "STRING",
+              "description": "Which of the four AI Gateway surfaces made the call."
+            },
+            {
+              "key": "outcome",
+              "valueType": "STRING",
+              "description": "\"success\", \"timeout\", or \"error\"."
+            }
+          ]
+        },
+        "labelExtractors": {
+          "operation": "EXTRACT(jsonPayload.operation)",
+          "outcome": "EXTRACT(jsonPayload.outcome)"
+        }
+      },
+      "liveCanonicalJson": {
+        "description": "Count of AI Gateway calls by operation and outcome. Source for request rate, success rate, error rate, and timeout rate -- no threshold chosen here.",
+        "filter": "jsonPayload.message=\"ai_gateway: call\" AND (jsonPayload.operation=\"aiCoachAdvice\" OR jsonPayload.operation=\"aiEquipmentRecognition\" OR jsonPayload.operation=\"aiMachineDescription\" OR jsonPayload.operation=\"aiExerciseGeneration\") AND (jsonPayload.outcome=\"success\" OR jsonPayload.outcome=\"timeout\" OR jsonPayload.outcome=\"error\")",
+        "metricDescriptor": {
+          "metricKind": "DELTA",
+          "valueType": "INT64",
+          "labels": [
+            {
+              "key": "operation",
+              "valueType": "STRING",
+              "description": "Which of the four AI Gateway surfaces made the call."
+            },
+            {
+              "key": "outcome",
+              "valueType": "STRING",
+              "description": "\"success\", \"timeout\", or \"error\"."
+            }
+          ]
+        },
+        "labelExtractors": {
+          "operation": "EXTRACT(jsonPayload.operation)",
+          "outcome": "EXTRACT(jsonPayload.outcome)"
+        }
+      },
+      "normalizationApplied": [
+        "excluded server-only fields: name, createTime, metricDescriptor.{name,type,unit,monitoredResourceTypes,metadata}",
+        "metricDescriptor.labels[].valueType defaulted to STRING when absent (proto3 zero-value enum omission)",
+        "metricDescriptor.labels[] sorted by key (order not semantically meaningful; labelExtractors is the real key->extraction mapping and is compared unsorted)"
+      ],
+      "diffCount": 0,
+      "diffs": [],
+      "match": true
+    },
+    "ai_gateway_latency_ms": {
+      "sourceCanonicalSha256": "9e8281739cd93210253608afdec70b78048afc316231f5747fee1629d606d14a",
+      "liveCanonicalSha256": "9e8281739cd93210253608afdec70b78048afc316231f5747fee1629d606d14a",
+      "sourceCanonicalJson": {
+        "description": "Distribution of AI Gateway call latency (ms) by operation and outcome. Bucket boundaries are centered on this codebase's own configured per-operation timeouts (20s/25s/45s).",
+        "filter": "jsonPayload.message=\"ai_gateway: call\" AND (jsonPayload.operation=\"aiCoachAdvice\" OR jsonPayload.operation=\"aiEquipmentRecognition\" OR jsonPayload.operation=\"aiMachineDescription\" OR jsonPayload.operation=\"aiExerciseGeneration\") AND (jsonPayload.outcome=\"success\" OR jsonPayload.outcome=\"timeout\" OR jsonPayload.outcome=\"error\")",
+        "metricDescriptor": {
+          "metricKind": "DELTA",
+          "valueType": "DISTRIBUTION",
+          "labels": [
+            {
+              "key": "operation",
+              "valueType": "STRING",
+              "description": "Which of the four AI Gateway surfaces made the call."
+            },
+            {
+              "key": "outcome",
+              "valueType": "STRING",
+              "description": "\"success\", \"timeout\", or \"error\"."
+            }
+          ]
+        },
+        "labelExtractors": {
+          "operation": "EXTRACT(jsonPayload.operation)",
+          "outcome": "EXTRACT(jsonPayload.outcome)"
+        },
+        "valueExtractor": "EXTRACT(jsonPayload.latencyMs)",
+        "bucketOptions": {
+          "explicitBuckets": {
+            "bounds": [
+              100,
+              250,
+              500,
+              1000,
+              2000,
+              3000,
+              5000,
+              8000,
+              12000,
+              16000,
+              20000,
+              22000,
+              25000,
+              28000,
+              32000,
+              36000,
+              40000,
+              45000,
+              50000,
+              60000,
+              90000
+            ]
+          }
+        }
+      },
+      "liveCanonicalJson": {
+        "description": "Distribution of AI Gateway call latency (ms) by operation and outcome. Bucket boundaries are centered on this codebase's own configured per-operation timeouts (20s/25s/45s).",
+        "filter": "jsonPayload.message=\"ai_gateway: call\" AND (jsonPayload.operation=\"aiCoachAdvice\" OR jsonPayload.operation=\"aiEquipmentRecognition\" OR jsonPayload.operation=\"aiMachineDescription\" OR jsonPayload.operation=\"aiExerciseGeneration\") AND (jsonPayload.outcome=\"success\" OR jsonPayload.outcome=\"timeout\" OR jsonPayload.outcome=\"error\")",
+        "metricDescriptor": {
+          "metricKind": "DELTA",
+          "valueType": "DISTRIBUTION",
+          "labels": [
+            {
+              "key": "operation",
+              "valueType": "STRING",
+              "description": "Which of the four AI Gateway surfaces made the call."
+            },
+            {
+              "key": "outcome",
+              "valueType": "STRING",
+              "description": "\"success\", \"timeout\", or \"error\"."
+            }
+          ]
+        },
+        "labelExtractors": {
+          "operation": "EXTRACT(jsonPayload.operation)",
+          "outcome": "EXTRACT(jsonPayload.outcome)"
+        },
+        "valueExtractor": "EXTRACT(jsonPayload.latencyMs)",
+        "bucketOptions": {
+          "explicitBuckets": {
+            "bounds": [
+              100,
+              250,
+              500,
+              1000,
+              2000,
+              3000,
+              5000,
+              8000,
+              12000,
+              16000,
+              20000,
+              22000,
+              25000,
+              28000,
+              32000,
+              36000,
+              40000,
+              45000,
+              50000,
+              60000,
+              90000
+            ]
+          }
+        }
+      },
+      "normalizationApplied": [
+        "excluded server-only fields: name, createTime, metricDescriptor.{name,type,unit,monitoredResourceTypes,metadata}",
+        "metricDescriptor.labels[].valueType defaulted to STRING when absent (proto3 zero-value enum omission)",
+        "metricDescriptor.labels[] sorted by key (order not semantically meaningful; labelExtractors is the real key->extraction mapping and is compared unsorted)"
+      ],
+      "diffCount": 0,
+      "diffs": [],
+      "match": true
+    },
+    "ai_gateway_total_tokens_per_call": {
+      "sourceCanonicalSha256": "02cd2ab864d598309a4f893e090a369f73b3f14430438878c37d7c2389d3c2bd",
+      "liveCanonicalSha256": "02cd2ab864d598309a4f893e090a369f73b3f14430438878c37d7c2389d3c2bd",
+      "sourceCanonicalJson": {
+        "description": "Distribution of total token usage per AI Gateway call (prompt + candidates + thoughts), by operation and outcome. Includes usage-bearing error/timeout events -- tokens can be spent on a call that ultimately fails. Absence of usage data (no field present) means unavailable, not zero, and is excluded via the existence check.",
+        "filter": "jsonPayload.message=\"ai_gateway: call\" AND (jsonPayload.operation=\"aiCoachAdvice\" OR jsonPayload.operation=\"aiEquipmentRecognition\" OR jsonPayload.operation=\"aiMachineDescription\" OR jsonPayload.operation=\"aiExerciseGeneration\") AND (jsonPayload.outcome=\"success\" OR jsonPayload.outcome=\"timeout\" OR jsonPayload.outcome=\"error\") AND jsonPayload.totalTokenCount:*",
+        "metricDescriptor": {
+          "metricKind": "DELTA",
+          "valueType": "DISTRIBUTION",
+          "labels": [
+            {
+              "key": "operation",
+              "valueType": "STRING",
+              "description": "Which of the four AI Gateway surfaces made the call."
+            },
+            {
+              "key": "outcome",
+              "valueType": "STRING",
+              "description": "\"success\", \"timeout\", or \"error\"."
+            }
+          ]
+        },
+        "labelExtractors": {
+          "operation": "EXTRACT(jsonPayload.operation)",
+          "outcome": "EXTRACT(jsonPayload.outcome)"
+        },
+        "valueExtractor": "EXTRACT(jsonPayload.totalTokenCount)",
+        "bucketOptions": {
+          "explicitBuckets": {
+            "bounds": [
+              50,
+              100,
+              200,
+              300,
+              500,
+              750,
+              1000,
+              1500,
+              2000,
+              3000,
+              4000,
+              6000,
+              8000,
+              12000,
+              20000
+            ]
+          }
+        }
+      },
+      "liveCanonicalJson": {
+        "description": "Distribution of total token usage per AI Gateway call (prompt + candidates + thoughts), by operation and outcome. Includes usage-bearing error/timeout events -- tokens can be spent on a call that ultimately fails. Absence of usage data (no field present) means unavailable, not zero, and is excluded via the existence check.",
+        "filter": "jsonPayload.message=\"ai_gateway: call\" AND (jsonPayload.operation=\"aiCoachAdvice\" OR jsonPayload.operation=\"aiEquipmentRecognition\" OR jsonPayload.operation=\"aiMachineDescription\" OR jsonPayload.operation=\"aiExerciseGeneration\") AND (jsonPayload.outcome=\"success\" OR jsonPayload.outcome=\"timeout\" OR jsonPayload.outcome=\"error\") AND jsonPayload.totalTokenCount:*",
+        "metricDescriptor": {
+          "metricKind": "DELTA",
+          "valueType": "DISTRIBUTION",
+          "labels": [
+            {
+              "key": "operation",
+              "valueType": "STRING",
+              "description": "Which of the four AI Gateway surfaces made the call."
+            },
+            {
+              "key": "outcome",
+              "valueType": "STRING",
+              "description": "\"success\", \"timeout\", or \"error\"."
+            }
+          ]
+        },
+        "labelExtractors": {
+          "operation": "EXTRACT(jsonPayload.operation)",
+          "outcome": "EXTRACT(jsonPayload.outcome)"
+        },
+        "valueExtractor": "EXTRACT(jsonPayload.totalTokenCount)",
+        "bucketOptions": {
+          "explicitBuckets": {
+            "bounds": [
+              50,
+              100,
+              200,
+              300,
+              500,
+              750,
+              1000,
+              1500,
+              2000,
+              3000,
+              4000,
+              6000,
+              8000,
+              12000,
+              20000
+            ]
+          }
+        }
+      },
+      "normalizationApplied": [
+        "excluded server-only fields: name, createTime, metricDescriptor.{name,type,unit,monitoredResourceTypes,metadata}",
+        "metricDescriptor.labels[].valueType defaulted to STRING when absent (proto3 zero-value enum omission)",
+        "metricDescriptor.labels[] sorted by key (order not semantically meaningful; labelExtractors is the real key->extraction mapping and is compared unsorted)"
+      ],
+      "diffCount": 0,
+      "diffs": [],
+      "match": true
+    },
+    "ai_gateway_quota_exhaustions": {
+      "sourceCanonicalSha256": "517a476e1aa1a61ec5abbd8f339c560a0139f6dc9727291d63832dcec4e52d37",
+      "liveCanonicalSha256": "517a476e1aa1a61ec5abbd8f339c560a0139f6dc9727291d63832dcec4e52d37",
+      "sourceCanonicalJson": {
+        "description": "Count of AI Gateway calls refused for exceeding the daily quota, before generate() was ever reached. Bounded to the four AI actions.",
+        "filter": "jsonPayload.message=\"quota exceeded\" AND (jsonPayload.action=\"aiCoachAdvice\" OR jsonPayload.action=\"aiEquipmentRecognition\" OR jsonPayload.action=\"aiMachineDescription\" OR jsonPayload.action=\"aiExerciseGeneration\")",
+        "metricDescriptor": {
+          "metricKind": "DELTA",
+          "valueType": "INT64",
+          "labels": [
+            {
+              "key": "operation",
+              "valueType": "STRING",
+              "description": "Which of the four AI Gateway surfaces made the call."
+            }
+          ]
+        },
+        "labelExtractors": {
+          "operation": "EXTRACT(jsonPayload.action)"
+        }
+      },
+      "liveCanonicalJson": {
+        "description": "Count of AI Gateway calls refused for exceeding the daily quota, before generate() was ever reached. Bounded to the four AI actions.",
+        "filter": "jsonPayload.message=\"quota exceeded\" AND (jsonPayload.action=\"aiCoachAdvice\" OR jsonPayload.action=\"aiEquipmentRecognition\" OR jsonPayload.action=\"aiMachineDescription\" OR jsonPayload.action=\"aiExerciseGeneration\")",
+        "metricDescriptor": {
+          "metricKind": "DELTA",
+          "valueType": "INT64",
+          "labels": [
+            {
+              "key": "operation",
+              "valueType": "STRING",
+              "description": "Which of the four AI Gateway surfaces made the call."
+            }
+          ]
+        },
+        "labelExtractors": {
+          "operation": "EXTRACT(jsonPayload.action)"
+        }
+      },
+      "normalizationApplied": [
+        "excluded server-only fields: name, createTime, metricDescriptor.{name,type,unit,monitoredResourceTypes,metadata}",
+        "metricDescriptor.labels[].valueType defaulted to STRING when absent (proto3 zero-value enum omission)",
+        "metricDescriptor.labels[] sorted by key (order not semantically meaningful; labelExtractors is the real key->extraction mapping and is compared unsorted)"
+      ],
+      "diffCount": 0,
+      "diffs": [],
+      "match": true
+    }
+  },
+  "policies": {
+    "stripe_reconciliation_failure": {
+      "policyId": "6432583742343399434",
+      "sourceCanonicalSha256": "4a9285483490454a34cb4a674cb9039e2c2dcd02d451135c6d15ea4fcfe245ad",
+      "liveCanonicalSha256": "4a9285483490454a34cb4a674cb9039e2c2dcd02d451135c6d15ea4fcfe245ad",
+      "sourceCanonicalJson": {
+        "displayName": "Stripe duplicate-subscription reconciliation failure",
+        "combiner": "OR",
+        "enabled": true,
+        "conditions": [
+          {
+            "displayName": "Any reconciliation failure log in stripeWebhook",
+            "conditionMatchedLog": {
+              "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"stripewebhook\" AND (jsonPayload.message=\"could not cancel duplicate subscription\" OR jsonPayload.message=\"duplicate reconciliation failed\")"
+            }
+          }
+        ],
+        "alertStrategy": {
+          "notificationRateLimit": {
+            "period": "300s"
+          },
+          "autoClose": "604800s",
+          "notificationPrompts": [
+            "OPENED"
+          ]
+        },
+        "notificationChannels": [
+          "projects/fitness-app-korostelev/notificationChannels/6584417736576854237"
+        ]
+      },
+      "liveCanonicalJson": {
+        "displayName": "Stripe duplicate-subscription reconciliation failure",
+        "combiner": "OR",
+        "enabled": true,
+        "conditions": [
+          {
+            "displayName": "Any reconciliation failure log in stripeWebhook",
+            "conditionMatchedLog": {
+              "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"stripewebhook\" AND (jsonPayload.message=\"could not cancel duplicate subscription\" OR jsonPayload.message=\"duplicate reconciliation failed\")"
+            }
+          }
+        ],
+        "alertStrategy": {
+          "notificationRateLimit": {
+            "period": "300s"
+          },
+          "autoClose": "604800s",
+          "notificationPrompts": [
+            "OPENED"
+          ]
+        },
+        "notificationChannels": [
+          "projects/fitness-app-korostelev/notificationChannels/6584417736576854237"
+        ]
+      },
+      "normalizationApplied": [
+        "excluded server-generated fields: condition names, alertStrategy scaffolding beyond notificationRateLimit/autoClose/notificationPrompts"
+      ],
+      "diffCount": 0,
+      "diffs": [],
+      "match": true
+    },
+    "delete_account_failure": {
+      "policyId": "1018850201032278331",
+      "sourceCanonicalSha256": "b02ca8840019cd0c6758c0964bbee77df3cf2627acec4f0e4c89935313b478df",
+      "liveCanonicalSha256": "b02ca8840019cd0c6758c0964bbee77df3cf2627acec4f0e4c89935313b478df",
+      "sourceCanonicalJson": {
+        "displayName": "deleteAccount operational failure",
+        "combiner": "OR",
+        "enabled": true,
+        "conditions": [
+          {
+            "displayName": "Any named failure or unhandled error in deleteAccount",
+            "conditionMatchedLog": {
+              "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"deleteaccount\" AND (jsonPayload.message=\"account deletion: failed to cancel subscription\" OR jsonPayload.message=\"account deletion: failed to delete Firestore data\" OR jsonPayload.message=\"account deletion: failed to delete the Auth user\" OR jsonPayload.message=\"Unhandled error\")"
+            }
+          }
+        ],
+        "alertStrategy": {
+          "notificationRateLimit": {
+            "period": "300s"
+          },
+          "autoClose": "604800s",
+          "notificationPrompts": [
+            "OPENED"
+          ]
+        },
+        "notificationChannels": [
+          "projects/fitness-app-korostelev/notificationChannels/6584417736576854237"
+        ]
+      },
+      "liveCanonicalJson": {
+        "displayName": "deleteAccount operational failure",
+        "combiner": "OR",
+        "enabled": true,
+        "conditions": [
+          {
+            "displayName": "Any named failure or unhandled error in deleteAccount",
+            "conditionMatchedLog": {
+              "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"deleteaccount\" AND (jsonPayload.message=\"account deletion: failed to cancel subscription\" OR jsonPayload.message=\"account deletion: failed to delete Firestore data\" OR jsonPayload.message=\"account deletion: failed to delete the Auth user\" OR jsonPayload.message=\"Unhandled error\")"
+            }
+          }
+        ],
+        "alertStrategy": {
+          "notificationRateLimit": {
+            "period": "300s"
+          },
+          "autoClose": "604800s",
+          "notificationPrompts": [
+            "OPENED"
+          ]
+        },
+        "notificationChannels": [
+          "projects/fitness-app-korostelev/notificationChannels/6584417736576854237"
+        ]
+      },
+      "normalizationApplied": [
+        "excluded server-generated fields: condition names, alertStrategy scaffolding beyond notificationRateLimit/autoClose/notificationPrompts"
+      ],
+      "diffCount": 0,
+      "diffs": [],
+      "match": true
+    },
+    "export_account_failure": {
+      "policyId": "11269446106306914871",
+      "sourceCanonicalSha256": "e4eb7fd13abd84cf7a61a31ed3ae04aa4969c553d64e28bee923b667c5933c38",
+      "liveCanonicalSha256": "e4eb7fd13abd84cf7a61a31ed3ae04aa4969c553d64e28bee923b667c5933c38",
+      "sourceCanonicalJson": {
+        "displayName": "exportAccountData operational failure",
+        "combiner": "OR",
+        "enabled": true,
+        "conditions": [
+          {
+            "displayName": "Any named failure or unhandled error in exportAccountData",
+            "conditionMatchedLog": {
+              "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"exportaccountdata\" AND (jsonPayload.message=\"account export failed\" OR jsonPayload.message=\"Unhandled error\")"
+            }
+          }
+        ],
+        "alertStrategy": {
+          "notificationRateLimit": {
+            "period": "300s"
+          },
+          "autoClose": "604800s",
+          "notificationPrompts": [
+            "OPENED"
+          ]
+        },
+        "notificationChannels": [
+          "projects/fitness-app-korostelev/notificationChannels/6584417736576854237"
+        ]
+      },
+      "liveCanonicalJson": {
+        "displayName": "exportAccountData operational failure",
+        "combiner": "OR",
+        "enabled": true,
+        "conditions": [
+          {
+            "displayName": "Any named failure or unhandled error in exportAccountData",
+            "conditionMatchedLog": {
+              "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"exportaccountdata\" AND (jsonPayload.message=\"account export failed\" OR jsonPayload.message=\"Unhandled error\")"
+            }
+          }
+        ],
+        "alertStrategy": {
+          "notificationRateLimit": {
+            "period": "300s"
+          },
+          "autoClose": "604800s",
+          "notificationPrompts": [
+            "OPENED"
+          ]
+        },
+        "notificationChannels": [
+          "projects/fitness-app-korostelev/notificationChannels/6584417736576854237"
+        ]
+      },
+      "normalizationApplied": [
+        "excluded server-generated fields: condition names, alertStrategy scaffolding beyond notificationRateLimit/autoClose/notificationPrompts"
+      ],
+      "diffCount": 0,
+      "diffs": [],
+      "match": true
+    },
+    "canary_probe_failure": {
+      "policyId": "13193555522289224138",
+      "sourceCanonicalSha256": "1a16ce0cdef8b5fa9c3394e350b57a93027760089384a24a042b599234d90746",
+      "liveCanonicalSha256": "1a16ce0cdef8b5fa9c3394e350b57a93027760089384a24a042b599234d90746",
+      "sourceCanonicalJson": {
+        "displayName": "Production canary probe failure",
+        "combiner": "OR",
+        "enabled": true,
+        "conditions": [
+          {
+            "displayName": "Any canary probe failure or unhandled error in runProductionCanary",
+            "conditionMatchedLog": {
+              "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"runproductioncanary\" AND (jsonPayload.message=\"production canary probe failed\")"
+            }
+          }
+        ],
+        "alertStrategy": {
+          "notificationRateLimit": {
+            "period": "300s"
+          },
+          "autoClose": "604800s",
+          "notificationPrompts": [
+            "OPENED"
+          ]
+        },
+        "notificationChannels": [
+          "projects/fitness-app-korostelev/notificationChannels/6584417736576854237"
+        ]
+      },
+      "liveCanonicalJson": {
+        "displayName": "Production canary probe failure",
+        "combiner": "OR",
+        "enabled": true,
+        "conditions": [
+          {
+            "displayName": "Any canary probe failure or unhandled error in runProductionCanary",
+            "conditionMatchedLog": {
+              "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"runproductioncanary\" AND (jsonPayload.message=\"production canary probe failed\")"
+            }
+          }
+        ],
+        "alertStrategy": {
+          "notificationRateLimit": {
+            "period": "300s"
+          },
+          "autoClose": "604800s",
+          "notificationPrompts": [
+            "OPENED"
+          ]
+        },
+        "notificationChannels": [
+          "projects/fitness-app-korostelev/notificationChannels/6584417736576854237"
+        ]
+      },
+      "normalizationApplied": [
+        "excluded server-generated fields: condition names, alertStrategy scaffolding beyond notificationRateLimit/autoClose/notificationPrompts"
+      ],
+      "diffCount": 0,
+      "diffs": [],
+      "match": true
+    }
+  }
+}
