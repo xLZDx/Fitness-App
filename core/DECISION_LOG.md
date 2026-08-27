@@ -29112,3 +29112,40 @@ that code returned `"verificationStatus": "VERIFIED"`. Immediately re-triggered 
 proof with a second, clearly-marked synthetic log entry (noting explicitly in its own payload that
 the first two attempts predate verification and were likely dropped). Awaiting the operator's
 confirmation that this one actually arrives -- the definitive proof GPT-PM's DoD requires.
+
+## FA-D1 delivery confirmed live, real email received -- 2026-08-27
+
+Operator sent a screenshot of the actual delivered email: "Log alert fired", policy "TEMPORARY --
+FA-D1 delivery proof (delete after use)", project `fitness-app-korostelev`, condition "Synthetic
+FA-D1 delivery-proof log entry", start time "Aug 27, 2026 at 3:06PM UTC". **Real, human-confirmed
+end-to-end delivery -- not inferred from API responses.** This is the definitive proof GPT-PM's DoD
+required; Step 3 is complete.
+
+**Cleanup**: deleted the temporary policy (`alertPolicies/5554767489680036593`), per its own declared
+lifecycle now that delivery is proven. The two other synthetic log entries written this segment
+(`fa-d1-delivery-proof` x2, `fa-d1-synthetic-canary-proof` x1) are left as-is -- ordinary log data,
+not a billed/persistent GCP resource, clearly self-marked as synthetic in their own payload, and
+will age out under normal log retention; nothing to explicitly delete there.
+
+## MVP1.G3 Step 9B, Step 7: final inventory -- zero temporary resources remain -- 2026-08-27
+
+Full live inventory, confirming the permanent state matches exactly what was approved, nothing
+temporary left over:
+
+- **4 alert policies**, all `enabled: true`: `deleteAccount operational failure`
+  (`1018850201032278331`), `exportAccountData operational failure` (`11269446106306914871`),
+  `Production canary probe failure` (`13193555522289224138`), `Stripe duplicate-subscription
+  reconciliation failure` (`6432583742343399434`). No temporary policy remains.
+- **1 notification channel**, `FA-D1`, `type: email`, `enabled: true`, `verificationStatus:
+  VERIFIED`.
+- **5 log-based metrics**: `ai_gateway_calls`, `ai_gateway_latency_ms`,
+  `ai_gateway_quota_exhaustions`, `ai_gateway_total_tokens_per_call`, `appcheck_attestation`.
+- **1 Cloud Scheduler job**, `firebase-schedule-runProductionCanary-europe-west1`, `ENABLED`, `every
+  30 minutes`.
+- **15 Cloud Functions**, confirmed zero AI Gateway callables among them -- `aiCoachAdvice`/
+  `aiEquipmentRecognition`/`aiMachineDescription`/`aiExerciseGeneration` remain undeployed, per
+  GPT-PM's binding constraint, unchanged through this entire activation.
+
+**MVP1.G3 Step 9B production activation is complete.** Closing the Rosetta plan next and sending the
+full evidence bundle to GPT-PM for its adversarial closure review, per the plan's own closing
+instruction.
