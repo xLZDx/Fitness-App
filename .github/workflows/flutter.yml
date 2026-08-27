@@ -341,3 +341,32 @@ jobs:
               )
           print("dataset_hash matches:", a["dataset_hash"])
           PY
+
+  dependency-scan:
+    name: dart/flutter dependency vulnerabilities (OSV)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: mobile
+    # MVP1.G3 OBS-1 item 2: the backend already fails CI on a known-vulnerable
+    # npm dependency (`functions.yml`'s `audit` job); the Flutter/Dart side had
+    # no equivalent -- an asymmetry flagged by security review in
+    # core/MASTER_PLAN_2026-08-26.md Sec8 item 6. OSV-Scanner (Google-maintained,
+    # queries the same osv.dev database `npm audit` itself surfaces
+    # advisories from) reads `pubspec.lock` directly and exits non-zero on any
+    # known vulnerability -- this step is not informational, a failure here
+    # fails the job. The binary version is pinned rather than "latest" so a
+    # scanner update cannot silently change what this job accepts.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install osv-scanner (pinned v2.5.1)
+        run: |
+          curl -sL -o /usr/local/bin/osv-scanner \
+            "https://github.com/google/osv-scanner/releases/download/v2.5.1/osv-scanner_linux_amd64"
+          chmod +x /usr/local/bin/osv-scanner
+          osv-scanner --version
+
+      - name: scan pubspec.lock for known vulnerabilities
+        run: osv-scanner --lockfile=pubspec.lock

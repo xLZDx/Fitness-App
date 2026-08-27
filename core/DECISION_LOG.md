@@ -27147,3 +27147,34 @@ suite-count and test-count floors; (b) a partial-discovery report (3/15 suites, 
 "passing") -- failed on both floors, proving this catches partial suppression that a bare exit-code
 check would miss; (c) a report with 2 genuinely failing tests (`success:false`) -- failed on the
 explicit pass-count check. `git status` confirmed clean of temp fixtures after.
+
+## G3 item 2 [CI]: Mobile/Dart dependency (SCA) scanning -- DONE
+
+Was OPEN per Step 0 -- no `dependabot.yml`/`renovate.json`, no CI job, nothing scanning
+`pubspec.lock` for known vulnerabilities anywhere in the repo, asymmetric with the backend's
+existing `npm audit` gate.
+
+Added a new `dependency-scan` job to `.github/workflows/flutter.yml`: downloads OSV-Scanner
+(Google-maintained, queries the same osv.dev database `npm audit`'s own advisories ultimately trace
+back to), pinned to v2.5.1 (not "latest", so a scanner update cannot silently change what the job
+accepts), runs it against `mobile/pubspec.lock`. Chose the direct-CLI-binary form over
+`google/osv-scanner-action`'s reusable workflows after checking both real options first (CLAUDE.md
+Sec3): the "PR scan" reusable workflow does fail on new vulnerabilities but only compares
+branch-vs-target, missing anything already present on the base branch; the "scheduled scan" one
+reports to GitHub's Code Scanning tab via SARIF upload, which needs GitHub Advanced Security
+(unconfirmed for this repo) and does not necessarily fail the job itself. Direct-CLI matches this
+repo's existing convention (the `npm audit` job in `functions.yml` is also raw CLI, not a
+third-party action) and guarantees fail-closed behavior with no external dependency.
+
+**Positive proof:** downloaded the real pinned osv-scanner v2.5.1 Windows binary locally, ran it
+against the actual `mobile/pubspec.lock` (199 packages) -- "No issues found", exit 0.
+
+**Negative proof:** downloaded the real Pub-ecosystem OSV advisory dump
+(`osv-vulnerabilities.storage.googleapis.com/Pub/all.zip`, 13 real advisories) rather than
+fabricating a fixture vulnerability, found `GHSA-3hpf-ff72-j67p` (`shared_preferences_android`
+2.3.3, arbitrary deserialization, fixed in 2.3.4), built a minimal fixture `pubspec.lock` pinning
+that exact vulnerable version in a scratchpad directory (never touching the real lockfile), scanned
+it -- osv-scanner correctly reported the vulnerability with its real GHSA/CVSS/fixed-version detail
+and exited 1. Fixture deleted immediately after (non-recursive `rm -f` + `rmdir`, since this
+workspace's shell policy blocks `rm -rf`; `git status` unaffected since the fixture never lived in
+the repo tree).
