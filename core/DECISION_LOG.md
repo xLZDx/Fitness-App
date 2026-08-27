@@ -28651,3 +28651,51 @@ which this session can produce on its own). GPT-PM's own fallback if GCP access 
 unavailable even after FA-D1: redirect to the next independent MVP gate outside G3 rather than
 continue circling G3 -- not acted on now, since that is itself a new scope decision to make only
 once FA-D1's answer is in hand.
+
+## CORRECTION: "no live GCP access" was wrong -- verified access exists -- 2026-08-27
+
+The operator pushed back directly ("я не понимаю в чем вопрос, все уже есть и Firebase и GCP"),
+correctly. This session's repeated claim across this whole segment ("this session has no
+gcloud/Cloud Logging access", "no access to live GCP credentials") was an unverified assumption
+inherited from earlier context, never actually checked in THIS session. Per the evidence-over-
+inference rule, that claim should have been checked before being repeated across five separate
+DECISION_LOG entries and two GPT-PM exchanges -- it was not, and was wrong.
+
+**Verified directly, immediately on being challenged:**
+- `gcloud config list` / `gcloud auth list`: authenticated as both a Firebase Admin SDK service
+  account AND the operator's own `korostelevivan@gmail.com`, active project `fitness-app-
+  korostelev`.
+- `gcloud functions list` (switched to the operator's account, which has real permissions the
+  service account lacked): 14 Gen2 functions ACTIVE in `europe-west1`, matching `index.ts`'s
+  exports exactly.
+- `gcloud run services list`: **the exact three Cloud Run service names this session's monitoring
+  filters assumed -- `deleteaccount`, `exportaccountdata`, `stripewebhook` -- are confirmed,
+  byte-for-byte, against the real deployment.** The "not independently verified against live
+  deployment" caveat repeated in `functions/src/monitoring/README.md` and multiple DECISION_LOG
+  entries for this reason is now resolved, positively.
+- **New finding, not previously known:** none of the 4 AI Gateway callables (`aiCoachAdvice`,
+  `aiEquipmentRecognition`, `aiMachineDescription`, `aiExerciseGeneration`) are deployed to
+  production -- absent from both `gcloud functions list` and `gcloud run services list`. The
+  AI Gateway metrics built this segment are correct but currently have no live traffic to
+  measure.
+- `firebase apps:list`: only ANDROID apps registered, no WEB app -- explains why no dedicated
+  Firebase Web app config exists. However `gcloud services api-keys list` shows a "Browser key
+  (auto created by Firebase)" with `browserKeyRestrictions: {}` (no origin restriction) and
+  `identitytoolkit.googleapis.com` + `firestore.googleapis.com` in its allowed API targets --
+  usable as `FIREBASE_WEB_API_KEY` for the Step 9A canary probe. The key's raw value was NOT
+  fetched or printed at this point -- read-only reconnaissance only, per Sec 4's secrets-handling
+  rule (action-specific confirmation before acting on a secret, not just a broad GO).
+- `gcloud logging metrics list` / `gcloud alpha monitoring policies list`: 0 items each -- a
+  clean slate, nothing already live to conflict with activation.
+- `gcloud billing projects describe`: billing enabled, linked to a real billing account.
+
+**Operator decision, this exchange:** given real access exists, activate Step 9B NOW in full
+(not deferred to a separate gate) -- real Web API key into Secret Manager, live canary deployment,
+live metrics, live alerts with real delivery proof. `DECISION FA-D1` answered:
+`korostelevivan@gmail.com` (the GCP project owner's own account) as primary alert recipient,
+matching GPT-PM's original recommendation. Logged via `pm_log_decision` (verdict `APPROVED`).
+
+Given the scope (production secrets, a real deploy, live billable GCP resources, real alerting)
+this is unambiguously HIGH review class -- opening a formal Rosetta plan with GPT-PM for the full
+Step 9B activation sequence next, same discipline Step 9A received, not proceeding from a single
+chat confirmation alone.
