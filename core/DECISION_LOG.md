@@ -29906,3 +29906,11 @@ confirmation "even if a broader GO exists" -- explicitly including a GO from a d
 authority like GPT-PM. Per §18, PM mode continues a session past a report EXCEPT when blocked on an
 operator-only §4/§14 decision, which this is. Surfaced to the operator as the current checkpoint
 rather than deploying unasked.
+
+Published the mandatory RU+EN closeout report pair for this arc
+(`reports/G3_STEP10A_ENFORCEMENT_STATE_REMEDIATION_2026-08-27.{ru.html,html}`), conformed via
+`report_conform.py`, RU published as an artifact
+(`https://claude.ai/code/artifact/db849619-6eb6-4d22-b0b0-559f9f9c1e37`). Content: the 3-round
+remediation arc to APPROVE, the two self-found bugs beyond GPT-PM's own findings (App Check
+`firestore.googleapis.com` confirmed live `UNENFORCED` in production; the pagination test's own
+positional-mock race), and this section's own checkpoint -- live deploy paused for the operator.

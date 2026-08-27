@@ -1,0 +1,362 @@
+<title>Видимость состояния защиты: код одобрен, деплой на паузе</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --surface-2: #f0ede4;
+    --ink: #1c1a16;
+    --ink-soft: #55504a;
+    --ink-faint: #8b8579;
+    --border: #ddd7c8;
+    --accent: #d99a1b;
+    --accent-ink: #4a3204;
+    --accent-soft: #f5e6c0;
+    --good: #2f7d4f;
+    --good-soft: #dcf0e3;
+    --warn: #b5540a;
+    --warn-soft: #fbe6d2;
+    --crit: #b02a2a;
+    --crit-soft: #fbdede;
+    --mono-surface: #221f1a;
+    --mono-ink: #f2ead9;
+    --shadow: 0 1px 2px rgba(28,26,22,0.06), 0 8px 24px -12px rgba(28,26,22,0.18);
+  }
+
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #17140f; --surface: #211d17; --surface-2: #2a251d; --ink: #f2ead9;
+      --ink-soft: #cbc2ae; --ink-faint: #8f8674; --border: #3a3327; --accent: #e8ac2f;
+      --accent-ink: #2a1c02; --accent-soft: #3d2f10; --good: #5cbf87; --good-soft: #17301f;
+      --warn: #e08a3c; --warn-soft: #3a2510; --crit: #e07070; --crit-soft: #3a1414;
+      --mono-surface: #0e0c09; --mono-ink: #f2ead9;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17140f; --surface: #211d17; --surface-2: #2a251d; --ink: #f2ead9;
+    --ink-soft: #cbc2ae; --ink-faint: #8f8674; --border: #3a3327; --accent: #e8ac2f;
+    --accent-ink: #2a1c02; --accent-soft: #3d2f10; --good: #5cbf87; --good-soft: #17301f;
+    --warn: #e08a3c; --warn-soft: #3a2510; --crit: #e07070; --crit-soft: #3a1414;
+    --mono-surface: #0e0c09; --mono-ink: #f2ead9;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 16px; line-height: 1.55; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  header { padding-bottom: 8px; }
+  .eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 10px; }
+  h1 { font-family: 'Archivo', sans-serif; font-weight: 800; font-size: clamp(28px, 4.5vw, 38px); line-height: 1.12; letter-spacing: -0.01em; margin: 0 0 12px; text-wrap: balance; }
+  .lede { font-size: 17px; color: var(--ink-soft); max-width: 72ch; margin: 0; }
+
+  .stat-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 32px 0; }
+  .stat { background: var(--surface); padding: 16px 14px; text-align: center; }
+  .stat .n { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; font-weight: 600; font-size: 22px; color: var(--ink); }
+  .stat .l { font-size: 12px; color: var(--ink-faint); margin-top: 3px; }
+
+  section { margin: 44px 0; }
+  h2 { font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 21px; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; }
+  .h2-num { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--ink-faint); font-weight: 500; }
+  .section-sub { color: var(--ink-faint); font-size: 14.5px; margin: 0 0 18px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px 24px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .card h3 { font-family: 'Archivo', sans-serif; font-size: 16.5px; margin: 0 0 4px; }
+  .card p { margin: 8px 0; color: var(--ink-soft); font-size: 15px; }
+  .card ul { margin: 8px 0; padding-left: 20px; color: var(--ink-soft); font-size: 15px; }
+  .card li { margin: 4px 0; }
+  code { font-family: 'IBM Plex Mono', monospace; font-size: 0.88em; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; padding: 3px 9px; border-radius: 999px; text-transform: uppercase; }
+  .pill-good { background: var(--good-soft); color: var(--good); }
+  .pill-warn { background: var(--warn-soft); color: var(--warn); }
+  .pill-accent { background: var(--accent-soft); color: var(--accent-ink); }
+  .pill-crit { background: var(--crit-soft); color: var(--crit); }
+
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 8px 0; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--ink-faint); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  td code { font-size: 0.85em; }
+  .table-wrap { overflow-x: auto; }
+  tr.neg td:first-child { color: var(--ink-faint); }
+
+  .cycle { display: flex; flex-direction: column; gap: 0; border-left: 2px solid var(--border); margin-left: 10px; padding-left: 24px; }
+  .cycle-step { position: relative; padding-bottom: 20px; }
+  .cycle-step:last-child { padding-bottom: 0; }
+  .cycle-step::before { content: ''; position: absolute; left: -30px; top: 4px; width: 11px; height: 11px; border-radius: 50%; background: var(--surface); border: 2px solid var(--ink-faint); }
+  .cycle-step.crit::before { border-color: var(--crit); background: var(--crit-soft); }
+  .cycle-step.fix::before { border-color: var(--accent); background: var(--accent-soft); }
+  .cycle-step.good::before { border-color: var(--good); background: var(--good-soft); }
+  .cycle-step .ct { font-weight: 600; font-size: 15px; }
+  .cycle-step .cd { color: var(--ink-soft); font-size: 13.5px; margin-top: 3px; }
+  .cycle-step .cd code { font-size: 0.86em; }
+
+  .gap-note { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 14px; color: var(--ink); margin-top: 10px; }
+  .gap-note b { color: var(--warn); }
+  .crit-note { border-left: 3px solid var(--crit); background: var(--crit-soft); padding: 14px 16px; border-radius: 0 8px 8px 0; font-size: 14.5px; color: var(--ink); margin: 14px 0; }
+  .crit-note b { color: var(--crit); }
+  .decision-note { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 14px 16px; border-radius: 0 8px 8px 0; font-size: 14.5px; color: var(--ink); margin: 14px 0; }
+  .decision-note b { color: var(--accent-ink); }
+
+  .quote { font-style: italic; color: var(--ink-soft); border-left: 2px solid var(--border); padding-left: 14px; margin: 12px 0; font-size: 14.5px; }
+
+  .status-row { display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; align-items: baseline; }
+
+  footer.provenance-fallback { display: none; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness App · MVP1.G3 · Шаг 10A</div>
+    <h1>Видимость состояния защиты: код одобрен GPT-PM, живой деплой — на паузе для оператора</h1>
+    <p class="lede">Автоматическая проверка живого состояния Functions/Firestore Rules/App Check/
+    Identity Toolkit построена, покрыта тестами и прошла три раунда адверсариального ревью GPT-PM —
+    итог: <b>APPROVE</b> с финальной квитанцией. Живого деплоя ещё не было: последний шаг —
+    создание реального ресурса в проде — сознательно оставлен на решение оператора.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ c19aea9</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="stat-strip">
+    <div class="stat"><div class="n">4</div><div class="l">коммита ремедиации</div></div>
+    <div class="stat"><div class="n">3</div><div class="l">раунда ревью до APPROVE</div></div>
+    <div class="stat"><div class="n">501</div><div class="l">тестов зелёных (было 476)</div></div>
+    <div class="stat"><div class="n">APPROVE</div><div class="l">финальный вердикт, final:true</div></div>
+  </div>
+
+  <section>
+    <h2><span class="h2-num">01</span> Что построено</h2>
+    <p class="section-sub">Автоматический, задеплоенный на Cloud Scheduler (раз в 6 часов) аналог
+    человеческого скрипта <code>production_manifest.py</code> — четыре живые секции состояния, каждая
+    честно <code>OK</code> либо <code>UNAVAILABLE</code>, никогда не выдуманная.</p>
+
+    <div class="card">
+      <div class="card-head"><h3>enforcement_state.ts — четыре секции</h3><span class="pill pill-good">Код готов</span></div>
+      <p>Functions (инвентарь + состояние), Firestore Rules (активный релиз + ruleset), App Check
+      (режим защиты по сервисам), Identity Toolkit (allowlist полей — секреты вроде
+      <code>signerKey</code>/<code>apiKey</code> никогда не проходят). Пагинация с ограничением в 20
+      страниц, таймаут на каждый запрос, единый бюджет на весь пробник (45с под платформенным
+      лимитом в 60с), включая получение токена.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>5-я политика алертов — независимая проверка "не завис ли планировщик"</h3><span class="pill pill-good">Код готов</span></div>
+      <p><code>ENFORCEMENT_STATE_STALENESS_POLICY</code> — не LogMatch, а <code>conditionAbsent</code>
+      на метрике <code>cloudscheduler.googleapis.com/job/execution_count</code>, которую платформа
+      пишет сама вне зависимости от кода этого файла. Первый несобственный (не LogMatch) тип условия
+      алерта в проекте.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Ничего не задеплоено</h3><span class="pill pill-warn">Ожидает</span></div>
+      <p>Ни функция, ни метрика, ни политики не созданы как живые ресурсы GCP — по правилу «ноль
+      живых мутаций до чистого раунда ревью», действующему в проекте с предыдущего Шага 9B.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="h2-num">02</span> Три раунда до APPROVE</h2>
+    <p class="section-sub">Каждый раунд ремедиации закрывал часть находок одним пакетом — не
+    по одной находке за раунд — и следующий раунд GPT-PM проверял именно закрытие, а не искал
+    новый периметр.</p>
+    <div class="cycle">
+      <div class="cycle-step crit">
+        <div class="ct">Раунд 1 · 4 MAJOR + 1 MINOR</div>
+        <div class="cd">Доступность API путали с корректностью данных (пустой список — не ошибка).
+        HTTP 200 с битым телом читался как успех. Пагинация не работала вовсе. Устаревание проверки
+        зависело только от собственного лога функции. Плюс: таблица статуса в README сама себе
+        противоречила про App Check.</div>
+      </div>
+      <div class="cycle-step fix">
+        <div class="ct">Ремедиация 1</div>
+        <div class="cd">Отказ закрытым на пустом/битом результате. <code>fetchAllPages()</code> с
+        пагинацией. Независимая политика устаревания через <code>conditionAbsent</code>. Таймаут на
+        каждый запрос. Попутно найдено и исправлено: отсутствовал заголовок
+        <code>X-Goog-User-Project</code> на вызове App Check — не находка GPT-PM, обнаружено прямым
+        curl-пробом вживую.</div>
+      </div>
+      <div class="cycle-step crit">
+        <div class="ct">Раунд 2 · 4 MAJOR (те же 4, глубже)</div>
+        <div class="cd">Сравнение режима защиты App Check со строкой <code>"OFF"</code> — реальный API
+        никогда её не возвращает (<code>"ENFORCED"</code>/<code>"UNENFORCED"</code>), сигнал был мёртв
+        с рождения. Поля строк молча подставлялись как <code>"?"</code> вместо отказа секции.
+        <code>unreachable[]</code> у Cloud Functions v2 отбрасывался молча. Таймаут на один запрос не
+        ограничивал весь пробник целиком.</div>
+      </div>
+      <div class="cycle-step fix">
+        <div class="ct">Ремедиация 2</div>
+        <div class="cd">Сравнение только с <code>"ENFORCED"</code>. Список сервисов, которые ЭТОТ
+        проект обязан защищать (<code>firestore.googleapis.com</code> — подтверждено вживую: сейчас
+        реально <code>UNENFORCED</code> в проде). Обязательные поля на уровне строки, не всей секции.
+        Единый бюджет на весь пробник, а не на один запрос.</div>
+      </div>
+      <div class="cycle-step crit">
+        <div class="ct">Раунд 3 · 2 MAJOR (последние два)</div>
+        <div class="cd">Единый бюджет считался ДО получения токена, но получение токена им самим не
+        ограничивалось — зависший вызов мог съесть весь платформенный лимит. Релиз
+        <code>cloud.firestore</code> мог остаться <code>OK</code> без реального
+        <code>updateTime</code> — а DoD Шага 10A требует именно его.</div>
+      </div>
+      <div class="cycle-step good">
+        <div class="ct">Ремедиация 3 → GPT-PM: APPROVE</div>
+        <div class="cd">Получение токена гонится против ТОГО ЖЕ бюджета (не второго независимого
+        таймера) через новый инъецируемый <code>raceDeadline()</code>, с очисткой таймера в любом
+        исходе. <code>updateTime</code> обязателен для <code>cloud.firestore</code> и для каждой
+        функции. <code>revision</code> сознательно оставлен best-effort — его наличие зависит от
+        поколения (GEN_1/GEN_2), а в проекте нет живого GEN_1 для проверки.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="h2-num">03</span> Реальные баги, найденные помимо находок GPT-PM</h2>
+    <p class="section-sub">Не для галочки — каждый подтверждён прямой проверкой (curl-проб, живой
+    API-вызов, живой прогон тестов), не предположением.</p>
+
+    <div class="card">
+      <div class="card-head"><h3>App Check реально <code>UNENFORCED</code> сейчас в проде</h3><span class="pill pill-crit">Живой факт</span></div>
+      <p>Прямой curl-проб к <code>firebaseappcheck.googleapis.com</code> подтвердил:
+      <code>firestore.googleapis.com</code> сейчас, по-настоящему, <code>UNENFORCED</code>.
+      <code>firestore.rules</code> даёт аутентифицированному клиенту прямой доступ к своей
+      <code>/users/{uid}/...</code> ветке без собственной проверки App Check в самих правилах — значит
+      это единственный контроль, способный требовать аттестацию на этом пути. Раунд-1 код не смог бы
+      это увидеть, даже если бы строка вовсе отсутствовала.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Собственный баг в новом тесте на пагинацию</h3><span class="pill pill-warn">Найдено тестами</span></div>
+      <p>Четыре секции проверки идут параллельно (<code>Promise.all</code>) — позиционная цепочка
+      моков в тесте ломалась из-за перемешивания первых вызовов до того, как хоть один резолвится.
+      <code>npm run build</code> прошёл чисто, <code>npx jest</code> поймал сразу (count 1 вместо 2).
+      Переписано на диспетчеризацию по URL — устойчиво независимо от порядка.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="h2-num">04</span> Чек-пойнт: живой деплой требует отдельного решения оператора</h2>
+    <div class="decision-note"><b>GPT-PM выдал полный APPROVE и явное «GO: proceed to Step 10A live
+    activation» + «PUSH: AUTHORIZED under the current Gate policy».</b> Тем не менее реальный
+    <code>firebase deploy --only functions:runEnforcementStateCheck</code> создаёт живой ресурс в
+    боевом проекте Firebase. §4 глобального контракта резервирует «production migrations» за
+    оператором отдельно — <i>«even if a broader GO exists»</i> — явно включая одобрение делегированного
+    ревьюера вроде GPT-PM. Поэтому сессия не деплоит сама, а фиксирует этот чек-пойнт как решение,
+    которое должен принять оператор.</div>
+    <p style="color:var(--ink-soft);font-size:14.5px;">Следующий шаг после решения — по формулировке
+    самого GPT-PM: целевой (не blanket) деплой, живой санитизированный снепшот состояния, подтверждённый
+    ID job'а Scheduler, позитивное доказательство исполнения, контролируемое доказательство деградации/
+    fail-closed, независимое доказательство политики устаревания, подтверждение что 4 колбэка AI Gateway
+    остаются НЕ задеплоенными.</p>
+  </section>
+
+  <section>
+    <h2><span class="h2-num">05</span> План → DoD → статус</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Пункт плана</th><th>Definition of Done</th><th>Статус</th></tr>
+      <tr><td>enforcement_state.ts — 4 секции</td><td>Код+тесты, отказ закрытым на пустом/битом/просроченном</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>5-я политика (устаревание Scheduler)</td><td>conditionAbsent-определение, покрыто тестами</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Три раунда ревью GPT-PM</td><td>Каждый раунд закрывает пакетом, финал — APPROVE без BLOCKER/MAJOR</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Финальная квитанция ревью</td><td><code>final:true</code>, verdict APPROVE, спутник push-гейта</td><td><span class="pill pill-good">done</span></td></tr>
+      <tr><td>Живой деплой функции + ресурсов</td><td>Целевой деплой, не blanket</td><td><span class="pill pill-warn">ждёт решения оператора</span></td></tr>
+      <tr><td>Позитивное доказательство (реальный прогон)</td><td>Живой санитизированный снепшот в логах</td><td><span class="pill pill-warn">не начато</span></td></tr>
+      <tr><td>Негативное/устаревания доказательство</td><td>Контролируемая деградация → алерт сработал</td><td><span class="pill pill-warn">не начато</span></td></tr>
+      <tr><td>Подтверждение ID Scheduler job</td><td><code>gcloud scheduler jobs list</code> против живого деплоя</td><td><span class="pill pill-warn">не начато</span></td></tr>
+    </table></div>
+  </section>
+
+</div>
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
