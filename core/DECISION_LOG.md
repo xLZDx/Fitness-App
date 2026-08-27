@@ -29384,3 +29384,22 @@ threshold-based AI paging. Those stay separate rather than being reopened as Ste
 premature "complete" framing earlier in this file, this closure is backed by a real GPT-PM APPROVE
 verdict against durable, re-derivable evidence (hash-verified live-readback artifact, temporally
 isolated negative proofs, real inbox-confirmed positive proofs for all 4 permanent policies).
+
+---
+
+## Step 9B closeout report published (2026-08-27)
+
+Per this project's mandatory `html-report` house format, published the RU+EN report pair
+(`reports/G3_STEP9B_PRODUCTION_ACTIVATION_2026-08-27.{ru.,}html`) covering the full Step 9B arc:
+what went live, the 3 implementation review rounds, the out-of-scope Firestore-rules production gap
+found by the canary's own first real trigger and the operator's deploy authorization, the two-round
+GPT-PM closure review, the independently re-checkable evidence tables (live-readback SHA-256, proof
+entries), what stayed explicitly out of scope (device Crashlytics, AI Gateway callables, threshold
+paging, GitHub Actions billing issue), and a plan/DoD/status table per Rosetta's own transparency
+requirement. RU published as an artifact: https://claude.ai/code/artifact/9832b7af-6d61-4125-a571-f60cd7bca7e0 .
+Both files conformed via `report_conform.py` (provenance block + copy button), `--check` passes for
+the whole `reports/` directory.
+
+PM Bridge orchestrator mode is ON for this session -- per its own rule, this report is a checkpoint,
+not a stopping point. Continuing to determine MVP1.G3's remaining scope next (Step 9B is one part
+of G3, not the whole gate) rather than stopping here.
