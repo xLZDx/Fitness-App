@@ -29779,3 +29779,78 @@ proves the second page request is never issued).
 **Still not done, unchanged**: no deploy, no live resource creation, no positive/negative proof.
 This remediation commit goes back to GPT-PM next, scoped to exactly these 4 MAJOR findings plus any
 direct regressions.
+
+---
+
+## MVP1.G3 Step 10A -- remediation round 3 (2026-08-27, same day)
+
+Sent commit `9e52984` (round 2's remediation) to GPT-PM via `review.js --commit 9e52984 --project
+Fitness_App`. First attempt returned `"browserContext.newPage: Target page, context or browser has
+been closed"`; verified via `pm_bridge_status` that NO outbound message for this commit was logged
+at all -- a genuine send failure this time, not a reply-capture failure (a `pm_bridge_mode_status`
+check right after showed the orchestrator process itself had restarted, new pid, since-timestamp
+reset -- consistent with a crash/relaunch closing the browser mid-navigation). Waited 90s per this
+session's standing backoff discipline, confirmed the queue was clear, retried once: this attempt
+returned `{"ok":false,"error":"fetch failed"}` locally, but `pm_bridge_status` confirmed the outbound
+diff for `9e52984` genuinely landed at 18:14:01 and a real, on-topic inbound reply arrived at
+18:16:33 -- a reply-capture failure this time, not a send failure. Read in full via the raw log
+(the reply exceeded `pm_bridge_status`'s inline token limit and was saved to a file, read directly).
+
+GPT-PM's verdict: **2 MAJOR findings** (down from 4), plus 3 explicit CLOSED confirmations (App
+Check enforcement checking, Functions `unreachable[]`, success-state observability) and the
+already-accepted Scheduler metric-absence architecture was NOT reopened. Both findings independently
+verified against the actual code before being accepted, not taken at GPT-PM's word:
+
+**1. MAJOR -- the whole-probe deadline still did not bound access-token acquisition.**
+`deadlineAt` was computed before `deps.getAccessToken()` in round 2's code specifically so its
+elapsed time would count against the budget -- but re-reading the actual code confirmed GPT-PM's
+point exactly: nothing then ENFORCED that bound on the call itself. `TokenGetter` remained a plain
+`() => Promise<string>` with no timeout mechanism, and `realGetAccessToken()`'s
+`google-auth-library` call had no deadline/AbortSignal wired to it either. A hang in ADC/metadata/
+token-exchange would consume the function's entire 60s platform timeout before any section, or this
+file's own try/catch/log, ever ran -- the identical silent-platform-kill failure mode finding #4
+(round 1/2) was built to close, one step earlier than any of round 2's fixes reached. Fixed: added
+`deps.raceDeadline()`, a new injectable `DeadlineRacer` seam that races a promise against however
+much of the SAME `deadlineAt` remains (GPT-PM's explicit requirement: "do not create a second
+independent 45s timer that can outlive the original deadline" -- satisfied by construction, since
+`raceDeadline` only ever receives the remaining-ms computed from the one shared deadline, never a
+fresh budget). The real implementation (`realRaceDeadline`) clears its `setTimeout` on whichever
+branch of the race wins and calls `.unref()` on it, so a normal (non-timeout) run never leaks a live
+~45s timer into the background -- checked deliberately, since this test suite had already shown a
+"worker process failed to exit gracefully... active timers" warning once before (from an unrelated
+cause, during an earlier round's own pagination-test debugging) and this remediation had no interest
+in adding a real instance of that failure mode. Verified after the fix: `npx jest
+--detectOpenHandles` on the full suite reported no open handles.
+
+**2. MAJOR -- a `cloud.firestore` release could still be `OK` with no genuine `updateTime`.**
+Round 2's row validation correctly required `name`+`rulesetName` and the presence of a
+`cloud.firestore` release specifically, but `updateTime` still defaulted to `r.updateTime ?? "?"`
+on an otherwise-accepted row. Re-checked Step 10A's own binding DoD before accepting this finding
+(quoted in this file's own earlier Step 10A entry): "active Firestore ruleset + update time" --
+GPT-PM was right that "a release exists" is not the same claim as "the required timestamp is
+genuinely present." Fixed: the `cloud.firestore` row now additionally requires a non-empty
+`updateTime` that `Date.parse` accepts, or the section reports `UNAVAILABLE`
+(`"cloud.firestore release has an invalid updateTime"`) instead of a snapshot silently missing the
+one field Step 10A exists to prove. GPT-PM's finding also named the same residual pattern in the
+Functions snapshot (`updateTime`/`revision` still defaulting to `"?"` on an `OK` section) and gave
+two options: validate them with explicit GEN_1/GEN_2 handling, or stop treating missing values as
+valid `OK` data. Took the narrower, evidence-scoped option: `updateTime` is now required alongside
+`name`/`state` for every function row (always present per the v2 API contract regardless of
+generation), but `revision` (`serviceConfig.revision`) was deliberately left best-effort --
+its presence is generation-dependent in ways this file has no live GEN_1 deployment to verify
+against (this project's own functions are all confirmed `GEN_2`, live-probed in an earlier round),
+so requiring it now would encode an assumption this codebase cannot actually prove. Documented as a
+deliberate scoping call in `enforcement_state.ts`'s own module header, for GPT-PM to contest next
+round if it disagrees rather than silently narrowing scope without saying so.
+
+**Verification**: `npm run build` -- clean. Full suite: `npx jest --json --outputFile=jest_result.json`
++ `node scripts/assert_test_health.js jest_result.json` -- **21 suites, 501 tests, all passed** (up
+from 497 before this round, +4: a hung-token-acquisition-bounded-by-deadline test, an
+already-exhausted-deadline-skips-the-race-entirely test, an invalid-`cloud.firestore`-`updateTime`
+test, and a missing-Functions-`updateTime` test). Also ran `npx jest --detectOpenHandles` on
+`enforcement_state.test.ts` specifically to confirm the new `setTimeout`-based race introduced no
+leaked timer handles -- clean.
+
+**Still not done, unchanged**: no deploy, no live resource creation, no positive/negative proof.
+This remediation commit goes back to GPT-PM next, scoped to exactly these 2 MAJOR findings plus any
+direct regressions.

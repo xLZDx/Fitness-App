@@ -466,3 +466,33 @@ test, the `unreachable[]` test, and 2 probe-deadline tests).
 **Still not done**: no deploy, no live resource creation, no positive/negative proof -- unchanged
 from round 1's own note above. This commit goes back to GPT-PM, scoped to exactly these findings
 plus any direct regressions.
+
+### Step 10A remediation round 3 (2026-08-27, same day)
+
+GPT-PM re-reviewed round 2 and closed 3 of the 4 findings (App Check enforcement, `unreachable[]`,
+success-state observability) but found 2 real residuals:
+
+1. **MAJOR -- token acquisition itself was never bounded by the deadline.** `deadlineAt` was
+   computed before `deps.getAccessToken()` so its elapsed time counted against the budget, but
+   nothing actually RACED `getAccessToken()` against it -- a hang there (ADC/metadata/token-exchange)
+   could still consume the whole 60s platform timeout before any section, or this file's own
+   try/catch/log, ever ran. Added `deps.raceDeadline()`, an injectable seam that races a promise
+   against the SAME remaining deadline (never a second, independent timer -- GPT-PM's explicit
+   requirement) and is used for token acquisition. The real implementation clears its timer on
+   whichever branch wins and `.unref()`s it, so a normal run never leaks a live timer into the
+   background (this suite has already shown a "worker process failed to exit gracefully... active
+   timers" warning once before, from an unrelated cause -- deliberately not adding a real one here).
+2. **MAJOR -- a `cloud.firestore` release could still be `OK` with no genuine `updateTime`.** Step
+   10A's own DoD is "active Firestore ruleset + update time," not just "a release exists." The
+   `cloud.firestore` row now also requires a non-empty `updateTime` that `Date.parse` accepts, or the
+   section reports `UNAVAILABLE`. Functions' `updateTime` is now required the same way (always
+   present per the v2 API contract); `revision` stays best-effort, since its presence is
+   generation-dependent in ways this file has no live GEN_1 deployment to verify against -- a
+   deliberate, documented scoping call, not an oversight.
+
+**Verification**: `npm run build` clean. Full suite: **21 suites, 501 tests, all passed** (up from
+497, +4: 2 deadline-races-token-acquisition tests and 2 updateTime-validation tests). Also confirmed
+no leaked timer handles from the new `setTimeout`-based race (`npx jest --detectOpenHandles`, clean).
+
+**Still not done**: no deploy, no live resource creation, no positive/negative proof. This commit
+goes back to GPT-PM, scoped to exactly these 2 findings plus any direct regressions.

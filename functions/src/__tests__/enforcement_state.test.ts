@@ -208,11 +208,23 @@ describe("runEnforcementStateProbe — fails closed on empty/malformed results (
 describe("runEnforcementStateProbe — pagination (GPT-PM remediation)", () => {
   test("follows nextPageToken across multiple pages and accumulates every item", async () => {
     const page1 = {
-      functions: [{ name: "projects/p/locations/x/functions/a", state: "ACTIVE" }],
+      functions: [
+        {
+          name: "projects/p/locations/x/functions/a",
+          state: "ACTIVE",
+          updateTime: "2026-08-01T00:00:00Z",
+        },
+      ],
       nextPageToken: "page-2-token",
     };
     const page2 = {
-      functions: [{ name: "projects/p/locations/x/functions/b", state: "ACTIVE" }],
+      functions: [
+        {
+          name: "projects/p/locations/x/functions/b",
+          state: "ACTIVE",
+          updateTime: "2026-08-01T00:00:00Z",
+        },
+      ],
     };
     // Sections run concurrently (Promise.all in runEnforcementStateProbe), so
     // the four sections' first-page calls interleave before any of them
@@ -509,6 +521,87 @@ describe("runEnforcementStateProbe — section extraction shape", () => {
       String(url).includes("cloudfunctions.googleapis.com"),
     );
     expect(functionsCalls.length).toBe(1);
+  });
+
+  test("a hung token acquisition is still bounded by the probe deadline (GPT-PM round-3)", async () => {
+    const fetchJson = jest.fn();
+    const result = await runEnforcementStateProbe({
+      getAccessToken: () => new Promise<string>(() => {}), // never resolves
+      fetchJson,
+      // Forces the deadline branch to win deterministically -- no real
+      // elapsed wall-clock wait, no fake system timers.
+      raceDeadline: async (_promise, _remainingMs, label) => {
+        throw new Error(`probe deadline exceeded during ${label}`);
+      },
+    });
+    expect(result.status).toBe("FAILED");
+    expect(result.sections.functions.error).toMatch(
+      /probe deadline exceeded during token acquisition/,
+    );
+    // No section made it past token acquisition to attempt a real request.
+    expect(fetchJson).not.toHaveBeenCalled();
+  });
+
+  test("an already-exhausted deadline fails token acquisition closed without racing at all (GPT-PM round-3)", async () => {
+    let calls = 0;
+    const now = () => (calls++ === 0 ? 0 : 100_000);
+    const raceDeadline = jest.fn();
+    const result = await runEnforcementStateProbe({
+      getAccessToken: async () => "fake-token",
+      fetchJson: jest.fn(),
+      now,
+      raceDeadline,
+    });
+    expect(result.status).toBe("FAILED");
+    expect(result.sections.functions.error).toMatch(/probe deadline exceeded/);
+    // The deadline was already gone before token acquisition even started --
+    // raceDeadline itself is never reached, just like fetchJson.
+    expect(raceDeadline).not.toHaveBeenCalled();
+  });
+
+  test("a cloud.firestore release with an invalid updateTime is UNAVAILABLE, not silently OK (GPT-PM round-3)", async () => {
+    const fetchJson = jest
+      .fn()
+      .mockResolvedValueOnce(okJson(oneFunction))
+      .mockResolvedValueOnce(
+        okJson({
+          releases: [
+            {
+              name: "projects/p/releases/cloud.firestore",
+              rulesetName: "projects/p/rulesets/abc123",
+              updateTime: "not-a-real-timestamp",
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(okJson(emptyServices))
+      .mockResolvedValueOnce(okJson(validIdentityConfig));
+    const result = await runEnforcementStateProbe({
+      getAccessToken: async () => "fake-token",
+      fetchJson,
+    });
+    expect(result.sections.firestoreRules.status).toBe("UNAVAILABLE");
+    expect(result.sections.firestoreRules.error).toMatch(/invalid updateTime/);
+    expect(result.sections.firestoreRules.data?.count).toBe(1);
+  });
+
+  test("a function row missing updateTime is UNAVAILABLE, not defaulted to \"?\" (GPT-PM round-3)", async () => {
+    const fetchJson = jest
+      .fn()
+      .mockResolvedValueOnce(
+        okJson({
+          functions: [{ name: "projects/p/locations/x/functions/a", state: "ACTIVE" }], // no updateTime
+        }),
+      )
+      .mockResolvedValueOnce(okJson(oneRelease))
+      .mockResolvedValueOnce(okJson(emptyServices))
+      .mockResolvedValueOnce(okJson(validIdentityConfig));
+    const result = await runEnforcementStateProbe({
+      getAccessToken: async () => "fake-token",
+      fetchJson,
+    });
+    expect(result.sections.functions.status).toBe("UNAVAILABLE");
+    expect(result.sections.functions.error).toMatch(/name\/state\/updateTime/);
   });
 
   test("firestore rules and identity toolkit calls carry the X-Goog-User-Project header", async () => {

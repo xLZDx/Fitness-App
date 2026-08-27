@@ -190,6 +190,51 @@
  * whatever budget actually remains. The deadline is read through the same
  * injectable `deps.now` seam as everything else, so a test can simulate the
  * clock crossing it without real elapsed time or fake system timers.
+ *
+ * ROUND 3 (2026-08-27, same day): GPT-PM's re-review of round 2 found the
+ * deadline was computed before token acquisition but never actually applied
+ * to it, and that a structurally valid `cloud.firestore` row could still be
+ * accepted `OK` with no genuine `updateTime`.
+ *
+ * WHY TOKEN ACQUISITION IS RACED AGAINST THE SAME DEADLINE, NOT A NEW TIMER
+ *
+ * `deadlineAt` used to be computed before `deps.getAccessToken()` so its
+ * elapsed time would count against the budget -- but nothing actually BOUNDS
+ * `getAccessToken()` itself. A hang there (ADC/metadata/token-exchange) would
+ * consume the function's entire 60-second platform timeout before any
+ * section, or this file's own try/catch/log, ever ran -- the identical
+ * silent-platform-kill failure mode the per-request and per-page deadline
+ * checks exist to close, just one step earlier. `deps.raceDeadline()` races
+ * `getAccessToken()`'s promise against the SAME `deadlineAt` (never a second,
+ * independent timer that could outlive it, per GPT-PM's explicit
+ * requirement) and is itself an injectable seam, so a test can force the
+ * deadline branch to win deterministically against a token promise that
+ * never resolves, without a real elapsed wall-clock wait. The real
+ * implementation `.unref()`s its underlying timer so a lost race never keeps
+ * the process alive past the point the rest of this file has already failed
+ * closed, and always clears it so a normal (non-timeout) run never leaks a
+ * live ~45s timer into the background -- this suite already showed a "worker
+ * process failed to exit gracefully... active timers" warning once before,
+ * from an unrelated cause, and this file has no interest in adding a real
+ * one of its own.
+ *
+ * WHY THE cloud.firestore ROW ALSO REQUIRES A VALID updateTime
+ *
+ * Step 10A's own DoD is "active Firestore ruleset + update time," not merely
+ * "a `cloud.firestore` release exists" -- round 2 required the release and
+ * its `rulesetName` but still let `updateTime` default to `"?"` on an
+ * otherwise-OK section. The `cloud.firestore` row specifically (other rows
+ * are unaffected) now also requires a non-empty `updateTime` that
+ * `Date.parse` accepts, or the section reports `UNAVAILABLE` instead of a
+ * snapshot that silently doesn't have the one field Step 10A was built to
+ * prove. Functions' own `updateTime` is held to the same bar (always present
+ * per the v2 API contract, independent of GEN_1/GEN_2). `revision`
+ * (`serviceConfig.revision`) is deliberately NOT made required alongside it:
+ * that field's presence is generation-dependent in ways this file has no
+ * live GEN_1 deployment to verify against (this project's own functions are
+ * all confirmed `GEN_2`), so requiring it now would be encoding an unverified
+ * assumption rather than a proven contract -- kept as best-effort (`?? "?"`)
+ * and left as a scoping call GPT-PM can contest next round if it disagrees.
  */
 import { GoogleAuth } from "google-auth-library";
 
@@ -231,6 +276,14 @@ export type JsonFetcher = (
 
 export type TokenGetter = () => Promise<string>;
 
+/**
+ * Races `promise` against `remainingMs`, resolving/rejecting with whichever
+ * finishes first. Never a second, independent timer -- callers always pass
+ * however much of the SAME whole-probe deadline is left. See module header,
+ * "WHY TOKEN ACQUISITION IS RACED AGAINST THE SAME DEADLINE".
+ */
+export type DeadlineRacer = <T>(promise: Promise<T>, remainingMs: number, label: string) => Promise<T>;
+
 export interface EnforcementStateDeps {
   project: string;
   getAccessToken: TokenGetter;
@@ -239,6 +292,10 @@ export interface EnforcementStateDeps {
    *  Injectable so a test can simulate the clock advancing between calls
    *  without real elapsed time or fake system timers. */
   now: () => number;
+  /** Defaults to a real setTimeout-based race. Injectable so a test can
+   *  force the deadline branch to win deterministically, with no real
+   *  elapsed wall-clock wait. */
+  raceDeadline: DeadlineRacer;
 }
 
 const DEFAULT_PROJECT = "fitness-app-korostelev";
@@ -248,6 +305,28 @@ const MAX_PAGES = 20;
 // (`enforcement_state_schedule.ts`) -- see this file's module header, "WHY
 // THERE IS A WHOLE-PROBE DEADLINE".
 const PROBE_BUDGET_MS = 45_000;
+
+function realRaceDeadline<T>(promise: Promise<T>, remainingMs: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`probe deadline exceeded during ${label}`));
+    }, remainingMs);
+    // Never keep the process alive on this timer alone -- if it's ever left
+    // to fire (it shouldn't be, `.then` below always clears it), the rest of
+    // this file has already failed the probe closed by the time it matters.
+    if (typeof timer.unref === "function") timer.unref();
+    promise.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
+}
 
 async function realGetAccessToken(): Promise<string> {
   const auth = new GoogleAuth({
@@ -280,7 +359,13 @@ async function realFetchJson(
 }
 
 function realDeps(project: string): EnforcementStateDeps {
-  return { project, getAccessToken: realGetAccessToken, fetchJson: realFetchJson, now: Date.now };
+  return {
+    project,
+    getAccessToken: realGetAccessToken,
+    fetchJson: realFetchJson,
+    now: Date.now,
+    raceDeadline: realRaceDeadline,
+  };
 }
 
 /**
@@ -365,10 +450,10 @@ async function checkFunctions(
     return { status: "UNAVAILABLE", error: "empty result: 0 functions returned" };
   }
   const rawItems = pages.items as Record<string, any>[];
-  if (!everyRowHas(rawItems, ["name", "state"])) {
+  if (!everyRowHas(rawItems, ["name", "state", "updateTime"])) {
     return {
       status: "UNAVAILABLE",
-      error: "malformed response: one or more function rows are missing name/state",
+      error: "malformed response: one or more function rows are missing name/state/updateTime",
     };
   }
   const items = rawItems
@@ -376,7 +461,10 @@ async function checkFunctions(
       name: String(f.name).split("/").pop(),
       state: f.state,
       environment: f.environment ?? "?",
-      updateTime: f.updateTime ?? "?",
+      updateTime: f.updateTime,
+      // NOT required alongside name/state/updateTime -- generation-dependent
+      // in ways this file has no live GEN_1 deployment to verify against.
+      // See module header, "WHY THE cloud.firestore ROW ALSO REQUIRES...".
       revision: f.serviceConfig?.revision ?? "?",
     }))
     .sort((a, b) => String(a.name).localeCompare(String(b.name)));
@@ -410,24 +498,35 @@ async function checkFirestoreRules(
     return { status: "UNAVAILABLE", error: "empty result: 0 rule releases returned" };
   }
   const rawItems = pages.items as Record<string, any>[];
-  if (!everyRowHas(rawItems, ["name", "rulesetName"])) {
+  if (!everyRowHas(rawItems, ["name", "rulesetName", "updateTime"])) {
     return {
       status: "UNAVAILABLE",
-      error: "malformed response: one or more rule release rows are missing name/rulesetName",
+      error:
+        "malformed response: one or more rule release rows are missing name/rulesetName/updateTime",
     };
   }
   const items = rawItems.map((r) => ({
     release: String(r.name).split("/").pop(),
     ruleset: String(r.rulesetName).split("/").pop(),
-    updateTime: r.updateTime ?? "?",
+    updateTime: r.updateTime,
   }));
-  if (!items.some((i) => i.release === "cloud.firestore")) {
+  const firestoreRelease = items.find((i) => i.release === "cloud.firestore");
+  if (!firestoreRelease) {
     // A non-empty, well-formed releases list that simply doesn't contain
     // THIS project's actual Firestore ruleset used to read as OK -- see
     // module header, "WHY EVERY ROW IS VALIDATED...".
     return {
       status: "UNAVAILABLE",
       error: "no cloud.firestore release present among returned releases",
+      data: { count: items.length, releases: items },
+    };
+  }
+  if (Number.isNaN(Date.parse(firestoreRelease.updateTime))) {
+    // Step 10A's own DoD is "active ruleset + update time" -- see module
+    // header, "WHY THE cloud.firestore ROW ALSO REQUIRES A VALID updateTime".
+    return {
+      status: "UNAVAILABLE",
+      error: "cloud.firestore release has an invalid updateTime",
       data: { count: items.length, releases: items },
     };
   }
@@ -564,7 +663,13 @@ export async function runEnforcementStateProbe(
 
   let token: string;
   try {
-    token = await deps.getAccessToken();
+    const remaining = deadlineAt - deps.now();
+    if (remaining <= 0) {
+      throw new Error("probe deadline exceeded before token acquisition could complete");
+    }
+    // Raced against the SAME deadline, not a second timer -- see module
+    // header, "WHY TOKEN ACQUISITION IS RACED AGAINST THE SAME DEADLINE".
+    token = await deps.raceDeadline(deps.getAccessToken(), remaining, "token acquisition");
   } catch (e) {
     // No token at all -- every section is unreachable. Reported as FAILED,
     // not four separate identical error strings.
