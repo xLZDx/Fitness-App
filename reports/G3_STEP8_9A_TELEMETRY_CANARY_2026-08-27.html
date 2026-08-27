@@ -1,0 +1,488 @@
+<title>Canary and Telemetry</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --surface-2: #f0ede4;
+    --ink: #1c1a16;
+    --ink-soft: #55504a;
+    --ink-faint: #8b8579;
+    --border: #ddd7c8;
+    --accent: #d99a1b;
+    --accent-ink: #4a3204;
+    --accent-soft: #f5e6c0;
+    --good: #2f7d4f;
+    --good-soft: #dcf0e3;
+    --warn: #b5540a;
+    --warn-soft: #fbe6d2;
+    --crit: #b02a2a;
+    --crit-soft: #fbdede;
+    --mono-surface: #221f1a;
+    --mono-ink: #f2ead9;
+    --shadow: 0 1px 2px rgba(28,26,22,0.06), 0 8px 24px -12px rgba(28,26,22,0.18);
+  }
+
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #17140f;
+      --surface: #211d17;
+      --surface-2: #2a251d;
+      --ink: #f2ead9;
+      --ink-soft: #cbc2ae;
+      --ink-faint: #8f8674;
+      --border: #3a3327;
+      --accent: #e8ac2f;
+      --accent-ink: #2a1c02;
+      --accent-soft: #3d2f10;
+      --good: #5cbf87;
+      --good-soft: #17301f;
+      --warn: #e08a3c;
+      --warn-soft: #3a2510;
+      --crit: #e07070;
+      --crit-soft: #3a1414;
+      --mono-surface: #0e0c09;
+      --mono-ink: #f2ead9;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17140f;
+    --surface: #211d17;
+    --surface-2: #2a251d;
+    --ink: #f2ead9;
+    --ink-soft: #cbc2ae;
+    --ink-faint: #8f8674;
+    --border: #3a3327;
+    --accent: #e8ac2f;
+    --accent-ink: #2a1c02;
+    --accent-soft: #3d2f10;
+    --good: #5cbf87;
+    --good-soft: #17301f;
+    --warn: #e08a3c;
+    --warn-soft: #3a2510;
+    --crit: #e07070;
+    --crit-soft: #3a1414;
+    --mono-surface: #0e0c09;
+    --mono-ink: #f2ead9;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  header { padding-bottom: 8px; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    font-size: clamp(28px, 4.5vw, 38px);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+  .lede {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 32px 0;
+  }
+  .stat {
+    background: var(--surface);
+    padding: 16px 14px;
+    text-align: center;
+  }
+  .stat .n {
+    font-family: 'IBM Plex Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--ink);
+  }
+  .stat .l {
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 3px;
+  }
+
+  section { margin: 44px 0; }
+  h2 {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .h2-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .section-sub { color: var(--ink-faint); font-size: 14.5px; margin: 0 0 18px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card h3 {
+    font-family: 'Archivo', sans-serif;
+    font-size: 16.5px;
+    margin: 0 0 4px;
+  }
+  .card p { margin: 8px 0; color: var(--ink-soft); font-size: 15px; }
+  .card ul { margin: 8px 0; padding-left: 20px; color: var(--ink-soft); font-size: 15px; }
+  .card li { margin: 4px 0; }
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.88em;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--ink);
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    text-transform: uppercase;
+  }
+  .pill-good { background: var(--good-soft); color: var(--good); }
+  .pill-warn { background: var(--warn-soft); color: var(--warn); }
+  .pill-accent { background: var(--accent-soft); color: var(--accent-ink); }
+  .pill-crit { background: var(--crit-soft); color: var(--crit); }
+
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+  .evidence {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border-radius: 8px;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+  .evidence b { color: var(--ink); }
+
+  /* Review cycle timeline */
+  .cycle {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-left: 2px solid var(--border);
+    margin-left: 10px;
+    padding-left: 24px;
+  }
+  .cycle-step {
+    position: relative;
+    padding-bottom: 22px;
+  }
+  .cycle-step:last-child { padding-bottom: 0; }
+  .cycle-step::before {
+    content: '';
+    position: absolute;
+    left: -30px;
+    top: 4px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--ink-faint);
+  }
+  .cycle-step.crit::before { border-color: var(--crit); background: var(--crit-soft); }
+  .cycle-step.fix::before { border-color: var(--accent); background: var(--accent-soft); }
+  .cycle-step.good::before { border-color: var(--good); background: var(--good-soft); }
+  .cycle-step .ct { font-weight: 600; font-size: 15px; }
+  .cycle-step .cd { color: var(--ink-soft); font-size: 14px; margin-top: 3px; }
+  .cycle-step .cd code { font-size: 0.86em; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--ink-faint); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.03em; }
+  td code { font-size: 0.85em; }
+
+  .gap-note {
+    border-left: 3px solid var(--warn);
+    background: var(--warn-soft);
+    padding: 10px 14px;
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+    color: var(--ink);
+    margin-top: 10px;
+  }
+  .gap-note b { color: var(--warn); }
+
+  .table-wrap { overflow-x: auto; }
+
+  footer.provenance-fallback { display: none; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness App · MVP1.G3 · Step 8/9</div>
+    <h1>Error Telemetry and an Access-Verification Canary</h1>
+    <p class="lede">An autonomous pass over three items agreed with GPT-PM: camera/AI error reporting,
+    a structured AI Gateway event, and a working probe that proves — the real way, through Auth and
+    Firestore Security Rules — that an ordinary user can still reach their own data.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ e312cae</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="stat-strip">
+    <div class="stat"><div class="n">7</div><div class="l">commits</div></div>
+    <div class="stat"><div class="n">3</div><div class="l">GPT-PM review rounds</div></div>
+    <div class="stat"><div class="n">22 / 22</div><div class="l">e2e tests</div></div>
+    <div class="stat"><div class="n">388 / 388</div><div class="l">unit tests</div></div>
+  </div>
+
+  <section>
+    <h2><span class="h2-num">01</span> What was built</h2>
+    <p class="section-sub">Three independent items from GPT-PM's authorization (Step 8, round 2), each
+    with its own proof rather than just "code written."</p>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Crashlytics in three swallowed catch blocks</h3>
+        <span class="pill pill-good">Done</span>
+      </div>
+      <p>Three spots in the mobile app caught an error and simply carried on silently — none of them
+      reached Crashlytics. Added, under the constraints GPT-PM set:</p>
+      <ul>
+        <li>Live-mode OCR anchoring — report <b>once per session</b>, not on every 8th frame (otherwise
+        Crashlytics would be flooded).</li>
+        <li>Camera failure — report only for <code>initializationFailed</code>; a permission denial is
+        an expected user state, not an incident.</li>
+        <li>Cloud equipment recognition — only <code>(error, stackTrace)</code>, no photo/prompt/health
+        data, with the same exception rethrown as before.</li>
+        <li>Plus a performance signal: a successful call taking ≥20s is also reported separately — the
+        first version of OBS-1 only covered failures, not slow-but-successful runs.</li>
+      </ul>
+      <div class="evidence"><b>A real regression was found and fixed:</b> an unguarded direct
+      Crashlytics call broke tests — <code>flutter test</code> has no Firebase app, and touching
+      <code>FirebaseCrashlytics.instance</code> throws synchronously. Fixed with the same try/catch
+      pattern already used in <code>main.dart</code>.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Structured AI Gateway event</h3>
+        <span class="pill pill-good">Done</span>
+      </div>
+      <p>The four Gemini calls had no per-operation tagging and no single event carrying latency and
+      token usage — only generic <code>warn</code>/<code>error</code> logs. Added:</p>
+      <ul>
+        <li>An <code>AiGatewayOperation</code> type — strictly 4 values, enforced at compile time.</li>
+        <li>One <code>logger.info("ai_gateway: call", …)</code> event per call, emitted from a single
+        <code>finally</code> — fires on both success and any failure, so a future new failure branch
+        can't accidentally skip it.</li>
+        <li>Quota exhaustion was deliberately not added as a field here — it is already logged
+        elsewhere under the same operation name, and the two logs join on that field.</li>
+      </ul>
+      <div class="evidence">6 new tests assert the event's shape directly: success with tokens, missing
+      <code>usageMetadata</code> → token fields absent (not <code>undefined</code>), timeout, SDK
+      error, empty answer (the one path that throws from inside the <code>try</code> rather than the
+      <code>catch</code>), and that the event fires exactly once per call.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>The canary: an Auth → Firestore probe</h3>
+        <span class="pill pill-accent">Done · not activated</span>
+      </div>
+      <p><code>runCanaryProbe()</code>: mints a custom token (Admin SDK) → exchanges it for a real ID
+      token via the Client SDK → writes/reads/deletes its own document, going through the already
+      published Security Rules. Not a public endpoint: no parameters, no <code>onCall</code> wrapper,
+      nothing pulled from a request.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Verified</th><th>How</th></tr>
+          <tr><td>Full cycle: mint → exchange → write → read → delete → verify</td><td>real Auth + Firestore emulators</td></tr>
+          <tr><td>A token without the <code>canary</code> claim is denied</td><td>real client-side path, not a rules simulation</td></tr>
+          <tr><td>Its own canary can't see another <code>_canary/</code> doc or ordinary <code>/users/…</code></td><td>same</td></tr>
+          <tr><td>A hung write → the function still returns on time</td><td>a real 15-second wait, not a mock</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="h2-num">02</span> How GPT-PM caught real problems</h2>
+    <p class="section-sub">"Green tests = done" did not hold up on its own, twice in a row — both times
+    GPT-PM's independent review found something the tests didn't cover.</p>
+
+    <div class="cycle">
+      <div class="cycle-step crit">
+        <div class="ct">Plan closure submitted for review</div>
+        <div class="cd">GPT-PM independently re-verified the commit range and found 2 real MAJORs:
+        cleanup/teardown had no time bound at all, and an <code>apiKey</code> placeholder was
+        substituted even outside the emulator.</div>
+      </div>
+      <div class="cycle-step fix">
+        <div class="ct">Remediation round 1</div>
+        <div class="cd">Own timeouts for delete/sign-out/channel-close, a shared 45s hard deadline over
+        the whole function, cleanup status became tri-state (<code>true | false | "unknown"</code>) —
+        a timeout now honestly says "don't know" instead of claiming "failed." Added a real
+        hung-write test.</div>
+      </div>
+      <div class="cycle-step crit">
+        <div class="ct">Re-review: MAJOR #1 closed, MAJOR #2 only partially</div>
+        <div class="cd">The "emulator mode" check used <code>OR</code> across two independent
+        environment variables, while each service connects to its own emulator independently. A
+        partial configuration could silently talk to production with one leg.</div>
+      </div>
+      <div class="cycle-step fix">
+        <div class="ct">Remediation round 2</div>
+        <div class="cd">Both variables must match (both set or both unset), otherwise an explicit
+        refusal — even if a real key is already configured. Two new tests for both half-configured
+        states.</div>
+      </div>
+      <div class="cycle-step good">
+        <div class="ct">Final approval</div>
+        <div class="cd">GPT-PM: "No remaining BLOCKER/MAJOR/MINOR." Rosetta plan closed with
+        <code>PASSED</code>.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="h2-num">03</span> What honestly remains open</h2>
+    <div class="gap-note"><b>A real Web API key</b> — without it the probe cannot connect to production
+    Auth (only to the emulator). This session has no access to live GCP credentials to obtain and
+    verify one. The probe correctly refuses to run unsafely instead of silently falling back to a
+    placeholder.</div>
+    <div class="gap-note"><b>DECISION FA-D1</b> — who owns production alerts (on-call) is the
+    operator's decision, still pending. Until it lands, no notification channel is created or wired
+    up.</div>
+  </section>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

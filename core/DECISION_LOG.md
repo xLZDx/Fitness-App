@@ -28229,3 +28229,16 @@ definitions, and AI Gateway monitoring queries reading the structured event buil
 its own bounded piece of work, same discipline (real implementation, real tests, explicit
 IMPLEMENTED/TESTED/READY_TO_ACTIVATE status, no live Scheduler/Monitoring/alert activation until
 `FA-D1` clears).
+
+## Step 8/9A: bilingual status report written and published -- 2026-08-27
+
+Per CLAUDE.md Sec 2's mandatory `html-report` format, wrote the segment report covering: the 3
+mobile Crashlytics/performance instrumentation catch blocks (Sec 12), the AI Gateway structured
+observability event (Sec 13), and the Step 9A canary probe across both GPT-PM adversarial review
+rounds (this section's own prior entries). `reports/G3_STEP8_9A_TELEMETRY_CANARY_2026-08-27.ru.html`
+(Russian, published as an artifact and handed to the operator) and the English `.html` counterpart
+(durable in-repo record, not linked) -- both conformed via `report_conform.py` (provenance block +
+copy button injected, `--check` clean). No code change in this commit; report files only.
+
+Per PM mode (Sec 18 of the global contract), this is a checkpoint, not a stop: continuing directly
+into the remaining alert-independent Step 9 groundwork GPT-PM authorized above.
