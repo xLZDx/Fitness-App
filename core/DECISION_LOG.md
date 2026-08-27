@@ -28611,3 +28611,43 @@ bounding), 0 findings dismissed without a fix. Nothing live created anywhere. Th
 exhausted the alert-independent groundwork GPT-PM authorized; further progress on Step 9 needs
 either the operator's FA-D1 answer, live GCP cost/credential access this session does not have, or
 new authorization from GPT-PM for a different part of the gate.
+
+## MVP1.G3: IMPLEMENTATION COMPLETE / ACTIVATION BLOCKED -- FA-D1 escalated to operator -- 2026-08-27
+
+Asked GPT-PM directly what the next gate/priority is, since Step 9's alert-independent groundwork
+is exhausted. GPT-PM's ruling: **no further autonomous G3 coding work right now** -- would either
+duplicate already-built definitions, invent activation mechanics against a live environment this
+session cannot reach, or route around the explicit FA-D1/cost/config HOLDs. "This would be
+manufactured work, not project progress."
+
+**G3 status, GPT-PM's own framing:** `IMPLEMENTATION COMPLETE / ACTIVATION BLOCKED`, not `DONE` --
+three prerequisite groups block Step 9B (production activation + end-to-end alert delivery proof),
+and answering FA-D1 alone does not clear all three:
+
+| Prerequisite | Status | Unblocked by |
+| --- | --- | --- |
+| FA-D1 -- runtime alert owner | PENDING | explicit operator decision |
+| Production `FIREBASE_WEB_API_KEY` | `BLOCKED_CONFIG` | live Firebase/GCP config access |
+| User-defined metric cost proof | `HOLD_LIVE_CREATION_COST` | billing/usage evidence; a nonzero figure needs its own operator cost decision |
+
+GPT-PM also laid out the full binding Step 9B sequence for when prerequisites clear (activation
+preflight -> FA-D1 channel + real delivery proof -> deploy/activate the canary on a consolidated
+Scheduler job -> activate the three rare-failure alerts -> create the approved live metrics ->
+on-device runtime telemetry proof -> final adversarial verification) -- recorded here so it does
+not need re-deriving later, not acted on now.
+
+**Escalated FA-D1 to the operator** via `pm_log_decision` (id `FA-D1`, `PENDING`), per CLAUDE.md
+Sec 16 -- this is a genuine business/ownership decision (who is personally accountable as
+production on-call recipient), the kind of real decision Sec 16 itself carves out as not GPT-PM's
+to make on the operator's behalf, not a routine technical or product call. GPT-PM's own
+recommendation: the operator as primary owner, using the GCP project owner's own Google account as
+the default email destination, revisable later -- offered as a recommendation, not decided for the
+operator.
+
+**Stopping this turn**, naming the blocking decision per the operating contract's own exit
+condition: this session has no further authorized work until either (a) the operator answers
+FA-D1, or (b) live GCP/billing/credential access becomes available to this session (neither of
+which this session can produce on its own). GPT-PM's own fallback if GCP access remains
+unavailable even after FA-D1: redirect to the next independent MVP gate outside G3 rather than
+continue circling G3 -- not acted on now, since that is itself a new scope decision to make only
+once FA-D1's answer is in hand.
