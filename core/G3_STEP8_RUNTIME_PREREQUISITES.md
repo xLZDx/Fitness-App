@@ -533,3 +533,41 @@ Sec 12); full functions suite 388/388, including all 4 callable suites unchanged
 this event (error-rate spike, quota-exhaustion-rate) -- Sec 6.6's own scoping puts assembling those
 in Step 9, which also waits on `FA-D1` for an alert destination regardless. This item is the event
 existing to be read from.
+
+## 14. Step 9 status vocabulary and 9A (canary probe) -- IMPLEMENTED/TESTED/READY_TO_ACTIVATE
+
+GPT-PM ruling (2026-08-27, full exchange in `core/DECISION_LOG.md`'s "Step 9A" entry): Step 9 does
+NOT wait on `FA-D1` as a single unit. Alert-independent groundwork across all 6 planned monitors is
+GO now, under binding status vocabulary:
+
+- `IMPLEMENTED` / `TESTED` / `READY_TO_ACTIVATE` -- allowed before `FA-D1`.
+- `ACTIVE` / `VERIFIED` / `DONE` -- only after `FA-D1` clears AND a live end-to-end delivery proof.
+- `BLOCKED_FA-D1` -- for the final activation/delivery step specifically, not for the whole item.
+
+What stays on HOLD regardless: the production human-facing alert binding, and any live deployment
+whose real recurring cost (after minimization) is confirmed nonzero and not already accepted.
+Everything else -- production implementation code, tests, controlled-failure fixtures, filters/query
+definitions, deployment config, cost estimates -- is explicitly not blocked.
+
+**9A (canary auth->Firestore probe): IMPLEMENTED/TESTED/READY_TO_ACTIVATE.** Full detail and proof in
+`core/DECISION_LOG.md`'s own entry. Summary: `functions/src/canary_probe.ts`'s `runCanaryProbe()` --
+mint (Admin SDK) -> exchange (real Client SDK `signInWithCustomToken`) -> write/read/delete through
+the exchanged identity against the already-shipped `_canary/` Security Rules (commit `6e91b10`) ->
+fail-safe cleanup -> bounded, non-sensitive result. Not a public endpoint, not wired to any Scheduler
+or alert. Moved `firebase` (Client SDK) from `devDependencies` to `dependencies` (a real deploy-time
+gap GPT-PM's DoD named explicitly). Found and fixed a second, unrelated real gap while building this:
+`_canary` had no G3-CI-8 lifecycle-policy entry (the earlier canary-rules commit never re-ran that
+check after adding the collection) -- now classified `EXEMPT`.
+
+Proof: `npm run test:e2e` (real Auth+Firestore emulators -- `npm run test:rules` alone was explicitly
+rejected by GPT-PM as insufficient proof of the Auth exchange) 17/17, covering the full positive
+mint->exchange->write->read->delete->verify cycle, an injected-failure cleanup proof, and all 3
+required negative-security proofs via the real client path. Two real regressions found and fixed
+while building this proof (an emulator-only `apiKey` requirement, and a leaked Firestore gRPC
+channel) -- both documented with what was actually broken and how the fix was confirmed load-bearing,
+not just applied and assumed. Stated proof gaps: the 15s timeout has no induced-hang test yet; the
+real Web API key needed for actual production Auth calls (`FIREBASE_WEB_API_KEY`) has no value
+configured anywhere, since this sandboxed session has no live GCP credentials to obtain or verify it.
+
+**Not built:** the Cloud Scheduler job, any `onSchedule` deployment, or any alert/notification
+channel -- Step 9B, waiting on `FA-D1`, per GPT-PM's explicit scope split.

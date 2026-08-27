@@ -27960,3 +27960,126 @@ custom metric needs its real recurring cost computed before being claimed as acc
 Monitoring custom-metric ingestion, no new dependency, no new infrastructure. Building the actual
 log-based metrics/alerts that READ this event (error-rate spike, quota-exhaustion-rate) is Step 9's
 job per Sec 6.6's own scoping, not this item's -- this item is the event existing to be read from.
+
+## MVP1.G3 Step 9A: canary auth->Firestore probe -- IMPLEMENTED/TESTED/READY_TO_ACTIVATE -- 2026-08-27 03:46 UTC
+
+Rosetta plan `6f47776803413019ddf9572f03a20a7016e48cd7d757687891959396b18bbed5` against base `33d4461`,
+GPT-PM GO. Follows a GPT-PM round asking whether any of Step 9 is safe to build while `FA-D1`
+(runtime-alert owner) stays PENDING -- ruling: yes, alert-independent groundwork across all 6 planned
+monitors is GO, status vocabulary IMPLEMENTED/TESTED/READY_TO_ACTIVATE (allowed now) vs
+ACTIVE/VERIFIED/DONE (needs FA-D1 plus live delivery proof). This item is the first slice: the canary
+probe itself, built to the detailed binding DoD GPT-PM gave for this specific plan.
+
+**Built:** `functions/src/canary_probe.ts` -- `runCanaryProbe()`, an internal (not re-exported from
+`index.ts`, not a callable) service function: `admin.auth().createCustomToken(CANARY_UID, {canary:
+true})` (Admin SDK -- the one thing only server code can do) -> `signInWithCustomToken()` via the
+real Firebase Client SDK (`firebase/auth`) -> authenticated write/read/delete against
+`_canary/{CANARY_UID}` via the real Firebase Client SDK's Firestore (`firebase/firestore`), subject to
+the already-shipped Security Rules (commit `6e91b10`) -- deliberately NOT the Admin SDK for the
+probe's own read/write, since Admin SDK bypasses rules and would prove nothing about whether a real
+user's Auth/Rules path still works. Returns a bounded `CanaryProbeResult` (`success`, `latencyMs`,
+`stage`, `failureClass` from a fixed 8-value taxonomy, `cleanupAttempted`/`cleanupSucceeded`/
+`cleanupFailureClass`) -- no token, credential, or document payload anywhere in it or in any log line.
+Fail-safe cleanup: a `finally` block attempts a cleanup delete unless the document is already
+confirmed gone, covering every failure path after a successful write, not only the ones anticipated
+in advance. Whole-probe deadline (15s) via a logical timeout (`Promise.race`, honestly documented as
+NOT a true cancellation -- the Client SDK calls accept no `AbortSignal`, unlike `ai_gateway.ts`'s
+Gemini calls).
+
+**Dependency correctness:** `firebase` (the Client SDK) moved from `functions/package.json`'s
+`devDependencies` to `dependencies` -- GPT-PM named this exact failure mode explicitly ("tests pass
+because the package is available in the development tree but the deployed Functions artifact would
+not install it"). `npm install` re-run; `package-lock.json`'s diff confirms the whole `firebase`
+dependency subtree lost its `"dev": true` marker, not just the top-level entry.
+
+**A second real gap found and fixed while building this, unrelated to the probe's own logic:**
+G3-CI-8's own coverage check (`node scripts/ci/check_data_lifecycle_coverage.js`) flagged `_canary` as
+an in-use collection with no lifecycle policy entry. The `_canary/` block was added to `firestore.rules`
+in the earlier canary-rules commit (`6e91b10`), which never re-ran G3-CI-8's check after adding it --
+a real drift, same class as the `equipment_setup_notes`/`receipts`/`coach_listings` gaps G3-CI-8 itself
+was built to catch, just this time in G3-CI-8's own blind spot for a collection added after its policy
+file was frozen. Fixed: added `_canary` to `data_lifecycle_policy.json` classified `EXEMPT` (not real
+user data, top-level so `deleteAccount`'s `recursiveDelete` never touches it, and the probe deletes its
+own document within one call so nothing durable accumulates there). Re-run confirms 35/35 collections
+now classified.
+
+**Positive proof (GPT-PM's DoD, item by item):**
+- Real Auth exchange, not simulated: `functions/src/__e2e__/canary_probe.e2e.test.ts`, run via
+  `npm run test:e2e` (starts BOTH the Firestore and Auth emulators -- `npm run test:rules` alone,
+  which GPT-PM explicitly flagged as insufficient, starts Firestore only and was not used as proof of
+  this item). "A full run mints, exchanges, writes, reads back, deletes, and verifies deletion":
+  `result.success === true`, no `failureClass`, `cleanupAttempted === false` (delete already
+  succeeded), AND an independent Admin-SDK read confirms no document remains -- not trusting the
+  probe's own self-report alone.
+- No public token-minting endpoint: `runCanaryProbe` is not exported from `index.ts`, has no `onCall`/
+  `onRequest` wrapper, and accepts no uid/path/claim parameter -- verified by reading the file, not
+  merely asserted.
+- Structured result is bounded and non-sensitive: a dedicated test statically checks the result shape
+  carries none of `token`/`idToken`/`customToken`/`document`/`data`.
+- Cleanup is fail-safe and observable, including the injected-failure case GPT-PM specifically asked
+  for: `runCanaryProbe({ injectFailureAfterWrite: true })` (a test-only seam -- a boolean flag, no
+  uid/path/claim, never set by any production caller) throws immediately after a REAL write succeeds;
+  the test confirms `cleanupAttempted === true`, `cleanupSucceeded === true`, and independently
+  verifies no document remains via a separate Admin-SDK read.
+- Three negative security proofs, all via the real client path (not rules-unit-testing): a token with
+  no `canary` claim is denied on `_canary/` (both write and read); a valid canary identity cannot
+  reach a DIFFERENT canary uid's `_canary/` document; a valid canary identity is denied on an ordinary
+  `/users/{CANARY_UID}/...` path.
+- Execution is bounded: the 15s logical timeout is implemented and documented; not separately proven
+  under a real induced hang in this round (no live network to actually stall against in the emulator
+  environment) -- stated as a proof gap below, not silently assumed covered.
+
+**Full test evidence:** `npm run build` (tsc) clean. `npx jest` (mocked suite): 388/388, unchanged --
+`canary_probe.ts` is not exercised by the mocked config, by design (it needs the real SDK path).
+`npx jest ai_gateway` and the 4 callable suites: unaffected, re-confirmed. `npm run test:rules`:
+113/113, unaffected (run with `FIRESTORE_EMULATOR_PORT=8098` locally, port 8080 occupied by an
+unrelated Docker Desktop process on this machine -- same recurring environment friction as the canary
+Security Rules commit, worked around the same way: temporary `firebase.json`/`jest.e2e.setup.js`
+port edits for local verification only, both confirmed reverted via `git diff --stat` empty before
+this commit). `npm run test:e2e`: 17/17 (11 existing `account_deletion.e2e.test.ts` + 6 new), same
+temporary port workaround.
+
+**A real regression fixed while building the e2e proof, not a clean first pass:**
+1. `getAuth(app)` threw `auth/invalid-api-key` even against the emulator -- the Client SDK's
+   `initializeAuth()` asserts an `apiKey` is present before constructing an `Auth` instance at all,
+   regardless of whether the value is ever actually checked against a real backend. Fixed by adding a
+   placeholder `apiKey` for the emulator path. Real gap, stated rather than papered over:
+   `FIREBASE_WEB_API_KEY` (a new env var, not a secret -- Firebase API keys are safe to embed
+   client-side and this project's Android key is already public in `mobile/lib/firebase_options.dart`)
+   must be set to the project's real Web API key before this ever runs against production Auth -- an
+   Android-restricted key (the only kind this repo currently has on file) would very likely be
+   rejected by Google's own per-platform key restrictions when called from a Node.js server context
+   with no package name to present. This sandboxed session has no live GCP credentials to fetch or
+   verify the real Web API key, same limitation `ai_gateway.ts` already documents for its own Vertex
+   location default -- left as an explicit, loud gap in `canary_probe.ts`'s own comment, not guessed.
+2. A leaked Firestore gRPC channel caused Jest to report open handles after every e2e run. Fixed by
+   calling `terminate(db)` before `deleteApp(app)` in both the probe itself and the test's own
+   `signInAs` helper -- confirmed load-bearing by removing it and re-observing the warning, matching
+   this whole gate's practice of proving a fix actually fixes something rather than assuming it does.
+   A SECOND, smaller "Jest did not exit" warning remains after this fix -- isolated (temporarily
+   removing the new test file made it disappear entirely) to the Firebase Auth SDK's Node platform
+   binding, which has no public teardown for its internal token-refresh timer. Documented in the test
+   file's own header as known and non-blocking: every assertion passes, the wrapper script still exits
+   0, and it says nothing about the deployed function's own runtime (a fresh process per Cloud
+   Functions cold start, not a long-lived one accumulating this test harness's specific state).
+
+**Deliberately not built here (explicit HOLD, per GPT-PM's own scope split):** the Cloud Scheduler job
+or any `onSchedule` deployment that would provision one; any Cloud Monitoring alert, notification
+channel, or policy; anything that runs this against production on a cadence. Confirmed: no such
+resource was created or referenced anywhere in this change. Step 9B (create/bind the channel, deploy
+the schedule, prove live delivery) waits on `FA-D1`, still `PENDING` as of this entry.
+
+**Proof gaps, stated rather than implied:**
+- The 15s timeout's actual behavior under a genuinely hung Auth/Firestore call is implemented and
+  reasoned about but not exercised by an induced-hang test this round -- the emulator has no easy way
+  to simulate a stalled network call the way `ai_gateway.test.ts` simulates one via a
+  never-resolving mock. A future round could add a fake-timers-based test for this specifically if the
+  gap is judged worth closing before Step 9B.
+- `FIREBASE_WEB_API_KEY` has no real value configured anywhere yet -- this function is READY_TO_
+  ACTIVATE in the sense GPT-PM defined (implementation + tests + controlled-failure proof + known
+  cost + deployment config), not deployable against production Auth until that env var is set to the
+  project's real Web API key, which requires live GCP access this session does not have.
+
+**Cost:** zero new spend. `runCanaryProbe()` is not deployed as any triggerable resource by this
+change (no `onCall`/`onSchedule`/`onRequest` wrapper exists yet) -- it is source code and tests only,
+callable exclusively from Step 9B's own future wrapper or from a test file that imports it directly.

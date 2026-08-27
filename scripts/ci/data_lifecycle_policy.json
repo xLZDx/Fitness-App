@@ -1,6 +1,10 @@
 {
   "_comment": "MVP1.G3-CI-8 (Data Lifecycle Coverage Drift Guard). Every collection discovered by check_data_lifecycle_coverage.js (firestore.rules match-blocks UNION literal .collection('name') calls in production source) must have an entry here. classification is one of DELETE / EXPORT / BOTH / EXEMPT -- DELETE means covered by deleteAccount, EXPORT means covered by exportAccountData, BOTH means both, EXEMPT means neither applies and why. `users` itself is intentionally absent -- it is the root container, not a distinct data class; every subcollection under it is classified individually below.",
   "collections": {
+    "_canary": {
+      "classification": "EXEMPT",
+      "reason": "Not real user data -- the synthetic runtime-monitor identity's own namespace (firestore.rules' isCanaryToken()/_canary block, MVP1.G3 Step 9A, functions/src/canary_probe.ts). Top-level, not nested under users/, so deleteAccount's recursiveDelete never touches it; the probe writes and deletes its own single document within one call, so nothing durable is expected to accumulate there for exportAccountData to miss."
+    },
     "coach_bookings": {
       "classification": "BOTH",
       "reason": "Top-level, keyed by clientUid/coachUid. Deleted via sweepSharedRecords (functions/src/index.ts ~1989-1991, queried by both uid fields). Exported redacted, both sides merged and de-duplicated (account_export.ts, BOOKING_SELF_FIELDS allow-list)."
