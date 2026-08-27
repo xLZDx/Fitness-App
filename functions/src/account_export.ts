@@ -207,6 +207,8 @@ export const exportAccountData = onCall(RARE, async (request) => {
       machineCards,
       recognisedEquipment,
       generatedExercises,
+      equipmentSetupNotes,
+      receipts,
       donorWall,
       coachListing,
       bookingsAsClient,
@@ -224,6 +226,26 @@ export const exportAccountData = onCall(RARE, async (request) => {
       sub(uid, "machine_cards", truncated),
       sub(uid, "recognised_equipment", truncated),
       sub(uid, "generated_exercises", truncated),
+      // MVP1.G3-CI-8: was missing entirely -- deleteAccount's recursiveDelete
+      // already covered this subcollection (it sweeps everything under
+      // users/{uid}), but exportAccountData did not, so a user's own setup
+      // notes were deletable but not retrievable on request. Found by
+      // building the data-lifecycle coverage drift guard, not by inspection.
+      sub(uid, "equipment_setup_notes", truncated),
+      // MVP1.G3-CI-8: also missing entirely, and the more serious of the two
+      // -- `index.ts:1225`'s own comment calls this "the one document a user
+      // might hand to a tax authority". `firestore.rules:63-77` closes both
+      // `usage` and `receipts` to client reads with the SAME stated reason
+      // ("the callable's own response is what the UI renders") that
+      // `account_export.ts`'s own top-of-file doc comment gives for reaching
+      // `debug_sessions`/`coach_bookings`/`equipment_reports` via the Admin
+      // SDK specifically BECAUSE a client cannot read them directly -- that
+      // reasoning applies here just as directly, and nothing had applied it.
+      // `usage` (daily rate-limit counters) is deliberately NOT added here:
+      // operational-only, regenerated daily, no content a user would
+      // recognise as their own -- classified EXEMPT-from-export in
+      // scripts/ci/data_lifecycle_policy.json, unlike this one.
+      sub(uid, "receipts", truncated),
       one(`donor_wall/${uid}`),
       one(`coach_listings/${uid}`),
       owned("coach_bookings", "clientUid", uid, truncated),
@@ -246,6 +268,8 @@ export const exportAccountData = onCall(RARE, async (request) => {
       machineCards,
       recognisedEquipment,
       generatedExercises,
+      equipmentSetupNotes,
+      receipts,
       donorWall,
       coachListing,
       // Both sides in one list rather than two keys: a booking is one event

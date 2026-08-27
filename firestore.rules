@@ -257,6 +257,23 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // A coach's own marketplace listing, keyed by their uid. Same server-only
+    // pattern as `coach_bookings` above -- and until this block, this
+    // collection had NO rule of its own at all, so it was only default-denied
+    // by Firestore's implicit deny-everything-unmatched behaviour rather than
+    // by an explicit decision a reader could point at. Found while building
+    // MVP1.G3-CI-8's data-lifecycle coverage guard, which surfaced it as a
+    // real collection with no rules entry -- the same "present in code,
+    // absent from the file that is supposed to name every collection" gap
+    // `coach_bookings`'s own comment above already describes for itself.
+    // `index.ts` reads/writes it via the Admin SDK (create/update the coach's
+    // own listing, look up a coach by id) and `account_export.ts` exports a
+    // user's own listing -- neither goes through client rules, so this stays
+    // explicit-deny rather than opened for a client read that has no caller.
+    match /coach_listings/{coachUid} {
+      allow read, write: if false;
+    }
+
     // P1.G1 T2/T4 (SPTR Equipment Recognition v4.4, core/design/
     // sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_
     // CONTRACTS_AND_AC_DOD_2026-08-22.md). A user's resolved exact-model

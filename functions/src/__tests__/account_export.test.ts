@@ -112,6 +112,12 @@ test("carries every store the inventory lists for this user", async () => {
   ]);
   collections.set("users/u1/recognised_equipment", [{ id: "r1", data: {} }]);
   collections.set("users/u1/generated_exercises", [{ id: "g1", data: {} }]);
+  collections.set("users/u1/equipment_setup_notes", [
+    { id: "n1", data: { note: "seat height 4" } },
+  ]);
+  collections.set("users/u1/receipts", [
+    { id: "2026", data: { totalCents: 4999 } },
+  ]);
   collections.set("coach_bookings", [
     { id: "b1", data: { clientUid: "u1", coachUid: "c9" } },
     { id: "b2", data: { clientUid: "c8", coachUid: "u1" } },
@@ -133,6 +139,8 @@ test("carries every store the inventory lists for this user", async () => {
   expect(res.machineCards[0]).toMatchObject({ note: "seat 4" });
   expect(res.recognisedEquipment).toHaveLength(1);
   expect(res.generatedExercises).toHaveLength(1);
+  expect(res.equipmentSetupNotes[0]).toMatchObject({ note: "seat height 4" });
+  expect(res.receipts[0]).toMatchObject({ totalCents: 4999 });
   expect(res.donorWall).toMatchObject({ name: "Ivan" });
   expect(res.coachListing).toMatchObject({ bio: "coach" });
   // Both ends of the marketplace, in one list.

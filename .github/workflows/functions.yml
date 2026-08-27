@@ -199,3 +199,26 @@ jobs:
       # the script only uses Node's built-in fs/path.
       - name: content-level parity check
         run: node scripts/ci/check_equipment_registry_parity.js
+
+  data-lifecycle-coverage:
+    name: data lifecycle coverage drift guard (G3-CI-8)
+    runs-on: ubuntu-latest
+    # Overrides the file-level `defaults.run.working-directory: functions` --
+    # this check reads firestore.rules, functions/src/ and mobile/lib/, so it
+    # needs the repo root, not either subtree.
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      # MVP1.G3-CI-8: deleteAccount can return 200/OK for years while
+      # silently missing a new Firestore collection -- coverage was a
+      # point-in-time human inventory ("A0", core/DECISION_LOG.md), not an
+      # enforced invariant. This discovers every collection actually in use
+      # (firestore.rules match-blocks UNION literal .collection() calls in
+      # production source) and fails on any collection with no explicit
+      # DELETE/EXPORT/BOTH/EXEMPT lifecycle policy entry in
+      # scripts/ci/data_lifecycle_policy.json. No npm install needed -- the
+      # script only uses Node's built-in fs/path.
+      - name: data lifecycle coverage check
+        run: node scripts/ci/check_data_lifecycle_coverage.js

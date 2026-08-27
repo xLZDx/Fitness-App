@@ -27679,3 +27679,82 @@ investigation, not new scope -- no new Rosetta re-plan required to act on them.
 Proceeding to build G3-CI-8 first (self-contained, mirrors the established `[CI]` item pattern from
 items 1-7), then the canary Security Rules/tests, then the Crashlytics/performance instrumentation,
 then the AI Gateway observability plumbing -- in that order, each independently committed and pushed.
+
+## MVP1.G3-CI-8: Data Lifecycle Coverage Drift Guard -- built, 2 real gaps fixed -- 2026-08-27
+
+**Disposition:** per GPT-PM's round-2 ruling, built inside this gate rather than deferred to roadmap.
+Dispatched a read-only Explore agent to enumerate every Firestore collection actually referenced in
+`functions/src/`, `functions-equipment-identity/src/`, `mobile/lib/`, and `firestore.rules` --
+independently re-verified rather than trusted (its report undercounted `coach_listings`' real
+reference sites; caught by directly reading `account_export.ts`, which the agent's own citation list
+had missed).
+
+**Design:** `scripts/ci/check_data_lifecycle_coverage.js` discovers collections from TWO independent
+sources and unions them by leaf name -- (1) `firestore.rules` `match /path/{var}` blocks (a regex
+distinguishes a literal collection segment from the generic per-user wildcard
+`/users/{uid}/{coll}/{document=**}`, which is skipped since it names no specific collection), and
+(2) literal `.collection('name')`/`.collection("name")` calls in PRODUCTION source (test directories
+excluded). Neither source alone is sufficient: rules do not enumerate the ordinary per-user
+subcollections that fall through the generic wildcard (`workout_logs`, `programmes`, ...), and code
+alone would miss a rules-reserved-but-not-yet-wired namespace (`recognised_models` and its siblings).
+Each of the 34 collections found requires an entry in `scripts/ci/data_lifecycle_policy.json`
+(`DELETE`/`EXPORT`/`BOTH`/`EXEMPT` + a mandatory non-empty reason); a collection with no entry fails
+CI. A stale policy entry (no current source reference) is printed as a non-blocking hygiene note, not
+a failure -- deliberately, since a removed feature's leftover policy entry is a much lower-severity
+issue than an under-classified live collection.
+
+**Two real gaps found and fixed while building the classification, not invented for the exercise:**
+1. **`equipment_setup_notes`** (a user's own per-machine setup notes) was DELETE-covered (swept by
+   `deleteAccount`'s `recursiveDelete` on `users/{uid}`, which cascades to every subcollection
+   regardless of name) but completely absent from `exportAccountData` -- a user's own notes were
+   deletable but not retrievable on request. Fixed: `functions/src/account_export.ts` now reads it via
+   `sub(uid, "equipment_setup_notes", truncated)`, added to both the destructured Promise.all and the
+   returned object.
+2. **`receipts`** (server-generated annual billing receipts) -- the more serious of the two.
+   `index.ts:1225`'s own comment calls this "the one document a user might hand to a tax authority."
+   `firestore.rules:63-77` closes both `usage` and `receipts` to client reads with the stated reason
+   "the callable's own response is what the UI renders" -- but `exportAccountData`'s own top-of-file
+   doc comment gives the EXACT SAME reasoning for reaching `debug_sessions`/`coach_bookings`/
+   `equipment_reports` via the Admin SDK specifically because a client cannot read them directly.
+   That reasoning was never applied to `receipts`. Fixed the same way as `equipment_setup_notes`.
+   `usage` (daily rate-limit counters) was deliberately NOT added -- classified `DELETE`-only
+   (EXEMPT from export) with a stated reason: operational-only, regenerated daily, no user-recognisable
+   content, unlike `receipts`.
+3. **`coach_listings` had NO `firestore.rules` entry at all** -- real, in production use (server reads/
+   writes via `index.ts`, exported via `account_export.ts`), covered only by Firestore's implicit
+   deny-everything-unmatched default rather than an explicit decision, exactly the same "present in
+   code, absent from the file that names every collection" gap `coach_bookings`'s own existing comment
+   already described for itself before it was fixed. Added an explicit `allow read, write: if false`
+   block, matching the `coach_bookings` pattern.
+
+**Positive proof:** `node scripts/ci/check_data_lifecycle_coverage.js` against real current state --
+"34 collection(s) in use (24 from firestore.rules, 17 from source), 34 classified in policy... OK",
+exit 0. `npx jest src/__tests__/account_export.test.ts` -- 11/11 pass, including 2 new assertions
+(`equipmentSetupNotes`, `receipts`) against real seeded fixture data. Firestore rules emulator suite
+(`npm run test:rules`, real `@firebase/rules-unit-testing` against a live Firestore emulator, port
+8080 was occupied by an unrelated Docker Desktop process on this machine -- temporarily repointed to
+8098 via `firebase.json` for local verification only, reverted after, confirmed via `git diff --stat`
+empty) -- 108/108 pass, including the new `coach_listings` denial test. Full functions suite:
+`npx jest` -- 382/382 pass across 15 suites. `npm run build` (tsc) -- compiles clean.
+
+**Negative proof, 3 scenarios, all real (not simulated in isolation):**
+(a) **new unclassified collection**: a temporary scratch file
+(`functions/src/__scratch_ci8__/fixture.ts`, deleted immediately after) referencing
+`.collection('fixture_new_collection')` -- the checker reported it as missing a policy entry.
+(b) **removed coverage of an existing collection**: temporarily deleted `workout_logs`'s entry from
+`data_lifecycle_policy.json` -- reported missing, exit 1. Both (a) and (b) run together in one pass:
+"Collection(s) in use with NO lifecycle policy entry: fixture_new_collection, workout_logs", exit 1.
+Restored from a backup copy and re-verified clean (34/34, exit 0) before committing.
+(c) **`equipment_setup_notes`/`receipts` export regressions**: each temporarily replaced with
+`Promise.resolve([])` in `account_export.ts` -- the corresponding new test assertion failed with
+"received value must be a non-null object", confirming the regression tests actually detect the bug
+they exist to catch, not just happen to pass. Both restored, full suite re-confirmed green.
+(d) **`coach_listings` rules regression**: temporarily changed `allow read: if false` to
+`if true` -- exactly 1 test failed (`coach listings are closed to clients`), the other 107 stayed
+green, confirming the new rules test discriminates a real security regression rather than always
+passing. Restored, `firebase.json`'s emulator port reverted to 8080, full rules suite re-confirmed
+108/108 green.
+
+**Wired into `.github/workflows/functions.yml`** as a new `data-lifecycle-coverage` job, mirroring
+item 4's `equipment-registry-parity` job precedent (repo-root working directory override, no npm
+install needed -- Node built-ins only).

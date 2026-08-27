@@ -335,6 +335,20 @@ describe("coach bookings are closed to clients", () => {
   });
 });
 
+// MVP1.G3-CI-8. Before this collection had its own explicit-deny block, it
+// had NO rule at all -- so this test would have passed anyway, on the
+// implicit deny-everything-unmatched default. That is exactly the gap the
+// rules file now closes explicitly: the same behaviour, but as a decision a
+// reader (or this test) can point at, not an accident of omission.
+describe("coach listings are closed to clients", () => {
+  test("no read and no write, even for the coach who owns the listing", async () => {
+    await assertFails(getDoc(doc(asAlice(), `coach_listings/${ALICE}`)));
+    await assertFails(
+      setDoc(doc(asAlice(), `coach_listings/${ALICE}`), { bio: "hi" }),
+    );
+  });
+});
+
 describe("debug sessions", () => {
   test("a signed-in user creates one stamped with their own uid", async () => {
     await assertSucceeds(
