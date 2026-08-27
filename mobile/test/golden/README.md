@@ -24,6 +24,26 @@ opposite of what a golden should pin. Once a composed screen settles, adding
 one golden for it is a natural follow-up; it needs no change to the
 infrastructure below.
 
+## Composed screens (MVP1.G3 OBS-1 item 6)
+
+`composed_screen_golden_test.dart` is that follow-up, scoped to the two
+highest-traffic screens that actually mix legacy `GlassCard`/
+`AuroraBackground` chrome with the `Hud*` widget family: Home, and Workouts'
+Programs tab (its default sub-tab). This is deliberately the surface class
+where the shipped WCAG contrast failure happened (`core/MASTER_PLAN_2026-08-26.md`
+Sec3) -- a bug neither an isolated-widget golden nor a manual review caught,
+because neither looks at how the pieces actually sit together. 4 PNGs
+(`composed_home_{light,dark}.png`, `composed_workouts_{light,dark}.png`).
+
+Both screens pin their default/empty-ish data state, same reasoning as the
+primitives above: a golden's job is catching an unintended pixel shift, not
+enumerating product states. `forYouExercisesProvider` is overridden with a
+resolved, deterministic value in the Home harness -- without it the
+Suggestions section stays in `AsyncLoading` and renders an indeterminate
+`CircularProgressIndicator`, which both makes for a meaningless golden and
+hangs `pumpAndSettle` (an indeterminate spinner never stops animating by
+design).
+
 ## Running them
 
 ```sh

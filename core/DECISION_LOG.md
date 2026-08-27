@@ -27320,3 +27320,68 @@ the August 2026 commit (`58105772ef`) and the CURRENT tracked file both end `...
 value is provably absent from the current tree entirely, yet gitleaks' full-history scan found it --
 real, non-synthetic proof that this check catches a secret no bare current-tree scan (including the
 prior Roboflow-only check) ever could.
+
+## MVP1.G3 OBS-1 item 6 [CI]: composed-screen visual regression -- 2026-08-27
+
+**Disposition (per `OBS1_G3_REBASELINE_2026-08-27.md` Step 0):** the existing `hud_golden_test.dart`
+covers only isolated HUD primitives (`HudPanel`, `HudButton`, `HudChip`, `HudToggle`, `HudNavBar`) --
+its own doc comment explicitly names `HomePage` as deliberately out of scope. That leaves the
+composition layer -- how those primitives actually sit together with legacy `GlassCard`/
+`AuroraBackground` chrome on a real screen -- with no pixel-level regression coverage at all. This is
+exactly the surface class where the shipped WCAG contrast defect happened
+(`core/MASTER_PLAN_2026-08-26.md` Sec3): neither an isolated-widget golden nor a manual review caught
+it, because neither looks at how the pieces sit together.
+
+**What was built:** `mobile/test/golden/composed_screen_golden_test.dart`, 4 golden tests across the
+two highest-traffic screens that mix both widget families -- Home, and Workouts' Programs tab (its
+default sub-tab). Each screen built with a real `ProviderScope` + `GoRouter` + `MaterialApp.router`
+harness matching the existing `home_page_test.dart`/`workouts_page_test.dart` patterns (not a
+simplified stand-in), both themes (`AppTheme.light()`/`AppTheme.dark()`), pinned at a fixed surface
+size via the existing `pinGoldenSurface` helper. Capture target is `find.byType(HomePage)` /
+`find.byType(WorkoutsPage)` (`HudScaffold` does not exist as an importable class -- checked
+`hud_scaffold.dart`'s actual exports before picking the capture root). Workouts' fixture is a small
+local `_seededRepo()` -- not imported from `workouts_page_test.dart`, since that file's own
+`_seededRepo` is library-private in Dart (privacy is per-library, `show` cannot reach it) -- so a
+minimal, purpose-built fixture was written instead of working around the privacy boundary. 4 new PNGs
+committed: `composed_home_{light,dark}.png`, `composed_workouts_{light,dark}.png`. Both screens pin
+their default/near-empty data state, same reasoning `hud_golden_test.dart` already documents for the
+primitives: a golden's job is catching an unintended pixel shift, not enumerating product states.
+`mobile/test/golden/README.md` extended with a "Composed screens (MVP1.G3 OBS-1 item 6)" section
+documenting scope and the one non-obvious fixture decision below.
+
+**Root-caused and fixed one real hang during construction, not just a flaky retry:** the Home golden's
+`pumpAndSettle()` timed out. Traced to `home_page.dart:1154-1166` -- with no override,
+`forYouExercisesProvider` stays in `AsyncLoading` forever (nothing in the harness resolves it) and the
+Suggestions section renders `_SuggestionsPlaceholder`'s indeterminate `CircularProgressIndicator`,
+which animates by design without ever settling (see also `home_page_test.dart:333`'s own comment on
+the same widget). Fixed by adding an explicit
+`forYouExercisesProvider.overrideWith((_) async => [...one resolved ExerciseItem...])` to the Home
+harness -- this both fixes the hang and makes the golden capture the section's real composed content
+instead of a placeholder spinner frozen mid-animation.
+
+**Positive proof:** `flutter test test/golden/` (full directory, both `hud_golden_test.dart`'s 13
+existing cases and this file's 4 new ones) -- 17/17 pass, both with and without `--update-goldens`.
+`flutter analyze test/golden/composed_screen_golden_test.dart` -- "No issues found!". Both new PNGs
+visually inspected (Read tool) and confirmed as real, legible composed-screen renders (App bar,
+Suggestions cards with the seeded exercise title, nav chrome), not blank/placeholder frames.
+
+**Negative proof:** swapped `composed_home_light.png` for `composed_workouts_light.png`'s bytes (a
+real pixel mismatch, not a synthetic corruption), ran `flutter test test/golden/composed_screen_golden_test.dart`
+-- the `Home (composed) light` case failed with a genuine pixel-diff mismatch report (and generated
+`test/golden/failures/*_{isolatedDiff,maskedDiff,masterImage,testImage}.png`, Flutter's own
+auto-generated comparison artifacts), while the other 3 cases stayed green -- confirming the check
+actually discriminates a real visual regression and does not just always pass. Restored the original
+PNG from git afterward (`git diff --stat test/golden/goldens/` empty, confirmed clean) and deleted the
+auto-generated failure-diff artifacts -- added `test/golden/failures/` to `mobile/.gitignore` so a
+future local negative-proof run does not leave test-output files staged for commit.
+
+No CI workflow change needed for this item: `.github/workflows/flutter.yml`'s existing
+`analyze-and-test` job already runs the full `flutter test` suite (see `test/golden/README.md`'s own
+"Running them" section) -- a new golden test file under `test/golden/` is picked up automatically, no
+separate job or tag required.
+
+**Caveat carried forward honestly, not silently:** these 4 PNGs (like the pre-existing 13) were
+generated and verified on a Windows host, not on `ubuntu-latest` where CI actually runs --
+`test/golden/README.md`'s existing "Exact-pixel comparison" section already documents this risk and
+the regenerate-from-Linux remediation path for the pre-existing primitives; the same caveat applies
+unchanged to these 4 new composed-screen goldens and is not re-litigated here.

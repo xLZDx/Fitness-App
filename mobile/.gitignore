@@ -33,6 +33,10 @@ migrate_working_dir/
 .pub/
 /build/
 
+# flutter_test golden-comparison failure diffs (auto-generated on a golden
+# mismatch, e.g. during a local negative-proof mutation test) -- never source.
+test/golden/failures/
+
 # Symbolication related
 app.*.symbols
 
