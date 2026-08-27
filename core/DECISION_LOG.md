@@ -27385,3 +27385,87 @@ generated and verified on a Windows host, not on `ubuntu-latest` where CI actual
 `test/golden/README.md`'s existing "Exact-pixel comparison" section already documents this risk and
 the regenerate-from-Linux remediation path for the pre-existing primitives; the same caveat applies
 unchanged to these 4 new composed-screen goldens and is not re-litigated here.
+
+## MVP1.G3 OBS-1 item 7 [CI]: RU/EN translation semantic-drift detection -- 2026-08-27
+
+**Disposition (per `OBS1_G3_REBASELINE_2026-08-27.md` Step 0):** key parity between
+`app_en.arb`/`app_ru.arb` is already structurally enforced -- `mobile/l10n.yaml`'s
+`nullable-getter: false` makes Flutter's own `gen_l10n` fail the build on any key missing from a
+locale file (confirmed: both files currently have exactly 1239 string keys, 0 missing on either
+side). That catches a MISSING translation, never a WRONG one -- nothing in the repo could tell a
+faithful translation from one that quietly says the opposite, as long as both keep the same key set
+and the same ICU placeholders. This is exactly the gap GPT-PM's DoD named: "a practical mechanism
+capable of detecting a meaning-changing RU/EN drift that structural checks would miss."
+
+**What was built:** `scripts/ci/check_ru_en_drift.js` -- five deterministic, offline heuristics per
+EN/RU string pair (no translation-quality model or API budget; that class of check belongs to the
+`[RUNTIME]` track, which needs an owner/budget decision this item does not have):
+- `placeholder_mismatch` -- ICU placeholder identifier sets differ (extracted via the leading
+  identifier of every `{ident` token, which stays well-defined even inside nested plural/select
+  syntax).
+- `negation_polarity_mismatch` -- EN negation-marker presence (`not/never/no/cannot/...`, plus
+  `fail(ed/ure)` and `unavailable`, added after auditing the real corpus -- this project's own
+  error-copy idiom renders both consistently as RU "не удалось"/"недоступ*") disagrees with RU
+  negation-marker presence. RU negation is matched two ways: a standalone particle
+  (не/нет/нельзя/никогда/ничего/никто/нигде/ни/без, Cyrillic-aware word boundaries so "не" inside
+  an unrelated word like "неделя" cannot match) OR one of a short, explicitly audited list of
+  lexicalized не-adjectives (недоступ-, невозможн-, необратим-, недостаточн-, неверн-,
+  неправильн-, непонятн-, неважн-) that carry genuine negation as a single word with no standalone
+  particle.
+- `length_ratio_outlier` -- stripped-prose length ratio outside [0.4, 2.8] for strings >=12 chars.
+- `missing_cyrillic` -- RU string has real letter content but zero Cyrillic characters (catches an
+  untranslated English leftover), exempted via the existing `@key.description` "Not translated"
+  convention (`appTitle` already uses it).
+- `numeric_token_mismatch` -- literal digit-sequence sets differ between EN and RU.
+
+Plural/select ICU messages (detected by the literal `, plural,`/`, select,` syntax) are exempted from
+the length/Cyrillic/digit checks specifically -- RU legitimately uses four plural categories
+(one/few/many/other) where EN uses two (one/other), so comparing whole-message shape across that
+difference is comparing different structures by design, not drift; `placeholder_mismatch` and
+`negation_polarity_mismatch` still run on the full raw string for these messages.
+
+**Grandfather baseline, per DoD ("expiry-dated baseline/grandfather mechanism for legacy unreviewed
+content; no permanent 'known-red' CI"):** `scripts/ci/ru_en_drift_baseline.json`, expiry
+`2026-11-25` (90 days out). Running the finished heuristics against the full corpus (1239 pairs)
+flagged 28 (~2.3%) -- every one individually read against its real EN/RU text and confirmed to be a
+translation-idiom difference, not meaning drift (documented per-key in the baseline file itself:
+"went wrong"/"was off" -> "не так", "-free"/"free of" -> "без", "unless X" -> logically-equivalent
+"если ... нет X", "1:1" -> "индивидуальные" as a word rather than digits, etc.). CI fails on any key
+NOT in the baseline, or a baseline key whose flag set grows -- and fails on the whole baseline too,
+once the expiry date passes, so this cannot become permanent debt.
+
+**Two real heuristic bugs caught and fixed BEFORE they could ship, by reviewing the corpus rather
+than trusting the first draft:**
+1. `RU_NEGATION` was written without the `i` (case-insensitive) flag -- "Не" at the start of a
+   sentence (capitalized) silently failed to match, producing 66 false negation-mismatch findings
+   out of an initial 89 (missed real matches, not spurious ones). Fixed by adding `iu` flags;
+   re-running dropped the count to 63, all from an unrelated cause below.
+2. A first attempt at adding "against" to the EN negation-marker list (to catch "advised against")
+   introduced 4 NEW false positives (`catalogHelpUsGrowTheCatalogPaste`, `injuriesWhatThisDoes`,
+   `profileInjuriesSubtitle`, `equipmentSuitableBecause`) where "against" is used in its neutral
+   "compared against"/"checked against" sense, not negation. Reverted before it reached the
+   baseline -- caught by re-running and diffing the flagged-key list after every heuristic change,
+   not by inspecting only the cases the change was meant to fix.
+
+**Positive proof:** `node scripts/ci/check_ru_en_drift.js` against the real, unmodified corpus --
+"28 key(s) currently flagged, 28 grandfathered ..., 0 NEW/worsened finding(s)", exit 0.
+`node scripts/ci/test_check_ru_en_drift.js` -- 4/4 self-test fixtures pass, including the DoD's own
+required pair: a semantically acceptable translation produces zero flags, and an intentionally
+meaning-corrupted one (negation inverted, Cyrillic script and sentence structure both fully
+preserved -- exactly the property structural checks cannot see) is caught via
+`negation_polarity_mismatch`.
+
+**Negative proof, real end-to-end, not just the unit-level self-test:** temporarily edited the real
+tracked `mobile/lib/l10n/app_ru.arb` -- `injuriesNoneListed` changed from "Вы не указали ни одной
+травмы." (You haven't listed any injuries) to "Вы указали одну травму." (You have listed one
+injury), a real meaning inversion with Cyrillic and general sentence shape both preserved. Ran the
+exact CI command: "29 key(s) currently flagged, 28 grandfathered ..., 1 NEW/worsened finding(s)" --
+`injuriesNoneListed: negation_polarity_mismatch` -- exit 1. Restored the original line via a direct
+`Edit` (not `git checkout --`, which this session's permission layer denies even for a targeted
+single-file restore per CLAUDE.md Sec4) and confirmed `git diff --stat mobile/lib/l10n/app_ru.arb`
+empty before re-running the check clean (exit 0) again.
+
+**Wired into `.github/workflows/flutter.yml`** as a new `ru-en-drift` job: the self-test step runs
+FIRST (so a broken checker fails loudly rather than silently passing everything), then the real
+corpus check. No `mobile` working-directory override needed -- the script resolves its own paths
+from `__dirname`, independent of CWD.

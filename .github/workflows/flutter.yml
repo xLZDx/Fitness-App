@@ -370,3 +370,27 @@ jobs:
 
       - name: scan pubspec.lock for known vulnerabilities
         run: osv-scanner --lockfile=pubspec.lock
+
+  ru-en-drift:
+    name: RU/EN translation semantic drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # MVP1.G3 OBS-1 item 7: key parity between app_en.arb/app_ru.arb is
+    # already structurally enforced by l10n.yaml's `nullable-getter: false`
+    # (Flutter's own codegen fails on a missing key) -- that catches a
+    # MISSING translation, not a WRONG one. This job runs the meaning-drift
+    # heuristics in scripts/ci/check_ru_en_drift.js: a self-test proves the
+    # checker actually distinguishes a semantically acceptable translation
+    # from an intentionally meaning-corrupted one first, then the real check
+    # runs against the corpus with an expiry-dated grandfather baseline for
+    # the ~1200 pre-existing pairs that predate this check
+    # (scripts/ci/ru_en_drift_baseline.json) -- see that file's own header
+    # for why grandfathering here is not a permanent suppression.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: self-test -- acceptable vs. meaning-corrupted fixtures
+        run: node scripts/ci/test_check_ru_en_drift.js
+
+      - name: check app_en.arb / app_ru.arb for new semantic drift
+        run: node scripts/ci/check_ru_en_drift.js
