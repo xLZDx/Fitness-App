@@ -27208,3 +27208,56 @@ direct text edit instead, restoring the exact prior line) -- `git diff` on the f
 byte-identical to the committed state before proceeding. Full suite re-run after restoration
 (`safety_context_required_invariant_test.dart` + `plan_builder_test.dart` +
 `programme_builder_test.dart`): 53/53 green.
+
+## G3 item 4 [CI]: equipment-registry parity -- DONE, and it found a real pre-existing drift
+
+Was REPLACED/re-based per Step 0 (`kCanonicalMachines` deleted client-side by G1; the same
+duplication now lives server-side as `functions/src/ai_equipment_recognition.ts::CANONICAL_MACHINES`
+vs `mobile/assets/data/equipment.json`).
+
+**Extracted both lists programmatically rather than hand-transcribing** (CLAUDE.md Sec3 -- a manual
+retype of a 71-item array is exactly the kind of transcription risk that produces false evidence):
+a Node one-liner parsed `CANONICAL_MACHINES` via regex from the real `.ts` source. This caught an
+error in my own first manual count immediately -- **CANONICAL_MACHINES has 71 entries, not 69** as
+an earlier Explore-agent sweep (Step 0) had reported; `equipment.json` genuinely has 69. The prior
+agent's count was wrong; corrected here against the authoritative extraction.
+
+**Real, previously-undetected drift found by building this check**: normalized comparison (lowercase,
+punctuation-stripped, crude depluralized) matched 65/71 CANONICAL_MACHINES entries automatically.
+The remaining 6 split into two real categories, both verified by hand against equipment.json's `id`
+and `name` fields: (a) 4 genuine naming aliases -- `"bench press station"` <-> `bench_press`
+("Weight bench"), `"hip abductor machine"` <-> `hip_abductor_adductor` ("Hip abductor / adductor
+machine"), `"flat bench"` <-> `adjustable_bench` ("Bench (flat / adjustable)"), `"suspension
+trainer"` <-> `trx` ("Suspension trainer (TRX)"); (b) 2 CANONICAL_MACHINES entries with genuinely
+**no** equipment.json counterpart at all -- `"push-up blocks"`, `"aerobic step"` -- meaning the
+camera-recognition prompt can currently return a machine name with no catalog page behind it. Not
+something this gate creates or fixes (content-catalog work is out of MVP1.G3's engineering scope per
+its own explicit exclusions), but a real, previously-invisible gap this check surfaces rather than
+silently ignores.
+
+Wrote `scripts/ci/check_equipment_registry_parity.js` (repo-root, reads both trees, no npm deps):
+normalizes both lists, resolves the 4 alias pairs via an explicit `ALIAS_MAP` keyed by
+CANONICAL_MACHINES string -> equipment.json `id` (so a future rename of that id breaks the lookup
+explicitly rather than silently), allows the 2 genuine gaps via an explicit, auditable
+`KNOWN_UNCOVERED` set, and fails on anything NOT covered by either -- meeting the DoD's explicit
+reject condition ("must not... ignore aliases/canonical naming semantics, or introduce a third
+manually maintained list" -- this is content-level, alias-aware, and the two maps are the SAME two
+sources of truth already named, not a third). Also audits the allowlist itself: an entry that no
+longer needs its exception (equipment.json grew a real match) fails loudly rather than silently
+accumulating stale bookkeeping. Wired into a new `equipment-registry-parity` job in
+`.github/workflows/functions.yml` (overrides the file's `working-directory: functions` default since
+this check spans both `functions/` and `mobile/`).
+
+**Positive proof:** ran against real current state -- "71 CANONICAL_MACHINES entries all resolve...
+(4 via ALIAS_MAP, 2 explicitly allowlisted)", exit 0.
+
+**Negative proof, 3 scenarios**, all correctly failed with exit 1, real source files temporarily
+mutated via `cp` backup/restore (not `git checkout --`, which this session's permission layer denies
+-- `cp` avoids that without needing approval for a git command) and confirmed restored via `git diff
+--stat` (empty) before proceeding: (a) added a genuinely new, unmapped CANONICAL_MACHINES entry --
+failed as "no equipment.json match... not in ALIAS_MAP or KNOWN_UNCOVERED", proving new drift is
+caught; (b) added `"treadmill"` (a real match) to `KNOWN_UNCOVERED` -- failed as a stale-allowlist
+entry, proving the allowlist itself can't quietly accumulate outdated exceptions; (c) pointed the
+`"suspension trainer"` alias at a nonexistent id -- failed as "ALIAS_MAP points at... which no longer
+exists", proving an alias breaking (e.g. from an equipment.json rename) is caught rather than
+silently passing.

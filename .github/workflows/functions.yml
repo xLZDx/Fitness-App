@@ -178,3 +178,24 @@ jobs:
         run: npm run build
       - name: entrypoint surface is complete
         run: npx jest scaling
+
+  equipment-registry-parity:
+    name: equipment registry parity (CANONICAL_MACHINES vs equipment.json)
+    runs-on: ubuntu-latest
+    # Overrides the file-level `defaults.run.working-directory: functions` --
+    # this check reads both functions/src/ and mobile/assets/data/, so it
+    # needs the repo root, not either subtree.
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      # MVP1.G3 OBS-1 item 4: functions/src/ai_equipment_recognition.ts's
+      # CANONICAL_MACHINES is a hand-maintained second source of truth for
+      # the same vocabulary mobile/assets/data/equipment.json already owns --
+      # the exact drift mechanism the 08-03 kCanonicalMachines fix closed one
+      # instance of without closing the recurrence risk (see
+      # core/MASTER_PLAN_2026-08-26.md Sec8 item 10). No npm install needed --
+      # the script only uses Node's built-in fs/path.
+      - name: content-level parity check
+        run: node scripts/ci/check_equipment_registry_parity.js
