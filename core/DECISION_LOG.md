@@ -30441,3 +30441,39 @@ true either way.
 
 **Step 10A's own scope, complete**: sending this round-8 remediation (event-field fix, live
 verification, live policy patch) to GPT-PM for round 9, alongside the wider-discovery report above.
+
+## MVP1.G3 Step 10A -- GPT-PM round 9: APPROVE, Step 10A declared CLOSED, scope decision made (2026-08-27, same day)
+
+Sent `review.js --commit 9a1c3f8 --round 9`. Correlated reply, **`VERDICT: APPROVE`**. Explicitly
+tried to invalidate the fix across every axis that failed before (logger rewriting, metadata
+survival, real Cloud Logging matching, real-service policy scoping, source/live drift, the
+generalized filter renderer) and found nothing. Quote: *"I do not find another supported
+BLOCKER/MAJOR/MINOR in the submitted Step 10A remediation. **Step 10A may now be declared CLOSED.**"*
+
+**Scope decision on the wider discovery (the 4 other silent alerts), as asked**: *"do not reopen
+Step 10A, but open an urgent dedicated remediation item immediately... Apply the now-proven
+event-field mechanism systematically, live-PATCH each affected policy, and verify at least
+representative genuine logger-produced failures. Do not hold Step 10A open for that separate
+work."* Filed as row 21 in `core/MASTER_PLAN_2026-08-26.md`'s §9 priority table ("High -- urgent,
+financial-correctness-adjacent"), same commit as this entry.
+
+**`PUSH: AUTHORIZED under the current Gate policy."`** Requested a `--final` receipt (round 9's own
+reply had `final:false` -- the CLI's own claim field, not auto-derived from the verdict text) before
+pushing, matching this project's standing discipline.
+
+### MVP1.G3 Step 10A is CLOSED.
+
+Summary of the full arc this segment: round 1 (initial implementation review) through round 9
+(final APPROVE) -- 4 real API constraints discovered live (24h duration ceiling, notificationRateLimit
+restriction, the entirely fictional `cloudscheduler.googleapis.com` metric, the silent
+`messageEquals`/logger-rewrite alert-matching bug), 3 rounds of fail-closed validation hardening on
+`extractIdentityToolkitState`, 2 live production deploys of the real `runEnforcementStateCheck`
+function, 2 temporary proof-only deploy/invoke/capture/delete cycles producing genuine real-failure
+evidence (not synthetic), 2 live alert-policy PATCHes with SHA-256 source==live verification each,
+and one wider systemic discovery reported (not silently expanded) with a concrete remediation item
+filed for it. Final test count: 21 suites, 522 tests, all passing.
+
+**Remaining before MVP1.G3 itself can be marked PASSED** (per GPT-PM's own closing line, unchanged
+from the pre-existing plan): Step 10B (Android device telemetry proof, S8 test device), Step 10C
+(reconciliation of all 13 original OBS-1 items), then a final adversarial GPT-PM review of the whole
+of MVP1.G3 before `pm_set_gate(Fitness_App, MVP1.G3, passed)`.
