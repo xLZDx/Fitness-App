@@ -28160,3 +28160,44 @@ induced hang, not just reasoned about). The production-Auth-connectivity dimensi
 `IMPLEMENTED`/`TESTED`/`BLOCKED_CONFIG` -- correctly refuses to run unsafely, but is still not
 deployable against real production Auth until `FIREBASE_WEB_API_KEY` is set to the project's real
 key, which requires live GCP access this session does not have.
+
+## MVP1.G3 Step 9A, round 2 of remediation: partial-emulator-config gap, closed -- 2026-08-27 04:06 UTC
+
+Sent the round-1 remediation (commit `0d74912`) back to GPT-PM for verification. Result: MAJOR 1
+(bounded execution) CLOSED outright -- GPT-PM confirmed the outer hard deadline, per-call cleanup/
+teardown budgets, tri-state cleanup result, and the real induced-hang test as genuine, sufficient
+proof. MAJOR 2 (API-key fail-safe) was PARTIALLY CLOSED: GPT-PM found one more real, narrow gap in
+the fix itself, not a new area -- `resolveFirebaseWebApiKey`'s emulator-mode check used `OR`
+(`FIRESTORE_EMULATOR_HOST || FIREBASE_AUTH_EMULATOR_HOST`), while `connectToEmulatorsIfConfigured`
+connects EACH service independently based on its OWN var. If only one host var were accidentally set,
+the key check would call it "emulator mode" and hand back the placeholder, while the OTHER service
+(whichever var was missing) would silently point at REAL production -- exactly the mixed
+emulator/production configuration this whole function exists to prevent, and worse than the original
+gap in one respect: with a REAL key configured alongside a partial emulator setup, this could mint and
+exchange a REAL production Auth session for the synthetic canary identity while writing to a LOCAL
+Firestore emulator, with nothing else in the code able to tell.
+
+**Fixed, and slightly more completely than the literal ask:** `resolveFirebaseWebApiKey` now checks
+`FIRESTORE_EMULATOR_HOST` and `FIREBASE_AUTH_EMULATOR_HOST` for CONSISTENCY first (`firestoreEmulator
+!== authEmulator` -> immediate `CONFIG` failure), independent of whether a key happens to be
+configured -- not only gating the placeholder path as GPT-PM's literal instruction said, but refusing
+ANY inconsistent emulator configuration outright, since a real key does not make a mismatched
+Firestore/Auth emulator setup any safer. Only once both vars agree does the existing "configured key,
+else placeholder-if-both-set, else CONFIG failure" logic run as before.
+
+**Proof:** two new e2e tests, `functions/src/__e2e__/canary_probe.e2e.test.ts` -- "only
+FIRESTORE_EMULATOR_HOST set (Auth would be real) is refused as CONFIG" and "only
+FIREBASE_AUTH_EMULATOR_HOST set (Firestore would be real) is refused as CONFIG", each temporarily
+unsetting the OTHER host var (and any real key) and confirming `failureClass: "CONFIG"`, no stage
+reached, no cleanup attempted -- env vars restored in `finally`. Both existing config tests (fully
+unset -> CONFIG; both-set-no-key -> succeeds) re-run unchanged and still pass, confirming the fix did
+not disturb either boundary GPT-PM had already approved.
+
+**Full re-verification:** `npm run build` clean. `npm run test:e2e`: 22/22 (20 from before + 2 new).
+`npx jest`: 388/388, unaffected. `npm run test:rules`: 113/113, unaffected. Same temporary port
+workaround as every prior local run this gate, confirmed reverted (`git diff --stat` empty) before
+this commit.
+
+Sent back to GPT-PM for final verification per its own instruction ("send only that exact-SHA
+remediation back"). Status held at bounded-execution `READY_TO_ACTIVATE` /
+production-Auth-connectivity `IMPLEMENTED`/`TESTED`/`BLOCKED_CONFIG` pending that verdict.

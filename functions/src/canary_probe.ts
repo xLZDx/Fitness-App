@@ -178,12 +178,35 @@ const OVERALL_HARD_DEADLINE_MS = 45_000;
 function resolveFirebaseWebApiKey():
   | { ok: true; apiKey: string }
   | { ok: false; message: string } {
-  const emulatorMode = Boolean(
-    process.env.FIRESTORE_EMULATOR_HOST || process.env.FIREBASE_AUTH_EMULATOR_HOST,
-  );
+  const firestoreEmulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST);
+  const authEmulator = Boolean(process.env.FIREBASE_AUTH_EMULATOR_HOST);
+
+  // GPT-PM's second remediation round: `connectToEmulatorsIfConfigured`
+  // below connects EACH service independently, based on ITS OWN env var --
+  // so a check that treats "either var set" as "emulator mode" (the first
+  // fix's OR) can accept the placeholder key while only ONE service actually
+  // points at the emulator and the OTHER points at real production. That is
+  // exactly the mixed configuration this whole function exists to refuse,
+  // regardless of whether a real key happens to be configured too: a real
+  // key with mismatched emulator hosts would mint/exchange a canary
+  // identity against REAL production Auth while writing to a LOCAL
+  // Firestore emulator (or the reverse) -- silently, since nothing else here
+  // would catch it.
+  if (firestoreEmulator !== authEmulator) {
+    return {
+      ok: false,
+      message:
+        "partial emulator configuration: FIRESTORE_EMULATOR_HOST and " +
+        "FIREBASE_AUTH_EMULATOR_HOST must both be set or both be unset -- refusing to run with " +
+        "one service pointed at an emulator and the other at production " +
+        `(firestore emulator set: ${firestoreEmulator}, auth emulator set: ${authEmulator})`,
+    };
+  }
+  const bothEmulatorHostsSet = firestoreEmulator && authEmulator;
+
   const configured = process.env.FIREBASE_WEB_API_KEY;
   if (configured) return { ok: true, apiKey: configured };
-  if (emulatorMode) return { ok: true, apiKey: "demo-emulator-key" };
+  if (bothEmulatorHostsSet) return { ok: true, apiKey: "demo-emulator-key" };
   return {
     ok: false,
     message:

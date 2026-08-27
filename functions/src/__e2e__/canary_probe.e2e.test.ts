@@ -225,6 +225,58 @@ describe("runCanaryProbe — the real thing, end to end", () => {
     expect(result.success).toBe(true);
     expect(result.failureClass).toBeUndefined();
   });
+
+  // GPT-PM's second remediation round (2026-08-27): the first fix's OR
+  // check accepted the placeholder key when only ONE of the two emulator
+  // host vars was set -- meaning the OTHER service would have pointed at
+  // real production while this probe believed it was running safely against
+  // an emulator. Both tests below prove each PARTIAL configuration is
+  // refused, not just the "neither set" case already covered above.
+  test("only FIRESTORE_EMULATOR_HOST set (Auth would be real) is refused as CONFIG", async () => {
+    const savedAuthHost = process.env.FIREBASE_AUTH_EMULATOR_HOST;
+    const savedWebApiKey = process.env.FIREBASE_WEB_API_KEY;
+    delete process.env.FIREBASE_AUTH_EMULATOR_HOST;
+    delete process.env.FIREBASE_WEB_API_KEY;
+    try {
+      expect(process.env.FIRESTORE_EMULATOR_HOST).toBeDefined();
+      expect(process.env.FIREBASE_AUTH_EMULATOR_HOST).toBeUndefined();
+
+      const result = await runCanaryProbe();
+
+      expect(result.success).toBe(false);
+      expect(result.failureClass).toBe("CONFIG");
+      expect(result.stage).toBeUndefined();
+      expect(result.cleanupAttempted).toBe(false);
+    } finally {
+      if (savedAuthHost !== undefined) {
+        process.env.FIREBASE_AUTH_EMULATOR_HOST = savedAuthHost;
+      }
+      if (savedWebApiKey !== undefined) process.env.FIREBASE_WEB_API_KEY = savedWebApiKey;
+    }
+  });
+
+  test("only FIREBASE_AUTH_EMULATOR_HOST set (Firestore would be real) is refused as CONFIG", async () => {
+    const savedFirestoreHost = process.env.FIRESTORE_EMULATOR_HOST;
+    const savedWebApiKey = process.env.FIREBASE_WEB_API_KEY;
+    delete process.env.FIRESTORE_EMULATOR_HOST;
+    delete process.env.FIREBASE_WEB_API_KEY;
+    try {
+      expect(process.env.FIRESTORE_EMULATOR_HOST).toBeUndefined();
+      expect(process.env.FIREBASE_AUTH_EMULATOR_HOST).toBeDefined();
+
+      const result = await runCanaryProbe();
+
+      expect(result.success).toBe(false);
+      expect(result.failureClass).toBe("CONFIG");
+      expect(result.stage).toBeUndefined();
+      expect(result.cleanupAttempted).toBe(false);
+    } finally {
+      if (savedFirestoreHost !== undefined) {
+        process.env.FIRESTORE_EMULATOR_HOST = savedFirestoreHost;
+      }
+      if (savedWebApiKey !== undefined) process.env.FIREBASE_WEB_API_KEY = savedWebApiKey;
+    }
+  });
 });
 
 describe("runCanaryProbe — negative proofs (the real client path denies what it must)", () => {
