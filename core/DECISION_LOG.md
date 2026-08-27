@@ -27004,3 +27004,39 @@ Commits this gate, in order: `0ccd484` (pin targetSdk=36), `6180453` (edge-to-ed
 `8ec2d31` (scanner collision fix), `fc53b37`, `1f927a0` (test-result records), `d8525cd` (round-1
 remediation), `6a633dc` (final verification log) -- pushed as a block. Report commit follows
 separately.
+
+## Report-only remediation round -- report itself found deficient, fixed in place
+
+Committed and pushed the bilingual closure report (`25f26b7`), then re-called `pm_rosetta_close`.
+The MCP tool's own auto-notify to GPT-PM aborted transport-side (fail-open per design -- closure
+recorded, review did not happen). Retried manually via `gpt_send_and_await` rather than accepting
+the fail-open silently.
+
+GPT-PM found 3 MAJOR + 1 MINOR in the report itself (not the implementation, which it explicitly
+re-confirmed as unchanged and still approved):
+
+1. **MAJOR** -- report omitted the Step 0 Play Console preflight result (`inaccessible`/UNVERIFIED,
+   already recorded in this log). Verified against this log before accepting: confirmed the omission
+   was real. Fixed: added to both reports' "what's still open" section and the new DoD table.
+2. **MAJOR** -- report lacked the Rosetta-mandated Plan/DoD/Status table (skill `rosetta`,
+   "Transparency is not optional"). Fixed: added a compact table, section 00, both languages.
+3. **MAJOR** -- report stated the API-36 deadline as "by November 1, 2026" without qualification.
+   Verified against this repo's own `build.gradle` comment (line 126-128, written during Step 2)
+   before accepting: that comment already correctly said "from 2026-08-31, with an extension path to
+   2026-11-01" -- the report's own simplification was the error, not GPT-PM's claim. Fixed: both
+   reports now say August 31, 2026 is the actual deadline, November 1 only via extension, extension
+   status for this app UNVERIFIED.
+4. **MINOR** -- report's closing/verdict band still called `6a633dc` the terminal pushed state after
+   the report-remediation commit (`25f26b7`) landed on top of it. Fixed: reworded to distinguish the
+   technical evidence baseline (`d8525cd`/`6a633dc`) from the gate's canonical range
+   (`c55877c..25f26b7`), avoiding further self-referential SHA churn.
+
+Canonical range for this plan, per GPT-PM's own instruction (Rosetta's live changed-set
+reconstruction stays declared non-authoritative -- polluted by unrelated pre-existing untracked
+workspace files never part of this plan): `c55877c..25f26b7` = 8 commits, 7 unique paths.
+
+Both reports re-run through `report_conform.py` (pass) after the edits, Russian artifact
+republished at the same URL (https://claude.ai/code/artifact/36aa8595-e8c4-4ddc-b547-d812c5253325).
+This commit (report fixes) is the next one in the range; GPT-PM's own stated next step is
+report-only re-review of exactly these four points plus any direct documentary regression -- no
+code/test/device work reopened.

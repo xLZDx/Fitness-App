@@ -304,7 +304,7 @@
   <header>
     <div class="eyebrow">Fitness_App &middot; MVP1 / SPTR &middot; Гейт G2</div>
     <h1>G2: приложение переведено на обязательный таргет Android 16 (API 36)</h1>
-    <p class="lede">Google требует targetSdk&nbsp;36 для новых обновлений к 1 ноября 2026&nbsp;года. Гейт закрепил <code>targetSdk=36</code>, живым тестированием на реальном устройстве нашёл и исправил два регресса edge-to-edge вёрстки (один &mdash; побочный эффект собственного первого фикса), подтвердил корректность предиктивного жеста "назад" и прошёл два раунда проверки GPT&#8209;PM.</p>
+    <p class="lede">Google требует targetSdk&nbsp;36 для новых обновлений приложений с 31&nbsp;августа&nbsp;2026&nbsp;года; продление до 1&nbsp;ноября&nbsp;2026&nbsp;доступно только по отдельному запросу в Play Console. Гейт закрепил <code>targetSdk=36</code>, живым тестированием на реальном устройстве нашёл и исправил два регресса edge-to-edge вёрстки (один &mdash; побочный эффект собственного первого фикса), подтвердил корректность предиктивного жеста "назад" и прошёл два раунда проверки GPT&#8209;PM.</p>
   </header>
 
 <!-- report-conform:begin -->
@@ -332,7 +332,7 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 6a633dc</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 25f26b7</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
@@ -342,12 +342,32 @@
 
 
 
+
+
   <div class="verdict-band">
     <div class="mark">&#10003;</div>
     <div class="text">
       <b>ЗАКОММИЧЕНО, ОДОБРЕНО GPT&#8209;PM И ЗАПУШЕНО</b>
-      <span>Раунд 2 (по финальному кандидату): VERDICT APPROVE, --final=true, PUSH: AUTHORIZED. Запушено в origin/master: c55877c&nbsp;&rarr;&nbsp;6a633dc.</span>
+      <span>Техническая база (раунд 2): VERDICT APPROVE, --final=true, PUSH: AUTHORIZED &mdash; кандидат <code>d8525cd</code>, evidence-коммит <code>6a633dc</code>. Этот отчёт добавлен отдельным, документальным коммитом поверх. Канонический диапазон гейта: <code>c55877c..25f26b7</code> (8 коммитов, 7 путей).</span>
     </div>
+  </div>
+
+  <h2><span class="num">00</span>Plan / DoD / Status</h2>
+  <p class="section-note">По требованию прозрачности протокола Rosetta: что было запланировано, какой критерий готовности задал GPT&#8209;PM, и фактический статус &mdash; отдельно от повествовательных разделов ниже.</p>
+  <div class="table-scroll">
+  <table class="gates">
+    <thead><tr><th>Пункт плана v2</th><th>Definition of Done</th><th>Статус</th></tr></thead>
+    <tbody>
+      <tr><td class="gate">Step 0: Play Console preflight</td><td>Проверить доступность Play Console / статус продления дедлайна</td><td><span class="pill pending">PARTIAL &mdash; <code>inaccessible</code>/UNVERIFIED, не блокирует технический PASS: в этой сессии нет учётных данных/доступа к Play Console (проверено поиском по репозиторию: ни fastlane, ни service-account JSON, ни конфигурации android-publisher API). Честно зафиксировано как непройденное, а не тихо пропущено.</span></td></tr>
+      <tr><td class="gate">Step 1: подготовка окружения</td><td>Эмулятор/устройство с Android 16 доступны для верификации</td><td><span class="pill closed">DONE &mdash; эмулятор (x86_64) + реальный S23 (arm64-v8a)</span></td></tr>
+      <tr><td class="gate">Step 2: <code>targetSdk=36</code></td><td>Явно закреплён в build.gradle, не унаследован</td><td><span class="pill closed">DONE &mdash; коммит <code>0ccd484</code></span></td></tr>
+      <tr><td class="gate">Step 3&ndash;6: сборка + verify + smoke + фиксы регрессов</td><td>Обязательный пересбор и повторный smoke-прогон после любого фикса (по плану v2)</td><td><span class="pill closed">DONE &mdash; 2 регресса найдены и исправлены, второй пойман именно этим инвариантом</span></td></tr>
+      <tr><td class="gate">Step 7: тесты + анализ</td><td>0 новых сбоев/замечаний относительно базовой линии</td><td><span class="pill closed">DONE &mdash; 3243/3244 (1 известный флейк), analyze 16 старых/0 новых</span></td></tr>
+      <tr><td class="gate">Step 8: финальная smoke-матрица + AAB</td><td>Полный прогон 11 пунктов на финальном кандидате + верифицированная подпись AAB</td><td><span class="pill closed">DONE &mdash; раздел 06 ниже</span></td></tr>
+      <tr><td class="gate">Публикация в Google Play</td><td>Не входила в scope плана v2</td><td><span class="pill blocked">NOT DONE / OUT OF SCOPE &mdash; отдельная незапущенная задача</span></td></tr>
+      <tr><td class="gate">Двуязычный отчёт о закрытии</td><td>RU опубликован и дан ссылкой, EN закоммичен, до <code>pm_rosetta_close</code></td><td><span class="pill closed">DONE (со второй попытки) &mdash; первое закрытие было преждевременным, см. раздел 09</span></td></tr>
+    </tbody>
+  </table>
   </div>
 
   <h2><span class="num">01</span>Коротко</h2>
@@ -468,6 +488,7 @@
 
   <h2><span class="num">08</span>Что осталось открытым &mdash; честно, не скрыто</h2>
   <ul class="plain">
+    <li><b>Play Console preflight (Step 0 плана): <code>inaccessible</code> / UNVERIFIED, не блокирует.</b> В этой изолированной сессии нет учётных данных/доступа к Play Console, поэтому нельзя подтвердить, доступно ли этому приложению продление дедлайна до 1&nbsp;ноября. Зафиксировано честно как непройденный, не блокирующий технический PASS шаг, а не тихо пропущено.</li>
     <li><b>Публикация в Google Play не выполнялась и не заявляется</b> &mdash; этот гейт закрывает только соответствие требованию targetSdk&nbsp;36 и совместимость с Android&nbsp;16, проверенную на реальном устройстве. Приёмка и публикация в Play Console &mdash; отдельная, не начатая задача.</li>
     <li><b>Один инцидент безопасности данных, честно задокументированный:</b> три последовательных нажатия "назад" при живом тестировании случайно вывели на настоящий домашний экран оператора (с личными фото). Приложение немедленно перезапущено, личный контент не просматривался далее, данные не изменялись.</li>
     <li><b>Реальные персональные данные оператора</b> (травма плеча в разделе "Профиль &rarr; Травмы") использовались только для проверки поведения клавиатуры/IME &mdash; поле открыто, но не изменено; неизменность подтверждена повторным <code>uiautomator dump</code>.</li>
@@ -487,11 +508,17 @@
     <span class="gate-tag">Раунд 2</span>
     <p>По финальному кандидату (коммит <code>d8525cd</code> + документальный <code>6a633dc</code>). VERDICT APPROVE, <code>--final=true</code>. PUSH: AUTHORIZED при условии, что <code>6a633dc</code> не содержит ничего, кроме <code>DECISION_LOG.md</code> &mdash; независимо перепроверено через <code>git diff --stat d8525cd..6a633dc</code> перед пушем.</p>
   </div>
+  <div class="deviation">
+    <span class="gate-tag">Переоткрытие</span>
+    <p>Первая попытка закрытия Rosetta-плана оказалась преждевременной: обязательный двуязычный отчёт не был выпущен до <code>pm_rosetta_close</code>, а собственная реконструкция изменённых файлов Rosetta оказалась загрязнена посторонними неотслеживаемыми файлами workspace. Технический результат G2 при этом не оспаривался ни разу. Этот отчёт и есть ремедиация; следующий раунд &mdash; только по содержимому самого отчёта.</p>
+  </div>
 
   <div class="closing">
-    <b>Далее:</b> G2 закрыт и запушен в origin/master на <code>6a633dc</code>. API&nbsp;36 / Android&nbsp;16 &mdash; ПОДТВЕРЖДЕНО на реальном устройстве S23; публикация в Play &mdash; НЕ ВЫПОЛНЯЛАСЬ и НЕ ЗАЯВЛЯЕТСЯ. Согласно режиму PM Bridge, работа продолжается автономно к следующему гейту (G3&ndash;G8) без остановки на этом отчёте; scope каждого следующего гейта будет заново подтверждён с GPT&#8209;PM, а не унаследован из предположений.
+    <b>Далее:</b> техническая база G2 (кандидат <code>d8525cd</code>) закрыта и запушена в origin/master; этот отчёт добавлен отдельным документальным коммитом поверх, канонический диапазон гейта &mdash; <code>c55877c..25f26b7</code>. API&nbsp;36 / Android&nbsp;16 &mdash; ПОДТВЕРЖДЕНО на реальном устройстве S23; Play preflight &mdash; UNVERIFIED/inaccessible, не блокирует; публикация в Play &mdash; НЕ ВЫПОЛНЯЛАСЬ и НЕ ЗАЯВЛЯЕТСЯ. Согласно режиму PM Bridge, работа продолжается автономно к следующему гейту (G3&ndash;G8) без остановки на этом отчёте; scope каждого следующего гейта будет заново подтверждён с GPT&#8209;PM, а не унаследован из предположений.
   </div>
 </div>
+
+
 
 
 

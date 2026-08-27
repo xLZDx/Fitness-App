@@ -304,7 +304,7 @@
   <header>
     <div class="eyebrow">Fitness_App &middot; MVP1 / SPTR &middot; Gate G2</div>
     <h1>G2: app migrated to the mandatory Android 16 (API 36) target</h1>
-    <p class="lede">Google requires targetSdk&nbsp;36 for new updates by November&nbsp;1,&nbsp;2026. This gate pinned <code>targetSdk=36</code>, used live real-device testing to find and fix two edge-to-edge layout regressions (one a side effect of its own first fix), confirmed the predictive back gesture behaves correctly, and passed two rounds of GPT&#8209;PM review.</p>
+    <p class="lede">Google requires targetSdk&nbsp;36 for new app updates starting August&nbsp;31,&nbsp;2026; an extension to November&nbsp;1,&nbsp;2026 is available only on separate request through Play Console. This gate pinned <code>targetSdk=36</code>, used live real-device testing to find and fix two edge-to-edge layout regressions (one a side effect of its own first fix), confirmed the predictive back gesture behaves correctly, and passed two rounds of GPT&#8209;PM review.</p>
   </header>
 
 <!-- report-conform:begin -->
@@ -332,7 +332,7 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 6a633dc</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 25f26b7</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
@@ -342,12 +342,32 @@
 
 
 
+
+
   <div class="verdict-band">
     <div class="mark">&#10003;</div>
     <div class="text">
       <b>COMMITTED, APPROVED BY GPT&#8209;PM AND PUSHED</b>
-      <span>Round 2 (final candidate): VERDICT APPROVE, --final=true, PUSH: AUTHORIZED. Pushed to origin/master: c55877c&nbsp;&rarr;&nbsp;6a633dc.</span>
+      <span>Technical baseline (round 2): VERDICT APPROVE, --final=true, PUSH: AUTHORIZED &mdash; candidate <code>d8525cd</code>, evidence commit <code>6a633dc</code>. This report lands as a separate documentary commit on top. Canonical gate range: <code>c55877c..25f26b7</code> (8 commits, 7 paths).</span>
     </div>
+  </div>
+
+  <h2><span class="num">00</span>Plan / DoD / Status</h2>
+  <p class="section-note">Per the Rosetta protocol's transparency requirement: what was planned, the Definition of Done GPT&#8209;PM set for it, and the actual status &mdash; separate from the narrative sections below.</p>
+  <div class="table-scroll">
+  <table class="gates">
+    <thead><tr><th>Plan v2 item</th><th>Definition of Done</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="gate">Step 0: Play Console preflight</td><td>Check Play Console reachability / deadline-extension status</td><td><span class="pill pending">PARTIAL &mdash; <code>inaccessible</code>/UNVERIFIED, non-blocking for technical PASS: this isolated session has no Play Console credentials/access (verified by repo search: no fastlane, service-account JSON, or android-publisher API config found). Reported plainly as not completed, not silently skipped.</span></td></tr>
+      <tr><td class="gate">Step 1: environment setup</td><td>An Android 16 emulator/device available for verification</td><td><span class="pill closed">DONE &mdash; emulator (x86_64) + real S23 (arm64-v8a)</span></td></tr>
+      <tr><td class="gate">Step 2: <code>targetSdk=36</code></td><td>Explicitly pinned in build.gradle, not inherited</td><td><span class="pill closed">DONE &mdash; commit <code>0ccd484</code></span></td></tr>
+      <tr><td class="gate">Steps 3&ndash;6: build + verify + smoke + regression fixes</td><td>Mandatory rebuild and re-smoke after any fix (per plan v2's own invariant)</td><td><span class="pill closed">DONE &mdash; 2 regressions found and fixed, the second caught by exactly this invariant</span></td></tr>
+      <tr><td class="gate">Step 7: tests + analyze</td><td>0 new failures/issues relative to baseline</td><td><span class="pill closed">DONE &mdash; 3243/3244 (1 known flake), analyze 16 pre-existing/0 new</span></td></tr>
+      <tr><td class="gate">Step 8: final smoke matrix + AAB</td><td>Complete 11-item run on the final candidate + verified AAB signature</td><td><span class="pill closed">DONE &mdash; section 06 below</span></td></tr>
+      <tr><td class="gate">Google Play publication</td><td>Out of plan v2's scope</td><td><span class="pill blocked">NOT DONE / OUT OF SCOPE &mdash; separate, unstarted task</span></td></tr>
+      <tr><td class="gate">Bilingual closure report</td><td>RU published and linked, EN committed, before <code>pm_rosetta_close</code></td><td><span class="pill closed">DONE (on the second attempt) &mdash; the first closure was premature, see section 09</span></td></tr>
+    </tbody>
+  </table>
   </div>
 
   <h2><span class="num">01</span>At a glance</h2>
@@ -468,6 +488,7 @@
 
   <h2><span class="num">08</span>What's still open &mdash; stated plainly, not hidden</h2>
   <ul class="plain">
+    <li><b>Play Console preflight (plan Step 0): <code>inaccessible</code> / UNVERIFIED, non-blocking.</b> This isolated session has no Play Console credentials/access, so it's not possible to confirm whether this app is eligible for the deadline extension to November&nbsp;1. Reported plainly as an incomplete, non-blocking step rather than silently skipped.</li>
     <li><b>Google Play publication was not performed and is not claimed</b> &mdash; this gate closes only the targetSdk&nbsp;36 requirement and Android&nbsp;16 compatibility, verified on real hardware. Play Console acceptance/publication is a separate, unstarted task.</li>
     <li><b>One data-safety incident, disclosed plainly:</b> three consecutive back-presses during live testing accidentally exited to the operator's real personal home screen (showing personal photos). The app was immediately relaunched, no personal content was further viewed, no data was modified.</li>
     <li><b>The operator's real personal data</b> (a shoulder injury under Profile &rarr; Injuries) was used only to verify keyboard/IME behavior &mdash; the field was opened but not edited; unchanged state was confirmed via a second <code>uiautomator dump</code>.</li>
@@ -487,11 +508,17 @@
     <span class="gate-tag">Round 2</span>
     <p>Against the final candidate (commit <code>d8525cd</code> plus documentary <code>6a633dc</code>). VERDICT APPROVE, <code>--final=true</code>. PUSH: AUTHORIZED conditional on <code>6a633dc</code> containing nothing but <code>DECISION_LOG.md</code> &mdash; independently re-verified via <code>git diff --stat d8525cd..6a633dc</code> before pushing.</p>
   </div>
+  <div class="deviation">
+    <span class="gate-tag">Re-opened</span>
+    <p>The first Rosetta plan closure was premature: the mandatory bilingual report had not been produced before <code>pm_rosetta_close</code>, and Rosetta's own live changed-set reconstruction was polluted by unrelated untracked workspace files. The technical G2 result itself was never contested. This report is that remediation; the next review round covers only the report's own content.</p>
+  </div>
 
   <div class="closing">
-    <b>Next:</b> G2 is closed and pushed to origin/master at <code>6a633dc</code>. API&nbsp;36 / Android&nbsp;16 &mdash; VERIFIED on real S23 hardware; Play publication &mdash; NOT PERFORMED and NOT CLAIMED. Under PM Bridge orchestrator mode, work continues autonomously to the next gate (G3&ndash;G8) without stopping on this report; each next gate's scope will be freshly confirmed with GPT&#8209;PM rather than assumed.
+    <b>Next:</b> the technical G2 baseline (candidate <code>d8525cd</code>) is closed and pushed to origin/master; this report lands as a separate documentary commit on top, and the gate's canonical range is <code>c55877c..25f26b7</code>. API&nbsp;36 / Android&nbsp;16 &mdash; VERIFIED on real S23 hardware; Play preflight &mdash; UNVERIFIED/inaccessible, non-blocking; Play publication &mdash; NOT PERFORMED and NOT CLAIMED. Under PM Bridge orchestrator mode, work continues autonomously to the next gate (G3&ndash;G8) without stopping on this report; each next gate's scope will be freshly confirmed with GPT&#8209;PM rather than assumed.
   </div>
 </div>
+
+
 
 
 
