@@ -27261,3 +27261,62 @@ entry, proving the allowlist itself can't quietly accumulate outdated exceptions
 `"suspension trainer"` alias at a nonexistent id -- failed as "ALIAS_MAP points at... which no longer
 exists", proving an alias breaking (e.g. from an equipment.json rename) is caught rather than
 silently passing.
+
+## G3 item 5 [CI]: secret scanning including Git history -- DONE, and it found a real live secret
+
+Was PARTIAL per Step 0 -- `scripts/review/state_ledger.py`'s `roboflow_key_not_committed` is a
+narrow, single-pattern regex, current-tracked-files-only check; no general-purpose or full-history
+scanner existed anywhere in the repo.
+
+Downloaded the real `gitleaks` v8.30.1 binary (pinned, not "latest") and ran it against this actual
+repository's full history (770 commits) as the first real test, before writing any CI wiring.
+
+**Found 10 findings. All 10 independently investigated by hand before deciding disposition --
+none accepted or dismissed on the tool's word alone (CLAUDE.md Sec3), and no secret VALUE printed
+anywhere in this log, only file/line/commit/rule metadata:**
+
+- 8 false positives: Firebase `apiKey` (`mobile/lib/firebase_options.dart`, 2 historical commits) --
+  not secret by Firebase's own documented design, restricted via Security Rules/App Check, not
+  secrecy. `firebase-tools`' own public OAuth `CLIENT_ID`/`CLIENT_SECRET` pair (2 files) -- a
+  well-known constant compiled into every install of the open-source CLI; the code's own comment
+  already said so before this check existed. A deliberate test fixture in
+  `cloud_feasibility.test.ts` (a fake key used to test that a validator REJECTS key-like strings).
+  A Firebase App ID + debug-keystore SHA-1 fingerprint quoted as evidence in a defect-burndown
+  report (both meant to be shared/registered, not secret) -- 4 findings (EN+RU report pair x 2
+  lines).
+- **1 real, currently-live secret, flagged directly to the operator in this session rather than
+  silently absorbed into an allowlist**: a registered Firebase App Check debug token, committed in
+  plaintext in `core/DECISION_LOG.md` (commit `2fed5a7c48`, 2026-08-21) -- verified still present in
+  the CURRENT tracked file (`secret in content` check against the live file, not just the historical
+  commit). Repo confirmed private (anonymous `api.github.com` request returns 404, GitHub's
+  by-design behavior for private repos) -- exposure is scoped to repo collaborators, not the public
+  internet, but is a real committed credential regardless. Revocation is a Firebase Console action,
+  outside this gate's scope and outside autonomous authority (CLAUDE.md Sec4/Sec16 -- secrets stay
+  the operator's). Not remediated here; not silently hidden either.
+
+Wrote `.gitleaksignore` at the repo root: one fingerprint per finding, one comment per entry stating
+WHY (false-positive class, or "real, already-reported, awaiting operator revocation" for the App
+Check token specifically, with an explicit instruction to delete that line once revoked -- not to
+carry it as permanent debt). Wired into a new `.github/workflows/secrets.yml`: full-history
+`gitleaks git . --redact` (the `--redact` flag keeps any FUTURE genuine finding's value out of CI
+logs too, not just this baseline), `fetch-depth: 0` (load-bearing -- a shallow checkout would make
+this job silently equivalent to a current-tree-only scan, defeating the item's whole point). Stays
+alongside `state_ledger.py`'s existing Roboflow-specific check rather than replacing it.
+
+**Positive proof:** ran the exact CI command (`gitleaks git . --redact`) against the real repo with
+`.gitleaksignore` applied -- "no leaks found", exit 0.
+
+**Negative proof, 2 scenarios:**
+(a) **current-tree detection**: a fake Stripe-format secret (`sk_live_...`) in a plain scratch
+directory (no git involved, `gitleaks dir` mode) -- "leaks found: 1", exit 1, confirmed via a
+non-piped exit-code capture (a naive piped `$?` earlier read `tail`'s exit code, not gitleaks' --
+caught and corrected before treating it as evidence).
+(b) **committed-then-removed-from-current-tree, using real project history rather than a synthetic
+git-commit experiment** (a scratch-repo `git commit` attempt was blocked by this session's
+`decision_log_gate` hook, which fired even against an unrelated throwaway repo -- not fought,
+substituted with real evidence instead): the two `firebase_options.dart` findings' actual secret
+suffixes were compared byte-for-byte -- the May 2026 commit (`2852eb6213`) value ends `...uVqw1s`,
+the August 2026 commit (`58105772ef`) and the CURRENT tracked file both end `...IY2mT8`. The May
+value is provably absent from the current tree entirely, yet gitleaks' full-history scan found it --
+real, non-synthetic proof that this check catches a secret no bare current-tree scan (including the
+prior Roboflow-only check) ever could.

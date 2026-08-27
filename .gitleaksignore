@@ -1,0 +1,60 @@
+# MVP1.G3 OBS-1 item 5 (CI: secret scanning including Git history).
+#
+# gitleaks scans the WHOLE history (770 commits as of 2026-08-27), not just
+# the current tree -- so it necessarily surfaces pre-existing findings that
+# predate this check's own introduction. Every fingerprint below was
+# individually reviewed by hand before being allowlisted; this file is not a
+# blanket "trust old commits" rule -- a NEW finding anywhere, including a new
+# commit-then-remove in history from this point forward, still fails CI.
+#
+# Format: gitleaks' own fingerprint (commit:file:rule:line). One entry per
+# finding, one comment per entry explaining the disposition.
+
+# False positive: Firebase `apiKey` values. Google's own documentation is
+# explicit that these are NOT treated as secret information and are safe in
+# client code/public repos -- access is restricted by Firestore Security
+# Rules / App Check, not by keeping this value private. Two commits, same
+# value, both firebase_options.dart (a config file `flutterfire configure`
+# generates and is meant to be committed).
+58105772ef59bebc1319fbe72d5cffd1c15be079:mobile/lib/firebase_options.dart:gcp-api-key:56
+2852eb6213e5991a7d1e40d6ef817a243a74a122:mobile/lib/firebase_options.dart:gcp-api-key:56
+
+# False positive: the Firebase CLI's own public OAuth client_id/client_secret
+# pair -- a well-known, publicly documented constant compiled into every
+# install of the open-source `firebase-tools` package (same class as gcloud's
+# own hardcoded installed-app OAuth client). The code's own comment at
+# scripts/ops/firebase_api.py already says so: "Public constants, compiled
+# into every copy of the open-source tool -- not a secret, and not the
+# operator's." Same value reused in provision_video_bucket.py.
+a5d71d125b6e10f1bb5f79e3ec918fa41145efa4:scripts/catalog/provision_video_bucket.py:generic-api-key:61
+bb04c69f1fac3c463361181bd68036f5251e7b34:scripts/ops/firebase_api.py:generic-api-key:35
+
+# False positive: a deliberate test fixture. cloud_feasibility.test.ts's own
+# "secret-like strings" test group constructs a fake AIza-prefixed value
+# specifically to assert the validator REJECTS anything that looks like a
+# live API key -- the finding is the test proving the opposite of a leak.
+e0483c1b0007bbc2f2b8e6b8ba28c9d96b6073bf:functions-equipment-identity/src/__tests__/cloud_feasibility.test.ts:gcp-api-key:211
+
+# False positive: Firebase Android App ID and a debug-keystore SHA-1
+# certificate fingerprint, both quoted as evidence in a defect-burndown
+# report (google-services.json app ids and SHA-1 fingerprints are meant to be
+# registered/shared for OAuth client setup -- neither grants access on its
+# own). Same content duplicated in the EN/RU report pair.
+ae0e24f607d382637ff318c4fa704e5625760f8a:reports/2026-08-20-defect-burndown-d02-d06-d07.ru.html:generic-api-key:403
+ae0e24f607d382637ff318c4fa704e5625760f8a:reports/2026-08-20-defect-burndown-d02-d06-d07.ru.html:generic-api-key:404
+ae0e24f607d382637ff318c4fa704e5625760f8a:reports/2026-08-20-defect-burndown-d02-d06-d07.html:generic-api-key:403
+ae0e24f607d382637ff318c4fa704e5625760f8a:reports/2026-08-20-defect-burndown-d02-d06-d07.html:generic-api-key:404
+
+# REAL finding, NOT a false positive -- flagged directly to the operator
+# 2026-08-27 rather than silently allowlisted as routine. A registered
+# Firebase App Check debug token was committed in plaintext in
+# core/DECISION_LOG.md and is still present in the CURRENT tracked file, not
+# just history. Revocation is a Firebase Console action -- outside this
+# gate's engineering scope and outside what this session can do
+# autonomously (CLAUDE.md Sec4/Sec16: secrets/credentials stay the
+# operator's). This allowlist entry exists ONLY so this pre-existing,
+# already-known, already-reported exposure does not block CI while awaiting
+# operator action -- remove this line once the token is revoked in Firebase
+# Console (revoking makes the committed value harmless, at which point this
+# suppression should be deleted, not kept as permanent debt).
+2fed5a7c48cdd45852f41fe10eea189f658734bd:core/DECISION_LOG.md:generic-api-key:22121
