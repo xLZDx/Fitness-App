@@ -27040,3 +27040,30 @@ republished at the same URL (https://claude.ai/code/artifact/36aa8595-e8c4-4ddc-
 This commit (report fixes) is the next one in the range; GPT-PM's own stated next step is
 report-only re-review of exactly these four points plus any direct documentary regression -- no
 code/test/device work reopened.
+
+## Report re-review (round 2 of the report-only cycle): 3 closed, 1 self-reference recursion found
+
+Sent commit `a63753d` (deadline wording, Play preflight status, DoD table, SHA-reference fix) for
+re-review, scoped to exactly the four points above. GPT-PM: findings 1-3 CLOSED outright. Finding 4
+(stale SHA) was **not** actually closed -- it had only moved forward one commit: the report said
+"canonical range c55877c..25f26b7", but the commit making that claim was itself pushed as
+`a63753d`, making the true range `c55877c..a63753d` and the report's own claim stale again the
+moment it landed. GPT-PM named this precisely: hardcoding a report's own terminal SHA inside itself
+is a self-reference recursion -- fixing it by writing in the new SHA just recreates the same bug one
+commit later.
+
+Verified the mechanism before accepting: re-read both reports' own `verdict-band` and `closing`
+text, confirmed both hardcoded `c55877c..25f26b7` as "the canonical gate range" -- exactly the
+pattern GPT-PM described.
+
+Fix, per GPT-PM's own suggested resolution: removed the concept of a report-internal "canonical
+gate range" entirely. Reports now state only the technical evidence baseline (`d8525cd`/`6a633dc`,
+which does not change) and the report's own original commit (`25f26b7`, stated as a fact about the
+past, not a claim about "the" terminal state) -- language explicit that the gate's actual terminal
+range is established externally, by this log's Rosetta re-close record and Git history, never by
+the HTML file itself. The auto-generated provenance bar (`report_conform.py`'s own `<dt>Git</dt>`
+line, refreshed on every conform run) is exempt from this -- it is generated fresh each time, not
+hand-authored, so it cannot go stale the same way.
+
+This is, structurally, the correct terminal statement: the actual full-gate range, computed after
+this commit lands, is recorded here rather than inside the report.
