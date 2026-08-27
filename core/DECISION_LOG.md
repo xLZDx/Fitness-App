@@ -28578,3 +28578,36 @@ plus the two new files.
 
 Sent back to GPT-PM with the exact commit. If approved, the entire alert-independent Step 9
 groundwork batch -- including both of its own follow-up findings -- is closed.
+
+## MVP1.G3 Step 9 alert-independent groundwork: ENTIRE BATCH FINAL APPROVED -- 2026-08-27
+
+GPT-PM's verdict on `481abfb`: `VERDICT: APPROVE`. Explicit note on its own verification limits,
+stated rather than glossed over: "I did not independently execute the reported 436/436 Jest suite
+or build from GitHub; that execution result is recorded in the commit. I independently verified
+the actual committed implementation and direct regression-test logic."
+
+**Final status, all FINAL APPROVED, GPT-PM's own list:** Step 9A Auth->Firestore canary; Stripe
+reconciliation LogMatch; deleteAccount and exportAccountData operational monitors; App Check
+attested-ratio metric definition; App Check callable-inventory parity guard; AI Gateway calls/
+latency/token-usage/quota-exhaustion metrics; AI Gateway investigation queries. Remaining scoped
+BLOCKER/MAJOR/MINOR -- NONE. "The entire alert-independent Step 9 groundwork batch is technically
+DONE/CLOSED."
+
+**Explicitly NOT the same as runtime monitoring being ACTIVE**, GPT-PM's own words: `FA-D1` --
+PENDING (notification owner/channel decision, operator's alone). Live user-defined metrics --
+`HOLD_LIVE_CREATION_COST` (real incremental-cost proof still required, this session cannot supply
+it). Production Web API key for Step 9A -- `BLOCKED_CONFIG` until configured/verified (this
+session has no live GCP credentials access). Scheduler/live alert policies/notification delivery
+proof -- NOT ACTIVE, belongs to a later activation phase. "Do not reopen this groundwork without
+concrete regression evidence. The next meaningful transition is the activation phase once the
+outstanding ownership/configuration/cost prerequisites are resolved."
+
+**Batch summary:** 9 commits total across this segment (Step 8 Crashlytics/AI Gateway
+observability + Step 9A canary from the prior part of this session; `41cb872`, `6185d11`,
+`c7a498e`, `1aba4e4`, `8a1c00a`, `481abfb` this part), 6 GPT-PM adversarial review rounds this
+part alone, 4 real MAJOR findings caught and fixed (Gen2 resource shape, non-deployable filter-
+only alert shape, non-exhaustive operation/outcome bounding, non-exhaustive App Check callable
+bounding), 0 findings dismissed without a fix. Nothing live created anywhere. This session has
+exhausted the alert-independent groundwork GPT-PM authorized; further progress on Step 9 needs
+either the operator's FA-D1 answer, live GCP cost/credential access this session does not have, or
+new authorization from GPT-PM for a different part of the gate.

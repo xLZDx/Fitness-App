@@ -1,0 +1,485 @@
+<title>Step 9 Monitoring Groundwork Closeout</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #f7f5f0;
+    --surface: #ffffff;
+    --surface-2: #f0ede4;
+    --ink: #1c1a16;
+    --ink-soft: #55504a;
+    --ink-faint: #8b8579;
+    --border: #ddd7c8;
+    --accent: #d99a1b;
+    --accent-ink: #4a3204;
+    --accent-soft: #f5e6c0;
+    --good: #2f7d4f;
+    --good-soft: #dcf0e3;
+    --warn: #b5540a;
+    --warn-soft: #fbe6d2;
+    --crit: #b02a2a;
+    --crit-soft: #fbdede;
+    --mono-surface: #221f1a;
+    --mono-ink: #f2ead9;
+    --shadow: 0 1px 2px rgba(28,26,22,0.06), 0 8px 24px -12px rgba(28,26,22,0.18);
+  }
+
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #17140f;
+      --surface: #211d17;
+      --surface-2: #2a251d;
+      --ink: #f2ead9;
+      --ink-soft: #cbc2ae;
+      --ink-faint: #8f8674;
+      --border: #3a3327;
+      --accent: #e8ac2f;
+      --accent-ink: #2a1c02;
+      --accent-soft: #3d2f10;
+      --good: #5cbf87;
+      --good-soft: #17301f;
+      --warn: #e08a3c;
+      --warn-soft: #3a2510;
+      --crit: #e07070;
+      --crit-soft: #3a1414;
+      --mono-surface: #0e0c09;
+      --mono-ink: #f2ead9;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17140f;
+    --surface: #211d17;
+    --surface-2: #2a251d;
+    --ink: #f2ead9;
+    --ink-soft: #cbc2ae;
+    --ink-faint: #8f8674;
+    --border: #3a3327;
+    --accent: #e8ac2f;
+    --accent-ink: #2a1c02;
+    --accent-soft: #3d2f10;
+    --good: #5cbf87;
+    --good-soft: #17301f;
+    --warn: #e08a3c;
+    --warn-soft: #3a2510;
+    --crit: #e07070;
+    --crit-soft: #3a1414;
+    --mono-surface: #0e0c09;
+    --mono-ink: #f2ead9;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Source Sans 3', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  header { padding-bottom: 8px; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    font-size: clamp(28px, 4.5vw, 38px);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+  .lede {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 68ch;
+    margin: 0;
+  }
+
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 32px 0;
+  }
+  .stat {
+    background: var(--surface);
+    padding: 16px 14px;
+    text-align: center;
+  }
+  .stat .n {
+    font-family: 'IBM Plex Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--ink);
+  }
+  .stat .l {
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 3px;
+  }
+
+  section { margin: 44px 0; }
+  h2 {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .h2-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .section-sub { color: var(--ink-faint); font-size: 14.5px; margin: 0 0 18px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card h3 {
+    font-family: 'Archivo', sans-serif;
+    font-size: 16.5px;
+    margin: 0 0 4px;
+  }
+  .card p { margin: 8px 0; color: var(--ink-soft); font-size: 15px; }
+  .card ul { margin: 8px 0; padding-left: 20px; color: var(--ink-soft); font-size: 15px; }
+  .card li { margin: 4px 0; }
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.88em;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--ink);
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    text-transform: uppercase;
+  }
+  .pill-good { background: var(--good-soft); color: var(--good); }
+  .pill-warn { background: var(--warn-soft); color: var(--warn); }
+  .pill-accent { background: var(--accent-soft); color: var(--accent-ink); }
+  .pill-crit { background: var(--crit-soft); color: var(--crit); }
+
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--ink-faint); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.03em; }
+  td code { font-size: 0.85em; }
+  .table-wrap { overflow-x: auto; }
+
+  /* Review cycle timeline */
+  .cycle {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-left: 2px solid var(--border);
+    margin-left: 10px;
+    padding-left: 24px;
+  }
+  .cycle-step { position: relative; padding-bottom: 20px; }
+  .cycle-step:last-child { padding-bottom: 0; }
+  .cycle-step::before {
+    content: '';
+    position: absolute;
+    left: -30px;
+    top: 4px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--ink-faint);
+  }
+  .cycle-step.crit::before { border-color: var(--crit); background: var(--crit-soft); }
+  .cycle-step.fix::before { border-color: var(--accent); background: var(--accent-soft); }
+  .cycle-step.good::before { border-color: var(--good); background: var(--good-soft); }
+  .cycle-step .ct { font-weight: 600; font-size: 15px; }
+  .cycle-step .cd { color: var(--ink-soft); font-size: 13.5px; margin-top: 3px; }
+  .cycle-step .cd code { font-size: 0.86em; }
+
+  .gap-note {
+    border-left: 3px solid var(--warn);
+    background: var(--warn-soft);
+    padding: 10px 14px;
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+    color: var(--ink);
+    margin-top: 10px;
+  }
+  .gap-note b { color: var(--warn); }
+
+  footer.provenance-fallback { display: none; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness App · MVP1.G3 · Step 9</div>
+    <h1>Alert-Independent Monitoring: Definitions Fully Closed</h1>
+    <p class="lede">The full background-monitoring package — the four items GPT-PM authorized
+    independently of the production-alert-ownership decision: definitions for Stripe, for
+    account deletion/export, App Check attestation, and AI Gateway metrics. Six rounds of
+    adversarial review, four real defects found — all closed.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 481abfb</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="stat-strip">
+    <div class="stat"><div class="n">6</div><div class="l">commits this part</div></div>
+    <div class="stat"><div class="n">6</div><div class="l">GPT-PM review rounds</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">real MAJORs, all fixed</div></div>
+    <div class="stat"><div class="n">436 / 436</div><div class="l">unit tests</div></div>
+  </div>
+
+  <section>
+    <h2><span class="h2-num">01</span> What was built</h2>
+    <p class="section-sub">All four items are definitions only. No live GCP resource (metric,
+    alert, notification channel) was created at any point in this work.</p>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Stripe: duplicate-subscription reconciliation failure</h3>
+        <span class="pill pill-good">Done</span>
+      </div>
+      <p>A LogMatch policy for the Stripe webhook handler: matches exactly the two reconciliation
+      failure log lines, not the two neighboring success/warning logs from the same code path.
+      Scoped to the <code>stripewebhook</code> Cloud Run service (not a function name — see
+      below).</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Account deletion and export: operational failures</h3>
+        <span class="pill pill-good">Done</span>
+      </div>
+      <p>A mandatory failure-path audit ran before declaring this done: the subscription-document
+      read in <code>deleteAccount</code> happens BEFORE its first <code>try</code> block — none
+      of the three named error logs would fire if it threw. Found and verified a real platform
+      backstop: <code>firebase-functions</code>' own <code>onCall</code> wrapper catches any
+      unhandled exception and logs <code>"Unhandled error"</code> — but only when it is NOT an
+      <code>HttpsError</code>, i.e. only for genuinely unexpected failures. Both filters include
+      this backstop.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>App Check: attested-call ratio</h3>
+        <span class="pill pill-accent">Done · metric not created</span>
+      </div>
+      <p>The visibility itself was already built earlier (discovered by scouting, not
+      reinvented). This part added a real log-based-metric definition (not just a filter) with
+      bounded cardinality: 17 known call sites x 2 <code>attested</code> values. The 17-entry
+      list is now mechanically cross-checked against the actual source inventory by a separate
+      test — a future 18th call site not added to the list fails that test instead of silently
+      slipping through.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>AI Gateway: four metrics and seven queries</h3>
+        <span class="pill pill-good">Done</span>
+      </div>
+      <p>A call counter (operation x outcome), a latency distribution (bucket boundaries centered
+      on the code's own real timeouts — 20/25/45 seconds), a token-usage distribution
+      (deliberately includes failed calls too — tokens can be spent before a response turns out
+      empty), and a quota-exhaustion counter (a separate event — the gateway itself never sees a
+      quota refusal, since the quota check runs earlier). Plus seven named queries for manual
+      Log Explorer investigation.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="h2-num">02</span> Six rounds, four real findings</h2>
+    <p class="section-sub">Every finding was substantive: the code genuinely would not have
+    worked as intended had it shipped in its original form.</p>
+
+    <div class="cycle">
+      <div class="cycle-step crit">
+        <div class="ct">Round 1 · wrong Cloud Logging resource model</div>
+        <div class="cd">Filters used <code>resource.labels.function_name</code> — the Gen1
+        Cloud Functions shape. The whole project runs on v2 (Cloud Run): real log entries carry
+        <code>resource.type="cloud_run_revision"</code> and
+        <code>resource.labels.service_name</code>. With the original filter, a monitor would
+        match exactly zero real log entries — green during an actual failure.</div>
+      </div>
+      <div class="cycle-step crit">
+        <div class="ct">Round 1 · not a real alert policy</div>
+        <div class="cd">Definitions only produced a filter string, not a full
+        <code>AlertPolicy</code> JSON (needs <code>combiner</code>,
+        <code>conditionMatchedLog</code>, a rate-limited <code>alertStrategy</code>, a channel
+        list).</div>
+      </div>
+      <div class="cycle-step fix">
+        <div class="ct">Fixed · round 1</div>
+        <div class="cd">Added a function deriving the real Cloud Run service name from the
+        TypeScript export name. Added a full <code>AlertPolicy</code> renderer with an empty
+        channel list — both shapes checked against Google's own REST reference before writing
+        the code, not guessed.</div>
+      </div>
+      <div class="cycle-step crit">
+        <div class="ct">Round 2 · not actually exhaustive drift protection</div>
+        <div class="cd">The AI Gateway's 4-operation list was only checked with
+        <code>satisfies</code> — which proves every array element is valid but NOT that every
+        type member is present. Add a 5th operation and the code still compiles, silently
+        excluding the new one from every metric.</div>
+      </div>
+      <div class="cycle-step fix">
+        <div class="ct">Fixed · round 2</div>
+        <div class="cd">Single source of truth: the operations array now lives in
+        <code>ai_gateway.ts</code>, with the type derived FROM the array instead of declared
+        separately. The monitoring module imports the exact same array — the duplicate that
+        could have drifted no longer exists structurally.</div>
+      </div>
+      <div class="cycle-step crit">
+        <div class="ct">Round 3 · same problem, for App Check</div>
+        <div class="cd">App Check's 17-known-callable list is a plain string set, not a
+        TypeScript type, so the same structural fix didn't apply — the list needed manual
+        upkeep with no mechanical guard at all.</div>
+      </div>
+      <div class="cycle-step good">
+        <div class="ct">Fixed · final approval</div>
+        <div class="cd">An existing test in <code>scaling.test.ts</code>, which scans the real
+        source files for every callable, was extracted into a reusable helper. A new test
+        compares the 17-entry list against that real inventory in both directions: a missing
+        callable fails the test, a stale entry fails the test.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="h2-num">03</span> What's honestly not activated</h2>
+    <div class="gap-note"><b>DECISION FA-D1</b> — who owns production alerts (on-call) is the
+    operator's decision, still pending. No notification channel has been created.</div>
+    <div class="gap-note"><b>App Check live-metric cost</b> — this session has no access to real
+    GCP billing data to confirm zero incremental cost; only a structural cardinality bound
+    (~34 max time series) is possible.</div>
+    <div class="gap-note"><b>A real Firebase Web API key</b> for the Step 9A canary probe — same
+    gap as the prior report: without real GCP credentials, the probe cannot reach production Auth
+    and correctly refuses to run unsafely.</div>
+    <p style="color:var(--ink-faint);font-size:14px;margin-top:16px;">GPT-PM, verbatim: "That does
+    not mean runtime monitoring is ACTIVE... The next meaningful transition is the activation
+    phase once the outstanding ownership/configuration/cost prerequisites are resolved."</p>
+  </section>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
