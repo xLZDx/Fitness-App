@@ -27178,3 +27178,33 @@ it -- osv-scanner correctly reported the vulnerability with its real GHSA/CVSS/f
 and exited 1. Fixture deleted immediately after (non-recursive `rm -f` + `rmdir`, since this
 workspace's shell policy blocks `rm -rf`; `git status` unaffected since the fixture never lived in
 the repo tree).
+
+## G3 item 3 [CI]: SafetyContext invariant regression guard -- DONE
+
+Was PARTIAL per Step 0 -- `SafetyContext` is already `required` at `plan_builder.dart:33` and
+`programme_builder.dart:274/288` (Dart's own type system already makes an actual bypass
+uncompilable, which is what made F014/F015 fixable this way), but nothing explicitly guarded the
+invariant ITSELF from regressing -- no test whose stated job is "this must stay required," so a
+future edit dropping `required` (or adding a default) would compile cleanly everywhere and nothing
+would notice.
+
+Added `mobile/test/features/safety/safety_context_required_invariant_test.dart`, 4 tests: 2 source
+guards (read `plan_builder.dart`/`programme_builder.dart` as text at test time, regex-assert
+`required SafetyContext safety,` / `required this.safety,` are still present, with a failure message
+naming the exact invariant and consequence), 2 construction-proof tests (a caller that DOES supply
+`SafetyContext` still compiles and runs for both `buildPlan` and `ProgrammeBuildRequest`). Explicitly
+scoped to the invariant only -- does not touch the 360 untagged-row disposition or any clinical
+policy, per the DoD's reject condition.
+
+**Positive proof:** ran the new test file standalone -- 4/4 pass.
+
+**Negative proof:** with `git status` confirmed clean first, temporarily edited the REAL
+`plan_builder.dart` (`required SafetyContext safety,` -> `SafetyContext? safety,`) and verified the
+new regex directly (outside `flutter test`, to isolate the check's own logic from unrelated
+downstream compile noise the mutation would otherwise cause) -- confirmed it no longer matches,
+proving the guard would fail red on this exact regression. Restored the file immediately via a
+targeted `Edit` (git's own `checkout --` was denied by this session's permission layer, so used a
+direct text edit instead, restoring the exact prior line) -- `git diff` on the file confirmed
+byte-identical to the committed state before proceeding. Full suite re-run after restoration
+(`safety_context_required_invariant_test.dart` + `plan_builder_test.dart` +
+`programme_builder_test.dart`): 53/53 green.
