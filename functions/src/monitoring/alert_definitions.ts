@@ -28,6 +28,7 @@ import {
   EXPORT_ACCOUNT_FAILED,
   PLATFORM_UNHANDLED_ERROR,
   APP_CHECK_EVENT,
+  CANARY_PROBE_FAILED_EVENT,
 } from "./log_signals";
 import type {
   LogMatchFilterSpec,
@@ -55,6 +56,17 @@ import {
 const STRIPE_WEBHOOK_FUNCTION_NAME = "stripeWebhook";
 const DELETE_ACCOUNT_FUNCTION_NAME = "deleteAccount";
 const EXPORT_ACCOUNT_FUNCTION_NAME = "exportAccountData";
+/**
+ * MVP1.G3 Step 9B. `runProductionCanary` (`canary_schedule.ts`) is a
+ * scheduled function, not a callable, but it produces the same Gen2
+ * `resource.labels.service_name` shape as every other function here --
+ * `toCloudRunServiceName` derives `runproductioncanary`. Written before the
+ * function was deployed: this name must be reconfirmed against the real
+ * `gcloud run services list` output once deployed (Step 9B's own preflight
+ * discipline, `core/DECISION_LOG.md`), the same live check the other three
+ * names in this file already received.
+ */
+const CANARY_PROBE_FUNCTION_NAME = "runProductionCanary";
 
 /** Standard rate limit/auto-close for every log-match policy defined here. */
 const NOTIFICATION_RATE_LIMIT_PERIOD = "300s"; // 5 min: avoid renotifying on every raw log line
@@ -97,6 +109,20 @@ export const EXPORT_ACCOUNT_FAILURE_FILTER: LogMatchFilterSpec = {
   messageEquals: [EXPORT_ACCOUNT_FAILED, PLATFORM_UNHANDLED_ERROR],
 };
 
+/**
+ * `runProductionCanary`'s own thrown failure (`canary_schedule.ts`) logs
+ * this exact message before throwing, so a canary failure is caught the
+ * same way any other operational failure in this file is: by matching the
+ * structured log line, not by inferring failure from a missing success
+ * signal. GPT-PM's Step 9B GO required this as a 4th policy, distinct from
+ * the three business-failure alerts: this one alerts on the MONITOR itself
+ * going quiet or erroring, not on a business outcome.
+ */
+export const CANARY_PROBE_FAILURE_FILTER: LogMatchFilterSpec = {
+  exportName: CANARY_PROBE_FUNCTION_NAME,
+  messageEquals: [CANARY_PROBE_FAILED_EVENT, PLATFORM_UNHANDLED_ERROR],
+};
+
 export function stripeReconciliationAlertFilterString(): string {
   return toGcpFilterString(STRIPE_RECONCILIATION_FAILURE_FILTER);
 }
@@ -107,6 +133,10 @@ export function deleteAccountAlertFilterString(): string {
 
 export function exportAccountAlertFilterString(): string {
   return toGcpFilterString(EXPORT_ACCOUNT_FAILURE_FILTER);
+}
+
+export function canaryProbeAlertFilterString(): string {
+  return toGcpFilterString(CANARY_PROBE_FAILURE_FILTER);
 }
 
 /**
@@ -143,6 +173,20 @@ export const EXPORT_ACCOUNT_ALERT_POLICY: AlertPolicySpec = {
   autoClose: AUTO_CLOSE,
 };
 
+/**
+ * The 4th policy GPT-PM's Step 9B GO required, on top of the three
+ * business-failure ones above: a permanent alert on the canary MONITOR
+ * itself failing or erroring -- so a broken canary reads as an incident
+ * rather than silently stops proving anything.
+ */
+export const CANARY_PROBE_ALERT_POLICY: AlertPolicySpec = {
+  displayName: "Production canary probe failure",
+  conditionDisplayName: "Any canary probe failure or unhandled error in runProductionCanary",
+  filter: CANARY_PROBE_FAILURE_FILTER,
+  notificationRateLimitPeriod: NOTIFICATION_RATE_LIMIT_PERIOD,
+  autoClose: AUTO_CLOSE,
+};
+
 export function stripeReconciliationAlertPolicyJson(): object {
   return toAlertPolicyJson(STRIPE_RECONCILIATION_ALERT_POLICY);
 }
@@ -153,6 +197,10 @@ export function deleteAccountAlertPolicyJson(): object {
 
 export function exportAccountAlertPolicyJson(): object {
   return toAlertPolicyJson(EXPORT_ACCOUNT_ALERT_POLICY);
+}
+
+export function canaryProbeAlertPolicyJson(): object {
+  return toAlertPolicyJson(CANARY_PROBE_ALERT_POLICY);
 }
 
 /**

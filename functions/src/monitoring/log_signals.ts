@@ -52,3 +52,6 @@ export const QUOTA_EXCEEDED_EVENT = "quota exceeded";
  * unable to evaluate the quota at all, not a caller legitimately over it.
  */
 export const QUOTA_CHECK_FAILED_EVENT = "quota check failed";
+
+/** `canary_schedule.ts` -- the Step 9B production canary's scheduled run failed. */
+export const CANARY_PROBE_FAILED_EVENT = "production canary probe failed";

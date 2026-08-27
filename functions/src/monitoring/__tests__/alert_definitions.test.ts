@@ -2,13 +2,16 @@ import {
   STRIPE_RECONCILIATION_FAILURE_FILTER,
   DELETE_ACCOUNT_FAILURE_FILTER,
   EXPORT_ACCOUNT_FAILURE_FILTER,
+  CANARY_PROBE_FAILURE_FILTER,
   APP_CHECK_ATTESTED_RATIO_METRIC,
   stripeReconciliationAlertFilterString,
   deleteAccountAlertFilterString,
   exportAccountAlertFilterString,
+  canaryProbeAlertFilterString,
   stripeReconciliationAlertPolicyJson,
   deleteAccountAlertPolicyJson,
   exportAccountAlertPolicyJson,
+  canaryProbeAlertPolicyJson,
   appCheckAttestedRatioMetricJson,
 } from "../alert_definitions";
 import {
@@ -183,11 +186,47 @@ describe("exportAccountData operational-failure alert filter", () => {
   });
 });
 
+describe("production canary probe-failure alert filter", () => {
+  it("matches the canary's own thrown-failure log and the platform backstop", () => {
+    expect(
+      matchesLogMatchFilter(
+        CANARY_PROBE_FAILURE_FILTER,
+        entry("runproductioncanary", signals.CANARY_PROBE_FAILED_EVENT),
+      ),
+    ).toBe(true);
+    expect(
+      matchesLogMatchFilter(
+        CANARY_PROBE_FAILURE_FILTER,
+        entry("runproductioncanary", signals.PLATFORM_UNHANDLED_ERROR),
+      ),
+    ).toBe(true);
+  });
+
+  it("does not match an identical-shaped failure from a different service", () => {
+    expect(
+      matchesLogMatchFilter(
+        CANARY_PROBE_FAILURE_FILTER,
+        entry("deleteaccount", signals.CANARY_PROBE_FAILED_EVENT),
+      ),
+    ).toBe(false);
+  });
+
+  it("renders a Gen2-shaped filter string scoped to the runproductioncanary Cloud Run service", () => {
+    const filter = canaryProbeAlertFilterString();
+    expect(filter).toContain('resource.type="cloud_run_revision"');
+    expect(filter).toContain(
+      'resource.labels.service_name="runproductioncanary"',
+    );
+    expect(filter).toContain(signals.CANARY_PROBE_FAILED_EVENT);
+  });
+});
+
 describe("AlertPolicy JSON shape (Cloud Monitoring projects.alertPolicies REST shape)", () => {
   it.each([
     ["Stripe reconciliation", stripeReconciliationAlertPolicyJson()],
     ["deleteAccount", deleteAccountAlertPolicyJson()],
     ["exportAccountData", exportAccountAlertPolicyJson()],
+    ["production canary probe", canaryProbeAlertPolicyJson()],
   ])("%s policy has the full deployable shape, not a bare filter", (_label, policy) => {
     const p = policy as {
       displayName: string;
@@ -214,6 +253,7 @@ describe("AlertPolicy JSON shape (Cloud Monitoring projects.alertPolicies REST s
     ["Stripe reconciliation", stripeReconciliationAlertPolicyJson()],
     ["deleteAccount", deleteAccountAlertPolicyJson()],
     ["exportAccountData", exportAccountAlertPolicyJson()],
+    ["production canary probe", canaryProbeAlertPolicyJson()],
   ])("%s policy has an empty notificationChannels list (no live paging until FA-D1)", (_label, policy) => {
     const p = policy as { notificationChannels: unknown[] };
     expect(p.notificationChannels).toEqual([]);

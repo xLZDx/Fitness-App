@@ -28699,3 +28699,69 @@ Given the scope (production secrets, a real deploy, live billable GCP resources,
 this is unambiguously HIGH review class -- opening a formal Rosetta plan with GPT-PM for the full
 Step 9B activation sequence next, same discipline Step 9A received, not proceeding from a single
 chat confirmation alone.
+
+## MVP1.G3 Step 9B: Rosetta plan opened and GO'd -- 2026-08-27
+
+Plan `Fitness_App-2026-08-27T07-36-39-218Z-7e07c6`, "MVP1.G3 Step 9B: production activation of
+alert-independent monitoring (backend/GCP only)", HIGH review class (production secrets, a real
+scheduled-function deploy, live billable GCP resources, real alert delivery). GPT-PM's GO
+materially amended the plan's scope: it added a requirement not in this session's original
+proposal -- a permanent 4th LogMatch alert policy on the canary probe's OWN failure, distinct from
+the three business-failure policies already built, "so a broken canary reads as an incident
+instead of silently stopping proving anything." Registered transparently rather than silently
+absorbed. GPT-PM's other binding constraints from the same GO: deploy only the exact scheduled
+function by name, never a blanket functions deploy (the four AI Gateway callables are exported but
+must stay undeployed); prove business-failure policies with clearly marked synthetic log entries
+carrying real Cloud Run resource labels, never actual business failures; for the AI metrics, record
+`LIVE_METRIC_CREATED`/`NO_PRODUCTION_PRODUCER` rather than generating fake AI traffic.
+
+**Step 1 (Preflight) -- COMPLETE.** Re-verified against the current live state (not reused from the
+correction entry above, per the plan's own verification discipline): the Browser API key
+(`gcloud services api-keys get-key-string`, fetched to a local scratchpad file only, never printed)
+returns HTTP 200 from `https://www.googleapis.com/identitytoolkit/v3/relyingparty/getProjectConfig`
+against real production Identity Toolkit -- confirms the key is valid and usable as
+`FIREBASE_WEB_API_KEY` before it is ever committed to Secret Manager. Re-confirmed 0 pre-existing
+log-based metrics, 0 alert policies, 0 Cloud Scheduler jobs -- a clean slate, matching the earlier
+reconnaissance, nothing to collide with activation.
+
+## MVP1.G3 Step 9B, Step 2: canary scheduled-function code + 4th canary-failure alert built -- 2026-08-27
+
+Built the code half of Step 2 (secret wiring + scheduled function) plus the net-new 4th alert
+policy GPT-PM's GO added, before touching any live GCP state:
+
+- **`functions/src/canary_schedule.ts`** (new file): `runProductionCanary`, an `onSchedule`
+  Cloud Function (`firebase-functions/v2/scheduler`) wrapping Step 9A's already-approved
+  `runCanaryProbe()`, every 30 minutes, `europe-west1`, `maxInstances: 1`, bound to a
+  `FIREBASE_WEB_API_KEY` secret via `defineSecret` -- the same pattern `index.ts` already uses for
+  `STRIPE_SECRET_KEY`. `canary_probe.ts` itself needed NO change: `resolveFirebaseWebApiKey()`
+  already reads `process.env.FIREBASE_WEB_API_KEY`, the exact env var name Cloud Functions v2
+  injects a bound secret under at runtime -- confirmed by reading the full file before writing
+  the wrapper, not assumed. A probe failure is thrown (surfaces as a genuine execution failure)
+  after logging a new structured event, `CANARY_PROBE_FAILED_EVENT` (`log_signals.ts`).
+- **`monitoring/alert_definitions.ts`**: `CANARY_PROBE_FAILURE_FILTER` / `CANARY_PROBE_ALERT_POLICY`
+  / `canaryProbeAlertPolicyJson()` -- the 4th policy, same `LogMatchFilterSpec`/`AlertPolicySpec`
+  shape as the three business-failure policies, including the `PLATFORM_UNHANDLED_ERROR` backstop.
+  Cloud Run service name `runproductioncanary` (via the existing `toCloudRunServiceName`
+  transform) is stated as unconfirmed against a live deployment in both the code comment and
+  `README.md` -- the function does not exist yet to check it against -- to be reconfirmed against
+  `gcloud run services list` once actually deployed, the same live check the other three names
+  already received.
+- **`index.ts`**: re-exports `runProductionCanary` from `canary_schedule.ts`, with an explicit
+  comment repeating the scoped-deploy-only constraint at the export site itself.
+- **`__tests__/scaling.test.ts`**: registered `runProductionCanary` in `ENTRYPOINTS` (this file's
+  own header: "this list IS the registration") -- it produces the same v2 `__endpoint` shape as
+  every callable this file already guards (`maxInstances`, `region`, `minInstances`), even though
+  it is scheduled rather than callable. Updated "seventeen" -> "eighteen" in the test title/header
+  comment.
+- **New tests**: `alert_definitions.test.ts` gained a full describe block for the canary filter
+  (positive match on both the canary's own event and the platform backstop, negative match against
+  a different service, Gen2-shaped filter string) plus inclusion in the two `AlertPolicy` JSON
+  shape tables.
+
+**Verification:** `npx tsc --noEmit` clean before and after every edit in this batch. Full suite
+443/443 (436 baseline + 2 from the new `ENTRYPOINTS` per-function loops + 5 new canary-filter
+tests). `git status` confirmed only the files named above changed -- no application/producer file
+outside the new wiring, no live GCP call made yet.
+
+Not yet done: committing/pushing this code, creating the `FIREBASE_WEB_API_KEY` secret, deploying
+the function, or any other live GCP mutation -- next.

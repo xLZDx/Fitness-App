@@ -9,7 +9,9 @@
  * `aiCoachAdvice`, a fifteenth, `aiEquipmentRecognition`, a sixteenth,
  * `aiMachineDescription`, and a seventeenth, `aiExerciseGeneration`, all on
  * the shared `AI_METERED` profile — registered here for the same reason
- * `exportAccountData` was: this list IS the registration.
+ * `exportAccountData` was: this list IS the registration. Step 9B added an
+ * eighteenth, `runProductionCanary` — a scheduled function, not a callable,
+ * but still deployed with the same v2 `__endpoint` shape this file guards.
  *
  * The assertion is on `__endpoint`, the deployment descriptor
  * `firebase-functions` builds from the options object, rather than on the
@@ -67,6 +69,11 @@ const ENTRYPOINTS: Record<string, unknown> = {
   aiEquipmentRecognition: index.aiEquipmentRecognition,
   aiMachineDescription: index.aiMachineDescription,
   aiExerciseGeneration: index.aiExerciseGeneration,
+  // MVP1.G3 Step 9B. Not a callable -- a scheduled function -- but it still
+  // produces a v2 `__endpoint` with the same platform/region/maxInstances
+  // shape, so it still belongs in this registration and this file's ceiling
+  // guard still applies to it.
+  runProductionCanary: index.runProductionCanary,
 };
 
 describe("scaling ceilings", () => {
@@ -76,10 +83,9 @@ describe("scaling ceilings", () => {
     expect(admin.initializeApp).toHaveBeenCalledTimes(1);
   });
 
-  test("the deployed surface is exactly these seventeen", () => {
-    // A seventeenth function added without a ceiling is the regression this
-    // whole file exists to catch, and it can only be caught by noticing the
-    // count moved.
+  test("the deployed surface is exactly these eighteen", () => {
+    // A function added without a ceiling is the regression this whole file
+    // exists to catch, and it can only be caught by noticing the count moved.
     const exported = Object.keys(index).filter(
       (k) => typeof endpointOf((index as any)[k])?.platform === "string",
     );

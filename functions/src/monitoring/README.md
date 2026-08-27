@@ -15,6 +15,7 @@ change. See `core/DECISION_LOG.md` for the full exchange.
 | App Check attested-ratio metric | `DEFINED`/`TESTED` | `HOLD` -- blocked on a real (not estimated) incremental-cost figure, see below |
 | AI Gateway metrics (calls, latency, tokens, quota exhaustions) | `DEFINED`/`TESTED` | `HOLD_LIVE_CREATION_COST` -- same cost posture as the App Check metric |
 | AI Gateway investigation queries (7, `ai_gateway_definitions.ts`) | `DEFINED`/`TESTED` | `READY_TO_USE` -- plain filter strings, no GCP resource to create |
+| Production canary probe-failure alert | `DEFINED`/`TESTED` | Step 9B activation in progress, see "Step 9B: production activation" below |
 
 Every alert policy renders the real `google.monitoring.v3.AlertPolicy` REST
 shape (`toAlertPolicyJson` in `types.ts`) with `notificationChannels: []` --
@@ -221,3 +222,52 @@ error rate > 5%" or "latency > 8s" with no production baseline would be
 invented. That is a separate, later operating-policy decision once real
 traffic gives a baseline to set a threshold against -- not something to
 guess a number for here.
+
+## Step 9B: production activation (2026-08-27)
+
+Unblocked the same day this groundwork batch closed: the operator corrected
+an earlier session claim of "no live GCP access" -- both Firebase and GCP
+access already existed and were verified live (`core/DECISION_LOG.md`'s
+"CORRECTION" entry) -- and then chose, via `AskUserQuestion`, to activate
+Step 9B in full immediately rather than defer it. Executed under a Rosetta
+plan (`Fitness_App-2026-08-27T07-36-39-218Z-7e07c6`) with GPT-PM's GO, whose
+own reply added one requirement beyond this session's original proposal: a
+**4th, permanent canary-failure alert**, in addition to the three
+business-failure policies above -- because a broken canary must read as an
+incident, not silently stop proving anything.
+
+- **`canary_schedule.ts`** wires `canary_probe.ts`'s `runCanaryProbe()`
+  (built and approved in Step 9A, deliberately left without a trigger --
+  see that file's own header) to a real `onSchedule` Cloud Function,
+  `runProductionCanary`, every 30 minutes, `europe-west1`, bound to a
+  `FIREBASE_WEB_API_KEY` secret via `defineSecret` -- the same pattern
+  `index.ts` already uses for `STRIPE_SECRET_KEY`. `canary_probe.ts` itself
+  needed no change: `resolveFirebaseWebApiKey()` already reads
+  `process.env.FIREBASE_WEB_API_KEY`, the exact name Cloud Functions v2
+  injects a secret under at runtime.
+- A probe failure is thrown (not just logged), so it also surfaces as a
+  genuine Cloud Run/Functions execution failure, on top of the structured
+  `CANARY_PROBE_FAILED_EVENT` log line the new alert filter keys on.
+- **`CANARY_PROBE_ALERT_POLICY`** (`alert_definitions.ts`) follows the exact
+  same `LogMatchFilterSpec`/`AlertPolicySpec` shape as the three
+  business-failure policies, including the `PLATFORM_UNHANDLED_ERROR`
+  backstop for anything the scheduled handler itself doesn't explicitly
+  catch. `notificationChannels: []` until the FA-D1 channel is attached as
+  a live, separate step (Step 3 of the Rosetta plan), same posture as the
+  other three policies before this activation.
+- **Registered in `__tests__/scaling.test.ts`'s `ENTRYPOINTS`**, the same
+  ceiling guard every other deployed function goes through, even though it
+  is a scheduled function rather than a callable -- it still produces a v2
+  `__endpoint` with `maxInstances`/`region`, and the file's own header says
+  this list IS the registration.
+- **Deploy constraint, binding from GPT-PM's GO:** only
+  `firebase deploy --only functions:runProductionCanary` may be used for
+  this change. A blanket `firebase deploy --only functions` would also
+  redeploy the four AI Gateway callables (`aiCoachAdvice` and siblings),
+  already exported from `index.ts` but deliberately kept undeployed --
+  GPT-PM's explicit instruction was not to deploy them or generate synthetic
+  AI traffic as part of this activation.
+- **Not yet done as of this entry:** the live `gcloud`/`firebase` steps
+  (secret creation, scoped deploy, FA-D1 notification-channel proof, live
+  metric/policy creation, cleanup) -- see `core/DECISION_LOG.md` for
+  per-step evidence as each one completes.

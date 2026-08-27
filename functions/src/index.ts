@@ -2234,3 +2234,9 @@ export { aiExerciseGeneration } from "./ai_exercise_generation";
 // request, and it is the only function here that reads across every
 // collection a user touches.
 export { exportAccountData } from "./account_export";
+
+// MVP1.G3 Step 9B — the production canary's scheduled trigger. Deploy ONLY
+// this function by name (`firebase deploy --only functions:runProductionCanary`);
+// see canary_schedule.ts's own header for why a blanket functions deploy is
+// forbidden here.
+export { runProductionCanary } from "./canary_schedule";
