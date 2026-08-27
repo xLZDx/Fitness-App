@@ -503,3 +503,33 @@ wiring itself is verifiable only on a real device/emulator build -- which is
 exactly Sec 8's own alert-path test plan for row 6.5 ("throw inside one of
 the 3 named catch blocks (test build) -> Crashlytics issue appears, velocity
 alert fires"), still the real verification step and still pending.
+
+## 13. Sec 6.6 (AI Gateway monitor) -- observability plumbing built
+
+Built the structured per-call event Sec 9 required -- full detail and proof in
+`core/DECISION_LOG.md`'s "Step 8 (6.6): AI Gateway per-call observability plumbing" entry. Summary:
+
+- New exported `AiGatewayOperation` union type in `ai_gateway.ts`, exactly the 4 callable names --
+  bounded at compile time, not by runtime convention.
+- `operation: AiGatewayOperation` is now a REQUIRED field on `GenerateOptions`; all 4 `ai_*.ts`
+  callables pass their own name.
+- `generate()` emits one `logger.info("ai_gateway: call", {...})` event per call from a single
+  `finally` block (fires on both the success path and every throw): `operation`, `outcome`
+  (`success`/`timeout`/`error`), `latencyMs`, and the provider's own `usageMetadata` token counts
+  when the response carried them.
+- `quota-exhaustion` is deliberately not a field on this event -- a quota-rejected call never reaches
+  `generate()`. Verified instead that `enforceDailyQuota`'s existing `"quota exceeded"` log already
+  carries the same operation identity via its `action` argument, so the two log lines join on that
+  field without duplicating the quota check's own logic -- the design this section's own 6.6 already
+  anticipated.
+
+**Proof:** `npm run build` clean; `npx jest ai_gateway` 24/24 (6 new tests directly asserting the
+event fires with the right shape for success/timeout/error/empty-answer, that absent usage data
+produces absent fields rather than `undefined` ones, and that the event fires exactly once per call
+-- this repo's existing SDK-client mock makes this directly assertable, unlike the mobile side in
+Sec 12); full functions suite 388/388, including all 4 callable suites unchanged.
+
+**Deliberately not built here:** the actual Cloud Monitoring log-based metrics and alerts that READ
+this event (error-rate spike, quota-exhaustion-rate) -- Sec 6.6's own scoping puts assembling those
+in Step 9, which also waits on `FA-D1` for an alert destination regardless. This item is the event
+existing to be read from.

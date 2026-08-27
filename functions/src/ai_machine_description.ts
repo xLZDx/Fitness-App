@@ -111,6 +111,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
   // `visual_equipment_providers.dart`'s `describeTimeoutProvider`) gives real margin over this
   // number rather than matching it.
   const text = await generate({
+    operation: "aiMachineDescription",
     prompt: buildPrompt(input.languageName),
     image: input.image,
     jsonResponse: true,

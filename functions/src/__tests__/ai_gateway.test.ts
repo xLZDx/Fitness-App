@@ -31,14 +31,22 @@ jest.mock("@google/genai", () => {
 });
 
 import { generate, AI_MODEL, __resetAiClient } from "../ai_gateway";
+import * as logger from "firebase-functions/logger";
 
 const OK_RESPONSE = { text: "some advice" };
 
 /** Every field `generate` requires, so each test only has to override what
  * it is actually asserting on. `maxOutputTokens: 999` is an arbitrary but
  * fixed sentinel — the dedicated `maxOutputTokens` tests below pin the field
- * itself; every other test just needs a valid, present value. */
-const BASE = { prompt: "hi", timeoutMs: 1000, maxOutputTokens: 999 } as const;
+ * itself; every other test just needs a valid, present value. `operation`
+ * is likewise an arbitrary but valid one of the 4 -- the dedicated
+ * "structured observability event" tests below pin that field itself. */
+const BASE = {
+  operation: "aiCoachAdvice",
+  prompt: "hi",
+  timeoutMs: 1000,
+  maxOutputTokens: 999,
+} as const;
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -216,5 +224,104 @@ describe("failure mapping", () => {
     jest.runAllTimers();
     await expect(p).resolves.toBe("some advice");
     jest.useRealTimers();
+  });
+});
+
+describe("structured observability event (GPT-PM round-2, Sec 9)", () => {
+  test("a successful call logs operation, outcome, latencyMs and token counts", async () => {
+    generateContent.mockResolvedValue({
+      text: "some advice",
+      usageMetadata: {
+        promptTokenCount: 10,
+        candidatesTokenCount: 20,
+        thoughtsTokenCount: 5,
+        totalTokenCount: 35,
+      },
+    });
+    await generate({ ...BASE, operation: "aiEquipmentRecognition" });
+    expect(jest.mocked(logger.info)).toHaveBeenCalledWith(
+      "ai_gateway: call",
+      expect.objectContaining({
+        operation: "aiEquipmentRecognition",
+        outcome: "success",
+        latencyMs: expect.any(Number),
+        promptTokenCount: 10,
+        candidatesTokenCount: 20,
+        thoughtsTokenCount: 5,
+        totalTokenCount: 35,
+      }),
+    );
+  });
+
+  test("no usageMetadata on the response means no token fields on the event, not undefined ones", async () => {
+    // "when available" (Sec 9's own wording) -- the provider does not always
+    // return usage data, and a field present with value `undefined` is a
+    // different, worse shape for a log-based metric to key off than the
+    // field being absent entirely.
+    generateContent.mockResolvedValue({ text: "some advice" });
+    await generate(BASE);
+    const event = jest.mocked(logger.info).mock.calls.find(
+      (call) => call[0] === "ai_gateway: call",
+    )?.[1] as Record<string, unknown>;
+    expect(event).toBeDefined();
+    expect(event).not.toHaveProperty("promptTokenCount");
+    expect(event).not.toHaveProperty("totalTokenCount");
+  });
+
+  test("a timed-out call logs outcome: timeout, not success or a generic error", async () => {
+    generateContent.mockImplementation(
+      ({ config }: { config: { abortSignal: AbortSignal } }) =>
+        new Promise((_resolve, reject) => {
+          config.abortSignal.addEventListener("abort", () =>
+            reject(new Error("aborted")),
+          );
+        }),
+    );
+    await expect(
+      generate({ ...BASE, operation: "aiMachineDescription", timeoutMs: 10 }),
+    ).rejects.toMatchObject({ code: "deadline-exceeded" });
+    expect(jest.mocked(logger.info)).toHaveBeenCalledWith(
+      "ai_gateway: call",
+      expect.objectContaining({ operation: "aiMachineDescription", outcome: "timeout" }),
+    );
+  });
+
+  test("an SDK failure logs outcome: error", async () => {
+    generateContent.mockRejectedValue(new Error("permission denied"));
+    await expect(
+      generate({ ...BASE, operation: "aiExerciseGeneration" }),
+    ).rejects.toMatchObject({ code: "internal" });
+    expect(jest.mocked(logger.info)).toHaveBeenCalledWith(
+      "ai_gateway: call",
+      expect.objectContaining({ operation: "aiExerciseGeneration", outcome: "error" }),
+    );
+  });
+
+  test("an empty answer -- a real failure mode -- also logs outcome: error, not success", async () => {
+    // Distinct from the other 3 failure-mapping tests above: this is the ONE
+    // path that throws HttpsError from INSIDE the try block rather than from
+    // the catch's own classification, so it is the one most likely to have
+    // been missed by an implementation that only set `outcome` in the catch.
+    generateContent.mockResolvedValue({ text: "   " });
+    await expect(generate(BASE)).rejects.toMatchObject({ code: "internal" });
+    expect(jest.mocked(logger.info)).toHaveBeenCalledWith(
+      "ai_gateway: call",
+      expect.objectContaining({ outcome: "error" }),
+    );
+  });
+
+  test("the event fires exactly once per call, on both the success and failure paths", async () => {
+    await generate(BASE);
+    const callCountAfterSuccess = jest
+      .mocked(logger.info)
+      .mock.calls.filter((call) => call[0] === "ai_gateway: call").length;
+    expect(callCountAfterSuccess).toBe(1);
+
+    generateContent.mockRejectedValue(new Error("boom"));
+    await expect(generate(BASE)).rejects.toMatchObject({ code: "internal" });
+    const callCountAfterFailure = jest
+      .mocked(logger.info)
+      .mock.calls.filter((call) => call[0] === "ai_gateway: call").length;
+    expect(callCountAfterFailure).toBe(2);
   });
 });

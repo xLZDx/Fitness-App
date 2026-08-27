@@ -138,6 +138,7 @@ export const aiEquipmentRecognition = onCall(AI_METERED, async (request) => {
   // the occasional legitimate 15-18s preview-model queueing this value was
   // already tuned against).
   const text = await generate({
+    operation: "aiEquipmentRecognition",
     prompt: buildPrompt(),
     image: input.image,
     jsonResponse: true,

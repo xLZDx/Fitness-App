@@ -27899,3 +27899,64 @@ is pre-existing drift, not something this session's Step 8 work introduced. Logg
 fixed: out of this item's scope, and a closed gate item does not get reopened for an unrelated
 pre-existing debt-tracker drift discovered while confirming it -- belongs on the roadmap/technical
 debt list instead.
+
+## MVP1.G3 Step 8 (6.6): AI Gateway per-call observability plumbing -- built -- 2026-08-27 03:21 UTC
+
+Built the structured per-call observability event GPT-PM's round-2 review required (Sec 9): "a
+structured per-call observability event, not the error-rate/quota-exhaustion metrics alone --
+operation (bounded to exactly the 4 callable names), outcome, latencyMs, timeout, quota-exhaustion,
+and the provider's own `usageMetadata`/token counts when available -- NOT a hand-built dollar ledger
+or hardcoded pricing." All in `functions/src/ai_gateway.ts` plus its 4 callers.
+
+1. **`AiGatewayOperation`** -- a new exported union type, exactly the 4 callable names
+   (`"aiCoachAdvice" | "aiEquipmentRecognition" | "aiMachineDescription" | "aiExerciseGeneration"`),
+   satisfying "bounded to exactly the 4" as a compile-time guarantee, not a runtime check a caller
+   could bypass.
+2. **`operation: AiGatewayOperation`** added as a REQUIRED field on `GenerateOptions` -- this is the
+   exact gap GPT-PM named ("Requires adding an `operation` identifier parameter to
+   `ai_gateway.ts::generate()`, which does not currently accept one"). All 4 `ai_*.ts` callables
+   updated to pass their own name.
+3. **One structured event, `logger.info("ai_gateway: call", {...})`, emitted from a single `finally`
+   block** -- fires on every call, both the success return and every throw, so a new failure branch
+   added later cannot silently skip it the way three separately hand-placed log calls could. Carries
+   `operation`, `outcome` (`"success" | "timeout" | "error"`), `latencyMs` (`Date.now()` around the
+   whole call), and -- only when the provider actually returned it -- `promptTokenCount`,
+   `candidatesTokenCount`, `thoughtsTokenCount`, `totalTokenCount` from `result.usageMetadata`
+   (`GenerateContentResponseUsageMetadata`, confirmed against `@google/genai`'s own
+   `genai.d.ts:5903-5924`). No dollar figure anywhere -- exactly what GPT-PM's round-2 ruling
+   forbade building.
+4. **`quota-exhaustion` deliberately NOT a field on this event.** A quota-rejected call is refused by
+   `enforceDailyQuota` (`abuse_guard.ts`) BEFORE it ever reaches `generate()`, so `generate()` cannot
+   observe it -- adding a field here would either always be `false` (misleading) or require
+   `generate()` to reach into a check that is not its job. Verified instead that the existing
+   rejection path already carries the same operation identity: `enforceDailyQuota`'s own
+   `logger.warn("quota exceeded", { uid, action, ... })` already fires with `action` set to the exact
+   same string as the new `operation` field at all 4 call sites (`grep`-verified: `"aiCoachAdvice"`,
+   `"aiEquipmentRecognition"`, `"aiMachineDescription"`, `"aiExerciseGeneration"`, each passed
+   verbatim to both `enforceDailyQuota` and `generate`). The two log lines are joinable into one
+   picture on `operation`/`action` without this event duplicating that check's own logic -- exactly
+   the design Sec 6.6 of `core/G3_STEP8_RUNTIME_PREREQUISITES.md` had already anticipated ("a
+   quota-exhaustion-rate metric off `enforceDailyQuota`'s own rejection path").
+
+**Positive proof:** `npm run build` (tsc) clean. `npx jest ai_gateway`: 24/24 pass, 6 of them new
+(added to `functions/src/__tests__/ai_gateway.test.ts`, since this repo -- unlike the mobile client --
+already has full SDK-client mocking infrastructure, so the actual call can be asserted directly
+rather than only its surrounding logic): a successful call logs `operation`/`outcome: "success"`/
+`latencyMs`/all 4 token fields when the mock response carries `usageMetadata`; the SAME call with no
+`usageMetadata` on the mock response logs the event with the token fields ABSENT, not present-as-
+`undefined` (`.not.toHaveProperty`, not `.toBeUndefined()` -- a real distinction for a log-based
+metric); a timed-out call logs `outcome: "timeout"`; a rejected SDK call logs `outcome: "error"`; the
+empty-answer case (the one path that throws `HttpsError` from INSIDE the try block, not from the
+catch's own classification, and so the one most likely to be missed by an implementation that only
+set `outcome` in the catch) also logs `outcome: "error"`; and the event fires EXACTLY once per call
+across both a success and a subsequent failure, not zero times or twice. `npx jest` (whole functions
+suite): 388/388 pass, including all 4 callable suites (`ai_coach_advice`/`ai_equipment_recognition`/
+`ai_machine_description`/`ai_exercise_generation`, 98 tests combined) unchanged after adding the
+required `operation` field to each of their `generate()` calls.
+
+**Cost:** zero new spend, per GPT-PM's own tightened framing (Sec 9: "any genuinely chargeable
+custom metric needs its real recurring cost computed before being claimed as acceptable"). This is a
+`logger.info` structured log line on an existing Cloud Functions execution path -- no new Cloud
+Monitoring custom-metric ingestion, no new dependency, no new infrastructure. Building the actual
+log-based metrics/alerts that READ this event (error-rate spike, quota-exhaustion-rate) is Step 9's
+job per Sec 6.6's own scoping, not this item's -- this item is the event existing to be read from.

@@ -42,7 +42,12 @@
  * (see that file's header for why a key file is the thing to avoid). No
  * Gemini API key exists anywhere in this repo or in the mobile app after G1.
  */
-import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "@google/genai";
+import {
+  GoogleGenAI,
+  HarmCategory,
+  HarmBlockThreshold,
+  type GenerateContentResponseUsageMetadata,
+} from "@google/genai";
 import * as logger from "firebase-functions/logger";
 import { HttpsError } from "firebase-functions/v2/https";
 
@@ -135,6 +140,20 @@ export function __resetAiClient(): void {
 }
 
 /**
+ * Bounded to exactly the 4 G1 callables (GPT-PM round-2, Sec 9: "operation
+ * (bounded to exactly the 4 callable names)"). A caller-invented free-text
+ * label would let categories proliferate without bound and make the
+ * resulting log-based metric unusable — a union of the four callables' own
+ * exported names is both the smallest correct type and automatically
+ * exhaustive, since every caller of `generate()` is one of them.
+ */
+export type AiGatewayOperation =
+  | "aiCoachAdvice"
+  | "aiEquipmentRecognition"
+  | "aiMachineDescription"
+  | "aiExerciseGeneration";
+
+/**
  * One inline image part, already resized. Callers resize before calling —
  * this module does not touch bytes, matching the four mobile services, all of
  * which resized client-side before the network call (`resizeForCloud`,
@@ -165,6 +184,14 @@ export interface InlineImage {
  * passes exactly what its own mobile source passed, no more.
  */
 export interface GenerateOptions {
+  /**
+   * Which of the 4 callables is asking. Required, not optional -- GPT-PM's
+   * round-2 review named this exact gap: no per-call observability event
+   * existed to label, only generic `logger.warn`/`logger.error` lines inside
+   * this shared gateway, unattributed to any calling function. Drives the
+   * `operation` field on the structured event `generate()` emits below.
+   */
+  operation: AiGatewayOperation;
   /** The fully-built prompt text. Built by the CALLER (one of the four
    * `ai_*.ts` files below), from a fixed template plus validated structured
    * input — never copied from `request.data` verbatim. */
@@ -222,6 +249,12 @@ export async function generate(opts: GenerateOptions): Promise<string> {
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), opts.timeoutMs);
+  const startedAtMs = Date.now();
+  // Set from inside the try/catch below, read once in `finally`. Default
+  // "error" covers every throwing path without each one having to remember
+  // to set it — only the single success return path flips it.
+  let outcome: "success" | "timeout" | "error" = "error";
+  let usage: GenerateContentResponseUsageMetadata | undefined;
   try {
     const result = await ai().models.generateContent({
       model: AI_MODEL,
@@ -242,14 +275,20 @@ export async function generate(opts: GenerateOptions): Promise<string> {
         abortSignal: controller.signal,
       },
     });
+    // Captured before the empty-answer check below: a response that carries
+    // no usable text still spent real, billed tokens, and that is exactly
+    // the number this event exists to make visible.
+    usage = result.usageMetadata;
     const text = result.text;
     if (!text || !text.trim()) {
       throw new HttpsError("internal", "The AI assistant returned no answer.");
     }
+    outcome = "success";
     return text;
   } catch (e) {
     if (e instanceof HttpsError) throw e;
     if (controller.signal.aborted) {
+      outcome = "timeout";
       logger.warn("ai_gateway: call timed out", { timeoutMs: opts.timeoutMs });
       throw new HttpsError("deadline-exceeded", "The AI assistant took too long to answer.");
     }
@@ -257,5 +296,31 @@ export async function generate(opts: GenerateOptions): Promise<string> {
     throw new HttpsError("internal", "Could not reach the AI assistant.");
   } finally {
     clearTimeout(timer);
+    // The structured per-call observability event GPT-PM's round-2 review
+    // required (Sec 9): one event, every call, every outcome -- `finally`
+    // runs on the return path and on every throw above, so this cannot be
+    // skipped by adding a new failure branch later the way three separately
+    // hand-placed log calls could be. Quota-exhaustion is deliberately NOT a
+    // field here: a quota-rejected call is refused by `enforceDailyQuota`
+    // (`abuse_guard.ts`) before it ever reaches `generate()`, so this
+    // function cannot observe it -- that rejection already logs
+    // `"quota exceeded"` with the same `action` string as this event's
+    // `operation` (verified: all 4 `ai_*.ts` callables pass their own
+    // `AiGatewayOperation` name as `enforceDailyQuota`'s `action` argument),
+    // so the two log lines are joinable into one picture without this event
+    // duplicating that check's own logic.
+    logger.info("ai_gateway: call", {
+      operation: opts.operation,
+      outcome,
+      latencyMs: Date.now() - startedAtMs,
+      ...(usage
+        ? {
+            promptTokenCount: usage.promptTokenCount,
+            candidatesTokenCount: usage.candidatesTokenCount,
+            thoughtsTokenCount: usage.thoughtsTokenCount,
+            totalTokenCount: usage.totalTokenCount,
+          }
+        : {}),
+    });
   }
 }

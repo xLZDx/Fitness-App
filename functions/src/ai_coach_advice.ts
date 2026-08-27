@@ -167,6 +167,7 @@ export const aiCoachAdvice = onCall(AI_METERED, async (request) => {
   // response could cost. Tightened later against measured real response
   // sizes, not guessed smaller now.
   const advice = await generate({
+    operation: "aiCoachAdvice",
     prompt: buildCoachPrompt(input, languageCode),
     timeoutMs: 45_000,
     maxOutputTokens: 512,

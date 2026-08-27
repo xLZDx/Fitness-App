@@ -284,6 +284,7 @@ export const aiExerciseGeneration = onCall(AI_METERED, async (request) => {
   // answer that lands after the model finishes but before the callable's own transport overhead
   // is accounted for.
   const text = await generate({
+    operation: "aiExerciseGeneration",
     prompt: buildPrompt(input.machineName, input.language),
     jsonResponse: true,
     temperature: 0.4,
