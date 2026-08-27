@@ -29403,3 +29403,94 @@ the whole `reports/` directory.
 PM Bridge orchestrator mode is ON for this session -- per its own rule, this report is a checkpoint,
 not a stopping point. Continuing to determine MVP1.G3's remaining scope next (Step 9B is one part
 of G3, not the whole gate) rather than stopping here.
+
+---
+
+## MVP1.G3 remaining scope: GPT-PM defines Step 10 -- 2026-08-27
+
+Asked GPT-PM directly what remains of G3 beyond Step 9B, rather than guessing from a possibly-stale
+prior summary (per CLAUDE.md Sec3/Sec16). The PM Bridge shared browser transport was genuinely
+congested at the time -- `gpt_send_and_await` aborted 3 times in a row, `pm_bridge_mode_status`
+showed queue depth growing (2 -> 4 -> 5 -> 6) with the requests-handled counter frozen for several
+checks, and the shared conversation log showed an unrelated concurrent session's chat hitting
+ChatGPT's own max-length banner around the same window -- consistent with this environment's
+documented single-shared-browser-profile concurrency risk (`~/.claude/CLAUDE.md` Sec15's own listed
+gaps). Reported this plainly to the operator rather than guessing or fabricating a reply, and
+stopped retrying to avoid adding more load to a resource other concurrent sessions also depend on.
+
+The operator said to go fetch the reply ("забирай ответ"). Both of my two outbound attempts had in
+fact reached GPT-PM despite the local "aborted" errors (recovered via `pm_bridge_status`, which
+reads the actual logged message history rather than the tool's own reply-poll path -- same pattern
+as the earlier `review.js` transport failures this session). Two independent replies, 4 minutes
+apart, converged on the same substantive answer -- treated as corroborating, not just a lucky single
+read.
+
+**GPT-PM's ruling, quoted (translated from Russian): "Decision: MVP1.G3 is NOT closed yet.
+pm_set_gate(G3=PASSED) right now would be premature."** Re-checked against current master at
+`0c15e21` before answering (not from memory of the plan). Of the three items this session's Step 9B
+closure review had named as separate/out-of-scope, only physical-device Crashlytics/performance
+proof is a genuine open G3 commitment; AI Gateway callable deployment and threshold-based AI paging
+are correctly NOT G3 (separate release gate / future operating-policy work needing a production
+baseline first, respectively -- GPT-PM confirmed this session's own prior reasoning here was right).
+
+**A second real gap GPT-PM found, not previously flagged this segment**: OBS-1 item #3
+(enforcement-status visibility) was recorded PARTIAL at the original G3 re-baseline
+(`core/OBS1_G3_REBASELINE_2026-08-27.md`) -- `production_manifest.py` is manual-only and stale, not
+a continuously-current live production-state view (App Check / Firestore Rules / Identity Toolkit
+enforcement state). No later work retired, rebased, or closed this item; it was never in this
+session's own scope-narrowing for Step 9 or Step 9B.
+
+**Defined next step: MVP1.G3 Step 10 -- Final Runtime Proof & G3 Reconciliation**, explicitly ruled
+the last G3 step (no scope expansion beyond it). Three sub-steps, GPT-PM's own Definition of Done
+for each:
+
+- **10A -- Enforcement-state visibility.** Live production state read directly from Firebase/GCP
+  (not a stale markdown file): deployed Functions inventory, active Firestore ruleset + its update
+  timestamp, App Check enforcement state per relevant service, Identity Toolkit/Auth state.
+  Machine-readable output; staleness/freshness mechanically detectable; runs on a repeatable
+  automated schedule, not human-only; a failed/stale collection must surface as FAILED/DEGRADED, not
+  silently read as green; positive proof AND a controlled negative/staleness proof required; no
+  secrets/token values in evidence; current output committed/published as evidence. Explicit
+  constraint: do not build this on top of the currently-broken GitHub Actions runner (account-level
+  billing/minutes issue, already flagged to the operator, not this session's to fix) -- prefer
+  Scheduler/Cloud Run or another already-available production mechanism over new infrastructure.
+- **10B -- Real Android device telemetry proof.** Proves, at runtime, the Crashlytics/performance
+  telemetry already built in commit `a5999e84` (client/camera/inference signal, Step 8 item 6.5) --
+  that commit's own honest gap note: unit/desktop tests never proved
+  `FirebaseCrashlytics.recordError()` actually reaches the Firebase backend. DoD: a controlled camera-
+  init failure produces a real Crashlytics issue; an ordinary camera permission denial produces none;
+  an OCR/inference operational failure produces a sanitized signal; repeated OCR-loop failure
+  dedupes to at most one report per session (not one per frame); a slow successful inference
+  (>=20s) produces the intended slow-performance signal; telemetry never changes user-visible
+  behavior or crashes the feature; backend evidence carries build SHA, device/Android version,
+  timestamps, and the actual Firebase issue/event IDs; verified absence of photo bytes, prompt text,
+  or health/profile content in the telemetry payload. Physical device preferred over emulator for
+  the camera path specifically (this project has one permanently adb-connected -- device S8, per
+  this session's own memory).
+- **10C -- Final 13-item reconciliation.** Re-check all 13 original OBS-1 rows from
+  `core/OBS1_G3_REBASELINE_2026-08-27.md` against current HEAD + live production (not trusted from
+  the old status ledger) -- for each: original item -> current implementation -> CI/live evidence ->
+  final disposition -> replacement evidence if rebased. Only `CLOSED` or `REBASED -> CLOSED` are
+  acceptable final states; nothing may remain `OPEN`/`PARTIAL`/`BUILT_NOT_PROVEN`/`DEFINED_ONLY`.
+  Then one final adversarial GPT-PM review of the WHOLE of MVP1.G3 (not just Step 10's own diff).
+
+Sequencing, GPT-PM's own words: **"GO: START MVP1.G3 Step 10 -- Final Runtime Proof & G3
+Reconciliation. PUSH: AUTHORIZED under current Gate policy. Порядок автономного исполнения: 10A ->
+10B -> 10C -> GPT-PM final G3 review -> только затем pm_set_gate(G3 = PASSED) -> определить/
+зафиксировать G4."** (10A -> 10B -> 10C -> final G3 review -> only then pm_set_gate(G3=PASSED) ->
+define/record G4.)
+
+**On G4**: GPT-PM was explicit it found zero authoritative repo definition for MVP1.G4 (grepped,
+zero results) and would not honestly claim one exists. Offered a *proposed*, not canonical, G4:
+"AI Gateway Production Release & E2E Validation" -- targeted deploy of exactly the 4 named
+callables (never a blanket Functions deploy), mobile->callable->Gemini production E2E for all four,
+App Check/Auth/quota/scaling validation, structured monitoring events landing in the metrics G3
+already built, live token/latency/outcome telemetry confirmation, rollback proof, zero direct-Gemini
+calls from mobile, and threshold alerts deferred to their own decision after a real baseline
+accumulates (not invented on G4's first day). Recorded here for continuity; not started, not
+authorized, not canonical until G3 actually closes.
+
+**PM Bridge state recorded** per GPT-PM's own suggested shape: `pm_set_gate(Fitness_App, MVP1.G3,
+in-progress)` with the full scope above in notes; `pm_set_gate(Fitness_App, MVP1.G3.Step9B, passed)`
+with evidence pointers. Proceeding directly to Step 10A per the standing autonomous mandate and PM
+mode ("a report is a checkpoint, not a stopping point") -- opening a Rosetta plan for it next.
