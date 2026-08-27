@@ -54,6 +54,15 @@ import {
   quotaFor,
   QUOTAS,
 } from "./abuse_guard";
+import {
+  STRIPE_RECONCILE_DUPLICATE_FOUND,
+  STRIPE_RECONCILE_CANCEL_OK,
+  STRIPE_RECONCILE_CANCEL_FAILED,
+  STRIPE_RECONCILE_FAILED,
+  DELETE_ACCOUNT_STRIPE_CANCEL_FAILED,
+  DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED,
+  DELETE_ACCOUNT_AUTH_DELETE_FAILED,
+} from "./monitoring/log_signals";
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -1881,7 +1890,7 @@ async function reconcileDuplicateSubscriptions(
     billing.sort((a, b) => a.created - b.created || a.id.localeCompare(b.id));
     const [keep, ...extras] = billing;
 
-    logger.warn("duplicate subscriptions found", {
+    logger.warn(STRIPE_RECONCILE_DUPLICATE_FOUND, {
       customerId,
       total: billing.length,
       keeping: keep.id,
@@ -1893,7 +1902,7 @@ async function reconcileDuplicateSubscriptions(
         await stripe.subscriptions.cancel(extra.id, {
           prorate: true,
         });
-        logger.info("cancelled duplicate subscription", {
+        logger.info(STRIPE_RECONCILE_CANCEL_OK, {
           customerId,
           cancelled: extra.id,
           kept: keep.id,
@@ -1901,7 +1910,7 @@ async function reconcileDuplicateSubscriptions(
       } catch (err) {
         // One failure must not stop the others: a customer with three
         // duplicates should end up with one, not two.
-        logger.error("could not cancel duplicate subscription", {
+        logger.error(STRIPE_RECONCILE_CANCEL_FAILED, {
           customerId,
           subscriptionId: extra.id,
           err: String(err),
@@ -1909,7 +1918,7 @@ async function reconcileDuplicateSubscriptions(
       }
     }
   } catch (err) {
-    logger.error("duplicate reconciliation failed", {
+    logger.error(STRIPE_RECONCILE_FAILED, {
       subscriptionId: changed.id,
       err: String(err),
     });
@@ -2122,7 +2131,7 @@ export const deleteAccount = onCall(
           }
         }
       } catch (err) {
-        logger.error("account deletion: failed to cancel subscription", {
+        logger.error(DELETE_ACCOUNT_STRIPE_CANCEL_FAILED, {
           uid,
           subscriptionId,
           customerId,
@@ -2159,7 +2168,7 @@ export const deleteAccount = onCall(
       // are not keyed by uid -- they only MENTION it. See sweepSharedRecords.
       await sweepSharedRecords(uid);
     } catch (err) {
-      logger.error("account deletion: failed to delete Firestore data", {
+      logger.error(DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED, {
         uid,
         err,
       });
@@ -2181,7 +2190,7 @@ export const deleteAccount = onCall(
       await admin.auth().deleteUser(uid);
     } catch (err) {
       if ((err as { code?: string }).code !== "auth/user-not-found") {
-        logger.error("account deletion: failed to delete the Auth user", {
+        logger.error(DELETE_ACCOUNT_AUTH_DELETE_FAILED, {
           uid,
           err,
         });

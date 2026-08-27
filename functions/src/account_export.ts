@@ -3,6 +3,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import { RARE } from "./scaling";
 import { noteAppCheck, enforceDailyQuota, QUOTAS } from "./abuse_guard";
+import { EXPORT_ACCOUNT_FAILED } from "./monitoring/log_signals";
 
 /**
  * A3 — everything the product stores about one user, assembled server-side.
@@ -313,7 +314,7 @@ export const exportAccountData = onCall(RARE, async (request) => {
     // because one read failed is worse than no export: it reads as "this is
     // everything" while being silently short, which is the precise failure
     // `data_export.dart` already guards with `progressPhotosIncomplete`.
-    logger.error("account export failed", { uid, err: String(err) });
+    logger.error(EXPORT_ACCOUNT_FAILED, { uid, err: String(err) });
     throw new HttpsError(
       "internal",
       "Could not assemble your data. Please try again.",

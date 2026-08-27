@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
+import { APP_CHECK_EVENT } from "./monitoring/log_signals";
 
 /**
  * A6-lite — the two cheap halves of abuse protection: see whether App Check is
@@ -63,7 +64,7 @@ export function noteAppCheck(request: CallableRequest, fn: string): void {
   // mattered more than it looked: N-05's Option 1 turns this from incidental
   // noise over 5-10 testers into a load-bearing dataset over a real Play
   // population. Removing it now costs nothing and later would be a migration.
-  logger.info("appcheck", { fn, attested: request.app !== undefined });
+  logger.info(APP_CHECK_EVENT, { fn, attested: request.app !== undefined });
 }
 
 /**

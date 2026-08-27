@@ -28242,3 +28242,87 @@ copy button injected, `--check` clean). No code change in this commit; report fi
 
 Per PM mode (Sec 18 of the global contract), this is a checkpoint, not a stop: continuing directly
 into the remaining alert-independent Step 9 groundwork GPT-PM authorized above.
+
+## Step 9 groundwork, item 1 (App Check attested-ratio visibility): FOUND ALREADY DONE -- 2026-08-27
+
+Scouted `functions/src` before writing anything, per the ground-truth-over-assumption rule. The
+visibility groundwork for this item already exists, from prior work not part of this gate:
+`abuse_guard.ts:48-66`'s `noteAppCheck(request, fn)` logs a structured `logger.info("appcheck",
+{ fn, attested: request.app !== undefined })` event on every callable invocation, called individually
+at each of 13 call sites across `index.ts`, `video_urls.ts`, `account_export.ts`, and all four AI
+callables (confirmed via grep, exact file:line list in the scout report). Enforcement plumbing
+(`enforceAppCheck` on the `CallableOptions` profiles in `scaling.ts:117-267`) is also already wired,
+gated inert behind env flags that default OFF -- a separate, older HOLD (Play Integrity/App
+Distribution mismatch) than FA-D1, not something this gate needs to touch.
+`functions/src/__tests__/scaling.test.ts` already covers both the enforcement-flag behavior and
+`noteAppCheck`'s exact log shape (179-325). No e2e coverage, but none was asked for.
+
+**No code change made for this item.** Status: visibility groundwork -- `IMPLEMENTED`/`TESTED`
+already, `READY_TO_ACTIVATE` only in the sense that a log-based Cloud Monitoring metric could be
+defined against the existing `appcheck` events with zero new application code -- not built yet, and
+whether defining that bare metric (with no alert policy attached) counts as still-authorized
+"alert-independent groundwork" or needs to wait for FA-D1 is a real line-drawing question, sent to
+GPT-PM rather than decided unilaterally (Sec 16 of the global contract: judgment calls go to
+GPT-PM, not invented locally).
+
+## Step 9 groundwork, items 1-3: monitor DEFINITIONS built -- 2026-08-27
+
+GPT-PM's binding ruling on the App Check routing question and DoD for the other two items
+(full text in the session's exchange log, `pm_bridge_status`): App Check bare metric DEFINITION
+is GO (only live GCP resource creation needs cost proof); Stripe reconciliation-failure and
+delete/export operational-failure need source-controlled LogMatch alert DEFINITIONS with
+positive/negative fixture proof, drift resistance (pin the exact source log literals), and --
+binding, checked before DONE -- a failure-path inventory audit for delete/export proving no
+uncovered path is silently unmonitored.
+
+**Built**, all under new `functions/src/monitoring/`:
+- `log_signals.ts` -- single source of truth for every log-message literal a definition keys on.
+  `index.ts`, `account_export.ts`, and `abuse_guard.ts` now import these constants instead of
+  retyping the strings at each `logger.warn/info/error` call site -- a byte-identical,
+  behavior-preserving refactor (confirmed: full diff reviewed, only the string literal became a
+  named import at each of 9 call sites, no other line changed). This is the drift guard GPT-PM's
+  DoD required: renaming a message is now a compile error at the log call site, not a monitor
+  that silently stops matching.
+- `types.ts` -- a small typed `LogMatchFilterSpec` (function name + OR-of-exact-message) that
+  both renders to real Cloud Logging filter syntax (`toGcpFilterString`) and is directly
+  evaluable against a fixture (`matchesLogMatchFilter`), so tests exercise the actual matching
+  semantics instead of re-typing them independently.
+- `alert_definitions.ts` -- the three definitions: Stripe reconciliation-failure (scoped to
+  `stripeWebhook`, the actual deployed function `reconcileDuplicateSubscriptions` runs inside --
+  confirmed via grep, index.ts:1019/1081/1862), delete/export operational-failure (scoped to
+  `deleteAccount`/`exportAccountData` respectively), and the App Check attested-ratio log-based
+  metric (bounded cardinality: `fn` x `attested`, ~26 max time series, no uid).
+- `__tests__/alert_definitions.test.ts` -- 14 new tests: positive proof (real failure literals
+  match), negative proof (the two non-failure log lines from the same Stripe code path don't
+  match; cross-function contamination doesn't match; an expected HttpsError refusal never
+  produces a matchable line in the first place), and the App Check metric's label bound.
+- `README.md` -- the failure-path inventory audit GPT-PM's DoD required as a precondition, not an
+  afterthought. Found: `deleteAccount`'s subscription-document read (index.ts:2086) runs BEFORE
+  its first try block, so none of the three named `logger.error` calls would fire if it threw.
+  Verified (read `functions/node_modules/firebase-functions/lib/common/providers/https.js:545-
+  570` directly, not assumed) that firebase-functions' own `onCall` wrapper catches the ENTIRE
+  handler invocation and logs `"Unhandled error"` for anything not already an `HttpsError` --
+  and every intentional refusal in both functions IS thrown as `HttpsError`, so this backstop
+  fires only for genuinely unclassified failures. This is GPT-PM's "Option A" (existing
+  platform-level signal, proven not assumed) -- no new application log line was needed. Both
+  alert filters include this backstop message, scoped by function name so one function's
+  backstop can't match the other's (tested).
+
+**Verification:** `npm run build` clean. `npx jest`: 402/402 (388 + 14 new), all pre-existing
+tests unaffected by the literal-to-constant refactor. `node scripts/ci/check_data_lifecycle_
+coverage.js`: unaffected (35/35, no new Firestore collections -- this item touches no Firestore
+code at all).
+
+**Not done, deliberately:** no live GCP resource created anywhere (no metric, no alert policy, no
+notification channel) -- matches GPT-PM's explicit HOLD on live creation pending cost proof
+(App Check) and FA-D1 (both alerts' notification channel). No Rosetta plan opened for this batch
+(unlike Step 9A): this is a documentation/definition-only change with a purely mechanical,
+string-preserving refactor of existing production log calls -- no new runtime behavior, no new
+Firestore access, no new external call. Judged STANDARD-not-HIGH review class by the same
+criteria Rosetta itself uses (no dependencies/CI/secrets/schema touched), and small enough that
+GPT-PM's existing batch-level GO plus this entry's own evidence stand in for a separate
+plan/GO/close cycle. Flagging this judgment call explicitly rather than silently deciding it.
+
+Status: all three items `DEFINED`/`TESTED`. Stripe and delete/export alerts `READY_TO_ACTIVATE`
+(blocked only on FA-D1). App Check metric definition `READY_TO_ACTIVATE`; live metric `HOLD`
+pending real cost data this session cannot supply (see README.md's cost-model section).
