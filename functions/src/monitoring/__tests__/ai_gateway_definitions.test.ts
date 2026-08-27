@@ -1,5 +1,6 @@
 import {
   AI_GATEWAY_OPERATIONS,
+  AI_GATEWAY_OUTCOMES,
   AI_GATEWAY_CALLS_METRIC,
   AI_GATEWAY_LATENCY_METRIC,
   AI_GATEWAY_TOKENS_METRIC,
@@ -21,6 +22,7 @@ import {
   distributionLogMetricFilterString,
 } from "../types";
 import * as signals from "../log_signals";
+import * as aiGateway from "../../ai_gateway";
 
 type CounterMetricJson = {
   name: string;
@@ -38,7 +40,19 @@ type DistributionMetricJson = CounterMetricJson & {
   bucketOptions: { explicitBuckets: { bounds: number[] } };
 };
 
-describe("AI_GATEWAY_OPERATIONS", () => {
+describe("AI_GATEWAY_OPERATIONS / AI_GATEWAY_OUTCOMES source of truth", () => {
+  it("is a re-export of ai_gateway.ts's own tuple, not an independently maintained copy", () => {
+    // Referential identity, not just value equality: this is the actual
+    // structural fix for GPT-PM's finding on commit c7a498e (a second,
+    // independently-declared array here was bounded only by a `satisfies`
+    // check, which proves every array element is valid but not that every
+    // union member is present -- a real gap when a 5th operation is added
+    // later). There is now exactly one array; this test fails if a future
+    // edit reintroduces a second declaration instead of importing this one.
+    expect(AI_GATEWAY_OPERATIONS).toBe(aiGateway.AI_GATEWAY_OPERATIONS);
+    expect(AI_GATEWAY_OUTCOMES).toBe(aiGateway.AI_GATEWAY_OUTCOMES);
+  });
+
   it("has exactly the four known AI Gateway operations", () => {
     expect(AI_GATEWAY_OPERATIONS).toEqual([
       "aiCoachAdvice",

@@ -147,12 +147,31 @@ export function __resetAiClient(): void {
  * resulting log-based metric unusable — a union of the four callables' own
  * exported names is both the smallest correct type and automatically
  * exhaustive, since every caller of `generate()` is one of them.
+ *
+ * A runtime tuple, not a bare `type` union: `AiGatewayOperation` is derived
+ * FROM `AI_GATEWAY_OPERATIONS`, not declared separately from it. GPT-PM's
+ * review of `functions/src/monitoring/ai_gateway_definitions.ts` (commit
+ * `c7a498e`) found that a second, independently-declared runtime array
+ * there — checked only with `satisfies readonly AiGatewayOperation[]` —
+ * proves every array element belongs to the type, but NOT that every type
+ * member is IN the array: a 5th operation added to the union here would
+ * still compile with the monitoring array unchanged, silently excluding
+ * the new operation from every metric filter. One tuple as the single
+ * source of truth for both the type and the monitoring bounding list
+ * closes that gap structurally instead of adding a second assertion to
+ * keep in sync by hand.
  */
-export type AiGatewayOperation =
-  | "aiCoachAdvice"
-  | "aiEquipmentRecognition"
-  | "aiMachineDescription"
-  | "aiExerciseGeneration";
+export const AI_GATEWAY_OPERATIONS = [
+  "aiCoachAdvice",
+  "aiEquipmentRecognition",
+  "aiMachineDescription",
+  "aiExerciseGeneration",
+] as const;
+export type AiGatewayOperation = (typeof AI_GATEWAY_OPERATIONS)[number];
+
+/** Same reasoning as `AiGatewayOperation` above, for `generate()`'s outcome. */
+export const AI_GATEWAY_OUTCOMES = ["success", "timeout", "error"] as const;
+export type AiGatewayOutcome = (typeof AI_GATEWAY_OUTCOMES)[number];
 
 /**
  * One inline image part, already resized. Callers resize before calling —
@@ -254,7 +273,7 @@ export async function generate(opts: GenerateOptions): Promise<string> {
   // Set from inside the try/catch below, read once in `finally`. Default
   // "error" covers every throwing path without each one having to remember
   // to set it — only the single success return path flips it.
-  let outcome: "success" | "timeout" | "error" = "error";
+  let outcome: AiGatewayOutcome = "error";
   let usage: GenerateContentResponseUsageMetadata | undefined;
   try {
     const result = await ai().models.generateContent({

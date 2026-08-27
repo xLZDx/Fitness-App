@@ -19,7 +19,11 @@ import {
   QUOTA_EXCEEDED_EVENT,
   QUOTA_CHECK_FAILED_EVENT,
 } from "./log_signals";
-import type { AiGatewayOperation } from "../ai_gateway";
+import {
+  AI_GATEWAY_OPERATIONS,
+  AI_GATEWAY_OUTCOMES,
+  type AiGatewayOperation,
+} from "../ai_gateway";
 import type {
   CounterLogMetricSpec,
   DistributionLogMetricSpec,
@@ -27,19 +31,21 @@ import type {
 import { toCounterLogMetricJson, toDistributionLogMetricJson } from "./types";
 
 /**
- * Runtime mirror of `AiGatewayOperation` (compile-time-only in
- * `ai_gateway.ts`). `satisfies` below means a value added to or removed
- * from the type without updating this array is a compile error, not a
- * silently stale bounding list.
+ * Re-exported, not re-declared: `AI_GATEWAY_OPERATIONS`/`AI_GATEWAY_OUTCOMES`
+ * are `ai_gateway.ts`'s own runtime tuples, the single source of truth
+ * `AiGatewayOperation`/`AiGatewayOutcome` are themselves derived from
+ * (`typeof AI_GATEWAY_OPERATIONS[number]`). GPT-PM's review of the first
+ * version of this module (commit `c7a498e`) found a second, independently
+ * declared array here, bounded only by a `satisfies` check that proves
+ * every array element is a valid operation but NOT that every operation is
+ * IN the array -- a real gap, since a 5th operation added to the union
+ * would still compile with this array unchanged, silently excluding it
+ * from every metric filter. Importing the producer's own tuple instead of
+ * mirroring it closes that structurally: there is now exactly one array,
+ * and every consumer (the type, `generate()`'s runtime check, and this
+ * module's filters) reads from it.
  */
-export const AI_GATEWAY_OPERATIONS = [
-  "aiCoachAdvice",
-  "aiEquipmentRecognition",
-  "aiMachineDescription",
-  "aiExerciseGeneration",
-] as const satisfies readonly AiGatewayOperation[];
-
-const AI_GATEWAY_OUTCOMES = ["success", "timeout", "error"] as const;
+export { AI_GATEWAY_OPERATIONS, AI_GATEWAY_OUTCOMES };
 
 const OPERATION_LABEL = {
   key: "operation",

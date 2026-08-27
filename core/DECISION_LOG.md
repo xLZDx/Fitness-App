@@ -28454,3 +28454,36 @@ check_data_lifecycle_coverage.js`: unaffected (no Firestore collections touched)
 **Not built, deliberately:** any threshold-based AlertPolicy (error rate, p99 latency, token-cost
 paging) -- GPT-PM's own ruling: a threshold with no production baseline would be invented, and
 stays a separate, later operating-policy decision once real traffic exists.
+
+## Step 9 groundwork, item 4: GPT-PM review round 1 -- 1 real MAJOR, fixed -- 2026-08-27
+
+GPT-PM's review of `c7a498e` found the operation/outcome "drift guard" was not actually
+exhaustive: `AI_GATEWAY_OPERATIONS` in `ai_gateway_definitions.ts` was declared as
+`[...] as const satisfies readonly AiGatewayOperation[]` with a comment claiming a value
+added-to-or-removed-from the union without updating the array would be a compile error. Verified
+this claim BEFORE accepting it (checked TypeScript's actual `satisfies` semantics): `satisfies`
+only proves every array element belongs to the union -- it does not prove every union member is
+present in the array. A 5th `AiGatewayOperation` added later would still compile with the
+monitoring array unmodified, silently excluding the new operation from all four metrics and
+several queries. This is a real gap, not a false alarm, and matches exactly the "monitor stays
+green after source evolves" failure class this whole groundwork exists to prevent.
+
+**Fixed per GPT-PM's own preferred option** (single source of truth, not a second assertion to
+keep in sync by hand): `ai_gateway.ts` now exports `AI_GATEWAY_OPERATIONS`/`AI_GATEWAY_OUTCOMES`
+as runtime `as const` tuples, with `AiGatewayOperation`/`AiGatewayOutcome` derived FROM them
+(`typeof AI_GATEWAY_OPERATIONS[number]`) rather than declared as a separate union the tuples then
+had to match. `generate()`'s local `outcome` variable now types against `AiGatewayOutcome`
+(zero behavior change -- same three string literals). `ai_gateway_definitions.ts` imports and
+re-exports these tuples directly instead of maintaining its own copy -- there is structurally only
+one array now, so the gap GPT-PM found cannot recur by definition, not merely by a check that
+could itself go stale. Added a referential-identity test (`toBe`, not `toEqual`) proving the
+monitoring module's `AI_GATEWAY_OPERATIONS`/`AI_GATEWAY_OUTCOMES` are the exact same array objects
+`ai_gateway.ts` exports, so a future edit that reintroduces an independent copy fails this test
+immediately.
+
+**Verification:** `npm run build` clean. `npx jest`: 429/429 (428 + 1 new identity test; the
+existing cardinality/bounding tests still pass unchanged, now exercising the single-source
+arrays). No change to any log message, filter value, or runtime behavior -- confirmed via diff
+review, this round only touched type/export structure.
+
+Sent back to GPT-PM with the exact commit for re-verification.
