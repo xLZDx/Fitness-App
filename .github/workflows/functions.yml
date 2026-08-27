@@ -69,7 +69,17 @@ jobs:
       - name: typecheck
         run: npx tsc --noEmit
       - name: unit tests
-        run: npm test
+        run: npm test -- --json --outputFile=jest_result.json
+      # MVP1.G3 OBS-1 item 1: `npm test`'s own exit code already fails on a
+      # fully-empty suite (no `--passWithNoTests`), but a partial-discovery
+      # regression can still exit 0 while running far fewer tests than
+      # exist -- exactly the class of gap that let the Jest suite run
+      # nothing in this worktree for months (see core/MASTER_PLAN_2026-08-26.md
+      # Sec8's OBS-1 history table). This step asserts an explicit minimum
+      # suite/test count from Jest's own JSON report, not just a nonzero
+      # exit code.
+      - name: assert test-suite health
+        run: node scripts/assert_test_health.js jest_result.json
 
   rules:
     name: firestore rules

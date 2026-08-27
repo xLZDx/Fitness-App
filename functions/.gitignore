@@ -4,3 +4,4 @@ lib/
 .runtimeconfig.json
 .env
 .env.local
+jest_result.json

@@ -27120,3 +27120,30 @@ row cites current file:line evidence, matching Step 0's own reject condition.
 
 Proceeding directly to the 7 [CI] items per the approved sequencing, no interim stop required per
 GPT-PM's explicit "progress updates are informational, not approval gates" instruction.
+
+## G3 item 1 [CI]: Functions test-health enforcement -- DONE
+
+Was PARTIAL per Step 0 (Jest's own default already fails on a fully-empty suite, but nothing
+asserted an explicit minimum count -- exit code alone was the only signal, exactly what the DoD's
+reject condition forbids).
+
+Added `functions/scripts/assert_test_health.js`: reads Jest's own `--json` report, asserts
+`numTotalTestSuites >= 12` and `numTotalTests >= 300` (floors set with a buffer below the real
+current count -- 15 suites / 382 tests, verified live via `npx jest --json` -- generous enough to
+tolerate an intentional suite removal during refactors, tight enough to catch "half the suite
+silently didn't run", the exact failure class OBS-1's own history table cites). Also asserts
+`success===true` and `numPassedTests===numTotalTests` explicitly, not just relying on Jest's exit
+code. Wired into `.github/workflows/functions.yml`'s `unit` job: `npm test` now writes
+`jest_result.json`, a new step runs the assertion script against it. `jest_result.json` added to
+`functions/.gitignore` (generated artifact).
+
+**Positive proof:** ran the exact CI command locally (`npm test -- --json --outputFile=jest_result.json`
+then `node scripts/assert_test_health.js jest_result.json`) against real current state -- exit 0,
+"15 suites, 382 tests, all passed."
+
+**Negative proof**, 3 scenarios, all correctly failed with exit 1 (fixtures created and deleted in
+the same command, never left in the working tree): (a) a fully zero-test report -- failed on both
+suite-count and test-count floors; (b) a partial-discovery report (3/15 suites, 40/382 tests, all
+"passing") -- failed on both floors, proving this catches partial suppression that a bare exit-code
+check would miss; (c) a report with 2 genuinely failing tests (`success:false`) -- failed on the
+explicit pass-count check. `git status` confirmed clean of temp fixtures after.
