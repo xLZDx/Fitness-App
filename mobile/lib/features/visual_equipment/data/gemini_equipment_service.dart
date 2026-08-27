@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart'
     show compute, debugPrint, visibleForTesting;
 import 'package:image/image.dart' as img;
@@ -121,6 +123,15 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
   /// timeouts instead.
   final Duration timeout;
 
+  /// Bounded performance signal (GPT-PM round-2, Sec 6.5): the failures path
+  /// above is only half of what OBS-1 asked for. 20s, not something tighter,
+  /// because it is the point this file already treats as meaningful --
+  /// [timeout]'s own comment anchors it as the server's real model budget, so
+  /// a successful call that still took that long is a genuine performance
+  /// signal, not routine cold-start/queueing noise (measured 15-18s cases
+  /// documented above).
+  static const Duration _slowInferenceThreshold = Duration(seconds: 20);
+
   late final CloudRecognitionAsk _cloud =
       _ask ?? cloudFunctionsEquipmentAsk(functions: _injected);
 
@@ -138,10 +149,50 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
     // the payload roughly 3-4x versus a full-resolution JPEG.
     final bytes = await compute(resizeForCloud, path);
     final String? text;
+    final stopwatch = Stopwatch()..start();
     try {
       text = await _askCloud(bytes);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // Error + stack trace only -- no photo bytes, no prompt text, no
+      // health/profile content reaches Crashlytics. Fire-and-forget: this
+      // must never delay or alter the exception thrown to the caller below.
+      // Same guard as main.dart's Crashlytics calls: telemetry must never
+      // break the feature it instruments (and has no app to report against
+      // at all in a plain `flutter test` run).
+      try {
+        unawaited(
+          FirebaseCrashlytics.instance.recordError(
+            e,
+            stackTrace,
+            fatal: false,
+            reason: 'cloud equipment recognition failed',
+          ),
+        );
+      } catch (_) {
+        // Reporting failure is not itself reportable -- see above.
+      }
       throw VisualEquipmentException('cloud recognition failed: $e');
+    }
+    stopwatch.stop();
+    // Disjoint from the failure report above on purpose: a call that timed
+    // out already went through the catch block, so this only fires for a
+    // call that SUCCEEDED but was still unusually slow -- the performance
+    // half of OBS-1, not a second copy of the failure half.
+    if (stopwatch.elapsed >= _slowInferenceThreshold) {
+      try {
+        unawaited(
+          FirebaseCrashlytics.instance.recordError(
+            'equipment recognition succeeded but took '
+            '${stopwatch.elapsedMilliseconds}ms '
+            '(>= ${_slowInferenceThreshold.inSeconds}s threshold)',
+            null,
+            fatal: false,
+            reason: 'slow equipment recognition inference',
+          ),
+        );
+      } catch (_) {
+        // Reporting failure is not itself reportable -- see above.
+      }
     }
     if (text == null || text.trim().isEmpty) {
       throw VisualEquipmentException('cloud recognition returned no answer');

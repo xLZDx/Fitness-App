@@ -454,3 +454,52 @@ the Step-8-authorized item; assembling the full scheduled monitor (the
 function, its registration, and the Scheduler job) is Step 9's job, and
 waits on `FA-D1` regardless -- a canary with no alert destination to report
 to is incomplete even once it runs.
+
+## 12. Sec 6.5 (client/camera/inference/performance telemetry) -- built
+
+Wired `FirebaseCrashlytics.instance` into the three named catches, matching
+all of Sec 9's constraints (dedupe the OCR-loop path, exclude expected
+camera-permission-denied from alerting, sanitize the Gemini catch to
+`(error, stackTrace)` only and rethrow unchanged), plus the still-open
+"bounded latency/performance signal" requirement -- full detail and proof in
+`core/DECISION_LOG.md`'s "Step 8/9 (6.5): client/camera/inference
+Crashlytics + performance signal" entry. Summary:
+
+- `mlkit_live_equipment_service.dart`: reports the OCR anchor's failure once
+  per live session (`_ocrAnchorFailureReported`, reset in `start()`), not
+  once per frame.
+- `scanner_page.dart`: reports only `CameraUnavailableReason
+  .initializationFailed`; the other three reasons are expected states, not
+  incidents.
+- `gemini_equipment_service.dart`: catch now captures a stack trace, reports
+  `(error, stackTrace)` only (no photo/prompt/health content), rethrows the
+  same `VisualEquipmentException` unchanged.
+- **Performance signal:** a `Stopwatch` around the cloud call, checked only
+  on the SUCCESS path, reports when a successful call still took >= 20s
+  (this file's own documented server-budget anchor) -- disjoint from the
+  failure report, so a timeout cannot double-count as "slow". Reuses
+  Crashlytics rather than adding `firebase_performance` as a new dependency
+  (Sec 9 tightened cost claims; this file's own Sec 6.5 cost line already
+  treats Crashlytics as free-tier and in use).
+
+**Regression caught, not a clean first pass:** the first version called
+`FirebaseCrashlytics.instance` directly with no guard. `FirebaseCrashlytics
+.instance`'s getter throws synchronously in a plain `flutter test` run (no
+`Firebase.initializeApp()` in this project's test harness) -- 3 of 71
+`scanner_page_test.dart` cases genuinely failed. Fixed by wrapping each call
+site in its own `try { unawaited(...) } catch (_) {}`, matching the guard
+`main.dart:160-166` already established for its own Crashlytics call.
+Re-running the same suites afterward returned to fully green.
+
+**Proof gap, stated rather than implied:** no test in this repository can
+assert that `FirebaseCrashlytics.instance.recordError` is actually invoked
+at runtime with the right arguments -- there is no method-channel mock for
+`firebase_core`/`firebase_crashlytics` anywhere in this suite today (the
+same boundary `live_text_anchor_test.dart` already documents for the OCR
+path: the service "cannot be driven end-to-end on a desktop runner"). What
+IS proven by executed tests: the dedupe/gating/rethrow-unchanged logic
+around each call, and that adding the calls introduces no regression. The
+wiring itself is verifiable only on a real device/emulator build -- which is
+exactly Sec 8's own alert-path test plan for row 6.5 ("throw inside one of
+the 3 named catch blocks (test build) -> Crashlytics issue appears, velocity
+alert fires"), still the real verification step and still pending.

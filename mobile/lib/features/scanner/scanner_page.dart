@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -176,14 +177,36 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       await _session!.start(requestPermission: requestPermission);
       if (!mounted) return;
       if (_cameraFailure != null) setState(() => _cameraFailure = null);
-    } catch (e) {
+    } catch (e, stackTrace) {
       // Permission refused, refused for good, no camera at all, or a failed
       // init. Surfaced with its reason, because a viewfinder that never
       // appears with no explanation is the defect this page was reported for,
       // and one message for four causes only tells the user something is
       // wrong — not which of the four fixes is theirs.
+      final failure = classifyCameraFailure(e);
+      // Only `initializationFailed` is an operational incident. The other
+      // three reasons are expected user/device states (permission refused,
+      // refused for good, or no camera on the device) and reporting those to
+      // Crashlytics would turn a normal permission denial into an alert.
+      if (failure.reason == CameraUnavailableReason.initializationFailed) {
+        // Same guard as main.dart's Crashlytics calls: telemetry must never
+        // break the feature it instruments (and has no app to report against
+        // at all in a plain `flutter test` run).
+        try {
+          unawaited(
+            FirebaseCrashlytics.instance.recordError(
+              e,
+              stackTrace,
+              fatal: false,
+              reason: 'camera initialization failed',
+            ),
+          );
+        } catch (_) {
+          // Reporting failure is not itself reportable -- see above.
+        }
+      }
       if (!mounted) return;
-      setState(() => _cameraFailure = classifyCameraFailure(e));
+      setState(() => _cameraFailure = failure);
     }
   }
 

@@ -27800,3 +27800,87 @@ precisely the gap GPT-PM's review named. Restored via `sed`, confirmed 113/113 g
 it. GPT-PM's GO named "canary rules/tests" as the Step-8-authorized item specifically; assembling
 the full scheduled monitor is Step 9's job and waits on `FA-D1` regardless -- a canary with no alert
 destination to report failure to is incomplete even once it runs.
+
+## MVP1.G3 Step 8/9 (6.5): client/camera/inference Crashlytics + performance signal -- built -- 2026-08-27 03:10 UTC
+
+Wired `FirebaseCrashlytics.instance` into the three named-and-confirmed swallowed catches (Sec 6.5),
+matching GPT-PM's round-2 constraints (Sec 9) exactly, plus the still-open "bounded latency/
+performance signal" requirement.
+
+1. **`mlkit_live_equipment_service.dart:_anchorFromFrame`** -- deduped, not per-frame. Added
+   `_ocrAnchorFailureReported` (reset to `false` in `start()`), checked before reporting so a decal
+   that fails OCR on every one of `ocrEveryNthFrame` frames reports exactly once per live session,
+   not roughly once a second for as long as live mode stays open -- the exact spam GPT-PM's
+   constraint named.
+2. **`scanner_page.dart:_arm`** -- gated on `classifyCameraFailure(e).reason ==
+   CameraUnavailableReason.initializationFailed` only. The other three reasons
+   (`permissionDenied`, `permissionPermanentlyDenied`, `noCamera`) are expected user/device states,
+   not operational incidents -- GPT-PM's constraint named permission-denial explicitly; `noCamera` is
+   the same class of fact (a device with no camera is not a bug) and is excluded by the same test.
+3. **`gemini_equipment_service.dart:classifyFile`** -- catch changed to `catch (e, stackTrace)` (was
+   `catch (e)`, no trace captured at all before this). Reports `(e, stackTrace)` only -- no photo
+   bytes, no prompt text, no health/profile content -- then rethrows the exact same
+   `VisualEquipmentException('cloud recognition failed: $e')` unchanged.
+4. **Performance signal (the still-open half of OBS-1, per Sec 9's "requires a bounded
+   latency/performance signal ... since the original OBS-1 item was failures AND performance, not
+   failures alone").** Chose to reuse Crashlytics rather than add `firebase_performance` as a new
+   dependency: Sec 6.5's own cost line already treats Crashlytics as free-tier and in use, and Sec 9
+   separately tightened cost claims against any new chargeable signal without justification -- a
+   second SDK integration for one measurement did not clear that bar. A `Stopwatch` around
+   `_askCloud(bytes)` in `classifyFile`, checked only on the SUCCESS path (after the existing failure
+   catch, never inside it) against a `_slowInferenceThreshold` of 20s -- the same number this file's
+   own `timeout` comment already anchors to the server's real model budget, so a successful call that
+   still took that long is a genuine performance signal, not the routine 15-18s cold-start/queueing
+   noise the same comment documents as normal. Deliberately disjoint from the failure report: a call
+   that times out already went through the catch block, so a slow-but-successful call cannot also
+   double-report as "failed".
+
+All three sites follow the same defensive shape already established in `main.dart:160-166`
+(`setCrashlyticsCollectionEnabled`'s own try/catch): the Crashlytics call is wrapped in its own
+`try { unawaited(...) } catch (_) {}`, so telemetry can never crash or alter the feature it
+instruments. This is not decorative -- it is what fixed a real regression found while building this
+(below).
+
+**Positive proof:**
+- `flutter analyze` on all 3 edited files plus a full-project `flutter analyze`: zero new issues (16
+  pre-existing lints elsewhere, none in the touched files, none introduced).
+- `flutter test test/features/visual_equipment/live_text_anchor_test.dart
+  test/features/scanner_page_test.dart test/features/visual_equipment/gemini_equipment_service_test.dart`:
+  all pass (75 scanner_page + 18 gemini + the OCR-decision suite), unchanged assertions. Two of these
+  are real regression proof, not just "still green": `scanner_page_test.dart`'s "the four causes do
+  not share one message" test drives all 4 `CameraUnavailableReason` values through `_arm`'s modified
+  catch block and confirms the UI-visible outcome is byte-for-byte unchanged; `gemini_equipment_
+  service_test.dart`'s "a stalled cloud call times out instead of spinning forever" test drives a
+  real `TimeoutException` through the modified catch block and confirms the rethrown
+  `VisualEquipmentException`'s message still contains `TimeoutException` -- i.e., rethrow-unchanged
+  is proven by an executed test, not just read.
+
+**Negative proof -- a real regression caught, not a clean first pass.** The first version of all
+three edits called `FirebaseCrashlytics.instance.recordError(...)` directly inside `unawaited(...)`
+with no surrounding guard. Running the existing suites against it failed for real: `FirebaseCrashlytics
+.instance`'s getter throws `[core/no-app] No Firebase App '[DEFAULT]' has been created` synchronously
+in a plain `flutter test` run (no `Firebase.initializeApp()` in the test harness), which the Flutter
+test framework treats as an uncaught async exception -- 3 of 71 `scanner_page_test.dart` cases and
+their downstream assertions genuinely failed (full failure log preserved in this session's
+transcript). This is exactly the class of defect this whole gate has been built to catch: a fix
+looked complete, and running the actual existing suite against it proved otherwise. Fixed by wrapping
+each call site's own `try { unawaited(...) } catch (_) {}`, matching `main.dart`'s established
+pattern -- re-running the same three suites afterward returned to 75+18+the OCR suite all green (see
+Positive proof above), confirmed by re-execution, not by re-reading the diff.
+
+**Proof gap, stated rather than implied.** No test in this repository asserts that
+`FirebaseCrashlytics.instance.recordError` is actually INVOKED with the right arguments at runtime --
+only that the surrounding logic (dedupe boolean, reason-gating, rethrow-unchanged, and now the
+try/catch guard) behaves correctly and that nothing regresses. This project has no method-channel
+mock for `firebase_core`/`firebase_crashlytics` anywhere in its test suite today (`live_text_anchor_
+test.dart` documents the same boundary for the OCR path specifically: "`MlKitLiveEquipmentService`
+needs a camera stream and a native labeler [and] cannot be driven end-to-end on a desktop runner").
+Building that mock harness from scratch was judged disproportionate to a 3-catch-block wiring task
+and would itself become new test infrastructure with its own maintenance cost; the actual production
+call is verifiable only on a real device/emulator build (Step 9's own alert-path test plan, Sec 8 row
+6.5, already calls for exactly that -- "throw inside one of the 3 named catch blocks (test build) ->
+Crashlytics issue appears, velocity alert fires" -- and remains the real verification for whether the
+wiring itself, not just its surrounding logic, is correct).
+
+**Cost:** zero new spend. No new dependency added; Crashlytics is the same free-tier product already
+integrated and already covered by Sec 6.5's own cost line.

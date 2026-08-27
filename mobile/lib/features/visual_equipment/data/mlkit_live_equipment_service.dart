@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:google_mlkit_commons/google_mlkit_commons.dart' show InputImage;
@@ -83,6 +84,11 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
   bool _busy = false;
   bool _running = false;
 
+  /// Set on the first OCR-anchor failure of a live session, so a decal that
+  /// fails to read on every one of `ocrEveryNthFrame` frames reports once,
+  /// not every ~1/8th of a second for as long as live mode stays open.
+  bool _ocrAnchorFailureReported = false;
+
   @override
   Stream<LiveRecognition> recognitions() => _ctrl.stream;
 
@@ -130,6 +136,7 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
     );
     await session.start();
     _running = true;
+    _ocrAnchorFailureReported = false;
     _sub = session.frames().listen(
           _onFrame,
           onError: (Object e, StackTrace st) {
@@ -175,8 +182,27 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
         agreement: 1,
         settled: true,
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('live text anchor failed, continuing without it: $e');
+      // First failure per session only -- see `_ocrAnchorFailureReported`.
+      if (!_ocrAnchorFailureReported) {
+        _ocrAnchorFailureReported = true;
+        // Same guard as main.dart's Crashlytics calls: telemetry must never
+        // break the feature it instruments (and has no app to report against
+        // at all in a plain `flutter test` run).
+        try {
+          unawaited(
+            FirebaseCrashlytics.instance.recordError(
+              e,
+              stackTrace,
+              fatal: false,
+              reason: 'live OCR anchor failed',
+            ),
+          );
+        } catch (_) {
+          // Reporting failure is not itself reportable -- see above.
+        }
+      }
       return null;
     }
   }
