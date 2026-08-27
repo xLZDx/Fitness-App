@@ -27469,3 +27469,84 @@ empty before re-running the check clean (exit 0) again.
 FIRST (so a broken checker fails loudly rather than silently passing everything), then the real
 corpus check. No `mobile` working-directory override needed -- the script resolves its own paths
 from `__dirname`, independent of CWD.
+
+## MVP1.G3: all 7 [CI] items DONE -- moving to Step 8 -- 2026-08-27
+
+All 7 OBS-1 `[CI]` items (test-health enforcement, Dart dependency scanning, SafetyContext
+invariant guard, equipment-registry parity, secret scanning, composed-screen visual regression,
+RU/EN semantic drift) are committed and pushed: `350c368..809b886` on `master`. Per the sequencing
+GPT-PM already approved (CI items first, no interim stop required), proceeding directly to Step 8
+(runtime-monitor prerequisites) without pausing for a report -- consistent with PM Bridge
+orchestrator mode being ON throughout this gate (CLAUDE.md Sec18).
+
+## MVP1.G3 Step 8: runtime-monitor prerequisites -- GPT-PM round 1 -- 2026-08-27
+
+**Live evidence gathered via `gcloud` against the real `fitness-app-korostelev` project before
+proposing anything** (not assumption -- re-verifying CLAUDE.md Sec3 discipline): 0 Cloud Monitoring
+notification channels exist (`gcloud beta monitoring channels list`); the existing $20/month Blaze
+budget (project `988522745882`, confirmed via `gcloud billing budgets list`, billing account
+`019944-23376A-5C1743`) has `notificationsRule: {}` -- alerts fall back to GCP's implicit
+billing-admin-only default, invisible from outside the console; no on-call/alerting structure
+exists anywhere in the repo (re-grepped slack/pagerduty/opsgenie/on-call/pager/nodemailer/twilio --
+zero real hits, matching the gap already logged at line ~25130); no staging project exists
+(`.firebaserc` has exactly `default: fitness-app-korostelev` and an unrelated legacy project alias);
+Cloud Logging/Monitoring/Pub-Sub APIs already enabled, Cloud Scheduler API available but not yet
+enabled.
+
+Opened Rosetta plan `Fitness_App-2026-08-27T01-44-56-612Z-f57b28`
+(hash `9f5e9bbd0aeb97b33b3d078dcbc49765bdf88f8569634959e0474879f61dfa09`), printed to the session in
+full per Rosetta's transparency requirement, and sent to GPT-PM with the evidence above plus a
+proposed "minimal Firebase-native option" (one Cloud Monitoring email channel, wired into the
+existing budget, Cloud Scheduler enabled, a narrowly-scoped canary identity design, and an explicit
+flag that "operator is the default alert owner" is an assumption requiring confirmation, not a
+silent choice).
+
+**GPT-PM verdict: APPROVE, with binding amendments and a 12-item DoD (8.1 through 8.12) plus a
+batch-level DoD** -- full exchange in `pm_bridge_status`, session id `61e7dfec-...`, timestamped
+~2026-08-27T01:47-01:52Z. Key corrections, each independently verified before acting on it (none
+taken on GPT-PM's word alone):
+
+1. **Cloud Scheduler free tier is 3 jobs/month per BILLING ACCOUNT, not per project.** Verified live
+   across every project sharing billing account `019944-23376A-5C1743`
+   (`gcloud billing projects list`): `fitness-app-korostelev` (0 jobs, API disabled),
+   `traidingbot-b4061` (0 jobs, API disabled), `trading-bot-496818` (0 jobs, API disabled),
+   `erp-moldova-staging-20260819` (API enabled, 0 jobs in `us-central1`). Real current usage:
+   **0 of 3 free jobs, billing-account-wide** -- Step 9's planned one-consolidated-dispatcher design
+   fits inside the free allowance with headroom. Replaces the original unverified "free tier is
+   generous" claim GPT-PM correctly flagged.
+2. **Canary must use a real client-facing Auth token exchange, not the Admin SDK, for any Firestore
+   read/write it claims proves the client path** (Admin SDK bypasses Security Rules entirely).
+   Requires a custom claim marker, not bare UID possession.
+3. **Must inspect actual production sign-in providers before choosing a test-auth method.** Verified
+   against `mobile/lib/features/auth/data/firebase_auth_repository.dart`: production uses Anonymous
+   (line 76-78) and Google Sign-In (line 132-143, with anonymous-to-Google linking) -- no
+   email/password provider (the file's own comment at line 183 already recorded this was checked).
+   Google Sign-In is not safely automatable headlessly without storing real account credentials
+   (which DoD 8.11 explicitly forbids) -- chose GPT-PM's own suggested fallback: a Firebase custom
+   token (`createCustomToken(uid, {canary:true})`, Admin SDK, server-side) exchanged for a real ID
+   token via the Client SDK's `signInWithCustomToken()`, with the scope honestly recorded as NOT
+   covering the Google OAuth flow itself.
+4. **App Check server-minted tokens (`createToken(appId)`) prove enforcement/token-acceptance only,
+   not real device attestation** -- any future report must state this precisely, not imply full
+   coverage.
+5. **Alert-channel existence is not proof of delivery** -- GCP's own docs warn a misconfigured
+   channel can fail silently. DoD 8.2 requires an actual temporary test policy that is confirmed to
+   deliver mail before being removed, not just channel creation.
+
+Wrote `core/G3_STEP8_RUNTIME_PREREQUISITES.md`: the full canary-identity design (custom-token
+exchange, Security Rules requiring BOTH `auth.uid==canaryUid` AND the `canary` custom claim,
+`_canary/` namespace isolation, synthetic-data cleanup and exclusion-from-lifecycle-monitoring
+requirements), the honest App Check scope statement, and the Scheduler job-budget evidence table --
+all reviewable by GPT-PM before Step 9 builds against it, per the DoD's own requirement.
+
+**One item explicitly on HOLD, not decided by me or by GPT-PM:** GPT-PM's own ruling --
+*"This does require direct operator confirmation, because our previously agreed escalation policy
+explicitly classifies a human on-call/notification obligation as a real ownership decision rather
+than something an agent may infer."* Recorded as `DECISION G3-RUNTIME-OWNER` (operator accepts
+responsibility as the primary alert owner/on-call recipient, project-owner Google account as
+destination, until explicitly changed) -- status PENDING, not yet answered. Per GPT-PM's authority
+ruling, Step 8's design/investigation/reversible-infrastructure-prep work continues without it
+(this entry and the design doc above ARE that work), but Step 8 cannot be marked fully DONE, and no
+production alert policy may be bound to a human recipient, until this is explicitly confirmed.
+Escalating to the operator directly now (CLAUDE.md Sec4: this is a human on-call obligation, not a
+routine technical call GPT-PM or I can settle alone).
