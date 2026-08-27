@@ -81,29 +81,6 @@ export function matchesLogMatchFilter(
   );
 }
 
-/**
- * A log-based metric: a counter over log entries matching `filter`,
- * grouped by `labelKeys` (each key must be a field present in every
- * matched entry's `jsonPayload`, e.g. "fn" or "attested" for the App Check
- * signal). Rendered separately from an alert filter because a metric
- * descriptor and an alert policy are different GCP resource kinds even
- * though both start from a Cloud Logging filter.
- *
- * NOTE: this is a simplified shape (name/filter/labelKeys only), predating
- * `CounterLogMetricSpec`/`DistributionLogMetricSpec` below. GPT-PM's review
- * of the AI Gateway metrics batch (2026-08-27) established that a real,
- * deployable `LogMetric` needs `metricDescriptor.labels` +
- * `labelExtractors`, which this shape does not produce -- flagged in
- * `README.md` as a known inconsistency with the App Check metric still
- * using this older shape, not silently left unmentioned.
- */
-export interface LogBasedMetricSpec {
-  name: string;
-  description: string;
-  filter: string;
-  labelKeys: string[];
-}
-
 /** One label on a real `google.logging.v2.LogMetric`. */
 export interface LogMetricLabel {
   key: string;
@@ -139,9 +116,16 @@ export interface BucketOptionsSpec {
 }
 
 function boundedLabelFilterClause(bl: BoundedLabel): string {
+  // BOOL fields render as unquoted literals (`field=true`), not strings
+  // (`field="true"`) -- Cloud Logging's filter grammar treats these
+  // differently, and a quoted boolean would never match a real log entry.
+  const renderValue = (v: string) =>
+    bl.label.valueType === "BOOL" ? v : `"${v}"`;
   return (
     "(" +
-    bl.allowedValues.map((v) => `${bl.label.sourceField}="${v}"`).join(" OR ") +
+    bl.allowedValues
+      .map((v) => `${bl.label.sourceField}=${renderValue(v)}`)
+      .join(" OR ") +
     ")"
   );
 }

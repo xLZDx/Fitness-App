@@ -28487,3 +28487,63 @@ arrays). No change to any log message, filter value, or runtime behavior -- conf
 review, this round only touched type/export structure.
 
 Sent back to GPT-PM with the exact commit for re-verification.
+
+## Step 9 groundwork, item 4: FINAL APPROVED -- 2026-08-27
+
+GPT-PM's verdict on commit `1aba4e4`: `VERDICT: APPROVE`. The operation/outcome drift finding
+CLOSED -- explicitly confirmed the fix is the structural version (single source of truth), not
+merely a passing assertion: "A future legitimate operation/outcome added at the producer source
+automatically flows into metric bounding/query construction rather than being silently dropped."
+Referential-identity test accepted as adequate direct-regression proof.
+
+**Final status, GPT-PM's own words:** call counter, latency distribution, token-usage
+distribution, quota-exhaustion metric, and all 7 investigation queries -- APPROVED. Operation/
+outcome single source of truth -- APPROVED/CLOSED. Remaining scoped BLOCKER/MAJOR/MINOR -- NONE.
+Threshold-based AlertPolicies correctly not built. Live metric creation still
+`HOLD_LIVE_CREATION_COST`. "1aba4e4 is final-approved for this AI Gateway metrics/query scope."
+
+**All four items of GPT-PM's alert-independent Step 9 groundwork batch are now closed**: App
+Check attested-ratio visibility (found already built), Stripe reconciliation-failure alert,
+delete/export operational-failure alert, AI Gateway metrics/queries. Total across the batch: 5
+commits (`41cb872`, `6185d11`, `c7a498e`, `1aba4e4`, plus this entry), 3 real MAJOR findings
+caught and fixed across 3 separate GPT-PM adversarial review rounds, 0 findings dismissed without
+a fix. Everything in `functions/src/monitoring/` stays `DEFINED`/`TESTED`; nothing live was
+created. Remaining before any of it can page anyone: DECISION FA-D1 (operator, still pending) for
+the two alert policies' notification channel, and a real (not estimated) cost figure for the App
+Check log-based metric's live creation -- both outside this session's authority/access to resolve
+further right now.
+
+One small, explicitly-flagged follow-up remains: retrofit `APP_CHECK_ATTESTED_RATIO_METRIC` onto
+the newer `CounterLogMetricSpec` shape for consistency with the other four metrics in this
+directory (GPT-PM: "a narrow STANDARD cleanup, not another large Step 9 design round"). Doing it
+now while the pattern is fresh, in the same spirit as CLAUDE.md's "fix the class, not the
+instance."
+
+## Step 9 groundwork follow-up: App Check metric retrofitted onto CounterLogMetricSpec -- 2026-08-27
+
+Closed the flagged inconsistency. `APP_CHECK_ATTESTED_RATIO_METRIC` now uses `CounterLogMetricSpec`
+(real `LogMetric` shape: `metricDescriptor.labels` + `labelExtractors`), matching the other four
+metrics. Found and fixed a genuine correctness bug while doing it, not just a shape/consistency
+change: the shared `boundedLabelFilterClause` renderer always quoted values as strings
+(`field="true"`), which is wrong for `attested` -- a real GCP boolean field, which Cloud Logging's
+filter grammar compares unquoted (`field=true`). A quoted boolean would never have matched a real
+log entry had this metric been created live. Fixed by branching on `label.valueType === "BOOL"` in
+the renderer.
+
+`fn`'s bounding list (`APP_CHECK_KNOWN_CALLABLES`, 17 values, grep-verified against every
+`noteAppCheck(request, "...")` call site) is explicitly documented as NOT the same guarantee as
+`AI_GATEWAY_OPERATIONS`: `noteAppCheck`'s `fn` parameter is a plain `string`, not a closed union,
+so there is no compile-time source of truth to derive the list from -- it is a maintained copy,
+same class of risk the AI Gateway operation list had before its fix. Stated as a known limitation
+in both the code comment and README.md, not silently presented as equally strong. The separate,
+real guarantee that every callable calls `noteAppCheck` at all remains `__tests__/scaling.test.ts`'s
+own source-scanning test, which is unaffected by this change.
+
+**Verification:** `npm run build` clean. `npx jest`: 432/432 (429 + 3 new: unquoted-boolean
+rendering, bounded-fn-excludes-unknown-value, real LogMetric shape). No application log call site
+touched -- confirmed via `git status`, only `functions/src/monitoring/{types.ts,alert_definitions.ts,
+__tests__/alert_definitions.test.ts,README.md}` changed.
+
+This closes out GPT-PM's entire alert-independent Step 9 groundwork batch, including its own
+flagged follow-up. Sending to GPT-PM for a final confirmation pass before considering Step 9
+groundwork fully done pending DECISION FA-D1.

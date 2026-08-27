@@ -9,10 +9,12 @@ import {
   stripeReconciliationAlertPolicyJson,
   deleteAccountAlertPolicyJson,
   exportAccountAlertPolicyJson,
+  appCheckAttestedRatioMetricJson,
 } from "../alert_definitions";
 import {
   matchesLogMatchFilter,
   toCloudRunServiceName,
+  counterLogMetricFilterString,
   type LogEntryFixture,
 } from "../types";
 import * as signals from "../log_signals";
@@ -220,16 +222,48 @@ describe("AlertPolicy JSON shape (Cloud Monitoring projects.alertPolicies REST s
 
 describe("App Check attested-ratio log-based metric definition", () => {
   it("filters on the exact noteAppCheck event message", () => {
-    expect(APP_CHECK_ATTESTED_RATIO_METRIC.filter).toBe(
-      `jsonPayload.message="${signals.APP_CHECK_EVENT}"`,
-    );
+    const filter = counterLogMetricFilterString(APP_CHECK_ATTESTED_RATIO_METRIC);
+    expect(filter).toContain(`jsonPayload.message="${signals.APP_CHECK_EVENT}"`);
+  });
+
+  it("renders the boolean attested label unquoted, not as a string", () => {
+    const filter = counterLogMetricFilterString(APP_CHECK_ATTESTED_RATIO_METRIC);
+    expect(filter).toContain("jsonPayload.attested=true");
+    expect(filter).toContain("jsonPayload.attested=false");
+    expect(filter).not.toContain('jsonPayload.attested="true"');
+  });
+
+  it("bounds fn to the known callable list, excluding an unknown/typo'd value", () => {
+    const filter = counterLogMetricFilterString(APP_CHECK_ATTESTED_RATIO_METRIC);
+    expect(filter).toContain('jsonPayload.fn="deleteAccount"');
+    expect(filter).toContain('jsonPayload.fn="aiCoachAdvice"');
+    expect(filter).not.toContain('jsonPayload.fn="someFutureCallable"');
+  });
+
+  it("renders the real LogMetric shape: metricDescriptor.labels + labelExtractors", () => {
+    const json = appCheckAttestedRatioMetricJson() as {
+      metricDescriptor: {
+        metricKind: string;
+        valueType: string;
+        labels: Array<{ key: string; valueType: string }>;
+      };
+      labelExtractors: Record<string, string>;
+    };
+    expect(json.metricDescriptor.metricKind).toBe("DELTA");
+    expect(json.metricDescriptor.valueType).toBe("INT64");
+    expect(json.metricDescriptor.labels.map((l) => l.key).sort()).toEqual([
+      "attested",
+      "fn",
+    ]);
+    expect(json.labelExtractors.fn).toBe("EXTRACT(jsonPayload.fn)");
+    expect(json.labelExtractors.attested).toBe("EXTRACT(jsonPayload.attested)");
   });
 
   it("keeps labels bounded to fn and attested -- no uid or other unbounded field", () => {
-    expect(APP_CHECK_ATTESTED_RATIO_METRIC.labelKeys).toEqual([
-      "fn",
-      "attested",
-    ]);
-    expect(APP_CHECK_ATTESTED_RATIO_METRIC.labelKeys).not.toContain("uid");
+    const keys = APP_CHECK_ATTESTED_RATIO_METRIC.boundedLabels.map(
+      (bl) => bl.label.key,
+    );
+    expect(keys.sort()).toEqual(["attested", "fn"]);
+    expect(keys).not.toContain("uid");
   });
 });

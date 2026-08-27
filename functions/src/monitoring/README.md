@@ -20,21 +20,29 @@ Every alert policy renders the real `google.monitoring.v3.AlertPolicy` REST
 shape (`toAlertPolicyJson` in `types.ts`) with `notificationChannels: []` --
 attaching a channel is exactly the FA-D1-gated step, and a policy with no
 channels notifies nobody even if it were applied today. Every counter/
-distribution metric (App Check's older shape aside, see the note below)
-renders the real `google.logging.v2.LogMetric` REST shape
+distribution metric in this directory, App Check included, renders the real
+`google.logging.v2.LogMetric` REST shape
 (`toCounterLogMetricJson`/`toDistributionLogMetricJson` in `types.ts`) with
 `metricDescriptor.labels` + `labelExtractors`, not a bare filter string.
 
-**Known inconsistency, flagged rather than silently left:**
-`APP_CHECK_ATTESTED_RATIO_METRIC` (`alert_definitions.ts`) still uses the
-older, simplified `LogBasedMetricSpec` shape (name/filter/labelKeys only),
-which predates `CounterLogMetricSpec` and does not itself produce a real,
-deployable `LogMetric` JSON (no `metricDescriptor.labels`, no
-`labelExtractors`). It was approved in that shape before this shape existed.
-Retrofitting it onto `CounterLogMetricSpec` was deliberately left out of this
-batch (out of the AI Gateway groundwork's own scope) rather than expanded
-into unilaterally -- worth a short follow-up item if a reviewer wants
-consistency across every metric in this directory.
+**App Check retrofit, 2026-08-27:** `APP_CHECK_ATTESTED_RATIO_METRIC` now
+uses `CounterLogMetricSpec`, closing the inconsistency GPT-PM flagged (as a
+non-blocking follow-up, not a finding) when it approved the AI Gateway
+batch. One genuine difference from the AI Gateway metrics remains, stated
+rather than glossed over: `noteAppCheck`'s `fn` parameter is a plain
+`string`, not a closed TypeScript union the way `AiGatewayOperation` is --
+there is no compile-time source of truth to derive `APP_CHECK_KNOWN_
+CALLABLES`'s 17 values from. That list is a maintained copy (grep-verified
+current, in `alert_definitions.ts`'s own comment), the same class of risk
+the AI Gateway operation list had before its fix -- a new callable added
+later will not appear in this metric until the list is updated by hand.
+The separate guarantee that every real callable calls `noteAppCheck` at all
+is `__tests__/scaling.test.ts`'s own source-scanning test, which does not
+and cannot keep this metric's bounding list in sync by itself. `attested`
+needed one more real fix: it is a genuine boolean, and the shared
+`boundedLabelFilterClause` renderer originally quoted every value as a
+string (`="true"`), which would never match a real boolean log field --
+fixed to render BOOL-typed labels unquoted (`=true`).
 
 ## Resource shape: Gen2 (Cloud Run), corrected 2026-08-27
 

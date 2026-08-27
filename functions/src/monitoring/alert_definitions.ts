@@ -31,10 +31,14 @@ import {
 } from "./log_signals";
 import type {
   LogMatchFilterSpec,
-  LogBasedMetricSpec,
   AlertPolicySpec,
+  CounterLogMetricSpec,
 } from "./types";
-import { toGcpFilterString, toAlertPolicyJson } from "./types";
+import {
+  toGcpFilterString,
+  toAlertPolicyJson,
+  toCounterLogMetricJson,
+} from "./types";
 
 /**
  * TypeScript export names of the enclosing deployed Cloud Functions.
@@ -152,20 +156,80 @@ export function exportAccountAlertPolicyJson(): object {
 }
 
 /**
- * Log-based metric for App Check attestation ratio. Labels are bounded by
- * construction: `fn` ranges over the ~13 known call sites of `noteAppCheck`
- * (a fixed, small set of function names, not a user-supplied value) and
- * `attested` is a boolean -- so cardinality is bounded at roughly
- * (call sites) x 2, never grows with traffic or user count. No uid or other
- * per-user field is a label, matching `noteAppCheck`'s own privacy design
- * (abuse_guard.ts:49-51).
+ * Log-based metric for App Check attestation ratio. Grep-verified 17 call
+ * sites of `noteAppCheck` (`index.ts` x9, `video_urls.ts` x2,
+ * `account_export.ts` x1, the 4 `ai_*.ts` callables x1 each), each passing
+ * a compile-time string literal -- never user-supplied -- so `fn`'s real
+ * cardinality only grows via a deliberate code change, not per-request or
+ * per-user traffic. `attested` is a genuine boolean (`request.app !==
+ * undefined`), rendered unquoted by `boundedLabelFilterClause`'s BOOL case.
+ * No uid or other per-user field is a label, matching `noteAppCheck`'s own
+ * privacy design (abuse_guard.ts:49-51).
+ *
+ * UNLIKE `AI_GATEWAY_OPERATIONS` (a closed TypeScript union derived from
+ * one runtime tuple, so the type system itself keeps the bounding list
+ * exhaustive): `noteAppCheck`'s `fn` parameter is a plain `string`, not a
+ * union -- there is no compile-time source of truth to derive this list
+ * from. `APP_CHECK_KNOWN_CALLABLES` below is therefore a maintained list,
+ * same class of risk GPT-PM's review flagged for the AI Gateway operation
+ * list before that fix. The actual coverage guarantee that every real
+ * callable calls `noteAppCheck` at all is a SEPARATE test
+ * (`__tests__/scaling.test.ts`'s "every callable reports its attestation",
+ * which scans the real source files) -- it does not, and cannot by
+ * itself, keep THIS metric's `allowedValues` list in sync. A new callable
+ * added later will not appear in this metric's data until this list is
+ * updated by hand. Stated as a known limitation, not silently assumed
+ * solved by analogy to the AI Gateway fix.
  */
-export const APP_CHECK_ATTESTED_RATIO_METRIC: LogBasedMetricSpec = {
+export const APP_CHECK_KNOWN_CALLABLES = [
+  "aiCoachAdvice",
+  "aiEquipmentRecognition",
+  "aiExerciseGeneration",
+  "aiMachineDescription",
+  "bookCoachSession",
+  "clipUrl",
+  "clipUrls",
+  "createCheckoutSession",
+  "createPortalSession",
+  "deleteAccount",
+  "exportAccountData",
+  "generateAnnualReceipt",
+  "optInDonorWall",
+  "optOutDonorWall",
+  "reportEquipment",
+  "startCoachOnboarding",
+  "startFreeTrial",
+] as const;
+
+export const APP_CHECK_ATTESTED_RATIO_METRIC: CounterLogMetricSpec = {
   name: "appcheck_attestation",
   description:
     "Count of callable invocations by function and whether the call " +
     "carried a verified App Check token. attested-ratio = " +
     "sum(attested=true) / sum(all), grouped by fn.",
-  filter: `jsonPayload.message="${APP_CHECK_EVENT}"`,
-  labelKeys: ["fn", "attested"],
+  message: APP_CHECK_EVENT,
+  boundedLabels: [
+    {
+      label: {
+        key: "fn",
+        valueType: "STRING",
+        description: "Which callable this attestation measurement is for.",
+        sourceField: "jsonPayload.fn",
+      },
+      allowedValues: [...APP_CHECK_KNOWN_CALLABLES],
+    },
+    {
+      label: {
+        key: "attested",
+        valueType: "BOOL",
+        description: "Whether the call carried a verified App Check token.",
+        sourceField: "jsonPayload.attested",
+      },
+      allowedValues: ["true", "false"],
+    },
+  ],
 };
+
+export function appCheckAttestedRatioMetricJson(): object {
+  return toCounterLogMetricJson(APP_CHECK_ATTESTED_RATIO_METRIC);
+}
