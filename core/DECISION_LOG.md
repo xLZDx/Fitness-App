@@ -29044,3 +29044,45 @@ Firestore REST read of `_canary/canary-fixed-uid` -- `404 NOT_FOUND`, i.e. no re
 trusting the function's own self-report. **Step 4 (real production canary proof, both the
 mint->exchange->write->read->delete->verify cycle and the earlier real RULES_DENIED failure this
 session already captured as the induced-failure proof) is complete.**
+
+## MVP1.G3 Step 9B, Steps 5 and 6: 5 live metrics created, 4 permanent policies activated -- 2026-08-27
+
+**Step 6 (metrics) done first, independent of FA-D1**: dumped the 5 already-reviewed JSON
+definitions straight from the compiled TS (`functions/lib/monitoring/{alert_definitions,
+ai_gateway_definitions}.js`, avoiding any hand-transcription) and created all 5 via `gcloud logging
+metrics create --config-from-file`: `appcheck_attestation`, `ai_gateway_calls`,
+`ai_gateway_latency_ms`, `ai_gateway_total_tokens_per_call`, `ai_gateway_quota_exhaustions`. Read
+back via `gcloud logging metrics describe` -- `ai_gateway_calls`'s live filter compared
+byte-for-byte against source, exact match. Per GPT-PM's explicit instruction, the 4 AI Gateway
+metrics are recorded as `LIVE_METRIC_CREATED / NO_PRODUCTION_PRODUCER` -- the 4 AI Gateway callables
+remain undeployed (confirmed again via `gcloud functions list`, still 15 functions, still zero AI
+matches), so these will show zero data until that gate deploys them. `appcheck_attestation` has real
+producers already (every deployed callable calls `noteAppCheck`).
+
+**Step 5 (permanent alert policies)**: same JSON-from-compiled-TS approach, `enabled: true` and
+`notificationChannels: [FA-D1 channel]` set programmatically (not hand-edited) before create.
+Created via `gcloud alpha monitoring policies create --policy-from-file`:
+- `stripe_reconciliation_failure` -- `alertPolicies/6432583742343399434`
+- `delete_account_failure` -- `alertPolicies/1018850201032278331`
+- `export_account_failure` -- `alertPolicies/11269446106306914871`
+- `canary_probe_failure` -- `alertPolicies/13193555522289224138`
+
+**Negative-before-positive proof, per GPT-PM's explicit instruction**, done against
+`canary_probe_failure` (the newest, least-proven of the 4):
+- **Negative**: re-triggered `runProductionCanary` for a genuine clean run with all 4 policies
+  already live -- scheduler `AttemptFinished` HTTP 200 (12:56:20Z). Normal operation stays quiet;
+  no failure signal for the policy to (mis)match.
+- **Positive**: wrote ONE clearly-marked synthetic log entry (`fa-d1-synthetic-canary-proof`,
+  `jsonPayload.synthetic: true`, an explicit `purpose` string naming this as a proof, never a real
+  failure) via `gcloud logging write --monitored-resource-type=cloud_run_revision
+  --monitored-resource-labels=service_name=runproductioncanary,...` -- the REAL Cloud Run resource
+  labels of the deployed function, not a fabricated resource. Confirmed via `gcloud logging read`
+  that the entry matches the policy's exact filter clause (`resource.type="cloud_run_revision" AND
+  resource.labels.service_name="runproductioncanary" AND jsonPayload.message="production canary
+  probe failed"`) byte-for-byte.
+
+**Not yet independently confirmed**: whether this triggered a real email notification -- Cloud
+Monitoring's incident/notification pipeline has no simple `gcloud` list command this session found
+to check server-side; the only genuine confirmation is the operator's own inbox, the same limitation
+already stated for the FA-D1 temp-policy proof earlier this session. Asked the operator to check for
+both emails.
