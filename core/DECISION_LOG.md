@@ -28881,3 +28881,44 @@ tests). `git status` confirmed no live GCP call made during this remediation rou
 actions being discussed here both predate this round's fix, per finding 3 above).
 
 Sending this round's diff back to GPT-PM next. No further live mutation until it returns clean.
+
+## MVP1.G3 Step 9B: `--uncommitted` review scope was contaminated by unrelated files -- re-reviewed clean -- 2026-08-27
+
+The round-3 `--uncommitted` review returned `VERDICT: APPROVE` with `"truncated": true` in its own
+receipt. Rather than trust an approval against a review the tool's own receipt flags as partial
+(`review.js`'s own comment: "A truncated diff was only a PARTIAL review -- never let that read as a
+concluded" one), checked why: `--uncommitted` scope (`review.js:138`) appends the FULL CONTENT of
+every untracked file in the working tree, not just this session's diff -- and `git status` showed
+~12 large, unrelated HTML report files sitting untracked in `reports/` (SPTR marketing/positioning
+review artifacts, not part of this Rosetta plan or even this project's G3 gate -- almost certainly
+another concurrent session's in-progress work, per this workspace's own "concurrent sessions" norm;
+left untouched, not this session's to delete). Combined, those pushed the request past
+`MAX_DIFF_CHARS` (400,000), truncating -- and possibly displacing -- the actual canary diff GPT-PM
+was supposed to be reviewing. **Committed the remediation as `216c870`, then re-reviewed with
+`--commit 216c870` instead of `--uncommitted`** -- that scope reads `git show <sha>` directly and
+never touches the untracked-file block at all (`review.js:137` vs `:138`), giving a clean review of
+exactly this round's diff with no contamination. Round 1's earlier `--commit b9d1e9a` review had
+this same property, which is why it was never affected.
+
+## MVP1.G3 Step 9B: GPT-PM round 4 (commit-scoped, clean) -- `VERDICT: APPROVE`, HOLD released -- 2026-08-27
+
+`--commit 216c870 --final`: `"final": true, "truncated": false, "verdict": "APPROVE"` -- a genuinely
+final receipt this time, not truncated. All 6 items GPT-PM had open across rounds 1-2 confirmed
+`CLOSED`: single-flight (`maxInstances`+`concurrency`), the invalid `PLATFORM_UNHANDLED_ERROR`
+backstop (replaced by the real `SCHEDULE_HANDLER` catch), the missing regression test, the "going
+quiet" scope overclaim, and the Rosetta review-hold breach's corrective action -- all accepted as
+adequately remediated, "no further remediation required" on the process-breach item specifically.
+One noted limitation, not a finding: GPT-PM's GitHub connector returned "No commit found for SHA"
+for `216c870` (not yet pushed at review time) -- it reviewed the complete diff text supplied
+directly instead, which it stated was sufficient for this scoped review.
+
+**Explicit instruction: "GO: CONTINUE STEP 9B PRODUCTION ACTIVATION. PUSH: AUTHORIZED under the
+current Gate policy."** Constraints restated and still binding: targeted `runProductionCanary`
+deploy only, four AI Gateway functions stay undeployed, and any future `REVIEW_HOLD` means zero
+production writes until a clean review releases it (the round-2 corrective action is now the
+standing rule, not a one-off).
+
+Pushing both commits (`b9d1e9a`, `216c870`) next, then resuming the live activation sequence:
+create `CANARY_WEB_API_KEY`, deploy `runProductionCanary` (scoped deploy only), reconfirm its real
+Cloud Run service name, complete the FA-D1 delivery-proof cleanup, activate the four permanent
+policies and five approved metrics, final cleanup.
