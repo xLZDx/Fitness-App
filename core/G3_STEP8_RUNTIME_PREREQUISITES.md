@@ -571,3 +571,22 @@ configured anywhere, since this sandboxed session has no live GCP credentials to
 
 **Not built:** the Cloud Scheduler job, any `onSchedule` deployment, or any alert/notification
 channel -- Step 9B, waiting on `FA-D1`, per GPT-PM's explicit scope split.
+
+**9A final status, after 2 remediation rounds (full detail in `core/DECISION_LOG.md`): FINAL-APPROVED,
+CLOSED.** GPT-PM's independent adversarial review of the initial closure found 2 real MAJORs --
+unbounded cleanup/teardown, and an API-key placeholder that fell open unconditionally including
+outside emulator mode. Round 1 (commit `0d74912`) added per-call cleanup/teardown budgets, an outer
+45s hard deadline (`Promise.race` over the whole function body), a tri-state `cleanupSucceeded`
+(`boolean | "unknown"`), a bounded pre-flight cleanup against prior-run residue, and gated the
+placeholder behind emulator-mode detection -- closing MAJOR 1 outright and partially closing MAJOR 2
+(GPT-PM found the emulator check used `OR` across two independently-connected services, letting a
+partial configuration still receive the placeholder). Round 2 (commit `fbd6978`) required both
+emulator host vars to agree before permitting either a real key or the placeholder, closing MAJOR 2
+completely. Both rounds added real e2e proof, not just code changes: a genuine 15s induced-hang test
+proving `runCanaryProbe()` returns within budget with `failureClass: "TIMEOUT"`, and 4 config tests
+covering all 4 combinations of the two emulator host vars. Final e2e suite: 22/22. GPT-PM's closing
+verdict: "Remaining scoped BLOCKER/MAJOR/MINOR -- NONE... Do not reopen it without concrete regression
+evidence." Bounded-execution dimension: `READY_TO_ACTIVATE`. Production-Auth-connectivity dimension:
+`IMPLEMENTED`/`TESTED`/`BLOCKED_CONFIG` (unchanged real gap -- no live GCP credentials in this session
+to obtain the project's real Web API key). Not `ACTIVE`/`DONE` as a production runtime monitor: no
+Scheduler, no Monitoring alert, `FA-D1` untouched, exactly as scoped throughout all 3 commits.

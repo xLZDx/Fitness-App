@@ -28201,3 +28201,31 @@ this commit.
 Sent back to GPT-PM for final verification per its own instruction ("send only that exact-SHA
 remediation back"). Status held at bounded-execution `READY_TO_ACTIVATE` /
 production-Auth-connectivity `IMPLEMENTED`/`TESTED`/`BLOCKED_CONFIG` pending that verdict.
+
+## MVP1.G3 Step 9A: FINAL APPROVED, Rosetta plan closed -- 2026-08-27 04:10 UTC
+
+GPT-PM's verdict on commit `fbd6978`: `VERDICT: APPROVE`. Both findings CLOSED -- "No remaining
+scoped BLOCKER/MAJOR/MINOR." Also explicitly endorsed the round-2 fix going slightly beyond its
+literal instruction (rejecting mixed emulator config even with a real key present): "a direct
+strengthening of the same configuration invariant, not unrelated scope expansion."
+
+Called `pm_rosetta_close` a second time on the same plan (`Fitness_App-2026-08-27T03-25-24-116Z-
+6f8d3b`) with the complete 3-round history as evidence. GPT-PM's own closure review independently
+re-verified the git range (`33d4461..fbd6978`, 3 commits, 7 unique real paths) and confirmed the
+Rosetta-reconstructed changed-set's inclusion of unrelated pre-existing untracked marketing/report
+files is noise the authoritative git range already excludes -- not a provenance problem.
+
+**Final declared status, GPT-PM's own words:** "MVP1.G3 Step 9A Rosetta plan -- PASSED/CLOSED.
+Implementation -- APPROVED. Auth + Firestore E2E proof -- APPROVED. Security isolation -- APPROVED.
+Bounded execution -- APPROVED. Configuration fail-closed behavior -- APPROVED. Remaining scoped
+BLOCKER/MAJOR/MINOR -- NONE. Production Auth connectivity -- BLOCKED_CONFIG. FA-D1/Scheduler/
+Monitoring activation -- HOLD. Step 9A itself -- not ACTIVE/DONE as a production runtime monitor...
+Do not reopen it without concrete regression evidence. Proceed with the remaining alert-independent
+Step 9 groundwork."
+
+Step 9A is closed. Next: the remaining alert-independent Step 9 groundwork GPT-PM's original ruling
+authorized (Sec 9 above) -- App Check attested-ratio visibility, Stripe/deletion-export alert
+definitions, and AI Gateway monitoring queries reading the structured event built in Sec 13 -- each
+its own bounded piece of work, same discipline (real implementation, real tests, explicit
+IMPLEMENTED/TESTED/READY_TO_ACTIVATE status, no live Scheduler/Monitoring/alert activation until
+`FA-D1` clears).
