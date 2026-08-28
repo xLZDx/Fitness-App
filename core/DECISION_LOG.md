@@ -32214,3 +32214,25 @@ device — `core/DECISION_LOG.md`/project memory name the S8 device as permanent
 connected via adb for exactly this kind of test). Then continue to G4's remaining
 criteria (IAM/runtime config, deployment provenance, real E2E, observability, device E2E,
 rollback mechanism, release guard).
+
+## G4 Step 1 + Step 2 status report published; stopping for the one operator decision
+
+Published the mandatory house-format report covering both G4 steps to date: Step 1
+(model choice, closed) and Step 2 (App Check corrections, HOLD on AI deployment, and the
+one question routed to the operator). RU published as a Claude Artifact
+(`https://claude.ai/code/artifact/f45bd88d-4328-48bd-927c-213261fec4e0`), both RU/EN
+local at `reports/2026-08-28-mvp1-g4-step1-step2.ru.html` /
+`reports/2026-08-28-mvp1-g4-step1-step2.html`, conformed (provenance block verified via
+`report_conform.py --check`).
+
+**Stopping here, not continuing autonomously past this point** — per CLAUDE.md §18's own
+carve-out ("a session may end only when the program is complete, or it is blocked on a
+decision that belongs to the operator alone under §4/§14"). GPT-PM itself named the
+anonymous-paid-AI-access question as outside its own authority, which makes this a
+genuine §4-class business/product decision, not a technical judgment call routable under
+§16. Handing it to the operator now rather than proceeding to guess an answer or
+indefinitely defer the question.
+
+Independent of the operator's answer, the Option-D real-device App Check attestation
+proof (GPT-PM's own GO, not blocked on this question) is the next technical task once
+work resumes.
