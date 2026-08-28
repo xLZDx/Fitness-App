@@ -31854,3 +31854,37 @@ observed above. Holding off as asked -- no further orchestrator restart attempts
 this session until that confirmation arrives. This also explains why my own two restart
 attempts each produced a fresh "listening" line immediately followed by a dead pid: not a
 one-off flake, but genuine concurrent writers to the same `orchestrator.json`/lock.
+
+## 2026-08-28 (continued) -- Transport recovered; push-final APPROVE; pushed. MVP1.G3 arc complete.
+
+The other session confirmed the daemon healthy (pid 56924, `browserReady: true`) and
+diagnosed the real cause: every restart attempt's browser/Playwright startup took longer
+than the client wrapper's 30s readiness timeout, so each attempt got killed by its own
+caller mid-startup -- not a genuine crash, a timeout race. It also flagged that THIS
+session's own long-lived `pm_bridge_mode_status` MCP tool call reported itself as the
+stale one (loaded build `ece03b005c588fb7`, disk now `848a1ad01f33e623`) -- confirmed via
+`pm_bridge_mode_status` directly. Per that warning, avoided the MCP tool wrappers for
+anything routing-sensitive and re-ran the push-final review via the direct
+`node .../review.js` CLI instead (a fresh process reading current code each invocation,
+not subject to the same long-lived-process staleness).
+
+**Round 6 (`--base origin/master --final`): VERDICT APPROVE, `final: true`.** All 5 INFO
+items confirm the #15-#17 MASTER_PLAN fix resolves the prior MINOR cleanly, with no new
+regression in the delta. GPT-PM's own words: *"FINAL RECEIPT: APPROVE. The full
+origin/master..HEAD G3 close-out range is approved for push under the current Gate
+policy. PUSH: AUTHORIZED. No additional G3 CI/device testing, function deployment,
+Monitoring-policy work, or another review round is warranted absent a new code/evidence
+regression."*
+
+**Pushed** `b3fb019..8a6f103` to `origin/master` (9 commits): the alert-filter remediation
++ GPT-PM sign-off, the Step 10C table + OBS-1 #11 completion, the #9 AI-Gateway
+rebaseline, `pm_set_gate(MVP1.G3=passed)`/`pm_set_gate(MVP1.G4=pending)`, the 5
+documentation-staleness fixes (Step 10C rows #5/#10, MASTER_PLAN rows #15-#18/#21), the
+closure report, and this transport-incident record.
+
+**MVP1.G3 (OBS-1: Continuous Reliability Guardrails) is fully closed, reviewed, and
+pushed.** MVP1.G4 (AI Gateway Production Release & E2E Validation) is registered and
+`pending`, not started this session, per GPT-PM's own explicit scope boundary. Report
+published: `https://claude.ai/code/artifact/50e7aa1b-8afc-4a28-89c9-afc2501af4df` (RU),
+local `reports/2026-08-28-mvp1-g3-closure.ru.html` /
+`reports/2026-08-28-mvp1-g3-closure.html`.
