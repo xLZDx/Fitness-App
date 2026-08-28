@@ -47,7 +47,7 @@ import { defineSecret } from "firebase-functions/params";
 import * as logger from "firebase-functions/logger";
 import type Stripe from "stripe";
 import { tierForPriceId } from "./tiers";
-import { INTERACTIVE, RARE, WEBHOOK } from "./scaling";
+import { INTERACTIVE, RARE, WEBHOOK, RUNTIME_SA } from "./scaling";
 import {
   noteAppCheck,
   enforceDailyQuota,
@@ -530,7 +530,7 @@ export const CHECKOUT_REFUSAL = {
 } as const;
 
 export const startFreeTrial = onCall(
-  RARE,
+  { ...RARE, serviceAccount: RUNTIME_SA.data },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -1145,7 +1145,7 @@ export const stripeWebhook = onRequest(
  * a donation badge.
  */
 export const optInDonorWall = onCall(
-  RARE,
+  { ...RARE, serviceAccount: RUNTIME_SA.data },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -1202,7 +1202,7 @@ export const optInDonorWall = onCall(
 
 /** Removes the caller from the donor wall. */
 export const optOutDonorWall = onCall(
-  RARE,
+  { ...RARE, serviceAccount: RUNTIME_SA.data },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -1565,7 +1565,7 @@ export const bookCoachSession = onCall(
  * admin console can pick the report up later.
  */
 export const reportEquipment = onCall(
-  INTERACTIVE,
+  { ...INTERACTIVE, serviceAccount: RUNTIME_SA.data },
   async (request) => {
     const auth = request.auth;
     if (!auth) {

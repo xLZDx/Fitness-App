@@ -32752,3 +32752,34 @@ single function, reverts to the default Compute SA.
 
 Next: `fn-data`, same discipline (wire -> typecheck -> deploy -> identity readback ->
 live smoke -> documented rollback) before moving to `fn-video`.
+
+## G4 Step 3 IAM: tier 2 (fn-data) migrated for 5/6 functions; runEnforcementStateCheck deliberately deferred
+
+Migrated `startFreeTrial`, `optInDonorWall`, `optOutDonorWall`, `reportEquipment`
+(`index.ts`) and `exportAccountData` (`account_export.ts`) to `serviceAccount:
+RUNTIME_SA.data`, deployed together, and confirmed via `gcloud functions describe` that
+all five now run as `fn-data@fitness-app-korostelev.iam.gserviceaccount.com`. Their
+actual needs (Firestore CRUD via the Admin SDK, one `assertAccountStillExists` read) are
+exactly what `fn-data` was provisioned with. Not independently re-proven with a live
+authenticated call, unlike `fn-canary` -- these lack a fragile signing/token chain, so
+identity readback plus confirmed grants plus a clean typecheck were judged sufficient
+verification; a full functional smoke test through a real client remains undone and is
+recorded as such rather than implied complete.
+
+**Caught before deploying, not after**: `runEnforcementStateCheck` was left out of this
+batch. Reading `enforcement_state.ts` directly showed its probe calls
+`cloudfunctions.googleapis.com`, `firebaserules.googleapis.com`,
+`firebaseappcheck.googleapis.com`, and `identitytoolkit.googleapis.com` via
+`GoogleAuth({ scopes: ["cloud-platform"] })` -- none of which `fn-data`'s
+`datastore.user`/`fitness.accountReader` grants cover. The original Step 3 evidence
+table (the "what each function actually needs" grep) never checked for this class of
+direct REST-API call, so this function's real permission footprint was never itemized --
+a gap in the original investigation, caught this time by reading the function's actual
+implementation before wiring it, not by a GPT-PM review round. Deploying it into
+`fn-data` as originally grouped would have degraded its checks to DEGRADED/FAILED status
+silently (the probe is documented to never throw) rather than failing loudly. Left on
+the default Compute SA; needs its own permission investigation before it can migrate.
+
+Next: `fn-video` (the tier round 1's actual MAJOR finding was about), where a real
+functional proof -- fetching bytes through a freshly generated signed URL -- matters
+more than for plain CRUD functions and is worth doing properly.

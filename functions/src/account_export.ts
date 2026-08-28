@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import { RARE } from "./scaling";
+import { RARE, RUNTIME_SA } from "./scaling";
 import { noteAppCheck, enforceDailyQuota, QUOTAS } from "./abuse_guard";
 import { EXPORT_ACCOUNT_FAILED } from "./monitoring/log_signals";
 
@@ -172,7 +172,9 @@ export const __bookingExportContract = {
   withheld: BOOKING_WITHHELD_FIELDS,
 };
 
-export const exportAccountData = onCall(RARE, async (request) => {
+export const exportAccountData = onCall(
+  { ...RARE, serviceAccount: RUNTIME_SA.data },
+  async (request) => {
   const auth = request.auth;
   if (!auth) {
     throw new HttpsError("unauthenticated", "Sign in first.");

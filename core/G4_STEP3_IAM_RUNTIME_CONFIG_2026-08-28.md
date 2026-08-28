@@ -377,16 +377,48 @@ assumed:
 - **Rollback, documented not exercised**: removing the `serviceAccount` line and
   redeploying with the same single-function command reverts to the default Compute SA.
 
+## Tier migration: fn-data (2 of 5) — 5 of 6 functions migrated; one deferred
+
+`RUNTIME_SA.data` wired into `startFreeTrial`, `optInDonorWall`, `optOutDonorWall`,
+`reportEquipment` (`index.ts`) and `exportAccountData` (`account_export.ts`). Deployed
+together (`firebase deploy --only functions:startFreeTrial,functions:optInDonorWall,...`)
+and verified: `gcloud functions describe` confirms all five now run as
+`fn-data@fitness-app-korostelev.iam.gserviceaccount.com`. Their permission needs (plain
+Firestore CRUD via the Admin SDK, plus `startFreeTrial`'s `assertAccountStillExists`
+read) match `fn-data`'s granted `datastore.user` + `fitness.accountReader` exactly, both
+independently confirmed live via `gcloud` during provisioning. **Not independently
+re-proven with a real authenticated end-to-end call** the way `fn-canary` was — these are
+ordinary CRUD functions without a fragile signing/token chain, so identity readback plus
+confirmed grants plus a clean build were judged sufficient; a full live functional smoke
+test through a real client is not yet done and is called out here rather than implied.
+
+**`runEnforcementStateCheck` deliberately NOT migrated in this pass** — a real finding
+caught before deploying, not after: `enforcement_state.ts`'s probe calls
+`cloudfunctions.googleapis.com`, `firebaserules.googleapis.com`,
+`firebaseappcheck.googleapis.com`, and `identitytoolkit.googleapis.com` directly via
+`GoogleAuth({ scopes: ["cloud-platform"] })` bound to whatever SA the function runs as —
+none of which is covered by `datastore.user` or `fitness.accountReader`. The original
+Step 3 evidence table never itemized these REST-API reads (it only checked
+Firestore/Storage/Secret Manager/Vertex/IAM-signBlob/Auth-admin), so grouping this
+function into `fn-data` was itself a gap in the original investigation, not something
+GPT-PM flagged — moving it now would have silently degraded the probe to
+DEGRADED/FAILED status on every run rather than crashing (the probe is "documented to
+never throw"), a failure mode that could easily go unnoticed. It stays on the default
+Compute SA until its actual permission set (likely `roles/cloudfunctions.viewer` +
+Firebase Rules/App Check/Auth-config read equivalents) is investigated with the same
+rigor as the other five tiers.
+
 ## Status
 
 Round 1 (5-tier proposal, `cc759fc`): `MAJOR`, 3 MAJOR + 2 MINOR — fixed. Round 2
 (six-tier, `29647bb`): `MAJOR`, 1 MAJOR + 2 MINOR (fn-canary's own permissions) — fixed
 at `3f0475f`. Round 3 (fn-canary fix, `3f0475f`): `APPROVE`, additive provisioning
-authorized and applied live. **Tier 1 of 5 (`fn-canary`) migrated and verified live**
-(above). Remaining, in GPT-PM's order: `fn-data` → `fn-video` → `fn-billing` →
-`fn-account-delete`, each source assignment → targeted deploy → live smoke → identity
-readback → documented rollback, same discipline as `fn-canary`. `roles/editor` stays on
-the default Compute SA until every tier has migrated and the App Check probe is deleted
-or moved off it. `fn-ai-runtime`'s identity is prepared but stays unattached; the four AI
-callables remain HOLD-ed by Step 2. See `core/DECISION_LOG.md` for all verdicts and
-migration evidence.
+authorized and applied live. **Tier 1 (`fn-canary`) migrated, verified live with a real
+triggered run. Tier 2 (`fn-data`) migrated for 5 of 6 functions**; `runEnforcementStateCheck`
+deliberately deferred (above) pending its own permission investigation. Remaining, in
+GPT-PM's order: `fn-video` → `fn-billing` → `fn-account-delete`, same discipline. `roles/
+editor` stays on the default Compute SA until every tier has migrated (including
+`runEnforcementStateCheck`, once scoped) and the App Check probe is deleted or moved off
+it. `fn-ai-runtime`'s identity is prepared but stays unattached; the four AI callables
+remain HOLD-ed by Step 2. See `core/DECISION_LOG.md` for all verdicts and migration
+evidence.
