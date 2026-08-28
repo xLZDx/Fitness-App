@@ -32549,3 +32549,37 @@ that a real device eventually has to pass -- flagging this to GPT-PM in the next
 round as a status update (an operator-directed test-strategy decision, not a request for
 permission) so the gate's standing reviewer record stays consistent with what actually
 happened and why.
+
+## Operator decisions mid-G4: no production/no data-threat framing, redesign priority after this gate, honest redesign-completeness check
+
+Three operator instructions recorded together, same live exchange:
+
+1. **"нет никакого продакшена... я единственный юзер"** -- no production exists yet,
+   everything is dev/test, zero data-threat exposure, operator is the sole user of the
+   live project. Saved to auto-memory
+   (`project-fitness-app-no-real-users-yet.md`, sharpened from the 2026-08-27 version).
+   Lowers the caution bar for config/IAM changes going forward -- does not touch §4/§14.
+
+2. **Redesign completeness check, done honestly with real evidence instead of another
+   self-report.** Operator pushed back hard on an earlier answer that framed the
+   "I don't see the redesign" complaint as a light-theme gap -- correctly: re-reading
+   `core/MASTER_PLAN_2026-08-26.md` §3 found the real, harsher picture already on
+   record (legacy `GlassCard` and the new HUD system coexist in the same screens, 142
+   occurrences across 46 files; M1-M9 were closed without real device verification;
+   known live contrast bugs). Then, per the operator's own request, took real
+   screenshots off the S8 (not descriptions) for Home/Workouts/Scan/Progress/Profile
+   and a fresh onboarding flow (`adb shell pm clear` to force it), compared directly
+   against the operator's own two Figma-style reference sheets (full dark-theme app
+   build, and the 9-step onboarding in both themes). Result: Home/Workouts/Progress/
+   Profile substantially match the target (photo backgrounds, glass cards, lime
+   accent); Scan differs but is a live-camera view, not comparable the same way;
+   **onboarding is 0% migrated** -- the welcome screen is the plain pre-redesign
+   lavender/white card design, no photo background, no HUD styling at all. Operator's
+   own "~5% done" estimate is closer to correct than my first answer, especially
+   weighted by onboarding's real UI surface area. Agreed, not disputed further.
+
+3. **"сделай редизайн приоритетом после завершения гейта"** -- once MVP1.G4 closes,
+   the redesign completion (starting with onboarding, the worst-migrated flow found
+   above) becomes the next priority, ahead of whatever else might otherwise be next.
+   Recorded here as a standing sequencing decision for this and future sessions to
+   honor, not just this turn's plan.
