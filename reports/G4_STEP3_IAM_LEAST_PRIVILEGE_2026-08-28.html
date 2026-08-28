@@ -295,8 +295,8 @@
 
   <div class="status-row">
     <div class="stat"><div class="n">3</div><div class="l">review rounds, final verdict APPROVE</div></div>
-    <div class="stat"><div class="n">6</div><div class="l">SAs + 3 narrow custom roles created</div></div>
-    <div class="stat"><div class="n">0</div><div class="l">functions switched to a new identity</div></div>
+    <div class="stat"><div class="n">7</div><div class="l">tiers migrated and verified live</div></div>
+    <div class="stat"><div class="n">22</div><div class="l">functions moved off the shared Editor identity</div></div>
   </div>
 
   <h2 data-n="01">Why</h2>
@@ -363,46 +363,59 @@
     and isn't needed right now, since no push has been requested.
   </div>
 
-  <h2 data-n="03">The final six-tier matrix</h2>
+  <h2 data-n="03">The final seven-tier matrix</h2>
   <div class="tbl-wrap">
     <table>
       <thead>
-        <tr><th>Service account</th><th>Functions</th><th>Grants beyond baseline</th></tr>
+        <tr><th>Service account</th><th>Functions</th><th>Grants beyond baseline</th><th>Verification</th></tr>
       </thead>
       <tbody>
         <tr>
           <td class="sa">fn-canary</td>
           <td>runProductionCanary</td>
           <td class="grants"><code>secretAccessor</code> → CANARY_WEB_API_KEY<br>
-            <code>serviceAccountTokenCreator</code> on itself (custom-token signing)</td>
+            <code>serviceAccountTokenCreator</code> on itself</td>
+          <td>Real triggered run post-deploy — succeeded</td>
         </tr>
         <tr>
           <td class="sa">fn-data</td>
-          <td>exportAccountData, donor wall, equipment reports, trial, enforcement</td>
+          <td>exportAccountData, donor wall, equipment reports, trial</td>
           <td class="grants"><code>datastore.user</code><br><code>fitness.accountReader</code></td>
+          <td>Identity confirmed, grant pre-verified</td>
         </tr>
         <tr>
           <td class="sa">fn-video</td>
           <td>clipUrl, clipUrls</td>
           <td class="grants"><code>datastore.user</code><br><code>serviceAccountTokenCreator</code> on itself<br>
             <code>storage.objectViewer</code> — licensed bucket only</td>
+          <td>Real object fetch — 200, 266,805 bytes</td>
         </tr>
         <tr>
           <td class="sa">fn-billing</td>
           <td>checkout, portal, webhook, receipt, coach booking/onboarding</td>
           <td class="grants"><code>datastore.user</code><br>
             <code>secretAccessor</code> → all 8 STRIPE_*<br><code>fitness.accountReader</code></td>
+          <td>Identity confirmed; no live Stripe-triggered test</td>
         </tr>
         <tr>
           <td class="sa">fn-account-delete</td>
           <td>deleteAccount — only</td>
           <td class="grants"><code>datastore.user</code><br>
             <code>secretAccessor</code> → STRIPE_SECRET_KEY<br><code>fitness.accountDeleter</code></td>
+          <td>Identity only — a live call is irreversible, deliberately not tested</td>
+        </tr>
+        <tr>
+          <td class="sa">fn-enforcement</td>
+          <td>runEnforcementStateCheck</td>
+          <td class="grants">4 read-only roles (functions/rules/appcheck/auth viewer)<br>
+            <code>serviceusage.serviceUsageConsumer</code></td>
+          <td>First run failed (DEGRADED), root cause found and fixed, retry succeeded</td>
         </tr>
         <tr>
           <td class="sa">fn-ai-runtime</td>
           <td>4 AI callables — HOLD per Step 2</td>
           <td class="grants"><code>datastore.user</code><br><code>fitness.vertexPredictor</code></td>
+          <td>Prepared, not attached — AI stays HOLD-ed</td>
         </tr>
       </tbody>
     </table>
@@ -413,26 +426,39 @@
     <code>fitness.accountReader</code> = exactly <code>firebaseauth.users.get</code>,
     <code>fitness.vertexPredictor</code> = exactly <code>aiplatform.endpoints.predict</code>.
     (Named <code>fn-ai-runtime</code>, not <code>fn-ai</code> — GCP requires a 6-character minimum
-    service-account ID.)
+    service-account ID.) The seventh tier, <code>fn-enforcement</code>, was found mid-migration —
+    the original plan wrongly grouped it into <code>fn-data</code>.
   </p>
+
+  <div class="callout">
+    <strong>Found and fixed live, not on paper.</strong> After deploying
+    <code>fn-enforcement</code>, the first real trigger failed: <code>DEGRADED:
+    firestoreRules</code>, caused by an <code>HTTP 403</code> — missing
+    <code>roles/serviceusage.serviceUsageConsumer</code> (needed only by the one
+    sub-check that sends an <code>X-Goog-User-Project</code> header). Neither a clean
+    typecheck nor a successful deploy was taken as proof — only a second real trigger
+    after the fix, which confirmed success.
+  </div>
 
   <h2 data-n="04">Done vs. still pending</h2>
   <ul class="checklist">
-    <li><span class="mark done">✓</span> 6 service accounts created and confirmed</li>
-    <li><span class="mark done">✓</span> 3 narrow custom roles created, each exactly one permission</li>
+    <li><span class="mark done">✓</span> 7 service accounts created and confirmed (6 planned + fn-enforcement)</li>
+    <li><span class="mark done">✓</span> Every custom role created, each exactly the permission it needs</li>
     <li><span class="mark done">✓</span> Every project-level, self-scoped, bucket-scoped, and per-secret binding applied and verified against each command's own output</li>
-    <li><span class="mark done">✓</span> Deployer (<code>korostelevivan@gmail.com</code>) granted <code>serviceAccountUser</code> on all 6 SAs — needed for future deploys</li>
-    <li><span class="mark pending">○</span> <code>serviceAccount</code> not yet wired into source (<code>scaling.ts</code>, <code>canary_schedule.ts</code>)</li>
-    <li><span class="mark pending">○</span> No function has been redeployed under its new identity yet</li>
-    <li><span class="mark pending">○</span> <code>roles/editor</code> on the default SA is untouched — removed only after every tier migrates and the App Check probe is deleted or moved</li>
+    <li><span class="mark done">✓</span> <code>serviceAccount</code> wired into source for all 22 functions across the five main tiers plus fn-enforcement</li>
+    <li><span class="mark done">✓</span> All 22 functions redeployed and confirmed on their new identity via <code>gcloud functions describe</code></li>
+    <li><span class="mark done">✓</span> Four of seven tiers verified with a real live call (canary, video's real bytes, enforcement's found-and-fixed failure)</li>
+    <li><span class="mark pending">○</span> <code>roles/editor</code> on the default SA is untouched — removed only once the temporary App Check probe (the last function on the shared identity) is deleted or moved</li>
     <li><span class="mark pending">○</span> The four AI callables remain HOLD-ed — blocked on Step 2's Android device with working Play Integrity</li>
   </ul>
 
   <h2 data-n="05">Next</h2>
-  <p>One tier at a time, sequenced <code>canary → data → video → billing → account-delete</code>: wire
-    <code>serviceAccount</code> in source → targeted deploy → live smoke test → readback confirming
-    the deployed identity → documented rollback — then the next tier. <code>fn-ai-runtime</code> is
-    prepared in parallel but stays unattached until Step 2's blocker closes.</p>
+  <p>Step 3 is substantively closed — 22 of 23 functions no longer share one project-wide
+    <code>Editor</code> identity. The only thing still holding <code>roles/editor</code> on
+    the default SA is the temporary <code>appCheckProbe</code> (Step 2's Option D), waiting
+    on the S23 device for a real on-device proof. Once it's deleted or moved,
+    <code>roles/editor</code> comes off and Step 3 closes fully. The redesign becomes the
+    priority immediately after, per the operator's own sequencing decision.</p>
 
   <footer>
     Full evidence trail and all three rounds' verdicts: <code>core/DECISION_LOG.md</code> and

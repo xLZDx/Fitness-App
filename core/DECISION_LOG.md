@@ -32861,3 +32861,13 @@ trigger caught a real gap neither of those would have shown.
 removed from the default Compute SA: the temporary `appCheckProbe` (Step 2's Option D)
 needs to be deleted or moved off it -- the last function still on the shared identity.
 `fn-ai-runtime` stays prepared, unattached, per Step 2's HOLD on the four AI callables.
+
+## G4 Step 3 IAM: report republished reflecting all 7 tiers complete
+
+Updated `reports/G4_STEP3_IAM_LEAST_PRIVILEGE_2026-08-28.{ru,html}` from their original
+"0 functions migrated, additive-provisioning-only" snapshot to the finished state: 22
+functions across 7 tiers (6 planned + the self-found `fn-enforcement` tier), each row
+showing its actual verification method, plus the `fn-enforcement` live-failure-then-fix
+callout. Republished to the same artifact URL
+(`https://claude.ai/code/artifact/4f75e732-b3dc-42cf-afa3-c80c54a3530e`). No code
+change in this commit -- report content only.

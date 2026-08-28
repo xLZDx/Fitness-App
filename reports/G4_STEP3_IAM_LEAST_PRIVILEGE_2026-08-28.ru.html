@@ -295,8 +295,8 @@
 
   <div class="status-row">
     <div class="stat"><div class="n">3</div><div class="l">раунда ревью, финал — APPROVE</div></div>
-    <div class="stat"><div class="n">6</div><div class="l">SA + 3 узкие кастомные роли — созданы</div></div>
-    <div class="stat"><div class="n">0</div><div class="l">функций переключено на новую личность</div></div>
+    <div class="stat"><div class="n">7</div><div class="l">уровней мигрировано и проверено вживую</div></div>
+    <div class="stat"><div class="n">22</div><div class="l">функции — на узких identity вместо общего Editor</div></div>
   </div>
 
   <h2 data-n="01">Зачем</h2>
@@ -364,46 +364,59 @@
     сейчас, т.к. пуш не запрашивался.
   </div>
 
-  <h2 data-n="03">Итоговая матрица — шесть уровней</h2>
+  <h2 data-n="03">Итоговая матрица — семь уровней</h2>
   <div class="tbl-wrap">
     <table>
       <thead>
-        <tr><th>Service account</th><th>Функции</th><th>Права сверх базовых</th></tr>
+        <tr><th>Service account</th><th>Функции</th><th>Права сверх базовых</th><th>Проверка</th></tr>
       </thead>
       <tbody>
         <tr>
           <td class="sa">fn-canary</td>
           <td>runProductionCanary</td>
           <td class="grants"><code>secretAccessor</code> → CANARY_WEB_API_KEY<br>
-            <code>serviceAccountTokenCreator</code> на себя (подпись custom token)</td>
+            <code>serviceAccountTokenCreator</code> на себя</td>
+          <td>Реальный запуск после деплоя — успех</td>
         </tr>
         <tr>
           <td class="sa">fn-data</td>
-          <td>exportAccountData, донор-стена, репорт оборудования, trial, enforcement</td>
+          <td>exportAccountData, донор-стена, репорт оборудования, trial</td>
           <td class="grants"><code>datastore.user</code><br><code>fitness.accountReader</code></td>
+          <td>Identity подтверждена, грант проверен ранее</td>
         </tr>
         <tr>
           <td class="sa">fn-video</td>
           <td>clipUrl, clipUrls</td>
           <td class="grants"><code>datastore.user</code><br><code>serviceAccountTokenCreator</code> на себя<br>
             <code>storage.objectViewer</code> — только licensed-бакет</td>
+          <td>Реальное скачивание объекта — 200, 266 805 байт</td>
         </tr>
         <tr>
           <td class="sa">fn-billing</td>
           <td>checkout, portal, webhook, receipt, coach-booking/onboarding</td>
           <td class="grants"><code>datastore.user</code><br>
             <code>secretAccessor</code> → все 8 STRIPE_*<br><code>fitness.accountReader</code></td>
+          <td>Identity подтверждена; live Stripe-тест не проводился</td>
         </tr>
         <tr>
           <td class="sa">fn-account-delete</td>
           <td>deleteAccount — только она</td>
           <td class="grants"><code>datastore.user</code><br>
             <code>secretAccessor</code> → STRIPE_SECRET_KEY<br><code>fitness.accountDeleter</code></td>
+          <td>Только identity — реальный вызов необратим, намеренно не тестировался</td>
+        </tr>
+        <tr>
+          <td class="sa">fn-enforcement</td>
+          <td>runEnforcementStateCheck</td>
+          <td class="grants">4 read-only роли (functions/rules/appcheck/auth viewer)<br>
+            <code>serviceusage.serviceUsageConsumer</code></td>
+          <td>Первый запуск упал (DEGRADED), причина найдена и исправлена, повтор — успех</td>
         </tr>
         <tr>
           <td class="sa">fn-ai-runtime</td>
           <td>4 AI-колбэка — HOLD по Шагу 2</td>
           <td class="grants"><code>datastore.user</code><br><code>fitness.vertexPredictor</code></td>
+          <td>Подготовлена, не подключена — AI остаётся на HOLD</td>
         </tr>
       </tbody>
     </table>
@@ -414,26 +427,39 @@
     <code>fitness.accountReader</code> = ровно <code>firebaseauth.users.get</code>,
     <code>fitness.vertexPredictor</code> = ровно <code>aiplatform.endpoints.predict</code>.
     (SA назван <code>fn-ai-runtime</code>, не <code>fn-ai</code> — у GCP минимум 6 символов на ID.)
+    Седьмой уровень, <code>fn-enforcement</code>, найден уже в процессе миграции — исходный
+    план ошибочно объединял его с <code>fn-data</code>.
   </p>
+
+  <div class="callout">
+    <strong>Найдено и исправлено вживую, не на бумаге.</strong> После деплоя
+    <code>fn-enforcement</code> первый же реальный запуск упал: <code>DEGRADED:
+    firestoreRules</code>, причина — <code>HTTP 403</code>, не хватало
+    <code>roles/serviceusage.serviceUsageConsumer</code> (нужен только одной из четырёх
+    проверок, использующей заголовок <code>X-Goog-User-Project</code>). Не была принята
+    на веру ни чистая типизация, ни успешный деплой — только повторный реальный запуск
+    после исправления, который и подтвердил успех.
+  </div>
 
   <h2 data-n="04">Что уже сделано, а что нет</h2>
   <ul class="checklist">
-    <li><span class="mark done">✓</span> 6 service accounts созданы и подтверждены</li>
-    <li><span class="mark done">✓</span> 3 узкие кастомные роли созданы, каждая — ровно с одним правом</li>
+    <li><span class="mark done">✓</span> 7 service accounts созданы и подтверждены (6 из плана + fn-enforcement)</li>
+    <li><span class="mark done">✓</span> Все кастомные роли созданы, каждая — ровно с нужным правом</li>
     <li><span class="mark done">✓</span> Все проектные, self-scoped, bucket-scoped и per-secret биндинги применены и проверены по выводу каждой команды</li>
-    <li><span class="mark done">✓</span> Deployer (<code>korostelevivan@gmail.com</code>) получил <code>serviceAccountUser</code> на всех 6 SA — нужно для будущего деплоя</li>
-    <li><span class="mark pending">○</span> <code>serviceAccount</code> ещё не прописан в исходниках (<code>scaling.ts</code>, <code>canary_schedule.ts</code>)</li>
-    <li><span class="mark pending">○</span> Ни одна функция ещё не передеплоена под новой identity</li>
-    <li><span class="mark pending">○</span> <code>roles/editor</code> на дефолтном SA не тронут — снимается только после миграции всех уровней плюс удаления/переноса зонда App Check</li>
+    <li><span class="mark done">✓</span> <code>serviceAccount</code> прописан в исходниках для всех 22 функций пяти основных уровней плюс fn-enforcement</li>
+    <li><span class="mark done">✓</span> Все 22 функции передеплоены и подтверждены на новой identity через <code>gcloud functions describe</code></li>
+    <li><span class="mark done">✓</span> Четыре из семи уровней проверены живым вызовом (canary, video — реальные байты, enforcement — найдена и исправлена реальная ошибка)</li>
+    <li><span class="mark pending">○</span> <code>roles/editor</code> на дефолтном SA не тронут — снимается только после удаления/переноса зонда App Check (последняя функция на общей identity)</li>
     <li><span class="mark pending">○</span> Четыре AI-колбэка остаются на HOLD — блокер Шага 2 (Android-устройство с работающим Play Integrity)</li>
   </ul>
 
   <h2 data-n="05">Дальше</h2>
-  <p>По одному уровню за раз, в порядке <code>canary → data → video → billing →
-    account-delete</code>: прописать <code>serviceAccount</code> в коде → точечный деплой → живой
-    smoke-тест → чтение фактической identity задеплоенной функции → задокументированный откат — и
-    только после этого следующий уровень. <code>fn-ai-runtime</code> готовится параллельно, но не
-    подключается, пока не закрыт блокер Шага 2.</p>
+  <p>Шаг 3 фактически закрыт по своей сути — 22 из 23 функций больше не делят один
+    project-wide <code>Editor</code>. Единственное, что держит <code>roles/editor</code>
+    на дефолтном SA — временный зонд <code>appCheckProbe</code> (Option D Шага 2),
+    ожидающий S23 для подтверждения App Check на реальном устройстве. Как только он
+    удалён или перенесён — <code>roles/editor</code> снимается, и Шаг 3 закрыт
+    полностью. Редизайн становится приоритетом сразу после этого, по решению оператора.</p>
 
   <footer>
     Полная доказательная база и хронология трёх раундов —
