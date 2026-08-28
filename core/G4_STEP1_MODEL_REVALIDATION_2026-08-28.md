@@ -208,9 +208,11 @@ NEGATIVE path (empty/unknown result) -- never proved a positive, usable recognit
 
 ## Round-2 remediation: verbatim prompts, real image, real contract validation
 
-Rebuilt the comparison
-(`D:\Temp\claude\d--Repo\61e7dfec-d8b3-4a63-a048-387194650f47\scratchpad\model_comparison_test2.mjs`)
-with three fixes: (1) all 4 prompts copied verbatim from `functions/src/ai_*.ts`'s
+Rebuilt the comparison (now preserved durably at
+`core/evidence/g4_step1_model_comparison_2026-08-28.mjs`, raw stdout at
+`core/evidence/g4_step1_model_comparison_2026-08-28_results.txt` -- moved from the
+session scratchpad per GPT-PM's round-3 MINOR: "preserve the small comparison/validator
+script under a durable repo evidence/test path") with three fixes: (1) all 4 prompts copied verbatim from `functions/src/ai_*.ts`'s
 `buildPrompt()` source, including the real `CANONICAL_MACHINES` (71 items) and
 `MUSCLE_VOCAB` lists; (2) a real illustration,
 `mobile/assets/posters/girl/leg_press.jpg` (leg press is in `CANONICAL_MACHINES`), in
@@ -243,9 +245,26 @@ independent confirmation of Finding 2 above, on a real image and the real schema
 time. `aiExerciseGeneration` (text-only) stays at `null` for all 3 models, matching the
 round-1 result -- the leak is specific to 3.7 handling image input with thinking disabled.
 
-## Decision (updated)
+## GPT-PM ruling (round 3): MINOR — model-choice verification CLOSED
 
-**`AI_MODEL = "gemini-3.6-flash"` stands, confirmed by contract-level evidence, not just
-JSON-syntax evidence.** Sending this remediation (the corrected documentation section
-above + this round-2 test) back to GPT-PM for the close-out round it asked for. Deployment
-remains gated on its own later G4 criterion.
+Full reply in `core/DECISION_LOG.md`. Both round-2 items confirmed closed: the
+contract-level evidence (usable recognition / valid MachineCard / 4-4 usable
+ExerciseItems on every callable) satisfies the round-2 MAJOR, and the corrected
+documentation section (Preview tier, no announced shutdown, `gemini-3.6-flash` named
+replacement) satisfies the round-2 MINOR. New MINOR: the comparison/validator script was
+referenced only from a session scratchpad path, not preserved under a durable repo
+evidence path -- fixed, see below. Explicit confirmation: "Do not test more candidate
+models absent new evidence" and "No additional Vertex calls are warranted for Step 1."
+`aiCoachAdvice`'s truncation stays logged as a separate, later G4 concern, correctly kept
+out of this narrow remediation.
+
+## Decision (final)
+
+**`AI_MODEL = "gemini-3.6-flash"` stands, confirmed by contract-level evidence and closed
+by GPT-PM's round-3 review (VERDICT: MINOR, model-choice decision CLOSED).** The
+comparison/validator script and its raw results are preserved durably at
+`core/evidence/g4_step1_model_comparison_2026-08-28.mjs` and
+`core/evidence/g4_step1_model_comparison_2026-08-28_results.txt`, not just referenced
+from the session scratchpad. **Step 1's model-choice verification is complete.**
+Deployment remains gated on its own later G4 criterion. Next: G4's security/abuse
+boundary criterion (`APP_CHECK_ENFORCED_AI` in `functions/src/scaling.ts`).

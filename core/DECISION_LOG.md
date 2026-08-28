@@ -32058,3 +32058,57 @@ contract-validated remediation table to the same document. `AI_MODEL =
 
 Next: send this remediation to GPT-PM for the close-out round it requested, then continue
 to G4's remaining criteria per its round-1 exit list.
+
+## PM Bridge orchestrator down again mid-round-3; recovered directly, without a peer session this time
+
+Round 3's first attempt failed immediately: `{"cwd": ..., "commit": "5fd539c", ...}` used
+`--cwd .` while this Bash session's persisted working directory had drifted to
+`D:\Repo\pm-bridge` (left over from an earlier `cd` for an unrelated check) — the review
+ran `git -C D:\Repo\pm-bridge show 5fd539c`, which doesn't exist there, and errored before
+ever reaching GPT-PM. Own mistake, not a transport issue — fixed by always passing an
+absolute `--cwd D:/Repo/Fitness_App` to `review.js` from here on, never a relative `.`,
+since this Bash tool's cwd persists across calls independent of any `cd` a background
+command runs.
+
+Retried with the corrected `--cwd`, and hit a second, real issue:
+`{"ok":false,"error":"No compatible PM Bridge orchestrator is active. Gate C disables
+direct multi-writer browser review; start PM Bridge mode..."}`. `pm_bridge_mode_status`
+confirmed the daemon was OFF (not the earlier "stale but on" condition from this
+session's own MCP tool — the daemon itself was down). `pm_bridge_mode_on` failed with
+"Orchestrator did not come up within 30000ms." `state/orchestrator.log` showed the exact
+pattern the peer session "repo-5f" diagnosed earlier this session: repeated
+`orchestrator: listening on 127.0.0.1:8765, pid N` immediately followed by the NEXT
+attempt logging `browserLock: reclaimed lock (dead pid N)` — each spawn genuinely starts
+and listens, then gets killed by its own caller's 30s readiness timeout before the
+browser/Playwright session finishes initializing. Not a crash; a timeout race, exactly as
+diagnosed before.
+
+**Recovered without needing a peer session this time**, using the same fix repo-5f used:
+`orchestratorClient.js` exports `PM_BRIDGE_ORCHESTRATOR_START_TIMEOUT_MS` as a supported
+override, read once at module load. Wrote a small script
+(`D:\Temp\...\scratchpad\start_orchestrator_patient.mjs`) that sets that env var to
+120000 before importing the module and calling its exported `startOrchestrator()`
+directly — bypassing the MCP tool's own hardcoded 30s wrapper, not the orchestrator
+itself. Ran it: `browserReady: true`, daemon came up clean on pid 62316. Confirmed via
+`pm_bridge_mode_status` immediately after — daemon healthy and current; this session's own
+MCP tool connection remains separately stale for routing (unrelated, pre-existing this
+segment — see the round-1 entry above), so continued using the direct `review.js` CLI as
+already established, not the MCP send tools.
+
+Round 3 then ran successfully against the live daemon (confirmed via
+`curl http://127.0.0.1:8765/status` showing `activeJobs: 1` while it was mid-flight,
+before the receipt landed) and returned a real, on-topic verdict — see the entry above
+this incident record for the actual review content.
+
+**Preserved the evidence GPT-PM's round-3 MINOR asked for:** copied
+`model_comparison_test2.mjs` from the session scratchpad into
+`core/evidence/g4_step1_model_comparison_2026-08-28.mjs`, and saved its raw stdout to
+`core/evidence/g4_step1_model_comparison_2026-08-28_results.txt`, so a later reviewer can
+audit the exact validator logic and raw model responses without depending on a
+session-local temp path that will not survive. Updated
+`G4_STEP1_MODEL_REVALIDATION_2026-08-28.md`'s references accordingly and added the
+round-3 verdict summary. **MVP1.G4 Step 1 (model production readiness) is now closed**:
+`AI_MODEL = "gemini-3.6-flash"`, contract-verified, documented, evidence durable.
+
+Next: G4's remaining criteria per GPT-PM's round-1 exit list, starting with the
+security/abuse boundary (`APP_CHECK_ENFORCED_AI` in `functions/src/scaling.ts`).
