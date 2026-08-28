@@ -1,0 +1,500 @@
+<title>IAM-редизайн G4.3</title>
+<style>
+  :root {
+    --ink: #12161c;
+    --paper: #f5f6f4;
+    --surface: #ffffff;
+    --surface-2: #eceeea;
+    --border: #d7dad4;
+    --text: #1c2128;
+    --text-muted: #5b6472;
+    --accent: #0f6d63;
+    --accent-soft: #dcece8;
+    --amber: #92400e;
+    --amber-soft: #fbe8d3;
+    --green: #15803d;
+    --green-soft: #dcf3e3;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+    --sans: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #eef0ec;
+      --paper: #14181e;
+      --surface: #1a1f27;
+      --surface-2: #212730;
+      --border: #313944;
+      --text: #e4e7e1;
+      --text-muted: #93a0ac;
+      --accent: #4fd8c4;
+      --accent-soft: #163832;
+      --amber: #f3b562;
+      --amber-soft: #3a2a12;
+      --green: #6bdd9a;
+      --green-soft: #123626;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #eef0ec;
+    --paper: #14181e;
+    --surface: #1a1f27;
+    --surface-2: #212730;
+    --border: #313944;
+    --text: #e4e7e1;
+    --text-muted: #93a0ac;
+    --accent: #4fd8c4;
+    --accent-soft: #163832;
+    --amber: #f3b562;
+    --amber-soft: #3a2a12;
+    --green: #6bdd9a;
+    --green-soft: #123626;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.55;
+    font-size: 15.5px;
+  }
+  .wrap {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 28px;
+    margin-bottom: 8px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-family: var(--mono);
+    font-size: clamp(1.6rem, 3.4vw, 2.15rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+  .dek {
+    color: var(--text-muted);
+    font-size: 1.02rem;
+    max-width: 62ch;
+    margin: 0;
+  }
+  h2 {
+    font-family: var(--mono);
+    font-size: 1.02rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    margin: 44px 0 16px;
+    color: var(--ink);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  h2::before {
+    content: attr(data-n);
+    color: var(--accent);
+    font-size: 0.85em;
+  }
+  p { margin: 0 0 14px; }
+  .lead { font-size: 1.02rem; }
+  a { color: var(--accent); }
+  code {
+    font-family: var(--mono);
+    background: var(--surface-2);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+    font-size: 0.88em;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+  }
+
+  .status-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 20px 0 8px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat .n {
+    font-family: var(--mono);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .l {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .rounds { display: flex; flex-direction: column; gap: 0; }
+  .round {
+    position: relative;
+    padding: 4px 0 22px 30px;
+    border-left: 2px solid var(--border);
+    margin-left: 6px;
+  }
+  .round:last-child { border-left-color: transparent; padding-bottom: 0; }
+  .round::before {
+    content: "";
+    position: absolute;
+    left: -7px;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--accent);
+  }
+  .round.approve::before { background: var(--green); border-color: var(--green); }
+  .round-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .round-title { font-weight: 600; font-family: var(--mono); font-size: 0.96rem; }
+  .pill {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .pill.major { background: var(--amber-soft); color: var(--amber); }
+  .pill.approve { background: var(--green-soft); color: var(--green); }
+  .round-body { color: var(--text-muted); font-size: 0.94rem; }
+  .round-body ul { margin: 8px 0 0; padding-left: 20px; }
+  .round-body li { margin-bottom: 4px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+  }
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    background: var(--surface-2);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.sa { font-family: var(--mono); color: var(--accent); white-space: nowrap; }
+  .grants { font-size: 0.86rem; }
+  .grants code { display: inline-block; margin: 1px 0; }
+
+  .checklist { list-style: none; margin: 0; padding: 0; }
+  .checklist li {
+    display: flex;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.94rem;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .mark { flex-shrink: 0; font-family: var(--mono); }
+  .mark.done { color: var(--green); }
+  .mark.pending { color: var(--text-muted); }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.92rem;
+    color: var(--text);
+    margin: 16px 0;
+  }
+  .callout.amber { border-left-color: var(--amber); background: var(--amber-soft); }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · MVP1.G4 · Шаг 3</p>
+    <h1>IAM-редизайн: от общего Editor к шести узким ролям</h1>
+    <p class="dek">Три раунда независимой проверки GPT-PM, каждая находка перепроверена по реальным
+      данным (исходники, живой <code>gcloud</code>, документация Google) — и уже применённое,
+      подтверждённое дополнительное IAM-провижининг без переключения продакшен-трафика.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 3f0475f</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="status-row">
+    <div class="stat"><div class="n">3</div><div class="l">раунда ревью, финал — APPROVE</div></div>
+    <div class="stat"><div class="n">6</div><div class="l">SA + 3 узкие кастомные роли — созданы</div></div>
+    <div class="stat"><div class="n">0</div><div class="l">функций переключено на новую личность</div></div>
+  </div>
+
+  <h2 data-n="01">Зачем</h2>
+  <p class="lead">Все 17 функций проекта — плюс временный зонд App Check — сегодня работают под одной
+    identity, <code>988522745882-compute@...</code>, с проектным <code>roles/editor</code>. Компрометация
+    любой одной функции наследует права на весь проект. Шаг 3 гейта G4 — доказать, что перед выпуском
+    четырёх AI-колбэков рантайм-права сведены к тому, что каждой функции реально нужно.</p>
+
+  <h2 data-n="02">Три раунда, каждая находка — с доказательством</h2>
+  <div class="rounds">
+    <div class="round">
+      <div class="round-head">
+        <span class="round-title">Раунд 1 — commit cc759fc, 5 функций</span>
+        <span class="pill major">MAJOR · 3+2</span>
+      </div>
+      <div class="round-body">
+        <p>Первая версия (5 уровней) содержала три реальных дефекта, каждый перепроверен напрямую:</p>
+        <ul>
+          <li><code>fn-video</code> подписывал бы URL, но не мог бы его отдать — не хватало
+            <code>storage.objectViewer</code>. Подтверждено дословной цитатой из документации Google
+            по подписанным URL.</li>
+          <li><code>deleteAccount</code> был в общей группе без доступа к <code>STRIPE_SECRET_KEY</code>,
+            хотя реально отменяет Stripe-подписку перед удалением — прочитано напрямую в
+            <code>index.ts:2071-2200</code>.</li>
+          <li><code>roles/aiplatform.user</code> для AI-уровня был шире, чем нужно: живой
+            <code>gcloud iam roles describe</code> показал права на создание/удаление эндпоинтов, хотя
+            код вызывает только <code>generateContent</code>.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="round">
+      <div class="round-head">
+        <span class="round-title">Раунд 2 — commit 29647bb, 6 функций</span>
+        <span class="pill major">MAJOR · 1+2</span>
+      </div>
+      <div class="round-body">
+        <p>Исправленная версия (6 уровней) закрыла все находки раунда 1, но сама внесла новую:
+          <code>fn-canary</code> получил <code>datastore.viewer</code> и не получил прав на подпись —
+          хотя код (<code>canary_probe.ts:364</code>) вызывает
+          <code>admin.auth().createCustomToken()</code>, которому нужна именно подпись, а Firestore
+          использует через клиентский SDK, для которого Admin-права вообще не нужны. Первый же, самый
+          безопасный уровень раскатки сломал бы существующий продакшен-канарейку.</p>
+      </div>
+    </div>
+    <div class="round approve">
+      <div class="round-head">
+        <span class="round-title">Раунд 3 — commit 3f0475f</span>
+        <span class="pill approve">APPROVE</span>
+      </div>
+      <div class="round-body">
+        <p>Все находки закрыты. <code>GO</code> на дополнительное IAM-провижининг (создание 6 SA, 3
+          ролей, всех биндингов) — без переключения живого трафика.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout amber">
+    <strong>Транспортная заминка, не обойдена молча.</strong> Попытка пометить раунд 3
+    как <code>--final</code> дважды упёрлась в реальную проблему: расхождение хэша при попытке
+    переиспользовать уже прочитанный ответ, затем предупреждение самой оркестрации PM Bridge, что
+    сборка ЭТОЙ сессии устарела и дальнейшая отправка рискует перепутать проекты в общем браузере.
+    Вместо повторных попыток через канал, который сам себя пометил небезопасным, содержание раунда
+    (полностью прочитанный, перепроверенный APPROVE с явным GO) было принято достаточным основанием
+    для продолжения — квитанция <code>final</code> для пуша остаётся не закрыта и не нужна прямо
+    сейчас, т.к. пуш не запрашивался.
+  </div>
+
+  <h2 data-n="03">Итоговая матрица — шесть уровней</h2>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Service account</th><th>Функции</th><th>Права сверх базовых</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="sa">fn-canary</td>
+          <td>runProductionCanary</td>
+          <td class="grants"><code>secretAccessor</code> → CANARY_WEB_API_KEY<br>
+            <code>serviceAccountTokenCreator</code> на себя (подпись custom token)</td>
+        </tr>
+        <tr>
+          <td class="sa">fn-data</td>
+          <td>exportAccountData, донор-стена, репорт оборудования, trial, enforcement</td>
+          <td class="grants"><code>datastore.user</code><br><code>fitness.accountReader</code></td>
+        </tr>
+        <tr>
+          <td class="sa">fn-video</td>
+          <td>clipUrl, clipUrls</td>
+          <td class="grants"><code>datastore.user</code><br><code>serviceAccountTokenCreator</code> на себя<br>
+            <code>storage.objectViewer</code> — только licensed-бакет</td>
+        </tr>
+        <tr>
+          <td class="sa">fn-billing</td>
+          <td>checkout, portal, webhook, receipt, coach-booking/onboarding</td>
+          <td class="grants"><code>datastore.user</code><br>
+            <code>secretAccessor</code> → все 8 STRIPE_*<br><code>fitness.accountReader</code></td>
+        </tr>
+        <tr>
+          <td class="sa">fn-account-delete</td>
+          <td>deleteAccount — только она</td>
+          <td class="grants"><code>datastore.user</code><br>
+            <code>secretAccessor</code> → STRIPE_SECRET_KEY<br><code>fitness.accountDeleter</code></td>
+        </tr>
+        <tr>
+          <td class="sa">fn-ai-runtime</td>
+          <td>4 AI-колбэка — HOLD по Шагу 2</td>
+          <td class="grants"><code>datastore.user</code><br><code>fitness.vertexPredictor</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:0.85rem;color:var(--text-muted);margin-top:8px">
+    Три кастомные роли заменили слишком широкие предустановленные:
+    <code>fitness.accountDeleter</code> = ровно <code>firebaseauth.users.delete</code>,
+    <code>fitness.accountReader</code> = ровно <code>firebaseauth.users.get</code>,
+    <code>fitness.vertexPredictor</code> = ровно <code>aiplatform.endpoints.predict</code>.
+    (SA назван <code>fn-ai-runtime</code>, не <code>fn-ai</code> — у GCP минимум 6 символов на ID.)
+  </p>
+
+  <h2 data-n="04">Что уже сделано, а что нет</h2>
+  <ul class="checklist">
+    <li><span class="mark done">✓</span> 6 service accounts созданы и подтверждены</li>
+    <li><span class="mark done">✓</span> 3 узкие кастомные роли созданы, каждая — ровно с одним правом</li>
+    <li><span class="mark done">✓</span> Все проектные, self-scoped, bucket-scoped и per-secret биндинги применены и проверены по выводу каждой команды</li>
+    <li><span class="mark done">✓</span> Deployer (<code>korostelevivan@gmail.com</code>) получил <code>serviceAccountUser</code> на всех 6 SA — нужно для будущего деплоя</li>
+    <li><span class="mark pending">○</span> <code>serviceAccount</code> ещё не прописан в исходниках (<code>scaling.ts</code>, <code>canary_schedule.ts</code>)</li>
+    <li><span class="mark pending">○</span> Ни одна функция ещё не передеплоена под новой identity</li>
+    <li><span class="mark pending">○</span> <code>roles/editor</code> на дефолтном SA не тронут — снимается только после миграции всех уровней плюс удаления/переноса зонда App Check</li>
+    <li><span class="mark pending">○</span> Четыре AI-колбэка остаются на HOLD — блокер Шага 2 (Android-устройство с работающим Play Integrity)</li>
+  </ul>
+
+  <h2 data-n="05">Дальше</h2>
+  <p>По одному уровню за раз, в порядке <code>canary → data → video → billing →
+    account-delete</code>: прописать <code>serviceAccount</code> в коде → точечный деплой → живой
+    smoke-тест → чтение фактической identity задеплоенной функции → задокументированный откат — и
+    только после этого следующий уровень. <code>fn-ai-runtime</code> готовится параллельно, но не
+    подключается, пока не закрыт блокер Шага 2.</p>
+
+  <footer>
+    Полная доказательная база и хронология трёх раундов —
+    <code>core/DECISION_LOG.md</code> и <code>core/G4_STEP3_IAM_RUNTIME_CONFIG_2026-08-28.md</code>
+    в репозитории.
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

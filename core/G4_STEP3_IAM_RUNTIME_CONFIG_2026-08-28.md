@@ -173,7 +173,7 @@ finding above, still to be sent back to GPT-PM before any `gcloud iam` mutation.
 | `fn-video@...` | `clipUrl`, `clipUrls` | `roles/datastore.user` (quota doc), `roles/iam.serviceAccountTokenCreator` **on itself only**, **`roles/storage.objectViewer` scoped to the `LICENSED_BUCKET` only** (bucket-level IAM binding/condition, not project-wide) — fixes finding #1 |
 | `fn-billing@...` | `createCheckoutSession`, `createPortalSession`, `stripeWebhook`, `generateAnnualReceipt`, `bookCoachSession`, `startCoachOnboarding` | `roles/datastore.user`, `roles/secretmanager.secretAccessor` scoped to the `STRIPE_*` secrets only, `fitness.accountReader` (read-only — `createCheckoutSession`/`bookCoachSession` via `assertAccountStillExists`) |
 | `fn-account-delete@...` | `deleteAccount` **only** | `roles/datastore.user`, `roles/secretmanager.secretAccessor` scoped to `STRIPE_SECRET_KEY` only (cancels the customer's subscriptions before deleting), **custom role `fitness.accountDeleter` = exactly `firebaseauth.users.delete`** (not `roles/firebaseauth.admin`) — fixes finding #2 |
-| `fn-ai@...` | `aiCoachAdvice`, `aiEquipmentRecognition`, `aiMachineDescription`, `aiExerciseGeneration` (not yet deployed, stays HOLD per Step 2) | `roles/datastore.user` (quota), **custom role `fitness.vertexPredictor` = exactly `aiplatform.endpoints.predict`** (not `roles/aiplatform.user`) — fixes finding #3. If a real smoke test against the deployed Gemini endpoint fails needing a permission this custom role lacks, add exactly that permission and record why; do not widen to `roles/aiplatform.user` pre-emptively |
+| `fn-ai-runtime@...` | `aiCoachAdvice`, `aiEquipmentRecognition`, `aiMachineDescription`, `aiExerciseGeneration` (not yet deployed, stays HOLD per Step 2) | `roles/datastore.user` (quota), **custom role `fitness.vertexPredictor` = exactly `aiplatform.endpoints.predict`** (not `roles/aiplatform.user`) — fixes finding #3. If a real smoke test against the deployed Gemini endpoint fails needing a permission this custom role lacks, add exactly that permission and record why; do not widen to `roles/aiplatform.user` pre-emptively. (Named `fn-ai-runtime`, not `fn-ai` — GCP requires a 6-30 character service-account ID.) |
 
 `appCheckProbe` (temporary, G4 Step 2 Option D): per MINOR finding #5, **stays on the
 current default SA** rather than being folded into `fn-ai` or provisioned as a seventh
@@ -288,16 +288,81 @@ was reduced or changed by this investigation — it is read-only (`gcloud ... de
 calls made). The four AI callables remain undeployed regardless of Step 3, per Step 2's
 own HOLD.
 
+## Round 3 GPT-PM review: APPROVE — additive provisioning authorized
+
+Sent at commit `3f0475f`. Verdict: `APPROVE`. All round-1 and round-2 findings confirmed
+closed; the six-tier matrix, the three custom roles, and the rollout order all confirmed
+correct. One new INFO, not blocking: the deploying principal needs
+`iam.serviceAccounts.actAs` (typically via `roles/iam.serviceAccountUser` scoped to each
+new SA) before it can later deploy a function to run as that SA — recorded as a
+prerequisite for additive provisioning itself, not just the later runtime switch.
+
+`GO: AUTHORIZED — create the 6 service accounts, 3 custom roles, resource-scoped runtime
+bindings, self-signing bindings, and deployment actAs bindings where appropriate.`
+`HOLD remains: no production function runtime-identity switch yet; no removal of Editor
+from the default Compute SA; no production deployment of the four AI callables.`
+
+**Transport note**: marking this round `--final` hit two consecutive blockers, both
+recorded in `core/DECISION_LOG.md` — a stale review-input-hash on a receipt-recovery
+attempt, then this session's own PM Bridge routing table being reported stale relative
+to the live orchestrator (a build-mismatch warning that explicitly cautioned further
+sends could misroute content across projects). Rather than retry through a channel that
+flagged itself as unsafe, the round's substance (a fully read, source-verified APPROVE
+with an explicit GO) was treated as sufficient to proceed with the additive provisioning
+it authorized; the mechanical push-gate `--final` receipt remains outstanding and is not
+needed since no push has been requested.
+
+## Provisioning applied — additive only, no runtime switch
+
+All six service accounts, three custom roles, and every binding in the matrix above are
+now live in `fitness-app-korostelev`, created and verified via `gcloud iam
+service-accounts create`, `gcloud iam roles create`, `gcloud projects
+add-iam-policy-binding`, `gcloud iam service-accounts add-iam-policy-binding`, `gcloud
+secrets add-iam-policy-binding`, and `gcloud storage buckets add-iam-policy-binding` —
+every command's own output confirmed the binding before moving to the next:
+
+- **Service accounts** (one naming correction: `fn-ai` is 5 characters, below GCP's
+  6-30 char floor for a service-account ID — created as `fn-ai-runtime` instead;
+  `core/G4_STEP3_IAM_RUNTIME_CONFIG_2026-08-28.md`'s matrix above uses this name):
+  `fn-canary`, `fn-data`, `fn-video`, `fn-billing`, `fn-account-delete`, `fn-ai-runtime`,
+  all `@fitness-app-korostelev.iam.gserviceaccount.com`.
+- **Custom roles**: `fitness.accountDeleter` (`firebaseauth.users.delete`),
+  `fitness.accountReader` (`firebaseauth.users.get`), `fitness.vertexPredictor`
+  (`aiplatform.endpoints.predict`) — each confirmed via the create command's own returned
+  `includedPermissions` list matching exactly one permission.
+- **Project-level bindings**: `roles/datastore.user` on `fn-data`/`fn-video`/
+  `fn-billing`/`fn-account-delete`/`fn-ai-runtime` (not `fn-canary`, per the round-2
+  fix); the three custom roles on their respective tiers.
+- **Self-scoped signing**: `roles/iam.serviceAccountTokenCreator` on `fn-canary` and
+  `fn-video`, each bound to itself only.
+- **Storage**: `roles/storage.objectViewer` on `fn-video`, scoped to the
+  `fitness-app-korostelev-videos-private` bucket only (bucket-level binding, confirmed
+  in the bucket's own returned policy — not a project-level grant).
+- **Secrets**: `roles/secretmanager.secretAccessor` scoped per-secret — `fn-canary` on
+  `CANARY_WEB_API_KEY`; `fn-account-delete` on `STRIPE_SECRET_KEY` only; `fn-billing` on
+  all 8 `STRIPE_*` secrets (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and the 6
+  `STRIPE_PRICE_*` secrets — confirmed each is actually read via `index.ts`'s
+  `defineSecret` declarations and the price-resolution helper).
+- **Deployer actAs**: `roles/iam.serviceAccountUser` for `korostelevivan@gmail.com` on
+  all six new SAs, per round 3's INFO finding — needed before any tier's runtime switch
+  can be deployed.
+
+**What did NOT change**: no function's `serviceAccount` option was touched in source, no
+function was redeployed, `roles/editor` remains on the default Compute SA, and every
+one of the 17 deployed functions plus `appCheckProbe` still executes under it exactly as
+before this pass. This provisioning creates unused identities and grants; it does not
+yet change what any live request actually runs as.
+
 ## Status
 
-Round 1 (5-tier proposal, commit `cc759fc`): `VERDICT: MAJOR`, 3 MAJOR + 2 MINOR, all
-independently re-verified and folded into a six-tier matrix. Round 2 (six-tier proposal,
-commit `29647bb`): `VERDICT: MAJOR`, 1 MAJOR (fn-canary's own permissions were wrong) +
-2 MINOR, all independently re-verified and fixed above; round 1's 5 findings confirmed
-closed. GPT-PM's phased GO: additive IAM provisioning (create the six SAs/custom
-roles/bindings) may proceed once fn-canary is corrected — done, above — but no live
-function's runtime identity may be switched, and `roles/editor` stays on the default SA,
-until each tier lands its source-controlled `serviceAccount` assignment, passes a live
-smoke test with a deployed-identity readback, and has a documented rollback, one tier at
-a time. No live `gcloud iam` mutation has been made yet. See `core/DECISION_LOG.md` for
-both rounds' verdicts.
+Round 1 (5-tier proposal, `cc759fc`): `MAJOR`, 3 MAJOR + 2 MINOR — fixed. Round 2
+(six-tier, `29647bb`): `MAJOR`, 1 MAJOR + 2 MINOR (fn-canary's own permissions) — fixed
+at `3f0475f`. Round 3 (fn-canary fix, `3f0475f`): `APPROVE`, additive provisioning
+authorized. Additive provisioning is now applied and verified live (above). Remaining
+work, not started: add `serviceAccount` to each tier's source (`scaling.ts` profiles /
+`canary_schedule.ts`'s `onSchedule`), then migrate one tier at a time — source assignment
+→ targeted deploy → live smoke → deployed-identity readback → documented rollback —
+before removing `roles/editor` from the default SA. `fn-ai-runtime`'s identity is
+prepared but stays unattached; the four AI callables remain HOLD-ed by Step 2. No
+production runtime identity has switched and no function has been redeployed. See
+`core/DECISION_LOG.md` for all three rounds' verdicts and the provisioning evidence.

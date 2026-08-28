@@ -32669,3 +32669,62 @@ documented rollback — one tier at a time, per the existing canary → data →
 billing → account-delete order. Still no live `gcloud iam` mutation made. Sending the
 corrected matrix back as round 3 to confirm the fix before starting additive
 provisioning.
+
+## G4 Step 3 IAM: round 3 GPT-PM review APPROVE; additive provisioning applied live
+
+Round 3 (fn-canary fix, commit `3f0475f`) came back `VERDICT: APPROVE`. All round-1
+(5 findings) and round-2 (3 findings) items confirmed closed; the six-tier matrix, three
+custom roles, and rollout order all confirmed correct. One new INFO: the deploying
+principal needs `iam.serviceAccounts.actAs` (via `roles/iam.serviceAccountUser` scoped
+to each new SA) before it can deploy any function to run as that SA — recorded as a
+prerequisite for provisioning itself.
+`GO: AUTHORIZED — create the 6 service accounts, 3 custom roles, resource-scoped runtime
+bindings, self-signing bindings, and deployment actAs bindings where appropriate.`
+`HOLD remains: no production function runtime-identity switch yet; no removal of Editor
+from the default Compute SA; no production deployment of the four AI callables.`
+
+**Transport blocker, not routed around**: attempting to mark round 3 `--final` hit two
+failures in sequence. First, `review.js --recover-request-id` refused to reuse the
+already-read APPROVE reply because the recomputed review-input-hash
+(`b2d852bb...`) didn't match the original round's receipt hash (`161e02c3...`) —
+declined rather than force it. Second, a fresh live `--final` call failed with `"No
+compatible PM Bridge orchestrator is active. Gate C disables direct multi-writer browser
+review"`; `pm_bridge_mode_status` then reported the orchestrator itself is fine but
+**this session's own build is stale** (`848a1ad01f33e623` vs. disk's `da5374d12c48885e`)
+and explicitly warned that its project→conversation routing could misdeliver one
+project's content into another project's chat, recommending a new session rather than a
+restart. Given the review's substance was already fully read and independently verified
+(a genuine APPROVE with explicit GO, not a guess), and no push had been requested, the
+call was made to proceed with the authorized additive provisioning rather than retry
+through a channel that had just flagged itself as unsafe. The mechanical push-gate
+`final` receipt for this repo remains outstanding; a fresh session should complete it (or
+re-run round 3) before any `git push` on this repo is attempted.
+
+**Provisioning applied live** in `fitness-app-korostelev`, every command's own output
+verified before proceeding to the next — no live mutation was assumed to have succeeded
+without checking its return value:
+
+- 6 service accounts: `fn-canary`, `fn-data`, `fn-video`, `fn-billing`,
+  `fn-account-delete`, `fn-ai-runtime` (the last renamed from the doc's `fn-ai` — GCP
+  requires a 6-30 character account ID; `fn-ai` is 5).
+- 3 custom IAM roles: `fitness.accountDeleter` (`firebaseauth.users.delete`),
+  `fitness.accountReader` (`firebaseauth.users.get`), `fitness.vertexPredictor`
+  (`aiplatform.endpoints.predict`) — each confirmed to include exactly one permission.
+- Project-level `roles/datastore.user` on the five Firestore-using tiers (not
+  `fn-canary`, correctly, per the round-2 fix), plus each tier's custom role.
+- Self-scoped `roles/iam.serviceAccountTokenCreator` on `fn-canary` and `fn-video`.
+- Bucket-scoped `roles/storage.objectViewer` for `fn-video` on
+  `fitness-app-korostelev-videos-private` only (confirmed via the bucket's own returned
+  policy, not a project-level grant).
+- Per-secret `roles/secretmanager.secretAccessor`: `fn-canary` → `CANARY_WEB_API_KEY`;
+  `fn-account-delete` → `STRIPE_SECRET_KEY` only; `fn-billing` → all 8 `STRIPE_*`
+  secrets (confirmed against `index.ts`'s actual `defineSecret` declarations).
+- Deployer `roles/iam.serviceAccountUser` for `korostelevivan@gmail.com` on all 6 SAs.
+
+**Unchanged, deliberately**: no function's `serviceAccount` source option was touched, no
+function was redeployed, and `roles/editor` remains on the default Compute SA — every
+currently-deployed function still runs exactly as before this pass. This is additive
+identity/grant creation only, per GPT-PM's explicit phasing; the runtime switch is
+separate, per-tier, and not started.
+
+Full detail: `core/G4_STEP3_IAM_RUNTIME_CONFIG_2026-08-28.md`.
