@@ -31841,3 +31841,16 @@ once a genuine `--final` receipt is obtained -- `pm_set_gate(MVP1.G3=passed)` an
 `pm_set_gate(MVP1.G4=pending)` are already recorded in PM Bridge's own gate state
 regardless (that write succeeded independently of this review transport), so only the git
 push of the local commits is actually pending.
+
+**Root cause identified, from another concurrent session (cross-session message, not this
+session's own diagnosis):** a sibling Claude session editing `D:\Repo\pm-bridge\src\` is
+exactly what caused the crash loop -- matches this workspace's own known pattern (auto
+memory `pm-bridge-src-edit-desyncs-every-session.md`: one shared daemon per machine, any
+`src/` edit desyncs every session's routing until a restart). That session is now fixing
+it and explicitly asked every session to hold off calling `pm_bridge_mode_on`/
+`pm_bridge_restart`/`/pm-bridge-mode` until it confirms stable, since concurrent restart
+attempts were racing on the same state file and causing the repeated crash-on-start
+observed above. Holding off as asked -- no further orchestrator restart attempts from
+this session until that confirmation arrives. This also explains why my own two restart
+attempts each produced a fresh "listening" line immediately followed by a dead pid: not a
+one-off flake, but genuine concurrent writers to the same `orchestrator.json`/lock.
