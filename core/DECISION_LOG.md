@@ -31784,3 +31784,30 @@ off on deploying 4 AI Gateway callables after GPT-PM's evidence-based HOLD rathe
 unilaterally shipping a new paid production surface to close one table row; caught and
 fixed 3 real documentation-staleness defects in the gate's own final review. Writing the
 required house-format report next.
+
+## 2026-08-28 (continued) -- push-final round: 1 more MINOR (MASTER_PLAN rows #15-#17 stale, same class as #18/#21)
+
+Requested `--final` on the full 6-commit close-out range (`origin/master..HEAD`) for the
+push gate (CLAUDE.md Sec15 -- no round this session had set `--final` yet).
+**VERDICT: MINOR (1)**, real, same defect class as the whole-G3 review's #18/#21 finding
+-- rows #15 ("`kCanonicalMachines` second source of truth," closes via OBS-1 #10), #16
+("Gemini/Firebase AI Logic client-direct calls," closes via OBS-1 #9), and #17 ("no
+client-runtime/ML telemetry," closes via OBS-1 #11) were left showing pre-G3 "Open"
+status even though the referenced OBS-1 items are now CLOSED/REBASED->CLOSED. Not caught
+by the earlier pass because that review was scoped to #18/#21 specifically (the two rows
+GPT-PM's whole-gate review had flagged); this round's request for a FULL-RANGE final
+receipt re-surfaced the same table and caught the remaining 3.
+
+**Fixed, same pattern as before:**
+- Row #15 -> CLOSED via OBS-1 #10, citing the real check and its 2 audited
+  `KNOWN_UNCOVERED` content exceptions (kept visible, not smoothed away).
+- Row #16 -> REBASED->CLOSED via OBS-1 #9 -- the direct-client-call exposure this row
+  describes genuinely no longer exists (G1's migration), but explicitly notes the
+  replacement production-AI risk is now owned by the new mandatory **MVP1.G4** gate, not
+  silently closed with no successor.
+- Row #17 -> CLOSED via OBS-1 #11.
+
+GPT-PM's own words: *"G3 remains substantively PASSED and G4 registration is valid, but I
+would not issue the final push receipt yet because the canonical master plan still
+contradicts that state in #15-#17... the next review stays strictly scoped to this one
+MINOR and direct regressions."* Committing and sending only this delta next.
