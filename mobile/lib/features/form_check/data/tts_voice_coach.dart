@@ -5,6 +5,9 @@
 // `pose_detector_service.dart`: the policy is pure and unit-testable, the
 // plugin needs a MethodChannel and a live binding.
 
+import 'dart:async' show unawaited;
+
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart' show debugPrint, debugPrintStack;
 import 'package:flutter_tts/flutter_tts.dart';
 
@@ -43,12 +46,33 @@ class TtsVoiceCoach extends GatedVoiceCoach {
   String? get lastErrorMessage =>
       _lastError == null ? null : '$_lastError';
 
-  void _recordError(String op, Object e, StackTrace st) {
+  void _recordError(String op, Object e, StackTrace st, {bool expected = false}) {
     _lastError = e;
     // Without this a device with no TTS voice installed produces a coach that
     // is simply silent, with nothing anywhere to explain why.
     debugPrint('TtsVoiceCoach.$op failed: $e');
     debugPrintStack(stackTrace: st);
+    // `expected` (no TTS voice installed for the device's language) is a real
+    // device-population fact, not a bug -- reporting it as a Crashlytics
+    // non-fatal would turn "user has no Russian TTS voice" into a paged
+    // operational signal, the same over-alerting GPT-PM's own OBS-1 design
+    // ruling warned against for the visual_equipment catches (an expected
+    // user-denied camera permission must not become an incident either).
+    // Fire-and-forget, sanitized (error + stack trace only, no cue text).
+    if (!expected) {
+      try {
+        unawaited(
+          FirebaseCrashlytics.instance.recordError(
+            e,
+            st,
+            fatal: false,
+            reason: 'TtsVoiceCoach.$op failed',
+          ),
+        );
+      } catch (_) {
+        // Reporting failure is not itself reportable.
+      }
+    }
   }
 
   /// Set when the device simply cannot do this — no voice installed for
@@ -74,6 +98,7 @@ class TtsVoiceCoach extends GatedVoiceCoach {
           'setLanguage',
           StateError('TTS voice for $languageTag is not installed'),
           StackTrace.current,
+          expected: true,
         );
         return;
       }

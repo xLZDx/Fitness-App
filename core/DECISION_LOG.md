@@ -31520,3 +31520,76 @@ withhold rows #1/#4 from CLOSED. Fix the one audit-trail sentence, commit/push u
 current policy, and proceed directly to the Step 10C 13-row reconciliation."* Wording
 fix applied in place (same DECISION_LOG entry, no new live action). Committing this
 correction, then writing the Step 10C reconciliation table next.
+
+## 2026-08-28 (continued) -- Step 10C table written, GPT-PM adversarial closure review round 1: MAJOR (PARTIAL not a valid Step 10C exit)
+
+Wrote `core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md`, the 13-row reconciliation table,
+using: the research agent's findings (re-verified independently earlier this session), the
+just-closed alert-filter remediation for rows #1/#4, and direct re-reads of every cited
+`DECISION_LOG.md` anchor rather than trusting the 2026-08-27 rebaseline's own prose --
+**row #7 (data-lifecycle sweep) required a correction before sending**: the rebaseline
+text described "hardcoded deletion/export lists," but that description was stale --
+`scripts/ci/check_data_lifecycle_coverage.js` (G3-CI-8, built 2026-08-27 per GPT-PM's own
+round-2 design ruling) replaced that mechanism entirely with rules+code union discovery
+and mandatory classification, and found 3 real gaps while being built. Corrected the row
+to describe G3-CI-8 accurately before this went to GPT-PM.
+
+Sent for the required "one adversarial closure review over the entire 13-row matrix"
+(`review.js --uncommitted --round 1`, scope-noted with the table's own stated rules plus
+two rows flagged for specific attention: #7's rebaseline reasoning, #9's split
+disposition). **VERDICT: MAJOR (1)**:
+
+- **MAJOR** -- 11 of 13 rows confirmed correct as written (all INFO, no changes needed,
+  including #7's REBASED→CLOSED judgment call, explicitly endorsed: *"I confirm the
+  judgment call... Keep REBASED→CLOSED, not plain CLOSED, and keep the orphaned-live-
+  collection limitation visible"*). But the table's own stated exit rule ("a visible,
+  disclosed PARTIAL with an explicit tail") **silently loosened the actual binding
+  Step 10C criterion from kickoff**: *"every row ends CLOSED or REBASED→CLOSED, no
+  PARTIAL/PROVISIONAL hiding in prose."* Rows #9 (AI Gateway observability half) and #11
+  (client telemetry) are honestly disclosed PARTIALs, not hidden ones -- but PARTIAL
+  itself is not a valid terminal state for Step 10C under the rule as originally given,
+  and the table cannot silently redefine that rule inside itself. **Required change**: for
+  #9, either complete live observability or obtain an explicit rebaseline/descope decision;
+  for #11, either wire/prove the two remaining paths or obtain an explicit rebaseline. Do
+  not rename PARTIAL to CLOSED to close the gate.
+
+GPT-PM's own summary: *"The table is substantially accurate. The Step 10C closure is not
+yet complete... remediate/govern only #9 and #11, then rerun a narrow reconciliation
+review. There is no reason to reopen #1-#8 or #10-#13 absent a direct regression."*
+
+## 2026-08-28 (continued) -- #11 (client-runtime/ML telemetry) genuinely closed: 2 remaining files wired to Crashlytics
+
+Chose to actually complete #11 rather than seek a rebaseline -- this is exactly the same
+mechanical, previously-established pattern Step 10B already used for the other 3 files in
+this same telemetry gap (`mlkit_live_equipment_service.dart`, `scanner_page.dart`,
+`gemini_equipment_service.dart`), so finishing it is the smaller, more honest move than
+inventing a scope exception for 2 leftover files of the same kind.
+
+**`mobile/lib/features/visual_equipment/data/machine_describer.dart`** -- both remaining
+bare-`debugPrint` catches wired to `FirebaseCrashlytics.instance.recordError()`, fire-
+and-forget, sanitized (error + stack trace only, matching `gemini_equipment_service.dart`'s
+own established contract -- no photo bytes, no prompt/model text, no PII):
+- Line 196 (network/cloud-call failure) -- now captures `stackTrace` (was `catch (e)` with
+  none) and reports `reason: 'cloud machine description failed'`.
+- Line 231 (malformed-JSON response) -- reports `reason: 'machine description response was
+  not valid JSON'`, a real signal (prompt/schema drift), not an expected condition.
+
+**`mobile/lib/features/form_check/data/tts_voice_coach.dart`** -- `_recordError` (the
+single centralized helper every failure path already funneled through) now takes an
+`expected` flag, wired to Crashlytics only when `false`. The one call site marked
+`expected: true` is "no TTS voice installed for this device's language" -- a real device-
+population fact, not a bug, per the same over-alerting guard GPT-PM's own Step 8 round-2
+ruling required for the visual_equipment catches ("an expected user-denied camera
+permission must not become an incident"). This class had **zero prior test coverage** --
+added `test/features/form_check/tts_voice_coach_test.dart` (4 tests, mocking the real
+`MethodChannel('flutter_tts')` the way `rest_timer_card_test.dart` already mocks
+`SystemChannels.platform`): unsupported-voice stays a state not a crash, a genuine engine
+failure is captured without throwing, a clean cue configures/speaks with no error state,
+and a `stopSpeaking` failure is captured. All 4 pass -- importantly, this also proves the
+new Crashlytics wiring does not crash the caller even though Firebase is never initialized
+in a plain `flutter test` run (the same try/catch(_) fire-and-forget contract already
+proven safe by `machine_describer_test.dart`'s unchanged 31/31 pass).
+
+**Verification**: `flutter analyze` on both changed files plus the new test file -- no
+issues. `flutter test test/features/visual_equipment/ test/features/form_check/` --
+628/628 pass, zero regressions.

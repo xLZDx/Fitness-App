@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart'
     show compute, debugPrint, visibleForTesting;
 
@@ -193,8 +194,24 @@ class GeminiMachineDescriber implements MachineDescriber {
         throw TimeoutException('resize left no budget for the network call');
       }
       text = await _cloud(bytes, languageCode).timeout(remaining);
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('could not describe the unknown machine: $e');
+      // Fire-and-forget, sanitized (error + stack trace only, no photo
+      // bytes/prompt/health content) -- same OBS-1 telemetry contract as
+      // gemini_equipment_service.dart's own catch block; must never delay or
+      // alter the null this method already returns on failure.
+      try {
+        unawaited(
+          FirebaseCrashlytics.instance.recordError(
+            e,
+            stackTrace,
+            fatal: false,
+            reason: 'cloud machine description failed',
+          ),
+        );
+      } catch (_) {
+        // Reporting failure is not itself reportable.
+      }
       return null;
     }
     if (text == null || text.trim().isEmpty) return null;
@@ -228,8 +245,24 @@ class GeminiMachineDescriber implements MachineDescriber {
     final Object? decoded;
     try {
       decoded = jsonDecode(cleaned);
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('machine description was not JSON: $e');
+      // A malformed response is a real signal (prompt/schema drift), not an
+      // expected condition -- same sanitized fire-and-forget contract as the
+      // network catch above; never the raw model text (may echo user photo
+      // description), only the parse exception and stack trace.
+      try {
+        unawaited(
+          FirebaseCrashlytics.instance.recordError(
+            e,
+            stackTrace,
+            fatal: false,
+            reason: 'machine description response was not valid JSON',
+          ),
+        );
+      } catch (_) {
+        // Reporting failure is not itself reportable.
+      }
       return null;
     }
     if (decoded is! Map) return null;
