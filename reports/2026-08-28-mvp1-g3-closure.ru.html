@@ -1,0 +1,379 @@
+<title>Закрытие гейта MVP1.G3</title>
+<style>
+  :root {
+    --bg: #f4f6f7;
+    --surface: #ffffff;
+    --surface-2: #eceff1;
+    --border: #d7dde0;
+    --ink: #16232a;
+    --ink-2: #445159;
+    --muted: #71808a;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --good: #157a4a;
+    --good-soft: #e3f5ea;
+    --bad: #b3261e;
+    --bad-soft: #fbe9e7;
+    --warn: #9a6700;
+    --warn-soft: #fff3d6;
+    --code-bg: #101820;
+    --code-ink: #d9e6e6;
+    --shadow: 0 1px 2px rgba(16, 24, 29, 0.06), 0 8px 24px rgba(16, 24, 29, 0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12181b;
+      --surface: #182226;
+      --surface-2: #1f2b30;
+      --border: #2b3a40;
+      --ink: #e7eef0;
+      --ink-2: #b6c4c9;
+      --muted: #8a9aa1;
+      --accent: #4fd1c5;
+      --accent-ink: #0b2323;
+      --accent-soft: #163333;
+      --good: #6bd6a0;
+      --good-soft: #133426;
+      --bad: #ff8a80;
+      --bad-soft: #3a1815;
+      --warn: #ffcf6b;
+      --warn-soft: #3a2c0d;
+      --code-bg: #0a0f12;
+      --code-ink: #cfe3e3;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12181b;
+    --surface: #182226;
+    --surface-2: #1f2b30;
+    --border: #2b3a40;
+    --ink: #e7eef0;
+    --ink-2: #b6c4c9;
+    --muted: #8a9aa1;
+    --accent: #4fd1c5;
+    --accent-ink: #0b2323;
+    --accent-soft: #163333;
+    --good: #6bd6a0;
+    --good-soft: #133426;
+    --bad: #ff8a80;
+    --bad-soft: #3a1815;
+    --warn: #ffcf6b;
+    --warn-soft: #3a2c0d;
+    --code-bg: #0a0f12;
+    --code-ink: #cfe3e3;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  @font-face { font-family: 'Newsreader'; src: local('Newsreader'); }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  header h1 {
+    font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
+    font-weight: 600;
+    font-size: clamp(28px, 4vw, 40px);
+    line-height: 1.15;
+    margin: 0 0 10px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  header .kicker {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header p.dek { color: var(--ink-2); font-size: 17px; max-width: 68ch; margin: 0 0 8px; }
+
+  section { margin-top: 40px; }
+  h2 {
+    font-family: 'Newsreader', Georgia, serif;
+    font-weight: 600;
+    font-size: 22px;
+    margin: 0 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 15px; font-weight: 700; margin: 22px 0 8px; color: var(--ink); }
+  p { margin: 0 0 12px; color: var(--ink-2); }
+  p.lead { color: var(--ink); font-size: 16px; }
+  strong { color: var(--ink); }
+  a { color: var(--accent); text-decoration-thickness: 1.5px; }
+
+  code, .mono {
+    font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 0.88em;
+  }
+  code {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    color: var(--ink);
+  }
+
+  .verdict-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 18px 0 8px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-radius: 12px; font-weight: 700; font-size: 14px;
+    border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow);
+  }
+  .pill .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .pill.good { color: var(--good); }
+  .pill.good .dot { background: var(--good); }
+  .pill.bad { color: var(--bad); }
+  .pill.bad .dot { background: var(--bad); }
+  .pill.warn { color: var(--warn); }
+  .pill.warn .dot { background: var(--warn); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px 22px; box-shadow: var(--shadow); margin-bottom: 16px;
+  }
+  .card.accent { border-left: 4px solid var(--accent); }
+  .card.bad-edge { border-left: 4px solid var(--bad); }
+  .card.good-edge { border-left: 4px solid var(--good); }
+  .card.warn-edge { border-left: 4px solid var(--warn); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+  .table-wrap { overflow-x: auto; border-radius: 12px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--surface-2); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; }
+  tr:last-child td { border-bottom: none; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .statgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .stat .n { font-family: 'Newsreader', Georgia, serif; font-size: 28px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
+  .stat .lbl { font-size: 12px; color: var(--muted); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  ol.steps { margin: 0; padding-left: 0; list-style: none; counter-reset: step; }
+  ol.steps li {
+    counter-increment: step; position: relative; padding: 4px 0 20px 38px;
+    border-left: 2px solid var(--border); margin-left: 13px;
+  }
+  ol.steps li:last-child { border-left-color: transparent; padding-bottom: 0; }
+  ol.steps li::before {
+    content: counter(step); position: absolute; left: -13px; top: 2px;
+    width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--accent-ink);
+    font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  ol.steps b { color: var(--ink); }
+
+  .status-tag {
+    display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.03em; padding: 2px 8px; border-radius: 5px;
+  }
+  .status-tag.closed { background: var(--good-soft); color: var(--good); }
+  .status-tag.rebased { background: var(--accent-soft); color: var(--accent); }
+  .status-tag.hold { background: var(--warn-soft); color: var(--warn); }
+  .status-tag.pending { background: var(--surface-2); color: var(--muted); }
+
+  ul.plain { margin: 0 0 12px; padding-left: 20px; color: var(--ink-2); }
+  ul.plain li { margin-bottom: 6px; }
+
+  footer.note { margin-top: 48px; font-size: 13px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 16px; }
+
+  @media (max-width: 640px) { .wrap { padding: 32px 16px 72px; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="kicker">Fitness_App · MVP1.G3 · закрытие гейта</span>
+    <h1>OBS-1: гейт непрерывной надёжности закрыт</h1>
+    <p class="dek">Все 13 пунктов наблюдаемости (OBS-1) сведены с текущим состоянием кода и живого продакшена. Заодно найден и устранён реальный дефект: 4 уже задеплоенных алерта в Cloud Monitoring не могли сработать никогда — та же логическая ошибка, что и в исправленном ранее <code>enforcement_state</code>. Один пункт (наблюдаемость AI Gateway) осознанно вынесен в отдельный обязательный гейт вместо того, чтобы разворачивать в проде новую платную функцию только ради «зелёной» строки в таблице.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 4316f4f</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <section>
+    <h2>Вердикт</h2>
+    <div class="verdict-row">
+      <span class="pill good"><span class="dot"></span>MVP1.G3 = PASSED</span>
+      <span class="pill good"><span class="dot"></span>13/13 пунктов OBS-1: CLOSED или REBASED→CLOSED</span>
+      <span class="pill bad"><span class="dot"></span>Найден и исправлен реальный дефект в 4 алертах</span>
+      <span class="pill warn"><span class="dot"></span>Деплой AI Gateway сознательно отложен GPT-PM</span>
+      <span class="pill good"><span class="dot"></span>Следующий гейт MVP1.G4 зарегистрирован</span>
+    </div>
+    <p class="lead">Гейт MVP1.G3 («OBS-1 — гарантии непрерывной надёжности») закрыт после финального состязательного ревью GPT-PM. Пройден полный путь: 7 CI-проверок → канарейка (Step 9A/9B) → дашборд состояния enforcement (Step 10A) → телеметрия на реальном устройстве (Step 10B) → сверка всех 13 пунктов OBS-1 (Step 10C).</p>
+  </section>
+
+  <section>
+    <h2>Путь через подгейты</h2>
+    <ol class="steps">
+      <li><b>7 пунктов [CI]</b> — тест-health функций, сканирование зависимостей mobile, инвариант безопасности, паритет реестра оборудования, сканирование секретов, golden-тест составного экрана, детектор смыслового расхождения RU/EN. Все закрыты 2026-08-27.</li>
+      <li><b>Step 9A/9B — канарейка и её активация в проде.</b> Плановая функция <code>runProductionCanary</code>, канал уведомлений FA-D1 подтверждён живым письмом на реальную почту.</li>
+      <li><b>Step 10A — дашборд состояния enforcement (10 раундов ревью).</b> В процессе поймана и исправлена настоящая брешь: код был пофикшен, но реальная функция в проде — нет, из-за чего алерт стал строже, чем способен был сработать.</li>
+      <li><b>Step 10B — телеметрия на реальном устройстве (Samsung Galaxy S8).</b> Подтверждена доставка событий Crashlytics по-настоящему, не синтетически.</li>
+      <li><b>Step 10C — сверка всех 13 пунктов OBS-1</b> с текущим HEAD и живым продакшеном. Здесь же найден и устранён дефект с 4 алертами (ниже) и закрыт последний пробел телеметрии.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Побочная находка: 4 алерта не могли сработать никогда</h2>
+    <div class="card bad-edge">
+      <p class="lead"><strong>Механизм.</strong> <code>firebase-functions/logger</code> при <code>logger.error(EVENT, {…})</code> безусловно переписывает <code>jsonPayload.message</code> в <code>"Error: EVENT\n&lt;стек&gt;"</code> для severity ERROR. Фильтр алерта, построенный как точное совпадение (<code>messageEquals</code>) с исходной строкой события, поэтому никогда не совпадал с реальным логом.</p>
+      <p>Это тот же корневой дефект, что был найден и исправлен для <code>enforcement_state</code> на Step 10A — но тогда 4 других уже развёрнутых алерта (Stripe-сверка, удаление аккаунта, экспорт аккаунта, канарейка) остались нетронутыми до этой сессии.</p>
+    </div>
+    <div class="statgrid">
+      <div class="stat"><div class="n">4</div><div class="lbl">задеплоенных функций</div></div>
+      <div class="stat"><div class="n">4</div><div class="lbl">политик alert обновлено на месте</div></div>
+      <div class="stat"><div class="n">5</div><div class="lbl">доказательных записей лога</div></div>
+      <div class="stat"><div class="n">3</div><div class="lbl">раунда ревью GPT-PM (1 MAJOR + 2 MINOR)</div></div>
+    </div>
+    <p>Исправление: во все 8 точек вызова добавлено явное поле <code>event</code>; фильтры переключены с <code>messageEquals</code> на <code>eventEquals</code> (плюс новый механизм <code>messageContains</code> для одного сообщения, принадлежащего самому фреймворку). Полная живая последовательность выполнена и подтверждена: передеплой → патч политики на месте → чтение обратно с подтверждением совпадения фильтра с текущим HEAD → безопасное индуцированное срабатывание на записях, по форме идентичных реальной продакшен-ошибке.</p>
+  </section>
+
+  <section>
+    <h2>Итог сверки 13 пунктов OBS-1</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Пункт</th><th>Итог</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td>Канарейка auth/данные</td><td><span class="status-tag closed">CLOSED</span></td></tr>
+          <tr><td class="num">2</td><td>Test-health функций</td><td><span class="status-tag closed">CLOSED</span></td></tr>
+          <tr><td class="num">3</td><td>Дашборд состояния enforcement</td><td><span class="status-tag closed">CLOSED</span></td></tr>
+          <tr><td class="num">4</td><td>Монитор целостности биллинга (Stripe)</td><td><span class="status-tag closed">CLOSED</span></td></tr>
+          <tr><td class="num">5</td><td>Расхождение перевода RU/EN</td><td><span class="status-tag rebased">REBASED→CLOSED</span></td></tr>
+          <tr><td class="num">6</td><td>Сканирование зависимостей mobile</td><td><span class="status-tag closed">CLOSED</span></td></tr>
+          <tr><td class="num">7</td><td>Проверка жизненного цикла данных</td><td><span class="status-tag rebased">REBASED→CLOSED</span></td></tr>
+          <tr><td class="num">8</td><td>Инвариант безопасности (SafetyContext)</td><td><span class="status-tag closed">CLOSED</span></td></tr>
+          <tr><td class="num">9</td><td>Наблюдаемость AI Gateway</td><td><span class="status-tag rebased">REBASED→CLOSED</span></td></tr>
+          <tr><td class="num">10</td><td>Паритет реестра оборудования</td><td><span class="status-tag closed">CLOSED</span></td></tr>
+          <tr><td class="num">11</td><td>Клиентская/ML-телеметрия</td><td><span class="status-tag closed">CLOSED</span></td></tr>
+          <tr><td class="num">12</td><td>Сканирование секретов + история git</td><td><span class="status-tag closed">CLOSED</span></td></tr>
+          <tr><td class="num">13</td><td>Визуальная регрессия составного экрана</td><td><span class="status-tag closed">CLOSED</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Полная таблица со всеми доказательствами: <code>core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md</code>.</p>
+  </section>
+
+  <section>
+    <h2>Пункт #9: осознанно не задеплоено — и почему это правильно</h2>
+    <div class="card warn-edge">
+      <p class="lead">Все 4 функции AI Gateway (<code>aiCoachAdvice</code>, <code>aiEquipmentRecognition</code>, <code>aiMachineDescription</code>, <code>aiExerciseGeneration</code>) написаны, протестированы и экспортированы — но не задеплоены в проде. Мобильное приложение уже вызывает их по имени (миграция G1), так что это реальный функциональный пробел, а не просто недоказанная метрика — но реальных пользователей ещё нет.</p>
+      <p>Предложение задеплоить прямо сейчас и закрыть пункт «по-настоящему» было отправлено GPT-PM на рассмотрение. GPT-PM удержал (HOLD) этот план: модель в коде (<code>gemini-3-flash-preview</code>) уже помечена в исходниках как устаревшая, специфичный для AI флаг App Check ещё не включён, а квота на пользователя одна не защищает от смены анонимного аккаунта. Разворачивать 4 новых платных эндпоинта только ради зелёной строки в таблице значило бы подменить наблюдательный гейт решением о продуктовом релизе.</p>
+    </div>
+    <p>Итог: часть про прямые вызовы Gemini с клиента закрыта по-настоящему (миграция G1 подтверждена — ни одного обращения к Gemini напрямую из мобильного кода). Часть про продакшен-развёртывание вынесена в новый обязательный гейт.</p>
+  </section>
+
+  <section>
+    <h2>Следующий гейт: MVP1.G4</h2>
+    <div class="card accent">
+      <p class="lead"><strong>AI Gateway Production Release &amp; E2E Validation</strong> — <span class="status-tag pending">PENDING</span></p>
+      <p>Безопасно активировать и доказать 4 серверных AI-функции. Обязательные критерии от GPT-PM: готовность модели к продакшену (актуальность Vertex-модели и региона), граница безопасности (App Check специально для AI, защита от ротации анонимных аккаунтов), точечный деплой только этих 4 функций с провенансом source↔live, реальный E2E через настоящий путь клиент→функция→Vertex, активация наблюдаемости с доказанными живыми данными по всем метрикам (включая честное исчерпание квоты), проверка на реальном устройстве, безопасный механизм отката. Релиз с AI для пользователей запрещён до прохождения этого гейта.</p>
+    </div>
+  </section>
+
+  <footer class="note">
+    <p>Полная хронология, все раунды ревью GPT-PM и живые доказательства — в <code>core/DECISION_LOG.md</code> проекта Fitness_App.</p>
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

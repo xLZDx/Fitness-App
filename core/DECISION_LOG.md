@@ -31811,3 +31811,33 @@ GPT-PM's own words: *"G3 remains substantively PASSED and G4 registration is val
 would not issue the final push receipt yet because the canonical master plan still
 contradicts that state in #15-#17... the next review stays strictly scoped to this one
 MINOR and direct regressions."* Committing and sending only this delta next.
+
+## 2026-08-28 (continued) -- push-final blocked on PM Bridge transport, not content; report published while waiting
+
+Requesting the `--final` receipt a second time (round 5, `--commit`/`--base` unchanged
+content, only the #15-#17 fix added) hit a genuine transport failure, not a content
+rejection: the orchestrator daemon was running a stale build vs. the code on disk
+(`ece03b005c588fb7` vs `4db6b9aaeb423db3`), same class of issue this session already
+recovered from once at its very start. Restart attempts (`pm_bridge_mode_off` then `on`,
+twice) each showed the daemon start ("orchestrator: listening on 127.0.0.1:8765") and then
+die before the next status check -- `orchestrator.json`'s recorded pid was confirmed dead
+each time (`Get-Process -Id <pid>`: no result). A direct-path retry (bypassing the
+orchestrator) was correctly refused by Gate C ("No compatible PM Bridge orchestrator is
+active... explicitly set `PM_BRIDGE_BREAK_GLASS_DIRECT=1`") -- did NOT set that env var
+myself, since it is an explicit escape hatch outside normal policy, not a substitute for a
+working orchestrator. Numerous stray `chrome.exe` processes observed from repeated failed
+launch attempts, consistent with the already-documented single-shared-browser-profile
+fragility (CLAUDE.md Sec15's own "Confirmed live, 2026-08-21" entry).
+
+**This blocks only the push receipt, not the work itself** -- the actual review content
+was already substantively approved (round 2's delta: VERDICT APPROVE, "G3 closure review
+is clean"; the #15-#17 fix is a mechanical, uncontested documentation correction of the
+exact same class GPT-PM already endorsed for #18/#21). Per Sec15's own fail-open
+philosophy, not forcing this: published the RU/EN closure report
+(`reports/2026-08-28-mvp1-g3-closure.{ru,html}`) while the transport recovers, since that
+work is independent of PM Bridge. Will retry the orchestrator restart (spaced out, not
+hammered, per the project's own "poll every minute on lock contention" guidance) and push
+once a genuine `--final` receipt is obtained -- `pm_set_gate(MVP1.G3=passed)` and
+`pm_set_gate(MVP1.G4=pending)` are already recorded in PM Bridge's own gate state
+regardless (that write succeeded independently of this review transport), so only the git
+push of the local commits is actually pending.
