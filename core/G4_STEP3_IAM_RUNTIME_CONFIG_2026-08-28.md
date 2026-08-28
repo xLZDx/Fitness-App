@@ -168,10 +168,10 @@ finding above, still to be sent back to GPT-PM before any `gcloud iam` mutation.
 
 | New service account | Replaces default SA for | Grants (beyond the Firebase-managed baseline every SA needs) |
 |---|---|---|
-| `fn-canary@...` | `runProductionCanary` | `roles/datastore.viewer`, `roles/secretmanager.secretAccessor` scoped to `CANARY_WEB_API_KEY` only |
-| `fn-data@...` | `exportAccountData`, `optInDonorWall`, `optOutDonorWall`, `reportEquipment`, `startFreeTrial`, `runEnforcementStateCheck` | `roles/datastore.user`, `roles/firebaseauth.viewer` (read-only `getUser` — needed by `startFreeTrial` via `assertAccountStillExists`; tier-shared with the lower-risk functions in this group as an accepted over-grant, see caveat below) |
+| `fn-canary@...` | `runProductionCanary` | `roles/secretmanager.secretAccessor` scoped to `CANARY_WEB_API_KEY`, `roles/iam.serviceAccountTokenCreator` **on itself only** (mints `admin.auth().createCustomToken()` via IAM remote signing — the probe then exchanges it and does ALL Firestore access through the client SDK, not Admin, so **no Firestore grant at all**; see round-2 correction below) |
+| `fn-data@...` | `exportAccountData`, `optInDonorWall`, `optOutDonorWall`, `reportEquipment`, `startFreeTrial`, `runEnforcementStateCheck` | `roles/datastore.user`, custom role `fitness.accountReader` = exactly `firebaseauth.users.get` (needed by `startFreeTrial` via `assertAccountStillExists`; narrower than `roles/firebaseauth.viewer`, still tier-shared with the lower-risk functions in this group as an accepted over-grant, see caveat below) |
 | `fn-video@...` | `clipUrl`, `clipUrls` | `roles/datastore.user` (quota doc), `roles/iam.serviceAccountTokenCreator` **on itself only**, **`roles/storage.objectViewer` scoped to the `LICENSED_BUCKET` only** (bucket-level IAM binding/condition, not project-wide) — fixes finding #1 |
-| `fn-billing@...` | `createCheckoutSession`, `createPortalSession`, `stripeWebhook`, `generateAnnualReceipt`, `bookCoachSession`, `startCoachOnboarding` | `roles/datastore.user`, `roles/secretmanager.secretAccessor` scoped to the `STRIPE_*` secrets only, `roles/firebaseauth.viewer` (read-only — `createCheckoutSession`/`bookCoachSession` via `assertAccountStillExists`) |
+| `fn-billing@...` | `createCheckoutSession`, `createPortalSession`, `stripeWebhook`, `generateAnnualReceipt`, `bookCoachSession`, `startCoachOnboarding` | `roles/datastore.user`, `roles/secretmanager.secretAccessor` scoped to the `STRIPE_*` secrets only, `fitness.accountReader` (read-only — `createCheckoutSession`/`bookCoachSession` via `assertAccountStillExists`) |
 | `fn-account-delete@...` | `deleteAccount` **only** | `roles/datastore.user`, `roles/secretmanager.secretAccessor` scoped to `STRIPE_SECRET_KEY` only (cancels the customer's subscriptions before deleting), **custom role `fitness.accountDeleter` = exactly `firebaseauth.users.delete`** (not `roles/firebaseauth.admin`) — fixes finding #2 |
 | `fn-ai@...` | `aiCoachAdvice`, `aiEquipmentRecognition`, `aiMachineDescription`, `aiExerciseGeneration` (not yet deployed, stays HOLD per Step 2) | `roles/datastore.user` (quota), **custom role `fitness.vertexPredictor` = exactly `aiplatform.endpoints.predict`** (not `roles/aiplatform.user`) — fixes finding #3. If a real smoke test against the deployed Gemini endpoint fails needing a permission this custom role lacks, add exactly that permission and record why; do not widen to `roles/aiplatform.user` pre-emptively |
 
@@ -181,13 +181,15 @@ identity — it is inert (confirmed: touches nothing), slated for deletion once 
 concludes on a real device (S23), and GPT-PM's own guidance was not to make it a
 permanent tier. Revisit only if it outlives Option D.
 
-None of these six accounts would hold `roles/editor`. Two custom roles replace
-predefined ones that were each independently confirmed too broad
-(`fitness.accountDeleter` instead of `roles/firebaseauth.admin`;
-`fitness.vertexPredictor` instead of `roles/aiplatform.user`). `roles/datastore.user` is
+None of these six accounts would hold `roles/editor`. Three custom roles replace
+predefined ones each independently confirmed too broad: `fitness.accountDeleter`
+(exactly `firebaseauth.users.delete`) instead of `roles/firebaseauth.admin`;
+`fitness.vertexPredictor` (exactly `aiplatform.endpoints.predict`) instead of
+`roles/aiplatform.user`; `fitness.accountReader` (exactly `firebaseauth.users.get`,
+added in round 2) instead of `roles/firebaseauth.viewer`. `roles/datastore.user` is
 itself project-wide within Firestore (Firestore doesn't support collection-level IAM),
 so grouping functions into a tier still shares whatever that tier's broadest member
-needs with its narrower siblings (e.g. `fn-data`'s `firebaseauth.viewer` reaching
+needs with its narrower siblings (e.g. `fn-data`'s `fitness.accountReader` reaching
 `optInDonorWall`, which never calls it) — a real, accepted remaining limitation, not
 hidden, and strictly narrower than the 5-tier proposal's equivalent gaps.
 
@@ -203,6 +205,54 @@ cannot silently revert the identity to default.
 (service account + custom role) is created and validated with a bounded smoke test but
 not attached to live traffic, since the four AI callables remain undeployed under
 Step 2's own HOLD regardless of this gate.
+
+**Implementation detail flagged for when identities are actually coded**:
+`runProductionCanary` is declared directly via `onSchedule({...}, ...)` in
+`canary_schedule.ts`, not through one of `scaling.ts`'s `CallableOptions` profiles like
+the callables are. Its `serviceAccount` must be set directly on that `onSchedule` call —
+routing every export through `scaling.ts` profiles alone would silently leave the
+scheduled canary on the default Compute SA.
+
+## Round 2 GPT-PM review: MAJOR — fn-canary's own permissions were wrong
+
+Sent at commit `29647bb`. Verdict: `MAJOR`, 1 MAJOR + 2 MINOR, plus explicit INFO
+confirming all 5 round-1 findings are now closed and the six-tier shape/rollout order
+are correct. All three re-verified against real source before acting:
+
+1. **MAJOR — fn-canary was missing signing capability and had an unneeded Firestore
+   grant.** Verified directly in `functions/src/canary_probe.ts:364`:
+   `admin.auth().createCustomToken(CANARY_UID, { canary: true })` — this needs IAM
+   remote signing (`iam.serviceAccounts.signBlob`, normally via
+   `roles/iam.serviceAccountTokenCreator` on itself), which the proposed
+   `roles/datastore.viewer`-only grant did not provide. The probe then exchanges that
+   token via `signInWithCustomToken` and does every subsequent read/write/delete
+   (`setDoc`/`getDoc`/`deleteDoc`, lines 387-432) through the **client** Firestore SDK to
+   exercise Security Rules, not the Admin SDK — so `roles/datastore.viewer` was not just
+   insufficient, it was also unnecessary. As proposed, the very first rollout tier
+   (chosen for being lowest-risk) would have broken the existing G3 production canary on
+   its first scheduled run.
+2. **MINOR — `firebaseauth.viewer` was broader than the single permission actually
+   used.** `fn-data`/`fn-billing` only need `firebaseauth.users.get`. Replaced with a
+   third custom role, `fitness.accountReader` (confirmed via `gcloud iam roles
+   describe`-equivalent Google docs that `firebaseauth.users.get` is supported in custom
+   roles), used by both tiers instead of the broader predefined role.
+3. **INFO, not a defect**: all 5 round-1 findings are substantively closed as designed;
+   the six-tier split and the canary → data → video → billing → account-delete rollout
+   order both remain correct once fn-canary is fixed.
+
+**Fix applied above**: `fn-canary` now gets `roles/iam.serviceAccountTokenCreator` on
+itself plus the scoped `CANARY_WEB_API_KEY` secret, and no Firestore role at all;
+`fn-data`/`fn-billing` use the new `fitness.accountReader` custom role instead of
+`roles/firebaseauth.viewer`.
+
+**GPT-PM's phased GO**: additive IAM provisioning (creating the six service accounts,
+custom roles, and scoped bindings) may proceed once fn-canary is corrected — creating
+unused identities changes nothing about current production execution. Switching any
+live function's actual runtime identity still needs, per tier: the source-controlled
+`serviceAccount` assignment landed and reviewed, a live smoke test, a readback
+confirming the deployed identity, and a documented rollback — one tier at a time.
+Removing `roles/editor` from the default Compute SA waits until every permanent function
+has moved AND the temporary `appCheckProbe` is deleted or moved off that SA.
 
 ## Why this is not being applied in this same pass
 
@@ -241,7 +291,13 @@ own HOLD.
 ## Status
 
 Round 1 (5-tier proposal, commit `cc759fc`): `VERDICT: MAJOR`, 3 MAJOR + 2 MINOR, all
-independently re-verified against real evidence and folded into the revised six-tier
-matrix above. No live `gcloud iam` mutation has been made — every finding above came
-from `gcloud ... describe`/`get-iam-policy`/`list` and source reads only. Revision ready
-for round 2. See `core/DECISION_LOG.md` for both rounds' verdicts as they land.
+independently re-verified and folded into a six-tier matrix. Round 2 (six-tier proposal,
+commit `29647bb`): `VERDICT: MAJOR`, 1 MAJOR (fn-canary's own permissions were wrong) +
+2 MINOR, all independently re-verified and fixed above; round 1's 5 findings confirmed
+closed. GPT-PM's phased GO: additive IAM provisioning (create the six SAs/custom
+roles/bindings) may proceed once fn-canary is corrected — done, above — but no live
+function's runtime identity may be switched, and `roles/editor` stays on the default SA,
+until each tier lands its source-controlled `serviceAccount` assignment, passes a live
+smoke test with a deployed-identity readback, and has a documented rollback, one tier at
+a time. No live `gcloud iam` mutation has been made yet. See `core/DECISION_LOG.md` for
+both rounds' verdicts.

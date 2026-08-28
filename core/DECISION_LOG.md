@@ -32632,3 +32632,40 @@ with `fn-ai`'s IAM prepared but not attached to live traffic while the four AI c
 remain HOLD-ed by Step 2. No live `gcloud iam` mutation has been made — every finding
 above came from read-only `gcloud`/source-code evidence. Revision going to GPT-PM as
 round 2 next.
+
+## G4 Step 3 IAM: round 2 GPT-PM review (MAJOR) — fn-canary's own permissions were wrong, fixed
+
+Round 2 (six-tier proposal, commit `29647bb`) came back `VERDICT: MAJOR` — 1 MAJOR + 2
+MINOR, with explicit INFO confirming all 5 round-1 findings closed and the six-tier
+shape/rollout order correct. Verified against real source before acting (§3/§13):
+
+- **MAJOR**: `fn-canary` was given `roles/datastore.viewer` and no signing permission.
+  Confirmed directly in `functions/src/canary_probe.ts:364`:
+  `admin.auth().createCustomToken(CANARY_UID, { canary: true })` needs IAM remote
+  signing (`iam.serviceAccounts.signBlob`, via `roles/iam.serviceAccountTokenCreator` on
+  itself) — the probe then exchanges that token and does every Firestore
+  read/write/delete through the **client** SDK (`setDoc`/`getDoc`/`deleteDoc`, lines
+  387-432) to exercise Security Rules, never the Admin SDK. So the proposed grant was
+  simultaneously missing what it needed and holding what it didn't: as written, the
+  lowest-risk tier chosen to go first would have broken the existing G3 production
+  canary on its very first scheduled run.
+- **MINOR**: `roles/firebaseauth.viewer` (used by `fn-data`/`fn-billing`) is broader than
+  the single `firebaseauth.users.get` permission those tiers actually call. Replaced
+  with a third custom role, `fitness.accountReader`.
+
+Fixed in `core/G4_STEP3_IAM_RUNTIME_CONFIG_2026-08-28.md`: `fn-canary` now gets
+`roles/iam.serviceAccountTokenCreator` on itself + the scoped `CANARY_WEB_API_KEY`
+secret and no Firestore role; `fn-data`/`fn-billing` use `fitness.accountReader` instead
+of the predefined viewer role. Also recorded: `runProductionCanary` is declared via
+`onSchedule(...)` directly, not a `scaling.ts` `CallableOptions` profile, so its
+`serviceAccount` must be set on that `onSchedule` call specifically when this is coded.
+
+GPT-PM's phased GO: additive provisioning (create the six SAs/custom roles/bindings) may
+proceed now that fn-canary is corrected — creating unused identities doesn't change
+current production execution. No live function's runtime identity may switch, and
+`roles/editor` stays on the default SA, until each tier lands its source-controlled
+`serviceAccount`, passes a live smoke test with a deployed-identity readback, and has a
+documented rollback — one tier at a time, per the existing canary → data → video →
+billing → account-delete order. Still no live `gcloud iam` mutation made. Sending the
+corrected matrix back as round 3 to confirm the fix before starting additive
+provisioning.
