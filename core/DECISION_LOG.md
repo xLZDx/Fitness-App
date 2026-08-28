@@ -31745,3 +31745,42 @@ PASSED) yet. These are documentation/governance corrections only, so the remedia
 should be very small... No CI rerun, device rerun, function redeploy, policy re-patch, or
 broad G3 review should be repeated."* Committing the 3 documentation fixes now, then
 sending only that delta for the narrow final closure check it asked for.
+
+## 2026-08-28 (continued) -- Final whole-G3 review round 2: VERDICT APPROVE -- MVP1.G3 = PASSED
+
+Sent commit `fbde54f` (exactly the 3 documentation fixes, nothing else) for the narrow
+delta check. **VERDICT: APPROVE**, all INFO -- all 3 MINORs confirmed resolved by the
+delta as submitted, no new contradiction introduced, dispositions unchanged (#5 stays
+REBASED->CLOSED, #10 stays CLOSED, MASTER_PLAN #18/#21 now accurate). GPT-PM's own
+closing words: *"G3 closure review is clean. MVP1.G3 = PASSED may now be recorded. No
+further G3 code review, CI/device rerun, function redeploy, or policy patch is warranted
+absent new regression evidence."*
+
+`pm_set_gate(Fitness_App, MVP1.G3, passed)` recorded, with the full evidence summary
+(7 [CI] items -> Step 9A -> Step 9B -> Step 10A -> Step 10B -> Step 10C, the row-21
+alert-filter live remediation, OBS-1 #11 completion, and the 3-MINOR final-review fix).
+GPT-PM's auto-notification reply on gate closure independently confirmed the same
+verdict fresh (not just echoing the prior round) and gave the full binding exit criteria
+for the successor gate.
+
+**`pm_set_gate(Fitness_App, MVP1.G4, pending)` registered immediately after**, per GPT-PM's
+own instruction and the standing rule from the final review ("register the successor gate
+now, not left as prose-only"). MVP1.G4 = **AI Gateway Production Release & E2E
+Validation** -- the full 9-part binding exit criteria (model production readiness;
+security/abuse boundary incl. AI-specific App Check; IAM/runtime config; targeted-only
+deployment with source==live provenance; real backend E2E per callable; observability
+activation incl. a real quota-exhaustion proof; real-device product E2E; rollback/disable
+mechanism; a release guard prohibiting AI-enabled user release before G4 passes) recorded
+verbatim in the gate's own `notes` field for durability independent of this log. Not
+started this session -- GPT-PM's own scope note: "do not merge unrelated post-G3 cleanup
+into G4."
+
+**MVP1.G3 is CLOSED.** Full arc this session: recovered PM Bridge from a protocol-version
+mismatch; closed the workout-save regression gate (rounds 3-6, 2 real CI/PowerShell bugs
+found and fixed); resumed and closed a deferred Step 10B round 4/5; discovered and fixed
+a real live-production defect (row-21 alert-filter bug silently breaking 4 already-
+deployed alert policies) while reconciling Step 10C; completed OBS-1 #11; correctly held
+off on deploying 4 AI Gateway callables after GPT-PM's evidence-based HOLD rather than
+unilaterally shipping a new paid production surface to close one table row; caught and
+fixed 3 real documentation-staleness defects in the gate's own final review. Writing the
+required house-format report next.
