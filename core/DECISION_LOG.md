@@ -32450,3 +32450,34 @@ checked so far) — not something to attempt blind via `adb input`/`am start` gu
 and not a decision, a physical/interactive action on hardware I do not have hands on.
 Routing the "how to proceed" question to GPT-PM per §16 rather than guessing further or
 declaring this closed either way.
+
+## GPT-PM round 3: BLOCKED/INCONCLUSIVE, not FAIL — try another device, continue G4 in parallel
+
+**VERDICT: APPROVE** on commit `d0e0512`. Key rulings: classify the S8 result as
+BLOCKED/INCONCLUSIVE, never FAIL — the release-signed outside-Play APK exercised the
+real production client path, but no attempt ever produced an integrity verdict for App
+Check's acceptance policy to evaluate, so this does NOT show outside-Play distribution
+fails attestation. Split Step 2's Option D into two durable states: config = VERIFIED
+(the documented API change + GET readback stands on its own evidence), real-device
+attestation = BLOCKED. Step 2 as a whole stays OPEN. No CEO/product escalation needed —
+this is a verification/hardware issue, not a policy decision; if the operator gets
+involved it is a physical action (re-authenticate the S8's Google account), not a new
+decision. Explicitly warned against overgeneralizing: attempts 1-2's native
+`IntegrityException` is the leading hypothesis for THIS device, not a proven universal
+root cause — if a second independent device also fails before producing a verdict,
+reopen the infrastructure/config side rather than keep blaming individual accounts.
+Try another physical device now if reachable, rather than waiting on the S8; an
+emulator is useful only as a diagnostic (isolating whether the project/provider config
+itself works), never as final Option-D closure proof, since Firebase's Play Integrity
+provider requires real Play Services and this gate exists specifically to prove the
+genuine physical-device production path. HOLD reaffirmed unconditionally: no deployment
+of the 4 AI callables until a real physical-device App Check acceptance is actually
+proven — nothing about IAM/observability/other G4 progress changes that.
+
+`GO: AUTHORIZED — continue G4 work in parallel and pursue an alternate physical-device
+Option-D proof.` `PUSH: AUTHORIZED under the current Gate policy.` Pushed `d0e0512` to
+`origin/master` (`9da104b..d0e0512`).
+
+Checking for a second reachable physical device next (project memory names an S23,
+"path TBD"); if none is reachable now, parking the S8 open and moving to Step 3
+(IAM/runtime config) in parallel, per this ruling's explicit permission to do so.
