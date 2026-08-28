@@ -32402,3 +32402,51 @@ target) is connected and ready. Next: build a release APK with
 `--dart-define=G4_STEP2D_APP_CHECK_PROBE=true --dart-define=G4_STEP2D_SOURCE_SHA=<sha>`
 via the same `scripts/dev/build_release.ps1` pipeline testers' builds go through, install
 it on the S8, and read the probe's logcat result.
+
+## Option D, part 2: real-device run blocked by a device-level Play Integrity credential
+
+Built the release APK directly with `flutter build apk --release --split-per-abi
+--target-platform=android-arm64` using the exact same stamps `build_release.ps1` would
+compute (`GIT_SHA=bfc8abe`, `BUILD_NUMBER=828`, clean tree, no `-dirty` suffix) plus the
+two probe defines. Fresh install via `adb install -r` on the S8
+(`ce02171299f0711005`, `SM-G950F`) — same signed artifact App Distribution would have
+shipped to a tester, installed the same way (not through Play), so this is a faithful
+proxy for the actual outside-Play channel.
+
+**Result: the proof did not run to a real App Check verdict.** Every attempt failed at
+the Play Integrity token-request stage, before App Check's own accept/reject logic was
+ever reached:
+
+- Attempt 1 (fresh install): `firebase_functions/unauthenticated` after ~5s. Native log:
+  `com.google.android.finsky.integrityservice.IntegrityException: User needs to
+  (re)enter credentials.`
+- Attempt 2 (Play Store force-stopped and restarted first, 20s wait): identical error,
+  identical `IntegrityException`.
+- Checked the obvious causes and ruled them out: Play Store itself is fully signed in
+  and functional (screenshot — real account, working store UI, no re-auth banner);
+  network is WiFi/VALIDATED with real internet; device clock (19:49:34 CEST /
+  17:49:34 UTC) matches real UTC, so it isn't a TLS/token-clock-skew issue; account
+  sync settings show the account present with auto-sync on, no error badge.
+- Rebooted the device (`adb reboot`, waited for `sys.boot_completed=1`) on the theory
+  that this clears a stale GMS/Play Integrity binder-service token — the single most
+  common fix reported for this exact exception. Attempt 3 (post-reboot): did NOT
+  reproduce the same fast failure — instead hung for ~17 minutes with no native
+  `IntegrityService` log line at all, then resolved `firebase_functions/unavailable`.
+  Different failure shape, same root cause family: the Play Integrity token exchange
+  itself is not completing for this Google account on this device, before App Check
+  gets to evaluate anything.
+
+**This is a device/account-level Play Integrity credential state, not an App Check
+config or code defect.** The `playIntegrityConfig` PATCH from part 1 was never actually
+exercised by these three attempts — none of them produced a verdict for App Check to
+accept or reject against `MEETS_DEVICE_INTEGRITY`. The proof is genuinely INCONCLUSIVE,
+not negative: this does not show outside-Play distribution fails attestation; it shows
+this specific device's Play Integrity credential handshake is broken, upstream of the
+question being tested.
+
+Re-authenticating the Play Integrity credential state is normally an interactive,
+on-device flow (the account itself shows no visible "sign in again" prompt anywhere
+checked so far) — not something to attempt blind via `adb input`/`am start` guesswork,
+and not a decision, a physical/interactive action on hardware I do not have hands on.
+Routing the "how to proceed" question to GPT-PM per §16 rather than guessing further or
+declaring this closed either way.
