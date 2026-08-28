@@ -331,13 +331,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 48cc9f3</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ ddf6ba1</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -348,6 +350,7 @@
       <span class="pill warn"><span class="dot"></span>Real root cause found</span>
       <span class="pill bad"><span class="dot"></span>Separate crash found and fixed</span>
       <span class="pill good"><span class="dot"></span>Regression test added</span>
+      <span class="pill good"><span class="dot"></span>Committed and pushed (6 GPT-PM review rounds)</span>
     </div>
     <p class="lead">Operator's request: add tests that, on every run (phone/emulator), complete 2-3 exercises, mark them done, and verify stats are remembered and recalculated. Added, and passing on a real device (Samsung Galaxy S8).</p>
   </section>
@@ -474,6 +477,26 @@
   </section>
 
   <section>
+    <h2>Rounds 3-6 — CI/runner scope, not the save path itself</h2>
+    <div class="card warn" style="border-left:4px solid var(--warn)">
+      <p><strong>Round 3 — the <code>run_app.ps1</code> question.</strong> GPT-PM initially required the new test to run on literally any device launch, including via <code>run_app.ps1</code> — an interactive manual-debugging launcher, not a test runner. Pushed back with evidence (wiring a multi-minute automated suite into it would tax every unrelated manual debug session); GPT-PM explicitly withdrew the requirement, agreeing CI + <code>run_tests.ps1 -Integration</code> are the right, sufficient surfaces.</p>
+      <p><strong>Round 4 — a real defect in round 1's own fix.</strong> Both the CI bash loop (<code>set -e</code>) and the PowerShell loop (<code>return</code> on first failure) stopped at the first failing file — and <code>app_test.dart</code> (already known-red) sorts alphabetically before the new test file. So "this test runs on every CI job" was factually false. Fixed: both runners now execute every file regardless of earlier failures and aggregate the result at the end.</p>
+      <p><strong>Round 5 — a subtler PowerShell scoping bug, also caught by GPT-PM.</strong> A direct <code>$LASTEXITCODE = ...</code> assignment inside a scriptblock invoked via <code>&amp;</code> creates a local shadow in a child scope that never reaches the calling <code>Run-Step</code> function — so if the LAST file in the loop happened to pass, an earlier real failure was silently masked. Verified with a standalone PowerShell repro before trusting the finding. Fixed by emitting a real native exit code (<code>cmd /c exit N</code>), which propagates correctly through the scope chain. Proven with a live end-to-end run of the FULL <code>run_tests.ps1 -Integration</code> on device: the known-red <code>app_test.dart</code> ran to completion, the new test then ran and passed 1/1, and the top-level process correctly returned a failing exit code.</p>
+      <p><strong>Unrelated noise, investigated and ruled out.</strong> That same full run also showed <code>analyze FAIL</code>/<code>test FAIL</code> — 16 pre-existing lint findings and golden-image/layout-assertion failures in entirely unrelated files (scanner, Gemini, settings, offline cache), none overlapping this gate's diff. Three representative files were re-run in isolation and passed cleanly — full-suite-only noise (coverage instrumentation, golden-image environment sensitivity), not a regression. GPT-PM confirmed: out of this gate's scope, not to be reopened for it.</p>
+      <p><strong>Round 6 (closing formality) — <code>VERDICT: APPROVE</code>, <code>final: true</code>.</strong> Committed as <code>829752d</code>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Along the way: resumed a deferred gate, Step 10B (MVP1.G3)</h2>
+    <div class="card accent">
+      <p>The branch turned out to be 4 commits ahead of <code>origin/master</code>, not 1 -- three earlier commits belonged to a separate, still-open gate (Step 10B, on-device Crashlytics telemetry proof) whose own round-4 GPT-PM review had been interrupted by this very operator report and left pending. A push is atomic for the whole branch, so pushing only this gate's own commit was not possible.</p>
+      <p>Resumed Step 10B's deferred round 4 (<code>--base</code> against the last commit GPT-PM had actually reviewed, covering both remediation commits accumulated since). <strong><code>VERDICT: APPROVE</code></strong> -- exact build provenance (source commit SHA + APK SHA-256 + a real Crashlytics backend event) confirmed for all 6 scenarios. Closed with a final round (<code>final: true</code>).</p>
+      <p>All 5 accumulated commits were then pushed together (<code>b733892..ddf6ba1</code>).</p>
+    </div>
+  </section>
+
+  <section>
     <h2>Files changed</h2>
     <ul class="filelist">
       <li><span class="tag mod">modified</span><span class="mono">mobile/lib/features/equipment/workout_player_page.dart</span> — rating persistence goes through a captured <code>ProviderContainer</code></li>
@@ -491,18 +514,21 @@
       <li>Both <code>integration_test/</code> files, run one at a time in sequence (as CI now does): no collision, deterministic result; the new file 1/1, the existing one 8/11 (3 failures are the separate pre-existing finding above).</li>
       <li>Existing <code>test/features/equipment/</code> + <code>test/features/workouts/</code> suite — <strong>800 tests, all green</strong>, no regressions introduced.</li>
       <li><code>flutter analyze</code> on the changed/new Dart files, plus PowerShell and YAML syntax checks — no issues.</li>
+      <li>Full <code>run_tests.ps1 -Integration</code> on the S8 — both integration files run to completion, the aggregated exit code is correct.</li>
     </ul>
   </section>
 
   <section>
     <h2>Next</h2>
-    <p>This change goes through the mandatory GPT-PM review (§15) before commit — round 1 already returned 3 MAJOR findings, all remediated and described above; round 2 verifies the fixes. MVP1.G3 Step 10B's own deferred round-4 verification resumes right after this item closes — PM Bridge mode stays on, and the program continues without stopping on this report.</p>
+    <p>This gate is fully closed: 6 GPT-PM review rounds (round 1's 3 MAJOR findings, the <code>run_app.ps1</code> scope question, and 2 real CI/PowerShell runner bugs, each independently verified before acting), <code>VERDICT: APPROVE</code>/<code>final: true</code> in round 6. Committed and pushed to <code>origin/master</code> together with the separately resumed and closed Step 10B (MVP1.G3) gate. PM Bridge mode stays on -- the program continues with the next gate (Step 10C) without stopping on this report.</p>
   </section>
 
   <footer class="note">
     Report generated automatically after the 2026-08-28 investigation. Full timeline in <code>core/DECISION_LOG.md</code>.
   </footer>
 </div>
+
+
 
 
 

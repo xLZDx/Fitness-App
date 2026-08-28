@@ -31265,3 +31265,18 @@ Marked final with one more round (`--final`, unchanged diff): **round 5, VERDICT
 
 Both gates now hold a `final:true` APPROVE receipt. Pushing all 4 local commits
 (`2acd73d`..`829752d`) to `origin/master` next.
+
+## 2026-08-28 (continued) -- report updated to match the actual outcome, republished, pushed
+
+The published report (`reports/2026-08-28-workout-save-investigation.{ru,html}`) still
+only covered rounds 1-2 at the point it was first published mid-session. Updated both
+language versions with the actual full outcome before treating this gate as closed: the
+round-3 `run_app.ps1` scope question and GPT-PM's explicit withdrawal of that requirement,
+round 4's CI/PowerShell fail-fast bug, round 5's PowerShell child-scope `$LASTEXITCODE`
+bug (with the standalone repro that proved it and the full end-to-end device proof of the
+fix), the unrelated full-suite analyzer/test noise investigated and explicitly ruled out
+of scope by GPT-PM, round 6's closing `VERDICT: APPROVE`/`final:true`, and the
+along-the-way resumption and closure of the deferred Step 10B gate. Re-conformed both
+files (`report_conform.py`), republished the Russian version to the existing artifact URL
+(same URL, per the house format -- redeploy, not a new artifact). Committing this update
+now; this entry satisfies the per-commit decision-log requirement for that commit.
