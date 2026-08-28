@@ -31888,3 +31888,99 @@ pushed.** MVP1.G4 (AI Gateway Production Release & E2E Validation) is registered
 published: `https://claude.ai/code/artifact/50e7aa1b-8afc-4a28-89c9-afc2501af4df` (RU),
 local `reports/2026-08-28-mvp1-g3-closure.ru.html` /
 `reports/2026-08-28-mvp1-g3-closure.html`.
+
+## MVP1.G4 Step 1 started: Vertex AI model revalidation
+
+Per `report_due.py`'s PM-mode continue-nudge (fires once per handed-over report; CLAUDE.md
+§18), continued directly into MVP1.G4 rather than stopping after the G3 report. Started on
+G4's own criterion 1: "Revalidate the configured Vertex model and region against current
+supported models. If `gemini-3-flash-preview` must be replaced, treat the model change as
+a reviewed behavioral change, not a string substitution. Prove one bounded direct backend
+smoke test before deployment."
+
+Full detail: `core/G4_STEP1_MODEL_REVALIDATION_2026-08-28.md`.
+
+**Why not trust either the source comment or web docs at face value:** `ai_gateway.ts`'s
+own comment (written during G1) called `gemini-3-flash-preview` flatly "deprecated."
+Checked current Google documentation first and found it internally contradictory across
+two official pages (same 2025-12-17 date read as both a shutdown and an announcement).
+Per CLAUDE.md §3, did not trust either source — instead ran a live, direct REST call
+against the real Vertex AI endpoint for the real `fitness-app-korostelev` project
+(`gcloud auth print-access-token` + curl, no ADC available locally, so the SDK itself
+couldn't be used). Result: `gemini-3-flash-preview` answered a real call today — not
+dead. All 4 candidate replacements (3.5/3.6/3.7-flash, 2.5-flash) also answered.
+
+**Sent the actual decision to GPT-PM, not picked unilaterally:** two honest options —
+(A) keep the preview model, ship G4 narrowly, record the preview-tier risk as an accepted
+limitation; (B) migrate the model now as part of G4 Step 1, expanding scope to include
+real per-callable behavioral re-verification. Own lean was (A), stated as a lean, not a
+decision — routed via direct `node .../pm-bridge/src/cli/review.js` CLI, not the MCP
+`gpt_send_and_await` tool, because `pm_bridge_mode_status` reported THIS session's own
+long-lived MCP tool connection was running a stale build for routing purposes (separate
+defect from the earlier daemon-crash-loop incident, which a peer session had already
+fixed) — using it to send could have delivered this project's content into a different
+project's ChatGPT conversation. The direct CLI is a fresh process per call and reads
+current disk code, so it was unaffected.
+
+**GPT-PM's ruling (round 1): MAJOR — rejected (A), required B′.** Verbatim reasoning
+(full reply preserved in `G4_STEP1_MODEL_REVALIDATION_2026-08-28.md`): criterion 1 of G4
+is specifically to revalidate the model for production, so this migration is not
+unrelated cleanup the "don't merge unrelated cleanup into G4" rule would exclude. Ruled
+`gemini-3.6-flash` the default migration target (Google's own named replacement, supports
+`thinking_level: MINIMAL`, closest to the current `thinkingBudget: 0` behavior);
+`gemini-3.7-flash` a challenger only, not a mandatory alternative. Required: run an
+exact-call-shape comparison against the 4 real callable configs before touching
+production source, not a blind swap. Also caught and required a correction: the
+documentation "self-contradiction" claim overstated the case — the real table lists
+`gemini-3-flash-preview`'s shutdown date as "No shutdown date announced" (2025-12-17 was
+the *release* date, misread as a shutdown date), while still naming 3.6-flash as the
+recommended replacement. No CEO escalation needed — GPT-PM ruled this within its own
+scope as a technical production-readiness call, consistent with its own delegation
+matrix framing ("no CEO escalation is needed merely for four test-call costs... a
+CEO/business decision becomes relevant when you intentionally activate AI for real
+users, choose the long-term model/cost posture, or accept operation without a binding
+anti-rotation control").
+
+**Verified GPT-PM's factual claims before acting, per §3/§13** rather than accepting
+them at face value: ran the required real-shaped comparison test
+(`D:\Temp\claude\d--Repo\61e7dfec-d8b3-4a63-a048-387194650f47\scratchpad\model_comparison_test.mjs`)
+against all 4 callables' exact real configs (`disableThinking`, `temperature`,
+`maxOutputTokens`, `jsonResponse`, and a real image payload for the two vision
+callables), live REST, same project/location as production, across all 3 candidate
+models. Results (full table in the Step 1 doc):
+
+- **`gemini-3.6-flash` matched `gemini-3-flash-preview`'s thinking-suppression behavior
+  exactly** on all 3 `disableThinking: true` callables — `thoughtsTokenCount: null`
+  (fully suppressed) on both models, every time. This independently confirms GPT-PM's
+  reasoning for choosing 3.6.
+- **`gemini-3.7-flash` did NOT fully honor `thinkingBudget: 0` on image input** — leaked
+  38 and 100 thinking tokens on the two vision callables (`aiEquipmentRecognition`,
+  `aiMachineDescription`) despite the identical override, while staying suppressed on
+  the text-only `aiExerciseGeneration`. Real, measured evidence, not a config artifact —
+  confirms 3.7 would have been the wrong choice; **3.7 rejected, 3.6 adopted.**
+- All 3 models returned valid, parseable JSON with `finishReason: STOP` on every
+  JSON-mode callable — no JSON regression from the migration.
+- **Side finding, out of scope for this decision but logged for the backlog:**
+  `aiCoachAdvice` truncates on ALL 3 models, including today's production model — with
+  no `disableThinking` override (matching the mobile source unchanged), ~487-492 of the
+  512-token budget goes to thinking and the call hits `MAX_TOKENS` before finishing the
+  answer. Not a migration regression — reproduces identically on
+  `gemini-3-flash-preview` right now. A real, pre-existing product-quality gap this test
+  happened to surface, not something this Step 1 decision is scoped to fix.
+
+**Action taken:** migrated `AI_MODEL` in `functions/src/ai_gateway.ts` from
+`gemini-3-flash-preview` to `gemini-3.6-flash`, with the doc comments above it (both the
+model-choice comment and the `LOCATION` comment, which referenced the old model by name)
+rewritten to reflect the real evidence instead of the stale "deprecated" framing. Also
+corrected a comment in `ai_gateway.test.ts` that named the old model. Ran
+`ai_gateway.test.ts`: all 24 tests pass unchanged — the suite asserts against the
+exported `AI_MODEL` constant, not a hardcoded literal, so no test rewrite was needed.
+**Not yet deployed** — deployment is a later G4 criterion (targeted-only deployment with
+source↔live provenance), gated on its own review round; this Step only changes the
+source constant.
+
+Next: send this migration + comparison evidence to GPT-PM for round-2 verification per
+its own required close-out ("rerun the four callable contract tests plus a bounded real
+backend smoke [...] before that passes"), then continue to G4's remaining criteria
+(security/abuse boundary — `APP_CHECK_ENFORCED_AI`; IAM/runtime config; deployment
+provenance; real E2E; observability; device E2E; rollback mechanism; release guard).

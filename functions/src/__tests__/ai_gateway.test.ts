@@ -68,8 +68,9 @@ describe("client construction", () => {
 
   test("defaults to the global location, not a region", async () => {
     // The BLOCKER this suite exists to prevent a recurrence of:
-    // gemini-3-flash-preview is a global-endpoint-only model on Vertex AI, and
-    // the first draft of this file defaulted to `europe-west1` instead.
+    // every model this gateway has used (gemini-3-flash-preview, now
+    // gemini-3.6-flash) is a global-endpoint-only model on Vertex AI, and the
+    // first draft of this file defaulted to `europe-west1` instead.
     await generate(BASE);
     expect(GoogleGenAI).toHaveBeenCalledWith(
       expect.objectContaining({ location: "global" }),

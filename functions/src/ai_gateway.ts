@@ -53,30 +53,36 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { AI_GATEWAY_CALL_EVENT } from "./monitoring/log_signals";
 
 /**
- * `gemini-2.5-flash` 404s for this project; `gemini-3-flash-preview` answers
- * — verified live 2026-07-30, but against the Gemini Developer API backend
- * (`GEMINI_VISION_MODEL_NOTE` in the mobile source, i.e. the OLD direct
- * `FirebaseAI.googleAI()` path), not against Vertex AI. That distinction
- * matters and was wrongly elided in this comment until GPT-PM's G1 round-1
- * review caught it: `gemini-3-flash-preview` is a DEPRECATED model on Vertex
- * AI (Google's own docs point migrators at `gemini-3.5-flash`), independently
- * confirmed 2026-08-26 via Google Cloud's own model and release-notes pages.
+ * MVP1.G4 Step 1 (2026-08-28): migrated from `gemini-3-flash-preview` to
+ * `gemini-3.6-flash` as a reviewed behavioral change, not a string
+ * substitution — GPT-PM's binding ruling on this exact question (round 1,
+ * `core/G4_STEP1_MODEL_REVALIDATION_2026-08-28.md`), reached only after a
+ * real-shaped comparison test against all 4 callables' actual configs
+ * (`disableThinking`/`temperature`/`maxOutputTokens`/`jsonResponse`), not a
+ * blind swap.
  *
- * The model id is kept as-is here anyway, deliberately, rather than silently
- * swapped to `gemini-3.5-flash`: a model swap is a real behavior/cost/latency
- * change to what was manually verified, not a transport-only migration, and
- * making that call without operator sign-off would be scope creep hiding
- * inside what this gate calls a pure client→server transport move. This is
- * the SAME reason the four ai_*.ts callables port each mobile prompt
- * unchanged rather than "improving" it in passing.
+ * Why 3.6, not 3.7 (the other GA candidate): the comparison test's live
+ * `usageMetadata.thoughtsTokenCount` proved a real behavioral difference —
+ * `gemini-3.6-flash` returned `thoughtsTokenCount: null` (thinking fully
+ * suppressed) on every one of the 3 `disableThinking: true` callables,
+ * matching `gemini-3-flash-preview` exactly. `gemini-3.7-flash` leaked
+ * nonzero `thoughtsTokenCount` (38, 100) on the two VISION callables despite
+ * the same `thinkingConfig: { thinkingBudget: 0 }` override — it does not
+ * fully honor a zero thinking budget on image input. Using 3.7 would have
+ * silently changed latency/cost on `aiEquipmentRecognition` and
+ * `aiMachineDescription`. All 4 callables' JSON output stayed valid and
+ * `finishReason: "STOP"` on both preview and 3.6; see the doc above for the
+ * full per-callable table and raw evidence.
  *
- * Left as an explicit, loud TODO rather than resolved silently: migrate off
- * this deprecated model, in its own reviewed change, before relying on this
- * gateway in production long-term. Track this alongside the location fix
- * below — both are pre-deployment gaps this sandboxed session cannot close
- * on its own (no live GCP credentials to smoke-test against).
+ * `gemini-3-flash-preview` was previously miscategorized in this comment as
+ * flatly "deprecated" — a live REST call the same day proved it still
+ * answers real requests, and Google's current lifecycle table lists it as
+ * Preview with no shutdown date announced, only a recommended replacement
+ * (`gemini-3.6-flash`, the model now in use here). The real risk was never
+ * imminent shutdown; it was staying on a preview tier indefinitely instead
+ * of the GA model Google already points migrators at.
  */
-export const AI_MODEL = "gemini-3-flash-preview";
+export const AI_MODEL = "gemini-3.6-flash";
 
 /**
  * Same provider-moderation policy the mobile clients used to set directly
@@ -108,16 +114,17 @@ const SAFETY_SETTINGS = [
  * `"global"`, NOT `europe-west1`. The first draft of this file defaulted to
  * `europe-west1` reasoning that compute and the model call should share a
  * region with `scaling.ts`'s Cloud Functions region — plausible, and wrong:
- * `gemini-3-flash-preview` (see `AI_MODEL` above) is documented as a
- * global-endpoint model on Vertex AI, independently confirmed 2026-08-26
- * against Google Cloud's own model documentation after GPT-PM's G1 round-1
- * review flagged the mismatch as a BLOCKER. A region-scoped location for a
- * global-only model is exactly the kind of failure that is invisible to
- * every test in this file's own suite (`ai_gateway.test.ts` mocks the SDK
- * client) and only surfaces as a live provider/location error — which this
- * sandboxed session has no live GCP credentials to actually trigger and
- * catch, so this remains a real, NOT YET independently smoke-tested,
- * pre-deployment verification gap. Still overridable via env var: Vertex
+ * every model this gateway has used (`gemini-3-flash-preview`, and now
+ * `gemini-3.6-flash` — see `AI_MODEL` above) is a global-endpoint model on
+ * Vertex AI, independently confirmed 2026-08-26 against Google Cloud's own
+ * model documentation after GPT-PM's G1 round-1 review flagged the mismatch
+ * as a BLOCKER, and reconfirmed live 2026-08-28 during the `AI_MODEL`
+ * migration (`core/G4_STEP1_MODEL_REVALIDATION_2026-08-28.md` — all 5
+ * candidate models answered real calls at `location: "global"` for this
+ * project). A region-scoped location for a global-only model is exactly the
+ * kind of failure that is invisible to every test in this file's own suite
+ * (`ai_gateway.test.ts` mocks the SDK client) and only surfaces as a live
+ * provider/location error. Still overridable via env var: Vertex
  * model/location support is a live GCP fact that can shift, and a wrong
  * default should be a one-line env fix, not a code change under pressure —
  * same posture as the `APP_CHECK_ENFORCED*` flags in `scaling.ts`.
