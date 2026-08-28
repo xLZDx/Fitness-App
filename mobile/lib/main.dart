@@ -274,18 +274,22 @@ Future<void> main() async {
   try {
     await FirebaseAppCheck.instance.activate(
       providerAndroid: kDebugMode
-          // Token passed in rather than auto-generated. Left to itself the
-          // SDK mints a fresh secret on every fresh install and prints it to
-          // logcat, and each one has to be pasted into the console by hand
-          // before that install can talk to anything. One token, registered
-          // once via the App Check API, is reused by every debug build on
-          // every machine.
+          // Token passed in rather than auto-generated: one token,
+          // registered once via the App Check API, is reused by every
+          // debug build on every machine.
           //
           // Supplied at run time, never committed:
           //   flutter run --dart-define=APP_CHECK_DEBUG_TOKEN=<value>
-          // Empty by default, and an empty string makes the SDK fall back to
-          // generating its own — so a developer who has not been given the
-          // token still gets a working (if manual) path rather than a crash.
+          // Empty by default. Verified on-device (MVP1.G4 Step 5, S8,
+          // 2026-08-29): an empty string is NOT a documented "generate one
+          // for me" signal on the current `firebase_app_check` Android
+          // plugin — it is sent to the backend as-is and rejected
+          // (`400 the debug_token cannot be empty`). A developer without a
+          // token must generate a real value (e.g. `crypto.randomUUID()`)
+          // and register it via the App Check Admin API or Console before
+          // App Check calls will succeed on a debug build; leaving this
+          // empty degrades to "App Check calls fail" (caught above), not a
+          // working manual path.
           ? const AndroidDebugProvider(
               debugToken: String.fromEnvironment('APP_CHECK_DEBUG_TOKEN'),
             )

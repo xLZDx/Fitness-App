@@ -33078,3 +33078,66 @@ exposure window established by chronology, all temporary probe artifacts (test A
 temporary IAM grant) cleaned up immediately after use. Continuing to Step 5 (S8 App Check
 debug-provider token, real backend E2E) per PM mode (§18) -- no stop after this checkpoint,
 per the operator's standing autonomous mandate for this gate + the redesign that follows it.
+
+## G4 Step 5: S8 App Check debug-provider E2E, real device, real positive control
+
+Full detail: `core/G4_STEP5_APP_CHECK_DEBUG_E2E_2026-08-29.md`. Built a debug APK
+(`flutter build apk --debug --target-platform android-arm64`), installed on the S8 via adb.
+
+Found the code's own comment was wrong: leaving `APP_CHECK_DEBUG_TOKEN` empty does not make the
+plugin auto-generate a secret (as documented) -- it sends the empty string to the backend, which
+rejects it (`400`). Generated a real UUID, rebuilt with `--dart-define`, got `403` (unregistered),
+registered it via the App Check Admin API (needed the same `X-Goog-User-Project` quota-project
+header `fn-enforcement` needed in Step 3), rebuilt/relaunched -- app now gets a genuine signed
+debug App Check JWT. Corrected the misleading comment in `main.dart`.
+
+Ran the actual Step-5 requirement GPT-PM named in Step 4 round 1 -- the positive control: valid
+non-anonymous Auth token (same signBlob-impersonation minting as Step 4 round 2) + the now-valid
+App Check debug token, sent to all four AI callables. All four returned `400 INVALID_ARGUMENT`
+(callable-specific validation messages) instead of `401` -- proving the request passed both Auth
+and App Check and reached real business logic. Confirmed via the structured verification log:
+`app=VALID; auth=VALID`. No Vertex call made/billed -- unnecessary for this proof.
+
+Cleaned up every temporary artifact same-session: removed the debug getToken() probe from
+`main.dart` (same lifecycle as the deleted `appCheckProbe`), deleted the throwaway test Auth
+user, revoked the temporary IAM impersonation grant. The registered debug token itself is kept
+(durable Step 5 deliverable for ongoing S8 testing), not deleted.
+
+**MVP1.G4 Step 5 is technically complete.** Sending for GPT-PM review, then commit + push under
+CLAUDE.md §20 on a genuine correlated APPROVE.
+
+## G4 Step 5 round 1: MAJOR -- stopping at input validation didn't prove the Vertex chain
+
+GPT-PM, correctly: `400 INVALID_ARGUMENT` proves App Check + Auth + the callable wrapper, but
+not handler -> quota -> `ai_gateway` -> Vertex -> response contract, which is the actual
+production path this gate introduced. Explicitly bounded and authorized: "four deliberately
+small calls ... no need for load testing."
+
+Built real per-callable payloads from each `ai_*.ts`'s own `parseInput` (not guessed):
+`aiCoachAdvice`, `aiExerciseGeneration` (`equipmentId: "treadmill"`), and for the two
+image-based callables a real photo from this repo's own `data/gym_photos_2026-07-30/` set
+(a hand-typed synthetic JPEG passed our own validation but Gemini's decoder rejected it --
+`400 Failed to decode image data`, itself proof the request reached Vertex -- a real photo fixed
+it). All four: `200` with real, correct, on-contract Gemini output (equipment recognition
+correctly named "cable machine" on the real photo; description and exercises equally sane).
+Full chain -- `fn-ai-runtime` identity, App Check, Auth, quota, Vertex -- proven live, no
+mocking. Same temporary-artifact cleanup as before (test Auth user, temporary IAM grant).
+
+Sent for round 2.
+
+## G4 Step 5 round 2: `VERDICT: APPROVE`, `final: true` -- Step 5 CLOSED, pushed under CLAUDE.md §20
+
+GPT-PM confirmed the real Vertex proof closes round 1's MAJOR, noted the image-path evidence
+(synthetic JPEG rejected by Gemini, real photo succeeded) independently rules out a mock/stub
+satisfying the test, and agreed token/cost characterization belongs to Step 6, not here. `GO:
+AUTHORIZED -- proceed to G4 Step 6`, `PUSH: AUTHORIZED`. Marked final via
+`--recover-request-id` (same `reviewInputHash`).
+
+Committed `core/DECISION_LOG.md`, `core/G4_STEP5_APP_CHECK_DEBUG_E2E_2026-08-29.md`,
+`mobile/lib/main.dart`. Fetched `origin/master` first (no drift since `3c163a9`), pushed.
+
+**MVP1.G4 Step 5 is now fully closed**: S8 debug-provider App Check token registered and
+durable for future testing, full chain proven live end to end (App Check -> Auth -> quota ->
+`fn-ai-runtime` -> Vertex/Gemini -> real response) on all four AI callables, no mocking anywhere,
+temporary test artifacts cleaned up each time. Continuing to Step 6 (observability + controlled
+real quota-exhaustion proof) per PM mode (§18) and the operator's standing autonomous mandate.
