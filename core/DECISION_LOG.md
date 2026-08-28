@@ -31984,3 +31984,77 @@ its own required close-out ("rerun the four callable contract tests plus a bound
 backend smoke [...] before that passes"), then continue to G4's remaining criteria
 (security/abuse boundary — `APP_CHECK_ENFORCED_AI`; IAM/runtime config; deployment
 provenance; real E2E; observability; device E2E; rollback mechanism; release guard).
+
+## G4 Step 1, round 2: GPT-PM found the verification incomplete, then it was worse than stated
+
+Sent commit `d12d8ac` to GPT-PM via direct `review.js` CLI (still avoiding the MCP
+`gpt_send_and_await` tool this session — `pm_bridge_mode_status` continued to report this
+session's own long-lived MCP connection as stale for routing). The background call
+(task `buqiw8j95`) appeared hung for ~19 minutes (PID 39188, CPU frozen at the same value
+across two checks 9 minutes apart, but still `Responding: True`) — killed it as a
+precaution, but the receipt (`D:\tmp\claude_gpt_review_gate\receipts.jsonl`,
+`2026-08-28T16:10:24.729Z`, `round:2`, `verdict:"MAJOR"`) turned out to have already been
+written before the kill; the process was in a post-completion cleanup/exit phase, not
+actually stuck. Full reply recovered from `pm-bridge`'s own `state/messages.jsonl`
+(messageId `94753950-0671-41c6-9223-ffda88967249`) since receipts.jsonl only stores
+metadata, not the reply text.
+
+**GPT-PM's round-2 ruling: MAJOR.** `gemini-3.6-flash` stays the approved target (no
+reason to revert `d12d8ac`) — but round 1's comparison only proved the model's output was
+syntactically valid JSON, not that it satisfies the actual contract the production
+Flutter clients enforce after parsing (`GeminiVisualEquipmentService.parseResponse`,
+`GeminiMachineDescriber.parseDescription`, `AiExerciseGenerator.parseResponse` — all
+three receive the model's raw JSON text unchanged from the Cloud Function; the schema
+contract is enforced client-side, not server-side). A syntactically valid `{}` can be
+silently discarded by all three. Required: validate through the real contract, record
+"usable recognition" / "valid MachineCard" / "N usable ExerciseItems," not just
+"JSON.parse succeeded." Also caught a MINOR: the doc's earlier
+"internally-contradictory-documentation" paragraph was left standing even after a later
+paragraph in the same document admitted it was a misreading — required a rewrite of the
+section itself, not an appended correction.
+
+**Verified GPT-PM's claim against the real files before acting (§3/§13), and found the
+actual defect was worse than GPT-PM's finding described.** Reading
+`gemini_equipment_service.dart` and `machine_describer.dart` directly showed the round-1
+test's JSON schemas for the two vision callables were not merely unvalidated against the
+client contract — they were **invented, not read from source**. The test asked the model
+for `{"machineName", "confidence", "category"}` and `{"name", "summary", "exercises"}`;
+the REAL prompts in `ai_equipment_recognition.ts`/`ai_machine_description.ts` ask for
+`{"machine", "confidence", "alternatives"}` and
+`{"isGymEquipment", "name", "summary", "uses"}` — verbatim, confirmed by reading both
+`buildPrompt()` functions directly. The round-1 test also used a blank/noise placeholder
+JPEG that only ever exercised the negative path (empty/unknown result), never a positive
+recognition. GPT-PM's finding was correct in substance (JSON.parse is not the contract)
+but had not caught that the test prompts themselves didn't match production.
+
+**Remediation:** rebuilt the comparison
+(`D:\Temp\claude\d--Repo\61e7dfec-d8b3-4a63-a048-387194650f47\scratchpad\model_comparison_test2.mjs`)
+with verbatim prompts (including the real 71-item `CANONICAL_MACHINES` and real
+`MUSCLE_VOCAB`), a real illustration (`mobile/assets/posters/girl/leg_press.jpg`,
+"leg press" is in `CANONICAL_MACHINES`) in place of the blank placeholder, and each
+JSON-mode response run through a faithful JS port of the actual Dart parser contract
+(ported the exact validation rules — resolvable machine name, non-empty name/summary,
+`usable` exercise items with non-empty title+steps).
+
+**Result: all 3 models produced a client-contract-usable result on every JSON-mode
+callable, on the same real image** — not just parseable JSON. All 3 independently
+identified the leg-press illustration as "smith machine" (a real recognition-accuracy
+question about that specific illustration, not model-choice-dependent — preview, 3.6 and
+3.7 all agree with each other). The thinking-leak pattern from round 1 reproduced exactly
+on the corrected test: `gemini-3.6-flash` matched `gemini-3-flash-preview`'s
+`thoughtsTokenCount: null` on both vision callables; `gemini-3.7-flash` leaked non-zero
+thinking tokens on both (47, 62) despite the identical `thinkingBudget: 0` override — the
+second independent confirmation of this finding, now on the real schema and a real image.
+`aiExerciseGeneration` (text-only) stayed at `null` for all 3 models on both test rounds —
+the leak is specific to 3.7 handling image input with thinking disabled.
+
+**Action taken:** rewrote the "Why not trust the docs alone" section of
+`G4_STEP1_MODEL_REVALIDATION_2026-08-28.md` to the corrected version (Preview tier, no
+announced shutdown, `gemini-3.6-flash` named as the recommended replacement) instead of
+leaving the misreading in place with a correction appended below it. Added the full
+round-2 finding, the self-verification that found the test-fidelity gap, and the
+contract-validated remediation table to the same document. `AI_MODEL =
+"gemini-3.6-flash"` stands, now backed by contract-level evidence.
+
+Next: send this remediation to GPT-PM for the close-out round it requested, then continue
+to G4's remaining criteria per its round-1 exit list.

@@ -5,30 +5,25 @@ Vertex model and region against current supported models. If `gemini-3-flash-pre
 must be replaced, treat the model change as a reviewed behavioral change, not a string
 substitution. Prove one bounded direct backend smoke test before deployment."
 
-## Why not trust the docs alone
+## Why not trust either the old source comment or the docs alone
 
-`functions/src/ai_gateway.ts`'s own comment (written 2026-08-26, during G1) says
-`gemini-3-flash-preview` "is a DEPRECATED model on Vertex AI (Google's own docs point
-migrators at `gemini-3.5-flash`)." Before either keeping or changing that, checked
-current web documentation first -- and it was **internally contradictory**:
+`functions/src/ai_gateway.ts`'s own comment (written 2026-08-26, during G1) said
+`gemini-3-flash-preview` "is a DEPRECATED model on Vertex AI." That framing overstated
+the case -- corrected here after GPT-PM's round-2 review caught this document itself
+repeating the same overstatement (see "GPT-PM ruling (round 2)" below for the full
+finding).
 
-- `ai.google.dev/gemini-api/docs/deprecations` (Gemini Developer API, not Vertex):
-  reported `gemini-3-flash-preview` shutdown date **2025-12-17**, replacement
-  `gemini-3.6-flash`.
-- `docs.cloud.google.com/vertex-ai/generative-ai/docs/release-notes` (Vertex AI, the
-  actual backend this codebase uses -- `ai_gateway.ts` sets `vertexai: true`): reported
-  `gemini-3-flash-preview` as **announced in public preview on 2025-12-17** (the SAME
-  date the other page called a shutdown), "no mention of retirement," and named
-  `gemini-2.5-flash` as the current stable recommendation -- itself later contradicted by
-  search results showing Gemini 2.5 Flash's own retirement date (2026-10-16).
-- Search results separately surfaced `gemini-3.7-flash` (newest, no shutdown date
-  announced) and `gemini-3.1-flash-lite`/`gemini-3.1-flash-image` as more recent entries
-  neither doc page mentioned.
-
-Given a same-day date used as both an "announcement" and a "shutdown" across two official
-Google pages, and models appearing in one source but not another, none of this was
-treated as reliable enough for a production decision on its own (CLAUDE.md §3 --
-evidence over inference; a citation is not proof by itself).
+**Corrected reading of Google's current lifecycle table** (`ai.google.dev`'s deprecations
+page, the authoritative source): `gemini-3-flash-preview`'s **release date** is
+2025-12-17; its **shutdown date is "No shutdown date announced."** There is no
+self-contradiction in the current table -- the earlier draft of this document misread the
+release date as a shutdown date, compared it against a second, differently-scoped page,
+and called the mismatch a "contradiction" when it was a misreading. What the table DOES
+say, correctly: Google names `gemini-3.6-flash` as the recommended replacement for
+`gemini-3-flash-preview`. That -- a named GA replacement for a Preview-tier model, not an
+imminent shutdown -- is the real, verifiable reason to migrate, and it is confirmed
+independently by the live REST evidence below (the model still answers real calls today;
+nothing here was ever about the model being dead).
 
 ## Live proof: called the real Vertex AI endpoint for this real project
 
@@ -117,15 +112,6 @@ GPT-PM rejected (A). Full reply in `core/DECISION_LOG.md`. Summary of the bindin
 - No CEO escalation needed for this call; it is a technical production-readiness
   decision GPT-PM is scoped to make.
 
-**Correction to the earlier documentation-contradiction claim:** the current official
-Google deprecations table lists `gemini-3-flash-preview`'s shutdown date as "No shutdown
-date announced," not 2025-12-17 -- 2025-12-17 is the *release* date, misread earlier as a
-shutdown date. The table does explicitly name `gemini-3.6-flash` as the recommended
-replacement. So: Vertex/global availability is live-proven (unchanged finding); the model
-remains Preview with no announced shutdown (corrected); Google nevertheless recommends
-migrating to the GA replacement (unchanged conclusion). The REST evidence stays valid --
-it proves availability, which documentation alone does not.
-
 ## Real-shaped comparison test (per GPT-PM's required B′ verification)
 
 Ran all 4 callables' exact real configs (`disableThinking`, `temperature`,
@@ -176,10 +162,90 @@ model. It is a pre-existing product-quality gap this test surfaced as a side eff
 which model is configured. Logged as a new finding for the backlog, out of scope for
 this model-choice decision -- see `core/DECISION_LOG.md`.
 
-## Decision
+## Model source change (round 1 close-out)
 
 **Migrated `AI_MODEL` in `functions/src/ai_gateway.ts` from `gemini-3-flash-preview` to
 `gemini-3.6-flash`.** `ai_gateway.test.ts`'s 24 tests pass unchanged (the suite asserts
 against the exported `AI_MODEL` constant, not a hardcoded literal). Not yet deployed --
 deployment is a later G4 criterion (targeted-only deployment with source↔live
-provenance), gated on its own review round.
+provenance), gated on its own review round. Commit `d12d8ac`.
+
+## GPT-PM ruling (round 2): MAJOR — model choice confirmed, verification incomplete
+
+Sent commit `d12d8ac` (the migration + the comparison table above) for the verification
+round GPT-PM's own round-1 ruling required. Full reply in `core/DECISION_LOG.md`. Summary:
+
+- **`gemini-3.6-flash` remains the approved migration target; no reason to revert
+  `d12d8ac`.** The thinking-suppression evidence (Finding 1/2 above) was accepted as
+  persuasive on its own terms.
+- **MAJOR (the real gap):** the round-1 comparison table proved the model's output was
+  syntactically valid JSON, not that it satisfies the actual contract the production
+  clients enforce AFTER parsing. `aiEquipmentRecognition`, `aiMachineDescription` and
+  `aiExerciseGeneration` all forward the model's raw JSON text unchanged; validation
+  happens client-side (`GeminiVisualEquipmentService.parseResponse`,
+  `GeminiMachineDescriber.parseDescription`, `AiExerciseGenerator.parseResponse` in the
+  Flutter source). A syntactically valid `{}` can still be silently discarded by all
+  three. Required: validate each 3.6 response through the real contract (or an
+  exact-equivalent port), record "usable recognition" / "valid MachineCard" / "N usable
+  ExerciseItems," not just "JSON.parse succeeded."
+- **MINOR:** the original "documentation is internally self-contradictory" paragraph was
+  left standing in this document even after a later paragraph admitted it was a
+  misreading -- two incompatible factual versions in the same durable record. Required:
+  rewrite the section itself, not append a correction below it.
+- Verdict: `gemini-3.6-flash` stays `AI_MODEL`; Step 1 is **not yet closed**.
+
+**Independent verification found the MAJOR was worse than stated.** Checking GPT-PM's
+claim against the real Dart parsers (per CLAUDE.md §3/§13 -- verify before acting)
+surfaced that the round-1 test's JSON schemas for the two vision callables were not just
+unvalidated against the client contract, they were **built from a guess, not read from
+source**: the test asked the model for `{"machineName", "confidence", "category"}` and
+`{"name", "summary", "exercises"}`, while the REAL prompts in
+`functions/src/ai_equipment_recognition.ts`/`ai_machine_description.ts` ask for
+`{"machine", "confidence", "alternatives"}` and
+`{"isGymEquipment", "name", "summary", "uses"}` -- verbatim, copied from source this time.
+The round-1 test also used a blank/noise placeholder JPEG, which only ever exercised the
+NEGATIVE path (empty/unknown result) -- never proved a positive, usable recognition.
+
+## Round-2 remediation: verbatim prompts, real image, real contract validation
+
+Rebuilt the comparison
+(`D:\Temp\claude\d--Repo\61e7dfec-d8b3-4a63-a048-387194650f47\scratchpad\model_comparison_test2.mjs`)
+with three fixes: (1) all 4 prompts copied verbatim from `functions/src/ai_*.ts`'s
+`buildPrompt()` source, including the real `CANONICAL_MACHINES` (71 items) and
+`MUSCLE_VOCAB` lists; (2) a real illustration,
+`mobile/assets/posters/girl/leg_press.jpg` (leg press is in `CANONICAL_MACHINES`), in
+place of the blank placeholder, so a positive recognition path is actually exercised; (3)
+each JSON-mode response run through a faithful JS port of the real Dart contract
+(`validateEquipmentRecognition`/`validateMachineDescription`/`validateExerciseGeneration`
+in the script) instead of `JSON.parse` alone.
+
+| Callable | Model | Contract result | thoughtsTokenCount |
+|---|---|---|---|
+| aiEquipmentRecognition | preview | usable: true — "smith machine" (0.95), resolved against CANONICAL_MACHINES | null |
+| | 3.6-flash | usable: true — "smith machine" (0.99) | **null** |
+| | 3.7-flash | usable: true — "smith machine" (0.98) | **47** |
+| aiMachineDescription | preview | usable: true — name/summary present, 5 usable `uses` lines | null |
+| | 3.6-flash | usable: true — name/summary present, 5 usable `uses` lines | **null** |
+| | 3.7-flash | usable: true — name/summary present, 5 usable `uses` lines | **62** |
+| aiExerciseGeneration | preview | usable: true — 4/4 items pass (title + steps present) | null |
+| | 3.6-flash | usable: true — 4/4 items pass | null |
+| | 3.7-flash | usable: true — 4/4 items pass | null |
+
+**All three models produced a client-contract-usable result on every JSON-mode callable,
+on the SAME real image, not just parseable JSON.** All three independently identified the
+`leg_press.jpg` illustration as "smith machine" (a real, model-driven recognition
+question about that illustration's fidelity, not a migration artifact -- preview, 3.6 and
+3.7 agree with each other, so this is not model-choice-dependent). The thinking-leak
+pattern from the round-1 test reproduces exactly: 3.6 matches preview's
+`thoughtsTokenCount: null` on both vision callables; 3.7 leaks non-zero thinking tokens on
+both (47, 62) despite the identical `thinkingBudget: 0` override. This is now the second,
+independent confirmation of Finding 2 above, on a real image and the real schema this
+time. `aiExerciseGeneration` (text-only) stays at `null` for all 3 models, matching the
+round-1 result -- the leak is specific to 3.7 handling image input with thinking disabled.
+
+## Decision (updated)
+
+**`AI_MODEL = "gemini-3.6-flash"` stands, confirmed by contract-level evidence, not just
+JSON-syntax evidence.** Sending this remediation (the corrected documentation section
+above + this round-2 test) back to GPT-PM for the close-out round it asked for. Deployment
+remains gated on its own later G4 criterion.
