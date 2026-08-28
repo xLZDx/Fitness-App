@@ -32583,3 +32583,52 @@ Three operator instructions recorded together, same live exchange:
    above) becomes the next priority, ahead of whatever else might otherwise be next.
    Recorded here as a standing sequencing decision for this and future sessions to
    honor, not just this turn's plan.
+
+## G4 Step 3 IAM: round 1 GPT-PM review (MAJOR), all findings independently verified, revised to six-tier matrix
+
+Round 1 (5-tier proposal, commit `cc759fc`) came back `VERDICT: MAJOR` — 3 MAJOR, 2
+MINOR. Per §3/§13, every finding was independently re-verified against real evidence
+before being accepted, not taken on the reviewer's word:
+
+1. **fn-video needs `storage.objectViewer`, not just `serviceAccountTokenCreator`** —
+   confirmed verbatim against Google's own signed-URL docs: the signer must itself hold
+   the permission for the operation the signed URL performs, not merely be able to sign.
+   Signing and working are different requirements; the original proposal only satisfied
+   the first.
+2. **`deleteAccount` was mis-grouped, missing its own Stripe dependency** — re-read
+   `functions/src/index.ts:2071-2200` directly: it's declared with
+   `secrets: [STRIPE_SECRET_KEY]` and cancels every Stripe subscription on the customer
+   before deleting Firestore/Auth state. The original `fn-account` tier gave it none of
+   that and instead over-granted `roles/firebaseauth.admin` (confirmed via
+   `gcloud iam roles describe` to include user create/update/sendEmail/configs, not just
+   delete) to a tier of otherwise low-risk functions.
+3. **`roles/aiplatform.user` too broad for fn-ai** — `ai_gateway.ts` calls only
+   `generateContent`. Confirmed live via `gcloud iam roles describe roles/aiplatform.user`
+   that the role also grants endpoint create/delete/deploy/undeploy/update, well beyond
+   the single `aiplatform.endpoints.predict` permission actually used.
+4. (MINOR) `serviceAccount` is a real Firebase Functions v2 `CallableOptions` field —
+   confirmed directly in `functions/node_modules/firebase-functions/lib/v2/options.d.ts`
+   — not only an external `gcloud`/`firebase deploy` flag as the original doc assumed.
+5. (MINOR) `appCheckProbe` must not inherit `fn-ai`'s permissions — it is inert and
+   temporary; folding it in would grant an inert probe paid-Vertex/Firestore access.
+
+Self-discovered during verification (not a GPT-PM finding): `assertAccountStillExists()`
+(`index.ts:215`) is called by `startFreeTrial`, `createCheckoutSession`, and
+`bookCoachSession` — read-only Auth lookup needed by one `fn-data` and two `fn-billing`
+functions, satisfied by `roles/firebaseauth.viewer` (confirmed via `gcloud iam roles
+describe` to be exactly `firebaseauth.users.get` plus read-only project/client
+permissions, no mutating Auth permission).
+
+**Revision**: `core/G4_STEP3_IAM_RUNTIME_CONFIG_2026-08-28.md` now proposes six tiers
+(`fn-canary`, `fn-data`, `fn-video`, `fn-billing`, `fn-account-delete`, `fn-ai`) per
+GPT-PM's explicit answer to the round-1 tier-count question, with two new custom IAM
+roles (`fitness.accountDeleter` = exactly `firebaseauth.users.delete`;
+`fitness.vertexPredictor` = exactly `aiplatform.endpoints.predict`) replacing the two
+predefined roles found too broad, `storage.objectViewer` added to `fn-video` scoped to
+the licensed bucket, and `serviceAccount` to be expressed in `scaling.ts` source rather
+than an external deploy patch. Rollout stays per-tier and independently revertible,
+sequenced `fn-canary` → `fn-data` → `fn-video` → `fn-billing` → `fn-account-delete`,
+with `fn-ai`'s IAM prepared but not attached to live traffic while the four AI callables
+remain HOLD-ed by Step 2. No live `gcloud iam` mutation has been made — every finding
+above came from read-only `gcloud`/source-code evidence. Revision going to GPT-PM as
+round 2 next.

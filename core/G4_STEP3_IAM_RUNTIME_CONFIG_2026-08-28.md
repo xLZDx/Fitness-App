@@ -95,24 +95,114 @@ across `functions/src` returned only that file and its own doc comments), so "St
 object read/write" is not a real requirement for anything except the signing pair, and
 even there it's IAM-mediated (`signBlob`), not a direct Storage grant.
 
-## Proposed remediation: four scoped service accounts, not one shared Editor
+## Round 1 GPT-PM review: MAJOR — 5-tier proposal had 3 real defects
 
-Not designed or applied yet — proposed here for review before any live IAM change,
-given the blast radius of getting this wrong on a project taking real Stripe payments.
+Sent for review at commit `cc759fc`. Verdict: `MAJOR`, 3 MAJOR + 2 MINOR findings. All
+five independently re-verified against real evidence below (§3/§13 — a reviewer's
+citation is not proof by itself) before being folded into the revision:
+
+1. **fn-video (`clipUrl`/`clipUrls`) needs `storage.objectViewer`, not just
+   `serviceAccountTokenCreator`.** The original proposal concluded Storage access was
+   "not a real requirement" for the signing pair because signing happens via IAM
+   `signBlob`, not a direct Storage read. That conflates *signing* the URL with
+   *the signed URL actually working*. Verified verbatim against Google's own signed-URL
+   docs (`docs.cloud.google.com/storage/docs/access-control/signing-urls-manually`):
+   *"Give the service account sufficient permission such that it could perform the
+   request that the signed URL will make. For example, if your signed URL will allow a
+   user to read object data, the service account must itself have permission to read the
+   object data."* Without it, `clipUrl` would keep issuing syntactically valid URLs that
+   403 the moment a client actually fetches the clip — a defect invisible to any test
+   that only checks the function returns a string.
+2. **`deleteAccount` was mis-grouped and its Stripe dependency was missed entirely.**
+   Re-read `functions/src/index.ts:2071-2200` directly: `deleteAccount` is declared
+   `{ ...RARE, secrets: [STRIPE_SECRET_KEY] }` and calls `stripeClient()` to cancel every
+   subscription on the Stripe customer *before* the Firestore/Auth deletion. The original
+   `fn-account` tier gave this function `roles/firebaseauth.admin` (which, confirmed via
+   `gcloud iam roles describe roles/firebaseauth.admin`, also grants
+   `firebaseauth.users.create`, `.update`, `.sendEmail` and all `configs.*` — far beyond
+   deletion) and no Stripe secret at all. Either the Stripe call would have thrown on
+   first live use, or the fix-in-place would have been to grant the whole tier —
+   including low-risk `optInDonorWall`/`reportEquipment`/`startFreeTrial` — Stripe and
+   broad Auth authority they never asked for.
+3. **`roles/aiplatform.user` is broader than `fn-ai` needs.** `ai_gateway.ts` calls only
+   `ai().models.generateContent(...)` — no endpoint management. Confirmed live:
+   `gcloud iam roles describe roles/aiplatform.user` lists `aiplatform.endpoints.create`,
+   `.delete`, `.deploy`, `.undeploy`, `.update` alongside `.predict` — a compromised AI
+   callable under this role could manipulate Vertex endpoint infrastructure, not just
+   spend inference tokens.
+4. (MINOR) **`serviceAccount` is a real Firebase Functions v2 source option, not only an
+   external `gcloud`/`firebase deploy` flag.** Confirmed directly in
+   `functions/node_modules/firebase-functions/lib/v2/options.d.ts:94,159`:
+   `serviceAccount?: string | Expression<string> | ResetValue;` on `CallableOptions`. The
+   original §"Why this is not being applied" reasoning (point 2, below) was wrong to
+   treat this as needing new plumbing — it needs a value, not a mechanism.
+5. (MINOR) **`appCheckProbe` (temporary, G4 Step 2 Option D) must not inherit `fn-ai`'s
+   permissions.** It calls nothing — no Firestore, no Vertex, no Storage, no secrets
+   (confirmed in the evidence table above, unchanged). Folding it into `fn-ai` "because
+   it's chronologically part of G4" would hand a deliberately inert probe paid-Vertex and
+   Firestore access it will never use.
+
+Additional requirement found during this verification pass, not flagged by GPT-PM
+(discovered while re-checking finding #2's blast radius): `assertAccountStillExists()`
+(`index.ts:215`, a read-only `admin.auth().getUser(uid)` guard) is called by
+`startFreeTrial`, `createCheckoutSession`, and `bookCoachSession` — i.e. one fn-data
+function and two fn-billing functions need read-only Auth lookup, independent of
+`deleteAccount`'s write-level need. `roles/firebaseauth.viewer` (confirmed via
+`gcloud iam roles describe`) is exactly `firebaseauth.users.get` plus a few
+project/client read permissions — no mutating Auth permission at all — and is the
+correct narrow grant for both tiers, distinct from `fn-account-delete`'s custom
+delete-only role.
+
+**Answers to the questions sent alongside round 1** (binding on the revision below):
+tier count is six, not five, and the probe should not become a seventh permanent tier;
+rollout is per-tier and independently revertible, sequenced canary → data → video →
+billing → account-delete, with `fn-ai`'s IAM prepared but not applied while the four AI
+callables stay HOLD-ed by Step 2; deferring the live IAM mutation past round 1 was
+correctly conservative, not overly so — the round found two concrete runtime breakages
+plus a real overgrant that a live mutation would have shipped.
+
+## Revised remediation: six scoped service accounts, not one shared Editor
+
+Not designed for live application yet — this is the round-2 proposal, revised per every
+finding above, still to be sent back to GPT-PM before any `gcloud iam` mutation.
 
 | New service account | Replaces default SA for | Grants (beyond the Firebase-managed baseline every SA needs) |
 |---|---|---|
-| `fn-billing@...` | `createCheckoutSession`, `createPortalSession`, `stripeWebhook`, `generateAnnualReceipt`, `bookCoachSession`, `startCoachOnboarding` | `roles/datastore.user` (Firestore), `roles/secretmanager.secretAccessor` scoped to the `STRIPE_*` secrets only |
-| `fn-video@...` | `clipUrl`, `clipUrls` | `roles/datastore.user` (Firestore, quota doc only in practice but IAM can't scope to a document), `roles/iam.serviceAccountTokenCreator` **on itself only** (unchanged behavior, narrower blast radius since no other function shares this identity) |
-| `fn-account@...` | `deleteAccount`, `exportAccountData`, `optInDonorWall`, `optOutDonorWall`, `reportEquipment`, `startFreeTrial`, `runEnforcementStateCheck` | `roles/datastore.user`, `roles/firebaseauth.admin` (covers `getUser`/`deleteUser`) |
-| `fn-ai@...` | `aiCoachAdvice`, `aiEquipmentRecognition`, `aiMachineDescription`, `aiExerciseGeneration` (not yet deployed), `appCheckProbe` (temporary) | `roles/datastore.user`, `roles/aiplatform.user` |
 | `fn-canary@...` | `runProductionCanary` | `roles/datastore.viewer`, `roles/secretmanager.secretAccessor` scoped to `CANARY_WEB_API_KEY` only |
+| `fn-data@...` | `exportAccountData`, `optInDonorWall`, `optOutDonorWall`, `reportEquipment`, `startFreeTrial`, `runEnforcementStateCheck` | `roles/datastore.user`, `roles/firebaseauth.viewer` (read-only `getUser` — needed by `startFreeTrial` via `assertAccountStillExists`; tier-shared with the lower-risk functions in this group as an accepted over-grant, see caveat below) |
+| `fn-video@...` | `clipUrl`, `clipUrls` | `roles/datastore.user` (quota doc), `roles/iam.serviceAccountTokenCreator` **on itself only**, **`roles/storage.objectViewer` scoped to the `LICENSED_BUCKET` only** (bucket-level IAM binding/condition, not project-wide) — fixes finding #1 |
+| `fn-billing@...` | `createCheckoutSession`, `createPortalSession`, `stripeWebhook`, `generateAnnualReceipt`, `bookCoachSession`, `startCoachOnboarding` | `roles/datastore.user`, `roles/secretmanager.secretAccessor` scoped to the `STRIPE_*` secrets only, `roles/firebaseauth.viewer` (read-only — `createCheckoutSession`/`bookCoachSession` via `assertAccountStillExists`) |
+| `fn-account-delete@...` | `deleteAccount` **only** | `roles/datastore.user`, `roles/secretmanager.secretAccessor` scoped to `STRIPE_SECRET_KEY` only (cancels the customer's subscriptions before deleting), **custom role `fitness.accountDeleter` = exactly `firebaseauth.users.delete`** (not `roles/firebaseauth.admin`) — fixes finding #2 |
+| `fn-ai@...` | `aiCoachAdvice`, `aiEquipmentRecognition`, `aiMachineDescription`, `aiExerciseGeneration` (not yet deployed, stays HOLD per Step 2) | `roles/datastore.user` (quota), **custom role `fitness.vertexPredictor` = exactly `aiplatform.endpoints.predict`** (not `roles/aiplatform.user`) — fixes finding #3. If a real smoke test against the deployed Gemini endpoint fails needing a permission this custom role lacks, add exactly that permission and record why; do not widen to `roles/aiplatform.user` pre-emptively |
 
-None of these five accounts would hold `roles/editor`, and only `fn-video` would hold
-any `iam.serviceAccounts.*` permission, self-scoped. `roles/datastore.user` is itself
-project-wide within Firestore (Firestore doesn't support collection-level IAM), so this
-is coarser than ideal but still a large reduction from Editor's cross-service scope —
-noted as a real remaining limitation, not hidden.
+`appCheckProbe` (temporary, G4 Step 2 Option D): per MINOR finding #5, **stays on the
+current default SA** rather than being folded into `fn-ai` or provisioned as a seventh
+identity — it is inert (confirmed: touches nothing), slated for deletion once Option D
+concludes on a real device (S23), and GPT-PM's own guidance was not to make it a
+permanent tier. Revisit only if it outlives Option D.
+
+None of these six accounts would hold `roles/editor`. Two custom roles replace
+predefined ones that were each independently confirmed too broad
+(`fitness.accountDeleter` instead of `roles/firebaseauth.admin`;
+`fitness.vertexPredictor` instead of `roles/aiplatform.user`). `roles/datastore.user` is
+itself project-wide within Firestore (Firestore doesn't support collection-level IAM),
+so grouping functions into a tier still shares whatever that tier's broadest member
+needs with its narrower siblings (e.g. `fn-data`'s `firebaseauth.viewer` reaching
+`optInDonorWall`, which never calls it) — a real, accepted remaining limitation, not
+hidden, and strictly narrower than the 5-tier proposal's equivalent gaps.
+
+**`serviceAccount` is expressed in source**, per MINOR finding #4: a `serviceAccount`
+field added to each tier's `CallableOptions` in `functions/src/scaling.ts` (or a
+per-function override where a profile is shared across tiers today), not an external
+`gcloud functions deploy --service-account=...` patch — so a normal `firebase deploy`
+cannot silently revert the identity to default.
+
+**Rollout, per GPT-PM's answer**: one tier at a time, independently revertible
+(redeploy that tier's functions under the old default SA to roll back), sequenced
+`fn-canary` → `fn-data` → `fn-video` → `fn-billing` → `fn-account-delete`. `fn-ai`'s IAM
+(service account + custom role) is created and validated with a bounded smoke test but
+not attached to live traffic, since the four AI callables remain undeployed under
+Step 2's own HOLD regardless of this gate.
 
 ## Why this is not being applied in this same pass
 
@@ -122,11 +212,10 @@ Five reasons, all evidence/risk-based rather than a unilateral call to defer:
    mis-scoped grant (missing one Firestore permission `datastore.user` doesn't cover, a
    typo'd secret binding) fails as a runtime error on a REAL user's checkout or webhook,
    not a test failure — worse than the status quo it would be fixing.
-2. **`--service-account` is a per-function deploy flag** (`firebase deploy` /
-   `gcloud functions deploy --service-account=...`), not something `scaling.ts`'s
-   `CallableOptions` profiles currently express — this needs either a per-function
-   override added to each profile or a new field threaded through, a small but real code
-   change to review alongside the IAM change itself.
+2. **Superseded by round 1 finding #4**: `serviceAccount` is a real `CallableOptions`
+   field (`options.d.ts:94,159`), not only an out-of-band `gcloud` flag — the remaining
+   work is adding it to `scaling.ts`'s profiles, still real code to review, but simpler
+   than originally scoped and no longer a reason to defer on its own.
 3. **Rollback plan needs to exist before rollout starts**, not be improvised mid-incident
    — each function's redeploy under a new SA should be independently revertible (redeploy
    under the old default SA) without needing to touch the other four groups.
@@ -151,6 +240,8 @@ own HOLD.
 
 ## Status
 
-Investigation complete, evidence-backed, remediation proposed but NOT applied. Sent to
-GPT-PM for review before any live `gcloud iam` mutation — see `core/DECISION_LOG.md` for
-the round and verdict once it lands.
+Round 1 (5-tier proposal, commit `cc759fc`): `VERDICT: MAJOR`, 3 MAJOR + 2 MINOR, all
+independently re-verified against real evidence and folded into the revised six-tier
+matrix above. No live `gcloud iam` mutation has been made — every finding above came
+from `gcloud ... describe`/`get-iam-policy`/`list` and source reads only. Revision ready
+for round 2. See `core/DECISION_LOG.md` for both rounds' verdicts as they land.
