@@ -32783,3 +32783,24 @@ the default Compute SA; needs its own permission investigation before it can mig
 Next: `fn-video` (the tier round 1's actual MAJOR finding was about), where a real
 functional proof -- fetching bytes through a freshly generated signed URL -- matters
 more than for plain CRUD functions and is worth doing properly.
+
+## G4 Step 3 IAM: tier 3 (fn-video) migrated, round-1 finding closed with a real byte fetch
+
+`RUNTIME_SA.video` added to `VIDEO_HOT`/`VIDEO_BATCH` in `scaling.ts` (safe as a shared
+constant here -- both profiles are exclusively `clipUrl`/`clipUrls`, unlike
+`INTERACTIVE`/`RARE`). Deployed together; `gcloud functions describe` confirmed both
+now run as `fn-video@fitness-app-korostelev.iam.gserviceaccount.com`.
+
+Since this tier is the actual subject of round 1's MAJOR finding, verification went
+beyond identity readback: generated a real access token AS `fn-video` via
+`iamcredentials.googleapis.com:generateAccessToken` (using a temporary
+`serviceAccountTokenCreator` self-grant on `fn-video`, added only for this test and
+removed immediately after -- confirmed removed via a follow-up `get-iam-policy`), then
+called the GCS JSON API directly against a real object,
+`exercises/men/Abdominals/45 degree bicycle twist knee to elbow.mp4`. Both the metadata
+GET and the `?alt=media` byte fetch returned `HTTP 200`; the fetch returned 266,805 real
+bytes. This is empirical proof of the exact chain round 1 found broken -- a signer
+without `storage.objectViewer` would 403 here -- closing that finding with a real fetch
+rather than a corrected review.
+
+Next: `fn-billing`, then `fn-account-delete`.

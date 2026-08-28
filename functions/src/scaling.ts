@@ -211,6 +211,7 @@ export const VIDEO_HOT: Capped<CallableOptions> = {
   maxInstances: 30,
   minInstances: 0,
   enforceAppCheck: APP_CHECK_ENFORCED_VIDEO,
+  serviceAccount: RUNTIME_SA.video,
 };
 
 /**
@@ -226,6 +227,7 @@ export const VIDEO_BATCH: Capped<CallableOptions> = {
   region: REGION,
   maxInstances: 20,
   enforceAppCheck: APP_CHECK_ENFORCED_VIDEO,
+  serviceAccount: RUNTIME_SA.video,
 };
 
 /**

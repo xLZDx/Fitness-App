@@ -408,16 +408,36 @@ Compute SA until its actual permission set (likely `roles/cloudfunctions.viewer`
 Firebase Rules/App Check/Auth-config read equivalents) is investigated with the same
 rigor as the other five tiers.
 
+## Tier migration: fn-video (3 of 5) — the actual round-1 finding, closed with real bytes
+
+`RUNTIME_SA.video` added directly to the `VIDEO_HOT`/`VIDEO_BATCH` profile constants in
+`scaling.ts` (both are exclusively `clipUrl`/`clipUrls`, no cross-tier sharing, so the
+shared-constant edit was safe here unlike `INTERACTIVE`/`RARE`). Deployed together;
+`gcloud functions describe` confirmed both now run as
+`fn-video@fitness-app-korostelev.iam.gserviceaccount.com`.
+
+This is the one finding round 1 was actually about, so it got the strongest available
+proof rather than a readback alone: generated a real IAM access token AS `fn-video`
+(via `iamcredentials.googleapis.com:generateAccessToken`, using a temporary
+`serviceAccountTokenCreator` self-grant added for this test only and removed
+immediately after) and used it to call the GCS JSON API directly against a real object
+in the licensed bucket —
+`exercises/men/Abdominals/45 degree bicycle twist knee to elbow.mp4`. Both the metadata
+read and `?alt=media` byte fetch returned `HTTP 200`; the download returned 266,805 real
+bytes. This is the exact chain round 1 found broken (a signer with no reader permission
+would 403 here) now proven working end to end, not just re-reviewed on paper.
+
 ## Status
 
 Round 1 (5-tier proposal, `cc759fc`): `MAJOR`, 3 MAJOR + 2 MINOR — fixed. Round 2
 (six-tier, `29647bb`): `MAJOR`, 1 MAJOR + 2 MINOR (fn-canary's own permissions) — fixed
 at `3f0475f`. Round 3 (fn-canary fix, `3f0475f`): `APPROVE`, additive provisioning
 authorized and applied live. **Tier 1 (`fn-canary`) migrated, verified live with a real
-triggered run. Tier 2 (`fn-data`) migrated for 5 of 6 functions**; `runEnforcementStateCheck`
-deliberately deferred (above) pending its own permission investigation. Remaining, in
-GPT-PM's order: `fn-video` → `fn-billing` → `fn-account-delete`, same discipline. `roles/
-editor` stays on the default Compute SA until every tier has migrated (including
+triggered run. Tier 2 (`fn-data`) migrated for 5 of 6 functions** (`runEnforcementStateCheck`
+deliberately deferred, above, pending its own permission investigation). **Tier 3
+(`fn-video`) migrated, verified with a real object fetch returning actual bytes.**
+Remaining, in GPT-PM's order: `fn-billing` → `fn-account-delete`, same discipline.
+`roles/editor` stays on the default Compute SA until every tier has migrated (including
 `runEnforcementStateCheck`, once scoped) and the App Check probe is deleted or moved off
 it. `fn-ai-runtime`'s identity is prepared but stays unattached; the four AI callables
 remain HOLD-ed by Step 2. See `core/DECISION_LOG.md` for all verdicts and migration
