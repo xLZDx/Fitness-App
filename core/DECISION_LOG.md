@@ -31203,3 +31203,65 @@ same posture as the deferred `app_test.dart` nav-label defect.
 
 Sent the full evidence pack back to GPT-PM as round 5, per its own statement that no
 further review would be needed once the three conditions were proven together.
+
+## 2026-08-28 (continued) -- GPT-PM round 5: APPROVE; round 6: final receipt; committed
+
+Round 5 verdict: **APPROVE**. All findings closed -- round-4 PowerShell scope-propagation
+MAJOR (fixed with the real `cmd /c exit N` native-exit mechanism, verified end to end),
+CI aggregation, and every earlier-round finding (rating persistence, mandatory rating
+assertion, cold-`ProviderScope` recovery, run_app.ps1 scope). The unrelated full-suite
+analyzer/test noise surfaced by the end-to-end `run_tests.ps1 -Integration` run was
+explicitly ruled out of scope by GPT-PM itself: "not caused by or required to close this
+workout-persistence remediation... do not reopen this gate for them."
+
+Round 5's receipt was not `final:true` (the `--final` flag was not passed on that call).
+Attempted `--recover-request-id` to mark the same exchange final without a new live round;
+it refused on a `reviewInputHash` mismatch -- Windows CRLF line-ending churn in `git diff`
+changed the computed hash between calls even though nothing in the repo had changed. Sent
+one more round (round 6, `--final`, unchanged diff, scope note stating explicitly that this
+was a closing formality only) rather than force a mismatched recovery. **Round 6: VERDICT
+APPROVE, `final:true`.** "Commit/push remains approved under the stated Gate policy."
+
+Committed as `829752d`: `.github/workflows/flutter.yml`, `core/DECISION_LOG.md`,
+`mobile/integration_test/workout_completion_persistence_test.dart`,
+`mobile/lib/features/equipment/workout_player_page.dart`, both report files, and
+`scripts/dev/run_tests.ps1`. Staged explicitly file-by-file (not `git add -A`) to avoid
+sweeping in unrelated untracked report files from other work in this shared repo
+(`reports/SPTR_*`, `reports/LANDING_COPY_REVIEW_*`, `reports/citation_verification_*`,
+`reports/equipment_identity_citation_review*` -- none of these are part of this gate).
+
+**Before pushing**: `git log` showed the branch 4 commits ahead of `origin/master`, not 1
+-- the 3 commits below this gate's own belong to the still-open MVP1.G3 Step 10B gate,
+whose round-4 GPT-PM verification call was explicitly deferred mid-session by the
+operator's interrupt (this same "workout results not saving" report) per
+`~/.claude/CLAUDE.md` SS11, logged above ("Interrupted before the round-4 GPT-PM
+verification call"). A `git push` is atomic for the whole branch -- pushing now would also
+push those 3 Step 10B commits, which never received their own closing review. Resumed that
+deferred round 4 before pushing anything; see the next entry.
+
+## 2026-08-28 (continued) -- Step 10B round 4, resumed: APPROVE, build-provenance MAJOR fully CLOSED
+
+Resumed the deferred review with `review.js --base 6ab9ff593608c31913dd81368f9ca2717f8ca45b
+--round 4`, covering both stacked remediation commits (`8c3c890` round-2 remediation +
+`48cc9f3` round-3 remediation) together against the last commit GPT-PM had actually
+reviewed (`6ab9ff5`). Scope note explained the interrupt and asked directly whether the
+round-2 Finding #4 (exact build/source-SHA provenance) is now closed for all six scenarios.
+
+**VERDICT: APPROVE.** GPT-PM verified each of the 6 scenarios' evidence individually
+(APK SHA-256 + backend eventId/issue.id + `g3_step10b_source_sha` custom key, all tracing
+to the same clean commit `6ab9ff5`), explicitly accepted the 4-separate-APKs design
+(compile-time fault flags are mutually exclusive, so one binary cannot exercise every
+scenario -- "requiring one binary... would make the evidence design worse rather than
+stronger"), and explicitly accepted permission-denial's negative-proof shape (exact
+APK/hash + a bounded zero-event backend query, deliberately no fabricated event). "All
+previously open Step 10B review findings are now closed. Step 10B is APPROVED... This
+authorizes commit/push of the already-committed Step 10B remediation under the current
+Gate policy." Noted for the record, not an action item here: GPT-PM was explicit that this
+closes Step 10B specifically, not the whole MVP1.G3 gate -- Step 10C reconciliation and a
+final whole-gate adversarial closure are still ahead.
+
+Marked final with one more round (`--final`, unchanged diff): **round 5, VERDICT APPROVE,
+`final:true`.**
+
+Both gates now hold a `final:true` APPROVE receipt. Pushing all 4 local commits
+(`2acd73d`..`829752d`) to `origin/master` next.
