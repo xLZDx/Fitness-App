@@ -33055,6 +33055,25 @@ immediately after. Full command sequence and log payload: `core/G4_STEP4_AI_GATE
 
 Sent for round 3.
 
+## G4 Step 6 round 3: `VERDICT: APPROVE`, `final: true` -- Step 6 CLOSED, pushed under CLAUDE.md §20
+
+GPT-PM confirmed the append-only correction closes round 2's MINOR cleanly, noted the
+historical entry stays intact with the correction immediately following it (readers see both),
+and confirmed round 1's observability evidence carries no regression. One optional housekeeping
+note (a stale "sent for round 2" status line in the gate doc) explicitly flagged as not affecting
+the verdict; fixed anyway post-approval. `GO: AUTHORIZED -- proceed to G4 Step 7`, `PUSH:
+AUTHORIZED`. Marked final via `--recover-request-id`.
+
+Committed `core/DECISION_LOG.md`, `core/G4_STEP6_OBSERVABILITY_QUOTA_PROOF_2026-08-29.md`.
+Fetched `origin/master` first (no drift since `d8b8af0`), pushed.
+
+**MVP1.G4 Step 6 is now fully closed**: all five AI Gateway observability metrics confirmed with
+genuine live production data (calls, latency, tokens, quota exhaustions, App Check attestation),
+and a real quota-exhaustion rejection independently confirmed at all three layers (HTTP contract,
+structured log, aggregated metric) with zero mocking and zero unnecessary Vertex cost. Continuing
+to Step 7 (product-level real-device E2E on the S8) per PM mode (§18) and the operator's standing
+autonomous mandate.
+
 ## G4 Step 4 round 3: `VERDICT: APPROVE`, `final: true` -- Step 4 CLOSED, pushed under CLAUDE.md §20
 
 GPT-PM confirmed the auth=VALID/app=MISSING evidence closes round 2's MAJOR, found no
@@ -33149,3 +33168,52 @@ regressions, all 5 GPT-PM review rounds, the per-callable evidence table, the ho
 window disclosure. Russian published as an artifact
 (`https://claude.ai/code/artifact/b7c3e968-921e-4fcc-8305-993b2fd6585c`), English kept as the
 durable in-repo record. `report_conform.py` ran clean on both.
+
+## G4 Step 6: observability activation + real quota-exhaustion proof
+
+Full detail: `core/G4_STEP6_OBSERVABILITY_QUOTA_PROOF_2026-08-29.md`. DoD: "observability
+activation incl. a real quota-exhaustion proof."
+
+Found the groundwork already existed: G3 Step 9B (2026-08-27) created all 5 AI Gateway log-based
+metrics live, recorded then as `NO_PRODUCTION_PRODUCER` since the AI callables were undeployed.
+Re-confirmed via `gcloud logging metrics list` -- all 5 still present. Queried
+`ai_gateway_calls`'s real time series: a genuine data point from Step 5's positive-control call
+(`aiCoachAdvice`/`success`, exact timestamp match) -- the metric is no longer producer-less.
+
+Real quota-exhaustion proof: rather than burning 40 real Vertex calls to reach
+`aiExerciseGeneration`'s actual daily ceiling, seeded `users/{uid}/usage/{today}` directly via
+Firestore REST to the real configured limit (40) for a throwaway test uid -- exercises the exact
+same `enforceDailyQuota` transaction a 40th real call would, without the preceding 39. One real
+call: `429 RESOURCE_EXHAUSTED`, structured log `{action, uid, used:40, limit:40}`, AND the
+`ai_gateway_quota_exhaustions` metric itself showed a real `value:1` data point at the same
+minute -- all three layers (HTTP contract, structured log, aggregated metric) independently
+confirm the same live event, nothing mocked. Cleaned up: usage doc deleted, test Auth user
+deleted, temporary IAM grant revoked.
+
+**MVP1.G4 Step 6 is technically complete.** Sending for GPT-PM review, then commit + push under
+CLAUDE.md §20.
+
+**Correction to the paragraph above** (round-2 MINOR; this log is append-only, corrected here
+rather than edited in place): "a 40th real call would" and "without the preceding 39" both
+describe the wrong boundary. Call 40 succeeds (`39 + 1 > 40` is false); call 41 is refused
+(`40 + 1 > 40` is true). The seeded value itself (`used: 40`) was always correct -- only the
+prose mislabeled which call it reproduces. Correct wording: "exercises the exact same
+`enforceDailyQuota` transaction the 41st call would take after 40 successful daily calls,
+without the cost of the preceding 40." The live evidence (429, structured log, metric point) is
+unaffected.
+
+## G4 Step 6 round 1: MAJOR -- only 2 of 5 metrics had confirmed real data
+
+GPT-PM, correctly: a green `ai_gateway_calls` point doesn't prove the latency/token distributions'
+own field-extraction paths work -- they read different jsonPayload fields entirely.
+`appcheck_attestation` was never re-checked either. Bounded remediation: query the existing Step
+4-5 window, no new Vertex calls.
+
+Queried all three against the same window: `ai_gateway_latency_ms` (6 series, e.g. aiCoachAdvice
+mean 3133ms), `ai_gateway_total_tokens_per_call` (4 series, e.g. aiCoachAdvice mean 678 tokens),
+`appcheck_attestation` (4 series, all four AI functions attested:true). All five AI Gateway
+metrics now confirmed with genuine production data, zero additional Vertex cost. Also fixed a
+MINOR wording error (seeded state models the 41st call, not the 40th -- the code allows the 40th
+and refuses the 41st; the seeded value itself, 40, was already correct).
+
+Sent for round 2.
