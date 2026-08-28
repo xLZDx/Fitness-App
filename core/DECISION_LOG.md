@@ -32936,3 +32936,24 @@ runs under a least-privilege identity, the default Compute SA holds nothing, and
 7th (`fn-ai-runtime`) identity is provisioned and ready for Step 4. The one open item
 (push to origin/master) is explicitly operator-gated, not a technical gap, and is
 recorded as such rather than worked around.
+
+## G4 Step 3: pushed on operator's explicit "го" -- MVP1.G4 Step 3 fully closed
+
+Operator asked "а почему гпт не попросил?" (why didn't GPT-PM ask you) after the prior
+turn's explicit push question -- answered: GPT-PM is a content reviewer (is this diff
+safe/ready), not the holder of CLAUDE.md §4's authorization boundary; it has no visibility
+into the operator's own chat instructions and structurally cannot be the one to ask for
+push-GO, that responsibility sits with the session, independent of what GPT-PM verdicts
+say. Operator then replied "го" -- a literal GO per §4, in direct response to the specific
+bounded ask ("push?"), authorizing exactly that action.
+
+Fetched `origin/master` first to confirm it had not moved (still `d0e0512`, same as GPT-PM
+saw in round 4) -- clean fast-forward, no conflict. Pushed `d0e0512..8bbfac2` (12 commits:
+the full Step 3 IAM redesign, all 4 GPT-PM review rounds, all 7 tiers migrated and
+verified live, the appCheckProbe deletion and Editor removal). Push succeeded.
+
+**MVP1.G4 Step 3 (IAM/runtime config) is now fully closed** -- technical work complete
+since the prior commit, remote provenance gap (the one item round 4 could not close
+itself) now resolved. Continuing to Step 4 per the revised, GPT-PM-agreed gate order:
+deploy the four AI Gateway callables with `APP_CHECK_ENFORCED_AI=true` from their first
+live revision, per PM mode (§18) -- no stop after this checkpoint.
