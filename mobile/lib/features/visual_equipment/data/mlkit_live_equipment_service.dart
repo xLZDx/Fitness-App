@@ -10,6 +10,7 @@ import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart'
 import 'package:path_provider/path_provider.dart';
 
 import '../../../core/camera/camera_session.dart';
+import '../../../core/debug/g3_step10b_probe.dart';
 import 'live_equipment_service.dart';
 import 'live_recognition.dart';
 import 'machine_text_anchor.dart';
@@ -166,6 +167,12 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
     // camera actually delivered.
     if (_frameCount++ % ocrEveryNthFrame != 0) return null;
     try {
+      // MVP1.G3 Step 10B fault injection -- see g3_step10b_probe.dart. Dead
+      // code (compiler-eliminated) in every build that does not pass
+      // --dart-define=G3_STEP10B_PROBE=true --dart-define=G3_STEP10B_OCR_FAIL=true.
+      if (G3Step10bProbe.forceOcrFailure) {
+        throw Exception('G3_STEP10B_PROBE: injected OCR anchor failure');
+      }
       final text = await recogniser.readFrame(input);
       if (text.trim().isEmpty) return null;
       final hits = matchMachineText(text, catalogue: catalogue);
@@ -191,14 +198,29 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
         // break the feature it instruments (and has no app to report against
         // at all in a plain `flutter test` run).
         try {
-          unawaited(
-            FirebaseCrashlytics.instance.recordError(
-              e,
-              stackTrace,
-              fatal: false,
-              reason: 'live OCR anchor failed',
-            ),
-          );
+          // Branch at the call site -- see gemini_equipment_service.dart's
+          // matching comment. G3_STEP10B_PROBE=false (every normal build)
+          // must call FirebaseCrashlytics directly, with no
+          // g3_step10b_probe.dart frame in between.
+          if (G3Step10bProbe.kEnabled) {
+            unawaited(
+              G3Step10bProbe.recordError(
+                e,
+                stackTrace,
+                fatal: false,
+                reason: 'live OCR anchor failed',
+              ),
+            );
+          } else {
+            unawaited(
+              FirebaseCrashlytics.instance.recordError(
+                e,
+                stackTrace,
+                fatal: false,
+                reason: 'live OCR anchor failed',
+              ),
+            );
+          }
         } catch (_) {
           // Reporting failure is not itself reportable -- see above.
         }

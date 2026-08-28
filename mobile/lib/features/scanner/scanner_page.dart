@@ -12,6 +12,7 @@ import '../ai_coach/ai_coach_sheet.dart';
 import '../../core/camera/camera_availability.dart';
 import '../../core/camera/camera_session.dart';
 import '../../core/camera/centre_crop.dart';
+import '../../core/debug/g3_step10b_probe.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../equipment/state/equipment_providers.dart';
@@ -193,14 +194,29 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         // break the feature it instruments (and has no app to report against
         // at all in a plain `flutter test` run).
         try {
-          unawaited(
-            FirebaseCrashlytics.instance.recordError(
-              e,
-              stackTrace,
-              fatal: false,
-              reason: 'camera initialization failed',
-            ),
-          );
+          // Branch at the call site -- see gemini_equipment_service.dart's
+          // matching comment. G3_STEP10B_PROBE=false (every normal build)
+          // must call FirebaseCrashlytics directly, with no
+          // g3_step10b_probe.dart frame in between.
+          if (G3Step10bProbe.kEnabled) {
+            unawaited(
+              G3Step10bProbe.recordError(
+                e,
+                stackTrace,
+                fatal: false,
+                reason: 'camera initialization failed',
+              ),
+            );
+          } else {
+            unawaited(
+              FirebaseCrashlytics.instance.recordError(
+                e,
+                stackTrace,
+                fatal: false,
+                reason: 'camera initialization failed',
+              ),
+            );
+          }
         } catch (_) {
           // Reporting failure is not itself reportable -- see above.
         }

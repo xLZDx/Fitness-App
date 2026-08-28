@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fitness_app/features/visual_equipment/data/gemini_equipment_service.dart'
+    show GeminiVisualEquipmentService;
 import 'package:fitness_app/features/visual_equipment/data/machine_card.dart';
 import 'package:fitness_app/features/visual_equipment/data/machine_describer.dart';
 import 'package:fitness_app/features/visual_equipment/data/scan_outcome.dart';
@@ -44,6 +46,29 @@ class _ThrowingService implements VisualEquipmentService {
     int topK = 3,
   }) async =>
       throw const VisualEquipmentException('model missing');
+}
+
+/// Answers, but not immediately -- stands in for a real
+/// `GeminiVisualEquipmentService` call that took long enough to cross its own
+/// `kSlowInferenceThreshold` and still succeeded. See the regression test
+/// below: MVP1.G3 Step 10B found this exact shape live, on a real device --
+/// `recogniseTimeoutProvider` and `GeminiVisualEquipmentService.
+/// kSlowInferenceThreshold` were both 20s, and since this controller's
+/// `.timeout()` wraps resize/index-load work that starts before that
+/// service-internal stopwatch does, the outer clamp always fired first. The
+/// user was shown a timeout card for an answer that, moments later, arrived.
+class _DelayedService implements VisualEquipmentService {
+  _DelayedService(this.delay, this.matches);
+
+  final Duration delay;
+  final List<VisualMatch> matches;
+
+  @override
+  Future<List<VisualMatch>> classifyFile({
+    required String path,
+    int topK = 3,
+  }) =>
+      Future.delayed(delay, () => matches);
 }
 
 /// Describes nothing, slowly enough to outlive the timeout.
@@ -249,6 +274,42 @@ void main() {
       expect(c.read(lastMachineCardProvider), isNotNull);
     });
 
+    test(
+        'a recognition answering after the slow-inference-equivalent window '
+        'still survives, because the outer timeout has real margin over it',
+        () async {
+      // MVP1.G3 Step 10B regression. Real production values were
+      // recogniseTimeoutProvider=20s and
+      // GeminiVisualEquipmentService.kSlowInferenceThreshold=20s -- equal,
+      // and since this controller's own `.timeout()` starts counting before
+      // the service's internal stopwatch does (it wraps resize/index-load
+      // too), the outer clamp always won that race. Scaled down 1000x here
+      // (60ms outer / 45ms answer) to prove the SAME shape without spending
+      // real seconds: a slow-but-successful answer must render as a real
+      // result, never as ScanOutcome.timeout, whenever the outer timeout
+      // genuinely has margin over how long the answer took.
+      final c = containerWith([
+        recogniseTimeoutProvider
+            .overrideWithValue(const Duration(milliseconds: 60)),
+        visualEquipmentServiceProvider.overrideWithValue(
+          _DelayedService(const Duration(milliseconds: 45), const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.9),
+          ]),
+        ),
+      ]);
+
+      await c
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/slow-but-real.jpg');
+
+      final state = c.read(visualEquipmentControllerProvider);
+      expect(state.requireValue.outcome, isNot(ScanOutcome.timeout),
+          reason: 'a 45ms answer must survive a 60ms outer timeout -- if '
+              'this becomes ScanOutcome.timeout, recogniseTimeoutProvider '
+              'has lost its margin over a slow-but-successful call again');
+      expect(state.requireValue.matches, isNotEmpty);
+    });
+
     test('a thrown recognition error is a rendered outcome, not a raw error',
         () async {
       final c = containerWith([
@@ -264,6 +325,34 @@ void main() {
           reason: 'the screen renders an outcome; the exception goes to logs');
       expect(state.requireValue.outcome, ScanOutcome.failed);
       expect(state.requireValue.isRetryable, isTrue);
+    });
+  });
+
+  group('recogniseTimeoutProvider / kSlowInferenceThreshold invariant', () {
+    test(
+        'the outer recognise timeout has real margin over the slow-inference '
+        'threshold it wraps', () {
+      // MVP1.G3 Step 10B: the two were found live, on a real device, exactly
+      // equal (both 20s) -- structurally impossible for a real slow-but-
+      // successful answer to ever reach the user, because this provider's
+      // `.timeout()` wraps GeminiVisualEquipmentService.classifyFile()
+      // entirely (resize/index-load included), so it starts counting before
+      // that service's own stopwatch does and therefore always fires first
+      // or at the same instant. A minimum 5s margin, not just >, per GPT-PM's
+      // review of the fix: "not merely 20.001s."
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final outer = container.read(recogniseTimeoutProvider);
+      const inner = GeminiVisualEquipmentService.kSlowInferenceThreshold;
+      expect(
+        outer - inner,
+        greaterThanOrEqualTo(const Duration(seconds: 5)),
+        reason: 'recogniseTimeoutProvider ($outer) must stay at least 5s '
+            'above GeminiVisualEquipmentService.kSlowInferenceThreshold '
+            '($inner), or a successful-but-slow answer is shown to the user '
+            'as a timeout again -- see the regression test above and '
+            'core/DECISION_LOG.md, MVP1.G3 Step 10B',
+      );
     });
   });
 }

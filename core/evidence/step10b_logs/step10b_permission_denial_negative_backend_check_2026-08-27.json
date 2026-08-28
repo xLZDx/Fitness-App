@@ -1,0 +1,37 @@
+{
+  "scenario": "permission denial (negative proof) -- revoking camera permission must NOT reach Crashlytics",
+  "remediation_note": "GPT-PM's Step 10B review (round 1) found the canonical file at this path was an empty {} with no query, window, filter, or result recorded -- an unproven negative masquerading as a closed case. This is the re-run: real device actions with recorded timestamps, plus the actual bounded Cloud Logging query and its raw result.",
+  "project_id": "fitness-app-korostelev",
+  "device": {
+    "serial": "ce02171299f0711005",
+    "model": "SM-G950F (Galaxy S8)"
+  },
+  "on_device_actions": [
+    { "utc": "2026-08-28T08:30:00Z", "action": "test window opened (PowerShell Get-Date, UTC)" },
+    { "utc": "2026-08-28T08:30:01.989Z", "action": "adb shell pm revoke com.fitnessapp.fitness_app.sptr android.permission.CAMERA (logcat-confirmed)" },
+    { "utc": "2026-08-28T08:30:02.610Z", "action": "ActivityManager: Killing 12151:com.fitnessapp.fitness_app.sptr (adj 0): permissions revoked (logcat-confirmed)" },
+    { "utc": "~2026-08-28T08:30:04Z", "action": "app relaunched via monkey -c LAUNCHER (new pid 16681)" },
+    { "utc": "~2026-08-28T08:30:07-09Z", "action": "navigated to Scan tab, tapped capture button" },
+    { "utc": "2026-08-28T08:30:27Z", "action": "test window closed (logcat dump taken, screenshot pulled)" },
+    { "utc": "~2026-08-28T08:31Z", "action": "camera permission re-granted (adb shell pm grant ...) to leave the device clean for subsequent tests" }
+  ],
+  "on_device_evidence": {
+    "processSurvived": "pid 16681 alive throughout, confirmed via pidof after the capture attempt -- no crash",
+    "screenshot": "screens/perm_denied_v2.png",
+    "logcatFile": "09_permission_denial_v2.log",
+    "crashlyticsActivityInWindow": "NONE -- grep for 'Crashlytics' across the full logcat capture (08-28 10:28:41 to 10:30:22 device-local, spanning the whole revoke/relaunch/capture-attempt sequence) shows only SDK init/session bookkeeping lines (FirebaseSessions cold-start, session id assignment). No 'disk worker: log non-fatal event to persistence' line and no 'Handling uncaught exception' line appear anywhere in the window -- i.e. recordError() was never called on-device for this run, consistent with scanner_page.dart's own design: only CameraUnavailableReason.initializationFailed is reported, permissionDenied deliberately is not (see that file's comment: 'reporting those to Crashlytics would turn a normal permission denial into an alert')."
+  },
+  "backend_query": {
+    "endpoint": "POST https://logging.googleapis.com/v2/entries:list",
+    "resourceNames": ["projects/fitness-app-korostelev"],
+    "filter": "resource.type=\"firebasecrashlytics.googleapis.com/App\" AND logName=\"projects/fitness-app-korostelev/logs/firebasecrashlytics.googleapis.com%2Fevents\" AND timestamp>=\"2026-08-28T08:29:00Z\" AND timestamp<=\"2026-08-28T08:45:00Z\"",
+    "orderBy": "timestamp desc",
+    "pageSize": 20,
+    "window_rationale": "08:29:00Z to 08:45:00Z UTC brackets the entire on-device action sequence (08:30:00Z-08:30:27Z) with margin on both sides, wide enough to catch a delayed upload without needing a cold relaunch (none occurred in this scenario, so nothing was ever queued to flush).",
+    "queries_run": [
+      { "executed_at_utc": "2026-08-28T08:31:23Z", "note": "early check, ~1 minute after the window closed", "entry_count": 0 },
+      { "executed_at_utc": "2026-08-28T08:36:30Z", "note": "final authoritative check, ~6 minutes after the window closed -- well past the ~90s-3.5min propagation delay observed for genuine events elsewhere in Step 10B", "entry_count": 0, "raw_response": {} }
+    ]
+  },
+  "conclusion": "Zero Crashlytics events of any kind exist in Cloud Logging for the exact window covering the permission-revoke, app relaunch, and capture attempt, confirmed by a real bounded query executed twice with a 5-minute gap. This matches the on-device logcat evidence (no recordError call fired at all) and the app's own design intent: a permission denial is a normal user-facing state, not an operational incident, and correctly generates no telemetry."
+}

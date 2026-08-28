@@ -1,0 +1,25 @@
+{
+  "scenario": "telemetry-facade failure -- app must survive its OWN Crashlytics call throwing",
+  "probe_build": "--dart-define=G3_STEP10B_PROBE=true --dart-define=G3_STEP10B_CAMERA_INIT_FAIL=true --dart-define=G3_STEP10B_TELEMETRY_FAIL=true",
+  "trigger": "camera-init-failure (as in scenario 1), which drives scanner_page.dart's catch block to call G3Step10bProbe.recordError()",
+  "mechanism": "forceTelemetryFacadeFailure=true makes G3Step10bProbe.recordError() return Future<void>.error(StateError(...)) instead of forwarding to FirebaseCrashlytics.instance.recordError. The unawaited/uncaught error was not swallowed silently: Flutter's own global uncaught-error handler (installed by main.dart, the same one Crashlytics registers against FlutterError.onError/PlatformDispatcher.onError) caught it and reported it as its own event.",
+  "process_survival": {
+    "pid_before": 12151,
+    "pid_after_scan_navigation": 12151,
+    "note": "Same pid throughout -- process never restarted or crashed. UI remained responsive; screenshot taken successfully after the failure."
+  },
+  "backend_event": {
+    "eventId": "2257438839229341906",
+    "issueId": "280b61820e5065955b6b234e85030418",
+    "issueTitle": "package:fitness_app/main.dart - main.<fn>",
+    "eventTime": "2026-08-28T08:15:37Z",
+    "message": "Bad state: G3_STEP10B_PROBE: injected Crashlytics facade failure",
+    "reportId": "6A91439B02CD00012F77E65E34B9967D"
+  },
+  "logcatCorrelation": {
+    "logFile": "08_telemetry_facade_failure.log",
+    "uncaughtExceptionHandled": "08-28 10:15:37.410 -- 'Handling uncaught exception \"io.flutter.plugins.firebase.crashlytics.FlutterError: Bad state: G3_STEP10B_PROBE: injected Crashlytics facade failure\" from thread Firebase Background Thread #3'",
+    "reportEnqueued": "08-28 10:15:37.600 -- 'Crashlytics report successfully enqueued to DataTransport: 6A91439B02CD00012F77E65E34B9967D'"
+  },
+  "conclusion": "The app survives its own telemetry call failing: no crash, no hang, camera-init-failure's own user-facing behavior was unaffected. The failure was not silently lost either -- Flutter's own top-level error handler (pre-existing app code, not modified by this probe) caught the escaped error and it reached the real Crashlytics backend under a distinct issue, which is a genuine (and reassuring) belt-and-suspenders property of the existing app, not something built for this test."
+}

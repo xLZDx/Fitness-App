@@ -12,6 +12,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/assets/asset_bootstrap.dart';
+import 'core/debug/g3_step10b_probe.dart';
 import 'core/health/platform_health_service.dart';
 import 'core/licences/asset_licences.dart';
 import 'core/health/state/health_providers.dart';
@@ -163,6 +164,14 @@ Future<void> main() async {
     );
   } catch (e) {
     debugPrint('R0: Crashlytics collection toggle failed, continuing: $e');
+  }
+  // MVP1.G3 Step 10B -- tags probe-build backend events with their exact
+  // source tree so a Crashlytics event can be matched to the APK that
+  // produced it. A no-op (empty sourceSha, dead code) in every normal build.
+  try {
+    await G3Step10bProbe.attachBuildProvenance();
+  } catch (e) {
+    debugPrint('R0: G3Step10bProbe provenance tagging failed, continuing: $e');
   }
   // B6 -- session diagnostics, debug builds only.
   //

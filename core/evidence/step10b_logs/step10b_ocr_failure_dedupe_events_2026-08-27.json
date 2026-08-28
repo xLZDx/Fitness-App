@@ -1,0 +1,141 @@
+{
+  "entries": [
+    {
+      "insertId": "dno0mkdgv9r",
+      "jsonPayload": {
+        "bundleOrPackage": "com.fitnessapp.fitness_app.sptr",
+        "sessionId": "5bad6f082bbd49288512fcf376bf45a0",
+        "name": "projects/988522745882/apps/1:988522745882:android:b9af40bb887a0388c201a3/events/6A90C90E021F000156DAB83EA575E62B_2257304162255564660",
+        "storage": {
+          "free": "2621280256",
+          "used": "54973132800"
+        },
+        "exceptions": [
+          {
+            "frames": [
+              {
+                "symbol": "MlKitLiveEquipmentService._anchorFromFrame",
+                "owner": "DEVELOPER",
+                "file": "package:fitness_app/features/visual_equipment/data/mlkit_live_equipment_service.dart",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "line": "173",
+                "offset": "173",
+                "blamed": true
+              },
+              {
+                "offset": "227",
+                "owner": "DEVELOPER",
+                "line": "227",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "symbol": "MlKitLiveEquipmentService._onFrame",
+                "file": "package:fitness_app/features/visual_equipment/data/mlkit_live_equipment_service.dart"
+              }
+            ],
+            "type": "io.flutter.plugins.firebase.crashlytics.FlutterError",
+            "subtitle": "Exception: G3_STEP10B_PROBE: injected OCR anchor failure. Error thrown live OCR anchor failed.",
+            "blamed": true,
+            "exceptionMessage": "Exception: G3_STEP10B_PROBE: injected OCR anchor failure. Error thrown live OCR anchor failed.",
+            "title": "Non-fatal Exception: io.flutter.plugins.firebase.crashlytics.FlutterError"
+          }
+        ],
+        "issueVariant": {
+          "id": "04ee08657b13978dc273d5733ed7175b"
+        },
+        "receivedTime": "2026-08-27T23:33:43Z",
+        "buildStamp": "generate_error_reason: NO_SUPPORTED_VCS_FOUND\n",
+        "installationUuid": "8AB60AAE0713DA7AC274FC04A4517B15CB7BF45B79845EFBEB9C55AD97C7079E",
+        "threads": [
+          {
+            "title": "Crashed: Firebase Background Thread #2",
+            "frames": [
+              {
+                "owner": "DEVELOPER",
+                "symbol": "MlKitLiveEquipmentService._anchorFromFrame",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "file": "package:fitness_app/features/visual_equipment/data/mlkit_live_equipment_service.dart",
+                "offset": "173",
+                "blamed": true,
+                "line": "173"
+              },
+              {
+                "owner": "DEVELOPER",
+                "file": "package:fitness_app/features/visual_equipment/data/mlkit_live_equipment_service.dart",
+                "offset": "227",
+                "line": "227",
+                "symbol": "MlKitLiveEquipmentService._onFrame",
+                "library": "com.fitnessapp.fitness_app.sptr"
+              }
+            ],
+            "name": "Firebase Background Thread #2",
+            "crashed": true
+          }
+        ],
+        "@type": "type.googleapis.com/google.firebase.crashlytics.v1main.Event",
+        "deviceOrientation": "PORTRAIT",
+        "platform": "ANDROID",
+        "appOrientation": "PORTRAIT",
+        "version": {
+          "displayVersion": "1.0.0",
+          "buildVersion": "14",
+          "displayName": "1.0.0 (14)"
+        },
+        "processState": "FOREGROUND",
+        "customKeys": {
+          "flutter_error_reason": "thrown live OCR anchor failed",
+          "flutter_error_exception": "Exception: G3_STEP10B_PROBE: injected OCR anchor failure"
+        },
+        "eventId": "2257304162255564660",
+        "operatingSystem": {
+          "modificationState": "UNMODIFIED",
+          "os": "UNKNOWN_OSNAME",
+          "deviceType": "MOBILE",
+          "displayVersion": "8.0.0",
+          "displayName": "Unknown (8.0.0)"
+        },
+        "blameFrame": {
+          "file": "package:fitness_app/features/visual_equipment/data/mlkit_live_equipment_service.dart",
+          "owner": "DEVELOPER",
+          "line": "173",
+          "symbol": "MlKitLiveEquipmentService._anchorFromFrame",
+          "offset": "173",
+          "blamed": true,
+          "library": "com.fitnessapp.fitness_app.sptr"
+        },
+        "memory": {
+          "used": "2407882752",
+          "free": "1221406720"
+        },
+        "issue": {
+          "errorType": "NON_FATAL",
+          "sampleEvent": "projects/988522745882/apps/1:988522745882:android:b9af40bb887a0388c201a3/events/6A90C90E021F000156DAB83EA575E62B_2257304162255564660",
+          "subtitle": "io.flutter.plugins.firebase.crashlytics.FlutterError - Exception: G3_STEP10B_PROBE: injected OCR anchor failure. Error thrown live OCR anchor failed.",
+          "title": "package:fitness_app/features/visual_equipment/data/mlkit_live_equipment_service.dart - MlKitLiveEquipmentService._anchorFromFrame",
+          "id": "ca5c8ec757f65047c585836bec52d7f2"
+        },
+        "eventTime": "2026-08-27T23:33:01Z",
+        "device": {
+          "formFactor": "PHONE",
+          "marketingName": "SM-G950F",
+          "model": "SM-G950F",
+          "architecture": "ARM64",
+          "manufacturer": "samsung",
+          "displayName": "samsung (SM-G950F)",
+          "companyName": "Samsung"
+        },
+        "crashlyticsSdkVersion": "20.0.5"
+      },
+      "resource": {
+        "type": "firebasecrashlytics.googleapis.com/App",
+        "labels": {
+          "app_id": "1:988522745882:android:b9af40bb887a0388c201a3",
+          "location": "global",
+          "resource_container": "projects/fitness-app-korostelev"
+        }
+      },
+      "timestamp": "2026-08-27T23:33:01Z",
+      "severity": "WARNING",
+      "logName": "projects/fitness-app-korostelev/logs/firebasecrashlytics.googleapis.com%2Fevents",
+      "receiveTimestamp": "2026-08-27T23:33:45.717589242Z"
+    }
+  ]
+}

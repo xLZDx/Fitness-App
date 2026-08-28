@@ -31,11 +31,22 @@ final machineTextRecogniserProvider =
 /// no retry and no way out but leaving the screen. That is the "no infinite
 /// spinner" rule, and it had no representation in the state at all.
 ///
-/// 20s is generous for a cloud round trip on gym wifi and still a wait rather
+/// 30s is generous for a cloud round trip on gym wifi and still a wait rather
 /// than a hang. A provider, not a constant, so a test can prove the timeout
-/// fires without spending twenty real seconds doing it.
+/// fires without spending thirty real seconds doing it.
+///
+/// MUST stay strictly greater than
+/// [GeminiVisualEquipmentService.kSlowInferenceThreshold] with real margin —
+/// this wraps the ENTIRE `classifyFile()` call, resize and index-load
+/// included, which start before that inner stopwatch does. A prior 20s/20s
+/// pairing meant the outer clamp always fired first: `.timeout()` does not
+/// cancel the underlying future, so the inner "successful but slow" telemetry
+/// call still fired moments later, but the user had already been shown the
+/// timeout card for an answer that in fact arrived. Found live on a real S8
+/// device during MVP1.G3 Step 10B (`core/DECISION_LOG.md`), which is also
+/// where `_recogniseTimeoutInvariantMargin` below is enforced as a test.
 final recogniseTimeoutProvider =
-    Provider<Duration>((_) => const Duration(seconds: 20));
+    Provider<Duration>((_) => const Duration(seconds: 30));
 
 /// How long the SECOND question -- "what is this, if it's not in our
 /// catalogue" -- may run before the user is told it did not answer.

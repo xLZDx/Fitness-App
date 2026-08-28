@@ -1,0 +1,201 @@
+{
+  "entries": [
+    {
+      "insertId": "-bmzi2xdgb0v",
+      "jsonPayload": {
+        "bundleOrPackage": "com.fitnessapp.fitness_app.sptr",
+        "sessionId": "b545cfde0ae6420486c67d5c850b7327",
+        "crashlyticsSdkVersion": "20.0.5",
+        "buildStamp": "generate_error_reason: NO_SUPPORTED_VCS_FOUND\n",
+        "exceptions": [
+          {
+            "frames": [
+              {
+                "blamed": true,
+                "owner": "DEVELOPER",
+                "offset": "158",
+                "symbol": "GeminiVisualEquipmentService.classifyFile",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "line": "158",
+                "file": "package:fitness_app/features/visual_equipment/data/gemini_equipment_service.dart"
+              },
+              {
+                "owner": "DEVELOPER",
+                "offset": "331",
+                "symbol": "HybridVisualEquipmentService.classifyFile",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "line": "331",
+                "file": "package:fitness_app/features/visual_equipment/data/gemini_equipment_service.dart"
+              },
+              {
+                "symbol": "Future.timeout.\u003cfn\u003e",
+                "file": "dart:async",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "owner": "PLATFORM"
+              },
+              {
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "file": "package:fitness_app/features/visual_equipment/state/visual_equipment_providers.dart",
+                "line": "101",
+                "owner": "DEVELOPER",
+                "symbol": "VisualEquipmentController.classifyFilePath",
+                "offset": "101"
+              },
+              {
+                "line": "396",
+                "file": "package:fitness_app/features/scanner/scanner_page.dart",
+                "owner": "DEVELOPER",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "symbol": "_ScannerPageState._classify",
+                "offset": "396"
+              },
+              {
+                "file": "package:fitness_app/features/scanner/scanner_page.dart",
+                "line": "356",
+                "offset": "356",
+                "symbol": "_ScannerPageState._recogniseWithCamera",
+                "owner": "DEVELOPER",
+                "library": "com.fitnessapp.fitness_app.sptr"
+              }
+            ],
+            "title": "Non-fatal Exception: io.flutter.plugins.firebase.crashlytics.FlutterError",
+            "blamed": true,
+            "type": "io.flutter.plugins.firebase.crashlytics.FlutterError",
+            "exceptionMessage": "G3_STEP10B_PROBE: injected cloud recognition failure. Error thrown cloud equipment recognition failed.",
+            "subtitle": "G3_STEP10B_PROBE: injected cloud recognition failure. Error thrown cloud equipment recognition failed."
+          }
+        ],
+        "deviceOrientation": "PORTRAIT",
+        "threads": [
+          {
+            "title": "Crashed: Firebase Background Thread #0",
+            "crashed": true,
+            "name": "Firebase Background Thread #0",
+            "frames": [
+              {
+                "line": "158",
+                "file": "package:fitness_app/features/visual_equipment/data/gemini_equipment_service.dart",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "owner": "DEVELOPER",
+                "blamed": true,
+                "symbol": "GeminiVisualEquipmentService.classifyFile",
+                "offset": "158"
+              },
+              {
+                "owner": "DEVELOPER",
+                "line": "331",
+                "file": "package:fitness_app/features/visual_equipment/data/gemini_equipment_service.dart",
+                "symbol": "HybridVisualEquipmentService.classifyFile",
+                "offset": "331",
+                "library": "com.fitnessapp.fitness_app.sptr"
+              },
+              {
+                "symbol": "Future.timeout.\u003cfn\u003e",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "owner": "PLATFORM",
+                "file": "dart:async"
+              },
+              {
+                "offset": "101",
+                "symbol": "VisualEquipmentController.classifyFilePath",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "owner": "DEVELOPER",
+                "line": "101",
+                "file": "package:fitness_app/features/visual_equipment/state/visual_equipment_providers.dart"
+              },
+              {
+                "file": "package:fitness_app/features/scanner/scanner_page.dart",
+                "line": "396",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "owner": "DEVELOPER",
+                "offset": "396",
+                "symbol": "_ScannerPageState._classify"
+              },
+              {
+                "offset": "356",
+                "symbol": "_ScannerPageState._recogniseWithCamera",
+                "line": "356",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "file": "package:fitness_app/features/scanner/scanner_page.dart",
+                "owner": "DEVELOPER"
+              }
+            ]
+          }
+        ],
+        "memory": {
+          "used": "2494836736",
+          "free": "1134452736"
+        },
+        "operatingSystem": {
+          "displayName": "Unknown (8.0.0)",
+          "os": "UNKNOWN_OSNAME",
+          "modificationState": "UNMODIFIED",
+          "deviceType": "MOBILE",
+          "displayVersion": "8.0.0"
+        },
+        "version": {
+          "buildVersion": "14",
+          "displayName": "1.0.0 (14)",
+          "displayVersion": "1.0.0"
+        },
+        "platform": "ANDROID",
+        "appOrientation": "PORTRAIT",
+        "name": "projects/988522745882/apps/1:988522745882:android:b9af40bb887a0388c201a3/events/6A90CB0001C7000169D4E51AA413EA0B_2257306224000185068",
+        "customKeys": {
+          "flutter_error_reason": "thrown cloud equipment recognition failed",
+          "flutter_error_exception": "G3_STEP10B_PROBE: injected cloud recognition failure"
+        },
+        "issue": {
+          "id": "f5f19f4eb0c87dcfbc6b97433eb8b68c",
+          "errorType": "NON_FATAL",
+          "subtitle": "io.flutter.plugins.firebase.crashlytics.FlutterError - G3_STEP10B_PROBE: injected cloud recognition failure. Error thrown cloud equipment recognition failed.",
+          "title": "package:fitness_app/features/visual_equipment/data/gemini_equipment_service.dart - GeminiVisualEquipmentService.classifyFile",
+          "sampleEvent": "projects/988522745882/apps/1:988522745882:android:b9af40bb887a0388c201a3/events/6A90CB0001C7000169D4E51AA413EA0B_2257306224000185068"
+        },
+        "@type": "type.googleapis.com/google.firebase.crashlytics.v1main.Event",
+        "eventTime": "2026-08-27T23:41:01Z",
+        "storage": {
+          "used": "54584401920",
+          "free": "3010011136"
+        },
+        "receivedTime": "2026-08-27T23:41:44Z",
+        "blameFrame": {
+          "library": "com.fitnessapp.fitness_app.sptr",
+          "owner": "DEVELOPER",
+          "symbol": "GeminiVisualEquipmentService.classifyFile",
+          "offset": "158",
+          "blamed": true,
+          "line": "158",
+          "file": "package:fitness_app/features/visual_equipment/data/gemini_equipment_service.dart"
+        },
+        "device": {
+          "manufacturer": "samsung",
+          "displayName": "samsung (SM-G950F)",
+          "model": "SM-G950F",
+          "formFactor": "PHONE",
+          "architecture": "ARM64",
+          "companyName": "Samsung",
+          "marketingName": "SM-G950F"
+        },
+        "issueVariant": {
+          "id": "9a2d2e721115dfb4bf4cc5294bca58e1"
+        },
+        "eventId": "2257306224000185068",
+        "processState": "FOREGROUND",
+        "installationUuid": "8AB60AAE0713DA7AC274FC04A4517B15CB7BF45B79845EFBEB9C55AD97C7079E"
+      },
+      "resource": {
+        "type": "firebasecrashlytics.googleapis.com/App",
+        "labels": {
+          "resource_container": "projects/fitness-app-korostelev",
+          "location": "global",
+          "app_id": "1:988522745882:android:b9af40bb887a0388c201a3"
+        }
+      },
+      "timestamp": "2026-08-27T23:41:01Z",
+      "severity": "WARNING",
+      "logName": "projects/fitness-app-korostelev/logs/firebasecrashlytics.googleapis.com%2Fevents",
+      "receiveTimestamp": "2026-08-27T23:41:46.533311311Z"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../debug/g3_step10b_probe.dart';
 import 'camera_availability.dart';
 import 'frame_brightness.dart';
 import 'nv21_converter.dart';
@@ -284,6 +285,12 @@ class CameraSession {
           ? ImageFormatGroup.yuv420
           : ImageFormatGroup.bgra8888,
     );
+    // MVP1.G3 Step 10B fault injection -- see g3_step10b_probe.dart. Dead
+    // code (compiler-eliminated) in every build that does not pass
+    // --dart-define=G3_STEP10B_PROBE=true --dart-define=G3_STEP10B_CAMERA_INIT_FAIL=true.
+    if (G3Step10bProbe.forceCameraInitFailure) {
+      throw Exception('G3_STEP10B_PROBE: injected camera initialization failure');
+    }
     await _camera!.initialize();
     // Widest available field of view. On phones whose logical camera extends
     // to the ultrawide lens this is the 0.6x the operator asked for; the

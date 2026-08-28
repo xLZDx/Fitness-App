@@ -1,0 +1,311 @@
+{
+  "entries": [
+    {
+      "insertId": "-1buomwddjgk",
+      "jsonPayload": {
+        "appOrientation": "PORTRAIT",
+        "buildStamp": "generate_error_reason: NO_SUPPORTED_VCS_FOUND\n",
+        "sessionId": "1b3f7a7009e0465aba0afc9a5a3b90d5",
+        "name": "projects/988522745882/apps/1:988522745882:android:b9af40bb887a0388c201a3/events/6A90C47E00D400012CE2E1702A4A25F4_2257299283422221026",
+        "version": {
+          "buildVersion": "14",
+          "displayVersion": "1.0.0",
+          "displayName": "1.0.0 (14)"
+        },
+        "eventTime": "2026-08-27T23:14:05Z",
+        "processState": "FOREGROUND",
+        "blameFrame": {
+          "offset": "249",
+          "line": "249",
+          "blamed": true,
+          "symbol": "CameraSession._startOnce",
+          "file": "package:fitness_app/core/camera/camera_session.dart",
+          "owner": "DEVELOPER",
+          "library": "com.fitnessapp.fitness_app.sptr"
+        },
+        "@type": "type.googleapis.com/google.firebase.crashlytics.v1main.Event",
+        "memory": {
+          "used": "2403717120",
+          "free": "1225572352"
+        },
+        "operatingSystem": {
+          "displayName": "Unknown (8.0.0)",
+          "displayVersion": "8.0.0",
+          "deviceType": "MOBILE",
+          "modificationState": "UNMODIFIED",
+          "os": "UNKNOWN_OSNAME"
+        },
+        "crashlyticsSdkVersion": "20.0.5",
+        "eventId": "2257299283422221026",
+        "device": {
+          "displayName": "samsung (SM-G950F)",
+          "marketingName": "SM-G950F",
+          "companyName": "Samsung",
+          "architecture": "ARM64",
+          "manufacturer": "samsung",
+          "model": "SM-G950F",
+          "formFactor": "PHONE"
+        },
+        "storage": {
+          "free": "2779013120",
+          "used": "54815399936"
+        },
+        "issueVariant": {
+          "id": "3496f688fd752065b1062553988a1ffa"
+        },
+        "threads": [
+          {
+            "crashed": true,
+            "name": "Firebase Background Thread #1",
+            "title": "Crashed: Firebase Background Thread #1",
+            "frames": [
+              {
+                "symbol": "CameraSession._startOnce",
+                "file": "package:fitness_app/core/camera/camera_session.dart",
+                "blamed": true,
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "owner": "DEVELOPER",
+                "offset": "249",
+                "line": "249"
+              },
+              {
+                "file": "package:fitness_app/core/camera/camera_session.dart",
+                "offset": "215",
+                "symbol": "CameraSession.start",
+                "owner": "DEVELOPER",
+                "line": "215",
+                "library": "com.fitnessapp.fitness_app.sptr"
+              },
+              {
+                "file": "package:fitness_app/features/scanner/scanner_page.dart",
+                "owner": "DEVELOPER",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "symbol": "_ScannerPageState._arm",
+                "line": "177",
+                "offset": "177"
+              }
+            ]
+          }
+        ],
+        "platform": "ANDROID",
+        "bundleOrPackage": "com.fitnessapp.fitness_app.sptr",
+        "exceptions": [
+          {
+            "title": "Non-fatal Exception: io.flutter.plugins.firebase.crashlytics.FlutterError",
+            "blamed": true,
+            "type": "io.flutter.plugins.firebase.crashlytics.FlutterError",
+            "subtitle": "CameraUnavailable(CameraUnavailableReason.initializationFailed, cause: Exception: G3_STEP10B_PROBE: injected camera initialization failure). Error thrown camera initialization failed.",
+            "exceptionMessage": "CameraUnavailable(CameraUnavailableReason.initializationFailed, cause: Exception: G3_STEP10B_PROBE: injected camera initialization failure). Error thrown camera initialization failed.",
+            "frames": [
+              {
+                "owner": "DEVELOPER",
+                "offset": "249",
+                "symbol": "CameraSession._startOnce",
+                "file": "package:fitness_app/core/camera/camera_session.dart",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "blamed": true,
+                "line": "249"
+              },
+              {
+                "owner": "DEVELOPER",
+                "file": "package:fitness_app/core/camera/camera_session.dart",
+                "offset": "215",
+                "line": "215",
+                "symbol": "CameraSession.start",
+                "library": "com.fitnessapp.fitness_app.sptr"
+              },
+              {
+                "owner": "DEVELOPER",
+                "offset": "177",
+                "symbol": "_ScannerPageState._arm",
+                "file": "package:fitness_app/features/scanner/scanner_page.dart",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "line": "177"
+              }
+            ]
+          }
+        ],
+        "installationUuid": "8AB60AAE0713DA7AC274FC04A4517B15CB7BF45B79845EFBEB9C55AD97C7079E",
+        "receivedTime": "2026-08-27T23:20:27Z",
+        "deviceOrientation": "PORTRAIT",
+        "issue": {
+          "id": "537b5488fac11d6f52f61cd548372c07",
+          "subtitle": "io.flutter.plugins.firebase.crashlytics.FlutterError - CameraUnavailable(CameraUnavailableReason.initializationFailed, cause: Exception: G3_STEP10B_PROBE: injected camera initialization failure). Error thrown camera initialization failed.",
+          "title": "package:fitness_app/core/camera/camera_session.dart - CameraSession._startOnce",
+          "errorType": "NON_FATAL",
+          "sampleEvent": "projects/988522745882/apps/1:988522745882:android:b9af40bb887a0388c201a3/events/6A90C47E00D400012CE2E1702A4A25F4_2257299283422221026"
+        },
+        "customKeys": {
+          "flutter_error_exception": "CameraUnavailable(CameraUnavailableReason.initializationFailed, cause: Exception: G3_STEP10B_PROBE: injected camera initialization failure)",
+          "flutter_error_reason": "thrown camera initialization failed"
+        }
+      },
+      "resource": {
+        "type": "firebasecrashlytics.googleapis.com/App",
+        "labels": {
+          "resource_container": "projects/fitness-app-korostelev",
+          "app_id": "1:988522745882:android:b9af40bb887a0388c201a3",
+          "location": "global"
+        }
+      },
+      "timestamp": "2026-08-27T23:14:05Z",
+      "severity": "WARNING",
+      "logName": "projects/fitness-app-korostelev/logs/firebasecrashlytics.googleapis.com%2Fevents",
+      "receiveTimestamp": "2026-08-27T23:20:30.096032406Z"
+    },
+    {
+      "insertId": "-1buomwddjgj",
+      "jsonPayload": {
+        "device": {
+          "companyName": "Samsung",
+          "architecture": "ARM64",
+          "manufacturer": "samsung",
+          "displayName": "samsung (SM-G950F)",
+          "formFactor": "PHONE",
+          "marketingName": "SM-G950F",
+          "model": "SM-G950F"
+        },
+        "eventId": "2257299042904052449",
+        "storage": {
+          "used": "54814105600",
+          "free": "2780307456"
+        },
+        "issueVariant": {
+          "id": "3496f688fd752065b1062553988a1ffa"
+        },
+        "eventTime": "2026-08-27T23:13:09Z",
+        "blameFrame": {
+          "library": "com.fitnessapp.fitness_app.sptr",
+          "file": "package:fitness_app/core/camera/camera_session.dart",
+          "owner": "DEVELOPER",
+          "offset": "249",
+          "symbol": "CameraSession._startOnce",
+          "blamed": true,
+          "line": "249"
+        },
+        "platform": "ANDROID",
+        "buildStamp": "generate_error_reason: NO_SUPPORTED_VCS_FOUND\n",
+        "deviceOrientation": "PORTRAIT",
+        "sessionId": "1b3f7a7009e0465aba0afc9a5a3b90d5",
+        "threads": [
+          {
+            "name": "Firebase Background Thread #1",
+            "title": "Crashed: Firebase Background Thread #1",
+            "frames": [
+              {
+                "line": "249",
+                "owner": "DEVELOPER",
+                "file": "package:fitness_app/core/camera/camera_session.dart",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "blamed": true,
+                "symbol": "CameraSession._startOnce",
+                "offset": "249"
+              },
+              {
+                "line": "215",
+                "symbol": "CameraSession.start",
+                "offset": "215",
+                "owner": "DEVELOPER",
+                "file": "package:fitness_app/core/camera/camera_session.dart",
+                "library": "com.fitnessapp.fitness_app.sptr"
+              },
+              {
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "owner": "DEVELOPER",
+                "file": "package:fitness_app/features/scanner/scanner_page.dart",
+                "symbol": "_ScannerPageState._arm",
+                "line": "177",
+                "offset": "177"
+              }
+            ],
+            "crashed": true
+          }
+        ],
+        "operatingSystem": {
+          "os": "UNKNOWN_OSNAME",
+          "modificationState": "UNMODIFIED",
+          "displayName": "Unknown (8.0.0)",
+          "displayVersion": "8.0.0",
+          "deviceType": "MOBILE"
+        },
+        "@type": "type.googleapis.com/google.firebase.crashlytics.v1main.Event",
+        "receivedTime": "2026-08-27T23:20:27Z",
+        "customKeys": {
+          "flutter_error_exception": "CameraUnavailable(CameraUnavailableReason.initializationFailed, cause: Exception: G3_STEP10B_PROBE: injected camera initialization failure)",
+          "flutter_error_reason": "thrown camera initialization failed"
+        },
+        "exceptions": [
+          {
+            "exceptionMessage": "CameraUnavailable(CameraUnavailableReason.initializationFailed, cause: Exception: G3_STEP10B_PROBE: injected camera initialization failure). Error thrown camera initialization failed.",
+            "type": "io.flutter.plugins.firebase.crashlytics.FlutterError",
+            "frames": [
+              {
+                "owner": "DEVELOPER",
+                "file": "package:fitness_app/core/camera/camera_session.dart",
+                "symbol": "CameraSession._startOnce",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "blamed": true,
+                "line": "249",
+                "offset": "249"
+              },
+              {
+                "symbol": "CameraSession.start",
+                "owner": "DEVELOPER",
+                "line": "215",
+                "offset": "215",
+                "file": "package:fitness_app/core/camera/camera_session.dart",
+                "library": "com.fitnessapp.fitness_app.sptr"
+              },
+              {
+                "line": "177",
+                "offset": "177",
+                "library": "com.fitnessapp.fitness_app.sptr",
+                "file": "package:fitness_app/features/scanner/scanner_page.dart",
+                "owner": "DEVELOPER",
+                "symbol": "_ScannerPageState._arm"
+              }
+            ],
+            "title": "Non-fatal Exception: io.flutter.plugins.firebase.crashlytics.FlutterError",
+            "subtitle": "CameraUnavailable(CameraUnavailableReason.initializationFailed, cause: Exception: G3_STEP10B_PROBE: injected camera initialization failure). Error thrown camera initialization failed.",
+            "blamed": true
+          }
+        ],
+        "crashlyticsSdkVersion": "20.0.5",
+        "bundleOrPackage": "com.fitnessapp.fitness_app.sptr",
+        "issue": {
+          "title": "package:fitness_app/core/camera/camera_session.dart - CameraSession._startOnce",
+          "id": "537b5488fac11d6f52f61cd548372c07",
+          "subtitle": "io.flutter.plugins.firebase.crashlytics.FlutterError - CameraUnavailable(CameraUnavailableReason.initializationFailed, cause: Exception: G3_STEP10B_PROBE: injected camera initialization failure). Error thrown camera initialization failed.",
+          "errorType": "NON_FATAL",
+          "sampleEvent": "projects/988522745882/apps/1:988522745882:android:b9af40bb887a0388c201a3/events/6A90C47E00D400012CE2E1702A4A25F4_2257299042904052449"
+        },
+        "version": {
+          "displayName": "1.0.0 (14)",
+          "displayVersion": "1.0.0",
+          "buildVersion": "14"
+        },
+        "appOrientation": "PORTRAIT",
+        "installationUuid": "8AB60AAE0713DA7AC274FC04A4517B15CB7BF45B79845EFBEB9C55AD97C7079E",
+        "memory": {
+          "used": "2375774208",
+          "free": "1253515264"
+        },
+        "processState": "FOREGROUND",
+        "name": "projects/988522745882/apps/1:988522745882:android:b9af40bb887a0388c201a3/events/6A90C47E00D400012CE2E1702A4A25F4_2257299042904052449"
+      },
+      "resource": {
+        "type": "firebasecrashlytics.googleapis.com/App",
+        "labels": {
+          "app_id": "1:988522745882:android:b9af40bb887a0388c201a3",
+          "resource_container": "projects/fitness-app-korostelev",
+          "location": "global"
+        }
+      },
+      "timestamp": "2026-08-27T23:13:09Z",
+      "severity": "WARNING",
+      "logName": "projects/fitness-app-korostelev/logs/firebasecrashlytics.googleapis.com%2Fevents",
+      "receiveTimestamp": "2026-08-27T23:20:30.096032406Z"
+    }
+  ],
+  "nextPageToken": "epABCosBAdAdWwQKBq3eWbMcGAHL9ezZ3BPMTSpYOij7pXn5wz_xgL51YDJZv8wuQyx4oeXUDj0yKG5-e4S3e3FLtVMqm6cSEFaLJVibKyaGlv-CXtu8jJT2r63teGbk27-I4v22Q2CGBcuwU-IE8SR8ceyawMkVzcNhtHB0oOKwjLFgMew8qDbJWddWpnn0aBAA"
+}

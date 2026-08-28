@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart'
     show compute, debugPrint, visibleForTesting;
 import 'package:image/image.dart' as img;
 
+import '../../../core/debug/g3_step10b_probe.dart';
 import '../../../core/firebase/functions_region.dart';
 import '../../equipment/data/equipment_alias_index.dart';
 import 'visual_equipment_match.dart';
@@ -130,7 +131,15 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
   /// a successful call that still took that long is a genuine performance
   /// signal, not routine cold-start/queueing noise (measured 15-18s cases
   /// documented above).
-  static const Duration _slowInferenceThreshold = Duration(seconds: 20);
+  ///
+  /// Public (not `_`-prefixed) so `visual_equipment_providers.dart`'s
+  /// `recogniseTimeoutProvider` -- which wraps this ENTIRE service's
+  /// `classifyFile()` call, starting before this stopwatch does -- can be
+  /// tested against it directly. The two were found live, on a real device,
+  /// numerically equal (MVP1.G3 Step 10B, `core/DECISION_LOG.md`): the outer
+  /// clamp always fired first, so a successful-but-slow answer was shown to
+  /// the user as a timeout every time, never as the success it was.
+  static const Duration kSlowInferenceThreshold = Duration(seconds: 20);
 
   late final CloudRecognitionAsk _cloud =
       _ask ?? cloudFunctionsEquipmentAsk(functions: _injected);
@@ -151,7 +160,32 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
     final String? text;
     final stopwatch = Stopwatch()..start();
     try {
-      text = await _askCloud(bytes);
+      // MVP1.G3 Step 10B fault injection -- see g3_step10b_probe.dart. Dead
+      // code (compiler-eliminated) in every build that does not pass
+      // --dart-define=G3_STEP10B_PROBE=true --dart-define=G3_STEP10B_INFERENCE_FAIL=true.
+      if (G3Step10bProbe.forceInferenceFailure) {
+        throw const VisualEquipmentException(
+            'G3_STEP10B_PROBE: injected cloud recognition failure');
+      }
+      if (G3Step10bProbe.injectedInferenceDelaySeconds > 0) {
+        // Fault injection continued: intercepts AT the `_askCloud()`
+        // dependency boundary rather than padding a real call, because the
+        // real `aiEquipmentRecognition` Cloud Function is not deployed in
+        // this environment -- it is one of the AI Gateway callables Step 10A
+        // deliberately left held back for a future gate, and this step must
+        // not touch that boundary just to manufacture evidence. The delay
+        // below stands in for real network/Gemini latency (not claimed as
+        // real -- see the labelled evidence this produces); everything AFTER
+        // it -- the stopwatch/threshold check, JSON parsing, alias
+        // resolution, and what the screen shows -- is the real, unmodified
+        // production path running on a well-formed canned success.
+        await Future<void>.delayed(
+          Duration(seconds: G3Step10bProbe.injectedInferenceDelaySeconds),
+        );
+        text = '{"machine": "treadmill", "confidence": 0.91}';
+      } else {
+        text = await _askCloud(bytes);
+      }
     } catch (e, stackTrace) {
       // Error + stack trace only -- no photo bytes, no prompt text, no
       // health/profile content reaches Crashlytics. Fire-and-forget: this
@@ -160,14 +194,33 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
       // break the feature it instruments (and has no app to report against
       // at all in a plain `flutter test` run).
       try {
-        unawaited(
-          FirebaseCrashlytics.instance.recordError(
-            e,
-            stackTrace,
-            fatal: false,
-            reason: 'cloud equipment recognition failed',
-          ),
-        );
+        // Branch at the call site, not inside the probe: G3_STEP10B_PROBE=false
+        // (every normal build) must call FirebaseCrashlytics directly, with
+        // NO g3_step10b_probe.dart frame in between. A null-stack report like
+        // the slow-inference one below is attributed to whatever Dart frame
+        // last called the plugin synchronously -- routing every build through
+        // a wrapper function moved that frame into the test harness and
+        // mis-grouped real production events under it. Found live during
+        // MVP1.G3 Step 10B's own GPT-PM review (`core/DECISION_LOG.md`).
+        if (G3Step10bProbe.kEnabled) {
+          unawaited(
+            G3Step10bProbe.recordError(
+              e,
+              stackTrace,
+              fatal: false,
+              reason: 'cloud equipment recognition failed',
+            ),
+          );
+        } else {
+          unawaited(
+            FirebaseCrashlytics.instance.recordError(
+              e,
+              stackTrace,
+              fatal: false,
+              reason: 'cloud equipment recognition failed',
+            ),
+          );
+        }
       } catch (_) {
         // Reporting failure is not itself reportable -- see above.
       }
@@ -178,18 +231,31 @@ class GeminiVisualEquipmentService implements VisualEquipmentService {
     // out already went through the catch block, so this only fires for a
     // call that SUCCEEDED but was still unusually slow -- the performance
     // half of OBS-1, not a second copy of the failure half.
-    if (stopwatch.elapsed >= _slowInferenceThreshold) {
+    if (stopwatch.elapsed >= kSlowInferenceThreshold) {
+      final message = 'equipment recognition succeeded but took '
+          '${stopwatch.elapsedMilliseconds}ms '
+          '(>= ${kSlowInferenceThreshold.inSeconds}s threshold)';
       try {
-        unawaited(
-          FirebaseCrashlytics.instance.recordError(
-            'equipment recognition succeeded but took '
-            '${stopwatch.elapsedMilliseconds}ms '
-            '(>= ${_slowInferenceThreshold.inSeconds}s threshold)',
-            null,
-            fatal: false,
-            reason: 'slow equipment recognition inference',
-          ),
-        );
+        // Same call-site branch as the catch block above -- see that comment.
+        if (G3Step10bProbe.kEnabled) {
+          unawaited(
+            G3Step10bProbe.recordError(
+              message,
+              null,
+              fatal: false,
+              reason: 'slow equipment recognition inference',
+            ),
+          );
+        } else {
+          unawaited(
+            FirebaseCrashlytics.instance.recordError(
+              message,
+              null,
+              fatal: false,
+              reason: 'slow equipment recognition inference',
+            ),
+          );
+        }
       } catch (_) {
         // Reporting failure is not itself reportable -- see above.
       }

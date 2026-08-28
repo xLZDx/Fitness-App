@@ -1,0 +1,78 @@
+{
+  "scenario": "slow-but-successful cloud inference (post-fix, recogniseTimeoutProvider=30s)",
+  "probe_build": "--dart-define=G3_STEP10B_PROBE=true --dart-define=G3_STEP10B_INFERENCE_DELAY_S=25",
+  "note": "Two independent real runs on the S8 both confirm the fix: 25s classification completes and reports 'succeeded but took Nms (>=20s threshold)', never a timeout. Run 1 (2026-08-27T23:59:07Z) predates the thermal shutdown; run 2 (2026-08-28T07:57:49Z) is the full re-run after device cooldown, with before/after screenshots and matched cold-relaunch DataTransport upload confirmation in logcat.",
+  "events": [
+    {
+      "run": 2,
+      "eventId": "2257434249538115988",
+      "issueId": "549b52248d4455a283a88259593fdd00",
+      "issueTitle": "package:fitness_app/core/debug/g3_step10b_probe.dart - G3Step10bProbe.recordError",
+      "sessionId": "4f8072ca294f47c1ac39f43b11eff537",
+      "eventTime": "2026-08-28T07:57:49Z",
+      "receivedTime": "2026-08-28T08:01:09Z",
+      "message": "equipment recognition succeeded but took 25003ms (>= 20s threshold). Error thrown slow equipment recognition inference.",
+      "customKeys": {
+        "flutter_error_reason": "thrown slow equipment recognition inference",
+        "flutter_error_exception": "equipment recognition succeeded but took 25003ms (>= 20s threshold)"
+      },
+      "deviceLogcatCorrelation": {
+        "captureTapLocalTime": "09:57:xx (approx, immediately preceding OCR pipeline start)",
+        "ocrPipelineStart": "09:57:24.088",
+        "ocrPipelineSucceeded": "09:57:24.387",
+        "crashlyticsDiskWorkerLog": "09:57:49.837",
+        "computedElapsedSincePipelineStart_ms": 25749,
+        "coldRelaunchReportEnqueuedToDataTransport": "10:01:10.776",
+        "reportId": "6A90D3AE02C80001240715A05366187A",
+        "logFiles": [
+          "06_slow_inference_success_fixed_v2.log",
+          "07_cold_relaunch_flush_v2.log"
+        ]
+      }
+    },
+    {
+      "run": 1,
+      "eventId": "2257310889253135745",
+      "issueId": "549b52248d4455a283a88259593fdd00",
+      "issueTitle": "package:fitness_app/core/debug/g3_step10b_probe.dart - G3Step10bProbe.recordError",
+      "sessionId": "e5bdf8f7c7d54b42aafee6a7fafc9783",
+      "eventTime": "2026-08-27T23:59:07Z",
+      "receivedTime": "2026-08-28T00:11:34Z",
+      "message": "equipment recognition succeeded but took 25001ms (>= 20s threshold). Error thrown slow equipment recognition inference.",
+      "customKeys": {
+        "flutter_error_reason": "thrown slow equipment recognition inference",
+        "flutter_error_exception": "equipment recognition succeeded but took 25001ms (>= 20s threshold)"
+      },
+      "note": "Predates the thermal-shutdown interruption; recovered from Cloud Logging retroactively, not re-verified on-device (device was mid-recovery at the time)."
+    }
+  ],
+  "acceptance_against_gptpm_checklist": {
+    "ui_reaches_success_not_timeout_card": "CONFIRMED with a real screenshot -- see run 3 below. Runs 1-2 left this unproven (GPT-PM MAJOR finding, round 1 review): the match card renders inside a DraggableScrollableSheet, below the fold at the sheet's resting size, and was never revealed by a plain screenshot. Swiping the sheet up on run 3 revealed it: 'Беговая дорожка' (treadmill), 91% confidence, added to 'Мои тренажёры' history.",
+    "inner_stopwatch_sees_ge_20s": "true -- 25003ms / 25001ms / 25004ms across three runs",
+    "real_production_telemetry_fires": "true -- G3Step10bProbe.recordError -> FirebaseCrashlytics.instance.recordError, same call site production uses",
+    "backend_event_present": "true -- eventId + issue.id present in all three runs, via Crashlytics -> Cloud Logging export",
+    "device_session_build_correlate": "true for runs 2 and 3 -- exact-second correlation between logcat capture timeline and the Cloud Logging eventTime/receivedTime, cold-relaunch DataTransport upload confirmed in the same logcat capture; run 3 additionally carries a g3_step10b_source_sha custom key tying the event to the exact working-tree build that produced it"
+  },
+  "run_3_remediation": {
+    "context": "GPT-PM round-1 review of the Step 10B evidence package found 4 MAJORs: (1) permission-denial evidence file was an empty {}, (2) this success state was unproven, (3) the probe facade unconditionally routed every recordError() call through g3_step10b_probe.dart even in normal builds, mis-attributing production Crashlytics events, (4) no build/source SHA tied an event to the exact APK that produced it. This run re-verifies (2) after fixing (3) and (4) in code.",
+    "build": "--dart-define=G3_STEP10B_PROBE=true --dart-define=G3_STEP10B_INFERENCE_DELAY_S=25 --dart-define=G3_STEP10B_SOURCE_SHA=b7338920-dirty-remediation2",
+    "event": {
+      "eventId": "2257444711283601425",
+      "issueId": "549b52248d4455a283a88259593fdd00",
+      "eventTime": "2026-08-28T08:38:25Z",
+      "message": "equipment recognition succeeded but took 25004ms (>= 20s threshold). Error thrown slow equipment recognition inference.",
+      "customKeys": {
+        "g3_step10b_source_sha": "b7338920-dirty-remediation2",
+        "flutter_error_reason": "thrown slow equipment recognition inference",
+        "flutter_error_exception": "equipment recognition succeeded but took 25004ms (>= 20s threshold)"
+      }
+    },
+    "ui_evidence": {
+      "note": "The plain post-capture screenshot (screens/poll_6.png) still shows the idle capture view -- the DraggableScrollableSheet's resting size does not include the result card. Swiping the sheet up (adb shell input swipe) revealed it.",
+      "screenshot_idle": "screens/poll_6.png",
+      "screenshot_expanded": "screens/sheet_expanded.png",
+      "rendered_result": "Беговая дорожка (treadmill), 91% СОВПАДЕНИЕ / уверенность 91%, listed under Мои тренажёры -- matches the probe's canned {\"machine\": \"treadmill\", \"confidence\": 0.91} exactly, resolved through the real equipment_aliases.json/equipment.json catalogue (treadmill is a genuine catalogue id, not a fixture invented for this test)"
+    },
+    "process": "am force-stop + monkey launcher relaunch, logcat -c before capture, six screenshots polled at ~1.8s intervals from t+22s to t+32s (all showed idle -- the card was never in the polled viewport, only reachable by scrolling), cold-relaunch afterward to flush and confirm the DataTransport upload (report 6A9148DE029A00014CA96492910E3D86)."
+  }
+}
