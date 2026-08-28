@@ -1,0 +1,368 @@
+<title>AI Gateway: Steps 4-5</title>
+<style>
+  :root {
+    --ink: #12161c;
+    --paper: #f5f6f4;
+    --surface: #ffffff;
+    --surface-2: #eceeea;
+    --border: #d7dad4;
+    --text: #1c2128;
+    --text-muted: #5b6472;
+    --accent: #0f6d63;
+    --accent-soft: #dcece8;
+    --amber: #92400e;
+    --amber-soft: #fbe8d3;
+    --green: #15803d;
+    --green-soft: #dcf3e3;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+    --sans: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #eef0ec;
+      --paper: #14181e;
+      --surface: #1a1f27;
+      --surface-2: #212730;
+      --border: #313944;
+      --text: #e4e7e1;
+      --text-muted: #93a0ac;
+      --accent: #4fd8c4;
+      --accent-soft: #163832;
+      --amber: #f3b562;
+      --amber-soft: #3a2a12;
+      --green: #6bdd9a;
+      --green-soft: #123626;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #eef0ec;
+    --paper: #14181e;
+    --surface: #1a1f27;
+    --surface-2: #212730;
+    --border: #313944;
+    --text: #e4e7e1;
+    --text-muted: #93a0ac;
+    --accent: #4fd8c4;
+    --accent-soft: #163832;
+    --amber: #f3b562;
+    --amber-soft: #3a2a12;
+    --green: #6bdd9a;
+    --green-soft: #123626;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.55;
+    font-size: 15.5px;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 48px 24px 96px; }
+  header { border-bottom: 1px solid var(--border); padding-bottom: 28px; margin-bottom: 8px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 10px;
+  }
+  h1 {
+    font-family: var(--mono); font-size: clamp(1.6rem, 3.4vw, 2.15rem); font-weight: 600;
+    letter-spacing: -0.01em; margin: 0 0 12px; text-wrap: balance; color: var(--ink);
+  }
+  .dek { color: var(--text-muted); font-size: 1.02rem; max-width: 62ch; margin: 0; }
+  h2 {
+    font-family: var(--mono); font-size: 1.02rem; font-weight: 600; letter-spacing: 0.01em;
+    margin: 44px 0 16px; color: var(--ink); display: flex; align-items: baseline; gap: 10px;
+  }
+  h2::before { content: attr(data-n); color: var(--accent); font-size: 0.85em; }
+  p { margin: 0 0 14px; }
+  .lead { font-size: 1.02rem; }
+  a { color: var(--accent); }
+  code {
+    font-family: var(--mono); background: var(--surface-2); padding: 0.1em 0.4em;
+    border-radius: 4px; font-size: 0.88em;
+  }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; margin-bottom: 16px; }
+  .status-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0 8px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .stat .n { font-family: var(--mono); font-size: 1.5rem; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+  .rounds { display: flex; flex-direction: column; gap: 0; }
+  .round { position: relative; padding: 4px 0 22px 30px; border-left: 2px solid var(--border); margin-left: 6px; }
+  .round:last-child { border-left-color: transparent; padding-bottom: 0; }
+  .round::before {
+    content: ""; position: absolute; left: -7px; top: 4px; width: 12px; height: 12px;
+    border-radius: 50%; background: var(--surface); border: 2px solid var(--accent);
+  }
+  .round.approve::before { background: var(--green); border-color: var(--green); }
+  .round-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .round-title { font-weight: 600; font-family: var(--mono); font-size: 0.96rem; }
+  .pill {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px; font-weight: 600;
+  }
+  .pill.major { background: var(--amber-soft); color: var(--amber); }
+  .pill.approve { background: var(--green-soft); color: var(--green); }
+  .round-body { color: var(--text-muted); font-size: 0.94rem; }
+  .round-body ul { margin: 8px 0 0; padding-left: 20px; }
+  .round-body li { margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); background: var(--surface-2); }
+  tr:last-child td { border-bottom: none; }
+  td.sa { font-family: var(--mono); color: var(--accent); white-space: nowrap; }
+  .checklist { list-style: none; margin: 0; padding: 0; }
+  .checklist li { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 0.94rem; }
+  .checklist li:last-child { border-bottom: none; }
+  .mark { flex-shrink: 0; font-family: var(--mono); }
+  .mark.done { color: var(--green); }
+  .mark.pending { color: var(--text-muted); }
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 14px 18px;
+    border-radius: 0 8px 8px 0; font-size: 0.92rem; color: var(--text); margin: 16px 0;
+  }
+  .callout.amber { border-left-color: var(--amber); background: var(--amber-soft); }
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.82rem; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · MVP1.G4 · Steps 4-5</p>
+    <h1>AI Gateway: App Check enforced, and the full chain proven to Vertex</h1>
+    <p class="dek">Four AI callables shipped under their own identity with App Check enforced
+      from their first live revision, two real regressions caught and fixed before they became
+      a problem, and the full request → Auth → App Check → quota → Vertex/Gemini → response
+      chain proven live — with no mocking anywhere.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 2a8ba52</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="status-row">
+    <div class="stat"><div class="n">5</div><div class="l">GPT-PM review rounds across both steps</div></div>
+    <div class="stat"><div class="n">4/4</div><div class="l">AI callables — real Vertex response</div></div>
+    <div class="stat"><div class="n">2</div><div class="l">Step 3 regressions found and fixed</div></div>
+  </div>
+
+  <h2 data-n="01">Step 4 — four AI callables, App Check from the first revision</h2>
+  <p class="lead"><code>aiCoachAdvice</code>, <code>aiEquipmentRecognition</code>,
+    <code>aiMachineDescription</code>, <code>aiExerciseGeneration</code> shipped under their own
+    least-privilege identity, <code>fn-ai-runtime</code>, with App Check enforced. Along the way,
+    two side-effect regressions from closing Step 3 were found and fixed — not hypothetical, they
+    genuinely broke the first deploy and the first test.</p>
+
+  <div class="rounds">
+    <div class="round">
+      <div class="round-head">
+        <span class="round-title">Regression A — the build failed before the first deploy</span>
+        <span class="pill major">Found at deploy time</span>
+      </div>
+      <div class="round-body">
+        <p>Removing <code>roles/editor</code> from the default Compute SA (Step 3's closure) also
+          removed <code>roles/cloudbuild.builds.builder</code>, the role gen2 function builds
+          actually run under — the build failed for all four at once. Confirmed against Google's
+          own documentation, fixed with one narrow role, nothing broader restored.</p>
+      </div>
+    </div>
+    <div class="round">
+      <div class="round-head">
+        <span class="round-title">GPT-PM round 1 — 2 MAJOR, 2 MINOR</span>
+        <span class="pill major">MAJOR · 2</span>
+      </div>
+      <div class="round-body">
+        <p>Both MAJORs held up under direct verification:</p>
+        <ul>
+          <li>My own "403 with no token" test proved nothing: the new functions lacked the public
+            <code>roles/run.invoker</code> every other callable already has — the request was
+            blocked at Cloud Run IAM, before App Check ever ran. Fixed; after the grant, a genuine
+            Firebase-shaped <code>401 UNAUTHENTICATED</code>.</li>
+          <li><code>APP_CHECK_ENFORCED_AI</code> only existed as mutable Cloud Run state — a clean
+            redeploy with no manual follow-up would silently ship the AI callables unenforced
+            again. Added <code>envFlagFailClosed</code>: enforced on any value except the literal
+            string <code>"false"</code>, with regression tests.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="round">
+      <div class="round-head">
+        <span class="round-title">GPT-PM round 2 — the 401 didn't distinguish App Check from the handler's own Auth guard</span>
+        <span class="pill major">MAJOR · 1</span>
+      </div>
+      <div class="round-body">
+        <p>A sharp point: the handlers themselves throw <code>unauthenticated</code> whenever
+          <code>request.auth</code> is missing — the same 401 would appear even with App Check
+          off. Required proof: a real Auth token with no App Check token. Delivered: the
+          structured verification log showed <code>app: MISSING, auth: VALID</code> on all four —
+          App Check itself is genuinely rejecting, not the handler's own Auth guard.</p>
+      </div>
+    </div>
+    <div class="round approve">
+      <div class="round-head">
+        <span class="round-title">GPT-PM round 3</span>
+        <span class="pill approve">APPROVE</span>
+      </div>
+      <div class="round-body">
+        <p>The full evidence chain accepted: identity → public ingress → fail-closed config → App
+          Check genuinely rejects a request that lacks it.
+          <code>PUSH: AUTHORIZED</code> — pushed as <code>3c163a9</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2 data-n="02">Step 5 — a real end-to-end path to Vertex, no mocking</h2>
+  <p class="lead">GPT-PM correctly pointed out that Step 4's proof stopped at input validation —
+    that doesn't exercise the AI chain itself. Step 5 closed exactly that gap, on a real Android
+    device (the S8) via the App Check debug provider.</p>
+
+  <div class="rounds">
+    <div class="round">
+      <div class="round-head">
+        <span class="round-title">GPT-PM round 1 — the proof never reached Vertex</span>
+        <span class="pill major">MAJOR · 1</span>
+      </div>
+      <div class="round-body">
+        <p>"App Check works, but quota/permissions/model could be broken — Step 5 would close
+          without ever exercising the real path." Explicitly authorized as bounded: four small
+          calls, no load testing needed.</p>
+      </div>
+    </div>
+    <div class="round approve">
+      <div class="round-head">
+        <span class="round-title">GPT-PM round 2</span>
+        <span class="pill approve">APPROVE</span>
+      </div>
+      <div class="round-body">
+        <p>All four calls, with a real Auth token and a real App Check debug token, reached
+          Vertex/Gemini and returned a correct, sensible answer. A synthetic JPEG first passed our
+          own magic-byte check but was rejected by Gemini's own decoder — proof by itself that the
+          request genuinely got there; a real photo from <code>data/gym_photos_2026-07-30/</code>
+          resolved it. <code>PUSH: AUTHORIZED</code> — pushed as <code>2a8ba52</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2 data-n="03">Evidence per callable</h2>
+  <div class="tbl-wrap">
+  <table>
+    <thead><tr><th>Callable</th><th>Identity</th><th>Negative control</th><th>Positive control (real Vertex)</th></tr></thead>
+    <tbody>
+      <tr><td>aiCoachAdvice</td><td class="sa">fn-ai-runtime@…</td><td>401, app=MISSING/auth=VALID</td><td>200, real advice text</td></tr>
+      <tr><td>aiEquipmentRecognition</td><td class="sa">fn-ai-runtime@…</td><td>401, app=MISSING/auth=VALID</td><td>200, "cable machine", confidence 0.96</td></tr>
+      <tr><td>aiMachineDescription</td><td class="sa">fn-ai-runtime@…</td><td>401, app=MISSING/auth=VALID</td><td>200, correct structured description of the same machine</td></tr>
+      <tr><td>aiExerciseGeneration</td><td class="sa">fn-ai-runtime@…</td><td>401, app=MISSING/auth=VALID</td><td>200, 4 real exercises with muscles/difficulty/duration</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 data-n="04">What was temporary and was removed the same session</h2>
+  <ul class="checklist">
+    <li><span class="mark done">✓</span> Throwaway Firebase Auth test user (dummy uid) — created to mint a token, deleted right after each use.</li>
+    <li><span class="mark done">✓</span> Temporary <code>roles/iam.serviceAccountTokenCreator</code> grant on <code>firebase-adminsdk-fbsvc@…</code> — revoked right after.</li>
+    <li><span class="mark done">✓</span> Debug print of the App Check token in <code>main.dart</code> — removed once the value was captured, same lifecycle as the already-deleted <code>appCheckProbe</code>.</li>
+    <li><span class="mark done">✓</span> Registered App Check debug token on the S8 — kept deliberately: this is the durable Step 5 deliverable for ongoing testing.</li>
+  </ul>
+
+  <div class="callout">
+    Honestly recorded deviation: each function's very first revision (before
+    <code>APP_CHECK_ENFORCED_AI=true</code> was applied, ~1-2 minutes) ran unenforced. The public
+    invoker was granted only AFTER enforcement was already on — there was never a moment of
+    "public and unenforced at once," a stronger argument than the original "no real users" framing.
+  </div>
+
+  <h2 data-n="05">Next</h2>
+  <p>Step 6 — real quota-exhaustion proof and observability. Then Step 7 (product E2E on the S8),
+    Step 8 (AI Gateway rollback mechanism), Step 9 (release guard). S23 will separately close the
+    production Play Integrity attestation once it becomes available.</p>
+
+  <footer>
+    MVP1.G4 · Fitness_App · autonomous work under PM Bridge orchestrator mode, GPT-PM review at
+    every step (CLAUDE.md §15/§17), push authorized by a confirmed <code>VERDICT: APPROVE</code>
+    (§20).
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

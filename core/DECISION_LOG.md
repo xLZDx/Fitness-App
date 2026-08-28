@@ -33141,3 +33141,11 @@ durable for future testing, full chain proven live end to end (App Check -> Auth
 `fn-ai-runtime` -> Vertex/Gemini -> real response) on all four AI callables, no mocking anywhere,
 temporary test artifacts cleaned up each time. Continuing to Step 6 (observability + controlled
 real quota-exhaustion proof) per PM mode (§18) and the operator's standing autonomous mandate.
+
+## G4 Step 4-5 report published
+
+Bilingual house-format report (`html-report` skill) covering Steps 4-5 end to end -- both
+regressions, all 5 GPT-PM review rounds, the per-callable evidence table, the honest exposure-
+window disclosure. Russian published as an artifact
+(`https://claude.ai/code/artifact/b7c3e968-921e-4fcc-8305-993b2fd6585c`), English kept as the
+durable in-repo record. `report_conform.py` ran clean on both.
