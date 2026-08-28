@@ -21,5 +21,24 @@
     "uncaughtExceptionHandled": "08-28 10:15:37.410 -- 'Handling uncaught exception \"io.flutter.plugins.firebase.crashlytics.FlutterError: Bad state: G3_STEP10B_PROBE: injected Crashlytics facade failure\" from thread Firebase Background Thread #3'",
     "reportEnqueued": "08-28 10:15:37.600 -- 'Crashlytics report successfully enqueued to DataTransport: 6A91439B02CD00012F77E65E34B9967D'"
   },
-  "conclusion": "The app survives its own telemetry call failing: no crash, no hang, camera-init-failure's own user-facing behavior was unaffected. The failure was not silently lost either -- Flutter's own top-level error handler (pre-existing app code, not modified by this probe) caught the escaped error and it reached the real Crashlytics backend under a distinct issue, which is a genuine (and reassuring) belt-and-suspenders property of the existing app, not something built for this test."
+  "conclusion": "The app survives its own telemetry call failing: no crash, no hang, camera-init-failure's own user-facing behavior was unaffected. The failure was not silently lost either -- Flutter's own top-level error handler (pre-existing app code, not modified by this probe) caught the escaped error and it reached the real Crashlytics backend under a distinct issue, which is a genuine (and reassuring) belt-and-suspenders property of the existing app, not something built for this test.",
+  "provenance_rerun_2026-08-28b": {
+    "context": "GPT-PM round-3: exact-commit provenance closure for the remaining positive scenarios.",
+    "apk": "probe_D_telemetry_fail.apk",
+    "build_define": "--dart-define=G3_STEP10B_PROBE=true --dart-define=G3_STEP10B_CAMERA_INIT_FAIL=true --dart-define=G3_STEP10B_TELEMETRY_FAIL=true --dart-define=G3_STEP10B_SOURCE_SHA=6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+    "clean_commit": "6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+    "apk_sha256": "11fd2eef77605a2ac38c567cd122a17490c5194fbd5e2866cf5957f4d77fb063",
+    "process_survival": "pid 6592 alive throughout, confirmed via pidof after the capture attempt -- no crash",
+    "event": {
+      "eventId": "2257456341025611521",
+      "eventTime": "2026-08-28T09:23:32Z",
+      "issueTitle": "package:fitness_app/main.dart - main.<fn>",
+      "message": "Bad state: G3_STEP10B_PROBE: injected Crashlytics facade failure",
+      "customKeys": {
+        "g3_step10b_source_sha": "6ab9ff593608c31913dd81368f9ca2717f8ca45b"
+      }
+    },
+    "reportId": "6A91538F0283000119C0A673D5F74EE5",
+    "logFile": "17_probeD_telemetry_fail_flush.log"
+  }
 }

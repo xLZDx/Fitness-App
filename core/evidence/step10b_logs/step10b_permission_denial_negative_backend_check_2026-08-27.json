@@ -7,13 +7,34 @@
     "model": "SM-G950F (Galaxy S8)"
   },
   "on_device_actions": [
-    { "utc": "2026-08-28T08:30:00Z", "action": "test window opened (PowerShell Get-Date, UTC)" },
-    { "utc": "2026-08-28T08:30:01.989Z", "action": "adb shell pm revoke com.fitnessapp.fitness_app.sptr android.permission.CAMERA (logcat-confirmed)" },
-    { "utc": "2026-08-28T08:30:02.610Z", "action": "ActivityManager: Killing 12151:com.fitnessapp.fitness_app.sptr (adj 0): permissions revoked (logcat-confirmed)" },
-    { "utc": "~2026-08-28T08:30:04Z", "action": "app relaunched via monkey -c LAUNCHER (new pid 16681)" },
-    { "utc": "~2026-08-28T08:30:07-09Z", "action": "navigated to Scan tab, tapped capture button" },
-    { "utc": "2026-08-28T08:30:27Z", "action": "test window closed (logcat dump taken, screenshot pulled)" },
-    { "utc": "~2026-08-28T08:31Z", "action": "camera permission re-granted (adb shell pm grant ...) to leave the device clean for subsequent tests" }
+    {
+      "utc": "2026-08-28T08:30:00Z",
+      "action": "test window opened (PowerShell Get-Date, UTC)"
+    },
+    {
+      "utc": "2026-08-28T08:30:01.989Z",
+      "action": "adb shell pm revoke com.fitnessapp.fitness_app.sptr android.permission.CAMERA (logcat-confirmed)"
+    },
+    {
+      "utc": "2026-08-28T08:30:02.610Z",
+      "action": "ActivityManager: Killing 12151:com.fitnessapp.fitness_app.sptr (adj 0): permissions revoked (logcat-confirmed)"
+    },
+    {
+      "utc": "~2026-08-28T08:30:04Z",
+      "action": "app relaunched via monkey -c LAUNCHER (new pid 16681)"
+    },
+    {
+      "utc": "~2026-08-28T08:30:07-09Z",
+      "action": "navigated to Scan tab, tapped capture button"
+    },
+    {
+      "utc": "2026-08-28T08:30:27Z",
+      "action": "test window closed (logcat dump taken, screenshot pulled)"
+    },
+    {
+      "utc": "~2026-08-28T08:31Z",
+      "action": "camera permission re-granted (adb shell pm grant ...) to leave the device clean for subsequent tests"
+    }
   ],
   "on_device_evidence": {
     "processSurvived": "pid 16681 alive throughout, confirmed via pidof after the capture attempt -- no crash",
@@ -23,15 +44,39 @@
   },
   "backend_query": {
     "endpoint": "POST https://logging.googleapis.com/v2/entries:list",
-    "resourceNames": ["projects/fitness-app-korostelev"],
+    "resourceNames": [
+      "projects/fitness-app-korostelev"
+    ],
     "filter": "resource.type=\"firebasecrashlytics.googleapis.com/App\" AND logName=\"projects/fitness-app-korostelev/logs/firebasecrashlytics.googleapis.com%2Fevents\" AND timestamp>=\"2026-08-28T08:29:00Z\" AND timestamp<=\"2026-08-28T08:45:00Z\"",
     "orderBy": "timestamp desc",
     "pageSize": 20,
     "window_rationale": "08:29:00Z to 08:45:00Z UTC brackets the entire on-device action sequence (08:30:00Z-08:30:27Z) with margin on both sides, wide enough to catch a delayed upload without needing a cold relaunch (none occurred in this scenario, so nothing was ever queued to flush).",
     "queries_run": [
-      { "executed_at_utc": "2026-08-28T08:31:23Z", "note": "early check, ~1 minute after the window closed", "entry_count": 0 },
-      { "executed_at_utc": "2026-08-28T08:36:30Z", "note": "final authoritative check, ~6 minutes after the window closed -- well past the ~90s-3.5min propagation delay observed for genuine events elsewhere in Step 10B", "entry_count": 0, "raw_response": {} }
+      {
+        "executed_at_utc": "2026-08-28T08:31:23Z",
+        "note": "early check, ~1 minute after the window closed",
+        "entry_count": 0
+      },
+      {
+        "executed_at_utc": "2026-08-28T08:36:30Z",
+        "note": "final authoritative check, ~6 minutes after the window closed -- well past the ~90s-3.5min propagation delay observed for genuine events elsewhere in Step 10B",
+        "entry_count": 0,
+        "raw_response": {}
+      }
     ]
   },
-  "conclusion": "Zero Crashlytics events of any kind exist in Cloud Logging for the exact window covering the permission-revoke, app relaunch, and capture attempt, confirmed by a real bounded query executed twice with a 5-minute gap. This matches the on-device logcat evidence (no recordError call fired at all) and the app's own design intent: a permission denial is a normal user-facing state, not an operational incident, and correctly generates no telemetry."
+  "conclusion": "Zero Crashlytics events of any kind exist in Cloud Logging for the exact window covering the permission-revoke, app relaunch, and capture attempt, confirmed by a real bounded query executed twice with a 5-minute gap. This matches the on-device logcat evidence (no recordError call fired at all) and the app's own design intent: a permission denial is a normal user-facing state, not an operational incident, and correctly generates no telemetry.",
+  "provenance_rerun_2026-08-28": {
+    "context": "GPT-PM round-3: reused probe_A_camera_init.apk (same exact-commit build already used for the camera-init-failure scenario) for the permission-denial re-run, per GPT-PM instruction: no event id is needed here, just proof the same canonical APK/hash was used.",
+    "apk": "probe_A_camera_init.apk",
+    "apk_sha256": "bca7103abd5a8758e60fe0916088d8d09eca4f36cad62c1104919c84edb33eb0",
+    "clean_commit": "6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+    "window_utc": [
+      "2026-08-28T09:26:35Z",
+      "2026-08-28T09:27:19Z"
+    ],
+    "query_window_checked": "2026-08-28T09:26:00Z to 2026-08-28T09:40:00Z",
+    "entry_count": 0,
+    "logFile": "18_probeA_permission_denial_provenance.log"
+  }
 }

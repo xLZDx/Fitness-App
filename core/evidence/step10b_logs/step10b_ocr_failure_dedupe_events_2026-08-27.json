@@ -137,5 +137,28 @@
       "logName": "projects/fitness-app-korostelev/logs/firebasecrashlytics.googleapis.com%2Fevents",
       "receiveTimestamp": "2026-08-27T23:33:45.717589242Z"
     }
-  ]
+  ],
+  "provenance_rerun_2026-08-28": {
+    "context": "GPT-PM round-3: exact-commit provenance closure for the remaining positive scenarios.",
+    "apk": "probe_B_ocr_fail.apk",
+    "build_define": "--dart-define=G3_STEP10B_PROBE=true --dart-define=G3_STEP10B_OCR_FAIL=true --dart-define=G3_STEP10B_SOURCE_SHA=6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+    "clean_commit": "6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+    "apk_sha256": "aa8f68d220a1a28b0d3fc4c4afa2d2f0813f9f5dd7136a746e45e7fa9d423ff2",
+    "trigger": "live mode toggled on; on-device logcat shows the injected OCR-anchor exception firing repeatedly (once per analyzed frame) while the once-per-session recordError dedupe held to a single report",
+    "event": {
+      "eventId": "2257453856695863140",
+      "eventTime": "2026-08-28T09:13:54Z",
+      "issueTitle": "package:fitness_app/features/visual_equipment/data/mlkit_live_equipment_service.dart - MlKitLiveEquipmentService._anchorFromFrame",
+      "message": "Exception: G3_STEP10B_PROBE: injected OCR anchor failure. Error thrown live OCR anchor failed.",
+      "customKeys": {
+        "g3_step10b_source_sha": "6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+        "flutter_error_reason": "thrown live OCR anchor failed"
+      }
+    },
+    "reportId": "6A91514003DA00017FB28F0EB6E8F700",
+    "logFiles": [
+      "14_probeB_ocr_fail_trigger.log",
+      "15_probeB_ocr_fail_flush.log"
+    ]
+  }
 }

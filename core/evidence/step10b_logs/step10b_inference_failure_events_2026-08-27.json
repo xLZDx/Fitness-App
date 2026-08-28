@@ -28,7 +28,7 @@
                 "file": "package:fitness_app/features/visual_equipment/data/gemini_equipment_service.dart"
               },
               {
-                "symbol": "Future.timeout.\u003cfn\u003e",
+                "symbol": "Future.timeout.<fn>",
                 "file": "dart:async",
                 "library": "com.fitnessapp.fitness_app.sptr",
                 "owner": "PLATFORM"
@@ -90,7 +90,7 @@
                 "library": "com.fitnessapp.fitness_app.sptr"
               },
               {
-                "symbol": "Future.timeout.\u003cfn\u003e",
+                "symbol": "Future.timeout.<fn>",
                 "library": "com.fitnessapp.fitness_app.sptr",
                 "owner": "PLATFORM",
                 "file": "dart:async"
@@ -197,5 +197,24 @@
       "logName": "projects/fitness-app-korostelev/logs/firebasecrashlytics.googleapis.com%2Fevents",
       "receiveTimestamp": "2026-08-27T23:41:46.533311311Z"
     }
-  ]
+  ],
+  "provenance_rerun_2026-08-28": {
+    "context": "GPT-PM round-3: exact-commit provenance closure for the remaining positive scenarios.",
+    "apk": "probe_C_inference_fail.apk",
+    "build_define": "--dart-define=G3_STEP10B_PROBE=true --dart-define=G3_STEP10B_INFERENCE_FAIL=true --dart-define=G3_STEP10B_SOURCE_SHA=6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+    "clean_commit": "6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+    "apk_sha256": "e15d5edeaf5bedb18659adb28d9e812fa8ed2a958a025850e70239a7a0ba8ec4",
+    "event": {
+      "eventId": "2257455124093463114",
+      "eventTime": "2026-08-28T09:18:49Z",
+      "issueTitle": "package:fitness_app/features/visual_equipment/data/gemini_equipment_service.dart - GeminiVisualEquipmentService.classifyFile",
+      "message": "G3_STEP10B_PROBE: injected cloud recognition failure. Error thrown cloud equipment recognition failed.",
+      "customKeys": {
+        "g3_step10b_source_sha": "6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+        "flutter_error_reason": "thrown cloud equipment recognition failed"
+      }
+    },
+    "reportId": "6A91526F006100010C698AB4EA29FF90",
+    "logFile": "16_probeC_inference_fail_flush.log"
+  }
 }

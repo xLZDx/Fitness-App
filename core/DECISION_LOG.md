@@ -30821,3 +30821,50 @@ targeted provenance re-run GPT-PM asked for -- not a repeat of the full six-scen
 sweep; the other five scenarios' existing evidence stands unchanged. Evidence recorded in
 `step10b_slow_inference_success_events_2026-08-28.json`'s new `run_4_exact_provenance`
 section. Sending this round's evidence back to GPT-PM for final verification before push.
+
+## GPT-PM round 3 -- still MAJOR: provenance mechanism proven, but only for one scenario
+
+Round 3 accepted the mechanism itself ("the mechanically exact provenance mechanism
+itself is now correct... reuse this exact mechanism for the remaining scenarios") but
+kept finding 4 open: only the slow-inference scenario carried the exact-commit SHA:
+camera-init, OCR/dedupe, cloud-inference and telemetry-facade events still predated
+exact provenance. Required: one canonical build basis (the same clean commit,
+`6ab9ff593608c31913dd81368f9ca2717f8ca45b`) reused across the remaining positive
+scenarios, each carrying `g3_step10b_source_sha` and its own recorded APK SHA-256;
+permission-denial needs no event (it is a negative proof) but should record which exact
+APK/hash was used for that run.
+
+**Remediation**: since `--dart-define` flags are compile-time constants and
+`forceCameraInitFailure=true` would block every downstream path (camera never opens, so
+OCR/cloud paths are unreachable), one literal APK could not exercise all four remaining
+scenarios -- built four separate APKs instead, all from the same clean
+`6ab9ff5` commit, each single-purpose:
+
+| Probe | Flags | APK SHA-256 | Backend event | issue attribution |
+|---|---|---|---|---|
+| A -- camera-init | `CAMERA_INIT_FAIL` | `bca7103a...db33eb0` | `2257452451171315646` | `camera_session.dart - CameraSession._startOnce` |
+| B -- OCR/dedupe | `OCR_FAIL` | `aa8f68d2...9d423ff2` | `2257453856695863140` | `mlkit_live_equipment_service.dart - MlKitLiveEquipmentService._anchorFromFrame` |
+| C -- cloud inference | `INFERENCE_FAIL` | `e15d5ede...a0ba8ec4` | `2257455124093463114` | `gemini_equipment_service.dart - GeminiVisualEquipmentService.classifyFile` |
+| D -- telemetry facade (scenario 6) | `CAMERA_INIT_FAIL` + `TELEMETRY_FAIL` | `11fd2eef...4d77fb063` | `2257456341025611521` | `main.dart - main.<fn>` (same top-level-handler attribution as before, now provenance-tagged) |
+
+Every event's `customKeys` carries `g3_step10b_source_sha:
+6ab9ff593608c31913dd81368f9ca2717f8ca45b`, verified live via the same Cloud Logging
+query pattern used throughout Step 10B. Permission-denial was re-run reusing probe A
+(no fault it triggers is reachable before the OS's own permission check fires, so
+reusing it is valid): revoke -> relaunch -> capture attempt -> two bounded backend
+queries, both zero entries -- recorded with probe A's own SHA-256 alongside the
+existing on-device logcat proof. Device battery temperature checked before every
+install (34.7-36.3C throughout, no thermal risk this round). Evidence appended to each
+scenario's existing JSON file under a `provenance_rerun_2026-08-28` (or `...-2028b` for
+scenario 6, since that file already had a same-dated key) section; DECISION_LOG updated
+here rather than duplicating the full per-event detail already in those files.
+
+**Interrupted before the round-4 GPT-PM verification call**: the operator sent a new,
+unrelated report mid-session ("workout results are not saving at all") while the
+permission-denial backend query was still in flight. Per the global interrupt rule
+(`~/.claude/CLAUDE.md` §11): stopped launching further Step 10B work at the next safe
+checkpoint (camera permission already re-granted, device left clean), finished only the
+already-in-flight query and its evidence write, and pivoted to the operator's new
+request. Step 10B's evidence for all four remaining scenarios plus the permission-denial
+re-run is complete and committed; the round-4 GPT-PM verification call and push are
+deferred until after the new item is addressed.

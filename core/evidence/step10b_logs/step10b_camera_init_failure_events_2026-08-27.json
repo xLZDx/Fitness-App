@@ -307,5 +307,24 @@
       "receiveTimestamp": "2026-08-27T23:20:30.096032406Z"
     }
   ],
-  "nextPageToken": "epABCosBAdAdWwQKBq3eWbMcGAHL9ezZ3BPMTSpYOij7pXn5wz_xgL51YDJZv8wuQyx4oeXUDj0yKG5-e4S3e3FLtVMqm6cSEFaLJVibKyaGlv-CXtu8jJT2r63teGbk27-I4v22Q2CGBcuwU-IE8SR8ceyawMkVzcNhtHB0oOKwjLFgMew8qDbJWddWpnn0aBAA"
+  "nextPageToken": "epABCosBAdAdWwQKBq3eWbMcGAHL9ezZ3BPMTSpYOij7pXn5wz_xgL51YDJZv8wuQyx4oeXUDj0yKG5-e4S3e3FLtVMqm6cSEFaLJVibKyaGlv-CXtu8jJT2r63teGbk27-I4v22Q2CGBcuwU-IE8SR8ceyawMkVzcNhtHB0oOKwjLFgMew8qDbJWddWpnn0aBAA",
+  "provenance_rerun_2026-08-28": {
+    "context": "GPT-PM round-3 review: exact-commit provenance closed for slow-inference only; required the same mechanism for the other positive scenarios.",
+    "apk": "probe_A_camera_init.apk",
+    "build_define": "--dart-define=G3_STEP10B_PROBE=true --dart-define=G3_STEP10B_CAMERA_INIT_FAIL=true --dart-define=G3_STEP10B_SOURCE_SHA=6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+    "clean_commit": "6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+    "apk_sha256": "bca7103abd5a8758e60fe0916088d8d09eca4f36cad62c1104919c84edb33eb0",
+    "event": {
+      "eventId": "2257452451171315646",
+      "eventTime": "2026-08-28T09:08:27Z",
+      "issueTitle": "package:fitness_app/core/camera/camera_session.dart - CameraSession._startOnce",
+      "message": "CameraUnavailable(CameraUnavailableReason.initializationFailed, cause: Exception: G3_STEP10B_PROBE: injected camera initialization failure)",
+      "customKeys": {
+        "g3_step10b_source_sha": "6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+        "flutter_error_reason": "thrown camera initialization failed"
+      }
+    },
+    "reportId": "6A9150070118000176FEC6D6E025D5EC",
+    "logFile": "13_probeA_camera_init_flush.log"
+  }
 }
