@@ -11,6 +11,7 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as logger from "firebase-functions/logger";
 import { runEnforcementStateProbe } from "./enforcement_state";
 import { ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT } from "./monitoring/log_signals";
+import { RUNTIME_SA } from "./scaling";
 
 /**
  * Every 6 hours: this checks slow-moving configuration state (deployed
@@ -35,6 +36,10 @@ export const runEnforcementStateCheck = onSchedule(
     memory: "256MiB",
     maxInstances: 1,
     concurrency: 1,
+    // G4 Step 3 follow-up: its own tier, not fn-data -- see scaling.ts's
+    // RUNTIME_SA.enforcement header for why this probe needs a different
+    // permission set entirely (four read-only config APIs, zero Firestore).
+    serviceAccount: RUNTIME_SA.enforcement,
   },
   async () => {
     let result;

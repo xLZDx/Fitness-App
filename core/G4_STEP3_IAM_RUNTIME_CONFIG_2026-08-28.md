@@ -442,18 +442,61 @@ Stripe-triggered functional test performed** (no Stripe CLI/API access in this s
 — same class of caveat as `fn-data`, called out rather than implied; `stripeWebhook`
 also has Stripe's own non-2xx retry as a safety net per this profile's original header.
 
-## Status
+## Tier migration: fn-account-delete (5 of 5)
+
+`RUNTIME_SA.accountDelete` wired into `deleteAccount`'s call site. Deployed alone (this
+is the one function where a real live invocation is never appropriate — deleting a real
+account is irreversible, so verification stopped at identity readback and the
+already-confirmed provisioning grants, not a live call). `gcloud functions describe`
+confirmed it now runs as `fn-account-delete@fitness-app-korostelev.iam.gserviceaccount.com`.
+
+## A 7th tier, found and fixed during migration: fn-enforcement
+
+`runEnforcementStateCheck` (deliberately deferred above, under "Tier migration:
+fn-data") got its own investigation once the other five tiers closed. Its actual
+permission set — four read-only, Firestore-unrelated APIs — matched cleanly onto four
+predefined GCP viewer roles, confirmed directly against the function's own source
+(`enforcement_state.ts` calls no Firestore/Storage/Secret API at all):
+`roles/cloudfunctions.viewer`, `roles/firebaserules.viewer`,
+`roles/firebaseappcheck.viewer`, `roles/firebaseauth.viewer`. Provisioned as a new
+`fn-enforcement` service account (no `datastore.user` — it touches no Firestore),
+wired into `enforcement_state_schedule.ts`'s `onSchedule`, deployed alone.
+
+**First live trigger genuinely failed** — real evidence the narrower grant set was
+still incomplete, not a formality: execution `dfa8qbi230ft` (2026-08-28 20:47:11 UTC)
+came back `DEGRADED: firestoreRules`, and the full structured log showed why —
+`HTTP 403: Caller does not have required permission to use project
+fitness-app-korostelev... roles/serviceusage.serviceUsageConsumer`. The Firestore Rules
+check (only that one, not the other three) sends an explicit `X-Goog-User-Project`
+header, which requires the caller to separately hold quota-project-consumer rights —
+unrelated to the `firebaserules.viewer` API-read permission and easy to miss. Fixed by
+granting `roles/serviceusage.serviceUsageConsumer`, then **re-triggered and confirmed**:
+execution `dfd9vslxkqix` (2026-08-28 20:49:32 UTC) — `enforcement_state_schedule: check
+succeeded`, all four sub-checks `OK`. Not accepted on the first "should work" attempt;
+caught, diagnosed from the real structured log, fixed, and re-proven live.
+
+## Status — all 7 tiers migrated and live-verified
 
 Round 1 (5-tier proposal, `cc759fc`): `MAJOR`, 3 MAJOR + 2 MINOR — fixed. Round 2
 (six-tier, `29647bb`): `MAJOR`, 1 MAJOR + 2 MINOR (fn-canary's own permissions) — fixed
 at `3f0475f`. Round 3 (fn-canary fix, `3f0475f`): `APPROVE`, additive provisioning
-authorized and applied live. **Tiers 1-4 migrated**: `fn-canary` (verified live with a
-real triggered run), `fn-data` (5/6 functions; `runEnforcementStateCheck` deliberately
-deferred, above), `fn-video` (verified with a real object fetch returning actual bytes),
-`fn-billing` (6/6 functions, identity confirmed, no live Stripe-triggered test).
-Remaining: `fn-account-delete`, the last and most sensitive tier. `roles/editor` stays
-on the default Compute SA until every tier has migrated (including
-`runEnforcementStateCheck`, once scoped) and the App Check probe is deleted or moved off
-it. `fn-ai-runtime`'s identity is prepared but stays unattached; the four AI callables
-remain HOLD-ed by Step 2. See `core/DECISION_LOG.md` for all verdicts and migration
-evidence.
+authorized and applied live.
+
+Every planned function now runs under a least-privilege identity, each independently
+verified:
+
+| Tier | Functions | Verification |
+|---|---|---|
+| `fn-canary` | runProductionCanary | Real triggered run succeeded post-deploy |
+| `fn-data` | 5 of 6 (see below) | Identity readback + confirmed grants |
+| `fn-video` | clipUrl, clipUrls | Real object fetch returned actual bytes (200, 266,805 B) |
+| `fn-billing` | 6 of 6 | Identity readback; deploy re-confirmed all 8 secret grants |
+| `fn-account-delete` | deleteAccount | Identity readback only (deliberate — no live invocation of a destructive function) |
+| `fn-enforcement` | runEnforcementStateCheck | Failed live, diagnosed, fixed, re-triggered and confirmed succeeding |
+
+**Not yet migrated, deliberately**: none. **Not yet applied**: `roles/editor` removal
+from the default Compute SA — still correctly gated on the temporary `appCheckProbe`
+being deleted or moved off it (Step 2's Option D device work), which is the one
+remaining function on the old shared identity. `fn-ai-runtime`'s identity stays
+prepared but unattached; the four AI callables remain HOLD-ed by Step 2. See
+`core/DECISION_LOG.md` for every round's verdict and every tier's migration evidence.

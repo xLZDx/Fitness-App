@@ -71,6 +71,19 @@ export const RUNTIME_SA = {
   billing: `fn-billing@${projectId()}.iam.gserviceaccount.com`,
   accountDelete: `fn-account-delete@${projectId()}.iam.gserviceaccount.com`,
   aiRuntime: `fn-ai-runtime@${projectId()}.iam.gserviceaccount.com`,
+  /**
+   * A 7th tier, added during Step 3's tier migration rather than in the
+   * original proposal: `runEnforcementStateCheck` was originally grouped
+   * into `fn-data`, but its probe (`enforcement_state.ts`) turns out to call
+   * `cloudfunctions.googleapis.com`, `firebaserules.googleapis.com`,
+   * `firebaseappcheck.googleapis.com`, and `identitytoolkit.googleapis.com`
+   * directly via `GoogleAuth({ scopes: ["cloud-platform"] })`, needing four
+   * read-only predefined roles (`cloudfunctions.viewer`,
+   * `firebaserules.viewer`, `firebaseappcheck.viewer`, `firebaseauth.viewer`)
+   * that have nothing to do with Firestore or Auth-user access. It touches
+   * no Firestore at all, so it gets no `datastore.user` either.
+   */
+  enforcement: `fn-enforcement@${projectId()}.iam.gserviceaccount.com`,
 } as const;
 
 /**

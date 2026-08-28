@@ -2071,7 +2071,7 @@ async function sweepSharedRecords(uid: string): Promise<void> {
 }
 
 export const deleteAccount = onCall(
-  { ...RARE, secrets: [STRIPE_SECRET_KEY] },
+  { ...RARE, serviceAccount: RUNTIME_SA.accountDelete, secrets: [STRIPE_SECRET_KEY] },
   async (request) => {
     const auth = request.auth;
     if (!auth) {

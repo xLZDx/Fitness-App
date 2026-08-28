@@ -32822,3 +32822,42 @@ whose failure "loses money rather than degrading an experience" per its own head
 still has Stripe's built-in non-2xx retry as a safety net if something were wrong.
 
 Next and last: `fn-account-delete` (deleteAccount only).
+
+## G4 Step 3 IAM: tier 5 (fn-account-delete) migrated; 7th tier (fn-enforcement) found, deployed, failed live, fixed, re-verified
+
+`RUNTIME_SA.accountDelete` wired into `deleteAccount`, deployed alone, identity
+confirmed via `gcloud functions describe`. No live invocation attempted -- deleting a
+real account is irreversible, so this tier stopped at readback plus the
+already-verified provisioning grants, deliberately not a live call.
+
+**`runEnforcementStateCheck`**, deferred earlier in this same pass, got its own
+investigation once tiers 1-5 closed. Its actual footprint -- `cloudfunctions
+.googleapis.com`, `firebaserules.googleapis.com`, `firebaseappcheck.googleapis.com`,
+`identitytoolkit.googleapis.com`, zero Firestore -- mapped cleanly onto four predefined
+read-only roles (`cloudfunctions.viewer`, `firebaserules.viewer`,
+`firebaseappcheck.viewer`, `firebaseauth.viewer`). Provisioned a new `fn-enforcement`
+SA with exactly those four bindings (no `datastore.user`), wired it in, deployed alone.
+
+**The first live trigger genuinely failed**: execution `dfa8qbi230ft` (20:47:11 UTC)
+came back `DEGRADED: firestoreRules`. The structured Cloud Logging entry (plain
+`functions logs read` only showed the generic wrapper error; `gcloud logging read
+--format=json` showed the real one) gave the actual cause: `HTTP 403 ... Grant the
+caller the roles/serviceusage.serviceUsageConsumer role`. Only the Firestore Rules
+check sends an explicit `X-Goog-User-Project` header among the four sub-checks, which
+needs quota-project-consumer rights separate from the API's own read permission --
+easy to miss, and missed on the first pass here. Fixed by granting
+`roles/serviceusage.serviceUsageConsumer` to `fn-enforcement`, then re-triggered:
+execution `dfd9vslxkqix` (20:49:32 UTC) -- `enforcement_state_schedule: check
+succeeded`, all four sub-checks `OK`.
+
+This is the discipline this whole gate has been built on, applied to a self-found
+follow-up rather than a GPT-PM round: don't accept "should work" from a clean typecheck
+and a config that looks complete -- trigger it for real and read the actual result
+before calling it done. It would have been easy to declare `fn-enforcement` finished
+after the deploy succeeded and the grants matched the source code's calls; the live
+trigger caught a real gap neither of those would have shown.
+
+**All 7 tiers now migrated and live-verified.** Remaining before `roles/editor` can be
+removed from the default Compute SA: the temporary `appCheckProbe` (Step 2's Option D)
+needs to be deleted or moved off it -- the last function still on the shared identity.
+`fn-ai-runtime` stays prepared, unattached, per Step 2's HOLD on the four AI callables.
