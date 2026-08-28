@@ -19,7 +19,7 @@
  */
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { AI_METERED } from "./scaling";
-import { QUOTAS, enforceDailyQuota, noteAppCheck, quotaFor } from "./abuse_guard";
+import { QUOTAS, enforceDailyQuota, enforceNonAnonymousForAi, noteAppCheck, quotaFor } from "./abuse_guard";
 import { generate, InlineImage } from "./ai_gateway";
 import { checkImageFieldsAreStrings, decodeAndValidateImageBytes } from "./image_validation";
 
@@ -89,6 +89,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
     throw new HttpsError("unauthenticated", "Sign in to describe equipment.");
   }
   noteAppCheck(request, "aiMachineDescription");
+  enforceNonAnonymousForAi(signInProvider(request));
   const input = parseInput(request.data);
 
   await enforceDailyQuota(

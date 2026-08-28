@@ -17,7 +17,7 @@
  */
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { AI_METERED } from "./scaling";
-import { QUOTAS, enforceDailyQuota, noteAppCheck, quotaFor } from "./abuse_guard";
+import { QUOTAS, enforceDailyQuota, enforceNonAnonymousForAi, noteAppCheck, quotaFor } from "./abuse_guard";
 import { generate } from "./ai_gateway";
 
 /** Matches every other callable's `signInProvider` extraction. */
@@ -262,6 +262,7 @@ export const aiExerciseGeneration = onCall(AI_METERED, async (request) => {
     throw new HttpsError("unauthenticated", "Sign in to generate exercises.");
   }
   noteAppCheck(request, "aiExerciseGeneration");
+  enforceNonAnonymousForAi(signInProvider(request));
   const input = parseInput(request.data);
 
   await enforceDailyQuota(

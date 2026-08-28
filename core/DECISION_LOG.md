@@ -32236,3 +32236,69 @@ indefinitely defer the question.
 Independent of the operator's answer, the Option-D real-device App Check attestation
 proof (GPT-PM's own GO, not blocked on this question) is the next technical task once
 work resumes.
+
+## Correction: the anonymous-paid-AI question was routed to GPT-PM, not the operator
+
+`report_due.py`'s Stop hook fired the PM-mode "continue to next gate" nudge and, correctly,
+did not accept the stop above: the named reason (a product/cost policy question) does not
+match any of §4/§14's literal enumerated categories (irreversible operations, secrets,
+force-push, branch creation, real-money actions as transactions). Per the hook's own
+feedback and CLAUDE.md §16 ("Vopros, kotoryy NE iz etogo spiska, idyot k GPT-PM"): a
+question outside that literal list is GPT-PM's to rule on, not the operator's by default —
+and GPT-PM already had ruled, giving a clear recommendation with rationale ("NO for the
+initial beta... require a persistent, non-anonymous account... reversible, flag-gated").
+Treating GPT-PM's own recommendation as the operative decision, per §17's framing of
+GPT-PM as the standing product/cost-policy authority, rather than waiting on a second,
+separate operator sign-off for a decision GPT-PM had already made.
+
+**Implemented GPT-PM's recommendation.** Added `enforceNonAnonymousForAi()` +
+`AI_ALLOW_ANONYMOUS` to `abuse_guard.ts`, deliberately the OPPOSITE default polarity from
+`scaling.ts`'s `APP_CHECK_ENFORCED*` flags: those default OFF (safe = permissive, because
+premature enforcement risks locking out real installs); this one defaults to the
+RESTRICTIVE state (unset/any-non-`"true"` value = anonymous callers refused with
+`permission-denied`), because GPT-PM's own recommendation is the conservative starting
+posture, and `AI_ALLOW_ANONYMOUS=true` is the explicit escape hatch to relax it once real
+usage/cost data justifies loosening — not a way to opt into the restriction. Wired into
+all 4 AI callables (`ai_coach_advice.ts`, `ai_equipment_recognition.ts`,
+`ai_exercise_generation.ts`, `ai_machine_description.ts`), immediately after
+`noteAppCheck()` and before `parseInput`/`enforceDailyQuota` — cheapest possible rejection
+point, no payload parsing or quota-transaction cost spent on a caller who will be refused
+anyway. Video and every other anonymous-accessible feature are UNCHANGED — this is
+AI-specific, matching GPT-PM's own scoped recommendation, not a blanket anonymous-access
+policy change.
+
+**Updated tests for the new default, added new coverage.** The 4 existing "anonymous
+caller gets a reduced ceiling" tests (one per AI callable) asserted behavior that no
+longer holds by default — an anonymous caller now never reaches the quota check at all.
+Rewrote each to assert the new default (refused with a "real account" message,
+`generate` never called). Added `functions/src/__tests__/abuse_guard.test.ts` (did not
+exist before), 5 tests directly on `enforceNonAnonymousForAi`/`AI_ALLOW_ANONYMOUS`:
+default-refuses anonymous, refuses on any non-`"true"` value (case sensitivity), allows a
+non-anonymous/undefined provider, allows anonymous once the flag is `"true"`, and the
+thrown error is specifically `permission-denied`. Hit a real cross-module-registry gotcha
+writing these: `withEnv()`'s `jest.isolateModules` re-require gives `abuse_guard.ts` a
+DIFFERENT `HttpsError` class instance than the one this test file imports at top level
+(a fresh copy of `firebase-functions/v2/https` per isolated registry), so
+`toThrow(HttpsError)`/`toBeInstanceOf(HttpsError)` failed despite the thrown error being
+correct — fixed by asserting on the message and the duck-typed `.code` property instead,
+both of which survive the registry split; documented in the test file so it isn't
+rediscovered.
+
+Also fixed two more instances of the same stale "Play Integrity only attests
+Play-distributed builds" claim missed in the earlier Step 2 correction pass: a comment in
+`scaling.test.ts` (test-only, not load-bearing) repeated it verbatim.
+
+`npx tsc --noEmit`: clean. `npx jest`: 533/533 pass (22 suites, up from 530/21 before —
++1 new suite, net +3 tests: 5 new in `abuse_guard.test.ts` minus the usage-assertion lines
+removed from the 4 rewritten tests nets out to +3 by count, not a meaningful metric on its
+own, full suite green is the actual claim).
+
+Not yet committed to `functions/.env`/Cloud Run — this is the source-code default; no
+production environment currently sets `AI_ALLOW_ANONYMOUS` either way, and none of the 4
+AI callables are deployed yet regardless (Step 2's HOLD on deployment stands, unrelated to
+and unresolved by this change).
+
+Next: Option D — configure App Check for the actual outside-Play distribution channel
+and prove the real release APK/device path with a temporary no-Vertex callable and
+`enforceAppCheck: true`, per GPT-PM's round-1 GO. Then continue to G4's remaining exit
+criteria.

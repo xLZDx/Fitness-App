@@ -239,10 +239,11 @@ describe("App Check enforcement flags", () => {
   };
 
   test("every callable profile is unenforced by default", () => {
-    // Enforcing today locks out the operator's own phone: Play Integrity only
-    // attests builds distributed through Google Play, and this project ships
-    // testers through Firebase App Distribution. Default-on would be a silent
-    // lockout, not a visible error.
+    // Enforcing today locks out the operator's own phone: the Firebase Console's
+    // outside-Play App Check configuration for this project's App Distribution
+    // channel is not yet verified/applied (see scaling.ts's own comment and
+    // MVP1.G4 Step 2, core/G4_STEP2_APP_CHECK_BOUNDARY_2026-08-28.md). Default-on
+    // would be a silent lockout, not a visible error, until that is proven.
     const s = withEnv({
       APP_CHECK_ENFORCED: undefined,
       APP_CHECK_ENFORCED_VIDEO: undefined,

@@ -30,7 +30,7 @@
  */
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { AI_METERED } from "./scaling";
-import { QUOTAS, enforceDailyQuota, noteAppCheck, quotaFor } from "./abuse_guard";
+import { QUOTAS, enforceDailyQuota, enforceNonAnonymousForAi, noteAppCheck, quotaFor } from "./abuse_guard";
 import { generate, InlineImage } from "./ai_gateway";
 import { validateImageInput } from "./image_validation";
 
@@ -110,6 +110,7 @@ export const aiEquipmentRecognition = onCall(AI_METERED, async (request) => {
     throw new HttpsError("unauthenticated", "Sign in to identify equipment.");
   }
   noteAppCheck(request, "aiEquipmentRecognition");
+  enforceNonAnonymousForAi(signInProvider(request));
   const input = parseInput(request.data);
 
   await enforceDailyQuota(

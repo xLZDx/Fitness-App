@@ -197,13 +197,13 @@ describe("aiEquipmentRecognition", () => {
     expect(usage.aiEquipmentRecognition).toBe(QUOTAS.aiEquipmentRecognition);
   });
 
-  test("an anonymous caller gets a reduced ceiling", async () => {
+  test("an anonymous caller is refused before the quota is even checked (G4 Step 2: AI_ALLOW_ANONYMOUS defaults off)", async () => {
     const anon = (data: unknown): any => ({
       data,
       auth: { uid: "anon1", token: { firebase: { sign_in_provider: "anonymous" } } },
     });
-    usage = { aiEquipmentRecognition: Math.floor(QUOTAS.aiEquipmentRecognition / 8) };
-    await expect(aiEquipmentRecognition.run(anon(VALID))).rejects.toThrow(/limit/i);
+    await expect(aiEquipmentRecognition.run(anon(VALID))).rejects.toThrow(/real account/i);
+    expect(generate).not.toHaveBeenCalled();
   });
 });
 

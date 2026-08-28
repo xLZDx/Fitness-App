@@ -259,3 +259,35 @@ export function quotaFor(
   if (signInProvider !== "anonymous") return limit;
   return Math.max(1, Math.floor(limit / ANONYMOUS_QUOTA_DIVISOR));
 }
+
+/**
+ * MVP1.G4 Step 2: unlike video (where refusing anonymous callers outright was
+ * rejected — see `ANONYMOUS_QUOTA_DIVISOR`'s own doc above), the 4 AI callables pay for
+ * a real Vertex AI invocation per call, not bandwidth. GPT-PM's ruling on this exact
+ * question (`core/G4_STEP2_APP_CHECK_BOUNDARY_2026-08-28.md`): App Check enforcement
+ * does not close the anonymous-rotation exposure at all — it attests the client, not
+ * the account, so a genuine attested install remains free to mint unlimited fresh
+ * anonymous uids. The `ANONYMOUS_QUOTA_DIVISOR` mitigation above only raises rotation
+ * cost by 8x; it does not remove it. Recommendation, adopted: require a persistent,
+ * non-anonymous account for the 4 AI callables specifically at initial launch, leaving
+ * every non-AI feature (including video) open to anonymous users as before.
+ *
+ * Default is the RESTRICTIVE state — opposite of `scaling.ts`'s `envFlag` pattern,
+ * where unset/off is always the safe default. Here or unset means anonymous callers are
+ * REFUSED; the flag is the escape hatch for relaxing that once real usage/cost data
+ * supports it, not a way to opt into enforcement. A typo therefore fails toward the
+ * more conservative behavior (blocking anonymous AI use), matching this being a
+ * deliberate initial-launch policy rather than a measured rollout like App Check.
+ */
+export const AI_ALLOW_ANONYMOUS = process.env.AI_ALLOW_ANONYMOUS === "true";
+
+/** Throws if this caller is anonymous and `AI_ALLOW_ANONYMOUS` has not been set. */
+export function enforceNonAnonymousForAi(signInProvider: string | undefined): void {
+  if (AI_ALLOW_ANONYMOUS) return;
+  if (signInProvider === "anonymous") {
+    throw new HttpsError(
+      "permission-denied",
+      "Sign in with a real account to use AI features.",
+    );
+  }
+}

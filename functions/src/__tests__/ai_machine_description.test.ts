@@ -226,12 +226,12 @@ describe("aiMachineDescription", () => {
     expect(usage.aiMachineDescription).toBe(QUOTAS.aiMachineDescription);
   });
 
-  test("an anonymous caller gets a reduced ceiling", async () => {
+  test("an anonymous caller is refused before the quota is even checked (G4 Step 2: AI_ALLOW_ANONYMOUS defaults off)", async () => {
     const anon = (data: unknown): any => ({
       data,
       auth: { uid: "anon1", token: { firebase: { sign_in_provider: "anonymous" } } },
     });
-    usage = { aiMachineDescription: Math.floor(QUOTAS.aiMachineDescription / 8) };
-    await expect(aiMachineDescription.run(anon(VALID))).rejects.toThrow(/limit/i);
+    await expect(aiMachineDescription.run(anon(VALID))).rejects.toThrow(/real account/i);
+    expect(generate).not.toHaveBeenCalled();
   });
 });
