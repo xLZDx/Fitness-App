@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/assets/asset_bootstrap.dart';
 import 'core/debug/g3_step10b_probe.dart';
+import 'core/debug/g4_step2d_app_check_probe.dart';
 import 'core/health/platform_health_service.dart';
 import 'core/licences/asset_licences.dart';
 import 'core/health/state/health_providers.dart';
@@ -255,12 +256,18 @@ Future<void> main() async {
   //
   // F0·6: debug builds attest through the debug provider instead of Play
   // Integrity. This is not convenience — it is what makes enforcement
-  // possible at all. Play Integrity only attests builds distributed through
-  // Google Play, so once enforcement is on, a locally-built debug APK is
-  // indistinguishable from an attacker and every Gemini call from it is
-  // refused. The debug provider prints a token on first run; registering
-  // that token in the console (App Check -> Apps -> Manage debug tokens)
-  // is what keeps development working after enforcement.
+  // possible at all. A `flutter run` debug build is neither Play- nor
+  // App-Distribution-signed, so it cannot pass Play Integrity under any
+  // App Check console config (a build-signing gap, not the
+  // outside-Play/App-Distribution distribution-channel question corrected
+  // in `functions/src/scaling.ts:91-107` -- that correction is about
+  // release builds shipped via Firebase App Distribution, which DOES have a
+  // documented attestation path; it does not extend to a raw local debug
+  // build). Once enforcement is on, a locally-built debug APK without the
+  // debug token is indistinguishable from an attacker and every Gemini call
+  // from it is refused. The debug provider prints a token on first run;
+  // registering that token in the console (App Check -> Apps -> Manage
+  // debug tokens) is what keeps development working after enforcement.
   //
   // Release builds are untouched by this branch and keep Play Integrity,
   // which is the whole point: the exemption cannot ship to users, because
@@ -289,6 +296,10 @@ Future<void> main() async {
     debugPrint('R0: App Check activate() failed, continuing without it: $e');
     FirebaseCrashlytics.instance.recordError(e, st, fatal: false);
   }
+
+  // G4 Step 2D: dead code in every normal build -- see
+  // core/debug/g4_step2d_app_check_probe.dart.
+  unawaited(G4Step2dAppCheckProbe.run());
 
   // Warm up notifications. Warm-up ONLY -- no permission prompt: this runs
   // before the first frame, and an "Allow notifications?" dialog over a blank

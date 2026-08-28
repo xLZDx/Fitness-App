@@ -32348,4 +32348,57 @@ Next: Option D — configure Firebase App Check for the actual outside-Play dist
 channel (PLAY_RECOGNIZED not required, LICENSED not required, Device Integrity required)
 and prove the real release APK/device path with a temporary no-Vertex callable and
 `enforceAppCheck: true`, then continue to G4's remaining exit
-criteria.
+criteria (superseded below — see "Option D, part 1" for what was actually done).
+
+## Option D, part 1: console config applied, probe deployed, real device confirmed connected
+
+Found the exact REST path for the "exclusively outside Google Play" Play Integrity config
+by reading the raw HTML of Firebase's REST reference
+(`firebase.google.com/docs/reference/appcheck/rest/v1/projects.apps.playIntegrityConfig`)
+directly rather than trusting a summarized fetch of it — a first WebFetch pass on the same
+page (an AI-summarized read, not the raw HTML) reported the device-integrity row backwards
+("don't explicitly check" for the outside-Play row, which is actually the value for the
+Play/both rows). Caught before acting on it by re-fetching the raw HTML and grepping the
+literal table text: `Exclusively outside Google Play | Not required | Not required |
+Device integrity`.
+
+`GET .../apps/{sptrAppId}/playIntegrityConfig` showed the release (`sptr`) app's current
+config was the default: `deviceIntegrity.minDeviceRecognitionLevel: NO_INTEGRITY`,
+`appIntegrity`/`accountDetails` unset (defaults: `allowUnrecognizedVersion: false`,
+`requireLicensed: false`). Per the REST reference's full field docs:
+`appIntegrity.allowUnrecognizedVersion` must be `true` for an off-Play app (otherwise only
+PLAY_RECOGNIZED is accepted, which this app can never receive);
+`accountDetails.requireLicensed: false` was already correct (LICENSED not required is the
+default); `deviceIntegrity.minDeviceRecognitionLevel` needed to move from `NO_INTEGRITY` to
+`MEETS_DEVICE_INTEGRITY` (available with no Play Console opt-in, unlike the BASIC/STRONG
+tiers). `PATCH .../playIntegrityConfig?updateMask=appIntegrity,deviceIntegrity` applied
+both changes; confirmed via the response body. Safe and reversible: no callable currently
+enforces App Check (`APP_CHECK_ENFORCED_AI` etc. all default off), so this changes only
+what verdicts WOULD be accepted if enforcement were later turned on — zero effect on any
+currently-serving traffic.
+
+Built the actual proof scaffolding, following G3 Step 10B's established
+dead-code-when-off probe pattern exactly rather than inventing a new one:
+`functions/src/app_check_probe.ts` (temporary callable, no Vertex AI, no auth, no quota —
+`enforceAppCheck: true` is the only thing under test) and
+`mobile/lib/core/debug/g4_step2d_app_check_probe.dart` (`G4_STEP2D_APP_CHECK_PROBE`
+dart-define gate, folds to dead code in every normal build, fires once after
+`FirebaseAppCheck.instance.activate()` resolves). Registered `appCheckProbe` in
+`scaling.test.ts`'s `ENTRYPOINTS` ceiling list (19 → 20) rather than leaving it
+unregistered — the whole point of that list is catching exactly this kind of function.
+Also fixed two more instances of the stale "Play Integrity only attests Play-distributed
+builds" claim found while touching `main.dart`/`​.env.example` — narrowed to the real,
+narrower reason (debug-signing gap, not the outside-Play/App-Distribution question already
+corrected in `scaling.ts`).
+
+`tsc` clean, `npx jest` 535/535 (was 533; +2 net from the new suite entry plus the
+ceiling-count assertion moving from nineteen to twenty). Deployed
+`appCheckProbe(europe-west1)` via `firebase deploy --only functions:appCheckProbe` —
+targeted, nothing else redeployed. Committed (`9da104b`+1, see git log).
+
+Device check: `adb devices -l` shows `ce02171299f0711005 device product:dreamltexx
+model:SM_G950F` — the Samsung Galaxy S8 (project memory's standing real-device test
+target) is connected and ready. Next: build a release APK with
+`--dart-define=G4_STEP2D_APP_CHECK_PROBE=true --dart-define=G4_STEP2D_SOURCE_SHA=<sha>`
+via the same `scripts/dev/build_release.ps1` pipeline testers' builds go through, install
+it on the S8, and read the probe's logcat result.

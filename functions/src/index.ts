@@ -2233,6 +2233,10 @@ export { aiCoachAdvice } from "./ai_coach_advice";
 export { aiEquipmentRecognition } from "./ai_equipment_recognition";
 export { aiMachineDescription } from "./ai_machine_description";
 export { aiExerciseGeneration } from "./ai_exercise_generation";
+// MVP1.G4 Step 2, Option D: temporary App Check attestation probe. Delete
+// along with `app_check_probe.ts` once the real-device proof is recorded --
+// see that file's header.
+export { appCheckProbe } from "./app_check_probe";
 
 // A3. Separate module for the same reason as the clip signer: it exists to
 // satisfy a written promise (`public/privacy.html:89`) rather than a feature

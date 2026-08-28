@@ -84,6 +84,11 @@ const ENTRYPOINTS: Record<string, unknown> = {
   runProductionCanary: index.runProductionCanary,
   // MVP1.G3 Step 10A. Same registration discipline.
   runEnforcementStateCheck: index.runEnforcementStateCheck,
+  // MVP1.G4 Step 2, Option D. Temporary -- deleted along with
+  // `app_check_probe.ts` and its mobile trigger once the real-device App
+  // Check proof is recorded. Registered here anyway: this ceiling guard is
+  // exactly what should catch a temporary function that ships unbounded.
+  appCheckProbe: index.appCheckProbe,
 };
 
 describe("scaling ceilings", () => {
@@ -93,7 +98,7 @@ describe("scaling ceilings", () => {
     expect(admin.initializeApp).toHaveBeenCalledTimes(1);
   });
 
-  test("the deployed surface is exactly these nineteen", () => {
+  test("the deployed surface is exactly these twenty", () => {
     // A function added without a ceiling is the regression this whole file
     // exists to catch, and it can only be caught by noticing the count moved.
     const exported = Object.keys(index).filter(
