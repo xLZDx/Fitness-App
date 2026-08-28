@@ -32301,4 +32301,51 @@ and unresolved by this change).
 Next: Option D — configure App Check for the actual outside-Play distribution channel
 and prove the real release APK/device path with a temporary no-Vertex callable and
 `enforceAppCheck: true`, per GPT-PM's round-1 GO. Then continue to G4's remaining exit
+criteria (superseded below — see "G4 Step 2, commit 66c1143: GPT-PM round-2 APPROVE" for
+the actual outcome).
+
+## G4 Step 2, commit 66c1143: GPT-PM round-2 review — transport trouble, then APPROVE
+
+Sent `66c1143` for GPT-PM review (`review.js --commit 66c1143 --project Fitness_App
+--round 2`) with a scope note explaining the §16 routing correction and the
+implementation. Hit three consecutive PM Bridge transport failures before a genuine
+reply landed:
+
+1. First attempt stalled ~30 min; `messages.jsonl`'s "latest" entry was byte-identical
+   to the already-processed round-1 reply (stale-reply bug), confirmed via
+   `receipts.jsonl` still showing `round:1` with no new receipt — safe to kill.
+2. Killed the stuck node process (`$pid` is a read-only PowerShell automatic variable,
+   `foreach ($pid in ...)` errors with "Cannot overwrite variable PID" — renamed to
+   `$procId`), ran `pm_bridge_mode_off` then `start_orchestrator_patient.mjs`
+   (`PM_BRIDGE_ORCHESTRATOR_START_TIMEOUT_MS=120000`, bypasses the MCP tool's
+   hardcoded 30s readiness wrapper), daemon came back healthy (pid 60724), retried.
+3. Second attempt also stalled 15-20+ min despite `activeJobs:1` and `durableJobs`
+   incrementing (job genuinely registered) — no new outbound message or receipt.
+   Checked concurrent-session receipt activity (`ERP_MVP1_WORKTREE`,
+   `AI_trading_assistance` both had recent entries in the same window) as a possible
+   shared-browser-contention explanation per the documented CLAUDE.md §15 known gap,
+   but didn't reach a conclusion before the job itself completed on its own — the
+   `bok27itl2` task notification arrived with a genuine, non-stale reply
+   (`replyId a5223630...`, `round:2`, `correlated:true`) shortly after.
+
+**VERDICT: APPROVE.** GPT-PM confirmed: `enforceNonAnonymousForAi` correctly implements
+the approved initial-beta policy (anonymous callers refused before parsing/quota/model
+generation in all 4 callables); the escape-hatch polarity is correct and fail-restrictive
+(only the literal string `"true"` relaxes it); the 4 rewritten callable tests are
+adequate; leaving `quotaFor`'s 8x anonymous divisor in place is sensible as secondary
+protection if `AI_ALLOW_ANONYMOUS=true` is ever set later; a dedicated mobile "sign in to
+use AI" UX is out of scope for this backend round (deferred to the later mobile E2E/
+release step, not held against this commit) — the backend already returns
+`"Sign in with a real account to use AI features."`; this APPROVE does not close all of
+Step 2 — deployment of the 4 AI callables stays on HOLD pending Option D.
+
+`GO: AUTHORIZED — proceed directly to Option-D App Check proof.`
+`PUSH: AUTHORIZED under the current Gate policy.`
+
+Pushed `66c1143` to `origin/master` (`af0eb20..66c1143`).
+
+Next: Option D — configure Firebase App Check for the actual outside-Play distribution
+channel (PLAY_RECOGNIZED not required, LICENSED not required, Device Integrity required)
+and prove the real release APK/device path with a temporary no-Vertex callable and
+`enforceAppCheck: true`, then continue to G4's remaining exit
 criteria.
