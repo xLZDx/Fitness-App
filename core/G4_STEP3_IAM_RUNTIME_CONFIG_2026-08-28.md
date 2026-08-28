@@ -427,17 +427,32 @@ read and `?alt=media` byte fetch returned `HTTP 200`; the download returned 266,
 bytes. This is the exact chain round 1 found broken (a signer with no reader permission
 would 403 here) now proven working end to end, not just re-reviewed on paper.
 
+## Tier migration: fn-billing (4 of 5)
+
+`RUNTIME_SA.billing` added directly to the `WEBHOOK` profile constant (exclusively
+`stripeWebhook`, safe as a shared edit) and as a per-call override on
+`createCheckoutSession`, `createPortalSession`, `generateAnnualReceipt`,
+`bookCoachSession`, `startCoachOnboarding` (all share `INTERACTIVE`/`RARE` with other
+tiers, so each needed its own override rather than a shared-constant edit). Deployed
+together; `gcloud functions describe` confirmed all six now run as
+`fn-billing@fitness-app-korostelev.iam.gserviceaccount.com`. The deploy itself
+re-confirmed every one of the 8 `STRIPE_*` secret grants without error — real signal
+that the provisioned bindings are functionally correct, not just declared. **No live
+Stripe-triggered functional test performed** (no Stripe CLI/API access in this session)
+— same class of caveat as `fn-data`, called out rather than implied; `stripeWebhook`
+also has Stripe's own non-2xx retry as a safety net per this profile's original header.
+
 ## Status
 
 Round 1 (5-tier proposal, `cc759fc`): `MAJOR`, 3 MAJOR + 2 MINOR — fixed. Round 2
 (six-tier, `29647bb`): `MAJOR`, 1 MAJOR + 2 MINOR (fn-canary's own permissions) — fixed
 at `3f0475f`. Round 3 (fn-canary fix, `3f0475f`): `APPROVE`, additive provisioning
-authorized and applied live. **Tier 1 (`fn-canary`) migrated, verified live with a real
-triggered run. Tier 2 (`fn-data`) migrated for 5 of 6 functions** (`runEnforcementStateCheck`
-deliberately deferred, above, pending its own permission investigation). **Tier 3
-(`fn-video`) migrated, verified with a real object fetch returning actual bytes.**
-Remaining, in GPT-PM's order: `fn-billing` → `fn-account-delete`, same discipline.
-`roles/editor` stays on the default Compute SA until every tier has migrated (including
+authorized and applied live. **Tiers 1-4 migrated**: `fn-canary` (verified live with a
+real triggered run), `fn-data` (5/6 functions; `runEnforcementStateCheck` deliberately
+deferred, above), `fn-video` (verified with a real object fetch returning actual bytes),
+`fn-billing` (6/6 functions, identity confirmed, no live Stripe-triggered test).
+Remaining: `fn-account-delete`, the last and most sensitive tier. `roles/editor` stays
+on the default Compute SA until every tier has migrated (including
 `runEnforcementStateCheck`, once scoped) and the App Check probe is deleted or moved off
 it. `fn-ai-runtime`'s identity is prepared but stays unattached; the four AI callables
 remain HOLD-ed by Step 2. See `core/DECISION_LOG.md` for all verdicts and migration

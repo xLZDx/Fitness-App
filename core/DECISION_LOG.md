@@ -32804,3 +32804,21 @@ without `storage.objectViewer` would 403 here -- closing that finding with a rea
 rather than a corrected review.
 
 Next: `fn-billing`, then `fn-account-delete`.
+
+## G4 Step 3 IAM: tier 4 (fn-billing) migrated, 6/6 functions
+
+`RUNTIME_SA.billing` wired into `WEBHOOK` (shared constant, safe -- exclusive to
+`stripeWebhook`) and as per-call overrides on `createCheckoutSession`,
+`createPortalSession`, `generateAnnualReceipt`, `bookCoachSession`,
+`startCoachOnboarding` (all share `INTERACTIVE`/`RARE` with other tiers, so each needed
+its own override, same as `fn-data`'s `reportEquipment`). Deployed together; `gcloud
+functions describe` confirmed all six now run as `fn-billing@fitness-app-korostelev
+.iam.gserviceaccount.com`. The deploy's own secret-binding step re-confirmed every one
+of the 8 STRIPE_* grants with no error.
+
+No live Stripe-triggered functional test performed (no Stripe CLI/API access this
+session) -- recorded honestly rather than implied. `stripeWebhook` -- the one function
+whose failure "loses money rather than degrading an experience" per its own header --
+still has Stripe's built-in non-2xx retry as a safety net if something were wrong.
+
+Next and last: `fn-account-delete` (deleteAccount only).

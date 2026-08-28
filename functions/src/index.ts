@@ -620,6 +620,7 @@ export const startFreeTrial = onCall(
 export const createCheckoutSession = onCall(
   {
     ...INTERACTIVE,
+    serviceAccount: RUNTIME_SA.billing,
     secrets: [
       STRIPE_SECRET_KEY,
       STRIPE_PRICE_STANDARD,
@@ -815,7 +816,7 @@ export const createCheckoutSession = onCall(
 /* ------------------------------------------------------------------ */
 
 export const createPortalSession = onCall(
-  { ...INTERACTIVE, secrets: [STRIPE_SECRET_KEY] },
+  { ...INTERACTIVE, serviceAccount: RUNTIME_SA.billing, secrets: [STRIPE_SECRET_KEY] },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -1249,6 +1250,7 @@ export const optOutDonorWall = onCall(
 export const generateAnnualReceipt = onCall(
   {
     ...RARE,
+    serviceAccount: RUNTIME_SA.billing,
     secrets: [STRIPE_SECRET_KEY],
   },
   async (request) => {
@@ -1359,7 +1361,7 @@ export const generateAnnualReceipt = onCall(
  * `bookCoachSession`); the Connect account is just the payout target.
  */
 export const startCoachOnboarding = onCall(
-  { ...RARE, secrets: [STRIPE_SECRET_KEY] },
+  { ...RARE, serviceAccount: RUNTIME_SA.billing, secrets: [STRIPE_SECRET_KEY] },
   async (request) => {
     const auth = request.auth;
     if (!auth) {
@@ -1409,7 +1411,7 @@ export const startCoachOnboarding = onCall(
  * webhook can mark the booking confirmed once the charge succeeds.
  */
 export const bookCoachSession = onCall(
-  { ...INTERACTIVE, secrets: [STRIPE_SECRET_KEY] },
+  { ...INTERACTIVE, serviceAccount: RUNTIME_SA.billing, secrets: [STRIPE_SECRET_KEY] },
   async (request) => {
     const auth = request.auth;
     if (!auth) {

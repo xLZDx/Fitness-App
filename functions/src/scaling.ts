@@ -240,6 +240,7 @@ export const VIDEO_BATCH: Capped<CallableOptions> = {
 export const WEBHOOK: Capped<HttpsOptions> = {
   region: REGION,
   maxInstances: 20,
+  serviceAccount: RUNTIME_SA.billing,
 };
 
 /**
