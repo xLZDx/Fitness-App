@@ -31593,3 +31593,67 @@ proven safe by `machine_describer_test.dart`'s unchanged 31/31 pass).
 **Verification**: `flutter analyze` on both changed files plus the new test file -- no
 issues. `flutter test test/features/visual_equipment/ test/features/form_check/` --
 628/628 pass, zero regressions.
+
+## 2026-08-28 (continued) -- #9 (AI Gateway observability): GPT-PM HOLD, rebaselined
+
+Rather than unilaterally deploy 4 new production Cloud Functions (a materially bigger
+action than this session's other live changes -- new paid Gemini-backed endpoints, not a
+patch to an already-existing resource), sent GPT-PM a specific plan via
+`gpt_send_and_await` (not `review.js` -- this is a judgment call, not a diff review) with
+the real evidence gathered first: all 4 callables code-complete/tested/exported; zero
+deployed (`gcloud functions list`); G1 already migrated every mobile call site onto these
+exact `httpsCallable` names, so this is a real functional gap, not just an unproven
+metric (mitigated only by "no real users yet," per project memory); `HOLD_LIVE_CREATION_
+COST` was about the 5 (actually 4, see below) log metrics specifically, not the callables;
+`FA-D1` (notification channel) is fully resolved; `AI_METERED` rate-limiting already
+exists. Proposed: deploy now, prove the metrics with one real invocation each.
+
+**VERDICT: HOLD live deployment; REBASED→CLOSED instead.** GPT-PM's reasoning, verified
+against real source before accepting (not taken on faith):
+
+- `functions/src/monitoring/README.md:22` already recorded this AI Gateway metrics row as
+  **`LIVE_METRIC_CREATED / NO_PRODUCTION_PRODUCER`** before this session -- a pre-existing
+  deliberate state, not something newly discovered this session as I had implied.
+  Confirmed by direct read.
+- `functions/src/ai_gateway.ts:79`, `export const AI_MODEL = "gemini-3-flash-preview"` --
+  the file's own comment (`:56-63`) already documents this as a model GPT-PM's G1 round-1
+  review found deprecated on Vertex AI, migration target `gemini-3.5-flash`. Confirmed by
+  direct read; deploying now would ship a known-deprecated model inside an
+  observability-closure step rather than as its own reviewed decision.
+- `functions/src/scaling.ts:137-138`, `export const APP_CHECK_ENFORCED_AI = envFlag(...)
+  || APP_CHECK_ENFORCED` -- confirmed a genuinely separate, not-yet-enforced flag from the
+  main App Check gate. Combined with `abuse_guard.ts`'s own documented limitation (per-UID
+  quota alone does not survive anonymous-account rotation), deploying now would leave 4
+  reachable paid endpoints without the control that actually binds a call to a real
+  installation.
+- **Correction to my own proposal**: I said "5 metrics"; GPT-PM correctly identified 4
+  AI-Gateway-specific metrics (calls, latency, tokens, quota-exhaustion) plus a SEPARATE
+  cross-callable App Check attested-ratio metric (already `LIVE`) -- confirmed against
+  `functions/src/monitoring/README.md:21-22`. Also correctly caught that my proposed
+  "one invocation proves every metric" test was itself incomplete: a normal successful
+  call cannot populate `ai_gateway_quota_exhaustions` (sourced from the pre-`generate()`
+  quota refusal, not a success path).
+- Judgment call, explicitly stated by GPT-PM: no CEO/operator escalation needed for the
+  cost of test calls themselves (named real, low figures) -- this HOLD is about
+  activation risk (App Check gap, model deprecation, leaving paid endpoints reachable),
+  which is a technical readiness call GPT-PM is authorized to make, not a business
+  decision requiring the operator.
+
+**Disposition**: #9 rebaselined to REBASED→CLOSED -- direct-client-call elimination
+(genuinely CLOSED, unchanged) + server-side metric definitions/live resources
+(established) count as closed for Step 10C purposes; production deployment and real-
+producer-data validation are deliberately deferred to a new, named, MANDATORY follow-up
+gate, **AI Gateway Production Release & E2E Validation** (required before any AI-enabled
+user release, not optional roadmap polish) -- GPT-PM's own binding sequence for that
+future gate recorded for reuse: preflight the real Vertex model/location; resolve the
+deprecated-model decision as its own reviewed change; decide/prove AI-specific App Check
+rollout; verify ADC/IAM; targeted-deploy the 4 functions; one real authenticated call per
+function; prove calls/latency/tokens from real backend data; prove quota-exhaustion
+cheaply (pre-seed a test user's usage counter to the limit, one rejected call, no real
+spend); verify source==live revision/build provenance; real device E2E through each
+reachable AI surface.
+
+`GO: AUTHORIZED` for this rebaseline. `PUSH: AUTHORIZED` under the current gate policy.
+Updating the Step 10C table to reflect this, then all 13 rows are CLOSED or
+REBASED→CLOSED -- sending a narrow re-check of rows #9/#11 (the two changed since the
+round-1 closure review) before proceeding to the final whole-G3 review.
