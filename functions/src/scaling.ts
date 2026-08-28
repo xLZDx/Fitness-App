@@ -88,11 +88,23 @@ const REGION = "europe-west1";
  * of legitimate users rather than a visible error. Three preconditions, all
  * checkable, none currently met:
  *
- *   1. **Play Integrity only attests builds distributed through Google Play.**
- *      This project ships its tester builds through Firebase App Distribution
- *      (`scripts/dev/build_release.ps1 -Distribute`), which is NOT Play. A
- *      release APK from that channel attests as a stranger. Enforcing today
- *      breaks the operator's own phone first.
+ *   1. **The Play Integrity provider's App Check console config is not yet set for
+ *      outside-Play distribution.** Corrected 2026-08-28 (MVP1.G4 Step 2,
+ *      `core/G4_STEP2_APP_CHECK_BOUNDARY_2026-08-28.md`) after this comment was found
+ *      to overstate the case: "Play Integrity only attests builds distributed through
+ *      Google Play" is NOT what Firebase's current docs say. Firebase explicitly
+ *      supports Android apps distributed outside Google Play — for an
+ *      exclusively-outside-Play channel (this project ships tester builds through
+ *      Firebase App Distribution, `scripts/dev/build_release.ps1 -Distribute`, which
+ *      is NOT Play), the documented per-app config is PLAY_RECOGNIZED not required,
+ *      LICENSED not required, Device Integrity required — set in the Firebase
+ *      Console under App Check > Apps, not in this repository. That console setting
+ *      has not been verified/applied yet, and until it is, a release APK from the
+ *      App Distribution channel likely DOES attest as a stranger under the DEFAULT
+ *      config — so the practical effect (enforcing today would break the operator's
+ *      own phone) still holds until this is proven, but the REASON is a missing
+ *      console configuration step, not an inherent limitation of Play Integrity.
+ *      Do not re-introduce "App Distribution cannot attest" as an unconditional claim.
  *   2. **The console has to show attestation actually succeeding.** The
  *      `attested: true` share in the `noteAppCheck` logs is the number; it is
  *      currently unmeasured because A6-lite has not been in the field.

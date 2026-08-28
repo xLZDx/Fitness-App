@@ -1,5 +1,20 @@
 # N-05 — disposition
 
+**Correction, 2026-08-28 (MVP1.G4 Step 2,
+`core/G4_STEP2_APP_CHECK_BOUNDARY_2026-08-28.md`):** the User-impact row below states
+"Play Integrity attests only Play-distributed builds" as an unconditional fact. That
+overstates the case — Firebase's current documentation explicitly supports Android apps
+distributed outside Google Play, via a documented per-app App Check console
+configuration (PLAY_RECOGNIZED not required, LICENSED not required, Device Integrity
+required), independently verified live before this correction was written. Whether that
+configuration is actually applied in this project's Firebase Console is unverified as of
+this note — until proven, App Distribution builds should still be assumed to attest as
+strangers under the DEFAULT config, so this document's practical conclusions (App
+Distribution testers refused under naive enforcement) are not retracted, only their
+stated REASON. See the Step 2 document for the live proof plan (Option D). Left as a
+pointer rather than rewritten below, since this document's own claims are otherwise
+intact and load-bearing for the video-flag decision.
+
 **`N-05 = OPERATOR / PLATFORM DECISION REQUIRED`.**
 
 Not closed, and not closed by anything in this repository. Two independent review rounds converged

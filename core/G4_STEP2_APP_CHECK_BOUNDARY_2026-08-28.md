@@ -105,3 +105,58 @@ control at initial launch — appears to be exactly the kind of decision that fr
 out as needing real business judgment, not a purely technical call. Asking GPT-PM to rule
 on it directly, and to say explicitly whether this is within its own scope to decide or
 needs operator escalation under CLAUDE.md §4.
+
+## GPT-PM ruling (round 1): MAJOR — 2 findings, both corrected below
+
+Full reply in `core/DECISION_LOG.md`. Two real defects in the framing above:
+
+**MAJOR 1 — the "App Distribution cannot attest" claim is stale.** Options A/B/C above,
+and the underlying `scaling.ts` comment they were built from, treated "Play Integrity
+only attests Play-distributed builds" as an unconditional fact. It is not: Firebase's
+current documentation explicitly supports Android apps distributed outside Google Play —
+for an exclusively-outside-Play channel, the documented per-app configuration is
+`PLAY_RECOGNIZED` not required, `LICENSED` not required, `Device Integrity` required (set
+in the Firebase Console under App Check > Apps, not in this repository). Independently
+verified via a live web search of Firebase's own docs before accepting this (CLAUDE.md
+§3/§13) — confirmed accurate. **Required change, adopted: Option D.** Configure App
+Check for the actual outside-Play beta channel and prove the real release APK/device path
+against a temporary no-Vertex callable with `enforceAppCheck: true`. If it passes, initial
+deployment of the 4 AI callables must use `APP_CHECK_ENFORCED_AI=true`, not Option A/B/C's
+"defer enforcement" framing. If it fails, keep AI undeployed and repair the attestation
+configuration first. `scaling.ts`'s comment corrected in place (see that file) rather than
+carrying the stale claim forward.
+
+**MAJOR 2 — App Check enforcement was conflated with a binding anonymous-account
+anti-rotation control.** This document already said, correctly, that App Check and UID
+quotas solve different problems (App Check blocks non-genuine CLIENTS; the 8x quota only
+raises rotation cost) — but then framed the actual decision as whether G4 may "operate
+without a binding anti-rotation control," implying App Check enforcement would BE that
+control. It would not: Firebase enforcement only rejects missing/invalid App Check
+tokens — a valid ATTESTED installation remains completely free to make unlimited
+authenticated callable requests under freshly-rotated anonymous UIDs. **An attacker
+rotating anonymous Firebase identities through a genuine, attested, real app install is
+not stopped by App Check at all.** Required change, adopted: split into two
+independently-closed controls, not one:
+
+1. **Genuine-client boundary = App Check enforcement.** Once Option D's real-device proof
+   passes, this is a clean technical decision — no CEO escalation needed. Deploy with
+   `APP_CHECK_ENFORCED_AI=true` from initial launch.
+2. **Anonymous paid-AI identity/cost policy = a separate product decision**, not solved by
+   (1) at all. This is the one that needs the operator — see below.
+
+## Decision
+
+**HOLD on deploying the 4 AI callables** until Option D's attestation proof passes.
+**GO on the Option-D technical proof and the documentation corrections** (this document,
+`scaling.ts`) — both done/in progress, no further GPT-PM round needed for those two items
+specifically per its own explicit authorization.
+
+**One question routed to the operator, not GPT-PM, because GPT-PM itself named it as
+outside its own scope:** *"At MVP launch, may anonymous users consume paid AI?"*
+GPT-PM's own recommendation: **NO** for the initial beta — anonymous users may use every
+non-AI SPTR feature, but the 4 AI callables should require a persistent, non-anonymous
+account until real usage/cost data supports relaxing that rule. This sidesteps the
+anonymous-rotation cost exposure entirely (a real account is not free to mint) rather than
+mitigating it at 1/8 severity, and is a clean, reversible policy (a single check at the
+top of each `ai_*.ts` callable, gated behind its own flag the same shape as
+`APP_CHECK_ENFORCED_AI`) rather than a permanent architectural commitment.

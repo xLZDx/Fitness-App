@@ -32143,3 +32143,74 @@ earlier framing of that boundary.
 Next: send this proposal to GPT-PM (direct `review.js` CLI, still avoiding this
 session's stale MCP routing), act on its ruling, then continue to G4's remaining
 criteria.
+
+## G4 Step 2 round 1: GPT-PM found a stale factual claim AND a conflated-control error
+
+Sent commit 4940169 to GPT-PM. Hit real PM Bridge transport trouble first: the initial
+`review.js` call hung ~30 min with zero outbound message ever recorded — killed it,
+found the orchestrator's own `activeJobs` counter never released even after the client
+died (the daemon itself was stuck, not just the client this time). `pm_bridge_mode_off`
+then the same patient-timeout restart script used earlier brought up a clean daemon
+(`activeJobs: 0`). The retry then ALSO stalled the same way (~18 min, zero progress on
+the orchestrator's own request counter) — killed again, restarted the daemon a second
+time, retried a third time; this one worked. Root cause not identified (unlike the
+earlier documented "30s client timeout race" — this time the DAEMON's own job counter
+was stuck, which is a different failure mode, possibly the shared-browser-profile
+degradation `~/.claude/CLAUDE.md` §15 already documents as a known, unfixed gap). Logging
+the pattern here in case it recurs.
+
+**GPT-PM's round-1 ruling: MAJOR, 2 findings.**
+
+1. **The "App Distribution/internal builds cannot pass App Check" claim, inherited from
+   this repo's own `scaling.ts` comment and the older N-05 disposition, is stale.**
+   Firebase's current documentation explicitly supports Android apps distributed outside
+   Google Play, via a per-app App Check console configuration (PLAY_RECOGNIZED not
+   required, LICENSED not required, Device Integrity required) — this repository's own
+   comment stated the opposite as an unconditional fact. **Verified independently via a
+   live web search of Firebase's own current docs before accepting this (§3/§13)** —
+   confirmed accurate: firebase.google.com's Play Integrity provider page describes
+   exactly this outside-Play configuration path. Required change, adopted as **Option
+   D**: configure App Check for the real outside-Play beta channel and prove the actual
+   release APK/device path against a temporary no-Vertex callable with
+   `enforceAppCheck: true` before deciding enforcement policy for the 4 AI callables — a
+   real device-testing task, not yet done, next step below.
+2. **App Check enforcement was wrongly framed as closing the anonymous-account-rotation
+   exposure.** This document already said, correctly, that App Check attests the CLIENT
+   (app/device), not the ACCOUNT — but then still framed the actual decision as whether
+   G4 could "operate without a binding anti-rotation control," implying App Check
+   enforcement would supply that control. It cannot: Firebase only rejects
+   missing/invalid tokens; an attested genuine install remains completely free to spin up
+   unlimited fresh anonymous UIDs and reset the per-UID quota each time. Required change,
+   adopted: split into two independently-closed controls — (1) App Check enforcement
+   (genuine-client boundary, purely technical, no CEO input needed once Option D's proof
+   passes) and (2) anonymous paid-AI access policy (a real product/cost decision that
+   does not have a code-only answer).
+
+**Action taken:** corrected `scaling.ts`'s comment in place (the stale "Play Integrity
+only attests Play-distributed builds" claim replaced with the actual documented
+outside-Play configuration path, with an explicit note that the console setting itself
+is still unverified/unapplied). Added a correction pointer to
+`core/review/N05_DISPOSITION.md`'s top (not a rewrite — that document's own claims stay
+otherwise intact and load-bearing for the already-settled video-flag N-05 decision).
+Rewrote `core/G4_STEP2_APP_CHECK_BOUNDARY_2026-08-28.md`'s conclusion to record both
+findings, the split-controls framing, and the decision below.
+
+**Decision: HOLD on deploying the 4 AI callables until Option D's real-device attestation
+proof passes** (GPT-PM's own GO covers the technical proof and documentation correction
+only, not deployment). **Routing exactly one question to the operator** — not to
+GPT-PM, because GPT-PM itself explicitly named this as outside its own scope under
+CLAUDE.md §16: *"At MVP launch, may anonymous users consume paid AI?"* GPT-PM's own
+recommendation is NO for the initial beta (require a persistent non-anonymous account for
+the 4 AI callables specifically, leaving every non-AI feature open to anonymous users) —
+this sidesteps the rotation exposure entirely rather than merely dividing it by 8, and is
+a small, reversible, flag-gated change rather than a permanent architectural commitment.
+This is presented to the operator as a genuine business/product decision per CLAUDE.md
+§4, not decided here.
+
+Next (independent of the operator's answer, per GPT-PM's GO): build and run Option D's
+real-device App Check attestation proof (temporary no-Vertex callable,
+`enforceAppCheck: true`, tested against the actual App Distribution release APK on a real
+device — `core/DECISION_LOG.md`/project memory name the S8 device as permanently
+connected via adb for exactly this kind of test). Then continue to G4's remaining
+criteria (IAM/runtime config, deployment provenance, real E2E, observability, device E2E,
+rollback mechanism, release guard).
