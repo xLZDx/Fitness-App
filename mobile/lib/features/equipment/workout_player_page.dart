@@ -525,6 +525,14 @@ class _MarkCompleteButton extends ConsumerWidget {
     final loading = action.isLoading;
 
     Future<void> onTap() async {
+      // Captured once, up front, while `context`/`ref` are certainly valid --
+      // a tap could not have reached a disposed element. Used below only for
+      // the work that must still happen after the difficulty sheet's await,
+      // where `ref.read` is not safe (see the comment at that call site).
+      // `ProviderContainer.read` does not depend on any particular widget
+      // still being mounted, only on the ProviderScope above this route,
+      // which the rest-timer list reshuffle does not touch.
+      final container = ProviderScope.containerOf(context, listen: false);
       var already = inDay
           ? _daySession(ref, sessionKey)
           : ref.read(_loggedEntryProvider(sessionKey));
@@ -704,6 +712,16 @@ class _MarkCompleteButton extends ConsumerWidget {
         context,
         exerciseTitle: exercise.title,
       );
+      // No `context.mounted` guard here any more. The sheet's await is a gap
+      // this element can be disposed across -- the rest timer started just
+      // above inserts a row into the virtualized `SmoothScrollList`, which
+      // can rebuild an unkeyed list item at this index into a different
+      // widget entirely -- and the user has, at this point, already made a
+      // choice. Returning here discarded it silently: the crash was gone but
+      // the rating was too. `context.mounted` now only gates the SnackBar
+      // below; persistence goes through `container`, captured before this
+      // element could have been disposed, so it runs whether or not this
+      // particular widget instance survived the sheet.
       if (rating != null) {
         // Same replaceEntryExercise as above -- rating exercise #1 must not
         // erase exercises #2+. And inside a day the rating belongs to the
@@ -720,20 +738,21 @@ class _MarkCompleteButton extends ConsumerWidget {
               : replaceEntryExercise(
                   entry.exercises, justLogged.copyWith(difficulty: rating)),
         );
-        await ref.read(logSessionActionProvider.notifier).log(rated);
-        if (!context.mounted) return;
-        final ratingState = ref.read(logSessionActionProvider);
+        await container.read(logSessionActionProvider.notifier).log(rated);
+        final ratingState = container.read(logSessionActionProvider);
         if (ratingState.hasError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)
-                  .equipmentCouldNotSave(ratingState.error ?? '')),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(AppLocalizations.of(context)
+                    .equipmentCouldNotSave(ratingState.error ?? '')),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
           return;
         }
-        ref.read(_loggedEntryProvider(sessionKey).notifier).state = rated;
+        container.read(_loggedEntryProvider(sessionKey).notifier).state = rated;
       }
     }
 

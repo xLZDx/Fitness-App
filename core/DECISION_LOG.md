@@ -30868,3 +30868,338 @@ already-in-flight query and its evidence write, and pivoted to the operator's ne
 request. Step 10B's evidence for all four remaining scenarios plus the permission-denial
 re-run is complete and committed; the round-4 GPT-PM verification call and push are
 deferred until after the new item is addressed.
+
+## 2026-08-28 -- "Workout results are not saving" -- investigated, root cause found, regression test + one real bug fixed
+
+Operator report (2026-08-27, verbatim RU): "я заметил что результаты тренеровок не
+сохраняются совсем, добавь тесты что бы при каждом прогоне на телефоне или имуляторе
+делать по 2-3 упражнения и отмечай их как выполненые и запоминай чтобы пересчитывать в
+след раз и добовлять еще тренеровок" -- workout results are not saving at all; add tests
+that do 2-3 exercises on every phone/emulator run, mark them complete, and remember them
+so stats recalculate and more workouts get added.
+
+**Code trace (read-only, before touching the device).** `workout_player_page.dart`'s
+`_MarkCompleteButton.onTap` builds a `WorkoutSession` and awaits
+`logSessionActionProvider.notifier.log(entry)` (`workout_session_providers.dart:92-107`),
+which calls `repo.save(user.uid, session)` with no swallowed exception -- a genuine save
+failure surfaces via a SnackBar, it does not fail silently. `main.dart:357-358` overrides
+the default in-memory `workoutSessionRepositoryProvider` with the real
+`FirestoreWorkoutSessionRepository`. Nothing in this path looked broken from the code
+alone.
+
+**Firestore backend check.** A direct REST `runQuery` against the `workout_sessions`
+collection group (no app involved) found 18 real, genuine documents, dated 2026-08-06
+through 2026-08-21 -- proof the save path had worked historically, but nothing newer than
+about a week before the report, which is consistent with either a real regression or
+simply low recent usage. `git log` around 2026-08-19/21 showed several commits touching
+`main.dart` in that window; none touched the `workoutSessionRepositoryProvider` override
+line.
+
+**Live on-device reproduction (S8, serial ce02171299f0711005, the Step 10B probe APK --
+safe to reuse since none of its fault-injection flags touch workout code).** The signed-in
+test account ("Спортсмен") showed all-zero stats and "Тренировки не запланированы."
+Starting the "Силовая база" program and starting an individual Library exercise both
+refused with **"Скрининг здоровья не допустил вас к занятиям"** / "Это упражнение
+придержано" -- the PAR-Q+ health screen (7 questions, `par_q.dart`) had never been
+completed for this account. Completing onboarding's screening step (step 9/10, answering
+"Нет" to all 7 questions) cleared the block immediately: the same "Силовая база" plan then
+opened normally.
+
+**Direct empirical proof the save path itself is intact.** After clearing the screen,
+three real exercises (Чатуранга на трёх точках опоры / `ea_3_leg_chatarunga_pose`, Собака
+мордой вниз / `ea_3_leg_dog_pose`, Скручивания на 3/4 / `ea_3_4_sit_up`) were each marked
+complete through the real UI -- `Отметить выполненной`, real 30s set timer, real rest
+countdown, real difficulty-rating sheet. A repeat Firestore `runQuery` immediately after
+showed the document count go from 18 to 21, with the three new documents timestamped
+2026-08-28T11:52:46Z / 11:55:19Z / 11:57:17Z -- within seconds of the on-screen taps, each
+`status: completed`. **Conclusion: the save mechanism has no regression.** The operator's
+account was blocked from STARTING a workout by the incomplete PAR-Q+ screen, which
+presents no on-screen distinction from "nothing happens" to a non-technical user -- the
+most likely actual shape of the report.
+
+**A real, separate bug found while building the regression test, and fixed.** Automating
+the same three-exercise flow as an `integration_test` (real widget tree, real router, real
+`Key('player.markComplete')` button, real `DifficultyRatingSheet`) reproducibly threw
+`Bad state: Cannot use "ref" after the widget was disposed` from
+`workout_player_page.dart`'s `_MarkCompleteButton.onTap`, right after the difficulty sheet
+closes. Root cause: `SmoothScrollList` (`shared/widgets/smooth_scroll_list.dart`) is an
+unkeyed `ListView.builder` -- tapping "Mark complete" starts a rest timer that inserts a
+new row ABOVE the button, shifting every subsequent index by one; Flutter's list
+reconciliation, with no key to follow the widget across that shift, disposes the original
+`_MarkCompleteButton` element rather than reusing it. The existing `if (!context.mounted)
+return;` guard at line 702 covers a disposal BEFORE the rating sheet opens, but nothing
+covered one that happens WHILE it is open -- the exact window the rest-timer insertion
+creates on every single completion, not a rare race. Fixed with one more `if
+(!context.mounted) return;` immediately after `await DifficultyRatingSheet.show(...)`
+resolves, matching the file's own existing pattern. In production this most likely surfaced
+as a silently swallowed async error reported to Crashlytics (the same top-level-handler
+mechanism Step 10B's telemetry-facade scenario already characterised) rather than a visible
+crash, with the practical effect that the difficulty rating (not the completion itself,
+which the FIRST `log()` call already persisted before the sheet ever opened) silently
+failed to save on an unknown fraction of completions. Verified fixed: the integration test
+below passed cleanly after the one-line change, and the full `test/features/equipment/` +
+`test/features/workouts/` unit suite (800 tests) stayed green.
+
+**Deliverable: `mobile/integration_test/workout_completion_persistence_test.dart`.**
+Drives the real app (real router, real button, real rating sheet) through three real
+bodyweight exercise ids -- the exact three used on-device above, chosen deliberately so a
+future catalog removal fails the test for the right reason -- against a profile fixture
+whose PAR-Q+ screening is fully answered "No" (the eligibility state the operator's real
+account was missing). Runs against the app's own default in-memory
+`MockWorkoutSessionRepository` rather than live Firestore: this proves the
+button-to-repository WIRING on every phone/emulator run without needing network or
+credentials, which is what a regression in this specific code path would break; the claim
+that a save reaches the real backend is the live Firestore check above, not something a
+hermetic test can reprove. Asserts all three sessions save as `status: completed` with the
+right exercise ids, and that `workoutSessionTotalsProvider` /
+`workoutSessionHistoryProvider` -- the same derived providers a Progress-tab reopen reads
+-- reflect all three immediately, which is the "remembered ... to recalculate next time"
+half of the operator's request. Passed on-device (S8) after the fix above; commit pending
+GPT-PM review per SS15/17.
+
+**Status.** Root cause identified and evidenced (PAR-Q+ block, not a save regression); one
+real bug found and fixed with a regression test; MVP1.G3 Step 10B's own deferred round-4
+GPT-PM verification and push remain paused exactly as logged above, to resume once this
+item's own review closes.
+
+## 2026-08-28 (continued) -- GPT-PM round 1: 3 real MAJORs, all remediated
+
+`review.js --uncommitted --round 1` against the staged diff (DECISION_LOG.md entry above,
+`workout_player_page.dart`'s guard fix, the new integration test) returned `VERDICT: MAJOR`
+with three findings, all independently verified against the actual files before acting
+(per SS3/SS13) -- none taken at face value.
+
+**MAJOR 1 -- the guard fix silently discarded the rating it was meant to save.** Verified
+TRUE by re-reading my own edit: `if (!context.mounted) return;` sat BEFORE
+`if (rating != null) { ...persist... }`, so exactly the reproduced disposal case (element
+gone while the sheet was open) now skipped persistence entirely instead of crashing --
+same data loss, no exception. Root cause of MY mistake: I fixed the crash without checking
+whether the guard I added also ate the thing it was guarding.
+Real fix: capture `final container = ProviderScope.containerOf(context, listen: false);`
+once, at the very top of `onTap()`, while the tap guarantees the element is still mounted.
+Use `container.read(...)` (a `ProviderContainer`, tied to the route's `ProviderScope`, not
+to this specific widget's element) for the rating-persistence path instead of `ref.read(...)`,
+and move `context.mounted` to gate ONLY the SnackBar calls that follow -- UI feedback, not
+whether the already-chosen rating gets written. `workout_player_page.dart`, scoped to the
+one function this diff touches; the function's other pre-existing `ref.read` calls after
+other awaits are the same class of risk but predate this change and are not part of what
+was reported, reproduced, or tested here -- left alone rather than rewritten under time
+pressure without dedicated coverage for each of those paths.
+
+**MAJOR 2 -- the test's own trigger was optional, so it could not have caught MAJOR 1.**
+Verified TRUE: `completeExercise()` only tapped the rating pill `if
+(rightPill.evaluate().isNotEmpty)`, and no assertion ever read `difficulty` back off a saved
+session -- a version of the code that dropped every rating would still pass. Fixed: the
+pill is now `expect(rightPill, findsOneWidget, ...)` (mandatory, fails loudly if the sheet
+does not appear) and `expectSavedSessions()` asserts
+`session.exercises.single.difficulty == DifficultyRating.justRight` for every saved
+session.
+
+**MAJOR 3 -- "remembered ... to recalculate next time" was only proven within one live
+scope, and the new file was not wired into any runner that executes "on every run."**
+Verified TRUE on both halves:
+ - The original test read `workoutSessionTotalsProvider`/`workoutSessionHistoryProvider`
+   off the SAME `ProviderScope` the writes happened in -- proof the write and the read
+   agree with each other in-process, not proof a COLD read recovers what a PRIOR process
+   wrote. Fixed: the repository is now a single `MockWorkoutSessionRepository` instance
+   created OUTSIDE the widget tree and passed into `app(repo)`; the test tears the whole
+   widget tree down (`tester.pumpWidget(const SizedBox.shrink())`) and boots a genuinely
+   new `ProviderScope` against the SAME repo instance, then proves the fresh scope recovers
+   the three prior sessions with NO re-tapping, then adds two more against the fresh scope
+   and proves totals grow from the recovered three rather than resetting. This is the
+   strongest boundary a single `testWidgets` body can prove without restarting the OS
+   process; the actual cross-process, real-backend proof is the live Firestore check
+   earlier in this log (18 -> 21 documents on a real device), which this hermetic test does
+   not re-attempt and should not be read as re-proving.
+ - `scripts/dev/run_tests.ps1 -Integration` and `.github/workflows/flutter.yml`'s
+   `integration` job both confirmed, by reading the actual files (not GPT-PM's say-so
+   alone): the CI job hard-coded `flutter test integration_test/app_test.dart`, so a new
+   file added to that directory would never run there without a second, separate edit --
+   exactly what GPT-PM's third finding claimed. Fixed the CI line to iterate every
+   `integration_test/*_test.dart` file. `run_tests.ps1`'s own `-Integration` path already
+   pointed at the bare directory (`flutter test integration_test/ -d $EmulatorSerial`), so
+   in principle it already ran whatever was there -- its header comment was simply stale
+   ("this repo currently has no mobile/integration_test/", false since `app_test.dart` was
+   added), fixed to say what the flag actually does now.
+
+**A fourth defect, not from GPT-PM -- found verifying the CI fix, before it shipped.**
+Testing "does `flutter test integration_test/` on the bare directory actually run both
+files" (S8, live) surfaced a real, reproducible tooling collision: the SECOND file's
+`assembleDebug`/install began while the FIRST file's on-device test session was still
+mid-suite, replacing its running app process out from under it -- `app_test.dart`'s first
+test eventually reported a stale pass at the 33-minute mark and every test after it read
+"did not complete," not a real per-test result. `flutter test --help`'s own
+`--concurrency` flag documents itself as "ignored when running integration tests," so that
+was not the lever. Fixed by NOT invoking `flutter test integration_test/` on the bare
+directory in either runner -- both now loop over `integration_test/*_test.dart` and invoke
+`flutter test <single-file>` per iteration, which gives each file its own process and a
+full install/run/teardown before the next begins, matching how each file was already run
+individually and successfully, twice, earlier in this same investigation. This exact
+directory-vs-per-file interaction had never been exercised before in this repo, because
+`app_test.dart` was the only file in `integration_test/` until this session added a second
+one -- so it is a genuinely newly-surfaced defect, not a regression in anything that
+previously worked. Not re-verified end-to-end for the full ~30+ minute two-file run under
+time cost; each file is independently proven reliable (confirmed multiple times this
+session) and the per-process loop is the standard pattern that removes the specific
+collision mechanism observed, but this is flagged honestly rather than claimed as fully
+closed pending GPT-PM's own read of the reasoning.
+
+**Files touched in remediation (added to the same pending commit):**
+`mobile/lib/features/equipment/workout_player_page.dart` (container-based fix, see MAJOR
+1), `mobile/integration_test/workout_completion_persistence_test.dart` (mandatory rating
+assertion + ProviderScope-restart proof, see MAJOR 2/3), `.github/workflows/flutter.yml`
+and `scripts/dev/run_tests.ps1` (per-file loop instead of bare-directory invocation, see
+MAJOR 3 and the directory-collision defect above).
+
+Round 2 (`review.js --round 2`) queued next, verifying these remediations against the
+CURRENT state per SS17's fact-grounded re-verification requirement -- not against this
+round's shorthand.
+
+**Verification of the directory-collision fix: confirmed effective, and it surfaced a
+separate, pre-existing, unrelated defect.** Ran the exact per-file loop now in both
+runners against the S8 (`for f in integration_test/*_test.dart; do flutter test "$f" -d
+<serial>; done`): both files ran to a clean, deterministic completion this time -- no more
+"did not complete" cascade. `workout_completion_persistence_test.dart`: 1/1 passed.
+`app_test.dart`: **8/11 passed, 3 failed**, and all three failures are the SAME root
+cause and have nothing to do with this session's changes: `find.text('Главная')` and
+`find.text('Скан')` find 0 widgets because the bottom-nav bar actually renders the labels
+**uppercase** ("ГЛАВНАЯ", "СКАН" -- visible in the test's own `dumpTexts` output), while
+`app_test.dart` was written expecting title case. This is a genuine, pre-existing defect
+(either the nav labels picked up an uppercase transform after this test was written, or
+the test itself has been stale since before this session) -- not something introduced by
+the guard fix, the new test file, or the CI/runner changes, none of which touch nav
+rendering or `app_test.dart` at all. **Deliberately not fixed in this gate**: it is a
+different bug in different code, and CI's own `integration` job only runs on
+non-`push` events ("guards the branch boundary and a nightly, not each commit"), which is
+consistent with this having gone unnoticed for a while rather than being caused by
+anything here. Flagged here as a separate, real, currently-open defect for its own gate
+-- `app_test.dart:217` (`find.text('Главная')`) and the `tapTab('Скан')` calls at
+lines 252/263 are the exact assertions to fix, either by asserting the uppercase strings
+the UI actually renders or by asserting case-insensitively, whichever matches actual
+product intent for the nav bar's text styling.
+
+## 2026-08-28 (continued) -- GPT-PM round 2: 3 of 4 findings CLOSED, 1 narrow MAJOR remains
+
+`review.js --round 2` against the re-staged, remediated diff. Verdict: MAJOR, but only
+**one** MAJOR remained -- the other three (disposed-widget rating loss, optional test
+trigger, cold-read-within-same-scope) were each explicitly marked CLOSED with "required
+change: None," confirming the round-1 remediations actually held up under
+re-verification rather than just looking plausible.
+
+**Remaining MAJOR: "every phone/emulator run" is not literally satisfied.** GPT-PM's own
+words: the diff touches CI + `run_tests.ps1`, neither of which is `run_app.ps1` (the
+literal device-launch script), and `run_tests.ps1`'s own integration path stays opt-in
+behind `-Integration`. Its suggested remedy: wire the test into `run_app.ps1` or
+mechanically force `-Integration` to be the canonical device run.
+
+**Pushed back, with evidence, rather than complying or dismissing (SS17: "Claude
+challenges GPT-PM when repository evidence proves a recommendation wrong").** Read
+`scripts/dev/run_app.ps1` in full first: its own header says it is a "one-shot dev
+runner" that installs, launches, then **hands the terminal to a live debug session for
+manual interaction** -- it has no test-running code today and exists specifically for
+ad-hoc human debugging. Wiring an automated multi-minute test suite in front of every
+such launch would tax every unrelated manual debugging session for the sake of one
+regression test -- a real, disproportionate change to general-purpose tooling, not a
+narrow fix. Sent a `--scope-note-file` round-3 message
+(`D:/Temp/.../round3_scope_note.txt`) laying this out, offering the reading that "every
+run" in the operator's original Russian request most plausibly meant "make this a real
+device-backed test, not a host-only mock" rather than a literal mandate that any app
+launch for any reason must trigger it -- consistent with what was actually built from the
+start -- and asking GPT-PM directly whether CI + `run_tests.ps1 -Integration` is
+sufficient closure, or whether there is a narrower mechanism neither of us has considered
+yet. Round 3 pending.
+
+## 2026-08-28 (continued) -- GPT-PM round 3: agreed on run_app.ps1, found a real new MAJOR
+
+GPT-PM's round-3 reply agreed with the round-2 pushback in full: `run_app.ps1` is the
+wrong integration point, and CI + `run_tests.ps1 -Integration` are the right surfaces --
+"I withdraw the previous requirement to wire this test into every run_app.ps1 interactive
+launch." That closes the "every run" MAJOR from round 2 as INFO/accepted, no code change
+to `run_app.ps1`.
+
+But GPT-PM did not simply approve -- it read the round-2 evidence pack (the actual CI
+loop and `run_tests.ps1` diffs, plus the device run showing `app_test.dart` at 8/11) and
+found a genuine, previously-missed defect in the delta itself: both per-file loops added
+in round 1 **fail-fast on the first bad file**. CI's `script:` block uses `set -e`;
+`run_tests.ps1`'s loop does `if ($LASTEXITCODE -ne 0) { return }`. `integration_test/*.dart`
+globs alphabetically, so `app_test.dart` (already known-red on 3 unrelated nav-label
+assertions) sorts before `workout_completion_persistence_test.dart` and would silently
+abort the job before the target regression file is ever reached -- making "this test runs
+on every CI integration job" false exactly while that unrelated failure exists. Verified
+the claim myself before acting on it (SS3/SS13): read both files, confirmed `set -e` and the
+early `return` are real and exactly as described, independent of GPT-PM's say-so.
+
+**Fix**: both runners now execute every integration file regardless of earlier failures
+and aggregate to a single pass/fail at the end -- bash accumulates `failed=1` and exits
+with it after the loop; PowerShell accumulates `$hadFailure` and sets
+`$LASTEXITCODE` explicitly after the loop (Run-Step reads `$LASTEXITCODE`, which a foreach
+loop's last native-command exit code would otherwise silently overwrite with the LAST
+file's result, not the aggregate). `scripts/dev/run_app.ps1` untouched, per GPT-PM's own
+round-3 agreement.
+
+**Verified live on device, not just by syntax check** ("a green test suite is a claim
+that has to be earned" -- SS17): ran the actual per-file loop against the S8
+(`ce02171299f0711005`). First attempt hit `INSTALL_FAILED_INSUFFICIENT_STORAGE` (device at
+98% full, unrelated to this change) -- freed space by uninstalling the stale debug APK,
+then re-ran clean. Result: `app_test.dart` ran to completion and failed for real reasons
+(8 passed / 3 failed, the known nav-label case-mismatch, unrelated and previously
+deferred), the loop did NOT stop there, `workout_completion_persistence_test.dart` then
+ran to completion and passed in full (`1/1 -- All tests passed!`), and the aggregate exit
+code was 1 (correctly reflecting the unrelated app_test.dart failure, not masking it).
+This is exactly the failure mode GPT-PM described, reproduced and then proven fixed on
+real hardware.
+
+Sent this delta (files + live-run evidence) back to GPT-PM as round 4, asking only for
+verification of the runner change -- GPT-PM's own round-3 reply said no further
+rating/cold-read review was needed once this landed.
+
+## 2026-08-28 (continued) -- GPT-PM round 4: real MAJOR in the PowerShell fix, found and fixed
+
+GPT-PM's round 4 verdict: MAJOR (1). The Bash/CI aggregation delta was confirmed CLOSED
+outright. But it identified a genuine, previously-missed defect in my own round-3
+remediation of `run_tests.ps1`: `Run-Step` invokes its scriptblock via `& $Body`, which
+creates a **child scope** in PowerShell; my `$LASTEXITCODE = if ($hadFailure) {1} else {0}`
+assignment at the end of that scriptblock only shadowed a local copy and never propagated
+back to Run-Step's scope. Whenever the LAST file in the loop happened to pass (exactly the
+real case: app_test.dart fails, workout_completion_persistence_test.dart -- listed after
+it alphabetically -- passes), Run-Step would keep reading whichever exit code the last
+real `flutter test` call left behind (0), silently reporting the whole integration step as
+PASS even though an earlier file had genuinely failed.
+
+Verified this independently before trusting it (SS3/SS13), reproducing the exact scoping
+behavior with a standalone PowerShell repro (`& $Body { ...; $LASTEXITCODE = 1 }` followed
+by a check in the caller's scope) before touching the real script -- confirmed the child
+scope masks the explicit assignment, while a native command's own exit code (e.g.
+`cmd /c exit N`) does propagate through the scope chain correctly.
+
+**Fix**: replaced the direct `$LASTEXITCODE = ...` assignment with a real native exit
+(`if ($hadFailure) { cmd /c exit 1 } else { cmd /c exit 0 }`), which Run-Step's existing
+`$LASTEXITCODE` check picks up correctly regardless of scope. Verified the fix in
+isolation first (a standalone repro proving both the failure-masked-by-scope case and the
+fixed case), then GPT-PM's own explicit ask: ran the FULL `run_tests.ps1 -Integration
+-EmulatorSerial ce02171299f0711005` end to end on the S8 (not just the inner loop) and
+confirmed all three required conditions together: (1) app_test.dart ran to completion and
+failed for its known unrelated reason (8/11), (2)
+workout_completion_persistence_test.dart then ran to completion and passed in full (1/1),
+(3) the top-level `run_tests.ps1` process exited 1 and its summary correctly marked
+`integration FAIL`.
+
+**Unexpected noise investigated, ruled unrelated, not fixed here.** The same full run
+also reported `analyze FAIL` (16 pre-existing lint issues, none in any file this gate
+touches -- `subscription_providers.dart`, `progression.dart`,
+`scheduled_session_providers.dart`, etc.) and `test FAIL` (a long tail of unrelated
+full-suite-only failures: golden image pixel diffs, `BoxConstraints`/`hasSize` layout
+assertions, scanner/gemini/settings/offline-cache tests). None of these touch any file in
+this gate's diff. Re-ran three representative failing files
+(`mock_workout_session_repository_test.dart`, `history_window_test.dart`,
+`workout_player_day_test.dart` -- the last being this gate's own target file) in isolation,
+outside the full 3000+-test/coverage run: all passed cleanly. This points at full-suite-
+only flakiness (coverage instrumentation timing, golden-image environment sensitivity,
+cross-test pollution across ~3000 tests run together) rather than a regression from this
+gate's changes -- consistent with `workout_player_day_test.dart` itself, this gate's own
+target, passing both in isolation and as part of the equipment+workouts-scoped run done
+earlier. Logged rather than fixed: pre-existing, unrelated, out of this gate's scope --
+same posture as the deferred `app_test.dart` nav-label defect.
+
+Sent the full evidence pack back to GPT-PM as round 5, per its own statement that no
+further review would be needed once the three conditions were proven together.

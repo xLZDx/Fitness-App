@@ -3,10 +3,11 @@
 # Runs the whole Flutter pipeline in order:
 #   1. flutter analyze        -- static type / lint / unused-import check
 #   2. flutter test            -- unit + widget + golden tests
-#   3. (optional) integration  -- driver-based flows when -Integration is set.
-#                                 This repo currently has no mobile/integration_test/,
-#                                 so -Integration SKIPs cleanly rather than erroring --
-#                                 see core/CODEMAP.md.
+#   3. (optional) integration  -- device-backed flows in mobile/integration_test/,
+#                                 run when -Integration is set. Skips cleanly
+#                                 (rather than erroring) when that directory is
+#                                 absent or the target emulator/device is not
+#                                 connected -- see core/CODEMAP.md.
 #
 # Outputs a per-run report under logs/test_runs/<timestamp>/ so a failure
 # can be triaged without re-running. Exits non-zero on any failure so CI
@@ -79,8 +80,45 @@ try {
                 Write-Host "[integration] SKIPPED -- emulator $EmulatorSerial not running" -ForegroundColor Yellow
                 $results['integration'] = $null
             } else {
+                # One file per `flutter test` invocation, NOT the bare
+                # directory -- verified live (2026-08-28) that
+                # `flutter test integration_test/ -d <device>` starts
+                # building/installing the NEXT file's APK onto the device
+                # while a PRIOR file's suite is still mid-run, replacing its
+                # app process out from under it; every test after that point
+                # reports "did not complete" rather than a real per-test
+                # result. Looping gives each file its own process and a full
+                # install/run/teardown before the next begins.
+                #
+                # Aggregate, don't fail-fast: an earlier `return` on the
+                # first non-zero exit skipped every later file, so a
+                # known-red file (e.g. app_test.dart) silently prevented a
+                # later one (e.g. workout_completion_persistence_test.dart)
+                # from ever running. GPT-PM round 3 (2026-08-28) caught this.
+                # Run every file regardless of prior failures, then report
+                # failure only after all of them have run.
+                #
+                # The aggregate result MUST be surfaced via a real native
+                # exit code (`cmd /c exit N`), not a plain `$LASTEXITCODE = N`
+                # assignment -- Run-Step invokes this scriptblock via `&`,
+                # which creates a child scope, and a direct assignment to
+                # $LASTEXITCODE there only shadows the local copy; it does
+                # not propagate back to Run-Step's scope, so Run-Step would
+                # keep reading whichever real exit code the LAST native
+                # `flutter test` call happened to leave behind -- silently
+                # masking an earlier real failure whenever the last file in
+                # the loop passed. GPT-PM round 4 (2026-08-28) caught this;
+                # reproduced and confirmed with a standalone PowerShell
+                # scoping test before applying the fix.
                 $results['integration'] = Run-Step 'integration tests' {
-                    & $Flutter test integration_test/ -d $EmulatorSerial
+                    $files = Get-ChildItem -Path $IntegrationDir -Filter '*_test.dart'
+                    $hadFailure = $false
+                    foreach ($f in $files) {
+                        Write-Host "  -- $($f.Name)" -ForegroundColor DarkCyan
+                        & $Flutter test $f.FullName -d $EmulatorSerial
+                        if ($LASTEXITCODE -ne 0) { $hadFailure = $true }
+                    }
+                    if ($hadFailure) { cmd /c exit 1 } else { cmd /c exit 0 }
                 } 'integration.log'
             }
         }

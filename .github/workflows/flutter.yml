@@ -172,7 +172,37 @@ jobs:
             -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio
             -no-boot-anim -camera-back emulated -camera-front emulated
           working-directory: mobile
-          script: flutter test integration_test/app_test.dart --reporter=expanded
+          # Every file, not one hard-coded name -- a file added to
+          # integration_test/ (e.g. workout_completion_persistence_test.dart)
+          # must run in CI without a second edit here, or "every run" quietly
+          # means "every run of the one file this line happens to name".
+          #
+          # One file at a time, in its own `flutter test` process, NOT
+          # `flutter test integration_test/` on the bare directory --
+          # verified live (2026-08-28) that the directory form starts
+          # building/installing the NEXT file's APK onto the emulator while
+          # the previous file's device session is still mid-suite, which
+          # replaces its running app process out from under it. Every test
+          # after the point of collision then reports "did not complete",
+          # not a real per-test failure. A loop over files gives each one
+          # its own process and its own full install/run/teardown before
+          # the next begins, which is what avoids that collision.
+          # Aggregate, don't fail-fast: `set -e` would abort this loop at the
+          # first failing file, and the glob is alphabetical -- a known-red
+          # file earlier in the alphabet (e.g. app_test.dart) would then
+          # silently prevent every later file (e.g.
+          # workout_completion_persistence_test.dart) from ever running.
+          # GPT-PM round 3 (2026-08-28) caught this: it made "this test runs
+          # on every CI integration job" false exactly while an unrelated
+          # earlier file was red. Run every file regardless of prior
+          # failures, then fail the job only after all of them have run.
+          script: |
+            failed=0
+            for f in integration_test/*_test.dart; do
+              echo "=== $f ==="
+              flutter test "$f" --reporter=expanded || failed=1
+            done
+            exit $failed
 
   # CT-1. Cheap on purpose: a contract check and a rule set, not a training
   # run. §26 of the CT-1 brief is explicit that expensive training must not

@@ -1,0 +1,564 @@
+<title>Расследование: сохранение тренировок</title>
+<style>
+  :root {
+    --bg: #f4f6f7;
+    --surface: #ffffff;
+    --surface-2: #eceff1;
+    --border: #d7dde0;
+    --ink: #16232a;
+    --ink-2: #445159;
+    --muted: #71808a;
+    --accent: #0e7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f3f2;
+    --good: #157a4a;
+    --good-soft: #e3f5ea;
+    --bad: #b3261e;
+    --bad-soft: #fbe9e7;
+    --warn: #9a6700;
+    --warn-soft: #fff3d6;
+    --code-bg: #101820;
+    --code-ink: #d9e6e6;
+    --shadow: 0 1px 2px rgba(16, 24, 29, 0.06), 0 8px 24px rgba(16, 24, 29, 0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12181b;
+      --surface: #182226;
+      --surface-2: #1f2b30;
+      --border: #2b3a40;
+      --ink: #e7eef0;
+      --ink-2: #b6c4c9;
+      --muted: #8a9aa1;
+      --accent: #4fd1c5;
+      --accent-ink: #0b2323;
+      --accent-soft: #163333;
+      --good: #6bd6a0;
+      --good-soft: #133426;
+      --bad: #ff8a80;
+      --bad-soft: #3a1815;
+      --warn: #ffcf6b;
+      --warn-soft: #3a2c0d;
+      --code-bg: #0a0f12;
+      --code-ink: #cfe3e3;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12181b;
+    --surface: #182226;
+    --surface-2: #1f2b30;
+    --border: #2b3a40;
+    --ink: #e7eef0;
+    --ink-2: #b6c4c9;
+    --muted: #8a9aa1;
+    --accent: #4fd1c5;
+    --accent-ink: #0b2323;
+    --accent-soft: #163333;
+    --good: #6bd6a0;
+    --good-soft: #133426;
+    --bad: #ff8a80;
+    --bad-soft: #3a1815;
+    --warn: #ffcf6b;
+    --warn-soft: #3a2c0d;
+    --code-bg: #0a0f12;
+    --code-ink: #cfe3e3;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  @font-face {
+    font-family: 'Newsreader';
+    src: local('Newsreader');
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 96px; }
+
+  header h1 {
+    font-family: 'Newsreader', Georgia, 'Times New Roman', serif;
+    font-weight: 600;
+    font-size: clamp(28px, 4vw, 40px);
+    line-height: 1.15;
+    margin: 0 0 10px;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  header .kicker {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+  header p.dek {
+    color: var(--ink-2);
+    font-size: 17px;
+    max-width: 62ch;
+    margin: 0 0 8px;
+  }
+
+  section { margin-top: 40px; }
+  h2 {
+    font-family: 'Newsreader', Georgia, serif;
+    font-weight: 600;
+    font-size: 22px;
+    margin: 0 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 22px 0 8px;
+    color: var(--ink);
+  }
+  p { margin: 0 0 12px; color: var(--ink-2); }
+  p.lead { color: var(--ink); font-size: 16px; }
+  strong { color: var(--ink); }
+  a { color: var(--accent); text-decoration-thickness: 1.5px; }
+
+  code, .mono {
+    font-family: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    font-size: 0.88em;
+  }
+  code {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    color: var(--ink);
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: 10px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    box-shadow: var(--shadow);
+  }
+  pre code { background: none; border: none; padding: 0; color: inherit; }
+
+  .verdict-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 18px 0 8px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .pill .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+  .pill.good { color: var(--good); }
+  .pill.good .dot { background: var(--good); }
+  .pill.bad { color: var(--bad); }
+  .pill.bad .dot { background: var(--bad); }
+  .pill.warn { color: var(--warn); }
+  .pill.warn .dot { background: var(--warn); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .card.accent { border-left: 4px solid var(--accent); }
+  .card.bad-edge { border-left: 4px solid var(--bad); }
+  .card.good-edge { border-left: 4px solid var(--good); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: var(--surface);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .table-wrap { overflow-x: auto; border-radius: 12px; }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--surface-2);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  ol.steps { margin: 0; padding-left: 0; list-style: none; counter-reset: step; }
+  ol.steps li {
+    counter-increment: step;
+    position: relative;
+    padding: 4px 0 16px 38px;
+    border-left: 2px solid var(--border);
+    margin-left: 13px;
+  }
+  ol.steps li:last-child { border-left-color: transparent; padding-bottom: 0; }
+  ol.steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: -13px;
+    top: 2px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  ol.steps b { color: var(--ink); }
+
+  figure { margin: 20px 0; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+    text-align: center;
+  }
+  .diagram-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .filelist { list-style: none; margin: 0; padding: 0; }
+  .filelist li {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .filelist li:last-child { border-bottom: none; }
+  .filelist .tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 5px;
+    flex: none;
+  }
+  .tag.mod { background: var(--warn-soft); color: var(--warn); }
+  .tag.new { background: var(--good-soft); color: var(--good); }
+
+  ul.plain { margin: 0 0 12px; padding-left: 20px; color: var(--ink-2); }
+  ul.plain li { margin-bottom: 6px; }
+
+  footer.note {
+    margin-top: 48px;
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 32px 16px 72px; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="kicker">Fitness_App · MVP1 · внеплановое расследование</span>
+    <h1>«Результаты тренировок не сохраняются» — что оказалось на самом деле</h1>
+    <p class="dek">Прямая проверка на реальном устройстве и в Firestore: механизм сохранения исправен. Настоящая причина — незавершённый медицинский скрининг PAR-Q+, который блокирует старт тренировки без понятного объяснения. Попутно найден и исправлен реальный краш в обработчике оценки нагрузки.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 48cc9f3</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+  <section>
+    <h2>Вердикт</h2>
+    <div class="verdict-row">
+      <span class="pill good"><span class="dot"></span>Сохранение тренировок работает</span>
+      <span class="pill warn"><span class="dot"></span>Найдена настоящая причина жалобы</span>
+      <span class="pill bad"><span class="dot"></span>Найден и исправлен отдельный краш</span>
+      <span class="pill good"><span class="dot"></span>Добавлен регрессионный тест</span>
+    </div>
+    <p class="lead">Запрос оператора: добавить тесты, которые на каждом прогоне (телефон/эмулятор) выполняют 2–3 упражнения, отмечают их выполненными и проверяют, что статистика запоминается и пересчитывается. Тесты добавлены и проходят на реальном устройстве (Samsung Galaxy S8).</p>
+  </section>
+
+  <section>
+    <h2>Как проверяли</h2>
+    <ol class="steps">
+      <li><b>Чтение кода.</b> Путь «нажал завершить → сохранил» (<code>workout_player_page.dart</code> → <code>LogSessionAction.log()</code> → <code>FirestoreWorkoutSessionRepository.save()</code>) не проглатывает ошибки — при реальном сбое пользователь увидит уведомление. С виду ничего не сломано.</li>
+      <li><b>Проверка Firestore напрямую.</b> Запрос ко всей коллекции <code>workout_sessions</code> нашёл 18 настоящих документов за 6–21 августа — механизм работал раньше, но новых записей за последнюю неделю не было.</li>
+      <li><b>Живое устройство.</b> Тестовый аккаунт «Спортсмен»: попытка начать программу или отдельное упражнение упиралась в сообщение <b>«Скрининг здоровья не допустил вас к занятиям»</b> — анкета PAR-Q+ (7 вопросов) не была пройдена.</li>
+      <li><b>Прямое доказательство.</b> После прохождения анкеты три упражнения были честно выполнены через настоящий интерфейс. Повторный запрос к Firestore показал рост с 18 до 21 документа — новые записи появились в течение секунд после нажатий.</li>
+      <li><b>Автотест.</b> При переносе того же сценария в <code>integration_test</code> обнаружился реальный краш в обработчике оценки нагрузки (см. ниже). Исправлен, тест проходит.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Как это устроено</h2>
+    <figure class="diagram-box">
+      <svg viewBox="0 0 860 300" role="img" aria-label="Схема: жалоба ветвится на два пути — реальная блокировка PAR-Q+ и отдельный краш в оценке нагрузки, оба обработаны отдельно">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+        <g fill="none" stroke="currentColor" stroke-width="1.5" font-family="IBM Plex Sans, sans-serif">
+          <rect x="20" y="16" width="230" height="52" rx="10"/>
+          <text x="135" y="38" text-anchor="middle" font-size="13" fill="currentColor" stroke="none" font-weight="700">Жалоба оператора</text>
+          <text x="135" y="56" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">«результаты не сохраняются»</text>
+
+          <line x1="135" y1="68" x2="135" y2="108" marker-end="url(#arrow)"/>
+          <rect x="20" y="110" width="230" height="46" rx="10"/>
+          <text x="135" y="132" text-anchor="middle" font-size="12" fill="currentColor" stroke="none" font-weight="700">Проверка кода + Firestore</text>
+          <text x="135" y="148" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">путь сохранения выглядит целым</text>
+
+          <line x1="135" y1="156" x2="135" y2="196" marker-end="url(#arrow)"/>
+          <rect x="20" y="198" width="230" height="46" rx="10"/>
+          <text x="135" y="220" text-anchor="middle" font-size="12" fill="currentColor" stroke="none" font-weight="700">Живой тест на S8</text>
+          <text x="135" y="236" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">воспроизводим сценарий</text>
+
+          <line x1="250" y1="221" x2="330" y2="130" marker-end="url(#arrow)"/>
+          <line x1="250" y1="221" x2="330" y2="252" marker-end="url(#arrow)"/>
+
+          <rect x="332" y="90" width="250" height="80" rx="10" stroke="#0e7c86"/>
+          <text x="457" y="112" text-anchor="middle" font-size="12" fill="currentColor" stroke="none" font-weight="700">Найдено: PAR-Q+ не пройден</text>
+          <text x="457" y="130" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">блокирует старт ЛЮБОЙ тренировки,</text>
+          <text x="457" y="146" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">выглядит как «ничего не происходит»</text>
+          <text x="457" y="162" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">= настоящая причина жалобы</text>
+
+          <rect x="332" y="212" width="250" height="80" rx="10" stroke="#b3261e"/>
+          <text x="457" y="234" text-anchor="middle" font-size="12" fill="currentColor" stroke="none" font-weight="700">Пройден скрининг, 3 упражнения</text>
+          <text x="457" y="252" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">18→21 документ в Firestore —</text>
+          <text x="457" y="268" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">сохранение работает штатно</text>
+          <text x="457" y="284" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">регрессии в save() нет</text>
+
+          <line x1="582" y1="130" x2="640" y2="130" marker-end="url(#arrow)"/>
+          <rect x="642" y="98" width="200" height="64" rx="10"/>
+          <text x="742" y="122" text-anchor="middle" font-size="12" fill="currentColor" stroke="none" font-weight="700">Отчёт + вывод</text>
+          <text x="742" y="140" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">причина названа,</text>
+          <text x="742" y="153" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">регрессии не найдено</text>
+
+          <line x1="582" y1="252" x2="640" y2="220" marker-end="url(#arrow)"/>
+          <rect x="642" y="188" width="200" height="70" rx="10" stroke="#b3261e"/>
+          <text x="742" y="210" text-anchor="middle" font-size="12" fill="currentColor" stroke="none" font-weight="700">Автотест краша</text>
+          <text x="742" y="226" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">disposed-ref в оценке</text>
+          <text x="742" y="240" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">нагрузки → 1-строчный фикс</text>
+          <text x="742" y="254" text-anchor="middle" font-size="11" fill="currentColor" stroke="none">+ регрессионный тест</text>
+        </g>
+      </svg>
+      <figcaption>Одно расследование, две независимые находки: реальная причина жалобы (PAR-Q+) и отдельный, ранее незамеченный краш, обнаруженный только при автоматизации того же сценария.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Находка 1 — настоящая причина жалобы</h2>
+    <div class="card accent">
+      <p><strong>PAR-Q+ (стандартная 7-вопросная анкета готовности к нагрузке)</strong> блокирует запуск любой тренировки — и программы, и отдельного упражнения из каталога — пока не пройдена полностью. У тестового аккаунта она не была пройдена.</p>
+      <p>Экран показывает текст вроде «Скрининг здоровья не допустил вас к занятиям», но для нетехнического пользователя, который просто хочет начать тренировку, это неотличимо от «приложение не реагирует» — и именно так, вероятно, и было воспринято как «результаты не сохраняются»: тренировка не то что не сохранялась, она вообще не могла начаться.</p>
+      <p>После прохождения анкеты (7 вопросов, ответ «Нет» на каждый) блокировка снялась немедленно, без перезапуска приложения.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Находка 2 — механизм сохранения исправен</h2>
+    <div class="card good-edge">
+      <p>Прямая проверка Firestore до и после выполнения трёх упражнений:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Упражнение</th><th>ID</th><th>Время сохранения (UTC)</th><th>Статус</th></tr></thead>
+          <tbody>
+            <tr><td>Чатуранга на трёх точках опоры</td><td class="mono">ea_3_leg_chatarunga_pose</td><td class="num mono">11:52:46.907</td><td>completed</td></tr>
+            <tr><td>Собака мордой вниз на трёх точках опоры</td><td class="mono">ea_3_leg_dog_pose</td><td class="num mono">11:55:19.693</td><td>completed</td></tr>
+            <tr><td>Скручивания на 3/4</td><td class="mono">ea_3_4_sit_up</td><td class="num mono">11:57:17.384</td><td>completed</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:14px">Число документов в коллекции <code>workout_sessions</code>: <strong>18 → 21</strong>, ровно на три новых. Каждая запись появилась в Firestore в течение секунд после нажатия «Отметить выполненной» на устройстве.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Находка 3 — реальный краш, найденный при автоматизации</h2>
+    <div class="card bad-edge">
+      <p>Перенос того же сценария в автотест (реальное дерево виджетов, реальная кнопка, реальный лист оценки нагрузки) воспроизводимо ловил:</p>
+      <pre><code>Bad state: Cannot use "ref" after the widget was disposed.
+  #4 _MarkCompleteButton.build.onTap (workout_player_page.dart:723)</code></pre>
+      <p><strong>Причина:</strong> список экрана тренировки (<code>SmoothScrollList</code>) — невиртуализированный <code>ListView.builder</code> без ключей. Нажатие «Отметить выполненной» запускает таймер отдыха, который добавляет строку ВЫШЕ кнопки, сдвигая индексы всех элементов ниже. Flutter не может «проследить» виджет кнопки через этот сдвиг без ключа и молча пересоздаёт его элемент — а асинхронный код внутри старого <code>onTap</code> (ожидание листа оценки) обращается к уже уничтоженной ссылке.</p>
+      <p>Существующая проверка <code>if (!context.mounted) return;</code> стояла ДО открытия листа оценки, но не ПОСЛЕ его закрытия — то есть ровно в том окне, которое создаёт вставка таймера отдыха при каждом завершении подхода, а не в редком гоночном случае.</p>
+      <p><strong>В проде:</strong> скорее всего тихо гасится как необработанная ошибка (репортится в Crashlytics), не давая видимого краша — но сама оценка нагрузки («Легко / В самый раз / Тяжело») в этот момент теряется молча, хотя сохранение подхода к этому моменту уже прошло успешно.</p>
+      <p><strong>Первое исправление (раунд 1, до ревью):</strong> одна дополнительная проверка <code>if (!context.mounted) return;</code> сразу после ожидания листа оценки — но она же и была найдена GPT-PM как новая ошибка (см. ниже).</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Раунд ревью GPT-PM — три MAJOR-находки, все устранены</h2>
+    <div class="card bad-edge">
+      <p><strong>1. Первое исправление молча теряло уже выбранную оценку.</strong> Проверка <code>context.mounted</code> стояла ДО кода сохранения — значит, ровно в воспроизведённом сценарии (элемент уничтожен, пока лист открыт) код теперь тихо выходил, так и не сохранив оценку пользователя. Краш исчез, но данные всё равно терялись. <strong>Правильное исправление:</strong> в начале обработчика захватывается <code>ProviderContainer</code> (он не привязан к жизненному циклу конкретного виджета, а живёт вместе со всем экраном), и сохранение оценки теперь всегда идёт через него; проверка <code>mounted</code> ограничивает только показ уведомления, а не запись данных.</p>
+      <p><strong>2. Сам тест не мог поймать первую находку.</strong> Тап по оценке был необязательным (<code>if (...isNotEmpty)</code>), а сохранённое поле <code>difficulty</code> нигде не проверялось — версия кода, теряющая каждую оценку, всё равно прошла бы тест. Тап сделан обязательным, добавлена проверка, что <code>difficulty</code> реально сохранился для всех трёх упражнений.</p>
+      <p><strong>3. «Запоминается, чтобы пересчитать в следующий раз» было доказано только внутри одного и того же живого экрана.</strong> Тест читал статистику из того же <code>ProviderScope</code>, в который только что писал — это доказывает согласованность записи и чтения, но не то, что ХОЛОДНЫЙ повторный запуск действительно восстановит данные. Тест переработан: репозиторий теперь создаётся ОТДЕЛЬНО от дерева виджетов; тест полностью разрушает экран, пересобирает его заново (новый <code>ProviderScope</code>) на том же репозитории и проверяет, что три ранее сохранённые тренировки восстановились без повторных нажатий — а затем добавляет ещё две тренировки поверх восстановленных, доказывая, что счётчик растёт, а не сбрасывается.</p>
+    </div>
+    <div class="card warn" style="border-left:4px solid var(--warn)">
+      <p><strong>Четвёртая находка — уже не от GPT-PM, а при проверке собственного исправления.</strong> Та же находка №3 указала, что новый тестовый файл не запускался бы «при каждом прогоне» — CI жёстко ссылался на один файл (<code>app_test.dart</code>), а не на всю папку. При попытке починить это (запускать всю папку <code>integration_test/</code> одной командой) на реальном устройстве воспроизвёлся отдельный, ранее не проявлявшийся баг инструментария: сборка/установка APK второго файла начиналась, пока на устройстве ещё шёл первый файл, — и подменяла его работающий процесс, из-за чего все последующие тесты первого файла отваливались с «did not complete» вместо настоящего результата. Исправлено переходом на цикл, запускающий каждый файл отдельным процессом <code>flutter test</code> — так уже надёжно работало оба файла по отдельности весь день.</p>
+      <p>После этого фикса оба файла в связке доходят до честного, детерминированного результата — и это вскрыло ещё одну, совершенно отдельную и не связанную с текущей задачей находку: у <code>app_test.dart</code> оказалось 3 предсуществующих падения (нижняя навигация реально рендерится ЗАГЛАВНЫМИ буквами «ГЛАВНАЯ» / «СКАН», а тест ищет «Главная» / «Скан» с обычным регистром). Это никак не связано с сохранением тренировок и не тронуто в рамках этой задачи — зафиксировано в <code>core/DECISION_LOG.md</code> как отдельный открытый пункт для будущего гейта.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Изменённые файлы</h2>
+    <ul class="filelist">
+      <li><span class="tag mod">правка</span><span class="mono">mobile/lib/features/equipment/workout_player_page.dart</span> — сохранение оценки через захваченный <code>ProviderContainer</code></li>
+      <li><span class="tag new">новый</span><span class="mono">mobile/integration_test/workout_completion_persistence_test.dart</span> — регрессионный тест: 3+2 упражнения → сохранение с оценкой → рестарт экрана → пересчёт статистики</li>
+      <li><span class="tag mod">правка</span><span class="mono">.github/workflows/flutter.yml</span> — CI гоняет каждый файл <code>integration_test/</code> отдельным процессом, а не один жёстко заданный файл</li>
+      <li><span class="tag mod">правка</span><span class="mono">scripts/dev/run_tests.ps1</span> — тот же цикл по файлам локально, актуализирован устаревший комментарий</li>
+      <li><span class="tag mod">правка</span><span class="mono">core/DECISION_LOG.md</span> — полная запись расследования, включая раунд ревью и обе дополнительные находки</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Проверка</h2>
+    <ul class="plain">
+      <li>Новый интеграционный тест — <strong>зелёный</strong> на реальном устройстве (Samsung Galaxy S8), включая проверку сохранённой оценки и восстановления после пересборки экрана.</li>
+      <li>Оба файла <code>integration_test/</code>, запущенные последовательно по одному (как теперь в CI): без коллизии, детерминированный результат; новый файл — 1/1, существующий — 8/11 (3 падения — отдельная предсуществующая находка, см. выше).</li>
+      <li>Существующий набор <code>test/features/equipment/</code> + <code>test/features/workouts/</code> — <strong>800 тестов, все зелёные</strong>, регрессий не внесено.</li>
+      <li><code>flutter analyze</code> на изменённых/новых Dart-файлах, синтаксис PowerShell и YAML — без замечаний.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Что дальше</h2>
+    <p>Изменения проходят обязательное ревью GPT-PM (§15) перед коммитом — раунд 1 уже дал 3 MAJOR-находки, все устранены и описаны выше; раунд 2 верифицирует исправления. Работа над отложенным раундом 4 Step 10B (MVP1.G3) возобновится сразу после закрытия этого пункта — режим PM Bridge остаётся включённым, программа продолжается без остановки на этом отчёте.</p>
+  </section>
+
+  <footer class="note">
+    Отчёт сгенерирован автоматически по итогам расследования 2026-08-28. Полная хронология — в <code>core/DECISION_LOG.md</code>.
+  </footer>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
