@@ -229,7 +229,13 @@ describe("App Check enforcement flags", () => {
    * read once at module load. */
   const withEnv = (env: Record<string, string | undefined>) => {
     const saved = { ...process.env };
-    Object.assign(process.env, env);
+    for (const [key, value] of Object.entries(env)) {
+      // Assigning `undefined` to process.env coerces it to the string
+      // "undefined" instead of leaving the var unset — delete it instead,
+      // so an "unset" test case actually exercises the unset code path.
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
     let mod: typeof import("../scaling");
     jest.isolateModules(() => {
       mod = require("../scaling");
@@ -288,6 +294,23 @@ describe("App Check enforcement flags", () => {
       expect(s.APP_CHECK_ENFORCED).toBe(false);
       expect(s.APP_CHECK_ENFORCED_VIDEO).toBe(false);
     }
+  });
+
+  test("G4 Step 4: AI stage is enforced by default — a missing or typoed var cannot silently disable it", () => {
+    // Unlike the other two stages, the AI rollout is over: a clean deploy
+    // with no APP_CHECK_ENFORCED_AI set at all (e.g. from a checkout without
+    // the Cloud Run env var applied) must still enforce, not go quiet.
+    for (const value of [undefined, "1", "TRUE", "yes", "", "0"]) {
+      const s = withEnv({ APP_CHECK_ENFORCED_AI: value });
+      expect(s.APP_CHECK_ENFORCED_AI).toBe(true);
+      expect(s.AI_METERED.enforceAppCheck).toBe(true);
+    }
+  });
+
+  test("G4 Step 4: AI stage can still be forced off deliberately for rollback", () => {
+    const s = withEnv({ APP_CHECK_ENFORCED_AI: "false", APP_CHECK_ENFORCED: undefined });
+    expect(s.APP_CHECK_ENFORCED_AI).toBe(false);
+    expect(s.AI_METERED.enforceAppCheck).toBe(false);
   });
 });
 

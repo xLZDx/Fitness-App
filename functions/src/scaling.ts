@@ -171,6 +171,15 @@ const REGION = "europe-west1";
  */
 const envFlag = (name: string): boolean => process.env[name] === "true";
 
+/**
+ * Fail-CLOSED variant: enforced unless the var is explicitly the literal
+ * string `"false"`. Unlike `envFlag` (fail-open — only the exact string
+ * `"true"` turns a stage on, everything else including a typo stays off),
+ * this treats a typo the same as "unset": still enforced. Use only for a
+ * stage whose rollout is over and is meant to be permanently on.
+ */
+const envFlagFailClosed = (name: string): boolean => process.env[name] !== "false";
+
 /** Stage 2: every callable. */
 export const APP_CHECK_ENFORCED = envFlag("APP_CHECK_ENFORCED");
 
@@ -188,9 +197,17 @@ export const APP_CHECK_ENFORCED_VIDEO =
  * enforcement is healthy says nothing about whether the AI surfaces' App
  * Check attestation rate is — they are a separate migration, shipped later,
  * and deserve their own measured rollout rather than inheriting one.
+ *
+ * Unlike the other two stages, this one's rollout is over (G4 Step 4):
+ * enforcement is meant to be permanently on, so it uses the fail-CLOSED
+ * helper — an absent or typoed env var stays enforced. A clean `firebase
+ * deploy` with no `.env`/Cloud Run var set can no longer silently redeploy
+ * the AI callables unenforced. Set the var to the literal string `"false"`
+ * to force it off deliberately (e.g. an emergency rollback); there is no
+ * way to land on "off" by omission or typo.
  */
 export const APP_CHECK_ENFORCED_AI =
-  envFlag("APP_CHECK_ENFORCED_AI") || APP_CHECK_ENFORCED;
+  envFlagFailClosed("APP_CHECK_ENFORCED_AI") || APP_CHECK_ENFORCED;
 
 /**
  * `clipUrl` — every clip play, on every screen, for every user.
@@ -322,4 +339,5 @@ export const AI_METERED: Capped<CallableOptions> = {
   minInstances: 0,
   concurrency: 10,
   enforceAppCheck: APP_CHECK_ENFORCED_AI,
+  serviceAccount: RUNTIME_SA.aiRuntime,
 };
