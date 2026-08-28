@@ -32112,3 +32112,34 @@ round-3 verdict summary. **MVP1.G4 Step 1 (model production readiness) is now cl
 
 Next: G4's remaining criteria per GPT-PM's round-1 exit list, starting with the
 security/abuse boundary (`APP_CHECK_ENFORCED_AI` in `functions/src/scaling.ts`).
+
+## G4 Step 2: App Check enforcement posture for the AI callables — proposal sent, not decided
+
+Investigated the security/abuse boundary criterion. Verified against source (not
+assumed): all 4 AI callables already call `quotaFor()` (the 8x anonymous-quota divisor)
+and `noteAppCheck()` (attestation logging) — confirmed by grep across
+`ai_coach_advice.ts`/`ai_equipment_recognition.ts`/`ai_exercise_generation.ts`/
+`ai_machine_description.ts`. `gcloud functions list --project=fitness-app-korostelev`
+(live) confirms none of the 4 are deployed yet, so there is zero real attestation data
+for the AI surfaces specifically to measure against.
+
+Found this repo already ran an extensive two-round adversarial analysis of the
+structurally identical question for video (`N-05 = OPERATOR / PLATFORM DECISION
+REQUIRED`, `core/review/N05_DISPOSITION.md`) — concluded App Check attests the
+installation, not the account, and "enforcing before measuring locks out real installs."
+Did not treat this as directly transferable: AI's per-call cost is a real paid Vertex AI
+invocation, not bandwidth, so an anonymous-account rotation is a categorically different
+dollar exposure even though the mitigation code (`quotaFor`) is shared with video.
+
+Wrote `core/G4_STEP2_APP_CHECK_BOUNDARY_2026-08-28.md` with 3 options (deploy unenforced
+and measure first, matching N-05's own conclusion / enforce from day one, accepting the
+real "real installs get locked out" risk on a smaller initial launch / per-callable flag
+granularity, not yet built) and an evidence-backed lean toward option A, explicitly not
+decided unilaterally — routed to GPT-PM per §16/§17, including asking it to rule on
+whether this specific question (accepting AI operation without a binding anti-rotation
+control) is within its own scope or needs operator escalation under §4, per GPT-PM's own
+earlier framing of that boundary.
+
+Next: send this proposal to GPT-PM (direct `review.js` CLI, still avoiding this
+session's stale MCP routing), act on its ruling, then continue to G4's remaining
+criteria.
