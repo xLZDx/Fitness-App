@@ -44,6 +44,36 @@
 import type { CallableOptions, HttpsOptions } from "firebase-functions/v2/https";
 
 /**
+ * G4 Step 3 — the six least-privilege runtime identities.
+ *
+ * `core/G4_STEP3_IAM_RUNTIME_CONFIG_2026-08-28.md` has the full investigation
+ * and the three GPT-PM review rounds; the six service accounts, three custom
+ * IAM roles, and every binding they need already exist live (created and
+ * verified via `gcloud`, additive only — see that doc's "Provisioning
+ * applied" section). This constant is the source-controlled pointer to them,
+ * per that same doc's MINOR finding #4: a `serviceAccount` value belongs in
+ * `CallableOptions`/`ScheduleOptions` here, not in an out-of-band `gcloud
+ * functions deploy --service-account=...` patch that a later `firebase
+ * deploy` would silently revert.
+ *
+ * Defining this constant does not, by itself, change what any function runs
+ * as — nothing consumes it until a profile or call site is edited to spread
+ * `serviceAccount: RUNTIME_SA.<tier>` in, and that only takes effect on that
+ * function's next deploy. Wiring and deploying happen one tier at a time,
+ * per GPT-PM's round-3 rollout order (canary -> data -> video -> billing ->
+ * account-delete), each verified live before the next.
+ */
+const projectId = () => process.env.GCLOUD_PROJECT ?? "fitness-app-korostelev";
+export const RUNTIME_SA = {
+  canary: `fn-canary@${projectId()}.iam.gserviceaccount.com`,
+  data: `fn-data@${projectId()}.iam.gserviceaccount.com`,
+  video: `fn-video@${projectId()}.iam.gserviceaccount.com`,
+  billing: `fn-billing@${projectId()}.iam.gserviceaccount.com`,
+  accountDelete: `fn-account-delete@${projectId()}.iam.gserviceaccount.com`,
+  aiRuntime: `fn-ai-runtime@${projectId()}.iam.gserviceaccount.com`,
+} as const;
+
+/**
  * A profile that is required to carry a numeric ceiling.
  *
  * `CallableOptions.maxInstances` is optional and widens to

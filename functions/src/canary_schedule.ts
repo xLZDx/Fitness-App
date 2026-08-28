@@ -20,6 +20,7 @@ import { defineSecret } from "firebase-functions/params";
 import * as logger from "firebase-functions/logger";
 import { runCanaryProbe } from "./canary_probe";
 import { CANARY_PROBE_FAILED_EVENT } from "./monitoring/log_signals";
+import { RUNTIME_SA } from "./scaling";
 
 /**
  * NOT named `FIREBASE_WEB_API_KEY`, despite that being both this probe's
@@ -71,6 +72,9 @@ export const runProductionCanary = onSchedule(
     memory: "256MiB",
     maxInstances: 1,
     concurrency: 1,
+    // G4 Step 3, tier 1 of the rollout: least-privilege identity instead of
+    // the shared default Compute SA. See scaling.ts's RUNTIME_SA header.
+    serviceAccount: RUNTIME_SA.canary,
   },
   async () => {
     let result;

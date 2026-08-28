@@ -32728,3 +32728,27 @@ identity/grant creation only, per GPT-PM's explicit phasing; the runtime switch 
 separate, per-tier, and not started.
 
 Full detail: `core/G4_STEP3_IAM_RUNTIME_CONFIG_2026-08-28.md`.
+
+## G4 Step 3 IAM: tier 1 (fn-canary) migrated and verified live
+
+`RUNTIME_SA` (`functions/src/scaling.ts`) is now the single source-controlled pointer to
+the six live identities from the additive provisioning pass. `runProductionCanary`'s
+`onSchedule` options carry `serviceAccount: RUNTIME_SA.canary`; deployed with the
+single-function command (`firebase deploy --only functions:runProductionCanary`) this
+file's own header already requires.
+
+Verified, not assumed: `gcloud functions describe` read back the deployed
+`serviceConfig.serviceAccountEmail` as `fn-canary@fitness-app-korostelev.iam
+.gserviceaccount.com`. Manually triggered via `gcloud scheduler jobs run
+firebase-schedule-runProductionCanary-europe-west1` and confirmed in Cloud Functions
+logs: `canary_schedule: production canary probe succeeded` (execution `ddyhnmhyv6iq`,
+2026-08-28 20:10:03 UTC) — the exact `createCustomToken` -> `signInWithCustomToken` ->
+Firestore-Rules read/write/delete path that round 2's finding would have broken at
+TOKEN_MINT now runs clean end to end under the new identity. Empirical proof, not just
+corrected review.
+
+Rollback (documented, not exercised): drop the `serviceAccount` line, redeploy the same
+single function, reverts to the default Compute SA.
+
+Next: `fn-data`, same discipline (wire -> typecheck -> deploy -> identity readback ->
+live smoke -> documented rollback) before moving to `fn-video`.

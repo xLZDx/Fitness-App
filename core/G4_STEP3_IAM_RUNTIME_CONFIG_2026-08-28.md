@@ -353,16 +353,40 @@ one of the 17 deployed functions plus `appCheckProbe` still executes under it ex
 before this pass. This provisioning creates unused identities and grants; it does not
 yet change what any live request actually runs as.
 
+## Tier migration: fn-canary (1 of 5), complete and verified live
+
+`RUNTIME_SA` added to `functions/src/scaling.ts` as the source-controlled pointer to the
+six live identities. `runProductionCanary`'s `onSchedule(...)` options in
+`canary_schedule.ts` now carry `serviceAccount: RUNTIME_SA.canary`.
+
+Deployed with `firebase deploy --only functions:runProductionCanary` (the exact
+single-function command this file's own header already mandates). Verified, not
+assumed:
+
+- **Deployed identity readback**: `gcloud functions describe runProductionCanary --gen2
+  --region=europe-west1 --format="value(serviceConfig.serviceAccountEmail)"` returned
+  `fn-canary@fitness-app-korostelev.iam.gserviceaccount.com` — confirmed, not the
+  default Compute SA.
+- **Live smoke test**: manually triggered via `gcloud scheduler jobs run
+  firebase-schedule-runProductionCanary-europe-west1`. Log line `canary_schedule:
+  production canary probe succeeded` at `2026-08-28 20:10:03 UTC`, execution
+  `ddyhnmhyv6iq` — the full `createCustomToken` → `signInWithCustomToken` →
+  Firestore-Rules write/read/delete → cleanup path that round 2's bug would have broken
+  at TOKEN_MINT now succeeds end to end under the new identity. This is the empirical
+  proof, not just the corrected code review.
+- **Rollback, documented not exercised**: removing the `serviceAccount` line and
+  redeploying with the same single-function command reverts to the default Compute SA.
+
 ## Status
 
 Round 1 (5-tier proposal, `cc759fc`): `MAJOR`, 3 MAJOR + 2 MINOR — fixed. Round 2
 (six-tier, `29647bb`): `MAJOR`, 1 MAJOR + 2 MINOR (fn-canary's own permissions) — fixed
 at `3f0475f`. Round 3 (fn-canary fix, `3f0475f`): `APPROVE`, additive provisioning
-authorized. Additive provisioning is now applied and verified live (above). Remaining
-work, not started: add `serviceAccount` to each tier's source (`scaling.ts` profiles /
-`canary_schedule.ts`'s `onSchedule`), then migrate one tier at a time — source assignment
-→ targeted deploy → live smoke → deployed-identity readback → documented rollback —
-before removing `roles/editor` from the default SA. `fn-ai-runtime`'s identity is
-prepared but stays unattached; the four AI callables remain HOLD-ed by Step 2. No
-production runtime identity has switched and no function has been redeployed. See
-`core/DECISION_LOG.md` for all three rounds' verdicts and the provisioning evidence.
+authorized and applied live. **Tier 1 of 5 (`fn-canary`) migrated and verified live**
+(above). Remaining, in GPT-PM's order: `fn-data` → `fn-video` → `fn-billing` →
+`fn-account-delete`, each source assignment → targeted deploy → live smoke → identity
+readback → documented rollback, same discipline as `fn-canary`. `roles/editor` stays on
+the default Compute SA until every tier has migrated and the App Check probe is deleted
+or moved off it. `fn-ai-runtime`'s identity is prepared but stays unattached; the four AI
+callables remain HOLD-ed by Step 2. See `core/DECISION_LOG.md` for all verdicts and
+migration evidence.
