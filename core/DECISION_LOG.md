@@ -32481,3 +32481,71 @@ Option-D proof.` `PUSH: AUTHORIZED under the current Gate policy.` Pushed `d0e05
 Checking for a second reachable physical device next (project memory names an S23,
 "path TBD"); if none is reachable now, parking the S8 open and moving to Step 3
 (IAM/runtime config) in parallel, per this ruling's explicit permission to do so.
+
+## Option D: real root cause found on the S8 -- unlocked bootloader, Knox e-fuse tripped (permanent)
+
+Operator re-authenticated the S8's Google account live during this session and asked to
+retry. Same `IntegrityException: User needs to (re)enter credentials` on the first
+retry; a second retry after a short wait produced a genuinely different signal --
+`requestIntegrityToken()` completed with NO native exception, meaning a real Play
+Integrity round-trip happened this time. The Cloud Function still rejected with
+`unauthenticated`, and its own log showed `FirebaseAppCheckError: Decoding App Check
+token failed` -- consistently, across every attempt including ones before the account
+fix, which was the first sign this might not be a credential problem at all.
+
+Ruled out an unregistered signing certificate before going further (the most common
+cause of this exact decode error per a live web search of reported cases): pulled the
+real release keystore's SHA-1/SHA-256 directly (`keytool -list -v`, password read from
+`android/key.properties` and never echoed) -- `16:69:B7:76:...` / `77:DA:5E:ED:...` --
+and compared against what's registered for the release (`sptr`) Android app via
+`firebase apps:android:sha:list`. Both fingerprints match exactly. Certificate
+registration is correct; this was not the cause.
+
+Enabled verbose Firebase SDK logging on-device (`adb shell setprop log.tag.FirebaseAppCheck
+VERBOSE` etc.) and retried once more. This surfaced the real error, one layer up from
+what the Cloud Function sees: `FirebaseContextProvider: Error getting App Check token.
+Error: r5.i: Error returned from API. code: 403 body: App attestation failed.` -- a
+genuine attestation REJECTION from Firebase's own App Check backend, not a client-side
+decode bug. The "Decoding App Check token failed" message at the Cloud Function layer
+was a downstream symptom: when the client can't obtain a real App Check token, whatever
+it sends instead isn't a valid JWT.
+
+Checked why the verdict itself would be rejected under the applied `MEETS_DEVICE_INTEGRITY`
+policy: `ro.boot.flash.locked=0`, `ro.boot.verifiedbootstate=orange`,
+`ro.boot.warranty_bit=1` -- this S8's bootloader is UNLOCKED and its Samsung Knox
+warranty bit is TRIPPED. Verified via web search that the Knox warranty bit is a
+one-time hardware e-fuse burned at the silicon level when the bootloader is unlocked --
+irreversible by any software action (factory reset, bootloader relock, firmware
+reflash); the only way to clear it is replacing the device's board. Play Integrity's
+device-integrity check is specifically designed to detect exactly this state. This is
+therefore a genuine, structural, PERMANENT property of this specific physical unit, not
+a bug in the App Check config, the signing setup, or the code -- confirmed to the
+operator directly (they separately asked whether a factory reset would help; answered
+no, with the e-fuse evidence, before they gave the instruction below).
+
+**Operator instruction (verbatim intent): accept the S8 as a deliberately unlocked,
+permanent test device; production-representative real-device validation will happen on
+the S23 instead; do not let the S8's permanent inability to pass Device Integrity block
+the rest of MVP1.G4's progress.**
+
+Recording the practical effect: Option D's real-device sub-step is reclassified from
+BLOCKED/INCONCLUSIVE to **MECHANISM VALIDATED ON S8 / STRICT PRODUCTION PROOF DEFERRED TO
+S23**. What IS now proven, on real hardware, via this S8 run: the release-signed
+outside-Play APK correctly requests a Play Integrity token, the app/cert registration is
+correct, the client correctly attempts the App Check token exchange, and the whole
+pipeline through to the Cloud Function's own App Check verification is wired correctly
+end-to-end -- the ONLY reason it doesn't return success is this device's own permanently
+compromised verified-boot state, a cause fully understood and evidenced, not a config or
+code defect. What remains open: an actual PASS from a genuine, unmodified device (S23)
+before production deployment of the 4 AI callables -- this does not change GPT-PM's
+existing HOLD on that deployment, which stays in effect regardless.
+
+Not deleting the temporary `appCheckProbe` function or the mobile
+`g4_step2d_app_check_probe.dart` trigger yet -- both stay in place for the S23 run
+whenever that device becomes available. This operator decision changes the acceptance
+evidence for CONTINUING other G4 work now, not the final HOLD-lifting bar for deploying
+the AI callables themselves, and not GPT-PM's own stated closure condition for Option D
+that a real device eventually has to pass -- flagging this to GPT-PM in the next Step 2
+round as a status update (an operator-directed test-strategy decision, not a request for
+permission) so the gate's standing reviewer record stays consistent with what actually
+happened and why.
