@@ -94,7 +94,7 @@ const AUTO_CLOSE = "604800s"; // 7 days: Google Cloud Monitoring's own default
  */
 export const STRIPE_RECONCILIATION_FAILURE_FILTER: LogMatchFilterSpec = {
   exportName: STRIPE_WEBHOOK_FUNCTION_NAME,
-  messageEquals: [STRIPE_RECONCILE_CANCEL_FAILED, STRIPE_RECONCILE_FAILED],
+  eventEquals: [STRIPE_RECONCILE_CANCEL_FAILED, STRIPE_RECONCILE_FAILED],
 };
 
 /**
@@ -106,23 +106,24 @@ export const STRIPE_RECONCILIATION_FAILURE_FILTER: LogMatchFilterSpec = {
  */
 export const DELETE_ACCOUNT_FAILURE_FILTER: LogMatchFilterSpec = {
   exportName: DELETE_ACCOUNT_FUNCTION_NAME,
-  messageEquals: [
+  eventEquals: [
     DELETE_ACCOUNT_STRIPE_CANCEL_FAILED,
     DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED,
     DELETE_ACCOUNT_AUTH_DELETE_FAILED,
-    PLATFORM_UNHANDLED_ERROR,
   ],
+  messageContains: [PLATFORM_UNHANDLED_ERROR],
 };
 
 /** Same shape as delete, for the export path's one explicit failure log. */
 export const EXPORT_ACCOUNT_FAILURE_FILTER: LogMatchFilterSpec = {
   exportName: EXPORT_ACCOUNT_FUNCTION_NAME,
-  messageEquals: [EXPORT_ACCOUNT_FAILED, PLATFORM_UNHANDLED_ERROR],
+  eventEquals: [EXPORT_ACCOUNT_FAILED],
+  messageContains: [PLATFORM_UNHANDLED_ERROR],
 };
 
 /**
  * `runProductionCanary`'s own thrown failure (`canary_schedule.ts`) logs
- * this exact message before throwing, so a canary failure is caught the
+ * this exact `event` before throwing, so a canary failure is caught the
  * same way any other operational failure in this file is: by matching the
  * structured log line, not by inferring failure from a missing success
  * signal. GPT-PM's Step 9B GO required this as a 4th policy, distinct from
@@ -157,7 +158,7 @@ export const EXPORT_ACCOUNT_FAILURE_FILTER: LogMatchFilterSpec = {
  */
 export const CANARY_PROBE_FAILURE_FILTER: LogMatchFilterSpec = {
   exportName: CANARY_PROBE_FUNCTION_NAME,
-  messageEquals: [CANARY_PROBE_FAILED_EVENT],
+  eventEquals: [CANARY_PROBE_FAILED_EVENT],
 };
 
 /**
@@ -184,11 +185,22 @@ export const CANARY_PROBE_FAILURE_FILTER: LogMatchFilterSpec = {
  * object it passes to `logger.error()`, which `entryFromArgs` spreads
  * directly into `jsonPayload` untouched -- `eventEquals` matches that field,
  * never rewritten. See `types.ts`'s `LogMatchFilterSpec.messageEquals` doc
- * for the full mechanism and why the four other already-deployed
- * `messageEquals`-based failure filters (Stripe reconciliation, delete
- * account, export account, canary probe) are NOT touched here -- same root
- * cause, reported to GPT-PM for a scope decision rather than silently
- * expanded into this gate.
+ * for the full mechanism. The four other already-deployed
+ * `messageEquals`-based failure filters this comment originally flagged as
+ * not-yet-fixed (Stripe reconciliation, delete account, export account,
+ * canary probe) were reported to GPT-PM for a scope decision rather than
+ * silently expanded into Step 10A -- and were fixed the same way in source
+ * (plus a new `messageContains` mechanism for the one framework-owned
+ * message this codebase cannot attach an `event` field to) in MVP1.G3 Step
+ * 10C (2026-08-28). Live redeploy of the 4 affected functions, an in-place
+ * patch of their already-existing Cloud Monitoring alert policies (a
+ * function deploy does NOT update a separately-created policy's filter), a
+ * live readback confirming each patched filter equals current-HEAD, and
+ * induced-failure proof against the real production-shaped log entry were
+ * all completed the same day -- see `core/DECISION_LOG.md`,
+ * "GPT-PM round 1: real MAJOR (missing policy patch), 2 MINOR, all fixed;
+ * live remediation complete", the same standard `ENFORCEMENT_STATE_FAILURE_FILTER`
+ * above already met.
  */
 export const ENFORCEMENT_STATE_FAILURE_FILTER: LogMatchFilterSpec = {
   exportName: ENFORCEMENT_STATE_CHECK_FUNCTION_NAME,

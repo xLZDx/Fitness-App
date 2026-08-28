@@ -1911,6 +1911,7 @@ async function reconcileDuplicateSubscriptions(
         // One failure must not stop the others: a customer with three
         // duplicates should end up with one, not two.
         logger.error(STRIPE_RECONCILE_CANCEL_FAILED, {
+          event: STRIPE_RECONCILE_CANCEL_FAILED,
           customerId,
           subscriptionId: extra.id,
           err: String(err),
@@ -1919,6 +1920,7 @@ async function reconcileDuplicateSubscriptions(
     }
   } catch (err) {
     logger.error(STRIPE_RECONCILE_FAILED, {
+      event: STRIPE_RECONCILE_FAILED,
       subscriptionId: changed.id,
       err: String(err),
     });
@@ -2132,6 +2134,7 @@ export const deleteAccount = onCall(
         }
       } catch (err) {
         logger.error(DELETE_ACCOUNT_STRIPE_CANCEL_FAILED, {
+          event: DELETE_ACCOUNT_STRIPE_CANCEL_FAILED,
           uid,
           subscriptionId,
           customerId,
@@ -2169,6 +2172,7 @@ export const deleteAccount = onCall(
       await sweepSharedRecords(uid);
     } catch (err) {
       logger.error(DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED, {
+        event: DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED,
         uid,
         err,
       });
@@ -2191,6 +2195,7 @@ export const deleteAccount = onCall(
     } catch (err) {
       if ((err as { code?: string }).code !== "auth/user-not-found") {
         logger.error(DELETE_ACCOUNT_AUTH_DELETE_FAILED, {
+          event: DELETE_ACCOUNT_AUTH_DELETE_FAILED,
           uid,
           err,
         });

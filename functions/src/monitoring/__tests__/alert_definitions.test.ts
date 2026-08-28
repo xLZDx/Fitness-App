@@ -50,80 +50,140 @@ describe("toCloudRunServiceName", () => {
 });
 
 describe("Stripe reconciliation-failure alert filter", () => {
-  it("matches both real failure log lines from the webhook's deployed service", () => {
+  // MVP1.G3 Step 10C (2026-08-28): this filter used to be messageEquals,
+  // which GPT-PM round-8's finding (proven for enforcement_state, same root
+  // cause here) means never matches a real logger.error(EVENT, {...}) call --
+  // firebase-functions' entryFromArgs rewrites `message` into
+  // "Error: EVENT\n    at ..." for ERROR severity. index.ts:1913,1921 now
+  // set `event: EVENT` explicitly, and the filter matches on that field.
+  it("matches both real failure events via the event field, using the REAL decorated message shape", () => {
+    for (const eventName of [
+      signals.STRIPE_RECONCILE_CANCEL_FAILED,
+      signals.STRIPE_RECONCILE_FAILED,
+    ]) {
+      const realDecoratedMessage = `Error: ${eventName}\n    at entryFromArgs (/workspace/node_modules/firebase-functions/lib/logger/index.js:144:19)`;
+      expect(
+        matchesLogMatchFilter(
+          STRIPE_RECONCILIATION_FAILURE_FILTER,
+          entry("stripewebhook", realDecoratedMessage, "ERROR", eventName),
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it("does NOT match on the raw undecorated event string as a message with no event field (the pre-fix bug)", () => {
     expect(
       matchesLogMatchFilter(
         STRIPE_RECONCILIATION_FAILURE_FILTER,
         entry("stripewebhook", signals.STRIPE_RECONCILE_CANCEL_FAILED),
       ),
-    ).toBe(true);
-    expect(
-      matchesLogMatchFilter(
-        STRIPE_RECONCILIATION_FAILURE_FILTER,
-        entry("stripewebhook", signals.STRIPE_RECONCILE_FAILED),
-      ),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("does not match the two non-failure log lines from the same code path", () => {
     expect(
       matchesLogMatchFilter(
         STRIPE_RECONCILIATION_FAILURE_FILTER,
-        entry("stripewebhook", signals.STRIPE_RECONCILE_DUPLICATE_FOUND, "WARNING"),
+        entry(
+          "stripewebhook",
+          "irrelevant",
+          "WARNING",
+          signals.STRIPE_RECONCILE_DUPLICATE_FOUND,
+        ),
       ),
     ).toBe(false);
     expect(
       matchesLogMatchFilter(
         STRIPE_RECONCILIATION_FAILURE_FILTER,
-        entry("stripewebhook", signals.STRIPE_RECONCILE_CANCEL_OK, "INFO"),
+        entry("stripewebhook", "irrelevant", "INFO", signals.STRIPE_RECONCILE_CANCEL_OK),
       ),
     ).toBe(false);
   });
 
-  it("does not match the identical message from a different service", () => {
+  it("does not match the identical event from a different service", () => {
     expect(
       matchesLogMatchFilter(
         STRIPE_RECONCILIATION_FAILURE_FILTER,
-        entry("deleteaccount", signals.STRIPE_RECONCILE_FAILED),
+        entry("deleteaccount", "irrelevant", "ERROR", signals.STRIPE_RECONCILE_FAILED),
       ),
     ).toBe(false);
   });
 
-  it("renders a Gen2-shaped filter string scoped to the stripewebhook Cloud Run service", () => {
+  it("renders a Gen2-shaped filter string scoped to the stripewebhook Cloud Run service, keyed on jsonPayload.event", () => {
     const filter = stripeReconciliationAlertFilterString();
     expect(filter).toContain('resource.type="cloud_run_revision"');
     expect(filter).toContain('resource.labels.service_name="stripewebhook"');
     expect(filter).not.toContain("function_name");
-    expect(filter).toContain(signals.STRIPE_RECONCILE_CANCEL_FAILED);
-    expect(filter).toContain(signals.STRIPE_RECONCILE_FAILED);
+    expect(filter).toContain(
+      `jsonPayload.event="${signals.STRIPE_RECONCILE_CANCEL_FAILED}"`,
+    );
+    expect(filter).toContain(`jsonPayload.event="${signals.STRIPE_RECONCILE_FAILED}"`);
+    expect(filter).not.toContain("jsonPayload.message=");
   });
 });
 
 describe("deleteAccount operational-failure alert filter", () => {
-  it("matches all three explicit failure paths", () => {
-    for (const message of [
+  // MVP1.G3 Step 10C: index.ts:2134,2171,2193 now set `event: EVENT`
+  // explicitly for all three named failure paths -- same fix as Stripe above.
+  it("matches all three explicit failure paths via the event field, using the REAL decorated message shape", () => {
+    for (const eventName of [
       signals.DELETE_ACCOUNT_STRIPE_CANCEL_FAILED,
       signals.DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED,
       signals.DELETE_ACCOUNT_AUTH_DELETE_FAILED,
     ]) {
+      const realDecoratedMessage = `Error: ${eventName}\n    at entryFromArgs (...)`;
       expect(
         matchesLogMatchFilter(
           DELETE_ACCOUNT_FAILURE_FILTER,
-          entry("deleteaccount", message),
+          entry("deleteaccount", realDecoratedMessage, "ERROR", eventName),
         ),
       ).toBe(true);
     }
   });
 
-  it("matches the platform backstop for a failure outside the three named catches", () => {
-    // Covers, e.g., the pre-try Firestore read at index.ts:2086 -- no
-    // explicit catch names it, but firebase-functions' own https.js wraps
-    // the whole handler and logs this exact message for anything that
-    // isn't already an HttpsError. See README.md's failure-path audit.
+  it("does NOT match on the raw undecorated event string as a message with no event field (the pre-fix bug)", () => {
     expect(
       matchesLogMatchFilter(
         DELETE_ACCOUNT_FAILURE_FILTER,
-        entry("deleteaccount", signals.PLATFORM_UNHANDLED_ERROR),
+        entry("deleteaccount", signals.DELETE_ACCOUNT_FIRESTORE_DELETE_FAILED),
+      ),
+    ).toBe(false);
+  });
+
+  it("matches the platform backstop for a failure outside the three named catches, via messageContains", () => {
+    // Covers, e.g., the pre-try Firestore read at index.ts:2086 -- no
+    // explicit catch names it, but firebase-functions' own https.js wraps
+    // the whole handler and logs `logger.error("Unhandled error", err)` for
+    // anything that isn't already an HttpsError. This is framework code --
+    // this repo cannot attach an `event` field to it -- so the filter uses
+    // `messageContains` instead: `entryFromArgs` runs this through
+    // `util.format("Unhandled error", err)`, which always PREFIXES the
+    // literal "Unhandled error" but appends the inspected err afterward, so
+    // an exact `messageEquals` never matches either (a second, independent
+    // reason the original filter was broken, on top of the Error-stack
+    // rewrite -- `err` here already `instanceof Error`, so that particular
+    // rewrite's own guard does not even apply; the appended detail is what
+    // breaks exact equality instead). See README.md's failure-path audit.
+    expect(
+      matchesLogMatchFilter(
+        DELETE_ACCOUNT_FAILURE_FILTER,
+        entry(
+          "deleteaccount",
+          `${signals.PLATFORM_UNHANDLED_ERROR} Error: something internal\n    at ...`,
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it("matches the platform backstop case-insensitively, same as Cloud Logging's real `:` operator", () => {
+    // GPT-PM MINOR (Step 10C, round 1): the real GCP `:` (has/contains)
+    // operator matches substrings case-insensitively -- the simulator must
+    // reproduce that, not silently assume the framework's literal casing is
+    // the only one that will ever appear.
+    expect(
+      matchesLogMatchFilter(
+        DELETE_ACCOUNT_FAILURE_FILTER,
+        entry("deleteaccount", "UNHANDLED ERROR: something internal"),
       ),
     ).toBe(true);
   });
@@ -135,12 +195,12 @@ describe("deleteAccount operational-failure alert filter", () => {
     // PLATFORM_UNHANDLED_ERROR line in the first place. There is no
     // separate log message for them to accidentally match here -- this
     // test documents that absence rather than asserting a fixture.
-    expect(DELETE_ACCOUNT_FAILURE_FILTER.messageEquals).not.toContain(
+    expect(DELETE_ACCOUNT_FAILURE_FILTER.eventEquals).not.toContain(
       "unauthenticated",
     );
   });
 
-  it("does not match exportAccountData's identical-shaped failure", () => {
+  it("does not match exportAccountData's identical-shaped platform backstop", () => {
     expect(
       matchesLogMatchFilter(
         DELETE_ACCOUNT_FAILURE_FILTER,
@@ -153,27 +213,52 @@ describe("deleteAccount operational-failure alert filter", () => {
     const filter = deleteAccountAlertFilterString();
     expect(filter).toContain('resource.type="cloud_run_revision"');
     expect(filter).toContain('resource.labels.service_name="deleteaccount"');
-    expect(filter).toContain(signals.PLATFORM_UNHANDLED_ERROR);
+    expect(filter).toContain(
+      `jsonPayload.event="${signals.DELETE_ACCOUNT_STRIPE_CANCEL_FAILED}"`,
+    );
+    expect(filter).toContain(`jsonPayload.message:"${signals.PLATFORM_UNHANDLED_ERROR}"`);
   });
 });
 
 describe("exportAccountData operational-failure alert filter", () => {
-  it("matches the explicit failure and the platform backstop", () => {
+  // MVP1.G3 Step 10C: account_export.ts:317 now sets `event: EXPORT_ACCOUNT_FAILED`.
+  it("matches the explicit failure via the event field, using the REAL decorated message shape", () => {
+    const realDecoratedMessage = `Error: ${signals.EXPORT_ACCOUNT_FAILED}\n    at entryFromArgs (...)`;
+    expect(
+      matchesLogMatchFilter(
+        EXPORT_ACCOUNT_FAILURE_FILTER,
+        entry(
+          "exportaccountdata",
+          realDecoratedMessage,
+          "ERROR",
+          signals.EXPORT_ACCOUNT_FAILED,
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it("does NOT match on the raw undecorated event string as a message with no event field (the pre-fix bug)", () => {
     expect(
       matchesLogMatchFilter(
         EXPORT_ACCOUNT_FAILURE_FILTER,
         entry("exportaccountdata", signals.EXPORT_ACCOUNT_FAILED),
       ),
-    ).toBe(true);
+    ).toBe(false);
+  });
+
+  it("matches the platform backstop via messageContains", () => {
     expect(
       matchesLogMatchFilter(
         EXPORT_ACCOUNT_FAILURE_FILTER,
-        entry("exportaccountdata", signals.PLATFORM_UNHANDLED_ERROR),
+        entry(
+          "exportaccountdata",
+          `${signals.PLATFORM_UNHANDLED_ERROR} Error: something internal\n    at ...`,
+        ),
       ),
     ).toBe(true);
   });
 
-  it("does not match deleteAccount's identical-shaped failure", () => {
+  it("does not match deleteAccount's identical-shaped platform backstop", () => {
     expect(
       matchesLogMatchFilter(
         EXPORT_ACCOUNT_FAILURE_FILTER,
@@ -188,17 +273,36 @@ describe("exportAccountData operational-failure alert filter", () => {
     expect(filter).toContain(
       'resource.labels.service_name="exportaccountdata"',
     );
+    expect(filter).toContain(`jsonPayload.event="${signals.EXPORT_ACCOUNT_FAILED}"`);
+    expect(filter).toContain(`jsonPayload.message:"${signals.PLATFORM_UNHANDLED_ERROR}"`);
   });
 });
 
 describe("production canary probe-failure alert filter", () => {
-  it("matches the canary's own thrown-failure log", () => {
+  // MVP1.G3 Step 10C: canary_schedule.ts:99,110 now set
+  // `event: CANARY_PROBE_FAILED_EVENT` explicitly -- same fix as above.
+  it("matches the canary's own thrown-failure log via the event field, using the REAL decorated message shape", () => {
+    const realDecoratedMessage = `Error: ${signals.CANARY_PROBE_FAILED_EVENT}\n    at entryFromArgs (...)`;
+    expect(
+      matchesLogMatchFilter(
+        CANARY_PROBE_FAILURE_FILTER,
+        entry(
+          "runproductioncanary",
+          realDecoratedMessage,
+          "ERROR",
+          signals.CANARY_PROBE_FAILED_EVENT,
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it("does NOT match on the raw undecorated event string as a message with no event field (the pre-fix bug)", () => {
     expect(
       matchesLogMatchFilter(
         CANARY_PROBE_FAILURE_FILTER,
         entry("runproductioncanary", signals.CANARY_PROBE_FAILED_EVENT),
       ),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("does not match PLATFORM_UNHANDLED_ERROR -- onSchedule's own wrapper never logs it", () => {
@@ -210,27 +314,31 @@ describe("production canary probe-failure alert filter", () => {
     // that can never match anything real. GPT-PM's review of b9d1e9a caught
     // this; canary_schedule.ts's own try/catch is the real backstop for
     // this function, and it emits CANARY_PROBE_FAILED_EVENT itself.
-    expect(CANARY_PROBE_FAILURE_FILTER.messageEquals).not.toContain(
-      signals.PLATFORM_UNHANDLED_ERROR,
-    );
+    expect(CANARY_PROBE_FAILURE_FILTER.messageContains).toBeUndefined();
   });
 
   it("does not match an identical-shaped failure from a different service", () => {
     expect(
       matchesLogMatchFilter(
         CANARY_PROBE_FAILURE_FILTER,
-        entry("deleteaccount", signals.CANARY_PROBE_FAILED_EVENT),
+        entry(
+          "deleteaccount",
+          "irrelevant",
+          "ERROR",
+          signals.CANARY_PROBE_FAILED_EVENT,
+        ),
       ),
     ).toBe(false);
   });
 
-  it("renders a Gen2-shaped filter string scoped to the runproductioncanary Cloud Run service", () => {
+  it("renders a Gen2-shaped filter string scoped to the runproductioncanary Cloud Run service, keyed on jsonPayload.event", () => {
     const filter = canaryProbeAlertFilterString();
     expect(filter).toContain('resource.type="cloud_run_revision"');
     expect(filter).toContain(
       'resource.labels.service_name="runproductioncanary"',
     );
-    expect(filter).toContain(signals.CANARY_PROBE_FAILED_EVENT);
+    expect(filter).toContain(`jsonPayload.event="${signals.CANARY_PROBE_FAILED_EVENT}"`);
+    expect(filter).not.toContain("jsonPayload.message=");
   });
 });
 

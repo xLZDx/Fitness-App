@@ -97,6 +97,7 @@ export const runProductionCanary = onSchedule(
       // alert_definitions.ts's own comment on CANARY_PROBE_FAILURE_FILTER
       // for that stated, separate scope limit.
       logger.error(CANARY_PROBE_FAILED_EVENT, {
+        event: CANARY_PROBE_FAILED_EVENT,
         stage: "SCHEDULE_HANDLER",
         failureClass: "UNEXPECTED",
         message: e instanceof Error ? e.message : String(e),
@@ -108,6 +109,7 @@ export const runProductionCanary = onSchedule(
       // Run/Functions execution failure, on top of the structured log line
       // below that the canary-failure alert policy actually keys on.
       logger.error(CANARY_PROBE_FAILED_EVENT, {
+        event: CANARY_PROBE_FAILED_EVENT,
         stage: result.stage,
         failureClass: result.failureClass,
         cleanupSucceeded: result.cleanupSucceeded,

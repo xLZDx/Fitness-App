@@ -81,6 +81,34 @@ export interface LogMatchFilterSpec {
    * `messageEquals`'s own doc for why.
    */
   eventEquals?: string[];
+  /**
+   * Matches if the log entry's `jsonPayload.message` CONTAINS ANY of these
+   * as a substring (Cloud Logging's `:` operator), rather than equaling one
+   * exactly. Exists for exactly one case: firebase-functions' own onCall
+   * wrapper (`common/providers/https.js`) logs
+   * `logger.error("Unhandled error", err)` -- framework code this repo
+   * cannot add an `event` metadata field to. `entryFromArgs` does NOT apply
+   * its Error-stack rewrite here (the second positional arg `err` already
+   * `instanceof Error`, so the rewrite's own guard skips it) -- but it DOES
+   * run the bare args through `util.format(...)`, which joins them with a
+   * space and appends the error's own inspected form, so the real
+   * `jsonPayload.message` is `"Unhandled error " + <err detail>`, never the
+   * bare literal `"Unhandled error"` a `messageEquals` filter would need.
+   * Confirmed by reading `entryFromArgs` directly
+   * (`node_modules/firebase-functions/lib/logger/index.js`), the same
+   * verification standard as `messageEquals`'s own doc above -- MVP1.G3 Step
+   * 10C, 2026-08-28, closing the gap that finding's own comment flagged but
+   * did not fix ("four other already-deployed messageEquals-based failure
+   * filters... NOT touched here"). Use this only for a message this repo's
+   * own code cannot attach an `event` field to; prefer `eventEquals` for
+   * anything this codebase logs itself.
+   *
+   * Matches CASE-INSENSITIVELY, matching Cloud Logging's own documented `:`
+   * operator semantics (GPT-PM Step 10C round-1 finding) -- `matches` below
+   * lowercases both sides before comparing; do not assume the framework's
+   * current literal casing is the only one that will ever appear.
+   */
+  messageContains?: string[];
 }
 
 /**
@@ -103,10 +131,11 @@ export function toGcpFilterString(spec: LogMatchFilterSpec): string {
   const clauses = [
     ...(spec.messageEquals ?? []).map((m) => `jsonPayload.message="${m}"`),
     ...(spec.eventEquals ?? []).map((e) => `jsonPayload.event="${e}"`),
+    ...(spec.messageContains ?? []).map((m) => `jsonPayload.message:"${m}"`),
   ];
   if (clauses.length === 0) {
     throw new Error(
-      `LogMatchFilterSpec for "${spec.exportName}" has neither messageEquals nor eventEquals -- a filter with no match clause would match nothing, silently.`,
+      `LogMatchFilterSpec for "${spec.exportName}" has neither messageEquals, eventEquals, nor messageContains -- a filter with no match clause would match nothing, silently.`,
     );
   }
   return (
@@ -123,6 +152,15 @@ export function matchesLogMatchFilter(
   if (entry.serviceName !== toCloudRunServiceName(spec.exportName)) return false;
   if (spec.messageEquals?.includes(entry.message)) return true;
   if (entry.event !== undefined && spec.eventEquals?.includes(entry.event)) return true;
+  // Cloud Logging's `:` operator does substring matching CASE-INSENSITIVELY
+  // (confirmed against Google's own filter-syntax docs) -- lowercase both
+  // sides so this simulator's semantics actually match the live filter's.
+  if (
+    spec.messageContains?.some((m) =>
+      entry.message.toLowerCase().includes(m.toLowerCase()),
+    )
+  )
+    return true;
   return false;
 }
 

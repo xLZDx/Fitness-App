@@ -31280,3 +31280,211 @@ along-the-way resumption and closure of the deferred Step 10B gate. Re-conformed
 files (`report_conform.py`), republished the Russian version to the existing artifact URL
 (same URL, per the house format -- redeploy, not a new artifact). Committing this update
 now; this entry satisfies the per-commit decision-log requirement for that commit.
+
+## 2026-08-28 (continued) -- Step 10B marked passed; GPT-PM correction; starting Step 10C
+
+`pm_set_gate(MVP1.G3.Step10B, passed)`. GPT-PM's reply confirmed closure is sound and
+flagged one audit-trail accuracy correction to carry into Step 10C's own documentation
+discipline: my gate-evidence text said all 4 round-1 MAJORs were "remediated in commit
+`6ab9ff5`" -- overstated. `6ab9ff5` fixed the implementation issues and introduced the
+provenance mechanism, but the provenance MAJOR (finding #4) was not actually closed for
+all 6 scenarios until the later `8c3c890`/`48cc9f3` evidence work verified in round 4.
+Corrected here for the record: findings #1-#3 closed at `6ab9ff5`; finding #4 closed only
+at `8c3c890` (1/6 scenarios) then fully at `48cc9f3` (6/6 scenarios), confirmed by GPT-PM
+round 4.
+
+GPT-PM set explicit rules for Step 10C (13-item OBS-1 reconciliation,
+`core/OBS1_G3_REBASELINE_2026-08-27.md`): reconcile against CURRENT HEAD + live
+production, not the doc's original write-time state; every row ends CLOSED or
+REBASED->CLOSED, no PARTIAL/PROVISIONAL hiding in prose; separate implementation evidence
+from live/CI proof; for rebased items state the original requirement, why rebased, the
+replacement control, and why it's equivalent-or-stronger; re-verify the 4 AI callables are
+still absent from the deployed function inventory; re-check production state changed
+since 10A/10B rather than assume staleness; don't let the unrelated workout-save
+remediation inflate OBS-1 closure claims unless it genuinely maps to one of the 13 rows;
+and explicitly expose (not launder) the systemic Stripe/delete/export/canary alert-filter
+defect if it is still unremediated. Output: one row per item (# | original item | current
+implementation @ HEAD | live/CI proof | disposition | rebaseline rationale/replacement |
+evidence refs), then one adversarial closure review over the whole matrix before the final
+whole-G3 review. GO: AUTHORIZED, PUSH: AUTHORIZED, continue autonomously, no stop between
+Step 10C sub-steps absent an actual irreversible/business decision. Starting by reading
+`core/OBS1_G3_REBASELINE_2026-08-27.md` to enumerate the 13 items.
+
+## 2026-08-28 (continued) -- Step 10C: research fanned out; the row-21 alert-filter defect confirmed real and fixed
+
+Delegated 13-item evidence gathering to a background research agent (read-only: file
+reads, `git`/DECISION_LOG greps, and read-only `gcloud functions list` /
+`gcloud scheduler jobs list` / `gcloud alpha monitoring policies list` checks -- no
+create/update/delete). Full findings summarized below; independently spot-verified the
+load-bearing claim before acting on it, per SS3/SS13.
+
+**Items closing cleanly (7 of 13): #2 (functions test-health), #5 (RU/EN semantic-drift,
+redefined scope), #6 (mobile SCA scanning), #8 (safety-invariant guard), #10
+(kCanonicalMachines->equipment.json content parity), #12 (secret scanning incl. history),
+#13 (composed-screen goldens).** All `[CI]`-track, all with positive+negative proof
+already captured in earlier "G3 item N -- DONE" entries or the Step 10A/10B arcs, all
+re-confirmed present and wired at current HEAD by the research agent.
+
+**Item #3 (enforcement-status dashboard): CLOSED**, Step 10A's own 10-round arc --
+strongest-verified item of the 13 (a real induced-failure proof, and the round-8
+`eventEquals` fix independently re-confirmed live this session).
+
+**Items needing an honest, non-CLOSED disposition (agent findings, independently
+re-verified below):**
+- **#7 (data-lifecycle sweep): REBASED->CLOSED with a disclosed scope gap.** The built
+  check (`scripts/ci/check_data_lifecycle_coverage.js`) compares hardcoded deletion/export
+  lists against STATIC source (rules + `.collection()` literals), never against Firestore's
+  actual live collection set (`listCollections` -- zero uses anywhere, re-confirmed).
+  Catches source-level drift before deploy (arguably stronger for that), but cannot detect
+  an orphaned LIVE collection with no current code reference. GPT-PM already ruled this
+  in-scope (`core/DECISION_LOG.md:27621-27629`) -- a deliberate rebaseline, not an oversight,
+  but the gap must stay visible in the Step 10C table, not be smoothed into a clean CLOSED.
+- **#9 (AI Gateway observability): split disposition.** Client-direct-call half:
+  CLOSED/confirmed (zero `firebase_ai`/`GenerativeModel(`/`.generateContent(` matches,
+  re-grepped this session). Observability half: the 5 log-metrics exist but the 4 AI
+  callables remain undeployed -- re-confirmed live via `gcloud functions list`
+  (16 functions, zero AI callables, unchanged from Step 9B/10A's own finding one day
+  earlier). Metrics with zero possible data points cannot be called CLOSED in the sense
+  OBS-1 asked for ("observability" implies something is actually observed).
+- **#11 (client-runtime/ML telemetry): PARTIAL, not CLOSED.** Step 10B wired
+  `mlkit_live_equipment_service.dart`, `scanner_page.dart`, and
+  `gemini_equipment_service.dart` (x2 call sites) to real `FirebaseCrashlytics.recordError`,
+  with genuine device-to-backend proof. Re-confirmed via direct file read this session:
+  `machine_describer.dart:196,231` and `tts_voice_coach.dart:46-52` -- both explicitly
+  named in the original OBS-1 baseline -- remain bare `debugPrint`, completely unwired,
+  unchanged since the 2026-08-27 baseline.
+
+**The consequential one: items #1 (canary) and #4 (Stripe billing monitor) cannot be
+called cleanly CLOSED.** GPT-PM's own Step 10C kickoff named this exact risk --
+"do not let ... Step 10C ... launder the corresponding observability rows into CLOSED"
+if the row-21 alert-filter defect is unremediated. It was unremediated as of session
+start. **Independently verified before acting** (SS3/SS13 -- did not trust the research
+agent's claim alone): read `functions/src/monitoring/alert_definitions.ts` directly --
+confirmed `STRIPE_RECONCILIATION_FAILURE_FILTER`, `DELETE_ACCOUNT_FAILURE_FILTER`,
+`EXPORT_ACCOUNT_FAILURE_FILTER`, `CANARY_PROBE_FAILURE_FILTER` all still used
+`messageEquals`, with the file's OWN comment at the time explicitly naming this as a known
+gap ("four other already-deployed messageEquals-based failure filters ... are NOT touched
+here -- same root cause, reported to GPT-PM for a scope decision"). Read
+`firebase-functions/lib/logger/index.js`'s real `entryFromArgs` source directly (not from
+memory or the agent's paraphrase) to confirm the exact mechanism: a metadata object passed
+as the logger call's last argument is spread into `jsonPayload` untouched (this is how
+`event:` survives); but `message` is rebuilt via `util.format(...)` and, for ERROR severity
+with no `Error`-instance argument, further rewritten to `new Error(message).stack` --
+exactly the enforcement_state root cause, reproduced here for 4 more already-deployed
+alerts. Traced every real call site (`index.ts:1913,1921,2134,2171,2193`,
+`account_export.ts:317`, `canary_schedule.ts:99,110`) -- all `logger.error(EVENT, {...})`
+with no `event:` field, confirmed vulnerable.
+
+**Additional wrinkle found independently, not in the agent's report:** the framework's own
+onCall backstop (`common/providers/https.js:570`, `logger.error("Unhandled error", err)`,
+matched via `PLATFORM_UNHANDLED_ERROR` in the delete/export filters) has a DIFFERENT,
+second bug: since `err` there is already an `Error` instance, `entryFromArgs`'s
+stack-rewrite guard does not even fire -- but `message` is still built via
+`util.format("Unhandled error", err)`, which always APPENDS the inspected error after the
+literal, so an exact `messageEquals: ["Unhandled error"]` can never match either, for an
+independent reason. Framework code -- cannot attach an `event` field to it.
+
+**Remediation, this session, before writing the Step 10C table (fix the class, not just
+the instance GPT-PM originally caught):**
+- Added `event: EVENT` to every affected call site's metadata object (8 call sites across
+  `index.ts` x5, `account_export.ts` x1, `canary_schedule.ts` x2).
+- Switched `STRIPE_RECONCILIATION_FAILURE_FILTER`, `DELETE_ACCOUNT_FAILURE_FILTER`,
+  `EXPORT_ACCOUNT_FAILURE_FILTER`, `CANARY_PROBE_FAILURE_FILTER` from `messageEquals` to
+  `eventEquals` for the events this codebase owns and logs itself.
+- For the framework-owned `PLATFORM_UNHANDLED_ERROR` backstop (delete/export only -- canary
+  and enforcement_state never included it, by design, per their own existing comments):
+  added a new `messageContains` field to `LogMatchFilterSpec`
+  (`functions/src/monitoring/types.ts`), rendering to Cloud Logging's `:` (contains, not
+  `=` exact) operator -- matches the real `"Unhandled error " + <inspected err>` shape
+  without needing framework code to cooperate.
+- Updated the stale doc comments this touched (ENFORCEMENT_STATE_FAILURE_FILTER's own
+  comment previously said the other 4 filters were "NOT touched here"; now accurate).
+- Rewrote `alert_definitions.test.ts`'s Stripe/deleteAccount/exportAccountData/canary
+  describe blocks to the same standard enforcement_state's own tests already met:
+  positive proof against the REAL decorated message shape (not the raw event string),
+  explicit negative proof that the raw-undecorated-message-with-no-event-field shape (the
+  pre-fix bug) does NOT match, plus new `messageContains` coverage for the platform
+  backstop. `npx tsc --noEmit`: clean. Full suite: **21 suites, 527 tests, all green**
+  (up from 476 at Step 10A's own closure -- 51 new/changed tests this round).
+
+**Not yet done**: live redeploy + real induced-failure proof for the 4 affected functions
+(`stripeWebhook`, `deleteAccount`, `exportAccountData`, `runProductionCanary`) -- same
+discipline as every prior live-production round this gate. Sending this diff to GPT-PM for
+review before any live action.
+
+## 2026-08-28 (continued) -- GPT-PM round 1: real MAJOR (missing policy patch), 2 MINOR, all fixed; live remediation complete
+
+**VERDICT: MAJOR (1), MINOR (2)**, correct and confirmed real before acting:
+
+1. **MAJOR** -- redeploying the 4 functions alone does NOT update the 4 already-existing
+   Cloud Monitoring alert policies (separate GCP resources); without an explicit policy
+   patch, the fixed functions would emit correct `event` fields into logs that the
+   still-`messageEquals`-based live policies would keep failing to match -- the exact
+   defect Step 10C exists to close, just moved rather than fixed. Required binding
+   sequence: (1) redeploy producers, (2) patch the 4 existing policies in place
+   (preserving IDs/channels), (3) live readback proving the patched filter equals the
+   current-HEAD filter, (4) safe induced-failure proof against the real policies. Do not
+   mark items #1/#4 CLOSED until both producer and policy sides are live.
+2. **MINOR** -- the `messageContains` test simulator used case-SENSITIVE `.includes()`,
+   but Cloud Logging's real `:` operator matches case-insensitively; a future differently-
+   cased message could pass the simulator while behaving differently live. Fixed:
+   `matchesLogMatchFilter` now lowercases both sides before comparing; added a mixed-case
+   test (`"UNHANDLED ERROR: ..."` matching the `PLATFORM_UNHANDLED_ERROR` clause).
+3. **MINOR** -- the source doc comment overclaimed "then redeployed with live proof" before
+   any live action had happened, and the decision-log text said "7 call sites" for what is
+   actually 8 (`index.ts` x5 + `account_export.ts` x1 + `canary_schedule.ts` x2 = 8, a
+   plain arithmetic error on my part). Both corrected: the doc comment now states fixed-
+   in-source/live-pending until this entry exists, and the call-site count is 8.
+
+Re-ran `tsc --noEmit` (clean) and the full suite (49 tests in `alert_definitions.test.ts`
+after the new case-insensitivity test, no regressions) before proceeding to live action.
+
+**Live remediation, in GPT-PM's required order:**
+
+1. **Redeployed** the 4 producers (`firebase deploy --only
+   functions:stripeWebhook,functions:deleteAccount,functions:exportAccountData,functions:runProductionCanary`).
+   All 4 "Successful update operation." No business-logic change -- only the added
+   `event:` metadata field and (unrelated to logging) zero other code changes in this diff.
+2. **Patched the 4 existing alert policies in place**, replacing only the `conditions[0].conditionMatchedLog.filter`
+   while preserving `displayName`/`enabled`/`notificationChannels`/`alertStrategy` exactly
+   (read each policy via `gcloud alpha monitoring policies describe` first, built the
+   update body from that real read, not from memory). `gcloud alpha monitoring policies
+   update`'s `--fields` flag does not support `conditions` in this CLI version (rejected:
+   "must be one of [disabled, notificationChannels]") -- used a full-body
+   `--policy-from-file` replace instead, since the file already carried every other field
+   unchanged.
+3. **Live readback**: `gcloud alpha monitoring policies describe` on all 4 policies
+   confirms each live filter now equals the exact string `toGcpFilterString()` computes
+   from current-HEAD compiled source (computed via `node -e` against `npm run build`'s
+   real output, not hand-typed) -- byte-for-byte. `displayName`/`enabled`/
+   `notificationChannels` independently confirmed unchanged (`gcloud alpha monitoring
+   policies list`).
+4. **Safe induced-failure proof, real production policies, not a hypothetical**: wrote 5
+   synthetic log entries to `fa-d1-policy-proof` (the same synthetic-proof stream Step 9B/
+   10A established), each carrying `synthetic: true`, an explicit `purpose` string, and a
+   unique `test_marker` -- against the REAL deployed Cloud Run resource shape
+   (`resource.type="cloud_run_revision"`, real `service_name`/`location`/`project_id`) for
+   `stripewebhook`, `deleteaccount` (x2 -- one `event`-field case, one
+   `PLATFORM_UNHANDLED_ERROR`/`messageContains` case), `exportaccountdata`,
+   `runproductioncanary`. Each entry's `message`/`event` shape modeled the REAL
+   `entryFromArgs` output this session verified by reading the framework source directly
+   (Error-stack-decorated message + separate `event` field for the owned-event case;
+   `"Unhandled error " + detail` for the framework backstop case) -- not the naive
+   hand-set-message-only shape Step 9B's ORIGINAL proof used, which is exactly what made
+   that original proof false. `gcloud logging read`, queried with each policy's own
+   live-read-back filter string (not a reconstructed one), confirms all 5 entries match
+   byte-for-byte.
+
+**Result: items #1 (canary) and #4 (Stripe billing monitor) can now be marked genuinely
+CLOSED** -- both the producer and the policy sides are live, patched, and proven against
+real Cloud Monitoring filter evaluation, not a synthetic shortcut. `deleteAccount` and
+`exportAccountData`'s own operational-failure alerts (not part of the original 13 OBS-1
+items, but sharing the same defect and the same fix) are also now genuinely live-correct.
+
+Not independently confirmed (same standing limitation as every prior synthetic proof in
+this project since Step 9B): whether these 5 entries actually triggered delivered email
+notifications -- no server-side incident/notification-delivery API found; only the
+operator's own inbox can confirm that, and this is not blocking given the same limitation
+was already accepted at Step 9B/10A's own close.
+
+Committing this remediation together with the Step 10C reconciliation table next.
