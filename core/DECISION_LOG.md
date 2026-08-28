@@ -31657,3 +31657,91 @@ reachable AI surface.
 Updating the Step 10C table to reflect this, then all 13 rows are CLOSED or
 REBASED→CLOSED -- sending a narrow re-check of rows #9/#11 (the two changed since the
 round-1 closure review) before proceeding to the final whole-G3 review.
+
+## 2026-08-28 (continued) -- Step 10C narrow final check: VERDICT APPROVE, Step 10C complete
+
+Sent commit `8ef906c` for the narrow re-check GPT-PM's round-1 review asked for, scoped to
+confirming the #9 ruling was transcribed accurately and #11's completion meets the bar.
+**VERDICT: APPROVE**, all INFO:
+
+- #9's transcription confirmed accurate to the ruling actually given: direct-client-call
+  half genuinely CLOSED, metric count corrected to 4, callables still undeployed, the
+  HOLD's real reasons (deprecated model, App Check gap, abuse exposure) recorded, AI
+  Gateway Production Release & E2E Validation made a named mandatory gate rather than
+  vague roadmap language.
+- #11 confirmed to meet the closure bar, not just a disclosed partial: both remaining
+  paths now report through the real `FirebaseCrashlytics.recordError` pipeline Step 10B
+  already proved end-to-end on a real device; GPT-PM explicitly did not require a
+  separate device-proof event for this mechanical call-site addition, since Step 10B
+  already proved the pipeline itself.
+- Exit-state summary confirmed internally consistent: 10 CLOSED + 3 REBASED→CLOSED = 13,
+  zero PARTIAL/PROVISIONAL -- restores the original binding criterion round 1 found
+  silently loosened.
+- One provenance-wording note (not a finding against the artifact): commit `8ef906c`'s own
+  message correctly scopes itself to #9/reconciliation; #11's implementation commit is
+  `5d75709`, immediately prior -- noted here so later chronology doesn't misattribute it.
+
+GPT-PM's own words: *"Step 10C is complete. Proceed to the final whole-MVP1.G3 adversarial
+closure review. Do not reopen the 13 rows individually unless that final review finds a
+direct contradiction/regression in current HEAD or live state. pm_set_gate(MVP1.G3=PASSED)
+should still occur after that final whole-G3 review returns clean, not merely because
+Step 10C is now approved."*
+
+Proceeding to the final whole-G3 review next.
+
+## 2026-08-28 (continued) -- Final whole-MVP1.G3 review round 1: VERDICT MINOR (3) -- two stale table rows, one stale MASTER_PLAN table
+
+Sent the full G3 range (`1a8bf816..8ef906c`, 70 commits, `truncated: true` -- the diff
+itself was too large for a full cold read, but GPT-PM's context from this same
+conversation thread across every sub-gate review this session covered the gap).
+**VERDICT: MINOR (3)**, all real, independently verified before fixing (CLAUDE.md Sec3):
+
+1. **Step 10C row #5 (RU/EN semantic-drift) understated what G3 actually built.** The row
+   said meaning-level drift "is not caught by anything today," describing only the
+   structural-parity tests. GPT-PM correctly pointed at `scripts/ci/check_ru_en_drift.js`
+   -- a real, CI-wired, 5-heuristic semantic-drift detector with an expiry-dated
+   grandfather baseline, built and proven (including a real end-to-end negative-proof
+   round: a tracked `.arb` file's translation was temporarily meaning-inverted and the
+   check correctly caught it). Confirmed by direct read of
+   `core/DECISION_LOG.md:27389-27472` (this session's own earlier entry -- the file
+   existed all along; the Step 10C table simply mis-transcribed the disposition). Fixed:
+   row #5 now describes the real heuristic detector, keeping the honest remaining
+   limitation (deterministic pattern-based, not general translation-quality validation).
+2. **Step 10C row #10 (equipment-registry parity) had a stale 69↔69 count.** Re-ran
+   `node scripts/ci/check_equipment_registry_parity.js` live: `71 CANONICAL_MACHINES
+   entries all resolve against equipment.json's 69 entries (4 via ALIAS_MAP, 2 explicitly
+   allowlisted as known content gaps)`. Confirmed `KNOWN_UNCOVERED = new Set(["push-up
+   blocks", "aerobic step"])` at `scripts/ci/check_equipment_registry_parity.js:73` --
+   real, audited, CI-enforced exceptions (fails on any NEW or stale one), not a hidden gap.
+   Fixed: row #10 now states 71 vs 69, names the 4 aliases and 2 known-uncovered
+   exceptions explicitly. Disposition stays CLOSED -- the approved control is a drift
+   guard with auditable exceptions, not a promise of zero catalog gaps; closing the 2
+   content gaps themselves is a catalog-content task outside this gate's scope.
+3. **`core/MASTER_PLAN_2026-08-26.md` rows #18/#21 still showed pre-G3 status,
+   contradicting work this same gate completed.** Row 18 (Mobile/Dart SCA scanning)
+   still said "Open, asymmetric coverage" though OBS-1 item 6 closed it 2026-08-27. Row 21
+   (the row-21 alert-filter defect itself) still said "Not started" with the ORIGINAL
+   remediation instructions, though Step 10C completed exactly that remediation live this
+   session. A later autonomous session reading MASTER_PLAN cold could have reopened
+   already-completed production work, or a status report could have falsely claimed open
+   SCA/alert work. Fixed both rows to CLOSED with pointers to the real closing evidence.
+
+**INFO items, no fix required but worth carrying forward:**
+- FA-D1 notification-channel inventory is 6 permanent policies, not 5 (Step 9B's 4 +
+  Step 10A's 2 -- failure and staleness) -- my own scope-note phrasing undercounted;
+  no drift found across any of them, all confirmed source==live with FA-D1 attached.
+- No forgotten/orphaned live resource found across any sub-gate (temporary FA-D1 proof
+  policy already deleted; retained synthetic log entries are marked `synthetic: true` and
+  age out under normal retention; Step 10B's probe APK is a documented, intentionally
+  reused artifact, not an undocumented one).
+- **The new AI Gateway Production Release & E2E Validation gate must be registered in
+  canonical gate state (`pm_set_gate`) immediately after G3 passes** -- not left as
+  prose-only. Doing this as the very next action once `pm_set_gate(MVP1.G3, passed)` is
+  recorded.
+
+GPT-PM's own words: *"I do not find a current BLOCKER or MAJOR contradiction across the
+implementation/live-resource portions of MVP1.G3... Do not call pm_set_gate(MVP1.G3=
+PASSED) yet. These are documentation/governance corrections only, so the remediation
+should be very small... No CI rerun, device rerun, function redeploy, policy re-patch, or
+broad G3 review should be repeated."* Committing the 3 documentation fixes now, then
+sending only that delta for the narrow final closure check it asked for.
