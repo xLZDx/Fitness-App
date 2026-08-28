@@ -31476,10 +31476,14 @@ after the new case-insensitivity test, no regressions) before proceeding to live
    byte-for-byte.
 
 **Result: items #1 (canary) and #4 (Stripe billing monitor) can now be marked genuinely
-CLOSED** -- both the producer and the policy sides are live, patched, and proven against
-real Cloud Monitoring filter evaluation, not a synthetic shortcut. `deleteAccount` and
-`exportAccountData`'s own operational-failure alerts (not part of the original 13 OBS-1
-items, but sharing the same defect and the same fix) are also now genuinely live-correct.
+CLOSED** -- producer and policy sides are both live: each policy's live-read-back filter
+was proven to match a production-shaped synthetic entry through Cloud Logging query
+evaluation. This is one layer short of proof that Cloud Monitoring's alert-condition
+engine actually opened an incident or delivered a notification -- that layer was not
+independently verified (see the unconfirmed-notification-delivery paragraph below,
+unchanged). `deleteAccount` and `exportAccountData`'s own operational-failure alerts
+(not part of the original 13 OBS-1 items, but sharing the same defect and the same fix)
+are also now live-correct to the same standard.
 
 Not independently confirmed (same standing limitation as every prior synthetic proof in
 this project since Step 9B): whether these 5 entries actually triggered delivered email
@@ -31487,4 +31491,32 @@ notifications -- no server-side incident/notification-delivery API found; only t
 operator's own inbox can confirm that, and this is not blocking given the same limitation
 was already accepted at Step 9B/10A's own close.
 
-Committing this remediation together with the Step 10C reconciliation table next.
+## 2026-08-28 (continued) -- GPT-PM round 2: VERDICT MINOR (1), all else CLOSED/INFO -- rows #1/#4 confirmed CLOSED-eligible
+
+Sent the committed remediation (`83636be`) plus the full live-rollout evidence above for
+sign-off (`review.js --commit 83636be --round 2`, scope-noted to this defect only).
+**VERDICT: MINOR (1)**, correctly identified:
+
+- **MINOR** -- the decision-log wording "real Cloud Monitoring filter evaluation... not a
+  synthetic shortcut" overstated what was actually proven. The recorded evidence shows a
+  Cloud Logging query (using each policy's own live-read-back filter string) matching a
+  production-shaped synthetic entry -- proof that the filter is correct, not proof that
+  Cloud Monitoring's alert-condition engine opened an incident or delivered a
+  notification. The document already disclosed the notification-delivery gap elsewhere;
+  only this one conclusion sentence overclaimed. **Required change: reword only, no
+  re-test** -- fixed above, in place, same entry.
+
+Everything else came back **INFO** (no defect, confirms closure): the round-1 MAJOR
+(missing policy patch) is closed by the exact binding sequence executed; both round-1
+MINORs (case-sensitive simulator, doc overclaim/call-site count) are closed; and GPT-PM
+explicitly confirmed **rows #1 (canary) and #4 (Stripe billing monitor) now have
+sufficient evidence to be marked CLOSED in the Step 10C table** -- "the previously
+possible state -- correct source, stale production alert filter -- is no longer
+supported by the evidence," with the one caveat that the table must state the
+notification-delivery layer as unconfirmed rather than implying it was proven.
+
+GPT-PM's own closing line: *"So there is no reason to repeat the alert remediation or
+withhold rows #1/#4 from CLOSED. Fix the one audit-trail sentence, commit/push under the
+current policy, and proceed directly to the Step 10C 13-row reconciliation."* Wording
+fix applied in place (same DECISION_LOG entry, no new live action). Committing this
+correction, then writing the Step 10C reconciliation table next.
