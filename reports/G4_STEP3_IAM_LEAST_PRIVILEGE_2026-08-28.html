@@ -294,9 +294,9 @@
 <!-- report-conform:end -->
 
   <div class="status-row">
-    <div class="stat"><div class="n">3</div><div class="l">review rounds, final verdict APPROVE</div></div>
-    <div class="stat"><div class="n">7</div><div class="l">tiers migrated and verified live</div></div>
-    <div class="stat"><div class="n">22</div><div class="l">functions moved off the shared Editor identity</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">review rounds — Step 3 closed</div></div>
+    <div class="stat"><div class="n">16</div><div class="l">functions, 0 on the default Compute SA</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">item waiting on the operator — push</div></div>
   </div>
 
   <h2 data-n="01">Why</h2>
@@ -351,6 +351,41 @@
           roles, all bindings) — with no live traffic switch.</p>
       </div>
     </div>
+    <div class="round">
+      <div class="round-head">
+        <span class="round-title">Round 4 — commit b250dae, complete live state</span>
+        <span class="pill major">MAJOR · 3+2</span>
+      </div>
+      <div class="round-body">
+        <p>Once all 7 tiers were deployed and verified, round 4 found three real
+          loose ends before authorizing Step 3's closure:</p>
+        <ul>
+          <li><code>appCheckProbe</code> was still on the default Compute SA, which
+            therefore still held <code>roles/editor</code> — deleted (backend source
+            and mobile trigger too), since a real AI callable takes over its role once
+            Step 4 deploys.</li>
+          <li><code>roles/editor</code> and a stale self-scoped
+            <code>serviceAccountTokenCreator</code> were removed from the default SA —
+            confirmed zero deployed functions use it now.</li>
+          <li>Production had drifted ahead of <code>origin/master</code> — nothing
+            pushed since this session began. <strong>Deliberately not fixed here</strong>:
+            GPT-PM's approval doesn't substitute for the operator's own separate
+            "push" word — a precedent this same project's decision log already states
+            explicitly.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>The Step 4-9 sequencing question was resolved in this same round.</strong>
+    Steps 4-7 don't need to wait for S23 — Firebase's Android debug provider lets an
+    App-Check-enforced backend be proven on a device that can't pass production
+    attestation. New order: Step 4 deploys the four AI callables with
+    <code>APP_CHECK_ENFORCED_AI=true</code> from day one → Step 5 backend E2E via a
+    debug token on the S8 → Step 6 a real quota-exhaustion proof → Step 7 functional
+    E2E on the S8 → S23 becomes the release-attestation acceptance test, not a blocker
+    to every preceding step.
   </div>
 
   <div class="callout amber">
@@ -440,25 +475,25 @@
     after the fix, which confirmed success.
   </div>
 
-  <h2 data-n="04">Done vs. still pending</h2>
+  <h2 data-n="04">Done, closed, and what's waiting on the operator</h2>
   <ul class="checklist">
-    <li><span class="mark done">✓</span> 7 service accounts created and confirmed (6 planned + fn-enforcement)</li>
-    <li><span class="mark done">✓</span> Every custom role created, each exactly the permission it needs</li>
-    <li><span class="mark done">✓</span> Every project-level, self-scoped, bucket-scoped, and per-secret binding applied and verified against each command's own output</li>
-    <li><span class="mark done">✓</span> <code>serviceAccount</code> wired into source for all 22 functions across the five main tiers plus fn-enforcement</li>
-    <li><span class="mark done">✓</span> All 22 functions redeployed and confirmed on their new identity via <code>gcloud functions describe</code></li>
-    <li><span class="mark done">✓</span> Four of seven tiers verified with a real live call (canary, video's real bytes, enforcement's found-and-fixed failure)</li>
-    <li><span class="mark pending">○</span> <code>roles/editor</code> on the default SA is untouched — removed only once the temporary App Check probe (the last function on the shared identity) is deleted or moved</li>
-    <li><span class="mark pending">○</span> The four AI callables remain HOLD-ed — blocked on Step 2's Android device with working Play Integrity</li>
+    <li><span class="mark done">✓</span> 16 deployed functions — all on narrow identities, zero on the default Compute SA</li>
+    <li><span class="mark done">✓</span> <code>roles/editor</code> and the stale self-TokenCreator removed from the default SA — confirmed live</li>
+    <li><span class="mark done">✓</span> <code>appCheckProbe</code> deleted (backend, mobile trigger, tests) — full suite green (533/533)</li>
+    <li><span class="mark done">✓</span> Function inventory reconciled against a real <code>gcloud functions list</code>, not memory</li>
+    <li><span class="mark done">✓</span> S8/Knox framing corrected to Google's documented criterion (unlocked bootloader), not a Samsung-specific detail</li>
+    <li><span class="mark done">✓</span> Step 4-9 sequencing agreed with GPT-PM — S23 no longer blocks Steps 4-7</li>
+    <li><span class="mark pending">○</span> <b>Not pushed to <code>origin/master</code></b> — GPT-PM approved, but that doesn't substitute for the operator's own separate "push" word under this project's standing contract</li>
   </ul>
 
   <h2 data-n="05">Next</h2>
-  <p>Step 3 is substantively closed — 22 of 23 functions no longer share one project-wide
-    <code>Editor</code> identity. The only thing still holding <code>roles/editor</code> on
-    the default SA is the temporary <code>appCheckProbe</code> (Step 2's Option D), waiting
-    on the S23 device for a real on-device proof. Once it's deleted or moved,
-    <code>roles/editor</code> comes off and Step 3 closes fully. The redesign becomes the
-    priority immediately after, per the operator's own sequencing decision.</p>
+  <p><strong>Step 3 is technically closed</strong> — all 16 deployed functions run on
+    narrow identities, and the default SA holds nothing. The one thing left is pushing
+    commits <code>29647bb..b250dae</code> to <code>origin/master</code>, which needs the
+    operator's separate confirmation. After that: Step 4 — deploy the four AI callables
+    with App Check enforcement on from day one, using a debug token on the S8 for Steps
+    5-7, with S23 as the final acceptance test. The redesign becomes the priority once
+    the whole G4 gate closes, per the operator's own sequencing decision.</p>
 
   <footer>
     Full evidence trail and all three rounds' verdicts: <code>core/DECISION_LOG.md</code> and

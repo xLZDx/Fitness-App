@@ -475,6 +475,109 @@ execution `dfd9vslxkqix` (2026-08-28 20:49:32 UTC) — `enforcement_state_schedu
 succeeded`, all four sub-checks `OK`. Not accepted on the first "should work" attempt;
 caught, diagnosed from the real structured log, fixed, and re-proven live.
 
+## Round 4 GPT-PM review: MAJOR — Step 3 not closeable yet; 2 residuals + a provenance gap
+
+Sent at commit `b250dae`, covering the complete live state (all 7 tiers, including the
+self-found `fn-enforcement` tier and its live failure/fix). Verdict: `MAJOR`, 3 MAJOR +
+2 MINOR. All independently re-verified before acting:
+
+1. **MAJOR — `appCheckProbe` was still on the default Compute SA, which still held
+   `roles/editor`.** Confirmed via `gcloud functions list --format="table(name,
+   serviceConfig.serviceAccountEmail)"`: every other deployed function had migrated,
+   but `appCheckProbe` was the sole holdout, meaning the shared-Editor blast radius
+   Step 3 exists to eliminate was still real for one live, externally-reachable,
+   App-Check-enforced endpoint. GPT-PM's recommendation: delete the probe now (its
+   purpose — proving Play Integrity against *some* App-Check-enforced callable — is
+   superseded once real AI callables deploy with enforcement on) rather than migrate it
+   to yet another SA. **Fixed**: deleted via `firebase functions:delete appCheckProbe`,
+   plus its backend source (`functions/src/app_check_probe.ts`), its `index.ts`
+   re-export, its mobile trigger (`g4_step2d_app_check_probe.dart` and the `main.dart`
+   call site — that file's own header already said both halves get deleted once the
+   probe's result is recorded, which it now is), and the now-stale `scaling.test.ts`
+   registration. Full test suite re-run clean after (533/533, `flutter analyze` clean).
+2. **MAJOR — the default Compute SA's residual grants** (`roles/editor`, plus a
+   self-scoped `roles/iam.serviceAccountTokenCreator` left over from before `clipUrl`/
+   `clipUrls` had their own identity). Confirmed via `gcloud functions list` that zero
+   deployed functions used this SA once `appCheckProbe` was gone. **Fixed**: removed
+   both bindings (`gcloud projects remove-iam-policy-binding` for `roles/editor`,
+   `gcloud iam service-accounts remove-iam-policy-binding` for the self-scoped
+   `serviceAccountTokenCreator`). Re-confirmed via `gcloud projects get-iam-policy
+   --filter=...` (empty result — no bindings remain) and a final SA-level
+   `get-iam-policy` (empty bindings). The default Compute SA now holds no explicit
+   project-level or self-scoped grant at all.
+3. **MAJOR — production had drifted ahead of `origin/master`.** GPT-PM's own repo
+   access showed GitHub's visible history ending at `d0e0512`, while live IAM/runtime
+   state reflected commits through `b250dae` — nothing after Step 2 had been pushed
+   this session. **Not fixed in this pass, deliberately**: per this project's own
+   repeated decision-log precedent (`core/DECISION_LOG.md:25175`, `:25194`, `:25284` —
+   "push still needs a separate operator push-GO regardless of GPT-PM's state"),
+   GPT-PM's `PUSH: AUTHORIZED` does not substitute for that. No `git push` has been
+   performed. This is the one open item that needs the operator's own word, not a
+   technical fix.
+4. (MINOR) **The "22 functions across 7 tiers" report figure didn't reconcile.**
+   Real count from `gcloud functions list`: 16 deployed functions across 6 migrated
+   tiers (not 22 — that number conflated something else, never fully reconciled) plus
+   `appCheckProbe` (now deleted) plus the 4 AI callables (never deployed at all).
+   **Fixed**: replaced with the real inventory table below, built directly from a live
+   `gcloud functions list` readback rather than restated from memory.
+5. (MINOR) **The Knox e-fuse framing over-generalized a vendor-specific detail as if it
+   were the Play Integrity protocol requirement.** Google's own criterion is an
+   unlocked bootloader (a documented certification-failure condition on any Android
+   device); Samsung's Knox warranty-bit e-fuse is that vendor's specific hardware
+   implementation of detecting it, not a Play-Integrity-specific mechanism.
+   **Corrected**: the durable framing is "the S8 is an intentionally
+   bootloader-unlocked/security-modified development device, not an acceptable
+   production Play Integrity target for the configured `MEETS_DEVICE_INTEGRITY`
+   policy" — a statement that transfers to the S23 or any other device, rather than one
+   that only makes sense for this specific Samsung part.
+
+**GPT-PM also resolved the Step 4-9 sequencing question** asked in this same round:
+Steps 4-7 do NOT need to wait for the S23 device. Firebase's own guidance treats the
+Android debug provider (a registered debug token) as the documented way to test an
+App-Check-enforced backend from a device that cannot pass production attestation —
+meaning the real choice was never "wait for S23" vs. "ship AI callables unenforced."
+**Revised order, authorized**: finish Step 3's two residuals (done, above) → Step 4:
+deploy the four AI callables with `APP_CHECK_ENFORCED_AI=true` from their first live
+revision → Step 5: backend E2E using a registered S8 debug-provider token → Step 6:
+real metrics/quota-exhaustion proof → Step 7: functional real-device E2E on the S8
+debug build → S23 becomes a release-signed Play Integrity **acceptance test**, not a
+blocker for every preceding engineering proof — closing Step 2's production-attestation
+proof and the release-specific half of Step 7 once available. `HOLD`, unchanged: no AI
+deployment with App Check enforcement off; no user-facing release before the S23 proof
+passes.
+
+## Final inventory — every deployed function, live-read, 2026-08-28/29
+
+```
+$ gcloud functions list --project=fitness-app-korostelev --v2 \
+    --format="table(name,state,serviceConfig.serviceAccountEmail)"
+```
+
+| Function | Tier | Runtime identity | State |
+|---|---|---|---|
+| runProductionCanary | fn-canary | fn-canary@fitness-app-korostelev.iam.gserviceaccount.com | ACTIVE |
+| startFreeTrial | fn-data | fn-data@fitness-app-korostelev.iam.gserviceaccount.com | ACTIVE |
+| optInDonorWall | fn-data | fn-data@... | ACTIVE |
+| optOutDonorWall | fn-data | fn-data@... | ACTIVE |
+| reportEquipment | fn-data | fn-data@... | ACTIVE |
+| exportAccountData | fn-data | fn-data@... | ACTIVE |
+| clipUrl | fn-video | fn-video@fitness-app-korostelev.iam.gserviceaccount.com | ACTIVE |
+| clipUrls | fn-video | fn-video@... | ACTIVE |
+| createCheckoutSession | fn-billing | fn-billing@fitness-app-korostelev.iam.gserviceaccount.com | ACTIVE |
+| createPortalSession | fn-billing | fn-billing@... | ACTIVE |
+| stripeWebhook | fn-billing | fn-billing@... | ACTIVE |
+| generateAnnualReceipt | fn-billing | fn-billing@... | ACTIVE |
+| startCoachOnboarding | fn-billing | fn-billing@... | ACTIVE |
+| bookCoachSession | fn-billing | fn-billing@... | ACTIVE |
+| deleteAccount | fn-account-delete | fn-account-delete@fitness-app-korostelev.iam.gserviceaccount.com | ACTIVE |
+| runEnforcementStateCheck | fn-enforcement | fn-enforcement@fitness-app-korostelev.iam.gserviceaccount.com | ACTIVE |
+
+**16 deployed functions, 6 tiers, zero on the default Compute SA.** `appCheckProbe`
+(the 17th, temporary) is deleted, not migrated. The four AI callables
+(`aiCoachAdvice`, `aiEquipmentRecognition`, `aiMachineDescription`,
+`aiExerciseGeneration`) are not deployed at all — `fn-ai-runtime`'s identity (a 7th,
+prepared tier) is provisioned and ready for Step 4.
+
 ## Status — all 7 tiers migrated and live-verified
 
 Round 1 (5-tier proposal, `cc759fc`): `MAJOR`, 3 MAJOR + 2 MINOR — fixed. Round 2
@@ -494,9 +597,24 @@ verified:
 | `fn-account-delete` | deleteAccount | Identity readback only (deliberate — no live invocation of a destructive function) |
 | `fn-enforcement` | runEnforcementStateCheck | Failed live, diagnosed, fixed, re-triggered and confirmed succeeding |
 
-**Not yet migrated, deliberately**: none. **Not yet applied**: `roles/editor` removal
-from the default Compute SA — still correctly gated on the temporary `appCheckProbe`
-being deleted or moved off it (Step 2's Option D device work), which is the one
-remaining function on the old shared identity. `fn-ai-runtime`'s identity stays
-prepared but unattached; the four AI callables remain HOLD-ed by Step 2. See
+**Step 3 is CLOSED**, per round 4's ruling once its two residuals were fixed:
+`appCheckProbe` deleted (superseded by the real AI callables once Step 4 deploys them
+with enforcement on), and `roles/editor` plus the obsolete self-scoped
+`serviceAccountTokenCreator` removed from the default Compute SA — confirmed via a
+final live readback showing zero deployed functions on it. Every one of the 16
+currently-deployed functions runs under a least-privilege identity; `fn-ai-runtime`'s
+7th identity is provisioned and ready for Step 4.
+
+**One item is NOT closed and is not a technical gap**: the local commit range
+(`29647bb..b250dae` and this entry's own commit) has not been pushed to
+`origin/master`. This needs the operator's own separate `push` word, per this
+project's own repeated standing precedent that GPT-PM's `PUSH: AUTHORIZED` does not
+substitute for it (see round 4 above). Until pushed, the repository's remote
+source-of-truth does not yet match live production state — flagged, not hidden.
+
+**Revised gate order, per round 4**: Step 4 (deploy the four AI callables with
+`APP_CHECK_ENFORCED_AI=true` from their first live revision) no longer waits on the
+S23 device — Firebase's Android debug provider lets Steps 4-7 be proven for real on
+the S8 with a registered debug token; S23 becomes the release-signed Play Integrity
+acceptance test, not a blocker to every preceding engineering proof. See
 `core/DECISION_LOG.md` for every round's verdict and every tier's migration evidence.

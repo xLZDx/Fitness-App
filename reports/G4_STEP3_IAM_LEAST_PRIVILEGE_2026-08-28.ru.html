@@ -294,9 +294,9 @@
 <!-- report-conform:end -->
 
   <div class="status-row">
-    <div class="stat"><div class="n">3</div><div class="l">раунда ревью, финал — APPROVE</div></div>
-    <div class="stat"><div class="n">7</div><div class="l">уровней мигрировано и проверено вживую</div></div>
-    <div class="stat"><div class="n">22</div><div class="l">функции — на узких identity вместо общего Editor</div></div>
+    <div class="stat"><div class="n">4</div><div class="l">раунда ревью — Шаг 3 закрыт</div></div>
+    <div class="stat"><div class="n">16</div><div class="l">функций, 0 на дефолтном Compute SA</div></div>
+    <div class="stat"><div class="n">1</div><div class="l">пункт ждёт оператора — push</div></div>
   </div>
 
   <h2 data-n="01">Зачем</h2>
@@ -351,6 +351,35 @@
           ролей, всех биндингов) — без переключения живого трафика.</p>
       </div>
     </div>
+    <div class="round">
+      <div class="round-head">
+        <span class="round-title">Раунд 4 — commit b250dae, полное живое состояние</span>
+        <span class="pill major">MAJOR · 3+2</span>
+      </div>
+      <div class="round-body">
+        <p>После того как все 7 уровней были задеплоены и проверены, раунд 4 нашёл три реальных
+          хвоста, прежде чем разрешить закрытие Шага 3:</p>
+        <ul>
+          <li><code>appCheckProbe</code> оставался на дефолтном Compute SA, который поэтому всё ещё
+            держал <code>roles/editor</code> — удалён (вместе с backend-исходником и мобильным
+            триггером), т.к. его роль возьмёт на себя реальный AI-колбэк после Шага 4.</li>
+          <li><code>roles/editor</code> и устаревший self-scoped <code>serviceAccountTokenCreator</code>
+            сняты с дефолтного SA — подтверждено: ноль задеплоенных функций теперь его использует.</li>
+          <li>Продакшен обогнал <code>origin/master</code> — ничего не запушено с начала сессии.
+            <strong>Не исправлено намеренно</strong>: одобрение GPT-PM не заменяет отдельное
+            «push»-слово оператора, это прямо зафиксированный прецедент этого же проекта.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Вопрос о порядке Шагов 4–9 решён этим же раундом.</strong> Шаги 4–7 не обязаны ждать
+    S23 — Android debug-provider Firebase позволяет доказать App-Check-защищённый backend на
+    устройстве, которое не может пройти боевую аттестацию. Новый порядок: Шаг 4 разворачивает 4
+    AI-колбэка сразу с <code>APP_CHECK_ENFORCED_AI=true</code> → Шаг 5 backend E2E через debug-токен
+    на S8 → Шаг 6 реальное доказательство исчерпания квоты → Шаг 7 функциональный E2E на S8 → S23
+    становится приёмочным тестом релизной атестации, а не блокером всех предыдущих шагов.
   </div>
 
   <div class="callout amber">
@@ -441,25 +470,25 @@
     после исправления, который и подтвердил успех.
   </div>
 
-  <h2 data-n="04">Что уже сделано, а что нет</h2>
+  <h2 data-n="04">Что сделано, что закрыто, что ждёт оператора</h2>
   <ul class="checklist">
-    <li><span class="mark done">✓</span> 7 service accounts созданы и подтверждены (6 из плана + fn-enforcement)</li>
-    <li><span class="mark done">✓</span> Все кастомные роли созданы, каждая — ровно с нужным правом</li>
-    <li><span class="mark done">✓</span> Все проектные, self-scoped, bucket-scoped и per-secret биндинги применены и проверены по выводу каждой команды</li>
-    <li><span class="mark done">✓</span> <code>serviceAccount</code> прописан в исходниках для всех 22 функций пяти основных уровней плюс fn-enforcement</li>
-    <li><span class="mark done">✓</span> Все 22 функции передеплоены и подтверждены на новой identity через <code>gcloud functions describe</code></li>
-    <li><span class="mark done">✓</span> Четыре из семи уровней проверены живым вызовом (canary, video — реальные байты, enforcement — найдена и исправлена реальная ошибка)</li>
-    <li><span class="mark pending">○</span> <code>roles/editor</code> на дефолтном SA не тронут — снимается только после удаления/переноса зонда App Check (последняя функция на общей identity)</li>
-    <li><span class="mark pending">○</span> Четыре AI-колбэка остаются на HOLD — блокер Шага 2 (Android-устройство с работающим Play Integrity)</li>
+    <li><span class="mark done">✓</span> 16 задеплоенных функций — все на узких identity, ноль на дефолтном Compute SA</li>
+    <li><span class="mark done">✓</span> <code>roles/editor</code> и устаревший self-TokenCreator сняты с дефолтного SA — подтверждено вживую</li>
+    <li><span class="mark done">✓</span> <code>appCheckProbe</code> удалён (backend + мобильный триггер + тесты), полный набор тестов зелёный (533/533)</li>
+    <li><span class="mark done">✓</span> Инвентарь функций сверен с реальным <code>gcloud functions list</code>, а не с памятью</li>
+    <li><span class="mark done">✓</span> Формулировка про S8/Knox исправлена — привязана к документированному критерию Google (unlocked bootloader), а не к специфике Samsung</li>
+    <li><span class="mark done">✓</span> Порядок Шагов 4–9 согласован с GPT-PM — S23 больше не блокирует Шаги 4–7</li>
+    <li><span class="mark pending">○</span> <b>Не запушено в <code>origin/master</code></b> — GPT-PM одобрил, но это не заменяет отдельное «push»-слово оператора по стандартному контракту этого проекта</li>
   </ul>
 
   <h2 data-n="05">Дальше</h2>
-  <p>Шаг 3 фактически закрыт по своей сути — 22 из 23 функций больше не делят один
-    project-wide <code>Editor</code>. Единственное, что держит <code>roles/editor</code>
-    на дефолтном SA — временный зонд <code>appCheckProbe</code> (Option D Шага 2),
-    ожидающий S23 для подтверждения App Check на реальном устройстве. Как только он
-    удалён или перенесён — <code>roles/editor</code> снимается, и Шаг 3 закрыт
-    полностью. Редизайн становится приоритетом сразу после этого, по решению оператора.</p>
+  <p><strong>Шаг 3 технически закрыт</strong> — все 16 задеплоенных функций на узких
+    identity, дефолтный SA не держит ничего. Единственное, что осталось — запушить
+    коммиты <code>29647bb..b250dae</code> в <code>origin/master</code>, для чего нужно
+    отдельное подтверждение оператора. После этого — Шаг 4: развернуть 4 AI-колбэка сразу
+    с включённым App Check enforcement, используя debug-токен на S8 для Шагов 5–7, и S23
+    как финальный приёмочный тест. Редизайн становится приоритетом после закрытия всего
+    гейта G4, по решению оператора.</p>
 
   <footer>
     Полная доказательная база и хронология трёх раундов —

@@ -32871,3 +32871,68 @@ showing its actual verification method, plus the `fn-enforcement` live-failure-t
 callout. Republished to the same artifact URL
 (`https://claude.ai/code/artifact/4f75e732-b3dc-42cf-afa3-c80c54a3530e`). No code
 change in this commit -- report content only.
+
+## G4 Step 3 IAM: round 4 GPT-PM review (MAJOR) -- 2 residuals fixed live, push flagged as operator-only, Step 4-9 sequencing resolved
+
+Round 4 (full live state, commit b250dae) came back `VERDICT: MAJOR` -- 3 MAJOR + 2
+MINOR. Independently verified before acting (§3/§13):
+
+1. **MAJOR, confirmed and fixed**: `appCheckProbe` was the sole function still on the
+   default Compute SA, which still held `roles/editor` because of it -- confirmed via
+   `gcloud functions list --format="table(name,serviceConfig.serviceAccountEmail)"`.
+   Deleted the function (`firebase functions:delete appCheckProbe`), its backend source
+   (`functions/src/app_check_probe.ts`), its `index.ts` re-export, its mobile trigger
+   (`g4_step2d_app_check_probe.dart` + the `main.dart` call site -- that file's own
+   header already said both halves get deleted once the probe's result is recorded,
+   which it now is), and the stale `scaling.test.ts` registration entry. Full functions
+   test suite re-run clean (533/533 across 22 suites), `flutter analyze lib/main.dart`
+   clean.
+2. **MAJOR, confirmed and fixed**: the default Compute SA's residual `roles/editor`
+   plus a leftover self-scoped `roles/iam.serviceAccountTokenCreator` (from before
+   `clipUrl`/`clipUrls` had their own identity). Confirmed zero deployed functions used
+   this SA once `appCheckProbe` was gone (`gcloud functions list` showed nothing
+   matching). Removed both bindings via `gcloud projects remove-iam-policy-binding` /
+   `gcloud iam service-accounts remove-iam-policy-binding`; re-confirmed empty via a
+   follow-up `get-iam-policy` at both the project and SA level. The default Compute SA
+   now holds no explicit grant of any kind.
+3. **MAJOR, confirmed, deliberately NOT fixed this pass**: production (live IAM/runtime
+   state) has drifted ahead of `origin/master` -- GitHub's visible history ends at
+   `d0e0512`; nothing from `29647bb` onward has been pushed. GPT-PM's own reply said
+   `PUSH: AUTHORIZED`. This project's own decision log already has repeated, explicit
+   precedent on exactly this point -- lines 25175, 25194, 25284 (search "push still
+   needs a separate operator push-GO regardless of GPT-PM's state") -- a GPT-PM
+   approval does not substitute for the operator's own separate push-GO here, and
+   nothing in this session changes that. **No push performed.** This is the one
+   remaining item that is not a technical fix; it needs the operator's word.
+4. (MINOR, fixed) Report's "22 functions across 7 tiers" didn't reconcile against a
+   real inventory. Rebuilt from a live `gcloud functions list` readback: 16 deployed
+   functions across 6 migrated tiers, zero on the default SA; `appCheckProbe` (now
+   deleted) was the 17th; the four AI callables were never deployed at all. Full table
+   in `core/G4_STEP3_IAM_RUNTIME_CONFIG_2026-08-28.md`.
+5. (MINOR, fixed) The Knox e-fuse framing over-generalized a Samsung-specific detection
+   mechanism as if it were the Play Integrity protocol's own requirement. Google's
+   actual criterion is an unlocked bootloader (a documented cross-vendor certification
+   failure); Knox's warranty-bit e-fuse is just Samsung's way of exposing that state.
+   Corrected, durable framing recorded in the Step 3 doc: "the S8 is an intentionally
+   bootloader-unlocked/security-modified development device, not an acceptable
+   production Play Integrity target for the configured MEETS_DEVICE_INTEGRITY policy" --
+   a statement that transfers to any device, not just this one.
+
+**Step 4-9 sequencing question resolved**: Steps 4-7 do not need to wait for S23.
+Firebase's own guidance treats the Android debug provider (a registered debug token) as
+the documented way to test an App-Check-enforced backend from a device that cannot pass
+production attestation -- the real choice was never "wait for S23" vs. "ship AI
+callables unenforced." Revised, authorized order: Step 4 deploys the four AI callables
+with `APP_CHECK_ENFORCED_AI=true` from their first live revision -> Step 5 backend E2E
+via a registered S8 debug-provider token -> Step 6 real quota-exhaustion proof -> Step 7
+functional real-device E2E on the S8 debug build -> S23 becomes the release-signed Play
+Integrity acceptance test (closing Step 2's production-attestation proof and the
+release-specific half of Step 7), not a blocker to every preceding proof. `HOLD`
+unchanged: no AI deployment with enforcement off; no user-facing release before the S23
+proof passes.
+
+**Step 3 is now CLOSED** on the technical merits -- every deployed function (16 of 16)
+runs under a least-privilege identity, the default Compute SA holds nothing, and the
+7th (`fn-ai-runtime`) identity is provisioned and ready for Step 4. The one open item
+(push to origin/master) is explicitly operator-gated, not a technical gap, and is
+recorded as such rather than worked around.

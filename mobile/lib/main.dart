@@ -13,7 +13,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/assets/asset_bootstrap.dart';
 import 'core/debug/g3_step10b_probe.dart';
-import 'core/debug/g4_step2d_app_check_probe.dart';
 import 'core/health/platform_health_service.dart';
 import 'core/licences/asset_licences.dart';
 import 'core/health/state/health_providers.dart';
@@ -296,10 +295,6 @@ Future<void> main() async {
     debugPrint('R0: App Check activate() failed, continuing without it: $e');
     FirebaseCrashlytics.instance.recordError(e, st, fatal: false);
   }
-
-  // G4 Step 2D: dead code in every normal build -- see
-  // core/debug/g4_step2d_app_check_probe.dart.
-  unawaited(G4Step2dAppCheckProbe.run());
 
   // Warm up notifications. Warm-up ONLY -- no permission prompt: this runs
   // before the first frame, and an "Allow notifications?" dialog over a blank
