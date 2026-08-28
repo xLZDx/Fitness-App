@@ -30772,5 +30772,52 @@ and logcat captures (`09_permission_denial_v2.log`, `10_slow_inference_v3_diagno
 
 Committing the probe harness, the four modified production files (with the call-site
 attribution fix), `main.dart`'s provenance hook, the timeout fix, the new tests, and the
-full evidence directory in the same commit as this log entry, then sending the
-remediated diff back to GPT-PM for the verification round before push.
+full evidence directory in the same commit as this log entry (`6ab9ff5`), then sending
+the remediated diff back to GPT-PM for the verification round before push.
+
+## GPT-PM round 2 (verification round) -- 3 of 4 MAJORs CLOSED, 1 MAJOR partially closed, 1 MINOR
+
+Verdict: MAJOR (1 MAJOR, 1 MINOR), `final:false`, round 2, correlated against commit
+`6ab9ff593608c31913dd81368f9ca2717f8ca45b`.
+
+- **Finding 1 (empty permission-denial evidence) -- CLOSED.** GPT-PM's own words: "The
+  previous `{}` masquerading as proof is gone."
+- **Finding 2 (unproven slow-inference success UI) -- CLOSED.** "The old 'structurally
+  guaranteed' inference is no longer being substituted for observed success." Explicit
+  caveat accepted at face value: GPT-PM cannot see the embedded screenshot pixels itself
+  and is trusting the evidence record's description -- correct and appropriately
+  cautious of it, not a gap in this review.
+- **Finding 3 (probe facade attribution) -- CLOSED.** "The production call path no
+  longer introduces `g3_step10b_probe.dart` as the intermediate Crashlytics attribution
+  frame."
+- **Finding 4 (build provenance) -- still MAJOR, correctly.** The remediation's
+  `b7338920-dirty-remediation2` label is a human-chosen string, not a mechanically exact
+  identity: two different dirty working trees built from the same base commit could
+  carry the identical label, and nothing about the string lets the backend verify which
+  bytes actually produced the APK. Required change: build the canonical probe APK from a
+  clean, immutable commit (now that one exists -- `6ab9ff5` itself), tag it with that
+  exact SHA, and persist the APK's own SHA-256 in the evidence manifest.
+- **New MINOR**: the Step 10B commit message says "every scenario is backed by a real
+  Cloud Logging event (eventId + issue.id)," which is wrong for the permission-denial
+  case -- that scenario's whole point is the OPPOSITE: two bounded queries returning
+  ZERO events. Correction, since the commit itself is not rewritten (unpushed history is
+  still not amended, per this project's standing git discipline): every POSITIVE
+  telemetry scenario (camera-init, OCR, cloud-inference, slow-success, telemetry-facade)
+  is backed by a backend `eventId`/`issue.id`; the permission-denial case is backed by a
+  bounded backend ZERO-event query. Recording the correct wording here as the
+  authoritative statement.
+
+**Remediation**: rebuilt the slow-inference probe from the clean, already-committed
+`6ab9ff593608c31913dd81368f9ca2717f8ca45b` (verified `git status` clean at build time --
+no dirty files), with `G3_STEP10B_SOURCE_SHA` set to that exact commit SHA. Computed the
+APK's SHA-256 (`3aff5a99e072bc68092c7df37beaa80904871a107803f6d7b6e29f86637531b7`) before
+installing. Re-ran the same scenario end to end: capture -> real OCR -> 25s injected
+delay -> canned success -> swipe-revealed "Беговая дорожка" / 91% card (screenshot
+`v4_clean_commit_expanded.png`) -> cold-relaunch flush (report
+`6A914CF6034900016335253F4BF50E8E`) -> backend event confirmed
+(`eventId 2257449224123762710`, `g3_step10b_source_sha:
+6ab9ff593608c31913dd81368f9ca2717f8ca45b` in its custom keys). This is the single
+targeted provenance re-run GPT-PM asked for -- not a repeat of the full six-scenario
+sweep; the other five scenarios' existing evidence stands unchanged. Evidence recorded in
+`step10b_slow_inference_success_events_2026-08-28.json`'s new `run_4_exact_provenance`
+section. Sending this round's evidence back to GPT-PM for final verification before push.

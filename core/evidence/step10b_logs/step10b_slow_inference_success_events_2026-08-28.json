@@ -74,5 +74,31 @@
       "rendered_result": "Беговая дорожка (treadmill), 91% СОВПАДЕНИЕ / уверенность 91%, listed under Мои тренажёры -- matches the probe's canned {\"machine\": \"treadmill\", \"confidence\": 0.91} exactly, resolved through the real equipment_aliases.json/equipment.json catalogue (treadmill is a genuine catalogue id, not a fixture invented for this test)"
     },
     "process": "am force-stop + monkey launcher relaunch, logcat -c before capture, six screenshots polled at ~1.8s intervals from t+22s to t+32s (all showed idle -- the card was never in the polled viewport, only reachable by scrolling), cold-relaunch afterward to flush and confirm the DataTransport upload (report 6A9148DE029A00014CA96492910E3D86)."
+  },
+  "run_4_exact_provenance": {
+    "context": "GPT-PM round-2 review of run 3's remediation closed findings 1-3 but kept finding 4 (build provenance) open as MAJOR: a human-chosen 'b7338920-dirty-remediation2' label is not a mechanically exact identity -- two different dirty trees could share the same label, and the backend cannot independently verify it. Required change: build the canonical probe APK from a clean, immutable commit, with the exact commit SHA as the provenance key and the APK's own SHA-256 persisted alongside.",
+    "clean_commit": "6ab9ff593608c31913dd81368f9ca2717f8ca45b (the Step 10B commit itself -- git status confirmed a fully clean tree at build time, no dirty files)",
+    "build": "--dart-define=G3_STEP10B_PROBE=true --dart-define=G3_STEP10B_INFERENCE_DELAY_S=25 --dart-define=G3_STEP10B_SOURCE_SHA=6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+    "apk_sha256": "3aff5a99e072bc68092c7df37beaa80904871a107803f6d7b6e29f86637531b7",
+    "event": {
+      "eventId": "2257449224123762710",
+      "issueId": "549b52248d4455a283a88259593fdd00",
+      "eventTime": "2026-08-28T08:55:55Z",
+      "message": "equipment recognition succeeded but took 25001ms (>= 20s threshold). Error thrown slow equipment recognition inference.",
+      "customKeys": {
+        "g3_step10b_source_sha": "6ab9ff593608c31913dd81368f9ca2717f8ca45b",
+        "flutter_error_reason": "thrown slow equipment recognition inference",
+        "flutter_error_exception": "equipment recognition succeeded but took 25001ms (>= 20s threshold)"
+      }
+    },
+    "ui_evidence": {
+      "screenshot_expanded": "screens/v4_clean_commit_expanded.png",
+      "rendered_result": "Беговая дорожка (treadmill), 91% СОВПАДЕНИЕ / уверенность 91%, listed under Мои тренажёры -- same result as run 3, now correlated to an exact commit SHA and a recorded APK SHA-256 rather than a human label"
+    },
+    "cold_relaunch_flush": {
+      "reportId": "6A914CF6034900016335253F4BF50E8E",
+      "logFile": "12_slow_inference_v4_clean_commit_flush.log"
+    },
+    "note": "This is the targeted provenance-only re-run GPT-PM asked for, not a repeat of the full six-scenario sweep. The other five scenarios' earlier evidence stands; only this one needed to demonstrate the exact-identity mechanism end to end."
   }
 }
