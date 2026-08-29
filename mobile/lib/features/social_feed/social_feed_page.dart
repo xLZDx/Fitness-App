@@ -5,7 +5,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../auth/state/auth_providers.dart';
 import 'data/social_post.dart';
 import 'state/social_feed_providers.dart';
@@ -63,8 +64,7 @@ class SocialFeedPage extends ConsumerWidget {
           top: 16,
           bottom: MediaQuery.of(sheet).viewInsets.bottom + 16,
         ),
-        child: GlassCard(
-          floating: true,
+        child: HudSheet(
           padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -110,7 +110,7 @@ class _PostCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

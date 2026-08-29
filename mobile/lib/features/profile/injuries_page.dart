@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../onboarding/widgets/inputs.dart';
 import 'data/injury_regions.dart';
@@ -94,7 +95,7 @@ class _InjuriesPageState extends ConsumerState<InjuriesPage> {
           return SmoothScrollList(
             padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
             children: [
-              GlassCard(
+              HudPanel(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -116,7 +117,7 @@ class _InjuriesPageState extends ConsumerState<InjuriesPage> {
               ),
               const SizedBox(height: 16),
               if (draft.isEmpty)
-                GlassCard(child: Text(l10n.injuriesNoneListed))
+                HudPanel(child: Text(l10n.injuriesNoneListed))
               else
                 for (var i = 0; i < draft.length; i++) ...[
                   _InjuryCard(
@@ -200,7 +201,7 @@ class _InjuryCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    return GlassCard(
+    return HudPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

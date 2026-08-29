@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import 'backup_envelope.dart';
 import 'backup_providers.dart';
 import 'backup_transfer.dart';
@@ -75,7 +76,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
-          GlassCard(
+          HudPanel(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -91,7 +92,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
           const SizedBox(height: 16),
 
           // --- create -------------------------------------------------
-          GlassCard(
+          HudPanel(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -163,7 +164,7 @@ class _BackupPageState extends ConsumerState<BackupPage> {
           const SizedBox(height: 16),
 
           // --- restore ------------------------------------------------
-          GlassCard(
+          HudPanel(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

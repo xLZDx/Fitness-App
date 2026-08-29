@@ -5,7 +5,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/demo_data_banner.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import 'data/coach_listing.dart';
 import 'state/marketplace_providers.dart';
 
@@ -29,7 +30,7 @@ class MarketplacePage extends ConsumerWidget {
             isDemo: isDemo,
             message: AppLocalizations.of(context).marketplaceDemoListings,
           ),
-          GlassCard(
+          HudPanel(
             child: Text(
               AppLocalizations.of(context).marketplaceVettedCoachesWhoRun11,
               style: theme.textTheme.bodyMedium,
@@ -39,7 +40,7 @@ class MarketplacePage extends ConsumerWidget {
           listAsync.when(
             loading: () =>
                 const Center(child: CircularProgressIndicator()),
-            error: (e, _) => GlassCard(child: Text(AppLocalizations.of(context).catalogError(e))),
+            error: (e, _) => HudPanel(child: Text(AppLocalizations.of(context).catalogError(e))),
             data: (list) => Column(
               children: [
                 for (final c in list) ...[
@@ -59,18 +60,18 @@ class _CoachCard extends ConsumerWidget {
   const _CoachCard({required this.coach, required this.bookingDisabled});
   final CoachListing coach;
 
-  /// True while the list is demo data. `GlassCard`'s own `onTap != null`
+  /// True while the list is demo data. `HudPanel`'s own `onTap != null`
   /// check is what marks a card as tappable to a screen reader
-  /// (`Semantics(button:)` in `glass.dart`), so `onTap: null` here is not
-  /// cosmetic — it is what makes "booking is disabled" in the banner above
-  /// actually true, instead of a card that still looks and announces as
-  /// tappable and only fails two round trips later inside `_bookSheet`.
+  /// (`Semantics(button:)` in `hud_surface.dart`), so `onTap: null` here is
+  /// not cosmetic — it is what makes "booking is disabled" in the banner
+  /// above actually true, instead of a card that still looks and announces
+  /// as tappable and only fails two round trips later inside `_bookSheet`.
   final bool bookingDisabled;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.all(16),
       onTap: bookingDisabled ? null : () => _bookSheet(context, ref),
       child: Column(

@@ -5,7 +5,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 
 /// "About / Mission" page. States the mission in plain language, lists
 /// the principles the product holds itself to, and offers two CTAs:
@@ -68,7 +69,7 @@ class AboutPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
-          GlassCard(
+          HudPanel(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,7 +123,7 @@ class AboutPage extends StatelessWidget {
                 ?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 12),
-          GlassCard(
+          HudPanel(
             padding: const EdgeInsets.all(18),
             child: Column(
               children: [
@@ -191,7 +192,7 @@ class _PrincipleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.all(16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -34266,3 +34266,51 @@ Next: continue through the remaining ~24 files (`about_page.dart`, `ai_planner_p
 `injuries_page.dart`, `health_sync_card.dart`, `progress_photos_page.dart`,
 `subscription_page.dart`, `progress_page.dart`, `settings_page.dart`,
 `workout_summary_page.dart`), continuing autonomously under the same GO, per PM mode.
+
+## HUD migration sub-gate 6: 2-3-site batch across 6 feature areas (17 GlassCard sites)
+
+Migrated `social_feed_page.dart`, `about_page.dart`, `celebrity_plans_page.dart`,
+`backup_page.dart`, `marketplace_page.dart`, `injuries_page.dart` -- 17 `GlassCard(` sites, same
+ownership-by-actual-container discipline as every prior sub-gate, no new design questions.
+
+Only one genuine sheet in this batch: `social_feed_page.dart`'s `_composeSheet`, a real
+`showModalBottomSheet` -> `HudSheet`, its explicit `padding: EdgeInsets.all(16)` preserved (it
+was never at `HudSheet`'s 20px default) and the dead `floating: true` dropped, same tell as every
+prior sheet site. Every other site in the batch is an in-page card sitting on its own page's
+background -> `HudPanel`: `social_feed_page.dart`'s `_PostCard`; `about_page.dart`'s mission card,
+fund-use card and `_PrincipleCard`; `celebrity_plans_page.dart`'s intro card, error-branch card and
+`_PlanCard`; `backup_page.dart`'s three plain cards; `marketplace_page.dart`'s intro card,
+error-branch card and `_CoachCard` (conditional `onTap`, which `HudPanel` supports identically --
+no capability gap); `injuries_page.dart`'s summary card, empty-state card and `_InjuryCard`'s form
+card. None of the 17 needed `tint`/`gradient`, so this sub-gate opened zero new
+`INTENTIONAL_LEGACY_EXCEPTION` instances.
+
+All six page-level files kept a scoped `import '...glass.dart' show FrostedScaffold, GlassAppBar;`
+alongside the new `hud_surface.dart` import -- every one still returns a `FrostedScaffold` with a
+`GlassAppBar`, so the "files importing `glass.dart`" census count does not move this sub-gate even
+though 17 sites left. One real mistake caught and fixed before it shipped:
+`injuries_page.dart` also uses `GlassTextField`, and the first pass added it to the `glass.dart`
+`show` clause on the assumption it lived there like `FrostedScaffold`/`GlassAppBar` do --
+`flutter analyze` immediately flagged `undefined_shown_name`, because `GlassTextField` is actually
+defined in and already reachable through `features/onboarding/widgets/inputs.dart`, a pre-existing
+import on the same file. Removed the wrong `show` entry rather than leaving a name that happened to
+resolve by accident. Separately, `marketplace_page.dart`'s `_CoachCard` carried a doc comment
+explaining `onTap: null` in terms of "`GlassCard`'s own `onTap != null` check" and "`glass.dart`" --
+updated to name `HudPanel`/`hud_surface.dart`, after actually confirming in
+`hud_surface.dart:311-312` (`Semantics(button: onTap != null, ...)`) that the claim still holds for
+the new widget rather than assuming it carried over.
+
+Verification: `flutter analyze` clean on all 6 files. `flutter test`: `marketplace_page_test.dart`
+and `injuries_page_test.dart` both green, plus `hud_components_test.dart`'s `HudSheet` group --
+73 total assertions across the three suites run, all passing. No dedicated widget test exists for
+`social_feed_page.dart`, `about_page.dart`, `celebrity_plans_page.dart`, or `backup_page.dart` --
+`flutter analyze` is this sub-gate's coverage for those four, stated plainly. Census: `GlassCard`
+sites 84->67, files with a call 20->14 (13 real usage + `glass.dart`'s own definition),
+`glass.dart` importers unchanged at 33.
+
+Next: continue through the remaining ~18 files (`ai_planner_page.dart`,
+`contribute_video_page.dart`, `team_feed_page.dart`, `donor_wall_page.dart`,
+`posture_page.dart`, `health_sync_card.dart`, `progress_photos_page.dart`,
+`subscription_page.dart`, `progress_page.dart`, `settings_page.dart`,
+`workout_summary_page.dart`, plus `deload_banner.dart`/`scanner_page.dart`'s deferred status-tint
+consolidation), continuing autonomously under the same GO, per PM mode.

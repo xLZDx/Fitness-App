@@ -6,7 +6,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'data/celebrity_plan.dart';
@@ -31,7 +32,7 @@ class CelebrityPlansPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
-          GlassCard(
+          HudPanel(
             child: Text(
               AppLocalizations.of(context).celebrityplansPlansDonatedInKindByProfessional,
               style: theme.textTheme.bodyMedium,
@@ -40,7 +41,7 @@ class CelebrityPlansPage extends ConsumerWidget {
           const SizedBox(height: 16),
           plansAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => GlassCard(child: Text(AppLocalizations.of(context).catalogError(e))),
+            error: (e, _) => HudPanel(child: Text(AppLocalizations.of(context).catalogError(e))),
             data: (plans) => Column(
               children: [
                 for (final p in plans) ...[
@@ -105,7 +106,7 @@ class _PlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

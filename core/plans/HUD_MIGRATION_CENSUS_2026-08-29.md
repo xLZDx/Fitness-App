@@ -14,9 +14,9 @@ observation below; sub-gates come from this data, not from mechanically working 
 
 | Metric | Count |
 |---|---|
-| `GlassCard(` call sites | 126 → 124 → 117 → 96 (gate 4) → **84** after sub-gate 5 |
-| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → **20** after sub-gate 5 |
-| Files importing `shared/widgets/glass.dart` | 45 → 43 → 42 → 38 (gate 4) → **33** after sub-gate 5 (several page files keep a scoped `show FrostedScaffold`/`GlassAppBar` import; `deload_banner.dart` keeps the full import for its `tint` exception) |
+| `GlassCard(` call sites | 126 → 124 → 117 → 96 (gate 4) → 84 (sub-gate 5) → **67** after sub-gate 6 |
+| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → 20 (sub-gate 5) → **14** after sub-gate 6 (13 real usage + `glass.dart`'s own definition) |
+| Files importing `shared/widgets/glass.dart` | 45 → 43 → 42 → 38 (gate 4) → 33 (sub-gate 5) → **33** after sub-gate 6 (unchanged: sub-gate 6 split each touched file's import into `show FrostedScaffold, GlassAppBar` alongside a new `hud_surface.dart` import rather than removing the `glass.dart` import outright — none of the 6 files dropped it entirely, since every one still uses `FrostedScaffold`/`GlassAppBar`; several page files keep a scoped `show FrostedScaffold`/`GlassAppBar` import; `deload_banner.dart` keeps the full import for its `tint` exception) |
 | Files referencing `aurora_background`/`AuroraBackground` | 5 (2 are theme/token files, 1 is the definition file itself, 1 is a comment-only mention in `workout_player_page.dart` — **corrected**: `main.dart` is the ONLY real widget-tree usage, see the struck sub-gate 3 below) |
 | Files already using `HudSurface`/`HudPanel`/`HudButton`/`HudChip` | 20 (+ `HudSheet`, the new opaque-surface widget from sub-gate 1) |
 | Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` → 2 after sub-gate 1 → **0** after sub-gate 2 (`home_page.dart` fully migrated; `scanner_page.dart` closed with 2 sites reclassified `INTENTIONAL_LEGACY_EXCEPTION`, not partial-migration debt) |
@@ -115,6 +115,45 @@ for the two calculators). No dedicated widget test exists for `day3_welcome_moda
 `moderation_page.dart`, `privacy_page.dart`, `terms_page.dart`, `licences_page.dart`,
 `machine_card_view.dart`, or `deload_banner.dart` -- `flutter analyze` plus the surrounding
 regression suites is the coverage this sub-gate has for those.
+
+### Sub-gate 6 (2-3-site batch across 6 feature areas) — closed, 2026-08-29
+
+Migrated the next batch of files carrying 2-3 `GlassCard(` sites each -- `social_feed_page.dart`,
+`about_page.dart`, `celebrity_plans_page.dart`, `backup_page.dart`, `marketplace_page.dart`,
+`injuries_page.dart` -- 17 sites total, same ownership-by-actual-container discipline as every
+prior sub-gate:
+
+- **`HudSheet`** (genuine `showModalBottomSheet`, confirmed from the call site itself, not the
+  filename): `social_feed_page.dart`'s `_composeSheet` -- explicit `padding: EdgeInsets.all(16)`
+  preserved (the sheet already had a deliberate, non-default padding), dead `floating: true`
+  dropped.
+- **`HudPanel`** (in-page cards sitting on the page's own background): every other site in this
+  batch -- `social_feed_page.dart`'s `_PostCard` (`padding: EdgeInsets.all(14)`); `about_page.dart`'s
+  mission card, fund-use card and `_PrincipleCard` (padding 20/18/16 respectively, all preserved);
+  `celebrity_plans_page.dart`'s intro card, error-branch card and `_PlanCard`
+  (`padding: EdgeInsets.all(16)`); `backup_page.dart`'s three plain cards (what-it-carries, create,
+  restore); `marketplace_page.dart`'s intro card, error-branch card and `_CoachCard`
+  (`padding: EdgeInsets.all(16)`, conditional `onTap` -- `HudPanel` supports this identically, so no
+  capability gap); `injuries_page.dart`'s summary card, empty-state card and `_InjuryCard`'s form
+  card. None of the 17 sites needed `tint`/`gradient`, so none triggered an
+  `INTENTIONAL_LEGACY_EXCEPTION`.
+- Every touched page-level file kept a scoped `import '...glass.dart' show FrostedScaffold,
+  GlassAppBar;` alongside the new `hud_surface.dart` import (all six still return a `FrostedScaffold`
+  with a `GlassAppBar`) -- this is why the "files importing `glass.dart`" count in the table above
+  does not drop for this sub-gate even though 17 `GlassCard(` sites left. `injuries_page.dart`
+  additionally uses `GlassTextField`, but that's sourced from `features/onboarding/widgets/inputs.dart`
+  (already imported), not from `glass.dart` -- an initial `show ... GlassTextField` on the `glass.dart`
+  import was a mistake caught immediately by `flutter analyze` (`undefined_shown_name`) and removed.
+- `marketplace_page.dart`'s `_CoachCard` carried a doc comment explaining `bookingDisabled` in terms
+  of "`GlassCard`'s own `onTap != null` check" and "`glass.dart`" -- updated to name `HudPanel` and
+  `hud_surface.dart` instead, after confirming (`hud_surface.dart:311-312`,
+  `Semantics(button: onTap != null, ...)`) the claim still holds for the new widget.
+
+`flutter analyze` clean on all 6 touched files. `flutter test`: `marketplace_page_test.dart` and
+`injuries_page_test.dart` both green, plus `hud_components_test.dart`'s `HudSheet` group -- 73 total
+assertions across the three suites run. No dedicated widget test exists for `social_feed_page.dart`,
+`about_page.dart`, `celebrity_plans_page.dart`, or `backup_page.dart` -- `flutter analyze` is the
+coverage this sub-gate has for those four.
 
 ### Sub-gate 1 — closed, 2026-08-29
 
