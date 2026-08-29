@@ -1,0 +1,219 @@
+<title>HUD Migration Progress</title>
+<style>
+  :root{
+    --bg:#f4f6f5; --surface:#ffffff; --surface-2:#eef2f0; --border:#d7dedb;
+    --text:#141a18; --text-2:#4c5a56; --text-3:#7b8b86;
+    --accent:#0f8a6e; --accent-ink:#ffffff; --accent-soft:#e2f4ee;
+    --danger:#b3432e; --danger-soft:#fbe9e4;
+    --mono:'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+    --sans:'Public Sans', -apple-system, Segoe UI, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0c1211; --surface:#121a18; --surface-2:#182220; --border:#26332f;
+      --text:#e7efec; --text-2:#a6b6b0; --text-3:#78897f;
+      --accent:#3fd6ac; --accent-ink:#04150f; --accent-soft:#123227;
+      --danger:#e58a76; --danger-soft:#2c1712;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c1211; --surface:#121a18; --surface-2:#182220; --border:#26332f;
+    --text:#e7efec; --text-2:#a6b6b0; --text-3:#78897f;
+    --accent:#3fd6ac; --accent-ink:#04150f; --accent-soft:#123227;
+    --danger:#e58a76; --danger-soft:#2c1712;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--text); font-family:var(--sans); margin:0}
+  .wrap{max-width:920px; margin:0 auto; padding:48px 24px 96px}
+  header h1{
+    font-family:var(--mono); font-size:clamp(28px,4vw,40px); font-weight:700;
+    letter-spacing:-0.01em; text-wrap:balance; margin:0 0 10px;
+  }
+  header p.lede{color:var(--text-2); font-size:16px; line-height:1.6; max-width:64ch; margin:0}
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:32px 0}
+  .stat{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px}
+  .stat .n{font-family:var(--mono); font-size:28px; font-weight:700; font-variant-numeric:tabular-nums}
+  .stat .n small{font-size:14px; color:var(--text-3); font-weight:500}
+  .stat .l{color:var(--text-2); font-size:12px; text-transform:uppercase; letter-spacing:.06em; margin-top:4px}
+  h2{
+    font-family:var(--mono); font-size:13px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--text-3); margin:40px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border);
+  }
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 22px; margin-bottom:14px}
+  .card h3{margin:0 0 6px; font-size:16px; font-weight:700}
+  .card .meta{font-family:var(--mono); font-size:12px; color:var(--text-3); margin-bottom:10px}
+  .card p{color:var(--text-2); line-height:1.6; margin:8px 0; font-size:14.5px}
+  .card ul{margin:8px 0; padding-left:20px; color:var(--text-2); font-size:14.5px; line-height:1.6}
+  .tbl-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:12px}
+  table{width:100%; border-collapse:collapse; font-size:14px; background:var(--surface)}
+  th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); white-space:nowrap}
+  th{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-3); background:var(--surface-2)}
+  td.num{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right}
+  tr:last-child td{border-bottom:none}
+  .pill{display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px; font-family:var(--mono); font-weight:600}
+  .pill.ok{background:var(--accent-soft); color:var(--accent)}
+  .pill.warn{background:var(--danger-soft); color:var(--danger)}
+  .exchange{border-left:3px solid var(--accent); background:var(--accent-soft); border-radius:0 12px 12px 0; padding:18px 22px; margin-bottom:14px}
+  .exchange .q{font-weight:700; margin-bottom:6px}
+  .exchange p{color:var(--text); line-height:1.6; margin:8px 0; font-size:14.5px}
+  .exchange code{font-family:var(--mono); font-size:.92em; background:rgba(0,0,0,.06); padding:1px 5px; border-radius:4px}
+  :root[data-theme="dark"] .exchange code, @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .exchange code{background:rgba(255,255,255,.08)}}
+  code{font-family:var(--mono); font-size:.92em}
+  .remaining{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0}
+  .remaining span{background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-family:var(--mono); font-size:12.5px}
+  footer.note{color:var(--text-3); font-size:12.5px; margin-top:48px; line-height:1.6}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>HUD Migration — Sub-gates 4&ndash;9</h1>
+  <p class="lede">GlassCard &rarr; HudPanel/HudSheet migration, continued autonomously under the standing PM-mode mandate. This report covers the equipment cluster through the new status-tint mechanism and its first two follow-on applications.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 691fb3d</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="stats">
+  <div class="stat"><div class="n">117&nbsp;<small>&rarr; 34</small></div><div class="l">GlassCard sites remaining</div></div>
+  <div class="stat"><div class="n">83</div><div class="l">Sites migrated, this span</div></div>
+  <div class="stat"><div class="n">31&nbsp;<small>&rarr; 6</small></div><div class="l">Files still using GlassCard</div></div>
+  <div class="stat"><div class="n">6</div><div class="l">Sub-gates closed (4&ndash;9)</div></div>
+</div>
+
+<h2>What shipped</h2>
+
+<div class="tbl-wrap">
+<table>
+  <thead><tr><th>Sub-gate</th><th>Scope</th><th>Files</th><th class="num">Sites</th><th>Commit</th></tr></thead>
+  <tbody>
+    <tr><td>4</td><td>Equipment feature cluster</td><td>6</td><td class="num">21</td><td><code>9c9a9ce</code></td></tr>
+    <tr><td>5</td><td>11 single-site files across areas</td><td>12</td><td class="num">12</td><td><code>e996e00</code></td></tr>
+    <tr><td>6</td><td>2&ndash;3-site batch, 6 feature areas</td><td>6</td><td class="num">17</td><td><code>1b834f9</code></td></tr>
+    <tr><td>7</td><td>4-site batch, 5 feature areas</td><td>5</td><td class="num">20</td><td><code>34c7710</code></td></tr>
+    <tr><td>8</td><td>Status-tint gap closed (<code>HudPanelTone.error</code>)</td><td>4</td><td class="num">5</td><td><code>0b0935e</code></td></tr>
+    <tr><td>9</td><td>ai_planner_page, health_sync_card</td><td>2</td><td class="num">11</td><td><code>691fb3d</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>The status-tint design question (sub-gate 8)</h2>
+
+<div class="exchange">
+  <div class="q">Why this needed a real question, not a unilateral call</div>
+  <p>A pattern kept recurring: some <code>GlassCard</code> sites use <code>tint: colorScheme.error</code> to paint an async-error card. <code>HudPanel</code> had no fill-color override, so every site was kept as <code>GlassCard</code> under an inline exception comment. By sub-gate 7 that was 6 sites across 5 files &mdash; too many to keep deferring.</p>
+  <p>Sent the proposal to GPT-PM via PM Bridge: reuse <code>HudPanel</code>'s own border/glow/shadow recipe and swap only the fill, the same shape <code>HudSheet</code> already uses for an opaque surface.</p>
+  <p><strong>Verdict: MODIFY.</strong> The shape was approved, but GPT-PM caught a real classification error in the framing: one of the six sites (<code>deload_banner.dart</code>) is a recovery-recommendation accent (<code>AppPalette.auroraPeach</code>), not a semantic error state &mdash; visually similar, semantically different. The evidenced pattern narrowed to 5 error sites across 4 files. GPT-PM also specified: an enum (<code>HudPanelTone</code>), not a raw color parameter; only <code>.error</code> defined today, no speculative warning/success/info without evidence; <code>tone</code> mutually exclusive with the panel's existing <code>secondary</code>/<code>dense</code> tiers; implement immediately rather than deferring further.</p>
+  <p>Result: <code>HudPanel(tone: HudPanelTone.error, &hellip;)</code>, covered by 8 new widget-test assertions pinning fill resolution, recipe parity, and the mutual-exclusion assertion. Two more evidenced sites turned up naturally in sub-gate 9 and slotted onto the same mechanism with no further design discussion needed.</p>
+</div>
+
+<h2>Verification, every sub-gate</h2>
+<div class="card">
+  <p>Every sub-gate above: <code>flutter analyze</code> clean on touched files, relevant <code>flutter test</code> suites green (widget tests where they exist; the census doc names exactly which touched files have no dedicated widget test, so that gap is stated rather than implied), committed with an itemized message, and pushed. Full per-file reasoning, including which sites got <code>HudSheet</code> vs. <code>HudPanel</code> and why (ownership of the actual widget tree, never filename), lives in <code>core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md</code> and <code>core/DECISION_LOG.md</code>.</p>
+</div>
+
+<h2>What's left</h2>
+<div class="card">
+  <p>34 <code>GlassCard</code> sites remain, across 5 files (4 real usage + <code>glass.dart</code>'s own definition):</p>
+  <div class="remaining">
+    <span>progress_photos_page.dart &middot; 6 sites</span>
+    <span>subscription_page.dart &middot; 8 sites</span>
+    <span>progress_page.dart &middot; 9 sites</span>
+    <span>settings_page.dart &middot; 9 sites</span>
+  </div>
+  <p>Also open: <code>deload_banner.dart</code> stays an intentional exception (recovery-accent tint) until a second genuine recovery-tone site makes a dedicated <code>HudPanelTone</code> member evidence-backed &mdash; not folded into <code>.error</code> just to clear the last site.</p>
+</div>
+
+<h2>Continuing</h2>
+<div class="card">
+  <p>PM mode is on: this report is a checkpoint, not a stop. Proceeding into the remaining 4 files now, watching for further <code>HudPanelTone.error</code> candidates (or a second recovery-tone site) as they come up, each sub-gate analyzed, tested, committed and pushed individually.</p>
+</div>
+
+<footer class="note">Report covers sub-gates 4&ndash;9 of the ongoing GlassCard &rarr; HUD surface-kit migration. Earlier sub-gates (1&ndash;3) and the census methodology are documented in <code>core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md</code>.</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

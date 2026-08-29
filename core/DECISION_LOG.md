@@ -34429,3 +34429,12 @@ Next: continue through the remaining 4 files (`progress_photos_page.dart`,
 `subscription_page.dart`, `progress_page.dart`, `settings_page.dart` -- 34 sites, the largest
 files left), watching for further `HudPanelTone.error` candidates as they come up, continuing
 autonomously under the same GO, per PM mode.
+
+## HUD migration: progress report, sub-gates 4-9 (PM-mode checkpoint)
+
+Wrote and published the mandatory milestone report per the `html-report` skill, due after 6
+sub-gate commits with none touching `reports/`. Covers sub-gates 4-9: the equipment cluster
+through `HudPanelTone.error`'s introduction and its two follow-on applications (sub-gate 9).
+`reports/HUD_MIGRATION_SUBGATES_4_9_2026-08-29.ru.html` (published as an artifact) and the English
+`.html` twin, both conformed via `report_conform.py`. PM mode is on, so this is a checkpoint, not a
+stop -- continuing straight into the remaining 4 files per the report's own "Continuing" section.

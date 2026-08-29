@@ -1,0 +1,219 @@
+<title>Прогресс миграции HUD</title>
+<style>
+  :root{
+    --bg:#f4f6f5; --surface:#ffffff; --surface-2:#eef2f0; --border:#d7dedb;
+    --text:#141a18; --text-2:#4c5a56; --text-3:#7b8b86;
+    --accent:#0f8a6e; --accent-ink:#ffffff; --accent-soft:#e2f4ee;
+    --danger:#b3432e; --danger-soft:#fbe9e4;
+    --mono:'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+    --sans:'Public Sans', -apple-system, Segoe UI, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0c1211; --surface:#121a18; --surface-2:#182220; --border:#26332f;
+      --text:#e7efec; --text-2:#a6b6b0; --text-3:#78897f;
+      --accent:#3fd6ac; --accent-ink:#04150f; --accent-soft:#123227;
+      --danger:#e58a76; --danger-soft:#2c1712;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c1211; --surface:#121a18; --surface-2:#182220; --border:#26332f;
+    --text:#e7efec; --text-2:#a6b6b0; --text-3:#78897f;
+    --accent:#3fd6ac; --accent-ink:#04150f; --accent-soft:#123227;
+    --danger:#e58a76; --danger-soft:#2c1712;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--text); font-family:var(--sans); margin:0}
+  .wrap{max-width:920px; margin:0 auto; padding:48px 24px 96px}
+  header h1{
+    font-family:var(--mono); font-size:clamp(26px,4vw,38px); font-weight:700;
+    letter-spacing:-0.01em; text-wrap:balance; margin:0 0 10px;
+  }
+  header p.lede{color:var(--text-2); font-size:16px; line-height:1.6; max-width:64ch; margin:0}
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:32px 0}
+  .stat{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px}
+  .stat .n{font-family:var(--mono); font-size:28px; font-weight:700; font-variant-numeric:tabular-nums}
+  .stat .n small{font-size:14px; color:var(--text-3); font-weight:500}
+  .stat .l{color:var(--text-2); font-size:12px; text-transform:uppercase; letter-spacing:.06em; margin-top:4px}
+  h2{
+    font-family:var(--mono); font-size:13px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--text-3); margin:40px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border);
+  }
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 22px; margin-bottom:14px}
+  .card h3{margin:0 0 6px; font-size:16px; font-weight:700}
+  .card .meta{font-family:var(--mono); font-size:12px; color:var(--text-3); margin-bottom:10px}
+  .card p{color:var(--text-2); line-height:1.6; margin:8px 0; font-size:14.5px}
+  .card ul{margin:8px 0; padding-left:20px; color:var(--text-2); font-size:14.5px; line-height:1.6}
+  .tbl-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:12px}
+  table{width:100%; border-collapse:collapse; font-size:14px; background:var(--surface)}
+  th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); white-space:nowrap}
+  th{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-3); background:var(--surface-2)}
+  td.num{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right}
+  tr:last-child td{border-bottom:none}
+  .pill{display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px; font-family:var(--mono); font-weight:600}
+  .pill.ok{background:var(--accent-soft); color:var(--accent)}
+  .pill.warn{background:var(--danger-soft); color:var(--danger)}
+  .exchange{border-left:3px solid var(--accent); background:var(--accent-soft); border-radius:0 12px 12px 0; padding:18px 22px; margin-bottom:14px}
+  .exchange .q{font-weight:700; margin-bottom:6px}
+  .exchange p{color:var(--text); line-height:1.6; margin:8px 0; font-size:14.5px}
+  .exchange code{font-family:var(--mono); font-size:.92em; background:rgba(0,0,0,.06); padding:1px 5px; border-radius:4px}
+  :root[data-theme="dark"] .exchange code, @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .exchange code{background:rgba(255,255,255,.08)}}
+  code{font-family:var(--mono); font-size:.92em}
+  .remaining{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0}
+  .remaining span{background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-family:var(--mono); font-size:12.5px}
+  footer.note{color:var(--text-3); font-size:12.5px; margin-top:48px; line-height:1.6}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Миграция HUD — Подгейты 4&ndash;9</h1>
+  <p class="lede">Миграция <code>GlassCard</code> &rarr; <code>HudPanel</code>/<code>HudSheet</code>, продолжена автономно в рамках постоянного мандата PM-режима. Отчёт охватывает кластер equipment вплоть до нового механизма статус-тинта и первых двух его применений.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 691fb3d</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="stats">
+  <div class="stat"><div class="n">117&nbsp;<small>&rarr; 34</small></div><div class="l">Осталось сайтов GlassCard</div></div>
+  <div class="stat"><div class="n">83</div><div class="l">Мигрировано за этот отрезок</div></div>
+  <div class="stat"><div class="n">31&nbsp;<small>&rarr; 6</small></div><div class="l">Осталось файлов с GlassCard</div></div>
+  <div class="stat"><div class="n">6</div><div class="l">Закрыто подгейтов (4&ndash;9)</div></div>
+</div>
+
+<h2>Что сделано</h2>
+
+<div class="tbl-wrap">
+<table>
+  <thead><tr><th>Подгейт</th><th>Область</th><th>Файлы</th><th class="num">Сайты</th><th>Коммит</th></tr></thead>
+  <tbody>
+    <tr><td>4</td><td>Кластер equipment</td><td>6</td><td class="num">21</td><td><code>9c9a9ce</code></td></tr>
+    <tr><td>5</td><td>11 файлов с одним сайтом</td><td>12</td><td class="num">12</td><td><code>e996e00</code></td></tr>
+    <tr><td>6</td><td>Батч 2&ndash;3 сайта, 6 фич</td><td>6</td><td class="num">17</td><td><code>1b834f9</code></td></tr>
+    <tr><td>7</td><td>Батч 4 сайта, 5 фич</td><td>5</td><td class="num">20</td><td><code>34c7710</code></td></tr>
+    <tr><td>8</td><td>Закрыт пробел статус-тинта (<code>HudPanelTone.error</code>)</td><td>4</td><td class="num">5</td><td><code>0b0935e</code></td></tr>
+    <tr><td>9</td><td>ai_planner_page, health_sync_card</td><td>2</td><td class="num">11</td><td><code>691fb3d</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Вопрос дизайна о статус-тинте (подгейт 8)</h2>
+
+<div class="exchange">
+  <div class="q">Почему это требовало реального вопроса, а не одностороннего решения</div>
+  <p>Повторялся паттерн: некоторые сайты <code>GlassCard</code> используют <code>tint: colorScheme.error</code> для карточки ошибки. У <code>HudPanel</code> не было переопределения цвета заливки, поэтому каждый такой сайт оставался <code>GlassCard</code> с комментарием-исключением. К подгейту 7 набралось 6 сайтов в 5 файлах &mdash; больше нельзя было откладывать.</p>
+  <p>Отправил предложение GPT-PM через PM Bridge: переиспользовать собственный рецепт границы/свечения/тени <code>HudPanel</code> и заменить только заливку &mdash; тот же приём, что уже использует <code>HudSheet</code> для непрозрачной поверхности.</p>
+  <p><strong>Вердикт: MODIFY.</strong> Форма была одобрена, но GPT-PM поймал реальную ошибку классификации в постановке вопроса: один из шести сайтов (<code>deload_banner.dart</code>) &mdash; это акцент рекомендации восстановления (<code>AppPalette.auroraPeach</code>), а не семантическое состояние ошибки &mdash; визуально похоже, по смыслу другое. Подтверждённый паттерн сузился до 5 сайтов ошибок в 4 файлах. GPT-PM также указал: перечисление (<code>HudPanelTone</code>), а не сырой цветовой параметр; сегодня определён только <code>.error</code>, без умозрительных warning/success/info без доказательств; <code>tone</code> взаимоисключим с существующими уровнями панели <code>secondary</code>/<code>dense</code>; реализовать немедленно, а не откладывать дальше.</p>
+  <p>Результат: <code>HudPanel(tone: HudPanelTone.error, &hellip;)</code>, покрыт 8 новыми ассертами виджет-тестов, фиксирующими разрешение заливки, идентичность рецепта и взаимоисключение. Ещё два подтверждённых сайта естественно всплыли в подгейте 9 и легли на тот же механизм без дальнейшего обсуждения дизайна.</p>
+</div>
+
+<h2>Верификация на каждом подгейте</h2>
+<div class="card">
+  <p>Каждый подгейт выше: <code>flutter analyze</code> чист на затронутых файлах, релевантные наборы <code>flutter test</code> зелёные (виджет-тесты там, где они существуют; в документе census прямо названо, у каких затронутых файлов нет отдельного виджет-теста, так что этот пробел зафиксирован, а не подразумевается), закоммичено с детальным сообщением и запушено. Полное пофайловое обоснование, включая какие сайты получили <code>HudSheet</code>, а какие <code>HudPanel</code>, и почему (по фактическому владению деревом виджетов, никогда по имени файла), лежит в <code>core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md</code> и <code>core/DECISION_LOG.md</code>.</p>
+</div>
+
+<h2>Что осталось</h2>
+<div class="card">
+  <p>Осталось 34 сайта <code>GlassCard</code> в 5 файлах (4 реальных + собственное определение <code>glass.dart</code>):</p>
+  <div class="remaining">
+    <span>progress_photos_page.dart &middot; 6 сайтов</span>
+    <span>subscription_page.dart &middot; 8 сайтов</span>
+    <span>progress_page.dart &middot; 9 сайтов</span>
+    <span>settings_page.dart &middot; 9 сайтов</span>
+  </div>
+  <p>Также открыто: <code>deload_banner.dart</code> остаётся намеренным исключением (акцент восстановления) до тех пор, пока второй реальный сайт с тем же тоном не сделает отдельный член <code>HudPanelTone</code> обоснованным доказательствами &mdash; а не будет свёрнут в <code>.error</code> просто чтобы закрыть последний сайт.</p>
+</div>
+
+<h2>Продолжение</h2>
+<div class="card">
+  <p>PM-режим включён: этот отчёт &mdash; контрольная точка, а не остановка. Продолжаю с оставшихся 4 файлов, отслеживая новые кандидаты на <code>HudPanelTone.error</code> (или второй сайт с тоном восстановления) по мере появления, каждый подгейт анализируется, тестируется, коммитится и пушится по отдельности.</p>
+</div>
+
+<footer class="note">Отчёт охватывает подгейты 4&ndash;9 текущей миграции GlassCard &rarr; HUD surface-kit. Более ранние подгейты (1&ndash;3) и методология census задокументированы в <code>core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md</code>.</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
