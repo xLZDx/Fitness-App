@@ -34003,3 +34003,19 @@ reintroduce the exact bug the original comment documents.
 Full census and a proposed (not yet GO'd) sub-gate order in
 `core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md`. Next: resolve the opaque-surface question, then
 close the 3 partially-migrated files as the first real migration sub-gate.
+
+## HUD migration census: corrected the opaque-surface finding's own mechanism
+
+Caught and fixed before relying on it further: the previous entry attributed `workouts_page.dart`'s
+remaining `GlassCard(floating: true, ...)` opacity to the `floating` flag. Grepped `glass.dart`:
+`floating` is declared and documented at length but never read inside `build()` -- dead since a
+later "Ф1c" fix made every `GlassCard`'s default fill opaque unconditionally, superseding it.
+
+The underlying finding still holds, relocated to the real mechanism: `HudGlass` (the recipe
+`HudPanel`/`HudSurface` read fill from, `core/theme/hud_tokens.dart`) is deliberately near-
+transparent by design (`rgba(255,255,255,.014)` on dark -- shape carried by border/glow, not fill).
+Correct for an in-page panel, wrong for a sheet over content it doesn't own: migrating this site (or
+`difficulty_rating_sheet.dart`'s twin) to a stock `HudPanel` would very likely reintroduce the exact
+day-3-donation-sheet readability bug `GlassCard`'s own comment documents. Real gap confirmed: no
+opaque `HudGlass` recipe/sheet variant exists yet. `core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md`
+corrected in place with the accurate mechanism and evidence.

@@ -49,14 +49,34 @@ explicit about why: *"an ordinary GlassCard is translucent, and a translucent ca
 template list this sheet opens on top of would read the list through the confirmation text"* — and
 names `difficulty_rating_sheet.dart` as using the same pattern for the same reason.
 
-Checked `hud_surface.dart` for an equivalent opaque/floating mode on `HudPanel`/`HudSurface`: **none
-exists today.** This means the remaining `GlassCard` usage in confirm/rate bottom sheets is not
-leftover laziness -- it is filling a real gap in the HUD widget vocabulary (an opaque
-sheet-over-scrollable-content surface). Per GPT-PM's DoD ("don't do mechanical blind replacement"),
-this is exactly the kind of site that needs either (a) a genuine `HudPanel`/new `HudSheet` opaque
-variant added to the shared widget library first, then migrated, or (b) classification as
-`INTENTIONAL_LEGACY_EXCEPTION` with this reasoning recorded -- not a blind swap to a translucent
-`HudPanel` that would silently reintroduce the exact readability bug the original comment describes.
+**Correction to this finding's own first pass, caught before relying on it further**: the first read
+of `glass.dart` assumed `floating: true` was still the mechanism keeping this sheet opaque. It is
+not -- `floating` is declared and extensively documented (the day-3-donation-sheet bug it was
+introduced to fix) but is **never read inside `GlassCard.build()`**; grepping the file confirms it
+appears nowhere else. `GlassCard`'s actual opacity comes from a separate, later fix ("Ф1c: flat
+opaque surface, not translucent white") that made the DEFAULT fill of every `GlassCard` opaque
+(`tokens?.surfaceElevated ?? theme.colorScheme.surfaceContainerHighest`, no alpha), superseding
+`floating` for that purpose -- so `floating: true` on this call site is dead weight, not the load-bearing flag its own comment claims.
+
+That correction does not remove the real gap, though -- it relocates it. Checked `HudGlass` (the
+recipe `HudPanel`/`HudSurface` read their fill from, `core/theme/hud_tokens.dart`): its `fill` field
+is **deliberately** near-transparent by design -- `rgba(255,255,255,.014)` on dark, with the panel's
+shape "carried entirely by `innerBorder` and `glow`," not the fill. That is the correct, intentional
+aesthetic for a panel sitting on the app's own background, and exactly wrong for a sheet presented
+over scrollable content it does not own: migrating `workouts_page.dart`'s confirm sheet (or
+`difficulty_rating_sheet.dart`'s, same documented reason) to a stock `HudPanel` as-is would very
+likely reintroduce the exact "поздравление с 3 днем просто наезжает и не читается" bug `GlassCard`'s
+own comment records, at a ~1.4% fill alpha instead of GlassCard's opaque one.
+
+So: the real, confirmed gap is that **no HUD glass recipe/opaque-surface variant exists yet for a
+sheet over content it doesn't control** -- `HudGlass`'s only recipes are all deliberately translucent
+by design. Per GPT-PM's DoD ("don't do mechanical blind replacement"), this class of site needs
+either (a) a new opaque `HudGlass` recipe / `HudSheet` variant added to the shared widget library
+first, then migrated, or (b) classification as `INTENTIONAL_LEGACY_EXCEPTION` with this reasoning
+recorded -- not a blind swap to a stock `HudPanel` that would silently reintroduce the bug the
+original `GlassCard` comment exists to prevent. Secondary, smaller finding worth fixing regardless
+of the above: `GlassCard.floating`'s dead parameter and stale doc comment should be removed or
+reconciled when `glass.dart` is eventually retired, so nobody reads it as still-load-bearing again.
 
 **This is the first concrete finding of the classification pass (DoD item 2), not yet complete for
 all 40 files** -- recorded here so it isn't rediscovered from scratch by whichever session continues
