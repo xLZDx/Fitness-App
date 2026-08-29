@@ -33,10 +33,14 @@ class DeloadBanner extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       // INTENTIONAL_LEGACY_EXCEPTION (HUD migration census,
-      // core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md): needs a flat
-      // `tint` fill, the same capability gap already recorded for
-      // scanner_page.dart's error cards -- neither HudPanel nor HudSurface
-      // exposes a plain Color? override today.
+      // core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md). NOT the same
+      // capability as HudPanelTone.error (GPT-PM's ruling, sub-gate 8
+      // review): this is a recovery *recommendation* accent
+      // (AppPalette.auroraPeach), not a semantic error/validation state --
+      // it stays GlassCard until a genuine second recovery/accent site
+      // makes a `HudPanelTone.recovery` (or similar) evidence-backed, per
+      // the same "add a member only when a real site needs it" bar the
+      // error tone itself was held to.
       child: GlassCard(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
         tint: AppPalette.auroraPeach,

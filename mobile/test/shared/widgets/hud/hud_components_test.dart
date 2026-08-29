@@ -1027,4 +1027,91 @@ void main() {
       expect(find.text('child'), findsOneWidget);
     });
   });
+
+  group(
+      'HudPanel tone -- a semantic fill swap on the panel recipe, not a '
+      'new widget (HUD migration gate, GPT-PM round 2026-08-29: status '
+      'panel = HudPanel recipe + semantic fill substitution)', () {
+    testWidgets('HudPanelTone.normal is unaffected -- the default panel fill',
+        (t) async {
+      await t.pumpWidget(_host(const HudPanel(child: Text('x'))));
+      final HudSurface surface = t.widget<HudSurface>(find.byType(HudSurface));
+      expect(surface.glass.fill, HudTokens.dark.panel.fill);
+      expect(surface.glass.cssBlur, HudTokens.dark.panel.cssBlur);
+      expect(surface.glass.saturate, HudTokens.dark.panel.saturate);
+    });
+
+    testWidgets(
+        'HudPanelTone.error resolves to the real colorScheme.error, in both '
+        'themes -- not a newly invented value', (t) async {
+      for (final Brightness b in Brightness.values) {
+        await t.pumpWidget(_host(
+          const HudPanel(tone: HudPanelTone.error, child: Text('x')),
+          brightness: b,
+        ));
+        final BuildContext ctx = t.element(find.text('x'));
+        final Color expected = Theme.of(ctx).colorScheme.error;
+        final HudSurface surface = t.widget<HudSurface>(find.byType(HudSurface));
+        expect(surface.glass.fill, expected, reason: '$b');
+      }
+    });
+
+    testWidgets(
+        'border, glow and top highlight stay byte-identical to the panel '
+        'recipe -- this is not a second, independently-invented status style',
+        (t) async {
+      await t.pumpWidget(
+          _host(const HudPanel(tone: HudPanelTone.error, child: Text('x'))));
+      final HudSurface surface = t.widget<HudSurface>(find.byType(HudSurface));
+      final HudGlass panel = HudTokens.dark.panel;
+      expect(surface.glass.innerBorder, panel.innerBorder);
+      expect(surface.glass.outerBorder, panel.outerBorder);
+      expect(surface.glass.glow, panel.glow);
+      expect(surface.glass.dropShadows, panel.dropShadows);
+      expect(surface.glass.topHighlight, panel.topHighlight);
+    });
+
+    testWidgets(
+        'an opaque tone disables blur and saturation -- nothing behind a '
+        'solid fill needs backdrop-filtering, same reasoning as HudSheet',
+        (t) async {
+      await t.pumpWidget(
+          _host(const HudPanel(tone: HudPanelTone.error, child: Text('x'))));
+      final HudSurface surface = t.widget<HudSurface>(find.byType(HudSurface));
+      expect(surface.glass.cssBlur, 0);
+      expect(surface.glass.saturate, isNull);
+    });
+
+    testWidgets('a tone rejects secondary and dense -- both pick a tier of '
+        'the same base fill a tone has already overridden', (t) async {
+      expect(
+        () => HudPanel(
+            tone: HudPanelTone.error, secondary: true, child: Text('x')),
+        throwsAssertionError,
+      );
+      expect(
+        () => HudPanel(tone: HudPanelTone.error, dense: true, child: Text('x')),
+        throwsAssertionError,
+      );
+    });
+
+    testWidgets(
+        'padding, radius, onTap and semantics behave exactly like an '
+        'ordinary HudPanel', (t) async {
+      var tapped = false;
+      await t.pumpWidget(_host(HudPanel(
+        tone: HudPanelTone.error,
+        padding: const EdgeInsets.all(11),
+        radius: 9,
+        semanticLabel: 'error card',
+        onTap: () => tapped = true,
+        child: const Text('x'),
+      )));
+      final HudSurface surface = t.widget<HudSurface>(find.byType(HudSurface));
+      expect(surface.borderRadius, BorderRadius.circular(9));
+      await t.tap(find.text('x'));
+      expect(tapped, isTrue);
+      expect(find.bySemanticsLabel('error card'), findsOneWidget);
+    });
+  });
 }

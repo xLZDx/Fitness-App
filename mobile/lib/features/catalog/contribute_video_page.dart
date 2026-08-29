@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
 import '../../shared/widgets/hud/hud_surface.dart';
 import '../auth/state/auth_providers.dart';
 import 'state/catalog_providers.dart';
@@ -130,11 +130,8 @@ class _ContributeVideoPageState extends ConsumerState<ContributeVideoPage> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            // INTENTIONAL_LEGACY_EXCEPTION: needs `tint`, which HudPanel has
-            // no equivalent for. See core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md
-            // (status-tint consolidation candidate).
-            GlassCard(
-              tint: theme.colorScheme.error,
+            HudPanel(
+              tone: HudPanelTone.error,
               child: Text(_error!,
                   style: TextStyle(color: theme.colorScheme.error)),
             ),

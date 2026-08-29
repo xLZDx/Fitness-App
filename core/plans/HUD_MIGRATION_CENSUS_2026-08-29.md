@@ -14,10 +14,10 @@ observation below; sub-gates come from this data, not from mechanically working 
 
 | Metric | Count |
 |---|---|
-| `GlassCard(` call sites | 126 → 124 → 117 → 96 (gate 4) → 84 (sub-gate 5) → 67 (sub-gate 6) → **50** after sub-gate 7 |
-| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → 20 (sub-gate 5) → 14 (sub-gate 6) → **12** after sub-gate 7 (11 real usage + `glass.dart`'s own definition) |
-| Files importing `shared/widgets/glass.dart` | 45 → 43 → 42 → 38 (gate 4) → 33 (sub-gate 5) → 33 (sub-gate 6) → **33** after sub-gate 7 (unchanged again: `posture_page.dart`/`workout_summary_page.dart` scoped down to `show FrostedScaffold, GlassAppBar`; `contribute_video_page.dart`/`team_feed_page.dart`/`donor_wall_page.dart` keep the full import for one remaining `tint` exception each; several page files keep a scoped `show FrostedScaffold`/`GlassAppBar` import; `deload_banner.dart` keeps the full import for its `tint` exception) |
-| `INTENTIONAL_LEGACY_EXCEPTION` sites (need `tint`, no HudPanel equivalent) | 2 (`scanner_page.dart`) + 1 (`deload_banner.dart`) → **6** after sub-gate 7: + `contribute_video_page.dart`, `team_feed_page.dart`, `donor_wall_page.dart` (1 each) — see the flag raised below |
+| `GlassCard(` call sites | 126 → 124 → 117 → 96 (gate 4) → 84 (sub-gate 5) → 67 (sub-gate 6) → 50 (sub-gate 7) → **45** after sub-gate 8 |
+| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → 20 (sub-gate 5) → 14 (sub-gate 6) → 12 (sub-gate 7) → **8** after sub-gate 8 (7 real usage + `glass.dart`'s own definition). Methodology note: a raw `grep -rl "GlassCard("` now also matches `hud_surface.dart` itself, whose new `HudPanelTone` doc comment *mentions* `` `GlassCard(tint: ...)` `` in prose -- not a real call site. Excluded from this count; see sub-gate 8 below. |
+| Files importing `shared/widgets/glass.dart` | 45 → 43 → 42 → 38 (gate 4) → 33 (sub-gate 5) → 33 (sub-gate 6) → 33 (sub-gate 7) → **33** after sub-gate 8 (unchanged again: every file that dropped its last `GlassCard` site this sub-gate scoped its import down to a `show` clause rather than removing it, since all four still use `FrostedScaffold`/`GlassAppBar`) |
+| `INTENTIONAL_LEGACY_EXCEPTION` sites (`GlassCard` kept for a capability `HudPanel` genuinely lacks) | 2 (`scanner_page.dart`) + 1 (`deload_banner.dart`) → 6 after sub-gate 7 → **1** after sub-gate 8: only `deload_banner.dart` remains, now correctly classified as a recovery-accent tint (`AppPalette.auroraPeach`), not an error tone — see below. The 5 error-tint sites all migrated onto the new `HudPanelTone.error`. |
 | Files referencing `aurora_background`/`AuroraBackground` | 5 (2 are theme/token files, 1 is the definition file itself, 1 is a comment-only mention in `workout_player_page.dart` — **corrected**: `main.dart` is the ONLY real widget-tree usage, see the struck sub-gate 3 below) |
 | Files already using `HudSurface`/`HudPanel`/`HudButton`/`HudChip` | 20 (+ `HudSheet`, the new opaque-surface widget from sub-gate 1) |
 | Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` → 2 after sub-gate 1 → **0** after sub-gate 2 (`home_page.dart` fully migrated; `scanner_page.dart` closed with 2 sites reclassified `INTENTIONAL_LEGACY_EXCEPTION`, not partial-migration debt) |
@@ -199,6 +199,64 @@ unilaterally.
 model/repository-level, not a page widget test) -- all green. No dedicated widget test exists for
 `contribute_video_page.dart` or `workout_summary_page.dart` -- `flutter analyze` is this sub-gate's
 coverage for those two.
+
+### Sub-gate 8 (status-tint gap closed: `HudPanelTone.error`) — closed, 2026-08-29
+
+Raised the flag from sub-gate 7 with GPT-PM before implementing anything (real exchange via
+PM Bridge, not a unilateral call). Verdict: **MODIFY** -- approved the reuse-HudPanel's-recipe
+shape, but made one correction that changed scope: **`deload_banner.dart` is not an error-tint
+site.** It shows `tint: AppPalette.auroraPeach` for a recovery *recommendation*
+(`shouldDeload == true`), not an async-error/validation state -- visually similar (both are a
+flat-tinted `GlassCard`) but semantically a different thing. So the evidenced pattern is **5 error
+sites across 4 files**, not 6 across 5, and `deload_banner.dart` stays an
+`INTENTIONAL_LEGACY_EXCEPTION` on its own, correctly re-labelled rather than folded into the new
+mechanism just to clear one more site.
+
+GPT-PM's full ruling, implemented as given:
+
+- **Shape**: `HudPanel` itself gets a `tone` parameter (not a new `HudStatusPanel` widget, not a
+  raw overlay, not a colored-border substitute). `HudPanelTone.error` derives from `t.panel` --
+  the exact recipe `HudPanel` already uses -- with only the fill replaced by
+  `Theme.of(context).colorScheme.error`, and `cssBlur`/`saturate` zeroed the same way `HudSheet`
+  already zeroes them for an opaque fill (nothing behind a solid color needs backdrop-filtering).
+  Border, glow, drop shadows and top highlight stay byte-identical to `t.panel`.
+- **API**: an enum (`HudPanelTone`), not a raw `Color? tint` parameter -- a raw color parameter
+  would just recreate `GlassCard`'s own escape hatch this whole gate exists to retire. Only
+  `HudPanelTone.error` is defined; `warning`/`success`/`info` were explicitly NOT pre-added
+  ("just because those are conventional names" -- GPT-PM's own words) without an evidenced site.
+  `tone` is asserted mutually exclusive with `secondary`/`dense` (both pick a tier of the same base
+  fill a tone has already overridden).
+- **Priority**: implement now, in its own sub-gate, rather than batching it with the remaining
+  plain-site sweep -- "five confirmed error sites... is already enough recurrence to justify the
+  abstraction."
+- **Value preserved, not switched**: the error fill stays `theme.colorScheme.error` (what all 5
+  sites already resolved to), not swapped to `AppSemanticColors.danger` -- GPT-PM was explicit that
+  token normalization is a separate design decision from this migration, absent evidence the two
+  values are identical in both themes.
+
+Implementation: `HudPanelTone` enum + `tone` param + `_toneGlass()` on `HudPanel`
+(`hud_surface.dart`), following the exact "same recipe, one field overridden" shape
+`HudPanel._denseGlass`/`HudSheet._opaqueGlass` already establish. Migrated all 5 evidenced sites:
+`scanner_page.dart` (2, its last remaining `GlassCard` sites -- `glass.dart` import scoped down to
+`show FrostedScaffold`), `contribute_video_page.dart`, `team_feed_page.dart`,
+`donor_wall_page.dart` (1 each, all now fully off `GlassCard`, imports scoped to
+`show FrostedScaffold, GlassAppBar`). `deload_banner.dart`'s exception comment corrected to state
+plainly it is a distinct recovery-accent case, not the same gap, so a future reader doesn't
+mistake it for an unmigrated instance of the same pattern.
+
+New tests, per GPT-PM's own list of invariants to pin (`hud_components_test.dart`, new "HudPanel
+tone" group, 8 assertions): `HudPanelTone.normal` unaffected; `.error` resolves to the real
+`colorScheme.error` in both themes (not a new literal); border/glow/dropShadows/topHighlight
+byte-identical to `t.panel`; blur/saturation disabled on a toned panel; `tone` + `secondary`/`dense`
+throws an assertion; padding/radius/`onTap`/semantics behave exactly like an ordinary `HudPanel`.
+
+Verification: `flutter analyze lib/` clean (5 pre-existing, unrelated warnings elsewhere in the
+tree, none in touched files). `flutter test`: 120 total assertions across
+`scanner_page_test.dart`, `team_feed_demo_banner_test.dart`, `donor_wall_test.dart` and
+`hud_components_test.dart` (including the 8 new ones) -- all green. Census:
+`GlassCard` sites 50→45, files with a real call 12→8 (7 real usage + `glass.dart`'s own
+definition), `glass.dart` importers unchanged at 33, `INTENTIONAL_LEGACY_EXCEPTION` sites 6→1
+(only `deload_banner.dart`, correctly re-scoped).
 
 ### Sub-gate 1 — closed, 2026-08-29
 

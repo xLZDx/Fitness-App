@@ -217,6 +217,42 @@ class HudSurface extends StatelessWidget {
   }
 }
 
+/// A semantic fill override for [HudPanel], for the one recurring case a
+/// neutral panel cannot cover: a card that has to communicate status through
+/// colour, not just content -- an async-error or validation card.
+///
+/// ## Why this is a fill swap on `HudPanel`, not a new widget
+///
+/// The HUD migration gate's census (`core/plans/
+/// HUD_MIGRATION_CENSUS_2026-08-29.md`, sub-gate 7) found the same
+/// `GlassCard(tint: theme.colorScheme.error)` shape independently at five
+/// sites across four files, all doing the identical thing on an async-error
+/// branch. GPT-PM's ruling on closing that gap (round review, 2026-08-29):
+/// derive from `HudPanel`'s own recipe exactly the way [HudSheet] already
+/// derives from `t.panel` and swaps only the fill, rather than inventing a
+/// second status-surface language. A tone is therefore not a different
+/// widget -- it is `HudPanel` with `t.panel`'s fill replaced and
+/// `cssBlur`/`saturate` zeroed the same way `HudSheet` zeroes them for an
+/// opaque surface (nothing behind an opaque fill benefits from
+/// backdrop-filtering it).
+///
+/// Only [error] is evidenced today. GPT-PM's ruling was explicit about not
+/// pre-populating `warning`/`success`/`info` "just because those are
+/// conventional names" -- add a member only when a real site needs it, the
+/// same evidence bar this enum itself was held to.
+enum HudPanelTone {
+  /// The ordinary panel fill. No semantic meaning.
+  normal,
+
+  /// `colorScheme.error`. The five confirmed sites (`scanner_page.dart` x2,
+  /// `contribute_video_page.dart`, `team_feed_page.dart`,
+  /// `donor_wall_page.dart`) all resolved to this same value before
+  /// migration; deliberately kept as `colorScheme.error` rather than
+  /// switched to `AppSemanticColors.danger` without evidence the two
+  /// resolve identically in both themes.
+  error,
+}
+
 /// The primary floating panel — radius 30, `margin:0 16px` at the call site.
 class HudPanel extends StatelessWidget {
   const HudPanel({
@@ -226,11 +262,16 @@ class HudPanel extends StatelessWidget {
     this.radius = HudTokens.radiusPanel,
     this.secondary = false,
     this.dense = false,
+    this.tone = HudPanelTone.normal,
     this.onTap,
     this.semanticLabel,
-  }) : assert(!(secondary && dense),
+  })  : assert(!(secondary && dense),
             'A panel is one tier: subPanel is the lightest, contentPanel the '
-            'most protective. Asking for both describes no surface.');
+            'most protective. Asking for both describes no surface.'),
+        assert(tone == HudPanelTone.normal || !(secondary || dense),
+            'A tone overrides the base t.panel fill; secondary/dense pick a '
+            'different tier of that same fill. Combining them describes no '
+            'single surface.');
 
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -249,8 +290,31 @@ class HudPanel extends StatelessWidget {
   /// default applies; see [HudSkyScope.of].
   final bool dense;
 
+  final HudPanelTone tone;
   final VoidCallback? onTap;
   final String? semanticLabel;
+
+  /// The `t.panel` recipe with only its fill replaced by the tone's semantic
+  /// colour -- the same "same recipe, one field overridden" shape
+  /// [HudSheet] already establishes, applied here instead of a dedicated
+  /// status-panel widget. See [HudPanelTone]'s own doc comment for why.
+  HudGlass _toneGlass(BuildContext context, HudTokens t) {
+    final HudGlass base = t.panel;
+    final Color fill = switch (tone) {
+      HudPanelTone.normal => base.fill,
+      HudPanelTone.error => Theme.of(context).colorScheme.error,
+    };
+    return HudGlass(
+      fill: fill,
+      cssBlur: 0,
+      innerBorder: base.innerBorder,
+      outerBorder: base.outerBorder,
+      glow: base.glow,
+      dropShadows: base.dropShadows,
+      saturate: null,
+      topHighlight: base.topHighlight,
+    );
+  }
 
   /// The `contentPanel` recipe with its placeholder alpha replaced by the one
   /// measured for the picture on screen.
@@ -286,8 +350,12 @@ class HudPanel extends StatelessWidget {
       child: child,
     );
 
+    final HudGlass glass = tone != HudPanelTone.normal
+        ? _toneGlass(context, t)
+        : (dense ? _denseGlass(context, t) : (secondary ? t.subPanel : t.panel));
+
     final Widget surface = HudSurface(
-      glass: dense ? _denseGlass(context, t) : (secondary ? t.subPanel : t.panel),
+      glass: glass,
       borderRadius: br,
       padding: onTap == null ? padding : null,
       child: onTap == null

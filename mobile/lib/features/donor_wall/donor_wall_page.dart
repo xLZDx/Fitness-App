@@ -6,7 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
 import '../../shared/widgets/hud/hud_surface.dart';
 import 'data/donor_wall_entry.dart';
 import 'state/donor_wall_providers.dart';
@@ -77,11 +77,8 @@ class DonorWallPage extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 36),
               child: Center(child: CircularProgressIndicator()),
             ),
-            // INTENTIONAL_LEGACY_EXCEPTION: needs `tint`, which HudPanel has
-            // no equivalent for. See core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md
-            // (status-tint consolidation candidate).
-            error: (e, _) => GlassCard(
-              tint: scheme.error,
+            error: (e, _) => HudPanel(
+              tone: HudPanelTone.error,
               child: Text(
                 AppLocalizations.of(context).donorwallCouldNotLoadWall(e),
                 style:

@@ -34352,3 +34352,53 @@ real design decision, not routine migration), then continue through the remainin
 (`ai_planner_page.dart`, `health_sync_card.dart`, `progress_photos_page.dart`,
 `subscription_page.dart`, `progress_page.dart`, `settings_page.dart`), continuing autonomously
 under the same GO, per PM mode.
+
+## HUD migration sub-gate 8: status-tint gap closed, `HudPanelTone.error`
+
+Sent the flagged design question to GPT-PM via PM Bridge (`gpt_send_and_await`, genuine round-trip,
+not a paraphrase) before implementing anything. Full exchange: proposed reusing `HudPanel`'s own
+recipe with only the fill swapped (the same shape `HudSheet` already uses), asked whether that
+shape was right, whether the API should be a `tone` enum or a raw `Color tint`, and whether to do
+it now or batch it later.
+
+**VERDICT: MODIFY.** GPT-PM approved the reuse-the-recipe shape but caught a real classification
+error in my own framing: I had described all 6 known tint sites as "the same error-tint pattern."
+`deload_banner.dart` is actually a recovery *recommendation* accent
+(`tint: AppPalette.auroraPeach`, shown when `shouldDeload` is true) -- visually the same shape as
+an error card (a flat-tinted `GlassCard`) but semantically distinct. Corrected before implementing:
+the evidenced pattern is 5 error sites across 4 files (`scanner_page.dart` x2,
+`contribute_video_page.dart`, `team_feed_page.dart`, `donor_wall_page.dart`), and
+`deload_banner.dart` stays its own, separately-labelled exception. GPT-PM's other rulings, all
+implemented as given: `HudPanel` itself gets a `tone` param (not a new widget); only
+`HudPanelTone.error` is defined now (no speculative warning/success/info); `tone` is mutually
+exclusive with `secondary`/`dense`; the error fill stays `colorScheme.error` (the value all 5 sites
+already resolved to), not switched to a semantic token without evidence the two match in both
+themes; implement now rather than deferring to a later consolidated pass.
+
+Implementation: `HudPanelTone` enum + `tone` parameter + `_toneGlass()` on `HudPanel`
+(`mobile/lib/shared/widgets/hud/hud_surface.dart`) -- derives `t.panel`, swaps only the fill,
+zeroes `cssBlur`/`saturate` the way `HudSheet` already does for an opaque fill. Migrated all 5
+sites onto `HudPanel(tone: HudPanelTone.error, ...)`; all 4 touched files dropped their last
+`GlassCard` reference and scoped their `glass.dart` import down to a `show` clause.
+`deload_banner.dart`'s exception comment corrected to say plainly it is a distinct recovery-accent
+case, not an unmigrated instance of the error pattern.
+
+New tests (`hud_components_test.dart`, "HudPanel tone" group, 8 assertions), matching GPT-PM's own
+list of invariants to pin: normal tone unaffected; error resolves to the real `colorScheme.error`
+in both themes; border/glow/dropShadows/topHighlight byte-identical to `t.panel`; blur/saturation
+disabled; tone+secondary/dense asserts; padding/radius/onTap/semantics unchanged from an ordinary
+panel.
+
+Verification: `flutter analyze lib/` clean (5 pre-existing warnings elsewhere in the tree,
+unrelated, none in touched files -- one real fix made along the way: `scanner_page.dart`'s
+`_LiveSection` had an unused `theme` local left over once its `tint: theme.colorScheme.error`
+reference was replaced by the tone param, removed). `flutter test`: 120 total assertions across
+`scanner_page_test.dart`, `team_feed_demo_banner_test.dart`, `donor_wall_test.dart`,
+`hud_components_test.dart` -- all green. Census: `GlassCard` sites 50->45, files with a real call
+12->8, `glass.dart` importers unchanged at 33, `INTENTIONAL_LEGACY_EXCEPTION` sites 6->1 (only
+`deload_banner.dart`, now correctly scoped to its own reason).
+
+Next: continue through the remaining files (`ai_planner_page.dart`, `health_sync_card.dart`,
+`progress_photos_page.dart`, `subscription_page.dart`, `progress_page.dart`,
+`settings_page.dart` -- 45 real `GlassCard` sites across 7 files), continuing autonomously under
+the same GO, per PM mode.
