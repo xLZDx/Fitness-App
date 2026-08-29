@@ -9,7 +9,6 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../core/theme/hud_tokens.dart';
 import '../../core/theme/hud_typography.dart';
-import '../../shared/widgets/glass.dart';
 import '../../shared/widgets/hud/hud_metric.dart';
 import '../../shared/widgets/hud/hud_scaffold.dart';
 import '../../shared/widgets/hud/hud_surface.dart';
@@ -794,7 +793,7 @@ class _AiPlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       onTap: () => GoRouter.of(context).push('/plan'),
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Row(
@@ -851,7 +850,7 @@ class _PostureCheckCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       key: const Key('home.postureCard'),
       onTap: () => GoRouter.of(context).push('/posture'),
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -925,7 +924,7 @@ class _SummaryLinkCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final result = ref.watch(todayResultProvider);
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('home.summaryLink'),
       onTap: () => GoRouter.of(context).push('/workout-summary'),
       child: Row(
@@ -971,7 +970,7 @@ class _UpcomingCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.all(14),
       onTap: () => GoRouter.of(context)
           .push('/workout/${session.exerciseId}?day=${session.id}'),
@@ -1069,7 +1068,7 @@ class _SuggestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       key: Key('suggestion-${s.exerciseId}'),
       padding: const EdgeInsets.all(14),
       // Opens the real exercise. This was `() {}` — the cards looked
@@ -1156,7 +1155,7 @@ class _SuggestionsPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const GlassCard(
+    return const HudPanel(
       child: SizedBox(
         height: 64,
         child: Center(child: CircularProgressIndicator()),
@@ -1174,7 +1173,7 @@ class _SuggestionsMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       key: const Key('suggestions-empty'),
       child: Text(
         text,

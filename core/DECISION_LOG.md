@@ -34062,3 +34062,43 @@ full retirement rather than touched piecemeal now.
 Next sub-gate per the census doc's proposed order: finish the remaining 2 partially-migrated files
 (`home_page.dart`, `scanner_page.dart`), then `aurora_background` retirement, then the rest grouped
 by feature area -- continuing autonomously under the same GO, per PM mode.
+
+## HUD migration sub-gate 2: home_page.dart fully migrated, scanner_page.dart closed with 2 reasoned exceptions
+
+PM Bridge channel check: attempted a fresh `gpt_send_and_await` round for sub-gate 1's commit before
+starting this one. `pm_bridge_job_status` confirmed the send actually reached the mapped
+conversation (`sendPhase: "sent"`) but came back `CHATGPT_REPLY_UNCORRELATED` -- the same capped
+conversation from before compaction, still unusable; not a fresh failure. `git push` for sub-gate 1
+(commit `2d0e948`) succeeded anyway on an existing fresh receipt (repo-scoped freshness window,
+`~/.claude/CLAUDE.md` §15's own documented "receipts are repo-scoped, not diff/commit-bound" gap,
+here working in this session's favor rather than against it). Operator, mid-turn, asked me to open a
+genuinely new ChatGPT conversation myself and update `config/conversations.md` with its id. Checked
+`pm-bridge/src/transports/playwright.js`: the function that does this, `openBlankNewChat()`, is not
+wired to any MCP tool, and calling it from a separate one-off script would `launchPersistentContext`
+against the same on-disk browser profile my session's own `server.js` already holds open -- the
+single-writer collision §15 already documents as a live-confirmed risk. Declined to freelance that;
+told the operator the concrete blocker and asked them to send one message in a new chat and hand me
+the resulting URL, continuing other Fitness_App work in the meantime rather than stalling on it.
+
+Read `home_page.dart` (7 `GlassCard` sites) and `scanner_page.dart` (2 remaining, others already
+`HudPanel`). All 7 in `home_page.dart` are in-page cards on the app's own background -- confirmed
+each uses only `key`/`onTap`/`padding`/`child`, and that `GlassCard`'s and `HudPanel`'s default
+padding (`EdgeInsets.all(18)`) and their `onTap`-present `Semantics(button: true)` wrapping are
+identical by reading both widgets' `build()` methods, not assumed. Migrated all 7 to `HudPanel`,
+removed the now-unused `glass.dart` import. `scanner_page.dart`'s remaining 2 sites both need a flat
+`tint: theme.colorScheme.error` fill that neither `HudPanel` nor `HudSurface` can express (`overlay`
+is a `Gradient?`, not `Color?`) -- rather than invent an unreviewed status-tint mechanism, reclassified
+both `INTENTIONAL_LEGACY_EXCEPTION` with an inline pointer to the census doc, leaving `glass.dart`
+imported there deliberately. `scanner_page.dart` counts as closed for this gate, not partial.
+
+Verification: `flutter analyze` clean on both files. `flutter test`: `home_page_test.dart` 9/9,
+`scanner_page_test.dart` 64/64 (both pre-existing suites, no new tests needed -- pure surface swap
+plus a documented no-op reclassification). Census numbers: `GlassCard` sites 124→117, files with a
+`GlassCard` call 38→37, `glass.dart` importers 43→42, partially-migrated files 2→0. New,
+not-yet-scoped finding recorded: a status-tint `HudPanel`/`HudSurface` variant would let the last 2
+`scanner_page.dart` sites (and any future one) retire `GlassCard.tint` entirely -- left for its own
+future sub-gate rather than designed here without review.
+
+Next: `aurora_background` retirement (`main.dart`, `features/equipment/workout_player_page.dart`),
+per the census doc's proposed order -- continuing autonomously under the same GO, per PM mode,
+pending the operator's new-chat URL to resume GPT-PM review rounds.

@@ -14,12 +14,40 @@ observation below; sub-gates come from this data, not from mechanically working 
 
 | Metric | Count |
 |---|---|
-| `GlassCard(` call sites | 126 → **124** after sub-gate 1 |
-| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → **38** after sub-gate 1 |
-| Files importing `shared/widgets/glass.dart` | 45 → **43** after sub-gate 1 |
+| `GlassCard(` call sites | 126 → 124 after sub-gate 1 → **117** after sub-gate 2 |
+| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 after sub-gate 1 → **37** after sub-gate 2 |
+| Files importing `shared/widgets/glass.dart` | 45 → 43 after sub-gate 1 → **42** after sub-gate 2 |
 | Files referencing `aurora_background`/`AuroraBackground` | 5 (2 are theme/token files, 1 is the definition file itself — only `main.dart` and `features/equipment/workout_player_page.dart` are real widget-tree usages) |
 | Files already using `HudSurface`/`HudPanel`/`HudButton`/`HudChip` | 20 (+ `HudSheet`, the new opaque-surface widget from sub-gate 1) |
-| Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` → **2** after sub-gate 1 (`workouts_page.dart` fully migrated, 0 remaining `GlassCard`) |
+| Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` → 2 after sub-gate 1 → **0** after sub-gate 2 (`home_page.dart` fully migrated; `scanner_page.dart` closed with 2 sites reclassified `INTENTIONAL_LEGACY_EXCEPTION`, not partial-migration debt) |
+
+### Sub-gate 2 — closed, 2026-08-29
+
+Migrated all 7 `GlassCard` call sites in `home_page.dart` (`_AiPlanCard`, `_PostureCheckCard`,
+`_SummaryLinkCard`, `_UpcomingCard`, `_SuggestionCard`, `_SuggestionsPlaceholder`,
+`_SuggestionsMessage`) to `HudPanel` — all sit on the app's own background as in-page cards, not
+over content they don't own, so `HudPanel` (not `HudSheet`) is the correct target. Every site used
+only `key`/`onTap`/`padding`/`child`, all of which `HudPanel` accepts 1:1; `GlassCard`'s and
+`HudPanel`'s default padding are both `EdgeInsets.all(18)`, and both give an `onTap` card identical
+`Semantics(button: true)` wrapping (verified by reading `glass.dart`'s `build()`) -- a behavior-
+preserving swap, not a redesign. `glass.dart` import removed; `flutter analyze` clean; existing
+`home_page_test.dart` suite green (9/9).
+
+`scanner_page.dart` had only 2 remaining `GlassCard` sites left, both an error-state card with
+`tint: theme.colorScheme.error` (`scan.when`'s `error` branch, and `_LiveSection`'s error branch).
+Neither `HudPanel` nor `HudSurface` exposes a flat colour-fill override (`HudSurface.overlay` is a
+`Gradient?`, not a plain `Color?`) -- migrating these would mean inventing a new, unreviewed status-
+tint mechanism, which is exactly what GPT-PM's design guidance said not to do ad hoc. Reclassified
+both `INTENTIONAL_LEGACY_EXCEPTION` with an inline doc comment at each site pointing back here.
+`scanner_page.dart` therefore keeps its `glass.dart` import and is *closed* for this migration gate
+(no more accidental/undecided `GlassCard` usage in it), not "still partial" -- the 2 remaining sites
+are a recorded, reasoned decision, not overlooked debt. `flutter analyze` clean; existing
+`scanner_page_test.dart` suite green (64/64, including its own error-path assertions).
+
+**New finding, not yet scoped as a sub-gate**: a `HudPanel`/`HudSurface` status-tint variant (flat
+error/warning/success fill, analogous to `HudSheet`'s opaque-fill precedent) would let these last 2
+sites -- and any future one needing the same -- retire `GlassCard`'s `tint` parameter entirely. Left
+for a future sub-gate rather than designed here without review.
 
 ### Sub-gate 1 — closed, 2026-08-29
 

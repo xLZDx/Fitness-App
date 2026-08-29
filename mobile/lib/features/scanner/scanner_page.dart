@@ -640,6 +640,13 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
             // converts every failure into a ScanResult so the outcome, not an
             // exception, drives the screen. Left as a safety net rather than
             // a `!`: an unexpected AsyncError must not blank the page.
+            //
+            // INTENTIONAL_LEGACY_EXCEPTION (HUD migration census,
+            // core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md): needs a flat
+            // error-coloured fill, which neither `HudPanel` nor `HudSurface`
+            // exposes today (only `overlay`, a gradient). Not migrated here to
+            // avoid inventing an unreviewed status-tint mechanism ad hoc --
+            // deferred to its own scoped sub-gate.
             error: (e, _) => GlassCard(
               tint: theme.colorScheme.error,
               child: Text(
@@ -1542,6 +1549,9 @@ class _LiveSection extends ConsumerWidget {
     // same as "no machine recognised yet" — spinning forever on a broken
     // model was a real defect.
     if (liveAsync.hasError) {
+      // INTENTIONAL_LEGACY_EXCEPTION -- same reason as the other error card in
+      // this file (see scan.when's `error` branch above): a flat error tint,
+      // which the HUD surface kit has no widget for yet.
       return GlassCard(
         key: const Key('scan-live-error'),
         tint: theme.colorScheme.error,
