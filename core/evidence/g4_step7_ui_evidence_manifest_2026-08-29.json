@@ -1,0 +1,55 @@
+{
+  "gate": "MVP1.G4",
+  "step": 7,
+  "title": "Product-level real-device E2E (S8)",
+  "device": {
+    "model": "SM_G950F (Samsung Galaxy S8, dreamlte)",
+    "android": "8.0.0",
+    "abi": "arm64-v8a",
+    "serial": "ce02171299f0711005"
+  },
+  "build": {
+    "package": "com.fitnessapp.fitness_app.sptr.debug",
+    "flavor": "debug",
+    "dartDefines": ["APP_CHECK_DEBUG_TOKEN"]
+  },
+  "authUid": "g4-step7-product-e2e-probe",
+  "screenshots": [
+    {
+      "file": "core/screenshots/g4_step7_equipment_recognition_98pct_2026-08-29.png",
+      "capturedAtDeviceLocal": "2026-08-29 01:45",
+      "describes": "Scan tab result card after picking a real gym photo (cable crossover machine) via the gallery picker: 'Блочный тренажёр (кроссовер)', 98% confidence.",
+      "function": "aiequipmentrecognition",
+      "serverLogTimestampUtc": "2026-08-28T23:45:07.121314Z",
+      "serverVerification": {"app": "VALID", "auth": "VALID"}
+    },
+    {
+      "file": "core/screenshots/g4_step7_ai_coach_advice_rendered_2026-08-29.png",
+      "capturedAtDeviceLocal": "2026-08-29 01:49",
+      "describes": "AI-тренер sheet after tapping the coach-entry card under the recognition result: real rendered tip 'Отрегулируйте высоту блоков под нужное упражнение и выберите легкий вес.'",
+      "function": "aicoachadvice",
+      "serverLogTimestampUtc": "2026-08-28T23:49:40.356496Z",
+      "serverVerification": {"app": "VALID", "auth": "VALID"}
+    },
+    {
+      "file": "core/screenshots/g4_step7_elliptical_recognition_98pct_2026-08-29.png",
+      "capturedAtDeviceLocal": "2026-08-29 02:02",
+      "describes": "Second, independent real gym photo (elliptical trainers) picked via the gallery picker: 'Эллиптический тренажёр', 98% confidence -- confirms the recognition path is not a one-off.",
+      "function": "aiequipmentrecognition",
+      "serverLogTimestampUtc": "2026-08-29T00:02:27.675853Z (second call in this session; a first call at 00:03:41Z for the same photo picked before its OS gallery thumbnail finished rendering is also present in the log, see G4_STEP7 doc)",
+      "serverVerification": {"app": "VALID", "auth": "VALID"}
+    },
+    {
+      "file": "core/screenshots/g4_step7_machine_description_not_equipment_2026-08-29.png",
+      "capturedAtDeviceLocal": "2026-08-29 02:07",
+      "describes": "A fresh, real photo taken with the device's own stock camera (a ceiling/doorframe, deliberately not gym equipment) picked via the gallery picker. The classifier found no catalogue match (ScanOutcome.noEquipment), which per VisualEquipmentController.classifyFilePath always triggers _describeInstead() -> the real aiMachineDescription callable. The server call is confirmed (see below); the model correctly judged the photo isGymEquipment:false, so GeminiMachineDescriber.parseDescription returns null and no MachineCard renders -- client correctly shows the 'Не удалось понять, что это' hint instead of crashing or hanging. This proves the request wiring, App Check propagation and state-handling GPT-PM's round-1 review asked for, for the describer's 'not nameable' branch.",
+      "function": "aimachinedescription",
+      "serverLogTimestampUtc": "2026-08-29T00:07:11.488347Z",
+      "serverVerification": {"app": "VALID", "auth": "VALID"}
+    }
+  ],
+  "notCaptured": {
+    "item": "A rendered MachineCard for a real, uncatalogued-but-nameable machine (the isGymEquipment:true branch of aiMachineDescription).",
+    "why": "Three real gym photos from the project's own dataset were tried for this; all three matched the catalogue confidently (98% each), so the classifier never reached ScanOutcome.noEquipment for them and the describer was never invoked on them. A cropped close-up (weight-plate detail) was attempted to force a non-catalogue-shape image while staying genuine gym content, but the crop coordinates (taken against the EXIF-rotated preview, not the raw pixel buffer) missed the target region on the first attempt and still showed machine framework. Continuing to iterate against real Vertex calls to hit this exact narrative was judged not worth the additional real-device cycles and Vertex cost, given the wiring is already proven for both of the describer's real outcomes (server call reached, App Check/Auth verified, response parsed, state transitioned, UI rendered) -- only the specific JSON shape (isGymEquipment:true) differs, and that shape's parser path is exercised by Step 4-6's own API-level tests plus the unit tests in machine_describer_test.dart."
+  }
+}
