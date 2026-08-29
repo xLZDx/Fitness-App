@@ -34402,3 +34402,30 @@ Next: continue through the remaining files (`ai_planner_page.dart`, `health_sync
 `progress_photos_page.dart`, `subscription_page.dart`, `progress_page.dart`,
 `settings_page.dart` -- 45 real `GlassCard` sites across 7 files), continuing autonomously under
 the same GO, per PM mode.
+
+## HUD migration sub-gate 9: ai_planner_page.dart, health_sync_card.dart (11 GlassCard sites)
+
+Migrated both files -- 11 sites total. Both carried their own `tint: colorScheme.error` async-error
+branch (`ai_planner_page.dart`'s plan-generation failure, `health_sync_card.dart`'s health-read
+failure); both landed directly on `HudPanelTone.error`, the mechanism sub-gate 8 already got
+GPT-PM's approval for -- no new design question needed, just applying the ruling to newly
+discovered evidence. The other 9 sites are plain in-page cards -> `HudPanel`, including one
+`onTap` card (`ai_planner_page.dart`'s exercise row, supported identically) and one `const`
+constructor (`health_sync_card.dart`'s `_LoadingTile`, confirmed `HudPanel`'s const constructor
+covers it same as `GlassCard`'s did).
+
+`health_sync_card.dart` is the first file in this migration to drop its `glass.dart` import
+entirely rather than scoping it down -- it's a card widget, not a page, and never used
+`FrostedScaffold`/`GlassAppBar`. `ai_planner_page.dart` scoped to
+`show FrostedScaffold, GlassAppBar` per the established pattern.
+
+Verification: `flutter analyze` clean on both files. `flutter test`: `health_sync_card_test.dart`
+(7) and `ai_planner_providers_test.dart` (2, provider-level) both green. No dedicated widget test
+for `ai_planner_page.dart` itself -- `flutter analyze` is this sub-gate's coverage for it. Census:
+`GlassCard` sites 45->34, files with a call 8->6, `glass.dart` importers 33->32,
+`INTENTIONAL_LEGACY_EXCEPTION` sites unchanged at 1.
+
+Next: continue through the remaining 4 files (`progress_photos_page.dart`,
+`subscription_page.dart`, `progress_page.dart`, `settings_page.dart` -- 34 sites, the largest
+files left), watching for further `HudPanelTone.error` candidates as they come up, continuing
+autonomously under the same GO, per PM mode.

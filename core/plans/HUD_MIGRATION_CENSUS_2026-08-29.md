@@ -14,10 +14,10 @@ observation below; sub-gates come from this data, not from mechanically working 
 
 | Metric | Count |
 |---|---|
-| `GlassCard(` call sites | 126 → 124 → 117 → 96 (gate 4) → 84 (sub-gate 5) → 67 (sub-gate 6) → 50 (sub-gate 7) → **45** after sub-gate 8 |
-| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → 20 (sub-gate 5) → 14 (sub-gate 6) → 12 (sub-gate 7) → **8** after sub-gate 8 (7 real usage + `glass.dart`'s own definition). Methodology note: a raw `grep -rl "GlassCard("` now also matches `hud_surface.dart` itself, whose new `HudPanelTone` doc comment *mentions* `` `GlassCard(tint: ...)` `` in prose -- not a real call site. Excluded from this count; see sub-gate 8 below. |
-| Files importing `shared/widgets/glass.dart` | 45 → 43 → 42 → 38 (gate 4) → 33 (sub-gate 5) → 33 (sub-gate 6) → 33 (sub-gate 7) → **33** after sub-gate 8 (unchanged again: every file that dropped its last `GlassCard` site this sub-gate scoped its import down to a `show` clause rather than removing it, since all four still use `FrostedScaffold`/`GlassAppBar`) |
-| `INTENTIONAL_LEGACY_EXCEPTION` sites (`GlassCard` kept for a capability `HudPanel` genuinely lacks) | 2 (`scanner_page.dart`) + 1 (`deload_banner.dart`) → 6 after sub-gate 7 → **1** after sub-gate 8: only `deload_banner.dart` remains, now correctly classified as a recovery-accent tint (`AppPalette.auroraPeach`), not an error tone — see below. The 5 error-tint sites all migrated onto the new `HudPanelTone.error`. |
+| `GlassCard(` call sites | 126 → 124 → 117 → 96 (gate 4) → 84 (sub-gate 5) → 67 (sub-gate 6) → 50 (sub-gate 7) → 45 (sub-gate 8) → **34** after sub-gate 9 |
+| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → 20 (sub-gate 5) → 14 (sub-gate 6) → 12 (sub-gate 7) → 8 (sub-gate 8) → **6** after sub-gate 9 (5 real usage + `glass.dart`'s own definition). Methodology note carried forward: a raw `grep -rl "GlassCard("` also matches `hud_surface.dart`'s `HudPanelTone` doc comment (prose, not a call site) -- excluded from this and every count above. |
+| Files importing `shared/widgets/glass.dart` | 45 → 43 → 42 → 38 (gate 4) → 33 (sub-gate 5) → 33 (sub-gate 6) → 33 (sub-gate 7) → 33 (sub-gate 8) → **32** after sub-gate 9 (`health_sync_card.dart` dropped the import entirely -- it never used `FrostedScaffold`/`GlassAppBar`, unlike every page-level file so far; `ai_planner_page.dart` scoped down to `show FrostedScaffold, GlassAppBar` like the others) |
+| `INTENTIONAL_LEGACY_EXCEPTION` sites (`GlassCard` kept for a capability `HudPanel` genuinely lacks) | 2 (`scanner_page.dart`) + 1 (`deload_banner.dart`) → 6 (sub-gate 7) → 1 (sub-gate 8) → **1** after sub-gate 9 (unchanged: only `deload_banner.dart`; both this sub-gate's error sites landed directly on the already-approved `HudPanelTone.error`, no new gap opened) |
 | Files referencing `aurora_background`/`AuroraBackground` | 5 (2 are theme/token files, 1 is the definition file itself, 1 is a comment-only mention in `workout_player_page.dart` — **corrected**: `main.dart` is the ONLY real widget-tree usage, see the struck sub-gate 3 below) |
 | Files already using `HudSurface`/`HudPanel`/`HudButton`/`HudChip` | 20 (+ `HudSheet`, the new opaque-surface widget from sub-gate 1) |
 | Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` → 2 after sub-gate 1 → **0** after sub-gate 2 (`home_page.dart` fully migrated; `scanner_page.dart` closed with 2 sites reclassified `INTENTIONAL_LEGACY_EXCEPTION`, not partial-migration debt) |
@@ -257,6 +257,29 @@ tree, none in touched files). `flutter test`: 120 total assertions across
 `GlassCard` sites 50→45, files with a real call 12→8 (7 real usage + `glass.dart`'s own
 definition), `glass.dart` importers unchanged at 33, `INTENTIONAL_LEGACY_EXCEPTION` sites 6→1
 (only `deload_banner.dart`, correctly re-scoped).
+
+### Sub-gate 9 (`ai_planner_page.dart`, `health_sync_card.dart`) — closed, 2026-08-29
+
+Migrated the next two files, 11 `GlassCard(` sites total. Both files carried their own
+`tint: colorScheme.error` async-error site -- both landed directly on `HudPanelTone.error`
+(sub-gate 8's already-approved mechanism), no new design question needed: `ai_planner_page.dart`'s
+plan-generation error branch and `health_sync_card.dart`'s health-read-failed branch. The other 9
+sites (intro/sign-in/hero/exercise-row cards in `ai_planner_page.dart`; `_AskCard`, `_SetupCard`,
+`_LoadingTile`, and `_SnapshotCard`'s two branches in `health_sync_card.dart`) are plain in-page
+cards -> `HudPanel`, including `ai_planner_page.dart`'s exercise-row card (`onTap`, supported
+identically) and `health_sync_card.dart`'s `_LoadingTile` (a `const HudPanel` -- confirmed the
+constructor stays `const`-compatible, same as `GlassCard`'s).
+
+`health_sync_card.dart` dropped its `glass.dart` import entirely rather than scoping it down: it
+is a card widget, not a page, and never used `FrostedScaffold`/`GlassAppBar` -- the first file in
+this migration for which that was true. `ai_planner_page.dart` scoped to
+`show FrostedScaffold, GlassAppBar` per the established page-level pattern.
+
+`flutter analyze` clean on both files. `flutter test`: `health_sync_card_test.dart` (7 assertions)
+and `ai_planner_providers_test.dart` (2 assertions, provider-level not page-widget) both green.
+No dedicated widget test exists for `ai_planner_page.dart` itself -- `flutter analyze` is this
+sub-gate's coverage for it. Census: `GlassCard` sites 45->34, files with a call 8->6,
+`glass.dart` importers 33->32, `INTENTIONAL_LEGACY_EXCEPTION` sites unchanged at 1.
 
 ### Sub-gate 1 — closed, 2026-08-29
 

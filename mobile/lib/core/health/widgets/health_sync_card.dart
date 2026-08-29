@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../shared/widgets/app_buttons.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../../theme/app_palette.dart';
 import '../../theme/app_semantic_colors.dart';
 import '../health_models.dart';
@@ -53,8 +53,8 @@ class HealthSyncCard extends ConsumerWidget {
         }
         return ref.watch(todayHealthProvider).when(
               loading: () => const _LoadingTile(),
-              error: (e, _) => GlassCard(
-                tint: scheme.error,
+              error: (e, _) => HudPanel(
+                tone: HudPanelTone.error,
                 child: Text(AppLocalizations.of(context).healthHealthReadFailed(e),
                     style:
                         theme.textTheme.bodySmall?.copyWith(color: scheme.error)),
@@ -82,7 +82,7 @@ class _AskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,7 +160,7 @@ class _SetupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       key: const Key('health-setup-card'),
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Column(
@@ -198,7 +198,7 @@ class _LoadingTile extends StatelessWidget {
   const _LoadingTile();
   @override
   Widget build(BuildContext context) {
-    return const GlassCard(
+    return const HudPanel(
       child: SizedBox(
         height: 72,
         child: Center(child: CircularProgressIndicator()),
@@ -215,7 +215,7 @@ class _SnapshotCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     if (snapshot == null) {
-      return GlassCard(
+      return HudPanel(
         child: Text(
           AppLocalizations.of(context).healthNoHealthDataForTodayYet,
           style: theme.textTheme.bodyMedium?.copyWith(
@@ -225,7 +225,7 @@ class _SnapshotCard extends StatelessWidget {
       );
     }
     final s = snapshot!;
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

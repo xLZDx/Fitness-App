@@ -5,7 +5,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../safety/widgets/eligibility_notice.dart';
 import 'data/workout_plan.dart';
 import 'plan_reason_text.dart';
@@ -30,7 +31,7 @@ class AiPlannerPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
-          GlassCard(
+          HudPanel(
             child: Text(
               AppLocalizations.of(context).aiplannerGeneratedFromYourIntakeInjuryFilter,
               style: theme.textTheme.bodyMedium,
@@ -42,13 +43,13 @@ class AiPlannerPage extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 36),
               child: Center(child: CircularProgressIndicator()),
             ),
-            error: (e, _) => GlassCard(
-              tint: theme.colorScheme.error,
+            error: (e, _) => HudPanel(
+              tone: HudPanelTone.error,
               child: Text(AppLocalizations.of(context).aiplannerCouldNotGenerate(e)),
             ),
             data: (outcome) {
               if (outcome == null) {
-                return GlassCard(
+                return HudPanel(
                   child: Text(
                     AppLocalizations.of(context).aiplannerSignInAndCompleteOnboardingTo,
                     style: theme.textTheme.bodyMedium,
@@ -70,7 +71,7 @@ class AiPlannerPage extends ConsumerWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  GlassCard(
+                  HudPanel(
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +122,7 @@ class AiPlannerPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   for (final ex in plan.exercises) ...[
-                    GlassCard(
+                    HudPanel(
                       onTap: () =>
                           GoRouter.of(context).push('/workout/${ex.id}'),
                       child: Row(
