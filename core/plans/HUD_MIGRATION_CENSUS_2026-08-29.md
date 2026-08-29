@@ -14,20 +14,52 @@ observation below; sub-gates come from this data, not from mechanically working 
 
 | Metric | Count |
 |---|---|
-| `GlassCard(` call sites | 126 → 124 → 117 → 96 (gate 4) → 84 (sub-gate 5) → 67 (sub-gate 6) → 50 (sub-gate 7) → 45 (sub-gate 8) → 34 (sub-gate 9) → **0** after sub-gate 10 (1 remaining call is `deload_banner.dart`'s own intentional exception, kept as `GlassCard` on purpose -- see below) |
-| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → 20 (sub-gate 5) → 14 (sub-gate 6) → 12 (sub-gate 7) → 8 (sub-gate 8) → 6 (sub-gate 9) → **2** after sub-gate 10: `deload_banner.dart` (the intentional exception) + `glass.dart`'s own definition. Methodology note carried forward: a raw `grep -rl "GlassCard("` also matches `hud_surface.dart`'s `HudPanelTone` doc comment (prose, not a call site) -- excluded from this and every count above. |
+| `GlassCard(` call sites requiring migration | 126 → 124 → 117 → 96 (gate 4) → 84 (sub-gate 5) → 67 (sub-gate 6) → 50 (sub-gate 7) → 45 (sub-gate 8) → 34 (sub-gate 9) → **0** after sub-gate 10 (renamed from a raw "call sites" count per GPT-PM's correction, 2026-08-29 closure round: the raw count is 1, not 0 -- `deload_banner.dart`'s own accepted, permanent exception. "Requiring migration" is the number that should legitimately reach zero; the raw census count stays 1 forever, by design, and that is not a defect) |
+| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → 20 (sub-gate 5) → 14 (sub-gate 6) → 12 (sub-gate 7) → 8 (sub-gate 8) → 6 (sub-gate 9) → **2** after sub-gate 10: `deload_banner.dart` (the accepted exception) + `glass.dart`'s own definition. Methodology note carried forward: a raw `grep -rl "GlassCard("` also matches `hud_surface.dart`'s `HudPanelTone` doc comment (prose, not a call site) -- excluded from this and every count above. |
 | Files importing `shared/widgets/glass.dart` | 45 → 43 → 42 → 38 (gate 4) → 33 (sub-gate 5) → 33 (sub-gate 6) → 33 (sub-gate 7) → 33 (sub-gate 8) → 32 (sub-gate 9) → **32** after sub-gate 10 (unchanged: all 4 files in this batch use `FrostedScaffold`/`GlassAppBar` and scoped their import to `show` rather than dropping it) |
 | `INTENTIONAL_LEGACY_EXCEPTION` sites (`GlassCard` kept for a capability `HudPanel` genuinely lacks) | 2 (`scanner_page.dart`) + 1 (`deload_banner.dart`) → 6 (sub-gate 7) → 1 (sub-gate 8) → 1 (sub-gate 9) → **1** after sub-gate 10 (unchanged: only `deload_banner.dart`; this sub-gate's 3 error sites -- `progress_photos_page.dart`, `subscription_page.dart` -- all landed directly on `HudPanelTone.error`, `progress_page.dart` and `settings_page.dart` had no tint sites at all) |
-
-**Migration substantially complete as of sub-gate 10.** Every `GlassCard` call site in the app is
-either migrated to `HudPanel`/`HudSheet`/`HudPanelTone.error`, or is `deload_banner.dart`'s single
-remaining, deliberately-kept recovery-accent exception (see "Suggested sub-gate order" below for
-what would close it). `shared/widgets/glass.dart` itself stays in the tree -- `FrostedScaffold` and
-`GlassAppBar` are still the app's scaffold/app-bar primitives and were never in scope for this
-migration; only `GlassCard` (and its `tint`/gradient capability) was being retired.
 | Files referencing `aurora_background`/`AuroraBackground` | 5 (2 are theme/token files, 1 is the definition file itself, 1 is a comment-only mention in `workout_player_page.dart` — **corrected**: `main.dart` is the ONLY real widget-tree usage, see the struck sub-gate 3 below) |
 | Files already using `HudSurface`/`HudPanel`/`HudButton`/`HudChip` | 20 (+ `HudSheet`, the new opaque-surface widget from sub-gate 1) |
 | Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` → 2 after sub-gate 1 → **0** after sub-gate 2 (`home_page.dart` fully migrated; `scanner_page.dart` closed with 2 sites reclassified `INTENTIONAL_LEGACY_EXCEPTION`, not partial-migration debt) |
+
+## GATE CLOSED — 2026-08-29 (formal closure, per GPT-PM APPROVE)
+
+Closing verdict from GPT-PM, sent the full sub-gate 4-10 summary and the `deload_banner.dart`
+disposition question via PM Bridge: **APPROVE (a)** -- keep `deload_banner.dart` as the one
+permanent, documented `GlassCard` exception; do not add a speculative `HudPanelTone.recovery` for
+a single site ("Adding recovery for a single call site would weaken the rule immediately after
+establishing it"); close the gate once the full-suite `flutter test` returns green. GPT-PM also
+caught the wording bug corrected above (a "→ 0" claim next to a stated "1 remains" is internally
+contradictory) -- fixed by splitting the metric into "requiring migration" (correctly 0) from the
+raw census count (correctly, permanently, 1).
+
+**Formal closure state, verbatim from GPT-PM's ruling:**
+- HudPanel / HudSheet migration work: **COMPLETE**
+- `HudPanelTone.error` capability gap: **CLOSED**
+- `deload_banner.dart`: **ACCEPTED BOUNDED LEGACY EXCEPTION**
+- `HudPanelTone.recovery`: **NOT JUSTIFIED / NOT CREATED** (revisit only if a second genuine
+  recovery/accent-tone site appears)
+- New `GlassCard` application call sites: **NOT ALLOWED** without a new evidenced design decision
+- Census raw remaining `GlassCard` application calls: **1**
+
+**Full-suite `flutter test` result: green with 2 pre-existing, out-of-scope failures**, verified
+NOT attributable to sub-gates 4-10 (or to this migration's own sub-gates 1-3) before closing:
+- `test/theme/app_semantic_colors_test.dart` — "the hardcoded whites that survived G1.2b stay
+  accounted for" (expects a running tripwire total of 61, currently measures 58). Verified via a
+  detached checkout of `215635f` (the commit immediately before this window's sub-gate 4 started,
+  itself downstream of sub-gates 1-3): **the identical Expected:61/Actual:58 failure already
+  existed there**, byte-for-byte the same per-file breakdown. Not caused by this window's work.
+- `test/golden/composed_screen_golden_test.dart` — "Home (composed) light/dark" (pixel-diff golden
+  screenshots). Same verification: **already failing at `215635f`** (18.34% dark-theme diff there
+  vs. 25.76% now -- the diff grew as more pages migrated in sub-gates 4-10, which is expected and
+  not a new failure mode, just more of the same one). Root cause: `home_page.dart`'s `GlassCard` →
+  `HudPanel` migration (sub-gate 2, before this window) already changed the rendered pixels the
+  golden PNGs were captured against, and those PNGs were never refreshed. Per GPT-PM's own
+  instruction ("remediate only failures attributable to this migration/direct regressions; do not
+  reopen unrelated scope"), refreshing stale goldens and re-baselining the whites tripwire is
+  explicitly **out of scope for this gate** -- it belongs to whichever gate actually owns visual
+  regression coverage and the G1.2b ledger, not the GlassCard retirement this gate tracked.
+  Recorded here so it is not silently rediscovered as a surprise later.
 
 ### Sub-gate 2 — closed, 2026-08-29
 

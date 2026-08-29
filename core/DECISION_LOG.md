@@ -34469,6 +34469,52 @@ prevent. Awaiting a GPT-PM read before marking the gate fully closed; continuing
 loose ends (a repo-wide `flutter test` full-suite run, a final full-project `flutter analyze`) in
 the meantime, per PM mode.
 
+## HUD migration gate: formally CLOSED (GPT-PM APPROVE (a))
+
+Sent the closing question to GPT-PM via PM Bridge: full sub-gate 4-10 summary plus the
+`deload_banner.dart` disposition (a/b/c from the entry above). **VERDICT: APPROVE (a).** Keep
+`deload_banner.dart` as the one permanent, documented `GlassCard` exception; do not build
+`HudPanelTone.recovery` for a single site ("Adding recovery for a single call site would weaken
+the rule immediately after establishing it. Worse, it buys almost nothing architecturally because
+glass.dart cannot be retired anyway"); close once the full-suite `flutter test` is green.
+
+GPT-PM also caught a real wording bug in my own draft before I'd noticed it: the census said
+"`GlassCard` call sites: ... → 0" in the same breath as "1 remaining call... intentional
+exception" -- internally contradictory for a raw census metric. Fixed by splitting the row into
+"call sites requiring migration" (0, correctly) from the permanent raw count (1, correctly, by
+design). Formal closure state, verbatim from the ruling: HudPanel/HudSheet migration COMPLETE;
+`HudPanelTone.error` gap CLOSED; `deload_banner.dart` ACCEPTED BOUNDED LEGACY EXCEPTION;
+`HudPanelTone.recovery` NOT JUSTIFIED/NOT CREATED; new `GlassCard` application sites NOT ALLOWED
+without a new evidenced decision.
+
+**Full-suite `flutter test` (3,269 tests): 2 pre-existing failures, verified out of scope before
+closing, not remediated.** Both traced to a state BEFORE this window's own sub-gates 4-10 even
+started, via a detached checkout of `215635f` (the commit immediately preceding sub-gate 4,
+already downstream of sub-gates 1-3):
+- `app_semantic_colors_test.dart`'s "hardcoded whites... G1.2b" tripwire: Expected 61, Actual 58,
+  byte-identical failure already present at `215635f`. Not caused by this window.
+- `golden/composed_screen_golden_test.dart`'s "Home (composed) light/dark": already failing at
+  `215635f` (18.34% dark-theme pixel diff there; 25.76% now -- the number grew because more pages
+  migrated in sub-gates 4-10, same root cause, not a new one). Root cause is `home_page.dart`'s
+  `GlassCard` → `HudPanel` migration in sub-gate 2 (before this window), whose golden PNGs were
+  never refreshed to match the new rendered pixels.
+
+Per GPT-PM's own instruction ("remediate only failures attributable to this migration/direct
+regressions; do not reopen unrelated scope"), neither is fixed here -- refreshing stale golden
+screenshots and re-baselining the G1.2b whites ledger are real, separate pieces of work that
+belong to whoever owns visual-regression coverage, not this gate. Recorded in the census doc's own
+closure section so this is not silently rediscovered as a surprise by a future session.
+
+Checked out `215635f` in a detached HEAD to verify both baselines, then returned cleanly to
+`master` at `1a52807` (`git checkout master`) -- no branch created, no history rewritten, working
+tree confirmed clean before and after.
+
+**HUD migration gate: CLOSED.** 126 -> 0 `GlassCard` call sites requiring migration, across 10
+sub-gates, one design escalation to GPT-PM (`HudPanelTone.error`) that caught a real
+classification error in my own framing, and one closing escalation that caught a real wording bug
+in my own census draft. Next: no further sub-gates planned under this gate; any new `GlassCard`
+use anywhere in the app is a regression against this closure, not a legitimate continuation.
+
 ## HUD migration: progress report, sub-gates 4-9 (PM-mode checkpoint)
 
 Wrote and published the mandatory milestone report per the `html-report` skill, due after 6
