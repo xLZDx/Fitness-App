@@ -34127,3 +34127,62 @@ mechanical in-page-card sites first (same pattern as sub-gate 2) and flagging an
 design question (a tint/gradient/blur override, a sheet-like usage) for GPT-PM review once the
 operator's new-chat URL restores the channel -- continuing autonomously under the same GO, per PM
 mode.
+
+## PM Bridge channel restored: fixed a real cross-project bug, GPT-PM review resumed
+
+The operator, after my report that I couldn't safely open a new ChatGPT conversation myself
+(`openBlankNewChat()` isn't exposed as a tool, and a rogue script would collide with the
+orchestrator's declared sole ownership of the shared browser profile), gave the exact fix: create
+the new chat, send one message, wait ~20s, then read the URL. This diagnosed a real bug in PM
+Bridge's own `createAndRegisterProject` -- it read the new conversation's URL immediately after
+sending, before ChatGPT's router had rewritten it from `/` to `/c/<id>`, so it silently failed to
+capture the ID on every genuinely-successful attempt. I reproduced it twice (each attempt created
+a harmless stray blank conversation, since the registry write only happens after a successful ID
+capture -- nothing was corrupted).
+
+Fixed it properly in the pm-bridge repo (`D:\Repo\pm-bridge`, commit `8a5baef`, pushed): the read
+now polls for up to 20s instead of once, verified against pm-bridge's own test suite (fixed one
+test whose mock transport was missing the helper my fix now calls; 45/45 assertions pass, full
+suite 0 failures) and end-to-end through a real MCP call. Also hit and fixed a known, previously-
+documented issue on the way (this session's own long-lived `server.js` process had the OLD code
+loaded in memory even after the daemon restarted): identified and killed the exact stale process
+belonging to this session (matched by shared parent PID, `Get-CimInstance Win32_Process`) without
+touching two other concurrent sessions' own `server.js` processes.
+
+First attempt after the fix landed still failed for an unrelated reason -- the operator caught it
+live ("ты должен был создать новый чат а не логиниться в старый"): Fitness_App's mapping was
+still pointing at the old conversation from an earlier restore, so the call routed straight back
+into the capped one instead of triggering auto-registration. Cleared the mapping again and it
+worked: a genuine new conversation (`6a931609-a93c-83eb-aa97-d8f5f46e3642`), GPT-PM responding
+normally, correlated replies. Restored the four `_wt-*` worktree routes onto the new mapping
+(auto-register only knew the one folder it was called for) and updated
+`pm-bridge/config/conversations.md` to match.
+
+Sent the full sub-gate 1-3 status (this file's own last three entries, condensed) plus the
+open question about how to handle the remaining 36 files. GPT-PM's reply: `VERDICT: APPROVE`,
+option (a) -- continue autonomously, no separate sign-off round needed for the sheet-shaped
+subset. Binding guardrails for the remaining pass, verbatim from the reply:
+
+- Classify by actual widget-tree role (ownership: does it sit on the page's own background, or
+  present over content it doesn't own?), never by filename -- a `*_sheet.dart` name is not proof
+  it needs `HudSheet`, and a modal-shaped widget with another name might.
+- Compare the COMPLETE `GlassCard` contract at each site before replacing it --
+  `padding`/`borderRadius`/`blur`/`blurSigma`/`tint`/`gradient`/`onTap` -- not just the fields the
+  first few sites happened to use. `HudSheet` currently has no `onTap`; a genuine sheet-shaped
+  site that needs tap semantics is a capability gap to classify, not something to silently drop
+  or redesign ad hoc.
+- Defaults are not interchangeable: `GlassCard` (18px padding, radius 26) vs `HudPanel` (18px
+  padding, radius 30 -- the HUD panel radius, a DELIBERATE design change) vs `HudSheet` (20px
+  padding, radius 26). An intentional HUD-radius adoption is fine; an accidental layout change is
+  not -- check which one each site is getting.
+- Do not invent a new HUD primitive just to zero out the `GlassCard` count. Any capability with
+  no approved HUD equivalent (tint, gradient, a special blur) becomes a concrete
+  `INTENTIONAL_LEGACY_EXCEPTION`, same as the scanner status-tint gap already recorded.
+- Keep going feature-area/incremental (the census's own proposed order), not one 36-file commit.
+  Each sub-gate: analyze + focused tests + regression tests + commit + push under standing
+  authorization.
+- Final DoD is not "`GlassCard` count == 0" -- every residual site must be migrated OR explicitly
+  classified with a concrete reason. Repeated instances of the same new gap consolidate into one
+  future design sub-gate, not repeated review rounds.
+
+Continuing autonomously into the remaining files under this GO, per PM mode.
