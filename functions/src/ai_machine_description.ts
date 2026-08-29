@@ -19,7 +19,14 @@
  */
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { AI_METERED } from "./scaling";
-import { QUOTAS, enforceDailyQuota, enforceNonAnonymousForAi, noteAppCheck, quotaFor } from "./abuse_guard";
+import {
+  QUOTAS,
+  enforceAiGatewayEnabled,
+  enforceDailyQuota,
+  enforceNonAnonymousForAi,
+  noteAppCheck,
+  quotaFor,
+} from "./abuse_guard";
 import { generate, InlineImage } from "./ai_gateway";
 import { checkImageFieldsAreStrings, decodeAndValidateImageBytes } from "./image_validation";
 
@@ -90,6 +97,7 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
   }
   noteAppCheck(request, "aiMachineDescription");
   enforceNonAnonymousForAi(signInProvider(request));
+  await enforceAiGatewayEnabled("aiMachineDescription");
   const input = parseInput(request.data);
 
   await enforceDailyQuota(

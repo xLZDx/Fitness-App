@@ -65,3 +65,27 @@ export const CANARY_PROBE_FAILED_EVENT = "production canary probe failed";
  */
 export const ENFORCEMENT_STATE_DEGRADED_OR_FAILED_EVENT =
   "enforcement state check degraded or failed";
+
+/**
+ * `abuse_guard.ts` -- MVP1.G4 Step 8's kill switch. A caller was refused
+ * because the `ai-gateway-kill-switch` Secret Manager secret's latest version
+ * decodes to `enabled: false` -- a deliberate operator disable. Distinct from
+ * `AI_GATEWAY_CONTROL_READ_FAILED_EVENT`: this fires when the control plane
+ * answered "disabled", not when it could not be consulted at all. (Round 1 of
+ * this step used a Firestore document, `system/aiGateway`; superseded by
+ * Secret Manager after GPT-PM's review found the runtime identity could
+ * write back to a Firestore-backed switch -- see `abuse_guard.ts`'s own doc
+ * comment on `enforceAiGatewayEnabled`.)
+ */
+export const AI_GATEWAY_DISABLED_REJECT_EVENT = "ai gateway disabled: call refused";
+
+/**
+ * `abuse_guard.ts` -- the kill-switch control secret itself could not be
+ * consulted: a Secret Manager error (including a disabled/destroyed
+ * version), an empty payload, or a payload that failed to parse as JSON.
+ * Fails the same way as a deliberate disable -- an unreadable control plane
+ * must never be silently treated as "enabled" -- but logged separately so an
+ * operator can tell "I turned this off on purpose" apart from "the control
+ * plane broke."
+ */
+export const AI_GATEWAY_CONTROL_READ_FAILED_EVENT = "ai gateway control read failed";

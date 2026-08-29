@@ -1,10 +1,13 @@
 import * as admin from "firebase-admin";
+import { SecretManagerServiceClient } from "@google-cloud/secret-manager";
 import { HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
 import {
   APP_CHECK_EVENT,
   QUOTA_EXCEEDED_EVENT,
   QUOTA_CHECK_FAILED_EVENT,
+  AI_GATEWAY_DISABLED_REJECT_EVENT,
+  AI_GATEWAY_CONTROL_READ_FAILED_EVENT,
 } from "./monitoring/log_signals";
 
 /**
@@ -127,6 +130,189 @@ export async function enforceDailyQuota(
     if (e instanceof HttpsError) throw e;
     logger.error(QUOTA_CHECK_FAILED_EVENT, { uid, action, cost, limit, err: String(e) });
     throw new HttpsError("internal", "Could not check your usage limit.");
+  }
+}
+
+/**
+ * MVP1.G4 Step 8 -- the server-side kill switch for the four AI Gateway
+ * callables. GPT-PM's binding DoD for this step (2026-08-29): a runtime
+ * control an operator can flip live, "without a function redeploy", that a
+ * "process restart/new instance must observe... rather than reverting to
+ * enabled."
+ *
+ * Secret Manager-backed, not Firestore and not an env var. The first version
+ * of this used a Firestore document -- GPT-PM's round-1 review of this same
+ * step found that fundamentally unsound: `fn-ai-runtime` (the identity
+ * running the very code being disabled) already holds project-wide
+ * `roles/datastore.user` for quota accounting (`core/G4_STEP3_IAM_RUNTIME_
+ * CONFIG_2026-08-28.md`), and Firestore has no collection-level IAM -- that
+ * grant cannot be narrowed to exclude one document. `firestore.rules` does
+ * not help either; the Admin SDK bypasses Security Rules entirely. So a
+ * compromised or buggy `fn-ai-runtime` could simply write `enabled: true`
+ * back to its own kill switch, defeating the one property this mechanism
+ * exists for: an operator being able to turn AI off From The Outside.
+ *
+ * Secret Manager grants IAM per-secret, independent of Firestore's project
+ * -wide grant. `fn-ai-runtime` holds `roles/secretmanager.secretAccessor`
+ * scoped to exactly this one secret (`ai-gateway-kill-switch`) -- read-only,
+ * verified by IAM policy inspection to carry no broader Secret Manager role
+ * -- and nothing grants it version-add/update rights on it. Flipping the
+ * switch means adding a new secret version, which only an operator identity
+ * (or a future admin tool acting on the operator's behalf) can do. This is
+ * the same secret-level IAM scoping pattern `fn-billing`'s `STRIPE_*` access
+ * already uses in this codebase, applied for the first time as the
+ * *authoritative* control rather than a credential the function merely reads
+ * for its own use.
+ *
+ * Not `defineSecret` (the pattern `STRIPE_SECRET_KEY` etc. use): that binds a
+ * secret's value into `process.env` once per container at cold start, so an
+ * already-running warm instance keeps serving the OLD value until it
+ * eventually recycles -- the opposite of what a kill switch needs. This
+ * calls `accessSecretVersion` directly, through a short bounded cache (below)
+ * rather than on every invocation.
+ *
+ * GPT-PM's round-2 review found the round-1 design's "fresh read every call"
+ * choice still left an unmetered path even after round 1's auth-ordering fix:
+ * a valid, non-anonymous, App-Check-attested caller can send malformed
+ * payloads (rejected by `parseInput`, which runs AFTER this check in every
+ * callable) or keep calling after exhausting its daily quota (checked AFTER
+ * this too, by the DoD's own requirement) -- every such attempt still paid a
+ * real Secret Manager access with no ceiling at all, which is both a
+ * per-project Secret Manager quota/cost dependency and exactly the kind of
+ * unbounded read this step's own design rationale claimed didn't exist.
+ * GPT-PM offered two acceptable fixes: reorder validation and add a
+ * non-charging rate pre-check, or "a short bounded cache with a documented
+ * maximum disable-propagation interval." The cache is simpler and closes the
+ * gap completely rather than partially -- reordering `parseInput` earlier
+ * would not have helped the "well-formed but already-over-quota caller
+ * retries" case at all, since that caller's payload passes validation and
+ * only quota (deliberately checked after this switch, per the DoD) would
+ * reject it.
+ */
+const AI_GATEWAY_SECRET_NAME =
+  "projects/988522745882/secrets/ai-gateway-kill-switch/versions/latest";
+
+let secretClient: SecretManagerServiceClient | undefined;
+function secrets(): SecretManagerServiceClient {
+  // Same lazy-per-call-not-module-load reasoning as `db()` above: constructing
+  // the client eagerly at import time would make merely importing this module
+  // reach for ADC, which every test file importing it would then have to mock
+  // whether or not that test exercises this function.
+  if (!secretClient) secretClient = new SecretManagerServiceClient();
+  return secretClient;
+}
+
+interface AiGatewayControl {
+  enabled?: unknown;
+  reason?: unknown;
+}
+
+interface ResolvedControlState {
+  /** `null` exactly when `readError` is set -- the two are mutually exclusive. */
+  data: AiGatewayControl | null;
+  readError: string | null;
+}
+
+/**
+ * Documented maximum disable-propagation interval: an operator flipping the
+ * switch mid-incident is observed by any given already-warm instance within
+ * this many milliseconds of the flip, not instantly -- the trade this step's
+ * round-2 remediation makes in exchange for bounding how many real Secret
+ * Manager accesses an unbounded caller can generate. A brand-new instance
+ * (durability point 7 of the DoD) always starts with an empty cache, so its
+ * very first call is always a genuine fresh read regardless of this window.
+ */
+const CONTROL_CACHE_TTL_MS = 5_000;
+
+/**
+ * Caches the in-flight PROMISE, not just its eventually-resolved value.
+ * Caching only the resolved value still lets a burst of concurrent calls
+ * stampede Secret Manager: each one checks the cache before any of them has
+ * awaited far enough to populate it, so all of them see "empty" and all of
+ * them fetch. Storing the promise itself closes that -- it is written
+ * synchronously before the first `await`, so every concurrent caller within
+ * the same tick shares the one in-flight request.
+ */
+let cachedControl: { promise: Promise<ResolvedControlState>; expiresAt: number } | undefined;
+
+/**
+ * Test-only escape hatch: `cachedControl` is module-scope state, so without
+ * this a cache hit in one test would leak into the next test in the same
+ * file (the module is `require`d once per file, not once per test). Not
+ * called anywhere outside `__tests__/*.test.ts`.
+ */
+export function __resetAiGatewayControlCacheForTests(): void {
+  cachedControl = undefined;
+}
+
+/**
+ * The one place that actually calls Secret Manager, at most once per
+ * `CONTROL_CACHE_TTL_MS` per warm instance regardless of caller volume.
+ * `enforceAiGatewayEnabled` below still logs its own structured event on
+ * EVERY call -- only the network access is throttled, not the per-call
+ * observability the DoD's proof point 5 requires.
+ */
+function resolveControlState(): Promise<ResolvedControlState> {
+  const now = Date.now();
+  if (cachedControl && cachedControl.expiresAt > now) return cachedControl.promise;
+
+  const promise = (async (): Promise<ResolvedControlState> => {
+    let payload: string | undefined;
+    try {
+      const [version] = await secrets().accessSecretVersion({ name: AI_GATEWAY_SECRET_NAME });
+      payload = version.payload?.data?.toString();
+    } catch (e) {
+      return { data: null, readError: String(e) };
+    }
+    if (!payload) {
+      return { data: null, readError: "control secret payload empty" };
+    }
+    try {
+      return { data: JSON.parse(payload) as AiGatewayControl, readError: null };
+    } catch (e) {
+      return { data: null, readError: `unparseable payload: ${String(e)}` };
+    }
+  })();
+  cachedControl = { promise, expiresAt: now + CONTROL_CACHE_TTL_MS };
+  return promise;
+}
+
+/**
+ * @throws HttpsError('unavailable') when AI is administratively disabled, OR
+ * when the control secret cannot be read/parsed at all -- an unreadable
+ * control plane must never be silently treated as "enabled" (the DoD's own
+ * "fail toward the safer state" requirement). Both cases use the identical
+ * client-visible contract on purpose: a caller cannot distinguish "an
+ * operator turned this off" from "the control plane is broken" and does not
+ * need to -- only the structured log (`AI_GATEWAY_DISABLED_REJECT_EVENT` vs.
+ * `AI_GATEWAY_CONTROL_READ_FAILED_EVENT`) carries that distinction, for an
+ * operator reading Cloud Logging, not for the client.
+ *
+ * Called after the auth/non-anonymous checks but before `enforceDailyQuota`/
+ * `generate` in every AI callable. GPT-PM's round-1 review found the earlier
+ * "before auth" placement let an unauthenticated caller trigger a read on
+ * every retry; round-2 review found auth alone did not bound a valid caller
+ * retrying with bad input or past its quota either -- see
+ * `resolveControlState`'s own doc comment for why a short cache, not further
+ * reordering, is what actually closes that.
+ */
+export async function enforceAiGatewayEnabled(fn: string): Promise<void> {
+  const { data, readError } = await resolveControlState();
+  if (readError !== null) {
+    logger.error(AI_GATEWAY_CONTROL_READ_FAILED_EVENT, { fn, err: readError });
+    throw new HttpsError(
+      "unavailable",
+      "AI features are temporarily unavailable. Please try again later.",
+    );
+  }
+  const enabled = data!.enabled === true;
+  if (!enabled) {
+    const reason = typeof data!.reason === "string" ? data!.reason : null;
+    logger.warn(AI_GATEWAY_DISABLED_REJECT_EVENT, { fn, reason });
+    throw new HttpsError(
+      "unavailable",
+      "AI features are temporarily unavailable. Please try again later.",
+    );
   }
 }
 

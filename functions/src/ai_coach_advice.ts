@@ -17,7 +17,14 @@
  */
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { AI_METERED } from "./scaling";
-import { QUOTAS, enforceDailyQuota, enforceNonAnonymousForAi, noteAppCheck, quotaFor } from "./abuse_guard";
+import {
+  QUOTAS,
+  enforceAiGatewayEnabled,
+  enforceDailyQuota,
+  enforceNonAnonymousForAi,
+  noteAppCheck,
+  quotaFor,
+} from "./abuse_guard";
 import { generate } from "./ai_gateway";
 
 type Source = "equipment" | "exercise";
@@ -131,6 +138,7 @@ export const aiCoachAdvice = onCall(AI_METERED, async (request) => {
   }
   noteAppCheck(request, "aiCoachAdvice");
   enforceNonAnonymousForAi(signInProvider(request));
+  await enforceAiGatewayEnabled("aiCoachAdvice");
   const input = parseInput(request.data);
 
   await enforceDailyQuota(

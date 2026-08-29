@@ -33305,3 +33305,266 @@ the additional test images pushed to the device (`g4step7_probe2/3/4.*`, the fre
 from `/sdcard` after copying the needed screenshots into `core/screenshots/`.
 
 Sent for round 2.
+
+## G4 Step 8: rollback mechanism -- DoD from GPT-PM, then a Firestore-backed kill switch, then a live drill
+
+Step 7 closed (round 2 APPROVE, commit `ecded8d`, pushed). Steps 8 ("rollback mechanism") and 9
+("release guard") had no stated Definition of Done anywhere in this repo. Per this project's own
+Rosetta discipline ("ask GPT-PM for a DoD, do not write your own"), routed an explicit question
+through `review.js` (`--commit ecded8d --scope-note-file g4_step8_dod_question.md`, using an
+already-approved commit purely as a vehicle since the diff-review tool has no bare-Q&A mode) rather
+than inventing scope. `mcp__pm-bridge__gpt_send_and_await` itself was unusable this session (`No
+compatible orchestrator is active` / this session's MCP connection confirmed stale by
+`pm_bridge_mode_status`) -- the direct CLI, a fresh process per call, is unaffected by that and is
+the established workaround for this same failure mode from earlier in this gate.
+
+GPT-PM's answer, VERDICT APPROVE, GO AUTHORIZED: a server-side kill switch for all 4 AI Gateway
+callables, effective **without a function redeploy**, evaluated before quota charging and before
+Vertex/Gemini is invoked. One generic switch is sufficient (not per-concern switches), recording a
+reason. Client-side UI flag optional, never the security control. Not required: model rollback or a
+full undeploy/redeploy drill. Eight binding proof points, enumerated verbatim in this session's
+prior turn and reproduced in `core/G4_STEP8_KILL_SWITCH_2026-08-29.md`.
+
+**Design.** This codebase's existing enforcement flags (`APP_CHECK_ENFORCED_AI` etc., `scaling.ts`)
+are baked into gen2 Cloud Functions at deploy time via `--update-env-vars` -- structurally
+incapable of "disable without a redeploy." Chose a Firestore document instead (`system/aiGateway`:
+`enabled`, `reason`, `updatedAt`, `updatedBy`), read fresh on every call (no in-memory cache/TTL --
+call volume is bounded by per-user daily quotas, so one Firestore read per call is negligible next
+to the Vertex call it gates, and this avoids reasoning about a cache-TTL propagation window
+entirely). Seeded the document (`enabled: true, reason: null`) via Firestore REST PATCH **before**
+any enforcement code was deployed, specifically to avoid a window where enforcement code exists but
+the control document doesn't -- which would have fail-closed and taken down all 4 already-working,
+already-proven (Step 7) callables.
+
+`enforceAiGatewayEnabled(fn)` in `abuse_guard.ts` runs as the literal first line of each of the 4
+callables' handler bodies, before even the `if (!request.auth)` check -- a globally disabled
+gateway refuses everyone identically regardless of auth state, and placing it first trivially
+guarantees the DoD's "before quota/Vertex" ordering without reasoning about interleaving with the
+auth/App-Check/quota logic that follows. Three distinct server states -- deliberate disable, a
+missing control document, and a Firestore read throwing -- all throw the identical client-facing
+`HttpsError("unavailable", "AI features are temporarily unavailable. Please try again later.")`,
+indistinguishable to the caller by design, but logged under two different structured event names
+(`log_signals.ts`) so an operator reading Cloud Logging can tell them apart:
+`AI_GATEWAY_DISABLED_REJECT_EVENT` (`logger.warn`, carries `reason`) vs.
+`AI_GATEWAY_CONTROL_READ_FAILED_EVENT` (`logger.error`, carries `err`). The `enabled` check is
+strict `=== true`, not truthy coercion, so a non-boolean value fails closed rather than being
+accidentally treated as enabled. `firestore.rules` denies all client read/write on `system/{docId}`
+-- the Admin SDK bypasses rules entirely so this isn't what protects the document, it's here so a
+client-side attempt is an explicit denial rather than "path never matched," matching every other
+admin-only collection in that file.
+
+Wired into all 4 callables (`ai_coach_advice.ts`, `ai_equipment_recognition.ts`,
+`ai_machine_description.ts`, `ai_exercise_generation.ts`). Extended `abuse_guard.test.ts` (rewritten
+to move all `jest.mock` calls to true file-top-level, this project's established hoisting
+convention -- an initial draft nested one inside a `describe` block) with 6 new tests covering
+enabled/disabled/non-boolean/missing-doc/read-throw. Extended each of the 4 callables' own test
+files with one test each: kill switch off refuses before auth/quota/generate. Full suite: 545/545
+passing, `tsc --noEmit` clean, `npm run build` clean. Deployed
+(`firebase deploy --only functions:aiCoachAdvice,functions:aiEquipmentRecognition,functions:aiMachineDescription,functions:aiExerciseGeneration,firestore:rules`).
+
+**Live drill against the real deployed functions (europe-west1), all 8 proof points:**
+
+Blocked initially on `signInWithCustomToken` returning `403 Method doesn't allow unregistered
+callers` even with a since-twice-confirmed-correct Web API key from `google-services.json`. Root
+cause: that key is the **Android key**, and `gcloud alpha services api-keys list` showed it carries
+`androidKeyRestrictions` -- Google enforces that by requiring genuine Android-app request context
+(package + cert signals only a real mobile SDK supplies), which a bare Node `fetch()` cannot
+produce, regardless of the key value being correct. Fixed by switching to this same project's
+**Browser key** (`82a01576-645b-451f-a708-be96e86aba21`, no such restriction, `identitytoolkit`
+already in its `apiTargets`), fetched via `gcloud alpha services api-keys get-key-string`. For App
+Check: registered a fresh debug token for the same debug app Step 5 used
+(`1:988522745882:android:7c05c915aa42410ec201a3`), then exchanged it for a real signed App Check
+JWT via the public `firebaseappcheck.googleapis.com/v1/.../exchangeDebugToken` endpoint (documented
+Firebase behavior -- a registered debug-token UUID is not itself a valid `X-Firebase-AppCheck`
+value, it has to be exchanged first, unlike what an earlier assumption this session had held).
+
+| # | Proof point | Result |
+|---|---|---|
+| 1 | Normal state, switch ON, one bounded call | `200`, real `aiCoachAdvice` response |
+| 2 | Live disable, no redeploy | Firestore REST PATCH `enabled:false`, confirmed via read-back |
+| 3 | All 4 reject the same way | All 4: `503 UNAVAILABLE`, identical message |
+| 4 | Pre-provider (usage/quota untouched, no Vertex call) | `users/g4-step8-killswitch-probe/usage/2026-08-29.aiCoachAdvice` stayed at `1` (the point-1 call) through all 4 rejections; only one `ai_gateway: call` log line exists all drill, timestamped to point 1, none during the disabled window |
+| 5 | Observability | 4 `AI_GATEWAY_DISABLED_REJECT_EVENT` log lines, one per callable, `reason=g4_step8_killswitch_drill`, no PII |
+| 6 | Recovery, no redeploy | Firestore PATCH `enabled:true`, immediate `200` on the next call |
+| 7 | Durability (fresh state on a new instance, not a stale "enabled" default) | Structural by design (no cache, fresh Firestore read every invocation); also implicitly exercised across point 3's 4 calls, each a genuinely separate deployed Cloud Run service/revision, all correctly observing the same disabled state independently |
+| 8 | Fail-safe on unreadable control plane | Deleted `system/aiGateway` entirely; the next call still got the identical `503 UNAVAILABLE`, but logged under the distinct `AI_GATEWAY_CONTROL_READ_FAILED_EVENT` (`severity=ERROR`, confirmed via `gcloud logging read`, `jsonPayload.message="Error: ai gateway control read failed"` -- the `firebase-functions` logger prefixes `Error:` on `.error()` calls, so the exact-string filter needed widening to find it); restored the document (`enabled:true`) immediately after and confirmed one more real call succeeded |
+
+Cleanup, same lifecycle discipline as every step this gate: deleted the drill's own registered
+debug token (Step 5's separately-registered token remains the durable one for future device
+testing, unaffected), deleted the test Auth user (`g4-step8-killswitch-probe`), revoked the
+temporary `roles/iam.serviceAccountTokenCreator` grant, removed local scratchpad credential files.
+Final `system/aiGateway` state verified: `enabled:true, reason:null`.
+
+Sending to GPT-PM for review.
+
+## G4 Step 8 round 1: 1 MAJOR, 2 MINOR -- Firestore control plane was not independent of the runtime it disables
+
+Round 1 verdict: MAJOR, verified against `core/G4_STEP3_IAM_RUNTIME_CONFIG_2026-08-28.md` before
+acting on it (per `~/.claude/CLAUDE.md` §3 -- never accept a reviewer claim without checking the
+cited evidence). Confirmed FACT: `fn-ai-runtime@...` holds project-wide `roles/datastore.user`
+(that doc's own IAM table), and Firestore has "no collection-level IAM" (the same doc, verbatim) --
+so the grant could not be narrowed to exclude `system/aiGateway`. `firestore.rules` did not help;
+the Admin SDK bypasses Security Rules entirely. The exact defect: a compromised or buggy
+`fn-ai-runtime` could write `enabled: true` back to its own kill switch, defeating the mechanism's
+one purpose -- an operator's ability to disable AI *from outside* the thing being disabled.
+
+Two MINORs alongside it, both also verified real: (1) the control-plane read sat before the auth
+check (literal first line of every callable), so an unauthenticated but App-Check-valid caller
+could trigger it on every retry with no quota bound at all -- a new unmetered read path the design
+rationale ("bounded by per-user daily quotas") did not actually cover; (2) the live-drill evidence
+said "only one `ai_gateway: call` log line exists all drill," which read as contradicting the two
+recovery calls (points 6 and 8) that should also have produced one each -- ambiguous wording, not
+a described regression, but not verifiable as written either.
+
+GO: AUTHORIZED -- remediate the control-plane authority boundary and the two direct evidence/cost
+regressions. HOLD: Step 8 closure and correlated commit/push until `fn-ai-runtime` is proven unable
+to re-enable its own kill switch.
+
+**Remediation, one batch (per `~/.claude/CLAUDE.md` §17 -- fix the whole reported package, then
+verify):**
+
+1. **Moved the control plane from Firestore to Secret Manager.** New secret
+   `ai-gateway-kill-switch`, payload JSON `{enabled, reason, updatedAt, updatedBy}`. Secret Manager
+   grants IAM per-secret, independent of Firestore's project-wide grant -- `fn-ai-runtime` now holds
+   `roles/secretmanager.secretAccessor` scoped to exactly this one secret (verified via
+   `gcloud projects get-iam-policy` before granting that no broader Secret Manager role already
+   existed on it), read-only, nothing granting version-add/update. `enforceAiGatewayEnabled()`
+   rewritten to call `SecretManagerServiceClient.accessSecretVersion` fresh per invocation (added
+   `@google-cloud/secret-manager` as a dependency -- not previously used in this codebase). Not
+   `defineSecret` (the `STRIPE_SECRET_KEY` pattern): that binds a value into `process.env` once per
+   container at cold start, so an already-warm instance would keep serving the old value -- the
+   opposite of what a live kill switch needs. Deleted the superseded `system/aiGateway` Firestore
+   document and removed the now-dead `firestore.rules` `system/{docId}` block.
+2. **Reordered all 4 callables**: `enforceAiGatewayEnabled` moved from the literal first line to
+   after `request.auth`/`enforceNonAnonymousForAi`, still before `enforceDailyQuota`/`generate` --
+   satisfies the DoD (which only requires "before quota and Vertex," never "before auth") while
+   closing the unmetered-read path.
+3. **Rewrote the drill with per-step UTC timestamps** recorded at call time, then reconciled every
+   relevant log line against them by exact timestamp rather than describing the result in prose.
+
+Updated 5 test files (`abuse_guard.test.ts` plus the 4 callables) to mock
+`SecretManagerServiceClient` instead of Firestore's `doc()` for this one path -- `runTransaction`'s
+own Firestore mock (quota, unrelated) was untouched, restored a plain `doc()` stub after an initial
+edit accidentally deleted it along with the gateway-specific override and broke quota's own tests
+(`db(...).doc is not a function`, caught immediately by the full suite, 42 failures, fixed before
+proceeding). Full suite: 546/546 passing. `tsc --noEmit` clean, `npm run build` clean. Redeployed
+all 4 functions plus `firestore:rules`.
+
+**New adversarial proof, exactly what GPT-PM asked for**: granted `roles/iam.serviceAccountTokenCreator`
+on `fn-ai-runtime` to the operator's own account temporarily (waited for IAM propagation via a
+proper polling loop, not a guessed sleep), impersonated it directly. `accessSecretVersion` -> `200`
+(reads the real payload). `addSecretVersion` -> `403 PERMISSION_DENIED: secretmanager.versions.add`
+(cannot write). Revoked the grant immediately after.
+
+**Rerun drill** (fresh test identity `g4-step8-remediation-probe`, same transport fixes as round 1 --
+Browser API key, App-Check debug-token exchange) against the new mechanism, all 8 DoD points again:
+normal call 200 (08:42:27-35) -> Secret Manager version-add disable (08:42:43-49) -> all 4 callables
+503 UNAVAILABLE (08:43:02-12) -> re-enable version-add (08:43:24-30) -> recovery call 200
+(08:43:30-35) -> disabled a specific secret version to force a genuine read failure
+(08:43:56-08:44:02) -> call still 503 but under the distinct `AI_GATEWAY_CONTROL_READ_FAILED_EVENT`,
+now carrying the REAL Secret Manager error (`FAILED_PRECONDITION: Secret Version ... is in DISABLED
+state`) rather than a synthetic "missing document" message -> re-enabled the version
+(08:44:11-17) -> one more successful call (08:44:23).
+
+**Reconciliation closing MINOR 2**: queried the exact window (08:42:00-08:44:30) for all three
+signal types. Exactly 3 `ai_gateway: call` events total (08:42:36, 08:43:36, 08:44:23) -- one per
+successful call, zero during either disabled interval. Exactly 4 `AI_GATEWAY_DISABLED_REJECT_EVENT`
+lines (08:43:04.31-08:43:13.22), one per callable, matching point 3's four rejections one-to-one.
+Exactly 1 `AI_GATEWAY_CONTROL_READ_FAILED_EVENT` (08:44:04.44), matching point 8's single call. Quota
+usage doc for the probe uid: `aiCoachAdvice: 3` -- exactly the 3 successful calls, confirming zero
+quota mutation during either disabled window. No regression from round 1; the ambiguity was in how
+the evidence was described, not in the implementation's behavior.
+
+Cleanup: deleted the rerun's own debug token and test Auth user, revoked both temporary IAM grants
+(`firebase-adminsdk-fbsvc` for token minting, `fn-ai-runtime` for the adversarial proof -- the
+latter left no standing grant beyond the pre-existing `roles/iam.serviceAccountUser` this session
+did not add), removed scratchpad credential files. Final secret state verified:
+`enabled:true, reason:null`.
+
+Sending round 2 to GPT-PM.
+
+## G4 Step 8 round 2: 2 MINOR -- round 1's auth-ordering fix raised the bar but did not bound the read
+
+VERDICT: MINOR. Round-1 MAJOR confirmed CLOSED by GPT-PM ("fn-ai-runtime can read the kill-switch
+payload but cannot change it"); round-1 logging MINOR also confirmed CLOSED. Two new MINORs, both
+verified real before acting:
+
+1. Auth-ordering (round 1) raised the attacker bar but did not create an actual ceiling: a valid,
+   non-anonymous, App-Check-attested caller sending malformed payloads (rejected by `parseInput`,
+   which runs AFTER `enforceAiGatewayEnabled`) or retrying past its exhausted daily quota (checked
+   AFTER this switch too, by the DoD's own binding requirement) could still generate one real
+   Secret Manager access per attempt with no ceiling -- a per-project Secret Manager quota/cost
+   dependency the design's own "bounded by per-user daily quotas" claim did not actually hold for.
+2. `log_signals.ts`'s doc comments for both Step 8 events still described the superseded Firestore
+   mechanism (`system/aiGateway`, "control document") -- stale documentation contradicting the
+   actual Secret Manager control plane, risking an incident responder investigating the wrong
+   system.
+
+GO: AUTHORIZED -- remediate the read-bounding/ordering issue and the stale comments only. HOLD:
+final closure/commit-push until the narrow direct regression is closed. GPT-PM explicitly said not
+to redesign or rerun the full eight-point drill unless the fix changes propagation semantics (it
+does, slightly -- see below) and offered two acceptable shapes: reorder validation earlier plus add
+a rate pre-check, or a short bounded cache with a documented maximum disable-propagation interval.
+
+**Remediation**: chose the bounded cache (`CONTROL_CACHE_TTL_MS = 5_000` in `abuse_guard.ts`) over
+reordering validation, because reordering alone would not have closed the "well-formed caller
+already past quota retries" case at all -- quota is deliberately checked after the switch, by the
+DoD's own requirement, so no amount of moving `parseInput` earlier changes that caller's path.
+Caches the in-flight PROMISE, not just the resolved value -- an initial draft caching only the
+resolved value had a stampede bug (a burst of concurrent calls all check the cache before the first
+one's fetch resolves, so all of them see "empty" and all of them fetch); caught immediately by the
+new regression test itself failing (`expected 1, received 5`) before the promise-caching fix, not
+discovered live. Every call still logs its own structured event regardless of cache hit, so proof
+point 5 (observability) is unaffected -- only the network access is throttled. Added
+`__resetAiGatewayControlCacheForTests()` since the cache is module-scope state that would otherwise
+leak a stale value from one test into the next within the same file. Added 2 regression tests: 5
+concurrent calls cost exactly 1 real `accessSecretVersion`, and a cached hit still produces one log
+line per call. Rewrote both `log_signals.ts` doc comments to describe the real mechanism.
+
+Full suite: 548/548 passing (546 + 2 new). `tsc --noEmit` clean, `npm run build` clean. Redeployed
+all 4 functions.
+
+**Live smoke check** (fresh test identity `g4-step8-r2-smoke-probe`, not the full 8-point drill, per
+GPT-PM's own scoping): normal call `200` -> live disable via `gcloud secrets versions add` (no
+redeploy) -> waited past the 5s cache TTL -> call `503 UNAVAILABLE` -> re-enable -> waited past TTL
+-> recovery call `200`. Confirms the documented disable-propagation interval holds in the real
+deployed environment, not just in the unit tests.
+
+Cleanup: deleted the smoke check's debug token and test Auth user, revoked the temporary IAM grant,
+removed scratchpad credential files.
+
+Sending round 3 to GPT-PM.
+
+## G4 Step 8 round 3: 1 MINOR, documentation-only -- confirmed all prior code findings CLOSED
+
+VERDICT: MINOR. Every round-1 and round-2 code finding explicitly confirmed CLOSED (security
+boundary, ordering, the unbounded-read fix, the stampede-safe cache, stale log_signals.ts comments).
+The one remaining MINOR: `core/G4_STEP8_KILL_SWITCH_2026-08-29.md`'s own main Design section and
+"What changed" test-count summary still described the pre-round-2 "fresh every call, no cache,
+instant propagation" architecture, contradicting the actual round-2 implementation and its own live
+smoke-check evidence in the same document -- a real risk for an incident responder reading the
+canonical doc rather than the round-by-round history. GO: AUTHORIZED, documentation-only. HOLD:
+final closure until reconciled. GPT-PM explicit: no code change, no redeploy, no further live
+testing required for this round.
+
+**Remediation**: rewrote the Design section's `enforceAiGatewayEnabled` bullet, the "What changed"
+test totals (546/546 -> 548/548, 7 -> 9 kill-switch tests), the durability proof-point row, and
+labeled the round-1 evidence table explicitly as a historical record of round 1's own now-superseded
+mechanism rather than the current one. No code touched.
+
+Sending round 4 to GPT-PM.
+
+## G4 Step 8 round 4: APPROVE -- CLOSED
+
+VERDICT: APPROVE, `final: true` (marked via `--recover-request-id` against the identical
+uncommitted diff, nothing changed since the round-4 call itself). All round 1-3 findings confirmed
+closed, no new findings. GPT-PM verbatim: "MVP1.G4 Step 8 is CLOSED... operator-controlled Secret
+Manager switch -> runtime can read but cannot re-enable -> auth before control read ->
+bounded/stampede-safe 5s cache -> switch before quota/Vertex -> fail-closed unreadable state ->
+per-call rejection observability -> live disable/recovery without redeploy." `PUSH: AUTHORIZED
+under the current Gate policy.`
+
+Per `~/.claude/CLAUDE.md` §20, this genuine correlated APPROVE is sufficient authorization for
+commit and push without separate operator confirmation (push is a reversible action under §20's
+carve-out). Proceeding to commit and push, then G4 Step 9 (release guard), whose DoD was already
+obtained from GPT-PM during Step 8's own DoD question and needs no further round-trip.

@@ -32,6 +32,19 @@ jest.mock("firebase-admin", () => ({
   })),
 }));
 
+// MVP1.G4 Step 8's kill switch (`enforceAiGatewayEnabled`) runs after the
+// auth/non-anonymous checks but before quota/generate, reading this via
+// `SecretManagerServiceClient.accessSecretVersion` -- a separate mocked
+// client from `runTransaction`'s Firestore path above.
+let aiGatewayEnabled = true;
+jest.mock("@google-cloud/secret-manager", () => ({
+  SecretManagerServiceClient: jest.fn().mockImplementation(() => ({
+    accessSecretVersion: async () => [
+      { payload: { data: Buffer.from(JSON.stringify({ enabled: aiGatewayEnabled, reason: null })) } },
+    ],
+  })),
+}));
+
 const generate = jest.fn();
 jest.mock("../ai_gateway", () => ({ generate: (...args: unknown[]) => generate(...args) }));
 
@@ -41,7 +54,7 @@ import {
   EQUIPMENT_NAMES_RU,
   MUSCLE_VOCAB,
 } from "../ai_exercise_generation";
-import { QUOTAS } from "../abuse_guard";
+import { QUOTAS, __resetAiGatewayControlCacheForTests } from "../abuse_guard";
 
 const req = (data: unknown, uid: string | null = "u1"): any => ({
   data,
@@ -56,13 +69,25 @@ const GOOD_ANSWER =
 
 beforeEach(() => {
   jest.clearAllMocks();
+  __resetAiGatewayControlCacheForTests();
   usage = {};
+  aiGatewayEnabled = true;
   generate.mockResolvedValue(GOOD_ANSWER);
 });
 
 describe("aiExerciseGeneration", () => {
   test("requires sign-in", async () => {
     await expect(aiExerciseGeneration.run(req(VALID, null))).rejects.toThrow(/Sign in/);
+    expect(generate).not.toHaveBeenCalled();
+  });
+
+  // MVP1.G4 Step 8: the kill switch is checked after auth/non-anonymous but
+  // before quota/generate -- a disabled gateway refuses every signed-in
+  // caller identically, without ever touching quota or Vertex.
+  test("refuses when the AI Gateway kill switch is off, before quota/generate", async () => {
+    aiGatewayEnabled = false;
+    await expect(aiExerciseGeneration.run(req(VALID, "u1"))).rejects.toThrow(/temporarily unavailable/i);
+    expect(usage).toEqual({});
     expect(generate).not.toHaveBeenCalled();
   });
 
