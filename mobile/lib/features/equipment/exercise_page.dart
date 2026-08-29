@@ -5,7 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold;
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../ai_coach/ai_coach_context.dart';
 import '../ai_coach/ai_coach_sheet.dart';
@@ -98,7 +99,7 @@ class _ExerciseCoachEntry extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    return GlassCard(
+    return HudPanel(
       key: const Key('exercise.ai-coach'),
       onTap: () => AiCoachSheet.show(
         context,

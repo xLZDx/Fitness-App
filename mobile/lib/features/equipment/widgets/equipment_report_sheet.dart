@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../../../shared/widgets/shell_insets.dart';
 import '../../auth/state/auth_providers.dart';
 import '../data/equipment_report.dart';
@@ -117,9 +117,7 @@ class _EquipmentReportSheetState extends ConsumerState<EquipmentReportSheet> {
         // swipe band.
         sheetBottomInset(context, base: 24),
       ),
-      child: GlassCard(
-        floating: true,
-        padding: const EdgeInsets.all(20),
+      child: HudSheet(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -34186,3 +34186,35 @@ subset. Binding guardrails for the remaining pass, verbatim from the reply:
   future design sub-gate, not repeated review rounds.
 
 Continuing autonomously into the remaining files under this GO, per PM mode.
+
+## HUD migration sub-gate 4: equipment cluster migrated (6 files, 21 GlassCard sites)
+
+Per GPT-PM's guardrails from the previous entry: classified `equipment_report_sheet.dart` by its
+actual role (a genuine `showModalBottomSheet`, confirmed from its own doc comment and `.show()`
+implementation) rather than assuming from its filename -- migrated to `HudSheet`, dropping the
+dead `floating: true` flag, same pattern as sub-gate 1. The other 5 files
+(`equipment_detail_page.dart` 8 sites, `exercise_page.dart` 1, `exercise_reference.dart` 9,
+`last_session_card.dart` 1, `setup_note_card.dart` 1) are all in-page cards on their host screen's
+own background -- migrated to `HudPanel`. Two sites (`equipment_detail_page.dart`'s
+`_ExerciseThumbCard`-equivalent stat tile, `exercise_reference.dart`'s `_MetricChip`-equivalent)
+had a custom `borderRadius: 12` override -- preserved exactly via `HudPanel`'s `radius` parameter
+(different name, same value), not silently dropped or left at the HUD default per the "compare the
+complete contract" guardrail.
+
+Caught and fixed mid-migration rather than after: a bulk `glass.dart` → `hud_surface.dart` import
+swap on `equipment_detail_page.dart` and `exercise_page.dart` broke both files immediately --
+both also use `FrostedScaffold` (a different `glass.dart` export, out of this gate's scope). The
+harness's own post-edit file-diff notice surfaced the resulting `FrostedScaffold` reference with
+no import before I moved on; fixed by keeping a scoped `import '...glass.dart' show
+FrostedScaffold;` alongside the new HUD import in both files.
+
+Verification: `flutter analyze` clean on all 6 files. `flutter test`:
+`equipment_detail_coach_gate_test.dart`, `equipment_report_sheet_test.dart`,
+`exercise_page_test.dart`, `setup_note_card_test.dart` (9 tests), `last_session_card_test.dart` (5
+tests) all green -- no regressions. Census: `GlassCard` sites 117→96, files with a `GlassCard`
+call 37→31, `glass.dart` importers 42→38 (2 of the 6 files keep the scoped `FrostedScaffold`
+import, so the drop is smaller than the file-migration count alone would suggest).
+
+Next: continue feature-area by feature-area through the remaining ~30 files per GPT-PM's GO,
+watching for the same `FrostedScaffold`/`GlassAppBar` co-import trap on every file before
+swapping its `glass.dart` import wholesale.

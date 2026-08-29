@@ -14,9 +14,9 @@ observation below; sub-gates come from this data, not from mechanically working 
 
 | Metric | Count |
 |---|---|
-| `GlassCard(` call sites | 126 → 124 after sub-gate 1 → **117** after sub-gate 2 |
-| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 after sub-gate 1 → **37** after sub-gate 2 |
-| Files importing `shared/widgets/glass.dart` | 45 → 43 after sub-gate 1 → **42** after sub-gate 2 |
+| `GlassCard(` call sites | 126 → 124 (gate 1) → 117 (gate 2) → **96** after sub-gate 4 (equipment cluster) |
+| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 (gate 1) → 37 (gate 2) → **31** after sub-gate 4 |
+| Files importing `shared/widgets/glass.dart` | 45 → 43 (gate 1) → 42 (gate 2) → **38** after sub-gate 4 (2 of the 6 equipment files keep a scoped `show FrostedScaffold` import -- see below) |
 | Files referencing `aurora_background`/`AuroraBackground` | 5 (2 are theme/token files, 1 is the definition file itself, 1 is a comment-only mention in `workout_player_page.dart` — **corrected**: `main.dart` is the ONLY real widget-tree usage, see the struck sub-gate 3 below) |
 | Files already using `HudSurface`/`HudPanel`/`HudButton`/`HudChip` | 20 (+ `HudSheet`, the new opaque-surface widget from sub-gate 1) |
 | Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` → 2 after sub-gate 1 → **0** after sub-gate 2 (`home_page.dart` fully migrated; `scanner_page.dart` closed with 2 sites reclassified `INTENTIONAL_LEGACY_EXCEPTION`, not partial-migration debt) |
@@ -48,6 +48,38 @@ are a recorded, reasoned decision, not overlooked debt. `flutter analyze` clean;
 error/warning/success fill, analogous to `HudSheet`'s opaque-fill precedent) would let these last 2
 sites -- and any future one needing the same -- retire `GlassCard`'s `tint` parameter entirely. Left
 for a future sub-gate rather than designed here without review.
+
+### Sub-gate 3 ("aurora_background retirement") — struck, void, 2026-08-29
+
+Found void before writing any code; see the corrected entry in "Suggested sub-gate order" below.
+`AuroraBackground` is already a flat fill (own doc comment: "one flat fill, nothing else") and sits
+as `main.dart`'s app-wide base layer; `HudSkyBackground` is a complementary photographic layer
+composed only inside `main_shell.dart` and `onboarding_page.dart`, not a replacement for it.
+Nothing to retire. No code changed.
+
+### Sub-gate 4 (equipment cluster) — closed, 2026-08-29
+
+Migrated the `features/equipment/` cluster: `equipment_detail_page.dart` (8 sites, all in-page
+cards -- one custom `HudPanel(radius: 12, padding: ...)` override, matching the site's original
+`borderRadius: 12` exactly, param renamed since `HudPanel` calls it `radius` not `borderRadius`),
+`exercise_page.dart` (1 site, in-page card with `onTap`), `exercise_reference.dart` (9 sites, all
+in-page -- one more `radius`-override site), `last_session_card.dart` and `setup_note_card.dart`
+(1 site each, plain in-page cards) -- all → `HudPanel`. `equipment_report_sheet.dart` (1 site) is a
+genuine `showModalBottomSheet` presented over whatever screen opened it (its own doc comment
+confirms), classified by actual widget-tree role per GPT-PM's guardrail rather than by its
+filename alone -- migrated to `HudSheet`, dropping the dead `floating: true` flag.
+
+**Caught mid-migration, not after**: `equipment_detail_page.dart` and `exercise_page.dart` both
+also use `FrostedScaffold` from `glass.dart` (a class this gate is not touching) -- an initial bulk
+import swap broke both files' analyze pass immediately, caught by the tool's own post-edit file-
+diff notice before either was left broken. Both keep a scoped `import '...glass.dart' show
+FrostedScaffold;` alongside the new HUD import, so `glass.dart`'s import count doesn't fall as far
+as the raw file-migration count would suggest (see the Numbers table above).
+
+`flutter analyze` clean on all 6 files. `flutter test`: `equipment_detail_coach_gate_test.dart`,
+`equipment_report_sheet_test.dart`, `exercise_page_test.dart`, `setup_note_card_test.dart`,
+`last_session_card_test.dart` all green (no dedicated test file exists for
+`exercise_reference.dart` itself; it's covered indirectly through the pages that render it).
 
 ### Sub-gate 1 — closed, 2026-08-29
 

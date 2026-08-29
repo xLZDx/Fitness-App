@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/app_buttons.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../../onboarding/widgets/inputs.dart';
 import '../../profile/state/profile_providers.dart';
 import '../data/equipment_setup_note.dart';
@@ -101,7 +101,7 @@ class _SetupNoteCardState extends ConsumerState<SetupNoteCard> {
       _draft = noteAsync.value?.note ?? '';
     }
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('equipment.setupNote'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

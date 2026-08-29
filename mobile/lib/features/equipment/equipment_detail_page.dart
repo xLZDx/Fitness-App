@@ -8,7 +8,8 @@ import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../ai_coach/ai_coach_context.dart';
 import '../ai_coach/ai_coach_sheet.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold;
+import '../../shared/widgets/hud/hud_surface.dart';
 import 'data/catalog_labels.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../workouts/widgets/plate_calculator.dart';
@@ -124,7 +125,7 @@ class EquipmentDetailPage extends ConsumerWidget {
               const SizedBox(height: 12),
               const _ToolsRow(),
               const SizedBox(height: 16),
-              GlassCard(
+              HudPanel(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -207,7 +208,7 @@ class EquipmentDetailPage extends ConsumerWidget {
               // of the same offer -- and the refusal itself already has a
               // home, on the screens that state it with its reason.
               if (mayTrain)
-                GlassCard(
+                HudPanel(
                   key: const Key('equipment-ai-coach'),
                   onTap: () => AiCoachSheet.show(
                     context,
@@ -252,7 +253,7 @@ class EquipmentDetailPage extends ConsumerWidget {
               ...ex.when(
                 loading: () => [const _ExerciseShimmer()],
                 error: (e, _) => [
-                  GlassCard(child: Text(AppLocalizations.of(context).equipmentCouldNotLoadExercises(e))),
+                  HudPanel(child: Text(AppLocalizations.of(context).equipmentCouldNotLoadExercises(e))),
                 ],
                 data: (rec) {
                   if (rec.items.isEmpty) {
@@ -263,7 +264,7 @@ class EquipmentDetailPage extends ConsumerWidget {
                     // thing and never said so.
                     return [
                       const SafetyDisclosure(compact: true),
-                      GlassCard(
+                      HudPanel(
                         child: Text(
                           rec.hiddenForInjury > 0
                               ? AppLocalizations.of(context).equipmentAllConflictWithInjuries
@@ -491,7 +492,7 @@ class _ExerciseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       onTap: () => GoRouter.of(context).push('/exercise/${exercise.id}'),
       child: Row(
         children: [
@@ -576,7 +577,7 @@ class _FilteredHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       child: Row(
         children: [
           Container(
@@ -612,7 +613,7 @@ class _ExerciseShimmer extends StatelessWidget {
   const _ExerciseShimmer();
   @override
   Widget build(BuildContext context) {
-    return const GlassCard(
+    return const HudPanel(
       child: SizedBox(
         height: 80,
         child: Center(child: CircularProgressIndicator()),
@@ -685,7 +686,7 @@ class _NotFound extends StatelessWidget {
     final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
-      child: GlassCard(
+      child: HudPanel(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

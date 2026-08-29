@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_semantic_colors.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../../workouts/data/equipment_type_history.dart';
 import '../../workouts/data/workout_log.dart' show WorkoutLogEntry;
 import '../../workouts/state/workout_session_providers.dart';
@@ -70,7 +70,7 @@ class LastSessionCard extends ConsumerWidget {
     // screen space here.
     if (summary.isConfirmedNoHistory) return const SizedBox.shrink();
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('equipment.lastSession'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

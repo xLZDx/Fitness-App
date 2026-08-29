@@ -29,7 +29,7 @@ import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../../shared/widgets/app_buttons.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../data/video_failure.dart';
 import '../../workouts/state/offline_video_providers.dart';
 import '../data/catalog_labels.dart';
@@ -49,7 +49,7 @@ class ExerciseHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       child: Row(
         children: [
           ExerciseThumb(exercise: exercise, size: 56),
@@ -367,8 +367,8 @@ class _QuickStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
-      borderRadius: 12,
+    return HudPanel(
+      radius: 12,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       child: Column(
         children: [
@@ -804,7 +804,7 @@ class ExerciseNoVideoFallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -860,7 +860,7 @@ class ExerciseFormCoachCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    return GlassCard(
+    return HudPanel(
       key: const Key('exercise-form-coach'),
       onTap: () => GoRouter.of(context).push('/form-check'),
       child: Row(
@@ -916,7 +916,7 @@ class ExerciseStepsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
-    return GlassCard(
+    return HudPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1020,7 +1020,7 @@ class ExerciseCautionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1104,7 +1104,7 @@ List<Widget> exerciseReferenceSections(
       const ExerciseNoVideoFallback(),
     if (item.muscles.isNotEmpty) ...[
       const SizedBox(height: 16),
-      GlassCard(
+      HudPanel(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1172,7 +1172,7 @@ class ExerciseResolutionView extends ConsumerWidget {
             if (resolution.hiddenForInjury) {
               return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
-                child: GlassCard(
+                child: HudPanel(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1220,7 +1220,7 @@ class ExerciseResolutionView extends ConsumerWidget {
             if (item == null) {
               return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(20, 92, 20, 24),
-                child: GlassCard(
+                child: HudPanel(
                   child: Text(l10n.equipmentWeCouldnTFindThatExercise,
                       style: theme.textTheme.titleMedium),
                 ),
