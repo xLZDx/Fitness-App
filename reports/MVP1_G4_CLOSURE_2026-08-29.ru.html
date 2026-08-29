@@ -1,0 +1,343 @@
+<title>Закрытие гейта G4</title>
+<style>
+  :root{
+    --bg:#0f1216; --surface:#161b21; --surface-2:#1d232b; --border:#2a323d;
+    --ink:#e8ecf1; --ink-dim:#a9b2bf; --ink-mute:#707a88;
+    --accent:#5fd9a4; --accent-dim:#2f6a52;
+    --amber:#e8b25f; --amber-dim:#6a5330;
+    --mono-bg:#0b0e12;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="light"]){
+      --bg:#f6f7f9; --surface:#ffffff; --surface-2:#eef1f4; --border:#dde2e8;
+      --ink:#1a1f26; --ink-dim:#4b5563; --ink-mute:#8a94a3;
+      --accent:#1f8f63; --accent-dim:#d8f3e6;
+      --amber:#9a6a12; --amber-dim:#faedd3;
+      --mono-bg:#eef1f4;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f6f7f9; --surface:#ffffff; --surface-2:#eef1f4; --border:#dde2e8;
+    --ink:#1a1f26; --ink-dim:#4b5563; --ink-mute:#8a94a3;
+    --accent:#1f8f63; --accent-dim:#d8f3e6;
+    --amber:#9a6a12; --amber-dim:#faedd3;
+    --mono-bg:#eef1f4;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1216; --surface:#161b21; --surface-2:#1d232b; --border:#2a323d;
+    --ink:#e8ecf1; --ink-dim:#a9b2bf; --ink-mute:#707a88;
+    --accent:#5fd9a4; --accent-dim:#2f6a52;
+    --amber:#e8b25f; --amber-dim:#6a5330;
+    --mono-bg:#0b0e12;
+  }
+
+  @font-face{font-family:'Manrope-fallback';src:local(Arial);}
+  * { box-sizing: border-box; }
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'IBM Plex Sans', 'Manrope-fallback', system-ui, sans-serif;
+    line-height:1.55;
+  }
+  .wrap{ max-width: 920px; margin: 0 auto; padding: 56px 24px 96px; }
+
+  header{ margin-bottom: 8px; }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 14px;
+  }
+  h1{
+    font-family:'Manrope', 'Manrope-fallback', sans-serif; font-weight:800;
+    font-size: clamp(28px, 4vw, 40px); line-height:1.12; letter-spacing:-.01em;
+    margin:0 0 12px; text-wrap:balance; color:var(--ink);
+  }
+  .lede{ font-size:17px; color:var(--ink-dim); max-width:62ch; margin:0; }
+
+  .status-row{
+    display:flex; flex-wrap:wrap; gap:10px; margin:26px 0 40px;
+  }
+  .pill{
+    display:inline-flex; align-items:center; gap:7px;
+    font-family:'IBM Plex Mono', monospace; font-size:12.5px; font-weight:600;
+    padding:7px 13px; border-radius:999px; border:1px solid var(--border);
+    background:var(--surface); color:var(--ink-dim);
+  }
+  .pill.pass{ background:var(--accent-dim); color:var(--accent); border-color:transparent; }
+  .pill b{ font-weight:700; }
+
+  section{ margin: 48px 0; }
+  h2{
+    font-family:'Manrope', 'Manrope-fallback', sans-serif; font-weight:700;
+    font-size:21px; letter-spacing:-.005em; margin:0 0 18px; color:var(--ink);
+    padding-bottom:10px; border-bottom:1px solid var(--border);
+  }
+  h3{ font-family:'Manrope','Manrope-fallback',sans-serif; font-size:15.5px; font-weight:700; margin:22px 0 10px; }
+  p{ margin: 0 0 14px; color:var(--ink-dim); }
+  a{ color:var(--accent); }
+  code{
+    font-family:'IBM Plex Mono', monospace; font-size:.9em;
+    background:var(--mono-bg); padding:.1em .4em; border-radius:4px; color:var(--ink);
+  }
+
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:10px;
+    padding:18px 20px;
+  }
+  .card + .card{ margin-top:12px; }
+
+  .checks{ display:grid; grid-template-columns: 1fr; gap:8px; }
+  .check{
+    display:flex; align-items:flex-start; gap:12px;
+    background:var(--surface); border:1px solid var(--border); border-radius:9px;
+    padding:12px 15px;
+  }
+  .check .num{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-mute);
+    width:20px; flex:0 0 auto; padding-top:2px;
+  }
+  .check .name{ font-size:14.5px; color:var(--ink); font-weight:500; }
+  .check .ok{
+    margin-left:auto; flex:0 0 auto; font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px; font-weight:700; color:var(--accent); letter-spacing:.03em;
+  }
+
+  table{ width:100%; border-collapse:collapse; font-size:14px; }
+  .twrap{ overflow-x:auto; border:1px solid var(--border); border-radius:10px; }
+  th, td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--ink-mute); background:var(--surface-2);
+    font-weight:600;
+  }
+  tr:last-child td{ border-bottom:none; }
+  td.round{ font-family:'IBM Plex Mono',monospace; color:var(--ink-mute); white-space:nowrap; }
+  td.verdict-major{ color:var(--amber); font-weight:600; font-family:'IBM Plex Mono',monospace; font-size:12.5px; }
+  td.verdict-approve{ color:var(--accent); font-weight:700; font-family:'IBM Plex Mono',monospace; font-size:12.5px; }
+
+  .roadmap-item{
+    border-left:3px solid var(--amber); background:var(--surface); border-radius:0 9px 9px 0;
+    padding:12px 16px; margin-bottom:10px;
+  }
+  .roadmap-item .tag{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--amber);
+    text-transform:uppercase; letter-spacing:.08em; display:block; margin-bottom:4px;
+  }
+
+  .commits{ display:flex; flex-direction:column; gap:8px; }
+  .commit{
+    display:flex; gap:12px; align-items:baseline; font-size:13.5px;
+    background:var(--surface); border:1px solid var(--border); padding:10px 14px; border-radius:8px;
+  }
+  .commit .sha{ font-family:'IBM Plex Mono',monospace; color:var(--accent); flex:0 0 auto; }
+  .commit .msg{ color:var(--ink-dim); }
+
+  footer{ margin-top:56px; padding-top:20px; border-top:1px solid var(--border); color:var(--ink-mute); font-size:12.5px; }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · MVP1 · Гейт G4</p>
+    <h1>G4 закрыт: продакшен-релиз AI Gateway и сквозная валидация</h1>
+    <p class="lede">
+      Итог семи раундов адверсариального ревью GPT-PM по релиз-гейту Step 9, закрытия
+      production-подтверждения Play Integrity на S23 и сверки состояния гейтов G3/G4 в PM Bridge.
+    </p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 791d221</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="status-row">
+    <span class="pill pass"><b>MVP1.G4</b> = PASSED</span>
+    <span class="pill pass"><b>MVP1.G3</b> = PASSED (сверка)</span>
+    <span class="pill">10 / 10 живых проверок гейта</span>
+    <span class="pill">601 / 601 тестов</span>
+    <span class="pill">7 раундов ревью GPT-PM</span>
+  </div>
+
+  <section>
+    <h2>Что закрылось</h2>
+    <p>
+      Гейт <code>MVP1.G4</code> ("AI Gateway Production Release &amp; E2E Validation") полностью
+      закрыт. Шаги 1–8 были закрыты ранее (см. <code>core/DECISION_LOG.md</code>); в этой сессии
+      закрыт Step 9 — fail-closed релиз-гейт для AI Gateway, объединённый с реальным
+      production-доказательством Play Integrity на устройстве Samsung Galaxy S23 Ultra, которое
+      сняло давний HOLD Step 2 на аттестацию устройства.
+    </p>
+    <p>
+      Финальный вердикт GPT-PM по всему гейту G4 (после независимой проверки состояния через
+      прямой доступ к GitHub-репозиторию): <em>«MVP1.G4 = PASSED / CLOSED... я не вижу оставшихся
+      BLOCKER/MAJOR в критериях закрытия G4»</em>.
+    </p>
+  </section>
+
+  <section>
+    <h2>Релиз-гейт Step 9 — 10 проверок, все зелёные на чистом коммите</h2>
+    <p>Живой прогон <code>node functions/scripts/run_release_guard.mjs</code> от коммита <code>791d221</code>: <strong>VERDICT: PASS</strong>.</p>
+    <div class="checks">
+      <div class="check"><span class="num">01</span><span class="name">Целевой проект деплоя — fitness-app-korostelev</span><span class="ok">OK</span></div>
+      <div class="check"><span class="num">02</span><span class="name">Инварианты AST кандидата (App Check, anonymous-refusal, gateway-guard, RUNTIME_SA.aiRuntime)</span><span class="ok">OK</span></div>
+      <div class="check"><span class="num">03</span><span class="name">Живой инвентарь функций под fn-ai-runtime</span><span class="ok">OK</span></div>
+      <div class="check"><span class="num">04</span><span class="name">App Check enforcement (fail-closed) на всех 4 callable</span><span class="ok">OK</span></div>
+      <div class="check"><span class="num">05</span><span class="name">Отказ анонимным вызовам на всех 4 callable</span><span class="ok">OK</span></div>
+      <div class="check"><span class="num">06</span><span class="name">IAM kill switch (secret + project, с учётом privilege escalation)</span><span class="ok">OK</span></div>
+      <div class="check"><span class="num">07</span><span class="name">Доказательство drill'а Step 8 (kill switch)</span><span class="ok">OK</span></div>
+      <div class="check"><span class="num">08</span><span class="name">Observability AI Gateway — метрики побайтово совпадают с источником</span><span class="ok">OK</span></div>
+      <div class="check"><span class="num">09</span><span class="name">Гейт S23 production Play Integrity</span><span class="ok">OK</span></div>
+      <div class="check"><span class="num">10</span><span class="name">Provenance источника (git status, ограниченный реальными путями деплоя)</span><span class="ok">OK</span></div>
+    </div>
+    <p style="margin-top:14px;">
+      <code>firebase.json</code> теперь также запускает полный набор Jest-тестов как обязательный
+      шаг <code>predeploy</code> между сборкой и релиз-гейтом — это закрывает разрыв по
+      reachability/control-flow реальными сквозными тестами вместо всё более глубокой эвристики AST.
+    </p>
+  </section>
+
+  <section>
+    <h2>Семь раундов ревью GPT-PM — хронология</h2>
+    <div class="twrap">
+      <table>
+        <thead><tr><th>Раунд</th><th>Вердикт</th><th>Что нашли / что исправлено</th></tr></thead>
+        <tbody>
+          <tr><td class="round">1</td><td class="verdict-major">4 MAJOR</td><td>Проверки читали только текущее развёрнутое состояние, не кандидата; целевой проект не был привязан к реальному деплою; в denylist ролей kill switch не хватало <code>secretmanager.editor</code>; устаревшее утверждение об observability-метриках.</td></tr>
+          <tr><td class="round">2</td><td class="verdict-major">3 MAJOR</td><td>Проверка кандидата была на regex, а не на AST (обходилась комментарием); не учитывалась эскалация через <code>resourcemanager.projects.setIamPolicy</code>; проверка метрик не сверяла определение побайтово. Попутно найден и исправлен собственный баг: порядок меток GCP не гарантирован.</td></tr>
+          <tr><td class="round">3</td><td class="verdict-major">3 MAJOR</td><td>Проверка <code>APP_CHECK_ENFORCED_AI</code> была нестрогим regex; проверялась только точка потребления <code>RUNTIME_SA.aiRuntime</code>, не её определение; reachability проверялась только по AST. Решение — использовать существующий поведенческий набор тестов вместо углубления эвристик AST.</td></tr>
+          <tr><td class="round">4</td><td class="verdict-approve">APPROVE</td><td>Все MAJOR раунда 3 подтверждены закрытыми. GO на коммит + push. Закоммичено как <code>38bdd94</code>.</td></tr>
+          <tr><td class="round">5</td><td class="verdict-major">4 MAJOR</td><td>Повторный живой прогон от чистого коммита показал, что provenance-проверка никогда не проходит: <code>functions/.gcloudignore</code> остаётся в области видимости; второй кодбейс Functions вне области; <code>.firebaserc</code> и корневой <code>.gitignore</code> не защищены.</td></tr>
+          <tr><td class="round">6</td><td class="verdict-major">1 MAJOR</td><td>3 из 4 находок закрыты; попытка спрятать <code>.gcloudignore</code> через <code>.gitignore</code> создала слепую зону вместо ложного срабатывания.</td></tr>
+          <tr><td class="round">7</td><td class="verdict-approve">APPROVE</td><td>Файл сделан обычным отслеживаемым — проверено по исходникам <code>firebase-tools</code>, что <code>firebase deploy</code> его вообще не читает. GO + PUSH. Закоммичено как <code>791d221</code>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Сверка состояния гейтов в PM Bridge</h2>
+    <p>
+      Кэш <code>pm_gate_status</code> отставал — <code>MVP1.G3</code> значился «in-progress» с
+      27.08, а <code>MVP1.G4</code> отсутствовал вовсе, хотя в <code>core/DECISION_LOG.md</code> и
+      истории репозитория (коммит <code>06d73de</code>) закрытие G3 и регистрация G4 давно
+      записаны. GPT-PM независимо подтвердил через прямой доступ к GitHub, что это дрейф
+      метаданных оркестратора, а не реальный откат гейтов, и дал GO на сверку без повторного
+      прогона G3/G4. Состояние PM Bridge обновлено: <code>MVP1.G3</code> → passed,
+      <code>MVP1.G4</code> → passed.
+    </p>
+  </section>
+
+  <section>
+    <h2>Что уходит в roadmap, не блокирует G4</h2>
+    <div class="roadmap-item">
+      <span class="tag">Защита ветки</span>
+      GitHub-ветка <code>master</code> сейчас не защищена и не требует обязательных проверок —
+      релиз-гейт защищает задекларированный путь деплоя локально, но не является внешне
+      неизменяемой политикой. Актуально перед этапом с несколькими разработчиками или реальными
+      клиентами.
+    </div>
+    <div class="roadmap-item">
+      <span class="tag">Debug-токен S8</span>
+      Зарегистрированный App Check debug-токен для устройства S8 остаётся живым тестовым
+      credential'ом вне системы контроля версий. Держать в хранилище секретов с владельцем,
+      отозвать при завершении отладочного тестирования.
+    </div>
+  </section>
+
+  <section>
+    <h2>Коммиты</h2>
+    <div class="commits">
+      <div class="commit"><span class="sha">38bdd94</span><span class="msg">MVP1.G4 Step 9: fail-closed AI Gateway release guard, plus S23 production Play Integrity closure</span></div>
+      <div class="commit"><span class="sha">791d221</span><span class="msg">G4 Step 9: scope the release guard's source-provenance check correctly (rounds 5-7)</span></div>
+    </div>
+  </section>
+
+  <footer>
+    Дальше по постоянному поручению оператора: редизайн в стиле Figma, автономно, без остановки
+    после этого отчёта (режим PM Bridge включён).
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

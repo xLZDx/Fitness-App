@@ -33964,3 +33964,15 @@ Remediation verification (rounds 5-7 combined): 7 new/updated unit tests for
 `checkSourceProvenance`'s branches (52 total in `release_guard.test.ts`), full monorepo suite
 601/601, `tsc --noEmit` clean, `npm run build` clean. Live re-run: 9/10, provenance now scoped
 correctly, blocked only on this remediation diff itself still being uncommitted. Committing now.
+
+## G4 closure report published (RU/EN)
+
+Milestone report for MVP1.G4's closure per the mandatory html-report house format: full 7-round
+GPT-PM review arc on the Step 9 release guard (rounds 1-7, 14 MAJOR findings all remediated, 2
+APPROVE verdicts), the S23 production Play Integrity proof closing Step 2's HOLD, and the
+MVP1.G3/MVP1.G4 PM Bridge gate-state reconciliation. Russian version published as an artifact
+(https://claude.ai/code/artifact/2dcbe4a0-89cd-4d22-acc2-5a312f28a7d8) and linked in the session
+reply; English version is the durable in-repo record. Both conformed via report_conform.py
+(provenance block + copy button). PM Bridge orchestrator mode is ON, so per CLAUDE.md S18 this is
+a checkpoint, not a stop -- continuing directly to the Figma-style redesign work per the operator's
+standing mandate ("закончи гейт и редизайн автономно").
