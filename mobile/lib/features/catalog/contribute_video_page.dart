@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../auth/state/auth_providers.dart';
 import 'state/catalog_providers.dart';
 import '../../shared/widgets/app_buttons.dart';
@@ -91,14 +92,14 @@ class _ContributeVideoPageState extends ConsumerState<ContributeVideoPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
-          GlassCard(
+          HudPanel(
             child: Text(
               AppLocalizations.of(context).catalogHelpUsGrowTheCatalogPaste,
               style: theme.textTheme.bodyMedium,
             ),
           ),
           const SizedBox(height: 16),
-          GlassCard(
+          HudPanel(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -129,6 +130,9 @@ class _ContributeVideoPageState extends ConsumerState<ContributeVideoPage> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),
+            // INTENTIONAL_LEGACY_EXCEPTION: needs `tint`, which HudPanel has
+            // no equivalent for. See core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md
+            // (status-tint consolidation candidate).
             GlassCard(
               tint: theme.colorScheme.error,
               child: Text(_error!,
@@ -137,7 +141,7 @@ class _ContributeVideoPageState extends ConsumerState<ContributeVideoPage> {
           ],
           if (_success != null) ...[
             const SizedBox(height: 12),
-            GlassCard(
+            HudPanel(
               child: Text(_success!),
             ),
           ],

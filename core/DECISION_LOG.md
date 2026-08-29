@@ -34314,3 +34314,41 @@ Next: continue through the remaining ~18 files (`ai_planner_page.dart`,
 `subscription_page.dart`, `progress_page.dart`, `settings_page.dart`,
 `workout_summary_page.dart`, plus `deload_banner.dart`/`scanner_page.dart`'s deferred status-tint
 consolidation), continuing autonomously under the same GO, per PM mode.
+
+## HUD migration sub-gate 7: 4-site batch across 5 feature areas (20 GlassCard sites)
+
+Migrated `contribute_video_page.dart`, `team_feed_page.dart`, `donor_wall_page.dart`,
+`posture_page.dart`, `workout_summary_page.dart`. 17 of 20 sites -> `HudPanel` (plain in-page cards,
+including `workout_summary_page.dart`'s `_NextWorkout` which carries a conditional `onTap` --
+`HudPanel` supports this identically, no gap). The other 3 -> kept `GlassCard` under
+`INTENTIONAL_LEGACY_EXCEPTION`: `contribute_video_page.dart`'s error card, `team_feed_page.dart`'s
+error branch, `donor_wall_page.dart`'s error branch -- all three are `tint: <error color>` on an
+async-error path, the same shape as the 3 prior instances (`scanner_page.dart` x2, sub-gate 2;
+`deload_banner.dart` x1, sub-gate 5).
+
+Files keeping at least one `GlassCard` site kept the full, unqualified `glass.dart` import (the
+class is still directly referenced); the two files that dropped their last site
+(`posture_page.dart`, `workout_summary_page.dart`) scoped their import down to
+`show FrostedScaffold, GlassAppBar` per the established pattern.
+
+**Not deferred a fourth time**: the running tally of `tint`-only `GlassCard` sites is now 6 across
+5 files (2+1 from sub-gates 2/5, +3 this sub-gate), every one doing the identical thing -- an
+async-error/validation card painted in a semantic color, with no `HudPanel` equivalent. Recorded as
+a flagged design question in `core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md` (sub-gate 7 section):
+propose a `HudPanel` status/tone variant built the same way `HudSheet` already reuses `HudPanel`'s
+own border/glow/shadow recipe and swaps only the fill -- to be put to GPT-PM as a real design
+question before implementing, not decided unilaterally and not deferred again past "future
+sub-gate."
+
+Verification: `flutter analyze` clean on all 5 files. `flutter test`: 15 assertions across
+`team_feed_demo_banner_test.dart` (7), `posture_page_test.dart` (3), `donor_wall_test.dart` (5,
+model-level) -- all green. No dedicated widget test for `contribute_video_page.dart` or
+`workout_summary_page.dart` -- `flutter analyze` is this sub-gate's coverage for those two, stated
+plainly. Census: `GlassCard` sites 67->50, files with a call 14->12 (11 real usage + `glass.dart`'s
+own definition), `glass.dart` importers unchanged at 33, `INTENTIONAL_LEGACY_EXCEPTION` sites 3->6.
+
+Next: raise the status-tint `HudPanel` variant question with GPT-PM before the next sub-gate (a
+real design decision, not routine migration), then continue through the remaining files
+(`ai_planner_page.dart`, `health_sync_card.dart`, `progress_photos_page.dart`,
+`subscription_page.dart`, `progress_page.dart`, `settings_page.dart`), continuing autonomously
+under the same GO, per PM mode.

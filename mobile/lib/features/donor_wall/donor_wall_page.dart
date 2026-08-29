@@ -7,6 +7,7 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/hud/hud_surface.dart';
 import 'data/donor_wall_entry.dart';
 import 'state/donor_wall_providers.dart';
 
@@ -27,7 +28,7 @@ class DonorWallPage extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
-          GlassCard(
+          HudPanel(
             padding: const EdgeInsets.all(18),
             child: Row(
               children: [
@@ -76,6 +77,9 @@ class DonorWallPage extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 36),
               child: Center(child: CircularProgressIndicator()),
             ),
+            // INTENTIONAL_LEGACY_EXCEPTION: needs `tint`, which HudPanel has
+            // no equivalent for. See core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md
+            // (status-tint consolidation candidate).
             error: (e, _) => GlassCard(
               tint: scheme.error,
               child: Text(
@@ -107,7 +111,7 @@ class _DonorList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (entries.isEmpty) {
       final theme = Theme.of(context);
-      return GlassCard(
+      return HudPanel(
         padding: const EdgeInsets.all(20),
         child: Text(
           AppLocalizations.of(context).donorwallBeTheFirstToOptIn,
@@ -167,7 +171,7 @@ class _DonorTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.all(14),
       child: Row(
         children: [

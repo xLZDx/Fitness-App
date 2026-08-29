@@ -6,7 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../../shared/widgets/smooth_scroll_list.dart';
 import '../equipment/data/catalog_labels.dart';
 import '../equipment/state/equipment_providers.dart';
@@ -81,7 +82,7 @@ class _EmptyDay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -191,7 +192,7 @@ class _StatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -230,7 +231,7 @@ class _MuscleLoad extends StatelessWidget {
         return byShare != 0 ? byShare : a.key.compareTo(b.key);
       });
 
-    return GlassCard(
+    return HudPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -287,7 +288,7 @@ class _NextWorkout extends ConsumerWidget {
     final muscles =
         next.muscles.map((m) => CatalogLabels.muscle(l10n, m)).join(', ');
 
-    return GlassCard(
+    return HudPanel(
       onTap: () => GoRouter.of(context).push(
           '/workout/${next.sessions.first.exerciseId}'
           '?day=${next.sessions.first.id}'),

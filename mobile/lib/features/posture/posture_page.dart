@@ -9,7 +9,8 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/experimental_banner.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../form_check/data/mlkit_pose_detector_service.dart';
 import '../form_check/data/pose_detector_service.dart';
 import '../form_check/state/form_check_providers.dart'
@@ -144,7 +145,7 @@ class _PosturePageState extends ConsumerState<PosturePage>
           // (`ML_STRATEGY_2026-08-11.md:203-209`), and a qualification a reader
           // has to find inside a paragraph of description is one they can miss.
           ExperimentalBanner(message: l10n.experimentalPosture),
-          GlassCard(
+          HudPanel(
             child: Text(
               l10n.postureIntro,
               style: theme.textTheme.bodyMedium
@@ -213,7 +214,7 @@ class _PosturePageState extends ConsumerState<PosturePage>
             _ResultSection(result: session.result!),
           ],
           const SizedBox(height: 16),
-          GlassCard(
+          HudPanel(
             child: Text(
               l10n.postureDisclaimer,
               key: const Key('posture.disclaimer'),
@@ -333,7 +334,7 @@ class _ResultSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     if (result.isEmpty) {
-      return GlassCard(
+      return HudPanel(
         child: Text(
           l10n.postureNoBodyDetected,
           key: const Key('posture.no_body'),
@@ -396,7 +397,7 @@ class _MetricCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
     final m = metric;
-    return GlassCard(
+    return HudPanel(
       key: Key('posture.metric.$keyName'),
       child: Row(
         children: [

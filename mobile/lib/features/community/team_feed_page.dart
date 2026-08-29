@@ -8,6 +8,7 @@ import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/demo_data_banner.dart';
 import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
 import 'data/team_feed.dart';
@@ -51,6 +52,9 @@ class TeamFeedPage extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 36),
               child: Center(child: CircularProgressIndicator()),
             ),
+            // INTENTIONAL_LEGACY_EXCEPTION: needs `tint`, which HudPanel has
+            // no equivalent for. See core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md
+            // (status-tint consolidation candidate).
             error: (e, _) => GlassCard(
               tint: theme.colorScheme.error,
               child: Text(
@@ -58,7 +62,7 @@ class TeamFeedPage extends ConsumerWidget {
             ),
             data: (posts) {
               if (posts.isEmpty) {
-                return GlassCard(
+                return HudPanel(
                   child: Text(
                     // The neutral line, not the pitch, whenever the plan is
                     // not yet known — "no posts yet" is true either way.
@@ -90,7 +94,7 @@ class _LockedHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,7 +155,7 @@ class _PostCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

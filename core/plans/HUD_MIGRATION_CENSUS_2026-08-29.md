@@ -14,9 +14,10 @@ observation below; sub-gates come from this data, not from mechanically working 
 
 | Metric | Count |
 |---|---|
-| `GlassCard(` call sites | 126 → 124 → 117 → 96 (gate 4) → 84 (sub-gate 5) → **67** after sub-gate 6 |
-| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → 20 (sub-gate 5) → **14** after sub-gate 6 (13 real usage + `glass.dart`'s own definition) |
-| Files importing `shared/widgets/glass.dart` | 45 → 43 → 42 → 38 (gate 4) → 33 (sub-gate 5) → **33** after sub-gate 6 (unchanged: sub-gate 6 split each touched file's import into `show FrostedScaffold, GlassAppBar` alongside a new `hud_surface.dart` import rather than removing the `glass.dart` import outright — none of the 6 files dropped it entirely, since every one still uses `FrostedScaffold`/`GlassAppBar`; several page files keep a scoped `show FrostedScaffold`/`GlassAppBar` import; `deload_banner.dart` keeps the full import for its `tint` exception) |
+| `GlassCard(` call sites | 126 → 124 → 117 → 96 (gate 4) → 84 (sub-gate 5) → 67 (sub-gate 6) → **50** after sub-gate 7 |
+| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → 20 (sub-gate 5) → 14 (sub-gate 6) → **12** after sub-gate 7 (11 real usage + `glass.dart`'s own definition) |
+| Files importing `shared/widgets/glass.dart` | 45 → 43 → 42 → 38 (gate 4) → 33 (sub-gate 5) → 33 (sub-gate 6) → **33** after sub-gate 7 (unchanged again: `posture_page.dart`/`workout_summary_page.dart` scoped down to `show FrostedScaffold, GlassAppBar`; `contribute_video_page.dart`/`team_feed_page.dart`/`donor_wall_page.dart` keep the full import for one remaining `tint` exception each; several page files keep a scoped `show FrostedScaffold`/`GlassAppBar` import; `deload_banner.dart` keeps the full import for its `tint` exception) |
+| `INTENTIONAL_LEGACY_EXCEPTION` sites (need `tint`, no HudPanel equivalent) | 2 (`scanner_page.dart`) + 1 (`deload_banner.dart`) → **6** after sub-gate 7: + `contribute_video_page.dart`, `team_feed_page.dart`, `donor_wall_page.dart` (1 each) — see the flag raised below |
 | Files referencing `aurora_background`/`AuroraBackground` | 5 (2 are theme/token files, 1 is the definition file itself, 1 is a comment-only mention in `workout_player_page.dart` — **corrected**: `main.dart` is the ONLY real widget-tree usage, see the struck sub-gate 3 below) |
 | Files already using `HudSurface`/`HudPanel`/`HudButton`/`HudChip` | 20 (+ `HudSheet`, the new opaque-surface widget from sub-gate 1) |
 | Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` → 2 after sub-gate 1 → **0** after sub-gate 2 (`home_page.dart` fully migrated; `scanner_page.dart` closed with 2 sites reclassified `INTENTIONAL_LEGACY_EXCEPTION`, not partial-migration debt) |
@@ -154,6 +155,50 @@ prior sub-gate:
 assertions across the three suites run. No dedicated widget test exists for `social_feed_page.dart`,
 `about_page.dart`, `celebrity_plans_page.dart`, or `backup_page.dart` -- `flutter analyze` is the
 coverage this sub-gate has for those four.
+
+### Sub-gate 7 (4-site batch across 5 feature areas) — closed, 2026-08-29
+
+Migrated `contribute_video_page.dart`, `team_feed_page.dart`, `donor_wall_page.dart`,
+`posture_page.dart`, `workout_summary_page.dart` -- 20 `GlassCard(` sites, 17 migrated to
+`HudPanel`, 3 kept as `GlassCard` under `INTENTIONAL_LEGACY_EXCEPTION`.
+
+- **`HudPanel`** (in-page cards, no capability gap): all sites in `posture_page.dart` (intro card,
+  disclaimer card, no-body-detected card, `_MetricCard`) and `workout_summary_page.dart`
+  (`_EmptyDay`, `_StatTile`, `_MuscleLoad`, `_NextWorkout` -- the last has a conditional `onTap`,
+  which `HudPanel` supports identically); plus the non-error sites in the other three files:
+  `contribute_video_page.dart`'s intro/form/success cards, `team_feed_page.dart`'s empty-state card
+  and `_LockedHero`/`_PostCard`, `donor_wall_page.dart`'s intro card and `_DonorList`/`_DonorTile`.
+- **`INTENTIONAL_LEGACY_EXCEPTION`** (kept as `GlassCard`, documented inline, same as the two prior
+  instances): `contribute_video_page.dart`'s error card, `team_feed_page.dart`'s error branch, and
+  `donor_wall_page.dart`'s error branch -- all three are `tint: <error color>` on the async-error
+  path, the identical shape as `scanner_page.dart` (sub-gate 2) and `deload_banner.dart` (sub-gate
+  5). Each site now carries the inline exception comment introduced in sub-gate 5.
+- Where a file keeps at least one `GlassCard` site, its `glass.dart` import stayed **unqualified**
+  (full import, not `show`) rather than split -- `GlassCard` itself is still directly referenced, so
+  a `show FrostedScaffold, GlassAppBar` clause would just break the remaining site. Where a file
+  dropped its last `GlassCard` site (`posture_page.dart`, `workout_summary_page.dart`), the import
+  scoped down to `show FrostedScaffold, GlassAppBar` per the established pattern.
+
+**Flag for GPT-PM, not deferred again**: this sub-gate is the third round in which a fresh
+`GlassCard` error-tint site turned up (sub-gate 2: 2 sites in `scanner_page.dart`; sub-gate 5: 1
+site in `deload_banner.dart`; this sub-gate: 3 more sites across 3 files). The running total is now
+**6 `tint` sites across 5 files**, all doing the exact same thing -- an async-error or validation
+card painted in `colorScheme.error` (occasionally another semantic tone). Every prior round's
+guidance was "consolidate into one future sub-gate, not one round per instance"; six real,
+independently-discovered sites is past the point where "future" should mean "next session," not
+"eventually." Proposed shape for that sub-gate, to put to GPT-PM before starting it: a `HudPanel`
+variant (or a `tone`/`status` parameter on the existing one) that swaps only the fill for a
+semantic-status color the same way `HudSheet` already swaps only the fill of `HudPanel`'s own
+recipe for an opaque surface -- i.e. reuse the established "derive border/glow/shadow from the
+panel recipe, replace one visual property" pattern rather than inventing a fourth one. Not
+implemented in this sub-gate; this is the design question to raise, not a decision made
+unilaterally.
+
+`flutter analyze` clean on all 5 files. `flutter test`: 15 assertions across
+`team_feed_demo_banner_test.dart` (7), `posture_page_test.dart` (3), `donor_wall_test.dart` (5,
+model/repository-level, not a page widget test) -- all green. No dedicated widget test exists for
+`contribute_video_page.dart` or `workout_summary_page.dart` -- `flutter analyze` is this sub-gate's
+coverage for those two.
 
 ### Sub-gate 1 — closed, 2026-08-29
 
