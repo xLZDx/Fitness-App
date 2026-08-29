@@ -170,7 +170,15 @@ class BodyZoneMap<T> extends StatelessWidget {
               painter: _BodyPainter<T>(
                 selected: selected,
                 rects: rects,
-                silhouette: t.subPanel.fill,
+                // `t.subPanel.fill` is a glass-panel tint (white @ ~2%),
+                // meant to sit as an overlay on top of an already-blurred
+                // backdrop -- painted directly onto this canvas, over the
+                // raw onboarding photo, it is indistinguishable from
+                // nothing, and the figure disappears leaving only the
+                // zone-rectangle outlines. Same near-opaque dark ink
+                // `_PoseAvatarPainter` uses for a body drawn over a photo
+                // (`form_check_page.dart:1028`), for the same reason.
+                silhouette: const Color(0xE60A0912),
                 outline: t.subPanel.innerBorder,
                 accent: t.accent,
               ),

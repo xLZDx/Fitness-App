@@ -34795,3 +34795,138 @@ Items 1, 2, 3, 5 are straightforward code/asset defects. Item 4 is a design-cons
 vs. accept). Item 6 is the largest of the six and is scope, not a bug -- migrating four more screens to
 the HudPanel/HudSheet system is a small gate in its own right, not a one-line fix alongside the other
 five.
+
+---
+
+## 2026-08-30 00:00-00:30 local / 21:00-21:30 UTC (2026-08-29) -- Batch fix pass: root causes found, 2 fixed, 1 real regression retracted, 1 finding turns out much bigger than reported
+
+Root-caused all four "straightforward" findings from the entry above before touching code, per the
+operator's own explicit sequencing (fix only after understanding, not before). Verified live on device
+with `uiautomator dump`-precise coordinates throughout -- not more blind `adb input tap` guessing, which
+is what produced finding #1 in the first place (see below).
+
+### Finding #1 retracted -- was my own mis-tap, not a code defect
+
+Reset the account (`pm clear`) and re-walked onboarding step 1 and step 2's "Пропустить" with exact
+`uiautomator dump` bounds instead of eyeballed screenshot coordinates. Both advanced correctly on the
+first precise tap. Read `onboarding_page.dart:129-143` and `_PrimaryCta` (`:255-330`): `onTap` calls
+`_next()` unconditionally regardless of `answered` -- there is no gating logic in the code that could
+produce a dead button. The original "step 2/10 Пропустить is dead" finding, logged earlier this
+session, was a coordinate-miscalibration artifact from my own blind taps, the same class of mistake
+already visible elsewhere in this session's `s23_shots` sequence (e.g. mistaking the form-coach
+"Начать" button's screen position twice in a row before switching to `uiautomator dump`). Retracted,
+not fixed -- there was nothing to fix.
+
+### Finding #2 fixed -- root cause: a glass-panel tint painted with no glass under it
+
+`BodyZoneMap`'s `_BodyPainter._paintFigure` (`body_zone_map.dart:173`, pre-fix) filled the body
+silhouette with `t.subPanel.fill` -- `Color(0x05FFFFFF)`, white at ~2% alpha (`hud_tokens.dart:458`).
+That token is designed as an overlay tint sitting on TOP of an already-blurred `HudSurface` backdrop;
+painted directly onto a `CustomPaint` canvas over the raw onboarding photo, with no blur or scrim
+underneath it, 2% white is indistinguishable from nothing. The zone-selector rectangles remained
+visible because their stroke uses a separate, much higher-alpha token (`innerBorder`, white @ 28%) --
+which is exactly why the screen showed empty outlined squares with no body behind them, not a fully
+blank screen. Fixed by swapping the fill to `Color(0xE60A0912)` -- the same near-opaque dark ink
+`_PoseAvatarPainter` already uses for a figure drawn over a photo (`form_check_page.dart:1028`), the
+established working pattern for exactly this situation elsewhere in the same codebase. `flutter
+analyze` clean.
+
+### Finding #3 fixed -- root cause: an honest flag, a dishonest label
+
+`profile_page.dart:33-37`: `subtitle = onboarded ? l10n.profileComplete : ...`, where `onboarded =
+profile?.hasCompletedOnboarding`. The flag itself is correct and working as designed -- onboarding is
+entirely optional end to end (every question skippable, `_submit` sends whatever the draft holds,
+documented at `step_answered.dart:108-113`), so "completed" legitimately means "reached the end of the
+flow," not "every field is filled in." The defect was never the logic, only the Russian string:
+"Профиль заполнен" ("Profile filled in") makes exactly the data-completeness claim the flag does not
+make. Changed the string, not the flag or its routing/gating uses (`profileComplete` has exactly one
+call site, confirmed by grep): RU -> "Анкета пройдена" ("Questionnaire completed"), EN -> "Questionnaire
+completed". Reusing the flag's real meaning as the label's meaning, instead of promising something no
+onboarding step here could ever verify.
+
+### Finding #5 -- root cause found, fixed for the 3 reported cases, turns out to be a catalog-wide pattern affecting up to 1,398 of 2,979 poster images
+
+`ExerciseThumb` (`exercise_thumb.dart`) and its poster-resolution chain (`posterFor`, the
+`applyTranslations` overlay merge) are all correct -- traced every step and found no code defect. The
+poster JPEGs themselves decode and display fine in every generic viewer and in `ffmpeg -f null -`, and
+a manually-computed `BoxFit.cover` crop at the exact 52x52 tile geometry (`ffmpeg -vf crop=226:226:87:0`
+on `ea_3_leg_chatarunga_pose.jpg`) shows the full, richly-coloured figure -- ruling out both a missing
+asset and a bad crop.
+
+The actual, confirmed, reproducible difference: the three reported posters' JPEGs open directly with an
+FFmpeg `COM` marker (`FF D8 FF FE ... "Lavc62.28.100"`) and **no JFIF `APP0` marker**, where a
+comparison poster that renders fine (`ab_crunch_machine.jpg`) opens `FF D8 FF E0 ... "JFIF"`.
+Re-encoding a broken file through ffmpeg unchanged reproduces the same missing-JFIF header; the
+differentiator turned out to be each source clip's pixel aspect ratio (SAR) -- ffmpeg's mjpeg encoder
+only emits the JFIF density block when SAR is explicitly known, and silently omits it (falling back to
+its own COM-only header) when the source video's SAR was unset. Confirmed the fix mechanism directly:
+`ffmpeg -i <broken>.jpg -vf setsar=1/1 -q:v 2 <out>.jpg` produces byte-identical picture content with a
+proper `FF D8 FF E0 ... JFIF` header. Applied to the 3 reported files (`ea_3_leg_chatarunga_pose.jpg`,
+`ea_3_leg_dog_pose.jpg`, `3_4_sit_up.jpg`, all under `assets/posters/girl/`) and visually re-verified
+the re-encoded content is pixel-identical to the original before overwriting.
+
+**Not yet established as causal, only as strongly correlated on a 4-file sample**: whether the missing
+JFIF marker is actually WHY these three render blank on the S23's decoder, versus merely correlated
+with something else about that source-video batch. The 3-file fix has not yet been re-verified on the
+physical device (pending the batch build below).
+
+**The real news is the blast radius, discovered while checking whether the 3 reported files were an
+isolated anomaly**: `find`/`python3` scan of `assets/posters/{girl,men}/*.jpg` (2,979 files total) shows
+**1,398 files (47%) share the exact same no-JFIF signature** as the 3 confirmed-broken ones. This was
+checked, not assumed -- full list at
+`D:\Temp\claude\d--Repo\61e7dfec-d8b3-4a63-a048-387194650f47\scratchpad\nojfif_posters.txt` (session
+scratch, not committed). If the JFIF-marker theory holds up once the 3-file fix is verified on-device,
+this is not "three broken thumbnails" -- it is a potential catalog-wide defect touching up to half of
+every exercise thumbnail in the app, most of which this session never scrolled far enough to see.
+**Deliberately not batch-re-encoded in this pass.** Re-encoding ~1,400 bundled assets is a different
+order of change than the four point-fixes above -- it rewrites a meaningful fraction of the app's asset
+bundle, changes APK size measurably, and should not be silently folded into "chinim vsyo razom" without
+the operator seeing the number first. Flagged here and in the handover report as its own decision,
+gated on confirming causality from the 3-file fix first.
+
+### Finding #4 (nav icons) and #6 (Тренер по технике HUD) -- deliberately left untouched, unchanged from the report
+
+Both still need a real design decision, not code: #4 would mean inventing 5 new bespoke icon glyphs
+with no existing reference to match against, and #6 is a genuine small migration gate on its own. Doing
+either blind, under time pressure, in the same pass as four verified point-fixes, risks producing a
+worse mismatch than the current state. Left for the operator/GPT-PM to scope explicitly.
+
+### On-device verification of the 3-file fix confirms causality -- proceeded to re-encode all 1,398
+
+Reinstalled the rebuilt app (versionCode 2872, tree dirty at the time) on the S23 and re-checked, with
+precise `uiautomator dump` coordinates: finding #2's body silhouette now renders correctly (a solid dark
+figure instead of empty outline squares), finding #3 shows "Анкета пройдена" in place of "Профиль
+заполнен", and finding #5's two previously-blank Библиотека cards now show their real poster images.
+This moved the JFIF theory from "strongly correlated on 4 files" to confirmed causal, so proceeded to
+re-encode the full 1,398-file set flagged as a separate decision above, rather than leaving it open.
+
+**Two real mistakes made and fixed while doing that, worth recording so they are not repeated:**
+
+1. **A duplicate background process, exactly what the operator suspected out loud.** The first bulk
+   re-encode attempt was launched by manually backgrounding a script with a trailing `&` inside a Bash
+   tool call; the tool call itself returned instantly (as `&` guarantees) and was wrongly read as "the
+   job is running detached and fine." It was not -- the child process survived as an orphan on the
+   Windows side. A second, "properly" `run_in_background`-launched attempt was then started against the
+   same file list, and the two concurrent runs raced on the same input files and the same
+   `$f.new.jpg`-then-rename pattern, producing near-100% "Error opening input: Invalid argument"
+   failures. The operator asked directly, unprompted, "may be there are 2 competing processes?" --
+   correct diagnosis, confirmed via `Get-CimInstance Win32_Process` showing two live `bash.exe` PIDs both
+   executing `reencode.sh`. Both killed; verified zero dangling `*.new.jpg` temp files and zero corrupted
+   originals (the script's own `if ffmpeg ...; then mv; else rm tmp; fi` shape protected every original
+   on failure, so the only cost was wasted time, not damaged assets).
+2. **The real, dominant cause of the failures was not the race -- it was CRLF line endings in the file
+   list.** Even after killing the duplicate and running exactly one clean process, 1,397 of 1,398 files
+   still failed identically. Root-caused by hand: `nojfif_posters.txt` (written earlier by a `python3`
+   one-liner using default text-mode `write()`) came out as `ASCII text, with CRLF line terminators` --
+   Windows Python's universal-newline translation turned every `\n` the script wrote into `\r\n`. Every
+   filename read from it via `mapfile`/`head`/`for f in $(...)` therefore carried an invisible trailing
+   `\r`, which a native Win32 executable (ffmpeg.exe) rejects as an invalid path character on `CreateFile`
+   -- reproduced identically outside any script, in a plain interactive loop, ruling out concurrency as
+   the cause of this part. Fixed by piping the list through `tr -d '\r'` before use; a 5-file sanity check
+   passed 5/5 before committing to the full 1,398-file run.
+
+Both mistakes are logged because they were preventable and neither was subtle in hindsight -- but
+neither corrupted any real asset, and the underlying image fix itself (verified pixel-identical to the
+originals on a 3-file spot check before the bulk run, and content-verified on a random 3-file sample of
+the finished 1,398) is now complete and confirmed correct: `python3` re-scan of all 2,979 posters shows
+0 remaining without a JFIF marker.

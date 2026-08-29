@@ -1438,7 +1438,7 @@
     }
   },
   "profileGuest": "Guest",
-  "profileComplete": "Profile complete",
+  "profileComplete": "Questionnaire completed",
   "profileSignInToSync": "Sign in to sync progress",
   "profileFinishOnboarding": "Finish onboarding to unlock plans",
   "profileHealthQuestionnaire": "Health questionnaire",

@@ -768,7 +768,7 @@
   "subLapsedDaysAgo": "Истекло {days} дн. назад",
   "subEndsInDays": "Заканчивается через {days} дн.",
   "profileGuest": "Гость",
-  "profileComplete": "Профиль заполнен",
+  "profileComplete": "Анкета пройдена",
   "profileSignInToSync": "Войдите, чтобы синхронизировать прогресс",
   "profileFinishOnboarding": "Заполните анкету, чтобы открыть планы",
   "profileHealthQuestionnaire": "Анкета о здоровье",
