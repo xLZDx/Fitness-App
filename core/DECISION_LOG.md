@@ -33976,3 +33976,30 @@ reply; English version is the durable in-repo record. Both conformed via report_
 (provenance block + copy button). PM Bridge orchestrator mode is ON, so per CLAUDE.md S18 this is
 a checkpoint, not a stop -- continuing directly to the Figma-style redesign work per the operator's
 standing mandate ("закончи гейт и редизайн автономно").
+
+## HUD migration gate opened -- fresh census, first real finding
+
+Asked GPT-PM (durable request a3f1c8e2-7b4d-4e91-9c3a-5f6d8b2e1a04) what "finish the redesign" now
+means, since `PLAN_REDESIGN_REMAINDER_2026-08-12.md` is 2.5 weeks stale and git log since then shows
+a large HUD/V2 migration already landed that doc doesn't mention. Answer: `App.tsx`/Figma-Make is no
+longer the target design (`core/MASTER_PLAN_2026-08-26.md` S3); the real remaining redesign debt is
+finishing the HUD Glass migration and retiring `glass.dart`/`aurora_background.dart`. GPT-PM gave a
+full DoD and GO: AUTHORIZED to proceed autonomously through the whole gate, sub-gated by surface.
+
+Ran a fresh census against current HEAD (not the old, stale 142 number): 126 `GlassCard(` call sites
+across 40 files, 45 files importing `glass.dart`, only 5 files touching `aurora_background` (2 of
+them just theme/token references), 20 files already on HUD widgets, 3 files in a partial-migration
+state (`home_page.dart`, `scanner_page.dart`, `workouts_page.dart`).
+
+First real classification finding, not a rubber-stamp: `workouts_page.dart`'s one remaining
+`GlassCard` usage (a confirm bottom sheet) is deliberately `floating: true` because a translucent
+surface over the scrollable list behind it would read the list through the confirmation text --
+`difficulty_rating_sheet.dart` uses the same pattern for the same reason. Checked `hud_surface.dart`:
+no opaque/floating equivalent exists on `HudPanel`/`HudSurface` today. This is a real gap in the HUD
+widget vocabulary, not leftover laziness -- migrating it needs either a new opaque HUD surface
+variant or an explicit, reasoned `INTENTIONAL_LEGACY_EXCEPTION`, not a blind swap that would
+reintroduce the exact bug the original comment documents.
+
+Full census and a proposed (not yet GO'd) sub-gate order in
+`core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md`. Next: resolve the opaque-surface question, then
+close the 3 partially-migrated files as the first real migration sub-gate.
