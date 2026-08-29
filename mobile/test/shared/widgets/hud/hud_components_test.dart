@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fitness_app/core/theme/app_semantic_colors.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
 import 'package:fitness_app/core/theme/hud_tokens.dart';
 import 'package:fitness_app/core/theme/hud_typography.dart';
@@ -953,6 +954,77 @@ void main() {
         t.element(find.text('inside')),
       );
       expect(style.style.shadows, HudTokens.dark.panelReadabilityShadow);
+    });
+  });
+
+  group(
+      'HudSheet -- an opaque surface for content over a screen it does not '
+      'control (HUD migration gate, GPT-PM round 2026-08-29: sheet = panel '
+      'with only its fill replaced)', () {
+    testWidgets('the fill is fully opaque, in both themes', (t) async {
+      for (final Brightness b in Brightness.values) {
+        await t.pumpWidget(
+            _host(const HudSheet(child: Text('x')), brightness: b));
+        final BoxDecoration fill = _fillDecoration(t);
+        expect((fill.color as Color).a, 1.0, reason: '$b');
+      }
+    });
+
+    testWidgets(
+        'the fill resolves to the already-shipped AppSemanticColors.surfaceElevated, '
+        'not a newly invented value', (t) async {
+      for (final Brightness b in Brightness.values) {
+        await t.pumpWidget(
+            _host(const HudSheet(child: Text('x')), brightness: b));
+        final BuildContext ctx = t.element(find.text('x'));
+        final AppSemanticColors expected =
+            Theme.of(ctx).extension<AppSemanticColors>()!;
+        final BoxDecoration fill = _fillDecoration(t);
+        expect(fill.color, expected.surfaceElevated, reason: '$b');
+      }
+    });
+
+    testWidgets(
+        'border, glow and top highlight stay byte-identical to the panel '
+        'recipe -- this is not a sixth, independently-invented glass style',
+        (t) async {
+      await t.pumpWidget(_host(const HudSheet(child: Text('x'))));
+      final BoxDecoration fill = _fillDecoration(t);
+      expect(fill.border!.top.color, HudTokens.dark.panel.innerBorder);
+
+      final BoxDecoration shadows = _shadowDecoration(t);
+      // The panel's own outer-border ring (light theme only) and glow are
+      // asserted the same way HudPanel's own tests already assert them --
+      // here, just confirming a HudSheet in dark carries the same glow
+      // BoxShadow the panel recipe defines, not a different one.
+      if (HudTokens.dark.panel.glow != null) {
+        expect(shadows.boxShadow, contains(HudTokens.dark.panel.glow));
+      }
+    });
+
+    testWidgets('defaults to HudTokens.radiusSheet, not the primary panel radius',
+        (t) async {
+      await t.pumpWidget(_host(const HudSheet(child: Text('x'))));
+      final HudSurface surface = t.widget<HudSurface>(find.byType(HudSurface));
+      expect(surface.borderRadius, BorderRadius.circular(HudTokens.radiusSheet));
+      expect(HudTokens.radiusSheet, isNot(HudTokens.radiusPanel));
+    });
+
+    testWidgets(
+        'renders outside the app theme too -- a shared presentational widget '
+        'must not throw under a bare MaterialApp, same reason GlassCard avoids '
+        'the throwing theme.colors getter', (t) async {
+      await t.pumpWidget(const MaterialApp(
+        home: Scaffold(body: HudSheet(child: Text('bare'))),
+      ));
+      expect(find.text('bare'), findsOneWidget);
+    });
+
+    testWidgets('carries its child, with the default 20px padding', (t) async {
+      await t.pumpWidget(_host(const HudSheet(child: Text('child'))));
+      final HudSurface surface = t.widget<HudSurface>(find.byType(HudSurface));
+      expect(surface.padding, const EdgeInsets.all(20));
+      expect(find.text('child'), findsOneWidget);
     });
   });
 }

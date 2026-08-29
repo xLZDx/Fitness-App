@@ -14,12 +14,32 @@ observation below; sub-gates come from this data, not from mechanically working 
 
 | Metric | Count |
 |---|---|
-| `GlassCard(` call sites | 126 |
-| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) |
-| Files importing `shared/widgets/glass.dart` | 45 |
+| `GlassCard(` call sites | 126 → **124** after sub-gate 1 |
+| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → **38** after sub-gate 1 |
+| Files importing `shared/widgets/glass.dart` | 45 → **43** after sub-gate 1 |
 | Files referencing `aurora_background`/`AuroraBackground` | 5 (2 are theme/token files, 1 is the definition file itself — only `main.dart` and `features/equipment/workout_player_page.dart` are real widget-tree usages) |
-| Files already using `HudSurface`/`HudPanel`/`HudButton`/`HudChip` | 20 |
-| Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` |
+| Files already using `HudSurface`/`HudPanel`/`HudButton`/`HudChip` | 20 (+ `HudSheet`, the new opaque-surface widget from sub-gate 1) |
+| Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` → **2** after sub-gate 1 (`workouts_page.dart` fully migrated, 0 remaining `GlassCard`) |
+
+### Sub-gate 1 — closed, 2026-08-29
+
+Resolved the opaque-surface gap this file first identified: added `HudSheet` to
+`shared/widgets/hud/hud_surface.dart` (derives `panel`'s border/glow/topHighlight byte-for-byte,
+replaces only `fill` with the already-shipped `AppSemanticColors.surfaceElevated`, zeroes
+`cssBlur`/`saturate` since an opaque fill has nothing to backdrop-blur), per GPT-PM's explicit
+approved design (round review, 2026-08-29, full reply archived in `core/DECISION_LOG.md`). Migrated
+the two identified bottom sheets — `workouts_page.dart`'s `_ConfirmSwitchSheet` and
+`difficulty_rating_sheet.dart`'s `DifficultyRatingSheet` — off `GlassCard(floating: true, ...)` onto
+`HudSheet(...)`. Both files' `glass.dart` imports removed; zero remaining `GlassCard` references in
+either (grep-verified). 6 new widget tests in `mobile/test/shared/widgets/hud/hud_components_test.dart`
+pin: fill opacity (alpha 1.0, both themes), fill resolving to the real `surfaceElevated` token (not an
+invented value), border/glow read directly off `HudTokens.dark/.light.panel` (not copied literals),
+default radius = `HudTokens.radiusSheet` (26, previously unused, distinct from `radiusPanel`=30),
+survival under a bare `MaterialApp` (no app theme installed), and default padding. `flutter analyze`
+clean on all 3 touched source files + the test file; `flutter test` green: 58/58 in
+`hud_components_test.dart` (52 pre-existing + 6 new), 40/40 in the existing `workouts_page_test.dart`
+regression suite. `GlassCard.floating`'s dead-parameter cleanup (this file's secondary finding) is
+deferred to `glass.dart`'s eventual full retirement, not done in this sub-gate.
 
 The old `PLAN_REDESIGN_REMAINDER_2026-08-12.md` number (142 `glass.dart` occurrences / 46 files) is
 stale and not reused here; these are fresh counts against current HEAD.

@@ -34019,3 +34019,46 @@ Correct for an in-page panel, wrong for a sheet over content it doesn't own: mig
 day-3-donation-sheet readability bug `GlassCard`'s own comment documents. Real gap confirmed: no
 opaque `HudGlass` recipe/sheet variant exists yet. `core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md`
 corrected in place with the accurate mechanism and evidence.
+
+## HUD migration sub-gate 1: HudSheet added, both identified bottom sheets migrated
+
+GPT-PM's round review on the opaque-surface proposal (sent after the previous entry) approved a
+minimal design: derive `HudSheet` from the existing `panel` recipe rather than inventing a sixth
+glass style -- byte-identical border/glow/topHighlight/dropShadows, `fill` replaced with the
+already-shipped `AppSemanticColors.surfaceElevated` (the same value `GlassCard`'s own Ф1c opacity
+fix reads), `cssBlur`/`saturate` zeroed since an opaque fill gains nothing from backdrop-blurring
+content it fully covers. Explicit constraint from the review: no new Figma-unbacked constants --
+`radius` defaults to `HudTokens.radiusSheet` (26, pre-existing, previously unused, confirmed
+distinct from `radiusPanel`'s 30). GO: implement sub-gate 1 for the two identified sheets with
+targeted light/dark/widget tests; PUSH: authorized after tests/review pass, under the standing
+`~/.claude/CLAUDE.md` §20 GPT-PM-APPROVE authorization already governing this project.
+
+Implemented `HudSheet` in `mobile/lib/shared/widgets/hud/hud_surface.dart`, reusing the exact
+field-by-field-reconstruction idiom `HudPanel._denseGlass` already established for "same recipe,
+one field overridden" (`HudGlass` has no `copyWith`). Migrated `workouts_page.dart`'s
+`_ConfirmSwitchSheet` and `difficulty_rating_sheet.dart`'s `DifficultyRatingSheet` off
+`GlassCard(floating: true, ...)` onto `HudSheet(...)`; both files' now-unused `glass.dart` imports
+removed. Zero remaining `GlassCard` references in either file (grep-verified).
+
+Added 6 widget tests (`hud_components_test.dart`, now 58 total) asserting against real resolved
+theme values, not invented literals: fill alpha == 1.0 in both themes; fill == the real
+`AppSemanticColors.surfaceElevated` for that theme (dark `0xFF1F1F27`, light `0xFFF7F2FC`, not a
+hardcoded copy); border/glow compared directly against `HudTokens.dark/.light.panel`'s own fields
+(so a future panel-spec change can't silently desync `HudSheet` from it); default radius ==
+`HudTokens.radiusSheet` and is distinct from `radiusPanel`; renders under a bare `MaterialApp` with
+no app theme installed (the same reason `GlassCard`'s fill resolution avoids the throwing
+`theme.colors` getter); default 20px padding preserved.
+
+Verification: `flutter analyze` clean on all 3 touched source files + the test file. `flutter test`:
+58/58 in `hud_components_test.dart` (52 pre-existing + 6 new), 40/40 in the pre-existing
+`workouts_page_test.dart` regression suite (no dedicated test file exists yet for
+`difficulty_rating_sheet.dart`). Census numbers updated in
+`core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md`: `GlassCard` call sites 126→124, files with a
+`GlassCard` call 40→38, `glass.dart` importers 45→43, partially-migrated files 3→2
+(`workouts_page.dart` now fully migrated). Deferred, not done here: `GlassCard.floating`'s dead
+parameter/stale doc comment (this file's own secondary finding) -- left for `glass.dart`'s eventual
+full retirement rather than touched piecemeal now.
+
+Next sub-gate per the census doc's proposed order: finish the remaining 2 partially-migrated files
+(`home_page.dart`, `scanner_page.dart`), then `aurora_background` retirement, then the rest grouped
+by feature area -- continuing autonomously under the same GO, per PM mode.

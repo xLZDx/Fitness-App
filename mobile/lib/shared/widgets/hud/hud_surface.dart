@@ -11,6 +11,7 @@ import 'package:flutter/services.dart'
     show KeyDownEvent, KeyEvent, LogicalKeyboardKey;
 
 import '../../../core/background/hud_sky.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/hud_tokens.dart';
 import '../../../core/theme/hud_typography.dart';
 
@@ -311,6 +312,86 @@ class HudPanel extends StatelessWidget {
       button: onTap != null,
       label: semanticLabel,
       child: semanticLabel != null ? ExcludeSemantics(child: surface) : surface,
+    );
+  }
+}
+
+/// An opaque HUD surface for content presented over a screen it does not
+/// control -- a confirm/rate bottom sheet, a modal card -- where [HudPanel]'s
+/// deliberately near-transparent fill (`HudGlass.fill` is ~1.4% alpha on
+/// dark, by design: the panel's shape is carried by its border and glow, not
+/// its fill) would let whatever is behind it show through.
+///
+/// ## Why this exists, and why it is not a sixth glass style
+///
+/// The HUD migration gate's own census (`core/plans/
+/// HUD_MIGRATION_CENSUS_2026-08-29.md`) found the legacy `GlassCard`'s
+/// history already proves the failure mode this widget exists to prevent: a
+/// translucent card behind a bottom sheet became unreadable in production
+/// (the day-3 donation sheet bug, see `GlassCard.floating`'s own doc
+/// comment) until a later fix made `GlassCard`'s default fill opaque. GPT-PM's
+/// explicit ruling on the migration of that fix onto HUD (round review,
+/// 2026-08-29): derive the existing, spec-derived `panel` recipe rather than
+/// inventing a new one -- `sheet = panel` with only its `fill` replaced by
+/// the same already-shipped opaque semantic surface `GlassCard`'s own fix
+/// uses (`AppSemanticColors.surfaceElevated`, falling back to
+/// `ColorScheme.surfaceContainerHighest`). Every other value -- border,
+/// glow, top highlight, drop shadows -- stays byte-identical to `panel`, so
+/// this can never drift into an undocumented second surface language.
+///
+/// `HudGlass` has no `copyWith`; this follows the same field-by-field
+/// reconstruction [HudPanel._denseGlass] already establishes for exactly
+/// this "same recipe, one field overridden" shape, rather than adding a
+/// method only this one call site would use.
+///
+/// `cssBlur`/`saturate` are zeroed rather than inherited from `panel`: an
+/// opaque fill has nothing to gain from `BackdropFilter`ing the content it
+/// is about to fully cover, and skipping it avoids a wasted composited
+/// readback -- the same reasoning `GlassCard`'s own `blur` flag documents
+/// ("one of the most expensive things a Flutter frame can contain").
+class HudSheet extends StatelessWidget {
+  const HudSheet({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(20),
+    this.radius = HudTokens.radiusSheet,
+  });
+
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+  final double radius;
+
+  HudGlass _opaqueGlass(BuildContext context, HudTokens t) {
+    final HudGlass base = t.panel;
+    // Read the extension directly, not via the `theme.colors` getter that
+    // ends in `extension<AppSemanticColors>()!` -- HudSheet is a shared
+    // presentational widget, reachable from a bare MaterialApp in tests and
+    // widget previews that do not install the app's own ThemeData, exactly
+    // the reason GlassCard's own fill resolution avoids that getter too.
+    final AppSemanticColors? tokens =
+        Theme.of(context).extension<AppSemanticColors>();
+    final Color opaqueFill =
+        tokens?.surfaceElevated ?? Theme.of(context).colorScheme.surfaceContainerHighest;
+    return HudGlass(
+      fill: opaqueFill,
+      cssBlur: 0,
+      innerBorder: base.innerBorder,
+      outerBorder: base.outerBorder,
+      glow: base.glow,
+      dropShadows: base.dropShadows,
+      saturate: null,
+      topHighlight: base.topHighlight,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final HudTokens t = context.hud;
+    return HudSurface(
+      glass: _opaqueGlass(context, t),
+      borderRadius: BorderRadius.circular(radius),
+      padding: padding,
+      child: child,
     );
   }
 }

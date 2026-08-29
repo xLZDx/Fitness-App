@@ -3,7 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../../../shared/widgets/shell_insets.dart';
 import '../data/workout_log.dart';
 
@@ -38,9 +38,7 @@ class DifficultyRatingSheet extends StatelessWidget {
       // sheet's only control and a flat 24 put it under the gesture indicator.
       padding:
           EdgeInsets.fromLTRB(16, 24, 16, sheetBottomInset(context, base: 24)),
-      child: GlassCard(
-        floating: true,
-        padding: const EdgeInsets.all(20),
+      child: HudSheet(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

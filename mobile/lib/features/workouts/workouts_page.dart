@@ -7,7 +7,6 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../core/theme/hud_tokens.dart';
 import '../../core/theme/hud_typography.dart';
-import '../../shared/widgets/glass.dart' show GlassCard;
 import '../../shared/widgets/hud/hud_metric.dart';
 import '../../shared/widgets/hud/hud_scaffold.dart';
 import '../../shared/widgets/hud/hud_surface.dart';
@@ -1708,18 +1707,17 @@ class _ConfirmSwitchSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    // `floating: true` -- same reason every other confirm/rate sheet in the
-    // app uses it (`difficulty_rating_sheet.dart`): an ordinary GlassCard is
-    // translucent, and a translucent card over the template list this sheet
-    // opens on top of would read the list through the confirmation text.
+    // HudSheet, not HudPanel -- same reason every other confirm/rate sheet in
+    // the app needs it (`difficulty_rating_sheet.dart`): HudPanel's fill is
+    // deliberately near-transparent, and a translucent surface over the
+    // template list this sheet opens on top of would read the list through
+    // the confirmation text. See HudSheet's own doc comment.
     return Padding(
       // Bottom derived, not a flat 24: the Cancel/Start row sat under the
       // gesture indicator on the operator's phone.
       padding:
           EdgeInsets.fromLTRB(16, 24, 16, sheetBottomInset(context, base: 24)),
-      child: GlassCard(
-        floating: true,
-        padding: const EdgeInsets.all(20),
+      child: HudSheet(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
