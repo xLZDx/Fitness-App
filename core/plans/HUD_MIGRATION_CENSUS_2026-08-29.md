@@ -17,7 +17,7 @@ observation below; sub-gates come from this data, not from mechanically working 
 | `GlassCard(` call sites | 126 → 124 after sub-gate 1 → **117** after sub-gate 2 |
 | Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 after sub-gate 1 → **37** after sub-gate 2 |
 | Files importing `shared/widgets/glass.dart` | 45 → 43 after sub-gate 1 → **42** after sub-gate 2 |
-| Files referencing `aurora_background`/`AuroraBackground` | 5 (2 are theme/token files, 1 is the definition file itself — only `main.dart` and `features/equipment/workout_player_page.dart` are real widget-tree usages) |
+| Files referencing `aurora_background`/`AuroraBackground` | 5 (2 are theme/token files, 1 is the definition file itself, 1 is a comment-only mention in `workout_player_page.dart` — **corrected**: `main.dart` is the ONLY real widget-tree usage, see the struck sub-gate 3 below) |
 | Files already using `HudSurface`/`HudPanel`/`HudButton`/`HudChip` | 20 (+ `HudSheet`, the new opaque-surface widget from sub-gate 1) |
 | Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` → 2 after sub-gate 1 → **0** after sub-gate 2 (`home_page.dart` fully migrated; `scanner_page.dart` closed with 2 sites reclassified `INTENTIONAL_LEGACY_EXCEPTION`, not partial-migration debt) |
 
@@ -139,9 +139,19 @@ this gate.
    `workouts_page.dart`) -- smallest remaining surface per file, and already HUD-aware, so lowest risk
    to close first and validate the migration pattern end-to-end (incl. real-device check) before
    scaling to the other 37.
-3. **`aurora_background` retirement** -- only 2 real usage sites (`main.dart`,
-   `workout_player_page.dart`) once the theme/token files are excluded; small, bounded, good second
-   proof point.
+3. ~~**`aurora_background` retirement**~~ -- **void, corrected 2026-08-29 before any work started
+   on it.** The original framing (2 real usage sites, small and bounded) was itself wrong: checked
+   `workout_player_page.dart:1037` and it is a comment, not a usage -- `main.dart:620` is the only
+   real one. More importantly, `AuroraBackground` is not legacy competing with `HudSkyBackground` --
+   its own doc comment already states it is "one flat fill, nothing else" (a past fix already
+   stripped the gradient/bloom layers this migration gate exists to retire elsewhere), and it sits
+   at `main.dart`'s app-wide router wrapper as the base/fallback background. `HudSkyBackground` is a
+   different, complementary widget -- a photographic time-of-day scene, composed separately and only
+   inside `main_shell.dart`'s body and `onboarding_page.dart` (confirmed by grepping every call
+   site), not a replacement for the app-wide flat base layer. There is nothing to retire here: no
+   duplicate visual system, no dead code, no HUD-vs-legacy conflict. Removing or swapping
+   `AuroraBackground` would drop the base fill every route outside the main shell still needs.
+   Struck from the sub-gate order; not attempted.
 4. **Remaining ~36 files**, grouped by feature area (equipment/workouts/progress/settings/etc.),
    each its own sub-gate per GPT-PM's explicit guidance not to land one 46-file commit.
 

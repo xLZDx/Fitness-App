@@ -34102,3 +34102,28 @@ future sub-gate rather than designed here without review.
 Next: `aurora_background` retirement (`main.dart`, `features/equipment/workout_player_page.dart`),
 per the census doc's proposed order -- continuing autonomously under the same GO, per PM mode,
 pending the operator's new-chat URL to resume GPT-PM review rounds.
+
+## HUD migration: sub-gate 3 ("aurora_background retirement") found void, corrected before starting work
+
+Read `aurora_background.dart` before touching it, per this gate's own "read before designing"
+discipline. `workout_player_page.dart:1037`'s reference is a comment, not a call site --
+`main.dart:620` is the only real usage. More significantly, `AuroraBackground`'s own doc comment
+already states it is "one flat fill, nothing else": a prior fix already stripped the gradient/bloom
+layers that made it look like a competing legacy visual system. Grepped every `HudSkyBackground(`/
+`HudSkyScope(` instantiation: it is composed only inside `main_shell.dart`'s body and
+`onboarding_page.dart` -- a photographic time-of-day background layered inside specific screens, not
+a replacement for `main.dart`'s app-wide flat base fill. The two are complementary, not duplicate
+systems. There is nothing to retire: no dead code, no HUD-vs-legacy conflict, and removing
+`AuroraBackground` would drop the base fill every route outside the main shell still relies on.
+
+Struck from the sub-gate order in `core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md`, corrected before
+any implementation was attempted against the wrong premise. No code changed. This is the third
+self-caught correction this gate has produced (after the `floating`-flag misattribution and the
+"partial migration" framing for `scanner_page.dart`) -- each time by reading the actual widget before
+acting on an inference about what it does.
+
+Next: the remaining ~35 files with `GlassCard` usage, grouped by feature area, picking clearly
+mechanical in-page-card sites first (same pattern as sub-gate 2) and flagging anything with a real
+design question (a tint/gradient/blur override, a sheet-like usage) for GPT-PM review once the
+operator's new-chat URL restores the channel -- continuing autonomously under the same GO, per PM
+mode.
