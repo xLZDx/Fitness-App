@@ -34616,3 +34616,28 @@ https://claude.ai/code/artifact/c689cc05-82f0-43d1-8c7a-a6835d40b56a) and the En
 both conformed via `report_conform.py`. Per CLAUDE.md SS18, PM mode makes a report a checkpoint, not
 an automatic stop -- but GPT-PM's own final ruling is that the program is actually complete, which
 is the other condition SS18 allows a session to end on. Stopping here.
+
+## Post-closure: HUD redesign build distributed to S23 for real-device verification
+
+Operator asked directly (not via GPT-PM) whether the HUD redesign had been tested on a real device.
+Answer, verified against the actual repo before answering: no -- this gate's verification was
+`flutter test` (widget tests + golden screenshots rendered through `flutter_tester`'s own Skia
+build, per `test/golden/README.md`'s own stated caveat, not a real Android renderer). No mention of
+S23/S8 anywhere in `core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md` or this window's own log entries.
+Operator then asked to send a new build to distribution for S23.
+
+Used the repo's existing, purpose-built release tooling (`scripts/dev/build_release.ps1
+-Distribute`) rather than inventing a new mechanism -- direct operator instruction, targeting the
+project's own standing Firebase App Distribution channel scoped to the operator's own tester email
+(`korostelevivan@gmail.com`), so no new authorization question applied beyond the operator's own
+direct word. Built from clean `master` HEAD `307e3da` (working tree verified clean before building,
+so no `-dirty` stamp) -- this is exactly the commit the HUD_MIGRATION closure covers, so the S23
+build genuinely reflects the closed redesign, not a stale or ahead-of-record commit.
+
+Split-per-abi release build, arm64-v8a artifact (107.8 MB) uploaded and distributed successfully:
+version `1.0.0 (2869)` (build number 869 = commit count on `master`, arm64 split shows `2869` per
+the script's own `abi*1000+versionCode` documented convention). Firebase console release:
+https://console.firebase.google.com/project/fitness-app-korostelev/appdistribution/app/android:com.fitnessapp.fitness_app.sptr/releases/7r4iiqbeh19l8
+. Release notes carry the `HUD_MIGRATION` closure summary plus the standard git-SHA/built-at/size
+stamp. No code change, no commit needed for this action itself -- the artifact and distribution
+record live in Firebase, not the repo.
