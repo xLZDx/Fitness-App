@@ -42,24 +42,28 @@ raw census count (correctly, permanently, 1).
 - New `GlassCard` application call sites: **NOT ALLOWED** without a new evidenced design decision
 - Census raw remaining `GlassCard` application calls: **1**
 
-**Full-suite `flutter test` result: green with 2 pre-existing, out-of-scope failures**, verified
-NOT attributable to sub-gates 4-10 (or to this migration's own sub-gates 1-3) before closing:
+**Full-suite `flutter test` result (corrected after a GPT-PM closure-remediation round, see
+`core/DECISION_LOG.md` "closure-remediation round"): green except 1 pre-existing, out-of-scope
+failure.** The original closure entry below compared against the wrong baseline (`215635f`, itself
+already downstream of sub-gate 2) and is superseded by this corrected version, checked against the
+true pre-gate baseline `d86b24797cf97c0f25d5d2082df5e04fa23618c8` (immediately before sub-gate 1):
 - `test/theme/app_semantic_colors_test.dart` — "the hardcoded whites that survived G1.2b stay
-  accounted for" (expects a running tripwire total of 61, currently measures 58). Verified via a
-  detached checkout of `215635f` (the commit immediately before this window's sub-gate 4 started,
-  itself downstream of sub-gates 1-3): **the identical Expected:61/Actual:58 failure already
-  existed there**, byte-for-byte the same per-file breakdown. Not caused by this window's work.
-- `test/golden/composed_screen_golden_test.dart` — "Home (composed) light/dark" (pixel-diff golden
-  screenshots). Same verification: **already failing at `215635f`** (18.34% dark-theme diff there
-  vs. 25.76% now -- the diff grew as more pages migrated in sub-gates 4-10, which is expected and
-  not a new failure mode, just more of the same one). Root cause: `home_page.dart`'s `GlassCard` →
-  `HudPanel` migration (sub-gate 2, before this window) already changed the rendered pixels the
-  golden PNGs were captured against, and those PNGs were never refreshed. Per GPT-PM's own
-  instruction ("remediate only failures attributable to this migration/direct regressions; do not
-  reopen unrelated scope"), refreshing stale goldens and re-baselining the whites tripwire is
-  explicitly **out of scope for this gate** -- it belongs to whichever gate actually owns visual
-  regression coverage and the G1.2b ledger, not the GlassCard retirement this gate tracked.
-  Recorded here so it is not silently rediscovered as a surprise later.
+  accounted for" (expects 61, measures 58). **Confirmed genuinely pre-existing**: identical,
+  byte-for-byte Expected:61/Actual:58 failure at `d86b247`. Still out of scope for this gate.
+- `test/golden/composed_screen_golden_test.dart` — "Home (composed) light/dark". At `d86b247` this
+  also technically fails, but only a 0.65%/0.59% diff confined to text anti-aliasing noise (header
+  and day-label glyphs) — pre-existing and unrelated to the migration. At HEAD (pre-refresh) it was
+  25.99%/25.76%, and the isolated-diff image showed large, correctly-shaped `HudPanel` card outlines
+  ("Today's adaptive plan", "Posture", "Today's recovery") absent from the baseline diff entirely —
+  the actual, deliberate visual result of sub-gate 2's `home_page.dart` migration (old lavender
+  `GlassCard` fill → new HUD gray/glass fill), confirmed by eye against both `masterImage`/
+  `testImage` PNGs. **Refreshed** via `flutter test --update-goldens
+  test/golden/composed_screen_golden_test.dart`; `git diff --stat` touched only
+  `composed_home_{light,dark}.png`, nothing else. Full suite after refresh: 0 golden failures.
+  Separately discovered, deliberately not fixed here (unrelated to GlassCard/HUD): the Home golden
+  harness has no fixed clock, so `greetingFor(DateTime.now())` and the "This week" day-of-week strip
+  make this golden inherently time-of-day-flaky independent of any migration — test-infrastructure
+  debt for whoever owns `test/golden/README.md`'s harness, not this gate.
 
 ### Sub-gate 2 — closed, 2026-08-29
 

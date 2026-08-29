@@ -34523,3 +34523,75 @@ through `HudPanelTone.error`'s introduction and its two follow-on applications (
 `reports/HUD_MIGRATION_SUBGATES_4_9_2026-08-29.ru.html` (published as an artifact) and the English
 `.html` twin, both conformed via `report_conform.py`. PM mode is on, so this is a checkpoint, not a
 stop -- continuing straight into the remaining 4 files per the report's own "Continuing" section.
+
+## HUD migration gate: closure-remediation round -- GPT-PM caught a real baseline defect, fixed
+
+Registered the HUD_MIGRATION gate via `pm_set_gate(fitness_app, ...)` to formally record closure
+and route the mandatory notification to GPT-PM. Along the way, resolving the notification
+routing surfaced (and fixed) a real PM Bridge project-key fragmentation: gate state existed under
+three different keys this session (`Fitness_App`, a stale duplicate carrying an obsolete
+`MVP1.G3=in-progress` record from before the 2026-08-27/28 orchestrator-instability reconciliation
+already documented elsewhere in this log; `fitness-app`, where that reconciliation actually
+landed; and `fitness_app`, the canonical Gate-B id `pm_project_register` returned when the
+`fitness-app` key had no registered conversation binding). Ran `pm_project_register` to create the
+canonical binding (`D:\Repo\Fitness_App` -> conversation `6a931609...`) and used `fitness_app` for
+this gate going forward. The three-way fragmentation itself is flagged to GPT-PM as roadmap-level
+PM-state cleanup, not fixed further here -- it is unrelated to whether the HUD code migrated
+correctly.
+
+GPT-PM's reply to the closure notification was **VERDICT: MAJOR**, and the finding was real: the
+previous closure entry's "not caused by this window" proof used `215635f` as the comparison
+baseline -- but that commit sits AFTER sub-gates 1-3, i.e. after `home_page.dart`'s own migration in
+sub-gate 2, which the very same entry named as the golden failure's root cause. Comparing against a
+post-sub-gate-2 commit cannot show whether sub-gate 2 caused the divergence. The true pre-gate
+baseline is `d86b24797cf97c0f25d5d2082df5e04fa23618c8` (immediately before sub-gate 1's own first
+commit `2d0e948`). GPT-PM's required change: re-baseline both failures against `d86b247`, and for
+the golden specifically, if it already fails there treat it as genuinely pre-existing; if it passes
+there and only fails after sub-gate 2, refresh the golden as an intentional visual-change update
+rather than leave it "out of scope."
+
+Re-ran both tests at a detached checkout of `d86b247`:
+- Whites tripwire: **identical Expected:61/Actual:58, byte-for-byte the same per-file breakdown**
+  as at HEAD. Genuinely pre-existing, confirmed against the correct baseline this time. No change
+  to this finding's disposition -- still out of scope for this gate.
+- Composed Home goldens: **also fail at `d86b247`**, but only a 0.65%/0.59% diff, confined (per the
+  isolated-diff PNG) to faint text-edge/anti-aliasing noise on the header and day-label glyphs --
+  not a layout or panel-style difference. At HEAD the diff is 25.99%/25.76%, and the isolated-diff
+  image there shows large, solid, correctly-shaped card outlines that are not present in the
+  baseline diff at all -- the actual `HudPanel` cards ("Today's adaptive plan", "Posture", "Today's
+  recovery") that sub-gate 2 introduced. Read both `masterImage`/`testImage` PNGs directly to
+  confirm this by eye: the pre-migration image shows those same cards in the old lavender-tinted
+  `GlassCard` fill; the post-migration image shows them in the new HUD gray/glass fill -- exactly
+  the intended, deliberate visual result of the migration, not a bug.
+
+This does not fit either of GPT-PM's two literal branches cleanly (the golden does technically fail
+at the true baseline too, from an unrelated pre-existing cause, so a strict reading of "if it
+already failed at d86b247, correct the root-cause statement instead" would say "leave it"), but the
+substance of GPT-PM's own instruction -- confirm whether the *migration* changed the *pixels*, and
+refresh if the change is real and intentional -- is unambiguous once the isolated diffs are looked
+at directly: the 25% delta is the migration; the 0.6% delta is pre-existing noise the golden already
+carried before this gate started. Refreshed the golden accordingly.
+
+**Separately discovered, and deliberately NOT fixed under this gate's bounded remediation** (real,
+but unrelated to HUD/GlassCard): `home_dashboard.dart`'s `greetingFor(DateTime.now())` and the
+"This week" day-of-week strip both read the real wall-clock, uncontrolled by the golden test harness
+-- the `masterImage`/`testImage` comparison above also shows "Good morning"/Thu vs "Good
+evening"/Sat, purely because the two test runs happened at different times of day. This makes
+`composed_home_{light,dark}.png` inherently flaky by time-of-day, independent of anything either
+sub-gate 2 or this remediation touched. Not fixed here -- it predates this gate, and fixing it means
+either injecting a fixed `now` into the Home harness or freezing the clock in the test, which is
+test-infrastructure work belonging to whoever owns `test/golden/README.md`'s harness, not a
+GlassCard migration concern. Recorded here so it is not mistaken for a HUD-migration regression by
+a future session re-running this golden at a different hour and seeing it fail again.
+
+`flutter test --update-goldens test/golden/composed_screen_golden_test.dart`: `git diff --stat`
+touched exactly `composed_home_light.png` and `composed_home_dark.png` -- nothing else, confirming
+the change was scoped to the one screen the migration actually touched (the `Workouts` composed
+goldens, unaffected by this gate, regenerated byte-identical and produced no diff).
+
+**Full-suite `flutter test --reporter=json` after the refresh: 1 failure (the whites tripwire),
+0 golden failures.** The whites tripwire remains the sole pre-existing, out-of-scope item, now
+verified against the correct baseline rather than the wrong one.
+
+Corrected census doc section below in place (not rewritten wholesale -- the sub-gate-by-sub-gate
+history above it stays as originally recorded).
