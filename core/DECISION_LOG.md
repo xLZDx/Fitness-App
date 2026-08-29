@@ -34595,3 +34595,24 @@ verified against the correct baseline rather than the wrong one.
 
 Corrected census doc section below in place (not rewritten wholesale -- the sub-gate-by-sub-gate
 history above it stays as originally recorded).
+
+## HUD migration gate: final GPT-PM sign-off, mandate COMPLETE
+
+Sent the remediation evidence back to GPT-PM (commit `f819820`, pushed). **VERDICT: APPROVE --
+HUD_MIGRATION PASSED.** Quoted: "The remediation satisfies the required invariant... The
+post-remediation full suite has 0 golden failures, leaving only the independently pre-existing
+whites-tripwire failure... Standing 'finish the gate and redesign' mandate is COMPLETE... Further
+work required under that mandate: NONE... Do not invent another HUD sub-gate merely to keep the
+session running."
+
+Recorded `pm_set_gate(fitness_app, HUD_MIGRATION, passed)`. Final program state: `MVP1.G3` passed,
+`MVP1.G4` passed, `HUD_MIGRATION` passed -- both halves of the operator's standing delegation
+("закончи гейт и редизайн автономно") are closed. GPT-PM explicit: next work begins only as a new,
+explicitly selected roadmap/gate item, not as a continuation of this one.
+
+Wrote and published the closure report per the `html-report` skill:
+`reports/HUD_MIGRATION_GATE_CLOSED_2026-08-29.ru.html` (published as an artifact,
+https://claude.ai/code/artifact/c689cc05-82f0-43d1-8c7a-a6835d40b56a) and the English `.html` twin,
+both conformed via `report_conform.py`. Per CLAUDE.md SS18, PM mode makes a report a checkpoint, not
+an automatic stop -- but GPT-PM's own final ruling is that the program is actually complete, which
+is the other condition SS18 allows a session to end on. Stopping here.

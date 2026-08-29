@@ -1,0 +1,241 @@
+<title>Миграция HUD — гейт закрыт</title>
+<style>
+  :root{
+    --bg:#f4f6f5; --surface:#ffffff; --surface-2:#eef2f0; --border:#d7dedb;
+    --text:#141a18; --text-2:#4c5a56; --text-3:#7b8b86;
+    --accent:#0f8a6e; --accent-ink:#ffffff; --accent-soft:#e2f4ee;
+    --danger:#b3432e; --danger-soft:#fbe9e4;
+    --mono:'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+    --sans:'Public Sans', -apple-system, Segoe UI, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0c1211; --surface:#121a18; --surface-2:#182220; --border:#26332f;
+      --text:#e7efec; --text-2:#a6b6b0; --text-3:#78897f;
+      --accent:#3fd6ac; --accent-ink:#04150f; --accent-soft:#123227;
+      --danger:#e58a76; --danger-soft:#2c1712;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c1211; --surface:#121a18; --surface-2:#182220; --border:#26332f;
+    --text:#e7efec; --text-2:#a6b6b0; --text-3:#78897f;
+    --accent:#3fd6ac; --accent-ink:#04150f; --accent-soft:#123227;
+    --danger:#e58a76; --danger-soft:#2c1712;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--text); font-family:var(--sans); margin:0}
+  .wrap{max-width:920px; margin:0 auto; padding:48px 24px 96px}
+  header h1{
+    font-family:var(--mono); font-size:clamp(26px,4vw,38px); font-weight:700;
+    letter-spacing:-0.01em; text-wrap:balance; margin:0 0 10px;
+  }
+  header p.lede{color:var(--text-2); font-size:16px; line-height:1.6; max-width:64ch; margin:0}
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:32px 0}
+  .stat{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px}
+  .stat .n{font-family:var(--mono); font-size:28px; font-weight:700; font-variant-numeric:tabular-nums}
+  .stat .n small{font-size:14px; color:var(--text-3); font-weight:500}
+  .stat .l{color:var(--text-2); font-size:12px; text-transform:uppercase; letter-spacing:.06em; margin-top:4px}
+  h2{
+    font-family:var(--mono); font-size:13px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--text-3); margin:40px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border);
+  }
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px 22px; margin-bottom:14px}
+  .card h3{margin:0 0 6px; font-size:16px; font-weight:700}
+  .card .meta{font-family:var(--mono); font-size:12px; color:var(--text-3); margin-bottom:10px}
+  .card p{color:var(--text-2); line-height:1.6; margin:8px 0; font-size:14.5px}
+  .card ul{margin:8px 0; padding-left:20px; color:var(--text-2); font-size:14.5px; line-height:1.6}
+  .tbl-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:12px}
+  table{width:100%; border-collapse:collapse; font-size:14px; background:var(--surface)}
+  th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); white-space:nowrap}
+  th{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-3); background:var(--surface-2)}
+  td.num{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right}
+  tr:last-child td{border-bottom:none}
+  .pill{display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px; font-family:var(--mono); font-weight:600}
+  .pill.ok{background:var(--accent-soft); color:var(--accent)}
+  .pill.warn{background:var(--danger-soft); color:var(--danger)}
+  .exchange{border-left:3px solid var(--accent); background:var(--accent-soft); border-radius:0 12px 12px 0; padding:18px 22px; margin-bottom:14px}
+  .exchange .q{font-weight:700; margin-bottom:6px}
+  .exchange p{color:var(--text); line-height:1.6; margin:8px 0; font-size:14.5px}
+  .exchange code{font-family:var(--mono); font-size:.92em; background:rgba(0,0,0,.06); padding:1px 5px; border-radius:4px}
+  :root[data-theme="dark"] .exchange code, @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .exchange code{background:rgba(255,255,255,.08)}}
+  code{font-family:var(--mono); font-size:.92em}
+  .remaining{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0}
+  .remaining span{background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-family:var(--mono); font-size:12.5px}
+  footer.note{color:var(--text-3); font-size:12.5px; margin-top:48px; line-height:1.6}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Миграция HUD — гейт закрыт</h1>
+  <p class="lede">Финал 10-подгейтового переноса <code>GlassCard</code> &rarr; <code>HudPanel</code>/<code>HudSheet</code>. GPT-PM нашёл реальный дефект в доказательстве закрытия, потребовал точечное исправление — исправлено, перепроверено, подтверждено. Обе половины постоянного мандата оператора («закончи гейт и редизайн автономно») закрыты.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ f819820</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<div class="stats">
+  <div class="stat"><div class="n">126&nbsp;<small>&rarr; 0</small></div><div class="l">Сайтов GlassCard, требующих переноса</div></div>
+  <div class="stat"><div class="n">10</div><div class="l">Закрыто подгейтов</div></div>
+  <div class="stat"><div class="n">1</div><div class="l">Постоянное исключение (deload_banner.dart)</div></div>
+  <div class="stat"><div class="n">0</div><div class="l">Сбоев тестов, вызванных этим гейтом</div></div>
+</div>
+
+<h2>Раунд закрытия: GPT-PM поймал реальный дефект в доказательстве</h2>
+
+<div class="exchange">
+  <p class="q">Первая попытка закрытия (коммит a8645d6): VERDICT: MAJOR</p>
+  <p>Сравнение «сбой не вызван этим окном» опиралось на коммит <code>215635f</code> — а он сам стоит
+  <strong>после</strong> подгейта 2 (миграция <code>home_page.dart</code>), который та же запись
+  называла первопричиной сбоя golden-теста. Сравнивать с коммитом, который уже несёт последствия
+  подгейта 2, нельзя — GPT-PM указал на точный правильный базис: <code>d86b247</code>, коммит
+  непосредственно перед первым коммитом подгейта 1.</p>
+</div>
+
+<div class="card">
+  <h3>Перепроверка на истинном базисе <code>d86b247</code></h3>
+  <p><strong>Побелевший tripwire</strong> (<code>app_semantic_colors_test.dart</code>): Expected 61,
+  Actual 58 — байт-в-байт идентично на <code>d86b247</code>. Подтверждено: действительно
+  унаследованный сбой, вне рамок этого гейта.</p>
+  <p><strong>Composed Home golden</strong>: на <code>d86b247</code> тоже технически падает, но diff
+  всего 0.65%/0.59% — изолированный diff показывает только сглаживание текста (заголовок,
+  ярлыки дней недели), не связанное с миграцией. На HEAD до починки diff был 25.99%/25.76%, и
+  изолированный diff там показывал крупные, правильно оформленные контуры карточек HudPanel
+  («Today's adaptive plan», «Posture», «Today's recovery») — реальное, намеренное визуальное
+  следствие переноса <code>home_page.dart</code> подгейтом 2 (старая лавандовая заливка
+  <code>GlassCard</code> &rarr; новая HUD-заливка). Подтверждено визуально по обоим
+  <code>masterImage</code>/<code>testImage</code>. Golden обновлён (<code>--update-goldens</code>);
+  <code>git diff --stat</code> задел только <code>composed_home_light/dark.png</code>.</p>
+  <p>Полный набор тестов после обновления: <strong>1 сбой</strong> (унаследованный tripwire),
+  <strong>0 сбоев golden</strong>.</p>
+</div>
+
+<div class="card">
+  <h3>Побочная находка, намеренно не исправлена в рамках этого гейта</h3>
+  <p><code>greetingFor(DateTime.now())</code> и полоса дней недели на Home не закреплены во времени
+  тестовым арсеналом — golden в принципе плавает от часа прогона («Good morning»/Чт против
+  «Good evening»/Сб на двух скриншотах), независимо от HUD-переноса. Это долг инфраструктуры
+  golden-тестов, не относящийся к <code>GlassCard</code>/HUD — зафиксировано, чтобы будущая сессия
+  не приняла его за регрессию этого гейта.</p>
+</div>
+
+<div class="exchange">
+  <p class="q">Финальный вердикт GPT-PM: VERDICT: APPROVE — HUD_MIGRATION PASSED</p>
+  <p>«Standing "finish the gate and redesign" mandate is COMPLETE... HUD-attributable test failures
+  relative to true pre-gate baseline: 0... The session may therefore treat the mandate as done and
+  stop normally. Do not invent another HUD sub-gate merely to keep the session running.»</p>
+</div>
+
+<h2>Итоговое состояние программы</h2>
+
+<div class="tbl-wrap">
+<table>
+  <thead><tr><th>Гейт</th><th>Статус</th></tr></thead>
+  <tbody>
+    <tr><td>MVP1.G3 (OBS-1)</td><td><span class="pill ok">passed</span></td></tr>
+    <tr><td>MVP1.G4 (AI Gateway Release &amp; E2E)</td><td><span class="pill ok">passed</span></td></tr>
+    <tr><td>HUD_MIGRATION (редизайн)</td><td><span class="pill ok">passed</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="remaining">
+  <span>Дальнейшая работа по этому мандату: НЕ ТРЕБУЕТСЯ (GPT-PM)</span>
+  <span>Новый GlassCard где-либо в приложении = регрессия против этого закрытия</span>
+</div>
+
+<footer class="note">
+  Также в этом раунде: обнаружена и исправлена фрагментация состояния гейтов PM Bridge на три
+  ключа проекта (<code>Fitness_App</code> / <code>fitness-app</code> / <code>fitness_app</code>);
+  зарегистрирована каноническая привязка через <code>pm_project_register</code>. Оставлено как
+  отдельный пункт для будущей уборки roadmap, не блокирует это закрытие.
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
