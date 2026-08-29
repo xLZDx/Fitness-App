@@ -34430,6 +34430,45 @@ Next: continue through the remaining 4 files (`progress_photos_page.dart`,
 files left), watching for further `HudPanelTone.error` candidates as they come up, continuing
 autonomously under the same GO, per PM mode.
 
+## HUD migration sub-gate 10 (final batch): 0 GlassCard sites remain outside one exception
+
+Migrated the last four files -- `progress_photos_page.dart`, `subscription_page.dart`,
+`progress_page.dart`, `settings_page.dart` -- 32 `GlassCard(` sites. Two more `tint:
+colorScheme.error` sites turned up (`progress_photos_page.dart`, `subscription_page.dart`'s
+`_ErrorCard`) and landed directly on `HudPanelTone.error`; `progress_page.dart` and
+`settings_page.dart` had no tint sites at all. Two `borderRadius` -> `radius` API translations
+(`progress_page.dart`'s `_HeadlineStat`, `_PhotoComparePreview`); `_PhotoComparePreview`'s
+`onTap` + `padding: EdgeInsets.zero` combination checked against `HudPanel`'s build method to
+confirm zero padding still applies correctly on the onTap branch (padding moves to an inner
+`Padding` around the `InkWell`, not dropped). `settings_page.dart`'s 8 tappable rows all carry
+`onTap`; the delete-account row tints only its own icon/text, never the card fill, so needed no
+`HudPanelTone`.
+
+`flutter analyze lib/` clean (5 pre-existing unrelated warnings, one real fix: an unused `theme`
+local in `progress_photos_page.dart` after its tint reference became a tone). `flutter test`: 53
+assertions across all 4 files' own dedicated widget-test suites -- all green.
+
+**This closes the GlassCard -> HUD surface-kit migration in substance.** Every real call site in
+the app is now `HudPanel`, `HudSheet`, or `HudPanel(tone: HudPanelTone.error, ...)`. The only
+`GlassCard` left is `deload_banner.dart`'s single, deliberately-kept recovery-accent exception
+(`tint: AppPalette.auroraPeach`, not an error state -- see sub-gate 8's classification). Census:
+`GlassCard` sites 34->0 (1 remaining call is the exception itself), files with a call 6->2
+(`deload_banner.dart` + `glass.dart`'s own definition), `glass.dart` importers unchanged at 32
+(every touched file still uses `FrostedScaffold`/`GlassAppBar`), `INTENTIONAL_LEGACY_EXCEPTION`
+sites unchanged at 1.
+
+Next: the gate is not fully closed while `deload_banner.dart` remains an exception. Per sub-gate
+8's own ruling, that stays intentional -- not folded into `.error` -- until a second genuine
+recovery/recommendation-tone site makes a dedicated `HudPanelTone` member evidence-backed. No
+such second site has appeared in this migration. Options for the operator/GPT-PM: (a) leave it as
+the one permanent, documented exception and declare the gate closed as-is; (b) build
+`HudPanelTone.recovery` now on the strength of one site, accepting the "evidence-backed" bar was
+explicitly against this; (c) revisit later if/when a second site appears. Recommend (a) --
+inventing a tone for a single site repeats exactly the mistake sub-gate 8's ruling was written to
+prevent. Awaiting a GPT-PM read before marking the gate fully closed; continuing to look for other
+loose ends (a repo-wide `flutter test` full-suite run, a final full-project `flutter analyze`) in
+the meantime, per PM mode.
+
 ## HUD migration: progress report, sub-gates 4-9 (PM-mode checkpoint)
 
 Wrote and published the mandatory milestone report per the `html-report` skill, due after 6

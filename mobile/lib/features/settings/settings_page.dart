@@ -5,7 +5,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/settings/app_settings.dart';
 import '../../core/settings/state/settings_providers.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../data_export/data_export_providers.dart';
 import '../../core/theme/app_semantic_colors.dart';
 
@@ -138,7 +139,7 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          GlassCard(
+          HudPanel(
             key: const Key('settings-about'),
             onTap: () => context.push('/about'),
             child: Row(
@@ -154,7 +155,7 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          GlassCard(
+          HudPanel(
             key: const Key('settings-terms'),
             onTap: () => context.push('/terms'),
             child: Row(
@@ -170,7 +171,7 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          GlassCard(
+          HudPanel(
             key: const Key('settings-privacy'),
             onTap: () => context.push('/privacy'),
             child: Row(
@@ -194,7 +195,7 @@ class SettingsPage extends ConsumerWidget {
           // package and no key to reason about. When R7 lands a real store,
           // whether to decrypt into a shareable file becomes a genuine
           // question; today it is not one.
-          GlassCard(
+          HudPanel(
             key: const Key('settings-export-data'),
             onTap: exportState.isLoading
                 ? null
@@ -227,7 +228,7 @@ class SettingsPage extends ConsumerWidget {
           // Encrypting the export instead would have made a data-portability
           // file unreadable without a passphrase, which is the opposite of
           // portable.
-          GlassCard(
+          HudPanel(
             key: const Key('settings-backup-transfer'),
             onTap: () => GoRouter.of(context).push('/backup'),
             child: Row(
@@ -246,7 +247,7 @@ class SettingsPage extends ConsumerWidget {
           const SizedBox(height: 16),
           // Not optional decoration: the bundled content ships under licences
           // that require visible attribution. See core/licences/.
-          GlassCard(
+          HudPanel(
             key: const Key('settings-licences'),
             onTap: () => context.push('/licences'),
             child: Row(
@@ -274,7 +275,7 @@ class SettingsPage extends ConsumerWidget {
           // the Firestore rules enforce the moderator claim, and a client flag
           // would be decoration over the real gate. A curious user who taps it
           // sees an empty queue, which is the truth.
-          GlassCard(
+          HudPanel(
             key: const Key('settings-moderation'),
             onTap: () => context.push('/moderate'),
             child: Row(
@@ -295,7 +296,7 @@ class SettingsPage extends ConsumerWidget {
           // L0b. Visually separated from every tile above it -- error colour
           // throughout, not just the icon -- because this is the one action
           // on this page that is not reversible by tapping it again.
-          GlassCard(
+          HudPanel(
             key: const Key('settings-delete-account'),
             onTap: () => context.push('/delete-account'),
             child: Row(
@@ -370,7 +371,7 @@ class _Section extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

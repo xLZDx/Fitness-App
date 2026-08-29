@@ -9,7 +9,8 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/demo_data_banner.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../auth/state/auth_providers.dart';
 import '../subscription/data/subscription_models.dart';
 import '../subscription/state/subscription_providers.dart';
@@ -42,7 +43,6 @@ class ProgressPhotosPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final tier = ref.watch(effectiveTierProvider);
     final isPaid = tier != SubscriptionTier.free;
     final photosAsync = ref.watch(progressPhotosProvider);
@@ -70,8 +70,8 @@ class ProgressPhotosPage extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 36),
               child: Center(child: CircularProgressIndicator()),
             ),
-            error: (e, _) => GlassCard(
-              tint: theme.colorScheme.error,
+            error: (e, _) => HudPanel(
+              tone: HudPanelTone.error,
               child: Text(l10n.progressphotosCouldNotLoadPhotos(e)),
             ),
             // Keyed so the paging cursor survives. `_Body` sits in a list
@@ -342,7 +342,7 @@ class _BodyState extends ConsumerState<_Body> {
     final l10n = AppLocalizations.of(context);
     final photos = widget.photos;
     if (photos.isEmpty) {
-      return GlassCard(
+      return HudPanel(
         child: Text(
           l10n.progressphotosNoPhotosYet,
           style: Theme.of(context).textTheme.bodyMedium,
@@ -391,7 +391,7 @@ class _CompareCard extends StatelessWidget {
     final theme = Theme.of(context);
     final p = pair;
     if (p == null) {
-      return GlassCard(
+      return HudPanel(
         key: const Key('photos.compare.empty'),
         child: Text(
           l10n.progressphotosNeedTwoSameAngle,
@@ -399,7 +399,7 @@ class _CompareCard extends StatelessWidget {
         ),
       );
     }
-    return GlassCard(
+    return HudPanel(
       key: const Key('photos.compare'),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -613,7 +613,7 @@ class _PrivacyStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -639,7 +639,7 @@ class _UpgradeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.all(18),
       onTap: () => GoRouter.of(context).push('/subscription'),
       child: Column(

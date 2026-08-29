@@ -14,10 +14,17 @@ observation below; sub-gates come from this data, not from mechanically working 
 
 | Metric | Count |
 |---|---|
-| `GlassCard(` call sites | 126 → 124 → 117 → 96 (gate 4) → 84 (sub-gate 5) → 67 (sub-gate 6) → 50 (sub-gate 7) → 45 (sub-gate 8) → **34** after sub-gate 9 |
-| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → 20 (sub-gate 5) → 14 (sub-gate 6) → 12 (sub-gate 7) → 8 (sub-gate 8) → **6** after sub-gate 9 (5 real usage + `glass.dart`'s own definition). Methodology note carried forward: a raw `grep -rl "GlassCard("` also matches `hud_surface.dart`'s `HudPanelTone` doc comment (prose, not a call site) -- excluded from this and every count above. |
-| Files importing `shared/widgets/glass.dart` | 45 → 43 → 42 → 38 (gate 4) → 33 (sub-gate 5) → 33 (sub-gate 6) → 33 (sub-gate 7) → 33 (sub-gate 8) → **32** after sub-gate 9 (`health_sync_card.dart` dropped the import entirely -- it never used `FrostedScaffold`/`GlassAppBar`, unlike every page-level file so far; `ai_planner_page.dart` scoped down to `show FrostedScaffold, GlassAppBar` like the others) |
-| `INTENTIONAL_LEGACY_EXCEPTION` sites (`GlassCard` kept for a capability `HudPanel` genuinely lacks) | 2 (`scanner_page.dart`) + 1 (`deload_banner.dart`) → 6 (sub-gate 7) → 1 (sub-gate 8) → **1** after sub-gate 9 (unchanged: only `deload_banner.dart`; both this sub-gate's error sites landed directly on the already-approved `HudPanelTone.error`, no new gap opened) |
+| `GlassCard(` call sites | 126 → 124 → 117 → 96 (gate 4) → 84 (sub-gate 5) → 67 (sub-gate 6) → 50 (sub-gate 7) → 45 (sub-gate 8) → 34 (sub-gate 9) → **0** after sub-gate 10 (1 remaining call is `deload_banner.dart`'s own intentional exception, kept as `GlassCard` on purpose -- see below) |
+| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → 20 (sub-gate 5) → 14 (sub-gate 6) → 12 (sub-gate 7) → 8 (sub-gate 8) → 6 (sub-gate 9) → **2** after sub-gate 10: `deload_banner.dart` (the intentional exception) + `glass.dart`'s own definition. Methodology note carried forward: a raw `grep -rl "GlassCard("` also matches `hud_surface.dart`'s `HudPanelTone` doc comment (prose, not a call site) -- excluded from this and every count above. |
+| Files importing `shared/widgets/glass.dart` | 45 → 43 → 42 → 38 (gate 4) → 33 (sub-gate 5) → 33 (sub-gate 6) → 33 (sub-gate 7) → 33 (sub-gate 8) → 32 (sub-gate 9) → **32** after sub-gate 10 (unchanged: all 4 files in this batch use `FrostedScaffold`/`GlassAppBar` and scoped their import to `show` rather than dropping it) |
+| `INTENTIONAL_LEGACY_EXCEPTION` sites (`GlassCard` kept for a capability `HudPanel` genuinely lacks) | 2 (`scanner_page.dart`) + 1 (`deload_banner.dart`) → 6 (sub-gate 7) → 1 (sub-gate 8) → 1 (sub-gate 9) → **1** after sub-gate 10 (unchanged: only `deload_banner.dart`; this sub-gate's 3 error sites -- `progress_photos_page.dart`, `subscription_page.dart` -- all landed directly on `HudPanelTone.error`, `progress_page.dart` and `settings_page.dart` had no tint sites at all) |
+
+**Migration substantially complete as of sub-gate 10.** Every `GlassCard` call site in the app is
+either migrated to `HudPanel`/`HudSheet`/`HudPanelTone.error`, or is `deload_banner.dart`'s single
+remaining, deliberately-kept recovery-accent exception (see "Suggested sub-gate order" below for
+what would close it). `shared/widgets/glass.dart` itself stays in the tree -- `FrostedScaffold` and
+`GlassAppBar` are still the app's scaffold/app-bar primitives and were never in scope for this
+migration; only `GlassCard` (and its `tint`/gradient capability) was being retired.
 | Files referencing `aurora_background`/`AuroraBackground` | 5 (2 are theme/token files, 1 is the definition file itself, 1 is a comment-only mention in `workout_player_page.dart` — **corrected**: `main.dart` is the ONLY real widget-tree usage, see the struck sub-gate 3 below) |
 | Files already using `HudSurface`/`HudPanel`/`HudButton`/`HudChip` | 20 (+ `HudSheet`, the new opaque-surface widget from sub-gate 1) |
 | Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` → 2 after sub-gate 1 → **0** after sub-gate 2 (`home_page.dart` fully migrated; `scanner_page.dart` closed with 2 sites reclassified `INTENTIONAL_LEGACY_EXCEPTION`, not partial-migration debt) |
@@ -280,6 +287,36 @@ and `ai_planner_providers_test.dart` (2 assertions, provider-level not page-widg
 No dedicated widget test exists for `ai_planner_page.dart` itself -- `flutter analyze` is this
 sub-gate's coverage for it. Census: `GlassCard` sites 45->34, files with a call 8->6,
 `glass.dart` importers 33->32, `INTENTIONAL_LEGACY_EXCEPTION` sites unchanged at 1.
+
+### Sub-gate 10 (`progress_photos_page.dart`, `subscription_page.dart`, `progress_page.dart`, `settings_page.dart`) — closed, 2026-08-29
+
+The final batch -- migrated the four largest remaining files, 32 `GlassCard(` sites total. Two more
+files carried their own `tint: colorScheme.error` async-error site
+(`progress_photos_page.dart`'s photo-load failure, `subscription_page.dart`'s `_ErrorCard`); both
+landed on `HudPanelTone.error`, no new design question. `progress_page.dart` and
+`settings_page.dart` had no tint sites at all -- every one of their 18 combined sites was a plain
+in-page card.
+
+Two API translations worth naming explicitly (`GlassCard.borderRadius` -> `HudPanel.radius`, the
+same rename every prior sub-gate has made when it came up): `progress_page.dart`'s
+`_HeadlineStat` (`borderRadius: 16`) and `_PhotoComparePreview` (`borderRadius: 18`, `onTap` +
+`padding: EdgeInsets.zero` -- confirmed `HudPanel` still applies zero padding correctly on the
+`onTap` branch, where padding moves from the outer `HudSurface` to an inner `Padding` around the
+`InkWell`'s child; behavior unchanged). `settings_page.dart`'s 8 tappable rows (about, terms,
+privacy, export, backup, licences, moderation, delete-account) all carry `onTap`, supported
+identically -- including the delete-account row, which tints its own icon/text `colorScheme.error`
+but never tinted the card's fill, so it needed no `HudPanelTone` at all.
+
+`flutter analyze lib/` clean (same 5 pre-existing, unrelated warnings elsewhere in the tree; one
+real fix made along the way: `progress_photos_page.dart`'s page-level `theme` local went unused
+once its `tint: theme.colorScheme.error` reference became `tone: HudPanelTone.error`, removed).
+`flutter test`: 53 total assertions across `progress_photos_demo_banner_test.dart` (17),
+`progress_page_test.dart` (13), `settings_page_test.dart` (11), `subscription_page_test.dart`
+(12) -- all green, every one of the four files in this batch has a dedicated widget-test suite.
+
+Census: `GlassCard` sites 34->0 (the one remaining call is `deload_banner.dart`'s own intentional
+exception), files with a call 6->2 (`deload_banner.dart` + `glass.dart`'s own definition),
+`glass.dart` importers unchanged at 32, `INTENTIONAL_LEGACY_EXCEPTION` sites unchanged at 1.
 
 ### Sub-gate 1 — closed, 2026-08-29
 

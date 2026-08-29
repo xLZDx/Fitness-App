@@ -7,7 +7,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../shared/widgets/app_buttons.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import 'data/checkout_failure.dart';
 import 'data/subscription_models.dart';
 import 'state/subscription_providers.dart';
@@ -213,7 +214,7 @@ class _MissionStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,8 +313,8 @@ class _ErrorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return GlassCard(
-      tint: scheme.error,
+    return HudPanel(
+      tone: HudPanelTone.error,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -421,7 +422,7 @@ class _UpgradeFromTrialCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
       onTap: isLoading ? null : onUpgrade,
       child: Column(
@@ -511,7 +512,7 @@ class _ManagePlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
       onTap: isLoading ? null : onTap,
       child: Column(
@@ -631,7 +632,7 @@ class _StatusCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final expiry = _expiryLabel(l10n);
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -739,7 +740,7 @@ class _PlanCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final isCurrent = currentTier == tier;
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -982,7 +983,7 @@ class _PlanCardForPeriod extends ConsumerWidget {
       // Unsupported combo — render a small note instead of hiding so the
       // user understands why the card "disappeared".
       final theme = Theme.of(context);
-      return GlassCard(
+      return HudPanel(
         padding: const EdgeInsets.all(14),
         child: Text(
           AppLocalizations.of(context)
@@ -1061,7 +1062,7 @@ class _EntitlementUnavailable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
+    return HudPanel(
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

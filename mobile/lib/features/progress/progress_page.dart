@@ -7,7 +7,8 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../core/theme/hud_tokens.dart' show HudMotionX;
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../progress_photos/data/photo_timeline.dart';
 import '../progress_photos/data/progress_photo.dart';
@@ -55,7 +56,7 @@ class ProgressPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
-          GlassCard(
+          HudPanel(
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
             child: SizedBox(
               height: 160,
@@ -92,7 +93,7 @@ class ProgressPage extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           if (logs.isEmpty)
-            GlassCard(
+            HudPanel(
               child: Text(
                 AppLocalizations.of(context)
                     .progressTapMarkCompleteOnAnyWorkout,
@@ -235,8 +236,8 @@ class _HeadlineStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
-      borderRadius: 16,
+    return HudPanel(
+      radius: 16,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
       child: Column(
         children: [
@@ -375,9 +376,9 @@ class _PhotoComparePreview extends StatelessWidget {
     // is not a smaller delta, it is no delta at all.
     final delta = (before != null && after != null) ? after - before : null;
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('progress.photoCompare'),
-      borderRadius: 18,
+      radius: 18,
       padding: EdgeInsets.zero,
       onTap: () => GoRouter.of(context).push('/photos'),
       child: Column(
@@ -521,7 +522,7 @@ class _VolumeSection extends ConsumerWidget {
                 ),
         ),
         const SizedBox(height: 8),
-        GlassCard(
+        HudPanel(
           padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
           child: SizedBox(
             height: 140,
@@ -567,7 +568,7 @@ class _ConsistencySection extends ConsumerWidget {
       children: [
         _Heading('${l10n.progressConsistency} — $month'),
         const SizedBox(height: 8),
-        GlassCard(
+        HudPanel(
           padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
           child: SizedBox(
             height: 60,
@@ -600,7 +601,7 @@ class _RecordsSection extends ConsumerWidget {
         _Heading(l10n.progressRecords),
         const SizedBox(height: 8),
         if (records.isEmpty)
-          GlassCard(
+          HudPanel(
             child: Text(
               l10n.progressNoRecordsYet,
               style: theme.textTheme.bodyMedium
@@ -609,7 +610,7 @@ class _RecordsSection extends ConsumerWidget {
           )
         else
           for (final r in records.take(5)) ...[
-            GlassCard(
+            HudPanel(
               child: Row(
                 children: [
                   const Icon(Icons.emoji_events_outlined,
@@ -761,7 +762,7 @@ class _RecentLogCard extends ConsumerWidget {
     // (`asLogEntries` copies both onto each), so reading them off the first
     // row is the whole workout's date and length, not the first exercise's.
     final log = session.first;
-    return GlassCard(
+    return HudPanel(
       padding: const EdgeInsets.all(14),
       child: Row(
         children: [
