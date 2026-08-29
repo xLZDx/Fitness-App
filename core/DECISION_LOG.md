@@ -34641,3 +34641,72 @@ https://console.firebase.google.com/project/fitness-app-korostelev/appdistributi
 . Release notes carry the `HUD_MIGRATION` closure summary plus the standard git-SHA/built-at/size
 stamp. No code change, no commit needed for this action itself -- the artifact and distribution
 record live in Firebase, not the repo.
+
+## Live S23 device walkthrough: stale build discovered, 2 real onboarding bugs found
+
+Operator asked for a full screen-by-screen comparison against the design (all screens including
+onboarding) before any further APK goes out, and to restart the wedged PM Bridge daemon/orchestrator
+first. Restarted via `pm_bridge_restart(force: true)` -- the prior GPT-PM round-1 send job
+(`request_id 7f3a2c1e-...`) was stuck `uncertain/sending` across 3 identical retries and a cancel
+attempt while the daemon itself reported `active: 0`; documented as a real, not self-inflicted,
+transport failure (`CHATGPT_SEND_UNCONFIRMED`) rather than hammered further, per the standing
+"wait for reply, don't resend" discipline.
+
+**Critical finding, before any screen comparison meant anything**: `adb -s R5CW142SASR shell dumpsys
+package com.fitnessapp.fitness_app.sptr` showed `versionCode=2656` installed -- `buildNumber 656`,
+which `git log --oneline --reverse | sed -n "656p"` resolves to commit `67b9fa9` ("MVP_REACHED: all
+directive gates... closed"), dated **2026-08-21**, 8 days before this session and before the entire
+HUD_MIGRATION gate (sub-gates 1-10), MVP1.G3 Step 10, and MVP1.G4 ever ran. Every screenshot the
+operator had reacted to ("redesign REJECT") was from that 8-day-old build. Installed the actual
+current build directly via `adb install -r` from the local artifact
+(`mobile/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`, the same file already uploaded to
+Firebase App Distribution as 1.0.0 (2869)) rather than waiting on the operator to act on the
+distribution email -- confirmed via the same `dumpsys` command afterward, `versionCode=2869`.
+
+**Also discovered**: the canonical HUD design reference the codebase itself cites --
+`design_handoff_fitness_hud/`, reference screen `Fitness Form Coach Phone.dc.html`
+(`MASTER_PLAN_2026-08-26.md` SS3b, "the system that actually reached production code") -- does not
+exist anywhere in this repository, only referenced by name in code comments and the plan doc. The
+one design file that DOES exist, `core/design/reference/onboarding_v4/*.dc.html`, is confirmed
+**superseded**: MASTER_PLAN SS3a marks that whole lineage (Figma-Make prototype, 08-05->08-09,
+gates R1-R11) "largely superseded, not shipped as-is" -- and the live app's actual onboarding (a
+10-step scrollable questionnaire: goal/level, equipment, schedule, injuries, ... "О1-О8, О10" per
+MASTER_PLAN SS4) bears no structural resemblance to that reference file's 9-screen wizard
+(Welcome/Goal/Level/Schedule/Body/Equipment/Camera/Background/Ready). Flagged to the operator rather
+than silently comparing against the wrong file; asked whether a current reference exists outside the
+repo.
+
+**Live walkthrough method**: `pm clear` on the package to force onboarding from a clean state (test
+device, reversible, not production data), `cmd uimode night yes` to force dark theme per operator
+request, then `adb shell input tap/swipe` navigation with `exec-out screencap` captures read back
+via the Read tool. Two real, reproducible defects found and confirmed independent of the stale-build
+confusion:
+
+1. **Onboarding step 2/10 ("Оборудование"), dead skip button**: with no location selected, the
+   `Пропустить` (Skip) button visually looks identical to an enabled control but does nothing --
+   tapped 8 times in the same position, zero navigation, zero visible feedback of any kind. Selecting
+   a location (`В зале`) immediately turns the same button into a working `Далее` at the same
+   position. Step 3's own `Пропустить` was tapped once and worked immediately, so this is local to
+   step 2's validation, not a global pattern. A silently inert button that looks live is worse than a
+   disabled-looking one -- a user has no way to tell "not answered yet" from "broken."
+2. **Onboarding step 4/10 ("Ваше тело" / injuries)**: the body-part selector renders as a grid of
+   empty rounded-square placeholder outlines instead of the actual icons/silhouette -- looks like a
+   failed asset load, not a designed empty state.
+
+**Confirmed NOT bugs, ruled out before reporting**: the "Тренер по технике" avatar view's
+photographic backdrop (`_AvatarBackdrop`, form_check_page.dart) is intentional, pre-existing design
+dated 2026-08-15 -- and outside HUD_MIGRATION's scope entirely (`form_check_page.dart` was never
+touched by any of the 10 sub-gates; it still carries 18 of the whites-tripwire's hardcoded-white
+occurrences). The black Scan-tab camera preview was simply `android.permission.CAMERA: granted=false`
+on the freshly cleared install, not a rendering defect -- granted via `pm grant` and confirmed.
+Onboarding's "Далее"-button-appears-unresponsive false alarm (screenshot 06) was the sticky footer
+staying in place while page content scrolled underneath it, not a real interaction bug -- resolved by
+scrolling to see the actual second question block.
+
+**Not yet covered**, honestly incomplete at the point this entry was written: Тренер по технике's
+avatar mode specifically on the CURRENT build (only checked on the stale one), Профиль, Прогресс,
+Настройки, and the remaining onboarding steps 5-9's own content. Blind `adb input tap` navigation
+repeatedly missed the bottom nav bar's real coordinates after a few screens, burning turns without
+adding evidence -- stopped rather than keep guessing, and put the continuation choice (fix the 2
+confirmed bugs now vs. finish the full walkthrough first) to the operator rather than picking for
+them, since it is a real, live, still-open question in the same session.
