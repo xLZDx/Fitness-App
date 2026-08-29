@@ -91,13 +91,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 881f4dd</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 9dc8660</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -111,26 +113,49 @@
 <h2>Covered this pass</h2>
 <p style="color:var(--text-2);font-size:14.5px;line-height:1.6">Profile (full scroll), Progress, and the entire Form Coach branch (intro → camera-readiness checklist → exercise picker → live avatar view). Onboarding and Home were checked earlier in the same session — the consolidated list below includes those too. Device confirmed in system night mode (<code>adb shell cmd uimode night</code> → <code>yes</code>) throughout.</p>
 
-<h2>Consolidated list for the batched fix</h2>
+<h2>Consolidated list — final status after the batched fix</h2>
 
 <div class="tbl-wrap">
 <table>
-<thead><tr><th>#</th><th>Screen</th><th>Finding</th><th>Type</th></tr></thead>
+<thead><tr><th>#</th><th>Screen</th><th>Finding</th><th>Status</th></tr></thead>
 <tbody>
-<tr><td>1</td><td>Onboarding, step 2/10</td><td>"Skip" button unresponsive until a selection is made — looks live, is actually dead</td><td><span class="pill bug">bug</span></td></tr>
-<tr><td>2</td><td>Onboarding, step 4/10</td><td>Body-part selector renders empty placeholder squares instead of icons</td><td><span class="pill bug">bug</span></td></tr>
-<tr><td>3</td><td>Profile</td><td>Header reads "Profile complete" while Age/Height/Weight/Activity/Goals fields are all empty</td><td><span class="pill bug">bug</span></td></tr>
-<tr><td>4</td><td>Bottom nav bar</td><td>Bare stock Material icons instead of the custom icon set used elsewhere in the app</td><td><span class="pill scope">design</span></td></tr>
-<tr><td>5</td><td>Workouts → Library</td><td>Three exercise cards ("Chaturanga…", "Downward dog…", "3/4 crunch") show a blank white square instead of a preview</td><td><span class="pill bug">bug</span></td></tr>
-<tr><td>6</td><td>Form Coach (whole flow, 4 screens)</td><td>Not one screen received the HUD glass treatment — flat dark background, plain rectangular cards, no photo backdrop or blur</td><td><span class="pill scope">scope</span></td></tr>
+<tr><td>1</td><td>Onboarding, step 2/10</td><td>"Skip" allegedly unresponsive</td><td><span class="pill ok">retracted — not a bug</span></td></tr>
+<tr><td>2</td><td>Onboarding, step 4/10</td><td>Body selector — empty placeholders instead of a silhouette</td><td><span class="pill ok">fixed, verified on device</span></td></tr>
+<tr><td>3</td><td>Profile</td><td>"Profile complete" while fields are empty</td><td><span class="pill ok">fixed, verified on device</span></td></tr>
+<tr><td>4</td><td>Bottom nav bar</td><td>Bare stock Material icons instead of the custom set</td><td><span class="pill scope">left untouched — no reference</span></td></tr>
+<tr><td>5</td><td>Workouts → Library</td><td>Exercise cards show a blank white square instead of a preview</td><td><span class="pill ok">fixed, verified on device</span></td></tr>
+<tr><td>6</td><td>Form Coach (whole flow, 4 screens)</td><td>Not one screen received the HUD glass treatment</td><td><span class="pill scope">left untouched — separate gate</span></td></tr>
 </tbody>
 </table>
 </div>
 
 <div class="card">
-  <h3>Item 6 needs a decision, not just a fix</h3>
-  <p>Items 1, 2, 3, 5 are point code/asset defects — fixed in the general batch with no extra decisions needed. Item 4 is a design call (redraw the icons or knowingly accept the current ones). Item 6 is the largest: migrating four more screens onto HudPanel/HudSheet is, by scope, a small gate of its own — not a one-line fix alongside the other five. This is also the exact screen the operator named first in the complaint ("especially the live coach") — and it turns out to be the least-migrated screen in the app, which plausibly explains the "feels like a 50% redesign" reaction.</p>
+  <h3>Items 4 and 6 deliberately untouched — a decision, not an oversight</h3>
+  <p>Item 4 would mean redrawing 5 custom icons with zero reference in the repository — doing that blind risks a worse mismatch. Item 6 — migrating four more screens onto HudPanel/HudSheet — is, by scope, a small gate of its own, not a one-line fix. This is also the exact screen the operator named first in the complaint ("especially the live coach") — and it turns out to be the least-migrated screen in the app, which plausibly explains the "feels like a 50% redesign" reaction.</p>
 </div>
+
+<h2>What was fixed and verified on the physical device (build 2873, commit 9dc8660)</h2>
+
+<div class="card">
+  <h3>#1 — retracted, not a bug</h3>
+  <p>Reset the account and precisely re-tested via <code>uiautomator dump</code> instead of eyeballed taps: "Skip" worked first try on both step 1 and step 2. The code (<code>onboarding_page.dart</code>) has no gating logic — <code>onTap</code> always calls <code>_next()</code>. The original finding was an artifact of my own imprecise taps, not a code defect.</p>
+</div>
+<div class="card">
+  <h3>#2 — root cause: a glass-panel tint painted with no glass under it</h3>
+  <p><code>BodyZoneMap</code> filled the silhouette with <code>t.subPanel.fill</code> (white at ~2% alpha) — a token meant as an overlay on top of an already-blurred backdrop, not a direct fill over a photo. Swapped for opaque <code>0xE60A0912</code>, the same ink <code>_PoseAvatarPainter</code> already uses elsewhere in the codebase for a figure drawn over a photo.</p>
+</div>
+<div class="card">
+  <h3>#3 — root cause: the flag was right, the wording wasn't</h3>
+  <p><code>hasCompletedOnboarding</code> honestly means "reached the end of the flow," not "every field is filled" — every onboarding question is skippable. The string "Profile complete" promised something the logic never guaranteed. Changed to "Questionnaire completed" (EN) / "Анкета пройдена" (RU); the flag and its one call site are untouched.</p>
+</div>
+<div class="card">
+  <h3>#5 — from 3 files to 1,398: the finding grew by an order of magnitude</h3>
+  <p>The poster-resolution code had no defect. The real cause: some poster JPEGs' ffmpeg encoder omitted the JFIF header (depending on whether the source clip's pixel aspect ratio was set), and Android rendered those as blank white squares. The fix (<code>ffmpeg -vf setsar=1/1</code>, pixels unchanged) was verified live on the 3 reported cases, then a full catalog scan found <strong>1,398 of 2,979</strong> posters shared the same signature. All 1,398 were re-encoded, content-verified pixel-identical before and after, zero files left without a JFIF marker.</p>
+  <p style="margin-top:10px"><strong>Two real process mistakes along the way, both recorded honestly:</strong> (1) accidentally ran two concurrent re-encode processes (one orphaned background job plus a fresh one) — exactly what the operator noticed and named out loud; both killed, no files were damaged. (2) The actual dominant cause of the failures was CRLF line endings in the file list (a side effect of Python's text-mode writes on Windows), which glued an invisible <code>\r</code> onto every filename and made ffmpeg unable to open the input. Found and fixed.</p>
+</div>
+
+<h2>Firebase App Distribution — cleanup per operator request</h2>
+<p style="color:var(--text-2);font-size:14.5px;line-height:1.6">Deleted every release via the official REST API (<code>releases:batchDelete</code>) on two of three apps: <code>com.fitnessapp.fitness_app.sptr.debug</code> (4→0) and the production <code>com.fitnessapp.fitness_app.sptr</code> (22→0), confirmed by re-querying. The third, <code>com.fitnessapp.fitness_app</code> (14 releases, no <code>.sptr</code> suffix) — the API returns a consistent 404 for that app id even though the Android app itself exists; looks like an orphaned registration from an earlier project naming, unused by any current build process. Deletable only by hand in the Firebase console. Then built and distributed exactly one clean new release — 1.0.0 (2873), commit 9dc8660.</p>
 
 <h2>False alarms ruled out before reporting</h2>
 
@@ -152,6 +177,8 @@
 
 <footer class="note">Walkthrough screenshots: local session folder <code>scratchpad/s23_shots/24-33_*.png</code> (not committed — ephemeral session evidence; the text findings are recorded durably in <code>core/DECISION_LOG.md</code>).</footer>
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>

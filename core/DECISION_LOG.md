@@ -34930,3 +34930,26 @@ neither corrupted any real asset, and the underlying image fix itself (verified 
 originals on a 3-file spot check before the bulk run, and content-verified on a random 3-file sample of
 the finished 1,398) is now complete and confirmed correct: `python3` re-scan of all 2,979 posters shows
 0 remaining without a JFIF marker.
+
+### Final build, on-device re-verification, Firebase cleanup, push -- gate closed
+
+Committed all four fixes (`9dc8660`, 1,402 files -- 1,398 posters plus the three code/copy changes) on
+a clean tree, rebuilt (versionCode 2873), reinstalled directly via `adb install -r` on the S23, and
+re-verified all three live: body silhouette renders correctly, Profile shows "Анкета пройдена", and a
+second, DIFFERENT filter tab in Библиотека ("Тренажёры") shows real thumbnails on every card -- not
+just the original 3 reported ones, confirming the catalog-wide fix rather than only the narrow reported
+case. Distributed exactly one release (1.0.0 / 2873) to Firebase App Distribution, per the operator's
+own instruction not to leave a trail of intermediate builds.
+
+Also actioned, same session, on direct operator instruction: deleted all releases from two of the three
+Firebase App Distribution app entries via the official `releases:batchDelete` REST API (`.sptr.debug`:
+4->0, production `.sptr`: 22->0, both re-verified empty by re-querying) -- the Firebase CLI itself has no
+delete command, so this went through a manually-authenticated `gcloud`-token REST call instead. The
+third app entry (`com.fitnessapp.fitness_app`, no `.sptr` suffix, 14 releases per the operator's own
+screenshot) returns a consistent 404 from the same API despite the Android app existing in
+`firebase apps:list` -- left alone, undeletable through this path, very likely an orphaned registration
+from before the `.sptr` package rename that no current build process touches.
+
+Pushed `9dc8660` and the report-update commit to `origin/master` -- both went through the repo-wide
+GPT-review gate (`gpt_review_gate.py`) cleanly on attempt, consistent with its documented fail-open
+behavior.
