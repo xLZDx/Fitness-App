@@ -832,6 +832,77 @@ export const aiMachineDescription = onCall(AI_METERED, async (request) => {
     expect(byName(result, PROVENANCE_CHECK).status).toBe("UNAVAILABLE");
   });
 
+  test("source provenance scopes `git status` to functions/, functions-equipment-identity/, firebase.json, .firebaserc, .gitignore, and the release-evidence file -- not the whole repo -- so unrelated untracked debris elsewhere (old report artifacts) can never permanently block a genuinely clean release", async () => {
+    let capturedArgs: string[] = [];
+    const result = await runReleaseGuard(
+      makeDeps({
+        git: {
+          status: (args) => {
+            capturedArgs = args;
+            return { ok: true, stdout: "", stderr: "" };
+          },
+        },
+      }),
+    );
+    expect(capturedArgs).toEqual([
+      "status",
+      "--porcelain",
+      "--",
+      "functions",
+      "functions-equipment-identity",
+      "firebase.json",
+      ".firebaserc",
+      ".gitignore",
+      RELEASE_EVIDENCE_PATH,
+    ]);
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("OK");
+  });
+
+  test("source provenance still FAILS on a dirty change confined to a scoped path (e.g. functions/) -- the scoping narrows WHERE it looks, not what counts as dirty", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({
+        git: { status: () => ({ ok: true, stdout: " M functions/src/scaling.ts\n", stderr: "" }) },
+      }),
+    );
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("FAILED");
+  });
+
+  test("source provenance FAILS on a dirty functions-equipment-identity/ -- round-5 GPT-PM MAJOR: firebase.json's second Functions codebase, deployed alongside the default one by `firebase deploy --only functions`, was originally outside the scoped provenance check entirely", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({
+        git: { status: () => ({ ok: true, stdout: " M functions-equipment-identity/src/index.ts\n", stderr: "" }) },
+      }),
+    );
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("FAILED");
+  });
+
+  test("source provenance FAILS on a dirty .firebaserc -- round-5 GPT-PM MAJOR: an uncommitted project-alias change is itself unreviewed deploy configuration, not just something checkDeployTarget's resolved-project check alone should catch", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({
+        git: { status: () => ({ ok: true, stdout: " M .firebaserc\n", stderr: "" }) },
+      }),
+    );
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("FAILED");
+  });
+
+  test("source provenance FAILS on a dirty root .gitignore -- round-5 GPT-PM MAJOR: an uncommitted ignore-rule change could otherwise make a real dirty file under a scoped path invisible to this very check", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({
+        git: { status: () => ({ ok: true, stdout: " M .gitignore\n", stderr: "" }) },
+      }),
+    );
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("FAILED");
+  });
+
+  test("source provenance FAILS on a modified functions/.gcloudignore -- round-6 GPT-PM MAJOR: gitignoring it (the first attempted fix) made it permanently invisible to this check instead of merely quiet when clean; tracking it as a real committed file means a mutation is caught like any other file under functions/", async () => {
+    const result = await runReleaseGuard(
+      makeDeps({
+        git: { status: () => ({ ok: true, stdout: " M functions/.gcloudignore\n", stderr: "" }) },
+      }),
+    );
+    expect(byName(result, PROVENANCE_CHECK).status).toBe("FAILED");
+  });
+
   test("verdict is BLOCK if even one check is not OK, regardless of how many others pass", async () => {
     const result = await runReleaseGuard(
       makeDeps({ git: { revParse: () => ({ ok: false, stdout: "", stderr: "fatal" }) } }),

@@ -1000,16 +1000,110 @@ async function checkCandidateSourceInvariants(deps: ReleaseGuardDeps): Promise<C
   };
 }
 
+/**
+ * The paths this guard's own provenance claim actually depends on.
+ * Deliberately NOT the whole repository -- this is a multi-purpose
+ * monorepo-style checkout (`mobile/`, `reports/`, other `core/*.md` docs
+ * unrelated to this release) where unrelated untracked debris is routine
+ * and has zero bearing on what a `firebase deploy` of this project's
+ * Functions actually uploads. Round-5 GPT-PM review found the first attempt
+ * at this list incomplete on 3 counts, all fixed here:
+ *
+ * - `functions` -- the "default"/AI codebase this guard itself is wired
+ *   into (source, tests, and the compiled `predeploy` scripts all live
+ *   under it).
+ * - `functions-equipment-identity` -- `firebase.json`'s SECOND, independent
+ *   Functions codebase. `firebase deploy --only functions` (no per-function
+ *   filter) deploys every configured codebase in one invocation, so a dirty
+ *   change here ships alongside the AI Gateway release in exactly the
+ *   scenario this check exists to catch, even though this guard's own
+ *   invariants (App Check, kill switch, etc.) are specific to the other
+ *   codebase.
+ * - `firebase.json` -- the predeploy wiring itself, and the source of both
+ *   codebases' `source`/`ignore` config.
+ * - `.firebaserc` -- the project-alias file `firebase deploy` resolves its
+ *   target project from. `checkDeployTarget` already fails closed if the
+ *   RESOLVED project differs from `EXPECTED_PROJECT_ID`, but that only
+ *   proves THIS invocation resolved correctly -- an uncommitted edit to
+ *   this file (e.g. a new alias) is itself unreviewed deploy-configuration
+ *   change this check should still catch.
+ * - `.gitignore` (repo root) -- `git status`'s own ignore rules. Dirty
+ *   `.gitignore` is a check-defeat vector: an uncommitted pattern added
+ *   here could make a real untracked file under one of the paths above
+ *   invisible to the very `git status` call below, silently reopening the
+ *   thing this whole check exists to prevent.
+ * - `RELEASE_EVIDENCE_PATH` -- the release-evidence anchor the guard reads
+ *   directly.
+ */
+const PROVENANCE_RELEVANT_PATHS = [
+  "functions",
+  "functions-equipment-identity",
+  "firebase.json",
+  ".firebaserc",
+  ".gitignore",
+  RELEASE_EVIDENCE_PATH,
+] as const;
+
+/**
+ * Confirmed live, round 4's own follow-up verification: a bare `git status
+ * --porcelain` (repo-root scope) never reports clean in this checkout even
+ * on a freshly committed HEAD, because unrelated untracked artifacts sit
+ * elsewhere in the tree (old report HTML files from unrelated gates,
+ * nothing to do with this release). Scoping `git status` to
+ * `PROVENANCE_RELEVANT_PATHS` (via `git status --porcelain -- <paths>`,
+ * which still respects `.gitignore` and still flags a genuinely dirty or
+ * uncommitted change anywhere the deploy/guard actually depends on) fixes
+ * this without weakening what the check protects.
+ *
+ * Round-5 GPT-PM MAJOR: the first version of this fix scoped to `functions`
+ * alone, which does NOT exclude `functions/.gcloudignore` -- an
+ * auto-generated Firebase/gcloud-CLI artifact that lives INSIDE that
+ * directory and so still showed up as `?? functions/.gcloudignore` even
+ * under the narrowed scope, defeating the fix's own stated purpose.
+ *
+ * Round-6 GPT-PM MAJOR: the first attempted fix -- adding `.gcloudignore`
+ * to `functions/.gitignore` so `git status` stops seeing it -- traded that
+ * permanent false positive for a genuine blind spot: a file `git status`
+ * has been told to ignore can be silently modified (or, if `gcloud
+ * functions deploy` were ever used as a real deploy path instead of this
+ * project's actual `firebase deploy`, could genuinely change what gets
+ * packaged) with zero visibility to this check ever again. Verified against
+ * `firebase-tools`' own source (`prepareFunctionsUpload.ts`) that
+ * `firebase deploy` -- this project's sole documented release path, see
+ * this file's own module header -- reads `firebase.json`'s
+ * `functions.ignore` field and a small hardcoded default list, and does NOT
+ * consult `.gcloudignore` at all; but the safer fix does not need to lean
+ * on that fact holding forever. Instead: `.gcloudignore` is now a normal
+ * TRACKED file (its actual current content -- `.git`/`.gitignore`/
+ * `node_modules` exclusions via `#!include:.gitignore`, the standard
+ * Firebase-CLI template) rather than gitignored. A committed-and-clean file
+ * shows nothing under scoped `git status`; a future mutation of it shows up
+ * as a real, caught diff -- the same guarantee every other tracked file in
+ * `PROVENANCE_RELEVANT_PATHS` already has, with no assumption required
+ * about which deploy tool is used.
+ *
+ * Round-7 GPT-PM INFO (out-of-scope MINOR, not a provenance defect --
+ * documented here rather than left implicit): this tracked `.gcloudignore`
+ * is NOT independently verified safe for a direct `gcloud functions deploy`
+ * -- its `#!include:.gitignore` inherits `functions/.gitignore`'s `lib/`
+ * exclusion, so a raw `gcloud` deploy using it would omit the compiled
+ * output. That path is unsupported by this project regardless (this file's
+ * own module header: the sole documented release path is `firebase deploy
+ * --only functions:*`, which -- per the verification above -- never reads
+ * this file at all), so this does not weaken the provenance invariant
+ * itself; it is a reason not to treat `gcloud functions deploy` as an
+ * ad-hoc alternative release path without first fixing this file for it.
+ */
 async function checkSourceProvenance(deps: ReleaseGuardDeps): Promise<CheckResult> {
   const name = "Release comes from a clean, committed working tree";
-  const status = await deps.runCommand("git", ["status", "--porcelain"], 15_000);
+  const status = await deps.runCommand("git", ["status", "--porcelain", "--", ...PROVENANCE_RELEVANT_PATHS], 15_000);
   if (!status.ok) return { name, status: "UNAVAILABLE", detail: status.stderr || "git status failed" };
   if (status.stdout.trim().length > 0) {
-    return { name, status: "FAILED", detail: "working tree has uncommitted changes" };
+    return { name, status: "FAILED", detail: `uncommitted changes under ${PROVENANCE_RELEVANT_PATHS.join(", ")}` };
   }
   const head = await deps.runCommand("git", ["rev-parse", "HEAD"], 15_000);
   if (!head.ok) return { name, status: "UNAVAILABLE", detail: head.stderr || "git rev-parse HEAD failed" };
-  return { name, status: "OK", detail: `clean tree at ${head.stdout.trim()}` };
+  return { name, status: "OK", detail: `clean tree (scoped to ${PROVENANCE_RELEVANT_PATHS.join(", ")}) at ${head.stdout.trim()}` };
 }
 
 export async function runReleaseGuard(deps: ReleaseGuardDeps): Promise<ReleaseGuardResult> {

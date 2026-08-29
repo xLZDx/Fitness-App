@@ -33892,3 +33892,75 @@ verification) -- only source provenance still fails, correctly, because this dif
 uncommitted.
 
 Sending round 4 to GPT-PM.
+
+## G4 Step 9 round 4: APPROVE -- committed as 38bdd94
+
+Marked the round-4 receipt final via `--recover-request-id` (same reviewInputHash, no new browser
+round-trip) after reading and confirming the reply was a genuine, correlated APPROVE with explicit
+GO/PUSH authorization language and no unresolved BLOCKER/MAJOR. Per CLAUDE.md S20, a genuine
+correlated GPT-PM APPROVE authorizes commit+push without separate operator confirmation (push is
+reversible). Committed the combined Step 9 release guard + S23 closure package as `38bdd94`.
+
+## G4 Step 9: GPT-PM's own GO ("rerun the guard from the resulting clean commit, require 10/10")
+## surfaced a real gap -- provenance never actually reaches 10/10
+
+Re-ran the guard live from `38bdd94` as instructed. Result: still 9/10, source provenance FAILED --
+but NOT because of any real uncommitted change. `checkSourceProvenance` used a repo-root `git status
+--porcelain`, which can never report clean in this multi-purpose checkout: unrelated untracked files
+sit elsewhere in the tree (old report HTML artifacts from unrelated earlier gates, dated 2026-08-18/19,
+never committed, nothing to do with Step 9; a Firebase-CLI-generated `functions/.gcloudignore` left
+by an earlier deploy). Neither is read by the guard or uploaded by `firebase deploy --only
+functions:*`. A provenance check that can structurally never pass regardless of whether the actually
+deployed source is clean is not a working invariant. Took 3 more review rounds to close correctly,
+recorded here in full because each round's own fix introduced a new real gap the next round caught --
+exactly the pattern CLAUDE.md S17 warns against, and each was caught by continuing to verify against
+live/real state rather than declaring victory early.
+
+### Round 5: 4 MAJOR on the first provenance-scope attempt
+
+First attempt scoped `git status` to `functions`, `firebase.json`, the release-evidence path.
+VERDICT: MAJOR, 4 findings, all independently verified before remediating:
+
+1. `functions/.gcloudignore` still inside the `functions` scope -- the exact false positive the fix
+   claimed to fix was still present. Confirmed live via `git status --porcelain -- functions ...`.
+2. `functions-equipment-identity/` (firebase.json's second, independent Functions codebase) was
+   entirely outside the scope -- `firebase deploy --only functions` deploys every configured
+   codebase in one invocation.
+3. `.firebaserc` exclusion left project-alias-file provenance uncovered beyond `checkDeployTarget`'s
+   own resolved-project check.
+4. Root `.gitignore` exclusion was itself a check-defeat vector -- a dirty `.gitignore` could hide a
+   real dirty file under a scoped path from the very `git status` call being narrowed.
+
+Remediated: widened `PROVENANCE_RELEVANT_PATHS` to all 6 paths above. Sent round 6.
+
+### Round 6: 3/4 closed, 1 new MAJOR -- the fix for #1 created a blind spot
+
+Attempted fix for finding #1: added `.gcloudignore` to `functions/.gitignore`. VERDICT: MAJOR, 1
+finding (findings #2/#3/#4 confirmed CLOSED): gitignoring the file traded a permanent false positive
+for a genuine blind spot -- a file `git status` is told to ignore can be silently modified with zero
+visibility to the check, and if `gcloud functions deploy` were ever used directly, `.gcloudignore`
+could change what gets packaged.
+
+Independently verified before remediating (not accepted or dismissed on the reviewer's word alone):
+fetched `firebase-tools`' own source (`src/deploy/functions/prepareFunctionsUpload.ts`). Confirmed
+`firebase deploy` -- this project's sole documented release path -- reads `firebase.json`'s
+`functions.ignore` field plus a small hardcoded default list, and does NOT consult `.gcloudignore`
+at all. The reviewer's specific failure scenario cannot occur through this project's actual,
+exclusively-used release path -- but the safer fix doesn't need to lean on that holding forever.
+Remediated: reverted the gitignore approach; `functions/.gcloudignore` is now a normal TRACKED file
+(its real, current, standard Firebase-CLI-template content). A committed-and-clean file shows
+nothing under scoped `git status`; a future mutation shows up as a real, caught diff. Sent round 7.
+
+### Round 7: APPROVE
+
+VERDICT: APPROVE. The round-6 MAJOR confirmed CLOSED. One out-of-scope MINOR, explicitly
+non-blocking: the now-tracked `.gcloudignore`'s `#!include:.gitignore` inherits `functions/
+.gitignore`'s `lib/` exclusion, so a hypothetical direct `gcloud functions deploy` using it would
+omit compiled output -- irrelevant to the actual `firebase deploy` path this guard protects, but
+documented in `release_guard.ts`'s own comment rather than left implicit. `GO: AUTHORIZED -- commit
+this remediation ... PUSH: AUTHORIZED under the current Gate policy.`
+
+Remediation verification (rounds 5-7 combined): 7 new/updated unit tests for
+`checkSourceProvenance`'s branches (52 total in `release_guard.test.ts`), full monorepo suite
+601/601, `tsc --noEmit` clean, `npm run build` clean. Live re-run: 9/10, provenance now scoped
+correctly, blocked only on this remediation diff itself still being uncommitted. Committing now.
