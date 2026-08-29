@@ -34710,3 +34710,88 @@ repeatedly missed the bottom nav bar's real coordinates after a few screens, bur
 adding evidence -- stopped rather than keep guessing, and put the continuation choice (fix the 2
 confirmed bugs now vs. finish the full walkthrough first) to the operator rather than picking for
 them, since it is a real, live, still-open question in the same session.
+
+---
+
+## 2026-08-29 23:44-23:52 local / 20:44-20:52 UTC — Live S23 walkthrough completed: Профиль, Прогресс, Тренер по технике, current build (2869)
+
+Operator's own explicit sequencing instruction: finish the full walkthrough (Профиль/Прогресс/Тренер
+по технике) before batching fixes. This entry closes that walkthrough. Device confirmed in system
+night mode (`adb shell cmd uimode night` -> `Night mode: yes`) for every screenshot in this entry and
+the preceding onboarding/Profile pass, satisfying the operator's separate "test in dark mode" ask --
+no light-theme pass was done (not asked for, and unclear the app ships one).
+
+### Профиль (Profile) -- full scroll, top to bottom
+
+Confirms and finalizes a finding surfaced verbally earlier in the session but not yet logged: the
+header reads "Профиль заполнен" (profile complete) while every personal-data field below it
+(Возраст/Рост/Вес/Активность/Цели) renders empty. A user reading the header has no reason to open the
+fields to fill them in -- the completeness claim and the actual state directly contradict each other.
+Screens: `s23_shots/24-26_profile*.png`.
+
+### Прогресс (Progress)
+
+Clean. Correct empty-state copy throughout ("Отметьте тренировку, чтобы увидеть динамику" /
+"Запишите вес в подходе -- и объём появится здесь") for a freshly reset account -- no defect, no
+false empty-state text. Screen: `s23_shots/27_progress.png`.
+
+### Bottom nav icon styling -- confirmed in code, per the operator's own live observation
+
+The operator flagged mid-session that the bottom nav icons "look completely different" from the rest
+of the app's custom icon set. Grepped `main_shell.dart:81-94`: confirmed the nav bar uses bare stock
+Material glyphs (`Icons.grid_view_rounded`, `Icons.fitness_center_rounded`,
+`Icons.qr_code_scanner_rounded`, `Icons.show_chart_rounded`, `Icons.person_outline_rounded`), not the
+bespoke icon set used in onboarding (custom flame/running-figure/meditation-figure marks). Real,
+confirmed visual-consistency gap -- not something HUD_MIGRATION touched (`main_shell.dart` already
+used `HudNavBar` from an earlier "MVP Gate M1", per its own code comment; the icon choice inside it
+was never part of that migration's scope).
+
+### Тренировки -> Библиотека tab: blank exercise thumbnails
+
+Three exercise list cards ("Чатуранга на трёх точках опоры", "Собака мордой вниз на трёх точках",
+"Скручивания на 3/4") render a plain white rounded-square placeholder instead of an icon or preview
+image. Same failure shape as onboarding step 4's empty body-part grid (`04:2026-08-29` entry above) --
+looks like a missing/unresolved asset, not a designed placeholder. Screen: `s23_shots/29_library.png`.
+
+### Тренер по технике (Form / technique coach) -- re-checked on current build (2869), not the stale one
+
+This was the single most emphatic item in the operator's original complaint ("особенно живой
+тренер"). Walked the full flow: intro card -> camera-readiness checklist -> exercise picker -> live
+avatar view (`s23_shots/30-33_formcoach*.png`).
+
+**Confirmed NOT a bug, corrected before logging**: "Тренер по технике доступен покровителям" is not a
+mistranslation -- grepped `app_ru.arb`: "покровитель" ("sustainer"/patron) is this app's established,
+consistently-used term for its paid support tier across at least 7 other strings (`Стать
+покровителем`, `Лента для покровителей`, etc.). Initially misread as a localization bug; it is
+deliberate product terminology.
+
+**Confirmed NOT a bug, re-confirms the earlier ruling**: no camera passthrough and no skeleton drawn
+in the live view is `_AvatarBackdrop`/`_PoseAvatar`'s documented, intentional privacy design
+(`form_check_page.dart:849-966` -- a photographic backdrop stands in for the camera at all times, the
+skeleton draws only once MediaPipe places a body, and nothing was in frame during this on-device pass
+since the phone was not physically aimed at a person). Matches the exact reasoning already logged in
+the prior entry; re-verified against the current build rather than assumed unchanged.
+
+**Real, confirmed finding, new this pass**: the entire Тренер по технике flow -- all four screens --
+uses a flat near-black background with plain bordered rectangle cards. None of the photographic
+HudPanel/HudSheet glass-card treatment used on Home/Workouts/Progress/Profile appears anywhere in this
+flow. This is the on-device confirmation of what grep already showed earlier this session
+(`form_check_page.dart` untouched by any of the 10 HUD_MIGRATION sub-gates, still carrying 18 of the
+whites-tripwire's hardcoded-white occurrences) -- and it is very plausibly the concrete thing driving
+the operator's "ощущение, что редизайн на 50%" reaction: the screen the operator opened first and
+named first is visually the least migrated screen in the app.
+
+### Consolidated finding list for the batched fix pass (per "и уже потом чиню всё разом")
+
+1. Onboarding step 2/10: "Пропустить" button dead/unresponsive until a selection is made.
+2. Onboarding step 4/10: body-part selector renders empty placeholder squares, not icons.
+3. Профиль: "Профиль заполнен" header contradicts empty Возраст/Рост/Вес/Активность/Цели fields.
+4. Bottom nav bar: stock Material icons, inconsistent with the app's bespoke icon set elsewhere.
+5. Тренировки -> Библиотека: three exercise cards show blank white placeholder thumbnails.
+6. Тренер по технике: entire flow (4 screens) never received the HUD glass-panel visual treatment --
+   a scope gap, not a code defect; needs a product decision on whether this gate now includes it.
+
+Items 1, 2, 3, 5 are straightforward code/asset defects. Item 4 is a design-consistency call (restyle
+vs. accept). Item 6 is the largest of the six and is scope, not a bug -- migrating four more screens to
+the HudPanel/HudSheet system is a small gate in its own right, not a one-line fix alongside the other
+five.

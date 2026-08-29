@@ -1,0 +1,211 @@
+<title>S23 Walkthrough — Profile, Progress, Form Coach</title>
+<style>
+  :root{
+    --bg:#f4f6f5; --surface:#ffffff; --surface-2:#eef2f0; --border:#d7dedb;
+    --text:#141a18; --text-2:#4c5a56; --text-3:#7b8b86;
+    --accent:#0f8a6e; --accent-ink:#ffffff; --accent-soft:#e2f4ee;
+    --danger:#b3432e; --danger-soft:#fbe9e4;
+    --warn:#a8791a; --warn-soft:#faf1de;
+    --mono:'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+    --sans:'Public Sans', -apple-system, Segoe UI, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0c1211; --surface:#121a18; --surface-2:#182220; --border:#26332f;
+      --text:#e7efec; --text-2:#a6b6b0; --text-3:#78897f;
+      --accent:#3fd6ac; --accent-ink:#04150f; --accent-soft:#123227;
+      --danger:#e58a76; --danger-soft:#2c1712;
+      --warn:#e0b45c; --warn-soft:#2c2312;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c1211; --surface:#121a18; --surface-2:#182220; --border:#26332f;
+    --text:#e7efec; --text-2:#a6b6b0; --text-3:#78897f;
+    --accent:#3fd6ac; --accent-ink:#04150f; --accent-soft:#123227;
+    --danger:#e58a76; --danger-soft:#2c1712;
+    --warn:#e0b45c; --warn-soft:#2c2312;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--text); font-family:var(--sans); margin:0}
+  .wrap{max-width:920px; margin:0 auto; padding:48px 24px 96px}
+  header h1{
+    font-family:var(--mono); font-size:clamp(24px,4vw,34px); font-weight:700;
+    letter-spacing:-0.01em; text-wrap:balance; margin:0 0 10px;
+  }
+  header p.lede{color:var(--text-2); font-size:16px; line-height:1.6; max-width:66ch; margin:0}
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:32px 0}
+  .stat{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px}
+  .stat .n{font-family:var(--mono); font-size:26px; font-weight:700; font-variant-numeric:tabular-nums}
+  .stat .l{color:var(--text-2); font-size:12px; text-transform:uppercase; letter-spacing:.06em; margin-top:4px}
+  h2{
+    font-family:var(--mono); font-size:13px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--text-3); margin:40px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border);
+  }
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 22px; margin-bottom:12px}
+  .card h3{margin:0 0 6px; font-size:15.5px; font-weight:700; display:flex; align-items:center; gap:8px}
+  .card p{color:var(--text-2); line-height:1.6; margin:6px 0; font-size:14.5px}
+  .pill{display:inline-block; padding:2px 9px; border-radius:999px; font-size:10.5px; font-family:var(--mono); font-weight:700; text-transform:uppercase; letter-spacing:.03em}
+  .pill.bug{background:var(--danger-soft); color:var(--danger)}
+  .pill.scope{background:var(--warn-soft); color:var(--warn)}
+  .pill.ok{background:var(--accent-soft); color:var(--accent)}
+  .tbl-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:12px; margin-bottom:12px}
+  table{width:100%; border-collapse:collapse; font-size:13.5px; background:var(--surface)}
+  th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top}
+  th{font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-3); background:var(--surface-2)}
+  tr:last-child td{border-bottom:none}
+  code{font-family:var(--mono); font-size:.92em; background:var(--surface-2); padding:1px 5px; border-radius:4px}
+  .ruled-out{border-left:3px solid var(--text-3); background:var(--surface-2); border-radius:0 12px 12px 0; padding:14px 20px; margin-bottom:10px}
+  .ruled-out p{color:var(--text-2); line-height:1.6; margin:4px 0; font-size:14px}
+  .ruled-out .h{font-weight:700; color:var(--text); font-size:14px; margin-bottom:4px}
+  footer.note{color:var(--text-3); font-size:12.5px; margin-top:48px; line-height:1.6}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>S23 Walkthrough — Profile / Progress / Form Coach</h1>
+  <p class="lede">Live walkthrough of the current build (2869) on a real Galaxy S23 Ultra, in system dark mode, after the operator rejected the redesign based on screenshots from an <strong>8-day-old stale</strong> build. Goal: cover the whole Profile/Progress/Form-coach surface before batching any fixes, per the operator's explicit sequencing.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 881f4dd</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<div class="stats">
+  <div class="stat"><div class="n">6</div><div class="l">Findings in the consolidated list</div></div>
+  <div class="stat"><div class="n">4</div><div class="l">Point code/asset defects</div></div>
+  <div class="stat"><div class="n">2</div><div class="l">Design-consistency gaps (icons, coach screen)</div></div>
+  <div class="stat"><div class="n">3</div><div class="l">False alarms ruled out before reporting</div></div>
+</div>
+
+<h2>Covered this pass</h2>
+<p style="color:var(--text-2);font-size:14.5px;line-height:1.6">Profile (full scroll), Progress, and the entire Form Coach branch (intro → camera-readiness checklist → exercise picker → live avatar view). Onboarding and Home were checked earlier in the same session — the consolidated list below includes those too. Device confirmed in system night mode (<code>adb shell cmd uimode night</code> → <code>yes</code>) throughout.</p>
+
+<h2>Consolidated list for the batched fix</h2>
+
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>#</th><th>Screen</th><th>Finding</th><th>Type</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Onboarding, step 2/10</td><td>"Skip" button unresponsive until a selection is made — looks live, is actually dead</td><td><span class="pill bug">bug</span></td></tr>
+<tr><td>2</td><td>Onboarding, step 4/10</td><td>Body-part selector renders empty placeholder squares instead of icons</td><td><span class="pill bug">bug</span></td></tr>
+<tr><td>3</td><td>Profile</td><td>Header reads "Profile complete" while Age/Height/Weight/Activity/Goals fields are all empty</td><td><span class="pill bug">bug</span></td></tr>
+<tr><td>4</td><td>Bottom nav bar</td><td>Bare stock Material icons instead of the custom icon set used elsewhere in the app</td><td><span class="pill scope">design</span></td></tr>
+<tr><td>5</td><td>Workouts → Library</td><td>Three exercise cards ("Chaturanga…", "Downward dog…", "3/4 crunch") show a blank white square instead of a preview</td><td><span class="pill bug">bug</span></td></tr>
+<tr><td>6</td><td>Form Coach (whole flow, 4 screens)</td><td>Not one screen received the HUD glass treatment — flat dark background, plain rectangular cards, no photo backdrop or blur</td><td><span class="pill scope">scope</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="card">
+  <h3>Item 6 needs a decision, not just a fix</h3>
+  <p>Items 1, 2, 3, 5 are point code/asset defects — fixed in the general batch with no extra decisions needed. Item 4 is a design call (redraw the icons or knowingly accept the current ones). Item 6 is the largest: migrating four more screens onto HudPanel/HudSheet is, by scope, a small gate of its own — not a one-line fix alongside the other five. This is also the exact screen the operator named first in the complaint ("especially the live coach") — and it turns out to be the least-migrated screen in the app, which plausibly explains the "feels like a 50% redesign" reaction.</p>
+</div>
+
+<h2>False alarms ruled out before reporting</h2>
+
+<div class="ruled-out">
+  <p class="h">"Form Coach is a sustainer benefit" is not a mistranslation</p>
+  <p>Checked against <code>app_ru.arb</code>: "sustainer" (Russian "покровитель") is this app's established term for its paid support tier, used consistently across 7+ other strings ("Become a sustainer", "Sustainer feed", etc.). Deliberate product terminology, not a localization bug.</p>
+</div>
+<div class="ruled-out">
+  <p class="h">No live camera feed or skeleton drawn in coach mode — not a defect</p>
+  <p>Confirmed, documented behavior of <code>_AvatarBackdrop</code>/<code>_PoseAvatar</code> (<code>form_check_page.dart:849-966</code>, dated 2026-08-15): the camera is never shown directly by design (privacy), and the figure only draws once MediaPipe places a body in frame. During this check the phone was not physically pointed at a person, so no figure drew — expected, not broken.</p>
+</div>
+<div class="ruled-out">
+  <p class="h">Progress tab empty state is correct</p>
+  <p>After the account reset (<code>pm clear</code>) the screen honestly shows "0" everywhere with placeholder copy ("Log a workout to see the trend") — expected behavior for a fresh account, not a bug.</p>
+</div>
+
+<h2>Next</h2>
+<p style="color:var(--text-2);font-size:14.5px;line-height:1.6">The walkthrough (Profile/Progress/Form Coach) is closed per the operator's own explicit sequencing instruction. Next: batch-fix items 1, 2, 3, 5 (plus a decision on 4) in one gate; item 6 is a separate gate to migrate the Form Coach screen onto HUD — it needs its own scoping decision rather than a silent fold into the general batch.</p>
+
+<footer class="note">Walkthrough screenshots: local session folder <code>scratchpad/s23_shots/24-33_*.png</code> (not committed — ephemeral session evidence; the text findings are recorded durably in <code>core/DECISION_LOG.md</code>).</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

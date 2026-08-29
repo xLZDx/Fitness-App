@@ -1,0 +1,212 @@
+<title>Обход на S23 — Профиль, Прогресс, Тренер по технике</title>
+<style>
+  :root{
+    --bg:#f4f6f5; --surface:#ffffff; --surface-2:#eef2f0; --border:#d7dedb;
+    --text:#141a18; --text-2:#4c5a56; --text-3:#7b8b86;
+    --accent:#0f8a6e; --accent-ink:#ffffff; --accent-soft:#e2f4ee;
+    --danger:#b3432e; --danger-soft:#fbe9e4;
+    --warn:#a8791a; --warn-soft:#faf1de;
+    --mono:'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+    --sans:'Public Sans', -apple-system, Segoe UI, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0c1211; --surface:#121a18; --surface-2:#182220; --border:#26332f;
+      --text:#e7efec; --text-2:#a6b6b0; --text-3:#78897f;
+      --accent:#3fd6ac; --accent-ink:#04150f; --accent-soft:#123227;
+      --danger:#e58a76; --danger-soft:#2c1712;
+      --warn:#e0b45c; --warn-soft:#2c2312;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c1211; --surface:#121a18; --surface-2:#182220; --border:#26332f;
+    --text:#e7efec; --text-2:#a6b6b0; --text-3:#78897f;
+    --accent:#3fd6ac; --accent-ink:#04150f; --accent-soft:#123227;
+    --danger:#e58a76; --danger-soft:#2c1712;
+    --warn:#e0b45c; --warn-soft:#2c2312;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--text); font-family:var(--sans); margin:0}
+  .wrap{max-width:920px; margin:0 auto; padding:48px 24px 96px}
+  header h1{
+    font-family:var(--mono); font-size:clamp(24px,4vw,34px); font-weight:700;
+    letter-spacing:-0.01em; text-wrap:balance; margin:0 0 10px;
+  }
+  header p.lede{color:var(--text-2); font-size:16px; line-height:1.6; max-width:66ch; margin:0}
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:32px 0}
+  .stat{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px}
+  .stat .n{font-family:var(--mono); font-size:26px; font-weight:700; font-variant-numeric:tabular-nums}
+  .stat .l{color:var(--text-2); font-size:12px; text-transform:uppercase; letter-spacing:.06em; margin-top:4px}
+  h2{
+    font-family:var(--mono); font-size:13px; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--text-3); margin:40px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--border);
+  }
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 22px; margin-bottom:12px}
+  .card h3{margin:0 0 6px; font-size:15.5px; font-weight:700; display:flex; align-items:center; gap:8px}
+  .card .meta{font-family:var(--mono); font-size:11.5px; color:var(--text-3); margin-bottom:8px}
+  .card p{color:var(--text-2); line-height:1.6; margin:6px 0; font-size:14.5px}
+  .pill{display:inline-block; padding:2px 9px; border-radius:999px; font-size:10.5px; font-family:var(--mono); font-weight:700; text-transform:uppercase; letter-spacing:.03em}
+  .pill.bug{background:var(--danger-soft); color:var(--danger)}
+  .pill.scope{background:var(--warn-soft); color:var(--warn)}
+  .pill.ok{background:var(--accent-soft); color:var(--accent)}
+  .tbl-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:12px; margin-bottom:12px}
+  table{width:100%; border-collapse:collapse; font-size:13.5px; background:var(--surface)}
+  th,td{text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top}
+  th{font-family:var(--mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-3); background:var(--surface-2)}
+  tr:last-child td{border-bottom:none}
+  code{font-family:var(--mono); font-size:.92em; background:var(--surface-2); padding:1px 5px; border-radius:4px}
+  .ruled-out{border-left:3px solid var(--text-3); background:var(--surface-2); border-radius:0 12px 12px 0; padding:14px 20px; margin-bottom:10px}
+  .ruled-out p{color:var(--text-2); line-height:1.6; margin:4px 0; font-size:14px}
+  .ruled-out .h{font-weight:700; color:var(--text); font-size:14px; margin-bottom:4px}
+  footer.note{color:var(--text-3); font-size:12.5px; margin-top:48px; line-height:1.6}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Обход на S23 — Профиль / Прогресс / Тренер по технике</h1>
+  <p class="lede">Живой обход текущей сборки (2869) на реальном устройстве Galaxy S23 Ultra, в системном тёмном режиме, после того как оператор отклонил редизайн по скринам со <strong>старой</strong> 8-дневной сборки. Задача: пройти весь Профиль/Прогресс/Тренер&nbsp;по&nbsp;технике и только затем чинить всё разом, как просил оператор.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 881f4dd</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<div class="stats">
+  <div class="stat"><div class="n">6</div><div class="l">Находок в сводном списке</div></div>
+  <div class="stat"><div class="n">4</div><div class="l">Точечных дефекта кода/ассетов</div></div>
+  <div class="stat"><div class="n">2</div><div class="l">Дизайн-несоответствия (иконки, экран коуча)</div></div>
+  <div class="stat"><div class="n">3</div><div class="l">Ложных тревог, снятых до отчёта</div></div>
+</div>
+
+<h2>Что проверено в этом проходе</h2>
+<p style="color:var(--text-2);font-size:14.5px;line-height:1.6">Профиль (полный скролл), Прогресс, вся ветка Тренер по технике (интро → чек-лист камеры → выбор упражнения → живой режим). Онбординг и Главная проверены раньше в этой же сессии — сводка находок ниже включает и их. Устройство подтверждённо в системном ночном режиме (<code>adb shell cmd uimode night</code> → <code>yes</code>) на всём проходе.</p>
+
+<h2>Сводный список для пакетного исправления</h2>
+
+<div class="tbl-wrap">
+<table>
+<thead><tr><th>#</th><th>Экран</th><th>Находка</th><th>Тип</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Онбординг, шаг 2/10</td><td>Кнопка «Пропустить» не реагирует, пока не сделан выбор — выглядит рабочей, на деле мёртвая</td><td><span class="pill bug">баг</span></td></tr>
+<tr><td>2</td><td>Онбординг, шаг 4/10</td><td>Сетка выбора частей тела рисуется пустыми плейсхолдерами вместо иконок</td><td><span class="pill bug">баг</span></td></tr>
+<tr><td>3</td><td>Профиль</td><td>Заголовок «Профиль заполнен» при полностью пустых полях Возраст/Рост/Вес/Активность/Цели</td><td><span class="pill bug">баг</span></td></tr>
+<tr><td>4</td><td>Нижний бар навигации</td><td>Голые стоковые Material-иконки вместо кастомного набора, используемого в остальном приложении</td><td><span class="pill scope">дизайн</span></td></tr>
+<tr><td>5</td><td>Тренировки → Библиотека</td><td>Три карточки упражнений («Чатуранга…», «Собака мордой вниз…», «Скручивания на 3/4») показывают пустой белый квадрат вместо превью</td><td><span class="pill bug">баг</span></td></tr>
+<tr><td>6</td><td>Тренер по технике (весь флоу, 4 экрана)</td><td>Ни один экран не получил HUD-стеклянного оформления — плоский тёмный фон, обычные прямоугольные карточки без фото-подложки и блюра</td><td><span class="pill scope">область охвата</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="card">
+  <h3>Пункт 6 требует отдельного решения, не просто фикса</h3>
+  <p>Пункты 1, 2, 3, 5 — точечные дефекты кода/ассетов, чинятся в общем батче без дополнительных решений. Пункт 4 — вопрос дизайна (перерисовать иконки или сознательно принять текущие). Пункт 6 — самый крупный: перенос ещё четырёх экранов на HudPanel/HudSheet — это, по объёму, отдельный небольшой гейт, а не однострочная правка вместе с остальными пятью. Именно этот экран оператор назвал первым в жалобе («особенно живой тренер») — и по факту это наименее мигрированный экран в приложении, что и объясняет ощущение «редизайн на 50%».</p>
+</div>
+
+<h2>Ложные тревоги, снятые до отчёта</h2>
+
+<div class="ruled-out">
+  <p class="h">«Тренер по технике доступен покровителям» — не ошибка перевода</p>
+  <p>Проверено по <code>app_ru.arb</code>: «покровитель» — устоявшийся термин приложения для платного уровня поддержки, используется единообразно ещё в 7+ строках («Стать покровителем», «Лента для покровителей» и т.д.). Осознанная терминология продукта, не баг локализации.</p>
+</div>
+<div class="ruled-out">
+  <p class="h">Отсутствие живого видео с камеры и скелета в режиме тренера — не дефект</p>
+  <p>Подтверждённое, задокументированное поведение <code>_AvatarBackdrop</code>/<code>_PoseAvatar</code> (<code>form_check_page.dart:849-966</code>, дата 2026-08-15): камера принципиально не показывается напрямую (приватность), фигура рисуется поверх фотоподложки только когда MediaPipe находит тело в кадре. Во время проверки телефон не был физически направлен на человека — поэтому фигура не рисовалась, это ожидаемо, а не поломка.</p>
+</div>
+<div class="ruled-out">
+  <p class="h">Прогресс — пустое состояние корректно</p>
+  <p>После сброса аккаунта (<code>pm clear</code>) экран честно показывает "0" везде и подсказки-заглушки («Отметьте тренировку, чтобы увидеть динамику») — ожидаемое поведение для нового пользователя, не баг.</p>
+</div>
+
+<h2>Что дальше</h2>
+<p style="color:var(--text-2);font-size:14.5px;line-height:1.6">Обход (Профиль/Прогресс/Тренер по технике) закрыт по прямой инструкции оператора «сначала закончу полный обход… и уже потом чиню всё разом». Далее — пакетное исправление пунктов 1, 2, 3, 5 (и решение по 4) в одном гейте; пункт 6 — отдельный гейт на перенос экрана Тренера по технике на HUD, требует отдельного решения по объёму, а не тихого включения в общий батч.</p>
+
+<footer class="note">Скриншоты обхода: локальная папка сессии <code>scratchpad/s23_shots/24-33_*.png</code> (не коммитятся в репозиторий — эфемерная evidence текущей сессии; текстовые находки зафиксированы постоянно в <code>core/DECISION_LOG.md</code>).</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
