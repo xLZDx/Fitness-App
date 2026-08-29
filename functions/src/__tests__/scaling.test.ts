@@ -312,6 +312,12 @@ describe("App Check enforcement flags", () => {
     expect(s.APP_CHECK_ENFORCED_AI).toBe(false);
     expect(s.AI_METERED.enforceAppCheck).toBe(false);
   });
+
+  test("G4 Step 9 round 3: AI_METERED.serviceAccount resolves to the real fn-ai-runtime service account for the actual deploy project -- release_guard.ts's AST checks only verify the SOURCE SHAPE (the property-access expression, and separately RUNTIME_SA.aiRuntime's own template), never the runtime-computed VALUE this test exercises", () => {
+    const s = withEnv({ GCLOUD_PROJECT: "fitness-app-korostelev" });
+    expect(s.AI_METERED.serviceAccount).toBe(s.RUNTIME_SA.aiRuntime);
+    expect(s.AI_METERED.serviceAccount).toBe("fn-ai-runtime@fitness-app-korostelev.iam.gserviceaccount.com");
+  });
 });
 
 /**

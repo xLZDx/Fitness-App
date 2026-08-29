@@ -21,7 +21,9 @@
         "*.local"
       ],
       "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run build"
+        "npm --prefix \"$RESOURCE_DIR\" run build",
+        "npm --prefix \"$RESOURCE_DIR\" test",
+        "node functions/scripts/run_release_guard.mjs"
       ]
     },
     {

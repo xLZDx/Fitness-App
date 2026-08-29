@@ -33568,3 +33568,327 @@ Per `~/.claude/CLAUDE.md` §20, this genuine correlated APPROVE is sufficient au
 commit and push without separate operator confirmation (push is a reversible action under §20's
 carve-out). Proceeding to commit and push, then G4 Step 9 (release guard), whose DoD was already
 obtained from GPT-PM during Step 8's own DoD question and needs no further round-trip.
+
+## G4 Step 9: release guard implemented, live-proven, DoD already on record from Step 8
+
+Implemented `functions/src/release_guard.ts` -- a standalone, deps-injected, fail-closed release
+gate (not a runtime control) wired into `firebase.json`'s `functions` "default" codebase
+`predeploy` array via `functions/scripts/run_release_guard.mjs`, so it runs unconditionally before
+every future `firebase deploy --only functions:*` on this codebase. No CI deploy job exists in this
+repo (`.github/workflows/functions.yml` covers unit/rules/e2e/audit/drift/parity/coverage, not
+deploy) -- every release here is a manual `firebase deploy` invocation, so `predeploy` is the actual
+canonical release path, not a proxy for one.
+
+8 checks per the DoD: functions inventory (exactly the 4 AI callables on `fn-ai-runtime`), App
+Check enforcement (replicates `scaling.ts`'s own `envFlagFailClosed(...) || APP_CHECK_ENFORCED`
+formula against live deployed env vars), anonymous refusal (`AI_ALLOW_ANONYMOUS !== "true"`), kill
+switch exists and stays read-only for the runtime (Step 8's own round-1 adversarial-proof invariant,
+now permanently checked), Step 8 drill evidence (`core/state/g4_release_evidence.json`), AI
+observability (live `gcloud logging read` for a real `ai_gateway: call` event within 30 days --
+adapted from a metrics-resource check because `monitoring/README.md` explicitly documents those
+metrics as defined-but-not-activated), the S23 carve-out (reads the kill switch's own live `enabled`
+state -- a deliberately AI-disabled release ships regardless of S23 status; only an AI-enabled
+release requires S23 `closed`), and source provenance (`git status --porcelain` empty, records
+`git rev-parse HEAD`). Every check fails UNAVAILABLE, never silently OK, on any read/parse error.
+
+Created `core/state/g4_release_evidence.json` as the one committed, machine-parseable anchor for
+the two process facts that are not live-queryable GCP state (Step 8's drill/review status, S23's
+open/closed status) -- previously only recorded in prose across three files.
+
+Fixed two real bugs found proving this live, not in unit tests: (1) `gcloud functions describe`
+with no `--region` defaulted to `us-central1`, 404ing against this project's actual
+`europe-west1` functions -- fixed by discovering each callable's real region from `functions
+list`'s own resource name. (2) Windows `child_process.spawn` with `shell:true` does not
+auto-escape an args array (Node's own DEP0190), breaking a `gcloud logging read` filter containing
+`:` and spaces; quoting the command name itself (tried first) broke cmd.exe's PATH resolution
+entirely, falling through to an unrelated sibling project's Python venv shim -- fixed by leaving
+the command name and simple tokens bare and quoting only arguments containing whitespace/quotes.
+
+`functions/src/__tests__/release_guard.test.ts`: 24 new tests, every check's OK/FAILED/UNAVAILABLE
+branch plus verdict aggregation, all against fake injected deps. Full suite: 572/572 passing
+(548 + 24), `tsc --noEmit` clean.
+
+**Live proof against the real project**: 6 of 8 checks genuinely OK (functions inventory, App
+Check, anonymous refusal, kill-switch read-only IAM, Step 8 drill evidence, AI observability); 2
+correctly FAILED reflecting real current state (S23 gate -- kill switch live `enabled:true` and
+S23 genuinely still `open`; source provenance -- working tree genuinely dirty with Step 9's own
+uncommitted files). Both failures are the guard working as designed, not a defect.
+
+**Fixture proof** (break/restore, zero live infra risk): edited
+`g4_release_evidence.json`'s `step8KillSwitch.status` from `"closed"` to
+`"pending-fixture-proof"` -- check 5 went FAILED with the exact expected/actual values; restored
+to `"closed"` -- check 5 returned OK; the other 6 checks were unaffected by the edit (they read
+live infrastructure independent of this file), and the overall verdict correctly stayed BLOCK
+throughout because checks 7-8 were genuinely still failing for unrelated real reasons.
+
+**Live carve-out proof**: temporarily flipped the live `ai-gateway-kill-switch` secret to
+`enabled:false` (`gcloud secrets versions add`, no redeploy, same Step 8 mechanism) -- check 7
+went OK with "kill switch is currently disabled -- a deliberately AI-disabled release may ship
+regardless of S23 status", demonstrating the DoD's own carve-out clause against real live state,
+not only a unit test. Restored the secret to `enabled:true` immediately after, matching Step 8's
+genuine current state exactly.
+
+Wrote `core/G4_STEP9_RELEASE_GUARD_2026-08-29.md` with full design rationale and the evidence
+table above. DoD for this step was already obtained from GPT-PM during Step 8's own DoD question
+(recorded at the top of the "G4 Step 8 round 4" entry above), so no further DoD round-trip was
+needed before implementing. Sending the Step 9 diff to GPT-PM for round-1 review.
+
+**PM Bridge blocker, same session**: `review.js --uncommitted` failed --
+`"No compatible PM Bridge orchestrator is active"`. `pm_bridge_mode_on` and
+`pm_bridge_restart(force:true)` (operator's own standing authorization for daemon/core restarts
+on a PM hang) both failed identically -- `"Orchestrator did not come up within its startup
+budget"`. `state/orchestrator.log` showed a rapid bind/crash/respawn loop with no captured error
+on the live attempts (two OLDER, unrelated `ERR_MODULE_NOT_FOUND: playwright` crashes sit earlier
+in the same log, from stale `.pm-bridge-generations` snapshots -- confirmed NOT the live cause:
+the current generation's `sourceRoot` correctly resolves `node_modules` up the directory tree).
+Ruled out the two obvious causes directly rather than guessing: `playwright.chromium
+.launchPersistentContext` succeeds standalone in <1s (browser engine itself is healthy), and no
+stale `SingletonLock`/lock file exists on the real profile (not an OS-level lock issue either).
+Points to a bug inside pm-bridge's own orchestrator (its internal advisory `browserLock` cycling
+rapidly between PIDs) -- genuine sibling-repo source debugging, out of scope for this session to
+unilaterally dig into and edit. Reported status to the operator rather than looping. Deferred
+Step 9's review submission; picked up S23 (below) while waiting, per the operator's own delegation
+that PM Bridge hangs should not block other available G4 work.
+
+## S23 Play Integrity acceptance test: PASSED -- Step 2's HOLD closed
+
+Operator confirmed the S23 (Samsung Galaxy S23 Ultra, SM-S918B) reachable again. Live device
+check before any work: `adb devices -l` shows `R5CW142SASR device product:dm3qxxx model:SM_S918B`
+connected. `ro.boot.flash.locked=1` (bootloader LOCKED), `ro.boot.verifiedbootstate=green`,
+`ro.boot.warranty_bit=0` -- the exact opposite of the S8's permanent disqualifiers (unlocked
+bootloader, tripped Knox e-fuse). Genuine Play Store (52.8.58) and GMS (26.32.34) both present.
+
+**Design decision, not a mechanical repeat of the deleted probe**: the original
+`appCheckProbe`/`g4_step2d_app_check_probe.dart` mechanism was already deleted (commit 8bbfac2,
+G4 Step 3 round-4 cleanup) -- that commit's own message says its purpose "is superseded once Step
+4 deploys a real, App-Check-enforced AI callable," which has since happened (`aiCoachAdvice` runs
+with `enforceAppCheck: APP_CHECK_ENFORCED_AI`, live `true`). Recreating the synthetic no-op probe
+would retest an already-proven mechanism and add throwaway backend surface again. Instead: reused
+the exact same dead-code-when-off dart-define pattern, but pointed it at the REAL deployed
+`aiCoachAdvice` callable. Key insight verified directly against `functions/src/ai_coach_advice.ts`
+and `functions/src/abuse_guard.ts` before relying on it: `enforceAppCheck` runs at the PLATFORM
+level before the handler body executes at all, so an anonymous-signed-in caller can only reach one
+of two outcomes -- a platform-level App-Check rejection (attestation failed), or the handler's own
+distinct `permission-denied: "Sign in with a real account to use AI features."` from
+`enforceNonAnonymousForAi` (attestation PASSED -- the call reached the handler). Getting the
+second, distinct error IS the proof, at zero Vertex cost either way (rejected before `generate()`
+is ever called), and needs no non-anonymous test account -- closing a real gap: a repo survey
+confirmed this app has NO email/password auth and NO headless sign-in path (only anonymous and
+interactive Google OAuth), so a scripted non-anonymous login was not available at all.
+
+Built `mobile/lib/core/debug/g4_s23_play_integrity_proof.dart` (dart-define gated
+`G4_S23_PLAY_INTEGRITY_PROOF`, same shape as the deleted probe: signs out, signs in anonymously,
+calls `aiCoachAdvice` with a minimal hardcoded payload, classifies the result). Wired one call site
+into `main.dart` at the exact same hook the deleted probe used (right after `FirebaseAppCheck
+.instance.activate()`'s try/catch). `flutter analyze` clean on both files.
+
+Built the release APK directly (`flutter build apk --release --split-per-abi
+--target-platform=android-arm64`), same stamps `build_release.ps1` computes (`GIT_SHA=beb3475
+-dirty` -- Step 9 was staged-uncommitted at build time, honestly stamped, not hidden -- `BUILD_NUM
+=849`), plus the two probe defines. Installed via `adb install -r` on the S23 -- a direct signed-
+artifact install, the same faithful outside-Play-channel proxy the S8 run used.
+
+**Result: PASS**, unambiguous, unlike the S8's INCONCLUSIVE runs. Logcat:
+```
+G4_S23_PROOF: starting (sourceSha=beb3475-dirty)
+G4_S23_PROOF: signed in anonymously uid=U4DsoBbIoear7svkPWLsZK2wRwy2
+G4_S23_PROOF: APP_CHECK_PASSED (reached the anonymous-account gate) [firebase_functions/permission-denied] Sign in with a real account to use AI features.
+```
+A release-signed, outside-Play-installed APK on a real, bootloader-locked S23 obtained a genuine
+Play Integrity token; App Check accepted it against the configured `MEETS_DEVICE_INTEGRITY`
+policy; the request reached the real, deployed, App-Check-enforced `aiCoachAdvice` handler. This
+closes Step 2's production-attestation HOLD and the release-specific half of Step 7, exactly as
+`core/G4_STEP3_IAM_RUNTIME_CONFIG_2026-08-28.md`'s round-4 sequencing ruling specified this test
+would.
+
+**Cleanup, same lifecycle discipline as every prior step**: deleted the anonymous test Auth user
+(`U4DsoBbIoear7svkPWLsZK2wRwy2`, via `identitytoolkit.googleapis.com/v1/.../accounts:delete`),
+uninstalled the test APK from the S23 (`adb uninstall`), deleted the probe source file and its
+`main.dart` call site + import -- confirmed `git diff -- mobile/lib/main.dart` is empty, net-zero,
+same discipline the original probe's own deletion left behind. Full mobile `flutter analyze`
+re-run clean (16 pre-existing, unrelated warnings only, none touching the files this work
+touched).
+
+Updated `core/state/g4_release_evidence.json`'s `s23PlayIntegrityProof` to `status: "closed"`,
+`verdict: "PASS"`, full method/result/device fields. Appended closure notes to
+`core/G4_STEP2_APP_CHECK_BOUNDARY_2026-08-28.md` (Step 2 now fully CLOSED) and
+`core/G4_STEP3_IAM_RUNTIME_CONFIG_2026-08-28.md` (its `HOLD` on a user-facing release LIFTED on
+this specific basis) rather than silently leaving the prior HOLD language stale -- the exact kind
+of doc/reality drift Step 8 round 3 already found and corrected once this gate.
+
+Bundling this with Step 9's already-staged, already-tested release guard into one GPT-PM review
+round rather than two separate PM Bridge round-trips against an unstable transport -- both touch
+the same `core/state/g4_release_evidence.json` file and are naturally one coherent diff. Retrying
+PM Bridge before submission.
+
+## G4 Step 9 (bundled with S23 closure) round 1: 4 MAJOR -- all remediated
+
+PM Bridge recovered on its own (`pm_bridge_mode_status` showed the daemon current and healthy,
+1 request already handled) -- sent the combined Step 9 + S23 diff via `review.js`. VERDICT: MAJOR,
+4 findings. S23's own proof got a fifth, INFO-level finding: "technically sound... I accept closing
+the outstanding S23 production-attestation HOLD on this evidence" -- no change needed there. Every
+MAJOR independently re-verified against real files/live GCP state before acting (CLAUDE.md §3/§13),
+not accepted on the reviewer's citations alone:
+
+1. **The 6 original live-GCP checks validate the CURRENTLY DEPLOYED revision, not the candidate
+   about to replace it** -- confirmed by re-reading `release_guard.ts` directly: `checkFunctions
+   Inventory`/`checkAppCheckEnforcement`/`checkAnonymousRefused` all read `gcloud functions
+   describe`, which is live state, i.e. the OLD revision when running as a predeploy hook. A
+   commit that strips `enforceAppCheck` or deletes `enforceNonAnonymousForAi()` would have sailed
+   through unnoticed.
+2. **`deps.project` was a hardcoded default, unbound to the actual Firebase deploy target.**
+   Confirmed real, not hypothetical: `.firebaserc` genuinely has a second alias, `legacy-shared` ->
+   `traidingbot-b4061`, an unrelated project.
+3. **The kill-switch write-role denylist omitted `roles/secretmanager.editor`** (independently
+   confirmed via `gcloud iam roles describe roles/secretmanager.editor` to include
+   `secretmanager.versions.add`) **and only checked the secret's own IAM policy**, missing
+   inherited project-level grants or custom roles. Checked this project's actual live
+   project-level bindings for `fn-ai-runtime` before designing the fix
+   (`gcloud projects get-iam-policy ... --filter=...`): `projects/fitness-app-korostelev/roles/
+   fitness.vertexPredictor` (custom, confirmed via `gcloud iam roles describe` to grant only
+   `aiplatform.endpoints.predict`) and `roles/datastore.user` (confirmed no `secretmanager.*`
+   permissions) -- both genuinely safe, but the guard had no mechanism to have proven that; it was
+   simply never looking at them.
+4. **The observability check's own doc comment ("defined but not activated") was factually
+   stale** -- independently verified live (`gcloud logging metrics list --project=fitness-app-
+   korostelev`) that `ai_gateway_calls`, `ai_gateway_latency_ms`, `ai_gateway_quota_exhaustions`,
+   and `ai_gateway_total_tokens_per_call` all already exist as real GCP LogMetric resources. Cross-
+   checked against `functions/src/monitoring/README.md`'s own status table, which already recorded
+   this (`LIVE_METRIC_CREATED`) -- the doc's claim, and the check's design, were both simply behind
+   the repo's own already-current record.
+
+**Remediation** (complete batch, per CLAUDE.md §17 -- one sweep, not one finding per round):
+added `checkDeployTarget` (new, first check -- fails outright if the resolved project isn't
+`fitness-app-korostelev`) and `checkCandidateSourceInvariants` (new -- reads the actual committed
+source of `scaling.ts` + all 4 `ai_*.ts` files for the App-Check/anonymous-refusal/gateway-guard
+wiring, independent of live GCP state). Rewrote `run_release_guard.mjs`'s project resolution to
+prefer `process.env.GCLOUD_PROJECT` (the same env var `scaling.ts`'s own `projectId()` already
+reads, and the one Firebase's CLI sets for predeploy hooks) over the hardcoded default. Rewrote
+`checkKillSwitchExists` to union secret-level and project-level IAM bindings for the runtime SA,
+and to resolve any unrecognized role's real `includedPermissions` live via `gcloud iam roles
+describe` rather than trusting a name-based denylist. Rewrote `checkAiObservability` to confirm
+the 4 metric resources exist (via `gcloud logging metrics list`) in addition to the existing
+recent-log-event check, and corrected the stale doc-comment claim.
+
+14 new unit tests (one per new branch), full suite 586/586 (was 572), `tsc --noEmit` clean, `npm
+run build` clean. Live re-run against real infrastructure: **9 of 10 checks now genuinely pass**
+(deploy target, candidate invariants, functions inventory, App Check, anonymous refusal, kill
+switch [3 roles resolved live, all confirmed safe], drill evidence, observability, S23 gate) --
+only source provenance still fails, correctly, because this diff itself remains uncommitted.
+
+Sending round 2 to GPT-PM.
+
+## G4 Step 9 round 2: 3 more MAJOR -- all remediated, plus one self-discovered comparison bug
+
+VERDICT: MAJOR, 3 findings. Round 1's deploy-target fix and the S23 proof both confirmed CLOSED --
+"None for the scoped round" on deploy-target (one small precedence discrepancy noted, fixed
+anyway since it was cheap); "None" on S23. Every MAJOR independently re-verified before acting:
+
+1. **`checkCandidateSourceInvariants` (round 1's own fix) used substring/regex matching** -- a
+   commented-out call still satisfies `indexOf`, so it could not distinguish "the guard runs" from
+   "the guard is mentioned in a comment." Confirmed by re-reading the round-1 code directly: yes,
+   plain `indexOf`/regex over raw text.
+2. **The kill-switch check (round 1's own fix) still only checked direct `secretmanager.*`
+   mutation permissions** -- a role granting `resourcemanager.projects.setIamPolicy` would let the
+   runtime grant itself write access indirectly. Verified live:
+   `gcloud iam roles describe roles/resourcemanager.projectIamAdmin` does include
+   `resourcemanager.projects.setIamPolicy` -- a real, confirmed escalation path the round-1 fix's
+   permission list never covered.
+3. **Observability (round 1's own fix) proved metric RESOURCES exist, not that their
+   filter/extractor/labels still match source** -- GPT-PM: "a log-based metric may still exist
+   while its filter/value extractor is broken."
+
+**Remediation** (complete batch, per CLAUDE.md §17): rewrote `checkCandidateSourceInvariants` on
+the real TypeScript AST (`typescript`, already a devDependency) -- locates the actual
+`onCall(AI_METERED, ...)` `CallExpression` for each callable, walks its handler body for genuine
+`CallExpression` nodes to `enforceNonAnonymousForAi`/`enforceAiGatewayEnabled` (a comment or dead
+string literal produces no such node at all -- structural, not a harder pattern match), and checks
+`AI_METERED`'s own `ObjectLiteralExpression` properties in `scaling.ts` the same way. Added
+`resourcemanager.projects.setIamPolicy` to the kill-switch check's dangerous-permission list.
+Rewrote `checkAiObservability` to reuse this project's own existing canonical-JSON builders
+(`aiGatewayCallsMetricJson` etc. in `./monitoring/ai_gateway_definitions` -- the same mechanism
+Step 9B's own source==live SHA-256 verification already used) and compare each live metric's real
+definition against it field-by-field, not just its name. Also fixed the small `--project=`/
+`GCLOUD_PROJECT` precedence discrepancy GPT-PM's INFO note flagged (the comment already claimed
+env-var precedence; the code let an explicit flag override it regardless -- now matches the
+comment).
+
+**Self-discovered during remediation, not a GPT-PM finding**: the first live re-run of fix #3
+showed both distribution metrics (`ai_gateway_latency_ms`, `ai_gateway_total_tokens_per_call`)
+FAILING with "definition no longer matches source." Investigated before assuming either a real
+drift or a false alarm (CLAUDE.md §3): direct side-by-side diff of the live `gcloud logging
+metrics describe` output against the canonical JSON showed the filter, `labelExtractors`,
+`valueExtractor`, and `bucketOptions.bounds` all byte-identical -- only `metricDescriptor.labels`'
+array ORDER differed (`[outcome, operation]` live vs. `[operation, outcome]` source), and only for
+the two distribution metrics (the two counter metrics happened to come back in source order). GCP
+does not guarantee label array order for a LogMetric -- `labels` is semantically a set, not a
+sequence. This was a bug in the NEW check's own comparison logic, not a real production drift.
+Fixed by sorting `labels` by `key` before comparing, with a regression test proving
+reordered-but-otherwise-identical labels still compare `OK`.
+
+6 more unit tests (comment-bypass, dead-string-bypass, reordering-tolerance for candidate
+invariants; privilege-escalation for kill-switch; definition-drift and label-order-tolerance for
+observability). Full suite 591/591 (was 586), `tsc --noEmit` clean, `npm run build` clean. Live
+re-run: **9 of 10 checks genuinely pass** (same 9 as round 1, now including the corrected
+observability check) -- only source provenance still fails, correctly, because this diff remains
+uncommitted.
+
+Sending round 3 to GPT-PM.
+
+## G4 Step 9 round 3: 3 more MAJOR -- all remediated, plus one self-discovered live bug
+
+VERDICT: MAJOR, 3 findings (round 2 fixes #5/#6/#7 all confirmed CLOSED live, no further change).
+Every finding independently verified against real files/live GCP state before acting (S3/S13).
+
+1. `checkScalingAst`'s check on `APP_CHECK_ENFORCED_AI` (round 1's own fix, never revisited
+   since) was still a loose regex over raw initializer text -- proves the `envFlagFailClosed(...)`
+   call APPEARS in the text, not that it IS the value the export evaluates to, so
+   `envFlagFailClosed("APP_CHECK_ENFORCED_AI") && false` (fail-OPEN despite calling the
+   fail-closed helper) would have passed. Remediated: exact AST shape check -- a BinaryExpression
+   using `||`, left = CallExpression to `envFlagFailClosed` with exactly one string-literal
+   argument `"APP_CHECK_ENFORCED_AI"`, right = bare identifier `APP_CHECK_ENFORCED` -- matching
+   `scaling.ts:209-210`'s real source line for line (confirmed live via Grep before writing the
+   check).
+2. Every round so far verified only the CONSUMER reference
+   (`AI_METERED.serviceAccount === RUNTIME_SA.aiRuntime`, a bare property-access shape match) and
+   never the DEFINITION site -- a rewrite of `RUNTIME_SA.aiRuntime` itself to an empty string or a
+   hardcoded wrong service account would have kept every earlier round's check green. Remediated:
+   new `checkRuntimeSaAiRuntime` locates `RUNTIME_SA`'s own exported object literal and verifies
+   `aiRuntime`'s initializer is a template expression with literal head/tail exactly
+   `fn-ai-runtime@` / `.iam.gserviceaccount.com` and a genuine non-empty dynamic expression
+   between them. Self-discovered live bug while proving this fix (not a GPT-PM finding): the
+   first live run against the real `scaling.ts` failed with "RUNTIME_SA is not an exported object
+   literal" -- the real source declares `export const RUNTIME_SA = { ... } as const;`, and the
+   `as const` assertion wraps the object literal in an AsExpression node the new check was not
+   unwrapping. Fixed with an `unwrapExpression` helper (strips `as const`/parenthesized wrappers)
+   before the object-literal check -- caught only because the fix was proven against real live
+   source rather than the test fixture alone.
+3. Reachability/ordering: `checkCallableAst` (round 2's own fix) proves the two guard calls exist
+   as real CallExpression nodes and checks their relative source-position order, but a purely
+   syntactic AST match cannot prove those calls sit on the path the handler actually EXECUTES
+   before doing paid work (e.g. both calls moved inside a dead `if (false)` branch would still
+   satisfy a narrowly-phrased order check). Decided against deepening the AST heuristic further --
+   risks the same kind of arms race each of the last two rounds already produced, exactly the
+   spiral CLAUDE.md S17 warns against. Instead: this project's EXISTING, already-passing Jest
+   suite already contains genuine end-to-end behavioral tests exercising the REAL wired-up
+   handler (`ai_coach_advice.test.ts`'s "an anonymous caller is refused before the quota is even
+   checked" and "refuses when the AI Gateway kill switch is off, before quota/generate" tests --
+   both call the real exported `aiCoachAdvice.run()` and assert real control-flow behavior, which
+   no syntactic AST match can substitute for). Remediated by making the full Jest suite a
+   mandatory predeploy step (`firebase.json`'s `functions` "default" codebase `predeploy` now runs
+   `npm --prefix "$RESOURCE_DIR" test` between `build` and the guard script -- fail-fast, so a
+   broken behavioral test blocks release before the guard's own AST checks even run), plus one new
+   focused test for the one gap no existing test covered: `AI_METERED.serviceAccount`'s actual
+   resolved runtime value (`scaling.test.ts`).
+
+Remediation verification: 3 more new unit tests (2 in `release_guard.test.ts` proving the
+tightened `checkScalingAst` catches the exact `&& false` and mutated-`RUNTIME_SA.aiRuntime`
+bypass scenarios; 1 in `scaling.test.ts` for the resolved-value gap) -- 46 total for
+`release_guard.test.ts`, full monorepo suite 595/595, `tsc --noEmit` clean, `npm run build` clean.
+
+Live re-run after remediation: **9 of 10 checks genuinely pass** (same 9 as rounds 1-2, now
+including the tightened candidate-invariants check with the definition-site RUNTIME_SA.aiRuntime
+verification) -- only source provenance still fails, correctly, because this diff remains
+uncommitted.
+
+Sending round 4 to GPT-PM.

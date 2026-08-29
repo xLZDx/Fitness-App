@@ -160,3 +160,14 @@ anonymous-rotation cost exposure entirely (a real account is not free to mint) r
 mitigating it at 1/8 severity, and is a clean, reversible policy (a single check at the
 top of each `ai_*.ts` callable, gated behind its own flag the same shape as
 `APP_CHECK_ENFORCED_AI`) rather than a permanent architectural commitment.
+
+**Update, 2026-08-29 — the S23 acceptance-test HOLD closed.** Per `core/
+G4_STEP3_IAM_RUNTIME_CONFIG_2026-08-28.md`'s round-4 sequencing ruling, the HOLD above on
+*deploying* the 4 AI callables was already superseded — Steps 4-7 did not wait for a real
+device, and the callables have been live with `APP_CHECK_ENFORCED_AI=true` since Step 4.
+What remained open was the S23 device itself as the **production Play Integrity
+acceptance test** (the S8 is permanently disqualified — unlocked bootloader). That test
+has now run and PASSED: a release-signed APK on a real, bootloader-locked S23 obtained a
+genuine Play Integrity token, App Check accepted it, and the request reached the real
+`aiCoachAdvice` handler. Full method and result in `core/state/g4_release_evidence.json`
+and `core/DECISION_LOG.md`'s S23 closure entry. Step 2 is now fully CLOSED.

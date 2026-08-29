@@ -1,0 +1,19 @@
+{
+  "_comment": "MVP1.G4 Step 9's release-guard evidence anchor. Machine-readable facts that are not live-queryable GCP state -- process/review facts recorded elsewhere in prose (core/DECISION_LOG.md, per-step gate docs) get ONE parseable anchor here. Update by hand exactly when the underlying fact actually changes; see functions/src/release_guard.ts's own module header for why this file exists instead of a live check.",
+  "step8KillSwitch": {
+    "status": "closed",
+    "verdict": "APPROVE",
+    "commit": "beb3475",
+    "gateDoc": "core/G4_STEP8_KILL_SWITCH_2026-08-29.md",
+    "secretName": "ai-gateway-kill-switch"
+  },
+  "s23PlayIntegrityProof": {
+    "status": "closed",
+    "verdict": "PASS",
+    "device": "Samsung Galaxy S23 Ultra (SM-S918B), adb serial R5CW142SASR, bootloader locked, verified boot green, Knox warranty bit 0",
+    "method": "Release-signed APK (flutter build apk --release --split-per-abi --target-platform=android-arm64, same stamps scripts/dev/build_release.ps1 computes), installed via adb (a faithful proxy for the outside-Play distribution channel), calling the real deployed App-Check-enforced aiCoachAdvice callable as an anonymous Firebase Auth user -- App Check rejects at the platform level before the handler runs if attestation fails, so reaching the handler's own distinct anonymous-account rejection (permission-denied: 'Sign in with a real account to use AI features.') IS the attestation proof, at zero Vertex cost.",
+    "result": "APP_CHECK_PASSED -- logcat: G4_S23_PROOF: APP_CHECK_PASSED (reached the anonymous-account gate) [firebase_functions/permission-denied] Sign in with a real account to use AI features.",
+    "note": "Closes Step 2's HOLD on the 4 AI callables' production Play Integrity attestation. S8 stays permanently disqualified (unlocked bootloader, Knox e-fuse tripped) -- unrelated to this result. See core/DECISION_LOG.md's S23 closure entry.",
+    "updatedAt": "2026-08-29T14:12:36.000Z"
+  }
+}

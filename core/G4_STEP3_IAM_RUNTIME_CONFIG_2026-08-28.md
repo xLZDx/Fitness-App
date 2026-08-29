@@ -542,9 +542,15 @@ revision → Step 5: backend E2E using a registered S8 debug-provider token → 
 real metrics/quota-exhaustion proof → Step 7: functional real-device E2E on the S8
 debug build → S23 becomes a release-signed Play Integrity **acceptance test**, not a
 blocker for every preceding engineering proof — closing Step 2's production-attestation
-proof and the release-specific half of Step 7 once available. `HOLD`, unchanged: no AI
-deployment with App Check enforcement off; no user-facing release before the S23 proof
-passes.
+proof and the release-specific half of Step 7 once available.
+
+**Update, 2026-08-29 — the S23 proof ran and PASSED.** A release-signed APK on a real,
+bootloader-locked S23 (SM-S918B) obtained a genuine Play Integrity token; App Check
+accepted it; the request reached the real, deployed, App-Check-enforced `aiCoachAdvice`
+handler. Full method/result in `core/state/g4_release_evidence.json` and
+`core/DECISION_LOG.md`'s S23 closure entry. `HOLD` on a user-facing release is now
+**LIFTED** on this specific basis — the production Play Integrity attestation proof this
+HOLD existed to gate has passed.
 
 ## Final inventory — every deployed function, live-read, 2026-08-28/29
 
