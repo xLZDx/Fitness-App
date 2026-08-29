@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../shared/widgets/app_buttons.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../../../shared/widgets/shell_insets.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../data/set_capture.dart';
@@ -129,9 +129,7 @@ class _SetCaptureSheetState extends State<SetCaptureSheet> {
         // the system's own swipe band.
         bottom: sheetBottomInset(context, base: 24),
       ),
-      child: GlassCard(
-        floating: true,
-        padding: const EdgeInsets.all(20),
+      child: HudSheet(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

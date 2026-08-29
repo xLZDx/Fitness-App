@@ -7,7 +7,8 @@ import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../shared/widgets/app_buttons.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold;
+import '../../shared/widgets/hud/hud_surface.dart';
 import 'state/auth_providers.dart';
 import 'data/sign_in_outcome.dart';
 
@@ -39,7 +40,7 @@ class LoginPage extends ConsumerWidget {
           child: Column(
             children: [
               const Spacer(),
-              GlassCard(
+              HudPanel(
                 padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,

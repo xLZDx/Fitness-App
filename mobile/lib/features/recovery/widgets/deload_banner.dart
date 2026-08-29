@@ -32,6 +32,11 @@ class DeloadBanner extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
+      // INTENTIONAL_LEGACY_EXCEPTION (HUD migration census,
+      // core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md): needs a flat
+      // `tint` fill, the same capability gap already recorded for
+      // scanner_page.dart's error cards -- neither HudPanel nor HudSurface
+      // exposes a plain Color? override today.
       child: GlassCard(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
         tint: AppPalette.auroraPeach,

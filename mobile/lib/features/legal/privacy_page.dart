@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import 'legal_body.dart';
 import 'terms_page.dart' show TermsPage;
 import '../../core/theme/app_semantic_colors.dart';
@@ -47,7 +48,7 @@ class PrivacyPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          GlassCard(child: LegalBody(l10n.legalPrivacyBody)),
+          HudPanel(child: LegalBody(l10n.legalPrivacyBody)),
         ],
       ),
     );

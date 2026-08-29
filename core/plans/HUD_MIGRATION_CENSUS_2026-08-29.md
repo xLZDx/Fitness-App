@@ -14,9 +14,9 @@ observation below; sub-gates come from this data, not from mechanically working 
 
 | Metric | Count |
 |---|---|
-| `GlassCard(` call sites | 126 → 124 (gate 1) → 117 (gate 2) → **96** after sub-gate 4 (equipment cluster) |
-| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 (gate 1) → 37 (gate 2) → **31** after sub-gate 4 |
-| Files importing `shared/widgets/glass.dart` | 45 → 43 (gate 1) → 42 (gate 2) → **38** after sub-gate 4 (2 of the 6 equipment files keep a scoped `show FrostedScaffold` import -- see below) |
+| `GlassCard(` call sites | 126 → 124 → 117 → 96 (gate 4) → **84** after sub-gate 5 |
+| Files with at least one `GlassCard(` call | 40 (39 real usage sites + `glass.dart`'s own definition) → 38 → 37 → 31 (gate 4) → **20** after sub-gate 5 |
+| Files importing `shared/widgets/glass.dart` | 45 → 43 → 42 → 38 (gate 4) → **33** after sub-gate 5 (several page files keep a scoped `show FrostedScaffold`/`GlassAppBar` import; `deload_banner.dart` keeps the full import for its `tint` exception) |
 | Files referencing `aurora_background`/`AuroraBackground` | 5 (2 are theme/token files, 1 is the definition file itself, 1 is a comment-only mention in `workout_player_page.dart` — **corrected**: `main.dart` is the ONLY real widget-tree usage, see the struck sub-gate 3 below) |
 | Files already using `HudSurface`/`HudPanel`/`HudButton`/`HudChip` | 20 (+ `HudSheet`, the new opaque-surface widget from sub-gate 1) |
 | Files with BOTH legacy `GlassCard` and HUD widgets (partial migration) | 3: `home_page.dart`, `scanner_page.dart`, `workouts_page.dart` → 2 after sub-gate 1 → **0** after sub-gate 2 (`home_page.dart` fully migrated; `scanner_page.dart` closed with 2 sites reclassified `INTENTIONAL_LEGACY_EXCEPTION`, not partial-migration debt) |
@@ -80,6 +80,41 @@ as the raw file-migration count would suggest (see the Numbers table above).
 `equipment_report_sheet_test.dart`, `exercise_page_test.dart`, `setup_note_card_test.dart`,
 `last_session_card_test.dart` all green (no dedicated test file exists for
 `exercise_reference.dart` itself; it's covered indirectly through the pages that render it).
+
+### Sub-gate 5 (single-site files across 11 areas) — closed, 2026-08-29
+
+Migrated every remaining single-`GlassCard`-site file in one batch, classified by actual role
+per GPT-PM's ownership guardrail, not by filename:
+
+- **`HudSheet`** (genuine `showModalBottomSheet`/`DraggableScrollableSheet` content, confirmed
+  from each widget's own `.show()`/doc comment, not assumed from the name): `set_capture_sheet.dart`,
+  `day3_welcome_modal.dart` (the original "day-3 donation sheet" bug this whole gap is named
+  after), `plate_calculator.dart` and `warmup_calculator.dart` (both explicitly doc-commented
+  "bottom-sheet appropriate; can be embedded inline" and both already carried the dead
+  `floating: true` flag -- the same tell sub-gate 1's two sheets had).
+- **`HudPanel`** (in-page cards, confirmed by reading each site's real container): 
+  `account_deletion_page.dart`, `login_page.dart`, `moderation_page.dart`, `privacy_page.dart`,
+  `terms_page.dart`, `licences_page.dart` (2 sites). `machine_card_view.dart` needed checking its
+  actual embedding context first -- it renders inside `scanner_page.dart`'s
+  `DraggableScrollableSheet`, which looked sheet-shaped by container alone, but that sheet's own
+  root `Container` is ALREADY opaque (`color: theme.colors.surfaceElevated`, with a comment citing
+  this exact gate's own bug) specifically so cards nested inside it can stay translucent -- matching
+  every one of that file's own already-shipped `HudPanel` cards in the same sheet. Ownership is
+  about what's directly behind a widget, not "is this anywhere inside something called a sheet."
+- **`INTENTIONAL_LEGACY_EXCEPTION`** (kept as `GlassCard`, documented inline): `deload_banner.dart`
+  -- needs `tint: AppPalette.auroraPeach`, the same flat-colour-fill gap already recorded for
+  `scanner_page.dart`'s error cards. Second confirmed instance of the same gap (see the status-tint
+  finding from sub-gate 2/4) -- still a candidate for one future consolidated sub-gate, not two
+  separate ones.
+
+`flutter analyze` clean on all 12 touched files. `flutter test`: `account_deletion_page_test.dart`,
+`account_deletion_providers_test.dart`, `login_page_test.dart`, `plate_calculator_test.dart`,
+`warmup_calculator_test.dart`, `set_capture_sheet_wording_test.dart` all green (30 total
+assertions across the account-deletion/login/set-capture suites, plus 10 pure-function assertions
+for the two calculators). No dedicated widget test exists for `day3_welcome_modal.dart`,
+`moderation_page.dart`, `privacy_page.dart`, `terms_page.dart`, `licences_page.dart`,
+`machine_card_view.dart`, or `deload_banner.dart` -- `flutter analyze` plus the surrounding
+regression suites is the coverage this sub-gate has for those.
 
 ### Sub-gate 1 — closed, 2026-08-29
 

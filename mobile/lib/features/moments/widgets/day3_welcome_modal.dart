@@ -5,7 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/app_buttons.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 
 /// Day-3 nurture modal. Shown once on the user's third launch, at least
 /// 48 hours after account creation, before any premium features become
@@ -31,9 +31,7 @@ class Day3WelcomeModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return GlassCard(
-      floating: true,
-      padding: const EdgeInsets.all(20),
+    return HudSheet(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

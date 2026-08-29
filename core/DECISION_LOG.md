@@ -34218,3 +34218,51 @@ import, so the drop is smaller than the file-migration count alone would suggest
 Next: continue feature-area by feature-area through the remaining ~30 files per GPT-PM's GO,
 watching for the same `FrostedScaffold`/`GlassAppBar` co-import trap on every file before
 swapping its `glass.dart` import wholesale.
+
+## HUD migration sub-gate 5: 11 single-site files, classified by role not filename
+
+Applied GPT-PM's central guardrail deliberately, file by file: `set_capture_sheet.dart` and
+`day3_welcome_modal.dart` confirmed as genuine `showModalBottomSheet` content from their own
+`.show()` methods -> `HudSheet`. `plate_calculator.dart`/`warmup_calculator.dart` were not obvious
+from filename alone, but both carry an explicit doc comment ("bottom-sheet appropriate; can be
+embedded inline") and both still had the dead `floating: true` flag -> `HudSheet`, on the same
+reasoning as sub-gate 1's two sheets.
+
+`machine_card_view.dart` was the one genuine judgment call this batch needed: it renders inside
+`scanner_page.dart`'s `DraggableScrollableSheet`, which by container alone looks sheet-shaped.
+Checked `_ScanSheet`'s own build method before assuming anything -- its root `Container` is
+already opaque (`color: theme.colors.surfaceElevated`), with a comment that names this exact bug
+("this sheet sits over a live camera frame, and at card opacity the preview reads straight
+through"). So the outer sheet already supplies the safety the fill exists for, and nested cards
+stay translucent by design -- confirmed against every one of that file's own already-shipped
+`HudPanel` cards in the same list. Classified `HudPanel`, not `HudSheet`. This is the concrete
+case GPT-PM's guardrail ("ownership, not naming... a modal-shaped widget may still need
+HudSheet, or may not") was written for.
+
+`deload_banner.dart` needs `tint: AppPalette.auroraPeach` -- a second confirmed instance of the
+flat-colour-fill gap first found in `scanner_page.dart` (sub-gate 2). Reclassified
+`INTENTIONAL_LEGACY_EXCEPTION` rather than invented a mechanism, per the standing rule; now two
+real call sites are waiting on the same future status-tint sub-gate, which is exactly the
+"consolidate repeated instances into one future sub-gate" instruction from the previous GPT-PM
+round, not "found two, opened two rounds."
+
+The other 6 files (`account_deletion_page.dart`, `login_page.dart`, `moderation_page.dart`,
+`privacy_page.dart`, `terms_page.dart`, `licences_page.dart` -- 2 sites) are plain in-page cards
+-> `HudPanel`. All but `login_page.dart` also use `GlassAppBar` alongside `FrostedScaffold`
+(login has only the scaffold); every one keeps a scoped `import '...glass.dart' show ...;` for
+those, same pattern as sub-gate 4.
+
+Verification: `flutter analyze` clean on all 12 files. `flutter test`: 30 assertions across
+`account_deletion_page_test.dart`, `account_deletion_providers_test.dart`, `login_page_test.dart`,
+`set_capture_sheet_wording_test.dart`, plus 10 pure-function assertions in
+`plate_calculator_test.dart`/`warmup_calculator_test.dart` -- all green. No dedicated widget test
+exists for the other 7 touched files; `flutter analyze` and the surrounding regression suites are
+this sub-gate's coverage for those, stated plainly rather than implied as more than it is. Census:
+`GlassCard` sites 96→84, files with a call 31→20, `glass.dart` importers 38→33.
+
+Next: continue through the remaining ~24 files (`about_page.dart`, `ai_planner_page.dart`,
+`celebrity_plans_page.dart`, `contribute_video_page.dart`, `team_feed_page.dart`,
+`backup_page.dart`, `donor_wall_page.dart`, `marketplace_page.dart`, `posture_page.dart`,
+`injuries_page.dart`, `health_sync_card.dart`, `progress_photos_page.dart`,
+`subscription_page.dart`, `progress_page.dart`, `settings_page.dart`,
+`workout_summary_page.dart`), continuing autonomously under the same GO, per PM mode.

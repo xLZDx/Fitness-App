@@ -3,7 +3,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/licences/asset_licences.dart';
 import '../../shared/widgets/app_buttons.dart';
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../../core/theme/app_semantic_colors.dart';
 
 /// Credits for the third-party content the app bundles.
@@ -25,7 +26,7 @@ class LicencesPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
         children: [
-          GlassCard(
+          HudPanel(
             child: Text(l.licencesIntro, style: theme.textTheme.bodyMedium),
           ),
           const SizedBox(height: 16),
@@ -58,7 +59,7 @@ class _AttributionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final muted = theme.colors.textSecondary;
-    return GlassCard(
+    return HudPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

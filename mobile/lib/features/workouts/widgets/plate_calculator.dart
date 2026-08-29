@@ -4,7 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/app_buttons.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 
 /// Pure plate-loading solver. Greedy from the largest available plate down;
 /// returns the plates per side that sum to (target - bar) / 2. When the
@@ -89,8 +89,7 @@ class _PlateCalculatorState extends State<PlateCalculator> {
     final theme = Theme.of(context);
     final load = solvePlateLoad(targetKg: _target, barKg: _bar);
 
-    return GlassCard(
-      floating: true,
+    return HudSheet(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

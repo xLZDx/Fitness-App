@@ -4,7 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/app_buttons.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 
 /// Pure ramp calculator. Returns 4 warm-up sets at 40 / 60 / 75 / 90% of
 /// working weight. Reps descend (8 → 5 → 3 → 1) so total bar volume stays
@@ -58,8 +58,7 @@ class _WarmupCalculatorState extends State<WarmupCalculator> {
     final theme = Theme.of(context);
     final ramp = rampForWorkingWeight(_working);
 
-    return GlassCard(
-      floating: true,
+    return HudSheet(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

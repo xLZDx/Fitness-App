@@ -7,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/app_buttons.dart';
-import '../../../shared/widgets/glass.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../../safety/state/eligibility_providers.dart';
 import '../data/machine_card.dart';
 
@@ -88,7 +88,7 @@ class MachineCardView extends ConsumerWidget {
         safety.injuries.isEmpty &&
         safety.health.restrictions.isEmpty;
 
-    return GlassCard(
+    return HudPanel(
       key: const Key('machine-card'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

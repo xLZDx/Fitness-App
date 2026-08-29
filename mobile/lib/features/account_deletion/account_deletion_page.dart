@@ -3,7 +3,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../shared/widgets/glass.dart';
+import '../../shared/widgets/glass.dart' show FrostedScaffold, GlassAppBar;
+import '../../shared/widgets/hud/hud_surface.dart';
 import '../onboarding/widgets/inputs.dart';
 import 'state/account_deletion_providers.dart';
 import '../../shared/widgets/app_buttons.dart';
@@ -67,7 +68,7 @@ class _AccountDeletionPageState extends ConsumerState<AccountDeletionPage> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 92, 20, 40),
         children: [
-          GlassCard(
+          HudPanel(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
