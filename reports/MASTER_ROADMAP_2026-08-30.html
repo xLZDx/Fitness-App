@@ -1,0 +1,381 @@
+<!doctype html>
+<title>Fitness_App Master Roadmap</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#e2e7ec;
+    --text:#171b21; --text-muted:#4d5a68;
+    --accent:#2b5797; --accent-strong:#1c3c6b; --accent-soft:#dde7f3;
+    --crit:#b3261e; --crit-soft:#fbe6e4;
+    --warn:#a05a00; --warn-soft:#f8ead2;
+    --good:#1f7a4d; --good-soft:#e0f1e7;
+    --border:rgba(23,27,33,.14);
+    --code-bg:#0e1116; --code-text:#dfe6ea;
+    --shadow:0 1px 2px rgba(23,27,33,.06),0 8px 24px rgba(23,27,33,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+      --text:#e7ecf1; --text-muted:#9aa8b6;
+      --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+      --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+      --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+      --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+      --border:rgba(231,237,239,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+    --text:#e7ecf1; --text-muted:#9aa8b6;
+    --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+    --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+    --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+    --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+    --border:rgba(231,237,239,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:48px 22px 100px}
+
+  header{padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);margin:0 0 12px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(26px,4vw,36px);line-height:1.12;margin:0 0 10px;text-wrap:balance}
+  .dek{font-size:16px;color:var(--text-muted);max-width:70ch;margin:0}
+
+  nav.toc{margin:24px 0 0;padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow)}
+  nav.toc .lbl{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin:0 0 10px}
+  nav.toc ol{margin:0;padding-left:20px;columns:2;column-gap:24px;font-size:13.5px}
+  nav.toc li{margin-bottom:6px;break-inside:avoid}
+  nav.toc a{color:var(--accent-strong);text-decoration:none}
+  nav.toc a:hover{text-decoration:underline}
+
+  section{margin-top:46px;scroll-margin-top:20px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kicker::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;flex:none}
+  h2{font-family:"Archivo",sans-serif;font-weight:700;font-size:21px;margin:0 0 6px}
+  .sec-note{color:var(--text-muted);font-size:13.5px;margin:0 0 16px;max-width:72ch}
+  p{margin:0 0 12px;max-width:72ch}
+
+  .flagbox{border-left:4px solid var(--crit);background:var(--crit-soft);border-radius:0 10px 10px 0;padding:14px 18px;margin:12px 0}
+  .flagbox .lbl{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--crit);font-weight:700;display:block;margin-bottom:5px}
+  .flagbox p{margin:0;max-width:none}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:10px}
+
+  ul.check{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+  ul.check li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:9px;font-size:14px}
+  ul.check li .box{flex:none;width:19px;height:19px;border-radius:5px;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  ul.check li.done .box{background:var(--good);color:#fff}
+  ul.check li.done .box::after{content:"✓"}
+  ul.check li.open .box{border:2px solid var(--text-muted);background:transparent}
+  ul.check li.blocked .box{background:var(--warn);color:#fff}
+  ul.check li.blocked .box::after{content:"!"}
+  ul.check li.crit .box{background:var(--crit);color:#fff}
+  ul.check li.crit .box::after{content:"✕"}
+  ul.check .body{flex:1;min-width:0}
+  ul.check .name{font-weight:600}
+  ul.check .meta{color:var(--text-muted);font-size:12.5px;margin-top:2px}
+  ul.check .cite{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text-muted)}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+  .pill.done{background:var(--good-soft);color:var(--good)}
+  .pill.open{background:var(--surface-2);color:var(--text-muted)}
+  .pill.blocked{background:var(--warn-soft);color:var(--warn)}
+  .pill.crit{background:var(--crit-soft);color:var(--crit)}
+
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+  .sha{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:.86em}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:6px}
+  th,td{text-align:left;padding:10px 12px;vertical-align:top;border-bottom:1px solid var(--border)}
+  thead th{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media (max-width:640px){.twocol{grid-template-columns:1fr}nav.toc ol{columns:1}}
+
+  .foot-note{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--text-muted);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend .box{width:14px;height:14px;border-radius:4px;display:inline-block}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Plan reassessment · assembled by 7 parallel agents from ~250 md/html files + DECISION_LOG.md (35,500 lines)</p>
+    <h1>Fitness_App master roadmap — every track, dependencies, real status</h1>
+    <p class="dek">Not "what the plans say" but "what was actually verified." Every item cites its source. Where documents conflict, the later/more direct source wins automatically (DECISION_LOG and gate-closure reports outrank a plan document's own claim).</p>
+    <nav class="toc">
+      <p class="lbl">Sections</p>
+      <ol>
+        <li><a href="#flags">0. Critical flags — read first</a></li>
+        <li><a href="#release">1. Release infrastructure (MVP1.G2→G4)</a></li>
+        <li><a href="#hud">2. HUD/Figma redesign</a></li>
+        <li><a href="#ml">3. ML / equipment recognition</a></li>
+        <li><a href="#engine">4. Recommendation Engine (G0–G11)</a></li>
+        <li><a href="#backlog">5. General backlog and orphaned items</a></li>
+        <li><a href="#audit">6. Safety/regulatory audit</a></li>
+        <li><a href="#marketing">7. SPTR marketing (reference)</a></li>
+        <li><a href="#next">8. Recommended next steps</a></li>
+      </ol>
+    </nav>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 75211dd</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+  <section id="flags">
+    <p class="kicker">Section 0 — critical flags</p>
+    <h2>Read this first</h2>
+    <p class="sec-note">Five facts that change how to read everything else in this document.</p>
+
+    <div class="flagbox">
+      <span class="lbl">The release-readiness verdict was never lifted</span>
+      <p>The full project audit from 08-16 returned a <strong>NOT_RELEASE_READY</strong> verdict, confirmed by an independent review of that same audit. The 5-gate remediation plan (G-A…G-E, section 6) was "Not started, awaiting REMEDIATION-GO" as of 08-16 — none of the 7 research agents found any trace of that chain having been run since.</p>
+    </div>
+    <div class="flagbox">
+      <span class="lbl">Regulatory Gate J: DO NOT SHIP</span>
+      <p>A separate regulatory audit (08-15) returned "REGULATORY_REVIEW_REQUIRED — DO NOT SHIP." Undisclosed Health Connect access (steps/HR/sleep) in the privacy policy in any locale; the About page's "rehab-grade exercise guidance" claim directly contradicts the app's own Terms (medical-device reclassification risk, MDR Rule 11). No document found confirms a fix.</p>
+    </div>
+    <div class="flagbox">
+      <span class="lbl">Two gate-numbering systems share the same names — do not confuse them</span>
+      <p><strong>Track A</strong> (actually executed, closed): "G1–G4" / "M1–M9" is the MVP delivery track (AI Gateway, Android 16, HUD migration, IAM). <strong>Track B</strong> (formal architecture, <code class="mono">core/agent-engine-v2.3.1/</code> + <code class="mono">.claude/policies/fitness-recommendation-gates.json</code>): "G0–G11" is the Safety/Eligibility/Prescription recommendation engine, with 29 bound specialist agents and veto authority held by the clinical gate. <strong>Track B has not started</strong> — no report describes closing any of its gates.</p>
+    </div>
+    <div class="flagbox">
+      <span class="lbl">Two BLOCKERs with no confirmed closure in the decision log</span>
+      <p><strong>P1.G5</strong> (SPTR exact-equipment-identity catalog) — blocked since 08-22 on insufficient direct sources for Technogym/Panatta (manufacturer sites return HTTP 403); status never changes later in the log. <strong>4 identical silent alerts</strong> (2× Stripe reconciliation, delete-account, export-account, canary) from MVP1.G3 Step 10A round 8 — found, filed to backlog, never shown fixed.</p>
+    </div>
+    <div class="flagbox">
+      <span class="lbl">The "closed → actually wasn't" pattern repeats systematically</span>
+      <p>Not a one-off: bug D-03 (dropped tap) was closed and reopened at least 4 times in a row; Step 10A was declared closed and immediately self-corrected ("declaration above was premature"); N-01 (BLOCKER) turned out to be an earlier fix (F014) "lost on restart." Practical takeaway: a "closed" status in an individual plan file is not proof by itself — proof is independent re-verification, which not every gate received twice.</p>
+    </div>
+  </section>
+
+  <section id="release">
+    <p class="kicker">Section 1 — release infrastructure</p>
+    <h2>MVP1.G2 → MVP1.G4 <span class="pill done">closed</span></h2>
+    <p class="sec-note">AI Gateway, Android 16, IAM, kill switch, release guard. Nine G4 steps, each a multi-round GPT-PM review with real defects found and fixed.</p>
+    <ul class="check">
+      <li class="done"><div class="box"></div><div class="body"><div class="name">MVP1.G2 — Android 16 / targetSdk 36, Play release readiness</div><div class="meta">targetSdk 35→36 raised, release build verified, an edge-to-edge regression found and fixed</div><div class="cite">core/DECISION_LOG.md:26543-27076 · reports/G2_ANDROID16_TARGETSDK36_2026-08-27.html</div></div></li>
+      <li class="done"><div class="box"></div><div class="body"><div class="name">MVP1.G3 — OBS-1, continuous reliability guarantees (13 items)</div><div class="meta">All 13 items closed, 0 PARTIAL; separately — runtime-monitor prerequisites (Step 8) and a production canary</div><div class="cite">core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md · reports/2026-08-28-mvp1-g3-closure.html</div></div></li>
+      <li class="done"><div class="box"></div><div class="body"><div class="name">MVP1.G4, steps 1–9 — Vertex AI revalidation → App Check → IAM (6 tiers) → AI Gateway deploy → E2E → observability → product E2E → kill switch → release guard</div><div class="meta">All 9 steps closed; Step 9 (release guard) — 7 review rounds, 14 MAJOR found and fixed; wired into <code class="mono">firebase.json predeploy</code></div><div class="cite">core/G4_STEP1…9_*.md · core/DECISION_LOG.md:34608-34609 · reports/MVP1_G4_CLOSURE_2026-08-29.html</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">Step 7 (product E2E) — round 2 final verdict not directly located</div><div class="meta">Strong circumstantial evidence of closure (the program moved on without reopening it), but no direct "Step 7 CLOSED round 2" citation found</div><div class="cite">INFERENCE — core/G4_STEP7_PRODUCT_E2E_2026-08-29.md:128-156</div></div></li>
+      <li class="crit"><div class="box"></div><div class="body"><div class="name">Post-closure: a real on-device regression, discovered after MVP1.G4</div><div class="meta">A live S23 walkthrough after gate closure turned out to be testing an 8-day-stale build; after installing the current one, 2 real onboarding bugs were found</div><div class="cite">core/DECISION_LOG.md:34645-34664</div></div></li>
+    </ul>
+    <p class="sec-note" style="margin-top:14px">Important: closing this track means the <strong>engineering</strong> AI-release infrastructure is closed. It does not mean overall product release readiness — that rests on the clinical/regulatory track (section 6), which this track never touches.</p>
+  </section>
+
+  <section id="hud">
+    <p class="kicker">Section 2 — HUD/Figma redesign</p>
+    <h2>0 of 9 screens reconciled against the correct reference</h2>
+    <p class="sec-note">Current source of truth: <code class="mono">core/design/reference/full_handoff_v1/</code> (the full design handoff, extracted in full only today, 08-30 — it sat 80% unextracted for 10 days). The old <code class="mono">docs/Redisign/*</code> line (Figma Make <code class="mono">App.tsx</code>) is <strong>superseded</strong>, per <code class="mono">core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md</code>.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Screen</th><th>Panel migration (GlassCard→HudPanel)</th><th>Reconciled vs. full reference</th></tr></thead>
+        <tbody>
+          <tr><td>Home</td><td><span class="pill done">done</span></td><td><span class="pill open">no</span></td></tr>
+          <tr><td>Workouts</td><td><span class="pill done">done</span> + Library default</td><td><span class="pill open">no</span></td></tr>
+          <tr><td>Scan</td><td><span class="pill done">done</span> (styling)</td><td><span class="pill crit">true gap</span> — never had a reference at all</td></tr>
+          <tr><td>Session (player/timer)</td><td>—</td><td><span class="pill crit">true gap</span> — no plan exists</td></tr>
+          <tr><td>Progress</td><td><span class="pill done">done</span></td><td><span class="pill open">no</span></td></tr>
+          <tr><td>Profile</td><td><span class="pill done">done</span></td><td><span class="pill blocked">partial</span> — see PROFILE_IDENTITY_HEADER below</td></tr>
+          <tr><td>Form Coach — background/HUD</td><td><span class="pill done">done</span> (FORM_COACH_HUD_ALIGNMENT)</td><td>—</td></tr>
+          <tr><td>Form Coach — skeleton overlay</td><td>—</td><td><span class="pill blocked">blocked</span> — see section 3, ML_STRATEGY R1(b)</td></tr>
+          <tr><td>Onboarding (9 steps)</td><td>—</td><td><span class="pill crit">true gap</span> — known divergence (10-step PAR-Q+ vs. 9-step reference), reconciliation not started</td></tr>
+          <tr><td>Backgrounds (10 photos)</td><td><span class="pill done">system exists</span></td><td><span class="pill open">unchecked</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="check" style="margin-top:14px">
+      <li class="open"><div class="box"></div><div class="body"><div class="name">PROFILE_IDENTITY_HEADER — GPT-PM approved, not implemented</div><div class="meta">Avatar → circular initial; subtitle → real progress instead of static "questionnaire complete"; Premium card — separate, outside this gate</div><div class="cite">core/DECISION_LOG.md:35513-35514</div></div></li>
+      <li class="blocked"><div class="box"></div><div class="body"><div class="name">Form Coach — color-coded skeleton overlay by technique correctness</div><div class="meta">Code exists, on by default, but always white — no green/red by technique, no pulsing error-joint indicator. Cannot be honestly built until ML_STRATEGY R1(b) (section 3) is done</div><div class="cite">mobile/lib/features/form_check/form_check_page.dart:990-1094 · core/design/reference/full_handoff_v1/CLAUDE.md §8</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">Nav icons — REFERENCE_BLOCKED_DEFERRED</div><div class="meta">GPT-PM refused a blind redesign on 08-29; reopens only if the operator supplies a reference</div><div class="cite">core/DECISION_LOG.md:34959-34987</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">Open Decisions Register (44 items) — likely stale</div><div class="meta">Dated 08-08/08-12, predates HUD Glass; no item found re-decided under current GPT-PM governance</div><div class="cite">docs/Redisign/OPEN_DECISIONS_REGISTER_v1.3.md</div></div></li>
+    </ul>
+  </section>
+
+  <section id="ml">
+    <p class="kicker">Section 3 — ML / equipment recognition</p>
+    <h2>Two independent tracks under one name</h2>
+    <div class="twocol">
+      <div class="card">
+        <p class="name" style="font-weight:700;margin-bottom:8px">Track A — SPTR v4.4 / P0–P1 (exact-identity catalog)</p>
+        <ul class="check">
+          <li class="done"><div class="box"></div><div class="body"><div class="name">P0 (7/7 gates)</div><div class="meta">Foundation: baseline, provenance, rights, catalog snapshot, cloud feasibility (outcome: OCR-text, visual path deferred), function isolation</div><div class="cite">core/equipment_identity/p0/* · reports/P0_PHASE_CLOSEOUT_2026-08-22.html</div></div></li>
+          <li class="done"><div class="box"></div><div class="body"><div class="name">P1.G1–G4 (schema, official adapters, WGER enrichment)</div><div class="meta">74 candidates staged, 0 production writes</div><div class="cite">core/equipment_identity/p1/*</div></div></li>
+          <li class="crit"><div class="box"></div><div class="body"><div class="name">P1.G5 — catalog reconciliation — BLOCKED_ON_SOURCE_EVIDENCE</div><div class="meta">Missing direct sources for Technogym and Panatta (manufacturer sites return HTTP 403); status unchanged since 08-22</div><div class="cite">core/DECISION_LOG.md (08-22 entries "P1.G5 BLOCKED_ON_SOURCE_EVIDENCE")</div></div></li>
+          <li class="open"><div class="box"></div><div class="body"><div class="name">P1.G6 and P2–P8 (OCR identity, licensed corpus, fusion, production rollout)</div><div class="meta">Not started; zero production surface (no exported Cloud Function)</div><div class="cite">functions-equipment-identity/src/index.ts (empty)</div></div></li>
+        </ul>
+      </div>
+      <div class="card">
+        <p class="name" style="font-weight:700;margin-bottom:8px">Track B — ML_STRATEGY (validity of what actually ships)</p>
+        <ul class="check">
+          <li class="crit"><div class="box"></div><div class="body"><div class="name">M0 — independent held-out set with negatives</div><div class="meta">Blocks every step below. Not started</div><div class="cite">core/plans/ML_STRATEGY_2026-08-11.md §3.1</div></div></li>
+          <li class="open"><div class="box"></div><div class="body"><div class="name">E1–E4 — abstention/kill-gate for equipment classifier v1</div><div class="meta">v1 (10 classes, no abstention) is the only thing shipped; independently confirmed confidently wrong on real gym photos</div><div class="cite">mobile/assets/models/equipment_v1.tflite</div></div></li>
+          <li class="crit"><div class="box"></div><div class="body"><div class="name">R1(b) — rewrite extract_mmfit_targets.py to match the production algorithm</div><div class="meta">What actually ships in rep_counter.dart (2D, one-sided, 4-phase) has NEVER been measured against the MM-Fit joint-angle dataset (3D, bilateral, 2-phase — a different algorithm). This is why SquatDepthClassifier.canFault=false</div><div class="cite">core/plans/ML_STRATEGY_2026-08-11.md §3.3 · mobile/lib/features/form_check/data/form_classifier.dart:141,212</div></div></li>
+        </ul>
+      </div>
+    </div>
+    <p class="sec-note" style="margin-top:12px"><strong>Unchanged in production today:</strong> the equipment classifier is 10 classes with no abstention, confidently wrong; form-check counts reps with an algorithm never checked against ground-truth angles. Track A fixes neither — it builds a parallel exact brand/model identity infrastructure.</p>
+  </section>
+
+  <section id="engine">
+    <p class="kicker">Section 4 — Recommendation Engine</p>
+    <h2>G0–G11 <span class="pill open">not started</span></h2>
+    <p class="sec-note">The formal architecture in <code class="mono">.claude/policies/fitness-recommendation-gates.json</code> + <code class="mono">core/agent-engine-v2.3.1/</code>: 11 gates (G0 repo audit → G0.5 ownership contract → G1 data contracts → G2 unified Safety+Eligibility → G3 Home/AI-planner convergence → G4 personalization semantics → G5 workout-data evolution → G6 Prescription/Load/Progression → G7 programme construction → G8 recovery/adherence → G9 AI boundary → G10 Scanner/Form-Check context → G11 final release audit), with 29 bound specialist agents and veto authority held by the clinical gate. <strong>No report describes closing any of these gates</strong> — all the actually-shipped work (sections 1–3) runs under a different, coincidentally-matching "G1–G4"/"M1–M9" numbering.</p>
+  </section>
+
+  <section id="backlog">
+    <p class="kicker">Section 5 — general backlog</p>
+    <h2>~90% closed, but real orphans remain</h2>
+    <p class="sec-note">Of ~50 plan files (late July through mid-August), most is closed history. Below is what's genuinely still open and untracked elsewhere.</p>
+    <ul class="check">
+      <li class="open"><div class="box"></div><div class="body"><div class="name">H2 — recommendation ranking ignores the user's equipment/injuries</div><div class="cite">core/plans/FINAL_SCOPE_2026-08-16.md</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">H3/C8 — 1484 catalog cards with no Purpose text; the professional row-by-row review was never done</div><div class="cite">core/audit/full_catalog_1887_2026-08-15/*</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">E1 — personalization/ranking model (E1.1–E1.6) — no completion confirmed</div><div class="cite">core/BACKLOG_2026-07-31.md</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">PLAN_GYMS_AND_NEWS — a pure proposal, no GO given, zero code</div><div class="cite">core/PLAN_GYMS_AND_NEWS_2026-08-01.md</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">Paid exercise-animation video pack — decision never made/acted on</div><div class="cite">core/VIDEO_SOURCES_RESEARCH_2026-08-01.md</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">B2 — shared camera session / QR consolidation — explicitly flagged "needs its own GO," no pickup found</div><div class="cite">core/plans/PLAN_DEVICE_DEFECTS_ROUND2_2026-07-30.md</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">O5/O6/O7/O10 (onboarding: schedule, body, barriers, plan generator) — status after 08-12 unconfirmed anywhere</div><div class="cite">core/plans/RESUME_O_SERIES_2026-08-12.md</div></div></li>
+    </ul>
+  </section>
+
+  <section id="audit">
+    <p class="kicker">Section 6 — safety / regulatory audit</p>
+    <h2>Remediation chain, status as of 08-16: "not started"</h2>
+    <p class="sec-note">Fixed order, hard dependencies: <strong>G-A → G-D → G-C → G-B → G-E</strong>. None of the 7 agents found any mention of these gates after 08-16 — treat as open until proven otherwise.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Gate</th><th>Risk</th><th>What it fixes</th></tr></thead>
+        <tbody>
+          <tr><td><strong>G-A</strong> (P0, low)</td><td>low</td><td>Surface refusals the app already generates but doesn't show: Retry button, chest-pain copy, a real safety-tag-coverage figure</td></tr>
+          <tr><td><strong>G-D</strong> (P0, low)</td><td>low</td><td>Firestore rules: exclude <code class="mono">usage</code>/<code class="mono">receipts</code> from client writes, deny the <code class="mono">health</code> key</td></tr>
+          <tr><td><strong>G-C</strong> (P0, low)</td><td>low</td><td>Suppress AI-invented <code class="mono">uses[]</code> values unless catalogue-matched</td></tr>
+          <tr><td><strong>G-B</strong> (P0, medium)</td><td>medium — touches the safety layer</td><td>Route every exercise-serving surface through the existing eligibility filter (6 sites, including the AI coach)</td></tr>
+          <tr><td><strong>G-E</strong> (P1, medium/high)</td><td>needs a strength-training reviewer</td><td>Give the spec-less default programme a real <code class="mono">ProgrammeSpec</code>; remove the alphabetical fallback</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sec-note" style="margin-top:14px">Plus operator-level, non-engineering decisions: D1 (clinician review of the 360-row sample), D2 (pregnancy-refusal wording), D3 ("scans any gym machine" is misleading — the model knows 10 of 69 classes), D4 (delete or keep unused questionnaire fields and unencrypted health fields).</p>
+  </section>
+
+  <section id="marketing">
+    <p class="kicker">Section 7 — reference</p>
+    <h2>SPTR marketing — a separate track, not the engineering roadmap</h2>
+    <p class="sec-note">~10 reports (Aug 18–19): positioning, competitive analysis, a synthetic panel, site build, landing copy. A separate brand/landing-page R&amp;D stream, unrelated to the product gates above. Plus ~15 audit/governance-mechanics reports (decision reconciliation, citation checks, Rosetta governance) — these check the review process itself, not product delivery.</p>
+  </section>
+
+  <section id="next">
+    <p class="kicker">Section 8 — what's next</p>
+    <h2>Recommended order by dependency</h2>
+    <ul class="check">
+      <li class="crit"><div class="box"></div><div class="body"><div class="name">1. Resolve the NOT_RELEASE_READY verdict / Gate J DO NOT SHIP</div><div class="meta">Operator-level: without this, "release ready" cannot be claimed regardless of what section 1 closed</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">2. G-A → G-D → G-C → G-B → G-E (section 6) — fixed order, the first three are low-risk</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">3. PROFILE_IDENTITY_HEADER — the one fully-unblocked, already-approved HUD gate</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">4. M0 (held-out set) → unblocks both E1–E4 (equipment) and the path to R1(b) (form-check)</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">5. Reconcile Home/Workouts/Progress against the new full reference (cheap — the screenshots already exist)</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">6. Resolve P1.G5 — either source Technogym/Panatta evidence, or get GPT-PM/operator sign-off for a smaller pool</div></div></li>
+    </ul>
+  </section>
+
+  <p class="foot-note">Assembled by 7 parallel research agents (full coverage of every .md/.html file in the repository) on 2026-08-30; synthesis done by hand with explicit FACT/INFERENCE labeling carried up from each agent. Section 6 (audit) is a snapshot as of 08-16 and may be partially stale — flagged explicitly. Each agent's full text report is not published separately; this document is their synthesis.</p>
+  <div class="legend">
+    <span><i class="box" style="background:var(--good)"></i> closed and verified</span>
+    <span><i class="box" style="border:2px solid var(--text-muted)"></i> open</span>
+    <span><i class="box" style="background:var(--warn)"></i> blocked by a dependency</span>
+    <span><i class="box" style="background:var(--crit)"></i> critical / stalled a long time</span>
+  </div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

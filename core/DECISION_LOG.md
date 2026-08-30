@@ -35541,3 +35541,42 @@ instruction, though the archive's own README still says not to ship it in the pr
 `mobile/lib/features/form_check/data/pose_silhouette.dart`/`pose_avatar.dart` (585+215 lines, an
 existing pose-overlay mechanism) against this spec and report concrete deltas -- not yet done in
 this commit.
+
+## 2026-08-30 ~09:15-10:10 UTC -- full-project master roadmap reassessment (operator instruction)
+
+Operator asked for a full reassessment of the plan across every dependency, not just the redesign
+-- a completely redone roadmap for the whole project, checked/done marked, checking every `.md`/
+`.html` file in the repo and its subfolders. Given ~250 doc files under `core/` alone plus
+`DECISION_LOG.md` at ~35,500 lines, reading this in the main thread would have blown context and
+missed material -- split into 7 parallel research agents by natural workstream (release/infra
+G3-G4, ML/equipment-recognition, the two full-project audits, general plans/backlog, HUD redesign,
+a targeted DECISION_LOG.md lifecycle extraction, and reports/+governance docs), each returning a
+structured, evidence-cited digest. Synthesized by hand into
+`reports/MASTER_ROADMAP_2026-08-30.ru.html`/`.html`.
+
+**Findings that materially change how this repo's state should be read, not previously consolidated
+anywhere:**
+- The 2026-08-16 full-project audit's `NOT_RELEASE_READY` verdict (confirmed by its own independent
+  second-order review) has never been revisited by any later document; its 5-gate remediation chain
+  (G-A/G-D/G-C/G-B/G-E) was "Not started, awaiting REMEDIATION-GO" as of that audit and no later
+  agent found any trace of it running since.
+- A separate regulatory audit (2026-08-15, Gate J) returned "DO NOT SHIP" -- undisclosed Health
+  Connect data access in the privacy policy, and an About-page "rehab-grade exercise guidance" claim
+  contradicting the app's own Terms (MDR Rule 11 reclassification risk). No later document confirms
+  either was fixed.
+- Two unrelated systems both use "G0-G11"/"G1-G4" gate numbering: the actually-executed MVP delivery
+  track (AI Gateway, Android 16, HUD migration -- closed) and a formal, never-started Recommendation
+  Engine architecture (`.claude/policies/fitness-recommendation-gates.json` +
+  `core/agent-engine-v2.3.1/`, 29 bound specialist agents, clinical veto authority). Real risk of
+  conflating the two when planning future work.
+- Two BLOCKER-class items were opened and never shown closed anywhere later in `DECISION_LOG.md`:
+  `P1.G5` (SPTR equipment-identity catalog, blocked since 2026-08-22 on missing Technogym/Panatta
+  source evidence) and 4 identical silent-alert defects (2x Stripe reconciliation, delete-account,
+  export-account, canary) filed to backlog from MVP1.G3 Step 10A round 8.
+- Of the HUD redesign's 9 screens (per the newly-extracted `full_handoff_v1` reference), zero are
+  reconciled against the correct, high-fidelity reference -- every prior "matches Figma" claim used
+  either the older, admittedly-incomplete video-frame crop set or the now-superseded `App.tsx`
+  Figma-Make line.
+
+No source code touched. Both report files conformed (`report_conform.py --check` clean), RU
+published as an artifact, both to be committed together with this entry.

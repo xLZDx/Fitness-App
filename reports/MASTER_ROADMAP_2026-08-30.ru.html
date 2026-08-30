@@ -1,0 +1,381 @@
+<!doctype html>
+<title>Мастер-роадмап Fitness_App</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#e2e7ec;
+    --text:#171b21; --text-muted:#4d5a68;
+    --accent:#2b5797; --accent-strong:#1c3c6b; --accent-soft:#dde7f3;
+    --crit:#b3261e; --crit-soft:#fbe6e4;
+    --warn:#a05a00; --warn-soft:#f8ead2;
+    --good:#1f7a4d; --good-soft:#e0f1e7;
+    --border:rgba(23,27,33,.14);
+    --code-bg:#0e1116; --code-text:#dfe6ea;
+    --shadow:0 1px 2px rgba(23,27,33,.06),0 8px 24px rgba(23,27,33,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+      --text:#e7ecf1; --text-muted:#9aa8b6;
+      --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+      --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+      --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+      --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+      --border:rgba(231,237,239,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+    --text:#e7ecf1; --text-muted:#9aa8b6;
+    --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+    --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+    --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+    --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+    --border:rgba(231,237,239,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:920px;margin:0 auto;padding:48px 22px 100px}
+
+  header{padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);margin:0 0 12px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(26px,4vw,36px);line-height:1.12;margin:0 0 10px;text-wrap:balance}
+  .dek{font-size:16px;color:var(--text-muted);max-width:70ch;margin:0}
+
+  nav.toc{margin:24px 0 0;padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow)}
+  nav.toc .lbl{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);margin:0 0 10px}
+  nav.toc ol{margin:0;padding-left:20px;columns:2;column-gap:24px;font-size:13.5px}
+  nav.toc li{margin-bottom:6px;break-inside:avoid}
+  nav.toc a{color:var(--accent-strong);text-decoration:none}
+  nav.toc a:hover{text-decoration:underline}
+
+  section{margin-top:46px;scroll-margin-top:20px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kicker::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;flex:none}
+  h2{font-family:"Archivo",sans-serif;font-weight:700;font-size:21px;margin:0 0 6px}
+  .sec-note{color:var(--text-muted);font-size:13.5px;margin:0 0 16px;max-width:72ch}
+  p{margin:0 0 12px;max-width:72ch}
+
+  .flagbox{border-left:4px solid var(--crit);background:var(--crit-soft);border-radius:0 10px 10px 0;padding:14px 18px;margin:12px 0}
+  .flagbox .lbl{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--crit);font-weight:700;display:block;margin-bottom:5px}
+  .flagbox p{margin:0;max-width:none}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:10px}
+
+  ul.check{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+  ul.check li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:9px;font-size:14px}
+  ul.check li .box{flex:none;width:19px;height:19px;border-radius:5px;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  ul.check li.done .box{background:var(--good);color:#fff}
+  ul.check li.done .box::after{content:"✓"}
+  ul.check li.open .box{border:2px solid var(--text-muted);background:transparent}
+  ul.check li.blocked .box{background:var(--warn);color:#fff}
+  ul.check li.blocked .box::after{content:"!"}
+  ul.check li.crit .box{background:var(--crit);color:#fff}
+  ul.check li.crit .box::after{content:"✕"}
+  ul.check .body{flex:1;min-width:0}
+  ul.check .name{font-weight:600}
+  ul.check .meta{color:var(--text-muted);font-size:12.5px;margin-top:2px}
+  ul.check .cite{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--text-muted)}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+  .pill.done{background:var(--good-soft);color:var(--good)}
+  .pill.open{background:var(--surface-2);color:var(--text-muted)}
+  .pill.blocked{background:var(--warn-soft);color:var(--warn)}
+  .pill.crit{background:var(--crit-soft);color:var(--crit)}
+
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+  .sha{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:.86em}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:6px}
+  th,td{text-align:left;padding:10px 12px;vertical-align:top;border-bottom:1px solid var(--border)}
+  thead th{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media (max-width:640px){.twocol{grid-template-columns:1fr}nav.toc ol{columns:1}}
+
+  .foot-note{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--text-muted);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend .box{width:14px;height:14px;border-radius:4px;display:inline-block}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Реассессмент плана · собрано 7 параллельными агентами из ~250 md/html-файлов + DECISION_LOG.md (35 500 строк)</p>
+    <h1>Мастер-роадмап Fitness_App — все треки, зависимости, реальный статус</h1>
+    <p class="dek">Не «что написано в планах», а «что реально проверено». Каждый пункт — со ссылкой на источник. Где документы противоречат друг другу, автоматически побеждает более поздний/более прямой источник (DECISION_LOG и отчёты о закрытии гейтов — над текстом самого плана).</p>
+    <nav class="toc">
+      <p class="lbl">Разделы</p>
+      <ol>
+        <li><a href="#flags">0. Критические флаги — прочитать первым</a></li>
+        <li><a href="#release">1. Release-инфраструктура (MVP1.G2→G4)</a></li>
+        <li><a href="#hud">2. HUD/Figma-редизайн</a></li>
+        <li><a href="#ml">3. ML / распознавание оборудования</a></li>
+        <li><a href="#engine">4. Recommendation Engine (G0–G11)</a></li>
+        <li><a href="#backlog">5. Общий бэклог и осиротевшие задачи</a></li>
+        <li><a href="#audit">6. Аудит безопасности/регуляторики</a></li>
+        <li><a href="#marketing">7. SPTR-маркетинг (справочно)</a></li>
+        <li><a href="#next">8. Рекомендуемый порядок действий</a></li>
+      </ol>
+    </nav>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 75211dd</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <section id="flags">
+    <p class="kicker">Раздел 0 — критические флаги</p>
+    <h2>Прочитать это первым</h2>
+    <p class="sec-note">Пять фактов, которые меняют то, как читать всё остальное в этом документе.</p>
+
+    <div class="flagbox">
+      <span class="lbl">Вердикт релиз-готовности не отменён</span>
+      <p>Полный аудит проекта от 16.08 вынес вердикт <strong>NOT_RELEASE_READY</strong>, подтверждённый независимым ревью того же аудита. Ремедиационный план из 5 гейтов (G-A…G-E, раздел 6) по состоянию на 16.08 был «Not started, awaiting REMEDIATION-GO» — ни один из 7 агентов не нашёл следов, что эта цепочка вообще запускалась после 16.08.</p>
+    </div>
+    <div class="flagbox">
+      <span class="lbl">Регуляторный гейт J: DO NOT SHIP</span>
+      <p>Отдельный регуляторный аудит (15.08) — вердикт «REGULATORY_REVIEW_REQUIRED — DO NOT SHIP». Недекларированный доступ к Health Connect (шаги/пульс/сон) в privacy policy ни в одной локали; заявление «rehab-grade exercise guidance» на странице «О приложении» прямо противоречит собственным Terms приложения (риск реклассификации как медизделие, MDR Rule 11). Не нашлось подтверждения исправления ни в одном документе.</p>
+    </div>
+    <div class="flagbox">
+      <span class="lbl">Две системы нумерации гейтов с одинаковыми именами — не путать</span>
+      <p><strong>Трек A</strong> (реально выполнялся, закрыт): «G1–G4» / «M1–M9» — это MVP-поставка (AI Gateway, Android 16, HUD-миграция, IAM). <strong>Трек B</strong> (формальная архитектура, <code class="mono">core/agent-engine-v2.3.1/</code> + <code class="mono">.claude/policies/fitness-recommendation-gates.json</code>): «G0–G11» — Safety/Eligibility/Prescription-движок рекомендаций, с 29 привязанными агентами-специалистами и правом вето у клинического гейта. <strong>Трек B ещё не начат</strong> — ни один отчёт не описывает закрытие ни одного его гейта.</p>
+    </div>
+    <div class="flagbox">
+      <span class="lbl">Два BLOCKER без подтверждённого закрытия в DECISION_LOG</span>
+      <p><strong>P1.G5</strong> (SPTR-каталог точной идентификации техники) — заблокирован с 22.08 на нехватке прямых источников для Technogym/Panatta (сайты производителей отдают HTTP 403); статус нигде дальше в логе не меняется. <strong>4 идентичных «молчащих» алерта</strong> (2× Stripe-сверка, delete-account, export-account, canary) из MVP1.G3 Step 10A round 8 — найдены, занесены в бэклог, нигде не показаны исправленными.</p>
+    </div>
+    <div class="flagbox">
+      <span class="lbl">Паттерн «закрыто → на самом деле нет» повторяется систематически</span>
+      <p>Не единичный случай: баг D-03 (залипание тапа) закрывался и переоткрывался минимум 4 раза подряд; Step 10A объявлялся закрытым и тут же корректировался («declaration above was premature»); N-01 (BLOCKER) оказался тем, что более ранний фикс F014 «терялся при рестарте». Практический вывод: статус «closed» в отдельном файле плана — не доказательство; доказательство — независимая ре-верификация, которую не все гейты прошли дважды.</p>
+    </div>
+  </section>
+
+  <section id="release">
+    <p class="kicker">Раздел 1 — Release-инфраструктура</p>
+    <h2>MVP1.G2 → MVP1.G4 <span class="pill done">закрыто</span></h2>
+    <p class="sec-note">AI Gateway, Android 16, IAM, kill switch, release guard. Девять шагов G4, каждый — многораундовое ревью GPT-PM с реальными найденными и исправленными дефектами.</p>
+    <ul class="check">
+      <li class="done"><div class="box"></div><div class="body"><div class="name">MVP1.G2 — Android 16 / targetSdk 36, релиз-готовность Play</div><div class="meta">targetSdk 35→36 поднят, релизная сборка верифицирована, регрессия edge-to-edge найдена и исправлена</div><div class="cite">core/DECISION_LOG.md:26543-27076 · reports/G2_ANDROID16_TARGETSDK36_2026-08-27.html</div></div></li>
+      <li class="done"><div class="box"></div><div class="body"><div class="name">MVP1.G3 — OBS-1, постоянные гарантии наблюдаемости (13 пунктов)</div><div class="meta">Все 13 пунктов закрыты, 0 PARTIAL; отдельно — runtime-monitor prerequisites (Step 8) и production-канарейка</div><div class="cite">core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md · reports/2026-08-28-mvp1-g3-closure.html</div></div></li>
+      <li class="done"><div class="box"></div><div class="body"><div class="name">MVP1.G4, шаги 1–9 — Vertex AI ревалидация → App Check → IAM (6 уровней) → деплой AI Gateway → E2E → observability → продуктовый E2E → kill switch → release guard</div><div class="meta">Все 9 шагов закрыты; Step 9 (release guard) — 7 раундов ревью, 14 MAJOR найдено и исправлено; вшит в <code class="mono">firebase.json predeploy</code></div><div class="cite">core/G4_STEP1…9_*.md · core/DECISION_LOG.md:34608-34609 · reports/MVP1_G4_CLOSURE_2026-08-29.html</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">Step 7 (продуктовый E2E) — раунд 2, финальный вердикт не найден напрямую</div><div class="meta">Косвенные доказательства закрытия сильные (программа пошла дальше без реоткрытия), но прямой цитаты «Step 7 CLOSED round 2» не найдено</div><div class="cite">INFERENCE — core/G4_STEP7_PRODUCT_E2E_2026-08-29.md:128-156</div></div></li>
+      <li class="crit"><div class="box"></div><div class="body"><div class="name">Пост-закрытие: реальная регрессия на устройстве, обнаружена уже после MVP1.G4</div><div class="meta">Живой обход S23 после закрытия гейтов — оказалось, тестировали 8-дневную устаревшую сборку; после установки актуальной нашли 2 реальных бага онбординга</div><div class="cite">core/DECISION_LOG.md:34645-34664</div></div></li>
+    </ul>
+    <p class="sec-note" style="margin-top:14px">Важно: закрытие этого трека = закрыта <strong>инженерная</strong> AI-релиз-инфраструктура. Это не означает общую релиз-готовность продукта — та упирается в клинический/регуляторный трек (раздел 6), который этот трек не затрагивает вообще.</p>
+  </section>
+
+  <section id="hud">
+    <p class="kicker">Раздел 2 — HUD/Figma-редизайн</p>
+    <h2>0 из 9 экранов сверены с правильным референсом</h2>
+    <p class="sec-note">Актуальный источник истины — <code class="mono">core/design/reference/full_handoff_v1/</code> (полный дизайн-хэндофф, извлечён целиком только сегодня, 30.08 — 10 дней провалялся на 80% неизвлечённым). Старая линия <code class="mono">docs/Redisign/*</code> (Figma Make <code class="mono">App.tsx</code>) — <strong>заменена</strong>, зафиксировано в <code class="mono">core/plans/HUD_MIGRATION_CENSUS_2026-08-29.md</code>.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Экран</th><th>Миграция панелей (GlassCard→HudPanel)</th><th>Сверено с полным референсом</th></tr></thead>
+        <tbody>
+          <tr><td>Home</td><td><span class="pill done">done</span></td><td><span class="pill open">нет</span></td></tr>
+          <tr><td>Workouts</td><td><span class="pill done">done</span> + Library default</td><td><span class="pill open">нет</span></td></tr>
+          <tr><td>Scan</td><td><span class="pill done">done</span> (стилизация)</td><td><span class="pill crit">true gap</span> — референса не было никогда</td></tr>
+          <tr><td>Session (плеер/таймер)</td><td>—</td><td><span class="pill crit">true gap</span> — плана нет вообще</td></tr>
+          <tr><td>Progress</td><td><span class="pill done">done</span></td><td><span class="pill open">нет</span></td></tr>
+          <tr><td>Profile</td><td><span class="pill done">done</span></td><td><span class="pill blocked">частично</span> — см. PROFILE_IDENTITY_HEADER ниже</td></tr>
+          <tr><td>Form Coach — фон/HUD</td><td><span class="pill done">done</span> (FORM_COACH_HUD_ALIGNMENT)</td><td>—</td></tr>
+          <tr><td>Form Coach — скелет-оверлей</td><td>—</td><td><span class="pill blocked">заблокировано</span> — см. раздел 3, ML_STRATEGY R1(b)</td></tr>
+          <tr><td>Onboarding (9 шагов)</td><td>—</td><td><span class="pill crit">true gap</span> — известно расхождение (10-шаговый PAR-Q+ vs 9-шаговый референс), сверка не начата</td></tr>
+          <tr><td>Backgrounds (10 фото)</td><td><span class="pill done">система есть</span></td><td><span class="pill open">не проверено</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul class="check" style="margin-top:14px">
+      <li class="open"><div class="box"></div><div class="body"><div class="name">PROFILE_IDENTITY_HEADER — одобрено GPT-PM, не реализовано</div><div class="meta">Аватар → круглый с инициалом; подпись → реальный прогресс вместо статичного «Анкета пройдена»; Premium-карточка — отдельно, вне этого гейта</div><div class="cite">core/DECISION_LOG.md:35513-35514</div></div></li>
+      <li class="blocked"><div class="box"></div><div class="body"><div class="name">Form Coach — цветной скелет-оверлей по правильности техники</div><div class="meta">Код есть, включён по умолчанию, но всегда белый — нет зелёного/красного по технике и пульсирующего индикатора сустава-ошибки. Честно реализовать нельзя, пока не пройден ML_STRATEGY R1(b) (раздел 3)</div><div class="cite">mobile/lib/features/form_check/form_check_page.dart:990-1094 · core/design/reference/full_handoff_v1/CLAUDE.md §8</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">Nav-иконки — REFERENCE_BLOCKED_DEFERRED</div><div class="meta">GPT-PM отказался переделывать вслепую 29.08; переоткрывается только если появится референс от оператора</div><div class="cite">core/DECISION_LOG.md:34959-34987</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">Open Decisions Register (44 пункта) — вероятно устарел</div><div class="meta">Датирован 08.08/12.08, до HUD Glass; ни один пункт не найден переоформленным под текущее GPT-PM-управление</div><div class="cite">docs/Redisign/OPEN_DECISIONS_REGISTER_v1.3.md</div></div></li>
+    </ul>
+  </section>
+
+  <section id="ml">
+    <p class="kicker">Раздел 3 — ML / распознавание оборудования</p>
+    <h2>Два независимых трека под одним названием</h2>
+    <div class="twocol">
+      <div class="card">
+        <p class="name" style="font-weight:700;margin-bottom:8px">Трек A — SPTR v4.4 / P0–P1 (каталог точной идентификации)</p>
+        <ul class="check">
+          <li class="done"><div class="box"></div><div class="body"><div class="name">P0 (7/7 гейтов)</div><div class="meta">Фундамент: baseline, provenance, права, снимок каталога, cloud-feasibility (вывод: OCR-текст, визуальный путь отложен), изоляция функций</div><div class="cite">core/equipment_identity/p0/* · reports/P0_PHASE_CLOSEOUT_2026-08-22.html</div></div></li>
+          <li class="done"><div class="box"></div><div class="body"><div class="name">P1.G1–G4 (схема, официальные адаптеры, WGER-обогащение)</div><div class="meta">74 кандидата в staging, 0 записей в продакшн</div><div class="cite">core/equipment_identity/p1/*</div></div></li>
+          <li class="crit"><div class="box"></div><div class="body"><div class="name">P1.G5 — сверка каталога — BLOCKED_ON_SOURCE_EVIDENCE</div><div class="meta">Не хватает прямых источников для Technogym и Panatta (сайты производителей — HTTP 403); статус не менялся с 22.08</div><div class="cite">core/DECISION_LOG.md (записи 22.08 «P1.G5 BLOCKED_ON_SOURCE_EVIDENCE»)</div></div></li>
+          <li class="open"><div class="box"></div><div class="body"><div class="name">P1.G6 и P2–P8 (OCR-identity, лицензированный корпус, fusion, промо в продакшн)</div><div class="meta">Не начаты; в проде — ноль изменений (нет ни одной экспортированной Cloud Function)</div><div class="cite">functions-equipment-identity/src/index.ts (пусто)</div></div></li>
+        </ul>
+      </div>
+      <div class="card">
+        <p class="name" style="font-weight:700;margin-bottom:8px">Трек B — ML_STRATEGY (валидность того, что реально в проде)</p>
+        <ul class="check">
+          <li class="crit"><div class="box"></div><div class="body"><div class="name">M0 — независимая held-out выборка с негативами</div><div class="meta">Блокирует все шаги ниже. Не начато</div><div class="cite">core/plans/ML_STRATEGY_2026-08-11.md §3.1</div></div></li>
+          <li class="open"><div class="box"></div><div class="body"><div class="name">E1–E4 — abstention/kill-gate для классификатора оборудования v1</div><div class="meta">v1 (10 классов, без abstention) — единственное, что в проде; независимо подтверждено уверенно-неправильным на реальных фото залов</div><div class="cite">mobile/assets/models/equipment_v1.tflite</div></div></li>
+          <li class="crit"><div class="box"></div><div class="body"><div class="name">R1(b) — переписать extract_mmfit_targets.py под продакшн-алгоритм</div><div class="meta">То, что реально в rep_counter.dart (2D, одна сторона, 4 фазы) — НИ РАЗУ не измерялось против датасета суставных углов MM-Fit (3D, обе стороны, 2 фазы — другой алгоритм). Отсюда SquatDepthClassifier.canFault=false</div><div class="cite">core/plans/ML_STRATEGY_2026-08-11.md §3.3 · mobile/lib/features/form_check/data/form_classifier.dart:141,212</div></div></li>
+        </ul>
+      </div>
+    </div>
+    <p class="sec-note" style="margin-top:12px"><strong>Сегодня в проде без изменений:</strong> классификатор оборудования — 10 классов без abstention, уверенно ошибается; форм-чек считает повторения алгоритмом, который никогда не сверялся с эталонными углами. Трек A не чинит ни то, ни другое — он строит параллельную инфраструктуру точной идентификации по бренду/модели.</p>
+  </section>
+
+  <section id="engine">
+    <p class="kicker">Раздел 4 — Recommendation Engine</p>
+    <h2>G0–G11 <span class="pill open">не начато</span></h2>
+    <p class="sec-note">Формальная архитектура из <code class="mono">.claude/policies/fitness-recommendation-gates.json</code> + <code class="mono">core/agent-engine-v2.3.1/</code>: 11 гейтов (G0 аудит репозитория → G0.5 контракт владения → G1 контракты данных → G2 единый Safety+Eligibility → G3 Home/AI-планировщик → G4 семантика персонализации → G5 эволюция данных тренировки → G6 Prescription/Load/Progression → G7 построение программы → G8 recovery/adherence → G9 границы AI → G10 контекст Scanner/Form-Check → G11 финальный аудит релиза), с 29 привязанными агентами-специалистами и правом вето у клинического гейта. <strong>Ни один отчёт не описывает закрытие ни одного из этих гейтов</strong> — вся реально выполненная работа (разделы 1–3) идёт под другой, случайно совпадающей нумерацией «G1–G4»/«M1–M9».</p>
+  </section>
+
+  <section id="backlog">
+    <p class="kicker">Раздел 5 — общий бэклог</p>
+    <h2>~90% закрыто, но настоящие сироты остались</h2>
+    <p class="sec-note">Из ~50 файлов планов (конец июля — середина августа) большинство — закрытая история. Ниже — то, что реально осталось открытым и нигде больше не отслеживается.</p>
+    <ul class="check">
+      <li class="open"><div class="box"></div><div class="body"><div class="name">H2 — ранжирование рекомендаций игнорирует оборудование/травмы пользователя</div><div class="cite">core/plans/FINAL_SCOPE_2026-08-16.md</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">H3/C8 — 1484 карточки каталога без текста Purpose; профессиональная построчная проверка не выполнена</div><div class="cite">core/audit/full_catalog_1887_2026-08-15/*</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">E1 — модель персонализации/ранжирования (E1.1–E1.6) — нет подтверждения завершения</div><div class="cite">core/BACKLOG_2026-07-31.md</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">PLAN_GYMS_AND_NEWS — чистое предложение, GO не дан, ни строчки кода</div><div class="cite">core/PLAN_GYMS_AND_NEWS_2026-08-01.md</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">Платный пакет анимаций упражнений — решение так и не принято/не исполнено</div><div class="cite">core/VIDEO_SOURCES_RESEARCH_2026-08-01.md</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">B2 — общая камера-сессия / консолидация QR — явно помечено «нужен отдельный GO», подхвата не найдено</div><div class="cite">core/plans/PLAN_DEVICE_DEFECTS_ROUND2_2026-07-30.md</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">O5/O6/O7/O10 (онбординг: график, тело, барьеры, генератор плана) — статус после 12.08 не подтверждён ни в одном документе</div><div class="cite">core/plans/RESUME_O_SERIES_2026-08-12.md</div></div></li>
+    </ul>
+  </section>
+
+  <section id="audit">
+    <p class="kicker">Раздел 6 — аудит безопасности / регуляторики</p>
+    <h2>Ремедиационная цепочка, статус на 16.08 — «не начата»</h2>
+    <p class="sec-note">Порядок фиксированный, зависимости жёсткие: <strong>G-A → G-D → G-C → G-B → G-E</strong>. Ни один из 7 агентов не нашёл упоминания этих гейтов после 16.08 — считать открытыми, пока не подтверждено обратное.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Гейт</th><th>Риск</th><th>Что чинит</th></tr></thead>
+        <tbody>
+          <tr><td><strong>G-A</strong> (P0, низкий)</td><td>низкий</td><td>Показать отказы, которые приложение уже генерирует, но не показывает: Retry-кнопка, копия про боль в груди, реальная цифра покрытия тегов безопасности</td></tr>
+          <tr><td><strong>G-D</strong> (P0, низкий)</td><td>низкий</td><td>Firestore-правила: исключить <code class="mono">usage</code>/<code class="mono">receipts</code> из клиентской записи, запретить ключ <code class="mono">health</code></td></tr>
+          <tr><td><strong>G-C</strong> (P0, низкий)</td><td>низкий</td><td>Подавить придуманные ИИ значения <code class="mono">uses[]</code>, если не совпадают с каталогом</td></tr>
+          <tr><td><strong>G-B</strong> (P0, средний)</td><td>средний — трогает слой безопасности</td><td>Провести каждую точку показа упражнений через существующий фильтр противопоказаний (6 мест, включая AI-тренера)</td></tr>
+          <tr><td><strong>G-E</strong> (P1, средний/высокий)</td><td>нужен ревьюер по силовой подготовке</td><td>Дать программе без спецификации реальный <code class="mono">ProgrammeSpec</code>; убрать алфавитный fallback</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sec-note" style="margin-top:14px">Плюс решения уровня оператора, не инженерные: D1 (клиническая оценка выборки в 360 строк), D2 (формулировка отказа при беременности), D3 (заявление «сканирует любой тренажёр» вводит в заблуждение — модель знает 10 из 69 классов), D4 (удалить/оставить неиспользуемые поля анкеты и незашифрованные поля здоровья).</p>
+  </section>
+
+  <section id="marketing">
+    <p class="kicker">Раздел 7 — справочно</p>
+    <h2>SPTR-маркетинг — отдельный трек, не инженерный роадмап</h2>
+    <p class="sec-note">~10 отчётов (18–19 августа): позиционирование, конкурентный анализ, синтетическая панель, сборка сайта, копирайт лендинга. Отдельный R&amp;D-поток по бренду/посадочной странице, не пересекается с продуктовыми гейтами выше. Плюс ~15 отчётов аудита/governance-механики (сверка решений, проверка цитат, Rosetta-governance) — это проверка самого процесса ревью, не поставка продукта.</p>
+  </section>
+
+  <section id="next">
+    <p class="kicker">Раздел 8 — что дальше</p>
+    <h2>Рекомендуемый порядок по зависимостям</h2>
+    <ul class="check">
+      <li class="crit"><div class="box"></div><div class="body"><div class="name">1. Решить судьбу вердикта NOT_RELEASE_READY / Gate J DO NOT SHIP</div><div class="meta">Операторский уровень: без этого «релиз-готовность» не может считаться достигнутой независимо от того, что закрыто в разделе 1</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">2. G-A → G-D → G-C → G-B → G-E (раздел 6) — фиксированный порядок, первые три низкого риска</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">3. PROFILE_IDENTITY_HEADER — единственный полностью разблокированный, уже одобренный HUD-гейт</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">4. M0 (held-out выборка) → разблокирует и E1–E4 (оборудование), и даёт путь к R1(b) (форм-чек)</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">5. Сверить Home/Workouts/Progress с новым полным референсом (дёшево — уже есть все скриншоты)</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">6. Решить P1.G5 — либо добыть источники по Technogym/Panatta, либо получить добро GPT-PM/оператора на меньший пул</div></div></li>
+    </ul>
+  </section>
+
+  <p class="foot-note">Собрано 7 параллельными исследовательскими агентами (общий охват — все .md/.html файлы репозитория) 2026-08-30, синтез выполнен вручную с явной пометкой FACT/INFERENCE на уровне агентов. Раздел 6 (аудит) — снимок на 16.08, возможно частично устарел; явно помечено. Полные текстовые отчёты каждого агента не публикуются отдельно — этот документ является их синтезом.</p>
+  <div class="legend">
+    <span><i class="box" style="background:var(--good)"></i> закрыто и проверено</span>
+    <span><i class="box" style="border:2px solid var(--text-muted)"></i> открыто</span>
+    <span><i class="box" style="background:var(--warn)"></i> заблокировано зависимостью</span>
+    <span><i class="box" style="background:var(--crit)"></i> критично / без движения долго</span>
+  </div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
