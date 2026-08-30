@@ -37073,3 +37073,73 @@ full mapping table plus this scope decision, RU published as an artifact
 record.
 
 Next: implementing Phase 1 (the five GO'd screens) as its own gate.
+
+## 2026-08-30 — Onboarding Phase 1: implemented, per GPT-PM's confirmed plan-with-boundaries
+
+Following the Gate 4 mapping and its Phase-1 GO (previous entry), implemented the five
+in-scope screens' visual reconciliation. No new state, no interaction redesign, no touch to any
+frozen or out-of-scope surface.
+
+**`inputs.dart`**:
+- `ChoiceCard` restyled in place (radius 18->26, padding 16/14->18/16, title 13.5px->15px via
+  `.copyWith(fontSize: 15)` on the existing `HudType.rowTitle(t, strong: true)` -- no new literal
+  style). Confirmed before touching it that `ChoiceCard` has exactly two call sites
+  (`step_goal_and_level.dart`, `step_equipment.dart`), both fully in Phase-1 scope, zero frozen-
+  screen usage -- safe to restyle globally.
+- Added `ChoiceCard.leading` (`Widget?`), used in place of `icon` when set -- backs the Level
+  screen's numeral dial without disturbing Goal/Equipment's existing `icon` cards.
+- Added `OnbRefTitle`, a NEW widget (not a restyle of `StepTitle`), built on
+  `HudType.bigNumber(t, size: 32)` -- the reference's own `font:400 32px/1.08` heading recipe,
+  already confirmed byte-matched earlier in this gate. `StepTitle` itself is untouched anywhere;
+  `grep -c "StepTitle("` before this change showed every one of the 11 onboarding step files uses
+  it, including all four frozen safety screens, so restyling it in place would have silently
+  reskinned surfaces this gate may not touch. `OnbRefTitle` is wired at exactly the four in-scope
+  title call sites below.
+- Added `TierDial`, a 52x52 filled-circle numeral badge (`HudPanel`/plain `BoxDecoration`
+  `shape: BoxShape.circle`, not `HudRing` -- `HudRing` draws a stroked progress arc against four
+  fixed size presets, none of which is "just fill the circle", confirmed by reading
+  `hud_surface.dart`/`hud_ring` before choosing). Purely decorative (`ExcludeSemantics`); the
+  outer `ChoiceCard`'s `Semantics(button:, selected:)` already speaks for the row.
+
+**`step_goal_and_level.dart`**: both `StepTitle` calls (Goal, Level) -> `OnbRefTitle`. Tier
+`ChoiceCard`s get `leading: TierDial(number: i + 1, ...)` for all 4 REAL tiers (never, beginner,
+intermediate, advanced) -- not truncated to the reference's own example count of 3
+(`hint-placeholder-count="3"` in the handoff is a placeholder-count attribute, not a data
+constraint). `currentExercises`/`frequencyPerWeek`/secondary-goal chips/sport field: untouched.
+
+**`step_schedule.dart`**: single `StepTitle` -> `OnbRefTitle`. All three controls (`daysPerWeek`,
+`sessionMinutes`, `preferredWeekdays` chips) unchanged in data/provider terms. **No reminder
+toggle added** (no backing state exists) and **no 158px day-count circle added** -- GPT-PM's own
+plan confirmation marked the circle optional, and flagged the risk of it competing visually with
+the three real controls; omitted for simplicity given it added no functional value this gate
+needed to ship. **`HudChip` left untouched** -- confirmed via `grep -rl "HudChip(" lib/` that it is
+shared across `form_check_page.dart`, `workouts_page.dart` and `inputs.dart` (broad blast radius
+beyond onboarding), and reading its `build()` showed it already draws from `t.chip`/
+`t.accentChipGradient` -- tokens already matching the reference's own chip recipe. GPT-PM's
+"weekday chips restyle GO" is satisfied by the existing token-driven implementation; no call-site
+change was needed or made.
+
+**`step_personal.dart`**: overall `StepTitle` untouched (screen also carries out-of-scope birth
+year, gender, target weight, activity level -- all untouched, all still frozen). ONLY the height
+(`onb.heightRuler`) and weight (`onb.weightRuler`) `FieldLabel`+`MeasureRuler` pairs wrapped each
+in a bare `HudPanel` (`t.panel` recipe, the byte-matched glass-card chrome). Confirmed by reading
+`MeasureRuler`'s `build()` before wrapping: it lays out via `LayoutBuilder`/`constraints.maxWidth`,
+so it has no fixed-width assumption a wrapping panel's padding could break. `MeasureRuler`'s drag
+math, snapping, ticks, values and `Key`s: unchanged. `BmiCard`/`WeightDeltaCard`: unchanged, same
+position.
+
+**`step_equipment.dart`**: single `StepTitle` -> `OnbRefTitle`. The `ChoiceCard` restyle above
+automatically carries to the `onb.place.*` cards -- GPT-PM's own "allowed consistency improvement"
+(Goal/Level/Equipment now share one visual language for the same interaction pattern). Gear
+`MultiChoiceChips`, free-text home-equipment field, conditional `onb.gymId` field: untouched.
+
+**Verification**: `flutter analyze` (mobile package): no issues in any touched file (pre-existing
+warnings elsewhere, unrelated). Full `test/features/onboarding/` suite (132 tests, includes
+`step_goal_and_level_test.dart`, `step_equipment_test.dart`, `training_schedule_test.dart`,
+`equipment_access_test.dart`, `measure_ruler_test.dart`, `birth_year_and_injury_input_test.dart`,
+`onboarding_shell_test.dart`, `step_health_test.dart`, `barriers_test.dart`, `body_zones_test.dart`,
+`glass_text_field_test.dart`, `questionnaire_notifier_test.dart`, `step_answered_test.dart`): all
+132 pass, confirming no frozen/out-of-scope screen or the underlying models regressed.
+
+Next: GPT-PM review round(s) via `review.js` against this plan as the scope note, then push once
+`VERDICT: APPROVE`, then the Phase-1 house-format report.

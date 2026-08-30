@@ -43,7 +43,7 @@ class StepEquipment extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        StepTitle(
+        OnbRefTitle(
           title: l10n.onbPlaceTitle,
           subtitle: l10n.onbPlaceSubtitle,
         ),

@@ -40,6 +40,47 @@ class StepTitle extends StatelessWidget {
   }
 }
 
+/// The reference handoff's own onboarding heading — `font:400 32px/1.08`,
+/// the same weight-400-and-glow register [HudType.bigNumber] already gives a
+/// large metric, reused here rather than a one-off literal because it is
+/// token-for-token the recipe the reference's own CSS uses for this text.
+///
+/// A SEPARATE widget from [StepTitle], not a restyle of it, on purpose:
+/// [StepTitle] renders every onboarding step's heading, including the four
+/// frozen ones (body/healthFlags/screening/preview) and the untouched ones
+/// (barriers/lifestyle) -- restyling it in place would silently reskin
+/// screens the redesign gate is explicitly forbidden from touching. This is
+/// used only at the exact four call sites GPT-PM's Phase-1 GO covers: Goal,
+/// Level, Schedule, Equipment (2026-08-30, Onboarding Phase 1 gate).
+class OnbRefTitle extends StatelessWidget {
+  const OnbRefTitle({
+    super.key,
+    required this.title,
+    this.subtitle,
+  });
+
+  final String title;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final HudTokens t = context.hud;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: HudType.bigNumber(t, size: 32).copyWith(height: 1.08),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 8),
+          Text(subtitle!, style: HudType.body(t, size: 13).overPhoto(t)),
+        ],
+      ],
+    );
+  }
+}
+
 /// Field-level label, used above an input.
 class FieldLabel extends StatelessWidget {
   const FieldLabel(this.label, {super.key});
@@ -141,6 +182,7 @@ class ChoiceCard extends StatelessWidget {
     required this.onTap,
     this.subtitle,
     this.icon,
+    this.leading,
   });
 
   final String title;
@@ -148,6 +190,12 @@ class ChoiceCard extends StatelessWidget {
   final IconData? icon;
   final bool selected;
   final VoidCallback onTap;
+
+  /// Replaces the [icon] slot when set -- the reference handoff's Level cards
+  /// carry a 52x52 numeral dial rather than an icon (`full_handoff_v1/...dc.html`,
+  /// L70-88). `icon` stays for Goal/Equipment's existing icon cards; a card
+  /// never needs both.
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context) {
@@ -176,8 +224,8 @@ class ChoiceCard extends StatelessWidget {
               overlay: selected ? t.accentChipGradient : null,
               border: selected ? t.accentChipBorder : null,
               topHighlight: selected ? t.accentChipTopHighlight : null,
-              borderRadius: BorderRadius.circular(18),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              borderRadius: BorderRadius.circular(26),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
               // No `ExcludeSemantics` here: the outer `Semantics(button:
               // true, selected: ...)` carries no `label` of its own, so
               // excluding the child would announce a selectable button with
@@ -186,7 +234,10 @@ class ChoiceCard extends StatelessWidget {
               // exactly what this row shows.
               child: Row(
                 children: [
-                  if (icon != null) ...[
+                  if (leading != null) ...[
+                    leading!,
+                    const SizedBox(width: 14),
+                  ] else if (icon != null) ...[
                     Icon(icon, size: 22, color: ink),
                     const SizedBox(width: 14),
                   ],
@@ -199,7 +250,10 @@ class ChoiceCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(title, style: HudType.rowTitle(t, strong: true)),
+                        Text(
+                          title,
+                          style: HudType.rowTitle(t, strong: true).copyWith(fontSize: 15),
+                        ),
                         if (subtitle != null) ...[
                           const SizedBox(height: 2),
                           Text(subtitle!, style: HudType.body(t, size: 12)),
@@ -221,6 +275,54 @@ class ChoiceCard extends StatelessWidget {
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The 52x52 numeral dial the reference gives each Level card in place of an
+/// icon (`full_handoff_v1/...dc.html`, `.dial` rule, L70-88) -- a filled disc
+/// carrying the tier's ordinal.
+///
+/// A plain circle needs [HudPanel]/[HudSurface] with `radius` set to half the
+/// box side, not [HudRing]: `HudRing` draws a stroked progress arc against a
+/// fixed set of size/geometry presets (Home/Session/Progress/Scan), none of
+/// which fits a 52px filled numeral badge, and it has no "just fill the
+/// circle" mode.
+///
+/// Purely decorative next to the tier's own title text, so it carries no
+/// semantics of its own -- [ChoiceCard]'s outer `Semantics(button:, selected:)`
+/// already speaks for the row.
+class TierDial extends StatelessWidget {
+  const TierDial({super.key, required this.number, required this.selected});
+
+  final int number;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final HudTokens t = context.hud;
+    return ExcludeSemantics(
+      child: Container(
+        width: 52,
+        height: 52,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: selected ? t.accent : t.subPanel.fill,
+          border: Border.all(
+            color: selected ? t.accent : t.subPanel.innerBorder,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          '$number',
+          style: HudType.bigNumber(
+            t,
+            size: 22,
+            color: selected ? t.onAccent : t.textPrimary,
           ),
         ),
       ),

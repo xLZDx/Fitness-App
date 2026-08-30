@@ -55,7 +55,7 @@ class StepSchedule extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        StepTitle(
+        OnbRefTitle(
           title: l10n.onbScheduleTitle,
           subtitle: l10n.onbScheduleSubtitle,
         ),

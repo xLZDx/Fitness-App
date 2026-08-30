@@ -57,7 +57,7 @@ class StepGoalAndLevel extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        StepTitle(
+        OnbRefTitle(
           title: l10n.onbGoalTitle,
           subtitle: l10n.onbGoalSubtitle,
         ),
@@ -74,16 +74,17 @@ class StepGoalAndLevel extends ConsumerWidget {
           const SizedBox(height: 10),
         ],
         const SizedBox(height: 14),
-        StepTitle(
+        OnbRefTitle(
           title: l10n.onbLevelTitle,
           subtitle: l10n.onbLevelSubtitle,
         ),
         const SizedBox(height: 14),
-        for (final t in _tiers) ...[
+        for (final (i, t) in _tiers.indexed) ...[
           ChoiceCard(
             key: Key('onb.tier.${t.name}'),
             title: _tierTitle(l10n, t),
             subtitle: _tierSubtitle(l10n, t),
+            leading: TierDial(number: i + 1, selected: level.tier == t),
             selected: level.tier == t,
             onTap: () => notifier.updateLevel((s) => s.copyWith(tier: t)),
           ),

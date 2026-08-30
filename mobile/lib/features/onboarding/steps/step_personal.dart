@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../core/theme/hud_tokens.dart';
 import '../../../core/theme/hud_typography.dart';
+import '../../../shared/widgets/hud/hud_surface.dart';
 import '../../profile/data/profile_models.dart';
 import '../state/questionnaire_notifier.dart';
 import '../widgets/body_metric_cards.dart';
@@ -75,28 +76,49 @@ class StepPersonal extends ConsumerWidget {
         // produce 1750 cm, cannot be left half-typed, and shows the
         // neighbouring values so someone unsure between 72 and 73 sees both.
         // A number field's failure modes are all silent.
-        FieldLabel(l10n.onbHeightCm),
-        MeasureRuler(
-          key: const Key('onb.heightRuler'),
-          value: personal.heightCm?.toDouble(),
-          min: 120,
-          max: 220,
-          unit: l10n.onbUnitCm,
-          onChanged: (v) => notifier.updatePersonal(
-            (p) => p.copyWith(heightCm: v.round()),
+        // Chrome only: the reference's slider cards wrap each measure in a
+        // glass panel (`full_handoff_v1/...dc.html`, L122-148). `MeasureRuler`
+        // itself -- drag math, snapping, ticks, values, keys -- is unchanged;
+        // only the height/weight rows gain this wrapper, per GPT-PM's
+        // Phase-1 boundary ("MeasureRuler behavior... frozen"). Birth year
+        // and target weight stay bare, out of this gate's scope.
+        HudPanel(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              FieldLabel(l10n.onbHeightCm),
+              MeasureRuler(
+                key: const Key('onb.heightRuler'),
+                value: personal.heightCm?.toDouble(),
+                min: 120,
+                max: 220,
+                unit: l10n.onbUnitCm,
+                onChanged: (v) => notifier.updatePersonal(
+                  (p) => p.copyWith(heightCm: v.round()),
+                ),
+              ),
+            ],
           ),
         ),
-        FieldLabel(l10n.onbWeightCurrent),
-        MeasureRuler(
-          key: const Key('onb.weightRuler'),
-          value: personal.weightCurrentKg,
-          min: 35,
-          max: 200,
-          step: 0.5,
-          majorEvery: 10,
-          unit: l10n.onbUnitKg,
-          onChanged: (v) => notifier.updatePersonal(
-            (p) => p.copyWith(weightCurrentKg: v),
+        const SizedBox(height: 12),
+        HudPanel(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              FieldLabel(l10n.onbWeightCurrent),
+              MeasureRuler(
+                key: const Key('onb.weightRuler'),
+                value: personal.weightCurrentKg,
+                min: 35,
+                max: 200,
+                step: 0.5,
+                majorEvery: 10,
+                unit: l10n.onbUnitKg,
+                onChanged: (v) => notifier.updatePersonal(
+                  (p) => p.copyWith(weightCurrentKg: v),
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 12),
