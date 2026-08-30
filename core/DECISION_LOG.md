@@ -35580,3 +35580,110 @@ anywhere:**
 
 No source code touched. Both report files conformed (`report_conform.py --check` clean), RU
 published as an artifact, both to be committed together with this entry.
+
+## 2026-08-30 ~11:00 UTC -- REMEDIATION: GPT-PM round-1 review of `75211dd`+`b3fa656`
+## (`--base origin/master`) returned 6 MAJOR + 1 MINOR, all confirmed; batch-fixed in one pass
+
+GPT-PM review (`review.js`, `replyId cb5ed6f2`, `reviewInputHash f5cc102a...`, `VERDICT: MAJOR`,
+`PUSH: HOLD until re-review`) read the two entries above cold and found six real defects, not
+cosmetic nits. Per the operator's own standing "verify before claiming" instruction and CLAUDE.md
+§17 (one sweep, batch remediation, then a single verification round -- not fix-one/re-review/
+repeat), all six plus the one MINOR are addressed together here before the next `review.js` round.
+
+**1. MAJOR -- the "complete/unfiltered" mp4 clips were silently gitignored, never actually
+committed.** `git ls-files core/design/reference/full_handoff_v1/uploads/` before this fix showed
+only the 10 `.webp` files -- `clip2-1786933639870-ww0q.mp4` and `ref-indicators.mp4` existed on
+disk (verified: both present, 2.5MB/2.3MB) but were silently excluded by `.gitignore:13`'s
+blanket `*.mp4` rule (`git check-ignore -v` confirmed the exact matching line). Both the
+DECISION_LOG entry above ("10 background photos + 2 reference clips") and 75211dd's own commit
+message ("reference clips") claimed they were included -- neither claim was checked against the
+actual tracked file list before being written. **Fixed:** added a scoped negation exception,
+`!core/design/reference/full_handoff_v1/uploads/*.mp4`, directly under the blanket rule in
+`.gitignore` (with a comment explaining why), and `git add -f`'d both files -- staged for this
+commit alongside this entry. `README_LOCAL.md` needed no correction here; it already listed both
+clips by name (the DECISION_LOG summary and commit message were the sources that were wrong, not
+the file inventory).
+
+**2. MAJOR -- DECISION_LOG claimed the master-roadmap reports were "committed together with this
+entry," but they landed in a separate commit.** The archive-extraction entry's own text
+(75211dd) is one commit; the master-roadmap entry immediately below it says the reports are "both
+to be committed together with this entry" -- true of *that* entry's own commit (`b3fa656`,
+confirmed via `git show --stat b3fa656`: both `.ru.html`/`.html` files are in it), but GPT-PM's
+round-1 review ran `--base origin/master`, spanning both unpushed commits, and the reply says the
+reports were "completely absent from the review diff" it was shown. Two possible causes, not yet
+distinguished: (a) `review.js`'s diff-size handling silently drops content past an internal budget
+in a way its own `truncated:false` flag doesn't reflect (the 75211dd diff carries ~6.4MB of binary
+uploads before b3fa656's ~800 lines of HTML), or (b) a genuine tool-side gap. Not chasing further
+in this remediation batch per the operator's "verify before claiming" standard for THIS repo's own
+claims -- flagging it here as an open question about `review.js`'s own diff coverage, not
+asserting either cause as fact. **What is fixed:** the wording itself. Both DECISION_LOG entries
+correctly describe what each commit contains; the ambiguity was only in a reader inferring "this
+entry" spans two commits when it does not. No content correction needed, since `b3fa656`
+genuinely does contain both report files -- confirmed again just now via `git show --stat`.
+
+**3. MAJOR -- `PROFILE_IDENTITY_HEADER` is still recorded as GPT-PM-authorized even though the
+newly-extracted reference contradicts the premise that authorized it.** Verified directly (not
+just taking GPT-PM's word): `Fitness Glass Phone v1 - Light.dc.html` and `- Sunset.dc.html` both
+contain the literal strings "Profile complete" and "At a glance" -- i.e. the reference's Profile
+header is built around a completion-state headline and an at-a-glance stats block, not the
+circular-initial-avatar + progress-subtitle design that the earlier `PROFILE_IDENTITY_HEADER` GO
+was based on (itself derived from the narrower, admittedly-incomplete video-frame prototype set).
+**Status change:** `PROFILE_IDENTITY_HEADER` moves from `AUTHORIZED` to `HOLD /
+SUPERSEDED_BY_FULL_HANDOFF_RECONCILIATION`. Do not implement the earlier circular-initial design
+GO. Before any Profile-header code change, reconcile against `Fitness Glass Phone v1 -
+{Light,Sunset}.dc.html`'s actual Profile section and get a fresh GPT-PM read on the reconciled
+design, not the pre-archive one.
+
+**4. MAJOR -- the Home week-strip's design-parity closure (`437338f`) is now contradicted by the
+correct-fidelity reference, with no note connecting the two.** Verified directly, not just taking
+GPT-PM's word: opened `screenshots/dark/01-home.png` from this same archive and visually confirmed
+each of the 7 day markers under the week strip (Mon..Sun) render as small circular dots, not
+squares. `437338f`'s own DECISION_LOG entry documents it as a real, GPT-PM-reviewed fix building a
+filled SQUARE tile against the older `p_162.jpg` reference -- that work was correct against the
+evidence available at the time and stays credited as such; it is the CONCLUSION ("design-parity:
+done") that no longer holds now that a higher-fidelity, contradicting reference exists. **Status
+change:** `437338f`'s design-parity conclusion moves from `CLOSED` to `REFERENCE_SUPERSEDED /
+REOPENED`. No code reverted in this remediation -- reconciling square-vs-dot against the full
+archive (and deciding whether to revert to dots or keep squares deliberately, e.g. for a11y touch
+target reasons) is separate follow-up work, not decided here.
+
+**5. MAJOR -- nav icons were still marked `REFERENCE_BLOCKED_DEFERRED` in the very archive that
+supplies the missing reference.** Verified directly: grepped both main phone-spec `.dc.html` files
+and confirmed all five bottom-nav icon roles are named explicitly -- `grid_view`, `fitness_center`,
+`radio_button_checked`, `north_east`, `person` (Home/Workouts/Scan/Progress/Profile). The prior
+`REFERENCE_BLOCKED_DEFERRED` ruling (2026-08-29) was correct at the time -- there genuinely was no
+reference for that asset -- but nothing updated it once this archive landed with one.
+`README_LOCAL.md`'s caveat section repeated the stale "pending an operator reference" line even
+though it was written the same day this exact reference arrived; corrected in that file directly
+(see its own 2026-08-30 correction note). **Status change:** nav icons move from
+`REFERENCE_BLOCKED_DEFERRED` to `REFERENCE_AVAILABLE / REOPENED`. Follow-up work (not done here):
+map the five named roles to equivalents in the product's own icon set -- the handoff's own
+instruction is to swap Material Symbols Sharp for the product's icons, not copy them verbatim.
+
+**6. MAJOR -- the hook-reversal claim (`EXCLUDED_REPO_ROOTS` restored to `[]`) had no fresh
+file:line citation, only a paraphrase.** Re-read `C:\Users\koros\.claude\hooks\gpt_review_gate.py`
+just now, fresh, not from memory: line 153 reads `EXCLUDED_REPO_ROOTS = []`; line 388 is the branch
+that consumes it, `if is_push and any(is_under(repo_root, root) for root in EXCLUDED_REPO_ROOTS):`
+-- with an empty list, `any()` over nothing is `False`, so this branch cannot fire and Fitness_App
+pushes flow into the normal final-receipt check below it, same as every other non-excluded repo.
+This citation is the evidence the original entry was missing; the underlying claim (hook reverted)
+was and remains true, now with the file:line to prove it rather than assert it.
+
+**MINOR -- `README_LOCAL.md`'s "open directly" guidance omitted a real dependency.** Fixed
+directly in that file: the overview/comparison `.dc.html` files load `_ds/modernist-.../styles.css`
++ `_ds_bundle.js`, not included in this archive, so opening those specific files renders with
+missing design-system assets. Added a caveat naming which files are self-contained and reliable
+for parity work instead (the two main phone-spec files plus the Form Coach spec).
+
+**What was NOT reopened, per §17's "closed gate" boundary:** `FORM_COACH_HUD_ALIGNMENT`'s actual
+closure and the week-strip's SQUARE implementation itself are unchanged in this remediation --
+only their governance *labels* moved to reflect that a stronger, contradicting reference now
+exists. Implementing either reconciliation is separate, future-gated work, not folded into this
+documentation-and-governance fix.
+
+Files touched this window: `.gitignore` (mp4 exception), the two previously-missing `.mp4`
+uploads (now tracked), `core/design/reference/full_handoff_v1/README_LOCAL.md` (nav-icon +
+_ds/-dependency corrections), and this entry. No product source code touched. Next: send this
+remediation back to GPT-PM (`review.js --base origin/master --round 2`) for the verification-only
+round §17 specifies -- confirming the six MAJORs are actually addressed and checking only for
+regressions this remediation itself could have introduced, not reopening unrelated scope.

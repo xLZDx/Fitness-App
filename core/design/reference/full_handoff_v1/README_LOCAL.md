@@ -73,11 +73,24 @@ Everything from `design_handoff_fitness_hud/` in the zip, unfiltered:
   overlay; the spec constrains the overlay's **visual treatment**, not the
   detection itself.
 - Icons in the reference are Material Symbols Sharp; the handoff's own
-  README says to swap for the product's own icon set, not copy verbatim —
-  consistent with this repo's existing `REFERENCE_BLOCKED_DEFERRED` ruling
-  on nav icons (`core/DECISION_LOG.md`, 2026-08-29) pending an operator
-  reference for that specific asset.
+  README says to swap for the product's own icon set, not copy verbatim.
+  **Correction, 2026-08-30 (GPT-PM review caught this the same day it was
+  written):** the line that used to stand here said this was "pending an
+  operator reference for that specific asset" — wrong the moment this
+  archive landed, since both main phone-spec `.dc.html` files name the five
+  bottom-nav roles explicitly (`grid_view`, `fitness_center`,
+  `radio_button_checked`, `north_east`, `person`). The nav-icon question is
+  no longer blocked on a missing reference; see `core/DECISION_LOG.md`,
+  2026-08-30 remediation entry, for the reopened ruling.
 - Not yet reconciled against current code as of this commit — that
   comparison (pose-overlay visual treatment vs. `pose_silhouette.dart`, and
   Scan/Session/Progress screens vs. their current implementations) is
   separate follow-up work, not done in this commit.
+- The overview/comparison `.dc.html` files (e.g. `Fitness All Screens -
+  Dark.dc.html`) load `_ds/modernist-.../styles.css` and `_ds_bundle.js`,
+  which are NOT included in this archive — opening those specific files
+  directly will render with missing design-system assets/styling. The two
+  main per-screen phone-spec files (`Fitness Glass Phone v1 - Light.dc.html`
+  / `- Sunset.dc.html`) and `Fitness Form Coach Phone.dc.html` are
+  self-contained (only `support.js` + `uploads/` alongside) and are the
+  reliable files for parity work. (MINOR finding, GPT-PM review, 2026-08-30.)

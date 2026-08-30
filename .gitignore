@@ -12,6 +12,10 @@ logs/
 # Recordings, screenshots, generated images (keep checked-in only what we curate)
 *.mp4
 *.mov
+# Exception: the two curated reference clips inside the full design handoff
+# archive are small (< 3MB each), deliberately kept, and referenced by the
+# handoff's own Form Coach spec -- see README_LOCAL.md in that directory.
+!core/design/reference/full_handoff_v1/uploads/*.mp4
 docs/rec_frames/
 docs/v3_*.png
 docs/01_*.png
