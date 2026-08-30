@@ -37143,3 +37143,12 @@ warnings elsewhere, unrelated). Full `test/features/onboarding/` suite (132 test
 
 Next: GPT-PM review round(s) via `review.js` against this plan as the scope note, then push once
 `VERDICT: APPROVE`, then the Phase-1 house-format report.
+
+## 2026-08-30 — Gate 5 report published
+
+House-format report for the Phase 1 implementation (previous entry) written, provenance-conformed,
+RU published as an artifact (`https://claude.ai/code/artifact/64a90280-9956-466f-a120-ebe786986775`),
+EN the durable in-repo record: `reports/REDESIGN_GATE5_ONBOARDING_PHASE1_2026-08-30.{ru,}.html`.
+GPT-PM review round (commit `cfe414c`): `VERDICT: APPROVE`, zero findings, `PUSH: AUTHORIZED`,
+pushed same commit. PM mode is ON -- per §18, continuing to the next gate in this same session
+rather than stopping after this report.

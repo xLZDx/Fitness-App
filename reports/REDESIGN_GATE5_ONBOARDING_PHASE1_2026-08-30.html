@@ -1,0 +1,235 @@
+<!doctype html>
+<title>Redesign Gate 5: Onboarding Phase 1</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#e2e7ec;
+    --text:#171b21; --text-muted:#4d5a68;
+    --accent:#2b5797; --accent-strong:#1c3c6b; --accent-soft:#dde7f3;
+    --crit:#b3261e; --crit-soft:#fbe6e4;
+    --warn:#a05a00; --warn-soft:#f8ead2;
+    --good:#1f7a4d; --good-soft:#e0f1e7;
+    --border:rgba(23,27,33,.14);
+    --code-bg:#0e1116; --code-text:#dfe6ea;
+    --shadow:0 1px 2px rgba(23,27,33,.06),0 8px 24px rgba(23,27,33,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+      --text:#e7ecf1; --text-muted:#9aa8b6;
+      --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+      --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+      --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+      --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+      --border:rgba(231,237,239,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+    --text:#e7ecf1; --text-muted:#9aa8b6;
+    --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+    --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+    --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+    --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+    --border:rgba(231,237,239,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:48px 22px 100px}
+
+  header{padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);margin:0 0 12px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.14;margin:0 0 10px;text-wrap:balance}
+  .dek{font-size:16px;color:var(--text-muted);max-width:72ch;margin:0}
+
+  section{margin-top:44px;scroll-margin-top:20px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kicker::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;flex:none}
+  h2{font-family:"Archivo",sans-serif;font-weight:700;font-size:20px;margin:0 0 6px}
+  .sec-note{color:var(--text-muted);font-size:13.5px;margin:0 0 16px;max-width:72ch}
+  p{margin:0 0 12px;max-width:72ch}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:10px}
+
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+  .sha{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:.86em}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+  .pill.good{background:var(--good-soft);color:var(--good)}
+  .pill.warn{background:var(--warn-soft);color:var(--warn)}
+  .pill.crit{background:var(--crit-soft);color:var(--crit)}
+  .pill.muted{background:var(--surface-2);color:var(--text-muted)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 11px;vertical-align:top;border-bottom:1px solid var(--border)}
+  thead th{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr.frozen td{background:var(--crit-soft)}
+  tbody tr.go td{background:var(--good-soft)}
+
+  ul.decisions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ul.decisions li{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px}
+  ul.decisions .title{font-weight:700;font-size:14.5px;margin-bottom:4px}
+  ul.decisions .body{color:var(--text);font-size:13.5px}
+  ul.decisions .body p{margin:0 0 6px}
+  ul.decisions li.frozen{border-left-color:var(--crit)}
+  ul.decisions li.go{border-left-color:var(--good)}
+
+  .foot-note{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · autonomous PM Bridge session · 2026-08-30</p>
+    <h1>Gate 5: Onboarding Phase 1 — implemented, verified, pushed</h1>
+    <p class="dek">Five screens (Goal, Level, Schedule, Equipment, height/weight) visually reconciled with the reference, strictly inside the boundary GPT-PM approved at Gate 4. No change to state, interaction, or any frozen surface. 132/132 tests pass, GPT-PM: <strong>APPROVE</strong>, pushed to <code class="mono">master</code>.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ cfe414c</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+  <section id="what">
+    <p class="kicker">What shipped</p>
+    <h2>Five surfaces, five targeted changes</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>File</th><th>Change</th><th>Left untouched</th></tr></thead>
+        <tbody>
+          <tr class="go"><td><code class="mono">inputs.dart</code></td><td>ChoiceCard: radius 18→26, padding 16/14→18/16, title 13.5→15px. New <code class="mono">OnbRefTitle</code> (not a StepTitle restyle). New <code class="mono">TierDial</code> — a 52×52 numeral disc.</td><td>ChoiceCard's semantics (Semantics(button, selected)), StepTitle itself — used by all 11 step files, including the 4 frozen ones</td></tr>
+          <tr class="go"><td><code class="mono">step_goal_and_level.dart</code></td><td>2 titles → OnbRefTitle. All 4 real tier cards get a TierDial (1–4, not truncated to the reference's 3)</td><td>currentExercises, frequencyPerWeek, secondary goals, sport field</td></tr>
+          <tr class="go"><td><code class="mono">step_schedule.dart</code></td><td>1 title → OnbRefTitle</td><td>daysPerWeek/sessionMinutes/preferredWeekdays — no data changes; day-count circle and reminder toggle not added (no backing state existed; GPT-PM flagged both as optional)</td></tr>
+          <tr class="go"><td><code class="mono">step_equipment.dart</code></td><td>1 title → OnbRefTitle; ChoiceCard restyle inherited automatically</td><td>Gear chips, free text, gymId field</td></tr>
+          <tr class="go"><td><code class="mono">step_personal.dart</code></td><td>Height and weight — each FieldLabel+MeasureRuler pair wrapped in HudPanel (glass chrome, the same t.panel recipe)</td><td>MeasureRuler's internal logic (drag, snapping, ticks, values, Key), birth year, gender, target weight, activityLevel, BmiCard/WeightDeltaCard</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="why-separate-title">
+    <p class="kicker">The key engineering call</p>
+    <h2>A new title widget, not a restyle of the old one</h2>
+    <p><code class="mono">StepTitle</code> is used across all 11 onboarding step files — confirmed by grep before any code was touched. Restyling it in place would have silently reskinned the 4 frozen safety screens (body, healthFlags, screening, preview) this gate has no authority to touch. So a separate <code class="mono">OnbRefTitle</code> was built on the <code class="mono">HudType.bigNumber(size:32)</code> token — the same glow-typography recipe the reference uses for its own headings — and wired only at the 4 call sites GPT-PM approved.</p>
+    <p>The same blast-radius check applied to <code class="mono">ChoiceCard</code> (only 2 call sites, both in Phase 1 — safe to restyle in place) and to <code class="mono">HudChip</code> (shared with form_check_page.dart, workouts_page.dart — left untouched; it already draws from the t.chip/t.accentChipGradient tokens that already match the reference, so GPT-PM's "weekday chip restyle GO" was already satisfied with zero code changes).</p>
+  </section>
+
+  <section id="verify">
+    <p class="kicker">Verification</p>
+    <ul class="decisions">
+      <li class="go">
+        <div class="title">flutter analyze — clean</div>
+        <div class="body"><p>Zero issues in any of the 6 touched files (full run across the mobile package).</p></div>
+      </li>
+      <li class="go">
+        <div class="title">132/132 tests pass</div>
+        <div class="body"><p>The full <code class="mono">test/features/onboarding/</code> directory — including step_goal_and_level_test, step_equipment_test, training_schedule_test, equipment_access_test, measure_ruler_test, onboarding_shell_test, step_health_test, barriers_test, body_zones_test and others. Confirms no behavioral/model regression; the frozen screens' visual integrity is confirmed by the diff itself never touching their files.</p></div>
+      </li>
+      <li class="go">
+        <div class="title">GPT-PM: VERDICT APPROVE, PUSH: AUTHORIZED</div>
+        <div class="body"><p>One review round against commit <code class="mono">cfe414c</code>, with a scope note (allowed vs. forbidden zones). Zero BLOCKER/MAJOR/MINOR findings; the reviewer specifically re-checked the StepTitle boundary, TierDial/ChoiceCard semantics, that the panel's width has no effect on MeasureRuler's drag contract, and that no new state was added to Schedule. Pushed on that same receipt — a second live round was not run since nothing changed after it.</p></div>
+      </li>
+    </ul>
+  </section>
+
+  <p class="foot-note">Decision and implementation recorded in <code class="mono">core/DECISION_LOG.md</code> ("Onboarding Phase 1: implemented..."). Next per the plan: an "Onboarding Safety Visual Reconciliation Gate" for body/healthFlags/screening/preview — a separate future gate, not started.</p>
+</div>
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
