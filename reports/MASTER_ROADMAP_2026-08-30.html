@@ -152,13 +152,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ de7e507</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ dbef400</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -188,8 +190,8 @@
       <p>Not a one-off: bug D-03 (dropped tap) was closed and reopened at least 4 times in a row; Step 10A was declared closed and immediately self-corrected ("declaration above was premature"); N-01 (BLOCKER) turned out to be an earlier fix (F014) "lost on restart." Practical takeaway: a "closed" status in an individual plan file is not proof by itself — proof is independent re-verification, which not every gate received twice.</p>
     </div>
     <div class="flagbox" style="border-color:var(--good);background:var(--good-soft)">
-      <span class="lbl" style="color:var(--good)">Correction, 08-30 — G-A turned out to be mostly already done</span>
-      <p>The same pattern flagged above ("closed → actually wasn't") ran in reverse here: section 6 below describes G-A as "not started," quoting the 08-16 audit — but a direct code check on 08-30 (after this document was first published) found all three G-A items already implemented, just not filed under that label. <code class="mono">ProgrammeNotViable</code> is caught before the generic error handler and shows an <code class="mono">EligibilityNotice</code> instead of a Retry snackbar (comment "N01", <code class="mono">workouts_page.dart:1300-1360</code>); the real tagged/total safety-coverage figure renders (<code class="mono">l10n.safetyFilterCoverage(coverage.tagged, coverage.total)</code>, <code class="mono">safety_disclosure.dart:100-109</code>, marked "F019" in-code); the <code class="mono">SafetyDisclosure</code> widget is wired into every exercise-serving surface via the shared <code class="mono">exerciseReferenceSections</code> function plus separate insertions in <code class="mono">workout_player_page.dart</code>/<code class="mono">workouts_page.dart</code> (marked "F020" in-code). This doesn't mean section 6 is wrong — the 08-16 audit was accurate when written — it means this remediation track shipped without an explicit G-A gate entry in DECISION_LOG, and section 6 below inherited the audit's stale status without re-checking current code. Full detail and method: <code class="mono">core/DECISION_LOG.md</code>, the "REMEDIATION: GPT-PM round-1 review" entry (08-30) and the G-A entry that follows it. G-D/G-C/G-B/G-E from the same audit have NOT been re-verified this way — their "not started" status stands as-is, from the audit.</p>
+      <span class="lbl" style="color:var(--good)">Correction, 08-30 — substantial implementation evidence found for G-A (2 of 3 items confirmed, not formally closed)</span>
+      <p>The same pattern flagged above ("closed → actually wasn't") ran in reverse here: section 6 below describes G-A as "not started," quoting the 08-16 audit — but a direct code check on 08-30 (after this document was first published) found substantial evidence of implementation, just not filed under that label. Two of the three items are fully confirmed by direct code reading: <code class="mono">ProgrammeNotViable</code> is caught before the generic error handler and shows an <code class="mono">EligibilityNotice</code> instead of a Retry snackbar (comment "N01", <code class="mono">workouts_page.dart:1300-1360</code>); the real tagged/total safety-coverage figure renders (<code class="mono">l10n.safetyFilterCoverage(coverage.tagged, coverage.total)</code>, <code class="mono">safety_disclosure.dart:100-109</code>, marked "F019" in-code); the <code class="mono">SafetyDisclosure</code> widget is wired into every exercise-serving surface via the shared <code class="mono">exerciseReferenceSections</code> function plus separate insertions in <code class="mono">workout_player_page.dart</code>/<code class="mono">workouts_page.dart</code> (marked "F020" in-code). The third item — chest-pain refusal copy — is only structurally confirmed (the <code class="mono">EligibilityNotice</code> dialog does intercept this case before the generic handler); the exact copy text was NOT separately checked line-by-line against the audit's original complaint — that check is still outstanding. Status below is therefore "implementation evidence found," not "formally closed": there is no separate DECISION_LOG entry recording a GPT-PM verdict on G-A as a gate unit. This doesn't mean section 6 is wrong — the 08-16 audit was accurate when written — it means this remediation track mostly shipped without an explicit G-A gate entry in DECISION_LOG, and section 6 below inherited the audit's stale status without re-checking current code. Full detail and method: <code class="mono">core/DECISION_LOG.md</code>, the "REMEDIATION: GPT-PM round-1 review" entry (08-30) and the G-A entry that follows it. G-D/G-C/G-B/G-E from the same audit have NOT been re-verified this way — their "not started" status stands as-is, from the audit.</p>
     </div>
   </section>
 
@@ -290,7 +292,7 @@
       <table>
         <thead><tr><th>Gate</th><th>Risk</th><th>What it fixes</th></tr></thead>
         <tbody>
-          <tr><td><strong>G-A</strong> (P0, low) <span class="pill done">appears done — see section 0 correction</span></td><td>low</td><td>Surface refusals the app already generates but doesn't show: Retry button, chest-pain copy, a real safety-tag-coverage figure — all three confirmed in code on 08-30, detail in section 0</td></tr>
+          <tr><td><strong>G-A</strong> (P0, low) <span class="pill open">evidence found, not formally closed — see section 0</span></td><td>low</td><td>Surface refusals the app already generates but doesn't show: Retry button (confirmed), real safety-tag-coverage figure (confirmed), chest-pain copy (structurally yes, exact text unchecked) — detail and what's left to verify in section 0</td></tr>
           <tr><td><strong>G-D</strong> (P0, low)</td><td>low</td><td>Firestore rules: exclude <code class="mono">usage</code>/<code class="mono">receipts</code> from client writes, deny the <code class="mono">health</code> key</td></tr>
           <tr><td><strong>G-C</strong> (P0, low)</td><td>low</td><td>Suppress AI-invented <code class="mono">uses[]</code> values unless catalogue-matched</td></tr>
           <tr><td><strong>G-B</strong> (P0, medium)</td><td>medium — touches the safety layer</td><td>Route every exercise-serving surface through the existing eligibility filter (6 sites, including the AI coach)</td></tr>
@@ -328,6 +330,8 @@
     <span><i class="box" style="background:var(--crit)"></i> critical / stalled a long time</span>
   </div>
 </div>
+
+
 
 
 

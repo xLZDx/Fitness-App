@@ -35732,13 +35732,24 @@ finding IDs the audit itself would have used) without a corresponding DECISION_L
 named it, and nothing reconciled the two.
 
 **Correction applied**: `reports/MASTER_ROADMAP_2026-08-30.ru.html`/`.html` -- added a sixth
-critical-flag box (Section 0, green/`--good` styled, distinct from the five red ones) stating G-A
-is verified done as of 08-30 with the citations above, and an inline "appears done" pill + note on
-the G-A table row in Section 6. Section 6's per-audit-date framing and the G-D/G-C/G-B/G-E rows
-are explicitly left as-is -- none of those four have been re-verified against current code by this
-same method, so their "not started" status stands unless/until someone does the same check.
-Re-conformed (`report_conform.py --check` clean) and republished the RU artifact in place (same
-URL, `label: g-a-correction`).
+critical-flag box (Section 0, green/`--good` styled, distinct from the five red ones) stating
+substantial implementation evidence was found for G-A as of 08-30, with the citations above, and
+an inline pill + note on the G-A table row in Section 6. Section 6's per-audit-date framing and
+the G-D/G-C/G-B/G-E rows are explicitly left as-is -- none of those four have been re-verified
+against current code by this same method, so their "not started" status stands unless/until
+someone does the same check. Re-conformed (`report_conform.py --check` clean) and republished the
+RU artifact in place (same URL, `label: g-a-correction`).
+
+**Self-correction, round 3 (GPT-PM MAJOR, `replyId d3850192`):** this entry's own first draft
+said "G-A is verified done" -- overstated against the very next paragraph's own admission that the
+chest-pain-copy sub-item's exact wording was never checked against the audit's original complaint.
+Fixed in both the wording above and in the HTML: 2 of 3 G-A items are fully confirmed by direct
+code reading (Retry-button/`EligibilityNotice` fix, tagged/total coverage figure); the third
+(chest-pain copy) is only structurally confirmed (the same dialog does intercept that case) with
+the exact copy text still unchecked. Status changed from "verified done" to "implementation
+evidence found -- not formally closed" throughout, including the Section 0 flagbox label and the
+Section 6 table pill (both files, RU+EN). No new code claims added -- this is a precision fix to
+what was already written, not new evidence.
 
 **What this is not**: not a claim that G-A is formally closed as a gate -- there is still no
 DECISION_LOG entry titled G-A recording a GPT-PM verdict on it as a unit, and the chest-pain
@@ -35746,3 +35757,34 @@ refusal copy sub-item was traced to the `EligibilityNotice` dialog structurally 
 wording was not separately verified against the audit's original complaint. If a future session
 wants G-A formally closed (not just "appears done" in a roadmap flag), it should assemble these
 citations into an actual gate-closure review round, not rely on this correction as that closure.
+
+## 2026-08-30 ~11:35 UTC -- ROOT CAUSE FOUND for round-2/3's open finding #2: `review.js`
+## structurally, deliberately, always excludes `reports/` from every diff it sends to GPT-PM
+
+Round 3 (`replyId d3850192`) repeated finding #2 a third time -- the roadmap reports' actual
+content still never reached GPT-PM through `review.js --base origin/master`, even after this
+session tried twice to explain why and offered `git show --stat` as evidence the files exist in
+the commit. Round 1's entry above hedged between "a diff-size budget silently drops it" and "a
+genuine tool-side gap" without finding the mechanism -- both guesses, neither checked against the
+actual source. Checked now: `D:\Repo\pm-bridge\src\cli\review.js:123-134` defines
+`const REVIEW_EXCLUDE = [":(exclude)reports"]` and applies it to EVERY diff-building code path
+(`--base`, `--commit`, and `--uncommitted`'s untracked-file listing) -- this is not a bug, a
+truncation artifact, or a `MAX_DIFF_CHARS` side effect. It is a deliberate, permanent design
+decision, documented in the file's own comment: a generated HTML report is "published prose, not
+code," and this project's reports have been large enough (114k of a 503k diff, in the comment's
+own cited precedent) to push a whole gate past `MAX_DIFF_CHARS` and strip `--final` from it. There
+is no flag to override this per-call -- `review.js` cannot show GPT-PM report content, ever,
+through its normal invocation, regardless of scope or round number.
+
+**Consequence for this gate**: GPT-PM's ask ("send only the two roadmap files' real patches") is
+not satisfiable through `review.js` at all -- asking a fourth time would repeat rounds 1-3 for
+nothing. The right fix is routing report-content review through a direct
+`gpt_send_and_await` exchange instead (same underlying transport and conversation, just not
+through `review.js`'s diff-building path), explaining the mechanism so GPT-PM isn't reading this
+session as stonewalling a straightforward request. That receipt won't be a `review.js` receipt
+(so it does not by itself satisfy `gpt_review_gate.py`'s commit/push check) -- but every actual
+code and governance-file change in this window already has real `review.js` receipts covering it
+(rounds 1-2, both `final:false` pending this exact finding); the reports are the one category
+`review.js` was built to never show a reviewer, by design, on this project specifically. Not
+chasing whether that design decision itself is still correct at current report sizes -- out of
+scope for a documentation-governance fix in this repo.

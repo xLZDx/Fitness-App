@@ -152,13 +152,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ de7e507</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ dbef400</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -188,8 +190,8 @@
       <p>Не единичный случай: баг D-03 (залипание тапа) закрывался и переоткрывался минимум 4 раза подряд; Step 10A объявлялся закрытым и тут же корректировался («declaration above was premature»); N-01 (BLOCKER) оказался тем, что более ранний фикс F014 «терялся при рестарте». Практический вывод: статус «closed» в отдельном файле плана — не доказательство; доказательство — независимая ре-верификация, которую не все гейты прошли дважды.</p>
     </div>
     <div class="flagbox" style="border-color:var(--good);background:var(--good-soft)">
-      <span class="lbl" style="color:var(--good)">Поправка 30.08 — G-A на деле оказался в основном уже сделан</span>
-      <p>Этот же паттерн («closed → на самом деле нет», флаг выше) сработал и в обратную сторону здесь: раздел 6 ниже описывает G-A как «not started» по цитате аудита от 16.08 — но прямая проверка кода 30.08 (после публикации этого документа) нашла, что все три пункта G-A уже реализованы, просто не под этой меткой. <code class="mono">ProgrammeNotViable</code> перехватывается до общего обработчика ошибок и показывает <code class="mono">EligibilityNotice</code> вместо Retry-кнопки (комментарий «N01», <code class="mono">workouts_page.dart:1300-1360</code>); реальная цифра покрытия тегов безопасности рендерится (<code class="mono">l10n.safetyFilterCoverage(coverage.tagged, coverage.total)</code>, <code class="mono">safety_disclosure.dart:100-109</code>, помечено «F019» в коде); виджет <code class="mono">SafetyDisclosure</code> подключён на всех точках показа упражнений через общую функцию <code class="mono">exerciseReferenceSections</code> плюс отдельные вставки в <code class="mono">workout_player_page.dart</code>/<code class="mono">workouts_page.dart</code> (помечено «F020» в коде). Вывод не «раздел 6 неверен» — аудит от 16.08 был точен на момент написания — а «этот ремедиационный трек прошёл, только без явного гейта G-A в DECISION_LOG, и раздел 6 ниже унаследовал устаревший статус аудита, не перепроверив код». Полная деталь и метод проверки — <code class="mono">core/DECISION_LOG.md</code>, запись «REMEDIATION: GPT-PM round-1 review» от 30.08, и последующая запись про G-A. G-D/G-C/G-B/G-E из того же аудита пока НЕ перепроверены этим же способом — статус «not started» для них остаётся как есть, из аудита.</p>
+      <span class="lbl" style="color:var(--good)">Поправка 30.08 — по G-A найдены веские доказательства реализации (2 из 3 пунктов подтверждены, формально не закрыт)</span>
+      <p>Этот же паттерн («closed → на самом деле нет», флаг выше) сработал и в обратную сторону здесь: раздел 6 ниже описывает G-A как «not started» по цитате аудита от 16.08 — но прямая проверка кода 30.08 (после публикации этого документа) нашла для G-A существенные доказательства реализации, просто не под этой меткой. Полностью подтверждены прямым чтением кода два из трёх пунктов: <code class="mono">ProgrammeNotViable</code> перехватывается до общего обработчика ошибок и показывает <code class="mono">EligibilityNotice</code> вместо Retry-кнопки (комментарий «N01», <code class="mono">workouts_page.dart:1300-1360</code>); реальная цифра покрытия тегов безопасности рендерится (<code class="mono">l10n.safetyFilterCoverage(coverage.tagged, coverage.total)</code>, <code class="mono">safety_disclosure.dart:100-109</code>, помечено «F019» в коде); виджет <code class="mono">SafetyDisclosure</code> подключён на всех точках показа упражнений через общую функцию <code class="mono">exerciseReferenceSections</code> плюс отдельные вставки в <code class="mono">workout_player_page.dart</code>/<code class="mono">workouts_page.dart</code> (помечено «F020» в коде). Третий пункт — копия про боль в груди — подтверждён только структурно (диалог <code class="mono">EligibilityNotice</code> действительно перехватывает этот случай раньше общего обработчика), но точный текст копии НЕ сверен построчно с оригинальной претензией аудита — это отдельная, ещё не сделанная проверка. Статус ниже поэтому — «найдены доказательства реализации», а не «формально закрыто»: нет отдельной записи в DECISION_LOG с вердиктом GPT-PM по G-A как по гейту целиком. Вывод не «раздел 6 неверен» — аудит от 16.08 был точен на момент написания — а «этот ремедиационный трек в основном прошёл, только без явного гейта G-A в DECISION_LOG, и раздел 6 ниже унаследовал устаревший статус аудита, не перепроверив код». Полная деталь и метод проверки — <code class="mono">core/DECISION_LOG.md</code>, запись «REMEDIATION: GPT-PM round-1 review» от 30.08, и последующая запись про G-A. G-D/G-C/G-B/G-E из того же аудита пока НЕ перепроверены этим же способом — статус «not started» для них остаётся как есть, из аудита.</p>
     </div>
   </section>
 
@@ -290,7 +292,7 @@
       <table>
         <thead><tr><th>Гейт</th><th>Риск</th><th>Что чинит</th></tr></thead>
         <tbody>
-          <tr><td><strong>G-A</strong> (P0, низкий) <span class="pill done">похоже, сделано — см. поправку в разделе 0</span></td><td>низкий</td><td>Показать отказы, которые приложение уже генерирует, но не показывает: Retry-кнопка, копия про боль в груди, реальная цифра покрытия тегов безопасности — все три подтверждены в коде 30.08, деталь в разделе 0</td></tr>
+          <tr><td><strong>G-A</strong> (P0, низкий) <span class="pill open">доказательства найдены, не закрыт формально — см. раздел 0</span></td><td>низкий</td><td>Показать отказы, которые приложение уже генерирует, но не показывает: Retry-кнопка (подтверждено), реальная цифра покрытия тегов безопасности (подтверждено), копия про боль в груди (структурно да, точный текст не сверен) — детали и что осталось проверить в разделе 0</td></tr>
           <tr><td><strong>G-D</strong> (P0, низкий)</td><td>низкий</td><td>Firestore-правила: исключить <code class="mono">usage</code>/<code class="mono">receipts</code> из клиентской записи, запретить ключ <code class="mono">health</code></td></tr>
           <tr><td><strong>G-C</strong> (P0, низкий)</td><td>низкий</td><td>Подавить придуманные ИИ значения <code class="mono">uses[]</code>, если не совпадают с каталогом</td></tr>
           <tr><td><strong>G-B</strong> (P0, средний)</td><td>средний — трогает слой безопасности</td><td>Провести каждую точку показа упражнений через существующий фильтр противопоказаний (6 мест, включая AI-тренера)</td></tr>
@@ -328,6 +330,8 @@
     <span><i class="box" style="background:var(--crit)"></i> критично / без движения долго</span>
   </div>
 </div>
+
+
 
 
 
