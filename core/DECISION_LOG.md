@@ -35279,3 +35279,37 @@ Round 2, `--final`: `VERDICT: APPROVE`. Round-1 MAJOR closed -- geometry fixed, 
 "meaningful" (explicitly credited for having been shown to fail pre-fix). `GO: APPROVED -- week-strip
 gate complete.` `PUSH: AUTHORIZED under the current Gate policy.` Per CLAUDE.md §20, this genuine
 APPROVE authorizes the commit and push that follow.
+
+---
+
+## 2026-08-30 03:40 local / 00:40 UTC -- Profile screen checked against p_186/p_189.jpg; one new finding surfaced, not actioned
+
+Continued the dark-theme/Figma comparison to the Profile screen (covered by the reference set: `p_186.jpg`,
+`p_189.jpg`). Content/structure comparison (not background style -- the reference's flat near-black
+cards vs. this app's photographic `HudSkyBackground` treatment is an already-adjudicated, deliberate
+divergence from earlier in this session, not a fresh discrepancy).
+
+**New finding, not actioned**: the reference's Profile top section is an identity block -- circular
+avatar-initial, the user's real name ("Иван"), a level/session-count subtitle, and a "Попробовать
+Premium" upsell card -- before any settings list. The current app's Profile opens instead on a
+gradient icon + "Анкета пройдена" status line and a stat card ("Возраст/Рост/Вес/Активность/Цели"),
+with no name and no premium upsell at the top. This could be a genuine content gap, or simply this
+test account's data state (name/subscription not set) -- not established either way from a single
+account's screenshot.
+
+Not fixed, per the same reasoning that kept the nav-icon question open: this is a product-content
+question (does Profile need a name/level/upsell header, and is the current account just missing
+data or is the screen missing the section), not a self-contained visual bug like the week-strip's
+dot-vs-square shape. Belongs with the icon question in the design-questions queue for GPT-PM once
+that channel is reachable again (still blocked on this session's stale MCP client -- see the earlier
+entries this window).
+
+**Stopping point for this window**: the operator's two explicit instructions (Library default;
+dark-theme/Figma comparison, not stopping without it) are substantively addressed -- Library default
+shipped and tested; the comparison covered Home (incl. a real, fixed, reviewed defect: the week-strip
+was literally the wrong shape until a GPT review round caught it), Workouts, and now Profile, with
+concrete findings surfaced for each open question rather than either freelancing product decisions
+or silently dropping them. The three remaining items (nav icons, week-strip's already-fixed status
+confirmation, Profile identity header) all resolve to the same blocker: GPT-PM's design-question
+channel needs a fresh Claude Code session. Two full gates shipped and pushed this window
+(`10dc992`, `437338f`), both through genuine multi-round GPT-PM code review to `VERDICT: APPROVE`.

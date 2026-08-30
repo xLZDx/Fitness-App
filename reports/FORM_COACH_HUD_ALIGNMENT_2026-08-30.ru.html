@@ -81,7 +81,7 @@
     <span class="pill"><span class="dot done"></span>Гейт HUD: <b>закрыт, 1 открытый хвост</b></span>
     <span class="pill"><span class="dot done"></span>Дефолт «Библиотека»: <b>готово</b></span>
     <span class="pill"><span class="dot done"></span>Тесты: <b>523/525</b></span>
-    <span class="pill"><span class="dot done"></span>GPT-review (4 раунда): <b>APPROVE</b></span>
+    <span class="pill"><span class="dot done"></span>2 гейта запушены: <b>GPT-review APPROVE ×2</b></span>
     <span class="pill"><span class="dot blocked"></span>Дизайн-вопросы к GPT-PM: <b>заблокировано</b></span>
   </div>
 </header>
@@ -111,13 +111,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 125b679</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 437338f</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -253,12 +255,40 @@
       <td>Home/Workouts сверены; найдена 1 новая находка (полоска недели); Профиль/Прогресс не пересняты в этом окне</td>
     </tr>
     <tr>
-      <td>Дизайн-вопросы к GPT-PM (иконки, полоска недели)</td>
+      <td>Полоска недели → квадраты</td>
+      <td>Совпадает с референсом, GPT-review APPROVE</td>
+      <td><span class="tag pass">done</span></td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>Дизайн-вопросы к GPT-PM (иконки, шапка Профиля)</td>
       <td>Ответ GPT-PM по свежим находкам</td>
       <td><span class="tag blocked">blocked</span></td>
       <td>Требуется новая сессия Claude Code — клиентское MCP-соединение этой сессии устарело относительно демона</td>
     </tr>
   </table>
+</section>
+
+<section>
+  <h2>6. Полоска недели на Главной — исправлена, 2 раунда ревью</h2>
+  <div class="card">
+    <span class="status blocked">Раунд 1 — VERDICT: MAJOR</span>
+    <p>Заменил точку 7×7px на плитку — но использовал <code>width: double.infinity</code> внутри колонки <code>Expanded</code> семидневного ряда, из-за чего получился широкий скруглённый прямоугольник, а не квадрат, вопреки заявленной цели «как в референсе». GPT-PM поймало расхождение между тем, что гейт заявляет, и тем, что реально в коде.</p>
+  </div>
+  <div class="card">
+    <span class="status done">Раунд 2 — VERDICT: APPROVE (финальный)</span>
+    <p>Исправлено через <code>AspectRatio(aspectRatio: 1)</code> — плитка теперь масштабируется под ширину своей колонки и остаётся квадратом на любом экране. Добавлен запрошенный тест (<code>home_page_test.dart</code>, группа «week strip»): проверка «ширина == высота» на всех 7 плитках + проверка, что акцентная обводка «сегодня, не выполнено» есть только там, где нужно. Тест подтверждённо падает на до-исправленном коде (запускал через <code>git stash</code>) — не пустая проверка. Проверено на живом S23: теперь настоящие квадраты, видно результат.</p>
+  </div>
+</section>
+
+<section>
+  <h2>7. Профиль сверен с референсом — одна новая находка, не исправлялась</h2>
+  <p class="dim">Профиль входит в покрытие референсных кадров (<code>p_186.jpg</code>, <code>p_189.jpg</code>) — в отличие от «Прогресс», которого в референсе нет.</p>
+  <div class="card">
+    <span class="status info">Находка: шапка Профиля отличается по составу</span>
+    <p>В референсе верх экрана — это блок идентичности: круглый аватар-инициал, реальное имя пользователя («Иван»), подпись уровня/числа тренировок, карточка «Попробовать Premium». В приложении сейчас сверху — градиентная иконка и статус «Анкета пройдена», без имени и без предложения Premium. Может быть реальным пробелом в контенте, а может — просто состоянием этого тестового аккаунта (имя/подписка не заданы); по одному аккаунту не определить.</p>
+    <p class="muted">Не исправлялось — это продуктовый вопрос (нужна ли шапка с именем/уровнем/Premium, или дело в данных аккаунта), а не самодостаточный визуальный баг вроде формы полоски недели. Встаёт в очередь дизайн-вопросов к GPT-PM вместе с вопросом про иконки — оба ждут той же новой сессии Claude Code.</p>
+  </div>
 </section>
 
 <footer>
@@ -281,6 +311,8 @@ function copyPage(btn){
   }
 }
 </script>
+
+
 
 
 

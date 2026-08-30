@@ -80,7 +80,7 @@
     <span class="pill"><span class="dot done"></span>HUD gate: <b>closed, 1 open tail</b></span>
     <span class="pill"><span class="dot done"></span>Library default: <b>done</b></span>
     <span class="pill"><span class="dot done"></span>Tests: <b>523/525</b></span>
-    <span class="pill"><span class="dot done"></span>GPT-review (4 rounds): <b>APPROVE</b></span>
+    <span class="pill"><span class="dot done"></span>2 gates pushed: <b>GPT-review APPROVE x2</b></span>
     <span class="pill"><span class="dot blocked"></span>Design questions to GPT-PM: <b>blocked</b></span>
   </div>
 </header>
@@ -110,13 +110,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 125b679</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 437338f</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -252,12 +254,40 @@
       <td>Home/Workouts checked; 1 new finding (week strip); Profile/Progress not freshly captured this window</td>
     </tr>
     <tr>
-      <td>Design questions to GPT-PM (icons, week strip)</td>
+      <td>Week strip → squares</td>
+      <td>Matches the reference, GPT-review APPROVE</td>
+      <td><span class="tag pass">done</span></td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>Design questions to GPT-PM (icons, Profile header)</td>
       <td>A GPT-PM reply on the fresh findings</td>
       <td><span class="tag blocked">blocked</span></td>
       <td>Needs a fresh Claude Code session — this session's MCP client connection is stale relative to the daemon</td>
     </tr>
   </table>
+</section>
+
+<section>
+  <h2>6. Home week strip — fixed, 2 review rounds</h2>
+  <div class="card">
+    <span class="status blocked">Round 1 — VERDICT: MAJOR</span>
+    <p>Swapped the 7×7px dot for a tile — but used <code>width: double.infinity</code> inside the 7-day row's <code>Expanded</code> column, producing a wide rounded rectangle instead of a square despite the gate's own stated goal of matching the reference. GPT-PM caught the gap between what the gate claimed and what the code actually did.</p>
+  </div>
+  <div class="card">
+    <span class="status done">Round 2 — VERDICT: APPROVE (final)</span>
+    <p>Fixed with <code>AspectRatio(aspectRatio: 1)</code> — the tile now scales with its own column's width and stays square on any screen. Added the requested test (<code>home_page_test.dart</code>, 'week strip' group): all 7 tiles' width == height, plus the today-not-done accent border present only where it should be. Confirmed the test actually fails against the pre-fix code (via <code>git stash</code>) — not a vacuous check. Re-verified on a live S23: genuine squares now.</p>
+  </div>
+</section>
+
+<section>
+  <h2>7. Profile checked against the reference — one new finding, not acted on</h2>
+  <p class="dim">Profile is covered by the reference frame set (<code>p_186.jpg</code>, <code>p_189.jpg</code>) — unlike Progress, which the reference doesn't cover.</p>
+  <div class="card">
+    <span class="status info">Finding: Profile's header composition differs</span>
+    <p>The reference's screen top is an identity block — circular avatar-initial, the user's real name ("Иван"), a level/session-count subtitle, a "Try Premium" card. The current app's top instead shows a gradient icon and an "Анкета пройдена" status line, with no name and no Premium offer. Could be a real content gap, or simply this test account's data state (no name/subscription set) — not settled from one account's screenshot.</p>
+    <p class="muted">Not fixed — this is a product question (does Profile need a name/level/Premium header, or is this just account data), not a self-contained visual bug like the week strip's shape was. Joins the icon question in the design-questions queue for GPT-PM, waiting on the same fresh Claude Code session.</p>
+  </div>
 </section>
 
 <footer>
@@ -280,6 +310,8 @@ function copyPage(btn){
   }
 }
 </script>
+
+
 
 
 
