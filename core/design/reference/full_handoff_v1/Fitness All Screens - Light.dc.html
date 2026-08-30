@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="_ds/modernist-45ca9727-c51f-443e-81d6-37788426e92c/styles.css">
+<script src="_ds/modernist-45ca9727-c51f-443e-81d6-37788426e92c/_ds_bundle.js"></script>
+<style>
+a{color:var(--color-accent-700);text-decoration:none}
+a:hover{color:var(--color-accent)}
+</style></helmet>
+
+<div style="width:3020px;padding:56px 48px 80px;background:var(--color-bg);font-family:Archivo,sans-serif;color:var(--color-text)">
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:48px">
+<div>
+<div style="font:700 11px Archivo;letter-spacing:.24em;text-transform:uppercase;color:var(--color-accent-700)">Turn 16 · <a href="#16a">16a</a></div>
+<div style="font:800 46px/1.02 Archivo;letter-spacing:-.025em;margin-top:14px">Полная сборка · светлая тема</div>
+</div>
+<div style="max-width:640px;font:400 14px/1.6 Archivo;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Те же четырнадцать кадров, что и в тёмной сборке, на тех же фотографиях — чтобы разница читалась только как смена знака: чернильный контур, белое свечение, заливка 30 %.</div>
+</div>
+<div style="height:2px;background:var(--color-divider);margin-top:28px"></div>
+
+<div id="16a">
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+<div style="padding-top:44px">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:32px;padding-bottom:14px">
+<div style="display:flex;align-items:baseline;gap:16px">
+<span style="font:800 30px/1 Archivo;letter-spacing:-.02em">{{ g.title }}</span>
+<span style="font:400 12px ui-monospace,monospace;letter-spacing:.08em;color:color-mix(in srgb,var(--color-text) 56%,transparent)">{{ g.count }}</span>
+</div>
+<div style="max-width:760px;font:400 13px/1.6 Archivo;color:color-mix(in srgb,var(--color-text) 66%,transparent);text-align:right">{{ g.note }}</div>
+</div>
+<div style="height:2px;background:var(--color-divider)"></div>
+<div style="display:flex;gap:40px;padding-top:26px;flex-wrap:wrap">
+<sc-for list="{{ g.screens }}" as="s" hint-placeholder-count="3">
+<div style="width:390px">
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:10px">
+<span style="font:700 13px Archivo;letter-spacing:-.005em">{{ s.label }}</span>
+<span style="font:400 10px ui-monospace,monospace;letter-spacing:.08em;color:color-mix(in srgb,var(--color-text) 54%,transparent)">{{ s.state }}</span>
+</div>
+<div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 26px 52px -32px rgba(32,30,29,.4)">
+<sc-if value="{{ s.isCoach }}" hint-placeholder-val="{{ false }}">
+<dc-import name="Fitness Form Coach Phone" hint-size="390px,844px"></dc-import>
+</sc-if>
+<sc-if value="{{ s.isApp }}" hint-placeholder-val="{{ true }}">
+<dc-import name="Fitness Glass Phone v1 - Light" sky="photo" sky-photo="{{ s.photo }}" hour="{{ s.hour }}" initial-tab="{{ s.tab }}" initial-view="{{ s.view }}" initial-sub-tab="{{ s.subTab }}" initial-filter="{{ s.filter }}" initial-scanned="{{ s.scanned }}" initial-day="{{ s.day }}" initial-done="{{ s.done }}" initial-rest="{{ s.rest }}" hint-size="390px,844px"></dc-import>
+</sc-if>
+</div>
+<div style="font:400 12px/1.5 Archivo;color:color-mix(in srgb,var(--color-text) 62%,transparent);padding-top:11px">{{ s.note }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const base = {tab: 0, view: 'home', subTab: 0, filter: 0, scanned: 'false', day: 4, done: 1, rest: 0, hour: 9, photo: 'uploads/04_fuji_sakura.webp'};
+const S = o => Object.assign({}, base, o, {isApp: !o.isCoach, isCoach: !!o.isCoach});
+
+const GROUPS = [
+  {title: 'Home', note: 'Главная в трёх состояниях: тренировочный день, день отдыха и утро.',
+   screens: [
+     S({label: 'Home · день тренировки', state: 'day 4', note: 'Круг и кнопка старта остаются самыми плотными элементами и на светлом.'}),
+     S({label: 'Home · день отдыха', state: 'day 6', day: 6, photo: 'uploads/09_forest_lake.webp', note: 'Кнопка теряет акцентный вес, рамка панели остаётся.'}),
+     S({label: 'Home · утро', state: 'day 1', day: 1, photo: 'uploads/07_snow_peak_tarn.webp', note: 'Холодный кадр — чернильный контур виден за счёт двойной обводки.'})
+   ]},
+  {title: 'Workouts', note: 'Две вкладки раздела и работа фильтров каталога.',
+   screens: [
+     S({label: 'Workouts · программы', state: 'sub 0', tab: 1, photo: 'uploads/01_cliffs_moher.webp', hour: 6, note: 'Список программ строками внутри одной рамки.'}),
+     S({label: 'Workouts · каталог', state: 'sub 1 · filter 0', tab: 1, subTab: 1, photo: 'uploads/06_greek_terrace.webp', hour: 13, note: 'Чипы: выбранный — тёмно-лаймовый акцент, остальные — стекло с обводкой.'}),
+     S({label: 'Workouts · фильтр', state: 'sub 1 · filter 2', tab: 1, subTab: 1, filter: 2, photo: 'uploads/08_coast_turquoise.webp', hour: 17, note: 'Самый насыщенный кадр — проверка, что текст не спорит с бирюзой.'})
+   ]},
+  {title: 'Scan', note: 'Распознавание тренажёра: пустая рамка и результат.',
+   screens: [
+     S({label: 'Scan · наведение', state: 'scanned false', tab: 2, photo: 'uploads/06_greek_terrace.webp', hour: 13, note: 'Уголки рамки чернильные — на светлом камне белые были бы не видны.'}),
+     S({label: 'Scan · найдено', state: 'scanned true', tab: 2, scanned: 'true', photo: 'uploads/04_fuji_sakura.webp', note: 'Карточка совпадения: круглый процент и переход в упражнения.'})
+   ]},
+  {title: 'Session', note: 'Активный подход: работа, отдых и финал.',
+   screens: [
+     S({label: 'Session · подход', state: 'done 1', view: 'session', photo: 'uploads/07_snow_peak_tarn.webp', note: 'Круг прогресса чернильный; геометрия совпадает с тёмной темой.'}),
+     S({label: 'Session · отдых', state: 'rest 62 s', view: 'session', rest: 62, photo: 'uploads/09_forest_lake.webp', note: 'Таймер отдыха идёт живьём.'}),
+     S({label: 'Session · завершено', state: 'done 4', view: 'session', done: 4, photo: 'uploads/01_cliffs_moher.webp', hour: 6, note: 'Финал: отмеченные сеты зелёные #2F7A3A.'})
+   ]},
+  {title: 'Progress · Profile · Coach', note: 'Аналитика, настройки и экран тренера.',
+   screens: [
+     S({label: 'Progress', state: 'tab 3', tab: 3, photo: 'uploads/09_forest_lake.webp', note: 'Столбцы и календарь получили чернильную обводку.'}),
+     S({label: 'Profile', state: 'tab 4', tab: 4, photo: 'uploads/04_fuji_sakura.webp', note: 'Тумблеры: включённый — тёмный лайм, выключенный — стекло.'}),
+     S({label: 'Form coach', state: 'видео · скелет', isCoach: true, note: 'Экран тренера остаётся тёмным в обеих темах — видео требует контраста.'})
+   ]}
+];
+
+class Component extends DCLogic {
+  renderVals() {
+    return {groups: GROUPS.map(g => ({title: g.title, note: g.note, count: g.screens.length + ' экрана', screens: g.screens}))};
+  }
+}
+</script>
+</body>
+</html>

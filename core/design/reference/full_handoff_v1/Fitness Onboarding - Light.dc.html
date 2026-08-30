@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
+<style>
+[data-icon]{font-family:'Material Symbols Sharp';font-weight:400;line-height:1}
+[data-scroll]::-webkit-scrollbar{display:none}
+@keyframes obPulse{0%,100%{opacity:.35}50%{opacity:1}}
+</style></helmet>
+
+<div style="width:390px;height:844px;position:relative;overflow:hidden;border-radius:26px;background:#eef0f6;font-family:Archivo,sans-serif;color:#1b2030">
+
+<img src="{{ photo }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></img>
+<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(246,247,252,.68) 0%,rgba(246,247,252,.6) 46%,rgba(246,247,252,.72) 100%)"></div>
+
+<div style="position:absolute;top:0;left:0;right:0;height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:600 13px Archivo;z-index:4;text-shadow:0 1px 12px rgba(255,255,255,.9)">
+<span>9:41</span>
+<span style="display:flex;gap:5px;align-items:center"><span data-icon style="font-size:15px">signal_cellular_alt</span><span data-icon style="font-size:15px">wifi</span><span data-icon style="font-size:15px">battery_full</span></span>
+</div>
+
+<div style="position:absolute;left:16px;right:16px;top:56px;display:flex;align-items:center;gap:10px;z-index:3">
+<div style="flex:1;display:flex;gap:5px">
+<sc-for list="{{ rail }}" as="r" hint-placeholder-count="8">
+<span style="flex:1;height:3px;border-radius:2px;{{ r.style }}"></span>
+</sc-for>
+</div>
+<span onClick="{{ skip }}" style="font:600 11px Archivo;letter-spacing:.14em;text-transform:uppercase;color:rgba(27,32,48,.72);cursor:pointer;text-shadow:0 1px 12px rgba(255,255,255,.9);white-space:nowrap" style-hover="color:#1b2030">Пропустить</span>
+</div>
+
+<div data-scroll style="position:absolute;left:0;right:0;top:82px;bottom:126px;overflow-y:auto;scrollbar-width:none;z-index:2">
+
+<sc-if value="{{ s1 }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="01 Welcome" style="padding:112px 22px 0;display:flex;flex-direction:column;gap:18px">
+<span style="font:600 10px Archivo;letter-spacing:.24em;text-transform:uppercase;color:{{ accent }};text-shadow:0 1px 12px rgba(255,255,255,.9)">Тренер в кармане</span>
+<span style="font:400 46px/1.04 Archivo;letter-spacing:-.02em;text-shadow:0 2px 20px rgba(255,255,255,.95);text-wrap:pretty">Камера видит<br>технику.<br>Ты — прогресс.</span>
+<span style="font:400 14px/1.55 Archivo;color:rgba(27,32,48,.82);max-width:300px;text-shadow:0 1px 12px rgba(255,255,255,.9)">Считаем повторы, ловим рывки и держим темп. Всё на устройстве — видео никуда не уходит.</span>
+</div>
+</sc-if>
+
+<sc-if value="{{ s2 }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="02 Goal" style="padding:26px 16px 0;display:flex;flex-direction:column;gap:20px">
+<div style="padding:0 6px;display:flex;flex-direction:column;gap:8px">
+<span style="font:400 32px/1.08 Archivo;letter-spacing:-.02em;text-shadow:0 2px 20px rgba(255,255,255,.95)">Какая цель?</span>
+<span style="font:400 13px/1.5 Archivo;color:rgba(27,32,48,.80);text-shadow:0 1px 12px rgba(255,255,255,.9)">От неё зависят подбор упражнений и объём недели.</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:9px">
+<sc-for list="{{ goals }}" as="g" hint-placeholder-count="4">
+<div onClick="{{ g.pick }}" style="padding:16px 18px;border-radius:26px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease;{{ g.style }}" style-hover="transform:translateY(-2px)">
+<span data-icon style="font-size:22px;color:{{ g.tint }}">{{ g.icon }}</span>
+<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+<span style="font:700 15px Archivo">{{ g.title }}</span>
+<span style="font:400 11.5px/1.4 Archivo;color:rgba(27,32,48,.76)">{{ g.note }}</span>
+</span>
+<span data-icon style="font-size:20px;color:{{ g.tint }}">{{ g.mark }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s3 }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="03 Level" style="padding:26px 16px 0;display:flex;flex-direction:column;gap:20px">
+<div style="padding:0 6px;display:flex;flex-direction:column;gap:8px">
+<span style="font:400 32px/1.08 Archivo;letter-spacing:-.02em;text-shadow:0 2px 20px rgba(255,255,255,.95)">Сколько<br>ты тренируешься?</span>
+<span style="font:400 13px/1.5 Archivo;color:rgba(27,32,48,.80);text-shadow:0 1px 12px rgba(255,255,255,.9)">Ответ задаёт стартовые веса и строгость тренера.</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:9px">
+<sc-for list="{{ levels }}" as="l" hint-placeholder-count="3">
+<div onClick="{{ l.pick }}" style="padding:18px;border-radius:26px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:transform .18s ease;{{ l.style }}" style-hover="transform:translateY(-2px)">
+<span style="width:52px;height:52px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font:400 22px Archivo;{{ l.dial }}">{{ l.num }}</span>
+<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+<span style="font:700 15px Archivo">{{ l.title }}</span>
+<span style="font:400 11.5px/1.4 Archivo;color:rgba(27,32,48,.76)">{{ l.note }}</span>
+</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s4 }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="04 Schedule" style="padding:26px 16px 0;display:flex;flex-direction:column;gap:22px">
+<div style="padding:0 6px;display:flex;flex-direction:column;gap:8px">
+<span style="font:400 32px/1.08 Archivo;letter-spacing:-.02em;text-shadow:0 2px 20px rgba(255,255,255,.95)">Дни недели</span>
+<span style="font:400 13px/1.5 Archivo;color:rgba(27,32,48,.80);text-shadow:0 1px 12px rgba(255,255,255,.9)">Отметь дни — план ляжет на них, остальные останутся под восстановление.</span>
+</div>
+<div style="display:flex;justify-content:center">
+<div style="width:158px;height:158px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:rgba(255,255,255,.3);backdrop-filter:blur(14px) saturate(150%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),0 0 0 1px rgba(27,32,48,.16),0 18px 34px -22px rgba(42,52,74,.35);text-shadow:0 1px 12px rgba(255,255,255,.9)">
+<span style="font:400 62px/1 Archivo;text-shadow:0 2px 20px rgba(255,255,255,.95)">{{ dayCount }}</span>
+<span style="font:600 9px Archivo;letter-spacing:.2em;text-transform:uppercase;color:rgba(27,32,48,.82)">дня в неделю</span>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">
+<sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+<div onClick="{{ d.pick }}" style="height:56px;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;{{ d.style }}">
+<span style="font:600 12px Archivo">{{ d.label }}</span>
+<span style="width:5px;height:5px;border-radius:50%;background:{{ d.dot }}"></span>
+</div>
+</sc-for>
+</div>
+<div style="padding:15px 18px;border-radius:24px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:rgba(255,255,255,.3);backdrop-filter:blur(14px) saturate(150%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),0 0 0 1px rgba(27,32,48,.16),0 18px 34px -22px rgba(42,52,74,.35);text-shadow:0 1px 12px rgba(255,255,255,.9)">
+<span style="min-width:0;display:flex;flex-direction:column;gap:3px">
+<span style="font:700 14px Archivo">Напоминание в 07:30</span>
+<span style="font:400 11px/1.4 Archivo;color:rgba(27,32,48,.78)">Только в отмеченные дни</span>
+</span>
+<div onClick="{{ toggleRemind }}" style="width:50px;height:29px;flex:none;border-radius:15px;padding:3px;cursor:pointer;display:flex;{{ remindStyle }}">
+<span style="width:23px;height:23px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(42,52,74,.35),inset 0 0 0 1px rgba(27,32,48,.1)"></span>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s5 }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="05 Body" style="padding:26px 16px 0;display:flex;flex-direction:column;gap:22px">
+<div style="padding:0 6px;display:flex;flex-direction:column;gap:8px">
+<span style="font:400 32px/1.08 Archivo;letter-spacing:-.02em;text-shadow:0 2px 20px rgba(255,255,255,.95)">Параметры</span>
+<span style="font:400 13px/1.5 Archivo;color:rgba(27,32,48,.80);text-shadow:0 1px 12px rgba(255,255,255,.9)">Нужны для расчёта весов и объёма. Можно изменить в профиле.</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<sc-for list="{{ sliders }}" as="s" hint-placeholder-count="2">
+<div style="padding:17px 18px;border-radius:26px;background:rgba(255,255,255,.3);backdrop-filter:blur(14px) saturate(150%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),0 0 0 1px rgba(27,32,48,.16),0 18px 34px -22px rgba(42,52,74,.35);text-shadow:0 1px 12px rgba(255,255,255,.9)">
+<div style="display:flex;align-items:baseline;justify-content:space-between">
+<span style="font:600 9px Archivo;letter-spacing:.18em;text-transform:uppercase;color:rgba(27,32,48,.82)">{{ s.label }}</span>
+<span style="display:flex;align-items:baseline;gap:5px"><span style="font:400 34px/1 Archivo;text-shadow:0 2px 20px rgba(255,255,255,.95)">{{ s.value }}</span><span style="font:400 11px ui-monospace,monospace;letter-spacing:.1em;color:rgba(27,32,48,.80)">{{ s.unit }}</span></span>
+</div>
+<div style="position:relative;height:6px;border-radius:3px;margin-top:13px;background:rgba(27,32,48,.1);box-shadow:inset 0 0 0 1px rgba(27,32,48,.16)">
+<span style="position:absolute;left:0;top:0;bottom:0;width:{{ s.pct }};border-radius:3px;background:{{ accent }};box-shadow:0 0 14px -2px {{ accent }}"></span>
+<span style="position:absolute;left:{{ s.pct }};top:-6px;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:#fff;box-shadow:0 3px 10px rgba(42,52,74,.4),inset 0 0 0 1px rgba(27,32,48,.14);cursor:grab"></span>
+</div>
+</div>
+</sc-for>
+<div style="display:flex;gap:9px">
+<sc-for list="{{ units }}" as="u" hint-placeholder-count="2">
+<div onClick="{{ u.pick }}" style="flex:1;height:46px;border-radius:22px;display:flex;align-items:center;justify-content:center;font:600 12px Archivo;cursor:pointer;{{ u.style }}">{{ u.label }}</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s6 }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="06 Equipment" style="padding:26px 16px 0;display:flex;flex-direction:column;gap:20px">
+<div style="padding:0 6px;display:flex;flex-direction:column;gap:8px">
+<span style="font:400 32px/1.08 Archivo;letter-spacing:-.02em;text-shadow:0 2px 20px rgba(255,255,255,.95)">Что доступно?</span>
+<span style="font:400 13px/1.5 Archivo;color:rgba(27,32,48,.80);text-shadow:0 1px 12px rgba(255,255,255,.9)">Отметь всё, что есть под рукой — план соберётся только из этого.</span>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ gear }}" as="g" hint-placeholder-count="8">
+<div onClick="{{ g.pick }}" style="padding:12px 16px;border-radius:22px;display:flex;align-items:center;gap:8px;font:600 12.5px Archivo;cursor:pointer;{{ g.style }}">
+<span data-icon style="font-size:16px">{{ g.icon }}</span>{{ g.label }}
+</div>
+</sc-for>
+</div>
+<div style="padding:15px 18px;border-radius:24px;font:400 11.5px/1.5 Archivo;color:rgba(27,32,48,.82);background:rgba(255,255,255,.3);backdrop-filter:blur(14px) saturate(150%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),0 0 0 1px rgba(27,32,48,.16),0 18px 34px -22px rgba(42,52,74,.35);text-shadow:0 1px 12px rgba(255,255,255,.9)">Тренажёр можно не искать в списке — наведи камеру в разделе «Скан», и приложение узнает его само.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s7 }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="07 Camera" style="padding:26px 16px 0;display:flex;flex-direction:column;gap:20px">
+<div style="padding:0 6px;display:flex;flex-direction:column;gap:8px">
+<span style="font:400 32px/1.08 Archivo;letter-spacing:-.02em;text-shadow:0 2px 20px rgba(255,255,255,.95)">Разбор техники</span>
+<span style="font:400 13px/1.5 Archivo;color:rgba(27,32,48,.80);text-shadow:0 1px 12px rgba(255,255,255,.9)">Камера считает повторы и следит за траекторией. Видео не покидает телефон.</span>
+</div>
+<div style="position:relative;height:236px;border-radius:30px;overflow:hidden;background:rgba(255,255,255,.3);backdrop-filter:blur(14px) saturate(150%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),0 0 0 1px rgba(27,32,48,.16),0 18px 34px -22px rgba(42,52,74,.35)">
+<svg viewBox="0 0 240 236" style="position:absolute;inset:0;width:100%;height:100%">
+<g stroke="#1b2030" stroke-width="3" stroke-linecap="round" fill="none" style="filter:drop-shadow(0 0 4px rgba(47,122,58,.7)) drop-shadow(0 0 12px rgba(47,122,58,.55))">
+<circle cx="120" cy="52" r="17"></circle>
+<line x1="120" y1="69" x2="120" y2="132"></line>
+<line x1="94" y1="86" x2="146" y2="86"></line>
+<line x1="94" y1="86" x2="78" y2="118"></line>
+<line x1="146" y1="86" x2="162" y2="118"></line>
+<line x1="78" y1="118" x2="86" y2="150"></line>
+<line x1="162" y1="118" x2="154" y2="150"></line>
+<line x1="104" y1="132" x2="136" y2="132"></line>
+<line x1="104" y1="132" x2="100" y2="180"></line>
+<line x1="136" y1="132" x2="140" y2="180"></line>
+<line x1="100" y1="180" x2="98" y2="216"></line>
+<line x1="140" y1="180" x2="142" y2="216"></line>
+</g>
+<g fill="#1b2030">
+<circle cx="94" cy="86" r="4"></circle><circle cx="146" cy="86" r="4"></circle>
+<circle cx="78" cy="118" r="4"></circle><circle cx="162" cy="118" r="4"></circle>
+<circle cx="104" cy="132" r="4"></circle><circle cx="136" cy="132" r="4"></circle>
+</g>
+<circle cx="120" cy="86" r="26" stroke="#2F7A3A" stroke-width="2" stroke-dasharray="4 6" fill="none" style="animation:obPulse 1.4s ease-in-out infinite"></circle>
+</svg>
+<span style="position:absolute;left:16px;bottom:14px;padding:8px 13px;border-radius:20px;font:600 10px ui-monospace,monospace;letter-spacing:.12em;background:rgba(255,255,255,.24);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.8),0 0 0 1px rgba(27,32,48,.16);text-shadow:0 1px 12px rgba(255,255,255,.9)">ТЕХНИКА 94 % · НОРМА</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:9px">
+<sc-for list="{{ privacy }}" as="p" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:11px;padding:0 6px">
+<span data-icon style="font-size:18px;color:{{ accent }}">{{ p.icon }}</span>
+<span style="font:400 12.5px/1.45 Archivo;color:rgba(27,32,48,.86);text-shadow:0 1px 12px rgba(255,255,255,.9)">{{ p.text }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s8 }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="08 Background" style="padding:26px 16px 0;display:flex;flex-direction:column;gap:20px">
+<div style="padding:0 6px;display:flex;flex-direction:column;gap:8px">
+<span style="font:400 32px/1.08 Archivo;letter-spacing:-.02em;text-shadow:0 2px 20px rgba(255,255,255,.95)">Свой фон</span>
+<span style="font:400 13px/1.5 Archivo;color:rgba(27,32,48,.80);text-shadow:0 1px 12px rgba(255,255,255,.9)">Кадр меняется по времени суток. Можно поставить свои снимки — горы, друзей, семью.</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px">
+<div style="aspect-ratio:9/16;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;cursor:pointer;background:rgba(255,255,255,.24);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.8),0 0 0 1px rgba(27,32,48,.16)" style-hover="background:rgba(255,255,255,.4)">
+<span data-icon style="font-size:24px">add_photo_alternate</span>
+<span style="font:600 10px/1.2 Archivo;text-align:center;color:rgba(27,32,48,.88)">Свой<br>снимок</span>
+</div>
+<sc-for list="{{ tiles }}" as="t" hint-placeholder-count="5">
+<div onClick="{{ t.pick }}" style="position:relative;aspect-ratio:9/16;border-radius:22px;overflow:hidden;cursor:pointer;{{ t.ring }}">
+<img src="{{ t.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></img>
+<span style="position:absolute;left:0;right:0;bottom:0;padding:16px 7px 6px;background:linear-gradient(180deg,rgba(8,10,18,0),rgba(8,10,18,.82));font:600 8px Archivo;letter-spacing:.1em;text-transform:uppercase">{{ t.phase }}</span>
+<span data-icon style="position:absolute;top:7px;right:7px;font-size:15px;color:{{ accent }};opacity:{{ t.on }};text-shadow:0 1px 5px rgba(0,0,0,.7)">check_circle</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ s9 }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="09 Ready" style="padding:44px 16px 0;display:flex;flex-direction:column;gap:24px;align-items:center">
+<div style="width:158px;height:158px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:rgba(255,255,255,.3);backdrop-filter:blur(14px) saturate(150%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),0 0 0 1px rgba(27,32,48,.16),0 18px 34px -22px rgba(42,52,74,.35);text-shadow:0 1px 12px rgba(255,255,255,.9)">
+<span style="font:400 56px/1 Archivo;text-shadow:0 2px 20px rgba(255,255,255,.95)">12</span>
+<span style="font:600 9px Archivo;letter-spacing:.2em;text-transform:uppercase;color:rgba(27,32,48,.82)">недель плана</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center">
+<span style="font:400 32px/1.08 Archivo;letter-spacing:-.02em;text-shadow:0 2px 20px rgba(255,255,255,.95)">План готов</span>
+<span style="font:400 13px/1.5 Archivo;color:rgba(27,32,48,.82);max-width:290px;text-shadow:0 1px 12px rgba(255,255,255,.9)">Первая тренировка — завтра утром. Плечи и спина, 48 минут.</span>
+</div>
+<div style="align-self:stretch;padding:18px;border-radius:26px;display:flex;flex-direction:column;gap:13px;background:rgba(255,255,255,.3);backdrop-filter:blur(14px) saturate(150%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),0 0 0 1px rgba(27,32,48,.16),0 18px 34px -22px rgba(42,52,74,.35);text-shadow:0 1px 12px rgba(255,255,255,.9)">
+<sc-for list="{{ summary }}" as="r" hint-placeholder-count="4">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:14px">
+<span style="font:600 9px Archivo;letter-spacing:.18em;text-transform:uppercase;color:rgba(27,32,48,.78)">{{ r.label }}</span>
+<span style="font:600 12.5px Archivo;white-space:nowrap">{{ r.value }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+</div>
+
+<div style="position:absolute;left:16px;right:16px;bottom:22px;display:flex;gap:9px;z-index:4">
+<div onClick="{{ back }}" style="width:52px;height:54px;flex:none;border-radius:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:{{ backOn }};background:rgba(255,255,255,.24);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.8),0 0 0 1px rgba(27,32,48,.16);transition:transform .18s ease,background .18s ease" style-hover="transform:translateY(-2px);background:rgba(255,255,255,.4)">
+<span data-icon style="font-size:20px">arrow_back</span>
+</div>
+<div onClick="{{ next }}" style="flex:1;height:54px;border-radius:26px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;cursor:pointer;background:rgba(255,255,255,.46);backdrop-filter:blur(16px) saturate(160%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.95),0 0 0 1px rgba(27,32,48,.3),0 18px 30px -18px rgba(42,52,74,.4);text-shadow:0 1px 12px rgba(255,255,255,.9);transition:transform .18s ease,background .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);background:rgba(255,255,255,.62);box-shadow:inset 0 0 0 1px rgba(255,255,255,1),0 0 0 1px rgba(27,32,48,.34)" style-active="transform:translateY(0);background:rgba(255,255,255,.72)">
+<span style="font:700 15px Archivo">{{ cta }}</span>
+<span data-icon style="font-size:20px">{{ ctaIcon }}</span>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844},&quot;step&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:1,&quot;min&quot;:1,&quot;max&quot;:9,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Screen&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#4B7A00&quot;,&quot;options&quot;:[&quot;#4B7A00&quot;,&quot;#7CE0FF&quot;,&quot;#FFB86B&quot;,&quot;#FF7A9C&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+const PHOTOS = [
+  'uploads/10_beach_sunset.webp', 'uploads/05_sunset_hills.webp', 'uploads/03_waterfall_dock.webp',
+  'uploads/07_snow_peak_tarn.webp', 'uploads/09_forest_lake.webp', 'uploads/08_coast_turquoise.webp',
+  'uploads/02_volcano.webp', 'uploads/01_cliffs_moher.webp', 'uploads/04_fuji_sakura.webp'
+];
+
+const GOALS = [
+  {icon: 'fitness_center', title: 'Сила', note: 'Малые повторы, большие веса'},
+  {icon: 'exercise', title: 'Масса', note: 'Объём и прогрессия нагрузки'},
+  {icon: 'bolt', title: 'Рельеф', note: 'Плотные круги, короткий отдых'},
+  {icon: 'directions_run', title: 'Выносливость', note: 'Кардио и длинные серии'}
+];
+
+const LEVELS = [
+  {num: '1', title: 'Первый год', note: 'Учим технику, веса подбираем осторожно'},
+  {num: '2', title: 'Год-три', note: 'Знакомые движения, средние веса'},
+  {num: '3', title: 'Больше трёх лет', note: 'Тренер только фиксирует срывы техники'}
+];
+
+const DAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+const GEAR = [
+  {icon: 'fitness_center', label: 'Штанга'}, {icon: 'exercise', label: 'Гантели'},
+  {icon: 'radio_button_checked', label: 'Блоки'}, {icon: 'linear_scale', label: 'Резина'},
+  {icon: 'accessibility_new', label: 'Турник'}, {icon: 'chair', label: 'Скамья'},
+  {icon: 'directions_bike', label: 'Кардио'}, {icon: 'self_improvement', label: 'Только вес тела'}
+];
+
+const PRIVACY = [
+  {icon: 'phone_iphone', text: 'Обработка на устройстве, 30 кадров в секунду'},
+  {icon: 'cloud_off', text: 'Видео не загружается и не сохраняется'},
+  {icon: 'tune', text: 'Разбор можно выключить в любой момент'}
+];
+
+const TILES = [
+  {src: 'uploads/10_beach_sunset.webp', phase: 'Сумерки'},
+  {src: 'uploads/07_snow_peak_tarn.webp', phase: 'Утро'},
+  {src: 'uploads/02_volcano.webp', phase: 'Ночь'},
+  {src: 'uploads/06_greek_terrace.webp', phase: 'День'},
+  {src: 'uploads/04_fuji_sakura.webp', phase: 'Рассвет'}
+];
+
+const SUMMARY = [
+  {label: 'Цель', value: 'Сила'},
+  {label: 'График', value: '4 дня · Пн Вт Чт Сб'},
+  {label: 'Разбор техники', value: 'Включён'},
+  {label: 'Фон', value: 'По времени суток'}
+];
+
+class Component extends DCLogic {
+  state = {step: null, goal: null, level: null, days: null, gear: null, remind: null, tile: null, unit: null};
+
+  _step() {
+    if (this.state.step !== null) return this.state.step;
+    const n = parseInt(this.props.step, 10);
+    return Number.isFinite(n) ? Math.min(9, Math.max(1, n)) : 1;
+  }
+  _v(key, fallback) { return this.state[key] === null ? fallback : this.state[key]; }
+
+  renderVals() {
+    const accent = this.props.accent || '#4B7A00';
+    const step = this._step();
+    const goal = this._v('goal', 0), level = this._v('level', 1);
+    const days = this._v('days', [0, 1, 3, 5]);
+    const gear = this._v('gear', [0, 1, 2, 4]);
+    const tile = this._v('tile', 0), unit = this._v('unit', 0);
+    const remind = this._v('remind', true);
+
+    const panel = 'background:rgba(255,255,255,.3);backdrop-filter:blur(14px) saturate(150%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),0 0 0 1px rgba(27,32,48,.16),0 18px 34px -22px rgba(42,52,74,.35);text-shadow:0 1px 12px rgba(255,255,255,.9)';
+    const chipOff = 'background:rgba(255,255,255,.24);backdrop-filter:blur(12px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.8),0 0 0 1px rgba(27,32,48,.16);color:#1b2030;text-shadow:0 1px 12px rgba(255,255,255,.9)';
+    const chipOn = 'background:' + accent + ';color:#f6f7fc;box-shadow:0 0 22px -6px ' + accent;
+    const sel = 'background:rgba(255,255,255,.42);backdrop-filter:blur(14px) saturate(150%);box-shadow:0 0 0 1px rgba(27,32,48,.16),inset 0 0 0 2px ' + accent + ',0 0 26px -8px ' + accent + ';text-shadow:0 1px 12px rgba(255,255,255,.9)';
+
+    const set = (k, v) => () => this.setState({[k]: v});
+    const toggleIn = (k, list, i) => () => {
+      const next = list.indexOf(i) >= 0 ? list.filter(x => x !== i) : list.concat(i);
+      this.setState({[k]: next});
+    };
+
+    return {
+      accent,
+      photo: PHOTOS[step - 1],
+      rail: PHOTOS.map((_, i) => ({
+        style: i + 1 <= step
+          ? 'background:' + accent + ';box-shadow:0 0 12px -2px ' + accent
+          : 'background:rgba(27,32,48,.2)'
+      })),
+      s1: step === 1, s2: step === 2, s3: step === 3, s4: step === 4, s5: step === 5,
+      s6: step === 6, s7: step === 7, s8: step === 8, s9: step === 9,
+
+      goals: GOALS.map((g, i) => ({
+        icon: g.icon, title: g.title, note: g.note,
+        mark: i === goal ? 'check_circle' : 'radio_button_unchecked',
+        tint: i === goal ? accent : 'rgba(255,255,255,.5)',
+        style: i === goal ? sel : panel,
+        pick: set('goal', i)
+      })),
+      levels: LEVELS.map((l, i) => ({
+        num: l.num, title: l.title, note: l.note,
+        style: i === level ? sel : panel,
+        dial: i === level
+          ? 'background:' + accent + ';color:#f6f7fc'
+          : 'background:rgba(255,255,255,.4);box-shadow:inset 0 0 0 1px rgba(27,32,48,.22)',
+        pick: set('level', i)
+      })),
+      days: DAYS.map((d, i) => ({
+        label: d,
+        style: days.indexOf(i) >= 0 ? chipOn : chipOff,
+        dot: days.indexOf(i) >= 0 ? 'rgba(255,255,255,.75)' : 'rgba(255,255,255,.3)',
+        pick: toggleIn('days', days, i)
+      })),
+      dayCount: String(days.length),
+      remindStyle: remind
+        ? 'background:' + accent + ';box-shadow:0 0 18px -4px ' + accent + ',inset 0 0 0 1px rgba(255,255,255,.4);justify-content:flex-end'
+        : 'background:rgba(27,32,48,.12);box-shadow:inset 0 0 0 1px rgba(27,32,48,.2);justify-content:flex-start',
+      toggleRemind: () => this.setState({remind: !remind}),
+
+      sliders: [
+        {label: 'Рост', value: unit === 0 ? '178' : '5′10″', unit: unit === 0 ? 'СМ' : 'FT', pct: '62%'},
+        {label: 'Вес', value: unit === 0 ? '74' : '163', unit: unit === 0 ? 'КГ' : 'LB', pct: '48%'}
+      ],
+      units: ['Метрическая', 'Имперская'].map((label, i) => ({
+        label, style: i === unit ? chipOn : chipOff, pick: set('unit', i)
+      })),
+
+      gear: GEAR.map((g, i) => ({
+        icon: g.icon, label: g.label,
+        style: gear.indexOf(i) >= 0 ? chipOn : chipOff,
+        pick: toggleIn('gear', gear, i)
+      })),
+      privacy: PRIVACY,
+
+      tiles: TILES.map((t, i) => ({
+        src: t.src, phase: t.phase, on: i === tile ? '1' : '0',
+        ring: i === tile
+          ? 'box-shadow:0 0 0 2px ' + accent + ',0 12px 26px -14px rgba(0,0,0,.9)'
+          : 'box-shadow:inset 0 0 0 1px rgba(27,32,48,.2)',
+        pick: set('tile', i)
+      })),
+      summary: SUMMARY,
+
+      cta: step === 1 ? 'Начать' : step === 7 ? 'Разрешить камеру' : step === 9 ? 'В приложение' : 'Дальше',
+      ctaIcon: step === 7 ? 'photo_camera' : 'arrow_forward',
+      backOn: step === 1 ? '.35' : '1',
+      next: () => this.setState({step: Math.min(9, step + 1)}),
+      back: () => this.setState({step: Math.max(1, step - 1)}),
+      skip: () => this.setState({step: 9})
+    };
+  }
+}
+</script>
+</body>
+</html>

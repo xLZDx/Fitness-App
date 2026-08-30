@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="_ds/modernist-45ca9727-c51f-443e-81d6-37788426e92c/styles.css">
+<script src="_ds/modernist-45ca9727-c51f-443e-81d6-37788426e92c/_ds_bundle.js"></script>
+<style>
+a{color:var(--color-accent-700);text-decoration:none}
+a:hover{color:var(--color-accent)}
+</style></helmet>
+
+<div style="width:4100px;padding:56px 48px 80px;background:var(--color-bg);font-family:Archivo,sans-serif;color:var(--color-text)">
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:48px">
+<div>
+<div style="font:700 11px Archivo;letter-spacing:.24em;text-transform:uppercase;color:var(--color-accent-700)">Turn 17 · <a href="#17a">17a</a></div>
+<div style="font:800 46px/1.02 Archivo;letter-spacing:-.025em;margin-top:14px">Онбординг · девять шагов в обеих темах</div>
+</div>
+<div style="max-width:700px;font:400 14px/1.6 Archivo;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Собран на утверждённой HUD-формуле: заливки нет, форму держит светящийся контур, крупные числа весом 400. Каждый шаг стоит на своём кадре — по ним же видно, как работает смена фона по времени суток.</div>
+</div>
+<div style="height:2px;background:var(--color-divider);margin-top:28px"></div>
+
+<div id="17a" style="padding-top:40px">
+<div style="display:flex;align-items:baseline;gap:16px;padding-bottom:14px">
+<span style="font:800 30px/1 Archivo;letter-spacing:-.02em">Тёмная тема</span>
+<span style="font:400 12px ui-monospace,monospace;letter-spacing:.08em;color:color-mix(in srgb,var(--color-text) 56%,transparent)">9 экранов</span>
+</div>
+<div style="height:2px;background:var(--color-divider)"></div>
+<div style="display:flex;gap:36px;padding-top:26px">
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="9">
+<div style="width:390px">
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:10px">
+<span style="font:700 13px Archivo">{{ s.label }}</span>
+<span style="font:400 10px ui-monospace,monospace;letter-spacing:.08em;color:color-mix(in srgb,var(--color-text) 54%,transparent)">{{ s.num }}</span>
+</div>
+<div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 26px 52px -32px rgba(32,30,29,.55)">
+<dc-import name="Fitness Onboarding - Dark" step="{{ s.step }}" hint-size="390px,844px"></dc-import>
+</div>
+<div style="font:400 12px/1.5 Archivo;color:color-mix(in srgb,var(--color-text) 62%,transparent);padding-top:11px">{{ s.note }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div style="padding-top:52px">
+<div style="display:flex;align-items:baseline;gap:16px;padding-bottom:14px">
+<span style="font:800 30px/1 Archivo;letter-spacing:-.02em">Светлая тема</span>
+<span style="font:400 12px ui-monospace,monospace;letter-spacing:.08em;color:color-mix(in srgb,var(--color-text) 56%,transparent)">те же девять шагов</span>
+</div>
+<div style="height:2px;background:var(--color-divider)"></div>
+<div style="display:flex;gap:36px;padding-top:26px">
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="9">
+<div style="width:390px">
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:10px">
+<span style="font:700 13px Archivo">{{ s.label }}</span>
+<span style="font:400 10px ui-monospace,monospace;letter-spacing:.08em;color:color-mix(in srgb,var(--color-text) 54%,transparent)">{{ s.num }}</span>
+</div>
+<div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 26px 52px -32px rgba(32,30,29,.4)">
+<dc-import name="Fitness Onboarding - Light" step="{{ s.step }}" hint-size="390px,844px"></dc-import>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+
+<div style="margin-top:56px;padding:44px 48px;background:var(--color-accent);color:var(--color-bg)">
+<div style="font:700 11px Archivo;letter-spacing:.24em;text-transform:uppercase;opacity:.85">Правила потока</div>
+<div style="font:800 30px/1.16 Archivo;letter-spacing:-.02em;margin-top:16px;max-width:2400px">Девять шагов, один вопрос на экран. «Пропустить» доступен всегда и ведёт сразу к плану на дефолтных ответах. Полоса прогресса сверху заполняется акцентом, кнопка «Дальше» — единственный светящийся элемент внизу, назад — иконкой слева.</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const STEPS = [
+  {step: 1, label: 'Welcome', note: 'Обещание продукта одной фразой, без списка функций. Фон — закатный кадр, самый узнаваемый вид приложения.'},
+  {step: 2, label: 'Цель', note: 'Четыре карточки; выбранная получает акцентный контур вместо заливки — иерархия держится светом.'},
+  {step: 3, label: 'Опыт', note: 'Круглые цифры 1–2–3 вместо слов «новичок / средний» — короче читается и не обидно.'},
+  {step: 4, label: 'График', note: 'Круглый счётчик дней обновляется от чипов; тумблер напоминания в той же панели.'},
+  {step: 5, label: 'Параметры', note: 'Слайдеры с крупным числом весом 400; переключатель единиц — два чипа под ними.'},
+  {step: 6, label: 'Оборудование', note: 'Мультивыбор чипами; подсказка внизу отправляет к скану вместо длинного списка тренажёров.'},
+  {step: 7, label: 'Камера', note: 'Единственный экран с запросом доступа: сразу показываем, как выглядит разбор, и три строки про приватность.'},
+  {step: 8, label: 'Фон', note: 'Первая плитка — загрузка своего снимка, остальные с подписью фазы; выбранная в акцентном кольце.'},
+  {step: 9, label: 'Готово', note: 'Итог одним кругом и четырьмя строками сводки; кнопка ведёт на Home.'}
+];
+
+class Component extends DCLogic {
+  renderVals() {
+    return {steps: STEPS.map(s => ({...s, num: String(s.step).padStart(2, '0') + ' / 09'}))};
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="_ds/modernist-45ca9727-c51f-443e-81d6-37788426e92c/styles.css">
+<script src="_ds/modernist-45ca9727-c51f-443e-81d6-37788426e92c/_ds_bundle.js"></script>
+<style>
+a{color:var(--color-accent-700);text-decoration:none}
+a:hover{color:var(--color-accent)}
+</style></helmet>
+
+<div style="width:3020px;padding:56px 48px 80px;background:var(--color-bg);font-family:Archivo,sans-serif;color:var(--color-text)">
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:48px">
+<div>
+<div style="font:700 11px Archivo;letter-spacing:.24em;text-transform:uppercase;color:var(--color-accent-700)">Turn 15 · <a href="#15a">15a</a></div>
+<div style="font:800 46px/1.02 Archivo;letter-spacing:-.025em;margin-top:14px">Полная сборка · тёмная тема</div>
+</div>
+<div style="max-width:640px;font:400 14px/1.6 Archivo;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Все экраны и их состояния в одном месте: четырнадцать кадров, сгруппированных по разделам. Фон у каждого свой, чтобы видеть, что HUD-формула держится на любом кадре.</div>
+</div>
+<div style="height:2px;background:var(--color-divider);margin-top:28px"></div>
+
+<div id="15a">
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+<div style="padding-top:44px">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:32px;padding-bottom:14px">
+<div style="display:flex;align-items:baseline;gap:16px">
+<span style="font:800 30px/1 Archivo;letter-spacing:-.02em">{{ g.title }}</span>
+<span style="font:400 12px ui-monospace,monospace;letter-spacing:.08em;color:color-mix(in srgb,var(--color-text) 56%,transparent)">{{ g.count }}</span>
+</div>
+<div style="max-width:760px;font:400 13px/1.6 Archivo;color:color-mix(in srgb,var(--color-text) 66%,transparent);text-align:right">{{ g.note }}</div>
+</div>
+<div style="height:2px;background:var(--color-divider)"></div>
+<div style="display:flex;gap:40px;padding-top:26px;flex-wrap:wrap">
+<sc-for list="{{ g.screens }}" as="s" hint-placeholder-count="3">
+<div style="width:390px">
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:10px">
+<span style="font:700 13px Archivo;letter-spacing:-.005em">{{ s.label }}</span>
+<span style="font:400 10px ui-monospace,monospace;letter-spacing:.08em;color:color-mix(in srgb,var(--color-text) 54%,transparent)">{{ s.state }}</span>
+</div>
+<div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 26px 52px -32px rgba(32,30,29,.55)">
+<sc-if value="{{ s.isCoach }}" hint-placeholder-val="{{ false }}">
+<dc-import name="Fitness Form Coach Phone" hint-size="390px,844px"></dc-import>
+</sc-if>
+<sc-if value="{{ s.isApp }}" hint-placeholder-val="{{ true }}">
+<dc-import name="Fitness Glass Phone v1 - Sunset" sky="photo" sky-photo="{{ s.photo }}" hour="{{ s.hour }}" initial-tab="{{ s.tab }}" initial-view="{{ s.view }}" initial-sub-tab="{{ s.subTab }}" initial-filter="{{ s.filter }}" initial-scanned="{{ s.scanned }}" initial-day="{{ s.day }}" initial-done="{{ s.done }}" initial-rest="{{ s.rest }}" hint-size="390px,844px"></dc-import>
+</sc-if>
+</div>
+<div style="font:400 12px/1.5 Archivo;color:color-mix(in srgb,var(--color-text) 62%,transparent);padding-top:11px">{{ s.note }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const base = {tab: 0, view: 'home', subTab: 0, filter: 0, scanned: 'false', day: 4, done: 1, rest: 0, hour: 20, photo: 'uploads/10_beach_sunset.webp'};
+const S = o => Object.assign({}, base, o, {isApp: !o.isCoach, isCoach: !!o.isCoach});
+
+const GROUPS = [
+  {title: 'Home', note: 'Главная в трёх состояниях: тренировочный день, день отдыха и вечер после закрытой тренировки.',
+   screens: [
+     S({label: 'Home · день тренировки', state: 'day 4', note: 'Круг с числом упражнений и кнопка старта — единственные светящиеся элементы.'}),
+     S({label: 'Home · день отдыха', state: 'day 6', day: 6, photo: 'uploads/09_forest_lake.webp', hour: 9, note: 'Вместо старта — восстановление; кнопка теряет свечение, панель остаётся.'}),
+     S({label: 'Home · утро', state: 'day 1 · 09:00', day: 1, photo: 'uploads/07_snow_peak_tarn.webp', hour: 9, note: 'Тот же экран на светлом кадре — контур виден за счёт плотности края, не заливки.'})
+   ]},
+  {title: 'Workouts', note: 'Две вкладки раздела и работа фильтров каталога.',
+   screens: [
+     S({label: 'Workouts · программы', state: 'sub 0', tab: 1, photo: 'uploads/05_sunset_hills.webp', note: 'Текущая программа сверху, список остальных — стеклянной рамкой со строками.'}),
+     S({label: 'Workouts · каталог', state: 'sub 1 · filter 0', tab: 1, subTab: 1, photo: 'uploads/03_waterfall_dock.webp', hour: 17, note: 'Чипы фильтров: выбранный сплошной акцент, остальные — контур.'}),
+     S({label: 'Workouts · фильтр', state: 'sub 1 · filter 2', tab: 1, subTab: 1, filter: 2, photo: 'uploads/08_coast_turquoise.webp', hour: 17, note: 'Счётчик упражнений под чипами обновляется вместе с выбором.'})
+   ]},
+  {title: 'Scan', note: 'Распознавание тренажёра: пустая рамка и результат.',
+   screens: [
+     S({label: 'Scan · наведение', state: 'scanned false', tab: 2, photo: 'uploads/06_greek_terrace.webp', hour: 13, note: 'Уголки рамки — единственная плотная графика; самый светлый кадр проекта.'}),
+     S({label: 'Scan · найдено', state: 'scanned true', tab: 2, scanned: 'true', photo: 'uploads/01_cliffs_moher.webp', hour: 6, note: 'Карточка совпадения с круглым процентом и переходом в упражнения.'})
+   ]},
+  {title: 'Session', note: 'Активный подход: работа, отдых и финал.',
+   screens: [
+     S({label: 'Session · подход', state: 'done 1', view: 'session', photo: 'uploads/05_sunset_hills.webp', note: 'Крупный круг прогресса, список сетов ниже — геометрия совпадает с Form Coach.'}),
+     S({label: 'Session · отдых', state: 'rest 62 s', view: 'session', rest: 62, photo: 'uploads/10_beach_sunset.webp', note: 'Таймер отдыха идёт живьём; кнопка меняет подпись, не форму.'}),
+     S({label: 'Session · завершено', state: 'done 4', view: 'session', done: 4, photo: 'uploads/02_volcano.webp', hour: 2, note: 'Финал на тёмном кадре: свечение цифр читается сильнее всего.'})
+   ]},
+  {title: 'Progress · Profile · Coach', note: 'Аналитика, настройки и экран тренера с реальным видео.',
+   screens: [
+     S({label: 'Progress', state: 'tab 3', tab: 3, photo: 'uploads/09_forest_lake.webp', hour: 9, note: 'Столбцы объёма и календарь получили контур, чтобы не растворяться в прозрачной панели.'}),
+     S({label: 'Profile', state: 'tab 4', tab: 4, photo: 'uploads/01_cliffs_moher.webp', hour: 6, note: 'Настройки: разделители заменены воздухом между стеклянными рамками.'}),
+     S({label: 'Form coach', state: 'видео · скелет', isCoach: true, note: 'Источник стиля: круглые счётчики, контур вместо заливки, зелёная подсветка скелета.'})
+   ]}
+];
+
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      groups: GROUPS.map(g => ({
+        title: g.title, note: g.note,
+        count: g.screens.length + ' экрана',
+        screens: g.screens
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

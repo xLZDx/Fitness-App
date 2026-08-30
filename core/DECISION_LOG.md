@@ -35493,3 +35493,51 @@ summary, timeline, the before/after of the stale handoff header GPT-PM caught, t
 DoD / Status / Tail) for both plans -- the retrospective one (`...258870`, left `pending`, DoD
 rejected as insufficient by GPT-PM, superseded) and the remediation one (`...a4b86c`, `VERDICT:
 APPROVE`, closed `passed`). No source code touched; documentation only.
+
+## 2026-08-30 ~09:10 UTC -- REFUSAL/CORRECTION: gpt_review_gate.py's Fitness_App push exclusion
+## reverted on direct operator instruction; full design handoff archive extracted (was 80% missing)
+
+**Two unrelated corrections in one window, both operator-initiated after the report above.**
+
+**1. Hook exclusion reverted.** The operator read the report's line about
+`gpt_review_gate.py`'s `EXCLUDED_REPO_ROOTS` skipping Fitness_App's push final-receipt check and
+said, verbatim, "надо включить обратно" (turn it back on). Edited
+`C:\Users\koros\.claude\hooks\gpt_review_gate.py`: `EXCLUDED_REPO_ROOTS` for Fitness_App changed
+from `[r"D:\Repo\Fitness_App"]` to `[]`. The 2026-08-26 rationale comment (review.js
+correlation-detector bug) was left in place as history rather than deleted, with a dated note
+explaining the reversion and pointing back to that rationale if the bug recurs. This file lives in
+`~/.claude`, outside this repo's git history (known gap, `~/.claude/CLAUDE.md` §15) -- recorded
+here as this repo's own evidence trail for the change, since the hook repo itself has none.
+
+**2. Full design handoff archive extracted -- a real, multi-session gap, not a minor miss.**
+Continuing the HUD-redesign plan (GPT-PM `VERDICT: APPROVE` on the Profile-header question,
+`PROFILE_IDENTITY_HEADER` gate authorized), the operator pasted two reference images and, on
+seeing "иконки навигации" framed as unreferenced, pointed out those images came from a design
+handoff already sitting on their disk -- `D:\Downloads\Mobile app design (4).zip`. Investigation
+confirmed: this is the SAME archive `core/design/reference/onboarding_v4/README.md` already
+documents extracting from, on 2026-08-20 -- but only its onboarding subset was ever pulled in.
+The archive's other 80% (all 45 files: `Fitness Glass Phone v1` dark/light -- Home, Workouts, Scan,
+Session, Progress, Profile; `Fitness Form Coach Phone.dc.html` with an explicit real-product
+pose-overlay spec -- glowing white bones, green/red by technique correctness, pulsing dashed
+error-joint indicator; background library; screenshots; source uploads/videos) was never
+extracted. Every visual-parity check done in this repo's HUD-redesign work instead compared
+against `docs/Redisign/reference/prototype/` -- video-frame crops from a screen recording, whose
+own README honestly states it does NOT cover Scan, Session, Progress, or Form Coach. Nobody flagged
+that a much higher-fidelity, more complete reference existed alongside the weaker one in active use.
+
+Concretely, this means `FORM_COACH_HUD_ALIGNMENT` (closed 2026-08-29/30 as done) was scoped, by its
+own opening entry above, to EXCLUDE pose-avatar/skeleton visual treatment -- so even a careful read
+of that gate would not have covered the Form Coach pose-overlay's visual style. The deeper problem
+is that the decision to scope it that way, and every later "compared against the reference" claim
+in this log, was made without this archive in view.
+
+**Remediation, this window**: extracted the archive's full remaining contents (operator instruction:
+"забери осолютно все из зипа" -- take absolutely everything from the zip, not a curated subset) into
+`core/design/reference/full_handoff_v1/` -- all `.dc.html` specs, `CLAUDE.md`/`README.md`,
+screenshots (dark+light, all 5 sections, plus onboarding and contact sheets), `uploads/` (10
+background photos + 2 reference clips), and `support.js` (kept for completeness per the operator's
+instruction, though the archive's own README still says not to ship it in the product). See
+`core/design/reference/full_handoff_v1/README_LOCAL.md` for the full provenance note. Next: compare
+`mobile/lib/features/form_check/data/pose_silhouette.dart`/`pose_avatar.dart` (585+215 lines, an
+existing pose-overlay mechanism) against this spec and report concrete deltas -- not yet done in
+this commit.

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="_ds/modernist-45ca9727-c51f-443e-81d6-37788426e92c/styles.css">
+<script src="_ds/modernist-45ca9727-c51f-443e-81d6-37788426e92c/_ds_bundle.js"></script>
+<style>
+a{color:var(--color-accent-700);text-decoration:none}
+a:hover{color:var(--color-accent)}
+</style></helmet>
+
+<div style="width:2400px;padding:56px 48px 72px;background:var(--color-bg);font-family:Archivo,sans-serif;color:var(--color-text)">
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:48px">
+<div>
+<div style="font:700 11px Archivo;letter-spacing:.24em;text-transform:uppercase;color:var(--color-accent-700)">Turn 9 · <a href="#9a">9a</a></div>
+<div style="font:800 46px/1.02 Archivo;letter-spacing:-.025em;margin-top:14px">Все десять фонов на экране</div>
+</div>
+<div style="max-width:600px;font:400 14px/1.6 Archivo;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Один и тот же домашний экран, десять кадров. Солнце убрано — свет принадлежит фотографии; вуаль подстроена под фазу, поэтому стекло читается везде. Подпись под каждым — фаза, на которую кадр назначен.</div>
+</div>
+<div style="height:2px;background:var(--color-divider);margin-top:28px"></div>
+
+<div id="9a" style="display:grid;grid-template-columns:repeat(5,390px);gap:56px 48px;margin-top:40px;align-items:start">
+<sc-for list="{{ shots }}" as="s" hint-placeholder-count="10">
+<div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:12px">
+<span style="font:800 19px/1 Archivo;letter-spacing:-.01em">{{ s.name }}</span>
+<span style="font:700 10px Archivo;letter-spacing:.18em;text-transform:uppercase;color:var(--color-accent-700)">{{ s.phase }}</span>
+</div>
+<div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 30px 60px -34px rgba(32,30,29,.55)">
+<dc-import name="Fitness Glass Phone v1 - Sunset" sky="photo" sky-photo="{{ s.src }}" hour="{{ s.hour }}" hint-size="390px,844px"></dc-import>
+</div>
+<div style="font:400 12px/1.5 Archivo;color:color-mix(in srgb,var(--color-text) 62%,transparent);padding-top:12px">{{ s.note }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const SHOTS = [
+  {name: 'Cliffs of Moher', src: 'uploads/01_cliffs_moher.webp', phase: 'Рассвет · A', hour: 6,
+   note: 'Холодная пастель, много ровного неба сверху — стекло ложится идеально.'},
+  {name: 'Volcano', src: 'uploads/02_volcano.webp', phase: 'Ночь · A + B', hour: 2,
+   note: 'Самый тёмный кадр из десяти, но лава спорит с акцентом в нижней половине.'},
+  {name: 'Waterfall dock', src: 'uploads/03_waterfall_dock.webp', phase: 'Золотой час · B', hour: 17,
+   note: 'Фиолетовое небо и тёплый склон — сильный кадр, но верх плотный по деталям.'},
+  {name: 'Fuji · sakura', src: 'uploads/04_fuji_sakura.webp', phase: 'Рассвет · B', hour: 6,
+   note: 'Самый спокойный верх во всём наборе; лучший кандидат в дефолт светлой темы.'},
+  {name: 'Sunset hills', src: 'uploads/05_sunset_hills.webp', phase: 'Сумерки · B', hour: 20,
+   note: 'Ровный градиент вверху, тёмная земля внизу — таб-бар садится на неё чисто.'},
+  {name: 'Greek terrace', src: 'uploads/06_greek_terrace.webp', phase: 'День · A', hour: 13,
+   note: 'Самый светлый кадр: вуаль здесь максимальная, иначе белый текст плывёт.'},
+  {name: 'Snow peak tarn', src: 'uploads/07_snow_peak_tarn.webp', phase: 'Утро · A', hour: 9,
+   note: 'Лиловая дымка и белый пик — холодный, чистый, хорошо держит лайм.'},
+  {name: 'Turquoise coast', src: 'uploads/08_coast_turquoise.webp', phase: 'Золотой час · A / День · B', hour: 17,
+   note: 'Тёплое небо против бирюзы — самый контрастный кадр, работает как акцентный.'},
+  {name: 'Forest lake', src: 'uploads/09_forest_lake.webp', phase: 'Утро · B', hour: 9,
+   note: 'Почти монохром, тихий; глубина за стеклом читается лучше всего.'},
+  {name: 'Beach sunset', src: 'uploads/10_beach_sunset.webp', phase: 'Сумерки · A', hour: 20,
+   note: 'Диск солнца уже внутри фотографии — именно поэтому нарисованное убрано.'}
+];
+
+class Component extends DCLogic {
+  renderVals() { return {shots: SHOTS}; }
+}
+</script>
+</body>
+</html>
