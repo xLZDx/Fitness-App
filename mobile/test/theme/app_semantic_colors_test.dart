@@ -532,8 +532,25 @@ void main() {
     // poseWarning / poseError` when `PushupAlignmentClassifier` (the one
     // shipped rule entitled to fault a rep — `form_classifier.dart`,
     // `canFault`) has a verdict to paint.
+    //
+    // 55 -> 58, 2026-08-30, same day (GPT-PM round-1 review of `9d43c92`,
+    // MAJOR 2): the entry directly above was itself wrong, caught before
+    // push. The consolidation it describes recoloured the whole skeleton
+    // (bones, glow, joints) instead of keeping the reference's own recipe —
+    // bones stay white in every state, colour is a separate glow layer
+    // behind them (`core/design/reference/full_handoff_v1/README.md:109`,
+    // read directly to confirm, not taken from the review's paraphrase).
+    // Reverted `form_check_page.dart`'s bone/glow/core/joint paints to the
+    // original literal `Colors.white` (18 -> 18, i.e. back to what HEAD
+    // already had) and added the coloured verdict as an independent glow
+    // pass that never reads `Colors.white` at all — it draws in
+    // `poseCorrect`/`poseError` or not at all. Net for this file: back to
+    // 18, same as before either change; total back to 58, matching the
+    // actually-measured HEAD baseline the entry above already established.
+    // Worth being explicit this is not the ledger "un-fixing" anything —
+    // 58 was always the real number; 55 was the wrong fix's byproduct.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 55, reason: 'per file: $whites');
+    expect(total, 58, reason: 'per file: $whites');
   });
 
   group('lerp', () {

@@ -1,5 +1,4 @@
 import 'dart:async' show TimeoutException;
-import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart' show debugPrint, mapEquals;
@@ -988,7 +987,6 @@ class _PoseAvatar extends ConsumerWidget {
           frame: frame,
           severity: severity,
           colorCorrect: colors.poseCorrect,
-          colorWarning: colors.poseWarning,
           colorError: colors.poseError,
         ),
       ),
@@ -1009,7 +1007,6 @@ class _PoseAvatarPainter extends CustomPainter {
     required this.frame,
     required this.severity,
     required this.colorCorrect,
-    required this.colorWarning,
     required this.colorError,
   });
 
@@ -1023,25 +1020,27 @@ class _PoseAvatarPainter extends CustomPainter {
 
   /// 0/1/2 from the active classifier's worst [FormFeedback], or null when
   /// no active classifier is entitled to fault this movement
-  /// ([FormClassifier.canFault]) — see the caller in `_PoseAvatar.build`.
-  /// Null keeps the figure exactly as it painted before this feature
-  /// existed: plain white, no verdict implied. This is deliberate for squat
-  /// depth and hip-hinge, which are camera-angle-confounded and must not be
-  /// shown as "correct" or "wrong" until the silhouette-match rule exists
-  /// (`form_classifier.dart` — `SquatDepthClassifier`,
-  /// `DeadliftHipHingeClassifier`).
+  /// ([FormClassifier.canFault]) — see [avatarVerdictSeverity] and the
+  /// caller in `_PoseAvatar.build`. Null keeps the figure exactly as it
+  /// painted before this feature existed: plain white, no glow, no verdict
+  /// implied. This is deliberate for squat depth and hip-hinge, which are
+  /// camera-angle-confounded and must not be shown as "correct" or "wrong"
+  /// until the silhouette-match rule exists (`form_classifier.dart` —
+  /// `SquatDepthClassifier`, `DeadliftHipHingeClassifier`).
   final int? severity;
 
   final Color colorCorrect;
-  final Color colorWarning;
   final Color colorError;
 
-  /// The verdict colour for [severity], or null to mean "no verdict" — the
-  /// plain white figure.
-  Color? get _verdictColor => switch (severity) {
+  /// The reference (`core/design/reference/full_handoff_v1/README.md:109`)
+  /// defines exactly two pose-overlay glow states — correct (green) and
+  /// error (red) — not a three-way traffic light; the "corrective nudge"
+  /// colour belongs to the cue card, not the skeleton. So severity 1
+  /// ("nudge") and 2 ("stop") both read as the error glow; only severity 0
+  /// gets the correct one.
+  Color? get _glowColor => switch (severity) {
         null => null,
         0 => colorCorrect,
-        1 => colorWarning,
         _ => colorError,
       };
 
@@ -1087,22 +1086,6 @@ class _PoseAvatarPainter extends CustomPainter {
         ));
     }
 
-    // Plain white with no verdict (severity == null) is exactly the figure
-    // this painted before colour existed. A verdict colour replaces white at
-    // the same alphas — the figure's *shape* language does not change, only
-    // its tint, so "which classifier is active" never redraws the body
-    // differently, only recolours it.
-    final verdictColor = _verdictColor;
-    final boneColor = verdictColor ?? Colors.white;
-
-    // A fault (severity >= 1) pulses so it reads as "something to fix right
-    // now" rather than a static tint indistinguishable from a colour theme.
-    // Severity 0 (clean rep) and null (no verdict) never pulse — pulsing on
-    // a clean rep would read as an alarm about nothing.
-    final pulse = (severity ?? 0) >= 1
-        ? 0.55 + 0.45 * math.sin(frame.timestampMs / 130)
-        : 1.0;
-
     canvas.drawPath(body, Paint()..color = const Color(0xE60A0912));
     canvas.drawPath(
       body,
@@ -1110,7 +1093,7 @@ class _PoseAvatarPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = (limbWidth * 0.14).clamp(1.5, 4.0)
         ..strokeJoin = StrokeJoin.round
-        ..color = boneColor.withValues(alpha: 0.45),
+        ..color = Colors.white.withValues(alpha: 0.45),
     );
 
     // Every bone in ONE path, so the glow is a single blurred draw rather than
@@ -1126,6 +1109,38 @@ class _PoseAvatarPainter extends CustomPainter {
     }
     final boneWidth = (limbWidth * 0.20).clamp(2.0, 6.0);
 
+    // The verdict is a GLOW behind the bone, not a recolour of it — the
+    // reference keeps the skeleton itself white in every state
+    // (`full_handoff_v1/README.md:109`: "кости 3-3.4 px, цвет #FFFFFF").
+    // Drawn before the white strokes below so the white line sits on top of
+    // its own halo. Two blurred passes approximate the reference's stacked
+    // `drop-shadow(0 0 5px)` + `drop-shadow(0 0 14px)`; the exact rgba
+    // literals it specifies are single-theme, so this uses the app's own
+    // theme-reactive `poseCorrect`/`poseError` tokens instead (already the
+    // same green/red family), the same adaptation already made for the nav
+    // icons against this same reference.
+    final glowColor = _glowColor;
+    if (glowColor != null) {
+      canvas.drawPath(
+        bones,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = boneWidth
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, boneWidth * 2.3)
+          ..color = glowColor.withValues(alpha: 0.55),
+      );
+      canvas.drawPath(
+        bones,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = boneWidth
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, boneWidth * 0.9)
+          ..color = glowColor.withValues(alpha: 0.85),
+      );
+    }
+
     canvas.drawPath(
       bones,
       Paint()
@@ -1133,7 +1148,7 @@ class _PoseAvatarPainter extends CustomPainter {
         ..strokeWidth = boneWidth * 2.0
         ..strokeCap = StrokeCap.round
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, boneWidth * 1.4)
-        ..color = boneColor.withValues(alpha: 0.45 * pulse),
+        ..color = Colors.white.withValues(alpha: 0.45),
     );
     canvas.drawPath(
       bones,
@@ -1141,12 +1156,24 @@ class _PoseAvatarPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = boneWidth
         ..strokeCap = StrokeCap.round
-        ..color = boneColor.withValues(alpha: 0.95 * pulse),
+        ..color = Colors.white.withValues(alpha: 0.95),
     );
 
     // Joints last, so an articulation reads as a bright point rather than as a
     // thickening of the bone that runs through it.
-    final jointCore = Paint()..color = boneColor.withValues(alpha: pulse);
+    //
+    // NOT IMPLEMENTED: the reference also marks the specific faulty joint
+    // with a pulsing dashed ring (r=26, dash `4 6`, 1.1s cycle -- same doc).
+    // `SilhouetteFigure.joints` is a flat `List<Offset>` with no landmark
+    // identity by the time it reaches this painter (`pose_silhouette.dart`
+    // discards the `LandmarkType` keys `PoseTarget.joints` carried), so
+    // there is no way from here to know WHICH of these points is the one
+    // `FormFeedback.rule`/`FormClassifier.requiredLandmarks` implicates.
+    // Threading that identity through `buildSilhouette` is real surgery on
+    // carefully-reasoned, already-tested geometry code (mirroring, the B4
+    // union fix) and deliberately out of this pass -- see the DECISION_LOG
+    // entry this change belongs to.
+    final jointCore = Paint()..color = Colors.white;
     for (final j in figure.joints) {
       canvas.drawCircle(place(j), boneWidth * 0.62, jointCore);
     }

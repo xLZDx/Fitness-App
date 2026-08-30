@@ -36488,8 +36488,12 @@ pursue formal named-gate verdicts for G-B/G-E.
 gave G-D. GPT-PM round 26 independently re-verified all six B1-B6 sites in current `master` (not
 recalled from the earlier round) and confirmed both remediation commits (`ff85df8`, `47499ee`) as
 ancestors of `origin/master` via GitHub's own compare API, not the request's own narrative.
-**`VERDICT: G-B: FORMALLY CLOSED by this review`** -- explicitly scoped to the six-site eligibility
-gate only; does not touch G-A/G-C/G-E's own open items.
+Reply's actual verdict line was **`VERDICT: APPROVE`**, with **`G-B: FORMALLY CLOSED by this
+review`** stated separately, further down the same reply -- not one combined "VERDICT: G-B:..."
+line as an earlier draft of this entry quoted it (GPT-PM's own round-1 review of the redesign gate
+below caught this misquote as a MINOR finding). Recorded verbatim here rather than repeating the
+fabricated combined form. Explicitly scoped to the six-site eligibility gate only; does not touch
+G-A/G-C/G-E's own open items.
 
 **Operator instruction**: finish the HUD/Figma redesign "до конца", explicitly including the Form
 Coach coloured skeleton overlay (`ГО`). Two background investigations (read-only) preceded any
@@ -36512,13 +36516,16 @@ edit:
    (player/timer), Onboarding (9 reference steps vs 10 current, non-1:1 semantically) and Scan
    (richer live/history UI vs a minimal reference) are genuine, undefined-scope gaps.
 
-**Shipped this gate** (commit follows this entry): nav icon fix (`main_shell.dart`); Profile "At a
-glance" unconditional on `profile != null` (`profile_page.dart`); Form Coach avatar now colours
-green/amber/red by `FormFeedback.severity` with a pulse on an actual fault, gated on
-`FormClassifier.canFault` via a new pure function `avatarVerdictSeverity` (unit-tested,
-`avatar_verdict_severity_test.dart`) rather than on severity alone -- Squat/Deadlift stay plain white
-by design, since colouring them would be exactly the false-safety-signal class of defect this
-session's G-A..G-E remediation spent the day closing elsewhere. Full `flutter test` run: 3297/3299
+**Shipped this gate, first draft** (commit `9d43c92`, unpushed; remediated by a follow-up commit --
+see the GPT-PM round below for what actually changed before push): nav icon fix (`main_shell.dart`); Profile "At a glance"
+unconditional on `profile != null` (`profile_page.dart`); a Form Coach avatar colour-verdict
+mechanism gated on `FormClassifier.canFault` via a new pure function `avatarVerdictSeverity`
+(unit-tested, `avatar_verdict_severity_test.dart`) rather than on severity alone -- Squat/Deadlift
+stay plain white by design, since colouring them would be exactly the false-safety-signal class of
+defect this session's G-A..G-E remediation spent the day closing elsewhere. This first draft
+recoloured the whole skeleton (green/amber/red) with a whole-figure pulse; both the exact visual
+treatment and the mechanism's real-world reachability turned out to be wrong -- see the review below,
+read before push, not after. Full `flutter test` run: 3297/3299
 passed; 2 pre-existing failures (`composed_home_light/dark` goldens) confirmed via direct image diff
 to be an unrelated, already-stale day-strip redesign plus a date-dependent "today" indicator -- no
 file this gate touched has anything to do with that widget. Left alone rather than silently
@@ -36535,3 +36542,94 @@ merging/dropping health/screening steps to match the reference could reopen exac
 just closed), Scan (does the reference's minimal aim-frame model replace the current live/history UI,
 or restyle around it), and the Squat/Deadlift silhouette-match itself (undefined-scope R&D, not an
 engineering task with a known size). Routing these to GPT-PM next rather than deciding unilaterally.
+
+**GPT-PM round 1 review of `9d43c92`: `VERDICT: MAJOR findings`, `PUSH: HOLD`.** Sent as a genuine
+cold round-1 read (`--commit 9d43c92`, not a follow-up to the G-B/G-C threads above). Correctly
+caught that the paragraph above overclaimed what the commit actually delivered. All three MAJORs
+independently re-verified by direct code/reference reading before accepting them, per this
+project's own evidence discipline -- none taken on the review's word alone:
+
+**MAJOR 1, CONFIRMED, and the important one.** The coloured verdict is gated on
+`FormClassifier.canFault`, and the only classifier for which that is `true` is
+`PushupAlignmentClassifier`. Verified directly: `formCoachTeaches(e)` (`form_check_providers.dart:105`)
+requires both an authored pose target AND `countsRepsFor(e)`, and its own doc comment says push-up
+fails this because "the rep counter's only signal is hip-versus-knee height... does not track a
+push-up at all." The exercise picker (`form_check_page.dart:1662,1671`) only renders an enabled,
+tappable chip `if (formCoachTeaches(e))` -- push-up is excluded, exactly like deadlift, for an
+unrelated reason. So as shipped in this commit, **no exercise reachable through the Form Coach's own
+picker can ever produce a coloured verdict** -- Squat/Deadlift by design (`canFault == false`,
+camera-angle confound), Push-up by an entirely separate, pre-existing gate (its rep count is not
+trustworthy), and Curl/Hinge/Lunge/Situp/Overhead-Press have no rule classifier at all (coached by
+`poseMatchProvider` instead -- see below). The five unit tests proved the helper's own logic, not
+that a user could ever see it. GPT-PM's explicit warning, agreed with: do not fix this by quietly
+re-enabling push-up in the picker -- that would revive the documented rep-count defect
+`formCoachTeaches` exists to prevent.
+
+Investigating the fix surfaced a second, deeper architectural fact not in the original plan: the
+app's ONE other live "how correct is this pose" signal, `poseMatchProvider`
+(`form_check_providers.dart:432`, driven by `poseMatchScore` in `_onFrame`), is explicitly forced to
+`null` in avatar mode -- `_onFrame`'s own comment: the target silhouette "is fitted to the PANEL
+while the avatar is placed where the body actually is," so scoring against it in avatar mode would
+compare two figures at unrelated scales, and Codex flagged exactly that during Gate A. So the two
+live judgement mechanisms this app has are mutually exclusive with the avatar view by construction:
+`FormClassifier`/`FormFeedback` is the only one that keeps running in avatar mode, and it currently
+says something useful for zero reachable exercises. Genuinely finishing the coloured overlay as a
+reachable feature needs one of: (a) fixing push-up's rep-counter well enough for `countsRepsFor` to
+pass honestly (comparable in size to R1(b) -- new rep-detection signal, not a threshold tweak), or
+(b) building a version of the silhouette-match score that is valid in avatar mode (a real design
+decision the app has so far deliberately avoided, not an oversight). Neither is a same-session fix;
+both are separately-scoped engineering. **Not decided unilaterally here** -- routed to GPT-PM
+alongside the other open redesign items above.
+
+**MAJOR 2, CONFIRMED against the primary source, not just the review's paraphrase.** Read
+`core/design/reference/full_handoff_v1/README.md:109` directly: "кости 3-3.4 px, цвет #FFFFFF...
+свечение... зелёным rgba(110,255,130,.9) при верной технике и красным rgba(255,70,70,.95) при
+ошибке; сустав с ошибкой -- пунктирный круг r=26, `4 6`, пульсация 1.1 s" -- bones stay white in
+every state; colour is a GLOW behind them; a specific faulty joint gets a dashed pulsing ring. The
+shipped painter did none of that -- it recoloured the whole skeleton (including tinting it amber for
+severity 1, a third state the reference does not define for the pose overlay) and pulsed the entire
+figure, which could nearly vanish at the low point of the pulse. **Partially fixed, still OPEN --
+GPT-PM round 2 correctly caught this entry originally overclaiming "Fixed" here.** Bones/joints are white
+again in every state (reverted to the original literals); a new glow layer (two blurred strokes
+behind the white bone, approximating the stacked drop-shadow radii) renders in `poseCorrect` for
+severity 0 or `poseError` for severity 1 and 2 -- the reference defines only a correct/error pair for
+the pose overlay itself, not a three-way one; the amber "nudge" colour belongs to the cue card, not
+the skeleton. Using the app's own theme-reactive `AppSemanticColors.poseCorrect/poseError` tokens
+rather than the reference's raw single-theme rgba literals -- **an unapproved deviation, not a
+signed-off equivalence**, per GPT-PM round 2: it may be legitimate (the same kind of adaptation
+already made for the nav icons against this same reference) but needs either explicit approval or
+visual evidence of equivalence, and this entry should not have implied it was settled.
+
+**Still open, is the actual reason MAJOR 2 is not closed**: the per-joint dashed pulsing fault
+marker (r=26, dash `4 6`, 1.1s cadence) is NOT implemented. `SilhouetteFigure.joints`
+(`pose_silhouette.dart`) is a flat `List<Offset>` -- the `LandmarkType` identity `PoseTarget.joints`
+carries is discarded by the time `buildSilhouette` produces it, so nothing at the painter reaches
+back to "which point is the sagging hip." Threading that identity through is real surgery on
+carefully-reasoned, already-tested geometry (the mirroring logic, the B4 union fix). Decision, per
+GPT-PM round 2's own offered alternative (do the surgery now, or downgrade the claim and leave this
+open): downgrading. Given MAJOR 1, the marker would currently be unreachable regardless of whether it
+existed -- no exercise the picker offers can produce a fault state at all yet -- so building it now
+would be effort spent on a code path nothing can currently exercise. **MAJOR 2 stays OPEN**, folded
+into the same "route to GPT-PM as a scope decision" queue as MAJOR 1's root cause and the
+colour-token approval above, not claimed as fixed.
+
+**MAJOR 3, CONFIRMED.** `avatarVerdictSeverity` checked `canFault` but never checked that `feedback`
+actually belonged to the active classifier. Verified: `FormFeedbackController` only overwrites its
+state on a scorable frame (`form_check_providers.dart` `_onFrame`); switching `selectedExerciseProvider`
+changes `activeClassifiersProvider` immediately but does not itself clear the old feedback. **Fixed**:
+the helper now also requires `feedback.rule == activeClassifiers.first.rule`, with a new test
+reproducing the exact scenario (pushup active, stale squat/deadlift feedback in hand -> null, not a
+false "clean rep" green).
+
+**MINOR, CONFIRMED and fixed above**: the entry recording G-B's closure quoted a combined
+"`VERDICT: G-B: FORMALLY CLOSED by this review`" line that was never actually emitted that way --
+corrected in place to record the reply verbatim (`VERDICT: APPROVE`, with the closure statement
+separate).
+
+Nav-icon and Profile-visibility changes: reviewed and NOT contested. Full-suite state (3297/3299,
+the 2 golden failures pre-existing and unrelated): reviewed and explicitly not blocked on.
+
+**Net effect on what "shipped" actually means**: the paragraph above should be read as shipping real,
+tested, correctly-gated INFRASTRUCTURE for a coloured pose verdict -- not a feature a user can
+currently see. That distinction is the whole point of MAJOR 1 and is being stated plainly rather than
+left implicit.

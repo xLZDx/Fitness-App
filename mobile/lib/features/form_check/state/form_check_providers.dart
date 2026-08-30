@@ -633,6 +633,16 @@ final formFeedbackControllerProvider =
 /// work today, only because that value never moves for either rule — and
 /// would silently start colouring an unentitled rule "correct" or "wrong"
 /// the moment either one grows a severity>0 arm.
+///
+/// Also gated on [feedback] carrying THIS classifier's own [FormFeedback.rule]
+/// — not merely on some feedback existing. `FormFeedbackController` keeps its
+/// last worst feedback until the next scorable frame; switching exercises
+/// changes [activeClassifiers] immediately but does not itself clear that
+/// stale value. Without this check, switching from an exercise that last
+/// read severity 0 into a fault-capable one paints the new exercise green
+/// off the OLD exercise's verdict until a fresh frame arrives — exactly the
+/// false-safety-signal class of defect this whole gate exists to avoid.
+/// GPT-PM review (round 1, `9d43c92`) caught this.
 int? avatarVerdictSeverity(
   List<FormClassifier> activeClassifiers,
   FormFeedback? feedback,
@@ -640,7 +650,10 @@ int? avatarVerdictSeverity(
   if (activeClassifiers.isEmpty || !activeClassifiers.first.canFault) {
     return null;
   }
-  return feedback?.severity;
+  if (feedback == null || feedback.rule != activeClassifiers.first.rule) {
+    return null;
+  }
+  return feedback.severity;
 }
 
 /// Speech engine. Defaults to the mock so widget tests never open a

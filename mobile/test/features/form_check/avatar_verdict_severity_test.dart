@@ -71,6 +71,33 @@ void main() {
       );
     });
 
+    test(
+        'stale feedback from a different rule is rejected, not painted as a '
+        'verdict', () {
+      // FormFeedbackController does not clear its state on an exercise
+      // switch -- only on the next scorable frame. Squat is inactive here
+      // (its feedback would be severity 0 anyway), so this reproduces the
+      // real defect: pushup active, but the feedback in hand still belongs
+      // to whatever ran before it.
+      expect(
+        avatarVerdictSeverity(
+          [PushupAlignmentClassifier()],
+          _feedback(0, rule: 'squat.depth'),
+        ),
+        isNull,
+        reason: 'a naive `feedback?.severity` gate with no rule-identity '
+            'check would paint the avatar green here off a stale squat '
+            'reading, on an exercise switch with no fresh pushup frame yet',
+      );
+      expect(
+        avatarVerdictSeverity(
+          [PushupAlignmentClassifier()],
+          _feedback(2, rule: 'deadlift.hip_hinge'),
+        ),
+        isNull,
+      );
+    });
+
     test('entitled classifier: severity passes through unchanged', () {
       expect(
         avatarVerdictSeverity([PushupAlignmentClassifier()], _feedback(0)),
