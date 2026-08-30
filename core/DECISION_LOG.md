@@ -36633,3 +36633,77 @@ the 2 golden failures pre-existing and unrelated): reviewed and explicitly not b
 tested, correctly-gated INFRASTRUCTURE for a coloured pose verdict -- not a feature a user can
 currently see. That distinction is the whole point of MAJOR 1 and is being stated plainly rather than
 left implicit.
+
+**Rounds 3-4**: round 3 caught that the corrected DECISION_LOG entry above did not (could not) fix
+the same overclaim sitting in commit `7b4baf2`'s own message ("the painter now matches
+...README.md:109") -- a commit message is immutable text; only amend/rebase can change it, and this
+project's rules forbid `rebase -i`. Fixed by `git reset --soft 9d43c92` (both `7b4baf2` and the
+docs-only `ac90554` were still unpushed, so this rewrites nothing shared) and one recommit,
+`bdee3cd`, with the diff verified byte-identical (`git diff --cached --stat` checked before
+committing) and an accurate message throughout. Round 4 (mechanical verification only, per GPT-PM's
+own instruction that no further code review was needed) confirmed the overclaim is gone and returned
+a genuine, correlated **`VERDICT: APPROVE`**, **`PUSH: AUTHORIZED for 9d43c92..bdee3cd`**.
+**Pushed** -- `da4c200..bdee3cd`, fast-forward, fetched and confirmed clean first.
+
+**Post-push: five open items routed to GPT-PM as a scope/roadmap decision** (`gpt_send_and_await`,
+not a code review), covering everything this gate's investigation surfaced as needing a judgment call
+rather than more engineering time. Decision received and binding for planning purposes (routed to
+GPT-PM per this project's own delegation matrix, not escalated to the operator -- the reply itself
+states explicitly that no CEO-level decision was needed here):
+
+1. **Colour-token policy (#3) -- RESOLVED as general policy, not just for this gate.** Use the app's
+   own theme-reactive `AppSemanticColors` tokens over the reference's raw single-theme literals
+   whenever all three hold: the semantic role matches, the token is theme-reactive, and the visual
+   difference does not change the state language. NOT a blanket licence to loosen fidelity elsewhere
+   -- geometry, state transitions, sizes and fault-marker semantics stay high-fidelity. Closes the
+   `poseCorrect`/`poseError` "unapproved deviation" flag from round 2/3 above.
+
+2. **Next engineering gate (#4): Session (player/timer) redesign.** Chosen over Form Coach
+   reachability specifically because it has no unresolved ML/architecture question and does not touch
+   the safety-critical onboarding surface -- a real, well-scoped, user-visible result (SVG progress
+   ring, done/current/pending set-state list, matching `full_handoff_v1`'s spec) without R&D risk.
+   Explicit instruction: preserve the player's existing functional semantics; redesign changes
+   presentation/state surface, not the workout engine underneath it.
+
+3. **Form Coach reachability (#1) -- comes AFTER Session; direction chosen: extend `poseMatchProvider`
+   to work correctly in avatar mode (option "b"), not fix push-up's rep counter (option "a").**
+   Reasoning given: fixing push-up's counter would unlock exactly one movement and create another
+   movement-specific signal; a correctly generalised avatar-mode pose-match becomes a shared judging
+   surface for Curl/Hinge/Lunge/Situp/Overhead-Press as well, not just Push-up. Must be its own
+   technical gate that proves target and live pose are compared in the same normalised coordinate
+   space -- explicitly NOT just removing the current `null` guard that keeps `poseMatchProvider`
+   inert in avatar mode. Until that gate lands, the coloured overlay stays honestly
+   "tested-but-unreachable infrastructure," and push-up's rep-counter work stays on the R1(b)/ML
+   roadmap on its own merits, not repurposed as an artificial HUD blocker.
+
+4. **Joint-fault dashed marker (#2) -- shelved until #1 lands, for a reason beyond mere
+   unreachability.** The deeper open question is which mechanism will actually produce a fault
+   verdict once #1 exists, and whether that mechanism can name a specific joint/region at all --
+   answering that has to come before deciding how to thread `LandmarkType` identity through
+   `SilhouetteFigure`/`buildSilhouette`, so as not to do that geometry surgery twice, or for a
+   mechanism that turns out not to need it.
+
+   **Engineering sequence, stated explicitly**: Session -> normalised avatar-mode pose-match ->
+   joint attribution/marker. Colour-token policy already resolved, not a separate gate.
+
+5. **Onboarding (#5) -- NOT resolved as a priority ranking; resolved as a binding constraint on HOW
+   it may be touched at all.** Direct quote, translated: "the visual reference does not get authority
+   over safety-critical information architecture... the 9-screen handoff is a presentation reference,
+   not a normative data schema." **Explicitly forbidden**: reducing the current 10 steps to the
+   reference's 9 by deleting, merging or weakening `barriers`/`healthFlags`/`screening` purely to hit
+   the number -- naming specifically that PAR-Q+/chest-pain routing, pregnancy/health-flag collection,
+   and anything the eligibility/refusal layer depends on must not be lost. **Required reconciliation
+   model**: preserve safety semantics and collected data first, reproduce the reference's visual
+   language second. Permitted: reorganising existing questions across screens, merging only
+   presentation containers, renaming/reordering where prerequisite logic is unchanged, and adding
+   reference-only visual steps (e.g. Backgrounds) that have no current data-collection counterpart.
+   **Acceptance criterion, verbatim intent**: not "exactly 9 screens" but "every safety-critical input
+   and refusal/eligibility dependency has a provably equivalent-or-stricter path before and after" --
+   ending at 10, 11 or 12 screens is an acceptable outcome, and should be recorded as an explicit,
+   named design deviation rather than treated as a failure to match the reference. **The only
+   authorised next step for Onboarding is a reconciliation/design gate**: build the mapping current
+   step/input -> safety consumer -> proposed visual step FIRST, before any UI change -- there is no
+   GO here for mechanically collapsing the step count.
+
+Not yet routed (deliberately, lower stakes, deferred to a follow-up message): Scan screen
+reconciliation (richer current live/history UI vs the reference's minimal aim-frame model).
