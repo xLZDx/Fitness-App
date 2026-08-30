@@ -35687,3 +35687,62 @@ _ds/-dependency corrections), and this entry. No product source code touched. Ne
 remediation back to GPT-PM (`review.js --base origin/master --round 2`) for the verification-only
 round §17 specifies -- confirming the six MAJORs are actually addressed and checking only for
 regressions this remediation itself could have introduced, not reopening unrelated scope.
+
+## 2026-08-30 ~11:20 UTC -- GPT-PM round 2 (`replyId 17bf3f9d`): 6/6 MAJOR + the MINOR CLOSED,
+## one narrowed finding remains (roadmap report *content* unreviewed) -- and a real G-A finding
+
+**Round 2 result.** All six MAJORs from round 1 confirmed closed by direct re-check of the diff:
+mp4 completeness, Profile governance (HOLD/SUPERSEDED), week-strip governance
+(REFERENCE_SUPERSEDED/REOPENED), nav-icon status (REFERENCE_AVAILABLE/REOPENED), the hook
+file:line citation, and the MINOR `_ds/` caveat. No new BLOCKER/MAJOR found in the remediation
+itself. One finding narrowed rather than closed: `git show --stat b3fa656` proves the two
+`MASTER_ROADMAP_2026-08-30*.html` files are IN that commit, but proves nothing about what they
+SAY -- GPT-PM correctly declined to treat file-presence as content review, and separately
+confirmed via its own GitHub connector that `b3fa656` is not yet reachable there (still
+local/unpushed), consistent with everything above. `PUSH: HOLD`; next round scoped explicitly to
+just those two files' actual content, nothing else reopened.
+
+**Continuing the audit-staleness thread this correction and the round-2 gap both point at**: while
+tracing the "6 exercise-serving surfaces" sub-item of G-A (the roadmap's audit-derived claim that
+G-A was unstarted), direct code inspection found the opposite -- G-A's three listed items are
+already implemented in current code, not filed under a "G-A" gate name:
+- `ProgrammeNotViable` + `blockedBySafety` caught before the generic error snackbar, shows
+  `EligibilityNotice` instead of a misleading Retry button -- comment "N01",
+  `mobile/lib/features/workouts/workouts_page.dart:1300-1360`.
+- Tagged/total safety-coverage figure renders (`l10n.safetyFilterCoverage(coverage.tagged,
+  coverage.total)`), not merely computed-and-discarded -- comment "F019",
+  `mobile/lib/features/equipment/widgets/safety_disclosure.dart:100-109`.
+- `SafetyDisclosure` widget wired into every exercise-serving surface: directly in
+  `equipment_detail_page.dart` (both compact and full variants) and `workouts_page.dart`, and via
+  the shared `exerciseReferenceSections` function (`exercise_reference.dart:1089`, consumed by
+  both `exercise_reference.dart`'s own caller and `exercise_page.dart`'s `ExercisePage` per that
+  file's own doc comment -- "every section here comes from `exerciseReferenceSections`, the same
+  function the player calls") plus a separate insertion in `workout_player_page.dart:259` --
+  comment "F020" at `exercise_reference.dart:1082-1088`, which documents this exact split and why
+  `workout_player_page.dart` carries its own copy rather than reusing the function. `grep -in
+  "keeps your plan safe"` across `mobile/lib` returns zero matches -- the false-subtitle sub-item
+  mentioned in earlier synthesis either was already removed or never existed under that literal
+  wording; not chasing further since nothing currently claims it exists.
+
+**Root cause, not just the symptom**: the roadmap's Section 6 audit-remediation table was built by
+one of the 7 research agents citing the 2026-08-16 audit's own text, and the audit was accurate
+*when written* -- these F019/F020/N01 fixes plainly landed after 08-16 (in-code comments naming
+finding IDs the audit itself would have used) without a corresponding DECISION_LOG entry titled
+"G-A" that a later search would find. The gate got done under a different label than the plan that
+named it, and nothing reconciled the two.
+
+**Correction applied**: `reports/MASTER_ROADMAP_2026-08-30.ru.html`/`.html` -- added a sixth
+critical-flag box (Section 0, green/`--good` styled, distinct from the five red ones) stating G-A
+is verified done as of 08-30 with the citations above, and an inline "appears done" pill + note on
+the G-A table row in Section 6. Section 6's per-audit-date framing and the G-D/G-C/G-B/G-E rows
+are explicitly left as-is -- none of those four have been re-verified against current code by this
+same method, so their "not started" status stands unless/until someone does the same check.
+Re-conformed (`report_conform.py --check` clean) and republished the RU artifact in place (same
+URL, `label: g-a-correction`).
+
+**What this is not**: not a claim that G-A is formally closed as a gate -- there is still no
+DECISION_LOG entry titled G-A recording a GPT-PM verdict on it as a unit, and the chest-pain
+refusal copy sub-item was traced to the `EligibilityNotice` dialog structurally but its exact
+wording was not separately verified against the audit's original complaint. If a future session
+wants G-A formally closed (not just "appears done" in a roadmap flag), it should assemble these
+citations into an actual gate-closure review round, not rely on this correction as that closure.
