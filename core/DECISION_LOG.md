@@ -35395,3 +35395,41 @@ specific to this repo or this finding.
 Pushed at `e0bc94d` (`437338f..e0bc94d`) on this round-5 receipt (`final:true`,
 `PUSH: AUTHORIZED under the current Gate policy`), completing the docs remediation for round 2's
 3 MAJOR findings end to end.
+
+## 2026-08-30 04:30 local / 01:30 UTC -- session handoff written for the next session
+
+Wrote `core/plans/SESSION_HANDOFF_2026-08-30_HUD_REDESIGN.md` at the operator's direct request
+("напиши хэндофф для новой сесии"). Follows the existing `core/plans/SESSION_HANDOFF_*.md`
+convention. Content: the one actionable item (send the nav-icon re-check and the corrected
+Profile-header layout question to GPT-PM via `gpt_send_and_await`, now that a fresh session's MCP
+client can reach the daemon -- `pm_bridge_mode_status` explicitly confirmed THIS session's client
+is stale, not the daemon), a summary of what is already done and must not be redone (both gates
+closed/pushed, exact commit SHAs and DECISION_LOG line ranges), and infra context worth carrying
+forward (reference-frame screen coverage, `adb` path, the Bash cwd-drift gotcha, the `review.js`
+multi-file paste-truncation workaround from the 04:15 entry above).
+
+No source code touched. Routine documentation-tier work, decided autonomously per the delegation
+default rather than escalated -- an operator ask-routing question was attempted first
+("commit and push this now?") and correctly refused by `ask_routing_gate.py` since committing a
+docs file is fully reversible and not the operator's decision to make; proceeding on that basis
+instead of re-routing to GPT-PM for something this routine.
+
+## 2026-08-30 04:35 local / 01:35 UTC -- push blocked: review.js reports a new "Gate C" orchestrator incompatibility
+
+Attempting to push `329cb69` (the handoff doc above), `review.js --uncommitted` returned a NEW
+error this session had not seen before: `"No compatible PM Bridge orchestrator is active. Gate C
+disables direct multi-writer browser review; start PM Bridge mode, or explicitly set
+PM_BRIDGE_BREAK_GLASS_DIRECT=1."` This fail-opened the COMMIT gate (attempt-based, so `329cb69`
+committed successfully) but cannot satisfy PUSH, which needs a genuine `final:true` receipt.
+
+Read as the same root cause `pm_bridge_mode_status` already reported this session (build
+`6235b685292c51d3` on disk vs. daemon's `cefcc53824dd3d17`), one layer deeper: the current daemon
+build has grown a "Gate C" multi-writer coordination mode that this session's stale `review.js`
+checkout does not know how to speak to.
+
+**Deliberately did not use `PM_BRIDGE_BREAK_GLASS_DIRECT=1`.** That flag exists specifically to
+bypass Gate C's multi-writer protection -- using it to route around a review-transport failure this
+session already knows is caused by its own staleness is exactly the "reformulate the command to
+slip past" pattern `~/.claude/CLAUDE.md` §4 forbids for a hook that fires. `329cb69` stays local,
+unpushed; the handoff doc itself was updated to say so and to make "push `329cb69`" the new
+session's first git action, once a current `review.js`/PM Bridge client confirms itself non-stale.
