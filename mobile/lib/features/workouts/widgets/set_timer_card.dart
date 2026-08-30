@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../../shared/widgets/app_buttons.dart';
@@ -73,17 +72,28 @@ class SetTimerCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final colors = theme.colors;
     final l10n = AppLocalizations.of(context);
     final plan = ref.watch(setPlanProvider(exercise));
     final timer = ref.watch(setTimerProvider);
     final controller = ref.read(setTimerProvider.notifier);
 
+    // Reconciled onto AppSemanticColors (GPT-PM, 2026-08-30 gate decision:
+    // "SetTimerCard + RestTimer colours -> semantic tokens -- GO", within
+    // the already-accepted no-raw-AppPalette policy). Five phases, four
+    // tokens with real outcome meaning ("danger" fits none of them and is
+    // deliberately left unused here): idle and work share accentPrimary --
+    // never a problem, because they never appear at once (idle's own button
+    // is fully replaced once a set starts) and a zero-progress ring draws no
+    // arc at all (`HudRing`'s painter returns before stroking when
+    // `sweep <= 0`), so the shared colour has nothing to visually collide
+    // with.
     final (label, colour) = switch (timer.phase) {
-      SetPhase.gettingReady => (l10n.timerGetReady, AppPalette.auroraPeach),
-      SetPhase.work => (l10n.timerWork, AppPalette.auroraTeal),
-      SetPhase.rest => (l10n.timerRest, AppPalette.auroraBlue),
-      SetPhase.done => (l10n.timerDone, AppPalette.auroraLime),
-      SetPhase.idle => (l10n.timerReady, AppPalette.auroraViolet),
+      SetPhase.gettingReady => (l10n.timerGetReady, colors.warning),
+      SetPhase.work => (l10n.timerWork, colors.accentPrimary),
+      SetPhase.rest => (l10n.timerRest, colors.accentSecondary),
+      SetPhase.done => (l10n.timerDone, colors.success),
+      SetPhase.idle => (l10n.timerReady, colors.accentPrimary),
     };
 
     return HudPanel(

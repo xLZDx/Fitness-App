@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../../core/theme/app_palette.dart';
 import '../../../shared/widgets/app_buttons.dart';
+import '../../../shared/widgets/hud/hud_metric.dart';
 import '../../../shared/widgets/hud/hud_surface.dart';
 import '../state/rest_timer_providers.dart';
 import '../../../core/theme/app_semantic_colors.dart';
@@ -76,7 +76,7 @@ class _RestTimerState extends ConsumerState<RestTimer> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    final colors = theme.colors;
     final l = AppLocalizations.of(context);
     final rest = ref.watch(restTimerProvider);
     final now = ref.read(restClockProvider)();
@@ -101,27 +101,26 @@ class _RestTimerState extends ConsumerState<RestTimer> {
         children: [
           Row(
             children: [
-              SizedBox(
-                width: 56,
-                height: 56,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      value: rest.progress(now),
-                      strokeWidth: 4,
-                      backgroundColor: scheme.onSurface.withValues(alpha: 0.10),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        done ? AppPalette.auroraLime : AppPalette.auroraBlue,
-                      ),
-                    ),
-                    Text(
-                      _format(remaining),
-                      key: const Key('rest-timer.remaining'),
-                      style: theme.textTheme.labelLarge
-                          ?.copyWith(fontWeight: FontWeight.w800),
-                    ),
-                  ],
+              // Reconciled onto the Session ring's own language (GPT-PM,
+              // 2026-08-30 gate decision: "RestTimer -> HudRing -- GO"),
+              // scaled down to a compact indicator rather than the hero
+              // Session-150 geometry -- this ring sits in a 56px row icon,
+              // not the exercise player's own full-size timer.
+              // done/in-progress reuse the same success/accentPrimary split
+              // SetTimerCard now uses for its own ring, so a completed rest
+              // and a completed set read as the same colour everywhere.
+              HudRing(
+                size: 56,
+                radius: 24,
+                strokeWidth: 4,
+                glowBlur: 6,
+                progress: rest.progress(now),
+                color: done ? colors.success : colors.accentPrimary,
+                child: Text(
+                  _format(remaining),
+                  key: const Key('rest-timer.remaining'),
+                  style: theme.textTheme.labelLarge
+                      ?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ),
               const SizedBox(width: 14),

@@ -36711,3 +36711,87 @@ reconciliation (richer current live/history UI vs the reference's minimal aim-fr
 **Report published**: `reports/REDESIGN_GATE1_FORM_COACH_2026-08-30.{ru,}.html`, house format, RU
 published as an artifact, EN the durable in-repo record -- covers everything above (the gate, all 4
 review rounds, the routed decision) in one handover.
+
+## 2026-08-30 -- Session (player/timer) gate: scope question routed to GPT-PM, first slice shipped
+
+Continuing to the next gate per operator's PM-mode instruction ("сессия может закончиться только
+тогда, когда задача полностью выполнена") and item 2 of the routed decision above.
+
+**Scope investigation, before writing any code.** A background investigation agent read the
+reference (`core/design/reference/full_handoff_v1`, Session section: ring markup, set-list markup,
+`dashFor`/`renderVals`/`bigDash`, the single bottom CTA) against the current implementation
+(`mobile/lib/features/equipment/workout_player_page.dart`, `set_timer_card.dart`,
+`rest_timer.dart`/`rest_timer_providers.dart`, `set_timer_providers.dart`/`set_session.dart`). Two
+findings mattered more than expected:
+
+1. `SetTimerCard` (`mobile/lib/features/workouts/widgets/set_timer_card.dart:114-172`) was **already**
+   built on `HudRing` at the exact "Session 150" geometry (r 66, 3pt arc, guide r 53, glow 9) -- the
+   widget's own doc comment names the handoff citation explicitly. The ring redesign this gate seemed
+   to be for was, for the work/rest set timer, already done in an earlier round. What was NOT done:
+   `RestTimer` (`rest_timer.dart`) still drew a stock Material `CircularProgressIndicator`, and both
+   widgets still coloured their state via raw `AppPalette.aurora*` literals rather than the
+   theme-reactive tokens item 1 of the prior decision already approved as general policy.
+2. `workout_player_page.dart` is not a minimal player. It is a ~970-line rich exercise page: video
+   demo, muscle map, technique steps, form-coach card, contraindication card, suggested-weight chip,
+   the set timer card, a plate/warm-up tools row, the rest timer, then four sequential full-width
+   actions (Mark Complete / Add Another Exercise / Schedule For Later / Add To Programme). The
+   reference's Session screen is a ring + a done/current/pending set list + ONE dynamic-label CTA,
+   with no equivalent anywhere for video, muscle map, tools, scheduling or the multi-exercise-day
+   flow.
+
+**Scope question routed to GPT-PM** (`gpt_send_and_await`, not a code review -- a product/architecture
+call under this project's own delegation matrix, per §16): given the standing instruction to
+"preserve the player's existing functional semantics; redesign changes presentation, not the
+workout engine," does the reference authorise collapsing this page's real feature set into its own
+minimal single-CTA shape, or does it supply only the ring/colour visual language for the parts that
+already map 1:1?
+
+**Decision received, binding:** **(a) MINIMAL-DIFF**, explicitly NOT full consolidation. Verbatim
+governance rule GPT-PM asked to be recorded for this screen, so a future round does not reopen it as
+a "design defect": *"Session reference is authoritative for visual language and timer/state
+presentation where there is a direct semantic mapping. It is not authoritative for removing
+production functionality or inventing a narrower workout-player information architecture where no
+mapping exists."*
+
+In scope for this gate, both GO'd explicitly:
+1. `RestTimer` -> `HudRing` -- same timer state, same callbacks, same duration/rest semantics, same
+   pause/skip/reset behaviour, same test keys.
+2. `SetTimerCard` + `RestTimer` colours -> `AppSemanticColors` tokens, no raw `AppPalette`, no new
+   timer logic.
+
+Explicitly out of scope, not implicitly deferred: the four page-level action buttons stay separate,
+unconsolidated, with unchanged callbacks/keys/invariants; no new set-status (done/current/pending)
+list widget -- GPT-PM's own reasoning: the reference's list implies a set-progression state model
+that does not yet exist as a clean read-only projection of engine state, and building one now would
+mean either inventing state purely for the picture or threading new semantics through the timer
+engine, both outside "presentation only." Revisit only if a later pass can show the list is a pure
+projection of already-existing state.
+
+**Implementation, this commit.**
+
+- `mobile/lib/features/workouts/widgets/rest_timer.dart`: the 56px row indicator now renders via
+  `HudRing` (`size: 56, radius: 24, strokeWidth: 4, glowBlur: 6`) instead of
+  `CircularProgressIndicator`. Colour: `colors.success` when the rest has an outcome (elapsed or
+  skipped), `colors.accentPrimary` while running -- previously `AppPalette.auroraLime` /
+  `AppPalette.auroraBlue`. `theme.colorScheme` (only used for the old indicator's background alpha)
+  is gone; `HudRing` reads its own track/guide/glow from `HudTokens` internally. All 12
+  `rest_timer_card_test.dart` widget tests pass unmodified -- the change is rendering-only, no key,
+  text or callback moved.
+- `mobile/lib/features/workouts/widgets/set_timer_card.dart`: the five `SetPhase` states now map to
+  `AppSemanticColors` instead of `AppPalette.aurora*`: `gettingReady -> warning`,
+  `work -> accentPrimary`, `rest -> accentSecondary`, `done -> success`, `idle -> accentPrimary`
+  (shared with `work` deliberately -- documented inline: they are never visible at once, since the
+  idle button is fully replaced once a set starts, and `HudRing`'s painter draws no arc at all at
+  zero progress, so there is nothing for the shared colour to collide with). `danger` is left unused
+  on purpose -- none of the five phases carry error/failure meaning, and repurposing it for hue
+  variety alone would misuse a token this codebase treats as a measured, meaningful value (see
+  `app_semantic_colors.dart`'s own header on why every value here is measured, not chosen by eye).
+
+**Verified**, not just claimed: `flutter analyze` on both files (0 issues),
+`rest_timer_card_test.dart` (12/12), `workout_player_day_test.dart` +
+`player_substitution_transition_test.dart` (15/15, the pages that embed `SetTimerCard` -- there is no
+dedicated widget test for `SetTimerCard` itself), the full `test/features/workouts/` directory
+(352/352), and `app_semantic_colors_test.dart`'s whites-ratchet (`expect(total, 58)` unaffected --
+this change touched zero `Colors.white` literals).
+
+**Not yet done in this gate**: GPT-PM code-review round (queued next, via `review.js`), commit, push.
