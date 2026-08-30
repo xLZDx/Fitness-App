@@ -36859,9 +36859,119 @@ published as an artifact (`https://claude.ai/code/artifact/ab282c62-9d1f-47cc-92
 the durable in-repo record -- covers the scope decision, both GO'd items, all three GPT-PM review
 rounds (including the Flutter-SDK-version correction), and the verification evidence.
 
-Session gate slice 1 (RestTimer -> HudRing, timer colours -> semantic tokens) is now shipped. Next:
-continuing to whatever slice, if any, is still open within the GPT-PM-approved minimal-diff boundary
-for this gate (item 2's colour-token work is done; the four page-level action buttons and any new
-set-status list remain explicitly out of scope per the earlier routed decision) -- or, if nothing
-further is in scope here, moving to the next gate in the program (Form Coach reachability /
-`poseMatchProvider` avatar-mode generalisation, per the prior routed decision's sequencing).
+Session gate slice 1 (RestTimer -> HudRing, timer colours -> semantic tokens) is now shipped. Both
+GO'd items are done; the four page-level action buttons and any new set-status list remain
+explicitly out of scope per the earlier routed decision. Session gate closed for now -- moving to
+the next gate in the program (Form Coach reachability), per the prior routed decision's sequencing.
+
+## 2026-08-30 -- Form Coach reachability gate: GPT-PM's own "option (b)" direction corrected before
+## any code was written; new binding governance statement supersedes it
+
+The prior routed decision (this file, above) said: *"extend `poseMatchProvider` to work correctly in
+avatar mode (option b)... Must be its own technical gate that proves target and live pose are
+compared in the same normalised coordinate space."* Before writing a line of implementation, a
+background investigation agent (Explore) was sent to read the actual pipeline -- `poseMatchScore`,
+`PoseTarget`, the live `PoseFrame`/coordinate-normalisation path, `buildSilhouette`/`pose_avatar.dart`,
+and every relevant DECISION_LOG entry -- rather than start from the directive's own framing. Every
+citation the agent returned was independently re-verified by direct `Read` before being trusted or
+acted on (per this project's own rule that a subagent's claims, like a reviewer's, are checked
+against the actual file:line before use, not taken on faith).
+
+**Finding 1 -- there is no coordinate-space bug to fix.** `PoseTarget.joints` and live
+`PoseLandmark`s already share one isotropic contract (`pose_coordinate_space.dart`,
+`PoseCoordinateNormaliser`), enforced upstream specifically so classifier angle math is not corrupted
+by anisotropic per-axis scaling. `poseMatchScore` (`pose_target.dart:514-544`) additionally
+self-normalises EACH pose independently -- centres on its own centroid, rescales to unit RMS radius
+-- before comparing, so it is invariant to translation and scale regardless of either pose's absolute
+units. Deleting the `null` guard at `form_check_providers.dart:965-967` would already produce a
+numeric score for any avatar-mode frame with >=4 matched joints. Verified directly: read
+`pose_target.dart:1-46` myself (not only the agent's citation) -- the file's own header states this
+invariance explicitly.
+
+**Finding 2 -- the real, already-known blocker is viewpoint invariance, and avatar mode's own
+default stance makes it acute.** `pose_target.dart:25-33` (read directly): *"This is still a 2D
+projection, so viewing angle is not cancelled out. A squat from the front and the same squat from the
+side are different shapes, and this will score them differently... The outline tells the user which
+view to present, and standing in it is what makes the comparison valid."* Every authored `PoseTarget`
+is a mid-line SIDE view. Avatar mode's default live stance is explicitly FACE-ON, by a separate,
+earlier, deliberate design decision (`pose_avatar.dart:130-137`, read directly -- fixing a real prior
+bug where picking one side and mirroring it produced a figure with one arm raised when the operator
+had raised only one). A real incident is already on record from the CAMERA path proving this failure
+mode is not hypothetical: a genuinely correct rep, filmed from the wrong angle, was scored as failing
+(`form_check_page.dart:1444-1449`) -- which is why the coach now explicitly instructs users to stand
+side-on. Wiring scoring into avatar mode's default face-on view would reproduce that exact failure for
+most real usage; it would not be a units fix, it would be shipping a feature that actively misjudges
+correct technique.
+
+**Finding 3 -- this was already caught and correctly deferred once, more precisely than the routed
+decision restated it, and the two entries were never reconciled.** `DECISION_LOG.md:9792-9799` (Gate
+E, 2026-08-15 -- earlier than the entry the "option b" direction continues from): *"`poseMatchScore`
+is invariant to translation and scale but NOT to viewpoint... every authored target is a side view.
+Restoring the score in the default face-on view would fail correct repetitions for the stance the
+operator actually uses... Stance-independent scoring is a prerequisite for that gate, not a
+follow-up to it."* Confirmed verbatim by direct read. The later entry that the routed "option (b)"
+decision continues from reframed the blocker as coordinate normalisation without citing or
+reconciling with this one.
+
+**Finding 4 -- avatar mode has a genuine live signal; the problem is the viewpoint it's captured
+in, not its existence.** `avatarFigureProvider` reads the same `latestPoseFrameProvider`, populated
+by the same detector stream, regardless of mode -- confirmed this is not a "no live data at all"
+gap.
+
+**Corrected finding routed back to GPT-PM** (`gpt_send_and_await`, not a code review -- a technical
+correction of GPT-PM's own prior direction, per this project's rule that Claude challenges a
+reviewer's recommendation with repository evidence rather than silently building the wrong thing).
+Four options were laid out without a recommendation forced: (a) require avatar mode to show a target
++ side-on stance too, matching camera mode -- reverses the earlier deliberate face-on decision, which
+itself came from a real bug fix, not a whim; (b) author face-on companion targets -- real
+content-authoring work, and this project's own history already found catalogue posters (face-on)
+scored near zero as usable side-view targets when tried, i.e. the accuracy risk of a second target
+library is not hypothetical; (c) a genuinely viewpoint-invariant match function (3D/learned
+representation) -- real ML/R&D work, meaning Form Coach colour is downstream of the ML track after
+all, via a different technical path than the R1(b)/M0 pipeline originally named; (d) leave the
+coloured overlay as honest unreachable infrastructure and do not open this gate now.
+
+**GPT-PM's decision, received and binding:**
+- **Withdrew** the "option (b): normalise poseMatch in avatar mode" direction as technically
+  misframed, after independently re-deriving the same conclusion from the evidence presented (not
+  simply accepting the correction on say-so).
+- **This gate: (d).** No Form Coach implementation work now. Close this gate as an
+  investigation/architecture correction, not an implementation gate. Do NOT delete the avatar guard,
+  do NOT re-enable push-up, do NOT invent a temporary score merely to make the colour visible. The
+  shipped coloured overlay stays accurately classified as tested-but-unreachable infrastructure.
+- **Strategic target: (c)**, through the ML/Form-Coach R&D track specifically, not the HUD redesign
+  execution path -- deliberately not selecting an algorithm (3D geometry vs. learned representation)
+  at this stage.
+- **(a) explicitly rejected as the default fix**: forcing avatar mode into a side-on stance to make
+  today's 2D matcher usable would optimise the UX around an implementation limitation and reverse a
+  face-on decision made for a real, documented reason. Revisit only if future evidence shows
+  viewpoint-invariant scoring is impractical and the product consciously chooses a guided-side-view
+  coaching mode instead.
+- **(b) explicitly rejected as production architecture now**: a face-on companion library could be a
+  future research baseline, but committing to author and maintain a second target library before
+  proving it reliably separates correct/incorrect technique across body types, camera positions and
+  intermediate angles risks trading "side-view dependence" for "two-discrete-viewpoints dependence."
+- **Joint-fault marker: stays DEFERRED**, now for the sharper reason this investigation surfaced --
+  there is no value doing `LandmarkType` -> `SilhouetteFigure` surgery before a trustworthy verdict
+  source exists that can name a specific fault/joint at all; once a future viewpoint-tolerant judgement
+  mechanism produces an attributable fault, the marker becomes a downstream presentation gate on top
+  of it, not a parallel track.
+- **New binding governance statement, superseding the prior "option (b)" wording verbatim**: *"Form
+  Coach avatar verdict reachability is blocked by viewpoint dependence of the current 2D pose matcher,
+  not by coordinate-space normalization. The current matcher is already translation/scale invariant
+  but not viewpoint invariant. Avatar-mode coloured verdicts remain intentionally unreachable until a
+  validated viewpoint-tolerant judgement mechanism exists. Do not remove the avatar scoring guard or
+  force side-view behaviour merely to expose the colour infrastructure."*
+- **Explicit instruction**: return execution priority to the remaining redesign/MVP work rather than
+  opening an ML/R&D branch from inside this gate.
+
+No code touched in this gate; nothing to commit for implementation. This entry itself, plus the
+report below, is the deliverable.
+
+**Report published**: `reports/REDESIGN_GATE3_FORMCOACH_CORRECTION_2026-08-30.{ru,}.html`, house
+format, RU published as an artifact
+(`https://claude.ai/code/artifact/d47fe6bd-1686-4128-8daf-0a331561f96e`), EN the durable in-repo
+record.
+
+Next: continuing to the remaining redesign-scope work -- Onboarding reconciliation (the mapping-first
+gate already authorised, no UI change yet) and/or Scan screen reconciliation (not yet routed).

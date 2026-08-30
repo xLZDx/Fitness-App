@@ -1,0 +1,228 @@
+<!doctype html>
+<title>Гейт 3 редизайна: коррекция Form Coach</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#e2e7ec;
+    --text:#171b21; --text-muted:#4d5a68;
+    --accent:#2b5797; --accent-strong:#1c3c6b; --accent-soft:#dde7f3;
+    --crit:#b3261e; --crit-soft:#fbe6e4;
+    --warn:#a05a00; --warn-soft:#f8ead2;
+    --good:#1f7a4d; --good-soft:#e0f1e7;
+    --border:rgba(23,27,33,.14);
+    --code-bg:#0e1116; --code-text:#dfe6ea;
+    --shadow:0 1px 2px rgba(23,27,33,.06),0 8px 24px rgba(23,27,33,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+      --text:#e7ecf1; --text-muted:#9aa8b6;
+      --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+      --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+      --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+      --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+      --border:rgba(231,237,239,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+    --text:#e7ecf1; --text-muted:#9aa8b6;
+    --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+    --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+    --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+    --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+    --border:rgba(231,237,239,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto;padding:48px 22px 100px}
+
+  header{padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);margin:0 0 12px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.14;margin:0 0 10px;text-wrap:balance}
+  .dek{font-size:16px;color:var(--text-muted);max-width:68ch;margin:0}
+
+  section{margin-top:44px;scroll-margin-top:20px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kicker::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;flex:none}
+  h2{font-family:"Archivo",sans-serif;font-weight:700;font-size:20px;margin:0 0 6px}
+  .sec-note{color:var(--text-muted);font-size:13.5px;margin:0 0 16px;max-width:70ch}
+  p{margin:0 0 12px;max-width:70ch}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:10px}
+
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+  .sha{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:.86em}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+  .pill.good{background:var(--good-soft);color:var(--good)}
+  .pill.warn{background:var(--warn-soft);color:var(--warn)}
+  .pill.crit{background:var(--crit-soft);color:var(--crit)}
+  .pill.muted{background:var(--surface-2);color:var(--text-muted)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:10px 12px;vertical-align:top;border-bottom:1px solid var(--border)}
+  thead th{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+
+  ul.decisions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ul.decisions li{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px}
+  ul.decisions .title{font-weight:700;font-size:14.5px;margin-bottom:4px}
+  ul.decisions .body{color:var(--text);font-size:13.5px}
+  ul.decisions .body p{margin:0 0 6px}
+  ul.decisions li.reject{border-left-color:var(--crit)}
+
+  .foot-note{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · автономная сессия PM Bridge · 2026-08-30</p>
+    <h1>Гейт 3: коррекция направления Form Coach reachability</h1>
+    <p class="dek">Без единой строки кода. Собственное решение GPT-PM («нормализовать координатные пространства») было проверено чтением реального пайплайна и опровергнуто — реальный блокер оказался другим и более сложным. GPT-PM независимо перепроверил и снял своё прежнее направление.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 3420961</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+  <section id="what">
+    <p class="kicker">Что произошло</p>
+    <h2>Гипотеза проверена чтением кода — и не подтвердилась</h2>
+    <p>Прошлое решение GPT-PM гласило: довести <code class="mono">poseMatchProvider</code> до работы в avatar-режиме, доказав, что целевая и живая позы сравниваются «в одном нормализованном координатном пространстве». Прежде чем писать код, был запущен фоновый исследовательский агент — прочитать реальный <code class="mono">poseMatchScore</code>, <code class="mono">PoseTarget</code>, путь живых координат и историю <code class="mono">DECISION_LOG.md</code>. Каждая цитата агента была лично перепроверена прямым чтением файла, а не принята на веру.</p>
+  </section>
+
+  <section id="finding">
+    <p class="kicker">Находка</p>
+    <h2>Координатного бага нет вообще</h2>
+    <p><code class="mono">PoseTarget.joints</code> и живые ориентиры уже в одном изотропном пространстве (<code class="mono">PoseCoordinateNormaliser</code>), а <code class="mono">poseMatchScore</code> сам ещё раз нормализует каждую позу независимо — центрирует и масштабирует к единичному RMS-радиусу. Просто удалить <code class="mono">null</code>-guard уже дало бы число. Реальный, уже задокументированный (но не связанный с новым решением) блокер — <strong>отсутствие инвариантности к ракурсу</strong>: собственный заголовок <code class="mono">pose_target.dart</code> прямо говорит, что вид спереди и сбоку — разные фигуры и будут оценены по-разному. Все эталонные позы — вид сбоку; avatar-режим по умолчанию — анфас (отдельное осознанное решение, зафиксированное после реального бага с зеркалированием руки). Точно такой же провал уже случался вживую в камера-режиме: правильное повторение, снятое не под тем углом, было засчитано как ошибка — поэтому коуч сейчас явно просит встать боком.</p>
+    <div class="card">
+      <p style="margin:0">Более того — более ранняя запись в <code class="mono">DECISION_LOG.md</code> (Gate E, 2026-08-15) уже правильно определила именно эту проблему и отложила её: «инвариантность к ракурсу — предпосылка для этого гейта, а не следствие». Более позднее решение, от которого отталкивалось указание «вариант (b)», не сверилось с этой записью.</p>
+    </div>
+  </section>
+
+  <section id="decision">
+    <p class="kicker">Решение GPT-PM — получено и обязательно</p>
+    <h2>Прежнее направление снято; для этого гейта — вариант (d)</h2>
+    <ul class="decisions">
+      <li>
+        <div class="title">Этот гейт <span class="pill good">вариант (d)</span></div>
+        <div class="body"><p>Никакой реализации сейчас. Гейт закрывается как коррекция исследования/архитектуры, а не как гейт реализации. Guard не удалять, отжимания не включать обратно, временный счёт не изобретать.</p></div>
+      </li>
+      <li>
+        <div class="title">Стратегическая цель <span class="pill muted">вариант (c)</span></div>
+        <div class="body"><p>Инвариантный к ракурсу механизм оценки (3D-геометрия или обученное представление) — через ML/Form-Coach R&amp;D-трек, не через исполнительный путь редизайна. Алгоритм намеренно не выбран на этом этапе.</p></div>
+      </li>
+      <li class="reject">
+        <div class="title">Вариант (a) отклонён как решение по умолчанию</div>
+        <div class="body"><p>Заставить avatar-режим встать боком ради работы сегодняшнего 2D-матчера — значит подогнать UX под ограничение реализации и отменить осознанное решение об анфасе, принятое из-за реального бага.</p></div>
+      </li>
+      <li class="reject">
+        <div class="title">Вариант (b) отклонён как продуктовая архитектура сейчас</div>
+        <div class="body"><p>Вторая библиотека эталонов анфас может быть исследовательской базой позже, но не раньше, чем доказано, что она реально разделяет верную/неверную технику по типам тела и углам — иначе «зависимость от вида сбоку» просто заменится на «зависимость от двух дискретных ракурсов».</p></div>
+      </li>
+      <li>
+        <div class="title">Маркер сустава-ошибки</div>
+        <div class="body"><p>Остаётся отложенным — теперь по более точной причине: нет смысла делать хирургию <code class="mono">LandmarkType → SilhouetteFigure</code> раньше, чем появится источник вердикта, способный вообще назвать конкретный сустав.</p></div>
+      </li>
+    </ul>
+  </section>
+
+  <p class="foot-note">Код не менялся — вся работа этого гейта в <code class="mono">core/DECISION_LOG.md</code> и в этом отчёте. Следующий шаг: возврат к оставшейся работе редизайна (Onboarding-сверка, Scan-сверка).</p>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
