@@ -36444,3 +36444,40 @@ test/features/visual_equipment` -- 699 passed; `flutter analyze` on both directo
 
 **Next**: send the corrected diff to GPT-PM for round 20, verifying specifically the resolve-to-
 canonical fix and the destructive-write removal. Commit and push once approved.
+
+## 2026-08-30 — Roadmap updated to reflect G-C/F016 closure; GPT-PM round 23 caught two overclaims, round 24/25 fixed
+
+After the G-C/F016 code fix (commit `70467cc`, GPT-PM round 22 `VERDICT: APPROVE`) landed, updated
+`reports/MASTER_ROADMAP_2026-08-30.html`/`.ru.html` to reflect it -- the G-C flagbox, Section 6's
+sec-note/table pill, and Section 8's dependency list all still said "partial, hazard open." GPT-PM's
+round-23 review of that update returned `VERDICT: MAJOR`, 2 findings.
+
+**MAJOR 1, CONFIRMED.** The update called G-C "formally closed" in Section 0, the flagbox, the table
+pill, and Section 8 -- but round 22's actual verdict said "G-C/F016 reviewed hazard: CLOSED," never
+"G-C: FORMALLY CLOSED" the way round 13 explicitly said for G-D. The project's own convention
+distinguishes "a real fix shipped and the hazard is closed" from "a standalone verdict closed this as
+a NAMED GATE" (G-A/G-B/G-E all already carry this same narrower status). Calling G-C "formally closed"
+collapsed that distinction and could make a future reviewer believe no governance receipt was
+outstanding when one genuinely was. **Fixed**: every location in both languages now quotes round 22's
+actual wording ("reviewed hazard: CLOSED") and explicitly states this is narrower than G-D's own
+closure -- no standalone named-gate verdict exists for G-C, same open governance item G-B/G-E carry.
+
+**MAJOR 2, CONFIRMED.** The new G-C paragraph opened with "Superseding the... correction above... kept
+in the record rather than deleted, per this project's append-only convention" -- but the edit had
+literally replaced the old flagbox's two lines with the new ones; nothing was "kept above" in the
+resulting HTML. Only `core/DECISION_LOG.md` is genuinely append-only; the roadmap HTML files are
+edited in place. **Fixed**: removed the false claim in both languages; the new text now says plainly
+that this document is edited in place, not append-only, and that the full prior text lives in
+DECISION_LOG.md instead.
+
+Round 24 (both fixes applied) and round 25 (final receipt) both returned genuine, correlated
+`VERDICT: APPROVE`, `PUSH: AUTHORIZED`. This closes the G-C roadmap/documentation-sync thread.
+
+**Note on session pacing**: the operator interrupted mid-round-24-wait to ask what was happening;
+per CLAUDE.md §11 (a genuine operator message supersedes the current plan), the session stopped
+autonomous continuation, published a status-summary artifact, and waited rather than proceeding
+straight to commit/push despite round 24's already-arrived APPROVE -- resumed only on the operator's
+explicit "продолжай" (continue).
+
+**Next**: per PM mode, continue to G-A's remaining item (exact chest-pain copy text verification) or
+pursue formal named-gate verdicts for G-B/G-E.
