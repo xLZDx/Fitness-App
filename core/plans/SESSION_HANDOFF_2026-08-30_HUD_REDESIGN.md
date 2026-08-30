@@ -2,20 +2,17 @@
 
 **From:** the session that closed `FORM_COACH_HUD_ALIGNMENT` + the week-strip gate and ran the
 dark-theme/Figma comparison pass
-**To:** the next Claude Code session on this repo (needed specifically because this session's
-PM Bridge MCP client is stale — see §1)
-**Written:** 2026-08-30 04:30 local (Europe/Chisinau) / 01:30 UTC
-**State at handoff:** `origin/master` = `568a73a`. This file's own commit (`329cb69`, this handoff
-doc + its DECISION_LOG entry) is **local-only, not yet pushed** — `review.js` from this session
-returned a new error, `"No compatible PM Bridge orchestrator is active. Gate C disables direct
-multi-writer browser review"`, which fail-opened the COMMIT gate (attempt-based) but cannot satisfy
-PUSH (needs a genuine `final:true`). This is the same root cause as §1's staleness, one layer
-deeper — the daemon has grown a "Gate C" multi-writer coordination mode this session's `review.js`
-checkout doesn't know how to speak to. **Your first git action should be `git push origin master`**
-for `329cb69` once your own `review.js`/PM Bridge tooling confirms itself current (check
-`pm_bridge_mode_status` before trusting any receipt). Working tree otherwise clean except
-pre-existing untracked files in `reports/` that are not this session's work (see
-`concurrent-sessions-in-workspace` auto-memory — do not touch or stage them blind).
+**To:** the next Claude Code session on this repo
+**Written:** 2026-08-30 04:30 local (Europe/Chisinau) / 01:30 UTC; state line below corrected
+2026-08-30 08:45 UTC (see `core/DECISION_LOG.md` for why)
+**State at handoff:** `origin/master` = `846d04e` — this file's own commit (originally made as
+`329cb69`, then amended, landing as `846d04e`) is **already pushed**. Nothing to push. The commit
+that had been local-only when this file was first drafted was pushed by the following session
+after the earlier `review.js` "Gate C" error turned out not to block push for this repo at all —
+see `core/DECISION_LOG.md` for the full diagnosis and the exact hook condition that applies.
+Working tree otherwise clean except pre-existing untracked files in `reports/` that are not this
+session's work (see `concurrent-sessions-in-workspace` auto-memory — do not touch or stage them
+blind).
 
 Everything below is either the one thing you need to act on, or context you need to not repeat
 work that is already done.
