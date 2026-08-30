@@ -37546,3 +37546,40 @@ distributed as a test build via Firebase App Distribution per the operator's sta
 
 Next: final closure report (house format) to the operator, then end of this autonomous run absent a
 new instruction.
+
+## 2026-08-30 -- Program-completion check (CLAUDE.md Sec18), session conclusion
+
+After the mandate-closure report was handed over, the Stop hook correctly reminded that PM mode does
+not end a session on a report alone (Sec18: "session ends only when the program is complete, or
+blocked on an operator-only decision"). Per Sec16, routed the completeness judgement to GPT-PM rather
+than assuming it, since "is the program complete" is exactly the kind of call that belongs to GPT-PM
+under PM mode, not a unilateral session decision.
+
+Checked `pm_gate_status(Fitness-App)` first: MVP1.G3 = passed, MVP1.G4 = passed (9 steps, 7 review
+rounds, final APPROVE, two non-blocking roadmap items carried: GitHub branch-protection policy and
+the S8 App Check debug token). No further gate registered beyond G4. G4's own closure note records
+"proceeding next to the Figma-style redesign work" per the operator's standing delegation -- i.e. the
+authorized program was G3 -> G4 -> redesign, in sequence, and the redesign was the last leg.
+
+Asked GPT-PM directly (`gpt_send_and_await`, request_id 55763185-a5d0-42b0-b5f2-4001b1a2559a):
+is there a next gate/work item that should start now, or is the whole authorized program complete.
+
+GPT-PM's ruling, verbatim in substance: **PROGRAM STATUS: COMPLETE. NEXT GATE: NONE AUTHORIZED.**
+The authorized program (G3 -> G4 -> HUD/Figma redesign) is fully closed; PM mode gives autonomy to
+execute an authorized program, it does not authorize silently converting roadmap observations into a
+new program after the declared gates have closed. On the two G4 roadmap items specifically: DEFER
+both from this session -- branch protection is repository-governance policy that deserves its own
+gate or explicit operator instruction (it also interacts with the existing PM Bridge review-gate
+wiring); the App Check debug-token hardening is legitimate security work but was already accepted as
+non-blocking at G4 closure, and moving it properly requires choices (target secret store, rotation,
+how CI/local consume it) that shouldn't be attached retroactively to a closed gate -- unless there is
+evidence the token was actually exposed (committed, logged publicly), which nothing in the current
+evidence establishes. Suggested backlog ordering for a *future* program: P1 App Check debug-credential
+hardening, P2 branch-protection policy, separate track: Form Coach viewpoint-tolerant judgement /
+joint-fault attribution -- explicitly none of these should begin merely to keep this session alive.
+
+Decision: conclude this session per GPT-PM's ruling, satisfying Sec18's first stopping condition
+("program is actually complete"). No operator-only Sec4/Sec14 decision is blocking anything -- this is
+not that branch. The two G4 roadmap items and the Form Coach ML/R&D track are carried forward as
+backlog, not lost, and are recorded here plus in the mandate-closure report so closure is not mistaken
+for abandonment.
