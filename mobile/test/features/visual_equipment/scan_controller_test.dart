@@ -3,9 +3,12 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fitness_app/features/equipment/data/exercise_name_matcher.dart';
+import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/visual_equipment/data/gemini_equipment_service.dart'
     show GeminiVisualEquipmentService;
 import 'package:fitness_app/features/visual_equipment/data/machine_card.dart';
+import 'package:fitness_app/features/visual_equipment/data/machine_card_repository.dart';
 import 'package:fitness_app/features/visual_equipment/data/machine_describer.dart';
 import 'package:fitness_app/features/visual_equipment/data/scan_outcome.dart';
 import 'package:fitness_app/features/visual_equipment/data/visual_equipment_match.dart';
@@ -178,6 +181,52 @@ void main() {
       expect(c.read(visualEquipmentControllerProvider).requireValue.outcome,
           ScanOutcome.unknown);
       expect(c.read(lastMachineCardProvider), isNotNull);
+    });
+
+    test(
+        'G-C/F016: the saved/last-scan card keeps the model\'s RAW uses[] — '
+        'validation is a render-time concern, not a write-time one', () async {
+      // GPT-PM's round-19 review caught why write-time filtering was unsafe:
+      // a one-time `ref.read` of the matcher, done while the catalogue could
+      // still be loading (an empty, fail-closed matcher), would PERMANENTLY
+      // destroy a legitimate suggestion before `MachineCardView` ever got a
+      // chance to validate it against the real, later-loaded catalogue. So
+      // `_describeInstead` must store exactly what the describer returned,
+      // unfiltered, with no path where a matcher's state at describe-time can
+      // ever lose data. `MachineCardView`'s own tests (machine_card_flow_test
+      // .dart) prove the actual filtering; this proves this layer does NOT
+      // do it, which is equally load-bearing given the round-19 finding.
+      final rawCard = MachineCard(
+        id: 'unknown_1',
+        name: 'Some machine',
+        summary: 'A machine the catalogue does not have yet.',
+        uses: const ['Leg Press for quads', 'Invented Machine Twist'],
+        firstSeenAt: DateTime(2026, 1, 1),
+      );
+      final repo = MockMachineCardRepository();
+      addTearDown(repo.dispose);
+      final c = containerWith([
+        visualEquipmentServiceProvider.overrideWithValue(_EmptyService()),
+        machineDescriberProvider
+            .overrideWithValue(MockMachineDescriber(card: rawCard)),
+        machineCardRepositoryProvider.overrideWithValue(repo),
+        // Deliberately an empty matcher (as if the catalogue were still
+        // loading) — if `_describeInstead` filtered against this, both
+        // lines would vanish. They must not: this provider is never read
+        // for the write path any more.
+        exerciseNameMatcherProvider
+            .overrideWithValue(ExerciseNameMatcher(const [])),
+      ]);
+
+      await c
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/abcd.jpg');
+
+      final saved = c.read(lastMachineCardProvider);
+      expect(saved, isNotNull);
+      expect(saved!.uses, rawCard.uses);
+      final stored = await repo.list();
+      expect(stored.single.uses, rawCard.uses);
     });
 
     test('nothing in the catalogue and unnameable is NO EQUIPMENT', () async {

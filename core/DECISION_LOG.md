@@ -36311,3 +36311,136 @@ called this out explicitly in the scope note so GPT-PM would not score against i
 corrected EN+RU G-E remaining-work wording (both done above) plus this DECISION_LOG entry. Per GPT-PM's
 own scoping instruction, no Firestore, G-B implementation, G-D, or unrelated roadmap section needs
 another substantive review this round.
+
+## 2026-08-30 — G-C/F016 actually closed: exercise-name catalogue validation, read-time not write-time
+
+Per the corrected roadmap (see the round-16/17 entries above), G-C's real hazard was open:
+`MachineDescriber` invents a `uses[]` exercise list for unrecognised gym equipment, and nothing
+validated any line of it against the real catalogue -- an un-onboarded/clear user (the common case)
+saw raw AI-invented, unvalidated exercise suggestions. This entry records the actual remediation.
+
+**Design.** New `ExerciseNameMatcher` (`mobile/lib/features/equipment/data/exercise_name_matcher.dart`):
+normalises free text (reusing `EquipmentAliasIndex.normalise` -- same alphabet, same "the model
+elaborates rather than shortens" shape already proven for the structurally identical machine-name
+problem) and checks for a whole-word-phrase match against a set of real catalogue exercise titles.
+Built from `exerciseTitlesProvider` (new `exerciseNameMatcherProvider` in `equipment_providers.dart`)
+-- verified, not assumed, that this catalogue is genuinely AI-generation-free: `exerciseTitlesProvider`
+sources from `_allExercisesProvider`, which applies `withDemonstration()` (`exercise_filter.dart:266-269`)
+before returning anything, and `AiExerciseGenerator.parseResponse` never sets a video/clip on a
+generated `ExerciseItem` -- so an AI-generated exercise can never validate another AI's invention.
+Fails closed on an empty/loading catalogue (confirmed by test, not just doc comment).
+
+**First version was write-time-only, and two independent internal reviews (flutter-reviewer,
+security-reviewer, run in parallel per CLAUDE.md §17's "specialists before GPT-PM" sequencing) both
+found the same real gap**: filtering only in `visual_equipment_providers.dart`'s `_describeInstead`
+(right before a card's first save) protects that ONE write path -- `lastMachineCardProvider`, the
+transient "just scanned" view -- but `machineCardsProvider` (`machine_card_providers.dart:26-28`,
+a raw stream straight from `MachineCardRepository.watch()`) feeds `scanner_page.dart:1099-1164`'s
+"мои тренажёры" list with ZERO re-validation. Any card saved before this fix shipped, or by any
+future write path that forgets to filter, would show raw unvalidated `uses[]` in that list forever.
+Worse: `MachineCardMerge.fold()` (`machine_card_repository.dart:67`) permanently keeps the FIRST
+non-empty `uses[]` a machine id ever got, so even actively re-scanning the same physical machine
+after the fix could never overwrite a bad stored list -- no self-healing path existed. flutter-reviewer
+additionally flagged a MINOR: a describe-time-only filter computed once against a possibly-still-
+loading catalogue would freeze a false-negative (a legitimate suggestion wrongly dropped) in place.
+
+**Fixed by moving validation to render time.** `MachineCardView.build()` now computes
+`ref.watch(exerciseNameMatcherProvider).filter(card.uses)` and renders THAT, not `card.uses`,
+regardless of how or when the card reached the widget. This closes all three findings at once,
+without touching `fold()` or writing a backfill migration: since every render re-validates against
+the CURRENT catalogue, what is stored (stale, legacy, or freshly filtered) stops mattering for this
+safety property -- there is nothing left to backfill. The cold-start race is also closed as a side
+effect: `ref.watch` (not a one-time read) rebuilds the moment the catalogue's `FutureProvider`
+resolves, rather than freezing an empty-catalogue result the way a describe-time-only computation did.
+`showUses`'s existing all-or-nothing safety-answer gate is unchanged and independent, now applied to
+`validatedUses` instead of the raw list -- a card with zero validated lines renders neither the list
+nor "withheld" (there's nothing to honestly call withheld). Write-time filtering in `_describeInstead`
+is KEPT, not removed -- reframed in its own comment as defense-in-depth for data at rest (an internal
+Admin-SDK collection-group read over `machine_cards`, used to prioritise what to film next, never
+goes through `MachineCardView` at all, so raw invented text sitting in Firestore is still worth
+avoiding even though no user-facing screen can display it now).
+
+**Tests**: `exercise_name_matcher_test.dart` (new, 9 cases: exact/phrase/case/ё-normalisation match,
+no-match, short-title false-positive guard, empty text, empty catalogue fails closed, filter order/
+drop behaviour). `scan_controller_test.dart`: 2 new cases proving end-to-end filtering through
+`_describeInstead`. `machine_card_flow_test.dart`: fixture-catalogue override added to the shared
+`pumpScan`/`pumpCard` helpers (this file's `aCard()` fixture predates the catalogue and would
+otherwise be entirely filtered out, breaking every pre-existing test in the file for an unrelated
+reason); one NEW regression test proving the actual fix -- a card built directly (bypassing
+`_describeInstead` entirely, simulating a legacy/stale stored card) with an unmatched line and a
+matcher that never saw it still renders nothing for that line. Full suite run: `flutter test
+test/features/equipment` (457 passed) + `test/features/visual_equipment` (239 passed) +
+`flutter analyze lib/features/equipment lib/features/visual_equipment` (no issues) -- all after the
+render-time redesign, not just the first (incomplete) version.
+
+**Next**: send this diff to GPT-PM for review (§15), fix any further findings in one batch per §17,
+then commit and push once approved.
+
+## 2026-08-30 — GPT-PM round 19: two real MAJORs on the G-C code fix, both fixed
+
+GPT-PM's round-19 review of the G-C exercise-validation diff returned `VERDICT: MAJOR`, 2 findings
+plus 1 MINOR. All confirmed against real code before fixing, per standing discipline.
+
+**MAJOR 1, CONFIRMED -- a genuine bypass of the fix's own purpose.** `ExerciseNameMatcher.matches()`
+returned a bare bool, and `filter()` rendered the model's ORIGINAL line whenever a catalogue title
+appeared anywhere inside it as a whole-word phrase. GPT-PM's example: "Leg Press With Torso Rotation"
+contains the real title "Leg Press", so the line passed the check -- and the WHOLE line, including the
+invented "With Torso Rotation" modification, was then displayed as validated. The design deliberately
+tolerated elaboration ("3 sets of Leg Press for quads") without distinguishing harmless dosage text
+from an actual invented movement modification, because nothing about phrase-matching CAN tell the two
+apart -- the flaw was in returning the model's own text at all for a "matched" line. **Fixed**:
+`ExerciseNameMatcher.resolve()` now returns the CANONICAL catalogue title, never the input text --
+"Leg Press With Torso Rotation" resolves to "Leg Press" and the invented addition is discarded, same
+as any unmatched line. `filter()` now builds its output from `resolve()`'s return values. Mirrors
+`EquipmentAliasIndex.resolve()`'s own return-canonical-value shape, not just its matching algorithm,
+for exactly the reason `EquipmentAliasIndex` already needed it (a resolved equipmentId, never raw
+surrounding prose, is what leaves that function too). Added the adversarial test GPT-PM asked for
+verbatim: `exercise_name_matcher_test.dart`, "a real title embedded in an invented MODIFICATION never
+lets the modification through."
+
+**MAJOR 2, CONFIRMED -- a genuine, previously undetected regression in the very fix meant to close the
+cold-start race the DECISION_LOG entry above claimed was solved.** `_describeInstead` did `ref.read(
+exerciseNameMatcherProvider).filter(card.uses)` ONCE, synchronously, and PERMANENTLY overwrote
+`card.uses` with that result before ever saving or setting `lastMachineCardProvider`. While the
+catalogue is still loading, `exerciseNameMatcherProvider` is an empty (fail-closed) matcher -- so a
+legitimate suggestion scanned during a cold start was destroyed at write time, with no raw copy left
+anywhere. The render-time watcher in `MachineCardView` genuinely does rebuild when the catalogue
+resolves, but by then it only ever receives the ALREADY-EMPTIED `card.uses` -- there was nothing left
+to recover. This directly contradicted the previous entry's own claim that render-time filtering
+closed this race; it only closes it if the raw data actually survives to be re-validated, which the
+destructive write-time rewrite prevented. **Fixed**: removed the write-time filtering entirely.
+`_describeInstead` now stores and forwards `card` completely unmodified -- `MachineCard.withValidatedUses`
+(now unused) was deleted along with the call site. GPT-PM offered a heavier alternative (await a
+loaded catalogue before producing a separately-sanitized stored copy, keeping the raw card for the UI);
+chose the simpler, GPT-PM-endorsed "safest shape" instead, since nothing in this gate's own scope
+requires storage-level sanitization to succeed -- the render-time boundary is sufficient and the
+alternative adds real complexity (an async wait plus two divergent copies of the same record) for a
+secondary property. The data-at-rest concern (an internal Admin-SDK collection-group read over
+`machine_cards`, unrelated to any user-facing screen) is knowingly NOT solved by this gate; recorded
+as deferred, not silently dropped. Added the test GPT-PM asked for: a cold-start-recovery widget test
+(`machine_card_flow_test.dart`) that starts a card's matcher empty (simulating a still-loading
+catalogue), confirms nothing shows, then updates the SAME watched provider (no rescan, no new card)
+and confirms the legitimate suggestion appears -- proving recovery is real, not just claimed. Also
+replaced the two now-obsolete write-time-filtering tests in `scan_controller_test.dart` with one
+proving the opposite: `_describeInstead` stores the model's raw, un-rewritten `uses[]` even when the
+matcher it's handed is empty, which is now the correct, load-bearing behaviour rather than a bug.
+
+**MINOR, CONFIRMED.** Doc comments in both `exercise_name_matcher.dart` and `machine_card_view.dart`
+still described the obsolete write-time-only architecture from the first version of this fix, directly
+contradicting the actual render-time boundary the redesign established -- risk: a future maintainer
+trusts the stale comment, treats render-time validation as redundant, and removes the real protection.
+**Fixed**: both rewritten to state plainly that render-time validation in the widget is the only
+safety boundary, `card.uses` is never filtered or rewritten upstream, and (in `exercise_name_matcher
+.dart`'s case) why `resolve()` returns a canonical value rather than a bool.
+
+**Confirmed correct by GPT-PM, not re-litigated**: leaving `MachineCardMerge.fold()` untouched is
+sound given a correct render-time validator -- stale stored `uses[]` cannot bypass a render-time check
+merely because `fold()` retains it. The AI-generation-exclusion claim (validation catalogue excludes
+ungrounded AI content via `withDemonstration()`) holds for the current pipeline, not documented as a
+permanent guarantee. The 457+239 test counts and clean `flutter analyze` were accepted as real
+regression evidence, with the explicit caveat that they didn't cover either MAJOR above -- now they
+do, via the tests listed above. Full re-run after all three fixes: `flutter test test/features/equipment
+test/features/visual_equipment` -- 699 passed; `flutter analyze` on both directories -- no issues.
+
+**Next**: send the corrected diff to GPT-PM for round 20, verifying specifically the resolve-to-
+canonical fix and the destructive-write removal. Commit and push once approved.

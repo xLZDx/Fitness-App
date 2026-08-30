@@ -221,6 +221,28 @@ class VisualEquipmentController extends Notifier<AsyncValue<ScanResult>> {
       return false;
     }
     if (card == null) return false;
+    // G-C/F016: `card.uses` is the model's own invention, unchecked against
+    // anything real at the point `machine_describer.dart` parsed it.
+    // `MachineCardView` re-validates on every render regardless of how a
+    // card reached it — that is the ONLY safety boundary for this content,
+    // deliberately, and `card` is stored and forwarded here unmodified.
+    //
+    // An earlier version of this fix also filtered here, before the first
+    // save, as claimed defense in depth for data at rest. GPT-PM's round-19
+    // review found that unsafe, not merely redundant: `exerciseNameMatcherProvider`
+    // fails closed (empty matcher) while the catalogue is still loading, and
+    // this was a one-time `ref.read` that PERMANENTLY overwrote `card.uses`
+    // with that empty-matcher result before saving -- a real suggestion
+    // scanned during a cold start was destroyed with no raw copy left
+    // anywhere to recover from, defeating the render-time watcher's own
+    // ability to pick it up once the catalogue actually loaded a moment
+    // later. Storing the raw card and validating only at render time has no
+    // such failure mode: nothing is ever destroyed, so there is nothing to
+    // lose during a race. The data-at-rest property (an internal Admin-SDK
+    // read over `machine_cards` could see raw invented text) is a real,
+    // knowingly deferred gap, not solved by this gate -- closing it needs a
+    // way to sanitise storage that cannot itself destroy legitimate content
+    // on a slow catalogue load, which is a bigger change than this fix.
     ref.read(lastMachineCardProvider.notifier).set(card);
     try {
       await ref.read(machineCardRepositoryProvider).save(card);

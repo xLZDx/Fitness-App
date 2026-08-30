@@ -13,6 +13,7 @@ import '../data/equipment_models.dart';
 import '../data/equipment_report_service.dart';
 import '../data/equipment_repository.dart';
 import '../data/exercise_filter.dart';
+import '../data/exercise_name_matcher.dart';
 import '../data/mock_equipment_report_service.dart';
 import '../../safety/data/eligibility.dart';
 import '../../safety/data/health_flags.dart' show MovementRestriction;
@@ -401,6 +402,19 @@ final exerciseTitlesProvider = Provider<Map<String, String>>((ref) {
   final all =
       ref.watch(_allExercisesProvider).valueOrNull ?? const <ExerciseItem>[];
   return {for (final e in all) e.id: e.title};
+});
+
+/// G-C/F016: validates free text (an AI machine-description's invented
+/// `uses[]` suggestions) against the real, current-language catalogue.
+///
+/// Built from [exerciseTitlesProvider], deliberately — that provider's own
+/// upstream ([_allExercisesProvider]) already drops any AI-generated
+/// exercise with no real clip, so this can never let one AI's invention
+/// validate another's; only real, demonstrable catalogue exercises can ever
+/// match. Empty before the catalogue has loaded, which fails closed (nothing
+/// matches yet) rather than open.
+final exerciseNameMatcherProvider = Provider<ExerciseNameMatcher>((ref) {
+  return ExerciseNameMatcher(ref.watch(exerciseTitlesProvider).values);
 });
 
 /// The catalogue's name for [id], falling back to the [stored] snapshot.

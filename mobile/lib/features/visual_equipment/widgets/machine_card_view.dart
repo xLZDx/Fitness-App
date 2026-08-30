@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/hud/hud_surface.dart';
+import '../../equipment/state/equipment_providers.dart';
 import '../../safety/state/eligibility_providers.dart';
 import '../data/machine_card.dart';
 
@@ -35,10 +36,43 @@ import '../data/machine_card.dart';
 /// That is the same problem `equipment_providers.dart:481-482` already
 /// solved for `ai::` exercises, and it takes the same answer: withheld for a
 /// user there is anything to screen against, rather than shown unscreened.
-/// Matching each line against the catalogue was considered and rejected — a
-/// machine this card exists for has no catalogue entry, so a catalogue match
-/// would suppress the list for everybody and delete the feature instead of
-/// making it safe.
+/// Matching each `uses` LINE against the MACHINE catalogue was considered and
+/// rejected here — a machine this card exists for has no catalogue entry by
+/// construction (`MachineDescriber` only runs after machine recognition came
+/// back empty), so that particular match would suppress the list for
+/// everybody and delete the feature instead of making it safe.
+///
+/// That rejection is about the machine, not the individual EXERCISE NAMES
+/// inside `uses`, which is a different check on a different entity — G-C's
+/// original remediation conflated the two and claimed the hazard closed on
+/// the strength of the machine-catalogue reasoning above; it does not follow
+/// from it. The actual per-line check happens HERE, in [build], every
+/// render, via `exerciseNameMatcherProvider` — regardless of `showUses`,
+/// and regardless of how or when [card] reached this widget: a fresh scan,
+/// a stored/legacy card streamed from Firestore, anything future that
+/// writes a card without going through the scan flow at all. That is
+/// deliberate, not incidental: a first version filtered once, at write
+/// time, in `visual_equipment_providers.dart`'s `_describeInstead`, and two
+/// independent reviews (GPT-PM's round-19, plus this repo's own internal
+/// flutter/security specialists) both caught that a write-time-only filter
+/// protects nothing streamed in from storage by any OTHER path — this
+/// widget is the only place `card.uses` is ever consumed, so this is the
+/// only place validation can actually guarantee coverage. `card` itself is
+/// never filtered or rewritten anywhere upstream; what's stored is always
+/// the model's raw, unvalidated text, and it stays that way — safe only
+/// because nothing downstream of storage ever trusts it unchecked.
+///
+/// `showUses` below is a second, independent gate on top of the content
+/// check: it withholds the (already-validated) list entirely for a user
+/// who has something to screen against, the same all-or-nothing shape
+/// `equipment_providers.dart:481-482` uses for `ai::` exercises. An
+/// un-onboarded/clear user still sees the list — but only the validated
+/// remainder of it, and only the matched CATALOGUE title for each line
+/// that validates, never the model's own wording: `exerciseNameMatcherProvider`
+/// resolves a line like "Leg Press With Torso Rotation" to "Leg Press" and
+/// discards the rest, rather than accepting the whole line just because a
+/// real title appears somewhere inside it — see that provider's own doc
+/// comment for why a boolean check alone was unsafe here.
 class MachineCardView extends ConsumerWidget {
   const MachineCardView({
     super.key,
@@ -88,6 +122,16 @@ class MachineCardView extends ConsumerWidget {
         safety.injuries.isEmpty &&
         safety.health.restrictions.isEmpty;
 
+    // G-C/F016: the actual content-validation boundary — see this class's
+    // own doc comment above for why it lives here and not at write time.
+    // `ref.watch`, not a one-time read: while the catalogue is still loading
+    // this returns an empty matcher (fails closed, nothing shown yet) and
+    // rebuilds the moment it resolves, recovering a legitimate suggestion
+    // without needing a rescan — safe specifically because `card.uses` is
+    // never destroyed or rewritten anywhere before it gets here.
+    final validatedUses =
+        ref.watch(exerciseNameMatcherProvider).filter(card.uses);
+
     return HudPanel(
       key: const Key('machine-card'),
       child: Column(
@@ -124,7 +168,7 @@ class MachineCardView extends ConsumerWidget {
           ),
           const SizedBox(height: 6),
           Text(card.summary, style: theme.textTheme.bodyMedium),
-          if (card.uses.isNotEmpty && showUses) ...[
+          if (validatedUses.isNotEmpty && showUses) ...[
             const SizedBox(height: 12),
             Text(
               l.machineCardWhatYouCanDo,
@@ -132,7 +176,7 @@ class MachineCardView extends ConsumerWidget {
                   ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
-            for (final use in card.uses)
+            for (final use in validatedUses)
               Padding(
                 padding: const EdgeInsets.only(top: 2),
                 child: Row(
@@ -145,11 +189,17 @@ class MachineCardView extends ConsumerWidget {
                   ],
                 ),
               ),
-          ] else if (card.uses.isNotEmpty) ...[
+          ] else if (validatedUses.isNotEmpty) ...[
             // Says why, rather than silently rendering a shorter card. A list
             // that vanishes without explanation reads as the app having
             // nothing to say about the machine, which is a different and
             // untrue claim.
+            //
+            // Gated on `validatedUses`, not `card.uses`: a card whose lines
+            // are ALL unvalidated must fall through to neither branch here,
+            // same as a card with no uses at all -- "withheld for safety
+            // reasons" would be a false claim about content that was never
+            // going to be shown regardless of the viewer's safety answers.
             const SizedBox(height: 12),
             Text(
               l.machineCardUsesWithheld,

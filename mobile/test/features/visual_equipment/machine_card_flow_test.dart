@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../helpers/test_app.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/equipment/data/exercise_name_matcher.dart';
+import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
 import 'package:fitness_app/features/scanner/scanner_page.dart';
 import 'package:fitness_app/features/visual_equipment/data/machine_card.dart';
 import 'package:fitness_app/features/visual_equipment/data/machine_card_repository.dart';
@@ -73,7 +75,21 @@ void main() {
     );
     addTearDown(router.dispose);
     await tester.pumpWidget(ProviderScope(
-      overrides: overrides,
+      overrides: [
+        // G-C/F016: this whole file's fixture (`aCard()`) writes exercise
+        // names the real bundled catalogue has no reason to contain — this
+        // is what a real, current-language catalogue would look like for
+        // exactly those two lines, so every test in this group keeps
+        // exercising the safety-answer/persistence behaviour it was written
+        // for, independent of the separate content-validation concern
+        // covered by scan_controller_test.dart and
+        // exercise_name_matcher_test.dart. A test that wants to exercise
+        // filtering itself overrides this again, after it in the list.
+        exerciseNameMatcherProvider.overrideWithValue(
+          ExerciseNameMatcher(const ['Belt squats', 'Calf raises']),
+        ),
+        ...overrides,
+      ],
       child: MaterialApp.router(
         theme: AppTheme.light(),
         locale: kTestLocale,
@@ -313,15 +329,27 @@ void main() {
     Future<void> pumpCard(
       WidgetTester tester, {
       required List<Override> overrides,
+      MachineCard? card,
     }) async {
       await tester.pumpWidget(ProviderScope(
-        overrides: overrides,
+        overrides: [
+          // MachineCardView now re-validates `card.uses` against the real
+          // catalogue on every render (see its own doc comment) — this
+          // group is about the SEPARATE safety-answer gate, so give it a
+          // catalogue that recognises this file's fixture content, same as
+          // `pumpScan` above. A test about the validation gate itself
+          // overrides this again, after it, in its own `overrides`.
+          exerciseNameMatcherProvider.overrideWithValue(
+            ExerciseNameMatcher(const ['Belt squats', 'Calf raises']),
+          ),
+          ...overrides,
+        ],
         child: MaterialApp(
           theme: AppTheme.light(),
           locale: kTestLocale,
           localizationsDelegates: kTestLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: MachineCardView(card: aCard())),
+          home: Scaffold(body: MachineCardView(card: card ?? aCard())),
         ),
       ));
       await tester.pumpAndSettle();
@@ -428,8 +456,105 @@ void main() {
       expect(find.textContaining('hip-belt loaded squat machine'),
           findsOneWidget);
     });
+
+    testWidgets(
+        'G-C/F016: a line with no catalogue match never renders, even for '
+        'a card this widget did not just receive from _describeInstead',
+        (tester) async {
+      // The regression two independent reviews caught in the first version
+      // of this fix: filtering only at the point `_describeInstead` first
+      // saves a card protects that one write path, but says nothing about a
+      // card streamed in from storage by any other path (the saved-machines
+      // list, a card written before this fix shipped, a future write path
+      // that forgets to filter). This pumps a card DIRECTLY, the same way a
+      // list render would, with content the override below never validated
+      // — proving the widget itself is now the actual safety boundary,
+      // independent of how or when the card was written.
+      await pumpCard(
+        tester,
+        card: MachineCard(
+          id: 'unknown_2',
+          name: 'Old Unvalidated Machine',
+          summary: 'A card as if it had been saved before this fix shipped.',
+          uses: const ['Genuinely Invented Exercise'],
+          firstSeenAt: DateTime(2025, 1, 1),
+        ),
+        overrides: [
+          safetyContextProvider.overrideWith((_) async => cleared),
+          // Deliberately does NOT recognise "Genuinely Invented Exercise" —
+          // this is what an un-migrated, pre-fix stored card looks like
+          // against today's real catalogue.
+          exerciseNameMatcherProvider
+              .overrideWithValue(ExerciseNameMatcher(const ['Leg Press'])),
+        ],
+      );
+
+      expect(find.text('Genuinely Invented Exercise'), findsNothing);
+      // Not "withheld" either — there was never anything validated to
+      // withhold, which is a different, more honest state than "hidden for
+      // your safety".
+      expect(find.byKey(const Key('machine-card.uses-withheld')), findsNothing);
+      expect(find.text('Old Unvalidated Machine'), findsOneWidget);
+    });
+
+    testWidgets(
+        'G-C/F016 (GPT-PM round 19): a legitimate suggestion reappears once '
+        'a still-loading catalogue resolves — no rescan needed', (tester) async {
+      // The specific defect round 19 found in the first fix: a write-time
+      // filter, reading the matcher once while the catalogue was still
+      // loading, destroyed the raw text before anything could recover it.
+      // This proves the actual (render-time, read-nothing-destructively)
+      // design: the SAME card, never rewritten, shows nothing while the
+      // catalogue is empty and then shows the real suggestion the moment the
+      // catalogue provider updates — without the card being touched again.
+      final card = MachineCard(
+        id: 'unknown_3',
+        name: 'Cold Start Machine',
+        summary: 'Scanned before the catalogue had loaded.',
+        uses: const ['Leg Press for quads'],
+        firstSeenAt: DateTime(2026, 1, 1),
+      );
+
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          safetyContextProvider.overrideWith((_) async => cleared),
+          // Starts empty — "the catalogue is still loading" — and is
+          // watched, not fixed, so updating it mid-test is exactly what a
+          // real FutureProvider resolving later looks like to this widget.
+          exerciseNameMatcherProvider.overrideWith(
+            (ref) => ExerciseNameMatcher(ref.watch(_catalogueLoadStub)),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          locale: kTestLocale,
+          localizationsDelegates: kTestLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: MachineCardView(card: card)),
+        ),
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Leg Press for quads'), findsNothing);
+
+      final container =
+          ProviderScope.containerOf(tester.element(find.byType(MachineCardView)));
+      container.read(_catalogueLoadStub.notifier).state = ['Leg Press'];
+      await tester.pump();
+
+      // The catalogue title, not the model's original elaborated line —
+      // resolve() returns the canonical value, per the round-19 fix.
+      expect(find.text('Leg Press'), findsOneWidget);
+      expect(find.text('Leg Press for quads'), findsNothing);
+    });
   });
 }
+
+/// Drives the simulated "catalogue still loading, then resolves" transition
+/// in the cold-start recovery test above — stands in for the real
+/// [exerciseTitlesProvider]'s own dependency on a [FutureProvider] that has
+/// not necessarily resolved yet when a scan happens.
+final _catalogueLoadStub = StateProvider<List<String>>((_) => const []);
 
 /// Recognises nothing at all.
 ///
