@@ -35908,3 +35908,41 @@ commits: `846d04e`..`226f047` plus this one) to get an actual `final:true` recei
 `review.js`'s `reports/` exclusion means it will show a much smaller diff than what was just
 reviewed by hand above (source-code and governance-file changes only), which is expected and
 already covered by rounds 1-2's `review.js` receipts.
+
+## 2026-08-30 ~13:05 UTC -- PUSHED: `review.js` round 8 final:true + one direct-evidence
+## confirmation round, genuine GPT-PM VERDICT: APPROVE, `eb2ba6d..baa1918` pushed to origin/master
+
+`review.js` round 8 (`--base origin/master --final`, `replyId 5f881aa9`) came back `final:true`
+(verdict MINOR, no BLOCKER) covering the full accumulated diff since `origin/master` -- but its own
+reply text said `PUSH: HOLD` pending one more direct look at the two provenance lines fixed in
+`baa1918`, since `review.js`'s `reports/` exclusion meant it still hadn't actually seen them. Per
+this project's own standing rule that a receipt's `final:true` is a claim, not a parsed verdict (see
+the "REVIEW_EXCLUDE" entry above), treated the reply text as authoritative over the flag and did not
+push on the flag alone.
+
+Sent one more direct `gpt_send_and_await` round with the exact `grep`'d `<dt>Git</dt>` lines from
+both files (not retyped from memory) plus the current/parent SHA relationship (`HEAD baa1918`,
+parent `226f047`). Genuine, correlated `VERDICT: APPROVE` came back (`GO: APPROVED`, `PUSH:
+AUTHORIZED`) -- confirmed both lines are RU/EN-semantically-aligned, internally consistent (the
+report never claims to know its own SHA), and that the self-reference problem is actually fixed, not
+just deferred one commit.
+
+**Pushed** under `~/.claude/CLAUDE.md` §20 (a genuine GPT-PM APPROVE authorizes push in place of a
+separate operator confirmation for this reversible action) plus the standing commit-gate receipt:
+`git push origin master` -- `eb2ba6d..baa1918`. Verified via `git fetch origin master` +
+`git rev-parse origin/master HEAD`: both resolve to `baa19182a44506395562f659e91e12aa07866444`,
+confirmed matching.
+
+**What shipped in this push** (8 commits, `eb2ba6d`..`baa1918`): the Rosetta retro-governance
+report; the full HUD design-handoff archive extraction (45 files, previously 80% missing, including
+the 2 mp4 reference clips this session's own remediation later added); the master-roadmap
+reassessment document (RU+EN) and every correction made to it across 7 GPT-PM review rounds (G-A
+implementation-evidence finding, Profile HOLD/SUPERSEDED, nav REFERENCE_AVAILABLE/REOPENED, MVP1.G4
+internal-consistency fix, provenance-banner fixes); and the `gpt_review_gate.py` hook-exclusion
+reversion (`EXCLUDED_REPO_ROOTS` back to `[]` for Fitness_App, `~/.claude`, outside this repo's own
+git history, recorded here per that hook's own documented gap).
+
+**Per CLAUDE.md §18 (PM mode), continuing to the next gate now rather than stopping** -- next
+candidate per this roadmap's own Section 8: reconcile the HUD-redesign screens (Home/Workouts/
+Progress, cheap since screenshots already exist) against `full_handoff_v1`, or pick up G-D (Firestore
+rules, P0/low risk, next in the fixed G-A→G-D→G-C→G-B→G-E order) -- deciding which now.
