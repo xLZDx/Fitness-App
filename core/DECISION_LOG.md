@@ -37465,3 +37465,22 @@ preview): all 288 pass.
 Next: house-format report for this gate, then a build-distribution run (standing instruction), then
 this closes the Scan line of the HUD/Figma redesign mandate -- the same status Onboarding reached
 after Gate 6.
+
+## 2026-08-30 -- Scan gate round-1 remediation: comment overclaim fixed
+
+GPT-PM round 1 (`5df740c`): `VERDICT: MINOR`, `PUSH: HOLD`. Confirmed correct, no dispute. Two
+provenance-cleanup comments overclaimed reference alignment beyond what was actually verified:
+- `scan_frame.dart`'s new doc comment said "the corner-bracket geometry itself is independently
+  confirmed" -- true only for the concept and 2px stroke. The reference's own geometry (fixed 230px
+  card, 34px arms, 10/15px corner radii) does NOT match production's 75%-of-preview frame,
+  `_armFraction = 0.18`, `_radius = 6.0` -- intentional divergences, not gaps. Fixed: comment now
+  scopes the confirmation to "concept and stroke" and states explicitly what does not match and why.
+- `scanner_page.dart` had the same overclaim at the `ScanFrame` call site; same fix.
+- `_CaptureCluster`'s comment closed with "this gate changes where the controls sit, not what they
+  do" -- stale wording inherited from an earlier layout gate (R11c) that Gate 7 did not repeat; Gate
+  7 made no layout change to this widget at all. Fixed: attributed to "the earlier scanner layout
+  gate" instead of "this gate."
+
+All three fixes are comment-only -- confirmed via `flutter analyze lib/features/scanner` (still clean)
+and by inspection that no runtime code changed. Per GPT-PM's own instruction, no re-verification of
+the already-clean runtime work (stroke width, App.tsx citation correctness elsewhere) was needed.

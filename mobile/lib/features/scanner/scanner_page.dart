@@ -516,9 +516,11 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                     // replaces marked the right area and said nothing else --
                     // a two-second classification looked like a frozen
                     // screen, because nothing on the viewfinder distinguished
-                    // "aim" from "working". Geometry confirmed against the
-                    // checked-in reference, not the missing `App.tsx` this
-                    // used to cite -- see `ScanFrame`'s own doc comment.
+                    // "aim" from "working". The corner-bracket concept and
+                    // stroke are confirmed against the checked-in reference,
+                    // not the missing `App.tsx` this used to cite -- see
+                    // `ScanFrame`'s own doc comment for what does and does
+                    // not match it.
                     IgnorePointer(
                       child: ScanFrame(
                         key: const Key('scan-frame'),
@@ -850,10 +852,12 @@ class ScanTopBar extends StatelessWidget {
 /// reference's Scan screen has one labelled pill button ("Recognise"/"Scan
 /// again"), not a circular shutter plus a separate gallery affordance -- this
 /// capture cluster is production-only, retained as-is per this gate's
-/// "preserve production capability the reference doesn't model" ruling. Both
-/// keys are unchanged (`scan-recognise-camera`, `scan-recognise-gallery`)
-/// because they are what every scanner test drives, and this gate changes
-/// where the controls sit, not what they do.
+/// "preserve production capability the reference doesn't model" ruling
+/// (2026-08-30 Scan mapping gate -- this comment corrects the stale App.tsx
+/// citation only; it makes no layout change of its own). Both keys are
+/// unchanged (`scan-recognise-camera`, `scan-recognise-gallery`) because they
+/// are what every scanner test drives; the earlier scanner layout gate this
+/// widget was built in changed where these controls sit, not what they do.
 class _CaptureCluster extends StatelessWidget {
   const _CaptureCluster({required this.onCamera, required this.onGallery});
 

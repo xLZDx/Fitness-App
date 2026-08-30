@@ -19,11 +19,16 @@ enum ScanFramePhase {
 /// The corner-bracket/sweep-line concept traces to `App.tsx:2592-2614`, a
 /// design source that no longer exists in this repository (confirmed absent,
 /// 2026-08-30 Scan mapping gate) -- treat that citation as unverifiable
-/// legacy provenance, not a checkable source. The corner-bracket geometry
-/// itself is independently confirmed against the checked-in reference:
-/// `core/design/reference/full_handoff_v1/README.md:91` ("Рамка наведения --
-/// четыре уголка `2px solid rgba(255,255,255,.9)`") and the matching markup,
-/// `Fitness Glass Phone v1 - Sunset.dc.html:180-226`.
+/// legacy provenance, not a checkable source. The corner-bracket *concept*
+/// and its 2px stroke are independently confirmed against the checked-in
+/// reference: `core/design/reference/full_handoff_v1/README.md:91`
+/// ("Рамка наведения -- четыре уголка `2px solid rgba(255,255,255,.9)`") and
+/// the matching markup, `Fitness Glass Phone v1 - Sunset.dc.html:180-226`.
+/// The rest of the geometry does NOT match that markup and is not meant to:
+/// the reference draws a fixed 230px card with 34px arms and 10/15px corner
+/// radii, while this stays a 75%-of-preview frame with `_armFraction = 0.18`
+/// and `_radius = 6.0` -- an intentional divergence (see "The 75% is
+/// load-bearing" below), not an unreconciled gap.
 ///
 /// ## Why this replaced a rectangle
 ///
