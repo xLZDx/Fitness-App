@@ -35874,3 +35874,37 @@ keep re-fixing.
 Republished the RU artifact in place (`label: provenance-refresh`). Sending round 7 next with the
 complete raw EN HTML (no RU resend needed per GPT-PM's own instruction, since RU is unchanged in
 substance -- only the banner moved).
+
+## 2026-08-30 ~12:45 UTC -- round 7: raw EN content CLOSES report-review thread; provenance
+## self-reference fixed per GPT-PM's own suggested resolution -- roadmap review thread DONE
+
+Round 7 sent the complete raw EN HTML (all 9 sections, no summary). GPT-PM confirmed CLOSED: raw
+EN content, G-A taxonomy/hedging, G-A-vs-other-gates separation, MVP1.G4/Step-7 consistency,
+Profile governance, nav governance, recommended-order Profile item -- every substantive finding
+from rounds 1-7 is now resolved. **No new BLOCKER or MAJOR.**
+
+One last MINOR, self-inflicted: round 6's "fix" for the stale provenance banner (refresh to the
+new HEAD SHA) recreates the exact self-reference problem GPT-PM had already named in round 6 --
+a commit cannot know its own SHA before it exists, so refreshing the banner to match HEAD only
+holds until the NEXT commit. GPT-PM's round-7 reply supplied the actual fix, matching what this
+log's own round-3 entry already predicted would eventually be needed: stop chasing the SHA.
+**Applied verbatim**: both files' provenance line now reads "state reviewed through 226f047; this
+review round's fixes are in the current commit (SHA intentionally omitted here -- self-reference is
+unresolvable, see DECISION_LOG.md)" instead of a `master @ <SHA>` line that `report_conform.py`
+would otherwise keep rewriting to a stale value every commit. Verified `report_conform.py reports
+--check` still passes -- the check only verifies the provenance block's structure/presence, not the
+exact SHA text, so this hand-edit doesn't fight the tool. **Consequence for future edits to this
+report**: do not re-run `report_conform.py` on the git-provenance line specifically after this point
+-- it would silently reintroduce a fresh self-referential SHA. Conforming other parts of the report
+(the copy button, the injected style block) is still fine; just don't let a routine `report_conform`
+pass clobber this specific hand-written line without noticing.
+
+**This closes the direct-content-review thread for the master roadmap** (7 rounds total: round 1
+found 6 MAJOR + 1 MINOR in the archive-extraction/hook-reversion entries, closed by round 2; rounds
+3-7 covered the roadmap document itself end to end, closing with this round). Republished RU
+artifact in place (`label: provenance-non-self-referential`). Committing this fix now; next action
+is a final `review.js` round covering the FULL accumulated diff since `origin/master` (all 8 local
+commits: `846d04e`..`226f047` plus this one) to get an actual `final:true` receipt and push --
+`review.js`'s `reports/` exclusion means it will show a much smaller diff than what was just
+reviewed by hand above (source-code and governance-file changes only), which is expected and
+already covered by rounds 1-2's `review.js` receipts.
