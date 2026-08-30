@@ -36815,4 +36815,35 @@ finished rest, both asserting the merged node actually carries a label and a val
 asserting the finding is gone. `flutter analyze` clean; all 14 `rest_timer_card_test.dart` tests pass
 (12 prior + 2 new).
 
-**Not yet done in this gate**: GPT-PM round 2 (verification of this fix), commit, push.
+**GPT-PM round 2** (`review.js --final`, commit `63c51f5`): **MINOR** again, and this time the
+finding's own factual basis was checked against the SDK before acting on it, per §3/§13/§15's
+citation-verification discipline applied to a GPT-PM finding, not just an internal one. GPT-PM said
+the fix was "only partially" done -- the countdown is audible again but the round-1 regression's
+other half, a determinate progress-bar role/percentage, was still missing -- and named the specific
+API to restore it: `SemanticsRole.progressBar` plus `minValue`/`maxValue`, citing GitHub as the
+source.
+
+**That specific API does not exist in this project's pinned Flutter SDK.**
+`grep -rl SemanticsRole /d/flutter/packages/flutter/lib/` returns zero matches against the installed
+`Flutter 3.27.1` (`flutter --version`) -- `SemanticsRole` was added to the framework after this
+version. Read `ProgressIndicator._buildSemanticsWrapper`
+(`packages/flutter/lib/src/material/progress_indicator.dart:134-142` in this SDK) directly instead
+of trusting the citation: the stock widget's own semantics have never carried a role or
+min/max in this codebase's actual Flutter version -- they are exactly `Semantics(label:
+semanticsLabel, value: expandedSemanticsValue)`, where `expandedSemanticsValue` defaults to
+`'${(value! * 100).round()}%'`. So the real, implementable kernel of the finding is narrower and
+correct: the round-1 fix substituted the countdown text for that percentage instead of keeping both,
+and the percentage is worth restoring since it is what the stock widget actually emitted.
+
+**Fix, round 3**: the merged `Semantics` node's `value` is now
+`'${_format(remaining)}, ${(progress*100).round()}%'` -- both pieces, not a swap. The two regression
+tests were strengthened to assert the full string (`'1:30, 0%'` running, `'0:00, 100%'` finished)
+rather than only the countdown half, so a future round that drops the percentage again fails the
+suite instead of only being caught by an external reviewer. The `SemanticsRole.progressBar` /
+`minValue`/`maxValue` request is NOT implemented -- it would not compile against this project's
+Flutter version -- and this reasoning, with the exact grep command and file:line, was sent back to
+GPT-PM rather than either silently complying with an uncompilable request or silently ignoring the
+finding.
+
+**Not yet done in this gate**: GPT-PM round 3 (does the corrected fix, and the correction of the
+finding's own factual basis, close the MINOR), commit, push.

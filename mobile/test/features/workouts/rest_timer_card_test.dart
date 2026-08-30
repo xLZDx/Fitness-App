@@ -152,10 +152,13 @@ void main() {
     // and that path excludes its child's own semantics, which would have
     // silenced the countdown text instead. `rest_timer.dart` now wraps the
     // ring itself in one explicit `Semantics(label:, value:, excludeSemantics:
-    // true)` node. This proves that node actually carries both pieces of
-    // information, running and finished, rather than only removing the
-    // regression from view.
-    testWidgets('a running rest reports the title and the time left', (t) async {
+    // true)` node.
+    //
+    // Round 2: the value also restores the percentage the stock widget's own
+    // semantics computed (`ProgressIndicator._buildSemanticsWrapper`), so
+    // these assert the full "countdown + percentage" string, not just the
+    // countdown half.
+    testWidgets('a running rest reports the title, time and progress', (t) async {
       final SemanticsHandle h = t.ensureSemantics();
       final harness = _harness();
       harness.c.read(restTimerProvider.notifier).start(const Duration(seconds: 90));
@@ -163,12 +166,14 @@ void main() {
 
       expect(
         t.getSemantics(find.byType(HudRing)),
-        matchesSemantics(label: 'Rest', value: '1:30'),
+        matchesSemantics(label: 'Rest', value: '1:30, 0%'),
       );
       h.dispose();
     });
 
-    testWidgets('a finished rest still reports a value, not silence', (t) async {
+    testWidgets(
+        'a finished rest still reports a value and a progress percentage, '
+        'not silence', (t) async {
       final SemanticsHandle h = t.ensureSemantics();
       final harness = _harness();
       harness.c.read(restTimerProvider.notifier).start(const Duration(seconds: 90));
@@ -179,7 +184,7 @@ void main() {
 
       expect(
         t.getSemantics(find.byType(HudRing)),
-        matchesSemantics(label: 'Rest', value: '0:00'),
+        matchesSemantics(label: 'Rest', value: '0:00, 100%'),
       );
       h.dispose();
     });

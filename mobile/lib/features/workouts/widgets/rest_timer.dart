@@ -119,9 +119,24 @@ class _RestTimerState extends ConsumerState<RestTimer> {
               // both what this is and what it currently reads -- and reads
               // as one stop instead of two disconnected ones the old
               // Stack-sibling layout produced.
+              //
+              // Round 2: the value also carries the percentage the stock
+              // widget's own semantics used to compute
+              // (`ProgressIndicator._buildSemanticsWrapper`, this project's
+              // pinned Flutter 3.27.1 -- `expandedSemanticsValue ??=
+              // '${(value! * 100).round()}%'`), alongside the countdown
+              // rather than instead of it. GPT-PM's round-2 finding named a
+              // `SemanticsRole.progressBar` + `minValue`/`maxValue` API that
+              // does not exist in this SDK (`grep -rl SemanticsRole
+              // /d/flutter/packages/flutter/lib/` -- zero matches; that API
+              // was added to Flutter after this project's pinned version) --
+              // this restores the actual thing the old widget emitted, not
+              // the newer-Flutter API GPT-PM's citation assumed was
+              // available here.
               Semantics(
                 label: l.restTimerTitle,
-                value: _format(remaining),
+                value:
+                    '${_format(remaining)}, ${(rest.progress(now).clamp(0.0, 1.0) * 100).round()}%',
                 excludeSemantics: true,
                 child: HudRing(
                   size: 56,
