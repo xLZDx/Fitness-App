@@ -1,0 +1,236 @@
+<!doctype html>
+<title>Гейт 7 редизайна: экран Scan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#e2e7ec;
+    --text:#171b21; --text-muted:#4d5a68;
+    --accent:#2b5797; --accent-strong:#1c3c6b; --accent-soft:#dde7f3;
+    --crit:#b3261e; --crit-soft:#fbe6e4;
+    --warn:#a05a00; --warn-soft:#f8ead2;
+    --good:#1f7a4d; --good-soft:#e0f1e7;
+    --border:rgba(23,27,33,.14);
+    --code-bg:#0e1116; --code-text:#dfe6ea;
+    --shadow:0 1px 2px rgba(23,27,33,.06),0 8px 24px rgba(23,27,33,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+      --text:#e7ecf1; --text-muted:#9aa8b6;
+      --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+      --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+      --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+      --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+      --border:rgba(231,237,239,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+    --text:#e7ecf1; --text-muted:#9aa8b6;
+    --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+    --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+    --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+    --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+    --border:rgba(231,237,239,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:48px 22px 100px}
+
+  header{padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);margin:0 0 12px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.14;margin:0 0 10px;text-wrap:balance}
+  .dek{font-size:16px;color:var(--text-muted);max-width:72ch;margin:0}
+
+  section{margin-top:44px;scroll-margin-top:20px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kicker::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;flex:none}
+  h2{font-family:"Archivo",sans-serif;font-weight:700;font-size:20px;margin:0 0 6px}
+  .sec-note{color:var(--text-muted);font-size:13.5px;margin:0 0 16px;max-width:72ch}
+  p{margin:0 0 12px;max-width:72ch}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:10px}
+
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+  .sha{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:.86em}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+  .pill.good{background:var(--good-soft);color:var(--good)}
+  .pill.warn{background:var(--warn-soft);color:var(--warn)}
+  .pill.crit{background:var(--crit-soft);color:var(--crit)}
+  .pill.muted{background:var(--surface-2);color:var(--text-muted)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 11px;vertical-align:top;border-bottom:1px solid var(--border)}
+  thead th{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr.frozen td{background:var(--crit-soft)}
+  tbody tr.go td{background:var(--good-soft)}
+
+  ul.decisions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ul.decisions li{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px}
+  ul.decisions .title{font-weight:700;font-size:14.5px;margin-bottom:4px}
+  ul.decisions .body{color:var(--text);font-size:13.5px}
+  ul.decisions .body p{margin:0 0 6px}
+  ul.decisions li.frozen{border-left-color:var(--crit)}
+  ul.decisions li.go{border-left-color:var(--good)}
+  ul.decisions li.warn{border-left-color:var(--warn)}
+
+  .foot-note{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · автономная сессия PM Bridge · 2026-08-30</p>
+    <h1>Гейт 7: экран Scan — «overlap-only» сверка, полное сохранение живой камеры и истории</h1>
+    <p class="dek">Референс для Scan — статичное фото с одной маленькой рамкой наведения, без live-камеры вообще. Продакшен — полноэкранная живая камера + live-лейблер + история + «готовится». GPT-PM разрешил сверить только пересекающиеся элементы, ничего не удалять. Итог: одна геометрическая правка (толщина уголков рамки), остальное уже совпадало. 2 раунда ревью, GPT-PM: <strong>APPROVE</strong>, запушено.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 4ed8af5</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+  <section id="mapping">
+    <p class="kicker">Mapping — вывод</p>
+    <h2>Референс: статичная карточка. Продакшен: четыре живых подсистемы на одном экране</h2>
+    <p>Референс (<code class="mono">README.md:90-91,121,130,166</code> + реальная разметка <code class="mono">.dc.html</code>): фоновое фото (без камеры вообще), одна фиксированная карточка 230px с уголками, один булев стейт «найдено», кнопка-тумблер, при находке — карточка совпадения с SVG-кольцом. Ни истории, ни live-режима, ни AI-коуча, ни alternatives, ни privacy/permission-состояний.</p>
+    <p>Продакшен — одна страница, четыре разных подсистемы: (1) постоянно активная живая камера + рамка наведения, (2) опциональный live-лейблер (переключатель), (3) разовый захват → классификация → результат, (4) два независимых списка истории («Мои тренажёры», «Готовится»).</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Элемент</th><th>Референс</th><th>Решение GPT-PM</th></tr></thead>
+        <tbody>
+          <tr class="go"><td>Толщина уголков рамки наведения</td><td>2px</td><td>Изменить: 3px → 2px</td></tr>
+          <tr><td>Размер рамки / crop</td><td>фикс. 230px</td><td>Не трогать — 75% от превью прямо связаны с реальным crop классификатора</td></tr>
+          <tr><td>Кольцо результата (HudRing)</td><td>78/34/2.5</td><td>Уже побайтово совпадает — NO CHANGE REQUIRED</td></tr>
+          <tr class="frozen"><td>Живая камера, live-лейблер, история, «готовится», AI-коуч, alternatives</td><td>нет аналога</td><td>Сохранить полностью — референс не имеет права удалять функциональность, которую вообще не моделирует</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="apptsx">
+    <p class="kicker">Побочная находка</p>
+    <h2>Источник «App.tsx», на который ссылался код, не существует в репозитории</h2>
+    <p>Комментарии в <code class="mono">scanner_page.dart</code> и <code class="mono">scan_frame.dart</code> (и ещё ~24 файла по всему приложению) годами ссылались на точные строки несуществующего файла <code class="mono">App.tsx</code> — подтверждено прямым <code class="mono">find</code>/<code class="mono">grep</code> по всему репозиторию. GPT-PM установил порядок авторитетности для Scan: явные product-решения и production-инварианты &gt; проверяемый <code class="mono">full_handoff_v1</code> там, где есть смысловое соответствие &gt; утраченные ссылки на App.tsx. 5 ссылок в файлах сканера исправлены — либо на реально проверенную ссылку на референс, либо на явную пометку «недоступная историческая провенанс, аналога в референсе нет». Остальные ~24 файла — вне scope этого гейта, roadmap.</p>
+  </section>
+
+  <section id="verify">
+    <p class="kicker">Проверка и два раунда ревью</p>
+    <ul class="decisions">
+      <li class="warn">
+        <div class="title">Раунд 1: MINOR — комментарий переобещал больше, чем проверено</div>
+        <div class="body"><p>GPT-PM корректно поймал: формулировка «geometry confirmed against reference» подразумевала совпадение всей геометрии рамки, хотя референс и продакшен намеренно расходятся в размере рамки, длине уголков и радиусе скругления — совпадает только концепция и толщина линии. Также одна фраза приписывала гейту 7 изменение позиции controls, которое произошло в более раннем гейте. Оба исправлены — только текст комментариев, без изменения кода.</p></div>
+      </li>
+      <li class="go">
+        <div class="title">Раунд 2: VERDICT APPROVE, PUSH: AUTHORIZED</div>
+        <div class="body"><p>«Round-1 MINOR: CLOSED. Scan overlap-only visual reconciliation Gate 7: APPROVED / CLOSED.» Подтвердил, что правки чисто текстовые и не открывают заново уже одобренное изменение толщины линии 3→2px.</p></div>
+      </li>
+      <li class="go">
+        <div class="title">flutter analyze чисто, 300 тестов прошли</div>
+        <div class="body"><p><code class="mono">test/features/scanner/</code> (12), <code class="mono">test/features/scanner_page_test.dart</code> + <code class="mono">test/features/visual_equipment/</code> (276) — все прошли, включая тесты VisualEquipmentController, ScanOutcome, rankTopK, дедупликацию истории.</p></div>
+      </li>
+    </ul>
+  </section>
+
+  <p class="foot-note">Полная карта и решение — в <code class="mono">core/DECISION_LOG.md</code>. Этим гейтом линия Scan в редизайне HUD/Figma закрыта — тот же статус, что Onboarding получил после гейта 6.</p>
+</div>
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

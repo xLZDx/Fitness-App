@@ -37484,3 +37484,20 @@ provenance-cleanup comments overclaimed reference alignment beyond what was actu
 All three fixes are comment-only -- confirmed via `flutter analyze lib/features/scanner` (still clean)
 and by inspection that no runtime code changed. Per GPT-PM's own instruction, no re-verification of
 the already-clean runtime work (stroke width, App.tsx citation correctness elsewhere) was needed.
+
+## 2026-08-30 -- Gate 7 report published; Scan redesign line reconciled
+
+House-format report for the Scan overlap-only reconciliation (previous two entries) written,
+provenance-conformed, RU published as an artifact
+(`https://claude.ai/code/artifact/37f0ba09-b7d8-407f-b92d-6b5f98e97747`), EN the durable in-repo
+record: `reports/REDESIGN_GATE7_SCAN_2026-08-30.{ru,}.html`.
+
+Per GPT-PM's own framing, Scan now reaches the same status Onboarding reached after Gate 6: the
+overlapping visual elements (aim-frame stroke, result-card chrome) are reconciled or already aligned;
+everything the reference does not model (live camera, live labeler, both history lists, AI coach,
+alternatives) is explicitly retained as intentional production capability, not a gap. The App.tsx
+provenance question is resolved for the scanner feature specifically (5 citations corrected); the
+~24 other app-wide files citing the same missing source remain an open roadmap item, not touched here.
+
+Build distributed per the standing instruction: `pwsh scripts/dev/build_release.ps1 -Distribute`,
+stamped `GIT_SHA=4ed8af5`, uploaded to Firebase App Distribution.
