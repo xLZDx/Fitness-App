@@ -37333,3 +37333,13 @@ and send a release APK to Firebase App Distribution without being asked -- "вс
 билды в апп дистанции." Saved to auto-memory
 (`feedback-fitness-app-always-distribute-builds.md`). `scripts/dev/build_release.ps1 -Distribute`
 run for this gate plus Gate 5 together (both touched `mobile/lib` since the last distributed build).
+
+## 2026-08-30 -- Test build distributed (Gates 5+6)
+
+`pwsh scripts/dev/build_release.ps1 -Distribute` run per the standing operator instruction (see
+previous entry). Split-per-ABI release build, stamped `GIT_SHA=7227db7` (covers both Gate 5
+Onboarding Phase 1 and Gate 6 safety-screen title reconciliation -- the last mobile/lib-touching
+commit at build time; Gate 6's report commit `a6c038b` that followed does not touch app code, so
+this stamp is accurate). Uploaded to Firebase App Distribution as release `1.0.0 (2910)`, distributed
+to `korostelevivan@gmail.com`. Console:
+`https://console.firebase.google.com/project/fitness-app-korostelev/appdistribution/app/android:com.fitnessapp.fitness_app.sptr/releases/2g6u7fis4lg78`.
