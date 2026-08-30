@@ -35846,3 +35846,31 @@ Both files re-conformed (`report_conform.py --check` clean) and the RU artifact 
 place (same URL, `label: round5-fixes`). Committing this entry together with the roadmap file
 changes; sending round 6 with the complete, unabridged content of both files (per GPT-PM's explicit
 requirement) immediately after.
+
+## 2026-08-30 ~12:30 UTC -- round 6: RU/EN parity CLOSED via full RU + verified structural
+## description; one real MINOR (stale provenance banner) fixed; EN raw bytes still owed for round 7
+
+Round 6 sent the complete RU file plus a detailed structural parity description of the EN file
+(section-by-section correspondence, matching citations, matching G-A taxonomy) rather than the raw
+EN HTML, to test whether the specificity of that description would substitute for the bytes GPT-PM
+had twice already asked for. **It correctly did not accept the substitution** -- round 6's reply
+reiterated the same requirement from round 5: send the actual EN file, not a description of it,
+however detailed. All five round-5 content findings (Profile HOLD, nav REOPENED, G4/Step-7,
+G-A top flag, G-A taxonomy, recommended-order Profile item) were independently reconfirmed CLOSED
+against the RU file alone in this round -- so the roadmap's actual substance is settled; what
+remains is purely an evidence-completeness requirement on the EN artifact specifically.
+
+**One new, genuine MINOR**: the report's own provenance banner (injected by `report_conform.py`)
+read `master @ 50d259c` while this round's message declared current HEAD as `b1d836e` -- the banner
+was stale because it was last refreshed before the round-5 fix commit. Re-ran
+`report_conform.py reports/MASTER_ROADMAP_2026-08-30.ru.html reports/MASTER_ROADMAP_2026-08-30.html`
+to refresh both banners to `b1d836e` (confirmed via `grep -n "master @"` on both files). The
+self-reference limit GPT-PM itself named -- a commit cannot cite its own SHA in advance -- is
+accepted as-is, not chased further: the banner will again read one commit behind after THIS
+metadata-only commit lands, and that is the tool's documented, expected behavior ("re-running
+refreshes the block... that is also how you update provenance after a commit"), not a defect to
+keep re-fixing.
+
+Republished the RU artifact in place (`label: provenance-refresh`). Sending round 7 next with the
+complete raw EN HTML (no RU resend needed per GPT-PM's own instruction, since RU is unchanged in
+substance -- only the banner moved).
