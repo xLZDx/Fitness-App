@@ -1,0 +1,251 @@
+<!doctype html>
+<title>Redesign Gate 2: Session</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#e2e7ec;
+    --text:#171b21; --text-muted:#4d5a68;
+    --accent:#2b5797; --accent-strong:#1c3c6b; --accent-soft:#dde7f3;
+    --crit:#b3261e; --crit-soft:#fbe6e4;
+    --warn:#a05a00; --warn-soft:#f8ead2;
+    --good:#1f7a4d; --good-soft:#e0f1e7;
+    --border:rgba(23,27,33,.14);
+    --code-bg:#0e1116; --code-text:#dfe6ea;
+    --shadow:0 1px 2px rgba(23,27,33,.06),0 8px 24px rgba(23,27,33,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+      --text:#e7ecf1; --text-muted:#9aa8b6;
+      --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+      --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+      --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+      --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+      --border:rgba(231,237,239,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+    --text:#e7ecf1; --text-muted:#9aa8b6;
+    --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+    --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+    --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+    --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+    --border:rgba(231,237,239,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto;padding:48px 22px 100px}
+
+  header{padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);margin:0 0 12px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.14;margin:0 0 10px;text-wrap:balance}
+  .dek{font-size:16px;color:var(--text-muted);max-width:68ch;margin:0}
+
+  section{margin-top:44px;scroll-margin-top:20px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kicker::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;flex:none}
+  h2{font-family:"Archivo",sans-serif;font-weight:700;font-size:20px;margin:0 0 6px}
+  .sec-note{color:var(--text-muted);font-size:13.5px;margin:0 0 16px;max-width:70ch}
+  p{margin:0 0 12px;max-width:70ch}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:10px}
+
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+  .sha{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:.86em}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+  .pill.good{background:var(--good-soft);color:var(--good)}
+  .pill.warn{background:var(--warn-soft);color:var(--warn)}
+  .pill.crit{background:var(--crit-soft);color:var(--crit)}
+  .pill.muted{background:var(--surface-2);color:var(--text-muted)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:10px 12px;vertical-align:top;border-bottom:1px solid var(--border)}
+  thead th{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+
+  ol.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ol.timeline li{display:flex;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+  ol.timeline .n{flex:none;width:22px;height:22px;border-radius:6px;background:var(--accent-soft);color:var(--accent-strong);font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  ol.timeline .body{flex:1;min-width:0}
+  ol.timeline .title{font-weight:600;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  ol.timeline .desc{color:var(--text-muted);font-size:13px;margin-top:3px}
+
+  ul.decisions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ul.decisions li{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px}
+  ul.decisions .title{font-weight:700;font-size:14.5px;margin-bottom:4px}
+  ul.decisions .body{color:var(--text);font-size:13.5px}
+  ul.decisions .body p{margin:0 0 6px}
+
+  .foot-note{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · autonomous PM Bridge session · 2026-08-30</p>
+    <h1>Redesign Gate 2: Session — RestTimer onto HudRing, timer colours onto tokens</h1>
+    <p class="dek">Continuation of the same PM-mode session, second gate after Form Coach. Scope reconciled with GPT-PM BEFORE writing code (the reference does not get authority over product architecture where no direct mapping exists). Three review rounds, one honest dispute over a Flutter API that does not exist in this project's pinned SDK version, a final APPROVE, pushed.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ b97db1b</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+  <section id="scope">
+    <p class="kicker">Scope question — before code</p>
+    <h2>Reference vs the real screen: a genuine mismatch</h2>
+    <p class="sec-note">The reference Session screen is minimal: a ring, a done/current/pending set-status list, one dynamic-label CTA. The real <code class="mono">workout_player_page.dart</code> is ~970 lines: video demo, muscle map, technique steps, form-coach card, suggested-weight chip, the set timer (already on <code class="mono">HudRing</code>), a plate/warm-up tools row, the rest timer, and four sequential action buttons (Mark Complete / Add Another Exercise / Schedule For Later / Add To Programme). None of that richer content has any equivalent in the reference.</p>
+    <div class="card">
+      <p style="margin:0"><strong>GPT-PM's decision (recorded as a standing governance rule for this screen):</strong> "Session reference is authoritative for visual language and timer/state presentation where there is a direct semantic mapping. It is not authoritative for removing production functionality or inventing a narrower workout-player information architecture where no mapping exists."</p>
+    </div>
+  </section>
+
+  <section id="what">
+    <p class="kicker">What shipped — within that decision</p>
+    <h2>Two items, both explicitly GO'd by GPT-PM</h2>
+    <ul class="decisions">
+      <li>
+        <div class="title">RestTimer → HudRing</div>
+        <div class="body"><p>The 56px rest-progress indicator now renders through the same <code class="mono">HudRing</code> the set timer already used, instead of the stock <code class="mono">CircularProgressIndicator</code>. Same state, same callbacks, same pause/skip/reset, same widget keys.</p></div>
+      </li>
+      <li>
+        <div class="title">Timer colours → semantic tokens</div>
+        <div class="body"><p><code class="mono">SetTimerCard</code> and <code class="mono">RestTimer</code>: the five set phases now colour through <code class="mono">AppSemanticColors</code> instead of raw <code class="mono">AppPalette.aurora*</code> literals. <code class="mono">danger</code> is deliberately left unused — none of the five phases carries error meaning.</p></div>
+      </li>
+    </ul>
+    <p class="sec-note" style="margin-top:14px">Explicitly out of scope for this gate: the page's four action buttons stay separate and unchanged; no new done/current/pending set-status list — GPT-PM's reasoning: such a list needs a state model that does not yet exist as a clean read-only projection of engine state.</p>
+  </section>
+
+  <section id="review">
+    <p class="kicker">GPT-PM review — 3 rounds</p>
+    <h2>From MINOR to a Flutter-version dispute to APPROVE</h2>
+    <ol class="timeline">
+      <li>
+        <div class="n">1</div>
+        <div class="body">
+          <div class="title">Commit <span class="sha mono">15e51a6</span> <span class="pill warn">MINOR</span></div>
+          <div class="desc">The ring swap silently dropped the progress-role semantics <code class="mono">CircularProgressIndicator</code> supplied for free — <code class="mono">HudRing</code> only wraps in <code class="mono">Semantics</code> when given a <code class="mono">semanticsLabel</code>, and that path excludes the child countdown text from the semantics tree. Everything else (ring geometry, idle/work sharing <code class="mono">accentPrimary</code>, leaving <code class="mono">danger</code> unused) confirmed clean.</div>
+        </div>
+      </li>
+      <li>
+        <div class="n">2</div>
+        <div class="body">
+          <div class="title">Commit <span class="sha mono">63c51f5</span> <span class="pill warn">MINOR — partially fixed</span></div>
+          <div class="desc">The countdown is audible again, but GPT-PM named <code class="mono">SemanticsRole.progressBar</code> + <code class="mono">minValue</code>/<code class="mono">maxValue</code> as the required fix. That API does not exist in this project's pinned <code class="mono">Flutter 3.27.1</code> — verified: <code class="mono">grep -rl SemanticsRole</code> against the installed SDK source returns zero matches; it was added later. Read the actual <code class="mono">ProgressIndicator._buildSemanticsWrapper</code> in this version instead: the old widget only ever emitted a bare percentage, no role, no bounds.</div>
+        </div>
+      </li>
+      <li>
+        <div class="n">3</div>
+        <div class="body">
+          <div class="title">Commit <span class="sha mono">ceef1de</span> <span class="pill good">VERDICT: APPROVE</span></div>
+          <div class="desc">Restored the actual percentage (not the nonexistent API) alongside the countdown — <code class="mono">"1:30, 0%"</code>. GPT-PM independently re-checked Flutter's tagged 3.27.1 source and confirmed its own round-2 citation was for a newer Flutter version and did not apply to this repository. <strong>PUSH: AUTHORIZED</strong>.</div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section id="verify">
+    <p class="kicker">Verification</p>
+    <h2>Not just claimed — run</h2>
+    <p><code class="mono">flutter analyze</code> — 0 issues every round. <code class="mono">rest_timer_card_test.dart</code> — 14/14 (12 prior + 2 new semantics regression tests, added specifically to prove GPT-PM's finding). The pages embedding <code class="mono">SetTimerCard</code> (<code class="mono">workout_player_day_test.dart</code> + <code class="mono">player_substitution_transition_test.dart</code>) — 15/15. The full <code class="mono">test/features/workouts/</code> directory — 352/352. The whites ratchet test is unaffected — this diff touched zero <code class="mono">Colors.white</code> literals.</p>
+  </section>
+
+  <p class="foot-note">Commits: <span class="sha mono">15e51a6</span> → <span class="sha mono">63c51f5</span> → <span class="sha mono">ceef1de</span> → <span class="sha mono">b97db1b</span>, all in <code class="mono">origin/master</code>. Full decision history and quotes: <code class="mono">core/DECISION_LOG.md</code>.</p>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
