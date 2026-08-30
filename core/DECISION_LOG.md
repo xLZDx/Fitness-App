@@ -35359,3 +35359,39 @@ report itself as its own card, same discipline as this log entry). `VERDICT: MAJ
 round 2 addressed as a batch, no unrelated scope reopened (week-strip code and Form Coach HUD gate
 both stay closed, per GPT-PM's own round-2 text). Proceeding to round 3 for verification before
 push, per SS17's one-sweep-then-verify shape.
+
+## 2026-08-30 04:15 local / 01:15 UTC -- rounds 3-5 outcome: review.js multi-file diff paste truncation, workaround, final APPROVE
+
+Continuing directly from the 04:00 entry. Rounds 3 and 4 (`--base HEAD~2` then `--commit e0bc94d`)
+both returned `VERDICT: MAJOR` with the *same* single complaint: the pasted diff visibly contained
+only `core/DECISION_LOG.md`, even though `git diff --stat` confirmed all 3 changed files (the two
+report `.html` files plus the log) were part of what `review.js` actually sent, well under the
+600k-char truncation limit (`truncated:false` on every round). Round 4 additionally tried to
+resolve the missing content from GitHub and got "No commit found for SHA" (the commit was not yet
+pushed -- expected, not a new bug).
+
+**Root cause, best available evidence**: `core/` sorts before `reports/` alphabetically, and every
+failure stopped at exactly that boundary -- consistent with a ChatGPT web-UI paste-chunking
+behavior that silently drops or fails to render every file block after the first in a multi-file
+diff paste, not a `review.js` generation defect. Not independently proven (no access to ChatGPT's
+internal rendering), so recorded as the best-evidence explanation, not a certainty.
+
+**Workaround**: round 5 dropped the raw-diff path for the already-closed `DECISION_LOG.md` finding
+(round 4 explicitly said it did not need resending) and instead embedded the literal
+`git show e0bc94d -- reports/FORM_COACH_HUD_ALIGNMENT_2026-08-30.html reports/...ru.html` patch
+text inside `--scope-note-file` -- a channel that had reliably carried multi-paragraph prose intact
+across every prior round. That worked: round 5 returned genuine `VERDICT: APPROVE`, `final: true`,
+verifying the exact three invariants asked of it (no more "no name" claim, the corrected
+layout/emphasis deltas present, the audit-trail framing preserved) against the pasted patch text
+rather than approving on the log's word alone.
+
+**Worth carrying forward for any future multi-file `review.js` round**: if a round reports missing
+files that `git diff --stat` proves were sent, don't retry the same `--base`/`--commit` diff
+unchanged expecting a different result -- embed the specific missing file(s)' patch as literal text
+in `--scope-note-file` instead. This is a transport-layer quirk of the same class already
+documented in `~/.claude/CLAUDE.md` SS15's "known open gaps" for the GPT-PM review channel, not
+specific to this repo or this finding.
+
+Pushed at `e0bc94d` (`437338f..e0bc94d`) on this round-5 receipt (`final:true`,
+`PUSH: AUTHORIZED under the current Gate policy`), completing the docs remediation for round 2's
+3 MAJOR findings end to end.
