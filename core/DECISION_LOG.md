@@ -36707,3 +36707,7 @@ states explicitly that no CEO-level decision was needed here):
 
 Not yet routed (deliberately, lower stakes, deferred to a follow-up message): Scan screen
 reconciliation (richer current live/history UI vs the reference's minimal aim-frame model).
+
+**Report published**: `reports/REDESIGN_GATE1_FORM_COACH_2026-08-30.{ru,}.html`, house format, RU
+published as an artifact, EN the durable in-repo record -- covers everything above (the gate, all 4
+review rounds, the routed decision) in one handover.

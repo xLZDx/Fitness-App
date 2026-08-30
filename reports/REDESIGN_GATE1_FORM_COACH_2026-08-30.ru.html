@@ -1,0 +1,272 @@
+<!doctype html>
+<title>Гейт 1 редизайна: Form Coach</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#e2e7ec;
+    --text:#171b21; --text-muted:#4d5a68;
+    --accent:#2b5797; --accent-strong:#1c3c6b; --accent-soft:#dde7f3;
+    --crit:#b3261e; --crit-soft:#fbe6e4;
+    --warn:#a05a00; --warn-soft:#f8ead2;
+    --good:#1f7a4d; --good-soft:#e0f1e7;
+    --border:rgba(23,27,33,.14);
+    --code-bg:#0e1116; --code-text:#dfe6ea;
+    --shadow:0 1px 2px rgba(23,27,33,.06),0 8px 24px rgba(23,27,33,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+      --text:#e7ecf1; --text-muted:#9aa8b6;
+      --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+      --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+      --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+      --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+      --border:rgba(231,237,239,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+    --text:#e7ecf1; --text-muted:#9aa8b6;
+    --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+    --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+    --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+    --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+    --border:rgba(231,237,239,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:880px;margin:0 auto;padding:48px 22px 100px}
+
+  header{padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);margin:0 0 12px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.14;margin:0 0 10px;text-wrap:balance}
+  .dek{font-size:16px;color:var(--text-muted);max-width:68ch;margin:0}
+
+  section{margin-top:44px;scroll-margin-top:20px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kicker::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;flex:none}
+  h2{font-family:"Archivo",sans-serif;font-weight:700;font-size:20px;margin:0 0 6px}
+  .sec-note{color:var(--text-muted);font-size:13.5px;margin:0 0 16px;max-width:70ch}
+  p{margin:0 0 12px;max-width:70ch}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:10px}
+
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+  .sha{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:.86em}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+  .pill.good{background:var(--good-soft);color:var(--good)}
+  .pill.warn{background:var(--warn-soft);color:var(--warn)}
+  .pill.crit{background:var(--crit-soft);color:var(--crit)}
+  .pill.muted{background:var(--surface-2);color:var(--text-muted)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:10px 12px;vertical-align:top;border-bottom:1px solid var(--border)}
+  thead th{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+
+  ol.timeline{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ol.timeline li{display:flex;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+  ol.timeline .n{flex:none;width:22px;height:22px;border-radius:6px;background:var(--accent-soft);color:var(--accent-strong);font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  ol.timeline .body{flex:1;min-width:0}
+  ol.timeline .title{font-weight:600;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  ol.timeline .desc{color:var(--text-muted);font-size:13px;margin-top:3px}
+
+  ul.decisions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ul.decisions li{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px}
+  ul.decisions .title{font-weight:700;font-size:14.5px;margin-bottom:4px}
+  ul.decisions .body{color:var(--text);font-size:13.5px}
+  ul.decisions .body p{margin:0 0 6px}
+
+  .foot-note{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · автономная сессия PM Bridge · 2026-08-30</p>
+    <h1>Гейт 1 редизайна: nav-иконки, Profile, цветной оверлей Form Coach</h1>
+    <p class="dek">По прямому ГО оператора на завершение HUD/Figma-редизайна. Гейт закрыт, запушен, прошёл 4 раунда ревью GPT-PM. Плюс — решение GPT-PM по пяти открытым вопросам дальнейшего плана.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 8e8dbcb</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <section id="what">
+    <p class="kicker">Что сделано</p>
+    <h2>Три правки в одном гейте</h2>
+    <ul class="decisions">
+      <li>
+        <div class="title">Nav-иконки Scan/Progress</div>
+        <div class="body"><p>Заменены на <code class="mono">radio_button_checked</code> / <code class="mono">north_east</code> — точное соответствие референсу <code class="mono">full_handoff_v1</code>.</p></div>
+      </li>
+      <li>
+        <div class="title">Profile — блок «At a glance»</div>
+        <div class="body"><p>Раньше показывался только при полностью заполненном онбординге; теперь — всегда, когда профиль вообще существует (как в референсе). Пустые поля и так рендерятся как «—».</p></div>
+      </li>
+      <li>
+        <div class="title">Form Coach — цветной/пульсирующий скелет-оверлей</div>
+        <div class="body"><p>Реализован как честная, протестированная инфраструктура: зелёное/красное свечение вокруг всегда-белого скелета вместо перекрашивания всей фигуры, по образцу референса (<code class="mono">core/design/reference/full_handoff_v1/README.md:109</code>). <strong>Важная оговорка ниже</strong> — сегодня это физически негде увидеть в продукте.</p></div>
+      </li>
+    </ul>
+  </section>
+
+  <section id="flag">
+    <p class="kicker">Критический флаг</p>
+    <h2>Цветной оверлей — инфраструктура, не видимая функция</h2>
+    <p class="sec-note">Единственный классификатор с <code class="mono">canFault=true</code> (отжимания) сам исключён из пикера Form Coach — его счётчик повторов недостоверен. Приседания/тяга нейтральны по дизайну (угол камеры). Значит сегодня <strong>ни одно упражнение в реальном пикере не может показать цвет</strong>. Это подтверждено прямым чтением кода, не предположением. Направление исправления решил GPT-PM — см. ниже.</p>
+  </section>
+
+  <section id="review">
+    <p class="kicker">Ревью GPT-PM — 4 раунда</p>
+    <h2>От первого черновика до PUSH: AUTHORIZED</h2>
+    <ol class="timeline">
+      <li>
+        <div class="n">1</div>
+        <div class="body">
+          <div class="title">Коммит <span class="sha mono">9d43c92</span> <span class="pill crit">MAJOR × 3</span></div>
+          <div class="desc">Оверлей физически недостижим через пикер; покраска не соответствует референсу (белые кости, свечение, а не перекраска); устаревший фидбек от другого упражнения мог дать ложный «зелёный» вердикт.</div>
+        </div>
+      </li>
+      <li>
+        <div class="n">2</div>
+        <div class="body">
+          <div class="title">Коммит <span class="sha mono">7b4baf2</span> — исправления <span class="pill warn">MAJOR 2 частично</span></div>
+          <div class="desc">Недостижимость — закрыта честной формулировкой (не код, а признание масштаба). Проверка правила устаревшего фидбека — закрыта тестом. Покраска — частично: кости снова белые, добавлено свечение, но маркер конкретного сустава-ошибки не реализован.</div>
+        </div>
+      </li>
+      <li>
+        <div class="n">3</div>
+        <div class="body">
+          <div class="title">Формулировка в decision log <span class="pill warn">MAJOR: текст коммита</span></div>
+          <div class="desc">GPT-PM поймал, что текст самого коммита 7b4baf2 всё ещё звучал как «полностью соответствует референсу» — текст коммита нельзя исправить новым коммитом, только amend.</div>
+        </div>
+      </li>
+      <li>
+        <div class="n">4</div>
+        <div class="body">
+          <div class="title">Коммит <span class="sha mono">bdee3cd</span> <span class="pill good">VERDICT: APPROVE</span></div>
+          <div class="desc">Два коммита схлопнуты в один честной формулировкой (soft reset, не rebase -i — это запрещено правилами проекта). Механическая проверка — чисто. <strong>PUSH: AUTHORIZED</strong>. Запушено в <code class="mono">origin/master</code>.</div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section id="decision">
+    <p class="kicker">После пуша — решение по дальнейшему плану</p>
+    <h2>5 вопросов отправлены GPT-PM, получено решение</h2>
+    <p class="sec-note">Не ревью кода — вопрос приоритизации и объёма, направленный туда согласно правилу проекта «вопросы, требующие суждения, идут к GPT-PM, а не останавливают сессию».</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>Вопрос</th><th>Решение GPT-PM</th></tr></thead>
+        <tbody>
+          <tr><td>3</td><td>Цвет из токенов темы или буквальные rgba референса?</td><td><span class="pill good">Решено</span> — семантические токены побеждают буквальные литералы темы, когда роль/реактивность совпадают. Геометрия и состояния остаются точными.</td></tr>
+          <tr><td>4</td><td>Что делать дальше — Session, Onboarding или Form Coach?</td><td><span class="pill good">Session (плеер/таймер)</span> — следующий гейт. Нет нерешённых ML-вопросов, не трогает safety-поверхность.</td></tr>
+          <tr><td>1</td><td>Как открыть цвет для реальных упражнений?</td><td>После Session. Путь (b): довести <code class="mono">poseMatchProvider</code> до работы в avatar-режиме (общая база для 5 упражнений), а не чинить счётчик отжиманий ради одного.</td></tr>
+          <tr><td>2</td><td>Маркер конкретного сустава-ошибки?</td><td><span class="pill muted">Отложено</span> до п.1 — рано делать хирургию геометрии для канала, который пока никуда не ведёт.</td></tr>
+          <tr><td>5</td><td>Онбординг: 10 шагов сейчас vs 9 в референсе</td><td><span class="pill crit">Жёсткое ограничение</span> — визуальный референс НЕ имеет права над safety-архитектурой. Запрещено урезать шаги безопасности (PAR-Q+/боль в груди, беременность/health flags) ради числа 9. Разрешён только гейт сверки «вход → потребитель безопасности → экран», до любых правок UI.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="verify">
+    <p class="kicker">Проверка</p>
+    <h2>Полный прогон — 3299/3299, где применимо</h2>
+    <p>Полный <code class="mono">flutter test</code>: все тесты зелёные, кроме 2 предсуществующих и не связанных с этим гейтом голден-скриншотов Home (устаревший дизайн недельной полоски + завязка на текущий день недели — проверено визуальным сравнением, ни один тронутый файл к этому виджету отношения не имеет). <code class="mono">flutter analyze</code> — 0 новых замечаний. Попутно найдена и честно исправлена рассинхронизация тестового «счётчика белого цвета» (был закреплён на устаревшем числе ещё до этой сессии).</p>
+  </section>
+
+  <p class="foot-note">Коммиты: <span class="sha mono">9d43c92</span> → <span class="sha mono">bdee3cd</span> → <span class="sha mono">8e8dbcb</span>, все в <code class="mono">origin/master</code>. Полная история решений и цитаты — <code class="mono">core/DECISION_LOG.md</code>.</p>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
