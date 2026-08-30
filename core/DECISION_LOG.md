@@ -35313,3 +35313,49 @@ or silently dropping them. The three remaining items (nav icons, week-strip's al
 confirmation, Profile identity header) all resolve to the same blocker: GPT-PM's design-question
 channel needs a fresh Claude Code session. Two full gates shipped and pushed this window
 (`10dc992`, `437338f`), both through genuine multi-round GPT-PM code review to `VERDICT: APPROVE`.
+
+## 2026-08-30 04:00 local / 01:00 UTC -- correction: Profile "no name" finding was wrong; GPT-review caught it before push
+
+Ran the mandatory GPT-PM code review (`review.js --commit 67e630d`, round 1 via `--uncommitted`
+correctly rejected because it picked up unrelated untracked reports instead of this commit's real
+diff; round 2 via `--commit 67e630d`) on the docs-only commit `67e630d` (report sections 6/7 +
+this DECISION_LOG's Profile entry). GPT-PM returned `VERDICT: MAJOR` and correctly caught that the
+2026-08-30 03:40 entry's Profile finding was factually wrong, not just under-verified:
+
+- **Claimed**: Profile's header shows "no name," possibly because "this test account['s] data
+  [is] not set."
+- **Actual, checked against `mobile/lib/features/profile/profile_page.dart` this round**: line 32
+  unconditionally computes `displayName = user?.displayName ?? l10n.profileGuest`, and line 65
+  unconditionally renders `Text(displayName)` next to the avatar. A name (or the localized "Guest"
+  fallback) always renders, regardless of account state. `_SectionLabel(l10n.profileSectionMembership)`
+  (line ~199) also confirms the Membership/subscription section already exists in the code -- lower
+  on the page, not missing.
+
+The "maybe it's just account data" hedge in the earlier entry was an unverified guess sitting next
+to a claim that turned out to be simply false -- exactly the kind of thing CLAUDE.md SS3 requires
+checking against the real source before writing down, and this round is the check that should have
+happened before the first write-up, not after.
+
+**Corrected finding**: the real Profile deltas against `p_186.jpg`/`p_189.jpg` are layout and
+emphasis, not missing content -- (1) gradient icon vs. the reference's circular avatar-initial;
+(2) onboarding-status subtitle vs. the reference's level/session-count subtitle; (3) no Premium
+upsell card at the top -- Membership exists, but lower on the page among other settings, not as an
+accent card by the header. Still a product/design call belonging in the same GPT-PM queue as the
+nav-icon question, not something to freelance -- the correction is to the diagnosis, not a decision
+to fix it blind.
+
+Also corrected: the prior entry's "three remaining items" list wrongly included "week-strip's
+already-fixed status confirmation" as an open blocker. Week strip is CLOSED and PUSHED at
+`437338f` (2 GPT-review rounds, final `VERDICT: APPROVE`) -- there is nothing pending on it. The
+actually-remaining design questions are exactly two: nav icons (Finding #4,
+`REFERENCE_BLOCKED_DEFERRED`, GPT-PM's own prior ruling not to freelance it) and the Profile
+header layout/emphasis question above. Both still wait on the same blocker: this session's
+`gpt_send_and_await`/MCP channel is stale relative to the PM Bridge daemon and needs a fresh
+Claude Code session -- unrelated to `review.js`, which worked normally for this round.
+
+Report sections 6/7 in `reports/FORM_COACH_HUD_ALIGNMENT_2026-08-30.ru.html`/`.html` rewritten to
+match this corrected finding (not silently -- the round-1/round-2 misdiagnosis is shown in the
+report itself as its own card, same discipline as this log entry). `VERDICT: MAJOR` findings from
+round 2 addressed as a batch, no unrelated scope reopened (week-strip code and Form Coach HUD gate
+both stay closed, per GPT-PM's own round-2 text). Proceeding to round 3 for verification before
+push, per SS17's one-sweep-then-verify shape.

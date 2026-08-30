@@ -110,13 +110,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 437338f</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 67e630d</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -281,12 +283,16 @@
 </section>
 
 <section>
-  <h2>7. Profile checked against the reference — one new finding, not acted on</h2>
+  <h2>7. Profile checked against the reference — finding corrected after GPT-review</h2>
   <p class="dim">Profile is covered by the reference frame set (<code>p_186.jpg</code>, <code>p_189.jpg</code>) — unlike Progress, which the reference doesn't cover.</p>
   <div class="card">
-    <span class="status info">Finding: Profile's header composition differs</span>
-    <p>The reference's screen top is an identity block — circular avatar-initial, the user's real name ("Иван"), a level/session-count subtitle, a "Try Premium" card. The current app's top instead shows a gradient icon and an "Анкета пройдена" status line, with no name and no Premium offer. Could be a real content gap, or simply this test account's data state (no name/subscription set) — not settled from one account's screenshot.</p>
-    <p class="muted">Not fixed — this is a product question (does Profile need a name/level/Premium header, or is this just account data), not a self-contained visual bug like the week strip's shape was. Joins the icon question in the design-questions queue for GPT-PM, waiting on the same fresh Claude Code session.</p>
+    <span class="status blocked">The first version of this finding was inaccurate — caught by GPT-review round 2 on this same commit</span>
+    <p>The first write-up claimed Profile's header shows "no name," and allowed that this might just be missing test-account data. GPT-PM checked this against <code>profile_page.dart</code> and found a fact: line 32 unconditionally computes <code>displayName = user?.displayName ?? l10n.profileGuest</code>, and line 65 unconditionally renders <code>Text(displayName)</code> next to the avatar — a name (or the localized "Guest" fallback) is always shown, regardless of account state. The Membership section (<code>profileSectionMembership</code>) also already exists in the code, just lower on the page rather than at the top. "Maybe it's just account data" was an unverified guess, not a code-checked claim.</p>
+  </div>
+  <div class="card">
+    <span class="status info">Finding, corrected: the real deltas are layout/emphasis, not missing content</span>
+    <p>The reference's screen top is an identity block — circular avatar-initial, the user's name, a level/session-count subtitle, a "Try Premium" card — all together, right under the nav bar. The current app already renders a name (with a "Guest" fallback if unset), but (1) the avatar is a gradient icon, not a circular initial; (2) the subtitle under the name is onboarding status ("Анкета пройдена"/"Анкета не пройдена"), not level/session count; (3) there's no Premium upsell block at the top — the Membership section exists, but lower on the page among other settings, not as an accent card by the header. This is a layout/prioritization question, not missing functionality.</p>
+    <p class="muted">Not fixed — the layout/prioritization question is still a product call (which avatar style, what the subtitle should show, whether Premium should move to the top), not a self-contained visual bug like the week strip's shape was. Joins the icon question in the design-questions queue for GPT-PM, waiting on the same fresh Claude Code session.</p>
   </div>
 </section>
 
@@ -310,6 +316,8 @@ function copyPage(btn){
   }
 }
 </script>
+
+
 
 
 
