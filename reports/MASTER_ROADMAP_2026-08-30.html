@@ -152,13 +152,17 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ dbef400</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 50d259c</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
+
+
 
 
 
@@ -171,7 +175,7 @@
 
     <div class="flagbox">
       <span class="lbl">The release-readiness verdict was never lifted</span>
-      <p>The full project audit from 08-16 returned a <strong>NOT_RELEASE_READY</strong> verdict, confirmed by an independent review of that same audit. The 5-gate remediation plan (G-A…G-E, section 6) was "Not started, awaiting REMEDIATION-GO" as of 08-16 — none of the 7 research agents found any trace of that chain having been run since.</p>
+      <p>The full project audit from 08-16 returned a <strong>NOT_RELEASE_READY</strong> verdict, confirmed by an independent review of that same audit. The 5-gate remediation plan (G-A…G-E, section 6) was "Not started, awaiting REMEDIATION-GO" as of 08-16. Narrowed 08-30 (see the green flag below): for G-D/G-C/G-B/G-E, none of the 7 research agents ever found any trace of those gates having run after 08-16 under those names — treat them as open. G-A is a separate case: substantial implementation evidence was found for it later, just not filed under that gate name; detail in the green flag below — do not conflate its status with the other four's.</p>
     </div>
     <div class="flagbox">
       <span class="lbl">Regulatory Gate J: DO NOT SHIP</span>
@@ -191,18 +195,18 @@
     </div>
     <div class="flagbox" style="border-color:var(--good);background:var(--good-soft)">
       <span class="lbl" style="color:var(--good)">Correction, 08-30 — substantial implementation evidence found for G-A (2 of 3 items confirmed, not formally closed)</span>
-      <p>The same pattern flagged above ("closed → actually wasn't") ran in reverse here: section 6 below describes G-A as "not started," quoting the 08-16 audit — but a direct code check on 08-30 (after this document was first published) found substantial evidence of implementation, just not filed under that label. Two of the three items are fully confirmed by direct code reading: <code class="mono">ProgrammeNotViable</code> is caught before the generic error handler and shows an <code class="mono">EligibilityNotice</code> instead of a Retry snackbar (comment "N01", <code class="mono">workouts_page.dart:1300-1360</code>); the real tagged/total safety-coverage figure renders (<code class="mono">l10n.safetyFilterCoverage(coverage.tagged, coverage.total)</code>, <code class="mono">safety_disclosure.dart:100-109</code>, marked "F019" in-code); the <code class="mono">SafetyDisclosure</code> widget is wired into every exercise-serving surface via the shared <code class="mono">exerciseReferenceSections</code> function plus separate insertions in <code class="mono">workout_player_page.dart</code>/<code class="mono">workouts_page.dart</code> (marked "F020" in-code). The third item — chest-pain refusal copy — is only structurally confirmed (the <code class="mono">EligibilityNotice</code> dialog does intercept this case before the generic handler); the exact copy text was NOT separately checked line-by-line against the audit's original complaint — that check is still outstanding. Status below is therefore "implementation evidence found," not "formally closed": there is no separate DECISION_LOG entry recording a GPT-PM verdict on G-A as a gate unit. This doesn't mean section 6 is wrong — the 08-16 audit was accurate when written — it means this remediation track mostly shipped without an explicit G-A gate entry in DECISION_LOG, and section 6 below inherited the audit's stale status without re-checking current code. Full detail and method: <code class="mono">core/DECISION_LOG.md</code>, the "REMEDIATION: GPT-PM round-1 review" entry (08-30) and the G-A entry that follows it. G-D/G-C/G-B/G-E from the same audit have NOT been re-verified this way — their "not started" status stands as-is, from the audit.</p>
+      <p>The same pattern flagged above ("closed → actually wasn't") ran in reverse here: section 6 below describes G-A as "not started," quoting the 08-16 audit — but a direct code check on 08-30 (after this document was first published) found substantial evidence of implementation, just not filed under that label. G-A has three acceptance items, per the audit's own definition: (1) the Retry-button/refusal surface, (2) the safety-tag-coverage figure, (3) chest-pain refusal copy. Two of the three are fully confirmed by direct code reading: <code class="mono">ProgrammeNotViable</code> is caught before the generic error handler and shows an <code class="mono">EligibilityNotice</code> instead of a Retry snackbar (comment "N01", <code class="mono">workouts_page.dart:1300-1360</code>); the real tagged/total safety-coverage figure renders (<code class="mono">l10n.safetyFilterCoverage(coverage.tagged, coverage.total)</code>, <code class="mono">safety_disclosure.dart:100-109</code>, marked "F019" in-code). The third item — chest-pain refusal copy — is only structurally confirmed (the same <code class="mono">EligibilityNotice</code> dialog does intercept this case before the generic handler); the exact copy text was NOT separately checked line-by-line against the audit's original complaint — that check is still outstanding. Separately, as supporting evidence (not a fourth acceptance item, not counted in the "2 of 3"): the <code class="mono">SafetyDisclosure</code> widget is wired into every exercise-serving surface via the shared <code class="mono">exerciseReferenceSections</code> function plus separate insertions in <code class="mono">workout_player_page.dart</code>/<code class="mono">workouts_page.dart</code> (marked "F020" in-code) — this speaks to the broader safety practice around G-A, not to the audit's three named items themselves. Status below is therefore "implementation evidence found," not "formally closed": there is no separate DECISION_LOG entry recording a GPT-PM verdict on G-A as a gate unit. This doesn't mean section 6 is wrong — the 08-16 audit was accurate when written — it means this remediation track mostly shipped without an explicit G-A gate entry in DECISION_LOG, and section 6 below inherited the audit's stale status without re-checking current code. Full detail and method: <code class="mono">core/DECISION_LOG.md</code>, the "REMEDIATION: GPT-PM round-1 review" entry (08-30) and the G-A entry that follows it. G-D/G-C/G-B/G-E from the same audit have NOT been re-verified this way — their "not started" status stands as-is, from the audit.</p>
     </div>
   </section>
 
   <section id="release">
     <p class="kicker">Section 1 — release infrastructure</p>
-    <h2>MVP1.G2 → MVP1.G4 <span class="pill done">closed</span></h2>
+    <h2>MVP1.G2 → MVP1.G4 <span class="pill blocked">8/9 confirmed, Step 7 closure inferred</span></h2>
     <p class="sec-note">AI Gateway, Android 16, IAM, kill switch, release guard. Nine G4 steps, each a multi-round GPT-PM review with real defects found and fixed.</p>
     <ul class="check">
       <li class="done"><div class="box"></div><div class="body"><div class="name">MVP1.G2 — Android 16 / targetSdk 36, Play release readiness</div><div class="meta">targetSdk 35→36 raised, release build verified, an edge-to-edge regression found and fixed</div><div class="cite">core/DECISION_LOG.md:26543-27076 · reports/G2_ANDROID16_TARGETSDK36_2026-08-27.html</div></div></li>
       <li class="done"><div class="box"></div><div class="body"><div class="name">MVP1.G3 — OBS-1, continuous reliability guarantees (13 items)</div><div class="meta">All 13 items closed, 0 PARTIAL; separately — runtime-monitor prerequisites (Step 8) and a production canary</div><div class="cite">core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md · reports/2026-08-28-mvp1-g3-closure.html</div></div></li>
-      <li class="done"><div class="box"></div><div class="body"><div class="name">MVP1.G4, steps 1–9 — Vertex AI revalidation → App Check → IAM (6 tiers) → AI Gateway deploy → E2E → observability → product E2E → kill switch → release guard</div><div class="meta">All 9 steps closed; Step 9 (release guard) — 7 review rounds, 14 MAJOR found and fixed; wired into <code class="mono">firebase.json predeploy</code></div><div class="cite">core/G4_STEP1…9_*.md · core/DECISION_LOG.md:34608-34609 · reports/MVP1_G4_CLOSURE_2026-08-29.html</div></div></li>
+      <li class="blocked"><div class="box"></div><div class="body"><div class="name">MVP1.G4, steps 1–9 — Vertex AI revalidation → App Check → IAM (6 tiers) → AI Gateway deploy → E2E → observability → product E2E → kill switch → release guard</div><div class="meta">8 of 9 steps closed with a direct citation; Step 7 — see the separate row below, closure inferred, not directly quoted. Step 9 (release guard) — 7 review rounds, 14 MAJOR found and fixed; wired into <code class="mono">firebase.json predeploy</code></div><div class="cite">core/G4_STEP1…9_*.md · core/DECISION_LOG.md:34608-34609 · reports/MVP1_G4_CLOSURE_2026-08-29.html</div></div></li>
       <li class="open"><div class="box"></div><div class="body"><div class="name">Step 7 (product E2E) — round 2 final verdict not directly located</div><div class="meta">Strong circumstantial evidence of closure (the program moved on without reopening it), but no direct "Step 7 CLOSED round 2" citation found</div><div class="cite">INFERENCE — core/G4_STEP7_PRODUCT_E2E_2026-08-29.md:128-156</div></div></li>
       <li class="crit"><div class="box"></div><div class="body"><div class="name">Post-closure: a real on-device regression, discovered after MVP1.G4</div><div class="meta">A live S23 walkthrough after gate closure turned out to be testing an 8-day-stale build; after installing the current one, 2 real onboarding bugs were found</div><div class="cite">core/DECISION_LOG.md:34645-34664</div></div></li>
     </ul>
@@ -231,9 +235,9 @@
       </table>
     </div>
     <ul class="check" style="margin-top:14px">
-      <li class="open"><div class="box"></div><div class="body"><div class="name">PROFILE_IDENTITY_HEADER — GPT-PM approved, not implemented</div><div class="meta">Avatar → circular initial; subtitle → real progress instead of static "questionnaire complete"; Premium card — separate, outside this gate</div><div class="cite">core/DECISION_LOG.md:35513-35514</div></div></li>
+      <li class="blocked"><div class="box"></div><div class="body"><div class="name">PROFILE_IDENTITY_HEADER — HOLD / SUPERSEDED_BY_FULL_HANDOFF_RECONCILIATION (updated 08-30)</div><div class="meta">The earlier GPT-PM approval (circular-initial avatar + progress subtitle) rested on a weaker video reference. The full design handoff (<code class="mono">full_handoff_v1</code>), extracted the same day, shows a different Profile header (gradient person icon + name + "Profile complete", then "At a glance") — this materially changes the premise the earlier GO was based on. Do not implement the earlier design before reconciling against the full reference</div><div class="cite">core/DECISION_LOG.md, "REMEDIATION: GPT-PM round-1 review" entry (08-30, finding #3)</div></div></li>
       <li class="blocked"><div class="box"></div><div class="body"><div class="name">Form Coach — color-coded skeleton overlay by technique correctness</div><div class="meta">Code exists, on by default, but always white — no green/red by technique, no pulsing error-joint indicator. Cannot be honestly built until ML_STRATEGY R1(b) (section 3) is done</div><div class="cite">mobile/lib/features/form_check/form_check_page.dart:990-1094 · core/design/reference/full_handoff_v1/CLAUDE.md §8</div></div></li>
-      <li class="open"><div class="box"></div><div class="body"><div class="name">Nav icons — REFERENCE_BLOCKED_DEFERRED</div><div class="meta">GPT-PM refused a blind redesign on 08-29; reopens only if the operator supplies a reference</div><div class="cite">core/DECISION_LOG.md:34959-34987</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">Nav icons — REFERENCE_AVAILABLE / REOPENED (updated 08-30, was REFERENCE_BLOCKED_DEFERRED)</div><div class="meta">The reference missing on 08-29 arrived the same day, later, as the full design handoff — both main phone-spec .dc.html files explicitly name the five bottom-nav roles (grid_view, fitness_center, radio_button_checked, north_east, person). Next step is semantic/visual mapping to the product's icon set, not waiting for another reference</div><div class="cite">core/DECISION_LOG.md, "REMEDIATION: GPT-PM round-1 review" entry (08-30, finding #5)</div></div></li>
       <li class="open"><div class="box"></div><div class="body"><div class="name">Open Decisions Register (44 items) — likely stale</div><div class="meta">Dated 08-08/08-12, predates HUD Glass; no item found re-decided under current GPT-PM governance</div><div class="cite">docs/Redisign/OPEN_DECISIONS_REGISTER_v1.3.md</div></div></li>
     </ul>
   </section>
@@ -315,7 +319,7 @@
     <ul class="check">
       <li class="crit"><div class="box"></div><div class="body"><div class="name">1. Resolve the NOT_RELEASE_READY verdict / Gate J DO NOT SHIP</div><div class="meta">Operator-level: without this, "release ready" cannot be claimed regardless of what section 1 closed</div></div></li>
       <li class="open"><div class="box"></div><div class="body"><div class="name">2. G-A → G-D → G-C → G-B → G-E (section 6) — fixed order, the first three are low-risk</div></div></li>
-      <li class="open"><div class="box"></div><div class="body"><div class="name">3. PROFILE_IDENTITY_HEADER — the one fully-unblocked, already-approved HUD gate</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">3. Reconcile Profile against the full reference, then re-decide PROFILE_IDENTITY_HEADER — the earlier approval is now HOLD (see section 2), no longer a "fully unblocked" item</div></div></li>
       <li class="open"><div class="box"></div><div class="body"><div class="name">4. M0 (held-out set) → unblocks both E1–E4 (equipment) and the path to R1(b) (form-check)</div></div></li>
       <li class="open"><div class="box"></div><div class="body"><div class="name">5. Reconcile Home/Workouts/Progress against the new full reference (cheap — the screenshots already exist)</div></div></li>
       <li class="open"><div class="box"></div><div class="body"><div class="name">6. Resolve P1.G5 — either source Technogym/Panatta evidence, or get GPT-PM/operator sign-off for a smaller pool</div></div></li>
@@ -330,6 +334,10 @@
     <span><i class="box" style="background:var(--crit)"></i> critical / stalled a long time</span>
   </div>
 </div>
+
+
+
+
 
 
 

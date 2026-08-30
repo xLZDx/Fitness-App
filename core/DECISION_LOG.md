@@ -35788,3 +35788,61 @@ code and governance-file change in this window already has real `review.js` rece
 `review.js` was built to never show a reviewer, by design, on this project specifically. Not
 chasing whether that design decision itself is still correct at current report sizes -- out of
 scope for a documentation-governance fix in this repo.
+
+## 2026-08-30 ~12:00 UTC -- direct-review rounds 4-5 (outside review.js): 5 real MAJOR findings,
+## all fixed -- roadmap document had NOT propagated its own earlier governance corrections
+
+Sent the report content directly to GPT-PM via `gpt_send_and_await` (bypassing `review.js`'s
+`reports/` exclusion, per the entry above). Round 4 caught two real defects in the round-3
+remediation itself: (a) the RU/EN files were sent with Sections 1-8 omitted/summarized instead of
+complete -- a genuine gap, fixed by resending in full; (b) a taxonomy ambiguity where the G-A
+flagbox narrative counted `SafetyDisclosure` wiring alongside the audit's three named acceptance
+items, making "2 of 3" ambiguous between 3 and 4 items -- fixed by explicitly naming the three
+audit items and reframing `SafetyDisclosure` as supporting evidence, not a counted item, in both
+languages.
+
+**Round 5 (`replyId` from the `gpt_send_and_await` call, ~12:00 UTC) found five more MAJORs, all
+genuine and all traced to the same root cause: earlier governance corrections made THIS SESSION
+(round-1 remediation, commit `eb2ba6d`/`dbef400`) were recorded correctly in `DECISION_LOG.md` but
+never propagated into the roadmap document's own Section 2 and Section 8 text, which still read as
+if written before those corrections:**
+
+1. **EN file still not sent complete** -- round 4's EN payload was a structural/prose translation
+   summary, not raw HTML, after explicitly promising "complete." Genuine repeat of the same gap.
+   Fixed by sending the actual EN HTML in round 6.
+2. **`PROFILE_IDENTITY_HEADER` still shown as "GPT-PM approved, not implemented" and named in
+   Section 8 as "the one fully-unblocked, already-approved HUD gate"** -- directly contradicts this
+   session's own round-1 remediation (finding #3), which moved that exact gate to `HOLD /
+   SUPERSEDED_BY_FULL_HANDOFF_RECONCILIATION`. The roadmap was never updated after making that
+   correction elsewhere. **Fixed**: Section 2 item and Section 8 item 3 both rewritten to state
+   HOLD/SUPERSEDED, cite the round-1 remediation entry, and drop "fully unblocked" framing.
+3. **Nav icons still shown as `REFERENCE_BLOCKED_DEFERRED`** -- directly contradicts this session's
+   own round-1 remediation (finding #5), which moved nav icons to `REFERENCE_AVAILABLE / REOPENED`.
+   Same propagation gap as #2. **Fixed**: Section 2 item rewritten with the corrected status and
+   citation.
+4. **MVP1.G4 heading claimed "closed" while the very next checklist item (Step 7) is marked `open`
+   with an INFERENCE-labeled citation** -- a genuine internal contradiction, not something GPT-PM
+   invented: the section literally asserted "all 9 steps closed" and "Step 7 final verdict not
+   found" in adjacent list items. **Fixed**: heading changed to "8/9 confirmed, Step 7 closure
+   inferred," the G4 item's own text changed from "all 9 closed" to "8 of 9 closed with a direct
+   citation; Step 7 -- see separate row, inferred not quoted," in both languages. No new evidence
+   sought for Step 7 -- the fix is honest hedging, not a new closure claim.
+5. **Section 0's first (red) flag said no evidence any of G-A...G-E ran after 08-16, while the
+   sixth (green) flag on the same page presents substantial implementation evidence for G-A** --
+   two incompatible "facts" in the highest-priority section of the same document. **Fixed**:
+   narrowed the first flag's wording to G-D/G-C/G-B/G-E specifically, with an explicit pointer to
+   the green flag for G-A's separately-established status, in both languages.
+
+**Pattern worth naming**: every one of these five is a documentation-propagation bug, not a new
+factual error -- the underlying facts (Profile HOLD, nav REOPENED, Step 7 inference-only) were
+already correctly recorded in this very DECISION_LOG by this session's own earlier work. The
+roadmap synthesis document is a separate artifact from the log and does not auto-update when the
+log changes; nothing in this session's process re-scanned the roadmap for downstream mentions of a
+status it had just changed elsewhere. Worth remembering for any future large synthesis document in
+this repo: a correction to one section doesn't imply the same fact is correct everywhere else that
+section is referenced.
+
+Both files re-conformed (`report_conform.py --check` clean) and the RU artifact republished in
+place (same URL, `label: round5-fixes`). Committing this entry together with the roadmap file
+changes; sending round 6 with the complete, unabridged content of both files (per GPT-PM's explicit
+requirement) immediately after.

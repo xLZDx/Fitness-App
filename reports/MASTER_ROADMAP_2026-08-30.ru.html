@@ -152,13 +152,17 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ dbef400</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 50d259c</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
+
+
 
 
 
@@ -171,7 +175,7 @@
 
     <div class="flagbox">
       <span class="lbl">Вердикт релиз-готовности не отменён</span>
-      <p>Полный аудит проекта от 16.08 вынес вердикт <strong>NOT_RELEASE_READY</strong>, подтверждённый независимым ревью того же аудита. Ремедиационный план из 5 гейтов (G-A…G-E, раздел 6) по состоянию на 16.08 был «Not started, awaiting REMEDIATION-GO» — ни один из 7 агентов не нашёл следов, что эта цепочка вообще запускалась после 16.08.</p>
+      <p>Полный аудит проекта от 16.08 вынес вердикт <strong>NOT_RELEASE_READY</strong>, подтверждённый независимым ревью того же аудита. Ремедиационный план из 5 гейтов (G-A…G-E, раздел 6) по состоянию на 16.08 был «Not started, awaiting REMEDIATION-GO». Уточнено 30.08 (см. зелёный флаг ниже): для G-D/G-C/G-B/G-E ни один из 7 агентов так и не нашёл следов, что эти гейты вообще запускались после 16.08 под этими именами — считать их открытыми. G-A — отдельный случай: для него позже найдены веские доказательства реализации, просто не под этим именем гейта; детали в зелёном флаге ниже, не путать со статусом остальных четырёх.</p>
     </div>
     <div class="flagbox">
       <span class="lbl">Регуляторный гейт J: DO NOT SHIP</span>
@@ -191,18 +195,18 @@
     </div>
     <div class="flagbox" style="border-color:var(--good);background:var(--good-soft)">
       <span class="lbl" style="color:var(--good)">Поправка 30.08 — по G-A найдены веские доказательства реализации (2 из 3 пунктов подтверждены, формально не закрыт)</span>
-      <p>Этот же паттерн («closed → на самом деле нет», флаг выше) сработал и в обратную сторону здесь: раздел 6 ниже описывает G-A как «not started» по цитате аудита от 16.08 — но прямая проверка кода 30.08 (после публикации этого документа) нашла для G-A существенные доказательства реализации, просто не под этой меткой. Полностью подтверждены прямым чтением кода два из трёх пунктов: <code class="mono">ProgrammeNotViable</code> перехватывается до общего обработчика ошибок и показывает <code class="mono">EligibilityNotice</code> вместо Retry-кнопки (комментарий «N01», <code class="mono">workouts_page.dart:1300-1360</code>); реальная цифра покрытия тегов безопасности рендерится (<code class="mono">l10n.safetyFilterCoverage(coverage.tagged, coverage.total)</code>, <code class="mono">safety_disclosure.dart:100-109</code>, помечено «F019» в коде); виджет <code class="mono">SafetyDisclosure</code> подключён на всех точках показа упражнений через общую функцию <code class="mono">exerciseReferenceSections</code> плюс отдельные вставки в <code class="mono">workout_player_page.dart</code>/<code class="mono">workouts_page.dart</code> (помечено «F020» в коде). Третий пункт — копия про боль в груди — подтверждён только структурно (диалог <code class="mono">EligibilityNotice</code> действительно перехватывает этот случай раньше общего обработчика), но точный текст копии НЕ сверен построчно с оригинальной претензией аудита — это отдельная, ещё не сделанная проверка. Статус ниже поэтому — «найдены доказательства реализации», а не «формально закрыто»: нет отдельной записи в DECISION_LOG с вердиктом GPT-PM по G-A как по гейту целиком. Вывод не «раздел 6 неверен» — аудит от 16.08 был точен на момент написания — а «этот ремедиационный трек в основном прошёл, только без явного гейта G-A в DECISION_LOG, и раздел 6 ниже унаследовал устаревший статус аудита, не перепроверив код». Полная деталь и метод проверки — <code class="mono">core/DECISION_LOG.md</code>, запись «REMEDIATION: GPT-PM round-1 review» от 30.08, и последующая запись про G-A. G-D/G-C/G-B/G-E из того же аудита пока НЕ перепроверены этим же способом — статус «not started» для них остаётся как есть, из аудита.</p>
+      <p>Этот же паттерн («closed → на самом деле нет», флаг выше) сработал и в обратную сторону здесь: раздел 6 ниже описывает G-A как «not started» по цитате аудита от 16.08 — но прямая проверка кода 30.08 (после публикации этого документа) нашла для G-A существенные доказательства реализации, просто не под этой меткой. У G-A три пункта приёмки, по определению самого аудита: (1) Retry-кнопка/поверхность отказа, (2) цифра покрытия тегов безопасности, (3) копия про боль в груди. Два из трёх подтверждены полностью прямым чтением кода: <code class="mono">ProgrammeNotViable</code> перехватывается до общего обработчика ошибок и показывает <code class="mono">EligibilityNotice</code> вместо Retry-кнопки (комментарий «N01», <code class="mono">workouts_page.dart:1300-1360</code>); реальная цифра покрытия тегов безопасности рендерится (<code class="mono">l10n.safetyFilterCoverage(coverage.tagged, coverage.total)</code>, <code class="mono">safety_disclosure.dart:100-109</code>, помечено «F019» в коде). Третий пункт — копия про боль в груди — подтверждён только структурно (тот же диалог <code class="mono">EligibilityNotice</code> действительно перехватывает этот случай раньше общего обработчика), но точный текст копии НЕ сверен построчно с оригинальной претензией аудита — это отдельная, ещё не сделанная проверка. Отдельно, как вспомогательное свидетельство (не четвёртый пункт приёмки, не входит в счёт «2 из 3»): виджет <code class="mono">SafetyDisclosure</code> подключён на всех точках показа упражнений через общую функцию <code class="mono">exerciseReferenceSections</code> плюс отдельные вставки в <code class="mono">workout_player_page.dart</code>/<code class="mono">workouts_page.dart</code> (помечено «F020» в коде) — это относится к более широкой практике безопасности вокруг G-A, но не к самим трём пунктам аудита. Статус ниже поэтому — «найдены доказательства реализации», а не «формально закрыто»: нет отдельной записи в DECISION_LOG с вердиктом GPT-PM по G-A как по гейту целиком. Вывод не «раздел 6 неверен» — аудит от 16.08 был точен на момент написания — а «этот ремедиационный трек в основном прошёл, только без явного гейта G-A в DECISION_LOG, и раздел 6 ниже унаследовал устаревший статус аудита, не перепроверив код». Полная деталь и метод проверки — <code class="mono">core/DECISION_LOG.md</code>, запись «REMEDIATION: GPT-PM round-1 review» от 30.08, и последующая запись про G-A. G-D/G-C/G-B/G-E из того же аудита пока НЕ перепроверены этим же способом — статус «not started» для них остаётся как есть, из аудита.</p>
     </div>
   </section>
 
   <section id="release">
     <p class="kicker">Раздел 1 — Release-инфраструктура</p>
-    <h2>MVP1.G2 → MVP1.G4 <span class="pill done">закрыто</span></h2>
+    <h2>MVP1.G2 → MVP1.G4 <span class="pill blocked">8/9 подтверждено, Step 7 — вывод по косвенным данным</span></h2>
     <p class="sec-note">AI Gateway, Android 16, IAM, kill switch, release guard. Девять шагов G4, каждый — многораундовое ревью GPT-PM с реальными найденными и исправленными дефектами.</p>
     <ul class="check">
       <li class="done"><div class="box"></div><div class="body"><div class="name">MVP1.G2 — Android 16 / targetSdk 36, релиз-готовность Play</div><div class="meta">targetSdk 35→36 поднят, релизная сборка верифицирована, регрессия edge-to-edge найдена и исправлена</div><div class="cite">core/DECISION_LOG.md:26543-27076 · reports/G2_ANDROID16_TARGETSDK36_2026-08-27.html</div></div></li>
       <li class="done"><div class="box"></div><div class="body"><div class="name">MVP1.G3 — OBS-1, постоянные гарантии наблюдаемости (13 пунктов)</div><div class="meta">Все 13 пунктов закрыты, 0 PARTIAL; отдельно — runtime-monitor prerequisites (Step 8) и production-канарейка</div><div class="cite">core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md · reports/2026-08-28-mvp1-g3-closure.html</div></div></li>
-      <li class="done"><div class="box"></div><div class="body"><div class="name">MVP1.G4, шаги 1–9 — Vertex AI ревалидация → App Check → IAM (6 уровней) → деплой AI Gateway → E2E → observability → продуктовый E2E → kill switch → release guard</div><div class="meta">Все 9 шагов закрыты; Step 9 (release guard) — 7 раундов ревью, 14 MAJOR найдено и исправлено; вшит в <code class="mono">firebase.json predeploy</code></div><div class="cite">core/G4_STEP1…9_*.md · core/DECISION_LOG.md:34608-34609 · reports/MVP1_G4_CLOSURE_2026-08-29.html</div></div></li>
+      <li class="blocked"><div class="box"></div><div class="body"><div class="name">MVP1.G4, шаги 1–9 — Vertex AI ревалидация → App Check → IAM (6 уровней) → деплой AI Gateway → E2E → observability → продуктовый E2E → kill switch → release guard</div><div class="meta">8 из 9 шагов закрыты с прямой цитатой; Step 7 — см. отдельную строку ниже, закрытие выведено косвенно, не процитировано напрямую. Step 9 (release guard) — 7 раундов ревью, 14 MAJOR найдено и исправлено; вшит в <code class="mono">firebase.json predeploy</code></div><div class="cite">core/G4_STEP1…9_*.md · core/DECISION_LOG.md:34608-34609 · reports/MVP1_G4_CLOSURE_2026-08-29.html</div></div></li>
       <li class="open"><div class="box"></div><div class="body"><div class="name">Step 7 (продуктовый E2E) — раунд 2, финальный вердикт не найден напрямую</div><div class="meta">Косвенные доказательства закрытия сильные (программа пошла дальше без реоткрытия), но прямой цитаты «Step 7 CLOSED round 2» не найдено</div><div class="cite">INFERENCE — core/G4_STEP7_PRODUCT_E2E_2026-08-29.md:128-156</div></div></li>
       <li class="crit"><div class="box"></div><div class="body"><div class="name">Пост-закрытие: реальная регрессия на устройстве, обнаружена уже после MVP1.G4</div><div class="meta">Живой обход S23 после закрытия гейтов — оказалось, тестировали 8-дневную устаревшую сборку; после установки актуальной нашли 2 реальных бага онбординга</div><div class="cite">core/DECISION_LOG.md:34645-34664</div></div></li>
     </ul>
@@ -231,9 +235,9 @@
       </table>
     </div>
     <ul class="check" style="margin-top:14px">
-      <li class="open"><div class="box"></div><div class="body"><div class="name">PROFILE_IDENTITY_HEADER — одобрено GPT-PM, не реализовано</div><div class="meta">Аватар → круглый с инициалом; подпись → реальный прогресс вместо статичного «Анкета пройдена»; Premium-карточка — отдельно, вне этого гейта</div><div class="cite">core/DECISION_LOG.md:35513-35514</div></div></li>
+      <li class="blocked"><div class="box"></div><div class="body"><div class="name">PROFILE_IDENTITY_HEADER — HOLD / SUPERSEDED_BY_FULL_HANDOFF_RECONCILIATION (обновлено 30.08)</div><div class="meta">Прежнее одобрение GPT-PM (круглый аватар с инициалом + прогресс-подпись) было основано на более слабом видео-референсе. Полный дизайн-хэндофф (<code class="mono">full_handoff_v1</code>), извлечённый в тот же день, показывает другой Profile-хедер (градиентная иконка человека + имя + «Profile complete», затем «At a glance») — это существенно меняет посылку, на которой было дано прежнее GO. Не реализовывать прежний дизайн до сверки с полным референсом</div><div class="cite">core/DECISION_LOG.md, запись «REMEDIATION: GPT-PM round-1 review» от 30.08 (finding #3)</div></div></li>
       <li class="blocked"><div class="box"></div><div class="body"><div class="name">Form Coach — цветной скелет-оверлей по правильности техники</div><div class="meta">Код есть, включён по умолчанию, но всегда белый — нет зелёного/красного по технике и пульсирующего индикатора сустава-ошибки. Честно реализовать нельзя, пока не пройден ML_STRATEGY R1(b) (раздел 3)</div><div class="cite">mobile/lib/features/form_check/form_check_page.dart:990-1094 · core/design/reference/full_handoff_v1/CLAUDE.md §8</div></div></li>
-      <li class="open"><div class="box"></div><div class="body"><div class="name">Nav-иконки — REFERENCE_BLOCKED_DEFERRED</div><div class="meta">GPT-PM отказался переделывать вслепую 29.08; переоткрывается только если появится референс от оператора</div><div class="cite">core/DECISION_LOG.md:34959-34987</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">Nav-иконки — REFERENCE_AVAILABLE / REOPENED (обновлено 30.08, было REFERENCE_BLOCKED_DEFERRED)</div><div class="meta">Референс, которого не хватало 29.08, появился в тот же день позже в виде полного дизайн-хэндоффа — оба основных .dc.html-файла явно называют пять ролей нижней навигации (grid_view, fitness_center, radio_button_checked, north_east, person). Следующий шаг — не «ждать референс», а семантическое/визуальное сопоставление с иконками продукта</div><div class="cite">core/DECISION_LOG.md, запись «REMEDIATION: GPT-PM round-1 review» от 30.08 (finding #5)</div></div></li>
       <li class="open"><div class="box"></div><div class="body"><div class="name">Open Decisions Register (44 пункта) — вероятно устарел</div><div class="meta">Датирован 08.08/12.08, до HUD Glass; ни один пункт не найден переоформленным под текущее GPT-PM-управление</div><div class="cite">docs/Redisign/OPEN_DECISIONS_REGISTER_v1.3.md</div></div></li>
     </ul>
   </section>
@@ -315,7 +319,7 @@
     <ul class="check">
       <li class="crit"><div class="box"></div><div class="body"><div class="name">1. Решить судьбу вердикта NOT_RELEASE_READY / Gate J DO NOT SHIP</div><div class="meta">Операторский уровень: без этого «релиз-готовность» не может считаться достигнутой независимо от того, что закрыто в разделе 1</div></div></li>
       <li class="open"><div class="box"></div><div class="body"><div class="name">2. G-A → G-D → G-C → G-B → G-E (раздел 6) — фиксированный порядок, первые три низкого риска</div></div></li>
-      <li class="open"><div class="box"></div><div class="body"><div class="name">3. PROFILE_IDENTITY_HEADER — единственный полностью разблокированный, уже одобренный HUD-гейт</div></div></li>
+      <li class="open"><div class="box"></div><div class="body"><div class="name">3. Сверить Profile с полным референсом, затем заново решить PROFILE_IDENTITY_HEADER — прежнее одобрение теперь HOLD (см. раздел 2), больше не «полностью разблокированный» пункт</div></div></li>
       <li class="open"><div class="box"></div><div class="body"><div class="name">4. M0 (held-out выборка) → разблокирует и E1–E4 (оборудование), и даёт путь к R1(b) (форм-чек)</div></div></li>
       <li class="open"><div class="box"></div><div class="body"><div class="name">5. Сверить Home/Workouts/Progress с новым полным референсом (дёшево — уже есть все скриншоты)</div></div></li>
       <li class="open"><div class="box"></div><div class="body"><div class="name">6. Решить P1.G5 — либо добыть источники по Technogym/Panatta, либо получить добро GPT-PM/оператора на меньший пул</div></div></li>
@@ -330,6 +334,10 @@
     <span><i class="box" style="background:var(--crit)"></i> критично / без движения долго</span>
   </div>
 </div>
+
+
+
+
 
 
 
