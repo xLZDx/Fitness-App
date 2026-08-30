@@ -77,8 +77,12 @@ class ProfilePage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          if (profile != null && onboarded) _ProfileSummary(profile: profile),
-          if (profile != null && onboarded) const SizedBox(height: 16),
+          // Reference (`full_handoff_v1`) shows "At a glance" unconditionally,
+          // once a profile exists at all -- not gated on onboarding being
+          // fully complete. `_ProfileSummary` already renders "-" for any
+          // field that isn't filled in yet, so a partial profile is fine.
+          if (profile != null) _ProfileSummary(profile: profile),
+          if (profile != null) const SizedBox(height: 16),
           // R11i: grouped sections, not one flat list of nine tiles
           // (`App.tsx:4916`). Nine rows in one card is a menu you scan rather
           // than read -- and two of them (sign out, subscription) carry rather

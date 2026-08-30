@@ -620,6 +620,29 @@ final formFeedbackControllerProvider =
     NotifierProvider<FormFeedbackController, FormFeedback?>(
         FormFeedbackController.new);
 
+/// The colour-verdict severity the live avatar should paint with, or null for
+/// "no verdict — plain white", exactly the figure painted before colour
+/// existed.
+///
+/// Gated on [FormClassifier.canFault], not on [feedback]'s severity value
+/// alone. Squat depth and hip-hinge report a metric at severity 0 on every
+/// frame by construction (`form_classifier.dart` —
+/// `SquatDepthClassifier.canFault`, `DeadliftHipHingeClassifier.canFault`,
+/// both false, and documented as camera-angle-confounded, not merely
+/// untuned). Reading `feedback.severity` without this gate would happen to
+/// work today, only because that value never moves for either rule — and
+/// would silently start colouring an unentitled rule "correct" or "wrong"
+/// the moment either one grows a severity>0 arm.
+int? avatarVerdictSeverity(
+  List<FormClassifier> activeClassifiers,
+  FormFeedback? feedback,
+) {
+  if (activeClassifiers.isEmpty || !activeClassifiers.first.canFault) {
+    return null;
+  }
+  return feedback?.severity;
+}
+
 /// Speech engine. Defaults to the mock so widget tests never open a
 /// MethodChannel; `main.dart` binds [TtsVoiceCoach] on device.
 final voiceCoachProvider = Provider<VoiceCoach>((ref) {

@@ -1,4 +1,5 @@
 import 'dart:async' show TimeoutException;
+import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart' show debugPrint, mapEquals;
@@ -971,10 +972,25 @@ class _PoseAvatar extends ConsumerWidget {
     // paint.
     if (figure.torso.isEmpty) return const SizedBox.shrink();
 
+    // See `avatarVerdictSeverity` for why this is gated on `canFault`, not
+    // read from the feedback's severity alone.
+    final severity = avatarVerdictSeverity(
+      ref.watch(activeClassifiersProvider),
+      ref.watch(formFeedbackControllerProvider),
+    );
+    final colors = Theme.of(context).colors;
+
     return RepaintBoundary(
       child: CustomPaint(
         key: const Key('form_check.avatar'),
-        painter: _PoseAvatarPainter(figure: figure, frame: frame),
+        painter: _PoseAvatarPainter(
+          figure: figure,
+          frame: frame,
+          severity: severity,
+          colorCorrect: colors.poseCorrect,
+          colorWarning: colors.poseWarning,
+          colorError: colors.poseError,
+        ),
       ),
     );
   }
@@ -988,7 +1004,14 @@ class _PoseAvatar extends ConsumerWidget {
 /// the bones read as light because that is what distinguishes a body from a
 /// shadow on a dusk backdrop.
 class _PoseAvatarPainter extends CustomPainter {
-  const _PoseAvatarPainter({required this.figure, required this.frame});
+  const _PoseAvatarPainter({
+    required this.figure,
+    required this.frame,
+    required this.severity,
+    required this.colorCorrect,
+    required this.colorWarning,
+    required this.colorError,
+  });
 
   /// Already built, by the widget above, which had to look at it anyway to
   /// decide between drawing a body and explaining why it cannot.
@@ -997,6 +1020,30 @@ class _PoseAvatarPainter extends CustomPainter {
   /// Carried for its aspect ratio, which the projection needs, and its
   /// timestamp, which is what makes one frame different from the last.
   final PoseFrame frame;
+
+  /// 0/1/2 from the active classifier's worst [FormFeedback], or null when
+  /// no active classifier is entitled to fault this movement
+  /// ([FormClassifier.canFault]) — see the caller in `_PoseAvatar.build`.
+  /// Null keeps the figure exactly as it painted before this feature
+  /// existed: plain white, no verdict implied. This is deliberate for squat
+  /// depth and hip-hinge, which are camera-angle-confounded and must not be
+  /// shown as "correct" or "wrong" until the silhouette-match rule exists
+  /// (`form_classifier.dart` — `SquatDepthClassifier`,
+  /// `DeadliftHipHingeClassifier`).
+  final int? severity;
+
+  final Color colorCorrect;
+  final Color colorWarning;
+  final Color colorError;
+
+  /// The verdict colour for [severity], or null to mean "no verdict" — the
+  /// plain white figure.
+  Color? get _verdictColor => switch (severity) {
+        null => null,
+        0 => colorCorrect,
+        1 => colorWarning,
+        _ => colorError,
+      };
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1040,6 +1087,22 @@ class _PoseAvatarPainter extends CustomPainter {
         ));
     }
 
+    // Plain white with no verdict (severity == null) is exactly the figure
+    // this painted before colour existed. A verdict colour replaces white at
+    // the same alphas — the figure's *shape* language does not change, only
+    // its tint, so "which classifier is active" never redraws the body
+    // differently, only recolours it.
+    final verdictColor = _verdictColor;
+    final boneColor = verdictColor ?? Colors.white;
+
+    // A fault (severity >= 1) pulses so it reads as "something to fix right
+    // now" rather than a static tint indistinguishable from a colour theme.
+    // Severity 0 (clean rep) and null (no verdict) never pulse — pulsing on
+    // a clean rep would read as an alarm about nothing.
+    final pulse = (severity ?? 0) >= 1
+        ? 0.55 + 0.45 * math.sin(frame.timestampMs / 130)
+        : 1.0;
+
     canvas.drawPath(body, Paint()..color = const Color(0xE60A0912));
     canvas.drawPath(
       body,
@@ -1047,7 +1110,7 @@ class _PoseAvatarPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = (limbWidth * 0.14).clamp(1.5, 4.0)
         ..strokeJoin = StrokeJoin.round
-        ..color = Colors.white.withValues(alpha: 0.45),
+        ..color = boneColor.withValues(alpha: 0.45),
     );
 
     // Every bone in ONE path, so the glow is a single blurred draw rather than
@@ -1070,7 +1133,7 @@ class _PoseAvatarPainter extends CustomPainter {
         ..strokeWidth = boneWidth * 2.0
         ..strokeCap = StrokeCap.round
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, boneWidth * 1.4)
-        ..color = Colors.white.withValues(alpha: 0.45),
+        ..color = boneColor.withValues(alpha: 0.45 * pulse),
     );
     canvas.drawPath(
       bones,
@@ -1078,12 +1141,12 @@ class _PoseAvatarPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = boneWidth
         ..strokeCap = StrokeCap.round
-        ..color = Colors.white.withValues(alpha: 0.95),
+        ..color = boneColor.withValues(alpha: 0.95 * pulse),
     );
 
     // Joints last, so an articulation reads as a bright point rather than as a
     // thickening of the bone that runs through it.
-    final jointCore = Paint()..color = Colors.white;
+    final jointCore = Paint()..color = boneColor.withValues(alpha: pulse);
     for (final j in figure.joints) {
       canvas.drawCircle(place(j), boneWidth * 0.62, jointCore);
     }
@@ -1091,7 +1154,8 @@ class _PoseAvatarPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_PoseAvatarPainter old) =>
-      old.frame.timestampMs != frame.timestampMs;
+      old.frame.timestampMs != frame.timestampMs ||
+      old.severity != severity;
 }
 
 /// The camera did not start, and what to do about it.

@@ -87,9 +87,10 @@ class MainShell extends StatelessWidget {
         // title and stays that. A nav label is one word wide: on the
         // operator's phone the long form wrapped to two lines and pushed the
         // tab out of line with its neighbours.
-        HudNavItem(icon: Icons.qr_code_scanner_rounded, label: l10n.navScan),
         HudNavItem(
-            icon: Icons.show_chart_rounded, label: l10n.progressProgress),
+            icon: Icons.radio_button_checked_rounded, label: l10n.navScan),
+        HudNavItem(
+            icon: Icons.north_east_rounded, label: l10n.progressProgress),
         HudNavItem(
             icon: Icons.person_outline_rounded, label: l10n.profileProfile),
       ];

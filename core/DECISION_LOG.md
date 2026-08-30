@@ -36481,3 +36481,57 @@ explicit "продолжай" (continue).
 
 **Next**: per PM mode, continue to G-A's remaining item (exact chest-pain copy text verification) or
 pursue formal named-gate verdicts for G-B/G-E.
+
+## 2026-08-30 — G-B formally closed (round 26); operator GO on the HUD/Form-Coach redesign; first gate shipped
+
+**G-B formal named-gate closure.** Sent a standing request for the same explicit closure round 13
+gave G-D. GPT-PM round 26 independently re-verified all six B1-B6 sites in current `master` (not
+recalled from the earlier round) and confirmed both remediation commits (`ff85df8`, `47499ee`) as
+ancestors of `origin/master` via GitHub's own compare API, not the request's own narrative.
+**`VERDICT: G-B: FORMALLY CLOSED by this review`** -- explicitly scoped to the six-site eligibility
+gate only; does not touch G-A/G-C/G-E's own open items.
+
+**Operator instruction**: finish the HUD/Figma redesign "до конца", explicitly including the Form
+Coach coloured skeleton overlay (`ГО`). Two background investigations (read-only) preceded any
+edit:
+
+1. **ML/Form-Coach chain**: the roadmap's "M0 blocks R1(b) blocks the overlay" framing does not match
+   `ML_STRATEGY_2026-08-11.md` itself -- M0 is scoped to the *equipment* held-out set and the
+   document's own critical path is M0 -> E1/E2 -> E3 -> E4; R1(b) is independent. Neither blocks the
+   overlay. What actually gates the overlay: (a) `SquatDepthClassifier.canFault`/
+   `DeadliftHipHingeClassifier.canFault` are `false` **by design** -- a documented camera-angle
+   confound (squat) and a missing spine landmark (hinge), not a data gap; the code's own doc comments
+   say a threshold cannot fix this, only a silhouette-match against a target pose could, and that does
+   not exist yet. (b) `PushupAlignmentClassifier.canFault` is `true` and works today. (c)
+   `_PoseAvatarPainter` had zero fault-state plumbing at all -- pure white, no colour logic -- so real
+   UI engineering was needed regardless of ML status.
+2. **Remaining HUD screens vs `core/design/reference/full_handoff_v1/`**: Home and Profile's header
+   already matched (documented intentional departures / already-correct copy). Nav icons: 2 of 5
+   wrong (Scan, Progress). Profile's "At a glance" panel was gated on full onboarding where the
+   reference shows it unconditionally. Workouts/Progress need only a light spot-check. Session
+   (player/timer), Onboarding (9 reference steps vs 10 current, non-1:1 semantically) and Scan
+   (richer live/history UI vs a minimal reference) are genuine, undefined-scope gaps.
+
+**Shipped this gate** (commit follows this entry): nav icon fix (`main_shell.dart`); Profile "At a
+glance" unconditional on `profile != null` (`profile_page.dart`); Form Coach avatar now colours
+green/amber/red by `FormFeedback.severity` with a pulse on an actual fault, gated on
+`FormClassifier.canFault` via a new pure function `avatarVerdictSeverity` (unit-tested,
+`avatar_verdict_severity_test.dart`) rather than on severity alone -- Squat/Deadlift stay plain white
+by design, since colouring them would be exactly the false-safety-signal class of defect this
+session's G-A..G-E remediation spent the day closing elsewhere. Full `flutter test` run: 3297/3299
+passed; 2 pre-existing failures (`composed_home_light/dark` goldens) confirmed via direct image diff
+to be an unrelated, already-stale day-strip redesign plus a date-dependent "today" indicator -- no
+file this gate touched has anything to do with that widget. Left alone rather than silently
+regenerated, since regenerating a stale golden without understanding the underlying diff would risk
+masking a real regression. Also found and fixed in passing: `app_semantic_colors_test.dart`'s
+`Colors.white` ratchet was pinned at 61 while HEAD already measured 58 by direct count against the
+committed tree -- a pre-existing 3-count gap with no diff available to explain it, flagged honestly
+in the test's own ledger rather than folded into this change's own (legitimate) -3.
+
+**Not in this gate, deliberately** -- each needs a scope decision before touching, not just more
+engineering time: Session (no design mapping exists at all), Onboarding (the 9-vs-10 step mismatch
+intersects the safety-gate onboarding steps this session's own G-A/G-D remediation depends on --
+merging/dropping health/screening steps to match the reference could reopen exactly what those gates
+just closed), Scan (does the reference's minimal aim-frame model replace the current live/history UI,
+or restyle around it), and the Squat/Deadlift silhouette-match itself (undefined-scope R&D, not an
+engineering task with a known size). Routing these to GPT-PM next rather than deciding unilaterally.

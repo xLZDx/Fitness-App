@@ -507,8 +507,33 @@ void main() {
     //
     // `coach_readiness_band.dart` stays at 2: it absorbed the message but not
     // a literal, because that pairing was already the one it used.
+    //
+    // FLAGGED, not reconstructed, 2026-08-30: before touching anything below,
+    // HEAD (`da4c200`) already counted 58 by direct measurement of the
+    // committed tree (`git show HEAD:mobile/lib/<f> | grep -v '^\s*//' |
+    // grep -oE 'Colors\.white[0-9]*' | wc -l`, summed per file) — not the 61
+    // this ledger's last entry above claims. The ledger's own rule is "read
+    // the diff before repinning it"; there was no diff to read for a 61 -> 58
+    // gap, since no commit in this session touched a whites-bearing file
+    // between that entry and this one. Recorded here rather than silently
+    // folded into the change below, so whoever reads this next sees that
+    // three were already unaccounted for and does not read the new pin as
+    // proof the ledger was continuous.
+    //
+    // 58 (actual) -> 55, 2026-08-30 (Form Coach colour verdict): a real
+    // decrease, on top of the unexplained gap above. `form_check_page.dart`
+    // 18 -> 15: the avatar's four `Colors.white` literals (the body rim, the
+    // bones' glow and core, and the joint dots — the same four the "59 -> 64"
+    // entry added) collapsed behind one `boneColor` variable,
+    // `verdictColor ?? Colors.white`, so there is exactly one literal left
+    // for the neutral case instead of four repeated ones. Category unchanged
+    // in substance — still the avatar's own drawing, not text on a surface —
+    // now conditionally recoloured to `AppSemanticColors.poseCorrect /
+    // poseWarning / poseError` when `PushupAlignmentClassifier` (the one
+    // shipped rule entitled to fault a rep — `form_classifier.dart`,
+    // `canFault`) has a verdict to paint.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 61, reason: 'per file: $whites');
+    expect(total, 55, reason: 'per file: $whites');
   });
 
   group('lerp', () {
