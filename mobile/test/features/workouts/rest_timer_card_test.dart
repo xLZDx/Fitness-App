@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/features/workouts/state/rest_timer_providers.dart';
 import 'package:fitness_app/features/workouts/widgets/rest_timer.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/shared/widgets/hud/hud_metric.dart';
 
 /// The card, as opposed to the state machine next door.
 ///
@@ -141,6 +142,47 @@ void main() {
     await t.pump();
 
     expect(outcomes, [RestOutcome.skipped]);
+  });
+
+  group('accessibility', () {
+    // GPT-PM round 1 (2026-08-30 Session gate): swapping the stock
+    // `CircularProgressIndicator` for `HudRing` dropped the automatic
+    // progress-role semantic value the old widget supplied for free --
+    // `HudRing` only wraps in `Semantics` when given a `semanticsLabel`,
+    // and that path excludes its child's own semantics, which would have
+    // silenced the countdown text instead. `rest_timer.dart` now wraps the
+    // ring itself in one explicit `Semantics(label:, value:, excludeSemantics:
+    // true)` node. This proves that node actually carries both pieces of
+    // information, running and finished, rather than only removing the
+    // regression from view.
+    testWidgets('a running rest reports the title and the time left', (t) async {
+      final SemanticsHandle h = t.ensureSemantics();
+      final harness = _harness();
+      harness.c.read(restTimerProvider.notifier).start(const Duration(seconds: 90));
+      await t.pumpWidget(_app(harness.c));
+
+      expect(
+        t.getSemantics(find.byType(HudRing)),
+        matchesSemantics(label: 'Rest', value: '1:30'),
+      );
+      h.dispose();
+    });
+
+    testWidgets('a finished rest still reports a value, not silence', (t) async {
+      final SemanticsHandle h = t.ensureSemantics();
+      final harness = _harness();
+      harness.c.read(restTimerProvider.notifier).start(const Duration(seconds: 90));
+      await t.pumpWidget(_app(harness.c));
+
+      await t.tap(find.byKey(const Key('rest-timer.skip')));
+      await t.pump();
+
+      expect(
+        t.getSemantics(find.byType(HudRing)),
+        matchesSemantics(label: 'Rest', value: '0:00'),
+      );
+      h.dispose();
+    });
   });
 
   group('the copy is localised', () {

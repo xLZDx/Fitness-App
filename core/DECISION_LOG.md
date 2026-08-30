@@ -36794,4 +36794,25 @@ dedicated widget test for `SetTimerCard` itself), the full `test/features/workou
 (352/352), and `app_semantic_colors_test.dart`'s whites-ratchet (`expect(total, 58)` unaffected --
 this change touched zero `Colors.white` literals).
 
-**Not yet done in this gate**: GPT-PM code-review round (queued next, via `review.js`), commit, push.
+**GPT-PM round 1** (`review.js`, commit `15e51a6`): **MINOR**, real and confirmed before fixing --
+swapping `CircularProgressIndicator` for `HudRing` in `RestTimer` silently dropped the automatic
+progress-role semantic value the stock widget supplied. `HudRing` only attaches a `Semantics` wrapper
+when given `semanticsLabel`, and that path (`hud_metric.dart`: `ExcludeSemantics(child: painted)`)
+excludes the ring's own child from the tree -- naively adding a label would have silenced the
+countdown text `SetTimerCard`'s own ring is deliberately built to keep audible (its own comment says
+so explicitly), trading one regression for another. Verified against `hud_metric.dart:136-141`
+before accepting the finding, not taken on faith. Everything else in the round-1 diff was confirmed
+clean: the compact-ring geometry, the idle/work shared-`accentPrimary` reasoning (there is genuinely
+no code path where both render at once), and leaving `danger` unused.
+
+**Fix**: `rest_timer.dart`'s ring is now wrapped in one explicit
+`Semantics(label: l.restTimerTitle, value: _format(remaining), excludeSemantics: true)` node, so a
+screen reader gets a single coherent stop -- what this is ("Rest") and what it currently reads
+("1:30") -- instead of either the old two-node split or the new silent gap. Two regression tests
+added to `rest_timer_card_test.dart` (`ensureSemantics` + `matchesSemantics`, the same pattern
+`hud_components_test.dart` already uses for `HudRing` elsewhere): one for a running rest, one for a
+finished rest, both asserting the merged node actually carries a label and a value rather than only
+asserting the finding is gone. `flutter analyze` clean; all 14 `rest_timer_card_test.dart` tests pass
+(12 prior + 2 new).
+
+**Not yet done in this gate**: GPT-PM round 2 (verification of this fix), commit, push.

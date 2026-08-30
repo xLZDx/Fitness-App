@@ -109,18 +109,33 @@ class _RestTimerState extends ConsumerState<RestTimer> {
               // done/in-progress reuse the same success/accentPrimary split
               // SetTimerCard now uses for its own ring, so a completed rest
               // and a completed set read as the same colour everywhere.
-              HudRing(
-                size: 56,
-                radius: 24,
-                strokeWidth: 4,
-                glowBlur: 6,
-                progress: rest.progress(now),
-                color: done ? colors.success : colors.accentPrimary,
-                child: Text(
-                  _format(remaining),
-                  key: const Key('rest-timer.remaining'),
-                  style: theme.textTheme.labelLarge
-                      ?.copyWith(fontWeight: FontWeight.w800),
+              // GPT-PM round 1 (2026-08-30): `CircularProgressIndicator`
+              // exposed a progress-role semantic value automatically; a bare
+              // `HudRing` does not unless given `semanticsLabel`, and that
+              // path excludes the child's own semantics (`hud_metric.dart`),
+              // which would silence the countdown text `SetTimerCard`'s own
+              // ring is deliberately built to keep audible. Merging both into
+              // one explicit node here keeps a screen reader informed of
+              // both what this is and what it currently reads -- and reads
+              // as one stop instead of two disconnected ones the old
+              // Stack-sibling layout produced.
+              Semantics(
+                label: l.restTimerTitle,
+                value: _format(remaining),
+                excludeSemantics: true,
+                child: HudRing(
+                  size: 56,
+                  radius: 24,
+                  strokeWidth: 4,
+                  glowBlur: 6,
+                  progress: rest.progress(now),
+                  color: done ? colors.success : colors.accentPrimary,
+                  child: Text(
+                    _format(remaining),
+                    key: const Key('rest-timer.remaining'),
+                    style: theme.textTheme.labelLarge
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
