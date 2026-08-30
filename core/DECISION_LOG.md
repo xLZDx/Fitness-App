@@ -36845,5 +36845,18 @@ Flutter version -- and this reasoning, with the exact grep command and file:line
 GPT-PM rather than either silently complying with an uncompilable request or silently ignoring the
 finding.
 
-**Not yet done in this gate**: GPT-PM round 3 (does the corrected fix, and the correction of the
-finding's own factual basis, close the MINOR), commit, push.
+**GPT-PM round 3** (`review.js --final`, commit `ceef1de`): **APPROVE**. GPT-PM independently
+re-checked Flutter's tagged 3.27.1 source (not current Flutter) and confirmed the round-2 citation
+was wrong for this repo's SDK -- `ProgressIndicator._buildSemanticsWrapper` never emits a role or
+min/max in that version, only `label` + a bare percentage `value`. Round-1/round-2 accessibility
+MINOR: **CLOSED**. `VERDICT: APPROVE`, `PUSH: AUTHORIZED for 15e51a6..ceef1de`.
+
+**Pushed** -- `c1f0b07..ceef1de`, fast-forward, `git fetch` + `git log origin/master..HEAD` checked
+clean (exactly the three approved commits, nothing else outbound) before pushing.
+
+Session gate slice 1 (RestTimer -> HudRing, timer colours -> semantic tokens) is now shipped. Next:
+continuing to whatever slice, if any, is still open within the GPT-PM-approved minimal-diff boundary
+for this gate (item 2's colour-token work is done; the four page-level action buttons and any new
+set-status list remain explicitly out of scope per the earlier routed decision) -- or, if nothing
+further is in scope here, moving to the next gate in the program (Form Coach reachability /
+`poseMatchProvider` avatar-mode generalisation, per the prior routed decision's sequencing).
