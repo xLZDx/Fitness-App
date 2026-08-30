@@ -36120,3 +36120,194 @@ reflecting the already-issued round-13 verdict -- no new technical claim, descri
 untouched. Sent as a raw RU+EN diff (round 12's lesson: a prose parity assertion is not accepted,
 only actual content). GPT-PM round 15: genuine `VERDICT: APPROVE`, confirmed "G-D: CLOSED... Formal
 named-gate closure: GPT-PM Round 13", push authorized on top of `64f67bd`.
+
+## 2026-08-30 — Roadmap correction: G-B (6/6 confirmed) and G-C (hazard closed via substitute mechanism)
+
+Continuing the same-session pattern already found twice (G-A: F019/F020, G-D: F005/F006/N03) --
+this session's shallow single-pass grep against `functions/` for catalogue-matching vocabulary
+found nothing for G-C and only partial provider usage for G-B, and concluded "likely genuinely not
+started" / "not independently verified." Both conclusions were wrong -- the real work is in
+`mobile/lib` (client Dart, not server TS) and filed under finding IDs, never under the gate labels
+"G-B"/"G-C". Two thorough agent investigations (code-explorer, each resumed past an 8-turn limit to
+finish) found the real evidence; verified here against `firestore.rules`-adjacent discipline: cite
+file:line, confirm deployment via `git merge-base --is-ancestor` rather than trusting either the
+agent's or the decision log's own narrative.
+
+**G-B**: `core/DECISION_LOG.md:12463-12601` (08-17 entry) records the "6 call sites" explicitly --
+B1 (programme enrolment), B2 (in-workout add-exercise picker), B3/B4 (AI-coach entry points on the
+equipment-detail and scanner pages), B5 (Library/Train-tab chips), B6 (AI-generated `ai::` exercise
+rows, extended for F023/movement-restrictions same day). All six independently verified present in
+current code by the agent: `programme_providers.dart:176-177`, `workout_player_page.dart:872-874`,
+`equipment_detail_page.dart:83,213`, `scanner_page.dart:1578-1587`, `workouts_page.dart:163-224`,
+`equipment_providers.dart:306-324,366,579-581`. Deployment confirmed directly (not assumed from the
+log, which itself said "Not pushed" at write time):
+```
+git log --oneline --all | grep -iE "G-B|F023"
+  ff85df8 fix(G-B): route every exercise surface through the eligibility layer
+  47499ee fix(G-B/B6, F023): a movement restriction excludes generated exercises, as an injury already did
+git merge-base --is-ancestor ff85df8 origin/master  -> true
+git merge-base --is-ancestor 47499ee origin/master  -> true
+```
+Status: implementation evidence found, 6 of 6 sites -- not formally closed as a named "G-B" gate
+(same caveat as G-A: no GPT-PM verdict on it as a unit yet).
+
+**G-C**: this one is NOT a simple confirmation and is recorded carefully to avoid the same
+overstatement error G-D's first pass made. F016 (CRITICAL, `29_FINDINGS.csv:5`) and the revised
+remediation plan (`FULL_PROJECT_AUDIT_2026-08-16_REVIEW/30_REVISED_REMEDIATION_PLAN.md:57-63`) both
+specify one literal mechanism: suppress `uses[]` unless every entry catalogue/alias-matches. The
+08-17 `DECISION_LOG.md:12401-12459` entry ("G-C / F016") explicitly considered and rejected that
+mechanism -- the AI machine-describer only runs when catalogue recognition already returned empty,
+so a catalogue-match filter would suppress the list on essentially every card it fires for. What
+shipped instead: `uses[]` withheld at render time unless the viewing user has nothing to screen
+against (`machine_card_view.dart:80-89,127-160`, `SafetyContext`-gated, not catalogue-matched);
+`machine_describer.dart:282-294` still has no catalogue check -- a real, intentional gap against the
+literal AC, not an oversight. A same-day re-verification pass (`DECISION_LOG.md:12722-12791`)
+pressure-tested the substitute against a stricter reframed invariant ("an invented or unvalidated
+ACTIONABLE exercise cannot cross the trust boundary") and confirmed `uses[]` text never becomes an
+exercise id, navigation target, or logged workout entry -- concluding "a stronger property than the
+prescribed filter would have given." Regression-guarded: 9 adversarial cases in
+`machine_describer_test.dart`, 6 widget-test cases in `machine_card_flow_test.dart:310-413`,
+mutation-tested. Deployment confirmed:
+```
+git log --oneline --all | grep -iE "F016|G-C"
+  a10ea17 test(F016): prove the model cannot name an exercise, rather than trusting G-C
+  f8021a7 fix(G-C/F016): unscreened model-written movements stop reaching users with something to screen
+git merge-base --is-ancestor f8021a7 origin/master  -> true
+git merge-base --is-ancestor a10ea17 origin/master  -> true
+```
+Status: the underlying safety hazard is substantively closed via a deliberate, reasoned, re-verified
+substitute mechanism -- explicitly NOT "confirmed against the literal AC," because the literal AC
+(catalogue matching) was never built and was judged infeasible for this surface. Not formally closed
+as a named "G-C" gate.
+
+**Roadmap corrected** (both RU+EN): Section 0 gets two new green flagboxes (G-B, G-C, worded to
+preserve the G-C nuance -- explicitly not "3/3" or "confirmed," since that would misstate what
+shipped); the top red flagbox's narrowed-open set shrinks from "G-C/G-B/G-E" to just "G-E"; Section
+6's sec-note and G-B/G-C table rows updated with pills distinguishing "confirmed" (G-B) from
+"hazard closed, not via literal AC" (G-C); Section 8 item 2 updated -- **G-E is now the only one of
+the five G-A..G-E gates with zero implementation evidence found**; G-A/B/C/D all have evidence and
+need only a formal named-gate GPT-PM verdict each, not further code remediation.
+
+**Next**: send this correction to GPT-PM (direct `gpt_send_and_await`, `reports/` exclusion as
+before), fix any real findings per §17, then either pursue formal named-gate closure for G-B/G-C
+(mirroring G-D's round-13 pattern) or investigate G-E next, per CLAUDE.md §18 (PM mode, continue).
+
+## 2026-08-30 — GPT-PM review of the G-B/G-C entry: real overclaim on G-C, missed G-E, regressed G-D wording
+
+GPT-PM's review of the G-B/G-C roadmap correction above returned `VERDICT: MAJOR`, 5 findings.
+Checked each against real code/git history before acting, per standing discipline.
+
+**MAJOR 1, CONFIRMED -- the most important one.** The submitted G-C correction claimed the F016
+hazard was "substantively closed." GPT-PM caught a logical error in that reasoning: rejecting
+catalogue-matching against the MACHINE's identity (correctly infeasible, since `MachineDescriber`
+only fires when the machine itself isn't in the catalogue) does not mean the EXERCISES named in
+`uses[]` can't be validated -- those are a different entity, and the audit's own concern was always
+about the exercise suggestions, not the machine. Verified directly: `machine_card_view.dart:86-89`
+-- `showUses = safety != null && !safety.blockedByAStatedAnswer && safety.injuries.isEmpty &&
+safety.health.restrictions.isEmpty`. `blockedByAStatedAnswer` (`eligibility.dart:263-264`) is
+`wholePersonBlocks.any((r) => !r.unanswered)` -- true only for an ANSWERED refusal, deliberately
+false for an unanswered screen (comment at `machine_card_view.dart:81-85` confirms this is
+intentional: "someone who has told us nothing has nothing to screen against"). Consequence,
+confirmed by reading the actual boolean logic, not assumed: an un-onboarded/"clear" user --
+answered nothing, a normal and common state -- gets `showUses == true` and sees AI-invented,
+unvalidated exercise suggestions with zero filtering. The re-verification pass proving `uses[]`
+never becomes an `ExerciseItem`/navigation target/logged session (`DECISION_LOG.md:12722-12791`) is
+real and does close a genuine, separate risk -- but F016's actual hazard (a human reading an
+invented, unvalidated suggestion and attempting it) needs no app-side action object to happen; a
+free-text bullet the user reads is sufficient. **Fixed**: rewrote the G-C correction end to end in
+both roadmap files -- no longer claims the hazard is closed; states precisely what's true (withheld
+only for users with a stated safety answer; open for un-onboarded/clear users); names concrete
+options to actually close it (validate the exercise names, not the machine; replace `uses[]` with
+non-prescriptive content; or an explicit reviewed risk-acceptance decision). Section 6's G-C pill
+changed from a green "closed" framing to `pill crit` "partial — hazard open for un-onboarded users."
+
+**MAJOR 2, CONFIRMED -- my own overclaim, not just an editorial gap.** The prior entry asserted
+"G-E is the only gate with zero implementation evidence" without ever having checked G-E this
+session. GPT-PM found real evidence I never looked for: `git log --oneline --all | grep -i G-E` ->
+`5ff9af3 fix(G-E): the programme generator stops inventing a programme`, confirmed ancestor of
+`origin/master`. `DECISION_LOG.md:12602-12718` ("G-E: the programme generator stops inventing a
+programme (F015 final, F021, F022)", 08-17): deleted `buildProgrammeSchedule`/`_fillDay` (the
+fallback that walked the catalogue and took whatever came first, producing zero primary-strength
+coverage for `shred_endurance` -- F021 -- and three shared yoga-only exercises across consecutive
+sessions -- F022), mutation-proven fixed for both, "F015 now fully FIXED." Confirmed in current
+code: `programme_providers.dart:210` calls `buildProgramme(...)`; no live definition or call site
+for `buildProgrammeSchedule` remains in `mobile/lib` (`grep` for an actual definition/call, not just
+doc-comment mentions, returned nothing). **Fixed**: added a full G-E flagbox to both roadmap files
+(implementation evidence found, mutation-proven, deployed, not formally closed as a named gate --
+same caveat as G-A/G-B), updated Section 6's G-E table row and sec-note, corrected the top red
+flagbox's framing (previously implied G-E was uniquely unverified; now accurate for all five gates).
+
+**MAJOR 3, CONFIRMED -- my own editing error.** Section 8 item 2's new wording grouped G-D into
+"all four (G-A/B/C/D) still need a formal named-gate GPT-PM verdict," directly contradicting the
+roadmap's own already-approved G-D closure (round 13, still on `origin/master`, untouched by this
+correction). **Fixed**: Section 8 item 2 rewritten to state G-D needs nothing further, and to
+correctly single out G-C as the one gate with genuine remaining code work (not just a missing
+verdict) -- G-A/B/E each need only their own already-accurate status (G-A: one item + verdict; G-B/
+E: verdict only).
+
+**MAJOR 4, evidence-completeness, same pattern as round 10-12.** Round 1 of this sub-thread sent
+only the EN raw diff plus a prose assertion that RU received "identical structural changes" --
+correctly rejected again, same as round 12's lesson. Both files' complete corrected diffs are sent
+together in the next round.
+
+**MINOR, CONFIRMED.** The G-B flagbox cited `a10ea17` as G-B deployment evidence; that commit is
+`test(F016): prove the model cannot name an exercise, rather than trusting G-C` -- it belongs to
+G-C's re-verification, not B1-B6. Fixed: removed from the G-B citation in both roadmap files
+(G-B's real evidence is `ff85df8`/`47499ee` only).
+
+**Not disputed**: the G-B 6/6 implementation claim itself and its file:line evidence held up
+unchanged in this review.
+
+**Next**: send the corrected EN+RU fragments (both, raw, not prose) to GPT-PM for the next round.
+
+## 2026-08-30 — GPT-PM round 16: G-C rationale conflated two different checks; G-E remaining-work wording dropped the strength-training review
+
+GPT-PM's round-16 review (sent via `review.js --scope-note-file`, since this session's direct
+message tool was unavailable -- see the transport note below) returned `VERDICT: MAJOR`, 2 findings,
+against the G-C/G-E correction two entries above. Both confirmed against real evidence before fixing.
+
+**MAJOR 1, CONFIRMED.** The G-C flagbox's "Options for actually closing it" line described
+exercise-level catalogue/alias validation of `uses[]` as "a different check than the one considered
+and rejected" -- true, but stated too casually: a reader skimming past the parenthetical could come
+away thinking exercise-level validation was ALSO already tried and found infeasible, when the 08-17
+rejection reasoning (`DECISION_LOG.md`, "G-C / F016" entry) was specifically about matching the
+MACHINE against the equipment catalogue -- it never addressed, attempted, or disproved anything about
+validating the EXERCISE NAMES inside `uses[]` against a catalogue or alias list. Those are different
+entities (the machine identity vs. the exercise suggestions), and conflating them risks a future
+implementer building yet another substitute mechanism instead of attempting the one thing F016
+actually specified. **Fixed** in both roadmap files: added an explicit sentence right after the 08-17
+rejection description stating plainly that the rejection reasoning is about machine-catalog matching
+and says nothing about exercise-name validation; rewrote the options list to state exercise-level
+catalogue/alias validation of `uses[]` is the closest match to F016's literal spec, was never
+attempted, and is not disproved by the machine-catalog reasoning above.
+
+**MAJOR 2, CONFIRMED.** Section 8 item 2 said "G-B and G-E have implementation evidence and are
+deployed, needing only a formal named-gate GPT-PM verdict, not further code" -- but Section 6's own
+G-E table row still lists "needs a strength-training reviewer" as part of what G-E requires, and no
+evidence was supplied anywhere in this correction round that such a review has actually happened.
+Grouping G-E with G-B under "only needs a verdict" would let a future session request G-E's formal
+closure without the domain review the roadmap itself still says is required -- a mutation-proven
+scheduler change is not the same thing as a training-design-validated one. **Fixed** in both roadmap
+files: Section 8 item 2 now separates G-B (implementation evidence, deployed, needs only the formal
+verdict) from G-E (no identified remaining CODE work, but formal closure needs both the stated
+strength-training review, still unevidenced, AND the named-gate GPT-PM verdict -- code evidence alone
+does not resolve the domain-review requirement).
+
+**Transport note**: this round could not use the normal `mcp__pm-bridge__gpt_send_and_await` tool --
+this session's in-process MCP client had loaded a stale pm-bridge build (a concurrent session's edit
+to `pm-bridge/src` desynced every running session, per the standing known limitation). Restarting the
+Gate-9 orchestrator daemon (`pm_bridge_restart`) fixed the daemon itself but not this session's own
+stale client, which explicitly refused to route ("Start a new session to pick up the change") to avoid
+misrouting content between projects. Worked around by invoking `review.js` directly via Bash as a
+fresh external process (loads current code from disk, unaffected by this session's stale in-memory
+state) with `--scope-note-file` carrying the full message (summary + both roadmap diffs), since
+`review.js`'s own `REVIEW_EXCLUDE` unconditionally excludes `reports/` from its `git diff` path. The
+`--uncommitted` scope's `untrackedFilesBlock()` still has no `reports/` filter (previously documented
+gap, not fixed -- pm-bridge/src is off-limits per standing rule), so several unrelated untracked
+`reports/*.html` files from earlier, unrelated sessions rode along in the auto-appended diff block;
+called this out explicitly in the scope note so GPT-PM would not score against it, and it didn't.
+
+**Next**: apply the narrow round-17 re-send GPT-PM asked for -- corrected EN+RU G-C rationale and
+corrected EN+RU G-E remaining-work wording (both done above) plus this DECISION_LOG entry. Per GPT-PM's
+own scoping instruction, no Firestore, G-B implementation, G-D, or unrelated roadmap section needs
+another substantive review this round.
