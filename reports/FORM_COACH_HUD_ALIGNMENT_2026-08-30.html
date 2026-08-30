@@ -1,0 +1,341 @@
+<title>Form Coach HUD Alignment</title>
+<style>
+  :root{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+      --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+      --accent:#4f8f1f; --accent-dim:#dff2c9;
+      --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+    --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+    --accent:#4f8f1f; --accent-dim:#dff2c9;
+    --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+  }
+  :root[data-theme="dark"]{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.55;}
+  .wrap{max-width:920px;margin:0 auto;padding:48px 24px 80px;}
+  header{border-bottom:1px solid var(--border);padding-bottom:28px;margin-bottom:8px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(28px,4vw,38px);font-weight:600;margin:0 0 12px;text-wrap:balance;letter-spacing:-.01em;}
+  .lede{color:var(--ink-dim);font-size:16px;max-width:64ch;margin:0;}
+  h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:20px;font-weight:600;margin:0 0 14px;letter-spacing:-.005em;}
+  h3{font-size:15px;font-weight:600;margin:0 0 6px;color:var(--ink);}
+  section{margin-top:44px;}
+  .pillrow{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0;}
+  .pill{font-family:var(--mono);font-size:12px;padding:6px 12px;border-radius:100px;border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px;color:var(--ink-dim);}
+  .pill b{color:var(--ink);font-weight:600;}
+  .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+  .dot.done{background:var(--accent);}
+  .dot.blocked{background:var(--block);}
+  .dot.info{background:var(--info);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px;}
+  .card + .card{margin-top:14px;}
+  .status{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px;margin-bottom:10px;}
+  .status.done{background:var(--accent-dim);color:var(--accent);}
+  .status.blocked{background:color-mix(in srgb, var(--block) 18%, transparent);color:var(--block);}
+  .status.info{background:color-mix(in srgb, var(--info) 16%, transparent);color:var(--info);}
+  p{margin:8px 0;color:var(--ink);}
+  .dim{color:var(--ink-dim);}
+  .muted{color:var(--ink-mute);font-size:13px;}
+  ul{margin:8px 0;padding-left:20px;}
+  li{margin:4px 0;}
+  code, .path{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;}
+  a{color:var(--info);text-decoration:none;border-bottom:1px solid color-mix(in srgb, var(--info) 40%, transparent);}
+  a:hover{border-bottom-color:var(--info);}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px;}
+  th{text-align:left;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-mute);font-weight:500;padding:0 10px 8px 0;border-bottom:1px solid var(--border);}
+  td{padding:9px 10px 9px 0;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tag{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:5px;white-space:nowrap;}
+  .tag.pass{background:var(--accent-dim);color:var(--accent);}
+  .tag.blocked{background:color-mix(in srgb, var(--block) 18%, transparent);color:var(--block);}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--ink-mute);font-size:13px;}
+  .copybtn{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--border);color:var(--ink-dim);padding:7px 14px;border-radius:8px;cursor:pointer;}
+  .copybtn:hover{color:var(--ink);border-color:var(--ink-mute);}
+  .copybtn.copied{color:var(--accent);border-color:var(--accent-dim);}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App &middot; gate report</p>
+  <h1>Form Coach HUD background, Library default, Figma comparison</h1>
+  <p class="lede">Gate <code>FORM_COACH_HUD_ALIGNMENT</code> is closed and verified on a physical device. Plus: the Workouts tab's default sub-tab was changed, a real bug in the release build script was found and fixed, and an honest status against the operator's "finish the redesign 1:1 with GPT confirmation" requirement — partly done, partly blocked.</p>
+  <div class="pillrow">
+    <span class="pill"><span class="dot done"></span>HUD gate: <b>closed, 1 open tail</b></span>
+    <span class="pill"><span class="dot done"></span>Library default: <b>done</b></span>
+    <span class="pill"><span class="dot done"></span>Tests: <b>523/525</b></span>
+    <span class="pill"><span class="dot done"></span>GPT-review (4 rounds): <b>APPROVE</b></span>
+    <span class="pill"><span class="dot blocked"></span>Design questions to GPT-PM: <b>blocked</b></span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 125b679</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<section>
+  <h2>1. Gate FORM_COACH_HUD_ALIGNMENT — closed, with one open tail</h2>
+  <div class="card">
+    <span class="status done">Done</span>
+    <p>The intro/camera-readiness card (<code>coach_intro_cards.dart</code>) and the exercise-picker chips (<code>ChoiceChip</code> → the app's own <code>HudChip</code>) got their <code>HudSkyBackground</code> in this window's first pass. Both are standalone routes/widgets above <code>MainShell</code>, so neither inherits the shell's background, and <code>FrostedScaffold</code> is transparent by design, expecting one.</p>
+    <p><strong>That first pass was incomplete, and I didn't find it myself</strong> — a real GPT-PM review round on the commit (section 5) caught that <code>FormCheckPage.build()</code> returns its own <code>FrostedScaffold</code> directly for every phase past preparation (live camera and the set summary), and that branch got no background at all. Wrapped the same way; see section 5 for the full round-by-round history.</p>
+    <p class="dim">DoD set by GPT-PM: physical-S23 verification of all 4 states. <strong>Met for launch/preparation/live; not met for the summary state</strong> — see the explicit tail below.</p>
+  </div>
+  <div class="card">
+    <span class="status info">Open tail: the set-summary screen was not verified on a live camera</span>
+    <p>Reaching <code>CoachPhase.summary</code> organically requires passing the quality gate with a real body in frame, then tapping "finish set" — which needs a person physically at the device, unavailable in this remote/automated session. The background claim for that state rests on different evidence instead: the same <code>HudSkyBackground</code> wraps ONE shared <code>FrostedScaffold</code> for both the live and summary branches (not two separate code paths), plus a passing widget-level regression test targeting <code>CoachPhase.summary</code> specifically. GPT-PM agreed this isn't a review blocker, but insisted it stay visible as an open gate item rather than be quietly closed — so it stays here.</p>
+  </div>
+  <div class="card">
+    <h3>Side episode: a false-alarm "dead" button</h3>
+    <p class="dim">The Launch card's "Начать" button appeared unresponsive under <code>adb shell input tap</code> for a while — spent ~15 tap attempts and three layers of diagnostics (Listeners at multiple tree depths, RenderBox geometry measurement, a hand-written PNG pixel scanner since Pillow isn't installed here) before a precise measurement proved there was no bug: I had simply been misreading the button's Y coordinate from the small screenshot thumbnail by ~500 native pixels (true Y ≈ 2050, not ≈ 1400) — consistently, on every attempt. Once confirmed, all diagnostic code was removed and the conclusion corrected in-conversation immediately, not after the fact. <strong>The same class of mistake recurred later the same window</strong> on the preparation card's own button (~580px off) — fixed faster that time, via <code>adb shell uiautomator dump</code> instead of another guess from the screenshot thumbnail.</p>
+  </div>
+</section>
+
+<section>
+  <h2>5. GPT-PM commit review — 4 rounds to APPROVE</h2>
+  <p class="dim">The mandatory gate (global CLAUDE.md §15): every commit goes to an independent review via <code>review.js</code> before it may be committed/pushed.</p>
+  <div class="card">
+    <span class="status blocked">Round 1 — VERDICT: MAJOR</span>
+    <p>3 real defects: (1) the background didn't cover Form Coach's live/summary phases — section 1; (2) the <code>build_release.ps1</code> fix treated ANY non-zero <code>git diff --quiet</code> exit code as "dirty tree", when anything other than 0/1 means the comparison itself never ran — it now throws instead of silently shipping an unverified build; (3) swapping <code>ChoiceChip</code> for <code>HudChip(onTap: null)</code> dropped the chip out of the "button" semantic role entirely instead of marking it disabled for a screen reader.</p>
+  </div>
+  <div class="card">
+    <span class="status blocked">Round 2 — VERDICT: MAJOR</span>
+    <p>The production code for all three items was confirmed fixed, but: the decision log still claimed "the only screen" and "all 4 states verified" before that was actually true; the build script had no deterministic proof (only "two builds succeeded"); and the HudChip fix itself introduced a NEW regression — <code>enabled</code> defaulting to <code>true</code> silently turned every existing decorative chip with no <code>onTap</code> (in <code>hud_golden_test.dart</code>/<code>hud_components_test.dart</code>) into an "enabled button" that does nothing when activated.</p>
+  </div>
+  <div class="card">
+    <span class="status info">Round 3 — VERDICT: MINOR</span>
+    <p>3 of 4 findings closed: the decision log entry was explicitly corrected (not silently rewritten) with an honest summary-phase status; a deterministic test harness was added for the build script (<code>build_release_gitcheck.tests.ps1</code>, no real git process); <code>HudChip.enabled</code> became three-valued (<code>bool?</code>) — interactive / explicitly disabled / plain neutral, old behaviour preserved. The separate finding about 13 unrelated untracked files in <code>reports/</code> was accepted as resolved: those are someone else's files from unrelated prior work in this shared repo; <code>review.js --uncommitted</code> scans them by its own coverage design, but the actual <code>git add</code>/<code>git commit</code> for this gate names files explicitly and never includes them. One MINOR remained: a single shared test covering all three <code>HudChip</code> states, not just the Form Coach case.</p>
+  </div>
+  <div class="card">
+    <span class="status done">Round 4 — VERDICT: APPROVE (final)</span>
+    <p>Added the shared test in <code>hud_components_test.dart</code> — all three states (<code>onTap</code> set / explicitly disabled / plain neutral), asserting <code>isButton</code>/<code>hasEnabledState</code>/<code>isEnabled</code> directly. 78/78 green. GPT-PM: "GO: APPROVED", "PUSH: AUTHORIZED under the current Gate policy" — explicitly noting the summary tail as an open gate item, not a defect in this round. Per global CLAUDE.md §20, this genuine APPROVE is what authorizes the commit and push below, not a separate operator GO.</p>
+  </div>
+</section>
+
+<section>
+  <h2>2. "Library" as the Workouts tab's default</h2>
+  <div class="card">
+    <span class="status done">Done, on direct instruction</span>
+    <p>Direct operator instruction this window: "the Library should be the default on Workouts." Changed the initial <code>_subTab</code> in <code>workouts_page.dart</code> from <code>programs</code> to <code>library</code>.</p>
+    <p>Verified on-device: the Workouts tab now opens directly on the highlighted "Library" segment, zero taps.</p>
+    <table>
+      <tr><th>File</th><th>What broke</th><th>Fix</th><th>Result</th></tr>
+      <tr>
+        <td class="path">workouts_page_test.dart</td>
+        <td>19 tests assumed the old "Programs" default</td>
+        <td>background agent: explicit tap onto "Programs" wherever a test actually exercises that tab's content</td>
+        <td><span class="tag pass">verified by me, 41/41</span></td>
+      </tr>
+      <tr>
+        <td class="path">programme_card_chip_overflow_test.dart</td>
+        <td>1 test, same default</td>
+        <td>same pattern (shared <code>_pumpPrograms</code> helper)</td>
+        <td><span class="tag pass">3/3</span></td>
+      </tr>
+      <tr>
+        <td class="path">programme_card_hue_test.dart</td>
+        <td>1 test, same default</td>
+        <td>same pattern, inline</td>
+        <td><span class="tag pass">2/2</span></td>
+      </tr>
+      <tr>
+        <td class="path">composed_screen_golden_test.dart</td>
+        <td>"Programs tab" golden group (light/dark) — the agent flagged but deliberately left this one</td>
+        <td>fixed by me, same pattern: explicit tap before each <code>expectLater</code></td>
+        <td><span class="tag pass">pixel-identical to baseline</span></td>
+      </tr>
+    </table>
+    <p class="muted">Separately, out of this change's scope: the "Home (composed) light/dark" golden fails at 0.64%/0.59%, both before and after — a <code>DateTime.now()</code>-dependent artifact (greeting text and weekday-abbreviation labels), confirmed via the isolated diff image. Not a regression from this work, not fixed.</p>
+  </div>
+</section>
+
+<section>
+  <h2>3. A real bug in build_release.ps1</h2>
+  <div class="card">
+    <span class="status done">Fixed, found incidentally</span>
+    <p>The release build silently failed three times this window (exit code 0, no APK produced) across different files. Root cause: this environment runs Windows PowerShell 5.1, where a native command's stderr line becomes a terminating error under <code>$ErrorActionPreference = 'Stop'</code> independent of <code>2>$null</code> (which hides the displayed text, not the underlying error record). <code>git diff --quiet HEAD</code> exists purely for its exit code (1 = dirty tree, normal control flow) — but git occasionally also writes an unrelated autocrlf advisory to stderr for whichever file it last touched, which was enough to abort the whole script before <code>$LASTEXITCODE</code> was ever read.</p>
+    <p>A first fix attempt (<code>$PSNativeCommandUseErrorActionPreference = $false</code>) was wrong — that variable is PowerShell 7.3+ only and a no-op on 5.1; caught by re-testing (failed identically), reverted. Correct fix: locally scope <code>$ErrorActionPreference = 'Continue'</code> around just the one <code>git diff --quiet</code> call, saving and restoring the prior value — the script's global <code>'Stop'</code> is untouched for everything else. Verified across 2 subsequent clean builds, including versionCode 2874 printing the dirty-tree warning correctly instead of dying silently.</p>
+  </div>
+</section>
+
+<section>
+  <h2>4. Dark-theme vs. Figma comparison — partly done, partly blocked</h2>
+  <p class="dim">Operator requirement: "don't stop without comparative tests of the phone in dark theme vs. Figma design matching 1:1; finish the entire redesign completely, with GPT confirmation via screenshots."</p>
+  <div class="card">
+    <span class="status done">Bottom-nav structure — confirmed matching</span>
+    <p>5 equal tabs, order Home&middot;Workouts&middot;Scan&middot;Progress&middot;Profile, dot-selection indicator, photographic background — checked against the prototype frames (<code>docs/Redisign/reference/prototype/p_162.jpg</code> and neighbors) and against the project's own history in <code>DECISION_LOG.md</code>: the raised-Scan-circle-at-position-2/solid-dark-card variant belongs to a stale, already-superseded <code>GlassNavBar</code> branch — not a current target.</p>
+  </div>
+  <div class="card">
+    <span class="status info">New finding — Home screen's week strip</span>
+    <p>In the reference, "this week" is a row of solid colored day-squares (green = completed, gray = not done, outlined = today) — a prominent visual element. In the current app it renders as barely-visible dots. This isn't explained by the test account's empty/no-active-programme state (which does explain other missing elements — the progress bar, muscle-recovery pills, photo-comparison card) — it's an independent style discrepancy.</p>
+  </div>
+  <div class="card">
+    <span class="status blocked">Blocked — design questions to GPT-PM, separate from commit review</span>
+    <p>Both the week-strip finding above and the earlier-deferred nav-icon question (Finding #4, status <code>REFERENCE_BLOCKED_DEFERRED</code>) are PRODUCT/design questions for GPT-PM (via <code>gpt_send_and_await</code>) — a separate channel from the mandatory commit-review gate (section 5, which worked fine via <code>review.js</code>). The questions channel failed twice in a row: first because the PM Bridge daemon was running stale code (restarted via <code>pm_bridge_mode_off</code>/<code>on</code>, new pid 15436); second, per <code>pm_bridge_mode_status</code>, for a different reason — this session's own MCP client connection is stale relative to the freshly restarted daemon, which per the tool's own status text cannot be fixed by restarting the daemon again — it requires a new Claude Code session. <code>pm_bridge_restart</code> was deliberately not used (it's documented for a hung/dead browser, not per-session client staleness, and disrupts every concurrent session).</p>
+    <p class="muted">Form Coach itself falls outside the prototype reference set's coverage (its README explicitly lists Scanner/Exercise/Player/Rest Timer/Technique Coach/Progress/Photos/Paywall as not captured) — its "Figma parity" claim is therefore limited to internal consistency with the app's own HUD language, not a frame-for-frame match.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Overall status</h2>
+  <table>
+    <tr><th>Item</th><th>DoD</th><th>Status</th><th>Tail</th></tr>
+    <tr>
+      <td>Gate FORM_COACH_HUD_ALIGNMENT</td>
+      <td>S23 verification of all 4 states, clean analyze</td>
+      <td><span class="tag pass">partial</span></td>
+      <td>launch/preparation/live physically verified; summary is code+widget-test only, no live camera (needs a person at the device)</td>
+    </tr>
+    <tr>
+      <td>"Library" default</td>
+      <td>Opens with zero taps, tests green</td>
+      <td><span class="tag pass">done</span></td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>GPT-PM commit review (§15)</td>
+      <td>VERDICT: APPROVE before push</td>
+      <td><span class="tag pass">done</span></td>
+      <td>4 rounds; see section 5</td>
+    </tr>
+    <tr>
+      <td>Dark-theme vs. Figma comparison</td>
+      <td>1:1 across visible screens</td>
+      <td><span class="tag pass">partial</span></td>
+      <td>Home/Workouts checked; 1 new finding (week strip); Profile/Progress not freshly captured this window</td>
+    </tr>
+    <tr>
+      <td>Design questions to GPT-PM (icons, week strip)</td>
+      <td>A GPT-PM reply on the fresh findings</td>
+      <td><span class="tag blocked">blocked</span></td>
+      <td>Needs a fresh Claude Code session — this session's MCP client connection is stale relative to the daemon</td>
+    </tr>
+  </table>
+</section>
+
+<footer>
+  <button class="copybtn" onclick="copyPage(this)">Copy full report text</button>
+</footer>
+</div>
+
+<script>
+function copyPage(btn){
+  const text = document.querySelector('.wrap').innerText;
+  const done = () => { btn.textContent = 'Copied'; btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy full report text'; btn.classList.remove('copied');}, 1800); };
+  const fail = () => { btn.textContent = 'Copy failed'; setTimeout(()=>{btn.textContent='Copy full report text';}, 1800); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => {
+      try { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); } catch(e){ fail(); }
+    });
+  } else {
+    try { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); } catch(e){ fail(); }
+  }
+}
+</script>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

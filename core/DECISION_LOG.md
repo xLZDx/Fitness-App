@@ -34953,3 +34953,267 @@ from before the `.sptr` package rename that no current build process touches.
 Pushed `9dc8660` and the report-update commit to `origin/master` -- both went through the repo-wide
 GPT-review gate (`gpt_review_gate.py`) cleanly on attempt, consistent with its documented fail-open
 behavior.
+
+---
+
+## 2026-08-30 01:15 local / 22:15 UTC (2026-08-29) -- GPT-PM decision on findings #4 and #6; FORM_COACH_HUD_ALIGNMENT gate opened
+
+PM Bridge orchestrator mode is ON for this session -- per the operator's own §18 instruction, a report
+is a checkpoint, not a stop, so the program continues rather than waiting on the operator here.
+Findings #4 (nav icons) and #6 (Тренер по технике HUD gap) were the two items deliberately left open in
+the prior entry. Per §16, routed both to GPT-PM (`gpt_send_and_await`, project `Fitness_App`) instead of
+stalling on the operator's still-unanswered "do you have a Figma reference?" question.
+
+**GPT-PM verdict, verbatim substance:**
+- **#4 (nav icons): APPROVE (c)** -- keep the current stock Material icons for now, classified
+  `REFERENCE_BLOCKED_DEFERRED`, not "accepted final design." Explicitly rejected designing 5 bespoke
+  icons blind (option b) as "exactly the kind of subjective change that can consume time and still leave
+  the operator saying they are wrong." Reopens when the operator supplies a reference, or a deliberate
+  icon-design exercise is separately authorized.
+- **#6 (Тренер по технике): APPROVE (a)**, scoped as a new gate `FORM_COACH_HUD_ALIGNMENT`, explicitly
+  NOT a reopening of the already-closed `HUD_MIGRATION` gate. One MAJOR guardrail: do not treat this as
+  a mechanical old-card-to-HudPanel replacement -- the 4 screens split into plain content surfaces
+  (intro, camera-readiness checklist, exercise picker) and camera/avatar/photo surfaces (the live coach
+  view) that need different treatment; a translucent panel correct on an app-owned HUD background can be
+  wrong over live camera or photographic content. Bound the gate to visual alignment only -- explicitly
+  OUT of scope: pose detection/model behavior, coordinate normalization, mirror wiring, avatar landmark
+  projection, camera lifecycle, rep counting, the backdrop-photo concept itself. DoD requires physical
+  S23 verification of all 4 states (not widget tests alone), before/after screenshots, `flutter analyze`
+  clean, and any remaining visual exception explicitly documented rather than left as an accidental
+  leftover.
+
+`GO: AUTHORIZED`, `PUSH: AUTHORIZED under the current Gate policy` -- both read and accepted per §3/§7
+(a specific, evidenced, scoped verdict referencing real repo structure, not a rubber stamp). Gate opened
+via `pm_set_gate(project: "fitness_app", gate_id: "FORM_COACH_HUD_ALIGNMENT", status: "in-progress")`.
+
+---
+
+## 2026-08-30 02:15 local / 23:15 UTC (2026-08-29) -- FORM_COACH_HUD_ALIGNMENT built and verified on-device; Library-default change; build script bug fixed; dark-theme/Figma comparison partially blocked
+
+**FORM_COACH_HUD_ALIGNMENT (opened in the entry above) -- implementation and on-device verification.**
+`coach_intro_cards.dart`'s `_CoachCardScaffold` was the only piece of the 4-screen Form Coach flow
+missing its own `HudSkyBackground`: it is a full-screen route pushed above `MainShell` (like onboarding
+and Session), so it does not inherit the shell's background, and `FrostedScaffold` is transparent by
+design expecting one. Wrapped `body:` in `HudSkyBackground` + `HudSkySelection(phase: HudSkyPhase.forTime(...))`,
+matching onboarding's own pattern (`onboarding_page.dart:187-192`). `form_check_page.dart`'s
+`_ExercisePicker` `ChoiceChip` usages were replaced with `HudChip` (this half was already in place from
+earlier in the session; re-verified live this window).
+
+Diagnosis of the change hit a real self-inflicted detour: a "Начать" button that looked unresponsive
+under `adb shell input tap` was investigated for ~15 tap attempts as a possible Flutter hit-testing bug
+(multiple `Listener` layers, `debugPrint`, RenderBox geometry logging, a hand-written PNG pixel scanner
+since PIL isn't installed here) before the ground-truth pixel scan proved there was no bug at all -- the
+button's true native-pixel Y was ~2050, and I had been reading it as ~1400 from the small Read-tool
+thumbnail rendering every single time, off by roughly 20% of screen height. Corrected in-session per
+CLAUDE.md sections 2/3 rather than left standing ("Нашёл ошибку -- она была в моих собственных
+координатах, а не в приложении"). All diagnostic instrumentation was fully removed before commit;
+`git diff --stat` on the file matches only the intended HudSkyBackground wrap (60 changed lines,
+`grep -n "DIAG"` empty).
+
+On-device verification (physical S23, release build, all 4 screens): intro card and camera-readiness
+checklist now render over the photographic sky background instead of the flat theme colour; exercise
+picker's chips render as `HudChip` (green-selected "Присед", dimmed disabled entries with
+"Пока не разобрано" suffix); "Начать" and the Preparation footer button both respond correctly once
+the real coordinates were used. `flutter analyze`: clean.
+
+**Second, separate change -- Library-default on Workouts, direct operator instruction (2026-08-30
+local time, mid-window): "и библиотека должна быть дефолт на тренировках".** `workouts_page.dart`'s
+`_subTab` initial value changed from `_WorkoutsSubTab.programs` to `_WorkoutsSubTab.library` --
+supersedes an earlier-session comment that had cited the prototype opening on "programs"; the operator's
+direct instruction here controls. This broke 21 existing tests that assumed the old default (most of
+`workouts_page_test.dart`, plus one each in `programme_card_chip_overflow_test.dart` and
+`programme_card_hue_test.dart`) -- delegated the mechanical repair (add an explicit tap onto "Programs"/
+"Программы" wherever a test actually exercises Programs-tab content) to a background subagent with the
+exact list of affected/unaffected tests and the fix pattern; verified its output rather than trusting
+the self-report (51/51 passed across the 3 touched test files, re-run directly). The subagent correctly
+flagged but declined to touch `test/golden/composed_screen_golden_test.dart`'s
+"Workouts (composed, Programs tab)" group (a golden-image test, outside a "add one tap" mechanical
+fix) -- fixed that one myself the same way (explicit tap onto "Programs" before each light/dark
+expectLater); both pass pixel-identical against the pre-existing baseline once navigated there. The
+pre-existing, unrelated "Home (composed) light/dark" golden failures (0.64%/0.59%, a DateTime.now()-
+dependent greeting/weekday-label artifact, confirmed via the isolated diff image) are untouched --
+out of scope for this change, not a regression from it.
+
+Verified on-device: Тренировки tab now opens directly on the highlighted "Библиотека" segment with zero
+taps.
+
+**Real infrastructure bug found and fixed in `scripts/dev/build_release.ps1`**, hit 3 times this window
+across builds for different files before being root-caused: this environment runs Windows PowerShell
+5.1 (confirmed via $PSVersionTable.PSVersion), where a native command's stderr line becomes a
+terminating error under $ErrorActionPreference = 'Stop' independently of 2>$null (which redirects
+the displayed text, not the error record). git diff --quiet HEAD's entire contract is its exit code
+(1 = dirty tree, normal control flow) -- but git occasionally also writes an unrelated autocrlf advisory
+to stderr for whichever file it last touched, which was enough to silently abort the whole script before
+$LASTEXITCODE was ever read, with no APK produced and exit code 0 reported outward. A first attempted
+fix ($PSNativeCommandUseErrorActionPreference = $false) was wrong -- that variable is PowerShell-7.3+
+only and is a no-op on 5.1; caught by re-testing (identical silent failure after the "fix"), reverted.
+Correct fix: locally scope $ErrorActionPreference = 'Continue' around just the one git diff --quiet
+call (save/restore the previous value), leaving the script's global 'Stop' untouched for everything
+that should actually abort a build. Verified via 2 subsequent clean builds, including one producing
+versionCode 2874 with the dirty-tree warning printing correctly instead of the script dying silently.
+
+**Dark-theme vs. Figma comparison (operator instruction, same window: "без сравнительных тестов
+телефона на темной схеме и фигма дезайна один в один не остонавливаться доделать весь редезайн до конца
+с подтверждением гпт по скриншотам") -- partially completed, one part genuinely blocked.**
+Took fresh dark-theme screenshots of Home and Workouts on the final combined build (coach HUD fix +
+Library-default + golden fix + build-script fix, versionCode 2874) and compared them against the
+Figma-Make prototype reference frames (docs/Redisign/reference/prototype/, specifically p_162.jpg
+for Home). Nav-bar structure (5 equal tabs, order Home-Workouts-Scan-Progress-Profile, dot-selection,
+photographic background) was already independently verified correct against this same reference material
+earlier in the session, cross-checked against DECISION_LOG.md's own prior finding that the
+raised-Scan-circle/2nd-position/solid-card variant belongs to a stale, superseded GlassNavBar branch
+(dead code), not a currently-valid target.
+
+One new, concrete, non-data-dependent discrepancy found this window: the "week strip" element (7-day
+row under "This week"/"За неделю") renders in the Figma reference as a row of solid colored day-squares
+(green = completed, gray = not done, outlined = today) -- a prominent visual element -- but renders in
+the current app as small, barely-visible dots. This is a genuine style gap, not explained by the test
+account's empty/no-active-programme state (which does explain several OTHER missing elements on the
+screenshot -- the progress bar, muscle-recovery pills, photo-comparison card -- that only appear once a
+programme is active and cannot be fairly judged without one).
+
+Both this week-strip finding and the earlier-deferred nav-icon question (Finding #4, REFERENCE_
+BLOCKED_DEFERRED) were queued for re-raising to GPT-PM now that real reference frames are in hand --
+**blocked**: gpt_send_and_await failed twice. First failure ("No compatible orchestrator is active")
+was the daemon itself running stale code, fixed by pm_bridge_mode_off/pm_bridge_mode_on (new pid
+15436). Second, identical-looking failure was a different cause per pm_bridge_mode_status: THIS
+session's own MCP client connection is stale relative to the freshly-restarted daemon, and the tool's
+own status text states this specific case is not fixable by restarting the daemon again -- "Start a new
+session to pick up the change." Did not attempt pm_bridge_restart (documented for a wedged/dead
+browser, not per-session client staleness, and disrupts every concurrent session) or any other
+workaround, per the standing instruction to never route around a blocking mechanism. Both the week-strip
+finding and the icon re-raise remain open, reported honestly as blocked on GPT-PM reachability rather
+than silently dropped or resolved unilaterally.
+
+Form Coach itself is explicitly outside the prototype reference set's own coverage (its README lists
+Scanner/Exercise page/Workout Player/Rest Timer/Technique Coach/Progress/Progress Photos/Paywall as
+not captured) -- its "Figma parity" claim is therefore necessarily limited to internal consistency with
+the app's own established HUD language (which the on-device verification above confirms), not a literal
+frame-for-frame match, and is reported as such rather than overclaimed.
+
+**Status**: FORM_COACH_HUD_ALIGNMENT's own DoD (physical S23 verification of all 4 states, before/after
+comparison, flutter analyze clean) is met. The broader "GPT confirmation via screenshots" and
+"complete redesign to 1:1 Figma parity" requirement from the operator's second instruction this window
+is NOT fully met: the nav-icon and week-strip questions are open, GPT-PM confirmation could not be
+obtained from this session, and this is reported as an explicit blocker rather than as completion.
+
+---
+
+## 2026-08-30 03:10 local / 00:10 UTC -- GPT review rounds 1-2 on FORM_COACH_HUD_ALIGNMENT: a real defect caught, remediated, re-verified on-device
+
+**Correction to the entry above ("FORM_COACH_HUD_ALIGNMENT built and verified on-device")**: that
+entry's claim that `_CoachCardScaffold` "was the only piece of the 4-screen Form Coach flow missing
+its own HudSkyBackground" was WRONG, and the DoD was NOT actually met at the time it was written.
+Recorded here rather than silently edited away, per CLAUDE.md 2/3.
+
+Sent the gate's diff to GPT-PM review (`node pm-bridge/src/cli/review.js --uncommitted`) before
+committing, per the standing mandatory review gate. Round 1 returned `VERDICT: MAJOR` with a real,
+evidence-backed finding: `FormCheckPage.build()` (`form_check_page.dart:320`, pre-fix) returns
+`FrostedScaffold` directly for every phase past `preparation` -- `qualityCheck`/`calibration`/
+`ready`/`active`/`paused`/`summary` -- and `/form-check` is a root `GoRoute` registered before
+`ShellRoute` (`app_router.dart:399-402`), so nothing upstream supplies a sky for those phases
+either. The earlier pass had wrapped only the intro/preparation cards
+(`coach_intro_cards.dart`). Verified the finding myself against the real file before accepting it
+(CLAUDE.md 3/7) -- confirmed exactly as described.
+
+Round 1 also caught two more real issues: (a) `build_release.ps1`'s new dirty-tree stamping treated
+EVERY non-zero `git diff --quiet` exit code as "dirty" rather than distinguishing 1 (dirty, expected)
+from anything else (a genuine git failure, e.g. 128) -- silently converting an unverifiable working-tree
+state into a shipped, distributed build; and (b) a MINOR accessibility regression in the `HudChip` swap:
+`onTap: null` alone drops a chip out of the semantic button role entirely rather than reading as a
+disabled control.
+
+**Remediation (this entry):**
+- `form_check_page.dart`: wrapped the live/summary branch's own `FrostedScaffold` in
+  `HudSkyBackground`, same pattern as the intro cards. The camera preview box itself already owns its
+  own backdrop (`Colors.black.withValues(alpha: 0.85)`) and needed no change -- only the surrounding
+  content cards (banner, upgrade card, exercise picker, set-summary card) were sitting on flat colour.
+- Added `test/features/form_check/coach_hud_sky_test.dart`: one regression test per phase (launch,
+  preparation, live, summary) asserting `HudSkyBackground` is present, plus one semantics test for the
+  disabled-chip case. Confirmed each test actually fails against the pre-fix code (`git stash` the two
+  changed lib files, re-run -- 2 of 5 failed exactly as expected) before trusting them as real
+  regression coverage, not vacuous assertions.
+- `build_release.ps1`: split the dirty-stamp decision into a standalone function `Get-GitDirtyStamp`
+  (moved to `build_release_gitcheck.ps1` so it can be dot-sourced without touching git/Flutter/Firebase)
+  -- 0 = clean, 1 = dirty (stamps `-dirty`), anything else throws rather than shipping an unverified
+  build. Added `build_release_gitcheck.tests.ps1`, a small dependency-free harness (no Pester in this
+  repo) proving all three branches deterministically with no real git process involved. Ran it:
+  `ALL PASSED: Get-GitDirtyStamp -- 0 (clean), 1 (dirty), 128 and 2 (throws)`. Then ran the real
+  `build_release.ps1` end-to-end once more to confirm the refactor didn't break the actual build path --
+  succeeded, `WARNING: working tree is dirty -- stamping 125b679-dirty`, versionCode 2874.
+- `hud_surface.dart`'s `HudChip`: changed `enabled` from a plain `bool` (default `true`, which round 2
+  caught as ANOTHER regression -- it silently turned every existing decorative `HudChip(onTap: null)`
+  in `hud_golden_test.dart`/`hud_components_test.dart` into a screen-reader "enabled button" that does
+  nothing) to `bool?` (default `null`) with explicit three-state semantics: interactive (`onTap` set) →
+  button; `onTap: null` + `enabled: false` → disabled button (the exercise-picker case); `onTap: null`
+  + `enabled` left `null` → the original plain non-button behaviour, unchanged. Re-ran
+  `hud_components_test.dart` and `hud_golden_test.dart` after the fix -- both green, confirming the old
+  call sites are untouched.
+
+**Verification after remediation:**
+- `flutter analyze` on every touched file: clean.
+- `flutter test` on `test/features/form_check/`, `test/features/workouts_page_test.dart`,
+  `programme_card_chip_overflow_test.dart`, `programme_card_hue_test.dart`,
+  `composed_screen_golden_test.dart`: 445/447 passed -- the 2 failures are the pre-existing,
+  already-documented `Home (composed) light/dark` `DateTime.now()`-dependent golden artifact, unrelated
+  to this gate.
+- Physical S23, fresh install of the corrected build (versionCode 2874): re-walked launch ->
+  preparation -> live. The live phase now visibly shows the volcano/sky background behind the
+  experimental banner, the "доступен покровителям" upgrade card, and the exercise-picker chips
+  (previously flat) -- screenshot evidence saved this session. The disabled chips
+  ("Отжимание/Становая · Пока не разобрано") render visibly dimmed, matching the `enabled: false` fix.
+  **Summary phase was NOT re-verified on a live camera this round**: reaching it organically requires
+  the quality/calibration gate to pass against a real body in frame, which needs a person physically at
+  the device -- unavailable in this remote/automated session (the device sat idle in front of no
+  subject). Summary's background-continuity claim rests on (a) the same `HudSkyBackground` wrap covering
+  both ternary branches of one shared `FrostedScaffold` -- not a separate code path -- and (b) the
+  passing `coach_hud_sky_test.dart` widget test for `CoachPhase.summary`, not a live camera session.
+  Recorded as an open tail rather than folded into "verified", per CLAUDE.md 5's evidence standard.
+- Re-sent the diff for a round-2 GPT review; verdict, remaining findings (the 13 unrelated untracked
+  report files scope concern, and confirmation that the substantive fixes are now correct) recorded in
+  the next entry once round 2/3 concludes.
+
+---
+
+## 2026-08-30 03:15 local / 00:15 UTC -- GPT-PM review rounds 3-4: all findings closed, VERDICT: APPROVE
+
+Round 3 (scoped to the 4 round-2 findings, `--scope-note-file` given the explicit file-list/`git
+status` evidence for the "13 unrelated reports" concern): 3 of 4 MAJORs closed outright --
+Live-phase physical re-verification + honest correction of the earlier false claim accepted;
+`Get-GitDirtyStamp` + its deterministic harness accepted as sufficient proof; the 13 untracked
+report files accepted as correctly excluded from this gate's actual `git add`/`git commit` (GPT-PM's
+own words: "I do not require deleting, stashing, or modifying another session's untracked material
+merely to make review.js --uncommitted prettier"). One MINOR remained: the HudChip three-state fix
+was correct in production code, but round 2's own request for a *shared* semantics test covering all
+three states in one place (not just the Form Coach single-case test) was not yet done.
+
+Added `test/shared/widgets/hud/hud_components_test.dart`'s `'enabled has three states, not two...'`
+test: interactive (`onTap` set) -> button, no enabled-state; `onTap: null` + `enabled: false` ->
+disabled button; `onTap: null` + `enabled` left `null` -> plain non-button (asserted via
+`SemanticsFlag.isButton`/`hasEnabledState`/`isEnabled` directly, not visual inference). Ran it plus
+`hud_golden_test.dart`: 78/78 passed.
+
+Round 4 (`--final`, scope note limited to exactly this one closure): `VERDICT: APPROVE`. No scoped
+BLOCKER/MAJOR/MINOR. `GO: APPROVED -- scoped remediation complete.` `PUSH: AUTHORIZED under the
+current Gate policy.` Explicitly out-of-scope-but-noted: physical S23 verification of the Form Coach
+**summary** phase remains an open, disclosed acceptance tail (code-path + widget-test evidence only,
+no live-camera confirmation this gate) -- GPT-PM's own words: "This should remain visible in gate
+state until a person is available to exercise Summary on-device, but it is not a defect in this
+round-4 remediation." Recorded here as the FORM_COACH_HUD_ALIGNMENT gate's one remaining open item,
+not silently closed.
+
+Per `~/.claude/CLAUDE.md` §20 (2026-08-29, GPT-PM APPROVE authorizes reversible actions including
+push, in place of the operator's own separate word): this genuine, correlated APPROVE (verified per
+§3/§7 -- the verdict references real repo evidence: exact test names, pass counts, file states, not
+a rubber stamp) is what authorizes the commit and push that follow this entry, not an independent
+operator GO. Stated plainly per §16's reporting discipline.
+
+**Full round-by-round summary for this gate's commit:**
+- Round 1: 3 MAJOR (background gap in live/summary, build-script exit-code over-broadening, HudChip
+  semantics loss) + 1 MINOR-turned-MAJOR-context (13 unrelated reports flagged).
+- Round 2: production fixes verified correct; HudChip's OWN fix introduced a new regression (caught
+  before it shipped); build-script fix needed a real proof harness, not "it built twice"; the
+  false/premature verification claim in the previous DECISION_LOG entry needed an explicit
+  correction, not a silent edit.
+- Round 3: all 3 MAJORs closed; 1 MINOR (shared semantics test) remained.
+- Round 4: MINOR closed. `VERDICT: APPROVE`, final.

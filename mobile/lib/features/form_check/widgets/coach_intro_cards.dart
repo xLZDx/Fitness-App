@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/background/hud_sky.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../shared/widgets/app_buttons.dart';
 import '../../../shared/widgets/glass.dart';
@@ -42,30 +43,45 @@ class _CoachCardScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return FrostedScaffold(
-      appBar: GlassAppBar(
-        title: l10n.formcheckFormCoach,
-        leading: onBack == null
-            ? null
-            : AppIconButton(
-                icon: Icons.arrow_back_ios_new_rounded,
-                tooltip: l10n.commonBack,
-                onPressed: onBack,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      // A full-screen route pushed above `MainShell` (never one of its five
+      // tabs), so it mounts its own sky rather than relying on an ancestor --
+      // the same reason onboarding and Session each do the same
+      // (`onboarding_page.dart:187-192`). Before this, these two cards were
+      // the only screens in that group actually missing it: `FrostedScaffold`
+      // itself is transparent by design, expecting a `HudSkyBackground`
+      // ancestor to paint through it -- MainShell supplies one for every tab,
+      // but this route sits outside the shell and had none, so the app's flat
+      // theme colour showed through instead of a photo.
+      body: HudSkyBackground(
+        selection: HudSkySelection(phase: HudSkyPhase.forTime(DateTime.now())),
+        child: FrostedScaffold(
+          appBar: GlassAppBar(
+            title: l10n.formcheckFormCoach,
+            leading: onBack == null
+                ? null
+                : AppIconButton(
+                    icon: Icons.arrow_back_ios_new_rounded,
+                    tooltip: l10n.commonBack,
+                    onPressed: onBack,
+                  ),
+          ),
+          body: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 92, 20, 12),
+                  children: children,
+                ),
               ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 92, 20, 12),
-              children: children,
-            ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+                child: footer,
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-            child: footer,
-          ),
-        ],
+        ),
       ),
     );
   }

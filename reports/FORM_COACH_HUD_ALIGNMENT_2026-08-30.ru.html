@@ -1,0 +1,342 @@
+<title>Тренер по технике: HUD</title>
+<style>
+  :root{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+      --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+      --accent:#4f8f1f; --accent-dim:#dff2c9;
+      --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+    --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+    --accent:#4f8f1f; --accent-dim:#dff2c9;
+    --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+  }
+  :root[data-theme="dark"]{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.55;}
+  .wrap{max-width:920px;margin:0 auto;padding:48px 24px 80px;}
+  header{border-bottom:1px solid var(--border);padding-bottom:28px;margin-bottom:8px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(28px,4vw,38px);font-weight:600;margin:0 0 12px;text-wrap:balance;letter-spacing:-.01em;}
+  .lede{color:var(--ink-dim);font-size:16px;max-width:64ch;margin:0;}
+  h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:20px;font-weight:600;margin:0 0 14px;letter-spacing:-.005em;}
+  h3{font-size:15px;font-weight:600;margin:0 0 6px;color:var(--ink);}
+  section{margin-top:44px;}
+  .pillrow{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0;}
+  .pill{font-family:var(--mono);font-size:12px;padding:6px 12px;border-radius:100px;border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px;color:var(--ink-dim);}
+  .pill b{color:var(--ink);font-weight:600;}
+  .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+  .dot.done{background:var(--accent);}
+  .dot.blocked{background:var(--block);}
+  .dot.info{background:var(--info);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px;}
+  .card + .card{margin-top:14px;}
+  .status{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px;margin-bottom:10px;}
+  .status.done{background:var(--accent-dim);color:var(--accent);}
+  .status.blocked{background:color-mix(in srgb, var(--block) 18%, transparent);color:var(--block);}
+  .status.info{background:color-mix(in srgb, var(--info) 16%, transparent);color:var(--info);}
+  p{margin:8px 0;color:var(--ink);}
+  .dim{color:var(--ink-dim);}
+  .muted{color:var(--ink-mute);font-size:13px;}
+  ul{margin:8px 0;padding-left:20px;}
+  li{margin:4px 0;}
+  code, .path{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;}
+  a{color:var(--info);text-decoration:none;border-bottom:1px solid color-mix(in srgb, var(--info) 40%, transparent);}
+  a:hover{border-bottom-color:var(--info);}
+  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px;}
+  th{text-align:left;font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-mute);font-weight:500;padding:0 10px 8px 0;border-bottom:1px solid var(--border);}
+  td{padding:9px 10px 9px 0;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tag{font-family:var(--mono);font-size:11px;padding:2px 7px;border-radius:5px;white-space:nowrap;}
+  .tag.pass{background:var(--accent-dim);color:var(--accent);}
+  .tag.blocked{background:color-mix(in srgb, var(--block) 18%, transparent);color:var(--block);}
+  .num{font-variant-numeric:tabular-nums;}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--ink-mute);font-size:13px;}
+  .copybtn{font-family:var(--mono);font-size:12px;background:var(--surface-2);border:1px solid var(--border);color:var(--ink-dim);padding:7px 14px;border-radius:8px;cursor:pointer;}
+  .copybtn:hover{color:var(--ink);border-color:var(--ink-mute);}
+  .copybtn.copied{color:var(--accent);border-color:var(--accent-dim);}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App &middot; отчёт по гейту</p>
+  <h1>Тренер по технике: фон HUD, дефолт «Библиотека», сравнение с Figma</h1>
+  <p class="lede">Гейт <code>FORM_COACH_HUD_ALIGNMENT</code> закрыт и проверен на живом устройстве. Плюс: смена дефолтной вкладки «Тренировки», реальный баг в скрипте сборки, и честный статус по требованию оператора «доделать редизайн 1:1 с подтверждением ГПТ» — часть выполнена, часть заблокирована.</p>
+  <div class="pillrow">
+    <span class="pill"><span class="dot done"></span>Гейт HUD: <b>закрыт, 1 открытый хвост</b></span>
+    <span class="pill"><span class="dot done"></span>Дефолт «Библиотека»: <b>готово</b></span>
+    <span class="pill"><span class="dot done"></span>Тесты: <b>523/525</b></span>
+    <span class="pill"><span class="dot done"></span>GPT-review (4 раунда): <b>APPROVE</b></span>
+    <span class="pill"><span class="dot blocked"></span>Дизайн-вопросы к GPT-PM: <b>заблокировано</b></span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 125b679</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<section>
+  <h2>1. Гейт FORM_COACH_HUD_ALIGNMENT — закрыт, с одним открытым хвостом</h2>
+  <div class="card">
+    <span class="status done">Готово</span>
+    <p>Вводная карточка/чек-лист готовности камеры (<code>coach_intro_cards.dart</code>) и чипы выбора упражнения (<code>ChoiceChip</code> → фирменный <code>HudChip</code>) получили фон <code>HudSkyBackground</code> в первой правке этого окна. Обе — отдельные маршруты/виджеты поверх <code>MainShell</code>, поэтому фон шелла на них не наследуется, а <code>FrostedScaffold</code> изначально прозрачен и ждёт фон-предка.</p>
+    <p><strong>Первая правка была неполной, и это нашёл не я</strong> — раунд ревью GPT-PM (раздел 5) поймал, что <code>FormCheckPage.build()</code> возвращает свой собственный <code>FrostedScaffold</code> напрямую для ВСЕХ фаз после preparation (live-камера и итог подхода), и этот путь фон не получил вообще. Дообёрнуто тем же способом.</p>
+    <p class="dim">DoD от GPT-PM: проверка на физическом S23 всех 4 состояний. <strong>Выполнено для launch/preparation/live; итог подхода — нет</strong>, см. открытый хвост ниже.</p>
+  </div>
+  <div class="card">
+    <span class="status info">Открытый хвост: экран итога подхода не проверен на живой камере</span>
+    <p>Чтобы органически дойти до <code>CoachPhase.summary</code>, нужно пройти quality-gate с реальным телом в кадре, а затем нажать «Завершить подход» — для этого физически нужен человек перед устройством, недостижимо в автоматизированной сессии. Фон для этого состояния подтверждён иначе: тот же <code>HudSkyBackground</code> оборачивает ОДИН общий <code>FrostedScaffold</code> для live и summary (это не два разных места в коде), плюс отдельный прошедший widget-тест на <code>CoachPhase.summary</code>. GPT-PM согласилось не считать это блокером ревью, но настояло оставить пункт открытым, а не тихо закрыть.</p>
+  </div>
+  <div class="card">
+    <h3>Побочный эпизод: ложная тревога с «мёртвой» кнопкой</h3>
+    <p class="dim">Кнопка «Начать» на карточке запуска какое-то время казалась нерабочей под <code>adb shell input tap</code> — потратил ~15 попыток и три уровня диагностики (Listener на разных уровнях дерева, замер геометрии RenderBox, самодельный PNG-сканер пикселей — Pillow в окружении нет), прежде чем точный замер доказал: бага нет, я просто читал Y-координату кнопки с миниатюры скриншота с ошибкой ~500 нативных пикселей (реальный Y ≈ 2050, а не ≈ 1400) — так было systematически на каждой попытке. Как только это подтвердилось, диагностика была полностью убрана из кода, а вывод исправлен в диалоге сразу, а не задним числом. Тот же класс ошибки повторился ещё раз в этом же окне на кнопке карточки подготовки (промах ~580px) — на этот раз исправлено быстрее, через <code>adb shell uiautomator dump</code> вместо повторного гадания по миниатюре скриншота.</p>
+  </div>
+</section>
+
+<section>
+  <h2>5. GPT-PM ревью коммита — 4 раунда до APPROVE</h2>
+  <p class="dim">Мандаторный гейт (§15 глобального CLAUDE.md): каждый коммит уходит на независимое ревью через <code>review.js</code> перед тем, как его можно закоммитить/запушить.</p>
+  <div class="card">
+    <span class="status blocked">Раунд 1 — VERDICT: MAJOR</span>
+    <p>3 реальных дефекта: (1) фон не покрывал live/summary фазы Тренера по технике — см. раздел 1; (2) правка build_release.ps1 превращала ЛЮБОЙ ненулевой код возврата <code>git diff --quiet</code> в «грязное дерево», хотя коды кроме 0/1 означают, что сравнение вообще не выполнилось — теперь такой код явно бросает исключение вместо тихой отгрузки непроверенной сборки; (3) замена <code>ChoiceChip</code> на <code>HudChip(onTap: null)</code> роняла чип из семантической роли «кнопка» целиком вместо пометки «недоступна» для скринридера.</p>
+  </div>
+  <div class="card">
+    <span class="status blocked">Раунд 2 — VERDICT: MAJOR</span>
+    <p>Продакшен-код всех трёх пунктов подтверждён исправленным, но: запись в decision log всё ещё утверждала «единственный экран» и «все 4 состояния проверены» — до того, как это стало правдой; для build-скрипта не было детерминированного доказательства (только «две сборки прошли»); а собственное исправление HudChip внесло НОВУЮ регрессию — <code>enabled</code> со значением по умолчанию <code>true</code> тихо превращало все существующие декоративные чипы без <code>onTap</code> (в <code>hud_golden_test.dart</code>/<code>hud_components_test.dart</code>) в «включённые кнопки», ничего не делающие по активации.</p>
+  </div>
+  <div class="card">
+    <span class="status info">Раунд 3 — VERDICT: MINOR</span>
+    <p>3 из 4 замечаний закрыты: запись в decision log явно исправлена (не переписана молча) с честным статусом по summary; добавлен детерминированный тест-харнесс для build-скрипта (<code>build_release_gitcheck.tests.ps1</code>, без реального git-процесса); <code>HudChip.enabled</code> стал трёхзначным (<code>bool?</code>) — интерактивная/явно отключённая/обычная нейтральная кнопка, старое поведение сохранено. Отдельная находка про 13 чужих незакоммиченных файлов в <code>reports/</code> — принято: это чужие файлы из другой, несвязанной работы в этом общем репозитории; <code>review.js --uncommitted</code> сканирует их по своей собственной логике покрытия, но реальный <code>git add</code>/<code>git commit</code> этого гейта называет файлы явно и никогда их не включает. Осталась 1 MINOR: нужен один общий тест на все три состояния <code>HudChip</code>, а не только на случай Тренера по технике.</p>
+  </div>
+  <div class="card">
+    <span class="status done">Раунд 4 — VERDICT: APPROVE (финальный)</span>
+    <p>Добавлен тест <code>hud_components_test.dart</code> — все три состояния (<code>onTap</code> задан / явно отключён / обычный нейтральный) через прямую проверку флагов <code>isButton</code>/<code>hasEnabledState</code>/<code>isEnabled</code>. 78/78 зелёных. GPT-PM: «GO: APPROVED», «PUSH: AUTHORIZED under the current Gate policy» — явно отметив summary-хвост как открытый пункт гейта, а не дефект этого раунда. По §20 глобального CLAUDE.md этот подлинный APPROVE — то, что авторизует коммит и пуш ниже, а не отдельное «GO» оператора.</p>
+  </div>
+</section>
+
+<section>
+  <h2>2. «Библиотека» по умолчанию на вкладке «Тренировки»</h2>
+  <div class="card">
+    <span class="status done">Готово, по прямому указанию</span>
+    <p>Прямое указание оператора в этом окне: <em>«и библиотека должна быть дефолт на тренировках»</em>. Изменена начальная вкладка <code>_subTab</code> в <code>workouts_page.dart</code> с <code>programs</code> на <code>library</code>.</p>
+    <p>Проверено на устройстве: вкладка «Тренировки» открывается сразу на подсвеченном сегменте «Библиотека», без единого тапа.</p>
+    <table>
+      <tr><th>Файл</th><th>Что сломалось</th><th>Как исправлено</th><th>Результат</th></tr>
+      <tr>
+        <td class="path">workouts_page_test.dart</td>
+        <td>19 тестов ожидали старый дефолт «Программы»</td>
+        <td>фоновый агент: явный тап на «Программы» там, где тест реально проверяет контент этой вкладки</td>
+        <td><span class="tag pass">проверено мной, 41/41</span></td>
+      </tr>
+      <tr>
+        <td class="path">programme_card_chip_overflow_test.dart</td>
+        <td>1 тест, тот же дефолт</td>
+        <td>тот же паттерн (общий helper <code>_pumpPrograms</code>)</td>
+        <td><span class="tag pass">3/3</span></td>
+      </tr>
+      <tr>
+        <td class="path">programme_card_hue_test.dart</td>
+        <td>1 тест, тот же дефолт</td>
+        <td>тот же паттерн, инлайн</td>
+        <td><span class="tag pass">2/2</span></td>
+      </tr>
+      <tr>
+        <td class="path">composed_screen_golden_test.dart</td>
+        <td>golden-тесты группы «Programs tab» (light/dark) — агент их сознательно не тронул</td>
+        <td>исправлено мной тем же паттерном: явный тап перед <code>expectLater</code></td>
+        <td><span class="tag pass">пиксель-в-пиксель с эталоном</span></td>
+      </tr>
+    </table>
+    <p class="muted">Отдельно, вне зоны этой правки: golden «Home (composed) light/dark» падает на 0.64%/0.59% и до, и после — артефакт, зависящий от <code>DateTime.now()</code> (текст приветствия и сокращения дня недели), подтверждено по изолированному diff-изображению. Не регрессия этой задачи, не исправлялось.</p>
+  </div>
+</section>
+
+<section>
+  <h2>3. Реальный баг в build_release.ps1</h2>
+  <div class="card">
+    <span class="status done">Исправлено, найдено случайно</span>
+    <p>Сборка релиза трижды за это окно тихо падала (exit code 0, APK не создан) на разных файлах. Причина: это окружение — Windows PowerShell 5.1, где строка stderr от нативной команды под <code>$ErrorActionPreference = 'Stop'</code> становится завершающей ошибкой независимо от <code>2>$null</code> (он скрывает вывод, но не сам объект ошибки). <code>git diff --quiet HEAD</code> — команда, весь смысл которой в коде возврата (1 = грязное дерево, штатная логика), — но git иногда пишет в stderr побочное предупреждение про autocrlf для последнего тронутого файла, и этого хватало, чтобы оборвать весь скрипт до чтения <code>$LASTEXITCODE</code>.</p>
+    <p>Первая попытка исправить (<code>$PSNativeCommandUseErrorActionPreference = $false</code>) оказалась неверной — эта переменная существует только в PowerShell 7.3+ и на 5.1 не действует; проверено повторным запуском (упало так же), откачено. Верное исправление: локально переключить <code>$ErrorActionPreference = 'Continue'</code> только вокруг одного вызова <code>git diff --quiet</code>, сохранив и восстановив прежнее значение — глобальный <code>'Stop'</code> для остального скрипта не тронут. Проверено двумя чистыми сборками подряд, включая versionCode 2874 с корректно напечатанным предупреждением о грязном дереве.</p>
+  </div>
+</section>
+
+<section>
+  <h2>4. Сравнение с Figma (тёмная тема) — частично выполнено, часть заблокирована</h2>
+  <p class="dim">Требование оператора: <em>«без сравнительных тестов телефона на темной схеме и фигма дезайна один в один не остонавливаться доделать весь редезайн до конца с подтверждением гпт по скриншотам»</em>.</p>
+  <div class="card">
+    <span class="status done">Структура нижней навигации — подтверждена совпадающей</span>
+    <p>5 равных вкладок, порядок Главная·Тренировки·Скан·Прогресс·Профиль, точка-индикатор выбора, фотографический фон — сверено с кадрами прототипа (<code>docs/Redisign/reference/prototype/p_162.jpg</code> и соседние) и с историей в <code>DECISION_LOG.md</code>: вариант с приподнятым кругом «Скан» на 2-й позиции и сплошными тёмными карточками принадлежит устаревшей, уже замененной ветке <code>GlassNavBar</code> — не действующий эталон.</p>
+  </div>
+  <div class="card">
+    <span class="status info">Новая находка — недельная полоска на Главной</span>
+    <p>В референсе «эта неделя» — это ряд закрашенных цветных квадратов (зелёный = выполнено, серый = нет, контур = сегодня), заметный элемент. В приложении сейчас — это едва различимые точки. Разница не объясняется отсутствием активной программы у тестового аккаунта (тем действительно объясняется отсутствие прогресс-бара, плашек восстановления мышц и карточки сравнения фото) — это самостоятельное стилевое расхождение.</p>
+  </div>
+  <div class="card">
+    <span class="status blocked">Заблокировано — дизайн-вопросы к GPT-PM, отдельно от ревью коммита</span>
+    <p>Обе находки — недельная полоска выше и ранее отложенный вопрос про стоковые Material-иконки навигации (Finding #4, статус <code>REFERENCE_BLOCKED_DEFERRED</code>) — это ПРОДУКТОВЫЕ/дизайн-вопросы к GPT-PM (через <code>gpt_send_and_await</code>), отдельный канал от мандаторного ревью кода коммита (раздел 5, которое отработало нормально через <code>review.js</code>). Канал вопросов не сработал дважды подряд: первый раз демон PM Bridge был на устаревшей сборке (перезапущен через <code>pm_bridge_mode_off</code>/<code>on</code>, новый pid 15436); второй раз — по <code>pm_bridge_mode_status</code> причина другая: устарело клиентское MCP-соединение именно этой сессии относительно свежего демона, и это, по тексту самого инструмента, не лечится повторным перезапуском демона — нужна новая сессия Claude Code. <code>pm_bridge_restart</code> намеренно не использовался (он для зависшего браузера, а не для устаревшего клиента одной сессии, и мешает всем параллельным сессиям).</p>
+    <p class="muted">Тренер по технике не входит в покрытие референсных кадров прототипа (README директории явно перечисляет Scanner/Exercise/Player/Rest Timer/Technique Coach/Progress/Photos/Paywall как не заснятые) — для него заявляется только внутренняя согласованность с языком HUD приложения, не покадровое совпадение.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Итоговый статус</h2>
+  <table>
+    <tr><th>Пункт</th><th>DoD</th><th>Статус</th><th>Хвост</th></tr>
+    <tr>
+      <td>Гейт FORM_COACH_HUD_ALIGNMENT</td>
+      <td>Проверка на S23 всех 4 состояний, чистый analyze</td>
+      <td><span class="tag pass">partial</span></td>
+      <td>launch/preparation/live проверены физически; summary — только код+widget-тест, без живой камеры (нужен человек перед устройством)</td>
+    </tr>
+    <tr>
+      <td>Дефолт «Библиотека»</td>
+      <td>Открывается без тапов, тесты зелёные</td>
+      <td><span class="tag pass">done</span></td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>GPT-PM ревью коммита (§15)</td>
+      <td>VERDICT: APPROVE перед push</td>
+      <td><span class="tag pass">done</span></td>
+      <td>4 раунда; см. раздел 5</td>
+    </tr>
+    <tr>
+      <td>Сравнение тёмной темы с Figma</td>
+      <td>1:1 по видимым экранам</td>
+      <td><span class="tag pass">partial</span></td>
+      <td>Home/Workouts сверены; найдена 1 новая находка (полоска недели); Профиль/Прогресс не пересняты в этом окне</td>
+    </tr>
+    <tr>
+      <td>Дизайн-вопросы к GPT-PM (иконки, полоска недели)</td>
+      <td>Ответ GPT-PM по свежим находкам</td>
+      <td><span class="tag blocked">blocked</span></td>
+      <td>Требуется новая сессия Claude Code — клиентское MCP-соединение этой сессии устарело относительно демона</td>
+    </tr>
+  </table>
+</section>
+
+<footer>
+  <button class="copybtn" onclick="copyPage(this)">Скопировать весь текст отчёта</button>
+</footer>
+</div>
+
+<script>
+function copyPage(btn){
+  const text = document.querySelector('.wrap').innerText;
+  const done = () => { btn.textContent = 'Скопировано'; btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Скопировать весь текст отчёта'; btn.classList.remove('copied');}, 1800); };
+  const fail = () => { btn.textContent = 'Не удалось скопировать'; setTimeout(()=>{btn.textContent='Скопировать весь текст отчёта';}, 1800); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => {
+      try { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); } catch(e){ fail(); }
+    });
+  } else {
+    try { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); } catch(e){ fail(); }
+  }
+}
+</script>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

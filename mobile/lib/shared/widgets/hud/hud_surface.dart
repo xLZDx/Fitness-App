@@ -658,6 +658,7 @@ class HudChip extends StatelessWidget {
     this.radius = HudTokens.radiusChip,
     this.padding = const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
     this.expand = false,
+    this.enabled,
   });
 
   final String label;
@@ -668,6 +669,23 @@ class HudChip extends StatelessWidget {
 
   /// A segmented control's halves fill their cell; a filter chip hugs its text.
   final bool expand;
+
+  /// Three states, not two -- collapsing this to a plain `bool` (an earlier
+  /// version of this field did, defaulting to `true`) silently turned every
+  /// existing decorative `HudChip(onTap: null)` -- `hud_golden_test.dart` and
+  /// `hud_components_test.dart` both build these -- into a screen-reader
+  /// "enabled button" that does nothing when activated, a real regression a
+  /// GPT review round on that version caught.
+  ///
+  /// - `onTap` set: interactive, always a button (`enabled` is ignored).
+  /// - `onTap: null`, `enabled: false`: a choice that exists but cannot
+  ///   currently be taken -- still announced as a button, explicitly
+  ///   disabled. What the exercise picker's unsupported entries need
+  ///   (`form_check_page.dart`).
+  /// - `onTap: null`, `enabled` left `null` (the default): a plain,
+  ///   non-interactive label, exactly the behaviour every call site had
+  ///   before this field existed.
+  final bool? enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -686,8 +704,11 @@ class HudChip extends StatelessWidget {
       ),
     );
 
+    final bool isDisabledControl = onTap == null && enabled == false;
+
     return Semantics(
-      button: onTap != null,
+      button: onTap != null || isDisabledControl,
+      enabled: isDisabledControl ? false : null,
       selected: selected,
       label: label,
       child: HudKeyboardActivation(

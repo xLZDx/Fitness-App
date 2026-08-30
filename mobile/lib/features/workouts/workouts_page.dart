@@ -272,10 +272,12 @@ class WorkoutsPage extends ConsumerStatefulWidget {
 }
 
 class _WorkoutsPageState extends ConsumerState<WorkoutsPage> {
-  // The prototype opens on 'programs' -- the tab this app had nothing to
-  // show on before Gate P, and the one that gives a new session on Home's
-  // header something real to point at the moment it exists.
-  _WorkoutsSubTab _subTab = _WorkoutsSubTab.programs;
+  // Opens on 'library' (operator instruction, 2026-08-30): the exercise/coach
+  // library is what most visits to this tab are actually after -- Form Coach,
+  // equipment lookups, free-weight moves -- while a programme is something a
+  // user starts once and then returns to from Home, not from this tab's
+  // default landing.
+  _WorkoutsSubTab _subTab = _WorkoutsSubTab.library;
 
   @override
   Widget build(BuildContext context) {

@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../core/background/hud_sky.dart';
 import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../core/theme/hud_tokens.dart' show HudMotionX;
@@ -317,7 +318,20 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       }
     }
 
-    return FrostedScaffold(
+    // The gate's first pass wrapped only the intro/preparation cards
+    // (`coach_intro_cards.dart`) in `HudSkyBackground` and missed this
+    // branch -- `/form-check` is a root route outside `MainShell`
+    // (`app_router.dart:399-402`), so the live-coach and summary phases
+    // rendered here fell back to the flat theme colour behind
+    // `FrostedScaffold`'s transparency exactly the same way the intro
+    // cards used to. The camera preview itself already owns its own
+    // backdrop (`Colors.black.withValues(alpha: 0.85)` a few hundred
+    // lines below) and is unaffected -- this only puts the sky behind
+    // the surrounding content cards (banner, upgrade, exercise picker,
+    // set summary) that were sitting on flat colour either side of it.
+    return HudSkyBackground(
+      selection: HudSkySelection(phase: HudSkyPhase.forTime(DateTime.now())),
+      child: FrostedScaffold(
       appBar: GlassAppBar(
         title: AppLocalizations.of(context).formcheckFormCoach,
         actions: [
@@ -626,6 +640,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                   ),
                 ],
               ),
+      ),
       ),
     );
   }
@@ -1586,23 +1601,32 @@ class _ExercisePicker extends ConsumerWidget {
       children: [
         Wrap(
           spacing: 8,
+          runSpacing: 8,
           children: [
             for (final e in FormExercise.values)
               if (formCoachTeaches(e))
-                ChoiceChip(
+                HudChip(
                   key: Key('form_check.exercise.${e.name}'),
-                  label: Text(label(e)),
+                  label: label(e),
                   selected: e == selected,
-                  onSelected: (_) =>
+                  onTap: () =>
                       ref.read(selectedExerciseProvider.notifier).state = e,
                 )
               else
-                ChoiceChip(
-                  key: Key('form_check.exercise.${e.name}'),
-                  label:
-                      Text('${label(e)} · ${l10n.formcheckExerciseNotTaught}'),
-                  selected: false,
-                  onSelected: null,
+                Opacity(
+                  // Same "disabled rather than hidden" intent as before
+                  // (comment above `unsupported`) -- `HudChip`'s `enabled`
+                  // covers the semantic (screen-reader) side of disabled,
+                  // not the visual one, so the dimming still has to be
+                  // added here.
+                  opacity: 0.5,
+                  child: HudChip(
+                    key: Key('form_check.exercise.${e.name}'),
+                    label: '${label(e)} · ${l10n.formcheckExerciseNotTaught}',
+                    selected: false,
+                    onTap: null,
+                    enabled: false,
+                  ),
                 ),
           ],
         ),

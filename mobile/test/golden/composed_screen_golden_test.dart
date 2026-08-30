@@ -219,6 +219,12 @@ void main() {
       pinGoldenSurface(tester, size: const Size(400, 860));
       await tester.pumpWidget(buildWorkouts(Brightness.light));
       await settle(tester);
+      // Library, not Programs, is the tab's own default since 2026-08-30 --
+      // this golden still pins Programs specifically (its own group name and
+      // the file's header comment), so it has to ask for that tab rather than
+      // land on it for free.
+      await tester.tap(find.text('Programs'));
+      await settle(tester);
       await expectLater(
         find.byType(WorkoutsPage),
         matchesGoldenFile('goldens/composed_workouts_light.png'),
@@ -228,6 +234,8 @@ void main() {
     testWidgets('dark', (tester) async {
       pinGoldenSurface(tester, size: const Size(400, 860));
       await tester.pumpWidget(buildWorkouts(Brightness.dark));
+      await settle(tester);
+      await tester.tap(find.text('Programs'));
       await settle(tester);
       await expectLater(
         find.byType(WorkoutsPage),

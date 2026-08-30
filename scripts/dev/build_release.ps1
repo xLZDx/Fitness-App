@@ -39,6 +39,12 @@ param(
     [string]$FirebaseAppId = '1:988522745882:android:b9af40bb887a0388c201a3'
 )
 
+# Get-GitDirtyStamp lives in its own file so a test harness can dot-source
+# just the decision logic -- no real git process, no repo, no Flutter or
+# Firebase side effects. See build_release_gitcheck.ps1 and its companion
+# build_release_gitcheck.tests.ps1.
+. (Join-Path $PSScriptRoot 'build_release_gitcheck.ps1')
+
 $ErrorActionPreference = 'Stop'
 $ProjectRoot = Resolve-Path "$PSScriptRoot\..\.."
 $MobileDir = Join-Path $ProjectRoot 'mobile'
@@ -60,10 +66,29 @@ try {
 
     # A dirty tree means the APK does not match the commit it claims. Marked
     # in the stamp itself, because the whole value of the stamp is that it is
-    # not a polite approximation.
+    # not a polite approximation. The 0/1/>1 decision itself lives in
+    # Get-GitDirtyStamp above, where it can be tested without a real git call.
+    #
+    # Reading $LASTEXITCODE at all requires surviving the call first: under
+    # $ErrorActionPreference = 'Stop', Windows PowerShell 5.1 turns any
+    # stderr line from a native command into a terminating error
+    # independently of `2>$null` (that redirects the displayed text, not the
+    # error-record it also raises) -- and git occasionally writes an
+    # unrelated autocrlf advisory ("LF will be replaced by CRLF...") to
+    # stderr for whichever file it last touched, which was enough to abort
+    # the whole script before $LASTEXITCODE below was ever read. Hit twice,
+    # with two different files, before this was traced to the git call
+    # itself rather than either file. Scoped to just this one call rather
+    # than flipping the script's own $ErrorActionPreference, which stays
+    # 'Stop' for everything that should actually abort the build.
+    $previousEap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
     & git diff --quiet HEAD 2>$null
-    if ($LASTEXITCODE -ne 0) {
-        $GitSha = "$GitSha-dirty"
+    $diffExitCode = $LASTEXITCODE
+    $ErrorActionPreference = $previousEap
+    $stamped = Get-GitDirtyStamp -DiffExitCode $diffExitCode -BaseSha $GitSha
+    if ($stamped -ne $GitSha) {
+        $GitSha = $stamped
         Write-Host "WARNING: working tree is dirty -- stamping $GitSha" -ForegroundColor Yellow
     }
 } finally {

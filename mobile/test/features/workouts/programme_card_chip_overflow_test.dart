@@ -112,6 +112,12 @@ Future<void> _pumpPrograms(
 
   await tester.pumpWidget(_harness(_seededRepo(), textScale: textScale));
   await tester.pumpAndSettle();
+  // R11i/L1: WorkoutsPage now opens on the Library sub-tab by default, so
+  // every test in this file (which pins the Programs-tab template cards)
+  // must switch to it first -- see workouts_page_test.dart's own note on
+  // the same change.
+  await tester.tap(find.text('Программы'));
+  await tester.pumpAndSettle();
 }
 
 void main() {

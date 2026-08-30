@@ -443,15 +443,31 @@ void main() {
   // end-to-end); this file only proves the PAGE shows what the entity says
   // and reaches the action when tapped.
   group('WorkoutsPage (Programs tab)', () {
-    testWidgets('opens on Programs, showing the template catalogue',
-        (tester) async {
+    testWidgets('opens on Library by default', (tester) async {
       await tester.pumpWidget(_harness(_seededRepo()));
       await tester.pumpAndSettle();
 
       expect(find.text('Programs'), findsOneWidget);
       expect(find.text('Library'), findsOneWidget);
+      // 'For you' is Library-only content (the default filter chip on the
+      // exercise list); finding it with no tap proves the page opens on
+      // Library, not Programs, by default. Same signature the
+      // 'switching to Library and back' test below uses to prove the tab.
+      expect(find.text('For you'), findsOneWidget);
+      expect(find.text('Strength base'), findsNothing);
+    });
+
+    testWidgets(
+        'reaches Programs by tapping the toggle, showing the template '
+        'catalogue', (tester) async {
+      await tester.pumpWidget(_harness(_seededRepo()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Programs'));
+      await tester.pumpAndSettle();
+
       // A static template title -- `programmeTemplates` needs no provider
-      // override to render, so this is present the instant the page opens.
+      // override to render, so this is present the instant the tab opens.
       //
       // B2a: English, because the harness locale is English. It read
       // 'Силовая база' until the titles moved into the ARB files.
@@ -524,6 +540,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Programs'));
+      await tester.pumpAndSettle();
 
       expect(
           find.byKey(const Key('workouts.currentProgramme')), findsOneWidget);
@@ -563,6 +581,8 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Programs'));
         await tester.pumpAndSettle();
       }
 
@@ -698,6 +718,8 @@ void main() {
             ),
           ),
         );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Programs'));
         await tester.pumpAndSettle();
       }
 
@@ -915,6 +937,8 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        await tester.tap(find.text('Programs'));
+        await tester.pumpAndSettle();
       }
 
       final thumbs = find.descendant(
@@ -996,6 +1020,8 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
+        await tester.tap(find.text('Programs'));
+        await tester.pumpAndSettle();
 
         expect(thumbs, findsNWidgets(2));
         expect(
@@ -1065,6 +1091,8 @@ void main() {
     testWidgets('the goal filter narrows the template list', (tester) async {
       await tester.pumpWidget(_harness(_seededRepo()));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Programs'));
+      await tester.pumpAndSettle();
 
       // 'Гипертрофия' is a Muscle-goal template; 'Старт в зале' is Form.
       // Selecting Muscle must keep one and drop the other. Scoped to the
@@ -1086,6 +1114,8 @@ void main() {
     testWidgets('tapping Start on a template reaches the enroll action',
         (tester) async {
       await tester.pumpWidget(_harness(_seededRepo()));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Programs'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Start programme').first);
@@ -1143,6 +1173,8 @@ void main() {
         ),
       ));
       await tester.pumpAndSettle();
+      await tester.tap(find.text('Programs'));
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('Start programme').first);
       await tester.pumpAndSettle();
@@ -1199,6 +1231,8 @@ void main() {
               AuroraBackground(child: child ?? const SizedBox.shrink()),
         ),
       ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Programs'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Start programme').first);

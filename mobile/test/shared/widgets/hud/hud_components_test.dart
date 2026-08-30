@@ -441,6 +441,56 @@ void main() {
       h.dispose();
     });
 
+    testWidgets(
+        'enabled has three states, not two -- interactive, explicitly '
+        'disabled, and plain non-button', (t) async {
+      // A GPT review round on FORM_COACH_HUD_ALIGNMENT caught a regression in
+      // an earlier version of this parameter: collapsing it to a plain `bool`
+      // defaulting to `true` silently turned every existing decorative
+      // `HudChip(onTap: null)` below -- the exact ones this file and
+      // `hud_golden_test.dart` already build -- into a screen-reader "enabled
+      // button" that does nothing when activated. This pins all three states
+      // the (nullable) parameter is meant to distinguish, in one place, so a
+      // future simplification cannot silently reintroduce that regression
+      // while the older, narrower tests above (which only vary `onTap`/
+      // `selected`) stay green.
+      final SemanticsHandle h = t.ensureSemantics();
+
+      // 1. Interactive: `onTap` set, `enabled` untouched -- a real button.
+      await t.pumpWidget(_host(
+        HudChip(label: 'Cardio', selected: false, onTap: () {}),
+      ));
+      var node = t.getSemantics(find.byType(HudChip));
+      expect(node.hasFlag(SemanticsFlag.isButton), isTrue);
+      expect(node.hasFlag(SemanticsFlag.hasEnabledState), isFalse,
+          reason: 'an interactive chip does not need a disabled state -- it '
+              'is simply a button, same as before this parameter existed');
+
+      // 2. Explicitly disabled: `onTap: null`, `enabled: false` -- still a
+      // button, but announced as disabled rather than dropped from the role.
+      await t.pumpWidget(_host(
+        const HudChip(
+            label: 'Cardio', selected: false, onTap: null, enabled: false),
+      ));
+      node = t.getSemantics(find.byType(HudChip));
+      expect(node.hasFlag(SemanticsFlag.isButton), isTrue);
+      expect(node.hasFlag(SemanticsFlag.hasEnabledState), isTrue);
+      expect(node.hasFlag(SemanticsFlag.isEnabled), isFalse);
+
+      // 3. Plain, decorative: `onTap: null`, `enabled` left at its default
+      // (`null`) -- the behaviour every existing call site had before
+      // `enabled` existed, and what the demo/golden chips below still rely
+      // on. Must NOT read as a button of any kind.
+      await t.pumpWidget(_host(
+        const HudChip(label: 'Cardio', selected: false),
+      ));
+      node = t.getSemantics(find.byType(HudChip));
+      expect(node.hasFlag(SemanticsFlag.isButton), isFalse);
+      expect(node.hasFlag(SemanticsFlag.hasEnabledState), isFalse);
+
+      h.dispose();
+    });
+
     testWidgets('it clears the 44pt floor even at chip padding', (t) async {
       await t.pumpWidget(_host(const HudChip(label: 'Fn', selected: false)));
       expect(t.getSize(find.byType(HudChip)).height,

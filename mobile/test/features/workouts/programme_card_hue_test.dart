@@ -113,6 +113,11 @@ void main() {
         (tester) async {
       await tester.pumpWidget(_harness(_seededRepo()));
       await tester.pumpAndSettle();
+      // R11i/L1: WorkoutsPage now opens on the Library sub-tab by default,
+      // so this file (which reads the Programs-tab template cards) must
+      // switch to it first -- see workouts_page_test.dart's own note.
+      await tester.tap(find.text('Программы'));
+      await tester.pumpAndSettle();
 
       // "Гипертрофия" is 2nd of six unfiltered and 1st of two under the
       // Muscle filter -- the exact renumbering the old `index % 5` reacted to.
@@ -135,6 +140,11 @@ void main() {
     testWidgets('is the goal hue at the prototype\'s own alpha, not a '
         'full-strength aurora ramp', (tester) async {
       await tester.pumpWidget(_harness(_seededRepo()));
+      await tester.pumpAndSettle();
+      // R11i/L1: WorkoutsPage now opens on the Library sub-tab by default,
+      // so this file (which reads the Programs-tab template cards) must
+      // switch to it first -- see workouts_page_test.dart's own note.
+      await tester.tap(find.text('Программы'));
       await tester.pumpAndSettle();
 
       final colors = _headerColors(tester, 'strength_base');
