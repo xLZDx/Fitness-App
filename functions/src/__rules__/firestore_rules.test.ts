@@ -283,6 +283,32 @@ describe("G-D: profile health block cannot reach the server unstripped (N03)", (
         setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), { health: older }),
       );
     });
+
+  // GPT-PM review, 2026-08-30: healthIsStripped/flagsAreStripped originally
+  // enumerated known fields only, with no keys().hasOnly(...) constraint on
+  // the map itself -- an unrecognised key inside `health` (or inside
+  // `flags`) was checked by nothing and passed through unstripped. Same shape
+  // of miss as F014/N-01 above, just in the guard itself this time. Fixed by
+  // adding hasOnly(...) to both functions; these two cases are the ones that
+  // fix closes.
+  test("a health block carrying an unrecognised key is refused", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: { ...strippedHealth(), privateDiagnosis: "type 2 diabetes" },
+      }),
+    );
+  });
+
+  test("a flags block carrying an unrecognised key is refused", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/profile/main`), {
+        health: {
+          ...strippedHealth(),
+          flags: { ...strippedHealth().flags, freeText: "diabetic, on metformin" },
+        },
+      }),
+    );
+  });
 });
 
 describe("catalogs are read-only", () => {

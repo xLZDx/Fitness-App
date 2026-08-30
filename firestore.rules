@@ -137,8 +137,21 @@ service cloud.firestore {
     //
     // Same shape of miss as F014's (N-01): a field added to the model and its
     // serialiser, not added to the thing guarding it.
+    // `hasOnly(...)` below is the guard against the exact defect this
+    // function's own history is about: a field that reaches the wire under a
+    // name none of the checks below inspect. Enumerating the values of ten
+    // known keys says nothing about an eleventh one -- `hasOnly` is what
+    // makes an unrecognised key (e.g. a compromised client sending
+    // `health.privateDiagnosis`) fail the write instead of silently passing
+    // because nothing asked about it. Kept in sync with `HealthHistory.toJson`
+    // (mobile/lib/features/profile/data/profile_models.dart) -- a legitimate
+    // field added there without being added here fails closed (the write is
+    // refused), not open.
     function healthIsStripped(h) {
-      return h.conditions.size() == 0
+      return h.keys().hasOnly(['conditions', 'allergies', 'medications',
+              'injuries', 'physicalLimitations', 'recentSurgeries',
+              'bloodPressure', 'otherConcerns', 'screening', 'flags'])
+          && h.conditions.size() == 0
           && h.allergies.size() == 0
           && h.medications.size() == 0
           && h.injuries.size() == 0
@@ -151,9 +164,13 @@ service cloud.firestore {
     }
     // Every answer HealthFlags can carry. Listed one by one rather than by
     // size(), because a stripped block legitimately still has the KEYS -- what
-    // it must not have is a value in any of them.
+    // it must not have is a value in any of them. `hasOnly` closes the same
+    // gap as `healthIsStripped` above, for the same reason -- kept in sync
+    // with `HealthFlags.toJson` (mobile/lib/features/safety/data/health_flags.dart).
     function flagsAreStripped(f) {
-      return f.get('restrictions', []).size() == 0
+      return f.keys().hasOnly(['restrictions', 'bloodPressure', 'surgery',
+              'clinicianAdvice', 'professionalGuidance'])
+          && f.get('restrictions', []).size() == 0
           && f.get('bloodPressure', null) == null
           && f.get('surgery', null) == null
           && f.get('clinicianAdvice', null) == null

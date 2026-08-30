@@ -35946,3 +35946,166 @@ git history, recorded here per that hook's own documented gap).
 candidate per this roadmap's own Section 8: reconcile the HUD-redesign screens (Home/Workouts/
 Progress, cheap since screenshots already exist) against `full_handoff_v1`, or pick up G-D (Firestore
 rules, P0/low risk, next in the fixed G-A→G-D→G-C→G-B→G-E order) -- deciding which now.
+
+## 2026-08-30 — Roadmap correction: G-D (Firestore rules) already implemented, 3/3 confirmed
+
+Same pattern as the G-A finding above, applied to the next gate in the fixed order. Direct read of
+`firestore.rules` (not agent-synthesized claims) confirms all three G-D acceptance items, per the
+08-16 audit's own definition:
+
+1. `usage`/`receipts` excluded from client writes -- `firestore.rules:62-63` -- and from client
+   reads too -- `firestore.rules:53-54`.
+2. `profile` excluded from client writes via a deny-list -- `firestore.rules:64`. **[Imprecise --
+   see the round-9 entry below: `profile` is removed from the wildcard's blanket write grant and
+   re-authorised by its own dedicated, constrained rule, not banned from client writes outright.]**
+3. The `health` key -- a write carrying non-empty `health` is refused by `healthIsStripped()`
+   (`firestore.rules:140-151,162-172`), which refuses any write where `health` is present and not
+   fully stripped rather than a blind key ban -- functionally the same audit goal (no unencrypted
+   health data reaching Firestore via a client write), implemented more defensively than the literal
+   wording asked for.
+
+The code cites its own origin directly: `firestore.rules:13` -- `// G-D / F005, F006, N03: usage,
+receipts and profile joined this list...` -- same pattern as G-A, remediation shipped under
+finding labels (F005/F006/N03), never filed under the gate name "G-D", which is why section 6 of
+the roadmap (sourced from the 08-16 audit) still read it as "not started."
+
+Unlike G-A (2 of 3 confirmed, one item structural-only), **G-D is 3 of 3 confirmed** -- no
+unresolved sub-item.
+
+**Status: implementation evidence found, not formally closed as a gate unit** -- same caveat as
+G-A: no separate DECISION_LOG/GPT-PM verdict exists on "G-D" as a named gate, only on the
+individual findings it shipped under. Section 6's per-gate table and the fixed dependency order
+note (section 6 top) are corrected accordingly in both `reports/MASTER_ROADMAP_2026-08-30.ru.html`
+and `.html`; the flagged/open set narrows to G-C/G-B/G-E. G-C (searched `functions/` for
+`catalogMatch|invented|hallucinat` and `catalog.*uses|filterUses|validateUses` in `*.ts` -- no
+implementation found) and G-B ("6 sites" eligibility-routing claim -- 10 files use
+`eligibilityProvider`/`SafetyContext` in `mobile/lib`, extensive usage exists, but the specific
+"6 sites including AI coach" audit claim is NOT independently verified) remain genuinely open or
+unconfirmed -- not re-labeled here, left as-is pending a similar direct check.
+
+**Next step per CLAUDE.md §18 (PM mode, continue rather than stop):** send this correction to
+GPT-PM (direct `gpt_send_and_await`, since `review.js` structurally excludes `reports/` --
+`review.js:128`), fix any real findings in one batch per §17, then decide between G-C/G-B
+investigation and the HUD-redesign screen reconciliation named as the other candidate in the prior
+entry.
+
+## 2026-08-30 — GPT-PM round 9: G-D was NOT actually 3/3 -- real gap found, fixed, verified
+
+GPT-PM review of the G-D correction above (`review.js --round 9`) returned `VERDICT: MAJOR`, two
+findings. Both checked against `firestore.rules` directly before acting on either.
+
+**MAJOR 1, CONFIRMED by direct code reading -- not a documentation error, a real defect.**
+`healthIsStripped()`/`flagsAreStripped()` (as they stood before this entry) enumerated known
+fields one by one and never constrained the map's own key set with `keys().hasOnly(...)`. Verified
+against `HealthHistory.toJson()` (`mobile/lib/features/profile/data/profile_models.dart:412-425`)
+and `HealthFlags.toJson()` (`mobile/lib/features/safety/data/health_flags.dart:315-324`): the app's
+own model emits exactly the keys the rule checked, so every legitimate write passed -- but nothing
+in the rule rejected an EXTRA key a non-standard client could add, e.g. `health.privateDiagnosis`
+or `health.flags.freeText`. `healthIsStripped()` would return `true` for such a payload (every
+field it actually inspects is still empty/null), so the write would succeed carrying real health
+content under a name the guard never asked about. Confirmed live: no test in
+`functions/src/__rules__/firestore_rules.test.ts` covered this before this fix (only "an unknown
+SIBLING field alongside a clean health block is allowed" at the old line 610, a different,
+benign, top-level case). This is the identical shape of miss the code's own comment already names
+for a past incident (F014/N-01: "a field added to the model and its serialiser, not added to the
+thing guarding it") -- just recurring in the guard's own key-set this time instead of its field
+list.
+
+**Fixed**, not just logged. `firestore.rules`: `healthIsStripped()` and `flagsAreStripped()` each
+gained a leading `h.keys().hasOnly([...])` / `f.keys().hasOnly([...])` clause, enumerating exactly
+the keys the two Dart models above emit -- 10 for `health`, 5 for `flags`. This fails an
+unrecognised key closed (write refused) rather than silently ignoring it. Two regression tests
+added: "a health block carrying an unrecognised key is refused" and "a flags block carrying an
+unrecognised key is refused" (`firestore_rules.test.ts`), reproducing GPT-PM's exact
+`privateDiagnosis`/`freeText` attack shape.
+
+**Verified**: `npm run test:rules` (Firestore emulator, real rule evaluation, not mocked) --
+**115/115 passed**, including the two new tests and every pre-existing test in the 954-line suite
+(zero regressions). Emulator's default port 8080 was held by an unrelated long-running Docker
+process on this machine (`com.docker.backend.exe`, PID 34644, running since 08-26 -- not another
+Claude session, checked via `Get-Process` before assuming so); worked around via the script's own
+documented `FIREBASE_EMULATOR_CONFIG`/`FIRESTORE_EMULATOR_PORT` mechanism (a scratchpad-local
+alternate-port config, port 8180) rather than touching the shared `firebase.json` or the Docker
+process.
+
+**MAJOR 2, CONFIRMED**: the roadmap's own claim "(2) `profile` excluded from client writes" is
+imprecise -- direct reading of `firestore.rules:64` shows `profile` is removed from the per-user
+wildcard's blanket write grant, then re-authorised by its own dedicated, constrained rule
+(`firestore.rules:162-179`), not banned from client writes outright. Corrected in both roadmap
+files.
+
+**G-D status, now genuinely 3/3 confirmed** -- not by relabeling, by closing the actual gap and
+proving it closed: (1) `usage`/`receipts` excluded from client read+write (unchanged, was already
+correct); (2) `profile` removed from the wildcard blanket grant, reworded accurately; (3) the
+`health` key -- a write carrying non-empty or unrecognised-key `health` content is now refused,
+verified by the two new tests plus the full suite. `reports/MASTER_ROADMAP_2026-08-30.ru.html` and
+`.html` updated to describe this accurately: the gap that was found, the fix, and the 115/115 test
+evidence -- not just a bare "confirmed" claim.
+
+**Also confirmed, not itself a defect**: the round-9 `review.js` payload GPT-PM saw included 13
+untracked `reports/*.html` files that belong to a different, unrelated session's work (SPTR
+marketing/positioning review documents) currently sitting in this working tree -- not part of this
+commit, never staged. Direct evidence: `git status --short` before and after round 9 shows them as
+`??` (untracked) throughout; GPT-PM itself flagged one by name
+(`SPTR_MARKETING_RND_DECISION_PACK_2026-08-19.local-untracked-backup.html`) as suspicious without
+elevating it to a verdict-setting finding, correctly. Root cause: `review.js`'s
+`REVIEW_EXCLUDE = [":(exclude)reports"]` (`review.js:128`) is a `git diff` pathspec exclusion, which
+does not apply to NEW untracked files the same way -- `--uncommitted` appears to pick up untracked
+`reports/` content by a different path than the tracked-diff exclusion covers. This is a real gap in
+`review.js`, not fixed here: per the standing rule ("PM Bridge: src edits need isolation" /
+"pm-bridge: editing src/ desyncs every session"), `D:\Repo\pm-bridge\src` is never edited live from
+this checkout -- a shared daemon serves every session on the machine. Recorded here as the evidence
+trail; the fix belongs in an isolated pm-bridge checkout, a separate gate, not this one.
+
+**Next**: send the corrected G-D fragments (not the full files) to GPT-PM for round 10
+verification, per its own required_change and the one-sweep review shape (§17) -- verify only the
+two MAJORs and any direct regression from this remediation, not reopen the closed
+HUD/master-roadmap thread.
+
+## 2026-08-30 — GPT-PM round 13: G-D FORMALLY CLOSED, genuine APPROVE
+
+Rounds 9-12 in sequence: round 9 found the real `keys().hasOnly(...)` gap (fixed, verified 115/115,
+see the round-9 entry above); round 10 found the DECISION_LOG item-2 wording still imprecise and
+the roadmap diff missing from that submission (both fixed); round 11 found two roadmap-wording
+overstatements -- G-A wrongly dropped from the open/actionable set (it is still 2/3, chest-pain
+copy unchecked), and G-D's item 3 mischaracterised as "deny the health key" when the actual
+mechanism permits a stripped/allowlisted shape (both fixed, EN then RU, RU sent as a raw diff after
+GPT-PM correctly rejected a prose "identical structural changes" assertion in round 12 and required
+the actual fragment).
+
+**Round 13, genuine correlated verdict**: `VERDICT: APPROVE`. Quote: "G-D: FORMALLY CLOSED by this
+review. Implementation: 3/3 verified. Rules regression suite: 115/115 passed. Round-9 security
+defect: CLOSED. Round-10/11/12 roadmap-governance findings: CLOSED." -- `GO: APPROVED`,
+push authorized "on top of baa1918 under the current Gate policy."
+
+**G-D status, as of this verdict: formally closed as a named gate** -- not just "implementation
+evidence found," the distinction the G-A entries above have carried throughout. This is the first
+of the five G-A..G-E gates to receive an explicit GPT-PM closure verdict as a named unit, rather
+than only implementation evidence under other finding labels. The roadmap's own "formal closure
+pending this review" wording was accurate at the time it was written (the review had not concluded
+yet) and is not being retroactively edited to hide that sequence -- per GPT-PM's own instruction,
+the closure is recorded here in the normal append-only trail rather than by manufacturing another
+review round to pre-empt a verdict that has now actually been issued. The roadmap files' "pending"
+wording will be updated to "closed" in a subsequent, separately-reviewed commit -- editing it into
+THIS commit after the fact would mean shipping content that was never itself reviewed.
+
+**Mechanical gate note**: rounds 10-13 were all direct `gpt_send_and_await` exchanges (not
+`review.js`), for the documented reason (`review.js`'s `REVIEW_EXCLUDE` cannot show `reports/`
+content). The local commit/push gate hook only reads receipts written by `review.js` itself, so
+despite this genuine round-13 APPROVE, one more `review.js --final` round is needed purely to
+satisfy that mechanical receipt file before the remote can be updated -- tracked as a formality,
+not a substantive re-review; the actual content decision was already made in round 13 above.
+
+Commit carries: `firestore.rules` (the `hasOnly()` fix), two new regression tests in
+`functions/src/__rules__/firestore_rules.test.ts`, the G-D correction and round-9..13 remediation
+history in this file, and the corresponding RU+EN roadmap sections (Section 0 G-D flagbox,
+Section 6 sec-note/table row, Section 8 item 2).
+
+**Next per CLAUDE.md §18 (PM mode, continue rather than stop)**: after the remote is updated and
+verified, update the roadmap's "pending" wording to "closed" (small, low-risk, no re-review needed
+for a pure status label update reflecting an already-issued verdict -- though it will still go
+through the standard gate before its own commit), then move to the next roadmap item: G-C
+(AI-invented `uses[]` suppression -- grep found no implementation, likely genuinely not started) or
+G-B ("6 sites" eligibility-routing claim -- extensive provider usage found but the specific site
+count not independently verified) or the HUD-redesign screen reconciliation named in the prior
+push entry.
