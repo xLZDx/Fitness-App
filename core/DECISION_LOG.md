@@ -36109,3 +36109,14 @@ through the standard gate before its own commit), then move to the next roadmap 
 G-B ("6 sites" eligibility-routing claim -- extensive provider usage found but the specific site
 count not independently verified) or the HUD-redesign screen reconciliation named in the prior
 push entry.
+
+## 2026-08-30 — G-D roadmap status updated: pending -> formally closed (round 15)
+
+Small, separately-reviewed follow-up to the round-13 closure entry above. Updated
+`MASTER_ROADMAP_2026-08-30.ru.html`/`.html` in four spots each (Section 0 flagbox label + closing
+line, Section 6 sec-note + table pill, Section 8 item 2): "formal gate closure pending" ->
+"formally closed by GPT-PM (round 13)", pill class `open` -> `done`. Pure status-label change
+reflecting the already-issued round-13 verdict -- no new technical claim, description text
+untouched. Sent as a raw RU+EN diff (round 12's lesson: a prose parity assertion is not accepted,
+only actual content). GPT-PM round 15: genuine `VERDICT: APPROVE`, confirmed "G-D: CLOSED... Formal
+named-gate closure: GPT-PM Round 13", push authorized on top of `64f67bd`.
