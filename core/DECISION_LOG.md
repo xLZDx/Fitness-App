@@ -35217,3 +35217,65 @@ operator GO. Stated plainly per §16's reporting discipline.
   correction, not a silent edit.
 - Round 3: all 3 MAJORs closed; 1 MINOR (shared semantics test) remained.
 - Round 4: MINOR closed. `VERDICT: APPROVE`, final.
+
+---
+
+## 2026-08-30 03:25 local / 00:25 UTC -- Week-strip finding fixed: dots -> colour-coded squares, matching the Figma reference
+
+Per CLAUDE.md 18/PM mode, continued to the next actionable item after FORM_COACH_HUD_ALIGNMENT closed
+rather than stopping on the report handover. Two items were left open from this window's dark-theme/
+Figma comparison: the nav-icon question (already GPT-PM-adjudicated as `REFERENCE_BLOCKED_DEFERRED`
+in an earlier entry -- explicitly NOT something to freelance, GPT-PM's own words were that blind icon
+design "is exactly the kind of subjective change that can consume time and still leave the operator
+saying they are wrong") and the week-strip finding (new this window, not previously adjudicated by
+anyone).
+
+The week-strip constraint doesn't apply here: it's a small, self-contained, easily-reversible visual
+change with no prior ruling against acting on it, well within CLAUDE.md 17's "several reasonable
+implementation choices is not a reason to stop" autonomy. `home_page.dart`'s `_WeekStrip` (via
+`weekStripProvider`) rendered each day as a plain 7px circular dot -- barely visible, especially
+against the busy photographic background -- while the Figma-Make reference (`p_162.jpg`) shows solid
+colour-coded squares, a genuinely prominent element. Replaced the dot with a 22px-tall rounded-square
+tile (`BorderRadius.circular(6)`), same three-state colour logic as before (`accent` when done,
+`accent` at 50% alpha for today-not-done, `textTertiary` at 18% alpha otherwise), plus an accent
+outline ring specifically for "today, not yet done" so the current day stays visually distinguishable
+even when its fill is the same pale grey as an unstarted past day.
+
+Verified: `flutter analyze` clean; `home_page_test.dart` 15/15 (only checks the section renders, no
+existing test pinned the dot's exact shape); on a fresh physical-S23 install, the strip now reads as a
+row of tiles, visually matching the reference's "a week you can read at a glance" quality instead of
+disappearing into the background. `composed_screen_golden_test.dart`'s pre-existing "Home (composed)
+light/dark" failures are unaffected in KIND (still the same `DateTime.now()`-dependent greeting/
+weekday-label artifact, out of scope, unchanged from before this fix) -- this deliberate visual change
+adds to that golden's known diff, which is expected and not a new regression.
+
+Sent to GPT-PM via `review.js` (the one PM-Bridge transport that actually works in this session --
+`gpt_send_and_await`/MCP remain stale, see the earlier entries this window). Round/verdict recorded
+immediately below.
+
+---
+
+## 2026-08-30 03:35 local / 00:35 UTC -- Week-strip round 1 caught a real defect: rectangle, not square
+
+GPT-PM review round 1 on the week-strip commit (`VERDICT: MAJOR`): the tile used
+`width: double.infinity` inside an `Expanded` day column, which stretches to the column's width
+rather than producing a square -- so despite the gate's own stated goal (match the Figma reference's
+square day markers), the shipped shape was a wide rounded rectangle, not a square. A real, correctly
+caught defect: verified myself against `home_page.dart` before accepting it.
+
+Fixed: `AspectRatio(aspectRatio: 1)` wrapping the `Container`, so the tile scales with its column and
+stays square regardless of screen width, instead of a fixed pixel size that would be wrong on a
+different device or a fixed `double.infinity` that ignores the day-column boundary entirely. Added the
+regression test GPT-PM's own "required change" asked for: `home_page_test.dart`'s new `'week strip'`
+group pins (a) every tile's rendered width equals its height, and (b) the today-not-done accent-outline
+ring is present only on that one state, not on an ordinary past day. Confirmed the square test actually
+fails against the pre-fix code (`git stash` the lib file, re-run -- failed as expected) before trusting
+it. Re-verified visually on a fresh physical-S23 install: the strip now reads as a row of true squares,
+not the elongated pills the first pass shipped.
+
+`flutter analyze` clean; `home_page_test.dart` 17/17.
+
+Round 2, `--final`: `VERDICT: APPROVE`. Round-1 MAJOR closed -- geometry fixed, regression proof
+"meaningful" (explicitly credited for having been shown to fail pre-fix). `GO: APPROVED -- week-strip
+gate complete.` `PUSH: AUTHORIZED under the current Gate policy.` Per CLAUDE.md §20, this genuine
+APPROVE authorizes the commit and push that follow.

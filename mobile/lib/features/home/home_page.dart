@@ -536,16 +536,36 @@ class _HudWeekSection extends ConsumerWidget {
                         ).overPhoto(t),
                       ),
                       const SizedBox(height: 7),
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: cell.done
-                              ? t.accent
-                              : cell.isToday
-                                  ? t.accent.withValues(alpha: 0.5)
-                                  : t.textTertiary.withValues(alpha: 0.4),
+                      // A filled SQUARE tile, not a dot: the Figma-Make
+                      // prototype (docs/Redisign/reference/prototype/p_162.jpg)
+                      // draws this row as solid colour-coded squares,
+                      // prominent enough to read the week's shape at a
+                      // glance -- a 7px dot reads as barely-there decoration
+                      // at arm's length, which is what a redesign pass
+                      // against that reference caught. `AspectRatio(1)`
+                      // rather than a fixed width: each cell already sits in
+                      // an `Expanded` column of a 7-wide row, so a fixed
+                      // width (or `double.infinity`, this widget's own first
+                      // attempt -- caught by a GPT review round before it
+                      // shipped) stretches into a rectangle instead of
+                      // scaling with the column and staying square. Same
+                      // three states as before (done/today/neither), same
+                      // colour logic -- only the shape changed.
+                      AspectRatio(
+                        key: Key('home.week.tile.${cell.day.weekday}'),
+                        aspectRatio: 1,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(6),
+                            color: cell.done
+                                ? t.accent
+                                : cell.isToday
+                                    ? t.accent.withValues(alpha: 0.5)
+                                    : t.textTertiary.withValues(alpha: 0.18),
+                            border: cell.isToday && !cell.done
+                                ? Border.all(color: t.accent, width: 1.5)
+                                : null,
+                          ),
                         ),
                       ),
                     ],

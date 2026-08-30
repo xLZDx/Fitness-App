@@ -14,7 +14,9 @@ import 'package:fitness_app/features/auth/data/auth_user.dart';
 import 'package:fitness_app/features/auth/state/auth_providers.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
+import 'package:fitness_app/features/home/data/home_dashboard.dart';
 import 'package:fitness_app/features/home/home_page.dart';
+import 'package:fitness_app/features/home/state/home_dashboard_providers.dart';
 import 'package:fitness_app/features/programmes/data/mock_programme_repository.dart';
 import 'package:fitness_app/features/programmes/data/programme.dart';
 import 'package:fitness_app/features/programmes/state/programme_providers.dart';
@@ -54,6 +56,7 @@ Widget _buildApp({
   List<Programme>? programmes,
   AuthUser? user,
   List<ExerciseItem>? catalog,
+  List<WeekDayCell>? weekStrip,
   /// Gate M. The home Suggestions section refuses when the pre-exercise screen
   /// cannot clear the user, and an unscreened profile is blocked — so a
   /// harness that says nothing about screening renders a refusal instead of
@@ -98,6 +101,8 @@ Widget _buildApp({
       // from provider through card to navigation.
       if (catalog != null)
         forYouExercisesProvider.overrideWith((_) async => catalog),
+      if (weekStrip != null)
+        weekStripProvider.overrideWithValue(weekStrip),
       safetyContextProvider.overrideWith((_) async =>
           safety ??
           SafetyContext(
@@ -399,6 +404,79 @@ void main() {
       await tester.pump();
 
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('week strip', () {
+    // A GPT review round on this gate caught the first version of this tile
+    // shipping as a rectangle (`width: double.infinity` inside a 7-wide
+    // `Expanded` row stretches, it doesn't square) despite the gate's own
+    // stated goal of matching the Figma reference's square day markers --
+    // and the existing "renders the greeting header, hero and week section"
+    // test above only checks that `Key('home.week')` exists, so it passed
+    // regardless. This pins the actual visual invariant instead.
+    testWidgets('each day tile is square, not a stretched rectangle',
+        (tester) async {
+      final monday = DateTime(2026, 8, 24); // a real Monday
+      final week = [
+        for (var i = 0; i < 7; i++)
+          WeekDayCell(
+            day: monday.add(Duration(days: i)),
+            done: false,
+            scheduled: false,
+            isToday: false,
+          ),
+      ];
+
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp(weekStrip: week));
+      await tester.pump();
+
+      for (var i = 0; i < 7; i++) {
+        final tile =
+            find.byKey(Key('home.week.tile.${week[i].day.weekday}'));
+        expect(tile, findsOneWidget, reason: 'day index $i');
+        final size = tester.getSize(tile);
+        expect(size.width, closeTo(size.height, 0.5),
+            reason: 'day index $i: ${size.width} x ${size.height} is not '
+                'square');
+      }
+    });
+
+    testWidgets('today, not yet done, gets an accent outline ring',
+        (tester) async {
+      final monday = DateTime(2026, 8, 24);
+      final week = [
+        for (var i = 0; i < 7; i++)
+          WeekDayCell(
+            day: monday.add(Duration(days: i)),
+            done: false,
+            scheduled: false,
+            isToday: i == 2,
+          ),
+      ];
+
+      await _setLargeSurface(tester);
+      await tester.pumpWidget(_buildApp(weekStrip: week));
+      await tester.pump();
+
+      final todayTile = tester.widget<AspectRatio>(
+        find.byKey(Key('home.week.tile.${week[2].day.weekday}')),
+      );
+      final container = todayTile.child! as Container;
+      final decoration = container.decoration! as BoxDecoration;
+      expect(decoration.border, isNotNull,
+          reason: 'today-not-done must be visually distinguishable from an '
+              'unstarted past day, which shares its pale fill');
+
+      // A day that is neither today nor done gets no border -- the ring is
+      // what marks "today", not a default every tile carries.
+      final pastTile = tester.widget<AspectRatio>(
+        find.byKey(Key('home.week.tile.${week[0].day.weekday}')),
+      );
+      final pastDecoration =
+          (pastTile.child! as Container).decoration! as BoxDecoration;
+      expect(pastDecoration.border, isNull);
     });
   });
 }
