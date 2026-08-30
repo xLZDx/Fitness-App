@@ -37314,3 +37314,22 @@ language only where the mapping proves it should.
 
 Next: GPT-PM review round on this commit, push once `VERDICT: APPROVE`, then the house-format report
 for this gate, then opening the Scan mapping gate.
+
+## 2026-08-30 -- Gate 6 report published; Onboarding redesign cycle reconciled
+
+House-format report for the safety-screen title-only reconciliation (previous entry) written,
+provenance-conformed, RU published as an artifact
+(`https://claude.ai/code/artifact/845a2a02-a4e3-4de1-82e4-523f3db3dd0d`), EN the durable in-repo
+record: `reports/REDESIGN_GATE6_ONBOARDING_SAFETY_2026-08-30.{ru,}.html`.
+
+Per GPT-PM's own framing, Onboarding is now reconciled for the current full-handoff scope: Phase 1
+(Goal/Level/Schedule/Equipment/height-weight, Gate 5) plus this gate's title-only pass on the four
+frozen safety screens (Gate 6) together close the Onboarding line of the HUD/Figma redesign mandate.
+Next: Scan mapping gate, default already set by GPT-PM (preserve the richer live/history production
+UI, reference supplies visual/state language only where the mapping proves it should).
+
+Operator instruction, same session (2026-08-30): after every gate that touches `mobile/lib`, build
+and send a release APK to Firebase App Distribution without being asked -- "всегда отправлять новые
+билды в апп дистанции." Saved to auto-memory
+(`feedback-fitness-app-always-distribute-builds.md`). `scripts/dev/build_release.ps1 -Distribute`
+run for this gate plus Gate 5 together (both touched `mobile/lib` since the last distributed build).

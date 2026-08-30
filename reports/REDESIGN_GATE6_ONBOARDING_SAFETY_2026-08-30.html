@@ -1,0 +1,239 @@
+<!doctype html>
+<title>Redesign Gate 6: Onboarding Safety Screens</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#e2e7ec;
+    --text:#171b21; --text-muted:#4d5a68;
+    --accent:#2b5797; --accent-strong:#1c3c6b; --accent-soft:#dde7f3;
+    --crit:#b3261e; --crit-soft:#fbe6e4;
+    --warn:#a05a00; --warn-soft:#f8ead2;
+    --good:#1f7a4d; --good-soft:#e0f1e7;
+    --border:rgba(23,27,33,.14);
+    --code-bg:#0e1116; --code-text:#dfe6ea;
+    --shadow:0 1px 2px rgba(23,27,33,.06),0 8px 24px rgba(23,27,33,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+      --text:#e7ecf1; --text-muted:#9aa8b6;
+      --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+      --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+      --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+      --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+      --border:rgba(231,237,239,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+    --text:#e7ecf1; --text-muted:#9aa8b6;
+    --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+    --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+    --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+    --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+    --border:rgba(231,237,239,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:48px 22px 100px}
+
+  header{padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);margin:0 0 12px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.14;margin:0 0 10px;text-wrap:balance}
+  .dek{font-size:16px;color:var(--text-muted);max-width:72ch;margin:0}
+
+  section{margin-top:44px;scroll-margin-top:20px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kicker::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;flex:none}
+  h2{font-family:"Archivo",sans-serif;font-weight:700;font-size:20px;margin:0 0 6px}
+  .sec-note{color:var(--text-muted);font-size:13.5px;margin:0 0 16px;max-width:72ch}
+  p{margin:0 0 12px;max-width:72ch}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:10px}
+
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+  .sha{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:.86em}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+  .pill.good{background:var(--good-soft);color:var(--good)}
+  .pill.warn{background:var(--warn-soft);color:var(--warn)}
+  .pill.crit{background:var(--crit-soft);color:var(--crit)}
+  .pill.muted{background:var(--surface-2);color:var(--text-muted)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 11px;vertical-align:top;border-bottom:1px solid var(--border)}
+  thead th{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr.frozen td{background:var(--crit-soft)}
+  tbody tr.go td{background:var(--good-soft)}
+
+  ul.decisions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ul.decisions li{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px}
+  ul.decisions .title{font-weight:700;font-size:14.5px;margin-bottom:4px}
+  ul.decisions .body{color:var(--text);font-size:13.5px}
+  ul.decisions .body p{margin:0 0 6px}
+  ul.decisions li.frozen{border-left-color:var(--crit)}
+  ul.decisions li.go{border-left-color:var(--good)}
+
+  .foot-note{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · autonomous PM Bridge session · 2026-08-30</p>
+    <h1>Gate 6: Onboarding safety screens — mapping, minimal scope, Onboarding redesign cycle closed</h1>
+    <p class="dek">The four frozen screens (body, healthFlags, screening, preview) were reconciled against the reference. Mapping's conclusion: the reference has no analogue for any of them by content, and their tokens/chips/panels already match. The one safe visual change is the heading. GPT-PM approved exactly that and nothing more. 132/132 tests pass, <strong>APPROVE</strong>, pushed.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7227db7</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+  <section id="mapping">
+    <p class="kicker">Mapping — the conclusion</p>
+    <h2>For three of the four screens, the reference has nothing comparable at all</h2>
+    <p>The full element -&gt; field -&gt; safety consumer -&gt; invariant map lives in <code class="mono">core/DECISION_LOG.md</code>. The reference has 9 steps (Welcome, Goal, Level, Schedule, Parameters, Equipment, Camera and Background — both dropped from the shipped product, "Ready"). None of them models a medical screening, a health-flags form, a limitations form, or any refusal state. The one partial analogue is the "Ready" step for Preview's happy-path branch only — never for its refused/empty branches, which have no reference counterpart at all.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Screen</th><th>Highest-stakes finding</th><th>What may change</th></tr></thead>
+        <tbody>
+          <tr class="frozen"><td>step_body.dart</td><td>BodyZoneMap writes Injury.region — exact tag match required by exercise_filter.dart; a text-only write degrades to fuzzy substring matching</td><td>Title only</td></tr>
+          <tr class="frozen"><td>step_health_flags.dart</td><td>professionalGuidance.reported is a binary hard block (pregnancy/postpartum), deliberately no "unsure" state; surgery/clinicianAdvice are also whole-person blocks, not just intensity caps</td><td>Title only</td></tr>
+          <tr class="frozen"><td>step_screening.dart</td><td>The single highest-stakes file in the app: fail-closed by construction, rendered from ParQQuestion.values specifically so an 8th question can't be silently added without being shown; SingleChoiceChips deliberately has no deselect</td><td>Title only</td></tr>
+          <tr class="frozen"><td>step_preview.dart</td><td>Writes nothing — a pure 3-branch consumer (refused/empty/ready); collapsing branches would show exercises to a user the app decided must not train</td><td>Title only</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tokens">
+    <p class="kicker">Why so little</p>
+    <h2>Tokens already match the reference — there's nothing left to reconcile</h2>
+    <p>The danger color <code class="mono">t.danger = 0xFFFF5A5A</code> is already byte-identical to the reference's error color; the glass panel and chip recipes are the same ones already confirmed byte-matched in earlier gates. <code class="mono">SafetyRefusalCard</code>/<code class="mono">EligibilityNotice</code> already draw from these tokens. The only element with no token analogue and no data risk is the heading — so that's the one change that shipped.</p>
+    <p><code class="mono">EligibilityNotice</code> is used in 8 places app-wide (confirmed via grep) — 5 screens outside onboarding plus its own "urgent" chest-pain logic. Touching it inside an onboarding gate would be an app-wide functional risk, not a single-screen visual one — so it's explicitly excluded, along with <code class="mono">SafetyRefusalCard</code>, <code class="mono">BodyZoneMap</code>, every chip widget, and the embedded <code class="mono">step_health.dart</code>.</p>
+  </section>
+
+  <section id="verify">
+    <p class="kicker">Verification and GPT-PM's decision</p>
+    <ul class="decisions">
+      <li class="go">
+        <div class="title">GPT-PM approved the minimal scope without pushback</div>
+        <div class="body"><p>"Mapping actually showed that for the safety part, the correct reconciliation result in most places is NO CHANGE REQUIRED." Explicitly rejected replacing chip pairs with toggle switches (the reference uses one in Schedule/Profile) — that's a control-type change, not chrome, and risks the screening screen's no-deselect invariant.</p></div>
+      </li>
+      <li class="go">
+        <div class="title">Mandatory documentation fix</div>
+        <div class="body"><p><code class="mono">OnbRefTitle</code>'s doc comment claimed "used only at the 4 Phase-1 call sites" — after this gate that's 8; rewritten to describe staged reconciliation rather than a fixed count.</p></div>
+      </li>
+      <li class="go">
+        <div class="title">132/132 tests, flutter analyze clean</div>
+        <div class="body"><p>Full <code class="mono">test/features/onboarding/</code> run — unchanged from Gate 5, confirming the title swap didn't touch the fail-closed screening loop, the whole-person block fields, the InjuryRegion write, or preview's 3-branch dispatch.</p></div>
+      </li>
+      <li class="go">
+        <div class="title">GPT-PM: VERDICT APPROVE, PUSH: AUTHORIZED</div>
+        <div class="body"><p>"Onboarding Safety Visual Reconciliation: APPROVED / CLOSED for the current full-handoff scope." Independently re-checked <code class="mono">OnbRefTitle</code> itself — confirmed it's a Column of Text with HUD typography and no state/callbacks/providers/navigation/gestures/semantics — the swap cannot by itself affect PAR-Q+ answers, injury writes, or preview dispatch.</p></div>
+      </li>
+    </ul>
+  </section>
+
+  <p class="foot-note">Decision and full mapping in <code class="mono">core/DECISION_LOG.md</code>. Per GPT-PM: "After push/report, Onboarding redesign can be considered reconciled for the current full-handoff scope" — next gate: Scan mapping, default already set (preserve the richer live/history UI, reference supplies visual language only where the mapping proves it should).</p>
+</div>
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

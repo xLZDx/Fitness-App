@@ -1,0 +1,239 @@
+<!doctype html>
+<title>Гейт 6 редизайна: safety-экраны Onboarding</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#e2e7ec;
+    --text:#171b21; --text-muted:#4d5a68;
+    --accent:#2b5797; --accent-strong:#1c3c6b; --accent-soft:#dde7f3;
+    --crit:#b3261e; --crit-soft:#fbe6e4;
+    --warn:#a05a00; --warn-soft:#f8ead2;
+    --good:#1f7a4d; --good-soft:#e0f1e7;
+    --border:rgba(23,27,33,.14);
+    --code-bg:#0e1116; --code-text:#dfe6ea;
+    --shadow:0 1px 2px rgba(23,27,33,.06),0 8px 24px rgba(23,27,33,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+      --text:#e7ecf1; --text-muted:#9aa8b6;
+      --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+      --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+      --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+      --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+      --border:rgba(231,237,239,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+    --text:#e7ecf1; --text-muted:#9aa8b6;
+    --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+    --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+    --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+    --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+    --border:rgba(231,237,239,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:48px 22px 100px}
+
+  header{padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);margin:0 0 12px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.14;margin:0 0 10px;text-wrap:balance}
+  .dek{font-size:16px;color:var(--text-muted);max-width:72ch;margin:0}
+
+  section{margin-top:44px;scroll-margin-top:20px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kicker::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;flex:none}
+  h2{font-family:"Archivo",sans-serif;font-weight:700;font-size:20px;margin:0 0 6px}
+  .sec-note{color:var(--text-muted);font-size:13.5px;margin:0 0 16px;max-width:72ch}
+  p{margin:0 0 12px;max-width:72ch}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:10px}
+
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+  .sha{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:.86em}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+  .pill.good{background:var(--good-soft);color:var(--good)}
+  .pill.warn{background:var(--warn-soft);color:var(--warn)}
+  .pill.crit{background:var(--crit-soft);color:var(--crit)}
+  .pill.muted{background:var(--surface-2);color:var(--text-muted)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 11px;vertical-align:top;border-bottom:1px solid var(--border)}
+  thead th{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr.frozen td{background:var(--crit-soft)}
+  tbody tr.go td{background:var(--good-soft)}
+
+  ul.decisions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ul.decisions li{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px}
+  ul.decisions .title{font-weight:700;font-size:14.5px;margin-bottom:4px}
+  ul.decisions .body{color:var(--text);font-size:13.5px}
+  ul.decisions .body p{margin:0 0 6px}
+  ul.decisions li.frozen{border-left-color:var(--crit)}
+  ul.decisions li.go{border-left-color:var(--good)}
+
+  .foot-note{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · автономная сессия PM Bridge · 2026-08-30</p>
+    <h1>Гейт 6: safety-экраны Onboarding — mapping, минимальный scope, закрытие полного цикла редизайна Onboarding</h1>
+    <p class="dek">Четыре заморожённых экрана (body, healthFlags, screening, preview) сверены с референсом. Вывод mapping'а: у референса нет аналога ни для одного из них по содержанию, а токены/чипы/панели уже совпадают. Единственное безопасное визуальное изменение — заголовок. GPT-PM утвердил именно это, ничего больше. 132/132 теста прошли, <strong>APPROVE</strong>, запушено.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7227db7</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+  <section id="mapping">
+    <p class="kicker">Mapping — вывод</p>
+    <h2>Для трёх из четырёх экранов у референса нет вообще ничего похожего</h2>
+    <p>Полная карта элемент → поле → потребитель безопасности → инвариант — в <code class="mono">core/DECISION_LOG.md</code>. У референса 9 шагов (Welcome, Goal, Level, Schedule, Parameters, Equipment, Camera и Background — оба выпилены из продукта, «Готово»). Ни один из них не моделирует медицинский скрининг, форму health-флагов, форму ограничений или состояние отказа. Единственный частичный аналог — шаг «Готово» для happy-path ветки Preview, но не для его веток отказа/пустого плана, для которых в референсе вообще ничего нет.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Экран</th><th>Самая опасная находка</th><th>Что можно менять</th></tr></thead>
+        <tbody>
+          <tr class="frozen"><td>step_body.dart</td><td>BodyZoneMap пишет Injury.region — точное совпадение тега нужно exercise_filter.dart; текстовая замена деградирует до нечёткого поиска подстрокой</td><td>Только заголовок</td></tr>
+          <tr class="frozen"><td>step_health_flags.dart</td><td>professionalGuidance.reported — бинарный жёсткий блок (беременность/послеродовое состояние), намеренно без «не уверена»; surgery/clinicianAdvice — тоже whole-person блоки, не просто ограничения интенсивности</td><td>Только заголовок</td></tr>
+          <tr class="frozen"><td>step_screening.dart</td><td>Самый опасный файл в приложении: fail-closed по конструкции, рендерится из ParQQuestion.values специально, чтобы 8-й вопрос не мог быть добавлен в модель и не показан; SingleChoiceChips намеренно без снятия выбора</td><td>Только заголовок</td></tr>
+          <tr class="frozen"><td>step_preview.dart</td><td>Ничего не пишет — чистый потребитель с 3 ветками (отказ/пустой план/готовый план); схлопывание веток показало бы упражнения человеку, которому приложение решило не давать тренироваться</td><td>Только заголовок</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tokens">
+    <p class="kicker">Почему так мало</p>
+    <h2>Токены уже совпадают с референсом — реконсилировать нечего</h2>
+    <p>Цвет опасности <code class="mono">t.danger = 0xFFFF5A5A</code> уже побайтово совпадает с референсным «Ошибка»; стеклянная панель и рецепт чипов — те же самые, что уже подтверждены побайтово в прошлых гейтах. <code class="mono">SafetyRefusalCard</code>/<code class="mono">EligibilityNotice</code> уже рисуются из этих токенов. Единственный элемент без токенового аналога и без риска для данных — заголовок, поэтому именно он и стал единственным изменением.</p>
+    <p><code class="mono">EligibilityNotice</code> используется в 8 местах по всему приложению (подтверждено grep) — 5 экранов вне онбординга плюс собственная логика «срочно» для боли в груди. Трогать его в рамках onboarding-гейта означало бы функциональный риск на всё приложение, а не визуальный риск одного экрана — поэтому явно исключён из scope, как и <code class="mono">SafetyRefusalCard</code>, <code class="mono">BodyZoneMap</code>, все chip-виджеты и вложенный <code class="mono">step_health.dart</code>.</p>
+  </section>
+
+  <section id="verify">
+    <p class="kicker">Проверка и решение GPT-PM</p>
+    <ul class="decisions">
+      <li class="go">
+        <div class="title">GPT-PM одобрил минимальный scope без возражений</div>
+        <div class="body"><p>«Mapping фактически показал, что для safety-части правильный результат reconciliation в большинстве мест — NO CHANGE REQUIRED.» Явно отклонил идею замены chip-пар на тумблеры (референс использует тумблер в Schedule/Profile) — смена типа контрола, не chrome, и риск для инварианта «нельзя снять выбор» в screening.</p></div>
+      </li>
+      <li class="go">
+        <div class="title">Обязательная документационная правка</div>
+        <div class="body"><p>Doc-комментарий <code class="mono">OnbRefTitle</code> утверждал «используется только на 4 точках вызова фазы 1» — после этого гейта их 8, комментарий переписан как описание поэтапной сверки, а не фиксированного числа.</p></div>
+      </li>
+      <li class="go">
+        <div class="title">132/132 теста, flutter analyze чисто</div>
+        <div class="body"><p>Полный прогон <code class="mono">test/features/onboarding/</code> — без изменений относительно гейта 5, подтверждает, что замена заголовка не задела fail-closed цикл скрининга, whole-person блоки, запись InjuryRegion или 3-ветвевую диспетчеризацию preview.</p></div>
+      </li>
+      <li class="go">
+        <div class="title">GPT-PM: VERDICT APPROVE, PUSH: AUTHORIZED</div>
+        <div class="body"><p>«Onboarding Safety Visual Reconciliation: APPROVED / CLOSED for the current full-handoff scope.» Отдельно перепроверил сам <code class="mono">OnbRefTitle</code> — подтвердил, что это Column с Text и HUD-типографикой без state/callbacks/providers/navigation/gestures/semantics — замена не может повлиять на ответы PAR-Q+, запись травм или диспетчеризацию preview сама по себе.</p></div>
+      </li>
+    </ul>
+  </section>
+
+  <p class="foot-note">Решение и полная карта — в <code class="mono">core/DECISION_LOG.md</code>. По словам GPT-PM: «После этого Onboarding redesign можно считать reconciled по текущему full-handoff scope» — следующий гейт: Scan mapping, дефолт уже установлен (сохранить текущий богатый live/history UI, референс — только источник визуального языка, если mapping не докажет обратное).</p>
+</div>
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
