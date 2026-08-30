@@ -35476,3 +35476,20 @@ rewritten to describe the actual current remote state (`846d04e`, already pushed
 and this entry was added recording the hook conclusion above with its file:line evidence, per that
 plan's own Definition of Done. No hook file, source code, or `pm-bridge` code was touched by either
 the push or this remediation -- documentation only.
+
+## 2026-08-30 ~08:55 UTC -- HTML report for the retro-governance/stale-handoff work, per house format
+
+`~/.claude` Stop hook `report_due.py` fired twice on the two entries above (3 commits since
+`reports/` was last touched). The escape hatch (state in one line that the work doesn't warrant a
+report, and continue) was used once and the hook re-fired anyway on the same 3 commits on the next
+turn, and the work itself has real substance -- a genuine GPT-PM `MAJOR` finding, diagnosed and
+fixed -- so a report was written rather than declining a second time.
+
+Wrote the RU/EN pair (`reports/ROSETTA_HANDOFF_GOVERNANCE_2026-08-30.ru.html` /
+`.html`), ran `report_conform.py` (provenance block + copy button injected, `--check` clean),
+published the RU file as an artifact, and am committing both together with this entry. Content:
+summary, timeline, the before/after of the stale handoff header GPT-PM caught, the
+`gpt_review_gate.py` conclusion with file:line citation, and a Rosetta governance table (Planned /
+DoD / Status / Tail) for both plans -- the retrospective one (`...258870`, left `pending`, DoD
+rejected as insufficient by GPT-PM, superseded) and the remediation one (`...a4b86c`, `VERDICT:
+APPROVE`, closed `passed`). No source code touched; documentation only.
