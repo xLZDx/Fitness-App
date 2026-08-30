@@ -37501,3 +37501,10 @@ provenance question is resolved for the scanner feature specifically (5 citation
 
 Build distributed per the standing instruction: `pwsh scripts/dev/build_release.ps1 -Distribute`,
 stamped `GIT_SHA=4ed8af5`, uploaded to Firebase App Distribution.
+
+## 2026-08-30 -- Test build distributed (Gate 7)
+
+`pwsh scripts/dev/build_release.ps1 -Distribute` run per the standing operator instruction. Stamped
+`GIT_SHA=4ed8af5`. Uploaded to Firebase App Distribution as release `1.0.0 (2914)`, distributed to
+`korostelevivan@gmail.com`. Console:
+`https://console.firebase.google.com/project/fitness-app-korostelev/appdistribution/app/android:com.fitnessapp.fitness_app.sptr/releases/77qhkd6p9m6ro`.
