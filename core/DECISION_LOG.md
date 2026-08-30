@@ -36975,3 +36975,101 @@ record.
 
 Next: continuing to the remaining redesign-scope work -- Onboarding reconciliation (the mapping-first
 gate already authorised, no UI change yet) and/or Scan screen reconciliation (not yet routed).
+
+## 2026-08-30 -- Onboarding reconciliation: the pre-authorised mapping gate, built and delivered
+
+Per the standing rule above ("the only authorised next step for Onboarding is a reconciliation/
+design gate: build the mapping current step/input -> safety consumer -> proposed visual step FIRST,
+before any UI change"), a background investigation agent built that mapping. Every load-bearing
+citation was independently spot-checked by direct `Read` before being trusted (`par_q.dart:123-125`
+`kBlockingQuestions`; `eligibility.dart:201-232` `advisories`/`wholePersonBlocks`) -- both confirmed
+accurate. Full table: `reports/REDESIGN_GATE4_ONBOARDING_MAPPING_2026-08-30.{ru,}.html`.
+
+**Current flow**: 10 `OnboardingStep`s (`step_answered.dart:68-90`, `kOnboardingOrder`) + 1 embedded
+sub-screen (the medical-disclosure block inside `body`) = 11 question surfaces. **Reference**: 9
+screens (`full_handoff_v1/Fitness Onboarding - Dark.dc.html:41-250`), three of which (Welcome,
+Camera-permission, Background-photo) have NO current data-collection counterpart at all -- pure
+additions if adopted, explicitly permitted by the existing reconciliation model.
+
+**Five current steps carry an active safety/eligibility consumer, and none of the five has a
+reference-screen equivalent to reorganise into:**
+- `body` (limitations tab) -> `Injury.region` -> `exercise_filter.dart` `isContraindicated` ->
+  `eligibility.dart:323-327` `BlockReason.injury`.
+- `healthFlags` -> restrictions/bloodPressure/surgery/clinicianAdvice/professionalGuidance -> the
+  entire whole-person block set + intensity-ceiling composition (`eligibility.dart:201-204,
+  217-232, 281-291, 329-337`) -- confirmed by direct read, matches exactly.
+- `screening` -> the 7 PAR-Q+ answers -> `par_q.dart:208-245` `screen()`, fail-closed on any
+  unanswered question, `chestPain`/`medicallySupervisedOnly` block outright (confirmed
+  `kBlockingQuestions` directly) -- "the only step whose answers can stop the app producing a
+  workout at all."
+- `equipment` (location/available) -> `eligibility.dart:339-343` + `exercise_filter.dart:470-489`
+  `BlockReason.equipment`.
+- `preview` -> renders `SafetyRefusalCard`/`EligibilityNotice` when `wholePersonBlocks` is
+  non-empty; the reference's equivalent "Ready" screen has no refused/blocked state at all, so
+  reproducing only its happy-path visual would delete a real, currently-guaranteed refusal path.
+
+**Everything else in the current flow is either a direct 1:1 visual match to a reference screen with
+no safety consumer to lose** (goal, tier, schedule day-count/weekdays, equipment chips, height/weight
+sliders) **or dead data collection today -- collected, stored, never read by any rule**: the 7
+free-text medical fields under `body`'s disclosure (by design --
+`ai_planner/data/workout_plan.dart:112-114`, "claiming otherwise told a user with diabetes it had
+been screened for"), all of `barriers`, all of `lifestyle`, `FitnessLevel.currentExercises/
+frequencyPerWeek/basics`, `FitnessGoals.flexibility/generalFitness/specificSport`,
+`EquipmentAccess.homeEquipment`, `PersonalInfo.weightTargetKg/activityLevel/age`. Flagged as fact,
+per instruction to the agent -- **not** a recommendation to remove any of it; several of these fields
+(the medical free text especially) matter for the user's/a clinician's own reference even though no
+rule parses them, and dropping them for reference parity would be a real product/privacy regression
+the code-level safety check alone would never catch.
+
+**Not yet done, and deliberately not started without further sign-off**: any actual UI
+reorganisation. The existing rule already requires explicit sign-off before touching onboarding UI at
+all; this mapping is the evidence that sign-off decision needs, not a green light to start
+implementing. Routed to GPT-PM next as a scope question: given this mapping, what (if anything)
+should this gate actually build -- restyle only the five SAFE-to-reorganise, no-consumer/1:1-mapped
+screens onto the reference's visual language while leaving the five safety-bearing steps
+untouched as their own steps, or hold the whole gate.
+
+**GPT-PM's decision, received and binding** (`gpt_send_and_await`): option **(d)**, a phased
+reconciliation close to (a) but with a harder boundary.
+
+- **Phase 1 (this gate's authorised implementation scope)**: restyle exactly the five direct,
+  safe mappings onto the reference's visual language -- Goal, Level/Experience, Schedule, Personal
+  height/weight (-> reference Parameters), Equipment (presentation-only: same values, same
+  provider/state writes, same eligibility inputs).
+- **`body`, `healthFlags`, `screening`, `preview`/refusal: FROZEN, structurally AND visually, in
+  this gate** -- no reordering, grouping, medically-meaningful label changes, required/optional
+  status, skip behaviour, default values, navigation conditions, or disclosure-boundary changes.
+  The one exception: an independently-discovered, unrelated UI defect may still be fixed on its own
+  merits. `screening`/PAR-Q+ named explicitly as a frozen surface that must not even be "nicely
+  merged" with a neighbouring screen -- its own visual redesign, if any, is a SEPARATE future gate
+  requiring a regression contract on all 7 answers, unanswered-question behaviour, and refusal
+  routing. `preview`/refusal likewise deferred to its own gate: the reference's "Ready" screen may
+  supply visual language for the happy path but NOT the state model -- production must keep at
+  least ready and blocked/refused as distinct states, and no redesign may turn a refusal into a
+  happy-path card variant or hide the blocking reason.
+- **Dead-data steps stay as-is.** A field going unread by the eligibility engine today is not
+  grounds to delete or merge it -- that is a separate product/data-retention decision, explicitly
+  not this gate's to make. The medical free-text fields especially are not to be touched merely
+  because the rule engine does not parse them.
+- **9-screens is explicitly NOT the success metric.** This gate may end at 11 question surfaces
+  and that is fine -- the metric is "5 direct mappings visually reconciled, zero safety/data
+  semantic change," not a step count.
+- **Shared onboarding scaffold/progress/header**: changeable only if the change is proven to be
+  pure shared presentation, with test evidence that every OTHER (frozen) safety screen keeps its
+  prior navigation, content visibility and state transitions. Otherwise a shared-shell change is
+  itself out of this slice's scope.
+- **New binding governance statement**: *"The onboarding handoff is authoritative for visual
+  treatment where a direct semantic mapping exists. It is not authoritative for step count,
+  safety-data collection, refusal states, or eligibility semantics. Production safety flows take
+  precedence over the reference."*
+- **Next gate already named**: a future "Onboarding Safety Visual Reconciliation Gate" for
+  `body` -> `healthFlags` -> `screening` -> `preview`, chrome/layout changes permitted there only
+  under the invariant "same collected data + same required answers + same fail-closed behaviour +
+  same refusal outcome."
+
+**Report published**: `reports/REDESIGN_GATE4_ONBOARDING_MAPPING_2026-08-30.{ru,}.html`, house format,
+full mapping table plus this scope decision, RU published as an artifact
+(`https://claude.ai/code/artifact/743b1547-347f-4154-8de3-f217bebf1300`), EN the durable in-repo
+record.
+
+Next: implementing Phase 1 (the five GO'd screens) as its own gate.

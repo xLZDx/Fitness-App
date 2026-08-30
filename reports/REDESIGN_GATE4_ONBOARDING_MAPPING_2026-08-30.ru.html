@@ -1,0 +1,241 @@
+<!doctype html>
+<title>Гейт 4 редизайна: карта Onboarding</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#e2e7ec;
+    --text:#171b21; --text-muted:#4d5a68;
+    --accent:#2b5797; --accent-strong:#1c3c6b; --accent-soft:#dde7f3;
+    --crit:#b3261e; --crit-soft:#fbe6e4;
+    --warn:#a05a00; --warn-soft:#f8ead2;
+    --good:#1f7a4d; --good-soft:#e0f1e7;
+    --border:rgba(23,27,33,.14);
+    --code-bg:#0e1116; --code-text:#dfe6ea;
+    --shadow:0 1px 2px rgba(23,27,33,.06),0 8px 24px rgba(23,27,33,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+      --text:#e7ecf1; --text-muted:#9aa8b6;
+      --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+      --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+      --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+      --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+      --border:rgba(231,237,239,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+    --text:#e7ecf1; --text-muted:#9aa8b6;
+    --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+    --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+    --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+    --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+    --border:rgba(231,237,239,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:48px 22px 100px}
+
+  header{padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);margin:0 0 12px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.14;margin:0 0 10px;text-wrap:balance}
+  .dek{font-size:16px;color:var(--text-muted);max-width:72ch;margin:0}
+
+  section{margin-top:44px;scroll-margin-top:20px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kicker::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;flex:none}
+  h2{font-family:"Archivo",sans-serif;font-weight:700;font-size:20px;margin:0 0 6px}
+  .sec-note{color:var(--text-muted);font-size:13.5px;margin:0 0 16px;max-width:72ch}
+  p{margin:0 0 12px;max-width:72ch}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:10px}
+
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+  .sha{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:.86em}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+  .pill.good{background:var(--good-soft);color:var(--good)}
+  .pill.warn{background:var(--warn-soft);color:var(--warn)}
+  .pill.crit{background:var(--crit-soft);color:var(--crit)}
+  .pill.muted{background:var(--surface-2);color:var(--text-muted)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 11px;vertical-align:top;border-bottom:1px solid var(--border)}
+  thead th{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr.frozen td{background:var(--crit-soft)}
+  tbody tr.go td{background:var(--good-soft)}
+
+  ul.decisions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ul.decisions li{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px}
+  ul.decisions .title{font-weight:700;font-size:14.5px;margin-bottom:4px}
+  ul.decisions .body{color:var(--text);font-size:13.5px}
+  ul.decisions .body p{margin:0 0 6px}
+  ul.decisions li.frozen{border-left-color:var(--crit)}
+  ul.decisions li.go{border-left-color:var(--good)}
+
+  .foot-note{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · автономная сессия PM Bridge · 2026-08-30</p>
+    <h1>Гейт 4: карта Onboarding «шаг → потребитель безопасности → референс», и решение по фазе 1</h1>
+    <p class="dek">Единственный разрешённый до этого шаг: построить карту, прежде чем трогать UI онбординга. Карта построена, 5 полей с реальным потребителем безопасности найдены, ни одно не имеет аналога в референсе. GPT-PM выбрал фазированный план — 5 безопасных экранов сейчас, safety-путь заморожен.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 5126f73</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+  <section id="counts">
+    <p class="kicker">Масштаб</p>
+    <h2>10 текущих экранов + 1 встроенный, 9 в референсе</h2>
+    <p>Текущий поток: 10 <code class="mono">OnboardingStep</code> + встроенный медицинский дисклеймер внутри <code class="mono">body</code> = 11 поверхностей вопросов. Референс: 9 экранов, из них 3 (Welcome, разрешение камеры, фон) вообще не имеют аналога в текущих данных — чистое добавление, если решим их принять.</p>
+  </section>
+
+  <section id="table">
+    <p class="kicker">Карта — сжатая версия</p>
+    <h2>Полная таблица — в <code class="mono">core/DECISION_LOG.md</code></h2>
+    <p class="sec-note">Красным — заморожено в этом гейте (реальный потребитель безопасности, нет аналога в референсе). Зелёным — прямое безопасное соответствие, одобрено к фазе 1.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Шаг</th><th>Что собирает</th><th>Потребитель безопасности</th><th>Референс</th><th>Классификация</th></tr></thead>
+        <tbody>
+          <tr class="go"><td>goalAndLevel — цель</td><td>FitnessGoals.primary</td><td>нет</td><td>Goal</td><td><span class="pill good">Фаза 1</span></td></tr>
+          <tr class="go"><td>goalAndLevel — tier</td><td>FitnessLevel.tier</td><td>нет (только персонализация)</td><td>Level/Experience</td><td><span class="pill good">Фаза 1</span></td></tr>
+          <tr><td>schedule</td><td>дни/нед, будни, минуты</td><td>нет</td><td>Schedule</td><td><span class="pill good">Фаза 1</span></td></tr>
+          <tr><td>personal — рост/вес</td><td>heightCm, weightCurrentKg</td><td>нет (только аватар Form Check)</td><td>Parameters</td><td><span class="pill good">Фаза 1</span></td></tr>
+          <tr><td>equipment</td><td>location, available</td><td><strong>eligibility.dart:339-343, BlockReason.equipment</strong></td><td>Equipment</td><td><span class="pill warn">Фаза 1, только presentation</span></td></tr>
+          <tr class="frozen"><td>body — ограничения</td><td>Injury.region</td><td><strong>exercise_filter.dart isContraindicated → BlockReason.injury</strong></td><td>нет аналога</td><td><span class="pill crit">Заморожено</span></td></tr>
+          <tr class="frozen"><td>healthFlags</td><td>restrictions, АД, операции, совет врача, проф. сопровождение</td><td><strong>весь whole-person block + intensity ceiling</strong></td><td>нет аналога</td><td><span class="pill crit">Заморожено</span></td></tr>
+          <tr class="frozen"><td>screening</td><td>7 ответов PAR-Q+</td><td><strong>par_q.dart screen(), fail-closed; chestPain/medicallySupervisedOnly → блок</strong></td><td>нет аналога</td><td><span class="pill crit">Заморожено — отдельный будущий гейт</span></td></tr>
+          <tr class="frozen"><td>preview</td><td>— (только читает)</td><td><strong>рендерит SafetyRefusalCard при блоке</strong></td><td>Ready (только happy-path)</td><td><span class="pill crit">Заморожено — отдельный будущий гейт</span></td></tr>
+          <tr><td>body — приоритеты, barriers, lifestyle, personal (доп. поля), медицинский текст</td><td>разное, всё в профиль</td><td>нет ни одного правила</td><td>частично / нет аналога</td><td><span class="pill muted">Не трогать — отдельное продуктовое решение</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="decision">
+    <p class="kicker">Решение GPT-PM</p>
+    <h2>Вариант (d): фазированная сверка, жёсткая граница</h2>
+    <ul class="decisions">
+      <li class="go">
+        <div class="title">Фаза 1 — разрешено в этом гейте</div>
+        <div class="body"><p>Goal, Level/Experience, Schedule, Personal рост/вес, Equipment (только presentation — те же значения, те же provider-записи, те же eligibility-входы).</p></div>
+      </li>
+      <li class="frozen">
+        <div class="title">body, healthFlags, screening, preview — заморожены структурно И визуально</div>
+        <div class="body"><p>Никакого переупорядочивания, группировки, смены required/optional, skip-логики, default-значений, условий навигации или границ дисклеймера. Screening/PAR-Q+ отдельно назван поверхностью, которую нельзя даже «красиво объединить» с соседним экраном — его собственный редизайн, если будет, это отдельный будущий гейт с regression-контрактом на все 7 ответов и маршрутизацию отказа. Preview/отказ — туда же: референсный «Ready» может дать визуальный язык только для happy-path, не модель состояний; production обязан сохранять минимум ready и blocked/refused как разные состояния.</p></div>
+      </li>
+      <li>
+        <div class="title">«Мёртвые» данные не трогаем</div>
+        <div class="body"><p>То, что поле сегодня не читается движком eligibility — не основание удалять или сливать его. Это отдельное продуктовое решение, особенно для свободного медицинского текста.</p></div>
+      </li>
+      <li>
+        <div class="title">9 экранов — явно НЕ цель</div>
+        <div class="body"><p>После этого гейта может остаться 11 поверхностей — это нормально. Метрика успеха: 5 прямых соответствий визуально сверены, ноль изменений в safety/data-семантике.</p></div>
+      </li>
+    </ul>
+  </section>
+
+  <p class="foot-note">Код в этом гейте не менялся — карта и решение зафиксированы в <code class="mono">core/DECISION_LOG.md</code>. Далее: реализация фазы 1 как отдельного гейта.</p>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

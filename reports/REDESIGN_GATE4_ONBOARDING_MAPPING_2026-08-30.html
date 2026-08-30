@@ -1,0 +1,241 @@
+<!doctype html>
+<title>Redesign Gate 4: Onboarding mapping</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#e2e7ec;
+    --text:#171b21; --text-muted:#4d5a68;
+    --accent:#2b5797; --accent-strong:#1c3c6b; --accent-soft:#dde7f3;
+    --crit:#b3261e; --crit-soft:#fbe6e4;
+    --warn:#a05a00; --warn-soft:#f8ead2;
+    --good:#1f7a4d; --good-soft:#e0f1e7;
+    --border:rgba(23,27,33,.14);
+    --code-bg:#0e1116; --code-text:#dfe6ea;
+    --shadow:0 1px 2px rgba(23,27,33,.06),0 8px 24px rgba(23,27,33,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+      --text:#e7ecf1; --text-muted:#9aa8b6;
+      --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+      --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+      --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+      --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+      --border:rgba(231,237,239,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+    --text:#e7ecf1; --text-muted:#9aa8b6;
+    --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+    --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+    --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+    --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+    --border:rgba(231,237,239,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:48px 22px 100px}
+
+  header{padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);margin:0 0 12px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.14;margin:0 0 10px;text-wrap:balance}
+  .dek{font-size:16px;color:var(--text-muted);max-width:72ch;margin:0}
+
+  section{margin-top:44px;scroll-margin-top:20px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kicker::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;flex:none}
+  h2{font-family:"Archivo",sans-serif;font-weight:700;font-size:20px;margin:0 0 6px}
+  .sec-note{color:var(--text-muted);font-size:13.5px;margin:0 0 16px;max-width:72ch}
+  p{margin:0 0 12px;max-width:72ch}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:10px}
+
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+  .sha{background:var(--surface-2);padding:1px 6px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:.86em}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+  .pill.good{background:var(--good-soft);color:var(--good)}
+  .pill.warn{background:var(--warn-soft);color:var(--warn)}
+  .pill.crit{background:var(--crit-soft);color:var(--crit)}
+  .pill.muted{background:var(--surface-2);color:var(--text-muted)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 11px;vertical-align:top;border-bottom:1px solid var(--border)}
+  thead th{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr.frozen td{background:var(--crit-soft)}
+  tbody tr.go td{background:var(--good-soft)}
+
+  ul.decisions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ul.decisions li{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px}
+  ul.decisions .title{font-weight:700;font-size:14.5px;margin-bottom:4px}
+  ul.decisions .body{color:var(--text);font-size:13.5px}
+  ul.decisions .body p{margin:0 0 6px}
+  ul.decisions li.frozen{border-left-color:var(--crit)}
+  ul.decisions li.go{border-left-color:var(--good)}
+
+  .foot-note{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · autonomous PM Bridge session · 2026-08-30</p>
+    <h1>Gate 4: the Onboarding "step → safety consumer → reference" map, and the Phase 1 decision</h1>
+    <p class="dek">The only step authorized before this: build the mapping before touching onboarding UI at all. Built. Five fields with a real safety consumer found, none with a reference equivalent. GPT-PM chose a phased plan — five safe screens now, the safety path frozen.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 5126f73</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+  <section id="counts">
+    <p class="kicker">Scale</p>
+    <h2>10 current screens + 1 embedded, 9 in the reference</h2>
+    <p>Current flow: 10 <code class="mono">OnboardingStep</code>s + the embedded medical-disclosure block inside <code class="mono">body</code> = 11 question surfaces. Reference: 9 screens, 3 of which (Welcome, camera permission, background photo) have no counterpart in current data at all — pure additions if adopted.</p>
+  </section>
+
+  <section id="table">
+    <p class="kicker">The map — condensed</p>
+    <h2>Full table lives in <code class="mono">core/DECISION_LOG.md</code></h2>
+    <p class="sec-note">Red — frozen in this gate (a real safety consumer, no reference equivalent). Green — direct safe mapping, GO'd for Phase 1.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Step</th><th>Collects</th><th>Safety consumer</th><th>Reference</th><th>Classification</th></tr></thead>
+        <tbody>
+          <tr class="go"><td>goalAndLevel — goal</td><td>FitnessGoals.primary</td><td>none</td><td>Goal</td><td><span class="pill good">Phase 1</span></td></tr>
+          <tr class="go"><td>goalAndLevel — tier</td><td>FitnessLevel.tier</td><td>none (personalization only)</td><td>Level/Experience</td><td><span class="pill good">Phase 1</span></td></tr>
+          <tr><td>schedule</td><td>days/week, weekdays, minutes</td><td>none</td><td>Schedule</td><td><span class="pill good">Phase 1</span></td></tr>
+          <tr><td>personal — height/weight</td><td>heightCm, weightCurrentKg</td><td>none (Form Check avatar only)</td><td>Parameters</td><td><span class="pill good">Phase 1</span></td></tr>
+          <tr><td>equipment</td><td>location, available</td><td><strong>eligibility.dart:339-343, BlockReason.equipment</strong></td><td>Equipment</td><td><span class="pill warn">Phase 1, presentation-only</span></td></tr>
+          <tr class="frozen"><td>body — limitations</td><td>Injury.region</td><td><strong>exercise_filter.dart isContraindicated → BlockReason.injury</strong></td><td>no equivalent</td><td><span class="pill crit">Frozen</span></td></tr>
+          <tr class="frozen"><td>healthFlags</td><td>restrictions, BP, surgery, clinician advice, professional guidance</td><td><strong>the entire whole-person block + intensity ceiling</strong></td><td>no equivalent</td><td><span class="pill crit">Frozen</span></td></tr>
+          <tr class="frozen"><td>screening</td><td>7 PAR-Q+ answers</td><td><strong>par_q.dart screen(), fail-closed; chestPain/medicallySupervisedOnly → block</strong></td><td>no equivalent</td><td><span class="pill crit">Frozen — separate future gate</span></td></tr>
+          <tr class="frozen"><td>preview</td><td>— (read-only)</td><td><strong>renders SafetyRefusalCard when blocked</strong></td><td>Ready (happy-path only)</td><td><span class="pill crit">Frozen — separate future gate</span></td></tr>
+          <tr><td>body priorities, barriers, lifestyle, personal (other fields), medical free text</td><td>various, all stored</td><td>no rule reads any of it</td><td>partial / none</td><td><span class="pill muted">Untouched — separate product decision</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="decision">
+    <p class="kicker">GPT-PM's decision</p>
+    <h2>Option (d): phased reconciliation, a hard boundary</h2>
+    <ul class="decisions">
+      <li class="go">
+        <div class="title">Phase 1 — authorized in this gate</div>
+        <div class="body"><p>Goal, Level/Experience, Schedule, Personal height/weight, Equipment (presentation-only — same values, same provider writes, same eligibility inputs).</p></div>
+      </li>
+      <li class="frozen">
+        <div class="title">body, healthFlags, screening, preview — frozen structurally AND visually</div>
+        <div class="body"><p>No reordering, grouping, medically-meaningful label changes, required/optional status, skip logic, default values, navigation conditions, or disclosure-boundary changes. Screening/PAR-Q+ named explicitly as a surface that must not even be "nicely merged" with a neighbouring screen — its own redesign, if any, is a separate future gate with a regression contract on all 7 answers and refusal routing. Preview/refusal likewise deferred: the reference's "Ready" screen may supply visual language only for the happy path, not the state model — production must keep ready and blocked/refused as distinct states.</p></div>
+      </li>
+      <li>
+        <div class="title">Dead data stays untouched</div>
+        <div class="body"><p>A field going unread by the eligibility engine today is not grounds to delete or merge it — that's a separate product decision, especially for free-text medical fields.</p></div>
+      </li>
+      <li>
+        <div class="title">9 screens is explicitly NOT the goal</div>
+        <div class="body"><p>This gate may end at 11 surfaces and that's fine. Success metric: 5 direct mappings visually reconciled, zero safety/data semantic change.</p></div>
+      </li>
+    </ul>
+  </section>
+
+  <p class="foot-note">No code changed in this gate — the map and the decision live in <code class="mono">core/DECISION_LOG.md</code>. Next: implementing Phase 1 as its own gate.</p>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
