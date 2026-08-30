@@ -53,7 +53,7 @@ class StepHealthFlags extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        StepTitle(
+        OnbRefTitle(
           title: l10n.healthStepTitle,
           subtitle: l10n.healthStepIntro,
         ),

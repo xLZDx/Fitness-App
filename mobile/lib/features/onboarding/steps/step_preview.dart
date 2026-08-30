@@ -38,7 +38,7 @@ class StepPreview extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        StepTitle(
+        OnbRefTitle(
           title: l10n.onbPreviewTitle,
           subtitle: l10n.onbPreviewSubtitle,
         ),

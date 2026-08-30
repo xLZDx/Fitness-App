@@ -47,7 +47,7 @@ class StepScreening extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        StepTitle(
+        OnbRefTitle(
           title: l10n.safetyScreeningTitle,
           subtitle: l10n.safetyScreeningIntro,
         ),

@@ -37152,3 +37152,165 @@ EN the durable in-repo record: `reports/REDESIGN_GATE5_ONBOARDING_PHASE1_2026-08
 GPT-PM review round (commit `cfe414c`): `VERDICT: APPROVE`, zero findings, `PUSH: AUTHORIZED`,
 pushed same commit. PM mode is ON -- per §18, continuing to the next gate in this same session
 rather than stopping after this report.
+
+## 2026-08-30 -- Onboarding Safety Visual Reconciliation: mapping gate (read-only), GPT-PM's next gate
+
+GPT-PM authorized this gate directly (not routed through a code review): "Onboarding Safety Visual
+Reconciliation... mapping-first, using the same discipline that worked for Phase 1." Acceptance
+contract, verbatim and binding, no exception: **same collected data + same required answers + same
+fail-closed behaviour + same refusal outcome**. The reference is authoritative for chrome/layout
+only, never for the safety state machine.
+
+Investigation done by a read-only Explore agent covering all four frozen files
+(`step_body.dart`, `step_health_flags.dart`, `step_screening.dart`, `step_preview.dart`) plus every
+downstream safety consumer (`par_q.dart`, `eligibility.dart`, `exercise_filter.dart`,
+`health_flags.dart`, `SafetyRefusalCard`, `EligibilityNotice`). Every load-bearing citation was
+independently re-verified by direct `Read`/`Grep` before being trusted, per this project's own
+evidence discipline -- not accepted on the agent's word alone. Directly re-verified myself: the
+fail-closed `for (final q in ParQQuestion.values)` loop and "no deselect" design
+(`step_screening.dart:19-24,55-69`, confirmed verbatim); `step_health.dart`'s only importer being
+`step_body.dart` (`grep` confirmed, single hit); `ProfessionalGuidanceNeed.reported` as a hard
+whole-person block (`eligibility.dart:230-231`, confirmed verbatim); `EligibilityNotice(` used in
+exactly 8 files app-wide (`grep` confirmed: 6 real call sites + its own definition +
+`step_health_flags.dart`/`step_preview.dart`), i.e. genuinely shared across 5 non-onboarding
+surfaces (`home_page.dart`, `workouts_page.dart`, `exercise_reference.dart`, `ai_planner_page.dart`,
+`workout_player_page.dart`) as claimed.
+
+**Clarification, asked for explicitly**: `step_health.dart` is a live, separate file (medical
+disclosure sub-form), **not** a standalone `OnboardingStep` (no enum value; superseded by `body` per
+`step_answered.dart`'s own doc comment) -- it renders as a collapsible child *inside* `step_body.dart`
+(`_Disclosure`, `step_body.dart:181`). Only `injuries` from it reaches a safety consumer
+(`exercise_filter.dart`); the other six fields (conditions, allergies, medications, physical
+limitations, surgeries, blood pressure legacy enum, free text) are stored and read by nothing
+safety-relevant, per the file's own doc comment. Treated as in-scope-by-inclusion for `step_body.dart`
+-- not a separate, freely-restylable target.
+
+**Mapping summary (full element -> field -> consumer -> invariant tables live in the agent's
+transcript; condensed here for the load-bearing conclusions)**:
+
+- `step_body.dart`: `BodyZoneMap.limitations` writes `Injury.region` (exact-tag match required for
+  `exercise_filter.dart`'s contraindication check -- a text-only write would silently degrade to fuzzy
+  substring matching). `MultiChoiceChips<InjuryRegion>` must stay routed through `_toggleRegion` one
+  region at a time -- a diffed-set rewrite would silently delete user-typed injury detail preserved by
+  the current removal logic (`type.isEmpty` guard). `priorities`/focus-zone data is NOT
+  safety-relevant (preference only).
+- `step_health_flags.dart`: `restrictions` (exact-tag matched by `eligibility.dart`),
+  `bloodPressure` (drives a 0.8-0.9x intensity ceiling), `surgery` and `clinicianAdvice`
+  (`underRestrictions`/`advisedAgainstExercise` are whole-person **blocks**, not caps),
+  `professionalGuidance` (binary `none`/`reported`, `reported` is a hard block -- deliberately no
+  third "unsure" state per its own doc comment; a restyle must not introduce one). Every
+  `SingleChoiceChips`/`MultiChoiceChips` control here must keep its exact enum-to-visual-position
+  mapping under any restyle.
+- `step_screening.dart`: **the single highest-stakes file in the app.** Fail-closed by construction
+  (`screen()` blocks on any missing answer); rendered from `ParQQuestion.values` specifically so a
+  future 8th question cannot be silently added to the model without being shown. `SingleChoiceChips`
+  has deliberately no deselect (only direction that matters: cannot return to the blocking
+  "unanswered" state from an answered one). `SafetyRefusalCard` renders 3 textually/visually distinct
+  states (urgent chest-pain / referral / incomplete) that must not be collapsed into one for "chrome
+  consistency."
+- `step_preview.dart`: purely a **consumer**, writes nothing. Three-way render dispatch
+  (`PlanRefused` -> `EligibilityNotice`; `PlanReady` empty -> `_Message`; `PlanReady` non-empty ->
+  `_planBody`) must stay structurally intact -- collapsing or merging branches risks showing exercises
+  to a user the app decided must not train, the worst-case failure for this whole gate.
+
+**Reference has no analogue for 3 of the 4 screens.** Confirmed via the reference's own 9-screen
+inventory (`README.md`): Welcome, Goal, Level, Schedule, Parameters, Equipment, Camera (dropped),
+Background (dropped), "Готово" (happy-path only). **Zero reference screens model a medical-screening
+question, a health-flags form, an injury/limitation form, or any blocked/refused state.** The only
+partial analogue is step 9 "Готово" (circular counter + summary) for `step_preview.dart`'s
+**happy-path branch only** -- never for its refused/empty branches, which have no reference
+counterpart at all.
+
+**Tokens are already reference-aligned; there is almost nothing left to "reconcile."** `t.danger =
+0xFFFF5A5A` (`hud_tokens.dart`) already matches the reference's error color bit-for-bit; `HudPanel`
+glass and `HudChip` chip recipes are the same ones already confirmed byte-matched to the reference in
+earlier gates. `SafetyRefusalCard`/`EligibilityNotice` already draw from these tokens. There is no
+open visual gap for the chips, panels or danger styling on these 4 screens -- the earlier gates'
+token work already closed it.
+
+**Shared-widget blast radius, same class of finding as `StepTitle` in the Phase-1 gate, one order of
+magnitude larger for one widget.** `StepTitle`/`FieldLabel`/`SingleChoiceChips`/`MultiChoiceChips`/
+`GlassTextField` are shared between the 4 frozen files AND `step_schedule.dart`/`step_equipment.dart`/
+`step_goal_and_level.dart` (Phase-1-restyled) AND `step_barriers.dart`/`step_lifestyle.dart`/
+`step_personal.dart` (non-frozen, non-restyled) -- modifying any of them in place would touch the
+frozen screens with no frozen `.dart` file ever being edited. `EligibilityNotice` is worse: shared
+with 5 surfaces entirely outside onboarding, and it carries safety-relevant *branching logic* (the
+urgent chest-pain detection), not just chrome -- a "visual-only" change to its conditional structure
+would be an app-wide functional risk, not an onboarding-scoped visual one. `SafetyRefusalCard` and
+`BodyZoneMap` are the two genuinely single-file-scoped widgets (only `step_screening.dart` and
+`step_body.dart` respectively use them) but remain inside the freeze regardless.
+
+**Decision: minimal-scope proposal, following the exact pattern already established in Phase 1.**
+Given (a) no reference analogue exists for 3 of 4 screens' actual content, (b) every token that could
+apply is already aligned, and (c) every reusable widget except `StepTitle` either carries safety
+branching logic or is single-file-scoped with nothing to reconcile against, the only change that is
+both meaningfully "visual reconciliation" AND provably zero-risk under the acceptance contract is:
+
+**Swap `StepTitle` -> the existing `OnbRefTitle` widget (already built, already used at 4 other call
+sites, zero data/behavior of its own -- pure heading typography) at exactly the 4 frozen screens'
+title call sites** (`step_body.dart:102`, `step_health_flags.dart:56`, `step_screening.dart:50`,
+`step_preview.dart:41`). Nothing else changes: no chip/card/panel/toggle restyle, no touch to
+`EligibilityNotice`/`SafetyRefusalCard`/`BodyZoneMap`/`FieldLabel`, no control-type change (chip pairs
+stay chip pairs -- the toggle-switch idea surfaced by the investigation as a reference concept is
+explicitly NOT adopted: changing a control's type is a bigger change than "visual," and would need
+separate product sign-off given the screening screen's no-deselect invariant). This is a strict
+subset of the OnbRefTitle call-site pattern the operator/GPT-PM already approved for Phase 1, applied
+to 4 more call sites of the exact same widget with the exact same zero-data contract.
+
+Routed to GPT-PM before any code change, per the gate's own "mapping first" instruction.
+
+**GPT-PM's decision, received and binding.** Approved the minimal scope without pushback: "Mapping
+фактически показал, что для safety-части правильный результат reconciliation в большинстве мест --
+NO CHANGE REQUIRED." Reasoning given: `step_screening.dart` is already built around safety semantics
+that outrank visual similarity (enum-driven questions, no-deselect, refusal feedback on the same
+screen); `step_preview.dart` is not a happy-path "Ready" screen -- it distinguishes `PlanRefused`,
+an empty plan, and a real ready plan, production semantics the reference does not model at all.
+Restyling controls just because the reference happens to use a different one (e.g. toggle switches)
+was explicitly rejected as an unjustified risk.
+
+**GO, exact boundary:**
+- `step_body.dart`, `step_health_flags.dart`, `step_screening.dart`, `step_preview.dart`: **only**
+  `StepTitle` -> `OnbRefTitle`.
+- Embedded `step_health.dart`: no changes for this gate.
+- `SingleChoiceChips`, `MultiChoiceChips`, `FieldLabel`, `GlassTextField`, `EligibilityNotice`,
+  `SafetyRefusalCard`, `BodyZoneMap`: not touched.
+- No chip-to-toggle conversions, no layout regroupings, no new panels/cards, no medical-question
+  wording changes, no state/provider/schema/navigation changes.
+- **Mandatory housekeeping**: `OnbRefTitle`'s own doc comment claimed it was used only at the four
+  Phase-1 call sites (Goal/Level/Schedule/Equipment) -- after this gate that would be false. GPT-PM
+  required it be corrected to describe the widget accurately as the reference onboarding heading for
+  every explicitly-reconciled call site, not pinned to the old count of four. Documentation accuracy,
+  not a scope expansion.
+- **New acceptance criterion added for this gate specifically, beyond the standing contract**: "no new
+  visual treatment may imply a softer safety meaning than the existing state carries" -- e.g. a
+  blocked/refusal state must never come to visually resemble a neutral informational card merely for
+  consistency. Satisfied trivially here since nothing about `EligibilityNotice`/`SafetyRefusalCard`
+  changes.
+
+**Implemented exactly this boundary.** `StepTitle` -> `OnbRefTitle` at the 4 confirmed call sites
+(`step_body.dart:102`, `step_health_flags.dart:56`, `step_screening.dart:50`,
+`step_preview.dart:41`) -- no other line in any of the 4 files touched. `OnbRefTitle`'s doc comment in
+`inputs.dart` rewritten to describe it as staged per-screen reference reconciliation (Phase 1: Goal/
+Level/Schedule/Equipment; this gate: Body/HealthFlags/Screening/Preview) rather than claiming a fixed
+four call sites, and to state explicitly that this gate's GO was title-substitution only -- every
+other control/panel/safety-refusal surface on the four screens is deliberately unchanged, either
+because it already matches the reference's tokens or because the reference has no equivalent to
+reconcile against. `StepTitle` itself is untouched and still backs every non-migrated screen
+(barriers/lifestyle/personal).
+
+**Verification**: `flutter analyze` (full package): 16 pre-existing issues, none in any touched file
+(no issues at all in `lib/features/onboarding`). Full `test/features/onboarding/` suite: 132/132 pass
+again, unchanged from Phase 1's run -- confirms the title-only swap did not alter the fail-closed
+screening loop, the whole-person block fields, the injury-region write path, or the preview's 3-way
+dispatch.
+
+GPT-PM's own framing of what "Gate completed" means: not that every screen gets a visible redesign,
+but that (1) heading is reference-aligned, (2) every control/panel/safety surface is proven
+already-aligned or has no reference analogue and is therefore intentionally retained, (3) safety
+semantics are unchanged. All three hold here. Per GPT-PM: "После его review/push Onboarding redesign
+можно считать reconciled по текущему full-handoff scope" -- next gate is Scan mapping, default
+already set: preserve the richer production live/history UI, reference supplies visual/state
+language only where the mapping proves it should.
+
+Next: GPT-PM review round on this commit, push once `VERDICT: APPROVE`, then the house-format report
+for this gate, then opening the Scan mapping gate.

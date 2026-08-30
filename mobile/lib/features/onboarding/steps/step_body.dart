@@ -99,7 +99,7 @@ class _StepBodyState extends ConsumerState<StepBody> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        StepTitle(
+        OnbRefTitle(
           title: l10n.onbBodyTitle,
           subtitle: l10n.onbBodySubtitle,
         ),

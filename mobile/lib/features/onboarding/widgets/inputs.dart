@@ -46,12 +46,20 @@ class StepTitle extends StatelessWidget {
 /// token-for-token the recipe the reference's own CSS uses for this text.
 ///
 /// A SEPARATE widget from [StepTitle], not a restyle of it, on purpose:
-/// [StepTitle] renders every onboarding step's heading, including the four
-/// frozen ones (body/healthFlags/screening/preview) and the untouched ones
-/// (barriers/lifestyle) -- restyling it in place would silently reskin
-/// screens the redesign gate is explicitly forbidden from touching. This is
-/// used only at the exact four call sites GPT-PM's Phase-1 GO covers: Goal,
-/// Level, Schedule, Equipment (2026-08-30, Onboarding Phase 1 gate).
+/// [StepTitle] renders every onboarding step's heading, and restyling it in
+/// place would have reskinned every screen at once with no way to stage the
+/// rollout or exclude a screen pending its own review. [OnbRefTitle] is pure
+/// heading typography -- no state, no interaction, no navigation logic --
+/// wired in one call site at a time as each screen is explicitly reconciled
+/// with the reference: Goal, Level, Schedule, Equipment (2026-08-30, Phase 1
+/// gate), then Body, Health Flags, Screening, Preview (2026-08-30, Safety
+/// Visual Reconciliation gate, GPT-PM GO: title substitution only -- every
+/// other control, panel and safety-refusal surface on those four screens is
+/// deliberately unchanged, either because it already matches the reference's
+/// tokens or because the reference has no equivalent to reconcile against).
+/// [StepTitle] itself still backs every screen not yet migrated
+/// (barriers/lifestyle/personal); it stays available for that reason, not
+/// because any onboarding screen is permanently excluded from this widget.
 class OnbRefTitle extends StatelessWidget {
   const OnbRefTitle({
     super.key,
