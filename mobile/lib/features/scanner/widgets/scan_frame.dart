@@ -14,7 +14,16 @@ enum ScanFramePhase {
 }
 
 /// The design's aiming frame: four corner brackets, a sweep line, and a pulse
-/// while a capture is classified (`App.tsx:2592-2614`).
+/// while a capture is classified.
+///
+/// The corner-bracket/sweep-line concept traces to `App.tsx:2592-2614`, a
+/// design source that no longer exists in this repository (confirmed absent,
+/// 2026-08-30 Scan mapping gate) -- treat that citation as unverifiable
+/// legacy provenance, not a checkable source. The corner-bracket geometry
+/// itself is independently confirmed against the checked-in reference:
+/// `core/design/reference/full_handoff_v1/README.md:91` ("Рамка наведения --
+/// четыре уголка `2px solid rgba(255,255,255,.9)`") and the matching markup,
+/// `Fitness Glass Phone v1 - Sunset.dc.html:180-226`.
 ///
 /// ## Why this replaced a rectangle
 ///
@@ -143,7 +152,12 @@ class _ScanFramePainter extends CustomPainter {
 
   /// How far along each edge a corner bracket runs.
   static const _armFraction = 0.18;
-  static const _stroke = 3.0;
+
+  /// Reference: `README.md:91` -- `2px solid rgba(255,255,255,.9)`. Was 3.0,
+  /// a pre-reference-check guess; the sweep line stays its own 2px literal
+  /// below (`Rect.fromLTWH(0, y - 1, size.width, 2)`) -- already correct, not
+  /// touched.
+  static const _stroke = 2.0;
   static const _radius = 6.0;
 
   @override

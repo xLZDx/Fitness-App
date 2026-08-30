@@ -469,9 +469,21 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     });
     return FrostedScaffold(
       // R11c: no app bar, no page-level list. The design hands this screen to
-      // the camera (`App.tsx:2565-2720`) -- the preview fills it edge to edge,
-      // the chrome floats on glass over it, and everything else lives in a
-      // sheet the user pulls up.
+      // the camera -- the preview fills it edge to edge, the chrome floats on
+      // glass over it, and everything else lives in a sheet the user pulls up.
+      //
+      // The cited source for this, `App.tsx:2565-2720`, does not exist in
+      // this repository (confirmed absent, 2026-08-30 Scan mapping gate) --
+      // treat that citation as unverifiable legacy provenance, not a
+      // checkable source. There is also no `full_handoff_v1` equivalent to
+      // cite in its place: the checked-in reference's own Scan screen has no
+      // live-camera concept at all -- a static background photo with one
+      // small fixed aim-frame card
+      // (`core/design/reference/full_handoff_v1/README.md:90-91`). Per
+      // GPT-PM's explicit ruling on this gate, this full-bleed live-camera
+      // architecture is a legitimate production decision in its own right
+      // (see the operator quote two paragraphs below), not something the
+      // reference is authoritative over -- so it stays exactly as built.
       //
       // The screen was already most of the way there in intent: the preview
       // was 68% of the height because "recognition is aiming, and aiming is
@@ -500,11 +512,13 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                     // never be what a tap lands on.
                     //
                     // R11c: corner brackets with a sweep line, and a pulse
-                    // while a capture is classified (`App.tsx:2592-2614`).
-                    // The plain outline this replaces marked the right area
-                    // and said nothing else -- a two-second classification
-                    // looked like a frozen screen, because nothing on the
-                    // viewfinder distinguished "aim" from "working".
+                    // while a capture is classified. The plain outline this
+                    // replaces marked the right area and said nothing else --
+                    // a two-second classification looked like a frozen
+                    // screen, because nothing on the viewfinder distinguished
+                    // "aim" from "working". Geometry confirmed against the
+                    // checked-in reference, not the missing `App.tsx` this
+                    // used to cite -- see `ScanFrame`'s own doc comment.
                     IgnorePointer(
                       child: ScanFrame(
                         key: const Key('scan-frame'),
@@ -517,11 +531,20 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                 ],
             ),
           ),
-          // The design's top chrome (`App.tsx:2584-2590`): a title pill on
+          // The design's top chrome: a title pill on
           // glass, with the live-labelling toggle where its capture-mode
           // button sits. No back arrow -- the design's returns to Home, and
           // here Scan IS a root tab, so the bottom nav already does that. A
           // second control doing the same thing is one more thing to explain.
+          //
+          // Was cited to `App.tsx:2584-2590`, a source that does not exist in
+          // this repository (confirmed absent, 2026-08-30 Scan mapping gate).
+          // No `full_handoff_v1` equivalent exists to cite instead: the
+          // checked-in reference's Scan screen has a plain title + subtitle,
+          // not a floating glass pill, and no live-labelling toggle at all --
+          // this top bar is production-only, retained as-is per this gate's
+          // "preserve production capability the reference doesn't model"
+          // ruling.
           //
           // MVP1.G2: the low-light banner used to be a second, independently
           // `Align(topCenter)`-ed overlay inside the camera Stack below.
@@ -820,10 +843,17 @@ class ScanTopBar extends StatelessWidget {
 
 /// Gallery, shutter, and the room the design leaves for a flash control.
 ///
-/// The shutter is a 68px circle rather than the old full-width filled button,
-/// per `App.tsx:2636-2700`. Both keys are unchanged (`scan-recognise-camera`,
-/// `scan-recognise-gallery`) because they are what every scanner test drives,
-/// and this gate changes where the controls sit, not what they do.
+/// The shutter is a 68px circle rather than the old full-width filled button.
+/// Was cited to `App.tsx:2636-2700`, a source that does not exist in this
+/// repository (confirmed absent, 2026-08-30 Scan mapping gate). No
+/// `full_handoff_v1` equivalent exists to cite instead: the checked-in
+/// reference's Scan screen has one labelled pill button ("Recognise"/"Scan
+/// again"), not a circular shutter plus a separate gallery affordance -- this
+/// capture cluster is production-only, retained as-is per this gate's
+/// "preserve production capability the reference doesn't model" ruling. Both
+/// keys are unchanged (`scan-recognise-camera`, `scan-recognise-gallery`)
+/// because they are what every scanner test drives, and this gate changes
+/// where the controls sit, not what they do.
 class _CaptureCluster extends StatelessWidget {
   const _CaptureCluster({required this.onCamera, required this.onGallery});
 

@@ -37343,3 +37343,125 @@ commit at build time; Gate 6's report commit `a6c038b` that followed does not to
 this stamp is accurate). Uploaded to Firebase App Distribution as release `1.0.0 (2910)`, distributed
 to `korostelevivan@gmail.com`. Console:
 `https://console.firebase.google.com/project/fitness-app-korostelev/appdistribution/app/android:com.fitnessapp.fitness_app.sptr/releases/2g6u7fis4lg78`.
+
+## 2026-08-30 -- Scan mapping gate (read-only), per GPT-PM's already-established default
+
+Per GPT-PM's own sequencing after Gate 6 closed, Onboarding: "the next gate is Scan mapping, default
+already set: preserve richer production functionality, reference supplies visual/state language
+unless mapping proves otherwise." Investigation done by a read-only Explore agent covering
+`mobile/lib/features/scanner/` and its `visual_equipment` dependencies, cross-referenced against the
+reference (`core/design/reference/full_handoff_v1/`). Independently re-verified myself: the
+`safetyContextProvider` gate at `scanner_page.dart:1580-1583` (confirmed verbatim, cites
+`equipment_detail_page.dart` as the precedent) and the reference's own Scan section
+(`README.md:90-91`, confirmed verbatim: "Рамка наведения -- четыре уголка... больше плотной графики
+на экране нет"). Also independently confirmed the agent's most surprising finding: `find . -iname
+App.tsx` over the whole repo returns nothing, while `grep -rl "App.tsx" mobile/lib` returns 25 files
+-- a design source the current codebase's own doc comments cite extensively does not exist in this
+repository.
+
+**Structure**: everything lives on one route (`ScannerPage`, no tabs/sub-routes). Four genuinely
+distinct pieces, not a single live/history binary: (1) an always-on live camera viewfinder +
+aim-frame overlay (`LiveEquipmentPreview`/`ScanFrame`), (2) an opt-in, battery-costly live labeler
+toggle (`liveModeEnabledProvider` -&gt; `liveRecognitionProvider`, rendered by `_LiveSection`), (3) a
+one-shot manual capture -&gt; classify -&gt; result pipeline (shutter/gallery -&gt;
+`visualEquipmentControllerProvider` -&gt; confident/alternatives/unknown/timeout/failed cards), (4)
+two independent, always-visible history lists lower in the same pull-up sheet ("My machines" via
+`recognitionHistoryProvider`, "Preparing" via `machineCardsProvider`).
+
+**Safety relevance: partial, transitive.** Scan itself does not gate capture or the base recognition
+result on eligibility/PAR-Q state -- anyone can scan. But `_ScanAiCoachEntry`
+(`scanner_page.dart:1561-1619`) and `MachineCardView`'s free-text `uses` list
+(`visual_equipment/widgets/machine_card_view.dart:114-133`) both hide/restrict on
+`safetyContextProvider`'s `blockedByAStatedAnswer`, reached transitively through
+`eligibility_providers.dart` (which itself imports `par_q.dart`/`eligibility.dart`) -- not a direct
+import from the scanner feature. Treated as in-scope-by-inclusion for those two elements specifically,
+same "transitively safety-adjacent, do not restyle its branching logic" posture as `EligibilityNotice`
+in the onboarding gate.
+
+**Reference has a real, minimal Scan concept -- confirmed, not assumed.** `README.md:90-91,121,130,166`
+and the actual `Fitness Glass Phone v1 - Sunset.dc.html:180-226` markup: a static background photo (no
+live camera at all in the reference), one fixed 230px glass card with four corner brackets + one sweep
+line, a single `scanned: bool` state, one toggle button ("Recognise"/"Scan again"), and on `scanned` a
+match card with an SVG ring (`width/height 78`, `r 34`, `stroke-width 2.5`) + name + category + an
+"Open exercises" button. No gallery picker, no live-mode toggle, no low-light banner, no privacy
+strip, no AI-coach entry, no alternatives list, no history, no "preparing" section anywhere in the
+reference.
+
+**Open question surfaced, not resolved unilaterally: which design source actually governs Scan's
+current layout.** `scanner_page.dart`'s own doc comments (and ~24 other files app-wide) cite precise
+`App.tsx` line ranges describing a full-bleed live camera with floating glass chrome -- a materially
+different concept from the `.dc.html` reference's static-background small-aim-frame page. `App.tsx`
+does not exist anywhere in this repository and cannot be independently re-verified. Two
+possibilities, not adjudicated here: (a) an earlier/different design source than
+`full_handoff_v1` genuinely existed at some point and was never checked in, in which case the current
+live-camera architecture has real design provenance just not traceable today; or (b) the citations are
+stale/inaccurate and the current architecture is closer to an engineering-led design than a
+handoff-led one. Routing this, plus the scope question, to GPT-PM rather than assuming an answer.
+
+**What already appears reference-aligned, independent of the App.tsx question**: the
+`cameraOverlay` token (`app_semantic_colors.dart:240,273`, `0x8C000000`, code comment states it is
+"the source's documented cameraOverlay token"); dark-theme accent `0xFFC9FF47` byte-matches the
+reference README's `#C9FF47` exactly; `HudRing`'s geometry in `_HeroMatchCard`
+(`scanner_page.dart:1452-1453` doc comment: "already sized for this exact screen") matches the
+reference SVG ring's `78/34/2.5` dimensions exactly. **Flagged, not fixed, out of this gate's
+scope**: light-theme accent in code (`0xFF5A25D0`) does not match the reference README's light accent
+(`#4B7A00`) -- an app-wide theme question, not scan-specific, not investigated further here.
+
+Routed to GPT-PM before any code change, per the gate's own "mapping first" instruction, same
+discipline as the Onboarding and Session gates.
+
+## 2026-08-30 -- Scan gate: GPT-PM's overlap-only GO, implemented exactly
+
+GPT-PM's decision, received and binding: not a no-op, but very narrow. Authority order for Scan set
+explicitly: "explicit operator/product decisions + production invariants > checked-in full_handoff_v1
+for visual treatment where there is a semantic mapping > missing App.tsx references." `.dc.html`
+stays authoritative for visual treatment of directly overlapping elements; it gets no authority to
+delete production capability it never modeled in the first place.
+
+**GO, exact boundary, implemented as follows:**
+
+1. **`ScanFrame` corner-bracket stroke, 3px -> 2px** (`scan_frame.dart`'s `_ScanFramePainter._stroke`).
+   Reference: `README.md:91`, "`2px solid rgba(255,255,255,.9)`". The 75% frame-sizing fraction (tied
+   to the actual classifier crop, `centre_crop.dart`) and every operational state (ready/analyzing,
+   sweep line, pulse) are untouched -- GPT-PM explicitly refused the reference's fixed 230px card as a
+   replacement, since it is not just styling, it is the crop the classifier actually receives.
+2. **Result/match-card presentation: verified, not changed.** `HudPanel`'s default radius
+   (`HudTokens.radiusPanel = 30`) already exactly matches the reference match-card's `border-radius:
+   30px`; the 16px gap between the ring and text block already matches the reference's `gap:16px`
+   exactly; `HudRing`'s `78/34/2.5` geometry was already confirmed a byte-match in an earlier gate and
+   GPT-PM explicitly marked it "NO CHANGE REQUIRED." Two further items GPT-PM authorized
+   (name/category hierarchy, an explicit "Open exercises"-style CTA in place of the bare trailing
+   chevron) were investigated and **deliberately deferred, not implemented**: the reference's
+   eyebrow-name-category text hierarchy would require either new equipment-category data not
+   currently rendered here, or duplicating the "Match" label the ring's own `HudRingLabel` caption
+   already carries: and swapping the row's implicit whole-card tap for an explicit CTA button changes
+   the row's tap-target shape on an already-heavily-tested screen for a copy-only justification. Since
+   the GO only requires *proven* 1:1 mappings, and neither of these is one without further data or UX
+   decisions this investigation did not settle, they are left for a possible follow-up rather than
+   pushed through now.
+3. **Scanner-local stale `App.tsx` citations corrected.** All 5 occurrences across
+   `scanner_page.dart`/`scan_frame.dart` rewritten: confirmed via direct `find`/`grep` that `App.tsx`
+   does not exist anywhere in this repository despite being cited by 25 files app-wide. Each
+   scanner-local citation now either (a) points to the actual verified `full_handoff_v1` source where
+   one genuinely exists (the corner-bracket recipe, `README.md:91` + the `.dc.html` markup), or (b) is
+   marked as unverifiable legacy provenance with an explicit note that the reference has no equivalent
+   for that element (full-bleed live camera, the top-chrome pill/toggle bar, the 68px shutter cluster)
+   -- so a future reader cannot mistake a dead citation for a live, checkable one. The other ~24
+   non-scanner files citing `App.tsx` are explicitly OUT of this gate's scope, per GPT-PM: "Общий sweep
+   остальных ~24 файлов -- ROADMAP, не расширять Scan Gate."
+
+**NO-GO, confirmed untouched**: static-image conversion, fixed 230px crop, live camera, live-labeler
+toggle, manual capture pipeline, both history lists ("My machines", "Preparing"), gallery picker, AI
+Coach entry, alternatives list, low-light/privacy/permission/failure surfaces, all `safetyContextProvider`
+gating.
+
+**Verification**: `flutter analyze` (full package): 16 pre-existing issues, none in any touched file.
+`test/features/scanner/` (12 tests, includes `scan_frame_test.dart` -- no test asserted the literal
+stroke value, none broke), `test/features/scanner_page_test.dart` +
+`test/features/visual_equipment/` (276 more tests, covering `VisualEquipmentController`,
+`ScanOutcome`, `rankTopK`, recognition history dedup, text-anchor pipeline, machine-card flow, live
+preview): all 288 pass.
+
+Next: house-format report for this gate, then a build-distribution run (standing instruction), then
+this closes the Scan line of the HUD/Figma redesign mandate -- the same status Onboarding reached
+after Gate 6.
