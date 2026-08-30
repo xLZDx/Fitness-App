@@ -37508,3 +37508,41 @@ stamped `GIT_SHA=4ed8af5`, uploaded to Firebase App Distribution.
 `GIT_SHA=4ed8af5`. Uploaded to Firebase App Distribution as release `1.0.0 (2914)`, distributed to
 `korostelevivan@gmail.com`. Console:
 `https://console.firebase.google.com/project/fitness-app-korostelev/appdistribution/app/android:com.fitnessapp.fitness_app.sptr/releases/77qhkd6p9m6ro`.
+
+## 2026-08-30 -- HUD/Figma redesign mandate: CLOSED (GPT-PM confirmed)
+
+Program-completion check sent to GPT-PM (not a code review) listing every line of the operator's
+original instruction ("закончи редизайн до конца," explicitly including Form Coach) and its current
+status. GPT-PM's decision, received and binding:
+
+**HUD/Figma REDESIGN MANDATE -- CLOSED.**
+
+- Session HUD reconciliation -- DONE/SHIPPED.
+- Onboarding Phase 1 -- DONE/SHIPPED.
+- Onboarding Safety reconciliation -- DONE/SHIPPED.
+- Scan overlap-only reconciliation -- DONE/SHIPPED.
+- Colour-token governance -- RESOLVED.
+- Form Coach coloured-overlay infrastructure -- SHIPPED as infrastructure.
+- Live Form Coach colour-verdict reachability -- ROUTED TO ML/R&D, not HUD (GPT-PM's own prior
+  decision, this run: investigation proved the blocker is viewpoint-dependent judgement, not a
+  HUD/UI defect -- correctly excluded from this mandate's scope, not abandoned).
+- Per-joint dashed fault marker -- DEFERRED, downstream of the ML/R&D capability above.
+
+Explicit distinction GPT-PM drew: "HUD/Figma redesign complete" != "entire SPTR product
+complete/release-ready." Only the original redesign mandate closes here; ML, safety, release,
+catalogue and product-roadmap gates continue independently and must not be held hostage to keep this
+mandate artificially open.
+
+**New binding governance statement**: *"Do not reopen the HUD/Figma redesign mandate merely because
+the ML/R&D Form Coach verdict pipeline has not landed. Reopen only for a demonstrated visual
+regression, a new authoritative design handoff, or an explicit operator redesign request."*
+
+GO: mandate closure and final operator report authorized.
+
+Every code-touching gate this run (Session, Onboarding Phase 1, Onboarding Safety, Scan) was reviewed
+by GPT-PM (VERDICT: APPROVE each time, several with a remediation round first), tested (full
+`flutter analyze` + the relevant suites, zero regressions introduced), pushed to `origin/master`, and
+distributed as a test build via Firebase App Distribution per the operator's standing instruction.
+
+Next: final closure report (house format) to the operator, then end of this autonomous run absent a
+new instruction.

@@ -1,0 +1,240 @@
+<!doctype html>
+<title>Редизайн HUD/Figma закрыт</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#eef1f4; --surface:#ffffff; --surface-2:#e2e7ec;
+    --text:#171b21; --text-muted:#4d5a68;
+    --accent:#2b5797; --accent-strong:#1c3c6b; --accent-soft:#dde7f3;
+    --crit:#b3261e; --crit-soft:#fbe6e4;
+    --warn:#a05a00; --warn-soft:#f8ead2;
+    --good:#1f7a4d; --good-soft:#e0f1e7;
+    --border:rgba(23,27,33,.14);
+    --shadow:0 1px 2px rgba(23,27,33,.06),0 8px 24px rgba(23,27,33,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+      --text:#e7ecf1; --text-muted:#9aa8b6;
+      --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+      --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+      --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+      --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+      --border:rgba(231,237,239,.16);
+      --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013; --surface:#141920; --surface-2:#1c232c;
+    --text:#e7ecf1; --text-muted:#9aa8b6;
+    --accent:#6fa1e0; --accent-strong:#9dc0ee; --accent-soft:rgba(111,161,224,.14);
+    --crit:#ff6b60; --crit-soft:rgba(255,107,96,.14);
+    --warn:#e3ab5c; --warn-soft:rgba(227,171,92,.14);
+    --good:#6fd19a; --good-soft:rgba(111,209,154,.14);
+    --border:rgba(231,237,239,.16);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 8px 24px rgba(0,0,0,.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;font-size:15.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:960px;margin:0 auto;padding:48px 22px 100px}
+
+  header{padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-strong);margin:0 0 12px}
+  h1{font-family:"Archivo",sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);line-height:1.14;margin:0 0 10px;text-wrap:balance}
+  .dek{font-size:16px;color:var(--text-muted);max-width:72ch;margin:0}
+
+  section{margin-top:44px;scroll-margin-top:20px}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kicker::before{content:"";width:18px;height:3px;background:var(--accent);border-radius:2px;flex:none}
+  h2{font-family:"Archivo",sans-serif;font-weight:700;font-size:20px;margin:0 0 6px}
+  .sec-note{color:var(--text-muted);font-size:13.5px;margin:0 0 16px;max-width:72ch}
+  p{margin:0 0 12px;max-width:72ch}
+
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;letter-spacing:.02em}
+  .pill.good{background:var(--good-soft);color:var(--good)}
+  .pill.warn{background:var(--warn-soft);color:var(--warn)}
+  .pill.muted{background:var(--surface-2);color:var(--text-muted)}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 11px;vertical-align:top;border-bottom:1px solid var(--border)}
+  thead th{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:600}
+  tbody tr:last-child td{border-bottom:none}
+
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-top:6px}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 14px;box-shadow:var(--shadow)}
+  .stat .n{font-family:"Archivo",sans-serif;font-weight:800;font-size:26px;color:var(--accent-strong);line-height:1}
+  .stat .l{font-size:11.5px;color:var(--text-muted);margin-top:6px}
+
+  ul.decisions{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+  ul.decisions li{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--good);border-radius:0 10px 10px 0;padding:14px 16px}
+  ul.decisions li.muted{border-left-color:var(--text-muted)}
+  ul.decisions .title{font-weight:700;font-size:14.5px;margin-bottom:4px}
+  ul.decisions .body{color:var(--text);font-size:13.5px}
+  ul.decisions .body p{margin:0 0 6px}
+
+  .foot-note{margin-top:56px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · автономная сессия PM Bridge · 2026-08-30</p>
+    <h1>Редизайн HUD/Figma: мандат закрыт</h1>
+    <p class="dek">Полный цикл операторского ГО «закончи редизайн до конца» — от Session до Scan, четыре гейта, все approve GPT-PM, все запушены, все распространены тестовыми сборками. Form Coach colour-verdict корректно выведен в отдельный ML/R&D трек, а не заброшен.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ da872ca</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+  <section id="stats">
+    <p class="kicker">Итог одним взглядом</p>
+    <div class="stat-row">
+      <div class="stat"><div class="n">4</div><div class="l">гейта редизайна закрыты</div></div>
+      <div class="stat"><div class="n">7</div><div class="l">раундов GPT-PM ревью</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">тестовые сборки распространены</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">регрессий тестов</div></div>
+    </div>
+  </section>
+
+  <section id="gates">
+    <p class="kicker">Что закрыто</p>
+    <h2>Session → Form Coach → Onboarding → Scan</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Линия</th><th>Статус</th><th>Коммиты</th><th>GPT-PM</th></tr></thead>
+        <tbody>
+          <tr><td>Session (таймеры)</td><td><span class="pill good">SHIPPED</span></td><td><code class="mono">ceef1de</code></td><td>APPROVE (3 раунда)</td></tr>
+          <tr><td>Form Coach reachability</td><td><span class="pill warn">ROUTED TO ML/R&amp;D</span></td><td>без кода — только исследование</td><td>подтвердил разворот собственного решения (b)</td></tr>
+          <tr><td>Onboarding: mapping + фаза 1</td><td><span class="pill good">SHIPPED</span></td><td><code class="mono">cfe414c</code></td><td>APPROVE</td></tr>
+          <tr><td>Onboarding: safety-экраны</td><td><span class="pill good">SHIPPED</span></td><td><code class="mono">7227db7</code></td><td>APPROVE</td></tr>
+          <tr><td>Scan: overlap-only сверка</td><td><span class="pill good">SHIPPED</span></td><td><code class="mono">5df740c..4ed8af5</code></td><td>APPROVE (2 раунда)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="formcoach">
+    <p class="kicker">Почему Form Coach — не «недоделано»</p>
+    <h2>Реальная блокировка — не HUD-дефект, а отсутствие надёжного судьи вида</h2>
+    <p>Инфраструктура цветного вердикта скелета построена, протестирована и корректно закрыта на <code class="mono">FormClassifier.canFault</code>. Но ни одно упражнение, доступное через селектор Form Coach, сегодня не может дать цветной вердикт: приседание/становая — по архитектуре камерного угла, отжимание — по отдельному, не связанному дефекту счётчика повторений. Расследование доказало, что заявленная GPT-PM причина («нормализация координат») была неверна — обе позы уже используют один изотропный контракт. Реальная причина — зависимость от угла обзора: все авторские цели сняты сбоку, а режим аватара по умолчанию — анфас. GPT-PM отозвал своё прежнее направление и перевёл цветной вердикт в отдельный ML/R&D-трек — это осознанное архитектурное решение, а не забытая задача.</p>
+  </section>
+
+  <section id="decision">
+    <p class="kicker">Решение GPT-PM</p>
+    <ul class="decisions">
+      <li>
+        <div class="title">HUD/Figma REDESIGN MANDATE — CLOSED</div>
+        <div class="body"><p>«Я не вижу оставшегося элемента, который по нашим текущим governance decisions всё ещё принадлежал бы именно redesign execution path.»</p></div>
+      </li>
+      <li class="muted">
+        <div class="title">«Закрыт редизайн» ≠ «продукт полностью готов»</div>
+        <div class="body"><p>Отдельные ML, safety, release, каталог и product-roadmap гейты продолжают жить независимо и не должны искусственно удерживать редизайн открытым.</p></div>
+      </li>
+      <li class="muted">
+        <div class="title">Новое правило governance</div>
+        <div class="body"><p>«Не переоткрывать мандат редизайна HUD/Figma просто потому, что ML/R&amp;D-конвейер вердикта Form Coach ещё не готов. Переоткрывать только при доказанной визуальной регрессии, новом авторитетном design handoff или явном запросе оператора на редизайн.»</p></div>
+      </li>
+    </ul>
+  </section>
+
+  <p class="foot-note">Полная история каждого гейта, все раунды ревью и вся доказательная база — в <code class="mono">core/DECISION_LOG.md</code>. Отдельные отчёты по каждому гейту: Гейт 2 (Session), Гейт 3 (Form Coach correction), Гейт 4 (Onboarding mapping), Гейт 5 (Onboarding фаза 1), Гейт 6 (Onboarding safety), Гейт 7 (Scan) — все в <code class="mono">reports/</code>.</p>
+</div>
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
