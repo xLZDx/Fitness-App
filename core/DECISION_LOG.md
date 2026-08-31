@@ -37854,3 +37854,40 @@ and the bottom stats panel are either deliberately disabled in this mode or simp
 this screen. Not characterized as a quick bug fix -- this is unfinished screen scope relative to the
 design, and the next step (build the missing pieces, or accept avatar-mode as counter-only) is the
 operator's call, not assumed.
+
+## REFUSAL/CORRECTION: operator rejected the previous entry's framing as still too soft --
+## "почему ты продолжаешь говорить что все хорошо" -- and supplied primary evidence directly:
+## D:\Downloads\video_2026-08-31_12-30-08.mp4 (31.5s screen recording, real device) and
+## D:\Downloads\Mobile app design (4).zip (the actual design handoff export, not a partial one).
+
+**FACT**, video extracted to 63 frames at 2fps (`ffmpeg -vf fps=2`), compared frame-by-frame against
+`design_handoff_fitness_hud/screenshots/04-form-coach.png` from the newly supplied zip and against
+the operator's own live Figma prototype (visible mid-video at `claude.ai/design/p/85d...`, frames
+f_045/f_058): the app's skeleton renders as straight-edged white polygon limbs (from
+`_PoseAvatarPainter`'s `Path.combine(PathOperation.union, ...)` construction over
+`pose_silhouette.dart`'s outlined limb quads) -- structurally different from the design's organic
+green glow that contours the body, which the design's own README (`full_handoff_v1/README.md:104`)
+describes as a video+`mix-blend-mode:screen` filter effect in the PROTOTYPE, distinct from the
+"real pose-overlay" spec the app follows. The two are not simply a styling variant of each other --
+they are different rendering approaches with a visibly different silhouette read.
+
+**FACT**, grep across `mobile/lib/features/form_check/data` for tempo/amplitude/symmetry/pause
+computation finds NOTHING -- the two `symmetry`-adjacent hits in `pose_avatar.dart` are the English
+word "asymmetry" in doc comments, not a metric. The design's bottom "Счётчики тренера" panel
+(Темп/Амплитуда/Симметрия/Пауза, all shown live-updating in the design prototype) has no
+corresponding data pipeline anywhere in this feature, not just a missing UI widget as the previous
+entry characterized it -- confirmed by direct search, not inferred.
+
+**FACT**, video frames f_005/f_035 show the in-app "too dark/blurry" no-body state and f_020 shows
+a full white skeleton with a live rep count ("5 чисто -- 0 с ошибками") -- confirming rep counting
+and pose tracking are functionally working end to end on this build; the gap identified here is
+strictly visual/scope (rendering style + missing gauges/panel), not a functional regression.
+
+**DECISION**: withdrew the softer framing from the previous entry ("mostly built, two elements
+missing") in favor of the accurate one: this is an unbuilt/different-technique screen relative to
+design, requiring (a) a different skeleton-rendering approach to visually match the reference glow,
+(b) two new circular gauge widgets, (c) an entirely new data pipeline for four metrics that do not
+exist today, (d) a new bottom panel, (e) colour-state wiring (red/error was never observed live in
+this app despite the code path existing). Explicitly told the operator no further "done" claim on
+this screen without a separate GO on a concrete plan. Offered to draft that plan next, pending
+operator direction on scope (full design fidelity vs a reduced target).
