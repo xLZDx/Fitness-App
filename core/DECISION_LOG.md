@@ -37959,3 +37959,48 @@ Follow-up: the global `*.mp4` gitignore rule silently dropped the two reference 
 `fitness_hud_v1` import (`clip2-...mp4`, `ref-indicators.mp4`) from the previous commit. Added the
 same `!core/design/reference/fitness_hud_v1/uploads/*.mp4` exception the repo already carries for
 `full_handoff_v1`, and committed the two clips.
+
+## Operator clarified Gate 1/2 UX and refused to re-answer Gate 3's data-sourcing question a second
+## time ("мы это уже 100 раз обсуждали посмотри в планы и память... у тебя уже все есть") --
+## searched the repo before responding rather than escalating to GPT-PM.
+
+**FACT**, UX clarification (operator, verbatim intent): the target silhouette and the live skeleton
+must be visible TOGETHER, always -- before "Начать" the silhouette loops a demo squat on its own
+(nothing tracked yet); after "Начать" the user turns side-on to match it and the tracked skeleton
+overlays the SAME figure, grading technique live. Not two mutually exclusive views.
+
+**FACT**, `form_check_page.dart:1769` (`_Silhouette.build`): `if (ref.watch(avatarModeProvider))
+return const SizedBox.shrink();` -- the demo-animated target silhouette (which already exists:
+`demonstrating` + `poseDemoProvider` + `lerpPoseTarget` with `Curves.easeInOutCubic` easing, i.e.
+exactly the auto-looping demo the operator described) is unconditionally suppressed whenever avatar
+mode (the live-skeleton mode) is on. The comment there explains why they were split apart: "two
+human figures at two unrelated scales in the same box" -- a real past defect, not an arbitrary
+choice. Gate 1/2 is therefore narrower than previously scoped: reuse the existing demo mechanism,
+remove the mutual-exclusion guard, and fix the scale mismatch between the demo/target figure and
+the live avatar figure so both coexist in one coordinate space.
+
+**FACT**, data sourcing for the four Gate 3 metrics, found by searching the repo rather than asking
+again:
+- Темп (tempo): `rep_counter.dart` already computes `_repStartMs`/`endMs`/`duration` per completed
+  rep (`_beginRep`/`_complete`) -- exists, just needs surfacing.
+- Амплитуда (amplitude): `rep_signals.dart`/the rep gate already run a continuous scoring signal
+  (e.g. joint angle) through each rep; amplitude = that signal's observed range (max-min) during
+  the rep. Needs a small addition (track min/max between `_beginRep` and `_complete`), not new
+  infrastructure.
+- Пауза (pause): same state machine, needs a phase-entry timestamp distinct from rep start/end --
+  small addition, same infrastructure family as tempo.
+- Симметрия (symmetry): exact formula already implemented for Posture (R10),
+  `core/plans/PLAN_R10_POSTURE_2026-08-08.md:107`: `(rightShoulder.y - leftShoulder.y) /
+  shoulderWidth`. BUT this repo has ALREADY documented, twice, that Form Coach's own side-on framing
+  instruction makes the far side of the body an extrapolated guess rather than a real detection
+  (`pose_avatar.dart`'s own header comment; `core/plans/NEXT_STEPS_2026-07-31.md` finding B3, which
+  rejected symmetry as a PRIMARY invariant metric for this exact reason in a different, earlier
+  architecture debate). Both landmark sides ARE already reported when visible
+  (`avatarTargetFrom`'s two-sided path) so the metric is computable, just lower-confidence on the
+  far side when the user is side-on -- a known, already-recorded limitation, not an open question.
+
+**DECISION**: none of the above was escalated to GPT-PM as an open question -- the operator was
+correct that the answer already existed in the repository's own plans/code, and escalating it again
+would have repeated the exact behavior being corrected. Gate 3 proceeds with these four sources;
+Симметрия ships with its known side-on-confidence caveat rather than being hidden, matching the
+design's own unconditional display of it.
