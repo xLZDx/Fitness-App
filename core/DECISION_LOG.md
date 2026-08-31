@@ -38254,3 +38254,75 @@ asked. Build to follow, distributed for that test.
 **Also this turn**: added `core/BACKLOG_2026-07-31.md` E4.3 -- per-exercise reference video clips
 for Form Coach (operator: "ролики... надо будет доделать... как присед для остальных упражнений"),
 explicitly not started, with the open questions named rather than guessed at.
+
+## 2026-08-31 -- Target silhouette was authored in the WRONG coordinate convention (x as fraction of width, not of isotropic height-normalised space); shoved right and clipped on a real device; fixed with `xScale`
+
+**Trigger**: operator video `video_2026-08-31_19-01-00.mp4` (S23), after the coordinate-unification
+fix (`95b6df8`) was already shipped and build-verified for the avatar/skeleton alignment. The demo
+target silhouette rendered shoved hard right, partially clipped off the panel, while the tracked
+dark avatar (from the SAME `projectLandmark` transform) sat correctly. Two shapes, same transform,
+different apparent bug -- meaning the transform was not the remaining defect; the DATA fed into it
+was.
+
+**FACT, root cause**: `pose_target.dart`'s target joints (`squatTopTarget`, `squatBottomTarget`,
+etc.) were authored with x as a fraction of the frame's WIDTH (0..1, the ordinary
+normalised-image convention) -- NOT of this app's isotropic space, where x only spans
+`0..aspectRatio` (`pose_coordinate_space.dart:41`, ~0.56 on a 9:16 phone). The doc comment on
+`PoseTarget` claimed the opposite ("same isotropic space as PoseLandmark") -- false, and never
+checked on the X axis: the prior coordinate-unification review (`FORMCOACH_COORDINATE_
+UNIFICATION_2026-08-31`) verified only the Y span as plausible, not X. A joint authored near x=0.5
+(intended as "centre of the frame's width") lands, uncorrected, near the RIGHT EDGE of the true
+`0..0.56` isotropic width -- exactly the observed clipping.
+
+**Decision**: added `xScale` parameter to `buildSilhouette` (`pose_silhouette.dart`), default
+`1.0` (backward compatible), multiplying x (not y) in the joint-reading closure. Call site
+(`_SilhouettePainter.paint`, `form_check_page.dart`) now passes `xScale: frameAspect` -- the same
+`frameAspect` already used for the projection itself. Scoped to DRAWING ONLY.
+
+**Deliberately NOT touched: `poseMatchScore`.** It compares `target.joints` directly against live
+landmarks with no such correction, and its calibration table (`_zeroScoreAtOffset` = 0.6, the
+measured offset table in `pose_target.dart`) was derived against the numbers AS AUTHORED.
+Applying the same x-correction there would change the geometry being scored and silently
+invalidate that calibration -- a real, separate risk that needs deliberate recalibration, not a
+rushed addition inside an emergency visual fix. The anisotropy this leaves in SCORING (target
+x-spread reads as if the frame were squarer than it actually is) is a known, deliberately
+deferred gap, documented in `pose_target.dart`'s doc comment. Revisit if match-score correctness
+(not just drawn position) is ever specifically in question.
+
+**FACT, tests**: `flutter analyze` clean. Added a test group to `pose_silhouette_test.dart`
+("xScale corrects the authored width-normalised convention") that reproduces the bug directly
+(`squatBottomTarget`'s unscaled bounds provably exceed a 9:16 frame's own width) and proves the
+fix (`xScale: frameAspect` keeps it inside). One assertion in the first draft of this test assumed
+`bounds.width` scales exactly linearly with `xScale` -- false, because the outline's widening
+(`sWiden`/`hWiden`) is a fraction of torso length, and torso length mixes x and y
+(`spine.distance`); rewritten as a proportionality/monotonicity claim against `squatBottomTarget`
+(genuine x-spread) rather than `squatTopTarget` (near-zero natural x-spread, where bounds.width is
+dominated by widening, not by joint spread, and barely responds to xScale at all -- a legitimate
+target-shape-dependent property, not a bug). `flutter test test/features/form_check/`: 412/412.
+
+**FACT, verified live on two real devices, two different camera aspect ratios** -- the operator's
+own standing instruction after this fix, given as part of the same GO: "прогонять тесты на разных
+экранах для теста смещения". Built locally (`build_release.ps1`, no `-Distribute`), installed
+directly via `adb install -r` on both devices connected simultaneously (`adb devices -l`):
+- **S23 Ultra** (`SM_S918B`, serial `R5CW142SASR`) -- pre-start target silhouette (squat) renders
+  centred, fully inside the camera panel. Screenshot:
+  `D:\Temp\claude\d--Repo\5c302c91-31c2-4e5a-8695-d3eb4d063e24\scratchpad\device_check\s23_8.png`.
+- **S8** (`SM_G950F`, serial `ce02171299f0711005`) -- same, different camera aspect ratio, target
+  silhouette also centred and fully contained. Screenshot:
+  `D:\Temp\claude\d--Repo\5c302c91-31c2-4e5a-8695-d3eb4d063e24\scratchpad\device_check\s8_camera3.png`.
+
+Both screenshots are in the session scratchpad, not committed to the repo (throwaway verification
+evidence, not a durable report).
+
+**Still NOT verified**: the live green-glow-on-a-real-tracked-body claim from the earlier
+`FORMCOACH_LIVE_GLOW_2026-08-31`-equivalent entry above. This fix only addresses where the DEMO/
+TARGET outline is drawn (visible even with nobody in frame); confirming the skeleton glows green
+against a real body still needs the operator's own device test, which is what these two builds
+are now on both phones for.
+
+**Also this turn**: operator sent two reference screenshots (canonical, pixel-level Form Coach
+target: circular ПОВТОРЫ/ТЕХНИКА gauges, photorealistic filled silhouette with a green-glow
+skeleton overlay, cue chips, "Счётчики тренера" bottom stat panel) and gave explicit GO. Saved as
+project memory (`project-fitness-app-formcoach-visual-target-100pct`, auto-memory system) since
+none of those six required elements exist in the app yet beyond the silhouette/skeleton pair --
+this is the scope for the next gate(s), not yet started.

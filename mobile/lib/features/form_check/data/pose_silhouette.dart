@@ -243,13 +243,29 @@ class SilhouetteFigure {
 /// Returns an empty figure when the target lacks a shoulder or a hip: without
 /// those there is no torso, and without a torso there is no axis to mirror
 /// about. Callers get nothing drawn rather than something wrong.
+///
+/// [xScale] converts [PoseTarget.joints] out of the convention they were
+/// actually authored in — x as a fraction of the frame's WIDTH, 0..1, the
+/// usual normalised-image convention — into the isotropic space
+/// `projectLandmark` expects, where x only spans `0..frameAspect` (see
+/// `pose_coordinate_space.dart`). The doc on [PoseTarget.joints] used to claim
+/// these were already isotropic; they were not, and a real device proved it:
+/// on a 9:16 camera (`frameAspect` ~0.56) a target authored near x=0.5 — dead
+/// centre of a 0..1 width — projects to dead centre of `0..1`, past the right
+/// edge of the actual `0..0.56` frame, and the outline draws shoved right and
+/// clipped. Passing `xScale: frameAspect` here undoes exactly that: x=0.5
+/// lands at `0.5 * frameAspect`, the true centre of the frame's own width.
+/// Default `1.0` keeps old callers (tests fixing exact pixel expectations)
+/// unchanged. Y needs no such correction — both conventions normalise it by
+/// height already.
 SilhouetteFigure buildSilhouette(
   PoseTarget target, {
   BodyBuild build = BodyBuild.unknown,
+  double xScale = 1.0,
 }) {
   Offset? at(LandmarkType t) {
     final j = target.joints[t];
-    return j == null ? null : Offset(j.$1, j.$2);
+    return j == null ? null : Offset(j.$1 * xScale, j.$2);
   }
 
   // Left keys carry two different meanings, and which one applies is decided by

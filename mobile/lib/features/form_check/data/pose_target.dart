@@ -39,11 +39,31 @@ import 'pose_landmark.dart';
 
 /// A named shape to match: joint positions for one phase of one movement.
 ///
-/// Coordinates are in the same isotropic space as [PoseLandmark] (see
-/// `pose_coordinate_space.dart`), but only their **relative** arrangement is
-/// used — [poseMatchScore] removes position and size before comparing. They are
-/// authored at plausible screen positions so the same numbers can be drawn as
-/// the on-screen outline without a second source of truth.
+/// **Correction, `FORMCOACH_TARGET_XSCALE_2026-08-31`:** this used to claim
+/// coordinates were "in the same isotropic space as [PoseLandmark]". A real
+/// device proved that false: x here is authored as a fraction of the frame's
+/// WIDTH (0..1, the ordinary normalised-image convention an author reaches
+/// for without thinking), while [PoseLandmark]'s isotropic space (see
+/// `pose_coordinate_space.dart`) normalises x by HEIGHT, so it only spans
+/// `0..aspectRatio` (~0.56 on a 9:16 phone). Drawing these joints straight
+/// through `projectLandmark` — which assumes true isotropic input — put the
+/// outline's centre (x~0.5) past the right edge of a `0..0.56` frame,
+/// clipped off-panel. `buildSilhouette`'s `xScale` parameter is the fix for
+/// **drawing**: pass `xScale: frameAspect` to convert on the way in.
+///
+/// [poseMatchScore] does **not** apply that correction — it compares these
+/// joints against live landmarks directly. Its calibration table (see
+/// `_zeroScoreAtOffset`) was measured against the numbers AS AUTHORED, so
+/// changing this convention there would silently invalidate that
+/// calibration. Not fixed here; the anisotropy this leaves in the score
+/// (target x-spread relative to y-spread reads as if the frame were
+/// squarer than it is) is a known, deliberately deferred gap — see
+/// `core/DECISION_LOG.md`.
+///
+/// Only their **relative** arrangement is scored — [poseMatchScore] removes
+/// position and size before comparing. They are authored at plausible
+/// screen positions so the same numbers can be drawn as the on-screen
+/// outline without a second source of truth.
 class PoseTarget {
   // No assert on joint count: `Map.length` is not readable in a const
   // expression, and these are const so they can be written as data. The
