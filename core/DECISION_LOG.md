@@ -38056,3 +38056,19 @@ before Gate 1 is called done.
 starts" defects. Gate 2 (circular HUD gauges), Gate 3 (Темп/Амплитуда/Симметрия/Пауза data
 pipeline) and Gate 4 (bottom metrics panel, second cue chip) are still open, per the 5-gate plan the
 operator said "ГО" to.
+
+## 2026-08-31 -- Gate 1/2 report published, build 928 distributed
+
+**FACT**: `report_due.py` fired after 3 commits (`795b65c`, `daca5d8`, `e78f609`) with none touching
+`reports/`. Published `reports/FORMCOACH_GATE1_DEMO_SILHOUETTE_2026-08-31.{ru,html}` per the
+`html-report` skill -- RU published as an artifact
+(`https://claude.ai/code/artifact/3ea96e37-8fd6-4140-a1f8-faf6b1717dfd`), both files conformed via
+`report_conform.py`, evidence images (4 on-device screenshots, resized/compressed to ~50KB each)
+under `reports/formcoach-gate1-demo-silhouette-2026-08-31/`. The report states plainly, in its own
+warning box, what is still unverified: avatar + skeleton + silhouette rendering together with a
+real person in frame -- only the pre-start (empty-frame) demo loop was checked on-device.
+
+**FACT**: `scripts/dev/build_release.ps1 -Distribute` run for commit `795b65c` (build 928),
+distributed to both tester emails via Firebase App Distribution, per the standing instruction to
+always distribute after a gate touching `mobile/lib`. This build is what the operator needs to run
+the live-person test the report calls out as outstanding.
