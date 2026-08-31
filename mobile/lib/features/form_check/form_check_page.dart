@@ -1777,33 +1777,35 @@ class _Silhouette extends ConsumerWidget {
     // Drawn together with the avatar now, deliberately (operator instruction,
     // 2026-08-31 — see `demonstrating`'s comment above): the silhouette is
     // the shape to match, the avatar is the user's own tracked body, and the
-    // design reference shows both at once. This used to hide the silhouette
-    // whenever avatar mode was on, because an earlier attempt at showing both
-    // put two human figures at two unrelated scales in the same box (a
-    // full-height ghost standing through a "no body found" message). That
-    // failure mode is avoided here by construction, not by coordinate
-    // unification: `demonstrating` covers the two cases where scale cannot
-    // clash — no body found yet (nothing real to be at a different scale
-    // from) and a real body being actively tracked, where the demo loop is
-    // an intentionally separate, independently-scaled reference the user
-    // aims for rather than something meant to overlay their own tracked
-    // figure pixel-for-pixel.
+    // design reference shows both at once.
+    //
+    // This used to be "avoided by construction, not by coordinate
+    // unification" — a claim that turned out to be wrong. A real device video
+    // (operator, same day, second video) showed the two figures at wildly
+    // different scales the instant a real body was tracked: the avatar,
+    // projected through `projectLandmark` at the camera's real scale, next to
+    // a silhouette fitted independently to fill the panel margin
+    // (`fitSilhouette`) — unrelated coordinate systems that only coincide by
+    // accident. `pose_target.dart`'s own doc comment already said the fix:
+    // targets are "authored at plausible screen positions so the same numbers
+    // can be drawn as the on-screen outline without a second source of
+    // truth" — i.e. target joints live in the SAME isotropic, per-image-height
+    // space real landmarks do, and were always meant to be projected the same
+    // way. `_SilhouettePainter` now does that instead of calling
+    // `fitSilhouette`, which unifies the two coordinate systems for real
+    // rather than hoping they never appear together at a clashing scale.
     final target = ref.watch(poseTargetProvider);
     final pair = ref.watch(poseDemoProvider);
     final build = ref.watch(silhouetteBuildProvider);
+    // The empty-frame case still carries a real aspect ratio (`_emptyFrame`
+    // in `mlkit_pose_detector_service.dart`) from the moment the camera
+    // starts, so this is null only in the brief window before the first
+    // camera frame has been processed at all. `9 / 16` matches the panel's
+    // own fallback aspect ratio elsewhere on this page.
+    final frameAspect = ref.watch(latestPoseFrameProvider)?.aspectRatio ?? 9 / 16;
 
     if (demonstrating && pair != null) {
       final (from, to) = pair;
-      // Fixed once per (from, to, build) rather than read off whichever frame
-      // happens to be on screen: `fitSilhouette` scales to fill its margin,
-      // so a mid-swing frame with a narrower bounding box than the standing
-      // frame was being blown up to fill the same box — the demo figure
-      // visibly jumped in size and position every cycle instead of holding
-      // one stable scale, only ever visible once this loop started running
-      // continuously instead of being hidden behind avatar mode.
-      final bounds = buildSilhouette(from, build: build)
-          .bounds
-          .expandToInclude(buildSilhouette(to, build: build).bounds);
       return AnimatedBuilder(
         animation: demo,
         builder: (_, __) => CustomPaint(
@@ -1817,7 +1819,7 @@ class _Silhouette extends ConsumerWidget {
             match: null,
             build: build,
             isDemo: true,
-            fixedBounds: bounds,
+            frameAspect: frameAspect,
           ),
         ),
       );
@@ -1830,6 +1832,7 @@ class _Silhouette extends ConsumerWidget {
         target: target,
         match: ref.watch(poseMatchProvider),
         build: build,
+        frameAspect: frameAspect,
       ),
     );
   }
@@ -1909,8 +1912,8 @@ class _SilhouettePainter extends CustomPainter {
     required this.target,
     required this.match,
     required this.build,
+    required this.frameAspect,
     this.isDemo = false,
-    this.fixedBounds,
   });
 
   final PoseTarget target;
@@ -1924,12 +1927,12 @@ class _SilhouettePainter extends CustomPainter {
   /// Drawing the movement rather than the position to reach.
   final bool isDemo;
 
-  /// Fit to these bounds instead of the current frame's own — the demo loop
-  /// passes the union of its two endpoint poses so the figure holds one
-  /// stable scale through the whole cycle instead of rescaling every frame
-  /// to fill the margin around whatever the interpolated figure's bounds
-  /// happen to be that instant.
-  final Rect? fixedBounds;
+  /// The live camera frame's aspect ratio — the same value
+  /// `_SkeletonPainter` and `_PoseAvatarPainter` project against, so a target
+  /// authored in the joints' own isotropic space lands at the same scale a
+  /// real body would. See `_Silhouette.build`'s comment for why this replaced
+  /// `fitSilhouette`.
+  final double frameAspect;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1940,8 +1943,15 @@ class _SilhouettePainter extends CustomPainter {
     // twice. Both faults live in `pose_silhouette.dart` now, with tests.
     final figure = buildSilhouette(target, build: build);
     if (figure.segments.isEmpty) return;
-    final (scale, origin) = fitSilhouette(fixedBounds ?? figure.bounds, size);
-    Offset place(Offset p) => p * scale + origin;
+    // The same projection `_SkeletonPainter`/`_PoseAvatarPainter` use, not
+    // `fitSilhouette` — see `_Silhouette.build`'s comment. This also means the
+    // demo loop no longer needs a `fixedBounds` union-of-endpoints hack to
+    // hold a stable scale: `projectLandmark`'s transform depends only on
+    // `frameAspect` and `size`, never on the pose's own bounds, so it cannot
+    // rescale from one animation frame to the next in the first place.
+    Offset place(Offset p) =>
+        projectLandmark(p.dx, p.dy, frameAspect: frameAspect, canvas: size);
+    final scale = (place(const Offset(0, 1)) - place(Offset.zero)).distance;
 
     // Green once the shape is reached, so the user gets the answer while they
     // are still in the position and can feel what it corresponds to.
@@ -2027,6 +2037,7 @@ class _SilhouettePainter extends CustomPainter {
       old.target.id != target.id ||
       old.isDemo != isDemo ||
       old.build != build ||
+      old.frameAspect != frameAspect ||
       // A demonstration is a new pose every frame and its id never changes, so
       // it has to be compared by content or the animation would render as a
       // single frozen frame.

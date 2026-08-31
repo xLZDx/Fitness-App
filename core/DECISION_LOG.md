@@ -38072,3 +38072,57 @@ real person in frame -- only the pre-start (empty-frame) demo loop was checked o
 distributed to both tester emails via Firebase App Distribution, per the standing instruction to
 always distribute after a gate touching `mobile/lib`. This build is what the operator needs to run
 the live-person test the report calls out as outstanding.
+
+## 2026-08-31 -- REFUSAL retracted: "avoided by construction" was false. Real fix: unify the two
+## coordinate systems instead of relying on them never appearing together at a clashing scale
+
+**FACT**, from the operator's own device video (`video_2026-08-31_15-43-53.mp4`, sent after the
+Gate 1/2 report above): the exact gap that report flagged as unverified -- avatar + skeleton +
+target silhouette together with a real body in frame -- is broken, badly. Frames extracted with
+`ffmpeg -vf fps=1`: the live avatar/skeleton renders at a drastically different scale than the
+target silhouette (an arm spanning most of the frame width next to a silhouette a third that size),
+reproducible across multiple frames. This is exactly the "two human figures at two unrelated scales
+in the same box" failure the removed avatar-mode guard used to prevent -- the thing this same day's
+earlier commit (`795b65c`) claimed was "avoided by construction, not by coordinate unification".
+That claim was wrong, and it was never verified against a real tracked body -- only against an
+empty pre-start frame, which cannot exhibit this failure at all (nothing to clash scale with).
+
+**FACT**, root cause, found by reading the two painters side by side:
+- `_PoseAvatarPainter` (the live avatar/skeleton) projects every point with `projectLandmark`,
+  which maps the pose detector's isotropic space (both axes divided by image height) onto the panel
+  using the CAMERA's real cover-fit scale -- the same transform `CameraPreview` itself uses. This is
+  correct: the avatar lands exactly where the real body is.
+- `_SilhouettePainter` (the demo/target) instead called `fitSilhouette`, which scales the target's
+  own bounding box to fill the panel with a margin -- a completely independent transform with no
+  relationship to the camera's real scale.
+- These only ever coincide by accident. `pose_target.dart`'s own doc comment already said what the
+  targets actually are: authored coordinates in the SAME isotropic space real landmarks live in
+  ("authored at plausible screen positions so the same numbers can be drawn as the on-screen outline
+  without a second source of truth") -- i.e. they were always meant to be projected with
+  `projectLandmark`, not fitted independently. Confirmed numerically: `squatTopTarget`'s joints span
+  roughly `y: 0.26..0.93` in that space, which is a plausible real-camera framing for a person
+  1.5-2m from the phone (the distance the app's own pre-set instructions already ask for) -- not an
+  arbitrary shape that only makes sense fitted to a box.
+
+**FACT**, the fix (`form_check_page.dart`, `_SilhouettePainter` + `_Silhouette.build`):
+`_SilhouettePainter` now projects every point with `projectLandmark(p.dx, p.dy, frameAspect:
+frameAspect, canvas: size)` -- the identical call `_SkeletonPainter`/`_PoseAvatarPainter` make --
+using `latestPoseFrameProvider`'s aspect ratio (falling back to `9/16` only in the brief window
+before the camera's first frame, matching this page's existing fallback elsewhere). This is a
+genuine unification, not a new guard: both painters now share one coordinate system, so they cannot
+land at different scales regardless of what mode is active or what is in frame.
+
+**Side effect, a real simplification**: the `fixedBounds` mechanism added earlier the same day (the
+union-of-two-endpoint-poses hack that fixed the demo loop's scale-jump bug) is no longer needed and
+has been removed. `projectLandmark`'s transform depends only on `frameAspect` and the canvas size,
+never on the current pose's own bounds, so the scale-jump bug this was patching cannot recur by
+construction -- the real fix subsumes the patch.
+
+**FACT**, verification: `flutter analyze lib/features/form_check/form_check_page.dart` clean;
+`flutter test test/features/form_check/` 403/403 (unchanged pass count -- the existing demo/target
+switch tests assert widget presence, not pixel position, so they do not exercise this transform
+either way). **NOT verified on a real device with a live tracked body** -- I have no way to stand in
+front of a camera myself. Build 928+1 will be distributed for the operator to re-run the exact test
+that found this bug. This entry is deliberately NOT accompanied by a "confirmed" report or artifact:
+the previous report's confident tone despite an untested gap is what caused this, and the fix is
+reasoned from code/doc evidence, not yet from a passing live test.
