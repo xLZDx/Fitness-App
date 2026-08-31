@@ -38182,3 +38182,16 @@ been compared parameter-by-parameter against these exact values, and has never b
 operator with a real body in frame at all (every screenshot so far has been pre-start, nobody
 tracked). That comparison -- and Gates 2-4, built against these exact hidden-SVG values instead of
 approximated from the video -- is the next concrete work, not yet started.
+
+## 2026-08-31 -- Report published for the coordinate-unification fix
+
+**FACT**: `report_due.py` fired after 3 commits (`95b6df8`, `980b542`, `428f806`) with none touching
+`reports/`. Published `reports/FORMCOACH_COORDINATE_UNIFICATION_2026-08-31.{ru,html}` per the
+`html-report` skill -- RU published as an artifact
+(`https://claude.ai/code/artifact/e0d95895-66c3-4256-8add-e3169eab51d8`), both conformed via
+`report_conform.py`, two evidence frames from the operator's own video (`bug_frame1.jpg`,
+`bug_frame2.jpg`, extracted via `ffmpeg -vf fps=1`, resized/compressed) under
+`reports/formcoach-coordinate-unification-2026-08-31/`. States plainly what remains unverified: a
+real device test with a real body in frame. Per the skill, stopping here rather than continuing to
+Gates 2-4 -- PM Bridge orchestrator mode is off, so this is a normal report/handover point, not a
+program-mode checkpoint.
