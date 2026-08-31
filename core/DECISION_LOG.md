@@ -38126,3 +38126,16 @@ front of a camera myself. Build 928+1 will be distributed for the operator to re
 that found this bug. This entry is deliberately NOT accompanied by a "confirmed" report or artifact:
 the previous report's confident tone despite an untested gap is what caused this, and the fix is
 reasoned from code/doc evidence, not yet from a passing live test.
+
+**FACT**, GPT-PM consultation (operator instruction, same message: "в конце спроси гпт, я ему
+отправил видео и дал указания" -- the operator had independently sent GPT-PM the same video and
+briefed it directly). Started PM Bridge orchestrator mode, sent the root-cause diagnosis and fix
+above to the project's mapped conversation (`D:\Repo\Fitness_App` -> the ChatGPT thread in
+`pm-bridge/config/conversations.md`, which had by then auto-retitled itself to "Update Handoff
+Documentation" -- confirmed to be the same thread via the path-keyed mapping, not a misroute).
+GPT-PM confirmed independently: it had the same MP4 (uploaded to its own library at 15:46
+Kishinev time, matching `video_2026-08-31_15-43-53.mp4`'s filename), and stated the coordinate-
+system diagnosis "совпадает с тем, что видно на ролике, и по коду она выглядит именно как корневая
+причина, а не косметический workaround" (matches what the clip shows, and reads from the code as
+the actual root cause, not a cosmetic workaround). Stopped PM Bridge mode after the exchange
+(queue depth 0, nothing else pending).
