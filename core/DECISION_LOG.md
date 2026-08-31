@@ -37773,3 +37773,43 @@ with this finding attached, rather than reported as closing the crash investigat
 
 Published `reports/FORMCOACH_CRASH_DIAGNOSIS_2026-08-31.ru.html` / `.html` (house format, both
 committed, Russian published as artifact) summarizing the above finding for the operator.
+
+## "Почему до сих пор нет силуэта со скелетом?" -- operator sent a real-device screenshot (build
+## fd6de17 / versionCode 2921, distributed to App Tester this session) showing a mostly-flat dark
+## body with only 2-3 glowing limb segments and the in-app text "Слишком темно или размыто, чтобы
+## разобрать позу". Code-only investigation (no live device access -- cannot put a body in front of
+## the S8 camera via adb), answered from source and the design reference.
+
+**FACT**, `form_check_page.dart:864-888` (`_AvatarBackdrop`): the mountain/lake photo the operator
+sees is intentional -- one of 10 bundled stock photos shown instead of the raw camera feed, for the
+privacy claim already on-screen ("Кадры никуда не загружаются -- камера остаётся приватной").
+
+**FACT**, `core/design/reference/full_handoff_v1/README.md:104` (Form Coach section): the design
+handoff itself states the mockup's video+CSS-filter glow layer "**в продукте это заменяется
+реальным pose-overlay**: кости 3-3.4 px, цвет #FFFFFF, свечение drop-shadow(0 0 5px) + drop-shadow
+(0 0 14px) зелёным ... и красным". This is a documented, deliberate product decision made at
+handoff time, not a deviation discovered now.
+
+**FACT**, `form_check_page.dart:1089-1160` (`_PoseAvatarPainter.paint`): implementation matches
+that spec -- near-black body fill (`0xE60A0912`), white bone strokes with two `MaskFilter.blur`
+passes for the halo, plus a green/red glow layer keyed to `severity`. The "dark body, lit skeleton"
+concept the operator originally wanted (see the redesign correction entries above) IS implemented
+and matches the reference.
+
+**FACT**, `pose_avatar.dart:107-125` (`buildPoseAvatar`) + `pose_silhouette.dart:425-433`
+(`limbPair.resolve`): the confidence floor for the avatar is `minLikelihood = 0.5` per joint, and a
+limb chain resolves ALL-OR-NOTHING -- "a partial limb is worse than none" (`pose_silhouette.dart:429`
+comment). If any one joint in a chain (e.g. shoulder->elbow->wrist) is below 0.5 likelihood that
+frame, the WHOLE limb is dropped from `figure.segments` and draws no bone/glow at all, leaving only
+the flat dark fill for that limb.
+
+**INFERENCE**: the screenshot's own in-app text ("Слишком темно или размыто, чтобы разобрать позу")
+is MediaPipe's own low-confidence signal for that frame -- most joints in that specific room/framing
+did not clear the 0.5 floor, so only the 2-3 limbs whose full chain did clear it show the white/glow
+bones; the rest is the (also-intentional) flat dark torso fill underneath. This reads as expected
+behavior of a working, spec-matching feature encountering a real low-light/confidence condition, not
+as a rendering defect -- but this is inferred from code reading, not verified live (no way to put a
+person in front of the S8 camera via adb in this session). Reported to the operator as such, with
+two explicit options offered: re-test under better lighting to confirm the full glow renders, or
+relax the all-or-nothing per-limb gate to show partial/dimmer bones at lower confidence (a real
+behavior change, not proposed unilaterally).
