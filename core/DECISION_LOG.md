@@ -37770,3 +37770,6 @@ kills a healthy process), not a functional defect in the Form Coach feature itse
 `base`-model fix (unrelated correctness improvement, zero cost). Not committed as "the crash fix"
 since it demonstrably is not one; will be committed as the documented model/mode pairing correction,
 with this finding attached, rather than reported as closing the crash investigation.
+
+Published `reports/FORMCOACH_CRASH_DIAGNOSIS_2026-08-31.ru.html` / `.html` (house format, both
+committed, Russian published as artifact) summarizing the above finding for the operator.
