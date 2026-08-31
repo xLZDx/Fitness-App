@@ -37696,3 +37696,77 @@ reaching the one feature (Form Coach's live overlay) the operator most wanted ve
 Scan's camera state cannot be positively confirmed either way. No further "closed"/"APPROVE" claim
 should be made on this program until both are actually investigated with evidence, not asserted from
 code review alone.
+
+## Form Coach crash investigation: root cause is Google Play Services' own out-of-process
+## GPU-benchmark subprocess, not fatal to the app; the accurate/stream model mismatch was a
+## documented issue but does NOT explain the crash. Operator instruction: "чинить краш"
+## (fix the crash, priority over the Scan camera issue).
+
+**FACT**, `mlkit_pose_detector_service.dart:1` (path:
+`D:\Repo\Fitness_App\mobile\lib\features\form_check\data\mlkit_pose_detector_service.dart`): the
+plugin's own doc comments in
+`D:\.pub-cache\hosted\pub.dev\google_mlkit_pose_detection-0.14.0\lib\src\pose_detector.dart` state
+`PoseDetectionModel.base` is documented for streaming, `PoseDetectionModel.accurate` for static
+images. The app used `accurate` + `PoseDetectionMode.stream`, a mismatch against Google's own
+documented use case. Changed to `base` + `stream` (matches documented pairing). Verified with
+`flutter analyze` on the changed file -- clean. `pose_gate.dart` / `pose_avatar.dart` gating logic
+uses generic `likelihood` thresholds, model-agnostic, so no architectural risk from the swap.
+
+**FACT**, live device reproduction, S8 (`ce02171299f0711005`), debug build with the `base`-model fix,
+package `com.fitnessapp.fitness_app.sptr.debug`, pid 32305 (confirmed via explicit
+`am start -n .../MainActivity` after force-stopping both installed packages, to rule out testing the
+stale release build): navigated Тренировки -> Библиотека -> "Тренер по технике" -> "Начать" ->
+"Готово - включить камеру" -> exercise list -> tapped "Присед" -> camera permission dialog ->
+granted. `ps -A` immediately showed a NEW subprocess
+`com.fitnessapp.fitness_app.sptr.debug:mlkit_acceleration_mini_benchmark` (pid 391) running
+alongside the main process. `adb logcat -d` shows pid 391 died with `Fatal signal 6 (SIGABRT)` at
+10:26:14.162, native stack entirely inside Google's own closed-source libraries
+(`com.google.android.gms.internal.mlkit_vision_mediapipe.zzhx.zzj` [native method] ->
+`mlkit_vision_mediapipe.zzhx.zze` -> `mlkit.vision.mediapipe.zzb/zzg` ->
+`MediaPipeGraphRunner.load` -> `pose.internal.zzh.load` (`pose-detection-common@18.0.0-beta5`) ->
+`ModelResource`/`MlKitThreadPool` (`mlkit:common@18.11.0`)) -- **none of it in this app's own Dart
+or Kotlin code**. ActivityManager auto-restarted the benchmark subprocess as pid 695 at 10:26:20.521
+(`Start proc 695:...mlkit_acceleration_mini_benchmark ... for service
+.../MlKitRemoteWorkerService`), which then ran stably for 8+ minutes with no further crash
+(confirmed alive at 10:34:48). **This proves the crash reproduces identically with the `base` model
+— the accurate/stream mismatch fix does NOT address this crash's root cause; the two are unrelated
+issues that happened to be found in the same investigation.**
+
+**FACT**, `adb logcat -d`, `08-31 10:26:19.351 ... ActivityManager: Showing crash dialog for package
+com.fitnessapp.fitness_app.sptr.debug u0`: the OS "Приложение fitness_app остановлено" dialog the
+operator's original screenshot (`formcoach_squat_CRASH_S8.png`) and this session's own
+`formcoach_crash_dialog_debug_base_model_S8.png` both show is triggered by ActivityManager treating
+ANY subprocess crash under a package's UID (including this Google-owned, out-of-process ML Kit
+benchmark helper) as a crash of "the app" for dialog purposes. **The main app process (pid 32305)
+never died** -- confirmed by continuous, unrelated network activity (`NativeCrypto: SSL shutdown`)
+logged at 10:28, 10:30, and 10:31, all well after the dialog appeared. Dismissing the dialog with
+the hardware/gesture BACK action (instead of tapping its only button, "Закрыть приложение") leaves
+the app fully intact and on-screen underneath
+(`formcoach_app_alive_under_dialog_S8.png`) -- confirmed by re-tapping "Присед" and
+successfully reaching the live pose-detection screen
+(`formcoach_live_session_reached_S8.png`, showing the "Отойдите, чтобы в кадр попало всё тело" /
+"Встаньте боком к камере" prompts, i.e. MediaPipe pose tracking is running).
+
+**INFERENCE**: per Google's own Acceleration Service documentation
+(https://developers.google.com/edge/litert/android/acceleration_service -- "benchmarks are run
+out-of-process, which minimizes the risk of crashes to your app"), this benchmark evaluates GPU
+delegate configurations for the device's GPU (this S8 uses a Mali GPU --
+`/vendor/lib64/egl/libGLES_mali.so`, confirmed in logcat) and is a known category of issue (GPU
+delegate compatibility benchmarks crashing on specific/older Mali GPU + driver combinations,
+Android 8 / API 26 in this case). No API in `google_mlkit_pose_detection: 0.14.0` or the underlying
+`com.google.mlkit:pose-detection` GMS library exposes a way for app code to disable or skip this
+benchmark -- it is auto-triggered by Play Services itself whenever a TFLite/MediaPipe-based ML Kit
+vision API initializes, independent of which `PoseDetectionModel` the app requests. This is
+Google-owned closed-source native code; no fix is available at the app level beyond what was
+already applied (the base/stream pairing correction, kept because it is still the
+documented-correct configuration regardless).
+
+**DECISION**: report this honestly rather than claiming "fixed" -- the crash is real, reproducible,
+and NOT resolved by the base-model change; but its actual severity is lower than "app is broken":
+the app's own process and the pose-detection feature both survive and function normally once the
+OS dialog is dismissed without tapping "Закрыть приложение". The single-button OS dialog is the
+practical user-facing failure mode (a user has no visible way to "just continue" -- the only button
+kills a healthy process), not a functional defect in the Form Coach feature itself. Kept the
+`base`-model fix (unrelated correctness improvement, zero cost). Not committed as "the crash fix"
+since it demonstrably is not one; will be committed as the documented model/mode pairing correction,
+with this finding attached, rather than reported as closing the crash investigation.

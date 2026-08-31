@@ -93,7 +93,7 @@ class MlKitPoseDetectorService implements PoseDetectorService {
     _detector = mlkit.PoseDetector(
       options: mlkit.PoseDetectorOptions(
         mode: mlkit.PoseDetectionMode.stream,
-        model: mlkit.PoseDetectionModel.accurate,
+        model: mlkit.PoseDetectionModel.base,
       ),
     );
     await session.start();
