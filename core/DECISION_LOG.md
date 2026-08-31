@@ -38139,3 +38139,46 @@ system diagnosis "совпадает с тем, что видно на роли�
 причина, а не косметический workaround" (matches what the clip shows, and reads from the code as
 the actual root cause, not a cosmetic workaround). Stopped PM Bridge mode after the exchange
 (queue depth 0, nothing else pending).
+
+## 2026-08-31 -- FACT: the design mockup's "dark body + green skeleton" is a video trick, not the
+## pixel-perfect spec; the real spec is a hidden, disabled SVG in the same file
+
+Operator, comparing an app screenshot (pre-start pale outline, nobody in frame) against the design
+screenshot (dark filled body, glowing green skeleton, metrics panel): "разве это похоже друг на
+друга??" -- correctly, no. Two separate reasons, and only one of them was already known:
+
+1. **Already known and logged**: Gates 2-4 (circular gauges, bottom metrics panel) are not built.
+   The app screenshot is also the PRE-START state (no body in frame yet), not the mid-set state the
+   design screenshot shows -- not a like-for-like comparison, but the underlying gap is real either
+   way.
+
+2. **New**, found by reading `Fitness Form Coach Phone.dc.html` in full rather than only the
+   rendered screenshot: the dark-body-with-glowing-green-skeleton look in the design screenshot is
+   **a pre-recorded video clip with a CSS color-grading trick**, not a procedural render. Evidence:
+   - Line 32: the actual SVG skeleton (bones as `<line>`s, joints as `<circle>`s, a glow filter,
+     exact stroke width `3.4`, joint radii `4.5`/`4`, head radius `25`) is present in the markup but
+     `style="...display:none"` -- disabled, never shown.
+   - Lines 22-24: what IS shown is two stacked `<video>` elements playing
+     `uploads/clip2-1786933639870-ww0q.mp4` on loop -- one graded normally (dark/desaturated), one
+     with `mix-blend-mode:screen` and `filter:grayscale(1) brightness(.62) contrast(7) sepia(1)
+     hue-rotate(62deg) saturate(6)`, which is what turns whatever is bright in the footage green.
+   - Line 213 comment, verbatim: "ролик несёт вшитый скелет — вторая фигура; поэтому кадр берём
+     статичный" (the clip carries a baked-in skeleton -- a second figure -- so [for a still-frame
+     preview] a static frame is used). The designer is explicitly saying the video's own footage
+     already contains a skeleton overlay, filmed/graded separately, not computed by this file.
+   - `README.md:12`: "Единственное упрощение: распознавание позы... симулировано (таймер +
+     тригонометрия), в продукте это реальный pose-estimation" -- the ONE declared simplification is
+     that pose recognition here is faked (a timer driving `Math.sin`), because the product's real
+     pose estimation cannot be represented in a static mockup tool. The hidden SVG (joint math driven
+     by exactly that sine simulation, `renderVals()` lines 171-196) is what stands in for a real,
+     live-computed skeleton in this spec -- not the video.
+
+**Conclusion**: the pixel-perfect, "final, reproduce exactly" spec for what a REAL live skeleton
+should look like is the hidden SVG (line 32-80) -- white `#FFFFFF` bones, `stroke-width:3.4`, joint
+circles r=4.5/4, a two-layer drop-shadow glow (5px + 14px) colored `rgba(110,255,130,.9)` on a
+correct rep / red on a fault -- not something to eyeball off a video frame. This is close in spirit
+to what `_PoseAvatarPainter` already draws (dark body, white bones, green/red glow) but has never
+been compared parameter-by-parameter against these exact values, and has never been shown to the
+operator with a real body in frame at all (every screenshot so far has been pre-start, nobody
+tracked). That comparison -- and Gates 2-4, built against these exact hidden-SVG values instead of
+approximated from the video -- is the next concrete work, not yet started.
