@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<script src="image-slot.js"></script>
+<style>
+@keyframes skyDriftA{0%,100%{transform:skewY(-7deg) translateX(-26px);opacity:.42}50%{transform:skewY(-4deg) translateX(22px);opacity:.72}}
+@keyframes skyDriftB{0%,100%{transform:skewY(5deg) translateX(20px);opacity:.3}50%{transform:skewY(8deg) translateX(-24px);opacity:.6}}
+@keyframes skyTwinkle{0%,100%{opacity:.55}50%{opacity:1}}
+</style></helmet>
+
+<div style="position:absolute;left:0;top:0;width:390px;height:844px;overflow:hidden;pointer-events:none;background:{{ grad }}">
+
+<div style="position:absolute;inset:0;opacity:{{ starOp }};animation:skyTwinkle 7s ease-in-out infinite;background-image:radial-gradient(1.2px 1.2px at 16% 9%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 64% 6%,rgba(255,255,255,.45),transparent),radial-gradient(1px 1px at 86% 15%,rgba(255,255,255,.38),transparent),radial-gradient(1.3px 1.3px at 34% 21%,rgba(255,255,255,.3),transparent),radial-gradient(1px 1px at 8% 33%,rgba(255,255,255,.34),transparent),radial-gradient(1px 1px at 52% 28%,rgba(255,255,255,.26),transparent),radial-gradient(1.1px 1.1px at 74% 34%,rgba(255,255,255,.24),transparent)"></div>
+
+<div style="position:absolute;left:-40px;bottom:40px;width:470px;height:300px;background:{{ bloom }}"></div>
+<div style="position:absolute;left:0;right:0;bottom:92px;height:112px;background:{{ haze }}"></div>
+
+<sc-if value="{{ isAurora }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:-50px;bottom:150px;width:490px;height:130px;filter:blur(20px);background:linear-gradient(90deg,transparent,rgba(126,240,196,.4) 26%,rgba(140,196,255,.34) 58%,transparent);animation:skyDriftA 15s ease-in-out infinite"></div>
+<div style="position:absolute;left:-50px;bottom:96px;width:490px;height:96px;filter:blur(22px);background:linear-gradient(90deg,transparent,rgba(180,150,255,.3) 34%,rgba(126,240,196,.26) 70%,transparent);animation:skyDriftB 19s ease-in-out infinite"></div>
+<div style="position:absolute;left:-50px;bottom:420px;width:490px;height:180px;filter:blur(30px);opacity:.5;background:linear-gradient(90deg,transparent,rgba(126,240,196,.24) 40%,rgba(150,170,255,.2) 72%,transparent);animation:skyDriftA 23s ease-in-out infinite"></div>
+</sc-if>
+
+<sc-if value="{{ isPhoto }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;pointer-events:none">
+<sc-for list="{{ photos }}" as="ph" hint-placeholder-count="6">
+<img src="{{ ph.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:{{ ph.op }};transition:opacity 1.6s ease"></img>
+</sc-for>
+</div>
+</sc-if>
+
+<div style="position:absolute;inset:0;background:{{ scrim }}"></div>
+
+<sc-if value="{{ showOrb }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:{{ orbX }};bottom:{{ orbY }};width:{{ orbSize }};height:{{ orbSize }};border-radius:50%;background:{{ orbFill }};box-shadow:{{ orbGlow }}"></div>
+<div style="position:absolute;left:{{ reflX }};bottom:88px;width:{{ reflW }};height:9px;border-radius:50%;filter:blur(4px);background:{{ reflFill }}"></div>
+</sc-if>
+
+<sc-if value="{{ isTerrain }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;right:0;bottom:78px;height:96px;background:{{ ridge1 }};clip-path:polygon(0 100%,0 46%,11% 28%,25% 47%,39% 20%,55% 41%,70% 24%,86% 45%,100% 32%,100% 100%)"></div>
+<div style="position:absolute;left:0;right:0;bottom:78px;height:64px;background:{{ ridge2 }};clip-path:polygon(0 100%,0 58%,15% 34%,31% 56%,47% 30%,63% 52%,79% 32%,92% 50%,100% 40%,100% 100%)"></div>
+<div style="position:absolute;left:0;right:0;bottom:78px;height:34px;background:{{ ridge3 }};clip-path:polygon(0 100%,0 62%,18% 44%,36% 64%,54% 40%,72% 60%,88% 46%,100% 58%,100% 100%)"></div>
+</sc-if>
+
+<sc-if value="{{ hasHorizonLine }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:0;right:0;bottom:99px;height:1px;background:linear-gradient(90deg,transparent,{{ hzLine }},transparent)"></div>
+</sc-if>
+
+<sc-if value="{{ hasClouds }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;left:52px;bottom:112px;width:190px;height:5px;background:linear-gradient(90deg,transparent,{{ cloud }},transparent)"></div>
+<div style="position:absolute;left:148px;bottom:134px;width:200px;height:4px;background:linear-gradient(90deg,transparent,{{ cloud2 }},transparent)"></div>
+</sc-if>
+
+<sc-if value="{{ isDial }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;left:0;right:0;bottom:78px;height:80px;background:{{ dialScrim }}"></div>
+<svg width="390" height="118" viewBox="0 0 390 118" style="position:absolute;left:0;bottom:74px;display:block">
+<path d="M18 104 Q195 -4 372 104" fill="none" stroke="{{ arcTrack }}" stroke-width="1"></path>
+<path d="M18 104 Q195 -4 372 104" fill="none" stroke="{{ arcInk }}" stroke-width="2" stroke-dasharray="{{ arcDash }}"></path>
+<sc-for list="{{ ticks }}" as="t" hint-placeholder-count="17">
+<circle cx="{{ t.x }}" cy="{{ t.y }}" r="{{ t.r }}" fill="{{ t.fill }}"></circle>
+</sc-for>
+<circle cx="{{ markX }}" cy="{{ markY }}" r="9" fill="{{ markFill }}"></circle>
+<line x1="18" y1="104" x2="372" y2="104" stroke="{{ arcTrack }}" stroke-width="1"></line>
+</svg>
+<div style="position:absolute;left:20px;bottom:82px;font:600 9px ui-monospace,monospace;letter-spacing:.14em;color:{{ dialInk }}">{{ dialLeft }}</div>
+<div style="position:absolute;right:20px;bottom:82px;font:600 9px ui-monospace,monospace;letter-spacing:.14em;color:{{ dialInk }}">{{ dialRight }}</div>
+</sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;sunset&quot;,&quot;horizon&quot;,&quot;terrain&quot;,&quot;aurora&quot;,&quot;dial&quot;,&quot;photo&quot;],&quot;default&quot;:&quot;photo&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;hour&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:-1,&quot;min&quot;:-1,&quot;max&quot;:23,&quot;tsType&quot;:&quot;number&quot;},&quot;ridges&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;photoSet&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;a&quot;,&quot;b&quot;],&quot;default&quot;:&quot;a&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+// one sky, six hours of the day — palettes are flat stop lists, no per-pixel work
+const PHASES = {
+  night: {
+    stops: ['#0a0e1e 0%','#111631 26%','#191e38 52%','#232540 76%','#2b2943 100%'],
+    star: 1, bloom: 'radial-gradient(52% 58% at 42% 88%,rgba(150,175,235,.16),rgba(150,175,235,0) 70%)',
+    haze: 'linear-gradient(180deg,rgba(148,170,225,0),rgba(148,170,225,.1))',
+    hz: 'rgba(186,205,255,.3)', cloud: 'rgba(10,14,30,.6)', cloud2: 'rgba(10,14,30,.42)',
+    ridges: ['rgba(10,14,30,.62)','rgba(7,10,22,.8)','rgba(4,6,16,.92)']
+  },
+  dawn: {
+    stops: ['#141a33 0%','#2c2b4c 24%','#5b4260 48%','#93596a 70%','#c58a78 88%','#deaa8f 100%'],
+    star: .38, bloom: 'radial-gradient(52% 58% at 42% 88%,rgba(255,178,158,.3),rgba(255,178,158,0) 70%)',
+    haze: 'linear-gradient(180deg,rgba(255,186,166,0),rgba(255,186,166,.14))',
+    hz: 'rgba(255,206,186,.5)', cloud: 'rgba(48,32,44,.42)', cloud2: 'rgba(48,32,44,.3)',
+    ridges: ['rgba(40,28,44,.6)','rgba(28,20,34,.78)','rgba(18,14,26,.9)']
+  },
+  morning: {
+    stops: ['#22406e 0%','#3f6c9a 26%','#7ba1bf 54%','#b7c6cd 80%','#dbd6c8 100%'],
+    star: 0, bloom: 'radial-gradient(52% 58% at 42% 88%,rgba(255,238,198,.3),rgba(255,238,198,0) 70%)',
+    haze: 'linear-gradient(180deg,rgba(255,240,206,0),rgba(255,240,206,.18))',
+    hz: 'rgba(255,250,232,.55)', cloud: 'rgba(70,86,104,.34)', cloud2: 'rgba(70,86,104,.24)',
+    ridges: ['rgba(62,80,100,.5)','rgba(44,60,78,.68)','rgba(30,42,58,.84)']
+  },
+  day: {
+    stops: ['#2f5f92 0%','#5b8bb6 28%','#92b5ce 58%','#c4d3da 82%','#e7e4d9 100%'],
+    star: 0, bloom: 'radial-gradient(52% 58% at 42% 88%,rgba(255,248,226,.34),rgba(255,248,226,0) 70%)',
+    haze: 'linear-gradient(180deg,rgba(255,250,232,0),rgba(255,250,232,.22))',
+    hz: 'rgba(255,255,246,.6)', cloud: 'rgba(88,104,120,.3)', cloud2: 'rgba(88,104,120,.2)',
+    ridges: ['rgba(78,96,116,.46)','rgba(56,74,94,.64)','rgba(38,52,70,.8)']
+  },
+  golden: {
+    stops: ['#263a60 0%','#4b4a72 26%','#855f74 50%','#b98066 74%','#daa47c 90%','#e6b88d 100%'],
+    star: .06, bloom: 'radial-gradient(52% 58% at 42% 88%,rgba(255,196,140,.34),rgba(255,196,140,0) 70%)',
+    haze: 'linear-gradient(180deg,rgba(255,198,142,0),rgba(255,198,142,.2))',
+    hz: 'rgba(255,222,180,.6)', cloud: 'rgba(56,38,44,.44)', cloud2: 'rgba(56,38,44,.32)',
+    ridges: ['rgba(48,32,42,.58)','rgba(34,24,34,.76)','rgba(22,16,26,.9)']
+  },
+  dusk: {
+    stops: ['#14182c 0%','#221f33 26%','#3c2e3a 50%','#5a403f 70%','#775645 88%','#866453 100%'],
+    star: .8, bloom: 'radial-gradient(52% 58% at 42% 88%,rgba(255,196,148,.3),rgba(255,190,140,0) 70%)',
+    haze: 'linear-gradient(180deg,rgba(255,192,142,0),rgba(255,192,142,.11))',
+    hz: 'rgba(255,214,172,.5)', cloud: 'rgba(46,34,46,.42)', cloud2: 'rgba(46,34,46,.3)',
+    ridges: ['rgba(38,28,40,.6)','rgba(26,20,32,.78)','rgba(16,12,24,.9)']
+  }
+};
+
+// one photograph per palette phase; two curated sets from the ten uploads
+const PHOTO_SETS = {
+  a: {
+    dawn: 'uploads/01_cliffs_moher.webp',
+    morning: 'uploads/07_snow_peak_tarn.webp',
+    day: 'uploads/06_greek_terrace.webp',
+    golden: 'uploads/08_coast_turquoise.webp',
+    dusk: 'uploads/10_beach_sunset.webp',
+    night: 'uploads/02_volcano.webp'
+  },
+  b: {
+    dawn: 'uploads/04_fuji_sakura.webp',
+    morning: 'uploads/09_forest_lake.webp',
+    day: 'uploads/08_coast_turquoise.webp',
+    golden: 'uploads/03_waterfall_dock.webp',
+    dusk: 'uploads/05_sunset_hills.webp',
+    night: 'uploads/02_volcano.webp'
+  }
+};
+const PHASE_ORDER = ['night', 'dawn', 'morning', 'day', 'golden', 'dusk'];
+
+function phaseFor(h) {
+  if (h < 5 || h >= 22) return 'night';
+  if (h < 7) return 'dawn';
+  if (h < 11) return 'morning';
+  if (h < 16) return 'day';
+  if (h < 19) return 'golden';
+  return 'dusk';
+}
+
+const SUN_UP = 5, SUN_DOWN = 21;      // orb rides the band between these hours
+const BAND_FLOOR = 78, BAND_CEIL = 172; // visible sky band (top 22px sit in the content's fade-out)
+
+// quadratic arc used by the dial variant
+const P0 = [18, 104], CP = [195, -4], P2 = [372, 104];
+function onArc(t) {
+  const u = 1 - t;
+  return [
+    u * u * P0[0] + 2 * u * t * CP[0] + t * t * P2[0],
+    u * u * P0[1] + 2 * u * t * CP[1] + t * t * P2[1]
+  ];
+}
+
+class Component extends DCLogic {
+  componentDidMount() {
+    this._t = setInterval(() => { if (this._live) this.forceUpdate(); }, 60000);
+  }
+  componentWillUnmount() { clearInterval(this._t); }
+
+  _hours() {
+    const raw = this.props.hour;
+    const n = typeof raw === 'number' ? raw : parseFloat(raw);
+    if (Number.isFinite(n) && n >= 0) { this._live = false; return n; }
+    this._live = true;
+    const d = new Date();
+    return d.getHours() + d.getMinutes() / 60;
+  }
+
+  renderVals() {
+    const variant = this.props.variant || 'photo';
+    const isPhoto = variant === 'photo';
+    const isSunset = variant === 'sunset';
+    const hours = isSunset ? 20.2 : this._hours();
+    const h = Math.max(0, Math.min(23.99, hours));
+
+    // aurora leans on the night palette so the ribbons have something to sit on
+    let key = phaseFor(h);
+    if (variant === 'aurora' && (h >= 18 || h < 8)) key = 'night';
+    const P = PHASES[key];
+
+    const sunUp = h >= SUN_UP && h < SUN_DOWN;
+    const p = sunUp
+      ? (h - SUN_UP) / (SUN_DOWN - SUN_UP)
+      : ((h < SUN_UP ? h + (24 - SUN_DOWN) : h - SUN_DOWN) / (24 - SUN_DOWN + SUN_UP));
+    const elev = Math.sin(Math.max(0, Math.min(1, p)) * Math.PI);
+    // a high sun reads smaller and whiter — and shrinking it keeps the whole disc
+    // inside the visible band (78 → 150px from the frame bottom)
+    const size = Math.round((sunUp ? 56 : 40) - elev * (sunUp ? 12 : 6));
+    const x = 26 + p * (390 - 52 - size);
+    const y = BAND_FLOOR + elev * Math.max(0, BAND_CEIL - BAND_FLOOR - size);
+
+    const sunFill = elev > .55
+      ? 'radial-gradient(circle at 50% 44%,#fffdf6 0%,#fff0d2 44%,#ffd9a6 78%,rgba(255,206,150,.6) 100%)'
+      : 'radial-gradient(circle at 50% 44%,#ffeed4 0%,#ffd7a4 40%,#f8b077 74%,rgba(232,146,104,.55) 100%)';
+    const moonFill = 'radial-gradient(circle at 40% 36%,#f6f8ff 0%,#dcdff2 52%,#a9b0cf 100%)';
+
+    const ticks = [];
+    for (let i = 0; i <= 16; i++) {
+      const t = i / 16;
+      const pt = onArc(t);
+      const passed = t <= p && sunUp;
+      ticks.push({
+        x: pt[0].toFixed(1), y: pt[1].toFixed(1),
+        r: i % 4 === 0 ? 2 : 1.2,
+        fill: passed ? 'rgba(255,214,172,.9)' : 'rgba(255,255,255,.34)'
+      });
+    }
+    const mark = onArc(Math.max(0, Math.min(1, sunUp ? p : 0)));
+    const arcLen = 372;
+    const hh = String(Math.floor(h)).padStart(2, '0');
+    const mm = String(Math.floor((h % 1) * 60)).padStart(2, '0');
+
+    return {
+      grad: 'linear-gradient(180deg,' + P.stops.join(',') + ')',
+      starOp: String(isPhoto ? 0 : variant === 'aurora' ? Math.min(1, P.star + .2) : P.star),
+      bloom: isPhoto ? 'none' : P.bloom,
+      haze: isPhoto ? 'none' : P.haze,
+      hzLine: P.hz,
+      cloud: P.cloud,
+      cloud2: P.cloud2,
+      ridge1: P.ridges[0], ridge2: P.ridges[1], ridge3: P.ridges[2],
+
+      isAurora: variant === 'aurora',
+      isTerrain: variant === 'terrain' || (variant === 'photo' && this.props.ridges === true),
+      isDial: variant === 'dial',
+      isPhoto: isPhoto,
+      // an explicit photo pins one frame (gallery use); otherwise the set crossfades by hour
+      photos: this.props.photo
+        ? [{src: this.props.photo, op: '1'}]
+        : (set => PHASE_ORDER.map(k => ({
+            src: set[k], op: k === key ? '1' : '0'
+          })))(PHOTO_SETS[this.props.photoSet === 'b' ? 'b' : 'a']),
+      hasClouds: variant !== 'dial' && !isPhoto,
+      hasHorizonLine: variant !== 'dial' && !isPhoto,
+      // in photo mode the light belongs to the photograph — no drawn orb on top
+      showOrb: variant !== 'dial' && !isPhoto,
+
+      orbX: x.toFixed(0) + 'px',
+      orbY: y.toFixed(0) + 'px',
+      orbSize: size + 'px',
+      orbFill: sunUp ? sunFill : moonFill,
+      orbGlow: sunUp
+        ? '0 0 46px 18px rgba(255,190,140,' + (.18 + elev * .22).toFixed(2) + '),0 0 100px 46px rgba(255,176,124,' + (.1 + elev * .1).toFixed(2) + ')'
+        : '0 0 30px 12px rgba(190,205,255,.16)',
+      reflX: (x - size * 0.55).toFixed(0) + 'px',
+      reflW: (size * 2.1).toFixed(0) + 'px',
+      reflFill: sunUp
+        ? 'radial-gradient(50% 50% at 50% 50%,rgba(255,206,158,' + (.34 - elev * .18).toFixed(2) + '),transparent 72%)'
+        : 'radial-gradient(50% 50% at 50% 50%,rgba(196,210,255,.16),transparent 72%)',
+
+      dialScrim: 'linear-gradient(180deg,rgba(12,10,20,0),rgba(12,10,20,.42))',
+      arcTrack: 'rgba(255,255,255,.22)',
+      arcInk: 'rgba(255,214,172,.85)',
+      arcDash: (arcLen * (sunUp ? p : 0)).toFixed(0) + ' ' + arcLen,
+      ticks: ticks,
+      markX: mark[0].toFixed(1),
+      markY: mark[1].toFixed(1),
+      markFill: sunUp ? '#ffd7a4' : 'rgba(220,223,242,.9)',
+      dialInk: 'rgba(255,255,255,.6)',
+      // light phases get a veil so the white glass UI above stays legible
+      // veils the sky behind the UI only — it stops above the band so the sun keeps its full brightness
+      // photos are busy edge to edge, so their veil never drops to zero —
+      // it only thins over the sky band so the sun keeps its brightness
+      scrim: isPhoto && this.props.veil === 'light'
+        ? 'linear-gradient(180deg,rgba(246,247,252,.66) 0%,rgba(246,247,252,.6) 58%,rgba(246,247,252,.7) 100%)'
+        : isPhoto
+        ? (a => 'linear-gradient(180deg,rgba(10,12,22,' + (a + .1).toFixed(2) + ') 0%,rgba(10,12,22,' + a + ') 58%,rgba(10,12,22,' + (a * .74).toFixed(2) + ') 82%,rgba(10,12,22,' + (a * .9).toFixed(2) + ') 100%)')(
+            {morning: .5, day: .56, golden: .46, dawn: .44, dusk: .44, night: .5}[key])
+        : (a => 'linear-gradient(180deg,rgba(12,14,26,' + a + ') 0%,rgba(12,14,26,' + a + ') 64%,rgba(12,14,26,0) 82%)')(
+            {morning: .56, day: .6, golden: .34, dawn: .18, dusk: .07, night: 0}[key]),
+      dialLeft: '05:00',
+      dialRight: hh + ':' + mm
+    };
+  }
+}
+
+</script>
+</body>
+</html>

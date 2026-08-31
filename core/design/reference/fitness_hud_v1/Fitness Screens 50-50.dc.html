@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="_ds/modernist-45ca9727-c51f-443e-81d6-37788426e92c/styles.css">
+<script src="_ds/modernist-45ca9727-c51f-443e-81d6-37788426e92c/_ds_bundle.js"></script>
+<style>
+a{color:var(--color-accent-700);text-decoration:none}
+a:hover{color:var(--color-accent)}
+</style></helmet>
+
+<div style="width:2680px;padding:56px 48px 80px;background:var(--color-bg);font-family:Archivo,sans-serif;color:var(--color-text)">
+
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:48px">
+<div>
+<div style="font:700 11px Archivo;letter-spacing:.24em;text-transform:uppercase;color:var(--color-accent-700)">Turn 14 · <a href="#14a">14a</a></div>
+<div style="font:800 46px/1.02 Archivo;letter-spacing:-.025em;margin-top:14px">Все экраны в стиле HUD · тёмная / светлая 50 : 50</div>
+</div>
+<div style="max-width:640px;font:400 14px/1.6 Archivo;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Формула из Form Coach разошлась по всему приложению: заливки почти нет, форму держит светящийся контур, скругления выросли до 30. Каждый экран стоит парой — слева тёмная тема, справа светлая на том же кадре.</div>
+</div>
+<div style="height:2px;background:var(--color-divider);margin-top:28px"></div>
+
+<div id="14a" style="display:grid;grid-template-columns:repeat(3,798px);gap:56px 44px;margin-top:40px">
+<sc-for list="{{ pairs }}" as="p" hint-placeholder-count="7">
+<div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:12px">
+<span style="font:800 22px/1 Archivo;letter-spacing:-.015em">{{ p.label }}</span>
+<span style="font:400 11px ui-monospace,monospace;letter-spacing:.08em;color:color-mix(in srgb,var(--color-text) 56%,transparent)">{{ p.frame }}</span>
+</div>
+<div style="height:2px;background:var(--color-divider);margin-bottom:16px"></div>
+<div style="display:grid;grid-template-columns:390px 390px;gap:18px">
+<div>
+<div style="font:700 10px Archivo;letter-spacing:.2em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 58%,transparent);padding-bottom:8px">Тёмная</div>
+<div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 26px 52px -32px rgba(32,30,29,.55)">
+<dc-import name="Fitness Glass Phone v1 - Sunset" sky="photo" sky-photo="{{ p.photo }}" hour="{{ p.hour }}" initial-tab="{{ p.tab }}" initial-view="{{ p.view }}" style="width:390px;height:844px" hint-size="390px,844px"></dc-import>
+</div>
+</div>
+<div>
+<div style="font:700 10px Archivo;letter-spacing:.2em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 58%,transparent);padding-bottom:8px">Светлая</div>
+<div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 26px 52px -32px rgba(32,30,29,.4)">
+<dc-import name="Fitness Glass Phone v1 - Light" sky="photo" sky-photo="{{ p.photo }}" hour="{{ p.hour }}" initial-tab="{{ p.tab }}" initial-view="{{ p.view }}" style="width:390px;height:844px" hint-size="390px,844px"></dc-import>
+</div>
+</div>
+</div>
+<div style="font:400 12px/1.5 Archivo;color:color-mix(in srgb,var(--color-text) 62%,transparent);padding-top:12px">{{ p.note }}</div>
+</div>
+</sc-for>
+
+<div>
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:12px">
+<span style="font:800 22px/1 Archivo;letter-spacing:-.015em">Form coach</span>
+<span style="font:400 11px ui-monospace,monospace;letter-spacing:.08em;color:color-mix(in srgb,var(--color-text) 56%,transparent)">видео · скелет</span>
+</div>
+<div style="height:2px;background:var(--color-divider);margin-bottom:16px"></div>
+<div style="display:grid;grid-template-columns:390px 390px;gap:18px">
+<div>
+<div style="font:700 10px Archivo;letter-spacing:.2em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 58%,transparent);padding-bottom:8px">Живой экран</div>
+<div style="width:390px;height:844px;border-radius:26px;overflow:hidden;box-shadow:0 26px 52px -32px rgba(32,30,29,.55)">
+<dc-import name="Fitness Form Coach Phone" style="width:390px;height:844px" hint-size="390px,844px"></dc-import>
+</div>
+</div>
+<div style="font:400 12.5px/1.6 Archivo;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Это исходник стиля: контур вместо заливки, круглые счётчики, свечение по краю. Всё остальное приложение теперь собрано по этой же формуле — светлая тема отличается только знаком: контур чернильный, свечение белое, заливка 30 % вместо 1,4 %.</div>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const PAIRS = [
+  {label: 'Home', tab: 0, view: 'home', photo: 'uploads/10_beach_sunset.webp', frame: 'beach sunset · 20:00', hour: 20,
+   note: 'Главная: круг «04 упражнения» и кнопка старта — единственные светящиеся элементы, всё остальное держится контуром.'},
+  {label: 'Workouts', tab: 1, view: 'home', photo: 'uploads/07_snow_peak_tarn.webp', frame: 'snow peak · 09:00', hour: 9,
+   note: 'Список программ: карточки читаются как рамки, выбранная подсвечена акцентом.'},
+  {label: 'Scan', tab: 2, view: 'home', photo: 'uploads/06_greek_terrace.webp', frame: 'greek terrace · 13:00', hour: 13,
+   note: 'Самый светлый кадр — проверка, что контур виден и на белом камне.'},
+  {label: 'Progress', tab: 3, view: 'home', photo: 'uploads/09_forest_lake.webp', frame: 'forest lake · 09:00', hour: 9,
+   note: 'Графики и календарь: столбцы получили контур, чтобы не растворяться в прозрачной панели.'},
+  {label: 'Profile', tab: 4, view: 'home', photo: 'uploads/01_cliffs_moher.webp', frame: 'cliffs of Moher · 06:00', hour: 6,
+   note: 'Настройки: строки-разделители заменены на воздух между стеклянными рамками.'},
+  {label: 'Session', tab: 0, view: 'session', photo: 'uploads/05_sunset_hills.webp', frame: 'sunset hills · 20:00', hour: 20,
+   note: 'Активный подход: таймер и кнопки повторяют геометрию Form Coach — 25-й радиус, свечение по контуру.'}
+];
+
+class Component extends DCLogic {
+  renderVals() { return {pairs: PAIRS}; }
+}
+</script>
+</body>
+</html>

@@ -37891,3 +37891,66 @@ exist today, (d) a new bottom panel, (e) colour-state wiring (red/error was neve
 this app despite the code path existing). Explicitly told the operator no further "done" claim on
 this screen without a separate GO on a concrete plan. Offered to draft that plan next, pending
 operator direction on scope (full design fidelity vs a reduced target).
+
+## REFUSAL/CORRECTION #2, same thread: operator supplied `D:\Downloads\Mobile app design (4).zip`
+## directly mid-turn and said, verbatim, "ты уже 10 раз забываешь об этом и делаешь не то что
+## нужно" -- this exact zip/its extracted folder has apparently been the right source to check
+## across many past sessions and was not checked. Saved as a standing feedback memory
+## (`project-fitness-app-design-reference-canonical-source.md`) so this stops recurring. Operator
+## chose scope: "полное соответствие дизайну" (full design fidelity) for the Form Coach rebuild.
+
+**FACT**: the zip's own top folder `design_handoff_fitness_hud` was copied into the repo at
+`core/design/reference/fitness_hud_v1/` (git-tracked, durable) -- it supersedes
+`core/design/reference/full_handoff_v1/` for Form Coach, which this session had been citing as if
+current (`full_handoff_v1/README.md:104`, used in two earlier entries above).
+
+**FACT**, `core/design/reference/fitness_hud_v1/README.md:12`: "**High-fidelity.** Цвета,
+типографика, отступы, радиусы и состояния финальные -- воспроизводить попиксельно. Единственное
+упрощение: распознавание позы в Fitness Form Coach Phone симулировано (таймер + тригонометрия), в
+продукте это реальный pose-estimation." I.e. every visual value in the mockup is meant to be
+reproduced pixel-for-pixel; the only sanctioned simplification is that the DEMO drives its numbers
+from a timer instead of a camera -- there is no license anywhere in this doc for a reduced/adapted
+version of the layout.
+
+**FACT**, `core/design/reference/fitness_hud_v1/Fitness Form Coach Phone.dc.html` is a literal,
+parameterized implementation (not a flat screenshot) -- exact values now available that were not
+before:
+- Two circular gauges, both exactly 158x158px, `border-radius:50%`, glass HUD formula
+  (`background:rgba(255,255,255,.012); backdrop-filter:blur(6px); box-shadow:inset 0 0 0 1px
+  rgba(255,255,255,.34),0 0 24px -6px rgba(255,255,255,.28)`), positioned `left:16px`/`right:16px`
+  at `top:112px`. Left: "Повторы" label + `52px` digit + `/target` + a thin progress bar tinted by
+  `accent`. Right: "Техника" label + `52px` digit coloured `scoreColor` (green `#7BF08A` / red
+  `#FF5A5A`) + `%` + a phase-label row with a coloured dot.
+- The functional skeleton reference is a HIDDEN fallback `<svg>` (lines 32-80 of the .dc.html,
+  `display:none` because the demo drives the flashy look off a baked-in video instead) -- and this
+  fallback, not the video effect, is the literal geometric spec: `stroke-width="3.4"`, plain
+  THIN LINES (`<line>`/`<circle r="25">` for the head, `r="4"-"4.5"` for joints) with
+  `filter:drop-shadow(0 0 5px {{glow}}) drop-shadow(0 0 14px {{glow}})`, `glow` = green
+  `rgba(110,255,130,.9)` normally, red `rgba(255,70,70,.95)` on fault. **There is no filled dark
+  body/silhouette shape anywhere in this spec** -- just the thin stick skeleton over the photo/video.
+  The app's `_PoseAvatarPainter` draws thick FILLED limb-outline polygons plus a near-black body
+  fill (`0xE60A0912`) -- a materially different visual language from the spec's thin-line skeleton,
+  not merely a styling variant of it. The dark-body-fill idea has no basis in this design doc; it
+  reads as this project's own later adaptation for the no-camera-video/privacy case, which the demo
+  file itself never actually exercises (`hasVideo` is hardcoded `true` in the component logic).
+- Bottom panel "Счётчики тренера" is a real 4-column CSS grid (`grid-template-columns:repeat(4,1fr)`)
+  inside a glass panel, each cell: uppercase 8.5px label + 21px value, colour per-metric (mostly
+  white, "Симметрия" green/red by fault state). Exact simulated values/formulas for reference (NOT
+  to be copied verbatim -- product must compute these from real pose data): Темп alternates
+  "2.0 с"/"3.0 с" by phase; Амплитуда `82 + round(e*14)` percent; Симметрия "49/51" normally,
+  "46/54" on the simulated fault; Пауза fixed "0.4 с" in the demo (never varies -- likely meant to
+  be a real measured rest-between-reps value in product, not literally constant).
+- Cue chips: an "ok" cue (`Лопатки сведены`, check icon) always shown; a second "warn" cue
+  (amber/orange glass tint, distinct from the ok cue's white glass) appears only on the simulated
+  fault -- confirms the app's current single-cue-card pattern under-represents the design, which
+  shows up to two cues stacked with visually distinct tones.
+- Finish/pause control: pill "Закрыть сет" with a trailing arrow icon + a separate 52px round pause
+  button, both glass-styled -- close to what `_SetControls` already does functionally but not
+  stylistically.
+
+**DECISION**: this supersedes the "unbuilt/different-technique screen" framing from the previous
+entry with concrete numbers, not just a qualitative gap. Operator chose full design fidelity as the
+target scope. Per `~/.claude/CLAUDE.md` §4/§17, this is real new-feature scope (new render technique,
+two new gauge widgets, a new 4-metric data pipeline, a new panel, two-cue-stack support) --
+proceeding under Plan -> GO -> Build -> Verify, not committed to unilaterally. Plan follows in the
+same turn per operator's explicit "да делай план."

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
+<style>
+[data-icon]{font-family:'Material Symbols Sharp';font-weight:400;line-height:1}
+@keyframes fcScan{0%{transform:translateY(-40px);opacity:0}12%{opacity:.85}88%{opacity:.85}100%{transform:translateY(500px);opacity:0}}
+@keyframes fcPulse{0%,100%{opacity:.35}50%{opacity:1}}
+</style></helmet>
+
+<div style="width:390px;height:844px;position:relative;overflow:hidden;border-radius:26px;background:#0b0e18;font-family:Archivo,sans-serif;color:#fff">
+
+<sc-if value="{{ hasVideo }}" hint-placeholder-val="{{ false }}">
+<video src="{{ video }}" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:42% center;filter:saturate(.85) brightness(.72) contrast(1.02)"></video>
+<video src="{{ video }}" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:42% center;mix-blend-mode:screen;opacity:.9;filter:grayscale(1) brightness(.62) contrast(7) sepia(1) hue-rotate(62deg) saturate(6)"></video>
+</sc-if>
+<sc-if value="{{ noVideo }}" hint-placeholder-val="{{ true }}">
+<img src="{{ feed }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.62) brightness(.5)"></img>
+</sc-if>
+<div style="position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 42%,rgba(8,10,18,.12),rgba(8,10,18,.86))"></div>
+<div style="position:absolute;left:26px;right:26px;top:150px;height:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.9),transparent);animation:fcScan 3.6s ease-in-out infinite"></div>
+
+<svg viewBox="0 0 390 520" style="position:absolute;left:0;top:268px;width:390px;height:520px;z-index:2;display:none">
+<defs>
+<filter id="fcSoft" x="-30%" y="-30%" width="160%" height="160%">
+<feGaussianBlur stdDeviation="4"></feGaussianBlur>
+</filter>
+<linearGradient id="fcBody" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="rgba(255,255,255,.62)"></stop>
+<stop offset="1" stop-color="rgba(255,255,255,.34)"></stop>
+</linearGradient>
+</defs>
+<g transform="translate(74,22) scale(0.62)">
+
+
+<g stroke="{{ line }}" stroke-width="3.4" stroke-linecap="round" fill="none" style="filter:drop-shadow(0 0 5px {{ glow }}) drop-shadow(0 0 14px {{ glow }})">
+<circle cx="195" cy="{{ p.headY }}" r="25"></circle>
+<line x1="195" y1="{{ p.neckY }}" x2="195" y2="{{ p.hipY }}"></line>
+<line x1="{{ p.shoulderL }}" y1="{{ p.shoulderY }}" x2="{{ p.shoulderR }}" y2="{{ p.shoulderY }}"></line>
+<line x1="{{ p.shoulderL }}" y1="{{ p.shoulderY }}" x2="{{ p.elbowLX }}" y2="{{ p.elbowY }}"></line>
+<line x1="{{ p.shoulderR }}" y1="{{ p.shoulderY }}" x2="{{ p.elbowRX }}" y2="{{ p.elbowY }}"></line>
+<line x1="{{ p.elbowLX }}" y1="{{ p.elbowY }}" x2="{{ p.handLX }}" y2="{{ p.handY }}"></line>
+<line x1="{{ p.elbowRX }}" y1="{{ p.elbowY }}" x2="{{ p.handRX }}" y2="{{ p.handY }}"></line>
+<line x1="176" y1="{{ p.hipY }}" x2="214" y2="{{ p.hipY }}"></line>
+<line x1="176" y1="{{ p.hipY }}" x2="174" y2="{{ p.kneeY }}"></line>
+<line x1="214" y1="{{ p.hipY }}" x2="216" y2="{{ p.kneeY }}"></line>
+<line x1="174" y1="{{ p.kneeY }}" x2="172" y2="{{ p.ankleY }}"></line>
+<line x1="216" y1="{{ p.kneeY }}" x2="218" y2="{{ p.ankleY }}"></line>
+</g>
+<g fill="{{ line }}">
+<circle cx="{{ p.shoulderL }}" cy="{{ p.shoulderY }}" r="4.5"></circle>
+<circle cx="{{ p.shoulderR }}" cy="{{ p.shoulderY }}" r="4.5"></circle>
+<circle cx="{{ p.elbowLX }}" cy="{{ p.elbowY }}" r="4.5"></circle>
+<circle cx="{{ p.elbowRX }}" cy="{{ p.elbowY }}" r="4.5"></circle>
+<circle cx="176" cy="{{ p.hipY }}" r="4.5"></circle>
+<circle cx="214" cy="{{ p.hipY }}" r="4.5"></circle>
+<circle cx="174" cy="{{ p.kneeY }}" r="4"></circle>
+<circle cx="216" cy="{{ p.kneeY }}" r="4"></circle>
+</g>
+<g stroke="{{ faultColor }}" stroke-width="2" fill="none" opacity="{{ faultOn }}">
+<circle cx="{{ p.faultX }}" cy="{{ p.faultY }}" r="26" stroke-dasharray="4 6" style="animation:fcPulse 1.1s ease-in-out infinite"></circle>
+</g>
+<g stroke="{{ pathColor }}" stroke-width="1.6" stroke-dasharray="5 7" fill="none" opacity=".8">
+<line x1="{{ p.handLX }}" y1="{{ p.pathTopY }}" x2="{{ p.handLX }}" y2="{{ p.pathBotY }}"></line>
+<line x1="{{ p.handRX }}" y1="{{ p.pathTopY }}" x2="{{ p.handRX }}" y2="{{ p.pathBotY }}"></line>
+</g>
+<g stroke="rgba(255,255,255,.34)" stroke-width="1" stroke-dasharray="3 6" fill="none">
+<line x1="195" y1="{{ p.headY }}" x2="195" y2="{{ p.ankleY }}"></line>
+</g>
+</g>
+</svg>
+
+<div style="position:absolute;top:0;left:0;right:0;height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:600 13px Archivo;z-index:4;text-shadow:0 1px 6px rgba(0,0,0,.4)">
+<span>{{ clock }}</span>
+<span style="display:flex;gap:5px;align-items:center"><span data-icon style="font-size:15px">signal_cellular_alt</span><span data-icon style="font-size:15px">wifi</span><span data-icon style="font-size:15px">battery_full</span></span>
+</div>
+
+<div style="position:absolute;left:16px;right:16px;top:56px;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-radius:26px;background:rgba(255,255,255,.012);backdrop-filter:blur(6px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.34),0 0 24px -6px rgba(255,255,255,.28);text-shadow:0 1px 14px rgba(6,8,18,.85)">
+<span style="display:flex;align-items:center;gap:8px;font:700 13px Archivo"><span style="width:7px;height:7px;border-radius:50%;background:#FF5A5A;box-shadow:0 0 10px #FF5A5A;animation:fcPulse 1.4s ease-in-out infinite"></span>{{ exercise }}</span>
+<span style="font:600 10px ui-monospace,monospace;letter-spacing:.1em;color:rgba(255,255,255,.8)">{{ setLabel }}</span>
+</div>
+
+<div style="position:absolute;left:16px;top:112px;width:158px;height:158px;padding:0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(255,255,255,.012);backdrop-filter:blur(6px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.34),0 0 24px -6px rgba(255,255,255,.28);text-shadow:0 1px 14px rgba(6,8,18,.85)">
+<div style="font:600 9px Archivo;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.76)">Повторы</div>
+<div style="display:flex;align-items:baseline;gap:6px;padding-top:4px">
+<span style="font:400 52px/1 Archivo;text-shadow:0 2px 26px rgba(255,255,255,.45)">{{ repText }}</span>
+<span style="font:400 15px Archivo;color:rgba(255,255,255,.72)">/ {{ target }}</span>
+</div>
+<div style="height:4px;border-radius:2px;margin-top:10px;background:rgba(255,255,255,.16)">
+<span style="display:block;height:100%;border-radius:2px;width:{{ repPct }};background:{{ accent }};box-shadow:0 0 12px -2px {{ accent }}"></span>
+</div>
+</div>
+
+<div style="position:absolute;right:16px;top:112px;width:158px;height:158px;padding:0;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:rgba(255,255,255,.012);backdrop-filter:blur(6px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.34),0 0 24px -6px rgba(255,255,255,.28);text-shadow:0 1px 14px rgba(6,8,18,.85)">
+<div style="font:600 9px Archivo;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.76)">Техника</div>
+<div style="display:flex;align-items:baseline;gap:6px;padding-top:4px">
+<span style="font:400 52px/1 Archivo;color:{{ scoreColor }};text-shadow:0 2px 26px rgba(255,255,255,.35)">{{ score }}</span>
+<span style="font:400 15px Archivo;color:rgba(255,255,255,.72)">%</span>
+</div>
+<div style="display:flex;align-items:center;gap:6px;padding-top:8px">
+<span style="width:6px;height:6px;flex:none;border-radius:50%;background:{{ scoreColor }};box-shadow:0 0 10px {{ scoreColor }}"></span>
+<span style="font:400 10.5px Archivo;white-space:nowrap;color:rgba(255,255,255,.74)">{{ phaseLabel }}</span>
+</div>
+</div>
+
+<div style="position:absolute;left:16px;right:16px;bottom:210px;display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+<sc-for list="{{ cues }}" as="c" hint-placeholder-count="2">
+<div style="padding:11px 16px;border-radius:22px;display:flex;align-items:center;gap:9px;font:600 12.5px Archivo;backdrop-filter:blur(34px) saturate(180%);{{ c.style }}">
+<span data-icon style="font-size:17px">{{ c.icon }}</span>{{ c.text }}
+</div>
+</sc-for>
+</div>
+
+<div style="position:absolute;left:16px;right:16px;bottom:22px;padding:20px;border-radius:32px;background:rgba(255,255,255,.012);backdrop-filter:blur(6px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.34),0 0 24px -6px rgba(255,255,255,.28);text-shadow:0 1px 14px rgba(6,8,18,.85)">
+<div style="display:flex;align-items:baseline;justify-content:space-between">
+<span style="font:700 14px Archivo">Счётчики тренера</span>
+<span style="font:400 9.5px ui-monospace,monospace;letter-spacing:.1em;color:rgba(255,255,255,.72)">ON-DEVICE · 30 FPS</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding-top:14px">
+<sc-for list="{{ metrics }}" as="m" hint-placeholder-count="4">
+<div>
+<div style="font:600 8.5px Archivo;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.72)">{{ m.label }}</div>
+<div style="font:400 21px/1 Archivo;padding-top:5px;color:{{ m.color }}">{{ m.value }}</div>
+</div>
+</sc-for>
+</div>
+<div style="display:grid;grid-template-columns:52px 1fr;gap:9px;padding-top:16px">
+<div onClick="{{ toggle }}" style="border-radius:25px;height:50px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:rgba(255,255,255,.02);backdrop-filter:blur(8px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.34);transition:transform .18s ease,background .18s ease" style-hover="transform:translateY(-2px);background:rgba(255,255,255,.14)">
+<span data-icon style="font-size:20px">{{ playIcon }}</span>
+</div>
+<div onClick="{{ finish }}" style="border-radius:25px;height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;cursor:pointer;background:rgba(255,255,255,.045);backdrop-filter:blur(10px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.45),0 0 26px -8px rgba(255,255,255,.35);transition:transform .18s ease,background .18s ease" style-hover="transform:translateY(-2px);background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(255,255,255,.12))" style-active="transform:translateY(0);background:rgba(255,255,255,.36)">
+<span style="font:700 14px Archivo">Закрыть сет</span>
+<span data-icon style="font-size:20px">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844},&quot;video&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;feed&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;uploads/02_volcano.webp&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;exercise&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Тяга верхнего блока&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#C9FF47&quot;,&quot;options&quot;:[&quot;#C9FF47&quot;,&quot;#7CE0FF&quot;,&quot;#FFB86B&quot;,&quot;#FF7A9C&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+const CUE_OK = {icon: 'check_circle', text: 'Лопатки сведены', tone: 'ok'};
+const CUE_LIB = [
+  {icon: 'trending_down', text: 'Опускай медленнее — 3 счёта', tone: 'warn'},
+  {icon: 'straighten', text: 'Корпус чуть назад', tone: 'warn'},
+  {icon: 'bolt', text: 'Рывок в верхней точке', tone: 'bad'}
+];
+
+class Component extends DCLogic {
+  state = {t: 0, playing: true, reps: 7};
+
+  componentDidMount() {
+    this._tick = setInterval(() => {
+      if (!this.state.playing) return;
+      this.setState(s => {
+        const t = s.t + 1;                       // 12 кадров = один повтор
+        const reps = t % 12 === 0 ? s.reps + 1 : s.reps;
+        return {t, reps: reps > 12 ? 1 : reps};
+      });
+    }, 110);
+  }
+  componentWillUnmount() { clearInterval(this._tick); }
+
+  renderVals() {
+    const accent = this.props.accent || '#C9FF47';
+    const target = 10;
+    const t = this.state.t;
+    const ph = (t % 12) / 12;                     // 0 → верх, .5 → низ
+    const e = Math.sin(ph * Math.PI);             // 0..1..0 — фаза тяги
+    const down = ph < 0.5;
+
+    // скелет: плечи и локти идут вниз, корпус слегка садится
+    const drop = e * 66;
+    const headY = 60 + e * 26, neckY = headY + 26;
+    const shoulderY = 108 + e * 26, hipY = 236 + e * 10;
+    const p = {
+      headY: headY.toFixed(0), neckY: neckY.toFixed(0),
+      shoulderY: shoulderY.toFixed(0),
+      shoulderL: (166).toString(), shoulderR: (224).toString(),
+      elbowY: (shoulderY - 62 + drop).toFixed(0),
+      elbowLX: (128 - e * 14).toFixed(0), elbowRX: (262 + e * 14).toFixed(0),
+      handY: (shoulderY - 104 + drop * .5).toFixed(0),
+      handLX: (150 - e * 4).toFixed(0), handRX: (240 + e * 4).toFixed(0),
+      hipY: hipY.toFixed(0),
+      kneeY: (hipY + 96).toFixed(0),
+      ankleY: (hipY + 178).toFixed(0),
+      faultX: '195', faultY: (shoulderY + 4).toFixed(0),
+      pathTopY: (108 - 104).toFixed(0), pathBotY: (108 + 66 - 104 + 33).toFixed(0)
+    };
+
+    // «ошибка» появляется на каждом четвёртом повторе в нижней фазе
+    const fault = this.state.reps % 4 === 0 && e > 0.6;
+    const score = fault ? 78 : 88 + Math.round(e * 6);
+    const scoreColor = fault ? '#FF5A5A' : '#7BF08A';
+    const line = fault ? '#FFD9D9' : '#FFFFFF';
+
+    const cues = [CUE_OK].concat(fault ? [CUE_LIB[0]] : []).map(c => ({
+      icon: c.icon, text: c.text,
+      style: c.tone === 'ok'
+        ? 'background:rgba(255,255,255,.012);box-shadow:inset 0 0 0 1px rgba(255,255,255,.32),0 0 20px -8px rgba(255,255,255,.3);color:#fff;text-shadow:0 1px 14px rgba(6,8,18,.85)'
+        : 'background:rgba(255,184,107,.05);box-shadow:inset 0 0 0 1px rgba(255,184,107,.55),0 0 22px -8px rgba(255,184,107,.5);color:#FFE2BE;text-shadow:0 1px 14px rgba(6,8,18,.85)'
+    }));
+
+    return {
+      feed: this.props.feed || 'uploads/02_volcano.webp',
+      // ролик несёт вшитый скелет — вторая фигура; поэтому кадр берём статичный
+      video: this.props.video || 'uploads/clip2-1786933639870-ww0q.mp4',
+      hasVideo: true,
+      noVideo: false,
+      accent, line, p,
+      glow: fault ? 'rgba(255,70,70,.95)' : 'rgba(110,255,130,.9)',
+      pathColor: fault ? 'rgba(255,90,90,.85)' : 'rgba(120,255,140,.85)',
+      faultColor: '#FF5A5A',
+      faultOn: fault ? '1' : '0',
+      clock: '19:52',
+      exercise: this.props.exercise || 'Тяга верхнего блока',
+      setLabel: 'СЕТ 3 / 4',
+      repText: String(this.state.reps).padStart(2, '0'),
+      target: String(target),
+      repPct: Math.min(100, this.state.reps / target * 100).toFixed(0) + '%',
+      score: String(score), scoreColor,
+      phaseLabel: down ? 'тяга вниз' : 'возврат',
+      cues,
+      metrics: [
+        {label: 'Темп', value: down ? '2.0 с' : '3.0 с', color: '#fff'},
+        {label: 'Амплитуда', value: (82 + Math.round(e * 14)) + '%', color: '#fff'},
+        {label: 'Симметрия', value: fault ? '46/54' : '49/51', color: fault ? '#FF5A5A' : '#7BF08A'},
+        {label: 'Пауза', value: '0.4 с', color: '#fff'}
+      ],
+      playIcon: this.state.playing ? 'pause' : 'play_arrow',
+      toggle: () => this.setState(s => ({playing: !s.playing})),
+      finish: () => this.setState({reps: 1, t: 0})
+    };
+  }
+}
+</script>
+</body>
+</html>
