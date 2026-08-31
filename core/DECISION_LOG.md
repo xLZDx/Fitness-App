@@ -38326,3 +38326,76 @@ skeleton overlay, cue chips, "Счётчики тренера" bottom stat panel
 project memory (`project-fitness-app-formcoach-visual-target-100pct`, auto-memory system) since
 none of those six required elements exist in the app yet beyond the silhouette/skeleton pair --
 this is the scope for the next gate(s), not yet started.
+
+## 2026-08-31 -- The silhouette fix wasn't the whole bug: `poseMatchScore` had the same x-convention defect, and it blocked EVERY pass, not just the drawing
+
+**Trigger**: operator, immediately after confirming the silhouette was now centred: "силует
+посередине но всеровно говорит вы не дошли до силуета" -- centred, but still says "you didn't
+reach the silhouette" (`formcheckCueSilhouetteMissed`). Also: "перестань мне слать релизные билды
+присылай только дебаг билды... можешь делать скрины в дебаг моде" -- switched the whole workflow
+to debug builds installed and screenshotted by Claude directly (adb install + adb screencap on
+both S23/S8), not release builds requiring the operator's own video. Saved as
+`feedback-fitness-app-debug-builds-only-self-screenshot` (auto-memory).
+
+**Investigated the "missing Начать тренировку button" report first.** Read `coach_phases.dart` and
+`_SetControls` (`form_check_page.dart:673-733`): the start button only renders for
+`CoachPhase.ready`, which is reached purely from `poseGateVerdictProvider == PoseGateVerdict.ok`
+(`phaseAfterFrame`, `coach_phases.dart:130-141`) -- entirely the QUALITY GATE (body detected, in
+frame, plausible geometry), nothing this session touched. Confirmed via `git log`/reading the
+file: neither `coach_phases.dart` nor `_SetControls` was modified in any commit this session. This
+is very likely the operator not yet being correctly framed (the visible cue was "Отойдите, чтобы в
+кадр попало всё тело" -- step back), not a regression. Could not fully rule it out without a live
+body in frame; flagged as needing the operator's own retest, distinctly from the second issue.
+
+**FACT, quantified, the real bug**: `poseMatchScore` compares `target.joints` (authored
+width-normalised x, per `FORMCOACH_TARGET_XSCALE_2026-08-31`) directly against live landmarks
+(genuinely isotropic x) with NO correction -- the same defect just fixed for drawing, but for
+SCORING. Verified computationally before touching code (`python3`, `_normalise`'s exact
+centroid+unit-RMS-radius algorithm reproduced): a landmark set that is the EXACT target pose,
+captured with a correct 9:16 camera (x properly isotropic), scores only **0.7376** against the
+unconverted target -- **below `kPoseMatchPassing` (0.80) for the best possible match**. No
+technique, however correct, could ever pass. This is not a marginal miscalibration; it is a
+structural block, and it is exactly what the operator was reporting live.
+
+**Why no existing test caught it**: every `poseMatchScore` test (`pose_target_test.dart`) used
+`poseOf`/`frameFrom` -- frames built by moving/scaling the TARGET'S OWN joints as a rigid body.
+Self-referential: whatever coordinate convention the target's x is in, the "live" frame inherits
+the same convention, so an absolute x-scale bug cancels out by construction and is invisible to
+every one of those tests, no matter how many pass.
+
+**Decision**: `poseMatchScore` now multiplies `target.joints`' x by `frame.aspectRatio` before
+pairing with live landmarks (`pose_target.dart`), mirroring `buildSilhouette`'s `xScale` but keyed
+to the ACTUAL live frame's aspect, not a hardcoded assumption. `PoseFrame`'s default
+`aspectRatio = 1.0` means every existing synthetic test (which never sets it) is unaffected --
+`x * 1.0` is a no-op, so nothing regressed by construction, and none of them exercise the fix
+either, which is exactly why new coverage was needed.
+
+**Was the existing calibration table (`_zeroScoreAtOffset = 0.6`, the measured-offsets doc
+comment) invalidated by fixing this?** Checked before deciding, not assumed: re-derived the same
+scenarios synthetically POST-fix. A perfect isotropic match scores 1.0 exactly (trivial identity).
+A small (+/-0.02) perturbation scores ~0.81 -- landing almost exactly on the table's own "a real
+body clearly in position, every joint nudged: offset 0.114, score 0.81" row, not off it. Kept
+`_zeroScoreAtOffset` and `kPoseMatchPassing` unchanged; the fix brought the geometry being scored
+back in line with what that table already expected, rather than requiring a new one.
+
+**FACT, tests**: added a new group to `pose_target_test.dart`
+("the score survives a real camera aspect ratio, not just a rigid move of the target itself"),
+using a new `isotropicPoseOf` helper that constructs an INDEPENDENT frame with its own real
+`aspectRatio` (unlike `poseOf`) -- 5 cases: perfect isotropic match scores 1, a small perturbation
+still passes, standing tall still fails the bottom target (discrimination survives), translation/
+scale invariance still hold, and a second aspect ratio (3/4, not just 9/16) is handled too, since
+the fix reads `frame.aspectRatio` live rather than assuming a constant. `flutter analyze` clean.
+`flutter test test/features/form_check/`: 417/417 (up from 412 -- 5 new cases, zero regressions,
+all pre-existing tests passed unchanged because their synthetic frames default to aspectRatio 1.0
+and the correction is a no-op there).
+
+**Verified centring only** (not scoring) live on both devices via debug build + adb screenshots,
+per the new debug-only workflow -- cannot verify a passing SCORE without a real tracked body,
+which remains the one thing only the operator's own device can produce. Debug APK installed via
+`adb install -r` on both S23 (`R5CW142SASR`) and S8 (`ce02171299f0711005`) this turn; no release
+build, no Firebase distribution, per the new standing instruction.
+
+**Still NOT verified**: that a real body in the correct position now actually reports a passing
+match score and a green glow on-device. The math is verified two ways (direct computation before
+the change, and unit tests after); the live claim needs the operator's own body in frame, which is
+exactly the missing piece the debug-build workflow exists to make cheap to re-check.

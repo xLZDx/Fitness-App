@@ -51,14 +51,22 @@ import 'pose_landmark.dart';
 /// clipped off-panel. `buildSilhouette`'s `xScale` parameter is the fix for
 /// **drawing**: pass `xScale: frameAspect` to convert on the way in.
 ///
-/// [poseMatchScore] does **not** apply that correction — it compares these
-/// joints against live landmarks directly. Its calibration table (see
-/// `_zeroScoreAtOffset`) was measured against the numbers AS AUTHORED, so
-/// changing this convention there would silently invalidate that
-/// calibration. Not fixed here; the anisotropy this leaves in the score
-/// (target x-spread relative to y-spread reads as if the frame were
-/// squarer than it is) is a known, deliberately deferred gap — see
-/// `core/DECISION_LOG.md`.
+/// **Correction, `FORMCOACH_MATCHSCORE_XSCALE_2026-08-31`, same day:**
+/// [poseMatchScore] was left uncorrected above on the theory that fixing it
+/// needed deliberate recalibration first. That was wrong — deferring it left
+/// a live, reachable defect: a landmark set that is EXACTLY the target pose,
+/// captured with a genuinely correct camera, scored only ~0.74 against the
+/// unconverted target, below [kPoseMatchPassing] (0.80) for the best
+/// possible match. No amount of correct technique could ever pass. Confirmed
+/// live: the operator reported the fixed (centred) silhouette still saying
+/// "вы не дошли до силуэта" — this is why. `poseMatchScore` now applies the
+/// same `* frame.aspectRatio` correction to `target.joints`' x before
+/// comparing. The existing calibration table below was NOT invalidated by
+/// this — re-derived synthetically post-fix, a perfect isotropic match
+/// scores 1.0 exactly (identity) and a small (±0.02) perturbation scores
+/// ~0.81, landing almost exactly on the table's own "real body... nudged:
+/// 0.114, 0.81" row, rather than off it. `_zeroScoreAtOffset` (0.6) and
+/// [kPoseMatchPassing] (0.80) are kept unchanged.
 ///
 /// Only their **relative** arrangement is scored — [poseMatchScore] removes
 /// position and size before comparing. They are authored at plausible
@@ -531,6 +539,22 @@ const double _zeroScoreAtOffset = 0.6;
 /// Returns null when the frame does not carry enough of the target's joints to
 /// judge — "cannot tell" is not a low score, and reporting it as one would tell
 /// a user their form is wrong when the truth is that their knee is out of shot.
+///
+/// **Correction, `FORMCOACH_MATCHSCORE_XSCALE_2026-08-31`**: [target]'s x is
+/// authored as a fraction of the frame's WIDTH (see the class doc), so it is
+/// multiplied by [frame]'s own `aspectRatio` before comparing — the same
+/// correction `buildSilhouette`'s `xScale` applies for drawing, using the
+/// live frame's own aspect rather than an assumed one. Proven necessary, not
+/// theoretical: a live landmark set that is EXACTLY the target pose, captured
+/// correctly (genuinely isotropic x), scored only ~0.74 against the
+/// uncorrected target — below [kPoseMatchPassing] for the best possible
+/// match, which cannot be fixed by better technique. Every existing test
+/// before this fix compared the target against poses DERIVED from the
+/// target's own (equally wrong-convention) joints, which cancels the bug out
+/// by construction and is why it went uncaught -- see
+/// `pose_target_test.dart`'s `frameFrom`/`poseOf` and the new
+/// `FORMCOACH_MATCHSCORE_XSCALE_2026-08-31` test group, which uses an
+/// independently isotropic frame instead.
 double? poseMatchScore(
   PoseFrame frame,
   PoseTarget target, {
@@ -541,7 +565,8 @@ double? poseMatchScore(
     final lm = frame.landmarks[entry.key];
     if (lm == null || lm.likelihood < minLikelihood) continue;
     if (lm.x.isNaN || lm.y.isNaN) continue;
-    pairs.add(((lm.x, lm.y), entry.value));
+    final want = entry.value;
+    pairs.add(((lm.x, lm.y), (want.$1 * frame.aspectRatio, want.$2)));
   }
   // Fewer than four shared joints is a fragment, not a pose: the normalisation
   // below would happily scale two points onto any other two points and report

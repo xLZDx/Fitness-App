@@ -35,7 +35,99 @@ PoseFrame poseOf(PoseTarget t,
   });
 }
 
+/// A frame built as a genuinely isotropic capture of [t] on a frame shaped
+/// [aspectRatio] -- unlike [poseOf], which moves/scales the target's OWN
+/// (width-normalised) x as a rigid body and so can never expose an absolute
+/// coordinate-convention bug, this converts x the way a real camera would
+/// have produced it (`x * aspectRatio`) before any further transform, so a
+/// comparison against the untouched `target.joints` is an honest test of
+/// `poseMatchScore`'s own `* frame.aspectRatio` correction.
+PoseFrame isotropicPoseOf(
+  PoseTarget t,
+  double aspectRatio, {
+  double dx = 0,
+  double dy = 0,
+  double jitterX = 0,
+  double jitterY = 0,
+  math.Random? rng,
+}) {
+  final r = rng ?? math.Random(1);
+  return PoseFrame(
+    timestampMs: 0,
+    aspectRatio: aspectRatio,
+    landmarks: {
+      for (final e in t.joints.entries)
+        e.key: PoseLandmark(
+          type: e.key,
+          x: e.value.$1 * aspectRatio +
+              dx +
+              (jitterX == 0 ? 0 : (r.nextDouble() * 2 - 1) * jitterX),
+          y: e.value.$2 +
+              dy +
+              (jitterY == 0 ? 0 : (r.nextDouble() * 2 - 1) * jitterY),
+          likelihood: 0.95,
+        ),
+    },
+  );
+}
+
 void main() {
+  // FORMCOACH_MATCHSCORE_XSCALE_2026-08-31: every test above this line uses
+  // `poseOf`/`frameFrom` fixtures derived from the target's own (equally
+  // wrong-convention) joints -- self-referential, so they cannot expose an
+  // absolute x-convention bug. This group uses `isotropicPoseOf`, an
+  // independently-constructed frame with its own real aspectRatio, which is
+  // what exposed the actual live defect (operator: a centred silhouette that
+  // still said "вы не дошли до силуэта").
+  group('the score survives a real camera aspect ratio, not just a rigid '
+      'move of the target itself', () {
+    const frameAspect916 = 9 / 16;
+
+    test('a landmark set that IS the target pose, captured correctly, '
+        'scores 1', () {
+      final live = isotropicPoseOf(squatBottomTarget, frameAspect916);
+      expect(poseMatchScore(live, squatBottomTarget), closeTo(1.0, 1e-9),
+          reason: 'this is the best possible match -- if it does not score '
+              '1, nothing can ever pass, no matter how correct the form');
+    });
+
+    test('a small, realistic perturbation still passes', () {
+      final live = isotropicPoseOf(squatBottomTarget, frameAspect916,
+          jitterX: 0.02, jitterY: 0.02);
+      final score = poseMatchScore(live, squatBottomTarget);
+      expect(score, isNotNull);
+      expect(score!, greaterThanOrEqualTo(kPoseMatchPassing),
+          reason: 'scored ${score.toStringAsFixed(3)} -- a body correctly in '
+              'position, captured on a real 9:16 frame, must pass');
+    });
+
+    test('standing tall, correctly captured, still fails the bottom target',
+        () {
+      final live = isotropicPoseOf(squatTopTarget, frameAspect916);
+      final score = poseMatchScore(live, squatBottomTarget);
+      expect(score, isNotNull);
+      expect(score!, lessThan(kPoseMatchPassing),
+          reason: 'the fix must not have flattened the discrimination this '
+              'feature exists for -- scored ${score.toStringAsFixed(3)}');
+    });
+
+    test('translation and scale invariance still hold on a real frame', () {
+      final base = isotropicPoseOf(squatBottomTarget, frameAspect916);
+      final moved = isotropicPoseOf(squatBottomTarget, frameAspect916,
+          dx: 0.05, dy: -0.08);
+      expect(poseMatchScore(moved, squatBottomTarget),
+          closeTo(poseMatchScore(base, squatBottomTarget)!, 1e-9));
+    });
+
+    test('a squarer frame (aspectRatio further from 1) needs the same fix',
+        () {
+      // Not hard-coded to 9:16 -- whatever the live camera reports.
+      const otherAspect = 3 / 4;
+      final live = isotropicPoseOf(squatBottomTarget, otherAspect);
+      expect(poseMatchScore(live, squatBottomTarget), closeTo(1.0, 1e-9));
+    });
+  });
+
   group('the score means what it claims', () {
     test('the target matched exactly scores 1', () {
       expect(poseMatchScore(poseOf(squatBottomTarget), squatBottomTarget),
