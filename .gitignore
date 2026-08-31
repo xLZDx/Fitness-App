@@ -16,6 +16,10 @@ logs/
 # archive are small (< 3MB each), deliberately kept, and referenced by the
 # handoff's own Form Coach spec -- see README_LOCAL.md in that directory.
 !core/design/reference/full_handoff_v1/uploads/*.mp4
+# Same exception for the current canonical design export (supersedes
+# full_handoff_v1 for Form Coach) -- see MEMORY project-fitness-app-design-
+# reference-canonical-source.md for why this must not go stale again.
+!core/design/reference/fitness_hud_v1/uploads/*.mp4
 docs/rec_frames/
 docs/v3_*.png
 docs/01_*.png

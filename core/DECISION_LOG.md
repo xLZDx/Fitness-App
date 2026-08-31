@@ -37954,3 +37954,8 @@ target scope. Per `~/.claude/CLAUDE.md` §4/§17, this is real new-feature scope
 two new gauge widgets, a new 4-metric data pipeline, a new panel, two-cue-stack support) --
 proceeding under Plan -> GO -> Build -> Verify, not committed to unilaterally. Plan follows in the
 same turn per operator's explicit "да делай план."
+
+Follow-up: the global `*.mp4` gitignore rule silently dropped the two reference clips from the
+`fitness_hud_v1` import (`clip2-...mp4`, `ref-indicators.mp4`) from the previous commit. Added the
+same `!core/design/reference/fitness_hud_v1/uploads/*.mp4` exception the repo already carries for
+`full_handoff_v1`, and committed the two clips.
