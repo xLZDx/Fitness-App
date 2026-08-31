@@ -453,8 +453,9 @@ void main() {
             'two had the chance to collide');
   });
 
-  testWidgets('the avatar scene carries no target outline and no second '
-      'skeleton', (t) async {
+  testWidgets(
+      'the avatar scene carries the looping demo pacer, no static target and '
+      'no second skeleton', (t) async {
     _phoneSized(t);
     final c = _container(oneSquat(0));
     await t.pumpWidget(_page(c));
@@ -469,12 +470,20 @@ void main() {
     expect(_skeleton, findsNothing,
         reason: 'the avatar already draws lit bones; a second, thinner set of '
             'the same joints on top reads as a tracking failure');
+    // Operator instruction, 2026-08-31: the target silhouette and the live
+    // avatar must be visible TOGETHER in avatar mode — a continuous demo
+    // pacer showing the correct rep, independent of and at a different
+    // scale from the user's own tracked body, not a hand-off between the
+    // two. `_silhouette` (the STATIC, solid, match-scored target from the
+    // non-avatar mode) stays absent — that variant belongs to the mode this
+    // test is not exercising.
     expect(_silhouette, findsNothing,
-        reason: 'the target outline is fitted to the PANEL and the avatar is '
-            'placed where the body is — together they are two human figures '
-            'at unrelated scales in one box');
-    expect(_demo, findsNothing,
-        reason: 'and the animated demonstration is the same outline, moving');
+        reason: 'the solid, match-scored static target is the non-avatar '
+            "mode's variant; avatar mode always shows the looping demo "
+            'instead');
+    expect(_demo, findsOneWidget,
+        reason: 'the looping demo pacer must always be present alongside the '
+            'avatar, per operator instruction');
   });
 
   testWidgets('turning the avatar off brings the camera overlays back',

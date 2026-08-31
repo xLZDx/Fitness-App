@@ -293,13 +293,28 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     // Both mean "no reps will be counted", so both belong in the same slot.
     final failure = _startError ?? ref.watch(poseErrorProvider);
 
-    // Demonstrate until the movement starts, and get out of the way the
-    // instant it does: an outline that keeps moving is not one you can hit.
+    // Avatar mode: a continuous pacer, not a one-off cue. The target
+    // silhouette loops the correct rep for as long as the coach is open,
+    // standing in for the design reference's own auto-looping demo
+    // (`Fitness Form Coach Phone.dc.html`'s `componentDidMount` timer)
+    // before the user has even stepped into frame, and continuing alongside
+    // the live tracked skeleton once they have — the two are independent
+    // readouts (silhouette = the shape to match, skeleton = how the user is
+    // actually doing), not a hand-off from one to the other. Operator,
+    // twice, after this used to stop the loop the instant a rep started:
+    // "силуэт и скелет всегда видны... силуэт показывает как правильно
+    // надо приседать, человек повторяет это, а скелет показывает как
+    // правильно человек это делает."
+    //
+    // Non-avatar mode keeps the original behaviour: demonstrate until the
+    // movement starts, then get out of the way — that mode draws a SOLID,
+    // STILL target over the raw camera (`_SilhouettePainter`'s non-demo
+    // branch) that the match score is read against, and an outline that
+    // keeps moving is not one you can hit (see `_Silhouette`'s own doc).
     // Never over a spinner or an error — there is nothing to copy it onto.
     final demonstrating = failure == null &&
-        _started &&
-        session.repCount == 0 &&
-        session.phase == RepPhase.top;
+        (ref.watch(avatarModeProvider) ||
+            (_started && session.repCount == 0 && session.phase == RepPhase.top));
     _syncDemo(demonstrating);
 
     // Two switches, one held frame. Dropping it on the way out of either mode
@@ -1759,21 +1774,36 @@ class _Silhouette extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Not in avatar mode. This outline is a TARGET: a fixed shape fitted to the
-    // panel with `fitSilhouette`, for the user to walk into while the camera
-    // shows them through it. The avatar is the opposite — the user's own body,
-    // placed where the detector says the body is. Drawn together they are two
-    // human figures at two unrelated scales in the same box, and the operator's
-    // screenshot shows what that looks like: a full-height ghost standing
-    // through a message explaining that no body could be found at all.
-    if (ref.watch(avatarModeProvider)) return const SizedBox.shrink();
-
+    // Drawn together with the avatar now, deliberately (operator instruction,
+    // 2026-08-31 — see `demonstrating`'s comment above): the silhouette is
+    // the shape to match, the avatar is the user's own tracked body, and the
+    // design reference shows both at once. This used to hide the silhouette
+    // whenever avatar mode was on, because an earlier attempt at showing both
+    // put two human figures at two unrelated scales in the same box (a
+    // full-height ghost standing through a "no body found" message). That
+    // failure mode is avoided here by construction, not by coordinate
+    // unification: `demonstrating` covers the two cases where scale cannot
+    // clash — no body found yet (nothing real to be at a different scale
+    // from) and a real body being actively tracked, where the demo loop is
+    // an intentionally separate, independently-scaled reference the user
+    // aims for rather than something meant to overlay their own tracked
+    // figure pixel-for-pixel.
     final target = ref.watch(poseTargetProvider);
     final pair = ref.watch(poseDemoProvider);
     final build = ref.watch(silhouetteBuildProvider);
 
     if (demonstrating && pair != null) {
       final (from, to) = pair;
+      // Fixed once per (from, to, build) rather than read off whichever frame
+      // happens to be on screen: `fitSilhouette` scales to fill its margin,
+      // so a mid-swing frame with a narrower bounding box than the standing
+      // frame was being blown up to fill the same box — the demo figure
+      // visibly jumped in size and position every cycle instead of holding
+      // one stable scale, only ever visible once this loop started running
+      // continuously instead of being hidden behind avatar mode.
+      final bounds = buildSilhouette(from, build: build)
+          .bounds
+          .expandToInclude(buildSilhouette(to, build: build).bounds);
       return AnimatedBuilder(
         animation: demo,
         builder: (_, __) => CustomPaint(
@@ -1787,6 +1817,7 @@ class _Silhouette extends ConsumerWidget {
             match: null,
             build: build,
             isDemo: true,
+            fixedBounds: bounds,
           ),
         ),
       );
@@ -1879,6 +1910,7 @@ class _SilhouettePainter extends CustomPainter {
     required this.match,
     required this.build,
     this.isDemo = false,
+    this.fixedBounds,
   });
 
   final PoseTarget target;
@@ -1892,6 +1924,13 @@ class _SilhouettePainter extends CustomPainter {
   /// Drawing the movement rather than the position to reach.
   final bool isDemo;
 
+  /// Fit to these bounds instead of the current frame's own — the demo loop
+  /// passes the union of its two endpoint poses so the figure holds one
+  /// stable scale through the whole cycle instead of rescaling every frame
+  /// to fill the margin around whatever the interpolated figure's bounds
+  /// happen to be that instant.
+  final Rect? fixedBounds;
+
   @override
   void paint(Canvas canvas, Size size) {
     // A two-sided body, and ONE scale for both axes. Drawing straight from
@@ -1901,7 +1940,7 @@ class _SilhouettePainter extends CustomPainter {
     // twice. Both faults live in `pose_silhouette.dart` now, with tests.
     final figure = buildSilhouette(target, build: build);
     if (figure.segments.isEmpty) return;
-    final (scale, origin) = fitSilhouette(figure.bounds, size);
+    final (scale, origin) = fitSilhouette(fixedBounds ?? figure.bounds, size);
     Offset place(Offset p) => p * scale + origin;
 
     // Green once the shape is reached, so the user gets the answer while they

@@ -38004,3 +38004,55 @@ correct that the answer already existed in the repository's own plans/code, and 
 would have repeated the exact behavior being corrected. Gate 3 proceeds with these four sources;
 Симметрия ships with its known side-on-confidence caveat rather than being hidden, matching the
 design's own unconditional display of it.
+
+## 2026-08-31 -- Gate 1/2 implemented: continuous demo pacer + live avatar, no mutual exclusion
+
+**FACT**, `mobile/lib/features/form_check/form_check_page.dart`, three changes, GO received
+("ГО") for the plan this executes:
+
+1. `demonstrating` (the flag that drives the looping target-pose animation) now stays true for the
+   whole avatar-mode session, not just pre-set: `ref.watch(avatarModeProvider) ||
+   (_started && session.repCount == 0 && session.phase == RepPhase.top)`. Non-avatar mode keeps the
+   original condition unchanged -- that mode's solid still target is a different, still-valid
+   feature and was not touched.
+2. `_Silhouette.build`'s `if (ref.watch(avatarModeProvider)) return const SizedBox.shrink();` guard
+   is removed. The silhouette (target to match) and the avatar (the user's own tracked body) now
+   render together in avatar mode, per the operator's explicit spec: "силуэт и скелет всегда
+   видны... силуэт показывает как правильно надо приседать, человек повторяет это, а скелет
+   показывает как правильно человек это делает."
+3. New bug found and fixed during on-device verification of (1)+(2), not predicted from reading the
+   code: once the demo loop was unlocked to run continuously, `_SilhouettePainter.paint()` was
+   refitting `figure.bounds` fresh every animation frame, so the figure's on-screen scale jumped
+   every cycle (each interpolated frame has a different bounding box, `fitSilhouette` always fills
+   the panel margin). Fixed with a `fixedBounds` parameter: the demo branch now computes
+   `buildSilhouette(from).bounds.expandToInclude(buildSilhouette(to).bounds)` once per (from, to,
+   build) and passes that union rect into the painter instead of letting it derive bounds from
+   whichever frame is on screen.
+
+**FACT**, verification:
+- `flutter analyze lib/features/form_check/form_check_page.dart` -- clean.
+- `flutter test test/features/form_check/` -- 403/403 pass, including a rewritten expectation in
+  `coach_single_status_test.dart` ("the avatar scene carries the looping demo pacer, no static
+  target and no second skeleton") that now asserts `_demo` is present and `_silhouette`/`_skeleton`
+  are absent in avatar mode, replacing the old assertion that no demo/target ran at all.
+- **Real device** (S8, `ce02171299f0711005`, fresh debug APK, `adb install -r` + explicit
+  force-stop/relaunch): navigated Тренировки -> Библиотека -> "Тренер по технике" filter chip ->
+  card -> "Начать" -> "Готово -- включить камеру" to the pre-start camera panel, before tapping
+  "Начать подход". Confirmed live: the full-body demo silhouette is visible and animating on this
+  screen with nobody in frame yet (previously it only appeared after a rep had started), matching
+  "до того как начать юзек видит именно то что на видео из макета". Took 8 rapid screenshots
+  (~0.5s apart) through a crouch-to-stand half-cycle; the figure holds one stable scale and
+  position throughout -- head/torso/legs all present in every frame, no size jump, no truncated
+  "legs only" shape (the exact artifact the pre-fix screenshots showed). Screenshots retained at
+  `D:\Temp\claude\d--Repo\5c302c91-31c2-4e5a-8695-d3eb4d063e24\scratchpad\g1v2_anim_1.png` through
+  `_8.png` (session scratchpad, not committed).
+
+**Not yet verified on-device**: a real body standing in frame (avatar + demo silhouette coexisting
+with a live tracked skeleton) -- the screenshots above are all pre-start, nobody in the camera. That
+is the actual coexistence case the operator's spec is about and still needs a real-person pass
+before Gate 1 is called done.
+
+**Scope note**: this closes only the "silhouette hidden by avatar mode" + "demo stops when a rep
+starts" defects. Gate 2 (circular HUD gauges), Gate 3 (Темп/Амплитуда/Симметрия/Пауза data
+pipeline) and Gate 4 (bottom metrics panel, second cue chip) are still open, per the 5-gate plan the
+operator said "ГО" to.
