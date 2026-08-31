@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/form_check/data/form_classifier.dart';
 import 'package:fitness_app/features/form_check/data/pose_landmark.dart';
+import 'package:fitness_app/features/form_check/data/pose_target.dart' show kPoseMatchPassing;
 import 'package:fitness_app/features/form_check/state/form_check_providers.dart';
 
 /// A double standing in for [SquatDepthClassifier] / [DeadliftHipHingeClassifier]:
@@ -111,6 +112,66 @@ void main() {
         avatarVerdictSeverity([PushupAlignmentClassifier()], _feedback(2)),
         2,
       );
+    });
+
+    // FORMCOACH_COORDINATE_UNIFICATION_2026-08-31: `matchScore` is the
+    // fallback for exactly the classifiers the tests above show stay
+    // ungated -- squat depth and hip hinge -- now that the target is drawn
+    // at the avatar's own scale and scoring against it is legitimate there.
+    group('matchScore fallback, for classifiers that cannot fault', () {
+      test('no matchScore: unchanged, still no verdict', () {
+        expect(
+          avatarVerdictSeverity([SquatDepthClassifier()], null),
+          isNull,
+        );
+      });
+
+      test('matchScore below the passing threshold: still no verdict', () {
+        expect(
+          avatarVerdictSeverity([SquatDepthClassifier()], null,
+              matchScore: kPoseMatchPassing - 0.01),
+          isNull,
+          reason: 'falling short of the target mid-rep is not a fault -- only '
+              'a COMPLETED rep judged against it is (lastRepMissedTarget), so '
+              'this must never paint red',
+        );
+      });
+
+      test('matchScore at or above the passing threshold: severity 0 '
+          '(correct)', () {
+        expect(
+          avatarVerdictSeverity([SquatDepthClassifier()], null,
+              matchScore: kPoseMatchPassing),
+          0,
+        );
+        expect(
+          avatarVerdictSeverity([DeadliftHipHingeClassifier()], null,
+              matchScore: 1.0),
+          0,
+        );
+      });
+
+      test('an entitled classifier ignores matchScore entirely -- its own '
+          'feedback always wins', () {
+        expect(
+          avatarVerdictSeverity(
+            [PushupAlignmentClassifier()],
+            _feedback(2),
+            matchScore: 1.0,
+          ),
+          2,
+          reason: 'a fault-capable classifier never falls back to the match '
+              'score, even when one happens to be available',
+        );
+      });
+
+      test('no active classifier at all: matchScore still cannot paint a '
+          'verdict on its own', () {
+        expect(
+          avatarVerdictSeverity(const [], null, matchScore: 1.0),
+          isNull,
+        );
+      });
     });
   });
 }

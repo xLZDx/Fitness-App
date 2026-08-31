@@ -38195,3 +38195,62 @@ approximated from the video -- is the next concrete work, not yet started.
 real device test with a real body in frame. Per the skill, stopping here rather than continuing to
 Gates 2-4 -- PM Bridge orchestrator mode is off, so this is a normal report/handover point, not a
 program-mode checkpoint.
+
+## 2026-08-31 -- Live green glow enabled for squat/hinge: closing the "silhouette-match rule" gap
+## multiple code comments already named as the precondition, now that it exists
+
+**FACT**: operator, on a fresh device screenshot from build 930 (coordinate-unification fix already
+live): "я хочу этот зелёный скелет как в макете только реально а не как сейчас" -- wants the green
+glow from the design mockup for real, not the current plain white avatar. Correct: squat/hinge never
+paint ANY glow colour today, by a deliberate, GPT-PM-reviewed decision
+(`SquatDepthClassifier.canFault == false`, `avatarVerdictSeverity`, `form_check_providers.dart:623`)
+-- camera-angle-confounded, "must not be shown as correct or wrong until the silhouette-match rule
+exists" (`_PoseAvatarPainter`'s own doc comment, before today).
+
+**FACT**: that missing rule already exists and has since `poseMatchScore`/`poseTargetProvider` were
+built -- it was simply never wired to the avatar's glow, and was ADDITIONALLY disabled specifically
+in avatar mode by a separate, correct-at-the-time Gate A/Codex decision: scoring against a target
+that was fitted to the panel independently of the avatar's own camera-scale placement would grade
+the user against a shape they could not see at their own size (`_onFrame`'s old comment, `git blame`
+predates today). `FORMCOACH_COORDINATE_UNIFICATION_2026-08-31` (this file, above) removed exactly
+that premise: both painters now share one projection, so the target IS shown at the avatar's own
+scale in avatar mode too.
+
+**DECISION**: re-enable target/match computation in avatar mode (`_onFrame` no longer nulls
+`poseTargetProvider` when `avatarModeProvider` is on -- both modes now score identically), and add a
+`matchScore` fallback to `avatarVerdictSeverity` for classifiers with `canFault == false`: severity 0
+(green) when `matchScore >= kPoseMatchPassing`, otherwise still null (never an error colour) --
+falling short of the target mid-rep is not a fault, only a COMPLETED rep judged against it is
+(`lastRepMissedTarget`, decided once at the rep boundary, not painted live). This preserves the exact
+false-safety-signal discipline the original gate existed to enforce; it only supplies the missing
+positive signal for movements that were structurally correct to never colour before.
+
+**Side effect, expected and correct, not a new defect**: since avatar mode now scores squat against
+`squatBottomTarget`, `RepVerdict` for the SHIPPED DEFAULT (avatar mode + squat) can now be `faulted`,
+where it used to always be `notEvaluated`. Confirmed this is genuine parity, not a regression: the
+same fixture already produced `faulted` in non-avatar mode before this change (both modes read the
+same `poseMatchScore`/`kPoseMatchPassing` now).
+
+**FACT**, tests: `flutter analyze` clean. Two pre-existing tests asserted the now-superseded
+behaviour and were rewritten with their reasoning updated, not deleted --
+`coach_single_status_test.dart` ("avatar mode does not fail a rep against a target it never showed"
+-> "...now judges a rep against the target, at parity with camera mode") and
+`one_cue_per_rep_test.dart` ("shipped default... does not mark every rep clean": `notEvaluated` ->
+`faulted`, same acceptance property, stronger route). Added direct unit coverage for the new
+`matchScore` fallback in `avatar_verdict_severity_test.dart` (5 new cases, including that an empty
+classifier list still returns null unconditionally -- a shape match is meaningless with no known
+movement being attempted). `flutter test test/features/form_check/`: 408/408.
+
+**Full mobile suite**: 2 failures, both `test/golden/composed_screen_golden_test.dart` ("Home
+(composed) light/dark", ~56% pixel diff) -- confirmed pre-existing and unrelated by `git stash`-ing
+this change and re-running: identical failure with none of today's edits present. Not a Form Coach
+screen; not investigated further here.
+
+**NOT verified on a real device**: whether the avatar visually glows green when a real body actually
+matches the target -- I have no way to stand in front of a camera. This is a genuinely new, correct
+code path (tested, analyzed) but the operator's own live test is what confirms it does what was
+asked. Build to follow, distributed for that test.
+
+**Also this turn**: added `core/BACKLOG_2026-07-31.md` E4.3 -- per-exercise reference video clips
+for Form Coach (operator: "ролики... надо будет доделать... как присед для остальных упражнений"),
+explicitly not started, with the open questions named rather than guessed at.

@@ -326,17 +326,29 @@ void main() {
     expect(find.byKey(const Key('form_check.waiting_for_top')), findsNothing);
   });
 
-  testWidgets('avatar mode does not fail a rep against a target it never '
-      'showed', (t) async {
-    // Codex again, and the sharpest of the four. The target outline is hidden
-    // in avatar mode because it is fitted to the panel while the avatar is
-    // placed where the body is. Grading continued regardless, so a rep could
-    // come back faulted for missing a shape the user could not see —
-    // `_SilhouettePainter`'s own doc says the drawn target is what makes the
-    // score legitimate.
+  testWidgets('avatar mode now judges a rep against the target, at parity '
+      'with camera mode', (t) async {
+    // Was: "avatar mode does not fail a rep against a target it never
+    // showed" — Codex's original concern, and it was right at the time: the
+    // target outline used to be hidden in avatar mode because it was fitted
+    // to the panel while the avatar was placed where the body is, two
+    // unrelated scales in one box. Grading continued regardless, so a rep
+    // could come back faulted for missing a shape the user could not see.
+    //
+    // That premise no longer holds. `FORMCOACH_COORDINATE_UNIFICATION_
+    // 2026-08-31` (see `core/DECISION_LOG.md`) made the silhouette and the
+    // avatar share one projection (`projectLandmark`), so the target IS shown,
+    // at the avatar's own scale, in avatar mode now — the exact condition
+    // Codex's fix required. `_onFrame` (`form_check_providers.dart`) stopped
+    // withholding the target for avatar mode the same day, so scoring now
+    // runs identically in both modes.
     _phoneSized(t);
-    // A squat that completes but stays well away from the authored bottom
-    // shape, so target grading would have something to fail it on.
+    // Same fixture the sibling non-avatar test scores against the bottom
+    // target with: a frontal, symmetric synthetic squat whose shape does not
+    // match the authored SIDE-VIEW bottom target closely enough to pass —
+    // known and asserted directly in `one_cue_per_rep_test.dart`'s "shipped
+    // default configuration" test, which is the acceptance test for this
+    // exact fixture/target pair.
     final frames = oneSquat(0);
     final c = _container(frames, skeleton: true);
     c.read(avatarModeProvider.notifier).state = true;
@@ -345,13 +357,18 @@ void main() {
 
     final session = c.read(repSessionControllerProvider);
     expect(session.repCount, greaterThan(0),
-        reason: 'positive control: reps are still counted in avatar mode — '
-            'this withdraws the silhouette verdict, not the coach');
-    expect(session.lastRepMissedTarget, isNull,
-        reason: 'no target was shown, so no rep may be judged against one');
-    expect(c.read(poseMatchProvider), isNull,
-        reason: 'and nothing scored a match to display');
-    expect(find.byKey(const Key('form_check.match')), findsNothing);
+        reason: 'positive control: reps are still counted in avatar mode');
+    expect(session.lastRepMissedTarget, isNotNull,
+        reason: 'the target is now shown at the avatar\'s own scale, so a '
+            'completed rep IS judged against it — parity with camera mode');
+    expect(c.read(poseMatchProvider), isNotNull,
+        reason: 'a match score is now computed in avatar mode too, driving '
+            'both the rep verdict and the avatar\'s green glow '
+            '(avatarVerdictSeverity)');
+    expect(find.byKey(const Key('form_check.match')), findsNothing,
+        reason: 'the numeric readout stays avatar-mode-hidden by choice, not '
+            'by necessity — its design-mandated home is the circular '
+            '"Техника" gauge from Gate 2, not yet built');
   });
 
   testWidgets('a match percentage does not outlive the frames it was measured '

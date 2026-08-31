@@ -205,8 +205,22 @@ void main() {
       () async {
     // The acceptance test for the whole finding, written to the DEFAULT state:
     // no override of `avatarModeProvider`, no override of the rule set. Avatar
-    // mode is on, so the silhouette is withdrawn; squat is selected, so the one
-    // active rule cannot fault. Before the fix this asserted `true`.
+    // mode is on; squat is selected, so the one active rule cannot fault
+    // (`SquatDepthClassifier.canFault == false`). Before the ORIGINAL fix
+    // (avatar mode withdrawing the target entirely) this asserted `true`.
+    //
+    // Updated 2026-08-31 (`FORMCOACH_COORDINATE_UNIFICATION_2026-08-31`,
+    // `core/DECISION_LOG.md`): avatar mode no longer withdraws the target —
+    // it is drawn at the avatar's own scale now, so scoring against it is
+    // legitimate in avatar mode too, and `_onFrame` stopped special-casing it.
+    // This fixture is a frontal, symmetric synthetic squat scored against the
+    // authored SIDE-VIEW bottom target (`squatBottomTarget`); its shape does
+    // not match closely enough to reach `kPoseMatchPassing`, so the rep is
+    // genuinely judged now and comes back faulted rather than unjudged. The
+    // acceptance property this test is FOR — "the shipped default does not
+    // silently mark every rep clean" — still holds, by a stronger route than
+    // before: not because nothing could judge it, but because something now
+    // does and finds it short of the target.
     //
     // Deliberately overriding as little as possible: the detector has to be a
     // mock because there is no camera, and everything else is left at whatever
@@ -235,7 +249,9 @@ void main() {
         reason: 'the fixture must actually complete a repetition, or the '
             'assertion below passes for the wrong reason');
     expect(state.lastRepClean, isNot(isTrue));
-    expect(state.lastRepVerdict, RepVerdict.notEvaluated);
+    expect(state.lastRepVerdict, RepVerdict.faulted,
+        reason: 'judged against the now-shown target and found short of it — '
+            'see FORMCOACH_COORDINATE_UNIFICATION_2026-08-31');
     await svc.dispose();
   });
 

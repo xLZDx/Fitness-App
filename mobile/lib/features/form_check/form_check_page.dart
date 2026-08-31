@@ -987,10 +987,12 @@ class _PoseAvatar extends ConsumerWidget {
     if (figure.torso.isEmpty) return const SizedBox.shrink();
 
     // See `avatarVerdictSeverity` for why this is gated on `canFault`, not
-    // read from the feedback's severity alone.
+    // read from the feedback's severity alone, and why `matchScore` is the
+    // fallback for the movements that gate excludes.
     final severity = avatarVerdictSeverity(
       ref.watch(activeClassifiersProvider),
       ref.watch(formFeedbackControllerProvider),
+      matchScore: ref.watch(poseMatchProvider),
     );
     final colors = Theme.of(context).colors;
 
@@ -2055,10 +2057,13 @@ class _MatchReadout extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Nothing to report while the avatar is on: there is no target being
-    // scored against there, so `poseMatchProvider` simply holds whatever the
-    // last camera-mode frame left in it. A percentage that stopped moving is
-    // worse than no percentage — it looks like a live number that has frozen.
+    // Hidden in avatar mode by choice, not by necessity: since the
+    // coordinate-unification fix (`FORMCOACH_COORDINATE_UNIFICATION_
+    // 2026-08-31`) `poseMatchProvider` IS live here too — it drives the
+    // avatar's own glow (`avatarVerdictSeverity`) and the rep verdict. This
+    // inline badge stays camera-mode-only because its design-mandated home in
+    // avatar mode is the circular "Техника" gauge (Gate 2, not yet built), not
+    // a text badge floating over the scene.
     if (ref.watch(avatarModeProvider)) return const SizedBox.shrink();
     final match = ref.watch(poseMatchProvider);
     if (match == null) return const SizedBox.shrink();

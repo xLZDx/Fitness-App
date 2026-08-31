@@ -643,17 +643,45 @@ final formFeedbackControllerProvider =
 /// off the OLD exercise's verdict until a fresh frame arrives — exactly the
 /// false-safety-signal class of defect this whole gate exists to avoid.
 /// GPT-PM review (round 1, `9d43c92`) caught this.
+///
+/// [matchScore] is the fallback for exactly the movements the paragraph above
+/// excludes — `canFault == false` — and it is what `_onFrame`'s own comment
+/// named as the missing "silhouette-match rule" before this could be lit up
+/// at all. It existed only in non-avatar mode until the coordinate-unification
+/// fix (`FORMCOACH_COORDINATE_UNIFICATION_2026-08-31`) made the target and the
+/// live body share one projection, at which point scoring against a target
+/// the user can actually see — the same condition Gate A required — became
+/// true in avatar mode too. It can only ever return 0 (correct), never an
+/// error severity: falling short of the target mid-rep is not a fault, only a
+/// COMPLETED rep judged against it is (`lastRepMissedTarget`, decided once at
+/// the rep boundary in `_onFrame`) — painting red on every frame the user has
+/// not yet reached the bottom would be exactly the false-fault class of
+/// defect the classifier branch above already guards against, just moved to a
+/// different signal.
+///
+/// Scoped to a classifier that exists and simply cannot fault — an EMPTY
+/// [activeClassifiers] still returns null unconditionally, matchScore or not.
+/// "No classifier at all" means no known movement is even being attempted,
+/// and a shape match is meaningless without one.
 int? avatarVerdictSeverity(
   List<FormClassifier> activeClassifiers,
-  FormFeedback? feedback,
-) {
-  if (activeClassifiers.isEmpty || !activeClassifiers.first.canFault) {
-    return null;
+  FormFeedback? feedback, {
+  double? matchScore,
+}) {
+  if (activeClassifiers.isEmpty) return null;
+  final classifier = activeClassifiers.first;
+  if (classifier.canFault) {
+    if (feedback == null || feedback.rule != classifier.rule) return null;
+    return feedback.severity;
   }
-  if (feedback == null || feedback.rule != activeClassifiers.first.rule) {
-    return null;
-  }
-  return feedback.severity;
+  // `classifier` names a real, known movement that has simply chosen not to
+  // fault it (camera-angle-confounded, e.g. squat depth / hip hinge) — unlike
+  // an empty list, which means no classifier at all is watching. The match
+  // fallback stays scoped to the former: a shape-match result answers "does
+  // this known movement match its target", which is meaningless without a
+  // classifier already naming what movement is being attempted.
+  if (matchScore != null && matchScore >= kPoseMatchPassing) return 0;
+  return null;
 }
 
 /// Speech engine. Defaults to the mock so widget tests never open a
@@ -942,28 +970,25 @@ class RepSessionController extends Notifier<RepSessionState> {
     // live and updates every frame; what the REP is judged on is the peak,
     // because a squat passes through the bottom for a fraction of a second and
     // the question is "did they reach it", not "are they in it right now".
-    // No target while the avatar is on, and this is a scoring decision rather
-    // than a drawing one.
     //
-    // Avatar mode replaces the camera with a scene and the body with a figure
-    // built from the live pose. It cannot show the target: that outline is
-    // fitted to the PANEL while the avatar is placed where the body actually
-    // is, so drawing both puts two human figures at unrelated scales in one
-    // box — which is what the operator's fourth screenshot shows and what
-    // `_Silhouette` now refuses to do.
+    // Used to be withheld entirely in avatar mode: that outline was fitted to
+    // the PANEL while the avatar was placed where the body actually is, so
+    // scoring against it graded the user on a shape they could not see drawn
+    // at their own scale — `_SilhouettePainter`'s own doc says the drawn
+    // target is what makes the score legitimate, and the same sentence read
+    // backwards says an undrawn (or wrongly-scaled) target makes it
+    // illegitimate. Codex raised exactly that against Gate A and it was
+    // right, at the time.
     //
-    // Withdrawing the picture and keeping the grading would fail a rep for
-    // missing a shape the user was never shown (`lastRepMissedTarget` ->
-    // `lastRepClean` false -> a red cue card). `_SilhouettePainter`'s own doc
-    // says the drawn target is what makes the score legitimate; the same
-    // sentence read backwards says an undrawn target makes it illegitimate.
-    // Codex raised this against Gate A and it was right.
-    //
-    // So in avatar mode the coach still counts reps and still runs every
-    // per-frame rule — it simply stops judging against a silhouette, and the
-    // match readout goes with it.
-    final target =
-        ref.read(avatarModeProvider) ? null : ref.read(poseTargetProvider);
+    // That premise no longer holds. Both painters now project through the
+    // same `projectLandmark` transform (see
+    // `FORMCOACH_COORDINATE_UNIFICATION_2026-08-31` in `core/DECISION_LOG.md`
+    // and `form_check_page.dart`'s `_Silhouette`/`_SilhouettePainter`), so the
+    // target the user is shown and the target the score is computed against
+    // are the same shape at the same scale in both modes. Scoring now runs
+    // identically regardless of `avatarModeProvider` — the two modes differ
+    // only in how the tracked body is drawn, never in what "correct" means.
+    final target = ref.read(poseTargetProvider);
     final match = target == null ? null : poseMatchScore(frame, target);
     _publishMatch(match);
 
