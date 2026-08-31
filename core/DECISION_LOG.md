@@ -37813,3 +37813,44 @@ person in front of the S8 camera via adb in this session). Reported to the opera
 two explicit options offered: re-test under better lighting to confirm the full glow renders, or
 relax the all-or-nothing per-limb gate to show partial/dimmer bones at lower confidence (a real
 behavior change, not proposed unilaterally).
+
+## "разве это похоже на то что по дизайну?" -- operator followed up with the actual Figma mockup
+## screenshot (claude.ai/design/p/85d..., "Form coach" tab) side by side with the low-confidence
+## device screenshot from the previous entry. This is a DIFFERENT and larger finding than the
+## confidence-gating one above: a structural gap between the built screen and the design, not a
+## lighting artifact.
+
+**FACT**, the Figma mockup shows: a full green-glowing skeleton over the whole body; TWO large
+158x158 circular gauges side by side ("Повторы 03/10" and "Техника 93%"); a cue chip with a
+checkmark icon ("Лопатки сведены"); a bottom panel "Счётчики тренера" with four metrics (Темп,
+Амплитуда, Симметрия, Пауза) plus a pill-shaped "Закрыть сет" button and a separate round pause
+button.
+
+**FACT**, `form_check_page.dart:2003-2035` (`_MatchReadout`, the only technique-percentage readout
+in this feature): `if (ref.watch(avatarModeProvider)) return const SizedBox.shrink();` -- the
+technique-match percentage is unconditionally suppressed whenever avatar mode (the glowing-skeleton
+mode) is active, by explicit design choice documented in the widget's own comment ("there is no
+target being scored against there"). This is not an omission to fix; it is a real architectural
+choice that the current build cannot show both the glow skeleton AND a technique score at once, the
+way the mockup's two-circle layout requires.
+
+**FACT**, `form_check_page.dart:1367-1370+` (`_RepBadge`): the rep counter is a small pill/badge
+(matches what the operator's own screenshots showed as a "0" chip), not a 158px circular ring gauge.
+
+**FACT**, grep across `mobile/lib` for the bottom panel's own label strings ("Счётчики тренера",
+"Темп", "Амплитуда", "Симметрия", "Пауза") finds them only in `workouts/set_timer_card.dart` and
+`workout_summary_page.dart` -- a different feature. That panel does not exist in
+`form_check_page.dart` (Form Coach's live screen) in any form.
+
+**FACT**, `form_check_page.dart:658-718` (`_SetControls`): a finish/pause control pair exists
+functionally (`formcheckFinishSet`/`formcheckPauseSet`) but is styled as an ordinary two-button row,
+not the mockup's pill-with-arrow "Закрыть сет" plus separate round pause button -- a minor styling
+gap next to the two structural ones above.
+
+**DECISION**: reported to the operator as a genuine "no, it does not match" -- the glow-skeleton
+concept and the privacy-preserving photo backdrop are built and match the design's own documented
+intent (see previous entry), but the technique-score gauge, the large dual-circle counter layout,
+and the bottom stats panel are either deliberately disabled in this mode or simply not built for
+this screen. Not characterized as a quick bug fix -- this is unfinished screen scope relative to the
+design, and the next step (build the missing pieces, or accept avatar-mode as counter-only) is the
+operator's call, not assumed.
