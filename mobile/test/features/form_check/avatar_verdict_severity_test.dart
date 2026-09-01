@@ -13,6 +13,11 @@ import 'package:fitness_app/features/form_check/state/form_check_providers.dart'
 /// exists so the gate is provably reading `canFault`, not inferring it from
 /// the number.
 class _UnentitledButLoud implements FormClassifier {
+
+  /// No vertex: a test double has no angle to turn on, and a ring drawn on a
+  /// joint no rule measured would point at nothing.
+  @override
+  LandmarkType? get faultVertex => null;
   @override
   bool get canFault => false;
 

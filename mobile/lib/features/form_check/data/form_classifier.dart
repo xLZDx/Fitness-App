@@ -68,6 +68,21 @@ class FormFeedback {
 abstract class FormClassifier {
   String get rule;
 
+  /// The joint this rule's measurement is centred on, or null when it has no
+  /// single one.
+  ///
+  /// G8. The design reference marks the offending joint with a pulsing dashed
+  /// ring — «сустав с ошибкой — пунктирный круг r=26, `4 6`, пульсация 1.1 s»
+  /// (`core/design/reference/full_handoff_v1/README.md`, section 8). Nothing in
+  /// [requiredLandmarks] says WHICH of those joints is the offending one: it is
+  /// a set, and a rule reading three joints to compute one angle has all three
+  /// in it while only one of them is the vertex the angle turns on. That vertex
+  /// is the answer, and only the rule knows it.
+  ///
+  /// Null is honest and is not a gap: a rule comparing two heights has no
+  /// vertex, and the ring simply is not drawn.
+  LandmarkType? get faultVertex => null;
+
   /// Joints this rule reads, and **only** those.
   ///
   /// Declared rather than discovered so the frame can be gated (see [gatePose])
@@ -140,6 +155,11 @@ class SquatDepthClassifier implements FormClassifier {
   @override
   bool get canFault => false;
 
+  /// None. This rule compares two heights rather than turning an angle on a
+  /// joint, so there is no vertex to ring — and it cannot fault anyway.
+  @override
+  LandmarkType? get faultVertex => null;
+
   @override
   FormFeedback? evaluate(PoseFrame frame) {
     final lHip = frame.landmarks[LandmarkType.leftHip];
@@ -211,6 +231,11 @@ class DeadliftHipHingeClassifier implements FormClassifier {
   @override
   bool get canFault => false;
 
+  /// The hip: `_angleDeg(shoulder, hip, knee)` turns on it. Recorded for
+  /// completeness — this rule never faults, so the ring is unreachable from it.
+  @override
+  LandmarkType? get faultVertex => LandmarkType.leftHip;
+
   @override
   FormFeedback? evaluate(PoseFrame frame) {
     final shoulder = frame.landmarks[LandmarkType.leftShoulder];
@@ -249,6 +274,11 @@ class PushupAlignmentClassifier implements FormClassifier {
   /// spoken aloud.
   @override
   bool get canFault => true;
+
+  /// The hip: `_angleDeg(shoulder, hip, ankle)` turns on it, and it is where a
+  /// sag or a pike actually happens. The one reachable value in the app.
+  @override
+  LandmarkType? get faultVertex => LandmarkType.leftHip;
 
   /// Shoulder-hip-ankle angle at or above which the body is one line.
   ///

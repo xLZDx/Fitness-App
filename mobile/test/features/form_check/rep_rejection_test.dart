@@ -59,6 +59,11 @@ List<PoseFrame> neverStands(int startTs) =>
 /// Faults for a fixed number of frames and then goes quiet. Used to prove that
 /// a fault seen during a discarded attempt is not charged to the next rep.
 class _FaultsFirst implements FormClassifier {
+
+  /// No vertex: a test double has no angle to turn on, and a ring drawn on a
+  /// joint no rule measured would point at nothing.
+  @override
+  LandmarkType? get faultVertex => null;
   _FaultsFirst(this.frames);
   int frames;
 

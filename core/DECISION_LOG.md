@@ -39664,3 +39664,45 @@ real; both are fixed.
 
 **The suite is now fully green for the first time in this program: 3437 passing,
 0 failing.**
+
+## FORM_COACH_REDESIGN G8 — the last element of the reference: the ring on the offending joint (2026-09-02)
+
+«сустав с ошибкой — пунктирный круг r=26, `4 6`, пульсация 1.1 s»
+(`core/design/reference/full_handoff_v1/README.md`, section 8). The painter's
+own comment had carried this as NOT IMPLEMENTED through two gates, first
+because the joints had no landmark identity and then because the animation
+needed a clock. Both are answered here.
+
+**Identity:** `SilhouetteFigure.jointTypes`, the same shape as G6's
+`segmentBones` — index for index with `joints`, null for a point with no
+landmark of its own, empty on a figure built before it existed.
+
+**Which joint.** Not any joint in the fault region, and this distinction is the
+substance of the gate. `requiredLandmarks` is a SET: a rule reading three joints
+to compute one angle has all three in it, while only one is the vertex the angle
+turns on. Only the rule knows which, so `FormClassifier` now declares
+`faultVertex`. For the push-up rule it is the hip — `_angleDeg(shoulder, hip,
+ankle)`'s middle argument, and physically where a sag happens. The squat's rule
+returns null and gets no ring: it compares two heights, there is no angle, and a
+ring on an arbitrary joint would point at nothing. Mirrored across the body for
+the same reason the fault region is.
+
+**The clock is the frame's own timestamp**, not a Ticker. The painter already
+repaints per frame, the timestamps are monotonic milliseconds, and a Ticker
+would keep animating a ring over a body the detector had stopped seeing. This
+one stops exactly when the picture does, and costs nothing. The `4 6` dash is
+computed from the ratio rather than eyeballed: ten arcs, each drawn for 0.4 of
+its slot, rotating with the phase.
+
+**Tested against the lesson from the review immediately before it.** G6 shipped
+dead because both halves were correct on their own and nothing tested their
+INTERSECTION. So the ring's test asserts that the vertex the rule names is a
+joint the figure actually carries under that name — and it is mutation-checked
+in exactly that direction: pointing `faultVertex` at `leftEar`, a landmark the
+skeleton never draws, fails it. Declining a vertex on the one rule that can
+fault fails it too.
+
+`FormClassifier` gained a member, so five test doubles gained it as well; each
+returns null, with the reason stated.
+
+Full suite: **3441 green, 0 failing.**

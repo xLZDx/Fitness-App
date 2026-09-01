@@ -318,6 +318,63 @@ void main() {
     });
   });
 
+  group('the ring lands on a joint that exists', () {
+    const sagging = FormFeedback(
+      rule: 'pushup.alignment',
+      severity: 2,
+      cueKey: FormCueKey.pushupAlignSagging,
+    );
+
+    test('the vertex is the joint the rule turns its angle on', () {
+      // `_angleDeg(shoulder, hip, ankle)` — the hip is the middle argument, so
+      // it is the vertex, and it is where a sag physically happens. Read off
+      // the classifier rather than restated here, so the two cannot drift.
+      expect(avatarFaultVertices([PushupAlignmentClassifier()], sagging),
+          contains(PushupAlignmentClassifier().faultVertex));
+    });
+
+    test('and the figure really carries that joint, under that name', () {
+      // The same intersection check the per-bone highlight needed and did not
+      // have: a vertex the skeleton never names is a ring drawn on nothing,
+      // and both halves would still pass their own tests.
+      final figure = buildPoseAvatar(_body(ts: 0));
+      expect(figure.jointTypes.length, figure.joints.length);
+      final vertices =
+          avatarFaultVertices([PushupAlignmentClassifier()], sagging);
+      expect(vertices, isNotEmpty);
+      final marked = [
+        for (final t in figure.jointTypes)
+          if (t != null && vertices.contains(t)) t,
+      ];
+      expect(marked, isNotEmpty,
+          reason: 'the ring would be drawn on no joint at all');
+    });
+
+    test('a rule with no vertex gets no ring rather than an arbitrary one', () {
+      // `SquatDepthClassifier` compares two heights; there is no angle and no
+      // joint it turns on. Silence is the honest answer.
+      expect(
+          avatarFaultVertices([SquatDepthClassifier()],
+              const FormFeedback(
+                rule: 'squat.depth',
+                severity: 2,
+                cueKey: FormCueKey.squatDepthHalf,
+              )),
+          isEmpty);
+    });
+
+    test('and a clean rep gets none', () {
+      expect(
+          avatarFaultVertices([PushupAlignmentClassifier()],
+              const FormFeedback(
+                rule: 'pushup.alignment',
+                severity: 0,
+                cueKey: FormCueKey.pushupAlignStraight,
+              )),
+          isEmpty);
+    });
+  });
+
   group('the skeleton knows which bones a rule is about', () {
     test('every bone is named, index for index with the segments it pairs to',
         () {

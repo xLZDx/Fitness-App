@@ -764,6 +764,30 @@ Set<LandmarkType> avatarFaultJoints(
   return const {};
 }
 
+/// The joint the current fault turns on, and its mirror, or empty.
+///
+/// G8 — the reference's pulsing ring. Separate from [avatarFaultJoints], which
+/// answers "which part of the body", because they are different questions: the
+/// region is a limb and the vertex is a point, and lighting a limb while
+/// ringing every joint in it would say the same thing twice at two sizes.
+///
+/// Mirrored for the same reason the region is: a classifier reads left-keyed
+/// joints only, and a sagging hip is not a fault of somebody's left hip.
+Set<LandmarkType> avatarFaultVertices(
+  List<FormClassifier> activeClassifiers,
+  FormFeedback? feedback,
+) {
+  if (feedback == null || feedback.severity <= 0) return const {};
+  for (final c in activeClassifiers) {
+    if (c.rule != feedback.rule) continue;
+    final vertex = c.faultVertex;
+    if (vertex == null) return const {};
+    final mirror = _mirrorOf(vertex);
+    return {vertex, if (mirror != null) mirror};
+  }
+  return const {};
+}
+
 /// The limb chains the skeleton's bones actually run along.
 ///
 /// Bones exist only WITHIN a chain: `buildSilhouette` draws shoulder-elbow,

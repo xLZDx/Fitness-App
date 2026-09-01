@@ -13,6 +13,11 @@ PoseFrame frame(Map<LandmarkType, PoseLandmark> ls) =>
 /// A rule that runs happily and finds nothing wrong — the shape every future
 /// rule will have, and the one no shipped rule has yet.
 class _Quiet implements FormClassifier {
+
+  /// No vertex: a test double has no angle to turn on, and a ring drawn on a
+  /// joint no rule measured would point at nothing.
+  @override
+  LandmarkType? get faultVertex => null;
   /// False, matching what it does: this double never returns feedback at all,
   /// so claiming it could fault a rep would be a lie the verdict logic reads.
   @override

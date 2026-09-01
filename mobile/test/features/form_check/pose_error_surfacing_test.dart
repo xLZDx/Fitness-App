@@ -69,6 +69,11 @@ class _FailingVoiceCoach implements VoiceCoach {
 /// Always faults, so the speech path is reached without depending on any rule's
 /// thresholds.
 class _AlwaysFaults implements FormClassifier {
+
+  /// No vertex: a test double has no angle to turn on, and a ring drawn on a
+  /// joint no rule measured would point at nothing.
+  @override
+  LandmarkType? get faultVertex => null;
   @override
   bool get canFault => true;
 

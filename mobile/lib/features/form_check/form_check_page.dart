@@ -1,4 +1,5 @@
 import 'dart:async' show TimeoutException;
+import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart' show debugPrint, mapEquals, setEquals;
@@ -1376,6 +1377,11 @@ class _PoseAvatar extends ConsumerWidget {
             ref.watch(activeClassifiersProvider),
             ref.watch(formFeedbackControllerProvider),
           ),
+          // G8. WHICH joint, as opposed to which part of the body.
+          faultVertices: avatarFaultVertices(
+            ref.watch(activeClassifiersProvider),
+            ref.watch(formFeedbackControllerProvider),
+          ),
           colorCorrect: colors.poseCorrect,
           colorError: colors.poseError,
         ),
@@ -1399,6 +1405,7 @@ class _PoseAvatarPainter extends CustomPainter {
     required this.colorCorrect,
     required this.colorError,
     this.faultJoints = const {},
+    this.faultVertices = const {},
   });
 
   /// Already built, by the widget above, which had to look at it anyway to
@@ -1432,6 +1439,13 @@ class _PoseAvatarPainter extends CustomPainter {
   /// and down the leg until most of the figure was red, which is the
   /// undifferentiated glow this replaced.
   final Set<LandmarkType> faultJoints;
+
+  /// The joint(s) the fault actually turns on, from [avatarFaultVertices].
+  ///
+  /// Gets the reference's pulsing dashed ring. A subset of [faultJoints] in
+  /// practice, and a much smaller one: the region says where to look, the ring
+  /// says exactly where the fault is.
+  final Set<LandmarkType> faultVertices;
 
   /// The reference (`core/design/reference/full_handoff_v1/README.md:109`)
   /// defines exactly two pose-overlay glow states — correct (green) and
@@ -1609,6 +1623,55 @@ class _PoseAvatarPainter extends CustomPainter {
     for (final j in figure.joints) {
       canvas.drawCircle(place(j), boneWidth * 0.62, jointCore);
     }
+
+    // The reference's marker for the offending joint: «пунктирный круг r=26,
+    // `4 6`, пульсация 1.1 s» (`full_handoff_v1/README.md`, section 8).
+    //
+    // The 1.1s cycle runs off the FRAME's own timestamp rather than off a
+    // Ticker. The painter already repaints on every frame, the timestamps are
+    // monotonic and in milliseconds, and a clock of its own would keep
+    // animating a ring over a body the detector had stopped seeing — this one
+    // stops exactly when the picture does, which is the correct behaviour and
+    // is also the cheaper one.
+    final vertexColour = _glowColor;
+    if (faultVertices.isEmpty ||
+        vertexColour == null ||
+        figure.jointTypes.length != figure.joints.length) {
+      return;
+    }
+    const cycleMs = 1100;
+    final phase = (frame.timestampMs % cycleMs) / cycleMs;
+    // A single smooth swell rather than a sawtooth: the ring grows and settles
+    // once per cycle instead of snapping back at the seam.
+    final swell = 0.5 - 0.5 * math.cos(phase * 2 * math.pi);
+    final radius = boneWidth * (3.4 + 0.9 * swell);
+    final ring = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (boneWidth * 0.34).clamp(1.2, 3.0)
+      ..strokeCap = StrokeCap.round
+      ..color = vertexColour.withValues(alpha: 0.55 + 0.35 * swell);
+    // The reference's `4 6` dash: four parts drawn to every six skipped, which
+    // over a full turn is ten arcs of 0.4 of their slot. Drawn as arcs because
+    // Flutter has no dashed stroke, and the arithmetic is the dash pattern
+    // rather than a look-alike chosen by eye.
+    const dashes = 10;
+    const drawn = 4 / (4 + 6);
+    const slot = 2 * math.pi / dashes;
+    for (var i = 0; i < figure.jointTypes.length; i++) {
+      final type = figure.jointTypes[i];
+      if (type == null || !faultVertices.contains(type)) continue;
+      final centre = place(figure.joints[i]);
+      final box = Rect.fromCircle(center: centre, radius: radius);
+      for (var d = 0; d < dashes; d++) {
+        canvas.drawArc(
+          box,
+          d * slot + phase * slot,
+          slot * drawn,
+          false,
+          ring,
+        );
+      }
+    }
   }
 
   @override
@@ -1621,6 +1684,7 @@ class _PoseAvatarPainter extends CustomPainter {
       // changed.
       !identical(old.figure, figure) ||
       old.severity != severity ||
+      !setEquals(old.faultVertices, faultVertices) ||
       // The region can change while the severity does not — one fault giving
       // way to another of the same weight moves the glow without changing the
       // number, and without this the picture would keep pointing at the old

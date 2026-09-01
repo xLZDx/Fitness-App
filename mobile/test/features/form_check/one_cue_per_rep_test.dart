@@ -29,6 +29,11 @@ import 'unscorable_frame_test.dart' show oneSquat;
 /// particular rule's thresholds — which is the point: this pins the PACING,
 /// and must keep passing when the rules change underneath it.
 class _AlwaysFaults implements FormClassifier {
+
+  /// No vertex: a test double has no angle to turn on, and a ring drawn on a
+  /// joint no rule measured would point at nothing.
+  @override
+  LandmarkType? get faultVertex => null;
   @override
   bool get canFault => true;
 
@@ -58,6 +63,11 @@ class _AlwaysFaults implements FormClassifier {
 /// verdict. Without this double, a test asserting `notEvaluated` would also
 /// pass if `canFault` were ignored entirely and every rep became "not judged".
 class _CouldFaultButDoesNot implements FormClassifier {
+
+  /// No vertex: a test double has no angle to turn on, and a ring drawn on a
+  /// joint no rule measured would point at nothing.
+  @override
+  LandmarkType? get faultVertex => null;
   @override
   bool get canFault => true;
 

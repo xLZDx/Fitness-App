@@ -218,6 +218,7 @@ class SilhouetteFigure {
     required this.limbThickness,
     this.limbs = const [],
     this.segmentBones = const [],
+    this.jointTypes = const [],
   });
 
   /// Bones, as endpoint pairs. The torso is [torso], not a segment: drawn as
@@ -255,6 +256,16 @@ class SilhouetteFigure {
   /// existed — a painter must check the length rather than assuming it pairs
   /// up with [segments].
   final List<(LandmarkType?, LandmarkType?)> segmentBones;
+
+  /// Which landmark each entry of [joints] is, index for index.
+  ///
+  /// Same idea and same caveats as [segmentBones]: null for a point with no
+  /// landmark of its own, and empty on a figure built before this existed, so a
+  /// painter must check the length rather than assume the lists pair up.
+  ///
+  /// This is what lets the reference's ring be drawn ON the joint a rule is
+  /// about instead of on all of them.
+  final List<LandmarkType?> jointTypes;
 
   /// Closed outlines — one per limb — ready to be filled as a single body.
   ///
@@ -520,6 +531,8 @@ SilhouetteFigure buildSilhouette(
   // two cannot fall out of step without the append itself being edited.
   final segmentBones = <(LandmarkType?, LandmarkType?)>[];
   final joints = <Offset>[];
+  // Index for index with `joints`, appended in the same statements.
+  final jointTypes = <LandmarkType?>[];
   final limbs = <List<Offset>>[];
 
   /// Turns a polyline into a closed outline that narrows along its length.
@@ -625,6 +638,12 @@ SilhouetteFigure buildSilhouette(
     leftWaist,
   ];
   joints.addAll([leftShoulder, rightShoulder, leftHip, rightHip]);
+  jointTypes.addAll(const [
+    LandmarkType.leftShoulder,
+    LandmarkType.rightShoulder,
+    LandmarkType.leftHip,
+    LandmarkType.rightHip,
+  ]);
 
   /// Draws the body's two matching limbs, each from its own observation where
   /// there is one.
@@ -679,6 +698,7 @@ SilhouetteFigure buildSilhouette(
         }
         previousType = type;
         joints.add(p);
+        jointTypes.add(type);
         placed.add(p);
         previous = p;
       }
@@ -818,9 +838,14 @@ SilhouetteFigure buildSilhouette(
     'every bone must be named, even if the name is (null, null): a painter '
     'reads these two lists index for index',
   );
+  assert(
+    jointTypes.length == joints.length,
+    'every joint must be named too, for the same reason',
+  );
   return SilhouetteFigure(
     segments: segments,
     segmentBones: segmentBones,
+    jointTypes: jointTypes,
     torso: trunk,
     joints: joints,
     head: (headCentre, torso * radius),
