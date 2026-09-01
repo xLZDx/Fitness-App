@@ -39097,3 +39097,223 @@ It looked exactly like a hang in production code and was a hang in the test. Two
 instrumentation went into it, one of them misled further by `debugPrint`'s own throttling timer
 reordering the output. The bound is now a constructor parameter (`startSettleWait`, default 5 s) and
 the tests use a real 20 ms wait against real asynchrony.
+
+## 2026-09-01 — FORM_COACH_REDESIGN G5: a side view drawn at depth, not at shoulder breadth
+
+**Taken out of order, ahead of G3, on evidence rather than preference (DECISION).** G2 put the
+demonstration on its own screen, which made it the first thing a user sees — and on the device it
+did not read as a person. The operator's point 4 («не квадратный а человекоподобный») was already
+the G5 gate; leaving it until after three more gates would have shipped that screen as the
+feature's front door. Recorded here rather than escalated: §17 puts a sequencing call inside an
+approved gate list with the implementer.
+
+**The fault, measured before it was fixed (FACT).** Every target in `pose_target.dart` is a
+MID-LINE SIDE VIEW — the coach's own instruction is «встаньте боком к камере», and the targets are
+authored that way because scoring a side view is what they support. `buildSilhouette` widened all of
+them by `shoulderHalfWidth`: a number describing how far apart two shoulders are when you are
+looking at someone's FRONT. Applied to a profile it does not make a person wider, it makes a person
+into two. Probed on the shipped squat before touching anything:
+
+| | before | after |
+| --- | --- | --- |
+| arm pair separation (`squat.bottom`) | 0.101 | 0.021 |
+| leg pair separation | 0.094 | 0.024 |
+| trunk across the shoulders | 0.139 | 0.067 |
+| figure bounds, `squat.bottom` | 0.5 wide x 0.5 tall | 0.4 x 0.4 |
+
+Torso length there is 0.257, so the two arms were 0.40 of a torso apart — and because the offset
+runs perpendicular to a spine inclined 42 degrees in a deep squat, they came apart on the DIAGONAL.
+That is the lattice, and no amount of re-tuning limb girth was going to fix a figure built to the
+wrong dimension. Every previous repair in this file (mirroring, one scale for both axes, closed
+outlines instead of stroked bones) was correct and none of them could have addressed this, because
+they all took the widening number as given.
+
+**The fix.** `BodyBuild` gains `trunkHalfDepth` (~0.13 of torso length; a chest is roughly a quarter
+as deep as the shoulder-to-hip line is long), and `buildSilhouette` interpolates every across-axis
+dimension between what a profile needs and what a front view needs. Limb pairs get a separate, much
+smaller parallax (0.055 of torso) rather than the trunk's width: in a profile the far arm is BEHIND
+the near one, so the two outlines have to overlap and union into one limb with depth.
+
+**The first version of that fix was a BOOLEAN, and internal review was right to reject it (DECISION).**
+It read `twoSided ? shoulderHalfWidth : trunkHalfDepth` — correct for both of the two cases it named,
+and wrong for every frame between them. `buildSilhouette` does not only draw the authored target; the
+same function draws the LIVE person in G6, where "did the detector see a right shoulder" flips on a
+confidence threshold that a turn, a rep, or motion blur crosses routinely. A user turning on the spot
+would have watched the figure halve in a single frame — the identical flicker class an earlier gate in
+this file was built to remove, moved onto a different axis.
+
+So nothing switches. `facing = observedShoulderSeparation / (shoulderHalfWidth * torso)`, clamped to
+0..1 and 0 when there is no far side at all, and each dimension is `side + (front - side) * facing`.
+The authored profile lands at `facing == 0` and gets exactly the depth-based figure; a body square to
+the camera lands at 1 and is drawn where the detector actually saw it; and — the property that makes
+it safe — the two-sided call at an observed separation of zero and the one-sided call are the SAME
+drawing, so losing the far side changes nothing that was already edge-on.
+
+**Depth tracks the intake the same way breadth does**, so a heavier body is drawn deeper as well as
+broader; the male/female difference is deliberately token (0.135 vs 0.125), because the ratio that
+separates the two conventional builds is a front-on one.
+
+**And the shape was then invisible, which the device showed and no test could (FACT).** With the
+geometry fixed, the demonstration still read as a thin wire outline. The cause was not the geometry
+at all: `_SilhouettePainter` fills the body at `alpha * 0.34`, and the demonstration's own `alpha` is
+0.45 — a 15%-white body on an OPAQUE near-black panel. Translucency there protects nothing, because
+unlike the live screen there is no person behind the demonstration to hide; all it did was hand the
+entire figure back to the rim stroke, i.e. reproduce the thin geometric outline the operator
+rejected, by an alpha rather than by a dimension. The demonstration now fills at 0.58 with a 0.85
+rim, and its limbs are no longer thinned to 0.85 of their girth. The live path's fill is untouched —
+there the translucency is the point.
+
+**This is why the gate's evidence is a screenshot and not a passing suite.** Every geometric test
+was green both before and after that change, because the geometry was right both times. Element 1 of
+the operator's own visual DoD is "a FILLED human figure ... not a thin white geometric outline"; a
+suite that measures where the outline is cannot tell whether anything inside it was drawn.
+
+**Then three more, each found the same way — on the phone, none by a test (FACT).** The gate's real
+lesson is in that sentence, not in any one of them.
+
+1. **A 13 cm-thick person.** `trunkHalfDepth` shipped at 0.13 of torso length. An adult torso is
+   ~50 cm shoulder to hip and a chest is ~21 cm front to back, so the half-depth is ~0.21 — 0.13 is
+   a plank, correct in KIND (a depth, not a breadth) and still wrong by 60%. Corrected to 0.21, with
+   the sexed pair at 0.215/0.20. The girth table went with it: an arm at 0.52/0.38/0.26 of limb
+   thickness and a thigh at 0.80/0.50/0.32, where both had been drawn at near-identical bore. The
+   legs were the loudest single reason the figure read as a stick drawing.
+2. **A trunk built from two different bodies.** `rightShoulder` was read from the observation
+   whenever it existed — but `sObs`, `facing` and `sWiden` are all computed from `twoSided`, which
+   needs the far shoulder AND the far hip. A detector that keeps one and loses the other (occlusion,
+   a turn, one low-confidence frame) therefore widened an already-separated pair by a full profile
+   half-width each: a trunk twice its proper width, sheared against hips still on the mid-line.
+   Either half was self-consistent; using one of each was not. Found by the F3 test an internal
+   reviewer asked for, written for a state I expected to be uninteresting.
+3. **No pelvis.** The hip landmark is where the leg rotates, not where the body ends. Ending the
+   trunk there leaves an open triangle between torso and thigh wherever the two are at an angle —
+   i.e. every frame of a squat, which is the exercise the demonstration shows. The trunk now
+   continues 0.16 of a torso past the hip, so the union closes that corner and the thigh grows out
+   of a body instead of hinging off a point.
+
+Two of those three passed the entire suite before and after. The one that did not was found by a
+test written to check a detector state nobody thought was interesting.
+
+**The live target changes shape too, and saying otherwise was wrong (DECISION, corrected in
+review).** The PAINTER's alpha and glow changes really are behind `isDemo`. The GEOMETRY is not:
+`buildSilhouette` takes no mode flag, so the corrected chest depth, the heavier limbs and the seat
+reshape the still target the user aligns against on the live camera as well. That is intended — a
+13 cm chest was wrong everywhere, not only on the demonstration panel, and G6 draws the live PERSON
+with the same builder — but it is a decision, not a side effect, and "the live path is untouched"
+was the wrong sentence for it. What is genuinely untouched is SCORING: `poseMatchScore` reads
+`PoseTarget.joints`, which none of this modifies. Caught by the internal Flutter reviewer, who was
+right that a sign-off screenshotting only the demonstration panel would have missed it.
+
+**A second instance of the trunk defect, in the limbs (FACT).** `limbPair`'s "both chains resolved"
+branch applied a widening derived from the SHOULDERS — so a detector keeping both arms while losing
+the far hip (not `twoSided`) added a full profile parallax on top of a separation those two limbs
+already had. Same class as the trunk fix, one layer down, and found by a reviewer tracing whether
+the first fix was complete rather than by the fix itself. Each pair now measures its own observed
+separation and widens only by what is missing; the mirrored branch follows the same rule. Pinned by
+extending the partial-detection test to read the limbs, and mutation-checked.
+
+**The boolean had not gone — it had MOVED, and GPT-PM's review found it (FACT, corrected).** The
+widening was continuous; `facing` itself was still `twoSided ? measured : 0`, and `twoSided` needs
+the far shoulder AND the far hip. So one dropped landmark still forced the trunk from 0.132 to 0.105
+in a single frame on the test's own fixture — 20%, and 42% at a wider stance — which is exactly the
+occlusion/turn/motion-blur flicker this gate was written to remove. The new partial-detection test I
+had just added CODIFIED that snap as correct. Two reviewers had approved the diff before this; the
+finding came from the one that recomputed the arithmetic instead of reading the rationale.
+
+**The fix is the one GPT-PM specified: separate evidence availability from body orientation.**
+Bilateral evidence is tracked per END (`sTwo`, `hTwo`). Orientation is read off whichever end still
+has two sides, so losing one changes where the measurement comes FROM, not what it is. The missing
+centre is reconstructed from the end that has one, scaled by the build's own shoulder-to-hip ratio —
+a body is not twisted between hip and shoulder — and the missing joint is then the mirror of the
+surviving one about that centre, rather than being collapsed onto it. Measured on anatomically
+proportioned fixtures, the worst jump falls from 42% to under 5%, with the mid-line held to 0.004 of
+a torso. Both halves are mutation-checked: restoring the aggregate boolean fails with "the trunk
+snapped by 13%", and removing the centre reconstruction fails with "the hips moved off the mid-line".
+
+**One more thing the same review was right about**: `trunkHalfDepth`'s own doc comment still stated
+the superseded ~0.13 and the quarter-of-a-torso reasoning behind it. A maintainer reads the field's
+contract, not the history under it, and would have "repaired" 0.21 back to the plank.
+
+**And the reconstruction was still circular, which the SAME reviewer caught on the next round
+(FACT, corrected).** Estimating the missing centre by scaling the surviving end's separation by
+`BodyBuild`'s shoulder-to-hip ratio is only continuous for a body whose observed proportions match
+that prior — and the regression fixture I wrote to prove it derived its own spans from those same
+constants. A test that passes because the observation was generated from the numbers used to
+reconstruct it proves nothing. On a body with equal projected shoulder and hip spans — an ordinary
+person, not an exotic case — the trunk still snapped 12.8% and its mid-line slid 6% of a torso on
+one lost landmark.
+
+**The prior is gone.** Every bilateral pair in the frame (shoulders, hips, knees, ankles — never
+elbows or wrists, because an arm moves independently of the body and one raised arm would drag the
+mid-line with it) contributes a midpoint, and the body's mid-line runs through all of them. The
+missing centre is the point on that line level with the surviving joint: measured, not assumed, and
+therefore true for any proportions. The build ratio survives only as a last resort for a frame
+holding a single bilateral pair, stated as such.
+
+That also removed the last remnant of the switch. `facing` used to be read off whichever end still
+had two sides; it is now always the near shoulder's distance to the mid-line, which no longer needs
+the far shoulder to exist. Measured on bodies at four different shoulder-to-hip ratios including
+equal spans, upright and leaning 20 degrees: the trunk width and both mid-points are now identical
+to five decimal places whether one far landmark is present or missing. Mutation-checked both ways —
+restoring the hip-derived `facing` fails at 2.5%, disabling the mid-line projection fails at 3.6%.
+
+**The lesson, which is the reason this is written down at length.** Two internal reviewers approved
+the version with the aggregate boolean, and one of them had been asked specifically whether the fix
+was complete as a class. Both times the finding came from the reviewer that recomputed the
+arithmetic instead of reading the rationale — and the second time, from one that checked whether my
+own test could have failed.
+
+**Round 3's replacement was worse than the defect, and the same reviewer said so (FACT, reverted).**
+Fitting a mid-line through the bilateral midpoints assumes an articulated body has one straight
+shoulder-to-ankle axis. A squat does not: on this app's own `squat.bottom` geometry the hip-to-ankle
+line puts the reconstructed shoulder about one whole torso length from where it belongs. Worse, my
+own regression fixture could not have caught it — it rotates a rigid straight column, so every
+midpoint stays collinear by construction. A tilted mannequin, not a bent squat.
+
+**The resolution came from checking whether the state exists at all, which nobody had done through
+three rounds of trying to handle it (FACT).** `avatarTargetFrom` — the only producer with a
+continuity requirement — emits right-keyed joints solely inside `if (leftOk && rightOk)`, and
+`_hasTorso` has already put the right shoulder AND the right hip through the identical three checks
+`collect` applies: non-null, the same likelihood floor, the same `_drawable` bound. So
+`rShoulder != null` if and only if `rHip != null`. **A half-bilateral torso cannot be produced.**
+Every stateless reconstruction of the missing end was therefore dead code with a live hazard
+attached.
+
+So there is no reconstruction. A half-bilateral target is drawn as the profile it structurally is —
+GPT-PM's own instruction, "degrade rather than invent an axis" — and the invariant that makes that
+safe is now pinned where it actually lives, in `pose_avatar_test.dart`: four tests, including a sweep
+of the confidence floor, asserting the far shoulder and far hip are present together or not at all.
+Mutation-checked by widening the producer's guard to `if (leftOk)`, which fails them.
+
+**What remains, stated rather than buried:** the transition that IS reachable is all-or-nothing —
+both far torso joints at once, when a body turns or the detector blinks — and it still steps
+`facing` from its measured value to 0, about 20% of trunk width. No stateless builder can
+interpolate that, because with no far side observed there is no measurement to interpolate towards.
+The honest fix is hysteresis at the producer, where the previous frame is still in hand; that needs
+state in a currently pure function and belongs with the live-person gate (G6), not here. Recorded as
+follow-up rather than guessed at.
+
+**Three rounds, three correct rejections, and the useful lesson is the last one:** the question that
+resolved it was not "how do I handle this state" but "can this state occur". Two internal reviewers
+and three of my own attempts all took the state's existence for granted.
+
+**Round 4 did not return, and the gate closes on the operator's instruction rather than on a verdict
+(DECISION, 2026-09-02).** The round carrying the unreachability evidence ran past 40 minutes with no
+reply and was stopped — it holds pm-bridge's single shared browser profile, and a hung call there is
+a known failure mode that has needed manual rescue before. Rounds 1-3 each returned a correct MAJOR
+and each was remediated; round 4 is the verification of the last of those, so what is missing is
+confirmation, not a finding. The operator's instruction was explicit: continue autonomously.
+
+Consequences, stated rather than glossed: **G5 is committed locally, not pushed.** A commit is
+allowed under §4 once the gate is complete and verified, and the review gate's commit check is
+satisfied by rounds 1-3's receipts. Push requires a `final` receipt and there is none, so the push
+waits — for GPT-PM to conclude, or for the operator to authorise it directly. The unreachability
+claim in `pose_avatar.dart` is the load-bearing one and has not had an external check; it is pinned
+by four tests and one mutation, which is the strongest evidence available without that round.
+
+**Every load-bearing part is mutation-checked**, not merely asserted — the fix is removed and the
+suite has to go red: the limb parallax ("the near and far limb overlap into one"); the depth
+substitution ("the trunk is as deep as a chest"); the rejected boolean put back in place of the
+blend ("turning side-on narrows the body continuously...", on the boundary assertion specifically);
+the limb pair's own interpolation, by swapping its two ends ("the limb pair closes up as
+continuously as the trunk does"); and the pelvis, by zeroing the offset ("the trunk carries on past
+the hip joint").

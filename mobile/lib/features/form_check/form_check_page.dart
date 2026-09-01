@@ -2121,8 +2121,7 @@ class _SilhouettePainter extends CustomPainter {
             ? 0.95
             : 0.65;
 
-    final limbWidth =
-        (figure.limbThickness * scale * (isDemo ? 0.85 : 1.0)).clamp(4.0, 30.0);
+    final limbWidth = (figure.limbThickness * scale).clamp(4.0, 30.0);
 
     // B4 — ONE body, not a set of parts.
     //
@@ -2178,15 +2177,26 @@ class _SilhouettePainter extends CustomPainter {
     // shape on its own. Still translucent — a solid fill over a live camera
     // would hide the person trying to match it, which is the reason the head
     // used to be an empty circle.
-    canvas.drawPath(
-        body, Paint()..color = colour.withValues(alpha: alpha * 0.34));
+    //
+    // The demonstration is the exception, and on the device it was the whole
+    // problem. It is painted on an OPAQUE dark panel with nobody behind it, so
+    // there is nothing for translucency to protect — and 0.45 x 0.34 is a 15%
+    // white body, which disappears into the panel and leaves the rim carrying
+    // the entire figure on its own. That is exactly the thin geometric outline
+    // the operator rejected («квадраты»), reintroduced by an alpha rather than
+    // by the geometry: G5 fixed the shape, and the shape was then invisible.
+    // The reference clip is a FILLED body with the skeleton glowing on top of
+    // it, so the demonstration gets a filled body.
+    final fillAlpha = isDemo ? 0.58 : alpha * 0.34;
+    final rimAlpha = isDemo ? 0.85 : alpha;
+    canvas.drawPath(body, Paint()..color = colour.withValues(alpha: fillAlpha));
     canvas.drawPath(
       body,
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = (limbWidth * 0.22).clamp(2.0, 5.0)
         ..strokeJoin = StrokeJoin.round
-        ..color = colour.withValues(alpha: alpha),
+        ..color = colour.withValues(alpha: rimAlpha),
     );
 
     if (isDemo) _paintDemoSkeleton(canvas, place, limbWidth);
@@ -2230,13 +2240,18 @@ class _SilhouettePainter extends CustomPainter {
     }
     if (!drew) return;
 
-    final width = (limbWidth * 0.28).clamp(2.0, 6.0);
+    // 0.15, down from 0.28 (2026-09-01). Once the body was actually filled and
+    // drawn at a real chest's depth, the bones at the old weight were the
+    // brightest thing on the panel and the figure read as a glowing wireframe
+    // with a grey shadow behind it — the reference has it the other way round:
+    // a body, with the skeleton glowing INSIDE it.
+    final width = (limbWidth * 0.15).clamp(2.0, 4.5);
     // Two passes, widening and fading, standing in for the reference's two
     // stacked drop-shadows. `MaskFilter.blur` rather than a wider opaque
     // stroke: a hard-edged halo reads as a second, thicker skeleton.
     for (final (mul, a, blur) in [
-      (3.2, 0.20, 7.0),
-      (1.9, 0.34, 3.0),
+      (3.2, 0.14, 7.0),
+      (1.9, 0.24, 3.0),
     ]) {
       canvas.drawPath(
         line,

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fitness_app/features/form_check/data/pose_avatar.dart';
 import 'package:fitness_app/features/form_check/data/pose_landmark.dart';
+import 'package:fitness_app/features/form_check/data/pose_target.dart';
 
 /// The live pose, turned into a body.
 ///
@@ -43,6 +44,91 @@ PoseFrame standing({double farLikelihood = 0.95, double farOffset = 0.0}) =>
     });
 
 void main() {
+  group('the far side is gained and lost as ONE torso, never half of one', () {
+    // The invariant three rounds of review on gate G5 converged on
+    // (2026-09-01). `buildSilhouette` reads "the detector saw a far side" off
+    // the presence of a right-keyed shoulder AND hip. GPT-PM's review asked,
+    // reasonably, what happens on the frame where only one of those two drops —
+    // and every stateless answer to that question is bad: an anthropometric
+    // prior is only continuous for a body matching the prior, and a mid-line
+    // fitted through the bilateral midpoints assumes an articulated squat has
+    // one straight shoulder-to-ankle axis, which on the app's own deep-squat
+    // geometry misplaces the reconstructed shoulder by an entire torso length.
+    //
+    // The answer is that the frame does not exist. `_hasTorso` puts the far
+    // shoulder and the far hip through the identical three checks `collect`
+    // applies — non-null, the same likelihood floor, the same coordinate bound
+    // — and the right chain is collected only inside `if (leftOk && rightOk)`.
+    // These tests are what stops that from silently ceasing to be true.
+
+    /// Every right-keyed landmark the target carries.
+    Set<LandmarkType> rightKeys(PoseTarget? t) => (t?.joints.keys ?? const [])
+        .where((k) => k.name.startsWith('right'))
+        .toSet();
+
+    test('a far shoulder below the floor takes the whole far side with it', () {
+      // The exact frame the review was worried about: the far SHOULDER blinks
+      // and the far hip does not. If the producer let that through, the
+      // silhouette would have to reconstruct a torso end it cannot measure.
+      final frame = standing(farLikelihood: 0.95, farOffset: 0.12);
+      final full = avatarTargetFrom(frame);
+      expect(rightKeys(full), isNotEmpty,
+          reason: 'POSITIVE CONTROL: a confident far side is reported at all');
+      expect(full!.joints.containsKey(LandmarkType.rightShoulder), isTrue);
+      expect(full.joints.containsKey(LandmarkType.rightHip), isTrue);
+
+      final dimmed = <LandmarkType, PoseLandmark>{...frame.landmarks};
+      dimmed[LandmarkType.rightShoulder] =
+          p(LandmarkType.rightShoulder, 0.62, 0.30, 0.10);
+      final partial = avatarTargetFrom(
+          PoseFrame(timestampMs: 1, landmarks: dimmed));
+
+      expect(rightKeys(partial), isEmpty,
+          reason: 'a far shoulder alone dragged the far HIP into the drawing, '
+              'leaving a torso the silhouette cannot measure');
+    });
+
+    test('a far hip below the floor takes the whole far side with it', () {
+      final frame = standing(farLikelihood: 0.95, farOffset: 0.12);
+      final dimmed = <LandmarkType, PoseLandmark>{...frame.landmarks};
+      dimmed[LandmarkType.rightHip] =
+          p(LandmarkType.rightHip, 0.62, 0.58, 0.10);
+      final partial = avatarTargetFrom(
+          PoseFrame(timestampMs: 1, landmarks: dimmed));
+
+      expect(rightKeys(partial), isEmpty,
+          reason: 'the mirror case, and it fails the same way');
+    });
+
+    test('a far joint outside the coordinate bound does the same', () {
+      // The other of `_hasTorso`'s three checks. A landmark the detector
+      // extrapolated far outside the frame passes the likelihood floor and is
+      // still not drawable — and it must not take half a torso through either.
+      final frame = standing(farLikelihood: 0.95, farOffset: 0.12);
+      final wild = <LandmarkType, PoseLandmark>{...frame.landmarks};
+      wild[LandmarkType.rightHip] = p(LandmarkType.rightHip, 9.0, 0.58);
+      final partial =
+          avatarTargetFrom(PoseFrame(timestampMs: 1, landmarks: wild));
+
+      expect(rightKeys(partial), isEmpty);
+    });
+
+    test('never, across a sweep of the confidence floor', () {
+      // The property rather than three instances of it: whatever the far side's
+      // confidence, the right-keyed shoulder and hip are present together or
+      // not at all.
+      for (var i = 0; i <= 20; i++) {
+        final t = avatarTargetFrom(
+            standing(farLikelihood: i / 20, farOffset: 0.12));
+        final hasShoulder =
+            t?.joints.containsKey(LandmarkType.rightShoulder) ?? false;
+        final hasHip = t?.joints.containsKey(LandmarkType.rightHip) ?? false;
+        expect(hasShoulder, hasHip,
+            reason: 'at likelihood ${i / 20} the torso was half bilateral');
+      }
+    });
+  });
+
   group('a body is produced at all', () {
     test('POSITIVE CONTROL: a standing pose becomes a figure with a head', () {
       // Without this, every "nothing was drawn" assertion below passes for the

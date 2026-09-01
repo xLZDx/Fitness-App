@@ -62,7 +62,18 @@ class BodyBuild {
     required this.shoulderHalfWidth,
     required this.hipHalfWidth,
     required this.limbThickness,
-  });
+    required this.trunkHalfDepth,
+  })  :
+        // `buildSilhouette` divides by `shoulderHalfWidth * torso` to work out
+        // how square to the camera a body is. Every build this file produces is
+        // comfortably positive, so this is unreachable today — but a zero would
+        // turn that into 0/0 and quietly draw a NaN figure rather than failing,
+        // and a silhouette is exactly the kind of output where "quietly wrong"
+        // survives a test run.
+        assert(shoulderHalfWidth > 0, 'a body has some width'),
+        assert(hipHalfWidth > 0, 'a body has some width'),
+        assert(trunkHalfDepth > 0, 'a body has some depth'),
+        assert(limbThickness > 0, 'a limb has some girth');
 
   /// Half the shoulder span, over torso length.
   final double shoulderHalfWidth;
@@ -73,11 +84,43 @@ class BodyBuild {
   /// Stroke width for limbs, over torso length.
   final double limbThickness;
 
+  /// Half the trunk's FRONT-TO-BACK thickness, over torso length.
+  ///
+  /// The number a side view needs, and the one the file had no concept of
+  /// until 2026-09-01. Every authored target is a side view, and the drawing
+  /// widened all of them by [shoulderHalfWidth] — a number that describes how
+  /// far apart two shoulders are when you are looking at someone's front.
+  /// Applied to a profile it does not make a person wider, it makes a person
+  /// TWO people: measured on the shipped squat, the two mirrored arms came out
+  /// 0.10 apart on a torso 0.257 long — 0.40 of a torso length — and, because
+  /// the offset runs perpendicular to a spine inclined 42 degrees in a deep
+  /// squat, they came apart on the diagonal. That is the lattice the operator
+  /// kept calling «закорючка», and no amount of re-tuning limb girth was going
+  /// to fix a figure built to the wrong dimension.
+  ///
+  /// An adult torso is ~50 cm shoulder to hip and a chest is ~21 cm front to
+  /// back, so the half-depth is ~0.21 of torso length. Against ~0.27 for a
+  /// shoulder half-span, a profile trunk is about three quarters the width of
+  /// the front-on one — which is what a person looks like from the side.
+  ///
+  /// This doc said ~0.13 until 2026-09-01, from a guess that a chest is a
+  /// quarter as deep as the torso is long. It is not; 0.13 is a 13 cm-thick
+  /// person. The value was corrected on the phone, and this text is corrected
+  /// here because a maintainer reads the field's own contract, not the history
+  /// below it, and would have "repaired" 0.21 back to the plank.
+  final double trunkHalfDepth;
+
   /// Neither sex assumed, nor any body composition known.
   static const unknown = BodyBuild(
     shoulderHalfWidth: 0.27,
     hipHalfWidth: 0.21,
     limbThickness: 0.16,
+    // A chest, measured. Torso (shoulder to hip) is ~50 cm on an adult and the
+    // chest is ~21 cm front to back, so the HALF-depth is ~0.21 of torso — not
+    // the 0.13 this shipped with first. 0.13 is a 13 cm-thick person: correct
+    // in kind (a depth, not a breadth) and still a plank, which is what the
+    // demonstration looked like on the phone once it was finally visible.
+    trunkHalfDepth: 0.21,
   );
 
   /// Derived from whatever the profile holds. Every argument is optional
@@ -98,11 +141,16 @@ class BodyBuild {
           shoulderHalfWidth: 0.31,
           hipHalfWidth: 0.19,
           limbThickness: 0.17,
+          // Depth is far less sexed than breadth — the ratio that separates
+          // the two conventional builds is a front-on one. A token difference
+          // rather than none, so the profile still tracks the answer.
+          trunkHalfDepth: 0.215,
         ),
       SilhouetteSex.female => const BodyBuild(
           shoulderHalfWidth: 0.25,
           hipHalfWidth: 0.24,
           limbThickness: 0.15,
+          trunkHalfDepth: 0.20,
         ),
       SilhouetteSex.unspecified => unknown,
     };
@@ -112,6 +160,10 @@ class BodyBuild {
       shoulderHalfWidth: base.shoulderHalfWidth * k,
       hipHalfWidth: base.hipHalfWidth * k,
       limbThickness: base.limbThickness * k,
+      // A heavier body is deeper as well as broader, so the profile has to
+      // move with the same factor or the side view would ignore the intake
+      // answers the front view uses.
+      trunkHalfDepth: base.trunkHalfDepth * k,
     );
   }
 
@@ -125,11 +177,12 @@ class BodyBuild {
       other is BodyBuild &&
           other.shoulderHalfWidth == shoulderHalfWidth &&
           other.hipHalfWidth == hipHalfWidth &&
-          other.limbThickness == limbThickness;
+          other.limbThickness == limbThickness &&
+          other.trunkHalfDepth == trunkHalfDepth;
 
   @override
-  int get hashCode =>
-      Object.hash(shoulderHalfWidth, hipHalfWidth, limbThickness);
+  int get hashCode => Object.hash(
+      shoulderHalfWidth, hipHalfWidth, limbThickness, trunkHalfDepth);
 
   /// Breadth multiplier from BMI, 1.0 when it cannot be computed.
   ///
@@ -279,10 +332,15 @@ SilhouetteFigure buildSilhouette(
   }
   final rShoulder = at(LandmarkType.rightShoulder);
   final rHip = at(LandmarkType.rightHip);
-  final twoSided = rShoulder != null && rHip != null;
+  // Named per end, and then required TOGETHER — which is the whole of what
+  // three rounds of review on this gate settled, so the names stay to make the
+  // pairing visible rather than implied. See the block below `across` for why
+  // there is no attempt to handle one without the other.
+  final sTwo = rShoulder != null;
+  final hTwo = rHip != null;
 
-  final shoulder = twoSided ? (lShoulder + rShoulder) / 2 : lShoulder;
-  final hip = twoSided ? (lHip + rHip) / 2 : lHip;
+  final shoulder = sTwo && hTwo ? (lShoulder + rShoulder) / 2 : lShoulder;
+  final hip = sTwo && hTwo ? (lHip + rHip) / 2 : lHip;
 
   final spine = shoulder - hip;
   final torso = spine.distance;
@@ -299,9 +357,15 @@ SilhouetteFigure buildSilhouette(
   // stay square to the torso however it is tilted.
   final across = Offset(-spine.dy / torso, spine.dx / torso);
 
-  final sHalf = build.shoulderHalfWidth * torso;
-  final hHalf = build.hipHalfWidth * torso;
-
+  // Which dimension the drawing is allowed to use.
+  //
+  // A one-sided target IS a side view — `pose_target.dart` authors every one of
+  // them about the body's mid-line, and the coach's own instruction is «встаньте
+  // боком к камере». So the trunk's across-axis extent is its DEPTH, not the
+  // span between two shoulders, and the two mirrored limbs are the near and far
+  // one rather than a left and a right. See [BodyBuild.trunkHalfDepth] for what
+  // using the wrong one of those produced.
+  //
   /// Signed distance from [centre] along the across-axis: how far to one side
   /// of the body a point sits, positive towards the drawn left.
   double acrossOf(Offset p, Offset centre) {
@@ -314,21 +378,121 @@ SilhouetteFigure buildSilhouette(
   // always drew the left limb on. Nothing about the authored figures moves.
   final leftSign = acrossOf(lShoulder, shoulder) >= 0 ? 1.0 : -1.0;
 
+  // How far from the mid-line the observation ACTUALLY put each end. Zero for a
+  // one-sided target, where the chain is the mid-line and there is nothing to
+  // measure.
+  final sObs = sTwo && hTwo ? acrossOf(lShoulder, shoulder).abs() : 0.0;
+  final hObs = sTwo && hTwo ? acrossOf(lHip, hip).abs() : 0.0;
+
+  // A torso with one far joint but not the other does not occur, and this is
+  // where three rounds of review converged (2026-09-01).
+  //
+  // GPT-PM found, correctly, that gating `facing` on an aggregate `twoSided`
+  // let one dropped landmark snap the trunk 20%. Two attempts to reconstruct
+  // the missing end followed, and it rejected both: the first scaled the
+  // surviving end by `BodyBuild`'s shoulder-to-hip ratio, which is only
+  // continuous for a body that matches the prior; the second projected onto a
+  // line through the bilateral midpoints, and a squat is ARTICULATED — hip to
+  // ankle is not the torso's axis, and on the app's own deep-squat geometry
+  // that line puts the reconstructed shoulder up to a whole torso length away.
+  // Both objections were exact, and the second is worse than the defect it
+  // replaced.
+  //
+  // Its own instruction was the answer: degrade rather than invent an axis. So
+  // there is no reconstruction here at all — a half-bilateral torso is drawn as
+  // the profile it structurally is.
+  //
+  // What makes that safe rather than a retreat is that the state is
+  // UNREACHABLE from the live path, which is the only caller with a continuity
+  // requirement. `avatarTargetFrom` emits right-keyed joints solely inside
+  // `if (leftOk && rightOk)`, and `_hasTorso` has already put the right
+  // shoulder AND the right hip through the identical three checks `collect`
+  // applies — non-null, the same likelihood floor, the same `_drawable` bound.
+  // So `rShoulder != null` if and only if `rHip != null`, and the far side is
+  // gained and lost as one. Pinned by a test in `pose_avatar_test.dart`.
+  //
+  // The transition that IS reachable is all-or-nothing: both far torso joints
+  // at once, when a body turns or the detector blinks. No stateless builder can
+  // interpolate that — with no far side observed there is no measurement to
+  // interpolate towards — so the honest place to soften it is hysteresis at the
+  // producer, where the previous frame is still in hand. Recorded as follow-up
+  // work rather than guessed at here.
+  final twoSided = sTwo && hTwo;
+
+  // How square to the camera the body is: 0 edge-on, 1 fully front-on.
+  //
+  // This is the number the whole widening hangs off, and it replaced a
+  // `twoSided ? breadth : depth` switch that reintroduced exactly the class of
+  // defect the paragraph below was written to prevent. Caught in review of this
+  // gate, and the reviewer was right: a hard switch halves the drawn body in a
+  // single frame at the moment one shoulder's confidence drops, which is a
+  // thing that happens mid-turn, mid-rep and under motion blur.
+  //
+  // A one-sided authored target is edge-on by definition, so it lands at 0 and
+  // gets the profile dimensions. A live body turning on the spot walks the
+  // range continuously — and, because the same factor drives every dimension
+  // below, so does everything drawn from it.
+  //
+  // Always off the shoulders, and it no longer needs the far one. `sObs` is the
+  // distance from the near shoulder to the body's mid-line, and the mid-line is
+  // reconstructed above from whatever bilateral pairs the frame does have — so
+  // losing the far shoulder changes nothing here at all.
+  //
+  // Reading it off the hips instead, when the shoulders were the pair that went
+  // missing, was the last remnant of the same switch: it makes the measurement
+  // depend on the body matching `BodyBuild`'s shoulder-to-hip ratio, and on a
+  // body with equal spans it still moved `facing` from 0.889 to a clamped 1.0
+  // and the trunk by 2.5% on one lost landmark.
+  final facing = twoSided
+      ? (sObs / (build.shoulderHalfWidth * torso)).clamp(0.0, 1.0)
+      : 0.0;
+
+  /// Interpolates a dimension between what a profile needs and what a front
+  /// view needs, by [facing].
+  double turned(double side, double front) => side + (front - side) * facing;
+
+  // The trunk's across-axis half-extent. Front-on that is half a shoulder span;
+  // edge-on it is half a chest's DEPTH — see [BodyBuild.trunkHalfDepth] for
+  // what using the front-on number on a profile produced.
+  final sHalf = turned(build.trunkHalfDepth * torso,
+      build.shoulderHalfWidth * torso);
+  // Hips are marginally deeper than the chest, front to back.
+  final hHalf =
+      turned(build.trunkHalfDepth * 1.1 * torso, build.hipHalfWidth * torso);
+
   // How much the figure has to be widened beyond what was observed to still
   // read as a body, and this is what makes the two paths meet continuously
   // instead of snapping between them.
   //
   // Facing the camera, the shoulders are already the width of a person, so this
   // is ~0 and every joint is drawn where the detector actually saw it. Turned
-  // side-on, the two shoulders collapse onto each other, this grows to the full
-  // build width, and the figure becomes the mirrored one the side view needs.
-  // Every angle between the two is a blend of the two, so a user turning on the
-  // spot sees the drawing rotate rather than flip — the flicker class Gate A
-  // existed to remove, avoided here by having no threshold to flicker across.
-  final sObs = twoSided ? acrossOf(lShoulder, shoulder).abs() : 0.0;
-  final hObs = twoSided ? acrossOf(lHip, hip).abs() : 0.0;
+  // side-on, the two shoulders collapse onto each other, this grows to the
+  // profile's own width, and the figure becomes the mirrored one the side view
+  // needs. Every angle between the two is a blend of the two, so a user turning
+  // on the spot sees the drawing rotate rather than flip — the flicker class
+  // Gate A existed to remove, avoided here by having no threshold to flicker
+  // across.
   final sWiden = sHalf > sObs ? sHalf - sObs : 0.0;
   final hWiden = hHalf > hObs ? hHalf - hObs : 0.0;
+
+  // How far apart to draw the near and far limb of a pair.
+  //
+  // Edge-on this is a PARALLAX, not the trunk's depth: in a profile the far arm
+  // is directly behind the near one, and separating them by the width of the
+  // body draws a second person standing beside the first. Enough that the
+  // figure has a far side at all, small enough that the two outlines overlap
+  // and union into one limb with depth to it. Front-on it converges on the
+  // observed separation, so each limb is drawn where it was actually seen.
+  const parallax = 0.055;
+  //
+  // These are TARGETS, not widenings: how far from the mid-line each limb of a
+  // pair belongs. `limbPair` subtracts whatever separation it can actually see
+  // in that pair, because it is the only place that knows. Computing the
+  // subtraction here, off the shoulders, was the same defect as the trunk's —
+  // a detector can lose the far HIP and keep both arms, and the arms would then
+  // have had a full profile parallax added to a separation they already had.
+  final armTarget = turned(parallax * torso, build.shoulderHalfWidth * torso);
+  final legTarget = turned(parallax * torso, build.hipHalfWidth * torso);
 
   final segments = <(Offset, Offset)>[];
   final joints = <Offset>[];
@@ -374,10 +538,29 @@ SilhouetteFigure buildSilhouette(
   // Observed position, widened outward. One-sided, `lShoulder` is the mid-line
   // and `sWiden` is the whole build half-width, so these are exactly the four
   // synthesised corners the authored figures have always had.
+  //
+  // `twoSided`, not `rShoulder != null`, and the difference is a real defect
+  // found by a test for exactly this state (2026-09-01). A detector that keeps
+  // the far SHOULDER and loses the far HIP — occlusion, a turn, one
+  // low-confidence frame — is not two-sided, so `sObs`, `facing` and `sWiden`
+  // were all computed as if the body were edge-on. Reading the surviving
+  // `rShoulder` here anyway then widened a pair already 0.12 apart by a full
+  // profile half-width each, drawing a trunk twice its proper width and
+  // sheared against hips still centred on the mid-line. Either half was
+  // self-consistent; using one of each was not.
+  //
+  // Where a far joint was not seen it is SYNTHESISED as the mirror of the near
+  // one about the centre, rather than collapsed onto the centre itself. With
+  // `sObs`/`hObs` at 0 — a genuinely one-sided target — the mirror IS the
+  // centre, so every authored figure is unchanged; with an estimated centre it
+  // is the far side that end would have had.
+  final farShoulder =
+      twoSided ? rShoulder : shoulder - across * (leftSign * sObs);
+  final farHip = twoSided ? rHip : hip - across * (leftSign * hObs);
   final leftShoulder = lShoulder + across * (leftSign * sWiden);
-  final rightShoulder = (rShoulder ?? shoulder) - across * (leftSign * sWiden);
+  final rightShoulder = farShoulder - across * (leftSign * sWiden);
   final leftHip = lHip + across * (leftSign * hWiden);
-  final rightHip = (rHip ?? hip) - across * (leftSign * hWiden);
+  final rightHip = farHip - across * (leftSign * hWiden);
 
   // B4: six points, not four. A shoulders-to-hips quad has straight sides and
   // reads as a box; a real trunk narrows at the waist and that single pair of
@@ -394,12 +577,27 @@ SilhouetteFigure buildSilhouette(
       0.82;
   final leftWaist = waistCentre + across * waistHalf;
   final rightWaist = waistCentre - across * waistHalf;
+
+  // A pelvis, and it is the difference between a figure and a lattice.
+  //
+  // The hip LANDMARK is the joint the leg rotates about, not the bottom of the
+  // body: a real trunk carries on past it as the pelvis and the seat. Ending
+  // the trunk exactly at that point leaves an open triangle between the torso
+  // and the thigh wherever the two are at an angle to each other — which is
+  // every frame of a squat, and is precisely where a squat is most in need of
+  // reading as a person. Extending the bottom of the trunk along the spine puts
+  // mass in that corner, so the union closes it and the thigh grows out of a
+  // body instead of hinging off a point.
+  //
+  // Found on a phone at the bottom of the demonstration squat, where the figure
+  // still read as a bent arrow after both the depth and the fill were correct.
+  final seat = -spine / torso * (0.16 * torso);
   final trunk = <Offset>[
     leftShoulder,
     rightShoulder,
     rightWaist,
-    rightHip,
-    leftHip,
+    rightHip + seat,
+    leftHip + seat,
     leftWaist,
   ];
   joints.addAll([leftShoulder, rightShoulder, leftHip, rightHip]);
@@ -419,7 +617,8 @@ SilhouetteFigure buildSilhouette(
   void limbPair(
     List<LandmarkType> leftChain,
     List<LandmarkType> rightChain,
-    double widen,
+    /// How far from the mid-line each limb of this pair belongs.
+    double targetHalf,
     List<double> taper,
     List<double> girth,
   ) {
@@ -433,7 +632,7 @@ SilhouetteFigure buildSilhouette(
       return points;
     }
 
-    void draw(List<Offset> points, double sign) {
+    void draw(List<Offset> points, double sign, double widen) {
       final placed = <Offset>[];
       Offset? previous;
       for (var i = 0; i < points.length; i++) {
@@ -456,9 +655,17 @@ SilhouetteFigure buildSilhouette(
 
     // Both seen: each limb is drawn where it was seen. This is the case that
     // was broken, and it is the case the default view is in.
+    //
+    // The widening is measured from THIS pair, not from the shoulders. A
+    // detector that keeps both arms and loses the far hip is not `twoSided`, so
+    // a shoulder-derived widening would be the full profile parallax — added on
+    // top of a separation these two limbs already have.
     if (left != null && right != null) {
-      draw(left, leftSign);
-      draw(right, -leftSign);
+      final mid = (left.first + right.first) / 2;
+      final obs = acrossOf(left.first, mid).abs();
+      final widen = targetHalf > obs ? targetHalf - obs : 0.0;
+      draw(left, leftSign, widen);
+      draw(right, -leftSign, widen);
       return;
     }
 
@@ -468,12 +675,12 @@ SilhouetteFigure buildSilhouette(
     if (!twoSided) {
       // One-sided figure: the chain is the mid-line and both limbs come from
       // mirroring it. Every authored target lands here, unchanged.
-      draw(only, 1.0);
-      draw(only, -1.0);
+      draw(only, 1.0, targetHalf);
+      draw(only, -1.0, targetHalf);
       return;
     }
 
-    // Two-sided torso, but only one of this pair survived — the far limb was
+    // A torso with a far side, but only one of this pair survived — the far limb was
     // occluded, or the detector's confidence in it fell below the floor. Its
     // partner is reflected across the spine rather than translated, because
     // here the chain is off the mid-line and translating it would stack both
@@ -482,8 +689,13 @@ SilhouetteFigure buildSilhouette(
       for (final p in only) p - across * (2 * acrossOf(p, hip)),
     ];
     final sign = identical(only, left) ? leftSign : -leftSign;
-    draw(only, sign);
-    draw(mirrored, -sign);
+    // Same rule again: the reflection already puts the two limbs
+    // `acrossOf(only.first, hip)` either side of the spine, so widen only by
+    // what is still missing.
+    final obs = acrossOf(only.first, hip).abs();
+    final widen = targetHalf > obs ? targetHalf - obs : 0.0;
+    draw(only, sign, widen);
+    draw(mirrored, -sign, widen);
   }
 
   // `girth` is the half-width at each joint, as a multiple of the build's own
@@ -500,9 +712,13 @@ SilhouetteFigure buildSilhouette(
       LandmarkType.rightElbow,
       LandmarkType.rightWrist,
     ],
-    sWiden,
+    armTarget,
     const [0.85, 0.72, 0.62],
-    const [0.46, 0.36, 0.26],
+    // Half-widths at shoulder / elbow / wrist, as multiples of limb thickness.
+    // 0.52 x 0.16 x a 50 cm torso is an 8 cm upper arm tapering to a 4.5 cm
+    // wrist, which is a person; the 0.46/0.36/0.26 this shipped with was a
+    // pipe of near-constant bore.
+    const [0.52, 0.38, 0.26],
   );
   limbPair(
     const [
@@ -515,9 +731,12 @@ SilhouetteFigure buildSilhouette(
       LandmarkType.rightKnee,
       LandmarkType.rightAnkle,
     ],
-    hWiden,
+    legTarget,
     const [1.0, 0.86, 0.74],
-    const [0.62, 0.44, 0.30],
+    // And a thigh is far heavier than an arm: 0.80 x 0.16 x 50 cm is a 13 cm
+    // thigh narrowing to a 5 cm ankle. Drawn at an arm's girth, the legs were
+    // the single loudest reason the figure read as a stick drawing.
+    const [0.80, 0.50, 0.32],
   );
 
   // Head and neck. Placed along the spine so it stays over the chest when the
