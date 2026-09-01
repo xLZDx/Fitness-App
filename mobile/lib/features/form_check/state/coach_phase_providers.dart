@@ -29,10 +29,10 @@ class CoachSessionState {
 /// It used to start at [CoachPhase.qualityCheck] because the page opened the
 /// camera on arrival, and this doc used to argue that moving it wanted device
 /// verification first. That argument is now the wrong way round. The design's
-/// preparation card ends on a button reading "включить камеру" and its own body
-/// text promises the camera is not yet in use (`App.tsx:4558-4562`) — so
-/// drawing those screens over a live preview would have been a lie in the
-/// interface, not a compromise. And the change moves the permission prompt
+/// intro card ends on a button reading "включить камеру" and its own body text
+/// promises the camera is not yet in use (`App.tsx:4558-4562`) — so drawing
+/// that screen over a live preview would have been a lie in the interface, not
+/// a compromise. And the change moves the permission prompt
 /// LATER, to the moment the user explicitly asks for it, which is the safer
 /// direction to be wrong in.
 class CoachPhaseController extends Notifier<CoachSessionState> {
@@ -40,14 +40,7 @@ class CoachPhaseController extends Notifier<CoachSessionState> {
   CoachSessionState build() =>
       CoachSessionState(phase: ref.watch(coachInitialPhaseProvider));
 
-  /// The user asked to begin. Show them how to stand before anything opens.
-  void toPreparation() =>
-      state = state.copyWith(phase: CoachPhase.preparation);
-
-  /// Back out of the preparation card to the intro.
-  void toLaunch() => state = state.copyWith(phase: CoachPhase.launch);
-
-  /// The user has read the preparation card and asked for the camera.
+  /// The user has read the intro card and asked for the camera.
   ///
   /// Only moves the phase. Actually opening the camera belongs to the page,
   /// which owns the service handle and the lifecycle token — a Notifier that

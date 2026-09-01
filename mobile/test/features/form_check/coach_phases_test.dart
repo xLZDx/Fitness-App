@@ -79,7 +79,6 @@ void main() {
     test('a verdict never moves the tap-driven phases', () {
       for (final p in [
         CoachPhase.launch,
-        CoachPhase.preparation,
         CoachPhase.active,
         CoachPhase.paused,
         CoachPhase.summary,

@@ -80,16 +80,14 @@ Widget _page(PoseDetectorService svc) => ProviderScope(
 ///
 /// Every case below used to begin `pumpWidget` + `pump` and have a camera. It
 /// does not any more: arriving on the coach shows what it does and how to
-/// stand, and the hardware is requested by the button on the second card. The
+/// stand, and the hardware is requested by that card's own button. The
 /// cases themselves — a start that hangs, a stop that overtakes it, a retry —
 /// are unchanged, and that is the point of routing them all through one helper
 /// rather than editing nine preludes into nine slightly different shapes.
 Future<void> _pumpToCamera(WidgetTester t, PoseDetectorService svc) async {
   await t.pumpWidget(_page(svc));
   await t.pumpAndSettle();
-  await t.tap(find.byKey(const Key('coach.intro.start')));
-  await t.pumpAndSettle();
-  await t.tap(find.byKey(const Key('coach.prep.openCamera')));
+  await t.tap(find.byKey(const Key('coach.intro.openCamera')));
   // Two pumps, not one: the button only moves the phase, and the camera is
   // opened by the post-frame callback the resulting build schedules.
   await t.pump();
@@ -275,23 +273,16 @@ void main() {
 
     // R11h moved this. It used to read "a fresh arrival IS the user asking for
     // the camera", which was true when arriving was the only signal there was.
-    // Now there are two cards in front of it and the second one ends on a
-    // button that says "open the camera", so arriving is no longer an ask —
-    // and this half of the test is the one that proves the cards are not
-    // decoration over an already-running preview.
+    // Now there is a card in front of it, ending on a button that says "open
+    // the camera", so arriving is no longer an ask — and this half of the test
+    // is the one that proves the card is not decoration over an
+    // already-running preview.
     await t.pumpWidget(_page(svc));
     await t.pumpAndSettle();
     expect(svc.permissionAsks, 0, reason: 'the intro card asks for nothing');
     expect(svc.startCount, 0, reason: 'and opens nothing');
 
-    await t.tap(find.byKey(const Key('coach.intro.start')));
-    await t.pumpAndSettle();
-    expect(svc.permissionAsks, 0,
-        reason: 'nor does the preparation card, which promises as much in its '
-            'own body text');
-    expect(svc.startCount, 0);
-
-    await t.tap(find.byKey(const Key('coach.prep.openCamera')));
+    await t.tap(find.byKey(const Key('coach.intro.openCamera')));
     await t.pump();
     await t.pump();
 

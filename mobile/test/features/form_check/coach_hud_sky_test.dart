@@ -21,7 +21,7 @@ import 'unscorable_frame_test.dart' show oneSquat;
 /// FORM_COACH_HUD_ALIGNMENT's own DoD (`core/DECISION_LOG.md`,
 /// "GPT-PM decision on findings #4 and #6") is background continuity across
 /// all four Form Coach phases. The first pass wrapped only `launch`/
-/// `preparation` (`coach_intro_cards.dart`) and missed `qualityCheck`..
+/// `launch` (`coach_intro_cards.dart`) and missed `qualityCheck`..
 /// `summary`, which render `FormCheckPage.build`'s own `FrostedScaffold`
 /// directly -- a real GPT review round on the first patch caught exactly
 /// this gap (evidence: `/form-check` is a root route outside `MainShell`,
@@ -66,7 +66,7 @@ void _phoneSized(WidgetTester t) {
   addTearDown(t.view.resetDevicePixelRatio);
 }
 
-/// The launch/preparation cards mount their own `HudSkyBackground`
+/// The intro card mounts its own `HudSkyBackground`
 /// (`coach_intro_cards.dart`) rather than inheriting `FormCheckPage`'s, so
 /// they are pumped with the plain page, no phase override.
 ProviderContainer _introContainer() {
@@ -96,23 +96,14 @@ void main() {
     await t.pumpWidget(_page(_introContainer()));
     await t.pumpAndSettle();
 
-    expect(find.byKey(const Key('coach.intro.start')), findsOneWidget);
-    expect(find.byType(HudSkyBackground), findsOneWidget);
-  });
-
-  testWidgets('preparation: the sky is behind the readiness card', (t) async {
-    _phoneSized(t);
-    await t.pumpWidget(_page(_introContainer()));
-    await t.pumpAndSettle();
-    await t.tap(find.byKey(const Key('coach.intro.start')));
-    await t.pumpAndSettle();
-
-    expect(find.byKey(const Key('coach.prep.openCamera')), findsOneWidget);
+    expect(find.byKey(const Key('coach.intro.openCamera')), findsOneWidget);
+    expect(find.byKey(const Key('coach.prep.angle')), findsOneWidget,
+        reason: 'the how-to-stand block is on this card now, not a second one');
     expect(find.byType(HudSkyBackground), findsOneWidget);
   });
 
   testWidgets(
-      'live (post-preparation): the sky is behind the exercise picker and '
+      'live (past the intro): the sky is behind the exercise picker and '
       'set controls, not just the camera preview box', (t) async {
     _phoneSized(t);
     final c = _liveContainer(CoachPhase.qualityCheck);
@@ -124,16 +115,15 @@ void main() {
     // (calibration, then ready) once frames start arriving -- the initial
     // override picks which branch of FormCheckPage.build is reached, not
     // where the session stays pinned. What matters here is that it landed
-    // somewhere past preparation and short of summary, i.e. the "live"
+    // somewhere past the intro and short of summary, i.e. the "live"
     // branch this test targets.
     expect(
       c.read(coachSessionProvider).phase,
-      isNot(anyOf(CoachPhase.launch, CoachPhase.preparation,
-          CoachPhase.summary)),
+      isNot(anyOf(CoachPhase.launch, CoachPhase.summary)),
     );
     expect(find.byType(HudSkyBackground), findsOneWidget,
         reason: 'FormCheckPage.build returns FrostedScaffold directly for '
-            'every phase past preparation -- this is the branch the first '
+            'every phase past the intro -- this is the branch the first '
             'HUD-alignment patch missed');
   });
 

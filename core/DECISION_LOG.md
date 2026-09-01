@@ -38856,3 +38856,77 @@ artifact republished; the recalibration gate's scope narrows to two movements ac
 
 The lesson worth keeping: `rep_signals.dart` is not the source of truth for what the counter does.
 Two layers select a config, and I read the lower one.
+
+---
+
+## 2026-09-01 — REDESIGN G1: one card before the camera
+
+**Operator instruction (DECISION).** "первые 2 экрана обяденить, + тудаже перенести банеры про
+доступно покравителям и эксперементально + вопрос на разрешенеие на камеру". Plan reviewed and
+approved by the operator with a literal `ГО`; this is gate 1 of seven.
+
+**What changed.** `CoachLaunchCard` and `CoachPreparationCard` became one `CoachIntroCard`: the
+value proposition, the three feature rows, the ракурс block, the four "перед началом" rows, the
+privacy small print, and now the experimental banner and the sustainer-tier card as well. Both
+banners were removed from the exercise picker, which sits PAST the camera -- a warning that arrives
+after the permission it was meant to inform is not a warning. `_UpgradeCard` moved out of
+`form_check_page.dart` and is now `CoachSustainerCard`, public, in one place.
+
+**`CoachPhase.preparation` is deleted, not just skipped (DECISION).** With one card there is
+nothing for a second pre-camera phase to mean, and a stage the session passes through without ever
+stopping is a lie in the state machine that the next reader has to disprove. Removing the enum
+value made the compiler point at all four switch sites, which is the reason to do it that way. The
+card also lost its leading back arrow: with one step there is no previous step, and "Позже" already
+offers leaving the feature.
+
+**What did NOT change, deliberately.** The camera still opens on that card's button, exactly as it
+did on the old preparation card's, and the permission is still asked there. Moving the camera start
+to the exercise picker's own button is gate 2; doing it here would have left the button's label
+("Готово — включить камеру") describing something that no longer happens.
+
+**Verification.** `test/features/form_check` 437 tests green; whole suite 3336, the only failures
+the two pre-existing `composed_screen_golden_test` Home cases already shown to be independent of
+this feature (`lib/features/home/` contains no reference to `form_check`). `flutter analyze lib`
+clean. **Not verified on a device**: the operator has not re-authorized device access since I
+captured their lock screen by screenshotting without checking what was in the foreground, and I am
+not touching the phone until they say so.
+
+**Tests rewritten rather than deleted.** The two-card navigation tests (walk forward, walk back)
+had nothing left to describe. What they were actually protecting is kept: nothing opens and nothing
+is asked for until the button, and the small print is readable before the prompt.
+
+**Review of this gate, and what it changed (FACT).** GPT-PM returned `VERDICT: MAJOR`. Three
+findings, all real, all about the gap between what this gate CLAIMED and what it actually did:
+
+1. *The preservation test covered four keys while this log claimed it covered everything.* True, and
+   the claim is the part that gets believed. Every merged block now carries a stable key and the
+   test iterates thirteen of them -- every UNCONDITIONAL one. The sustainer card is deliberately
+   excluded from that loop and given its own test instead, in both directions: present for a
+   resolved non-premium user before anything is asked of them, absent for a subscriber. Round 2
+   caught that too, and it was right about why it matters -- inside the loop its absence would be
+   indistinguishable from it being correctly hidden, so the card could have been deleted outright
+   with every test still green.
+2. *"No back arrow" was simply wrong.* `GlassAppBar` passes `leading` straight to `AppBar` and never
+   sets `automaticallyImplyLeading: false`, so on a pushed route Flutter draws its own back button.
+   The comment was corrected rather than the behaviour: a route-level back means "leave the coach",
+   which is a real thing to want and is what "Позже" does too. What genuinely went away is the
+   CUSTOM card-to-card arrow, and that is what the test now asserts.
+3. *The sustainer card can be missed on a cold start,* because `entitlementResolvedProvider` is
+   false while the subscription stream is still answering, and nothing stops the user tapping
+   through in that window.
+
+**Finding 3 is accepted as a defect and its proposed fix is refused (DECISION).** GPT-PM asked for
+the camera button to be blocked until entitlement resolves. `subscription_providers.dart:95-98`
+makes exactly the opposite choice for exactly this provider -- "a feature that stays locked for the
+half-second before the stream answers costs a flicker" -- and gating hardware on a network
+round-trip is a worse failure than a late pitch. The split that matters: the EXPERIMENTAL banner is
+the safety warning and is unconditional, so the thing that actually had to precede the permission
+does; the sustainer card is an upsell, and showing it to somebody who already pays is the harm its
+gate exists to prevent. A test now pins both halves, including that the camera still opens while the
+stream is unresolved.
+
+**A wrong assumption of mine, caught by that test on its first run:** I wrote it expecting the
+sustainer card to be absent by default, and it was present. With no signed-in user the subscription
+stream yields null immediately, so entitlement IS resolved and the pitch shows. The loading state
+has to be constructed deliberately (`currentSubscriptionProvider` overridden to an empty stream),
+which is what the test now does -- otherwise it would have "passed" while exercising nothing.

@@ -235,7 +235,7 @@ class CoachReadinessBand extends ConsumerWidget {
           const Key('coach.checking'),
           false,
         ),
-      // Launch, preparation, calibration, active, paused and summary say
+      // Launch, calibration, active, paused and summary say
       // nothing here. Calibration is in the enum but never entered — see
       // `phaseAfterFrame`'s doc for why this app does not fake a settling bar.
       _ => (null, null, false),

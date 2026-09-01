@@ -24,8 +24,6 @@ import 'data/pose_projection.dart';
 import 'data/pose_silhouette.dart';
 import 'data/pose_target.dart';
 import 'data/rep_counter.dart';
-import '../subscription/data/subscription_models.dart';
-import '../subscription/state/subscription_providers.dart';
 import 'data/coach_phases.dart';
 import 'state/coach_phase_providers.dart';
 import 'state/form_check_providers.dart';
@@ -141,7 +139,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       ref.read(coachBackdropProvider.notifier).shuffle();
     });
     // R11h: arriving on this page is NOT asking for the camera any more. The
-    // intro and preparation cards come first, and `_openCamera` below is the
+    // intro card comes first, and `_openCamera` below is the
     // single place the hardware is requested — by a tap that says so.
   }
 
@@ -153,10 +151,10 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
   /// when we backgrounded".
   bool _cameraRequested = false;
 
-  /// The preparation card's only button.
+  /// The intro card's primary button.
   ///
   /// Moves the phase and nothing else. Opening the camera is [build]'s job, on
-  /// the rule "past preparation means the camera belongs open" — so the phase
+  /// the rule "past the intro means the camera belongs open" — so the phase
   /// is the single source of truth, and anything else that legitimately puts
   /// the session into a camera phase (a test starting at the screen it is
   /// actually about; a future deep link into a set) gets a camera without
@@ -224,7 +222,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     } else if (state == AppLifecycleState.resumed &&
         mounted &&
         !_started &&
-        // Not while the user is still on the intro or preparation card.
+        // Not while the user is still on the intro card.
         _cameraRequested) {
       _startDetector();
     }
@@ -251,18 +249,17 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // R11h. Two cards before anything opens. Deliberately ABOVE every provider
+    // R11h. One card before anything opens. Deliberately ABOVE every provider
     // watch below, `formFeedbackControllerProvider` in particular: watching it
     // is what subscribes to the frame stream, so returning early here is also
     // what guarantees nothing is listening for frames while the user is still
     // reading.
     final phase = ref.watch(coachSessionProvider).phase;
-    if (phase == CoachPhase.launch) return const CoachLaunchCard();
-    if (phase == CoachPhase.preparation) {
-      return CoachPreparationCard(onOpenCamera: _openCamera);
+    if (phase == CoachPhase.launch) {
+      return CoachIntroCard(onOpenCamera: _openCamera);
     }
 
-    // Past preparation, so the camera belongs open. Once per visit: the flag
+    // Past the intro card, so the camera belongs open. Once per visit: the flag
     // is what stops a rebuild from starting a second one, and it is also what
     // the lifecycle-resume path reads to tell "stopped" from "never asked
     // for". Deferred to a post-frame callback because starting a camera is a
@@ -274,8 +271,6 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       });
     }
 
-    final tier = ref.watch(effectiveTierProvider);
-    final isPremium = tier == SubscriptionTier.celebrityTrainer;
     // Watched for its side effects, not its value: building this controller is
     // what subscribes to the frame stream, which is what feeds the gate verdict
     // and the coordinate probe. The card itself now reads the rep verdict
@@ -335,7 +330,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       }
     }
 
-    // The gate's first pass wrapped only the intro/preparation cards
+    // The gate's first pass wrapped only the intro card
     // (`coach_intro_cards.dart`) in `HudSkyBackground` and missed this
     // branch -- `/form-check` is a root route outside `MainShell`
     // (`app_router.dart:399-402`), so the live-coach and summary phases
@@ -393,7 +388,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
       // The set is over: the numbers get the screen. Not an early `return`
       // above — every provider watched further up stays watched, so the frame
       // subscription and the camera survive the summary and "new set" resumes
-      // instantly instead of walking back through preparation and the gate.
+      // instantly instead of walking back through the intro card and the gate.
       //
       // `HudPanel` frosts its backdrop with `BackdropFilter` by default
       // (`HudQuality.frostedOf` falls back to true with no ancestor), and this
@@ -447,15 +442,12 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
             : ListView(
                 padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
                 children: [
-                  // A1. Above the upgrade card on purpose: what the coach can and
-                  // cannot tell you is not a detail below the offer to pay for it.
-                  ExperimentalBanner(
-                      message:
-                          AppLocalizations.of(context).experimentalFormCoach),
-                  if (!isPremium && ref.watch(entitlementResolvedProvider)) ...[
-                    _UpgradeCard(),
-                    const SizedBox(height: 16),
-                  ],
+                  // The experimental banner and the sustainer card used to open
+                  // this list. Both moved to `CoachIntroCard` on 2026-09-01:
+                  // this screen sits PAST the camera, so a warning here reached
+                  // the user after they had already granted the permission it
+                  // was supposed to inform.
+                  //
                   // Asked for here rather than left to the profile tab, because this
                   // is the one screen where the answers visibly change something: the
                   // outline the user is about to aim at. Operator: "если етих данных
@@ -726,7 +718,6 @@ class _SetControls extends ConsumerWidget {
       // Nothing to control: the camera is not open, or the view is not usable
       // yet and the readiness band is already saying why.
       case CoachPhase.launch:
-      case CoachPhase.preparation:
       case CoachPhase.qualityCheck:
       case CoachPhase.calibration:
       case CoachPhase.summary:
@@ -1521,34 +1512,6 @@ class _SetSummaryCard extends StatelessWidget {
               ),
             ),
           ],
-        ],
-      ),
-    );
-  }
-}
-
-class _UpgradeCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return HudPanel(
-      onTap: () => GoRouter.of(context).push('/subscription'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppLocalizations.of(context).formcheckFormCoachIsASustainerBenefit,
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 4),
-          // Was a raw English literal quoting a competitor's hardware price.
-          // Localized, and the unverifiable price claim dropped — what the
-          // feature actually does is the honest version of the same pitch.
-          Text(
-            AppLocalizations.of(context).formcheckUpgradeSubtitle,
-            style: theme.textTheme.bodySmall,
-          ),
         ],
       ),
     );

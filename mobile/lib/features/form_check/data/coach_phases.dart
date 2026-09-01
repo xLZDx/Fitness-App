@@ -22,11 +22,14 @@ import 'pose_gate.dart';
 /// the instruction the design shows, and [advanceCalibration] counts real
 /// consecutive usable frames rather than milliseconds.
 enum CoachPhase {
-  /// What this is and what it will do. Nothing is running.
+  /// What this is and what it will do, how to stand, and what it costs.
+  /// Nothing is running.
+  ///
+  /// Was two stages -- `launch` then `preparation` -- until 2026-09-01, when
+  /// the operator asked for one screen. There is nothing left for a second
+  /// pre-camera phase to mean, so it is gone rather than kept as a stage the
+  /// session passes through without stopping.
   launch,
-
-  /// Where to put the phone and where to stand.
-  preparation,
 
   /// Is the view usable? Blocks until the gate says yes.
   qualityCheck,
@@ -106,7 +109,7 @@ CoachBlocker blockerFor(PoseGateVerdict verdict) {
 /// Which phase a verdict moves the session to, from where it is now.
 ///
 /// Only the stages that advance on a MEASUREMENT are here. Everything driven
-/// by a tap — launch → preparation, ready → active, active ↔ paused, active →
+/// by a tap — launch → qualityCheck, ready → active, active ↔ paused, active →
 /// summary — belongs to the controller, because a pure function over a
 /// verdict cannot know that a button was pressed.
 ///
@@ -141,7 +144,6 @@ CoachPhase phaseAfterFrame(CoachPhase phase, PoseGateVerdict verdict) {
           : CoachPhase.qualityCheck;
     case CoachPhase.calibration:
     case CoachPhase.launch:
-    case CoachPhase.preparation:
     case CoachPhase.active:
     case CoachPhase.paused:
     case CoachPhase.summary:
