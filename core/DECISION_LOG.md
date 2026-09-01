@@ -38823,3 +38823,13 @@ on the roadmap unless recalibration proves one of them blocks the counter.
 not be the cue selector. A missed rep at essentially the same hip-minus-knee depth as a counted one
 means attribution has to come from the residual structure across the scored joints -- not from
 resurrecting the withdrawn depth heuristic.
+
+**Report published (2026-09-01).** `reports/FORMCOACH_ISOTROPIC_MIGRATION_2026-09-01.ru.html` and its
+English twin, conformed and committed; the Russian one published at
+https://claude.ai/code/artifact/d8f82f55-1dc1-4f9e-9b47-d1eee929b6b2 . It carries the gate outcome,
+both defects, the device evidence, and where the operator's two standing complaints now sit -- the
+arm-position one closed, the wrong-cue one moved to third place behind the recalibration gate.
+
+**Stated plainly in the report because it is easy to miss:** the push carried 28 commits, not the
+three this gate produced. Everything from the earlier squat gates in this session was still local
+and went public in the same push.

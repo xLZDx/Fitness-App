@@ -1,0 +1,344 @@
+<title>Калибровка по рисунку</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600;6..72,700&family=Public+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --paper: #f6f4ef; --card: #fffefb; --ink: #191b1f; --ink-soft: #56595f;
+    --rule: #ddd8cd; --good: #2f6b4f; --good-bg: #e7f0e9;
+    --bad: #a8402f; --bad-bg: #f6e6e2; --accent: #2f6b4f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14161a; --card: #1b1e23; --ink: #e9e6df; --ink-soft: #a3a7ae;
+      --rule: #31353c; --good: #7fc9a1; --good-bg: #1c2b23;
+      --bad: #e0897a; --bad-bg: #2c1e1b; --accent: #7fc9a1;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14161a; --card: #1b1e23; --ink: #e9e6df; --ink-soft: #a3a7ae;
+    --rule: #31353c; --good: #7fc9a1; --good-bg: #1c2b23;
+    --bad: #e0897a; --bad-bg: #2c1e1b; --accent: #7fc9a1;
+  }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: "Public Sans", system-ui, -apple-system, sans-serif;
+    font-size: 16px; line-height: 1.65;
+  }
+  .wrap { max-width: 74ch; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+  header { margin-bottom: 2rem; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.74rem; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 0.6rem;
+  }
+  h1 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 600; font-size: clamp(2rem, 5vw, 2.9rem);
+    line-height: 1.1; margin: 0 0 0.7rem; text-wrap: balance;
+  }
+  .standfirst { font-size: 1.08rem; color: var(--ink-soft); margin: 0; max-width: 62ch; }
+  h2 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 600; font-size: 1.55rem; line-height: 1.2;
+    margin: 3rem 0 0.9rem; text-wrap: balance;
+    padding-top: 1.4rem; border-top: 1px solid var(--rule);
+  }
+  h3 { font-size: 1rem; font-weight: 700; margin: 1.8rem 0 0.5rem; }
+  p { margin: 0 0 1rem; }
+  ul, ol { margin: 0 0 1rem; padding-left: 1.2rem; }
+  li { margin-bottom: 0.45rem; }
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.88em; }
+  .verdict {
+    display: grid; gap: 1px; background: var(--rule);
+    border: 1px solid var(--rule); border-radius: 10px; overflow: hidden;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    margin: 2rem 0;
+  }
+  .verdict div { background: var(--card); padding: 1rem 1.1rem; }
+  .verdict .k {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 0.35rem;
+  }
+  .verdict .v {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 1.45rem; font-weight: 600; margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .v.was { color: var(--bad); }
+  .v.now { color: var(--good); }
+  .scroll { overflow-x: auto; margin: 1.2rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
+  th, td {
+    text-align: right; padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--rule);
+    font-variant-numeric: tabular-nums;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  th:first-child, td:first-child {
+    text-align: left; font-family: "Public Sans", sans-serif; white-space: nowrap;
+  }
+  thead th {
+    font-family: "Public Sans", sans-serif; font-size: 0.78rem;
+    font-weight: 700; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--rule);
+  }
+  td.pass { color: var(--good); font-weight: 600; }
+  td.fail { color: var(--bad); font-weight: 600; }
+  blockquote {
+    margin: 1.4rem 0; padding: 0.7rem 0 0.7rem 1.1rem;
+    border-left: 3px solid var(--accent);
+    color: var(--ink-soft); font-style: italic;
+  }
+  .note {
+    background: var(--card); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 1rem 1.15rem; margin: 1.5rem 0;
+  }
+  .note.warn { background: var(--bad-bg); border-color: var(--bad); }
+  .note.ok { background: var(--good-bg); border-color: var(--good); }
+  .note p:last-child { margin-bottom: 0; }
+  .note strong { font-weight: 700; }
+  footer {
+    margin-top: 3.5rem; padding-top: 1.4rem; border-top: 1px solid var(--rule);
+    font-size: 0.88rem; color: var(--ink-soft);
+  }
+  a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App · Тренер по технике · 1 сентября 2026</p>
+  <h1>Калибровка по рисунку</h1>
+  <p class="standfirst">Цели поз были описаны в системе координат, растянутой по горизонтали в полтора раза. Это чинилось на лету двумя умножениями. Когда умножения убрали, выяснилось, что по этому же растянутому рисунку когда-то откалибровали счётчик повторений — и три движения из семи просят пользователя встать в позу, которую их собственный счётчик не примет.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 159a942</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>Итог</h2>
+
+<div class="verdict">
+  <div><p class="k">Гейт</p><p class="v now">ЗАКРЫТ</p></div>
+  <div><p class="k">Тесты form_check</p><p class="v now">438</p></div>
+  <div><p class="k">Дрейф между камерами</p><p class="v was">0.1366</p></div>
+  <div><p class="k">После</p><p class="v now">0</p></div>
+</div>
+
+<p>Гейт <code>POSE_TARGET_ISOTROPIC_COORDINATE_MIGRATION</code> закрыт, GPT-PM дал <code>VERDICT: APPROVE</code> и авторизовал пуш. Отправлено в <code>origin/master</code>: <code>ab502a8</code>, <code>f4455a2</code>, <code>159a942</code> — и вместе с ними ушла вся неотправленная работа сессии, 28 коммитов, а не три. Это стоит знать отдельно: предыдущие гейты тоже стали публичными в этот момент.</p>
+
+<h2>Что было не так</h2>
+
+<p>Детектор поз отдаёт координаты, поделив <strong>обе</strong> оси на высоту кадра. Поэтому <code>y</code> идёт от 0 до 1, а <code>x</code> — от 0 до соотношения сторон. Авторские цели были записаны иначе: <code>x</code> как доля <strong>ширины</strong>. Два места примиряли это умножением на соотношение сторон.</p>
+
+<p>Умножить одну ось — это анизотропное масштабирование, а <code>poseMatchScore</code> переживает только изотропное: он меряет форму через углы, а углы искажаются, если сжать картинку по одной оси. Следствие измеримо: одна и та же физическая поза набирала на 0.1366 разный балл между камерой 9:16 и 3:4. Это 22.8% от 0.6 — среднего смещения суставов, при котором балл падает до нуля.</p>
+
+<h2>Что сделано</h2>
+
+<ul>
+  <li><code>x_new = x_old × 2/3</code> по всем 84 суставам всех 14 целей. 2/3 — соотношение сторон референсного телефона, поэтому на нём поведение сохраняется.</li>
+  <li>Умножение на соотношение сторон удалено из <code>poseMatchScore</code> и <code>debugMatchBreakdown</code>; параметр <code>xScale</code> удалён из <code>buildSilhouette</code> вместе с местом вызова.</li>
+  <li>Инвариантность проверена для всех 14 целей на кадрах 9:16, 2:3, 3:4 и 1:1 с точностью 1e-9, плюс отрицательный контроль — чтобы инвариантность не оказалась куплена тем, что сравнение начало соглашаться со всем подряд.</li>
+</ul>
+
+<div class="note">
+  <p><strong>Эквивалентно, но не тождественно.</strong> Я сначала написал «на референсном устройстве изменение ровно нулевое». GPT-PM это отклонил, и справедливо: константы округлены до трёх знаков, а 0.47 × 2/3 = 0.313333…, не 0.313. Настоящие величины измерены и закреплены тестами: худшая координата отходит от точного частного на 3.33e-4, а тело, стоящее ровно в дореформенной позе, набирает на 2.96e-3 меньше единицы. При проходном балле 0.80 это неразличимо — но это не ноль, и в долговременной записи должно стоять честное число.</p>
+</div>
+
+<h2>Дефект А: силуэт уезжал за край</h2>
+
+<p>Пока <code>x</code> пересчитывался под кадр, фигура автоматически сжималась под узкий экран. Как только пересчёт убрали, три силуэта перестали помещаться в кадр 9:16 (ширина 0.5625):</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Движение</th><th>Правый край</th><th>Влезает?</th><th>Сдвиг</th><th>Стало</th></tr></thead>
+<tbody>
+<tr><td>Присед</td><td>0.568</td><td class="fail">нет</td><td>−0.016</td><td class="pass">0.552</td></tr>
+<tr><td>Отжимание</td><td>0.602</td><td class="fail">нет</td><td>−0.050</td><td class="pass">0.552</td></tr>
+<tr><td>Скручивание</td><td>0.600</td><td class="fail">нет</td><td>−0.048</td><td class="pass">0.552</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>Сдвиг одинаковый для обоих концов движения, иначе демонстрация ехала бы вбок во время проигрывания. На оценку он не влияет вообще: <code>poseMatchScore</code> сначала центрирует обе позы по центроиду. Это не аргумент, а тест — проверяется для каждой цели на трёх смещениях.</p>
+
+<h2>Дефект Б: пороги считаны с чертежа</h2>
+
+<p>Вот главное, что вскрыла миграция. В <code>rep_signals.dart</code> записано, откуда взяты пороги счётчика: «Measured: … folded to the bottom -0.563», «bottom of the lunge -0.707», «lying flat 0.119». Эти числа воспроизводятся точно — но <strong>только если растянуть авторские цели обратно в полтора раза</strong>. То есть пороги снимали с фигур в <code>pose_target.dart</code>, пока те были в полтора раза шире реальности, а не с человека перед камерой.</p>
+
+<p>Три сигнала из пяти — горизонтальные (наклон — это насколько плечи ушли вперёд относительно таза), поэтому искажение попало прямо в них:</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Движение</th><th>Фигура сейчас</th><th>Порог требует</th><th>В старом пространстве</th><th>Итог</th></tr></thead>
+<tbody>
+<tr><td>Наклон, низ</td><td>−0.717</td><td>≥ −0.600</td><td>−0.565</td><td class="fail">не дотягивает</td></tr>
+<tr><td>Выпад, низ</td><td>−0.832</td><td>≥ −0.720</td><td>−0.707</td><td class="fail">не дотягивает</td></tr>
+<tr><td>Скручивание, верх</td><td>0.177</td><td>≤ 0.160</td><td>0.119</td><td class="fail">не дотягивает</td></tr>
+<tr><td>Сгибание на бицепс</td><td>—</td><td>—</td><td>сдвиг 0.002</td><td class="pass">не затронуто</td></tr>
+<tr><td>Жим над головой</td><td>—</td><td>—</td><td>сдвиг 0.004</td><td class="pass">не затронуто</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="note warn">
+  <p><strong>Это дефект живого поведения, а не теста.</strong> Счётчик всегда сравнивал эти пороги с настоящими координатами детектора. Значит пользователь, точно вставший в нарисованный силуэт наклона, выпада или скручивания, <strong>не доходит до фазы, которую ждёт счётчик</strong>. Присед и отжимание не затронуты — их сигнал читает только вертикаль.</p>
+</div>
+
+<p>Я это <strong>не чинил в этом гейте</strong>. Починка означает измерение настоящих повторений на телефоне — это отдельная работа, а гейт был поставлен механическим. Вместо тихого пропуска тесты теперь <em>утверждают</em> дефект и называют, какой именно конец пары недостижим у каждого движения. Когда порог перекалибруют, тесты упадут — и это правильный способ узнать об этом.</p>
+
+<h2>Что показал телефон</h2>
+
+<p>Пока гейт дописывался, вы прогнали подход на S23 на свежем debug-билде. Из 20 «кругов» 17 были настоящими повторениями, 3 — телефон в руках (шлюз отметил <code>lowConfidence</code> / <code>missingJoints</code>, тело в кадре перевёрнуто).</p>
+
+<div class="verdict">
+  <div><p class="k">Засчитано</p><p class="v now">8</p></div>
+  <div><p class="k">Балл</p><p class="v now">0.809–0.936</p></div>
+  <div><p class="k">Не засчитано</p><p class="v was">9</p></div>
+  <div><p class="k">Кадров без оценки</p><p class="v now">0</p></div>
+</div>
+
+<p>Важное: <strong>у каждого валидного повторения ноль неоцениваемых кадров</strong>. Минимум в четыре сустава, появившийся когда руки перестали судить, на практике не мешает. И поздние повторения идут плотно — 0.910, 0.913, 0.930, 0.936 — при том, что между ними ничего не менялось в коде.</p>
+
+<div class="note">
+  <p><strong>Одно наблюдение, которое меняет план следующего гейта.</strong> Глубина сама по себе не отделяет засчитанное от незасчитанного. Повторение №2 не засчитано с баллом 0.780 при глубине <code>0.001</code>, а №4 засчитано с 0.840 при <code>0.000</code>. Различались не колени, а остальное тело: у №2 плечо 0.13 и голеностоп 0.20 нормированных остатка против 0.09 и 0.05 у №4. Подсказка, построенная на одной глубине, сказала бы вам «присядьте ниже» на повторении, где глубина была в порядке — ровно та ошибка, из-за которой старое правило глубины уже снимали.</p>
+</div>
+
+<h2>Ревью</h2>
+
+<p>Сначала внутренние специалисты, потом GPT-PM — в таком порядке. Внутреннее ревью нашло два реальных пробела, оба в тестах, а не в коде:</p>
+
+<ol>
+  <li><strong>Тесты инвариантности не могли поймать неконвертированную цель.</strong> Каждая «живая» поза строилась из той же цели, против которой её потом и сравнивали, поэтому цель, забытая при умножении, продолжала бы набирать 1.0 против самой себя на всех формах кадра. Закрыто: дореформенные координаты всех 13 механически сконвертированных целей — 78 суставов — закреплены таблицей, вычитанной из git скриптом, а не перепечатанной руками.</li>
+  <li><strong>Страж дефекта Б утверждал только «не оба конца работают».</strong> Этому удовлетворяет и совсем другая поломка. Теперь указано, какой конец недостижим у каждого движения, и проверяются оба.</li>
+</ol>
+
+<p>GPT-PM дал <code>APPROVE</code> и два замечания уровня MINOR, оба по моим формулировкам:</p>
+
+<ul>
+  <li>«ровно ноль» для округлённых констант — исправлено выше;</li>
+  <li>я описывал 0.6 как «смещение, при котором сустав перестаёт учитываться». Это неверно: <code>poseMatchScore</code> усредняет смещения всех оцениваемых суставов и делит среднее на 0.6. Порога отбраковки отдельного сустава не существует вовсе. Оставь я эту фразу — следующий гейт искал бы правило, которого нет.</li>
+</ul>
+
+<h2>Порядок дальше — изменён</h2>
+
+<p>Я предлагал следующим гейт диагностических подсказок. GPT-PM переставил очередь, и я с этим согласен:</p>
+
+<ol>
+  <li><code>POSE_TARGET_ISOTROPIC_COORDINATE_MIGRATION</code> — <strong>закрыт</strong>.</li>
+  <li><code>FORM_COACH_REP_SIGNAL_DEVICE_RECALIBRATION</code> — <strong>следующий</strong>. Наклон, выпад, скручивание.</li>
+  <li><code>FORM_COACH_SQUAT_DIAGNOSTIC_CUES</code> — после.</li>
+</ol>
+
+<p>Довод простой: подсказки улучшают объяснение того, что уже работает, а дефект Б означает, что три поставленных движения просят позу, которую их счётчик не примет. Корректность вперёд отделки.</p>
+
+<div class="note ok">
+  <p><strong>Метод рекалибровки задан заранее, чтобы он не съехал.</strong> Нельзя просто подставить вместо −0.600 / −0.720 / 0.160 новые числа −0.717 / −0.832 / 0.177. Это повторило бы ту же методическую ошибку уже в исправленной системе координат — снова снять порог с чертежа. Нужны распределения по настоящим повторениям на телефоне: и правильно выполненным, и намеренно неполным; сначала разброс и шум, только потом границы гистерезиса с видимым зазором. Нарисованный силуэт — проверка на здравый смысл, а не набор данных для калибровки.</p>
+</div>
+
+<h2>Ваши две жалобы: где они</h2>
+
+<ul>
+  <li><strong>«Положение рук решало исход»</strong> — закрыто в предыдущем гейте (локоть и запястье рисуются, но не судятся). Сегодняшний прогон это подтверждает: восемь засчитанных повторений, ноль неоцениваемых кадров.</li>
+  <li><strong>«Говорит „вы не дошли до силуэта“ вместо конкретной ошибки»</strong> — не закрыто. Это гейт диагностических подсказок, и он теперь третий, а не второй. Материал для него уже собран, и первое, что он говорит: строить подсказку на глубине нельзя.</li>
+</ul>
+
+<h2>Чего этот гейт не доказывает</h2>
+
+<ul>
+  <li>На референсном телефоне миграция по построению нейтральна, поэтому прогон на нём подтверждает отсутствие регресса, а не пользу. Выигрыш от многокадровой инвариантности виден только на железе с другим соотношением сторон камеры — такого под рукой нет.</li>
+  <li>Граница 9:16 в тесте — предположение о железе, а не то, что программа обеспечивает: реальное соотношение берётся из метаданных сенсора. 9:16 — самый узкий распространённый <em>кадр камеры</em> (экраны телефонов выше, сенсоры — нет), поэтому граница стоит, но это вывод, а не гарантия.</li>
+  <li>Два golden-теста экрана «Главная» падают с расхождением 59.6%. Это не моё и доказуемо: <code>lib/features/home/</code> вообще не ссылается на <code>form_check</code>, а эталон последний раз трогал посторонний коммит <code>f819820</code>.</li>
+  <li>Первый запуск ревью через codex-чекаут не достучался до оркестратора и записал fail-open квитанцию — то есть коммит был разрешён <em>попыткой</em> ревью, а не ревью. Настоящий раунд прошёл вторым, из чекаута, которому принадлежит живой процесс.</li>
+</ul>
+
+<footer>
+  <p>Коммиты: <code>ab502a8</code> (миграция), <code>f4455a2</code> (точность формулировки, закрытие гейта), <code>159a942</code> (правки по итогам ревью). Решения и полные измерения — в <code>core/DECISION_LOG.md</code>.</p>
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

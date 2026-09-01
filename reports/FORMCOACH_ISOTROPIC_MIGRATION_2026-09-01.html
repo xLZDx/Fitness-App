@@ -1,0 +1,344 @@
+<title>Calibrated Against a Drawing</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600;6..72,700&family=Public+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --paper: #f6f4ef; --card: #fffefb; --ink: #191b1f; --ink-soft: #56595f;
+    --rule: #ddd8cd; --good: #2f6b4f; --good-bg: #e7f0e9;
+    --bad: #a8402f; --bad-bg: #f6e6e2; --accent: #2f6b4f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14161a; --card: #1b1e23; --ink: #e9e6df; --ink-soft: #a3a7ae;
+      --rule: #31353c; --good: #7fc9a1; --good-bg: #1c2b23;
+      --bad: #e0897a; --bad-bg: #2c1e1b; --accent: #7fc9a1;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14161a; --card: #1b1e23; --ink: #e9e6df; --ink-soft: #a3a7ae;
+    --rule: #31353c; --good: #7fc9a1; --good-bg: #1c2b23;
+    --bad: #e0897a; --bad-bg: #2c1e1b; --accent: #7fc9a1;
+  }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: "Public Sans", system-ui, -apple-system, sans-serif;
+    font-size: 16px; line-height: 1.65;
+  }
+  .wrap { max-width: 74ch; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+  header { margin-bottom: 2rem; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.74rem; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 0.6rem;
+  }
+  h1 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 600; font-size: clamp(2rem, 5vw, 2.9rem);
+    line-height: 1.1; margin: 0 0 0.7rem; text-wrap: balance;
+  }
+  .standfirst { font-size: 1.08rem; color: var(--ink-soft); margin: 0; max-width: 62ch; }
+  h2 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 600; font-size: 1.55rem; line-height: 1.2;
+    margin: 3rem 0 0.9rem; text-wrap: balance;
+    padding-top: 1.4rem; border-top: 1px solid var(--rule);
+  }
+  h3 { font-size: 1rem; font-weight: 700; margin: 1.8rem 0 0.5rem; }
+  p { margin: 0 0 1rem; }
+  ul, ol { margin: 0 0 1rem; padding-left: 1.2rem; }
+  li { margin-bottom: 0.45rem; }
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.88em; }
+  .verdict {
+    display: grid; gap: 1px; background: var(--rule);
+    border: 1px solid var(--rule); border-radius: 10px; overflow: hidden;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    margin: 2rem 0;
+  }
+  .verdict div { background: var(--card); padding: 1rem 1.1rem; }
+  .verdict .k {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 0.35rem;
+  }
+  .verdict .v {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 1.45rem; font-weight: 600; margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .v.was { color: var(--bad); }
+  .v.now { color: var(--good); }
+  .scroll { overflow-x: auto; margin: 1.2rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
+  th, td {
+    text-align: right; padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--rule);
+    font-variant-numeric: tabular-nums;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  th:first-child, td:first-child {
+    text-align: left; font-family: "Public Sans", sans-serif; white-space: nowrap;
+  }
+  thead th {
+    font-family: "Public Sans", sans-serif; font-size: 0.78rem;
+    font-weight: 700; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--rule);
+  }
+  td.pass { color: var(--good); font-weight: 600; }
+  td.fail { color: var(--bad); font-weight: 600; }
+  blockquote {
+    margin: 1.4rem 0; padding: 0.7rem 0 0.7rem 1.1rem;
+    border-left: 3px solid var(--accent);
+    color: var(--ink-soft); font-style: italic;
+  }
+  .note {
+    background: var(--card); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 1rem 1.15rem; margin: 1.5rem 0;
+  }
+  .note.warn { background: var(--bad-bg); border-color: var(--bad); }
+  .note.ok { background: var(--good-bg); border-color: var(--good); }
+  .note p:last-child { margin-bottom: 0; }
+  .note strong { font-weight: 700; }
+  footer {
+    margin-top: 3.5rem; padding-top: 1.4rem; border-top: 1px solid var(--rule);
+    font-size: 0.88rem; color: var(--ink-soft);
+  }
+  a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App · Form Coach · 1 September 2026</p>
+  <h1>Calibrated Against a Drawing</h1>
+  <p class="standfirst">The pose targets were authored in a coordinate space stretched 1.5&times; horizontally, and two multiplications papered over it at runtime. Removing them revealed that the rep counter's own thresholds had once been read off that same stretched drawing — so three of seven movements ask the user to reach a pose their own counter will not accept.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 159a942</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>Outcome</h2>
+
+<div class="verdict">
+  <div><p class="k">Gate</p><p class="v now">CLOSED</p></div>
+  <div><p class="k">form_check tests</p><p class="v now">438</p></div>
+  <div><p class="k">Cross-camera drift</p><p class="v was">0.1366</p></div>
+  <div><p class="k">After</p><p class="v now">0</p></div>
+</div>
+
+<p><code>POSE_TARGET_ISOTROPIC_COORDINATE_MIGRATION</code> is closed; GPT-PM returned <code>VERDICT: APPROVE</code> and authorized the push. Pushed to <code>origin/master</code>: <code>ab502a8</code>, <code>f4455a2</code>, <code>159a942</code> — and with them the session's entire unpushed backlog, 28 commits rather than three. Worth stating separately: the earlier gates became public at that moment too.</p>
+
+<h2>What was wrong</h2>
+
+<p>The pose detector divides <strong>both</strong> axes by the frame's height. So <code>y</code> runs 0 to 1 and <code>x</code> runs 0 to the aspect ratio. The authored targets were written the other way: <code>x</code> as a fraction of <strong>width</strong>. Two places reconciled that by multiplying by the aspect ratio.</p>
+
+<p>Multiplying one axis is an anisotropic scale, and <code>poseMatchScore</code> only survives isotropic ones — it measures shape through angles, and angles do not survive squeezing an image along a single axis. The consequence is measurable: the same physical pose scored 0.1366 apart between a 9:16 and a 3:4 camera. That is 22.8% of 0.6, the mean joint offset at which the score reaches zero.</p>
+
+<h2>What shipped</h2>
+
+<ul>
+  <li><code>x_new = x_old &times; 2/3</code> across all 84 joints of all 14 targets. 2/3 is the reference phone's own aspect ratio, so behaviour there is preserved.</li>
+  <li>The aspect-ratio multiplication deleted from <code>poseMatchScore</code> and <code>debugMatchBreakdown</code>; the <code>xScale</code> parameter deleted from <code>buildSilhouette</code> along with its call site.</li>
+  <li>Invariance asserted for all 14 targets across 9:16, 2:3, 3:4 and 1:1 frames at 1e-9, plus a negative control — so invariance was not bought by making the comparison agree with everything.</li>
+</ul>
+
+<div class="note">
+  <p><strong>Equivalent, not identical.</strong> I first wrote that the change was "exactly nil" on the reference device. GPT-PM rejected that, correctly: the constants are rounded to three decimals, and 0.47 &times; 2/3 is 0.313333…, not 0.313. The real figures are measured and pinned by tests — the worst coordinate lands 3.33e-4 from the exact quotient, and a body standing in the exact pre-migration shape scores 2.96e-3 short of 1.0. Against a 0.80 pass mark that is indistinguishable, but it is not zero, and a durable record should carry the honest number.</p>
+</div>
+
+<h2>Defect A: the silhouette ran off the screen</h2>
+
+<p>While <code>x</code> was being rescaled to the frame, the figure was automatically squeezed to fit a narrow screen. With the rescale gone, three silhouettes no longer fitted a 9:16 frame (0.5625 wide):</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Movement</th><th>Right edge</th><th>Fits?</th><th>Shift</th><th>Now</th></tr></thead>
+<tbody>
+<tr><td>Squat</td><td>0.568</td><td class="fail">no</td><td>&minus;0.016</td><td class="pass">0.552</td></tr>
+<tr><td>Pushup</td><td>0.602</td><td class="fail">no</td><td>&minus;0.050</td><td class="pass">0.552</td></tr>
+<tr><td>Situp</td><td>0.600</td><td class="fail">no</td><td>&minus;0.048</td><td class="pass">0.552</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>The same shift at both ends of a movement, or the demo would drift sideways while it plays. Scoring cannot see it: <code>poseMatchScore</code> centres both poses on their centroid first. That is a test, not an argument — checked for every shipped target at three offsets.</p>
+
+<h2>Defect B: the thresholds were read off a drawing</h2>
+
+<p>This is what the migration actually uncovered. <code>rep_signals.dart</code> records where the counter's thresholds came from: "Measured: … folded to the bottom -0.563", "bottom of the lunge -0.707", "lying flat 0.119". Those numbers reproduce exactly — but <strong>only by stretching the authored targets back by 1.5</strong>. The thresholds were read off the figures in <code>pose_target.dart</code> while those figures were 1.5&times; too wide, not off a person in front of a camera.</p>
+
+<p>Three of the five signals are horizontal — a hinge is how far the shoulders travel forward of the hips — so the distortion went straight into them:</p>
+
+<div class="scroll">
+<table>
+<thead><tr><th>Movement</th><th>Figure now</th><th>Gate needs</th><th>Old space</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Hinge, bottom</td><td>&minus;0.717</td><td>&ge; &minus;0.600</td><td>&minus;0.565</td><td class="fail">falls short</td></tr>
+<tr><td>Lunge, bottom</td><td>&minus;0.832</td><td>&ge; &minus;0.720</td><td>&minus;0.707</td><td class="fail">falls short</td></tr>
+<tr><td>Situp, top</td><td>0.177</td><td>&le; 0.160</td><td>0.119</td><td class="fail">falls short</td></tr>
+<tr><td>Curl</td><td>—</td><td>—</td><td>moved 0.002</td><td class="pass">unaffected</td></tr>
+<tr><td>Overhead press</td><td>—</td><td>—</td><td>moved 0.004</td><td class="pass">unaffected</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="note warn">
+  <p><strong>This is a live-behaviour defect, not a test artifact.</strong> The counter always compared these thresholds against real detector coordinates. So a user who stands exactly in the drawn hinge, lunge or situp silhouette <strong>does not reach the phase the counter is waiting for</strong>. Squat and pushup are unaffected — their signal reads the vertical axis only.</p>
+</div>
+
+<p>I did <strong>not</strong> fix it in this gate. Fixing it means measuring real repetitions on a phone, which is its own piece of work, and this gate was scoped to stay mechanical. Rather than skip the tests, they now <em>assert</em> the defect and name which end of each pair is unreachable. When the thresholds are recalibrated the tests will fail — which is the right way to find out.</p>
+
+<h2>What the phone showed</h2>
+
+<p>While this gate was being finished, a set was run on the S23 against a fresh debug build. Of 20 laps, 17 were real repetitions and 3 were the phone being handled (the gate flagged <code>lowConfidence</code> / <code>missingJoints</code>, bodies inverted in frame).</p>
+
+<div class="verdict">
+  <div><p class="k">Counted</p><p class="v now">8</p></div>
+  <div><p class="k">Score</p><p class="v now">0.809–0.936</p></div>
+  <div><p class="k">Missed</p><p class="v was">9</p></div>
+  <div><p class="k">Unscoreable frames</p><p class="v now">0</p></div>
+</div>
+
+<p>The important part: <strong>every valid repetition had zero unscoreable frames</strong>. The four-joint minimum introduced when the arms stopped being judged is not biting in practice. And the later repetitions cluster tightly — 0.910, 0.913, 0.930, 0.936 — with no code change between them.</p>
+
+<div class="note">
+  <p><strong>One observation that changes the next gate's plan.</strong> Depth alone does not separate counted from missed. Rep #2 was missed at 0.780 with a depth of <code>0.001</code>; rep #4 counted at 0.840 with <code>0.000</code>. What differed was the rest of the body — #2 carried shoulder 0.13 and ankle 0.20 normalised residuals against #4's 0.09 and 0.05. A cue built on depth alone would have said "squat lower" on a repetition whose depth was fine — exactly the failure that got the old depth rule withdrawn.</p>
+</div>
+
+<h2>Review</h2>
+
+<p>Internal specialists first, GPT-PM second, in that order. The internal pass found two real gaps, both in the tests rather than the code:</p>
+
+<ol>
+  <li><strong>The invariance tests could not catch an unconverted target.</strong> Every "live" pose was built from the same target it was then compared against, so a target missed by the multiply would have gone on scoring 1.0 against itself on every frame shape. Closed: the pre-migration coordinates of all 13 mechanically converted targets — 78 joints — are pinned in a table read out of git by a script rather than retyped by hand.</li>
+  <li><strong>The defect-B guard asserted only "not both ends work".</strong> A completely different breakage satisfies that too. It now names which end is unreachable per movement and asserts both.</li>
+</ol>
+
+<p>GPT-PM returned <code>APPROVE</code> with two MINOR notes, both about my prose:</p>
+
+<ul>
+  <li>"exactly nil" for rounded constants — corrected above;</li>
+  <li>I had described 0.6 as "the offset at which a joint stops counting". It is not: <code>poseMatchScore</code> averages the offsets of all scored joints and divides that mean by 0.6. There is no per-landmark rejection threshold at all. Left standing, that sentence would have sent the next gate hunting for a rule that does not exist.</li>
+</ul>
+
+<h2>Revised order</h2>
+
+<p>I proposed the diagnostic-cues gate next. GPT-PM reordered it, and I agree:</p>
+
+<ol>
+  <li><code>POSE_TARGET_ISOTROPIC_COORDINATE_MIGRATION</code> — <strong>closed</strong>.</li>
+  <li><code>FORM_COACH_REP_SIGNAL_DEVICE_RECALIBRATION</code> — <strong>next</strong>. Hinge, lunge, situp.</li>
+  <li><code>FORM_COACH_SQUAT_DIAGNOSTIC_CUES</code> — after that.</li>
+</ol>
+
+<p>The reasoning is simple: cues improve the explanation of a path that already works, while defect B means three shipped movements ask for a pose their counter will not accept. Correctness before refinement.</p>
+
+<div class="note ok">
+  <p><strong>The recalibration method is fixed in advance so it cannot drift.</strong> Do not simply substitute &minus;0.717 / &minus;0.832 / 0.177 for &minus;0.600 / &minus;0.720 / 0.160. That repeats the original methodological error inside the corrected coordinate system — reading a threshold off a drawing again. It needs distributions from real device repetitions, both correctly executed and deliberately incomplete; spread and noise first, then hysteresis bands with visible separation. The drawn silhouette is a sanity check, never the calibration dataset.</p>
+</div>
+
+<h2>Where the two complaints stand</h2>
+
+<ul>
+  <li><strong>"Arm position decided the verdict"</strong> — closed in the previous gate (elbow and wrist are drawn but not judged). Today's run confirms it: eight counted repetitions, zero unscoreable frames.</li>
+  <li><strong>"It says 'you did not reach the silhouette' instead of naming the actual fault"</strong> — not closed. That is the diagnostic-cues gate, now third rather than second. The material for it is already collected, and the first thing it says is that the cue cannot be built on depth.</li>
+</ul>
+
+<h2>What this gate does not prove</h2>
+
+<ul>
+  <li>On the reference phone the migration is nil by construction, so a run there confirms nothing regressed rather than confirming a benefit. The multi-aspect gain only shows on hardware with a different camera ratio, which is not in hand.</li>
+  <li>The 9:16 bound in the test is an assumption about hardware, not something production enforces — the real ratio comes from sensor metadata. 9:16 is the narrowest common camera <em>frame</em> (phone screens are taller; sensors are not), so the bound stands, but it is an inference rather than a guarantee.</li>
+  <li>Two Home-screen golden tests fail at a 59.6% pixel diff. Not from this change, and provably so: <code>lib/features/home/</code> contains no reference to <code>form_check</code>, and that baseline was last touched by an unrelated commit, <code>f819820</code>.</li>
+  <li>The first review run, from the codex checkout, could not reach the orchestrator and wrote a fail-open receipt — meaning the commit was permitted by an <em>attempt</em> at review, not by a review. The real round ran second, from the checkout that owns the live process.</li>
+</ul>
+
+<footer>
+  <p>Commits: <code>ab502a8</code> (migration), <code>f4455a2</code> (precision correction, gate closure), <code>159a942</code> (review remediation). Decisions and full measurements in <code>core/DECISION_LOG.md</code>.</p>
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
