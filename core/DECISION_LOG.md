@@ -38495,3 +38495,93 @@ post-rotation size and pass `imageWidth`/`imageHeight` in the correct order, and
 frame rotated 90 degrees gives exactly the observed 0.667 bound. The 20-26% overshoot is BlazePose
 extrapolating joints of a body cropped by standing too close, accumulated as a cumulative maximum
 over 1684 frames.
+
+## 2026-09-01 -- FORMCOACH_SQUAT_BOTTOM_MEASURED: the target was rewarding a shallower rep
+
+The mirror fix earlier today was necessary and not sufficient: it moved the live score from an
+unreachable ~0.21 to a stable ~0.65, still under `kPoseMatchPassing` (0.80), and the operator's
+"не дошли до силуэта" persisted on every repetition.
+
+**Instrumented rather than guessed.** Added debug-only per-rep logging: the peak-match frame with a
+per-joint residual breakdown, AND -- separately -- the DEEPEST frame of the rep by hip-minus-knee
+height. The separation is the point: the peak-MATCH frame is selected by the target being scored
+against, so judging a candidate target on frames the current target chose is circular. An earlier
+pass in this same session did exactly that and produced a conclusion ("a correct parallel-squat
+target would score WORSE") that was an artefact of the selection, not a finding. Recorded because
+the mistake is easy to repeat.
+
+**What the device showed, four consecutive reps, gate ok:**
+
+| | rep 1 | rep 2 | rep 3 | rep 4 |
+| --- | --- | --- | --- | --- |
+| hip minus knee at the deepest frame | +0.017 | +0.047 | +0.035 | +0.042 |
+| match AT that deepest frame | 0.257 | 0.092 | 0.162 | 0.191 |
+| best match anywhere in the rep | 0.651 | 0.680 | 0.681 | 0.638 |
+
+Positive hip-minus-knee means the hip is BELOW the knee: every rep was below parallel. So the
+scorer was not merely strict, it was **inverted** -- it scored the correct, deep frame at 0.09-0.26
+and its best score came from a shallower moment.
+
+**Root cause.** `squatBottomTarget` was not a human shape. Converted into the space it is actually
+compared in, its thigh/shin ratio was **0.54** and torso/thigh **2.29**, against 1.00 and 1.18 for a
+person. It was the sole outlier among all fourteen shipped targets (every other one sits at
+thigh/shin 0.98-1.12), and its thigh was 29% shorter than `squatTopTarget`'s -- the same body, one
+phase later, violating this file's own stated invariant that segment lengths hold to within a few
+percent between the two phases of a movement. The live body measured thigh/shin 1.01 and
+torso/thigh 1.22, so the detector was never the problem.
+
+**Second finding, same measurement.** The wrist's rep-to-rep spread was 0.53 normalised units where
+every other joint stayed within 0.08-0.26. The mechanism is projective, not a detector fault: at the
+bottom of a squat the forearm lies close to the camera axis and projects at 0.41 of the upper arm
+where anatomy says 0.78. Judging it does not make the coach stricter about squatting -- it makes the
+coach randomly strict about where the hands happen to point.
+
+**Decision, approved by GPT-PM (`VERDICT: GO on A + B`, 2026-09-01).** Under `~/.claude/CLAUDE.md`
+§20 a genuine GPT-PM APPROVE authorises a reversible action, and this is what authorised the change
+rather than a separate operator GO.
+
+- **A.** `squatBottomTarget` re-authored as the median of the four measured deepest frames, placed
+  on `squatTopTarget`'s ankle and scaled to its thigh so the demo loop keeps constant limb lengths.
+  Result is anatomically consistent (thigh/shin 1.00, torso/thigh 1.22) and a genuine below-parallel
+  squat (hip 0.04 below knee). Provenance recorded at the constant: one operator, one S23, four
+  reps, provisional, MM-Fit refinement is roadmap not blocker.
+- **B.** New `PoseTarget.unscoredJoints`, so the geometry that is DRAWN and the geometry that is
+  JUDGED can deliberately differ instead of being forced to be one set. `{leftWrist}` for the squat
+  only. GPT-PM explicitly required this be a target-level contract rather than an `if (id == ...)`
+  buried in the scorer, and explicitly declined to extend it to the elbow: there is direct evidence
+  against the wrist and none requiring the elbow's removal.
+- **`kPoseMatchPassing` stays 0.80.** The reference was wrong, not the standard.
+- **Deferred to its own gate** (GPT-PM: approved in principle, separate): authored target x is a
+  fraction of frame WIDTH and is multiplied by the live aspect ratio at scoring, so the same target
+  is a different shape on a 16:9 phone than on a 2:3 one. Fixing it is a mechanical migration of all
+  fourteen targets into isotropic units plus dropping the multiplication at both call sites --
+  behaviour-neutral on the measured device, correct everywhere else. Folding it in here would make a
+  regression in curl/lunge/hinge indistinguishable from the squat fix.
+
+**Evidence.** `flutter test test/features/form_check` -- 430 pass. Ten new acceptance tests encode
+GPT-PM's required set, using the four raw measured frames as fixtures rather than anything derived
+from the target: every measured rep passes; a shallow variant of each still fails; standing still
+fails; a mirrored rep scores identically; moving the wrist 0.25/0.30 changes the score by nothing;
+moving the KNEE the same distance drops it below the pass mark; the pass mark is asserted unchanged;
+the target is asserted anatomically possible.
+
+**Two existing tests broke, and both were right to.** They carried hand-copied duplicates of
+`squatBottomTarget`'s old numbers as their "nearly right" fixture, so re-authoring the target
+silently turned them into "the OLD shape, nudged". Replaced with `nudgedPoseOf`, which derives the
+fixture from whatever the target currently is. Its default nudge is calibrated to the measurement
+(0.01 per axis ~ 0.074 normalised offset, the harsh end of the 0.042-0.072 the four correct reps
+actually produce) rather than the previous 0.02 (~0.147), which demanded that an error two to three
+times worse than any real correct rep still pass. A `pose_silhouette_test` tolerance widened from
+0.05 to 0.15 for a stated reason: head radius and limb half-widths derive from torso length, which
+mixes x and y, and the re-authored target genuinely spreads in x where the old one barely did.
+
+**Not yet live-verified:** that a real rep on the device now passes and the cue stops. Built and
+installed on the S23; the device measurement is pending the operator stepping back in front of the
+camera.
+
+**Also observed, not this gate's work.** A Flutter `!keyReservation.contains(key)` navigator assert
+appeared during repeated restart/navigation cycling and did not reproduce on a clean pass. Suspected
+(INFERENCE, stack already rolled out of the log buffer): `_rootKey` is a file-level `GlobalKey` in
+`lib/core/router/app_router.dart` while the `GoRouter` holding it is built inside `appRouterProvider`,
+which watches auth and profile repositories -- a provider rebuild constructs a second router around
+the same GlobalKey while the first is still mounted.

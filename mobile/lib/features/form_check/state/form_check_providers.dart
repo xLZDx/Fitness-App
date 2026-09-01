@@ -898,6 +898,21 @@ class RepSessionController extends Notifier<RepSessionState> {
   /// Closest the body got to the target shape during the current repetition.
   double? _peakMatchThisRep;
 
+  /// The frame that produced [_peakMatchThisRep], kept only so the debug
+  /// breakdown at the rep boundary can say WHICH joints lost the score. Never
+  /// read in a release build.
+  PoseFrame? _peakFrameThisRep;
+
+  /// The deepest frame of the rep, by hip-minus-knee height, and that depth.
+  ///
+  /// Separate from [_peakFrameThisRep] on purpose, and the distinction is the
+  /// whole reason this exists: the peak-MATCH frame is chosen by the target
+  /// being scored against, so judging a candidate target on frames the current
+  /// target selected is circular. The deepest frame is selected by the movement
+  /// itself and is the same frame whatever shape is authored.
+  PoseFrame? _deepestFrameThisRep;
+  double? _deepestThisRep;
+
   @override
   RepSessionState build() {
     final svc = ref.watch(poseDetectorServiceProvider);
@@ -1023,7 +1038,19 @@ class RepSessionController extends Notifier<RepSessionState> {
     if (wasInRep || counter.phase != RepPhase.top) {
       if (match != null && match > (_peakMatchThisRep ?? -1)) {
         _peakMatchThisRep = match;
+        assert(() {
+          _peakFrameThisRep = frame;
+          return true;
+        }());
       }
+      assert(() {
+        final depth = _debugHipMinusKnee(frame);
+        if (depth != null && depth > (_deepestThisRep ?? -1e9)) {
+          _deepestThisRep = depth;
+          _deepestFrameThisRep = frame;
+        }
+        return true;
+      }());
       // Remember the worst thing seen so far, rather than reacting to it. The
       // decision to speak belongs at the rep boundary.
       final worst = result.worst;
@@ -1072,6 +1099,33 @@ class RepSessionController extends Notifier<RepSessionState> {
     // the second as `RepVerdict.notEvaluated` rather than as a pass.
     final evaluated =
         judged || ref.read(activeClassifiersProvider).any((c) => c.canFault);
+    // Debug-only, and it exists because the alternative was guessing. The
+    // silhouette verdict is the one number on this screen with no on-screen
+    // readout in avatar mode (`_MatchReadout` is camera-mode only), so a
+    // report of "it says I missed on every rep" could not be told apart from
+    // "the scorer is broken" without a person in front of the camera
+    // describing what they did. Mirrors `pose_unit_probe.dart`'s precedent:
+    // one line, stripped from release by `assert`.
+    assert(() {
+      debugPrint('[rep] #${counter.repCount} target=${target?.id} '
+          'peak=${peak?.toStringAsFixed(3) ?? "-"} '
+          'pass=$kPoseMatchPassing missed=$missed gate=${ref.read(
+        poseGateVerdictProvider,
+      )}');
+      final f = _peakFrameThisRep;
+      if (f != null && target != null) {
+        debugPrint('[rep]   ${debugMatchBreakdown(f, target)}');
+      }
+      final deep = _deepestFrameThisRep;
+      if (deep != null && target != null) {
+        debugPrint('[rep]   deepest hipMinusKnee='
+            '${_deepestThisRep?.toStringAsFixed(3)} '
+            'match=${poseMatchScore(deep, target)?.toStringAsFixed(3)} '
+            '${debugJointDump(deep, target)}');
+      }
+      return true;
+    }());
+
     var cue = _worstThisRep;
     if (missed) {
       cue = FormFeedback(
@@ -1083,6 +1137,9 @@ class RepSessionController extends Notifier<RepSessionState> {
     }
     _worstThisRep = null;
     _peakMatchThisRep = null;
+    _peakFrameThisRep = null;
+    _deepestFrameThisRep = null;
+    _deepestThisRep = null;
 
     state = RepSessionState(
       repCount: counter.repCount,
@@ -1140,6 +1197,9 @@ class RepSessionController extends Notifier<RepSessionState> {
     // NEXT repetition and attributed to it.
     _worstThisRep = null;
     _peakMatchThisRep = null;
+    _peakFrameThisRep = null;
+    _deepestFrameThisRep = null;
+    _deepestThisRep = null;
 
     // Only the silhouette is allowed to blame the user for a rejection. The
     // counter's own signal is hip-height-minus-knee-height — the same
@@ -1193,6 +1253,9 @@ class RepSessionController extends Notifier<RepSessionState> {
     // Also the silhouette peak. Left behind, the best shape of the previous
     // set would be credited to the first rep of the next one.
     _peakMatchThisRep = null;
+    _peakFrameThisRep = null;
+    _deepestFrameThisRep = null;
+    _deepestThisRep = null;
     unawaited(ref.read(voiceCoachProvider).stop());
     state = const RepSessionState();
   }
@@ -1201,3 +1264,20 @@ class RepSessionController extends Notifier<RepSessionState> {
 final repSessionControllerProvider =
     NotifierProvider<RepSessionController, RepSessionState>(
         RepSessionController.new);
+
+/// Mean hip height minus mean knee height, the squat's own depth signal, in
+/// frame-height units. Debug diagnostics only — negative means the hip is above
+/// the knee, and `RepCounterConfig.bottomEnter` (-0.04) is the depth at which a
+/// repetition is allowed to count.
+double? _debugHipMinusKnee(PoseFrame f) {
+  double? mid(LandmarkType l, LandmarkType r) {
+    final a = f.landmarks[l], b = f.landmarks[r];
+    if (a == null || b == null) return null;
+    if (a.likelihood < 0.5 || b.likelihood < 0.5) return null;
+    return (a.y + b.y) / 2;
+  }
+
+  final hip = mid(LandmarkType.leftHip, LandmarkType.rightHip);
+  final knee = mid(LandmarkType.leftKnee, LandmarkType.rightKnee);
+  return (hip == null || knee == null) ? null : hip - knee;
+}

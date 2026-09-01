@@ -35,6 +35,35 @@ PoseFrame poseOf(PoseTarget t,
   });
 }
 
+/// The target's own pose with every joint nudged in a different direction:
+/// what a real body standing correctly looks like, since nobody is exact.
+///
+/// Derived from [t] rather than written out, deliberately. Two tests below
+/// used to carry a hand-copied duplicate of `squatBottomTarget`'s numbers as
+/// their "nearly right" fixture, and when that target was re-authored from
+/// measurement (`FORMCOACH_SQUAT_BOTTOM_MEASURED_2026-09-01`) both silently
+/// became "the OLD shape, nudged" -- so they failed for the right reason but
+/// described the wrong thing. A fixture that cannot go stale is the fix.
+/// The default nudge is calibrated, not chosen. Four correct reps measured on
+/// an S23 score 0.882-0.934 against the re-authored target, i.e. a mean joint
+/// offset of 0.042-0.072 normalised body radii. `by: 0.01` on every joint in
+/// both axes lands at ~0.074 -- the harsh end of what a real correct rep
+/// actually produces. The previous 0.02 sat at ~0.147, two to three times
+/// worse than any measured correct repetition, so demanding that it pass was
+/// demanding a looseness reality never asks for, at the cost of the
+/// discrimination this whole feature exists to provide.
+PoseFrame nudgedPoseOf(PoseTarget t, {double by = 0.01}) {
+  const dirs = [(1, 1), (-1, 1), (1, -1), (-1, -1), (1, 0), (0, -1)];
+  final joints = <LandmarkType, (double, double)>{};
+  var i = 0;
+  for (final e in t.joints.entries) {
+    final d = dirs[i % dirs.length];
+    joints[e.key] = (e.value.$1 + d.$1 * by, e.value.$2 + d.$2 * by);
+    i++;
+  }
+  return frameFrom(joints);
+}
+
 /// A frame built as a genuinely isotropic capture of [t] on a frame shaped
 /// [aspectRatio] -- unlike [poseOf], which moves/scales the target's OWN
 /// (width-normalised) x as a rigid body and so can never expose an absolute
@@ -190,16 +219,8 @@ void main() {
       // distinguishing the poses, just landing near the line. Both withdrawn
       // rules failed exactly here: correct and incorrect execution differed by
       // less than the noise.
-      final good = poseMatchScore(
-          frameFrom({
-            LandmarkType.leftShoulder: (0.54, 0.50),
-            LandmarkType.leftElbow: (0.55, 0.63),
-            LandmarkType.leftWrist: (0.59, 0.71),
-            LandmarkType.leftHip: (0.41, 0.76),
-            LandmarkType.leftKnee: (0.58, 0.73),
-            LandmarkType.leftAnkle: (0.50, 0.94),
-          }),
-          squatBottomTarget)!;
+      final good =
+          poseMatchScore(nudgedPoseOf(squatBottomTarget), squatBottomTarget)!;
       final bad = poseMatchScore(poseOf(squatTopTarget), squatBottomTarget)!;
       expect(good - bad, greaterThan(0.4),
           reason:
@@ -215,15 +236,8 @@ void main() {
     test('a nearly-right squat still passes', () {
       // The threshold has to admit real bodies, which are never exact. Every
       // joint nudged, in different directions.
-      final wobbled = frameFrom({
-        LandmarkType.leftShoulder: (0.54, 0.50),
-        LandmarkType.leftElbow: (0.55, 0.63),
-        LandmarkType.leftWrist: (0.59, 0.71),
-        LandmarkType.leftHip: (0.41, 0.76),
-        LandmarkType.leftKnee: (0.58, 0.73),
-        LandmarkType.leftAnkle: (0.50, 0.94),
-      });
-      final score = poseMatchScore(wobbled, squatBottomTarget);
+      final score =
+          poseMatchScore(nudgedPoseOf(squatBottomTarget), squatBottomTarget);
       expect(score!, greaterThanOrEqualTo(kPoseMatchPassing),
           reason: 'scored ${score.toStringAsFixed(2)}; a real body that is '
               'clearly in position must not be failed for being human');
@@ -614,6 +628,197 @@ void main() {
       expect(standing, lessThan(kPoseMatchPassing),
           reason: 'standing tall scored ${standing.toStringAsFixed(2)} '
               'against the squat target');
+    });
+  });
+
+  // FORMCOACH_SQUAT_BOTTOM_MEASURED_2026-09-01. The acceptance set GPT-PM
+  // required before the re-authored squat target could close. Proving only the
+  // positive half would reproduce the old defect in the other direction -- a
+  // coach that calls everything clean, which the operator already rejected
+  // once: "все повторения правильные даже если я неправильно делаю".
+  group('the re-authored squat bottom, against real device measurements', () {
+    // The deepest frame of each of four correct, below-parallel repetitions,
+    // logged raw off an S23 at aspect 2:3. NOT synthesised from the target --
+    // deriving fixtures from the target's own joints is the circularity that
+    // hid every earlier defect in this file.
+    const measuredDeepReps = <Map<LandmarkType, (double, double)>>[
+      {
+        LandmarkType.leftShoulder: (0.417, 0.535),
+        LandmarkType.leftElbow: (0.446, 0.678),
+        LandmarkType.leftWrist: (0.495, 0.713),
+        LandmarkType.leftHip: (0.238, 0.707),
+        LandmarkType.leftKnee: (0.440, 0.683),
+        LandmarkType.leftAnkle: (0.383, 0.877),
+      },
+      {
+        LandmarkType.leftShoulder: (0.389, 0.557),
+        LandmarkType.leftElbow: (0.451, 0.685),
+        LandmarkType.leftWrist: (0.527, 0.643),
+        LandmarkType.leftHip: (0.230, 0.744),
+        LandmarkType.leftKnee: (0.422, 0.689),
+        LandmarkType.leftAnkle: (0.366, 0.882),
+      },
+      {
+        LandmarkType.leftShoulder: (0.406, 0.563),
+        LandmarkType.leftElbow: (0.444, 0.708),
+        LandmarkType.leftWrist: (0.507, 0.729),
+        LandmarkType.leftHip: (0.240, 0.739),
+        LandmarkType.leftKnee: (0.435, 0.697),
+        LandmarkType.leftAnkle: (0.367, 0.883),
+      },
+      {
+        LandmarkType.leftShoulder: (0.399, 0.541),
+        LandmarkType.leftElbow: (0.459, 0.676),
+        LandmarkType.leftWrist: (0.521, 0.686),
+        LandmarkType.leftHip: (0.243, 0.738),
+        LandmarkType.leftKnee: (0.424, 0.680),
+        LandmarkType.leftAnkle: (0.363, 0.881),
+      },
+    ];
+
+    const deviceAspect = 2 / 3;
+
+    PoseFrame frameOf(Map<LandmarkType, (double, double)> joints) => PoseFrame(
+          timestampMs: 0,
+          aspectRatio: deviceAspect,
+          landmarks: {
+            for (final e in joints.entries)
+              e.key: PoseLandmark(
+                type: e.key,
+                x: e.value.$1,
+                y: e.value.$2,
+                likelihood: 0.95,
+              ),
+          },
+        );
+
+    /// The same pose executed facing the other way.
+    Map<LandmarkType, (double, double)> mirror(
+        Map<LandmarkType, (double, double)> j) {
+      final axis =
+          j.values.map((p) => p.$1).reduce((a, b) => a + b) / j.length;
+      return {
+        for (final e in j.entries) e.key: (2 * axis - e.value.$1, e.value.$2),
+      };
+    }
+
+    test('every measured correct rep passes', () {
+      for (var i = 0; i < measuredDeepReps.length; i++) {
+        final s =
+            poseMatchScore(frameOf(measuredDeepReps[i]), squatBottomTarget)!;
+        expect(s, greaterThan(kPoseMatchPassing),
+            reason: 'rep $i scored ${s.toStringAsFixed(3)}; against the old '
+                'target these same four frames scored '
+                '0.257 / 0.092 / 0.162 / 0.191');
+      }
+    });
+
+    test('the fixtures really are deep reps, not a flattering sample', () {
+      // y grows downward, so a hip below the knee is a below-parallel squat.
+      for (final rep in measuredDeepReps) {
+        expect(rep[LandmarkType.leftHip]!.$2,
+            greaterThan(rep[LandmarkType.leftKnee]!.$2));
+      }
+    });
+
+    test('a shallow squat still fails', () {
+      // The same rep stopped short: hip and shoulder lifted together so the
+      // torso keeps its shape and only DEPTH is on trial.
+      for (final rep in measuredDeepReps) {
+        final hip = rep[LandmarkType.leftHip]!;
+        final knee = rep[LandmarkType.leftKnee]!;
+        final lift = (knee.$2 - hip.$2).abs() + 0.09;
+        final shoulder = rep[LandmarkType.leftShoulder]!;
+        final shallow = {
+          ...rep,
+          LandmarkType.leftHip: (hip.$1, hip.$2 - lift),
+          LandmarkType.leftShoulder: (shoulder.$1, shoulder.$2 - lift),
+        };
+        final s = poseMatchScore(frameOf(shallow), squatBottomTarget)!;
+        expect(s, lessThan(kPoseMatchPassing),
+            reason: 'a shallow rep scored ${s.toStringAsFixed(3)}');
+      }
+    });
+
+    test('standing tall still fails', () {
+      final s = poseMatchScore(
+          isotropicPoseOf(squatTopTarget, deviceAspect), squatBottomTarget)!;
+      expect(s, lessThan(kPoseMatchPassing),
+          reason: 'standing scored ${s.toStringAsFixed(3)}');
+    });
+
+    test('the same rep filmed from the other side scores the same', () {
+      for (final rep in measuredDeepReps) {
+        final direct = poseMatchScore(frameOf(rep), squatBottomTarget)!;
+        final flipped =
+            poseMatchScore(frameOf(mirror(rep)), squatBottomTarget)!;
+        expect(flipped, closeTo(direct, 1e-9));
+      }
+    });
+
+    test('moving the wrist a long way changes nothing', () {
+      // What `unscoredJoints` is for: drawn, not judged.
+      for (final rep in measuredDeepReps) {
+        final before = poseMatchScore(frameOf(rep), squatBottomTarget)!;
+        final wrist = rep[LandmarkType.leftWrist]!;
+        final moved = {
+          ...rep,
+          LandmarkType.leftWrist: (wrist.$1 + 0.25, wrist.$2 - 0.30),
+        };
+        expect(poseMatchScore(frameOf(moved), squatBottomTarget)!,
+            closeTo(before, 1e-9));
+      }
+    });
+
+    test('moving a scored joint the same distance does change it', () {
+      // Negative control for the test above: the exclusion has to be specific
+      // to the wrist, not a scorer that quietly stopped reacting to anything.
+      for (final rep in measuredDeepReps) {
+        final before = poseMatchScore(frameOf(rep), squatBottomTarget)!;
+        final knee = rep[LandmarkType.leftKnee]!;
+        final moved = {
+          ...rep,
+          LandmarkType.leftKnee: (knee.$1 + 0.25, knee.$2 - 0.30),
+        };
+        final after = poseMatchScore(frameOf(moved), squatBottomTarget)!;
+        expect(after, lessThan(kPoseMatchPassing));
+        expect(after, lessThan(before - 0.2));
+      }
+    });
+
+    test('the pass mark was not relaxed to make this work', () {
+      expect(kPoseMatchPassing, 0.80);
+    });
+
+    test('the wrist is still drawn, only unjudged', () {
+      expect(
+          squatBottomTarget.joints.containsKey(LandmarkType.leftWrist), isTrue);
+      expect(
+          squatBottomTarget.bones.any((b) =>
+              b.$1 == LandmarkType.leftWrist || b.$2 == LandmarkType.leftWrist),
+          isTrue);
+      expect(
+          squatBottomTarget.unscoredJoints, contains(LandmarkType.leftWrist));
+    });
+
+    test('the re-authored target is an anatomically possible body', () {
+      // The check that would have caught the original defect, in the space the
+      // joints are actually compared in.
+      double len(LandmarkType a, LandmarkType b) {
+        final p = squatBottomTarget.joints[a]!;
+        final q = squatBottomTarget.joints[b]!;
+        final dx = (p.$1 - q.$1) * deviceAspect;
+        final dy = p.$2 - q.$2;
+        return math.sqrt(dx * dx + dy * dy);
+      }
+
+      final thigh = len(LandmarkType.leftHip, LandmarkType.leftKnee);
+      final shin = len(LandmarkType.leftKnee, LandmarkType.leftAnkle);
+      final torso = len(LandmarkType.leftShoulder, LandmarkType.leftHip);
+      expect(thigh / shin, closeTo(1.0, 0.15),
+          reason: 'the old target was 0.54 here, where a person is 1.00');
+      expect(torso / thigh, closeTo(1.18, 0.25),
+          reason: 'the old target was 2.29 here, where a person is 1.18');
     });
   });
 }

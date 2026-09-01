@@ -169,17 +169,23 @@ void main() {
       // length, which barely depends on x for a mostly-vertical pose), not
       // by the joints' own x-spread. So a precise width-scales-by-xScale
       // prediction does not hold there; it is not what this parameter
-      // claims to do. squatBottomTarget genuinely spreads in x (0.42..0.58,
-      // the bent-over pose) and is the shape that actually clipped off a
-      // real 9:16 panel -- monotonic narrowing is the true, robust claim.
+      // claims to do. squatBottomTarget genuinely spreads in x (0.28..0.72
+      // since it was re-authored from measurement, and 0.42..0.58 before
+      // that) and is the shape that actually clipped off a real 9:16 panel
+      // -- monotonic narrowing is the true, robust claim.
       final wide = buildSilhouette(squatBottomTarget);
       final narrow = buildSilhouette(squatBottomTarget, xScale: 0.3);
       expect(narrow.bounds.width, lessThan(wide.bounds.width));
       // y is untouched directly by xScale (only x passes through it in
-      // `at()`), so the two should stay close -- allowing headroom for the
-      // same torso-mixing effect noted above, on this more inclined pose.
+      // `at()`), so the two should stay close -- but not exactly: the head
+      // radius and the limb half-widths are derived from TORSO LENGTH, which
+      // mixes x and y, so squeezing x shortens them a little and the drawn
+      // bounds follow. The headroom is 0.15 rather than 0.05 because the
+      // re-authored target genuinely spreads in x where the hand-authored one
+      // barely did, which makes that torso-mixing effect proportionally
+      // larger. Measured at 0.898 for xScale 0.3.
       final heightRatio = narrow.bounds.height / wide.bounds.height;
-      expect(heightRatio, closeTo(1.0, 0.05));
+      expect(heightRatio, closeTo(1.0, 0.15));
     });
 
     test('does not mutate the authored target -- same contract as build',

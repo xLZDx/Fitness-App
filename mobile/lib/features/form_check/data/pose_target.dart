@@ -94,6 +94,7 @@ class PoseTarget {
     required this.id,
     required this.joints,
     required this.bones,
+    this.unscoredJoints = const {},
   });
 
   /// Stable identifier, e.g. `squat.top`.
@@ -103,6 +104,28 @@ class PoseTarget {
 
   /// Which joints to connect when drawing. Not used for scoring.
   final List<(LandmarkType, LandmarkType)> bones;
+
+  /// Joints that are DRAWN but deliberately not judged.
+  ///
+  /// The score may only judge geometry that is both relevant to the movement
+  /// and reliably observable from the view the user was told to stand in
+  /// (GPT-PM, product decision, 2026-09-01). Those are two different sets, and
+  /// before this they were forced to be the same set because [joints] served
+  /// drawing and scoring at once.
+  ///
+  /// The squat's wrist is the case that forced the distinction, measured on an
+  /// S23 across four correct reps: in normalised units the wrist's frame-to-
+  /// frame spread was 0.53 while every other joint stayed within 0.08-0.26.
+  /// The mechanism is projective, not a detector fault — at the bottom of a
+  /// squat the forearm lies close to the camera axis, so it projects at 0.41
+  /// of the upper arm where anatomy says 0.78, and small real movements swing
+  /// its projection a long way. Judging it does not make the coach stricter
+  /// about squatting; it makes the coach randomly strict about where the hands
+  /// happen to point.
+  ///
+  /// A score therefore means "the SCORED target geometry was reached", never
+  /// "every drawn part of the silhouette was matched".
+  final Set<LandmarkType> unscoredJoints;
 
   /// Where to draw a head, as `(x, y, radius)`, or null when the torso cannot
   /// be located.
@@ -169,22 +192,50 @@ const squatTopTarget = PoseTarget(
 /// The bottom of a squat, filmed from the side: hips travelled back and down to
 /// about knee height, knees forward over the feet, torso inclined to balance.
 ///
-/// Hand-authored from the movement, not measured off a person — which is
-/// honest for a *shape* that scoring normalises for size and position, and
-/// would not be honest for an absolute threshold. The numbers below say "hips
-/// level with knees, torso inclined about 45 degrees", which is what a parallel
-/// squat is; they do not claim to be anyone's actual body.
+/// **Re-authored from measurement, `FORMCOACH_SQUAT_BOTTOM_MEASURED_2026-09-01`.**
+/// It used to be hand-authored, and the hand-authored numbers were not a human
+/// shape. Converted into the space they are actually compared in, they gave a
+/// thigh/shin ratio of 0.54 and a torso/thigh of 2.29, where a person is 1.00
+/// and 1.18 — the only such outlier among the fourteen shipped targets, all of
+/// which the same authoring hand produced. The consequence was not strictness
+/// but INVERSION: instrumented on an S23, the deepest frame of four correct,
+/// below-parallel reps scored 0.257 / 0.092 / 0.162 / 0.191, while a SHALLOWER
+/// moment in the same rep scored 0.65-0.68. The coach was rewarding not
+/// reaching depth, and said "вы не дошли до силуэта" on every repetition — the
+/// complaint the operator raised against build after build.
+///
+/// The joints below are the median of those four measured deepest frames,
+/// placed on `squatTopTarget`'s ankle and scaled to its thigh so the demo loop
+/// does not change limb length between the two phases. The result is
+/// anatomically consistent (thigh/shin 1.00, torso/thigh 1.22) and is a real
+/// below-parallel squat: the hip sits 0.04 BELOW the knee, where the old
+/// numbers put it level.
+///
+/// **Provenance, stated rather than implied:** one operator, one S23, four
+/// correct deep repetitions, median geometry. Provisional. That is a small
+/// sample for a population claim and is deliberately not presented as one —
+/// it is preferred over the previous numbers only because those are now
+/// demonstrated to be geometrically impossible for a human, and keeping known-
+/// invalid invented numbers because the replacement sample is small would be
+/// the worse choice (GPT-PM, 2026-09-01). MM-Fit (6,160 labelled reps, already
+/// the source for `measured_rep_configs.dart`) is the intended refinement; its
+/// archive is not on this machine today, so that is roadmap work, not a
+/// blocker on correcting a live defect.
+///
+/// [kPoseMatchPassing] is NOT relaxed to accommodate this. The reference was
+/// wrong, not the standard.
 const squatBottomTarget = PoseTarget(
   id: 'squat.bottom',
   joints: {
-    LandmarkType.leftShoulder: (0.52, 0.52),
-    LandmarkType.leftElbow: (0.56, 0.62),
-    LandmarkType.leftWrist: (0.58, 0.72),
-    LandmarkType.leftHip: (0.42, 0.74),
-    LandmarkType.leftKnee: (0.57, 0.75),
+    LandmarkType.leftShoulder: (0.54, 0.58),
+    LandmarkType.leftElbow: (0.62, 0.73),
+    LandmarkType.leftWrist: (0.72, 0.74),
+    LandmarkType.leftHip: (0.28, 0.77),
+    LandmarkType.leftKnee: (0.59, 0.73),
     LandmarkType.leftAnkle: (0.49, 0.93),
   },
   bones: _sideViewBones,
+  unscoredJoints: {LandmarkType.leftWrist},
 );
 
 /// A push-up at the top: one straight line from shoulder to ankle, arms under
@@ -513,6 +564,13 @@ PoseTarget lerpPoseTarget(PoseTarget from, PoseTarget to, double t) {
     bones: from.bones
         .where((b) => joints.containsKey(b.$1) && joints.containsKey(b.$2))
         .toList(growable: false),
+    // An interpolated pose is only ever DRAWN (the demo loop), never scored,
+    // but carrying the exclusion is still the honest answer: an in-between
+    // frame of a squat has the same unreliable wrist as its ends do. Taken
+    // from `from` alone rather than unioned, because the two ends of one
+    // movement are authored together and disagreeing about it would be the
+    // authoring bug, not something to paper over here.
+    unscoredJoints: from.unscoredJoints,
   );
 }
 
@@ -574,6 +632,7 @@ double? poseMatchScore(
 }) {
   final pairs = <((double, double), (double, double))>[];
   for (final entry in target.joints.entries) {
+    if (target.unscoredJoints.contains(entry.key)) continue;
     final lm = frame.landmarks[entry.key];
     if (lm == null || lm.likelihood < minLikelihood) continue;
     if (lm.x.isNaN || lm.y.isNaN) continue;
@@ -600,6 +659,76 @@ double? poseMatchScore(
   );
   final score = 1.0 - (mean / _zeroScoreAtOffset);
   return score.clamp(0.0, 1.0);
+}
+
+/// Where a score was lost, joint by joint. Debug diagnostics only.
+///
+/// [poseMatchScore] answers with one number, and one number cannot distinguish
+/// "the lifter is doing it wrong" from "the authored target is not the shape a
+/// real body makes". Four consecutive live reps scoring 0.645/0.642/0.685/0.616
+/// against a 0.80 pass mark is far too tight a cluster to be technique: that is
+/// a fixed offset between two shapes, and this says which joints carry it.
+///
+/// Returns the same units the score is built from — normalised radii, where
+/// [_zeroScoreAtOffset] (0.6) is the distance at which a joint contributes
+/// nothing at all.
+String? debugMatchBreakdown(
+  PoseFrame frame,
+  PoseTarget target, {
+  double minLikelihood = 0.5,
+}) {
+  final types = <LandmarkType>[];
+  final pairs = <((double, double), (double, double))>[];
+  for (final entry in target.joints.entries) {
+    if (target.unscoredJoints.contains(entry.key)) continue;
+    final lm = frame.landmarks[entry.key];
+    if (lm == null || lm.likelihood < minLikelihood) continue;
+    if (lm.x.isNaN || lm.y.isNaN) continue;
+    types.add(entry.key);
+    pairs.add(((lm.x, lm.y), (entry.value.$1 * frame.aspectRatio,
+        entry.value.$2)));
+  }
+  if (pairs.length < 4) return null;
+  final live = _normalise([for (final p in pairs) p.$1]);
+  final want = _normalise([for (final p in pairs) p.$2]);
+  if (live == null || want == null) return null;
+
+  final mirrored = [for (final p in want) (-p.$1, p.$2)];
+  final useMirror = _meanOffset(live, mirrored) < _meanOffset(live, want);
+  final ref = useMirror ? mirrored : want;
+
+  final parts = <String>[];
+  for (var i = 0; i < live.length; i++) {
+    final dx = live[i].$1 - ref[i].$1;
+    final dy = live[i].$2 - ref[i].$2;
+    parts.add('${types[i].name}='
+        '${math.sqrt(dx * dx + dy * dy).toStringAsFixed(2)}'
+        '(dx${dx.toStringAsFixed(2)},dy${dy.toStringAsFixed(2)})');
+  }
+  return 'mirror=$useMirror ar=${frame.aspectRatio.toStringAsFixed(3)} '
+      '${parts.join(' ')}';
+}
+
+/// The raw joints [target] would be scored against, as the detector saw them.
+///
+/// Debug diagnostics only, and deliberately RAW rather than normalised: a
+/// candidate target has to be judged against the body's real geometry, and a
+/// normalised dump has already had the very scale information removed that
+/// tells whether the lifter reached depth.
+String? debugJointDump(
+  PoseFrame frame,
+  PoseTarget target, {
+  double minLikelihood = 0.5,
+}) {
+  final parts = <String>[];
+  for (final t in target.joints.keys) {
+    final lm = frame.landmarks[t];
+    if (lm == null || lm.likelihood < minLikelihood) continue;
+    parts.add('${t.name}=${lm.x.toStringAsFixed(3)},'
+        '${lm.y.toStringAsFixed(3)}');
+  }
+  if (parts.isEmpty) return null;
+  return 'ar=${frame.aspectRatio.toStringAsFixed(3)} ${parts.join(' ')}';
 }
 
 /// Mean point-to-point distance between two already-normalised poses.
