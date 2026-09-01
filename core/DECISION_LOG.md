@@ -38447,3 +38447,51 @@ looks like on a real, imperfectly-executed set -- especially given the target is
 side-view shape and `poseMatchScore`'s own doc already states viewing angle is not normalised
 away. Asked the operator directly whether the cue fires on literally every rep (would point to a
 residual bug) or only some (expected, working as intended) rather than assuming either.
+
+## 2026-09-01 -- FORMCOACH_TARGET_MIRROR: facing the other way made a pass impossible
+
+Operator answered the question left open in the previous entry: `"на каждом без исключений"` -- the
+`"вы не дошли до силуэта"` cue fires on EVERY rep, with reps themselves counted roughly correctly.
+That answer rules out "a discriminating scorer on an imperfect set" and points at a residual defect.
+
+**Root cause, measured before touching code.** Every shipped `PoseTarget` is authored from one side:
+`_sideViewBones` names only `left*` joints, and `poseMatchScore` compares exactly those. Which
+shoulder the lifter turns towards the lens is an arbitrary framing choice, but the scorer treated it
+as a shape difference. Replicating `_normalise` + the distance/`_zeroScoreAtOffset` formula
+numerically against `squatBottomTarget` at aspect 2/3:
+
+| live pose | score | `kPoseMatchPassing` = 0.80 |
+| --- | --- | --- |
+| exactly the target | 1.00 | pass |
+| the same pose mirrored in x | **0.21** | fail, at any skill level |
+| target, but turned partly towards the camera (x-spread x0.3) | 0.71 | fail |
+
+So a lifter standing the wrong way round could not pass however well they squatted -- and with the
+front camera the on-screen preview is mirrored while ML Kit's landmarks are not, which makes picking
+the "wrong" side the likely case rather than an edge one.
+
+**Fix.** `poseMatchScore` now scores against the target AND against the target's mirror image and
+keeps the better (`_meanOffset` extracted for the two comparisons). Negating x AFTER `_normalise` is
+a true reflection about the body's own midline: the points are already centred on their centroid, so
+the axis is correct and the RMS radius is unchanged. Depth is carried entirely by y, which mirroring
+leaves alone, so this adds no leniency to the thing the coach is actually judging -- a regression
+test asserts a standing pose still fails the squat target from either side.
+
+**Not changed, deliberately.** The 0.71 row above is the documented, intended limitation -- a 2D
+projection cannot cancel viewing angle, which is why the outline is drawn on screen at all. Only the
+left/right ambiguity is cancelled, because that one is not a technique error.
+
+**Evidence.** `flutter test test/features/form_check` -- 420 tests pass, including three new ones in
+`pose_target_test.dart` ("which side the lifter turns to the camera is not a technique error").
+Debug APK built and installed on the S23 (`R5CW142SASR`), app launches clean.
+
+**Not live-verified, stated plainly:** that a real body now scores a pass and the cue stops. That
+needs a person in front of the camera doing reps; the code path is proven only synthetically so far.
+
+**Ruled out along the way, so it is not re-investigated.** The on-device probe's `OUT OF CONTRACT`
+reading (`trusted x -0.015..0.842 y -0.056..1.218`, bound 0.667) is NOT a normalisation bug:
+`_frameSize`/`_aspectFor`/`_normaliserFor` in `mlkit_pose_detector_service.dart` share one
+post-rotation size and pass `imageWidth`/`imageHeight` in the correct order, and a 720x480 landscape
+frame rotated 90 degrees gives exactly the observed 0.667 bound. The 20-26% overshoot is BlazePose
+extrapolating joints of a body cropped by standing too close, accumulated as a cumulative maximum
+over 1684 frames.

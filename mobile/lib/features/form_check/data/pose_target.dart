@@ -24,7 +24,19 @@
 ///
 /// ## The limitation, stated plainly
 ///
-/// This is still a 2D projection, so **viewing angle is not cancelled out**. A
+/// Facing IS cancelled out, as of `FORMCOACH_TARGET_MIRROR_2026-09-01`:
+/// [poseMatchScore] scores the pose against the target and against the
+/// target's mirror image and keeps the better. Every shipped target is
+/// authored from one side (`_sideViewBones` names only `left*` joints), and
+/// before this a perfectly executed squat filmed from the OTHER side scored
+/// 0.21 against the 0.80 pass mark — so a lifter who happened to stand the
+/// wrong way round could not pass at any skill level, and heard "вы не дошли
+/// до силуэта" on every rep. Which shoulder points at the lens is a framing
+/// choice, not a technique error. Depth is unaffected: mirroring touches x
+/// only.
+///
+/// Beyond that, this is still a 2D projection, so **viewing angle is not
+/// cancelled out**. A
 /// squat from the front and the same squat from the side are different shapes,
 /// and this will score them differently. That is not a defect to be fixed here;
 /// it is the reason the silhouette is drawn on screen. The outline tells the
@@ -577,15 +589,28 @@ double? poseMatchScore(
   final want = _normalise([for (final p in pairs) p.$2]);
   if (live == null || want == null) return null;
 
-  var total = 0.0;
-  for (var i = 0; i < live.length; i++) {
-    final dx = live[i].$1 - want[i].$1;
-    final dy = live[i].$2 - want[i].$2;
-    total += math.sqrt(dx * dx + dy * dy);
-  }
-  final mean = total / live.length;
+  // Which side the lifter turns towards the camera is a framing choice, not a
+  // technique error, so the target is matched against both facings and the
+  // better one wins. Negating x after `_normalise` is a true mirror: the points
+  // are already centred on their own centroid, so the reflection axis is the
+  // body's own midline and the RMS radius is unchanged.
+  final mean = math.min(
+    _meanOffset(live, want),
+    _meanOffset(live, [for (final p in want) (-p.$1, p.$2)]),
+  );
   final score = 1.0 - (mean / _zeroScoreAtOffset);
   return score.clamp(0.0, 1.0);
+}
+
+/// Mean point-to-point distance between two already-normalised poses.
+double _meanOffset(List<(double, double)> a, List<(double, double)> b) {
+  var total = 0.0;
+  for (var i = 0; i < a.length; i++) {
+    final dx = a[i].$1 - b[i].$1;
+    final dy = a[i].$2 - b[i].$2;
+    total += math.sqrt(dx * dx + dy * dy);
+  }
+  return total / a.length;
 }
 
 /// Centres on the centroid and scales to unit RMS radius.

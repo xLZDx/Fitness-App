@@ -552,4 +552,68 @@ void main() {
       }
     });
   });
+
+  // FORMCOACH_TARGET_MIRROR_2026-09-01. Operator, on a build whose silhouette
+  // was finally centred and whose reps were counted correctly: "не дошли до
+  // силуэта по прежнему осталось", then "на каждом без исключений".
+  group('which side the lifter turns to the camera is not a technique error',
+      () {
+    const frameAspect = 2 / 3;
+
+    /// The same pose executed facing the other way: x reflected about the
+    /// pose's own midline, y untouched.
+    PoseFrame mirroredPoseOf(PoseTarget t, double aspectRatio) {
+      final xs = [for (final j in t.joints.values) j.$1 * aspectRatio];
+      final axis = xs.reduce((a, b) => a + b) / xs.length;
+      return PoseFrame(
+        timestampMs: 0,
+        aspectRatio: aspectRatio,
+        landmarks: {
+          for (final e in t.joints.entries)
+            e.key: PoseLandmark(
+              type: e.key,
+              x: 2 * axis - e.value.$1 * aspectRatio,
+              y: e.value.$2,
+              likelihood: 0.95,
+            ),
+        },
+      );
+    }
+
+    test('a perfect squat filmed from the other side still scores 1', () {
+      final live = mirroredPoseOf(squatBottomTarget, frameAspect);
+      final score = poseMatchScore(live, squatBottomTarget)!;
+      expect(score, closeTo(1.0, 1e-9),
+          reason: 'scored ${score.toStringAsFixed(2)} — before the mirror was '
+              'allowed this was 0.21, so standing the wrong way round made '
+              'kPoseMatchPassing unreachable at any skill level');
+    });
+
+    test('every shipped target is reachable from both sides', () {
+      for (final t in [
+        squatBottomTarget,
+        pushupTopTarget,
+        pushupBottomTarget,
+        curlBottomTarget,
+        curlTopTarget,
+      ]) {
+        final score = poseMatchScore(mirroredPoseOf(t, frameAspect), t)!;
+        expect(score, greaterThan(kPoseMatchPassing),
+            reason: '${t.id} scored ${score.toStringAsFixed(2)} mirrored');
+      }
+    });
+
+    test('the mirror does not make a different movement pass', () {
+      // Depth is carried entirely by y, which mirroring leaves alone, so the
+      // leniency this adds must not reach across two genuinely different
+      // shapes.
+      final standing = poseMatchScore(
+        mirroredPoseOf(curlBottomTarget, frameAspect),
+        squatBottomTarget,
+      )!;
+      expect(standing, lessThan(kPoseMatchPassing),
+          reason: 'standing tall scored ${standing.toStringAsFixed(2)} '
+              'against the squat target');
+    });
+  });
 }
