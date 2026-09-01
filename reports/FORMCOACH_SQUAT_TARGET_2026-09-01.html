@@ -1,0 +1,409 @@
+<title>The Inverted Squat</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600;6..72,700&family=Public+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --paper: #f6f4ef;
+    --card: #fffefb;
+    --ink: #191b1f;
+    --ink-soft: #56595f;
+    --rule: #ddd8cd;
+    --good: #2f6b4f;
+    --good-bg: #e7f0e9;
+    --bad: #a8402f;
+    --bad-bg: #f6e6e2;
+    --accent: #2f6b4f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14161a;
+      --card: #1b1e23;
+      --ink: #e9e6df;
+      --ink-soft: #a3a7ae;
+      --rule: #31353c;
+      --good: #7fc9a1;
+      --good-bg: #1c2b23;
+      --bad: #e0897a;
+      --bad-bg: #2c1e1b;
+      --accent: #7fc9a1;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14161a;
+    --card: #1b1e23;
+    --ink: #e9e6df;
+    --ink-soft: #a3a7ae;
+    --rule: #31353c;
+    --good: #7fc9a1;
+    --good-bg: #1c2b23;
+    --bad: #e0897a;
+    --bad-bg: #2c1e1b;
+    --accent: #7fc9a1;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Public Sans", system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+  }
+  .wrap { max-width: 74ch; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+  header { margin-bottom: 2rem; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.74rem; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 0.6rem;
+  }
+  h1 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 600; font-size: clamp(2rem, 5vw, 2.9rem);
+    line-height: 1.1; margin: 0 0 0.7rem; text-wrap: balance;
+  }
+  .standfirst { font-size: 1.08rem; color: var(--ink-soft); margin: 0; max-width: 62ch; }
+  h2 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 600; font-size: 1.55rem; line-height: 1.2;
+    margin: 3rem 0 0.9rem; text-wrap: balance;
+    padding-top: 1.4rem; border-top: 1px solid var(--rule);
+  }
+  h3 { font-size: 1rem; font-weight: 700; margin: 1.8rem 0 0.5rem; }
+  p { margin: 0 0 1rem; }
+  ul { margin: 0 0 1rem; padding-left: 1.2rem; }
+  li { margin-bottom: 0.45rem; }
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.88em;
+  }
+
+  .verdict {
+    display: grid; gap: 1px; background: var(--rule);
+    border: 1px solid var(--rule); border-radius: 10px; overflow: hidden;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    margin: 2rem 0;
+  }
+  .verdict div { background: var(--card); padding: 1rem 1.1rem; }
+  .verdict .k {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 0.35rem;
+  }
+  .verdict .v {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 1.45rem; font-weight: 600; margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .v.was { color: var(--bad); }
+  .v.now { color: var(--good); }
+
+  .scroll { overflow-x: auto; margin: 1.2rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
+  th, td {
+    text-align: right; padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--rule);
+    font-variant-numeric: tabular-nums;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  th:first-child, td:first-child {
+    text-align: left; font-family: "Public Sans", sans-serif;
+    white-space: nowrap;
+  }
+  thead th {
+    font-family: "Public Sans", sans-serif; font-size: 0.78rem;
+    font-weight: 700; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--rule);
+  }
+  td.pass { color: var(--good); font-weight: 600; }
+  td.fail { color: var(--bad); font-weight: 600; }
+
+  blockquote {
+    margin: 1.4rem 0; padding: 0.7rem 0 0.7rem 1.1rem;
+    border-left: 3px solid var(--accent);
+    color: var(--ink-soft); font-style: italic;
+  }
+  .note {
+    background: var(--card); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 1rem 1.15rem; margin: 1.5rem 0;
+  }
+  .note.warn { background: var(--bad-bg); border-color: var(--bad); }
+  .note.ok { background: var(--good-bg); border-color: var(--good); }
+  .note p:last-child { margin-bottom: 0; }
+  .note strong { font-weight: 700; }
+  footer {
+    margin-top: 3.5rem; padding-top: 1.4rem; border-top: 1px solid var(--rule);
+    font-size: 0.88rem; color: var(--ink-soft);
+  }
+  a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App · Form Coach · 1 September 2026</p>
+  <h1>The Inverted Squat</h1>
+  <p class="standfirst">"You did not reach the outline" fired on every repetition — not because the coach was strict, but because it gave its best score to the shallow part of the rep. A diagnosis from measurements on a real phone.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ a7c9a91</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<div class="verdict">
+  <div><p class="k">Was, deepest frame</p><p class="v was">0.09–0.26</p></div>
+  <div><p class="k">Now, deepest frame</p><p class="v now">0.82–0.86</p></div>
+  <div><p class="k">Pass mark</p><p class="v">0.80</p></div>
+  <div><p class="k">Passed on device</p><p class="v now">9 / 12</p></div>
+</div>
+
+<h2>The symptom</h2>
+<p>The operator, across many builds: "you did not reach the outline" appears on every set without exception, while rep counting is roughly correct. Investigated on a Samsung S23, debug build, with per-rep instrumentation added for this purpose.</p>
+
+<h2>First cause: which side you film from</h2>
+<p>Every authored target is described by left-side joints only — a side view from one particular side. The score compared exactly those points, so which shoulder the lifter turned towards the lens counted as a difference in shape rather than a choice of framing.</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Pose</th><th>Score</th><th>Pass mark 0.80</th></tr></thead>
+  <tbody>
+    <tr><td>Exactly the target</td><td>1.00</td><td class="pass">passes</td></tr>
+    <tr><td>The same pose mirrored</td><td>0.21</td><td class="fail">never passes</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Fixed: the pose is scored against the target and against its mirror, and the better wins. The reflection happens after normalisation, so the axis is the body's own midline. Depth is unaffected — mirroring touches the horizontal only.</p>
+<p>The live score rose from an unreachable ~0.21 case to a stable ~0.65. Necessary, but not sufficient: the cue remained.</p>
+
+<h2>Second cause, the real one: the score was inverted</h2>
+<p>Two frames of every repetition are now logged separately — the best-matching frame, and the <strong>deepest</strong> frame by hip-minus-knee height. The separation matters: the best-MATCHING frame is chosen by the very target under test, so judging a candidate target on frames that target selected is circular.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>Four consecutive reps</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead>
+  <tbody>
+    <tr><td>hip minus knee at the deepest frame</td><td>+0.017</td><td>+0.047</td><td>+0.035</td><td>+0.042</td></tr>
+    <tr><td>score at that same frame</td><td class="fail">0.257</td><td class="fail">0.092</td><td class="fail">0.162</td><td class="fail">0.191</td></tr>
+    <tr><td>best score anywhere in the rep</td><td>0.651</td><td>0.680</td><td>0.681</td><td>0.638</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>A positive value means the hip is <strong>below</strong> the knee: all four reps were below parallel. The coach scored the correct, deep frame at 0.09–0.26 and took its best score from a higher moment on the way up. It was rewarding not reaching depth.</p>
+
+<h3>Why</h3>
+<p>The squat target was not a human shape. In the space it is actually compared in:</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Ratio</th><th>Squat bottom</th><th>The other 13 targets</th><th>A person</th></tr></thead>
+  <tbody>
+    <tr><td>thigh / shin</td><td class="fail">0.54</td><td>0.98–1.12</td><td>1.00</td></tr>
+    <tr><td>torso / thigh</td><td class="fail">2.29</td><td>1.09–1.53</td><td>1.18</td></tr>
+  </tbody>
+</table>
+</div>
+<p>The sole outlier among all fourteen targets, with a thigh 29% shorter than the standing target's — the same body one phase later, violating an invariant stated in that same file's own comment. The live body measured 1.01 and 1.22: the detector was never the problem.</p>
+
+<h2>Third finding: the wrist</h2>
+<p>Rep-to-rep spread in normalised units:</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Joint</th><th>x spread</th><th>y spread</th></tr></thead>
+  <tbody>
+    <tr><td>Wrist</td><td>0.25</td><td class="fail">0.53</td></tr>
+    <tr><td>Shoulder</td><td>0.17</td><td>0.21</td></tr>
+    <tr><td>Hip</td><td>0.09</td><td>0.26</td></tr>
+    <tr><td>Knee</td><td>0.12</td><td>0.10</td></tr>
+    <tr><td>Elbow</td><td>0.10</td><td>0.09</td></tr>
+    <tr><td>Ankle</td><td>0.13</td><td>0.08</td></tr>
+  </tbody>
+</table>
+</div>
+<p>The mechanism is projective, not a detector fault: at the bottom of a squat the forearm lies close to the camera axis and projects at 0.41 of the upper arm where anatomy says 0.78. Judging it does not make the coach stricter about squatting — it makes the coach randomly strict about where the hands happen to point.</p>
+
+<h2>What changed</h2>
+<div class="note ok">
+<p><strong>Decided with GPT-PM</strong> — <code>VERDICT: GO on A + B</code>, with the coordinate-convention question split off into its own gate. Under §20 of the global contract, that APPROVE is what authorised the change, rather than a separate word from the operator.</p>
+</div>
+<ul>
+  <li><strong>A.</strong> The squat-bottom target is re-authored as the median of the four measured deepest frames, placed on the standing target's ankle and scaled to its thigh so limb lengths do not change across the demo loop. The result is anatomically consistent (thigh/shin 1.00, torso/thigh 1.22) and a genuine below-parallel squat: the hip sits 0.04 below the knee.</li>
+  <li><strong>B.</strong> Drawing and judging are now separable — an <code>unscoredJoints</code> field on the target. The squat excludes the wrist: still drawn, no longer scored. GPT-PM specifically required this be a target-level contract rather than an identifier check buried inside the scorer, and specifically declined to extend it to the elbow — there is direct evidence against the wrist and none requiring the elbow's removal.</li>
+  <li><strong>The 0.80 pass mark is untouched.</strong> The reference was wrong, not the standard.</li>
+</ul>
+
+<h3>Provenance, stated plainly</h3>
+<p>One person, one S23, four correct deep repetitions, median geometry. This is provisional and is not presented as a population norm. It is preferred over the previous numbers only because those are now demonstrated to be impossible for a human body, and keeping known-invalid invented numbers because the replacement sample is small would be the worse choice. Refinement against MM-Fit (6,160 labelled reps, already the source for the rep-counter configuration) is roadmap work; the archive is not on this machine.</p>
+
+<h2>Verification</h2>
+<h3>Tests</h3>
+<p>430 tests pass. Ten new acceptance tests use the <strong>raw measured frames</strong> as fixtures rather than anything derived from the target:</p>
+<ul>
+  <li>every measured correct rep passes;</li>
+  <li>a shortened variant of each — a shallow rep — fails;</li>
+  <li>standing tall fails;</li>
+  <li>a mirrored rep scores identically to nine decimal places;</li>
+  <li>moving the wrist by 0.25 / 0.30 changes the score by nothing at all;</li>
+  <li>moving the <em>knee</em> the same distance drops it below the pass mark — the negative control for the line above;</li>
+  <li>the pass mark is asserted equal to 0.80;</li>
+  <li>the target is asserted to be an anatomically possible body.</li>
+</ul>
+
+<h3>On the device</h3>
+<p>Twelve usable consecutive repetitions, framing good. One repetition is excluded from the log: the person left the frame and the shoulder landed below the hip — invalid data, not bad data.</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Rep</th><th>hip − knee</th><th>best score</th><th>at the deepest frame</th><th>verdict</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>+0.028</td><td>0.877</td><td>0.829</td><td class="pass">counted</td></tr>
+    <tr><td>2</td><td>+0.012</td><td>0.856</td><td>0.826</td><td class="pass">counted</td></tr>
+    <tr><td>3</td><td>+0.022</td><td>0.871</td><td>0.815</td><td class="pass">counted</td></tr>
+    <tr><td>4</td><td>+0.031</td><td>0.893</td><td>0.864</td><td class="pass">counted</td></tr>
+    <tr><td>5</td><td>+0.033</td><td>0.884</td><td>0.838</td><td class="pass">counted</td></tr>
+    <tr><td>7</td><td>+0.059</td><td>0.823</td><td>0.721</td><td class="pass">counted</td></tr>
+    <tr><td>8</td><td>+0.065</td><td>0.827</td><td>0.513</td><td class="pass">counted</td></tr>
+    <tr><td>9</td><td>−0.026</td><td>0.474</td><td>0.387</td><td class="fail">missed</td></tr>
+    <tr><td>10</td><td>+0.020</td><td>0.762</td><td>0.762</td><td class="fail">missed</td></tr>
+    <tr><td>11</td><td>+0.046</td><td>0.882</td><td>0.791</td><td class="pass">counted</td></tr>
+    <tr><td>12</td><td>+0.005</td><td>0.634</td><td>0.409</td><td class="fail">missed</td></tr>
+    <tr><td>13</td><td>+0.035</td><td>0.801</td><td>0.761</td><td class="pass">counted</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Nine of twelve counted, three not. <strong>That is the correct outcome, not an unfinished one.</strong> A coach that passes everything is one the operator has already rejected once. Which three failed is the telling part: rep 9 had the hip <em>above</em> the knee — the only negative value in that column, a shallow rep — and rep 12 barely reached knee level. The verdict now follows depth instead of contradicting it.</p>
+<p>But the scores rising is not the point. The point is that <strong>the best score of a rep and the score of its deepest frame have converged</strong>: 0.65 against 0.16 before, 0.86 against 0.83 now. The target finally describes the bottom of the movement rather than a point halfway back up.</p>
+
+<h2>Two tests broke, and both were right to</h2>
+<p>Two existing tests carried hand-copied coordinates of the old target as their "nearly right" fixture. Re-authoring the target silently turned them into "the old shape, nudged" — failing for the right reason while describing the wrong thing. They now derive the fixture from whatever the target currently is, so it cannot go stale. Its nudge is calibrated to the measurement: 0.01 per axis gives a ~0.074 normalised offset, the harsh end of what correct reps actually produce (0.042–0.072). The previous 0.02 gave ~0.147, demanding that an error two to three times worse than any real correct repetition still pass.</p>
+
+<h2>An error in the analysis, acknowledged</h2>
+<div class="note warn">
+<p>The first pass evaluated candidate targets on frames <strong>selected by the old target</strong> as its best matches, and concluded that an anatomically correct squat would score worse. That is an artefact of the selection, not a finding. The conclusion was discarded and the instrumentation rebuilt so the frame is chosen by the movement itself. Recorded in the decision log, because the mistake is easy to repeat.</p>
+</div>
+
+
+<h2>The operator's live test: arm position still decides</h2>
+<div class="note warn">
+<p>Immediately after the fix the operator reported two things. First: correct sets are now counted and the cue is silent — <strong>the main defect is closed</strong>. Second, and this is a direct regression from that same fix: <strong>a rep counted, and the skeleton turned green, only when the arms were held out in front.</strong> With the arms tucked at the sides it failed, with the same cue.</p>
+</div>
+<p>Checked numerically on the same four measured frames, changing only the direction of the arms while taking limb lengths from that same frame — so position changes and anatomy does not:</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>What is scored</th><th>Arms forward</th><th>Arms at the sides</th></tr></thead>
+  <tbody>
+    <tr><td>as shipped now (wrist excluded)</td><td class="pass">0.891</td><td class="fail">0.772</td></tr>
+    <tr><td>wrist and elbow excluded</td><td class="pass">0.919</td><td class="pass">0.919</td></tr>
+    <tr><td>all six joints (before today's fix)</td><td>0.847</td><td class="fail">0.480</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Excluding the wrist was not enough: the elbow is still scored, and it is the joint that moves most when the arms change position. GPT-PM deliberately declined to exclude the elbow last round — there was direct evidence against the wrist and none against the elbow. There is now, and this is exactly the regression-from-remediation case §17 reserves a second verification round for.</p>
+<p>Noted up front: removing the elbow as well leaves four scored joints, which is precisely the minimum at which the scorer will answer at all. Losing any one of them to low confidence would produce "no answer" rather than a score. That has to be settled together with the exclusion, not after it.</p>
+
+<h2>The second complaint: the cue does not say what is wrong</h2>
+<p>The operator: on a badly executed rep the app still says "you did not reach the outline", where it should name the actual fault. That is fair, and it is separate work: the machinery already exists — the per-joint breakdown that showed, in this very investigation, that the knee and hip carry the bulk of the error. What remains is turning it from a debug line into something a person can act on. Not part of this gate.</p>
+
+<h2>Deferred and not done</h2>
+<ul>
+  <li><strong>The target coordinate convention.</strong> Authored x is a fraction of frame <em>width</em> and is multiplied by the live aspect ratio at scoring, so the same target is a different shape on a 16:9 phone than on a 2:3 one. GPT-PM agreed it must be fixed, but as its own gate: it is a mechanical migration of all fourteen targets, and folding it in here would make a regression in another movement indistinguishable from the squat fix.</li>
+  <li><strong>The full visual rework</strong> towards the design reference (circular Reps and Technique gauges, the coach counters panel, a filled silhouette) — not started; that is the next and much larger gate.</li>
+  <li><strong>A navigator assertion.</strong> During repeated restart cycling a Flutter <code>!keyReservation.contains(key)</code> assert fired once and did not reproduce on a clean pass. An inference from the code rather than a proven fact: the navigator key is declared at file level while the router itself is built inside a provider that watches auth and profile state, so a provider rebuild constructs a second router around the same key while the first is still mounted.</li>
+  <li><strong>The other movements' targets</strong> were not re-authored. Their proportions are close to human, but they have not been through the same device measurement.</li>
+</ul>
+
+<h2>Commits</h2>
+<ul>
+  <li><code>27508e5</code> — the score is compared against the target's mirror as well.</li>
+  <li><code>a7c9a91</code> — the squat target re-authored from measurement, the wrist removed from scoring.</li>
+</ul>
+<p>Not pushed to the remote: a push requires its own authorisation.</p>
+
+<footer>
+  <p>Every number here was measured on a Samsung S23 (debug build) or produced by running the test suite, not reasoned out. Scores are in the normalised units the scorer itself works in, where an offset of 0.6 reduces a joint's contribution to zero.</p>
+</footer>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

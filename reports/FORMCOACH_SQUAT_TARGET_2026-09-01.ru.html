@@ -1,0 +1,409 @@
+<title>Перевёрнутый присед</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600;6..72,700&family=Public+Sans:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --paper: #f6f4ef;
+    --card: #fffefb;
+    --ink: #191b1f;
+    --ink-soft: #56595f;
+    --rule: #ddd8cd;
+    --good: #2f6b4f;
+    --good-bg: #e7f0e9;
+    --bad: #a8402f;
+    --bad-bg: #f6e6e2;
+    --accent: #2f6b4f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14161a;
+      --card: #1b1e23;
+      --ink: #e9e6df;
+      --ink-soft: #a3a7ae;
+      --rule: #31353c;
+      --good: #7fc9a1;
+      --good-bg: #1c2b23;
+      --bad: #e0897a;
+      --bad-bg: #2c1e1b;
+      --accent: #7fc9a1;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14161a;
+    --card: #1b1e23;
+    --ink: #e9e6df;
+    --ink-soft: #a3a7ae;
+    --rule: #31353c;
+    --good: #7fc9a1;
+    --good-bg: #1c2b23;
+    --bad: #e0897a;
+    --bad-bg: #2c1e1b;
+    --accent: #7fc9a1;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Public Sans", system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+  }
+  .wrap { max-width: 74ch; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+  header { margin-bottom: 2rem; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.74rem; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 0.6rem;
+  }
+  h1 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 600; font-size: clamp(2rem, 5vw, 2.9rem);
+    line-height: 1.1; margin: 0 0 0.7rem; text-wrap: balance;
+  }
+  .standfirst { font-size: 1.08rem; color: var(--ink-soft); margin: 0; max-width: 62ch; }
+  h2 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 600; font-size: 1.55rem; line-height: 1.2;
+    margin: 3rem 0 0.9rem; text-wrap: balance;
+    padding-top: 1.4rem; border-top: 1px solid var(--rule);
+  }
+  h3 { font-size: 1rem; font-weight: 700; margin: 1.8rem 0 0.5rem; }
+  p { margin: 0 0 1rem; }
+  ul { margin: 0 0 1rem; padding-left: 1.2rem; }
+  li { margin-bottom: 0.45rem; }
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.88em;
+  }
+
+  .verdict {
+    display: grid; gap: 1px; background: var(--rule);
+    border: 1px solid var(--rule); border-radius: 10px; overflow: hidden;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    margin: 2rem 0;
+  }
+  .verdict div { background: var(--card); padding: 1rem 1.1rem; }
+  .verdict .k {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 0.35rem;
+  }
+  .verdict .v {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 1.45rem; font-weight: 600; margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .v.was { color: var(--bad); }
+  .v.now { color: var(--good); }
+
+  .scroll { overflow-x: auto; margin: 1.2rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
+  th, td {
+    text-align: right; padding: 0.5rem 0.7rem;
+    border-bottom: 1px solid var(--rule);
+    font-variant-numeric: tabular-nums;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  th:first-child, td:first-child {
+    text-align: left; font-family: "Public Sans", sans-serif;
+    white-space: nowrap;
+  }
+  thead th {
+    font-family: "Public Sans", sans-serif; font-size: 0.78rem;
+    font-weight: 700; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--rule);
+  }
+  td.pass { color: var(--good); font-weight: 600; }
+  td.fail { color: var(--bad); font-weight: 600; }
+
+  blockquote {
+    margin: 1.4rem 0; padding: 0.7rem 0 0.7rem 1.1rem;
+    border-left: 3px solid var(--accent);
+    color: var(--ink-soft); font-style: italic;
+  }
+  .note {
+    background: var(--card); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 1rem 1.15rem; margin: 1.5rem 0;
+  }
+  .note.warn { background: var(--bad-bg); border-color: var(--bad); }
+  .note.ok { background: var(--good-bg); border-color: var(--good); }
+  .note p:last-child { margin-bottom: 0; }
+  .note strong { font-weight: 700; }
+  footer {
+    margin-top: 3.5rem; padding-top: 1.4rem; border-top: 1px solid var(--rule);
+    font-size: 0.88rem; color: var(--ink-soft);
+  }
+  a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App · Тренер по технике · 1 сентября 2026</p>
+  <h1>Перевёрнутый присед</h1>
+  <p class="standfirst">Подсказка «вы не дошли до силуэта» срабатывала на каждом повторении не потому, что тренер был строгим, а потому что он ставил лучшую оценку за недосед. Разбор по измерениям на реальном телефоне — и один оставшийся дефект, найденный оператором сразу после правки.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ a7c9a91</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<div class="verdict">
+  <div><p class="k">Было, глубокий кадр</p><p class="v was">0.09–0.26</p></div>
+  <div><p class="k">Стало, глубокий кадр</p><p class="v now">0.82–0.86</p></div>
+  <div><p class="k">Порог</p><p class="v">0.80</p></div>
+  <div><p class="k">Зачтено на устройстве</p><p class="v now">9 / 12</p></div>
+</div>
+
+<h2>Симптом</h2>
+<p>Оператор, через множество сборок подряд: подсказка «вы не дошли до силуэта» появляется на каждом подходе без исключений, при этом повторения считаются примерно правильно. Проверка проводилась на Samsung S23, debug-сборка, с добавленным логированием на каждое завершённое повторение.</p>
+
+<h2>Первая причина: сторона съёмки</h2>
+<p>Все эталонные позы заданы только левыми суставами — вид сбоку с одной определённой стороны. Оценка сравнивала именно эти точки, поэтому то, каким плечом человек повернулся к камере, считалось разницей формы, а не выбором ракурса.</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Поза</th><th>Оценка</th><th>Порог 0.80</th></tr></thead>
+  <tbody>
+    <tr><td>Точно эталон</td><td>1.00</td><td class="pass">проходит</td></tr>
+    <tr><td>Та же поза зеркально</td><td>0.21</td><td class="fail">не проходит никогда</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Исправлено: оценка считается и с эталоном, и с его зеркалом, берётся лучшее. Отражение выполняется после нормализации, поэтому ось — собственная средняя линия тела. Глубина от этого не страдает: зеркалится только горизонталь.</p>
+<p>Живая оценка после правки выросла с недостижимых ~0.21 до устойчивых ~0.65. Необходимо, но недостаточно — подсказка осталась.</p>
+
+<h2>Вторая причина, главная: оценка была перевёрнута</h2>
+<p>Добавлено раздельное логирование двух кадров каждого повторения: кадра с лучшей оценкой и — отдельно — <strong>самого глубокого</strong> кадра по разнице «таз минус колено». Разделение принципиально: кадр с лучшей оценкой выбирается тем самым эталоном, который проверяется, поэтому судить о новом эталоне по таким кадрам — замкнутый круг.</p>
+
+<div class="scroll">
+<table>
+  <thead><tr><th>Четыре повторения подряд</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead>
+  <tbody>
+    <tr><td>таз минус колено в самом низу</td><td>+0.017</td><td>+0.047</td><td>+0.035</td><td>+0.042</td></tr>
+    <tr><td>оценка в этом самом кадре</td><td class="fail">0.257</td><td class="fail">0.092</td><td class="fail">0.162</td><td class="fail">0.191</td></tr>
+    <tr><td>лучшая оценка за повторение</td><td>0.651</td><td>0.680</td><td>0.681</td><td>0.638</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Положительное значение означает, что таз <strong>ниже</strong> колена — все четыре повторения были ниже параллели. За правильный глубокий кадр тренер ставил 0.09–0.26, а свою лучшую оценку брал с более высокого момента подъёма. Он поощрял не доходить.</p>
+
+<h3>Почему</h3>
+<p>Эталон приседа не был человеческой фигурой. В том пространстве, где идёт сравнение:</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Пропорция</th><th>Эталон приседа</th><th>Остальные 13 эталонов</th><th>Человек</th></tr></thead>
+  <tbody>
+    <tr><td>бедро / голень</td><td class="fail">0.54</td><td>0.98–1.12</td><td>1.00</td></tr>
+    <tr><td>торс / бедро</td><td class="fail">2.29</td><td>1.09–1.53</td><td>1.18</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Единственный такой выброс среди всех четырнадцати эталонов, причём бедро на 29% короче, чем у эталона стойки — то же тело фазой позже, что нарушает инвариант, записанный в комментарии того же файла. Живое тело измерилось как 1.01 и 1.22: детектор был ни при чём всё это время.</p>
+
+<h2>Третья находка: запястье</h2>
+<p>Разброс между повторениями в нормализованных единицах:</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Сустав</th><th>Разброс по x</th><th>Разброс по y</th></tr></thead>
+  <tbody>
+    <tr><td>Запястье</td><td>0.25</td><td class="fail">0.53</td></tr>
+    <tr><td>Плечо</td><td>0.17</td><td>0.21</td></tr>
+    <tr><td>Таз</td><td>0.09</td><td>0.26</td></tr>
+    <tr><td>Колено</td><td>0.12</td><td>0.10</td></tr>
+    <tr><td>Локоть</td><td>0.10</td><td>0.09</td></tr>
+    <tr><td>Голеностоп</td><td>0.13</td><td>0.08</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Механизм проекционный, а не сбой детектора: в нижней точке приседа предплечье лежит почти вдоль оси камеры и проецируется как 0.41 от плеча при анатомических 0.78. Оценивать его — значит быть строгим не к приседу, а к тому, куда случайно смотрят кисти.</p>
+
+<h2>Что изменено</h2>
+<div class="note ok">
+<p><strong>Решение согласовано с GPT-PM</strong> — <code>VERDICT: GO on A + B</code>, отдельным гейтом вынесен пункт про систему координат. Согласно §20 глобального контракта именно этот APPROVE авторизовал правку, а не отдельное слово оператора.</p>
+</div>
+<ul>
+  <li><strong>A.</strong> Эталон нижней точки приседа переписан как медиана четырёх измеренных глубоких кадров, посаженная на голеностоп эталона стойки и отмасштабированная по его бедру — чтобы в демонстрационной анимации не менялась длина конечностей. Результат анатомически состоятелен (бедро/голень 1.00, торс/бедро 1.22) и является настоящим приседом ниже параллели: таз на 0.04 ниже колена.</li>
+  <li><strong>B.</strong> Введено разделение «что рисуем» и «что судим» — поле <code>unscoredJoints</code> у эталона. Для приседа исключено запястье: оно по-прежнему рисуется, но не оценивается. GPT-PM отдельно потребовал сделать это контрактом на уровне эталона, а не условием по идентификатору внутри оценщика, и отдельно отказался распространять исключение на локоть — против запястья есть прямые измерения, против локтя их нет.</li>
+  <li><strong>Порог 0.80 не тронут.</strong> Неправильным был эталон, а не планка.</li>
+</ul>
+
+<h3>Происхождение чисел — сказано прямо</h3>
+<p>Один человек, один S23, четыре правильных глубоких повторения, медианная геометрия. Это временное решение и оно не выдаётся за популяционную норму. Оно предпочтено прежним числам только потому, что те теперь доказанно невозможны для человеческого тела, а сохранять заведомо неверные выдуманные числа из-за малости выборки замены — худший выбор. Уточнение по MM-Fit (6160 размеченных повторений, уже источник для конфигурации счётчика) — работа для дорожной карты, архива на этой машине сейчас нет.</p>
+
+<h2>Проверка</h2>
+<h3>Тесты</h3>
+<p>430 тестов проходят. Десять новых приёмочных используют <strong>сырые измеренные кадры</strong> как фикстуру, а не что-либо выведенное из эталона:</p>
+<ul>
+  <li>каждое измеренное правильное повторение проходит;</li>
+  <li>укороченный вариант каждого из них (недосед) — не проходит;</li>
+  <li>стойка в полный рост — не проходит;</li>
+  <li>зеркальное повторение даёт ту же оценку до девятого знака;</li>
+  <li>сдвиг запястья на 0.25 / 0.30 не меняет оценку вообще;</li>
+  <li>сдвиг <em>колена</em> на ту же величину роняет её ниже порога — это отрицательный контроль к предыдущему пункту;</li>
+  <li>порог проверяется на равенство 0.80;</li>
+  <li>эталон проверяется на анатомическую состоятельность.</li>
+</ul>
+
+<h3>На устройстве</h3>
+<p>Двенадцать пригодных повторений подряд, рамка в порядке. Одно повторение из логов исключено: человек вышел из кадра, плечо оказалось ниже таза — данные недействительны, а не плохи.</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Повторение</th><th>таз − колено</th><th>лучшая оценка</th><th>в самом глубоком кадре</th><th>вердикт</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>+0.028</td><td>0.877</td><td>0.829</td><td class="pass">зачтено</td></tr>
+    <tr><td>2</td><td>+0.012</td><td>0.856</td><td>0.826</td><td class="pass">зачтено</td></tr>
+    <tr><td>3</td><td>+0.022</td><td>0.871</td><td>0.815</td><td class="pass">зачтено</td></tr>
+    <tr><td>4</td><td>+0.031</td><td>0.893</td><td>0.864</td><td class="pass">зачтено</td></tr>
+    <tr><td>5</td><td>+0.033</td><td>0.884</td><td>0.838</td><td class="pass">зачтено</td></tr>
+    <tr><td>7</td><td>+0.059</td><td>0.823</td><td>0.721</td><td class="pass">зачтено</td></tr>
+    <tr><td>8</td><td>+0.065</td><td>0.827</td><td>0.513</td><td class="pass">зачтено</td></tr>
+    <tr><td>9</td><td>−0.026</td><td>0.474</td><td>0.387</td><td class="fail">не зачтено</td></tr>
+    <tr><td>10</td><td>+0.020</td><td>0.762</td><td>0.762</td><td class="fail">не зачтено</td></tr>
+    <tr><td>11</td><td>+0.046</td><td>0.882</td><td>0.791</td><td class="pass">зачтено</td></tr>
+    <tr><td>12</td><td>+0.005</td><td>0.634</td><td>0.409</td><td class="fail">не зачтено</td></tr>
+    <tr><td>13</td><td>+0.035</td><td>0.801</td><td>0.761</td><td class="pass">зачтено</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Девять из двенадцати зачтены, три — нет. <strong>Это и есть правильный результат, а не недоделка.</strong> Тренер, который засчитывает всё подряд, оператору уже не понравился однажды. Показательно, какие именно три не прошли: у повторения 9 таз оказался <em>выше</em> колена (единственное отрицательное значение в столбце — недосед), у 12-го он едва дошёл до уровня колена. Вердикт снова следует за глубиной вместо того, чтобы ей противоречить.</p>
+<p>Но главное здесь не рост оценок. Главное — что <strong>лучшая оценка за повторение и оценка самого глубокого кадра сошлись</strong>: было 0.65 против 0.16, стало 0.86 против 0.83. Эталон наконец описывает низ движения, а не точку на полпути вверх.</p>
+
+<h2>Две сломавшиеся проверки, и обе — по делу</h2>
+<p>Два существовавших теста содержали вручную скопированные координаты старого эталона в качестве фикстуры «почти правильной позы». После переписывания эталона они молча превратились в «старая форма, слегка сдвинутая» — падали по верной причине, но описывали не то. Заменены на функцию, которая выводит фикстуру из текущего эталона и потому не может протухнуть. Её величина сдвига откалибрована по измерениям: 0.01 на ось даёт смещение ~0.074 нормализованных радиусов — жёсткий край того, что реально дают правильные повторения (0.042–0.072). Прежние 0.02 давали ~0.147, то есть требовали, чтобы проходила ошибка вдвое-втрое хуже любого реального правильного повторения.</p>
+
+<h2>Признанная ошибка в анализе</h2>
+<div class="note warn">
+<p>Первый заход оценивал кандидатов-эталонов на кадрах, <strong>отобранных старым эталоном</strong> как наилучшие, и дал вывод «анатомически корректный присед оценивается хуже». Это артефакт отбора, а не находка. Вывод отброшен, логирование переделано так, чтобы кадр выбирался самим движением. Записано в журнал решений, потому что ошибку легко повторить.</p>
+</div>
+
+
+<h2>Живой тест оператора: положение рук всё ещё решает</h2>
+<div class="note warn">
+<p>Сразу после правки оператор сообщил два наблюдения. Первое: правильные подходы теперь засчитываются и подсказка молчит — <strong>основной дефект закрыт</strong>. Второе, и это прямой регресс от той же правки: <strong>подход засчитывался и скелет зеленел только когда руки были вытянуты вперёд.</strong> С руками, прижатыми к бокам, — незачёт и та же подсказка.</p>
+</div>
+<p>Проверено числом на тех же четырёх измеренных кадрах, где направление рук меняется, а длины сегментов берутся из того же кадра — то есть меняется только положение, не анатомия:</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Что оценивается</th><th>Руки вперёд</th><th>Руки у боков</th></tr></thead>
+  <tbody>
+    <tr><td>сейчас в коде (без запястья)</td><td class="pass">0.891</td><td class="fail">0.772</td></tr>
+    <tr><td>без запястья и локтя</td><td class="pass">0.919</td><td class="pass">0.919</td></tr>
+    <tr><td>все шесть суставов (до сегодняшней правки)</td><td>0.847</td><td class="fail">0.480</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Исключения запястья оказалось мало: локоть остался в оценке, а он смещается от смены положения рук сильнее всего. В прошлом раунде GPT-PM намеренно отказался исключать локоть — против запястья были прямые измерения, против локтя их не было. Теперь есть, и это ровно тот случай регресса от собственной ремедиации, ради которого §17 предусматривает второй раунд проверки.</p>
+<p>Отмечено сразу: если убрать и локоть, останется четыре оцениваемых сустава — ровно минимум, при котором оценщик вообще отвечает. Потеря любого из них по низкой уверенности даст «нет ответа» вместо оценки. Это надо решать вместе с исключением, а не после.</p>
+
+<h2>Вторая претензия: подсказка не говорит, что именно не так</h2>
+<p>Оператор: при неправильном исполнении приложение по-прежнему выдаёт «вы не дошли до силуэта», хотя должно называть конкретную ошибку. Это справедливо и это отдельная работа: механика для такой подсказки уже есть — разбивка по суставам, которая в этом расследовании и показала, что колено с тазом дают основной вклад. Её остаётся превратить из отладочного лога в текст для человека. В этот гейт не входит.</p>
+
+<h2>Отложено и не сделано</h2>
+<ul>
+  <li><strong>Система координат эталонов.</strong> Координата x задана в долях <em>ширины</em> кадра и домножается на пропорции камеры при оценке, поэтому один и тот же эталон — разная форма на 16:9 и на 2:3. GPT-PM согласился, что чинить надо, но отдельным гейтом: это механический перенос всех четырнадцати эталонов, и смешение его с правкой приседа сделало бы регресс в других упражнениях неотличимым от неё.</li>
+  <li><strong>Полная визуальная переработка экрана</strong> под макет (круговые шкалы «Повторы» и «Техника», панель счётчиков тренера, заполненный силуэт) — не начата, это следующий и гораздо больший гейт.</li>
+  <li><strong>Ассерт навигатора.</strong> Во время серии перезапусков однажды сработал Flutter-ассерт <code>!keyReservation.contains(key)</code>; на чистом проходе не воспроизвёлся. Предположение по коду, не доказанный факт: ключ навигатора объявлен на уровне файла, а сам роутер строится внутри провайдера, который следит за состоянием авторизации и профиля — пересоздание провайдера даёт второй роутер с тем же ключом, пока первый ещё смонтирован.</li>
+  <li><strong>Эталоны остальных движений</strong> не переписывались. По пропорциям они близки к человеческим, но той же проверки на устройстве не проходили.</li>
+</ul>
+
+<h2>Коммиты</h2>
+<ul>
+  <li><code>27508e5</code> — оценка сравнивается и с зеркалом эталона.</li>
+  <li><code>a7c9a91</code> — эталон приседа переписан по измерениям, запястье выведено из оценки.</li>
+</ul>
+<p>Не отправлено в удалённый репозиторий: пуш требует отдельного разрешения.</p>
+
+<footer>
+  <p>Все числа в отчёте получены измерением на Samsung S23 (debug-сборка) либо прогоном тестов, а не выведены рассуждением. Оценки даны в нормализованных единицах, в которых работает сам оценщик: смещение 0.6 обнуляет вклад сустава.</p>
+</footer>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

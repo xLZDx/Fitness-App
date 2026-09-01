@@ -38585,3 +38585,34 @@ appeared during repeated restart/navigation cycling and did not reproduce on a c
 `lib/core/router/app_router.dart` while the `GoRouter` holding it is built inside `appRouterProvider`,
 which watches auth and profile repositories -- a provider rebuild constructs a second router around
 the same GlobalKey while the first is still mounted.
+
+## 2026-09-01 -- Operator's live test: excluding the wrist was not enough, the elbow decides too
+
+Reported immediately after `a7c9a91` shipped, on the device: (1) correct sets are now counted and
+the cue is silent -- the main defect is closed; (2) a rep counted, and the avatar glowed green, ONLY
+when the arms were held out in front. Arms tucked at the sides: no count, same cue.
+
+Reproduced numerically on the same four measured deepest frames, changing only the DIRECTION of the
+arms while taking upper-arm and forearm lengths from that same frame, so anatomy is held constant:
+
+| scored joints | arms forward | arms at the sides |
+| --- | --- | --- |
+| as shipped in `a7c9a91` (wrist excluded) | 0.891 | **0.772 -- fails** |
+| wrist AND elbow excluded | 0.919 | 0.919 |
+| all six (before today) | 0.847 | 0.480 |
+
+So the exclusion was one joint short. GPT-PM deliberately declined the elbow in the previous round
+-- "you have direct evidence against the wrist and not equivalent evidence requiring removal of the
+elbow" -- which was the right call on the evidence then available. The evidence now exists, and it
+is a direct regression from this gate's own remediation, which is what §17 reserves a second
+verification round for rather than a new gate.
+
+**Flagged before implementing, not after:** dropping the elbow leaves shoulder/hip/knee/ankle, which
+is exactly `poseMatchScore`'s four-joint minimum. Any one of them falling below the likelihood
+threshold would make the function return null -- "no answer" instead of a score -- where today the
+wrist and elbow provide slack. That has to be settled together with the exclusion.
+
+**Second operator complaint, separate work:** a badly executed rep still says only "вы не дошли до
+силуэта" instead of naming the fault. The machinery for a specific cue already exists -- the
+per-joint breakdown added for this investigation is what identified knee and hip as the dominant
+error terms -- but turning a debug line into an actionable sentence is its own gate.
