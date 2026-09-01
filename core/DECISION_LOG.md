@@ -38686,7 +38686,7 @@ multiplied by the aspect ratio to reconcile that with landmark x — `poseMatchS
 `buildSilhouette(xScale:)`. Multiplying one axis is an anisotropic scale, and `poseMatchScore`
 survives only isotropic scaling, so the same physical pose scored differently on different cameras.
 Measured before the change: one pose scored 0.1366 apart between a 9:16 and a 3:4 frame, in
-normalised radii — 22.8% of the 0.6 offset at which a joint stops contributing at all.
+normalised radii -- 22.8% of the 0.6 MEAN joint offset at which the whole score reaches zero.
 
 **The migration itself (FACT).** `x_new = x_old * 2/3` across all 84 joints of all 14 targets, the
 `* frame.aspectRatio` removed from `poseMatchScore` and `debugMatchBreakdown`, and `xScale` removed
@@ -38696,8 +38696,15 @@ numerically identical. GPT-PM insisted on that distinction when closing the gate
 the shipped constants are rounded to three decimals, and 0.47 * 2/3 is 0.313333..., not 0.313.
 Measured rather than asserted -- the worst coordinate lands 3.33e-4 from the exact quotient, and a
 body standing in the exact pre-migration shape scores 2.96e-3 short of a perfect match on a 2:3
-frame, against a 0.80 pass mark and the 0.6 offset at which a joint stops counting altogether. Both
-bounds are tests now, so the claim cannot quietly become false. The drift across frame shapes is 0
+frame, against a 0.80 pass mark and against the 0.6 MEAN normalised joint offset at which the whole
+pose score reaches zero. Both maxima are PINNED by tests, not merely bounded by a loose ceiling --
+they are pure arithmetic on shipped constants, so if a target moves the figures above become false
+and the suite says so. (0.6 is not a per-joint cutoff. `poseMatchScore` averages every scored
+joint's offset and divides that mean by 0.6; there is no landmark rejection threshold. An earlier
+draft of this entry called it the point where "a joint stops counting", which would have sent the
+recalibration gate hunting for a rule that does not exist. GPT-PM caught it reviewing this very
+correction -- the second time in two rounds that its objection was to my prose about the numbers
+rather than to the numbers.) The drift across frame shapes is 0
 by construction, asserted for all fourteen targets across four aspect ratios at 1e-9.
 
 **A defect the migration exposed, fixed here (FACT).** Once x stopped being rescaled to the frame,

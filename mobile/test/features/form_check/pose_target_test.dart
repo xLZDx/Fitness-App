@@ -1156,8 +1156,18 @@ void main() {
       // Two bounds, both real numbers rather than round ones: the worst
       // coordinate lands 3.33e-4 from the exact quotient, and the worst score
       // lands 2.96e-3 from a perfect match on a 2:3 frame -- against a 0.80
-      // pass mark and the 0.6 offset at which a joint stops counting, i.e.
-      // half a percent of the smallest quantity that matters.
+      // pass mark, and against the 0.6 MEAN normalised joint offset at which
+      // the whole pose score reaches zero. (0.6 is not a per-joint cutoff:
+      // `poseMatchScore` averages every scored joint's offset and divides that
+      // mean by 0.6. An earlier draft of this comment and of the decision log
+      // called it the point where "a joint stops counting", which would have
+      // sent the recalibration gate looking for a landmark rejection rule that
+      // does not exist. Caught by GPT-PM reviewing this very correction.)
+      //
+      // Both maxima are pinned, not merely bounded. They are pure arithmetic
+      // on shipped constants, so they can only move if a target moves -- and
+      // if one does, the durable claim in the decision log becomes false and
+      // this should say so rather than staying green up to a loose ceiling.
       var worstCoord = 0.0;
       var worstScore = 0.0;
       for (final target in allShippedTargets) {
@@ -1175,13 +1185,15 @@ void main() {
         final d = (1.0 - score!).abs();
         if (d > worstScore) worstScore = d;
       }
-      expect(worstCoord, lessThan(5e-4),
-          reason: 'rounding to three decimals should cost at most half a '
-              'thousandth; it cost ${worstCoord.toStringAsExponential(2)}');
-      expect(worstScore, lessThan(5e-3),
-          reason: 'a body standing in the exact pre-migration shape should '
-              'still score essentially 1.0 on the reference frame; the worst '
-              'was ${(1 - worstScore).toStringAsFixed(4)}');
+      expect(worstCoord, closeTo(3.33e-4, 5e-6),
+          reason: 'the decision log records 3.33e-4 as the cost of rounding to '
+              'three decimals; it is now '
+              '${worstCoord.toStringAsExponential(2)}');
+      expect(worstScore, closeTo(2.96e-3, 5e-5),
+          reason: 'the decision log records that a body in the exact '
+              'pre-migration shape scores 2.96e-3 short of 1.0 on the '
+              'reference frame; it is now '
+              '${worstScore.toStringAsExponential(2)}');
     });
 
     test('the table describes the shipped set, not a stale copy of it', () {
