@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../helpers/test_app.dart';
 
 import 'package:fitness_app/core/theme/app_theme.dart';
+import 'package:fitness_app/features/home/state/home_dashboard_providers.dart';
 import 'package:fitness_app/features/equipment/data/asset_equipment_repository.dart';
 import 'package:fitness_app/features/equipment/data/equipment_models.dart';
 import 'package:fitness_app/features/equipment/state/equipment_providers.dart';
@@ -112,6 +113,18 @@ void main() {
       );
       return ProviderScope(
         overrides: [
+          // A fixed instant, and the reason this golden was failing for days.
+          // The Home header greets by the hour and the week strip marks today,
+          // so an image recorded on a Saturday evening could only ever match on
+          // a Saturday evening — it was carried as a "known pre-existing
+          // failure" while being a clock-dependent test, which is the shape
+          // every such test eventually takes.
+          //
+          // Wednesday 2026-01-14, 09:30 local. Midweek so the strip's marker
+          // sits in the middle rather than at an edge, and mid-morning so it
+          // is not near either greeting boundary — a golden pinned one minute
+          // from a boundary is one timezone assumption from flaking again.
+          homeNowProvider.overrideWithValue(DateTime(2026, 1, 14, 9, 30)),
           safetyContextProvider.overrideWith((_) async => SafetyContext(
               screening:
                   screen({for (final q in ParQQuestion.values) q: false}))),

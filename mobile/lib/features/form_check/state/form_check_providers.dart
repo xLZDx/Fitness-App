@@ -756,12 +756,88 @@ Set<LandmarkType> avatarFaultJoints(
 ) {
   if (feedback == null || feedback.severity <= 0) return const {};
   for (final c in activeClassifiers) {
-    if (c.rule == feedback.rule) return c.requiredLandmarks;
+    if (c.rule == feedback.rule) return _faultRegion(c.requiredLandmarks);
   }
   // A verdict from a rule no longer in the active set — the movement changed
   // mid-frame. Nothing to point at, and pointing at the previous movement's
   // joints would be worse than pointing at nothing.
   return const {};
+}
+
+/// The limb chains the skeleton's bones actually run along.
+///
+/// Bones exist only WITHIN a chain: `buildSilhouette` draws shoulder-elbow,
+/// elbow-wrist, hip-knee and knee-ankle, and nothing between a shoulder and a
+/// hip — that span is the filled trunk, not a bone.
+const _faultChains = <List<LandmarkType>>[
+  [LandmarkType.leftShoulder, LandmarkType.leftElbow, LandmarkType.leftWrist],
+  [LandmarkType.leftHip, LandmarkType.leftKnee, LandmarkType.leftAnkle],
+];
+
+/// A rule's declared joints, widened to the region of the body it is about.
+///
+/// **This function exists because G6's narrowing did not work in production,
+/// and neither its tests nor three rounds of review caught it.** The painter
+/// lights a bone when BOTH of its ends are in the fault set; the only shipped
+/// rule that can fault a repetition declares `{leftShoulder, leftHip,
+/// leftAnkle}`; and no bone in the skeleton has both of its ends in that set —
+/// shoulder-to-hip is the trunk quad, and hip-to-ankle is two bones with a
+/// knee in the middle that the rule never names. So zero bones ever lit and
+/// the glow fell back to the whole skeleton every time, which is the exact
+/// pre-G6 behaviour G6's own comments described as fixed. Measured, not
+/// inferred: a probe over a full frontal body returned an empty lit set.
+///
+/// Two widenings, both of them about the difference between "the joints a rule
+/// READS" and "the part of the body a rule is ABOUT":
+///
+/// 1. **Along a chain.** A rule that names two joints of the same limb is
+///    talking about the limb between them, including the joints it did not
+///    have to measure. The push-up rule reads hip and ankle; the knee lies
+///    between them and its two bones are the lower body the rule is judging.
+/// 2. **Across the body.** Every classifier reads LEFT-keyed joints only,
+///    because the avatar is built from one side and mirrored
+///    (`pose_avatar.dart`'s header). A sagging hip is not a fault of somebody's
+///    left leg, so the region mirrors — otherwise the picture would light half
+///    a body for a fault the whole body has.
+///
+/// **Known and deliberate limit:** the shoulder-to-hip span is the trunk, drawn
+/// as a filled quad rather than as a bone, so the part of the push-up line that
+/// runs through the torso still cannot light. Narrowing to the legs is a real
+/// improvement over lighting everything; lighting the trunk too needs the
+/// painter to tint a fill, which is a different change.
+Set<LandmarkType> _faultRegion(Set<LandmarkType> declared) {
+  final out = <LandmarkType>{...declared};
+  for (final chain in _faultChains) {
+    var first = -1;
+    var last = -1;
+    for (var i = 0; i < chain.length; i++) {
+      if (!declared.contains(chain[i])) continue;
+      if (first < 0) first = i;
+      last = i;
+    }
+    if (first < 0 || last <= first) continue;
+    for (var i = first; i <= last; i++) {
+      out.add(chain[i]);
+    }
+  }
+  return {
+    for (final j in out) ...[j, _mirrorOf(j) ?? j],
+  };
+}
+
+/// The same joint on the other side of the body, or null for a centre one.
+LandmarkType? _mirrorOf(LandmarkType t) {
+  final name = t.name;
+  final other = name.startsWith('left')
+      ? 'right${name.substring(4)}'
+      : name.startsWith('right')
+          ? 'left${name.substring(5)}'
+          : null;
+  if (other == null) return null;
+  for (final candidate in LandmarkType.values) {
+    if (candidate.name == other) return candidate;
+  }
+  return null;
 }
 
 /// Speech engine. Defaults to the mock so widget tests never open a

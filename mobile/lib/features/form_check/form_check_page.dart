@@ -225,6 +225,12 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     // bug.
     ref.read(repSessionControllerProvider.notifier).resetSet();
     ref.read(poseMatchProvider.notifier).state = null;
+    // Alongside the rest of the per-set state, and for the same reason. The
+    // latch self-expires on its own clock within 200ms, so this is not load-
+    // bearing — but a piece of frame-to-frame state left out of the one place
+    // that clears frame-to-frame state reads as an omission, and the next
+    // person to widen `holdMs` would make it one.
+    ref.read(avatarFarSideLatchProvider).reset();
     ref.read(coachPhaseControllerProvider.notifier).backToSelection();
     if (mounted) {
       setState(() {
@@ -1608,6 +1614,12 @@ class _PoseAvatarPainter extends CustomPainter {
   @override
   bool shouldRepaint(_PoseAvatarPainter old) =>
       old.frame.timestampMs != frame.timestampMs ||
+      // The figure can change without a new frame: `silhouetteBuildProvider`
+      // derives the body's proportions from the user's profile, which can
+      // resolve while the pose stream is between frames. Identity is enough —
+      // `buildPoseAvatar` returns a fresh figure whenever anything it reads
+      // changed.
+      !identical(old.figure, figure) ||
       old.severity != severity ||
       // The region can change while the severity does not — one fault giving
       // way to another of the same weight moves the glow without changing the
@@ -1946,18 +1958,14 @@ class _PassedRuleChips extends StatelessWidget {
 
   final RepSessionState session;
 
-  /// At most two. The picture behind them is the thing the user is actually
-  /// looking at, and a full list of every rule in the movement would cover it.
-  static const _limit = 2;
-
   @override
   Widget build(BuildContext context) {
     final last = session.reps.isEmpty ? null : session.reps.last;
     if (last == null) return const SizedBox.shrink();
-    final passed = [
-      for (final e in last.severityByRule.entries)
-        if (e.value <= 0) e.key,
-    ]..sort();
+    // Selection and the cap live in `passedRules`, not here: through this
+    // widget the cap is unfalsifiable, because one classifier is active per
+    // movement and a rep therefore never carries more than one rule to cap.
+    final passed = passedRules(last.severityByRule);
     if (passed.isEmpty) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context);
     return Padding(
@@ -1967,7 +1975,7 @@ class _PassedRuleChips extends StatelessWidget {
         spacing: 8,
         runSpacing: 8,
         children: [
-          for (final rule in passed.take(_limit))
+          for (final rule in passed)
             CoachCueChip(
               key: Key('form_check.hud.passed_rule.$rule'),
               text: formRuleName(l10n, rule),

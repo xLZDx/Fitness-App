@@ -39574,3 +39574,93 @@ failures the two pre-existing `composed_screen_golden_test` Home goldens.
 
 **Still unverified on the device**, for the same reason as G3, G4 and G6: the
 S8 is connected and the build installs, but the phone is PIN-locked.
+
+## FORM_COACH_REDESIGN — internal review of G3–G7, and the gate that was dead code (2026-09-02)
+
+Four specialist reviewers over the whole G3–G7 diff, run after the gates closed
+rather than before, which is the wrong order and is why the worst of what they
+found had already been committed and pushed.
+
+### The MAJOR: G6's narrowing never ran, on any real fault
+
+The per-bone highlight lights a bone when BOTH of its ends are in the fault
+region. The only shipped rule that can fault a repetition declares
+`{leftShoulder, leftHip, leftAnkle}`. The skeleton's bones are shoulder-elbow,
+elbow-wrist, hip-knee and knee-ankle — **no bone has both of its ends in that
+set**: shoulder-to-hip is the trunk quad rather than a bone, and hip-to-ankle is
+two bones with a knee in the middle the rule never names. So the lit set was
+always empty, `hasFaultBones` was always false, and the glow fell back to the
+whole skeleton every single time — the exact pre-G6 behaviour G6's own comments
+described as fixed.
+
+Measured before fixing, not inferred: a probe over a full frontal body returned
+zero lit bones.
+
+**Why nothing caught it.** Both halves were tested and both were correct on
+their own — `avatarFaultJoints` returns the right joints, `segmentBones` names
+the right bones. Their INTERSECTION was empty, and no test crossed the boundary
+between the classifier's declared landmarks and the skeleton's actual bone list.
+Three rounds of external review on the same file did not either; they were
+reviewing the far-side geometry, which is what the scope note put in front of
+them.
+
+**The fix** is `_faultRegion`, which widens a rule's declared joints into the
+region of the body it is ABOUT, in two directions. Along a chain: a rule naming
+two joints of one limb is talking about the limb between them, so the push-up
+rule's hip and ankle pull in the knee and with it two real bones. And across the
+body: every classifier declares left-keyed joints only, because the avatar is
+built from one side and mirrored, so a sagging hip is not a fault of somebody's
+left leg. Both widenings are asserted, and the narrowing itself is asserted too
+— a region that lit everything would pass "some bone lights" while being the
+defect.
+
+**Stated limit rather than a silent one:** the shoulder-to-hip span is a filled
+quad, so the part of the push-up line running through the torso still cannot
+light. Narrowing to the legs beats lighting everything; tinting a fill is a
+different change.
+
+### The far-side latch worked for only half of all stances
+
+`avatarTargetFrom` keyed the latch off `leftOk`, so a lifter whose reliable side
+is their RIGHT reset it on every frame their left flickered — the pre-G6 snap,
+alive for half of all stances, under a test suite that only ever dropped the
+right side. Restructured into near/far rather than left/right; the latch now
+records which physical side was near and refuses to serve a hold across a turn,
+because held far-side joints describe the body they were taken from.
+
+### Two vacuous tests, both of the kind this session keeps producing
+
+The "never more than two chips" assertion could not fail: exactly one classifier
+is active per movement, so a rep never carries more than one rule and a limit of
+2, 10 or none produces the same screen. The cap moved into `passedRules`, where
+three rules can be handed in and the cap is falsifiable — mutation-checked both
+for the cap and for the sort. And the technique-gauge caption test used invented
+rule ids (`squat_depth`), which `formRuleName` does not recognise, so it proved
+only that the raw-id FALLBACK renders; it now uses real ids and asserts a
+localised name, plus that no id reaches the user.
+
+### Also fixed, both MINOR
+
+The latch is now reset in `_backToSelection` alongside the rest of the per-set
+state — not load-bearing, since it self-expires in 200ms, but a piece of
+frame-to-frame state left out of the one place that clears frame-to-frame state
+reads as an omission. And `_PoseAvatarPainter.shouldRepaint` now compares the
+figure: `silhouetteBuildProvider` derives the body's proportions from the
+profile, which can resolve while the pose stream is between frames.
+
+### The two Home goldens were never "pre-existing failures"
+
+They had been carried as environmental for days. They were a **clock-dependent
+test**: the Home header greets by the hour and the week strip marks today, so an
+image recorded on a Saturday evening could only ever match on a Saturday
+evening. `homeNowProvider` makes that clock injectable, the golden pins it to a
+Wednesday mid-morning — midweek and far from a greeting boundary, so it is not
+one timezone assumption from flaking again — and `home_clock_test.dart` fails
+fast and by name if anything reads the wall clock directly again.
+
+The images were also genuinely stale: commit `437338f` deliberately changed the
+week strip to colour-coded squares and never refreshed them. Both causes were
+real; both are fixed.
+
+**The suite is now fully green for the first time in this program: 3437 passing,
+0 failing.**

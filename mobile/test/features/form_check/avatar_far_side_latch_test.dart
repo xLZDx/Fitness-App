@@ -189,12 +189,20 @@ void main() {
           cueKey: FormCueKey.pushupAlignSagging,
         );
 
-    test('a fault points at the joints its own rule declares, and only those',
-        () {
+    test('a fault covers the joints its own rule declares', () {
+      // Was `expect(joints, active.first.requiredLandmarks)` — an exact match.
+      // That was the right claim while the region WAS the declared set, and it
+      // was wrong: no bone has both ends in that set, so the highlight lit
+      // nothing and fell back to the whole skeleton. The region is now widened
+      // deliberately (`_faultRegion`), so the declared joints are a subset of
+      // it rather than the whole of it, and the widening itself is asserted in
+      // the "the two halves actually meet" group below.
       final joints = avatarFaultJoints(active, fb(active.first.rule, 2));
-      expect(joints, active.first.requiredLandmarks);
+      expect(joints, containsAll(active.first.requiredLandmarks));
       expect(joints, isNotEmpty,
           reason: 'positive control: this rule declares joints at all');
+      expect(joints, isNot(contains(LandmarkType.nose)),
+          reason: 'widened along the body, not to the whole of it');
     });
 
     test('a clean verdict points at nothing', () {
@@ -212,6 +220,101 @@ void main() {
       // The movement changed mid-frame. Lighting the previous movement's
       // joints would be worse than lighting none.
       expect(avatarFaultJoints(active, fb('squat.depth', 2)), isEmpty);
+    });
+  });
+
+  group('and the two halves actually meet', () {
+    /// A whole frontal body, arms included, so every bone the skeleton can draw
+    /// is present.
+    PoseFrame whole() => PoseFrame(timestampMs: 0, landmarks: {
+          LandmarkType.leftShoulder: _p(LandmarkType.leftShoulder, 0.41, 0.30),
+          LandmarkType.rightShoulder:
+              _p(LandmarkType.rightShoulder, 0.59, 0.30),
+          LandmarkType.leftElbow: _p(LandmarkType.leftElbow, 0.38, 0.44),
+          LandmarkType.rightElbow: _p(LandmarkType.rightElbow, 0.62, 0.44),
+          LandmarkType.leftWrist: _p(LandmarkType.leftWrist, 0.36, 0.56),
+          LandmarkType.rightWrist: _p(LandmarkType.rightWrist, 0.64, 0.56),
+          LandmarkType.leftHip: _p(LandmarkType.leftHip, 0.43, 0.58),
+          LandmarkType.rightHip: _p(LandmarkType.rightHip, 0.57, 0.58),
+          LandmarkType.leftKnee: _p(LandmarkType.leftKnee, 0.43, 0.78),
+          LandmarkType.rightKnee: _p(LandmarkType.rightKnee, 0.57, 0.78),
+          LandmarkType.leftAnkle: _p(LandmarkType.leftAnkle, 0.43, 0.95),
+          LandmarkType.rightAnkle: _p(LandmarkType.rightAnkle, 0.57, 0.95),
+        });
+
+    /// The painter's own rule: a bone lights when BOTH of its ends are in the
+    /// fault region. Reproduced here rather than reached through the painter,
+    /// because a CustomPainter's chosen colours are not observable from a
+    /// widget test — which is precisely how this went unnoticed.
+    List<(LandmarkType?, LandmarkType?)> litBones(
+        SilhouetteFigure figure, Set<LandmarkType> region) {
+      expect(figure.segmentBones.length, figure.segments.length);
+      return [
+        for (final b in figure.segmentBones)
+          if (b.$1 != null &&
+              b.$2 != null &&
+              region.contains(b.$1) &&
+              region.contains(b.$2))
+            b,
+      ];
+    }
+
+    test('a fault from the one rule that can fault lights REAL bones', () {
+      // The test this gate should have had from the start, and the one whose
+      // absence let G6 ship as dead code: it crosses the boundary between the
+      // rule's declared joints and the skeleton's actual bone list. Both halves
+      // were tested on their own and both were correct on their own; their
+      // intersection was empty.
+      final region = avatarFaultJoints(
+        [PushupAlignmentClassifier()],
+        const FormFeedback(
+          rule: 'pushup.alignment',
+          severity: 2,
+          cueKey: FormCueKey.pushupAlignSagging,
+        ),
+      );
+      final lit = litBones(buildPoseAvatar(whole()), region);
+      expect(lit, isNotEmpty,
+          reason: 'no bone had both ends in the region, so the glow falls back '
+              'to the whole skeleton — the pre-G6 behaviour');
+      expect(lit, contains((LandmarkType.leftHip, LandmarkType.leftKnee)));
+      expect(lit, contains((LandmarkType.leftKnee, LandmarkType.leftAnkle)));
+    });
+
+    test('and it is a NARROWING — the arms stay dark', () {
+      // The other half of the claim. A region that lit every bone would pass
+      // the test above while being exactly the defect it was written for.
+      final region = avatarFaultJoints(
+        [PushupAlignmentClassifier()],
+        const FormFeedback(
+          rule: 'pushup.alignment',
+          severity: 2,
+          cueKey: FormCueKey.pushupAlignSagging,
+        ),
+      );
+      final figure = buildPoseAvatar(whole());
+      final lit = litBones(figure, region);
+      expect(lit.length, lessThan(figure.segments.length));
+      expect(lit, isNot(contains((LandmarkType.leftShoulder,
+          LandmarkType.leftElbow))));
+    });
+
+    test('a fault is about a body, not about its left half', () {
+      // Every classifier declares LEFT-keyed joints, because the avatar is
+      // built from one side and mirrored. Lighting only the left leg for a
+      // sagging hip would be reporting on a coordinate convention.
+      final region = avatarFaultJoints(
+        [PushupAlignmentClassifier()],
+        const FormFeedback(
+          rule: 'pushup.alignment',
+          severity: 2,
+          cueKey: FormCueKey.pushupAlignSagging,
+        ),
+      );
+      expect(region, contains(LandmarkType.rightHip));
+      expect(region, contains(LandmarkType.rightAnkle));
+      final lit = litBones(buildPoseAvatar(whole()), region);
+      expect(lit, contains((LandmarkType.rightHip, LandmarkType.rightKnee)));
     });
   });
 

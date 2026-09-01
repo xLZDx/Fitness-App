@@ -218,7 +218,8 @@ class _HudGreeting extends ConsumerWidget {
     final name =
         full.isEmpty ? l10n.homeAthlete : full.split(RegExp(r'\s+')).first;
 
-    final greeting = switch (greetingFor(DateTime.now())) {
+    // Through the provider, not off the wall clock: see [homeNowProvider].
+    final greeting = switch (greetingFor(ref.watch(homeNowProvider))) {
       DayGreeting.morning => l10n.homeGreetingMorning,
       DayGreeting.afternoon => l10n.homeGreetingAfternoon,
       DayGreeting.evening => l10n.homeGreetingEvening,

@@ -315,6 +315,25 @@ class CoachCueChip extends StatelessWidget {
 /// [RepQuality.severityByRule] at 0 is a rule that watched this repetition and
 /// had nothing to complain about. That is what earns the green tick — it is a
 /// pass, not an absence.
+/// Which rules earned a tick on a repetition, worst-name-order, capped.
+///
+/// Pulled out of the widget that renders them so the CAP is testable. It was
+/// asserted through the page — "no more than two chips on screen" — and that
+/// assertion could not fail: exactly one classifier is active per movement
+/// (`activeClassifiersProvider`), so a rep's [RepQuality.severityByRule] never
+/// holds more than one entry and a limit of 2, 10 or none at all produces the
+/// same screen. A cap nothing can exceed is not a cap that has been tested.
+///
+/// Sorted, so the two that survive the cap are the same two every time rather
+/// than whichever order a Map happened to yield.
+List<String> passedRules(Map<String, int> severityByRule, {int limit = 2}) {
+  final passed = [
+    for (final e in severityByRule.entries)
+      if (e.value <= 0) e.key,
+  ]..sort();
+  return passed.length <= limit ? passed : passed.sublist(0, limit);
+}
+
 CoachTone coachToneForSeverity(int severity) => switch (severity) {
       <= 0 => CoachTone.good,
       1 => CoachTone.warn,

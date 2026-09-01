@@ -172,20 +172,26 @@ void main() {
     // Off the last COMPLETED rep by design: a caption recomputed thirty times
     // a second is not readable, and the reference's tag is a verdict on a
     // repetition rather than a running commentary.
+    // Real, dotted rule ids. The first draft used invented ones
+    // ('squat_depth'), which `formRuleName` does not recognise — so it fell
+    // through to the raw-id fallback and the test proved only that SOME string
+    // reached the caption, never that a localised name did.
     final session = RepSessionState(
       repCount: 1,
       reps: [
-        _rep(severities: {'squat_depth': 2, 'torso_line': 0}),
+        _rep(severities: {'squat.depth': 2, 'pushup.alignment': 0}),
       ],
     );
     await tester.pumpWidget(_strip(_container(match: 0.62, session: session)));
     await tester.pump();
 
     final l10n = await AppLocalizations.delegate.load(kTestLocale);
-    expect(find.text(formRuleName(l10n, 'squat_depth')), findsOneWidget,
-        reason: 'the WORST rule, not the first one in the map');
-    expect(find.text(formRuleName(l10n, 'torso_line')), findsNothing,
+    expect(find.text(l10n.formcheckRuleSquatDepth), findsOneWidget,
+        reason: 'the WORST rule, in words, not the first one in the map');
+    expect(find.text(l10n.formcheckRulePushupAlignment), findsNothing,
         reason: 'and only that one — the gauge caption is one line');
+    expect(find.text('squat.depth'), findsNothing,
+        reason: 'and an internal id never reaches the user');
   });
 
   group('the counters panel is honest about having nothing yet', () {
@@ -254,9 +260,37 @@ void main() {
     expect(find.byKey(const Key('form_check.hud.passed_rules')), findsOneWidget);
     expect(find.byKey(Key('form_check.hud.passed_rule.${passed.first}')),
         findsOneWidget);
-    // Never more than two: the picture behind the chips is what the user came
-    // to look at.
-    expect(find.byType(CoachCueChip).evaluate().length, lessThanOrEqualTo(2));
+    // The CAP is asserted on `passedRules` instead of here. Through the page it
+    // cannot fail: exactly one classifier is active per movement, so a rep
+    // never carries more than one rule and `lessThanOrEqualTo(2)` holds with
+    // the cap removed entirely. See the group below.
+  });
+
+  group('the tick chips are capped, and the cap is falsifiable', () {
+    test('more passing rules than fit are cut down to the limit', () {
+      // Three rules, which no shipped movement can currently produce — and
+      // that is exactly why this is a unit test on the selection rather than a
+      // widget test on the screen. A cap tested only through a screen that can
+      // never exceed it is not tested at all.
+      expect(passedRules(const {'c': 0, 'a': 0, 'b': 0}), ['a', 'b']);
+    });
+
+    test('and fewer are all kept', () {
+      expect(passedRules(const {'a': 0}), ['a']);
+    });
+
+    test('a rule that complained is not a rule that passed', () {
+      expect(passedRules(const {'a': 1, 'b': 0}), ['b']);
+      expect(passedRules(const {'a': 2}), isEmpty);
+    });
+
+    test('the survivors are the same two on every run', () {
+      // Sorted, not Map-order. Two runs over maps built in different orders
+      // must show the same chips, or the screen flickers between equally
+      // valid answers.
+      expect(passedRules(const {'z': 0, 'y': 0, 'x': 0}),
+          passedRules(const {'x': 0, 'z': 0, 'y': 0}));
+    });
   });
 
   testWidgets('once a rep completes the panel stops saying «—»',

@@ -175,48 +175,48 @@ PoseTarget? avatarTargetFrom(
     }
   }
 
-  if (leftOk && rightOk) {
-    collect(_leftChain, _leftChain);
-    collect(_rightChain, _rightChain);
-  } else if (leftOk) {
-    collect(_leftChain, _leftChain);
-  } else {
-    // Only the right side is believable. Re-keyed onto the left, which makes
-    // this a mid-line figure exactly like an authored target, and
-    // `buildSilhouette` mirrors it back out to both sides itself. Drawing a
-    // lone half-body would be the honest reading of the data and an unusable
-    // picture.
-    //
-    // The latch takes no part here: it holds RIGHT-keyed joints, and this
-    // branch has just moved the surviving side onto the left keys, so pairing
-    // the two would draw one real side twice under two different names.
-    collect(_rightChain, _leftChain);
-    latch?.reset();
-  }
+  // Which physical side of the body is the believable one this frame, and
+  // which is the far one. The NEAR side is always emitted under the left keys
+  // — that is what makes a one-sided figure a mid-line one, exactly like an
+  // authored target, which `buildSilhouette` then mirrors back out to both
+  // sides itself. Drawing a lone half-body would be the honest reading of the
+  // data and an unusable picture.
+  //
+  // Written as near/far rather than as left/right because the latch below has
+  // to work for a lifter standing either way round. It used to key off `leftOk`
+  // directly, which meant a body whose reliable side was its RIGHT reset the
+  // latch on every frame its left side flickered — the pre-G6 snap, alive for
+  // half of all stances, under a test suite that only ever dropped the right
+  // side. Found by review, not by the tests.
+  final nearIsLeft = leftOk;
+  final nearChain = nearIsLeft ? _leftChain : _rightChain;
+  final farChain = nearIsLeft ? _rightChain : _leftChain;
+  final farOk = leftOk && rightOk;
 
-  if (leftOk) {
-    // Observed on a two-sided frame, held on a one-sided one. The near
-    // shoulder and the torso length are what bound the hold in space — see
-    // [AvatarFarSideLatch.gate].
-    final nearShoulder = joints[LandmarkType.leftShoulder];
-    final nearHip = joints[LandmarkType.leftHip];
-    final torso = nearShoulder == null || nearHip == null
-        ? 0.0
-        : _distance(nearShoulder, nearHip);
-    final observed = rightOk
+  collect(nearChain, _leftChain);
+  if (farOk) collect(farChain, _rightChain);
+
+  // Observed on a two-sided frame, held on a one-sided one. The near shoulder
+  // and the torso length are what bound the hold in space — see
+  // [AvatarFarSideLatch.gate].
+  final nearShoulder = joints[LandmarkType.leftShoulder];
+  final nearHip = joints[LandmarkType.leftHip];
+  final torso = nearShoulder == null || nearHip == null
+      ? 0.0
+      : _distance(nearShoulder, nearHip);
+  final far = latch?.gate(
+    observed: farOk
         ? {
             for (final t in _rightChain)
               if (joints.containsKey(t)) t: joints[t]!,
           }
-        : null;
-    final far = latch?.gate(
-      observed: observed,
-      nearShoulder: nearShoulder,
-      torso: torso,
-      timestampMs: frame.timestampMs,
-    );
-    if (far != null && !rightOk) joints.addAll(far);
-  }
+        : null,
+    nearIsLeft: nearIsLeft,
+    nearShoulder: nearShoulder,
+    torso: torso,
+    timestampMs: frame.timestampMs,
+  );
+  if (far != null && !farOk) joints.addAll(far);
 
   // The torso is the one hard requirement, and `_hasTorso` has already proved
   // it for whichever side got collected. A partial limb is dropped by
@@ -276,6 +276,7 @@ class AvatarFarSideLatch {
   (double, double)? _anchor;
   double _torso = 0;
   int _atMs = 0;
+  bool _nearIsLeft = true;
 
   /// Forget everything. Call when the stream restarts or the mode is left.
   void reset() {
@@ -290,8 +291,14 @@ class AvatarFarSideLatch {
   /// [observed] is what the detector actually reported for the far side this
   /// frame — non-null and non-empty means there is nothing to latch for, and
   /// the fresh observation both wins and becomes the new held value.
+  /// [nearIsLeft] says which physical side of the body was believable this
+  /// frame. A held far side only describes the body it was taken from: if the
+  /// lifter turns so that the OTHER side becomes the near one, the joints held
+  /// belong to the side that is now nearest the camera and drawing them as the
+  /// far one would fold the body through itself.
   Map<LandmarkType, (double, double)>? gate({
     required Map<LandmarkType, (double, double)>? observed,
+    required bool nearIsLeft,
     required (double, double)? nearShoulder,
     required double torso,
     required int timestampMs,
@@ -301,11 +308,16 @@ class AvatarFarSideLatch {
       _anchor = nearShoulder;
       _torso = torso;
       _atMs = timestampMs;
+      _nearIsLeft = nearIsLeft;
       return _far;
     }
 
     final held = _far;
     if (held == null) return null;
+    if (nearIsLeft != _nearIsLeft) {
+      reset();
+      return null;
+    }
 
     // A clock that went backwards is a new stream, not a 0ms-old latch.
     final age = timestampMs - _atMs;
