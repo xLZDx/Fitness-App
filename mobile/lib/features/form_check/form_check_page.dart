@@ -116,7 +116,9 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     super.initState();
     _demo = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      // Halved, operator: "надо снизить скорость силуета в двое" -- was
+      // 1000ms each way (2s per full up-down cycle), now 2000ms (4s/cycle).
+      duration: const Duration(milliseconds: 2000),
     );
     WidgetsBinding.instance.addObserver(this);
     // The rep session and the match readout are app-scoped, so they outlive

@@ -38418,3 +38418,32 @@ provenance being silently overwritten, exactly the risk `project-repo-runs-concu
 the two new files carry today's provenance; the rest are untouched. Worth a future fix: point
 `report_conform.py` at the specific new file(s) rather than the whole directory when only
 publishing one report.
+
+## 2026-08-31 -- Demo silhouette animation speed halved; poseMatchScore fix's residual "missed" cues investigated as far as possible without a live body
+
+**Trigger**: operator, after confirming reps now count roughly correctly on a real device:
+"не дошли до силуэта по прежнему осталось но додходы считает примерно правильно... надо снизить
+скорость силуета в двое" -- the "missed the silhouette" cue still appears, but reps are now
+counting approximately correctly; asked to halve the demo silhouette's animation speed and check
+on S23.
+
+**Speed change**: `_demo` (`form_check_page.dart:117-120`), an `AnimationController` driving
+`_syncDemo`'s `repeat(reverse: true)` -- duration `1000ms` -> `2000ms` per half-cycle (2s -> 4s
+for a full up-down loop). `flutter analyze` clean, 417/417 tests unaffected (no test asserted this
+duration). Built and installed via debug APK on S23 (`R5CW142SASR`); S8
+(`ce02171299f0711005`) was not reachable this round (adb daemon restarted mid-session, device not
+re-enumerated -- not investigated further, not blocking this request).
+
+**On "не дошли до силуэта" (formcheckCueSilhouetteMissed) still appearing**: cannot reproduce or
+further diagnose without a live tracked body -- confirmed via two screenshots ~0.5s apart on S23
+that the centred/contained silhouette fix (xScale) still holds, but that says nothing about a
+completed rep's peak match score, which only exists with a real person moving through the
+movement. Reasoned explicitly, and said so to the operator rather than guessing: the operator's
+own report -- reps now counting "примерно правильно" (some passing, presumably some not) -- is
+consistent with the `poseMatchScore` fix (`7c1d123`) working as intended, not with it still being
+broken. Before that fix a real, perfect match capped at ~0.74 and NOTHING could ever pass; a mix of
+passing and missing reps is what a genuinely discriminating scorer against a strict 0.80 threshold
+looks like on a real, imperfectly-executed set -- especially given the target is a specific
+side-view shape and `poseMatchScore`'s own doc already states viewing angle is not normalised
+away. Asked the operator directly whether the cue fires on literally every rep (would point to a
+residual bug) or only some (expected, working as intended) rather than assuming either.
