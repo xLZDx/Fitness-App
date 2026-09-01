@@ -38616,3 +38616,59 @@ wrist and elbow provide slack. That has to be settled together with the exclusio
 силуэта" instead of naming the fault. The machinery for a specific cue already exists -- the
 per-joint breakdown added for this investigation is what identified knee and hip as the dominant
 error terms -- but turning a debug line into an actionable sentence is its own gate.
+
+## 2026-09-01 -- Elbow excluded too; GPT-PM round 2 kept the squat gate OPEN
+
+GPT-PM's verification round on `a7c9a91` returned **`VERDICT: MAJOR` -- the gate is not closed**,
+on the arm-position regression above. Its remediation, approved and now implemented:
+
+- **`leftElbow` joins `leftWrist` in `squatBottomTarget.unscoredJoints`.** The scored set is now
+  shoulder + hip + knee + ankle. Both arm joints stay in `joints`/`bones` and keep drawing a human
+  silhouette; they simply take no part in pass/fail. GPT-PM: *"scoring реагирует на не относящуюся
+  к squat correctness степень свободы"*.
+- **The regression test asserts EQUALITY, not both-pass.** GPT-PM specifically asked for
+  `arms forward == arms down` rather than `both > 0.80`, because two scores either side of the line
+  would satisfy the weaker assertion while leaving the coach sensitive to a degree of freedom that
+  has nothing to do with squatting. Implemented to 1e-9.
+- **Four-joint minimum kept (option (a)).** Not lowered to three, and no bilateral averaging in this
+  gate. Reasoning, GPT-PM's and endorsed here: the scorer deliberately answers "cannot tell" rather
+  than "bad technique" below four joints, and relaxing that guarantee at the same moment noisy
+  signals are being removed would trade a known conservative failure mode for a new false-positive
+  surface. Left/right averaging (`rep_signals.dart`'s `_mid` pattern) is genuinely promising but
+  changes the measurement layer, and on a side view the far limb is often a model estimate rather
+  than an independent second measurement -- averaging a good near-side landmark with a poor inferred
+  far-side one can be worse, not better. ROADMAP, pending measurement.
+- **Two further tests** assert the scored set explicitly, and assert that losing any ONE scored joint
+  yields `null` while losing either arm joint costs nothing -- so the four-joint minimum is a stated
+  contract rather than something a future edit discovers in production.
+- **Instrumentation, not behaviour** (GPT-PM required this before closing): each rep now logs
+  `frames=N scored/M unscoreable`. Four scored joints is exactly the minimum, so any one dropping
+  below the likelihood threshold now costs the whole frame where the arm joints used to provide
+  slack. A few unscoreable frames near the bottom are expected and harmless; whole correct reps
+  coming back unscoreable would be evidence for the landmark-stabilisation decision, and this is how
+  that would be noticed rather than assumed away.
+
+**Gate status: still OPEN.** It closes on a bounded device run that shows correct-squat-arms-forward
+passing, correct-squat-arms-down passing, those two scoring essentially the same, shallow failing,
+hip-above-knee failing, and the frame instrumentation showing normal reps remain scoreable.
+
+**Order of the next gates, set by GPT-PM and deliberately not the obvious one:**
+`squat A+B` → `POSE_TARGET_ISOTROPIC_COORDINATE_MIGRATION` → `FORM_COACH_SQUAT_DIAGNOSTIC_CUES`.
+The diagnostic cues wait for the coordinate migration on purpose: a fault classifier built on
+residuals whose target geometry still changes with the phone's aspect ratio could diagnose "a knee
+error" on another device purely from the coordinate convention.
+
+**On the cues, a constraint worth recording** (GPT-PM, and it corrects an assumption in my own
+proposal): the largest residual is NOT automatically the fault. `poseMatchScore` centres and scales
+the whole joint set first, so moving one joint shifts the centroid and RMS and redistributes residual
+across the others. Residuals are a good instrument for finding a candidate, not a causal
+classification. Wording must match the strength of evidence -- "положение колена отличается от
+целевой позиции" may be provable where "вы слишком сильно выводите колени вперёд" is not -- and a
+"lost balance" class is refused outright from static geometry. One actionable cue per rep, generic
+fallback when the evidence is ambiguous. Division of labour: implementer brings a data-backed
+taxonomy proposal, GPT-PM approves what the product is allowed to claim and owns the final wording.
+
+**Observed while testing, out of scope, recorded so it is not lost:** the operator switched the
+coach to `hinge.bottom` and six reps scored 0.512 / 0.855 / 0.798 / 0.736 / 0.817 / 0.825 -- mixed,
+right on the line. Unlike the squat the arm residuals there are small (0.02-0.24); shoulder and hip
+carry the error. That target has NOT been through the measurement this gate applied to the squat.

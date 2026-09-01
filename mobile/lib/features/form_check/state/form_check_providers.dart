@@ -913,6 +913,20 @@ class RepSessionController extends Notifier<RepSessionState> {
   PoseFrame? _deepestFrameThisRep;
   double? _deepestThisRep;
 
+  /// How many frames of the rep could and could not be scored.
+  ///
+  /// Required by GPT-PM before the squat gate closes, and it is instrumentation
+  /// rather than a change of behaviour: excluding the elbow leaves the squat
+  /// with exactly four scored joints, which is `poseMatchScore`'s own minimum,
+  /// so any one of them dropping below the likelihood threshold now yields no
+  /// score for that frame where previously the arm joints provided slack. A few
+  /// unscoreable frames around the bottom are expected and harmless — the peak
+  /// is taken over the frames that DID score. Whole correct repetitions coming
+  /// back unscoreable would be a different matter, and this is how that would
+  /// be noticed rather than assumed away.
+  int _scoredFramesThisRep = 0;
+  int _unscoredFramesThisRep = 0;
+
   @override
   RepSessionState build() {
     final svc = ref.watch(poseDetectorServiceProvider);
@@ -1036,6 +1050,16 @@ class RepSessionController extends Notifier<RepSessionState> {
     // descent (top before, descending after) and the one that completes the
     // lap (ascending before, top after). Neither belongs to the rest state.
     if (wasInRep || counter.phase != RepPhase.top) {
+      assert(() {
+        if (target != null) {
+          if (match == null) {
+            _unscoredFramesThisRep++;
+          } else {
+            _scoredFramesThisRep++;
+          }
+        }
+        return true;
+      }());
       if (match != null && match > (_peakMatchThisRep ?? -1)) {
         _peakMatchThisRep = match;
         assert(() {
@@ -1111,7 +1135,8 @@ class RepSessionController extends Notifier<RepSessionState> {
           'peak=${peak?.toStringAsFixed(3) ?? "-"} '
           'pass=$kPoseMatchPassing missed=$missed gate=${ref.read(
         poseGateVerdictProvider,
-      )}');
+      )} frames=$_scoredFramesThisRep scored/'
+          '$_unscoredFramesThisRep unscoreable');
       final f = _peakFrameThisRep;
       if (f != null && target != null) {
         debugPrint('[rep]   ${debugMatchBreakdown(f, target)}');
@@ -1140,6 +1165,8 @@ class RepSessionController extends Notifier<RepSessionState> {
     _peakFrameThisRep = null;
     _deepestFrameThisRep = null;
     _deepestThisRep = null;
+    _scoredFramesThisRep = 0;
+    _unscoredFramesThisRep = 0;
 
     state = RepSessionState(
       repCount: counter.repCount,
@@ -1200,6 +1227,8 @@ class RepSessionController extends Notifier<RepSessionState> {
     _peakFrameThisRep = null;
     _deepestFrameThisRep = null;
     _deepestThisRep = null;
+    _scoredFramesThisRep = 0;
+    _unscoredFramesThisRep = 0;
 
     // Only the silhouette is allowed to blame the user for a rejection. The
     // counter's own signal is hip-height-minus-knee-height — the same
@@ -1256,6 +1285,8 @@ class RepSessionController extends Notifier<RepSessionState> {
     _peakFrameThisRep = null;
     _deepestFrameThisRep = null;
     _deepestThisRep = null;
+    _scoredFramesThisRep = 0;
+    _unscoredFramesThisRep = 0;
     unawaited(ref.read(voiceCoachProvider).stop());
     state = const RepSessionState();
   }

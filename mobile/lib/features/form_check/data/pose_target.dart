@@ -123,6 +123,17 @@ class PoseTarget {
   /// about squatting; it makes the coach randomly strict about where the hands
   /// happen to point.
   ///
+  /// The ELBOW joined it hours later, on the operator's own device and for a
+  /// blunter reason: with the wrist excluded but the elbow still judged, a
+  /// correct squat passed at 0.891 with the arms held forward and failed at
+  /// 0.772 with the arms tucked at the sides. Same legs, same torso, same limb
+  /// lengths — only the direction of the arms changed. Where a lifter puts
+  /// their hands is not what a squat is judged on, and GPT-PM had declined the
+  /// elbow in the previous round precisely because that evidence did not exist
+  /// yet; it does now. With both excluded the two arm positions score 0.919
+  /// and 0.919, and `pose_target_test.dart` asserts that equality rather than
+  /// merely asserting both pass, so the invariance is the contract.
+  ///
   /// A score therefore means "the SCORED target geometry was reached", never
   /// "every drawn part of the silhouette was matched".
   final Set<LandmarkType> unscoredJoints;
@@ -235,7 +246,7 @@ const squatBottomTarget = PoseTarget(
     LandmarkType.leftAnkle: (0.49, 0.93),
   },
   bones: _sideViewBones,
-  unscoredJoints: {LandmarkType.leftWrist},
+  unscoredJoints: {LandmarkType.leftWrist, LandmarkType.leftElbow},
 );
 
 /// A push-up at the top: one straight line from shoulder to ankle, arms under

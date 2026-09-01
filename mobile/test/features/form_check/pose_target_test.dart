@@ -801,6 +801,85 @@ void main() {
           squatBottomTarget.unscoredJoints, contains(LandmarkType.leftWrist));
     });
 
+    test('where the hands are held does not change the score at all', () {
+      // FORMCOACH_SQUAT_ARMS_INVARIANT_2026-09-01. The operator, on the device,
+      // minutes after the target was re-authored: a rep counted and the avatar
+      // glowed green ONLY with the arms held forward; tucked at the sides it
+      // failed with the same cue. Reproduced here by changing the DIRECTION of
+      // the arms while taking each limb's length from that same frame, so
+      // anatomy is held constant and only placement moves.
+      //
+      // GPT-PM required this be asserted as an equality rather than as "both
+      // pass": two scores either side of the line would satisfy the weaker
+      // assertion while leaving the coach sensitive to a degree of freedom that
+      // has nothing to do with squatting.
+      for (final rep in measuredDeepReps) {
+        final shoulder = rep[LandmarkType.leftShoulder]!;
+        final elbow = rep[LandmarkType.leftElbow]!;
+        final wrist = rep[LandmarkType.leftWrist]!;
+        final upper = math.sqrt(math.pow(elbow.$1 - shoulder.$1, 2) +
+            math.pow(elbow.$2 - shoulder.$2, 2));
+        final fore = math.sqrt(math.pow(wrist.$1 - elbow.$1, 2) +
+            math.pow(wrist.$2 - elbow.$2, 2));
+        final tucked = {
+          ...rep,
+          LandmarkType.leftElbow: (shoulder.$1, shoulder.$2 + upper),
+          LandmarkType.leftWrist: (shoulder.$1, shoulder.$2 + upper + fore),
+        };
+
+        final forward = poseMatchScore(frameOf(rep), squatBottomTarget)!;
+        final down = poseMatchScore(frameOf(tucked), squatBottomTarget)!;
+        expect(down, closeTo(forward, 1e-9),
+            reason: 'arms forward ${forward.toStringAsFixed(3)} vs arms down '
+                '${down.toStringAsFixed(3)}; before the elbow was excluded '
+                'these were 0.891 and 0.772, i.e. pass and fail');
+        expect(forward, greaterThan(kPoseMatchPassing));
+      }
+    });
+
+    test('the scored set is exactly shoulder, hip, knee and ankle', () {
+      // Named explicitly so a future edit to `unscoredJoints` has to confront
+      // the four-joint minimum below rather than discover it in production.
+      final scored = squatBottomTarget.joints.keys
+          .where((j) => !squatBottomTarget.unscoredJoints.contains(j))
+          .toSet();
+      expect(
+          scored,
+          unorderedEquals([
+            LandmarkType.leftShoulder,
+            LandmarkType.leftHip,
+            LandmarkType.leftKnee,
+            LandmarkType.leftAnkle,
+          ]));
+    });
+
+    test('losing any one scored joint yields no answer, never a low score', () {
+      // Four scored joints is exactly `poseMatchScore`'s minimum, so the squat
+      // now has no slack: GPT-PM chose to keep that conservative failure mode
+      // (option (a)) rather than relax the minimum to three, because "cannot
+      // tell" must never be reported as "bad technique". This asserts the
+      // consequence rather than leaving it implicit.
+      for (final missing in [
+        LandmarkType.leftShoulder,
+        LandmarkType.leftHip,
+        LandmarkType.leftKnee,
+        LandmarkType.leftAnkle,
+      ]) {
+        final rep = Map.of(measuredDeepReps.first)..remove(missing);
+        expect(poseMatchScore(frameOf(rep), squatBottomTarget), isNull,
+            reason: 'dropping ${missing.name} must produce no score');
+      }
+      // ...while losing an UNSCORED joint costs nothing.
+      for (final missing in [
+        LandmarkType.leftElbow,
+        LandmarkType.leftWrist,
+      ]) {
+        final rep = Map.of(measuredDeepReps.first)..remove(missing);
+        expect(poseMatchScore(frameOf(rep), squatBottomTarget), isNotNull,
+            reason: '${missing.name} is drawn, not judged');
+      }
+    });
+
     test('the re-authored target is an anatomically possible body', () {
       // The check that would have caught the original defect, in the space the
       // joints are actually compared in.
