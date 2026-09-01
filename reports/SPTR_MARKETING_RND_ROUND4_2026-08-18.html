@@ -1,0 +1,573 @@
+<title>SPTR Marketing R&D Round Four</title>
+<style>
+  :root {
+    --paper: #F4F2ED;
+    --surface: #FCFBF8;
+    --sunk: #E9E6DE;
+    --ink: #16191A;
+    --muted: #5D6465;
+    --rule: #D8D4CA;
+    --accent: #10615C;
+    --exists: #146B52;
+    --exists-soft: #DBEAE2;
+    --commit: #1B5580;
+    --commit-soft: #DAE6F0;
+    --hypo: #8A5A0B;
+    --hypo-soft: #F1E6D1;
+    --never: #93302B;
+    --never-soft: #F1DEDB;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #101312;
+      --surface: #171B1A;
+      --sunk: #1D2221;
+      --ink: #E6E8E6;
+      --muted: #929A99;
+      --rule: #29302E;
+      --accent: #5CBFB6;
+      --exists: #56C295;
+      --exists-soft: #122420;
+      --commit: #74AEDF;
+      --commit-soft: #111F2A;
+      --hypo: #DBA35C;
+      --hypo-soft: #271F11;
+      --never: #E4857D;
+      --never-soft: #2A1817;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #101312;
+    --surface: #171B1A;
+    --sunk: #1D2221;
+    --ink: #E6E8E6;
+    --muted: #929A99;
+    --rule: #29302E;
+    --accent: #5CBFB6;
+    --exists: #56C295;
+    --exists-soft: #122420;
+    --commit: #74AEDF;
+    --commit-soft: #111F2A;
+    --hypo: #DBA35C;
+    --hypo-soft: #271F11;
+    --never: #E4857D;
+    --never-soft: #2A1817;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: "Segoe UI", -apple-system, "Helvetica Neue", system-ui, sans-serif;
+    font-size: 16px; line-height: 1.58; margin: 0; padding: 0 22px 88px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; }
+
+  .masthead { padding: 60px 0 24px; border-bottom: 3px solid var(--accent); }
+  .kicker {
+    font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 6px 20px; margin-bottom: 16px;
+  }
+  h1 {
+    font-size: clamp(29px, 4.9vw, 47px); line-height: 1.06; letter-spacing: -0.018em;
+    font-weight: 600; margin: 0 0 14px; text-wrap: balance;
+  }
+  .standfirst { font-size: 17.5px; color: var(--muted); max-width: 66ch; margin: 0; }
+
+  section { padding: 40px 0 6px; border-bottom: 1px solid var(--rule); }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+  .sec-tag {
+    font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; font-size: 12px;
+    color: var(--accent); font-weight: 600; letter-spacing: 0.05em; padding-top: 3px;
+  }
+  h2 { font-size: clamp(21px, 2.9vw, 28px); line-height: 1.16; font-weight: 600; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+  h3 { font-size: 16.5px; font-weight: 600; margin: 24px 0 8px; }
+  p { margin: 0 0 13px; max-width: 74ch; }
+  ul, ol { margin: 0 0 13px; padding-left: 20px; max-width: 74ch; }
+  li { margin-bottom: 5px; }
+  li::marker { color: var(--muted); }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  code, .mono { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; font-size: 0.87em; }
+
+  .chip {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 2px 7px; border-radius: 2px; white-space: nowrap;
+  }
+  .chip.exists { background: var(--exists-soft); color: var(--exists); }
+  .chip.commit { background: var(--commit-soft); color: var(--commit); }
+  .chip.hypo { background: var(--hypo-soft); color: var(--hypo); }
+  .chip.never { background: var(--never-soft); color: var(--never); }
+  .chip.flat { background: var(--sunk); color: var(--muted); }
+
+  .scroll { overflow-x: auto; margin-bottom: 16px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 620px; }
+  th {
+    text-align: left; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--ink); padding: 0 11px 6px 0;
+  }
+  td { padding: 9px 11px 9px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tbody tr:hover { background: var(--surface); }
+
+  /* territory cards */
+  .terr {
+    border: 1px solid var(--rule); background: var(--surface);
+    border-left: 4px solid var(--rule); padding: 18px 20px; margin-bottom: 14px;
+  }
+  .terr.is-exists { border-left-color: var(--exists); }
+  .terr.is-commit { border-left-color: var(--commit); }
+  .terr.is-hypo { border-left-color: var(--hypo); }
+  .terr-top { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 9px; }
+  .terr-rank {
+    font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; font-size: 13px;
+    color: var(--muted); font-variant-numeric: tabular-nums;
+  }
+  .terr h3 { margin: 0; font-size: 18px; }
+  .terr .promise {
+    font-size: 17px; font-weight: 600; color: var(--accent); margin: 0 0 10px; max-width: 56ch;
+  }
+  .terr dl { margin: 0; display: grid; grid-template-columns: 1fr; gap: 7px 22px; }
+  @media (min-width: 760px) { .terr dl { grid-template-columns: max-content 1fr; } }
+  .terr dt {
+    font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted);
+    font-weight: 700; padding-top: 3px;
+  }
+  .terr dd { margin: 0; font-size: 14.5px; max-width: 70ch; }
+
+  .hook {
+    border-left: 3px solid var(--rule); padding: 3px 0 3px 16px; margin: 0 0 15px;
+  }
+  .hook .line { font-size: 19px; font-weight: 600; line-height: 1.28; max-width: 44ch; letter-spacing: -0.008em; }
+  .hook .ru { font-size: 16px; color: var(--ink); margin-top: 5px; max-width: 44ch; }
+  .hook .meta { font-size: 13px; color: var(--muted); margin-top: 6px; max-width: 66ch; }
+  .hook.top { border-left-color: var(--accent); }
+
+  .box {
+    border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface);
+    padding: 16px 18px; margin: 0 0 16px; max-width: 76ch;
+  }
+  .box .lbl {
+    display: block; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    font-weight: 700; color: var(--accent); margin-bottom: 6px;
+  }
+  .box.never { border-left-color: var(--never); }
+  .box.never .lbl { color: var(--never); }
+  .box p:last-child { margin-bottom: 0; }
+
+  footer { padding: 32px 0 0; color: var(--muted); font-size: 13.5px; }
+  .src { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; font-size: 12px; word-break: break-word; }
+  .src a { color: var(--muted); }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">
+    <span>Round four · marketing R&amp;D mode</span>
+    <span>Territories · brand · hooks · product backlog</span>
+    <span>2026-08-18</span>
+    <span>master 78b24dc</span>
+  </div>
+  <h1>The strongest position this product can own is already built, and nobody noticed it for three rounds</h1>
+  <p class="standfirst">Under the new rule — a promise the current build cannot keep becomes a product requirement, not a deletion — the search widened. It found something narrower and better than any of the previous candidates: every gym machine worth naming has its name printed on it in English, most of this product's market cannot read English, and the app already reads that English label and answers in Russian. That capability ships today, no competitor in this category has it, and it converts the one mechanic everyone called a commodity into the one thing that is hard to follow.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<!-- A -->
+<section>
+  <div class="sec-head"><span class="sec-tag">A</span><h2>Ten differentiated territories, ranked</h2></div>
+  <p>Ranked by differentiation × conversion value ÷ (build cost + proof cost). Status uses the operator's four classes.</p>
+
+  <div class="terr is-exists">
+    <div class="terr-top"><span class="terr-rank">01</span><span class="chip exists">Exists now</span><h3>The machine is labelled in English. The user is not.</h3></div>
+    <p class="promise">"Сфотографируй тренажёр — он объяснит по-русски."</p>
+    <dl>
+      <dt>Pain</dt><dd>Nautilus, Precor, Life Fitness, Technogym and Star Trac print the exercise name on the shroud — in English, everywhere in the world. A Russian-speaking beginner in Chisinau, Almaty or Kazan is standing in front of an instruction they cannot read, on a machine they cannot name, and the internet's answer is also in English.</dd>
+      <dt>Gap</dt><dd>All four camera-scan competitors are English-only products. A check for a Russian-language machine-recognition app surfaced none — Russian gym apps are planners, trackers and AI-coach chat. The mechanic is a commodity in English and appears unoccupied in Russian.</dd>
+      <dt>Status</dt><dd><strong>Built and verified.</strong> All 69 equipment types carry English <em>and</em> Russian aliases in one list, so an English nameplate resolves regardless of interface language; the catalog is Russian for 1,887 of 1,887 entries with full step lists; UI strings are at 1,101 of 1,101 parity.</dd>
+      <dt>Build</dt><dd>None for the capability. What is missing is the <em>claim</em>: nobody has measured the anchor end to end on non-Latin-market photos, and that measurement is the only thing standing between this and a headline.</dd>
+      <dt>Proof</dt><dd>Run the text anchor over a labelled set of real nameplate photos and report the hit rate. This is the single highest-value measurement in the whole backlog.</dd>
+      <dt>Value</dt><dd>Acquisition, brand memory, and a genuine moat — a competitor has to build a full Russian catalog, not translate a landing page.</dd>
+      <dt>Verdict</dt><dd><strong>Bet the positioning on this.</strong></dd>
+    </dl>
+  </div>
+
+  <div class="terr is-commit">
+    <div class="terr-top"><span class="terr-rank">02</span><span class="chip commit">Committed before marketing</span><h3>The machine remembers you</h3></div>
+    <p class="promise">"You've been here before. 45 kg, ten reps, two weeks ago."</p>
+    <dl>
+      <dt>Pain</dt><dd>Recognition is a one-time novelty — both earlier rounds flagged it and neither solved it. Nobody scans the same machine twice to be told what it is. They would scan it every week to be told what they lifted on it.</dd>
+      <dt>Gap</dt><dd>Every logger is exercise-anchored: "leg press — 45 kg" lives in a list you have to go and open. Nothing surfaces your own history at the moment you are physically standing at the machine, because nothing else knows which machine you are standing at.</dd>
+      <dt>Status</dt><dd><strong>Mostly assembled already.</strong> Log rows carry <span class="mono">exerciseId</span>, catalog exercises carry <span class="mono">equipmentId</span> for 1,384 of 1,887, so machine-level history is derivable from shipped data with no schema change. And <span class="mono">suggestNextWeight()</span> already exists with real rules — deload 5 % after a "too hard", +5 % after three easy sessions at target reps.</dd>
+      <dt>Build</dt><dd><span class="chip flat">Low</span> Group existing history by equipment id and render it on the scan result. The physical-instance version — <em>this</em> leg press rather than leg presses in general — needs a new gym-and-unit entity and is High; do not promise it yet.</dd>
+      <dt>Proof</dt><dd>Trivially demonstrable on video. No measurement needed.</dd>
+      <dt>Value</dt><dd>Retention. This is what turns the hook into a habit, and it is the cheapest high-value item in the backlog.</dd>
+    </dl>
+  </div>
+
+  <div class="terr is-commit">
+    <div class="terr-top"><span class="terr-rank">03</span><span class="chip commit">Committed before marketing</span><h3>Setup, not identity — the seat and the pin</h3></div>
+    <p class="promise">"Knowing the name is the easy part. Where does the seat go?"</p>
+    <dl>
+      <dt>Pain</dt><dd>Nobody is defeated by not knowing a machine's <em>name</em>. They are defeated by the seat being at someone else's height, the pad hitting the wrong part of the shin, and the pin being in a hole they cannot see the logic of. Naming the machine and then leaving the user to guess the geometry solves the smaller half of the problem.</dd>
+      <dt>Gap</dt><dd>The whole category treats an exercise as the atom. Setup belongs to the machine, not the exercise, which is why an exercise library cannot carry it — and why an app that identifies machines is the only one shaped to hold it.</dd>
+      <dt>Status</dt><dd><strong>Absent, and the content is not hiding in the catalog.</strong> With word-boundary matching, only 467 of 1,887 exercises mention seat, pad, pin, adjust or height at all, and just 83 of the 186 machine-labelled ones. Neither the exercise nor the equipment record has a field for it.</dd>
+      <dt>Build</dt><dd><span class="chip flat">Low–Medium</span> — and this is the finding that matters: because setup attaches to the machine, the authoring job is <strong>69 records, not 1,887</strong>. One nullable field plus 69 short setup cards, in two languages.</dd>
+      <dt>Proof</dt><dd>Content review, not measurement. Keep it mechanical — where things go, not what is safe.</dd>
+      <dt>Value</dt><dd>Acquisition and trust. It is also the most demonstrable thing on a landing page: a photo of a seat at the wrong height needs no explanation.</dd>
+    </dl>
+  </div>
+
+  <div class="terr is-exists">
+    <div class="terr-top"><span class="terr-rank">04</span><span class="chip exists">Exists now</span><h3>The machine it doesn't know gets added because you pointed at it</h3></div>
+    <p class="promise">"Not in here yet. Now it is on the list, with your photo."</p>
+    <dl>
+      <dt>Pain</dt><dd>Every recognition product fails silently on the machine it has never seen and returns the nearest wrong answer.</dd>
+      <dt>Gap</dt><dd>Unoccupied, and structurally awkward for anyone whose pitch is that their AI recognises everything. Admitting a miss contradicts their headline; here it <em>is</em> the headline.</dd>
+      <dt>Status</dt><dd><strong>Built, persisted and user-visible.</strong> An unrecognised machine produces a record carrying what the model could tell plus the user's photograph as the only evidence of what they actually pointed at, shown as "Content being prepared" and moving through a real lifecycle to <span class="mono">inCatalog</span> or <span class="mono">declined</span>. Cards from two gyms merge into one, so a machine two people photograph is prioritised twice.</dd>
+      <dt>Build</dt><dd>None for the mechanism. Marketable only once there is a stated fill rate — a promise like "photographed machines get added inside a month" needs someone to actually do it.</dd>
+      <dt>Proof</dt><dd>Publish the fill rate honestly, or make no time promise at all.</dd>
+      <dt>Value</dt><dd>Trust proof plus a compounding data asset: coverage of the machines actually present in the gyms of one specific market. That is the only moat here that grows while you sleep.</dd>
+    </dl>
+  </div>
+
+  <div class="terr is-commit">
+    <div class="terr-top"><span class="terr-rank">05</span><span class="chip commit">Committed before marketing</span><h3>It tells you when it doesn't know — everywhere, not in places</h3></div>
+    <p class="promise">"Show what you know. Show when you don't."</p>
+    <dl>
+      <dt>Pain</dt><dd>Confident wrong answers, which this category produces constantly and never labels.</dd>
+      <dt>Gap</dt><dd>Unoccupied at the hard end. One nutrition app widens a number into a range; nobody withholds a number entirely.</dd>
+      <dt>Status</dt><dd><strong>Real but inconsistent.</strong> Three genuine behaviours ship — the scanner's "Not sure — closest matches", offline answers never presented as settled, and a rep count withheld below a 0.80 measured bar — but there is no shared notion of uncertainty in the codebase. Confidence is an ad-hoc <span class="mono">double?</span> in at least three places with three different shapes.</dd>
+      <dt>Build</dt><dd><span class="chip flat">Medium</span> One uncertainty type and one way of showing it, applied across scanner, form check and any generative answer. This is the clearest case of marketing defining an engineering constraint: the territory is only ownable if the behaviour is structural rather than three coincidences.</dd>
+      <dt>Proof</dt><dd>An auditable rule per surface, and a written threshold that cannot be quietly rounded.</dd>
+      <dt>Value</dt><dd>Trust and brand memory. Not the acquisition hook — nobody downloads an app to be told it is unsure.</dd>
+    </dl>
+  </div>
+
+  <div class="terr is-hypo">
+    <div class="terr-top"><span class="terr-rank">06</span><span class="chip hypo">Concept hypothesis</span><h3>The machine is taken and you still have forty minutes</h3></div>
+    <p class="promise">"Occupied. Here are two machines that are free and do the same job."</p>
+    <dl>
+      <dt>Pain</dt><dd>The most universal gym frustration there is, and it happens at 18:00 to everyone who works.</dd>
+      <dt>Gap</dt><dd>Nothing addresses it in the moment. Planners assume the plan survives contact with a full gym.</dd>
+      <dt>Status</dt><dd>Absent as a feature; the data supports it — exercises carry <span class="mono">muscles</span>, <span class="mono">primaryMuscles</span> and <span class="mono">equipmentId</span>, which is what a same-pattern-different-equipment query needs.</dd>
+      <dt>Build</dt><dd><span class="chip flat">Medium</span> Substitution logic plus a way to know what is free — which is the hard half, and the honest version is asking the user rather than pretending to sense it.</dd>
+      <dt>Proof</dt><dd>Substitution quality needs review by someone who trains; a bad swap is worse than no swap.</dd>
+      <dt>Value</dt><dd>Strong acquisition hook, high emotional recognition, medium defensibility — a competitor can add a substitution list without knowing the machine.</dd>
+    </dl>
+  </div>
+
+  <div class="terr is-hypo">
+    <div class="terr-top"><span class="terr-rank">07</span><span class="chip hypo">Concept hypothesis</span><h3>Your gym builds its own profile while you train</h3></div>
+    <p class="promise">"Three weeks in, it knows your gym better than you do."</p>
+    <dl>
+      <dt>Pain</dt><dd>Recommendations for equipment your gym does not have.</dd>
+      <dt>Gap</dt><dd>Half-occupied, and the half that is missing is the good half. Fitbod has multi-gym profiles with a user-ticked equipment list and per-increment weights — maintained by hand. Nobody builds the inventory automatically from what the user has photographed, and nobody holds it at machine-model resolution.</dd>
+      <dt>Status</dt><dd>Absent. There is no gym entity anywhere in the model; the recognition history is keyed by machine type and deliberately merges across gyms.</dd>
+      <dt>Build</dt><dd><span class="chip flat">High</span> New entity, new relations, and it is the prerequisite for the physical-instance version of territory 02.</dd>
+      <dt>Value</dt><dd>Retention and a second compounding data asset. Correct as a year-two bet, wrong as a launch promise.</dd>
+    </dl>
+  </div>
+
+  <div class="terr is-exists">
+    <div class="terr-top"><span class="terr-rank">08</span><span class="chip exists">Exists now</span><h3>You choose what to leave out</h3></div>
+    <p class="promise">"Tell it what to skip. It stops offering it."</p>
+    <dl>
+      <dt>Pain</dt><dd>Being shown, session after session, the exercise you already know you cannot do.</dd>
+      <dt>Gap</dt><dd>Coarse versions exist in Fitbod, JEFIT and Alpha Progression. The resolution here is higher — 1,527 of 1,887 exercises tagged across nine body areas — but resolution is reproducible with budget.</dd>
+      <dt>Status</dt><dd>Built and live on the catalog list, equipment detail, the planner and deep links.</dd>
+      <dt>Build</dt><dd>None. What changes is the framing: this is <strong>user control</strong>, not safety. Reframed that way it needs no health claim and carries no regulatory weight, which is what previous rounds spent their energy on.</dd>
+      <dt>Value</dt><dd>Supporting differentiation. Real, but it does not carry a page on its own.</dd>
+    </dl>
+  </div>
+
+  <div class="terr is-exists">
+    <div class="terr-top"><span class="terr-rank">09</span><span class="chip exists">Exists now</span><h3>Count only what can be counted</h3></div>
+    <p class="promise">"No reliable count, no number."</p>
+    <dl>
+      <dt>Status</dt><dd>Built: thresholds measured against 6,160 labelled repetitions, a 0.80 bar, and a visible badge where the number is withheld.</dd>
+      <dt>Gap</dt><dd>Unoccupied and economically awkward to copy — the rep-counter category's storefront is push-ups, the exact movement withheld here.</dd>
+      <dt>Value</dt><dd>The best proof asset in the product, and the right closing argument on the page. Not the opening one.</dd>
+      <dt>Note</dt><dd>Publish the behaviour, not the percentages. A printed 1.00 is disproved by the first miscount.</dd>
+    </dl>
+  </div>
+
+  <div class="terr is-exists">
+    <div class="terr-top"><span class="terr-rank">10</span><span class="chip exists">Exists now</span><h3>The photographs of your own body never leave the phone</h3></div>
+    <p class="promise">"Encrypted on your phone. Never uploaded, never backed up, never exported."</p>
+    <dl>
+      <dt>Status</dt><dd>Verified in depth: AES-256-GCM, per-account key in the hardware keystore, excluded from cloud backup and device transfer, no upload path in the codebase, no export flow — one was designed and deliberately not built — and deletion removes both ciphertext and key. Pose analysis is on-device too.</dd>
+      <dt>Scope carefully</dt><dd>The machine scanner is <em>not</em> on-device: photos go to Google Gemini and are stored in the EU, which the shipped privacy policy already discloses. Claim the photos and the pose, never the scan.</dd>
+      <dt>Value</dt><dd>Trust, for a product that asks people to photograph their own body. A supporting block, not a territory.</dd>
+    </dl>
+  </div>
+
+  <div class="box">
+    <span class="lbl">The pain behind territories 01, 03 and hook 10 is measured, not assumed</span>
+    <p>Published survey work on gym intimidation lands repeatedly on <em>equipment</em> as the specific trigger rather than on bodies or fitness level: around 71&nbsp;% of gym newcomers report worrying about not knowing how to use the equipment properly; in one segmentation 41&nbsp;% of gym anxiety traces to not knowing how to use machines; roughly a third of 3,000 surveyed UK members felt intimidated using equipment for the first time; and "afraid to ask for help" recurs among the top stated reasons. Two machines are named most often as the ones people cannot work out — the Smith machine at nearly 40&nbsp;% and the assisted pull-up at 37.6&nbsp;%. Both are in this catalog.</p>
+    <p>That is the strongest external validation in four rounds, and it validates the <em>machine</em>-shaped reading of the problem rather than the coaching-shaped one the category sells. It also says the audience is wider than beginners: over 40&nbsp;% report carrying the feeling for more than five years.</p>
+  </div>
+
+  <div class="box never">
+    <span class="lbl">Never claim — removed permanently, not deferred</span>
+    <p>Injury prevention, safety outcomes, medical clearance, "trains around your injuries", anything implying supervision during a lift, and any percentage presented as real-world accuracy. These fail not because they are unbuilt but because they would still be wrong after being built. Auto-deload also leaves the marketing set — Fitbod's recovery model occupies it — and Wear OS and the coach marketplace stay off until they are real.</p>
+  </div>
+</section>
+
+<!-- B -->
+<section>
+  <div class="sec-head"><span class="sec-tag">B</span><h2>Three brand directions</h2></div>
+
+  <h3>Direction 1 — SPTR = SPOTTER, steelmanned</h3>
+  <p>The strongest version drops the catching and keeps the judgement. A spotter's actual work, watched honestly in any gym, is three things: knowing this equipment, telling you the truth about the set, and saying "not this one, not today". Two of those three transfer perfectly to software, and the third is the one that creates the liability — so the ownable version is <em>the one who tells you the truth</em>, not the one who is there when it fails.</p>
+  <p><strong>Where it still loses:</strong> six live products already use the word, one of them on Google Play with this product's own pitch, and in Russian the word means a body-shop welding tool. A brand that has to be explained in half its market is a brand that spends its impressions on spelling.</p>
+  <p><strong>Verdict:</strong> keep as an English-only mnemonic under the mark. Not the promise.</p>
+
+  <h3>Direction 2 — the reader of machines <span class="chip exists">Recommended</span></h3>
+  <p>Derived from the only thing this product uniquely knows: it reads the identity of the specific physical object in front of the user. Not a coach, not a planner, not a companion — a <em>reader</em>. It reads what the manufacturer printed and hands it back in the user's own language, with the exercises attached.</p>
+  <p>Lockup: <strong>SPTR</strong> — <em>reads the machine</em>. In Russian: <strong>SPTR</strong> — <em>читает тренажёр</em>. The Russian version is the stronger of the two, which has not been true of any other candidate in four rounds.</p>
+  <p><strong>What must be true at launch:</strong> the anchor's hit rate on real nameplates must be measured, and the Russian answer must be as complete as the English one — which it already is.</p>
+  <p><strong>What a competitor must do to take it:</strong> build a Russian catalog of 1,887 exercises with video, then accumulate coverage of the machines actually standing in the gyms of a market they do not operate in. That is not a sprint.</p>
+
+  <h3>Direction 3 — the anti-category brand</h3>
+  <p>A tool defined by its restraint: it shows what it knows, shows when it doesn't, and adds what it lacks because you pointed at it. Genuinely unoccupied and philosophically consistent with three shipping behaviours.</p>
+  <p><strong>Why it is not first:</strong> restraint is a reason to trust, not a reason to install. As the primary promise it asks a stranger to admire a negative. It is the second paragraph of the page, and it is what makes the first paragraph believable.</p>
+
+  <div class="box">
+    <span class="lbl">Recommendation</span>
+    <p>Direction 2 as the promise, Direction 3 as the trust layer, Direction 1 retained as an English-only name story. The operator's objective — that SPTR be remembered as Spotter — survives in English and is replaced in Russian by something better: a name that is remembered for what it does to the machine in front of you.</p>
+  </div>
+</section>
+
+<!-- C -->
+<section>
+  <div class="sec-head"><span class="sec-tag">C</span><h2>Twelve hooks, distinct by angle</h2></div>
+  <p>Each is a different situation, not a rephrasing. Collision-checked against the live competitor lines established in earlier rounds.</p>
+
+  <div class="hook top">
+    <div class="line">The machine is labelled in English. You don't have to be.</div>
+    <div class="ru">Тренажёр подписан по-английски. Тебе — не обязательно.</div>
+    <div class="meta">Angle: language barrier · needs the anchor measured · no competitor operates in Russian · <strong>top pick</strong>: it is the only hook that is simultaneously true today, unoccupied, and stronger in Russian than in English.</div>
+  </div>
+
+  <div class="hook top">
+    <div class="line">You've used this machine before. It remembers what you lifted.</div>
+    <div class="ru">Ты уже был на этом тренажёре. Он помнит, сколько ты поднял.</div>
+    <div class="meta">Angle: return visit · needs machine-level history grouping (Low) · loggers are exercise-anchored, so nobody says this · <strong>top pick</strong> for retention.</div>
+  </div>
+
+  <div class="hook top">
+    <div class="line">Knowing what it's called is the easy part.</div>
+    <div class="ru">Понять, как называется — это простое. Сложное — куда ставить сиденье.</div>
+    <div class="meta">Angle: setup over identity · needs 69 setup cards · directly attacks the four scan competitors' entire proposition · <strong>top pick</strong> for differentiation against the commodity.</div>
+  </div>
+
+  <div class="hook">
+    <div class="line">That machine in the corner you've never touched.</div>
+    <div class="meta">Angle: the avoided machine. Both prior rounds converged on this insight independently, which is the strongest signal any of them produced. Warm, specific, honest today.</div>
+  </div>
+
+  <div class="hook">
+    <div class="line">The rack is taken. You've still got forty minutes.</div>
+    <div class="meta">Angle: the occupied machine. Highest emotional recognition of any line here; needs substitution logic and an honest way to know what is free.</div>
+  </div>
+
+  <div class="hook">
+    <div class="line">New gym. Same forty minutes.</div>
+    <div class="meta">Angle: unfamiliar gym, travel, moving city. Works with today's capability; weaker in a market where people train at one gym for years.</div>
+  </div>
+
+  <div class="hook">
+    <div class="line">When it isn't sure, it says so.</div>
+    <div class="ru">Если не уверен — так и скажет.</div>
+    <div class="meta">Angle: visible uncertainty. True in three places today, structural after the shared-uncertainty work. Trust layer, not a hero.</div>
+  </div>
+
+  <div class="hook">
+    <div class="line">It reads the label. It doesn't guess from the shape.</div>
+    <div class="meta">Angle: the mechanism itself. Explains why it works rather than that it works — and it is the sentence that separates this from a photo classifier.</div>
+  </div>
+
+  <div class="hook">
+    <div class="line">Doesn't know your machine? Photograph it. Then it will.</div>
+    <div class="meta">Angle: the coverage flywheel. Unoccupied, and it turns the product's gap into the reason to participate. Needs a fill-rate someone will honour.</div>
+  </div>
+
+  <div class="hook">
+    <div class="line">Nobody has to know it's your first week.</div>
+    <div class="meta">Angle: the social cost of looking lost. Emotionally the strongest territory in the whole category and, as far as this review found, unclaimed by any app's marketing. Handle without condescension.</div>
+  </div>
+
+  <div class="hook">
+    <div class="line">Ten exercises on the machine you thought did one.</div>
+    <div class="meta">Angle: hidden capacity. Honest for the well-covered machines only — the median machine in the registry has four exercises and 29 of 69 have three or fewer, so this hook is a content commitment before it is copy.</div>
+  </div>
+
+  <div class="hook">
+    <div class="line">The seat was set by someone a head taller than you.</div>
+    <div class="meta">Angle: setup, felt rather than explained. The most visual line here — one photograph carries it with no text at all.</div>
+  </div>
+
+  <h3>The graveyard</h3>
+  <p>Rejected on collision or exhaustion: anything containing "know what to do" (GymScan, Fitbod, Ladder), "no guesswork" (Fitbod), "train smarter" (Alpha Progression), "feel lost at the gym" (GymScan's subhead, and the project's own earlier draft), "your AI coach" (Freeletics), "think less" (Strong). Rejected on safety: every line built on protection, limits or supervision. Rejected as unmemorable: "the smart way to use gym equipment", "understand any machine", "your gym, decoded" — all three are descriptions pretending to be lines.</p>
+</section>
+
+<!-- D -->
+<section>
+  <div class="sec-head"><span class="sec-tag">D</span><h2>Product gap backlog</h2></div>
+  <p>Every marketing promise above that the build cannot yet keep, as delivery work. Ordered by value per unit of effort, not by appeal.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>#</th><th>Work</th><th>Unlocks</th><th>Effort</th><th>Proof needed before any claim</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Measure the text anchor end to end on a labelled set of real nameplate photographs</td><td>Territory 01 — the entire recommended positioning</td><td><span class="chip flat">Low</span></td><td>The measurement <em>is</em> the proof. Nothing else unblocks a recognition claim</td></tr>
+        <tr><td class="num">2</td><td>Group workout history by equipment id and surface it on the scan result</td><td>Territory 02, retention loop</td><td><span class="chip flat">Low</span></td><td>None — demonstrable directly</td></tr>
+        <tr><td class="num">3</td><td>Add a setup field to the equipment record and author 69 setup cards in both languages</td><td>Territory 03, the anti-commodity argument</td><td><span class="chip flat">Low–Med</span></td><td>Content review by someone who coaches; keep it mechanical, never protective</td></tr>
+        <tr><td class="num">4</td><td>One uncertainty type, one way of showing it, applied across scanner, form check and generative answers</td><td>Territory 05, and it makes the brand structural</td><td><span class="chip flat">Medium</span></td><td>A written per-surface rule and a threshold that cannot be silently changed</td></tr>
+        <tr><td class="num">5</td><td>Substitution by muscle pattern, with availability supplied by the user</td><td>Territory 06</td><td><span class="chip flat">Medium</span></td><td>Swap-quality review; a bad substitution is worse than none</td></tr>
+        <tr><td class="num">6</td><td>State and honour a fill rate for photographed unknown machines</td><td>Territory 04's marketability</td><td><span class="chip flat">Medium</span></td><td>Published fill rate, or no time promise at all</td></tr>
+        <tr><td class="num">7</td><td>Gym entity plus per-user available-equipment set</td><td>Territory 07, and physical-instance memory</td><td><span class="chip flat">High</span></td><td>—</td></tr>
+        <tr><td class="num">8</td><td>Physical-machine identity, so settings can be remembered per unit</td><td>The strong version of Territory 02</td><td><span class="chip flat">High</span></td><td>Depends on 7</td></tr>
+        <tr><td class="num">9</td><td>Fill the thin machines — 29 of 69 have three exercises or fewer, four have none</td><td>Makes "ten exercises on this machine" honest</td><td><span class="chip flat">Medium</span></td><td>Coverage count per machine, published or at least known</td></tr>
+        <tr><td class="num">10</td><td>Non-Latin nameplate handling, if the market ever needs it</td><td>Nothing yet — nameplates are English worldwide</td><td><span class="chip flat">Low</span></td><td>Deprioritise. This is the assumption to test, not the feature to build</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Items 1 to 3 are the whole launch. They are all Low, they unlock the top three territories, and none of them requires a new entity.</p>
+</section>
+
+<!-- E -->
+<section>
+  <div class="sec-head"><span class="sec-tag">E</span><h2>Marketing prototype for concept testing</h2></div>
+  <p>Five blocks. Internal class labels are for the team, never rendered.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Block</th><th>Content</th><th>Class</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1 · Hero</strong></td><td>The English-label hook, a real capture of a nameplate scan resolving into Russian, one CTA</td><td><span class="chip exists">Exists now</span> capability, claim pending measurement</td></tr>
+        <tr><td><strong>2 · Setup</strong></td><td>The seat-height photograph and the setup card for that machine</td><td><span class="chip commit">Committed</span></td></tr>
+        <tr><td><strong>3 · Return</strong></td><td>The same machine a week later, showing what you lifted and what to load</td><td><span class="chip commit">Committed</span></td></tr>
+        <tr><td><strong>4 · Restraint</strong></td><td>"Not sure — closest matches", the withheld rep count, and the unknown machine becoming a card with your photo</td><td><span class="chip exists">Exists now</span></td></tr>
+        <tr><td><strong>5 · Ask</strong></td><td>One action, stated platform truth, named human</td><td><span class="chip exists">Exists now</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Russian is the canonical version of this prototype, because the recommended positioning is stronger in Russian and because the app already falls back to Russian for any device locale it cannot match. English is a maintained translation, not the source.</p>
+</section>
+
+<!-- F -->
+<section>
+  <div class="sec-head"><span class="sec-tag">F</span><h2>Pre-public truth gate</h2></div>
+  <p>Nothing here blocks concept work. All of it blocks the first real user.</p>
+  <ol>
+    <li>Anchor hit rate measured on real nameplates, and the claim written to match the number rather than the ambition.</li>
+    <li>Machine-level history and setup cards shipped, or removed from the page.</li>
+    <li>Every claim re-mapped to the build at freeze, with the two recognition figures from earlier rounds retired — neither measures the shipped model or the production pipeline.</li>
+    <li>Uncertainty behaviour audited per surface against the written rule.</li>
+    <li>Safety and privacy pass: no protective claims anywhere, photo and pose claims scoped to exclude the cloud scanner, the Play-mandated sentence present exactly as the policy words it.</li>
+    <li>Name and trademark cleared before a wordmark is drawn.</li>
+    <li>Launcher label, release signing key, locale fallback decision, tester path.</li>
+    <li>Competitor lines re-checked the week of publication — this field moved twice during four rounds of review.</li>
+  </ol>
+</section>
+
+<footer>
+  <p>Round four runs under Marketing R&amp;D Mode: current implementation informs cost, not permission. Repository figures were measured against the working tree at commit <span class="mono">78b24dc</span>; competitor language was verified at source. Two panel seats — the gap hunter and the brand strategist — were lost to repeated upstream API failures and their work was carried by the coordinator and by direct measurement; where a claim rests on a single check rather than a panel, it says so. Review only: nothing implemented, committed or pushed.</p>
+  <p class="src">Evidence added this round: <a href="mobile/assets/data/equipment_aliases.json">mobile/assets/data/equipment_aliases.json</a> · <a href="mobile/lib/features/workouts/data/workout_log.dart">mobile/lib/features/workouts/data/workout_log.dart</a> · <a href="mobile/lib/features/workouts/data/progression.dart">mobile/lib/features/workouts/data/progression.dart</a> · <a href="mobile/lib/features/visual_equipment/data/machine_card.dart">mobile/lib/features/visual_equipment/data/machine_card.dart</a> · <a href="mobile/lib/features/visual_equipment/data/recognition_history.dart">mobile/lib/features/visual_equipment/data/recognition_history.dart</a></p>
+</footer>
+
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

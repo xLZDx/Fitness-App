@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citation Verification: Equipment Identity</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+    <style>
+        :root {
+            --text: #2c3e50;
+            --text-secondary: #5a6c7d;
+            --surface: #f5f5f5;
+            --surface-dark: #efefef;
+            --bg: #ffffff;
+            --border: #d0d0d0;
+            --accent: #0066cc;
+            --accent-light: #e6f2ff;
+            --mono-bg: #f8f8f8;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                --text: #e0e0e0;
+                --text-secondary: #a8b5c1;
+                --surface: #242424;
+                --surface-dark: #2e2e2e;
+                --bg: #1a1a1a;
+                --border: #404040;
+                --accent: #4da6ff;
+                --accent-light: #1a3a52;
+                --mono-bg: #202020;
+            }
+        }
+
+        :root[data-theme="dark"] {
+            --text: #e0e0e0;
+            --text-secondary: #a8b5c1;
+            --surface: #242424;
+            --surface-dark: #2e2e2e;
+            --bg: #1a1a1a;
+            --border: #404040;
+            --accent: #4da6ff;
+            --accent-light: #1a3a52;
+            --mono-bg: #202020;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .wrap {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+
+        header {
+            margin-bottom: 48px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .finding {
+            margin-bottom: 40px;
+            padding: 24px;
+            background: var(--surface);
+            border-left: 4px solid var(--accent);
+            border-radius: 4px;
+        }
+
+        .finding-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .verdict-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 3px;
+            background: var(--accent-light);
+            color: var(--accent);
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .finding-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .finding-basis {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-family: "IBM Plex Mono", monospace;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .finding-body {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .citation {
+            background: var(--mono-bg);
+            padding: 12px 14px;
+            border-radius: 4px;
+            margin: 12px 0;
+            border-left: 2px solid var(--border);
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-x: auto;
+            color: var(--text-secondary);
+        }
+
+        .citation-ref {
+            font-weight: 600;
+            color: var(--text);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .summary {
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 32px;
+            padding: 20px;
+            background: var(--accent-light);
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) .summary {
+                background: var(--accent-light);
+                color: var(--accent);
+            }
+        }
+
+        :root[data-theme="dark"] .summary {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .note-small {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 12px;
+            font-style: italic;
+        }
+
+        footer {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        code {
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 0.9em;
+        }
+
+        ul {
+            margin: 12px 0 0 20px;
+        }
+
+        li {
+            margin: 6px 0;
+        }
+
+        section h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <header>
+            <h1>Citation Verification</h1>
+            <p class="subtitle">Engineering report on type_snapshot.py</p>
+        </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+        <div class="summary">
+            <strong>Summary:</strong> Verified all citations in the engineering report on equipment identity. One of four primary MAJOR findings is confirmed by cited sources; others require extended verification against complete code for full validation.
+        </div>
+
+        <section>
+            <h2>Findings</h2>
+
+            <div class="finding">
+                <div class="finding-header">
+                    <span class="verdict-tag">supports</span>
+                </div>
+                <div class="finding-title">Citation 1: Exception promise in docstring</div>
+                <div class="finding-basis">FACT | lines 112–113 in type_snapshot.py</div>
+                <div class="finding-body">
+                    The report claims that lines 112–113 promise <code>TypeSnapshotError</code> on any invalid reference. The cited text fully supports this claim.
+                </div>
+                <div class="citation">
+                    <span class="citation-ref">scripts/equipment_identity/type_snapshot.py:112–113</span>
+snapshot. Raises `TypeSnapshotError` on any invalid reference — never<br>
+silently normalizes, drops, or defaults an unknown id.
+                </div>
+                <div class="finding-body">
+                    The citation supports the claim: the function explicitly documents the promise to raise <code>TypeSnapshotError</code> on any invalid reference.
+                </div>
+            </div>
+
+            <div class="finding">
+                <div class="finding-header">
+                    <span class="verdict-tag" style="background: #fff3cd; color: #856404;">unverified</span>
+                </div>
+                <div class="finding-title">Citations 2–4: Implementation on lines 119, 123</div>
+                <div class="finding-basis">FACT | lines 119, 123 in type_snapshot.py</div>
+                <div class="finding-body">
+                    The report cites critical implementation lines (119 and 123), but in this verification round those specific lines were not included in the provided citations. Without direct access to the implementation code in the range 115–130, it is impossible to independently verify either the MAJOR findings about contract violations or the MINOR finding about missing integrity checks.
+                </div>
+                <div class="note-small">
+                    Note: Full verification requires an extended round with the complete text of <code>validate_type_reference</code> and <code>load_snapshot()</code> functions.
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Methodology</h2>
+            <p style="font-size: 14px; line-height: 1.7; color: var(--text-secondary); margin-bottom: 12px;">
+                Verification was conducted by matching each claim in the original report against provided citations from source code. Verdicts are assigned per the following criteria:
+            </p>
+            <ul style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+                <li><strong>supports</strong> — the cited lines fully support the claim</li>
+                <li><strong>unrelated</strong> — the lines are accurate but contain no information about the claim</li>
+                <li><strong>contradicts</strong> — the lines contradict the claim</li>
+                <li><strong>unverified</strong> — the citation is missing or incomplete; extended verification required</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>Citation verification report for an engineering document. Generated 2026-08-22.</p>
+        </footer>
+    </div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

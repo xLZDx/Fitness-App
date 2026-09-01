@@ -1,0 +1,566 @@
+<title>SPTR Landing Review</title>
+<style>
+  :root {
+    --paper: #EDEFEA;
+    --surface: #F7F8F5;
+    --ink: #14181A;
+    --muted: #5E6B66;
+    --rule: #D3D8D0;
+    --accent: #1F6F4A;
+    --accent-soft: #DCE9E0;
+    --warn: #9C5B12;
+    --warn-soft: #F0E4D2;
+    --risk: #93302C;
+    --risk-soft: #F0DCDA;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0F1412;
+      --surface: #161C19;
+      --ink: #E6EAE4;
+      --muted: #93A099;
+      --rule: #28312C;
+      --accent: #5FC894;
+      --accent-soft: #172A20;
+      --warn: #DDA25A;
+      --warn-soft: #2A2117;
+      --risk: #E38A82;
+      --risk-soft: #2C1917;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0F1412;
+    --surface: #161C19;
+    --ink: #E6EAE4;
+    --muted: #93A099;
+    --rule: #28312C;
+    --accent: #5FC894;
+    --accent-soft: #172A20;
+    --warn: #DDA25A;
+    --warn-soft: #2A2117;
+    --risk: #E38A82;
+    --risk-soft: #2C1917;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Constantia, Charter, "Iowan Old Style", Georgia, serif;
+    font-size: 17px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 24px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; }
+
+  .label,
+  h1, h2, h3,
+  th,
+  .tag,
+  .masthead-meta {
+    font-family: Bahnschrift, "DIN Alternate", "Roboto Condensed", "Helvetica Neue", system-ui, sans-serif;
+  }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    border-bottom: 2px solid var(--ink);
+    padding: 72px 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  h1 {
+    font-size: clamp(34px, 6vw, 58px);
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+    font-weight: 600;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    max-width: 62ch;
+    font-size: 19px;
+    color: var(--muted);
+    margin: 0;
+  }
+  .masthead-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    font-size: 12.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ---------- section grid ---------- */
+
+  section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 44px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  @media (min-width: 900px) {
+    section {
+      grid-template-columns: 150px minmax(0, 1fr);
+      gap: 40px;
+    }
+    .rail { position: sticky; top: 28px; align-self: start; }
+  }
+  .rail {
+    font-family: Bahnschrift, "DIN Alternate", "Roboto Condensed", system-ui, sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .rail .kind { color: var(--accent); font-weight: 600; }
+  .rail.is-block .kind { color: var(--risk); }
+  .rail.is-plan .kind { color: var(--warn); }
+
+  .body > * + * { margin-top: 16px; }
+  .body { min-width: 0; }
+  p { margin: 0; max-width: 68ch; }
+
+  h2 {
+    font-size: clamp(23px, 3vw, 30px);
+    line-height: 1.16;
+    font-weight: 600;
+    margin: 0 0 4px;
+    letter-spacing: -0.008em;
+    text-wrap: balance;
+  }
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.005em;
+  }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  code, .mono, .path {
+    font-family: "Cascadia Mono", Consolas, "SF Mono", ui-monospace, monospace;
+    font-size: 0.86em;
+  }
+
+  /* ---------- evidence cards ---------- */
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--accent);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card.is-block { border-left-color: var(--risk); }
+  .card.is-plan { border-left-color: var(--warn); }
+  .card p { max-width: 66ch; }
+
+  .stat-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 34px;
+    padding: 2px 0;
+  }
+  .stat { display: flex; flex-direction: column; gap: 1px; }
+  .stat .n {
+    font-family: Bahnschrift, "DIN Alternate", system-ui, sans-serif;
+    font-size: 30px;
+    line-height: 1;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .n small { font-size: 15px; font-weight: 400; color: var(--muted); }
+  .stat .cap {
+    font-family: Bahnschrift, "DIN Alternate", system-ui, sans-serif;
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .src {
+    font-family: "Cascadia Mono", Consolas, ui-monospace, monospace;
+    font-size: 12.5px;
+    color: var(--muted);
+    word-break: break-word;
+  }
+  .src a { color: var(--muted); }
+  .src a:hover { color: var(--accent); }
+
+  /* ---------- tables ---------- */
+
+  .scroll { overflow-x: auto; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 15px;
+    min-width: 460px;
+  }
+  th {
+    text-align: left;
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--muted);
+    border-bottom: 1px solid var(--ink);
+    padding: 0 14px 7px 0;
+  }
+  td {
+    padding: 9px 14px 9px 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .tag.ok { background: var(--accent-soft); color: var(--accent); }
+  .tag.no { background: var(--risk-soft); color: var(--risk); }
+  .tag.mid { background: var(--warn-soft); color: var(--warn); }
+
+  ul { margin: 0; padding-left: 20px; max-width: 68ch; }
+  li + li { margin-top: 7px; }
+  li::marker { color: var(--muted); }
+
+  blockquote {
+    margin: 0;
+    padding-left: 18px;
+    border-left: 2px solid var(--rule);
+    color: var(--muted);
+    font-style: italic;
+    max-width: 62ch;
+  }
+
+  .pull {
+    font-family: Bahnschrift, "DIN Alternate", system-ui, sans-serif;
+    font-size: clamp(19px, 2.4vw, 24px);
+    line-height: 1.3;
+    font-weight: 600;
+    color: var(--accent);
+    max-width: 32ch;
+    text-wrap: balance;
+  }
+
+  footer {
+    padding: 40px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="masthead-meta">
+      <span>Fitness App</span>
+      <span>Landing copy review</span>
+      <span>2026-08-18</span>
+      <span>master 78b24dc · 1.0.0+14</span>
+    </div>
+    <h1>The landing copy describes a different app than the one in this repository</h1>
+    <p class="standfirst">The SPTR document sells a category: guided workouts, progress tracking, step-by-step flow. The code sells a mechanism: a photograph of the machine, a rep counter calibrated against 6,160 labelled repetitions, and an injury filter covering 1,528 of 1,887 exercises. Below: what is genuinely distinctive in this project, what in the code proves it, and what currently blocks selling any of it.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+  <section>
+    <div class="rail"><span class="kind">Verdict</span><span>Basis: FACT</span></div>
+    <div class="body">
+      <h2>The outside critique is right, for the wrong reason</h2>
+      <p>"Swap SPTR for Fitbod and nothing breaks" describes the document exactly. But its conclusion — if there is no mechanism, the landing page cannot save you, change the product — does not apply here: <strong>the mechanisms exist, and there are several</strong>. They simply never reached the copy, because the copy was written without reading the repository.</p>
+      <p class="pull">The product is stronger than its landing page. That is a rare and pleasant problem — it is fixed with text, not by rebuilding the app.</p>
+      <p>The second finding is worse: part of the document describes things that do <em>not exist</em>. The "Download SPTR" button, the two store badges and the footer links to App Store and Google Play are, today, untrue on all three counts.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="rail"><span class="kind">Asset 1</span><span>Basis: FACT</span></div>
+    <div class="body">
+      <h2>Photograph the machine instead of picking equipment off a list</h2>
+      <p>The CODEMAP calls this "the core moat feature", and it is not built the way this is usually built. Recognition runs on <strong>two anchors</strong>, and the first one is not a neural network — it is OCR reading <em>the machine's own printed name</em>.</p>
+      <div class="card">
+        <div class="stat-row">
+          <div class="stat"><span class="n">18<small> / 18</small></span><span class="cap">Machine's printed name</span></div>
+          <div class="stat"><span class="n">5<small> / 18 · top-3</small></span><span class="cap">TFLite classifier</span></div>
+          <div class="stat"><span class="n">69</span><span class="cap">Equipment types in the registry</span></div>
+        </div>
+        <p>Measured on 30 real gym photographs the operator shot. The 29-class classifier scores 28&nbsp;% top-3; the printed name identifies every frame that could be labelled. So the text anchor runs <em>before</em> the classifier and stays silent when it is not certain. It returns a list rather than a single answer — otherwise a cable-station decal listing six exercises reads as a shoulder-press machine.</p>
+        <p class="src">Source: <a href="mobile/lib/features/visual_equipment/data/machine_text_anchor.dart">mobile/lib/features/visual_equipment/data/machine_text_anchor.dart</a> · <a href="core/plans/B5b_TEXT_ANCHOR_2026-08-07.md">core/plans/B5b_TEXT_ANCHOR_2026-08-07.md</a> · <a href="mobile/assets/models/README.md">mobile/assets/models/README.md</a></p>
+      </div>
+      <p>Behind that: cloud Gemini via Firebase AI Logic, with an on-device TFLite fallback (4.5&nbsp;MB in the bundle), a live-stream smoother, and a "my machines" history.</p>
+      <p><strong>Why it sells.</strong> Fitbod, Hevy and JEFIT all require picking equipment from a list by hand. "Photograph the machine — the app reads its name and shows you what to do on it" is a checkable claim about a mechanism, not a promise of "guided workouts". That is the first-screen headline.</p>
+      <blockquote>Note: QR codes were removed from the product on 2026-07-30 by operator decision and replaced with photo recognition. The pitch deck <span class="path">core/business/PITCH_2026.md</span> still sells QR stickers — the landing page must not be written from it.</blockquote>
+    </div>
+  </section>
+
+  <section>
+    <div class="rail"><span class="kind">Asset 2</span><span>Basis: FACT</span></div>
+    <div class="body">
+      <h2>A rep counter that stays silent where it is not accurate</h2>
+      <p>The counter's thresholds are not invented. They come out of the public MM-Fit dataset (Strömbäck, Huang, Radu — IMWUT 2020, CC&nbsp;BY&nbsp;4.0): 6,160 labelled repetitions across 21 sessions. Each movement stores its exact-match rate on <em>holdout</em> sessions the threshold sweep never saw.</p>
+      <div class="card">
+        <div class="scroll">
+          <table>
+            <thead>
+              <tr><th>Movement</th><th>Holdout</th><th>Sets</th><th>Reps</th><th>In the product</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Squat</td><td class="num">1.00</td><td class="num">62</td><td class="num">619</td><td><span class="tag ok">Counts</span></td></tr>
+              <tr><td>Biceps curl</td><td class="num">0.93</td><td class="num">59</td><td class="num">599</td><td><span class="tag ok">Counts</span></td></tr>
+              <tr><td>Overhead press</td><td class="num">0.93</td><td class="num">60</td><td class="num">598</td><td><span class="tag ok">Counts</span></td></tr>
+              <tr><td>Lunge</td><td class="num">0.84</td><td class="num">62</td><td class="num">624</td><td><span class="tag ok">Counts</span></td></tr>
+              <tr><td>Sit-up</td><td class="num">0.41</td><td class="num">65</td><td class="num">640</td><td><span class="tag no">No number</span></td></tr>
+              <tr><td>Push-up</td><td class="num">0.29</td><td class="num">65</td><td class="num">649</td><td><span class="tag no">No number</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The bar is <span class="mono">holdoutExactRate &gt;= 0.80</span>. Below it, <span class="mono">counterFor()</span> returns <span class="mono">null</span> and the screen shows no number at all. The file states it as a contract: "returning null rather than a counter with guessed thresholds is the whole contract".</p>
+        <p class="src">Source: <a href="mobile/lib/features/form_check/data/measured_rep_configs.dart">mobile/lib/features/form_check/data/measured_rep_configs.dart</a></p>
+      </div>
+      <p>On top of that, a dedicated commit labelled the scanner, Form Coach and posture check as experimental, in plain words: recognition can name the wrong machine, the rep counter is a display and not a measurement, and posture cannot produce a defensible number from a single frame.</p>
+      <p><strong>Why it sells.</strong> The category is saturated with "AI form check" that counts badly and never admits it. A landing section that prints the table above in full — including the two rows where the app refuses to show a number — will be the most memorable thing on the site. Nobody else does this, and a competitor can only copy it by repeating the work.</p>
+      <p class="pull">"We show a count where we verified it against 6,160 repetitions. For push-ups it is wrong — so there is no count there."</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="rail"><span class="kind">Asset 3</span><span>Basis: FACT</span></div>
+    <div class="body">
+      <h2>Injuries handled in the catalog, not in a promise</h2>
+      <div class="card">
+        <div class="stat-row">
+          <div class="stat"><span class="n">1,528<small> / 1,887</small></span><span class="cap">Carry contraindication tags</span></div>
+          <div class="stat"><span class="n">81<small> %</small></span><span class="cap">Catalog coverage</span></div>
+          <div class="stat"><span class="n">1,527</span><span class="cap">Ratchet floor in tests</span></div>
+        </div>
+        <p>The filter is a pure function with no Flutter dependency: exact matching against a closed vocabulary of body regions, substring matching only for legacy free text. Coverage is not asserted, it is measured by <span class="mono">safetyCoverage()</span> and held by the ratchet test <span class="mono">kSafetyCoverageFloor = 1527</span> — a commit cannot quietly drop it, the suite fails.</p>
+        <p class="src">Source: <a href="mobile/lib/features/equipment/data/exercise_filter.dart">mobile/lib/features/equipment/data/exercise_filter.dart</a> · <a href="mobile/test/features/equipment/safety_coverage_test.dart">mobile/test/features/equipment/safety_coverage_test.dart</a></p>
+      </div>
+      <p>That measurement exists for a reason. The filter was once a total no-op — 0 tags across 1,887 exercises — while eight places in the interface told the user their injuries were being screened for. The number exists so that cannot happen again unnoticed.</p>
+      <p><strong>Why it sells.</strong> Freeletics states outright that its app is not designed to accommodate injuries; Fitbod requires manual skip-and-swap every session; Centr, Sweat, Ladder and NTC ignore the subject. Here there is a 34-step intake with an injury questionnaire and a catalog tagged to match it. The public claim has to be the number: "flag a bad knee once — 1,528 exercises carry contraindication tags, and the ones you must not do simply never appear."</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="rail"><span class="kind">Asset 4</span><span>Basis: FACT</span></div>
+    <div class="body">
+      <h2>A catalog that actually exists — and speaks Russian</h2>
+      <div class="card">
+        <div class="stat-row">
+          <div class="stat"><span class="n">1,887</span><span class="cap">Exercises</span></div>
+          <div class="stat"><span class="n">1,764</span><span class="cap">Male demonstration video</span></div>
+          <div class="stat"><span class="n">775</span><span class="cap">Female demonstration video</span></div>
+          <div class="stat"><span class="n">1,886</span><span class="cap">With step-by-step instructions</span></div>
+          <div class="stat"><span class="n">1,480</span><span class="cap">With technique tips</span></div>
+          <div class="stat"><span class="n">1,887</span><span class="cap">Poster thumbnails</span></div>
+        </div>
+        <p>Twelve groups (Legs 396, Shoulders 250, Calisthenics 216, Abdominals 197, Back 181, Chest 152, Stretching 136, Biceps 136, Triceps 87, Yoga 81, Powerlifting 31, Forearms 24). The full Russian catalog is a separate 3.2&nbsp;MB file, plus Russian equipment synonyms in the alias table — which is exactly what the recognition text anchor reads.</p>
+        <p class="src">Source: <a href="mobile/assets/data/exercises_vendor.json">mobile/assets/data/exercises_vendor.json</a> · <a href="mobile/assets/data/exercises_vendor.ru.json">mobile/assets/data/exercises_vendor.ru.json</a> · <a href="mobile/assets/data/equipment_aliases.json">mobile/assets/data/equipment_aliases.json</a></p>
+      </div>
+      <p>Licence hygiene is part of the asset: a clip-licence audit ran in August, and a separate commit closed the gap where the licensed library had shipped but the catalog was still serving the unlicensed scaffold. For a video-heavy app heading into a store, that is not housekeeping — it is a condition of existing.</p>
+      <p><strong>Why it sells.</strong> Two things a screenshot proves without a word: male and female demonstrations of the same exercise, and a Russian interface. The first genuinely matters to a female audience and almost nobody ships it; the second is a geographic moat, because every strong competitor in the RU/RO market is English-only.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="rail"><span class="kind">Asset 5</span><span>Basis: FACT</span></div>
+    <div class="body">
+      <h2>Two quiet differentiators worth bringing to the surface</h2>
+      <h3>Auto-deload</h3>
+      <p>A pure function over training history: the difficulty trend across the last 7 sessions, the share of scheduled sessions completed over 14 days, and — optionally — a drop in 7-day rolling HRV against a 30-day baseline. Two signals out of three are enough to recommend a deload week. HRV is optional precisely because most users have no wearable on day one.</p>
+      <p class="src">Source: <a href="mobile/lib/features/recovery/data/deload_detector.dart">mobile/lib/features/recovery/data/deload_detector.dart</a></p>
+      <p>The file's own doc-comment already carries the marketing line, and it is an honest one: the top reviewer complaint about Centr is that it "doesn't adapt to recovery".</p>
+      <p class="pull">"Other apps push you harder. This one knows when to pull you back."</p>
+      <h3>Privacy as a feature, not a footer link</h3>
+      <p>Progress photos are encrypted on device in AES-GCM envelopes; pose estimation runs on the phone through ML&nbsp;Kit, not in the cloud; account deletion and data export are deployed Cloud Functions; the Play Data Safety answers are worked out and the target age group is declared 16+. For an app that asks people to photograph their own body, that is a direct reason to install — and the document does not mention it at all.</p>
+      <p class="src">Source: <a href="mobile/lib/features/progress_photos/data/photo_store.dart">mobile/lib/features/progress_photos/data/photo_store.dart</a> · <a href="core/PLAY_DATA_SAFETY_2026-08-05.md">core/PLAY_DATA_SAFETY_2026-08-05.md</a></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="rail is-block"><span class="kind">Blockers</span><span>Basis: FACT</span></div>
+    <div class="body">
+      <h2>Five reasons the landing page cannot be written from this document</h2>
+      <div class="card is-block">
+        <h3>1. The app is in no store</h3>
+        <p>The official scope: Android is the only supported tier, shipping through Firebase App Distribution, with Play "later". iOS <strong>does not physically exist</strong> — there is no <span class="mono">mobile/ios</span> directory, no signing, no App Store Connect entry, and IAP is unimplemented; Stripe cannot be used for digital goods on iOS, so a second payment path is required before iOS can ship at all. Wear OS is in the repo and knowingly broken (its release build is debug-signed) and is not advertised as working.</p>
+        <p>Consequence for the site: <strong>no "Download" button, no two badges, no App Store link in the footer</strong>. Version one is a closed Android beta signup with a single CTA.</p>
+        <p class="src">Source: <a href="core/PLATFORM_SCOPE.md">core/PLATFORM_SCOPE.md</a></p>
+      </div>
+      <div class="card is-block">
+        <h3>2. Payments are in test mode</h3>
+        <p>The tier model is written ($9.99 / $19.99 monthly, $59.99 / $119.99 annual, family plans at 2 and 4 seats) and Stripe runs in test mode. Nobody can actually pay. A pricing section reading "coming soon" is worse here than no section at all — it says "we haven't decided what to charge you". Until the payment path is live: one line saying the beta is free, and nothing more.</p>
+      </div>
+      <div class="card is-block">
+        <h3>3. The product has no settled name</h3>
+        <p>The document says SPTR. The app's <span class="mono">appTitle</span> says "Fitness App". The pitch deck still holds the placeholder "[App Name]". The name is unchosen, and the domain, store listing, logo and every line of copy depend on it. That is a blocker before the page is coded, not a detail.</p>
+      </div>
+      <div class="card is-block">
+        <h3>4. The business documents have fallen behind the code</h3>
+        <p>The pitch sells QR stickers on gym machines — a mechanic removed from the product on 2026-07-30. The competitive assessment is dated May. Anyone writing copy from <span class="mono">core/business/</span> will describe an app that does not exist. Those two documents need updating, or an explicit "historical" marker, before site work starts.</p>
+      </div>
+      <div class="card is-block">
+        <h3>5. Language and geography are undecided</h3>
+        <p>The code is fully bilingual (interface and catalog in Russian), the operator sits in Europe/Chisinau, and the landing copy is English aimed at "adults 20–45" — which is a census, not an audience. A Russian-language landing page in a market where Fitbod and Hevy are English-only is the one place where narrow positioning is nearly free.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="rail is-plan"><span class="kind">Plan</span><span>Basis: DECISION</span></div>
+    <div class="body">
+      <h2>The page structure the code implies</h2>
+      <p>Eleven sections is indeed about twice what is needed — but not because there is nothing to say. Four sections repeat one idea ("it will feel clear and simple") while everything checkable was left out. The replacement is seven blocks, each with one claim and its own proof.</p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Block</th><th>What it claims</th><th>What proves it on screen</th></tr></thead>
+          <tbody>
+            <tr><td>Hero</td><td>"Photograph the machine — find out what to do on it"</td><td>A real scanner screenshot with the machine name recognised. One CTA: beta access</td></tr>
+            <tr><td>Mechanism</td><td>Three steps: photo → name read → exercises on that machine</td><td>Three real screenshots in sequence, no abstract mockups</td></tr>
+            <tr><td>Injuries</td><td>1,528 of 1,887 exercises carry contraindication tags</td><td>The intake screen plus the filtered list screen</td></tr>
+            <tr><td>Form Coach</td><td>A count appears only where it was verified</td><td>The full holdout accuracy table, including both refusals</td></tr>
+            <tr><td>Catalog</td><td>1,887 exercises, male and female demonstration, Russian</td><td>A poster grid plus the demonstration toggle</td></tr>
+            <tr><td>Privacy</td><td>Photos encrypted on device, pose estimated on the phone</td><td>One paragraph and a link to the policy</td></tr>
+            <tr><td>FAQ + CTA</td><td>Honest answers to the real questions</td><td>Android-only and when iOS; what it will cost; does it need a connection; what happens to my photos; how to join the beta</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>On motion</h3>
+      <p>The page-weight critique is fair, but there is a stronger argument than load time. This product's core asset is <em>credibility</em>: measured percentages, a refusal to display an unreliable number, honest "experimental" banners. An AI-generated "person in a gym" clip sitting next to an accuracy table destroys exactly that. One looping screen capture of a real scan is enough (poster frame, <span class="mono">preload="none"</span>, loaded on scroll) plus CSS transitions. Real footage shot on a phone in a real gym is fair and honest; generation is not.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="rail"><span class="kind">Open</span><span>Basis: UNKNOWN</span></div>
+    <div class="body">
+      <h2>Decisions needed before the first line of page code</h2>
+      <ul>
+        <li><strong>Name and domain.</strong> Is SPTR a working title or the final one?</li>
+        <li><strong>Landing language.</strong> Russian, English, or both? The code is ready for Russian; the competitors are not.</li>
+        <li><strong>Stage.</strong> Beta signup — today the only truthful option — or wait for the Play release and build the page for it?</li>
+        <li><strong>Whether to publish the accuracy figures.</strong> My recommendation is yes, together with the "no number" rows. It is the one thing separating this from the whole category, and it only works in full.</li>
+        <li><strong>Geography.</strong> Moldova/Romania/CIS or an international launch — this decides the language and which machines belong in the screenshots.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    <p>Every figure was measured directly against the working tree at <span class="path">D:\Repo\Fitness_App</span>, commit <span class="mono">78b24dc</span>, version <span class="mono">1.0.0+14</span>, on 2026-08-18. Catalog figures were recomputed from <span class="path">mobile/assets/data/exercises_vendor.json</span>; counter accuracy figures come from constants in the source, not from documentation.</p>
+  </footer>
+
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

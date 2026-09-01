@@ -1,0 +1,408 @@
+<title>SPTR Concept Test Round Eight</title>
+<style>
+  :root {
+    --paper: #F3F2F5; --surface: #FBFAFC; --sunk: #E8E6EC; --ink: #17151C;
+    --muted: #5C5866; --rule: #D6D2DC; --accent: #5B3A70;
+    --a: #1E6A55; --a-soft: #DCEAE4;
+    --b: #1F4F84; --b-soft: #DCE5F0;
+    --c: #8A5410; --c-soft: #F2E7D4;
+    --warn: #93302E; --warn-soft: #F2DEDD;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #111014; --surface: #191720; --sunk: #201E28; --ink: #E7E5EB;
+      --muted: #97919F; --rule: #2B2833; --accent: #B48DCB;
+      --a: #5CC09C; --a-soft: #13241F; --b: #7BAAE0; --b-soft: #121E2A;
+      --c: #D9A25C; --c-soft: #271F12; --warn: #E4837D; --warn-soft: #2A1817;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #111014; --surface: #191720; --sunk: #201E28; --ink: #E7E5EB;
+    --muted: #97919F; --rule: #2B2833; --accent: #B48DCB;
+    --a: #5CC09C; --a-soft: #13241F; --b: #7BAAE0; --b-soft: #121E2A;
+    --c: #D9A25C; --c-soft: #271F12; --warn: #E4837D; --warn-soft: #2A1817;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: Constantia, Charter, "Iowan Old Style", Georgia, serif;
+    font-size: 16.5px; line-height: 1.6; margin: 0; padding: 0 22px 88px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; }
+  h1, h2, h3, th, .sans, .chip, .cell-tag { font-family: "Segoe UI", -apple-system, system-ui, sans-serif; font-weight: 600; }
+  .mono, code, .eyebrow { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; }
+
+  .masthead { padding: 58px 0 24px; border-bottom: 2px solid var(--accent); }
+  .eyebrow {
+    font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 17px;
+  }
+  h1 { font-size: clamp(29px, 4.8vw, 46px); line-height: 1.07; letter-spacing: -0.015em; margin: 0 0 14px; text-wrap: balance; }
+  .standfirst { font-size: 17.5px; color: var(--muted); max-width: 66ch; margin: 0; }
+
+  section { padding: 38px 0 6px; border-bottom: 1px solid var(--rule); }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+  .sec-tag { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--accent); font-weight: 700; padding-top: 3px; }
+  h2 { font-size: clamp(20px, 2.8vw, 27px); line-height: 1.18; margin: 0; text-wrap: balance; }
+  h3 { font-size: 16.5px; margin: 20px 0 8px; }
+  p { margin: 0 0 13px; max-width: 74ch; }
+  ul, ol { margin: 0 0 13px; padding-left: 20px; max-width: 74ch; }
+  li { margin-bottom: 6px; } li::marker { color: var(--muted); }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .chip { display: inline-block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; white-space: nowrap; font-weight: 700; }
+  .chip.a { background: var(--a-soft); color: var(--a); }
+  .chip.b { background: var(--b-soft); color: var(--b); }
+  .chip.c { background: var(--c-soft); color: var(--c); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.flat { background: var(--sunk); color: var(--muted); }
+
+  .cell {
+    border: 1px solid var(--rule); background: var(--surface);
+    border-top: 4px solid var(--rule); padding: 20px 22px; margin-bottom: 16px;
+  }
+  .cell.a { border-top-color: var(--a); } .cell.b { border-top-color: var(--b); } .cell.c { border-top-color: var(--c); }
+  .cell-tag { font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 8px; }
+  .hero-line {
+    font-family: "Segoe UI", system-ui, sans-serif; font-weight: 600;
+    font-size: clamp(21px, 2.9vw, 28px); line-height: 1.18; letter-spacing: -0.012em;
+    margin: 0 0 8px; max-width: 26ch;
+  }
+  .cell .sub { font-size: 16px; color: var(--muted); max-width: 62ch; margin: 0 0 14px; }
+  .cell dl { margin: 0; display: grid; grid-template-columns: 1fr; gap: 6px 20px; }
+  @media (min-width: 780px) { .cell dl { grid-template-columns: max-content 1fr; } }
+  .cell dt { font-family: "Segoe UI", system-ui, sans-serif; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding-top: 3px; }
+  .cell dd { margin: 0; font-size: 14.5px; max-width: 68ch; }
+
+  .scroll { overflow-x: auto; margin-bottom: 16px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 560px; }
+  th { text-align: left; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--ink); padding: 0 11px 6px 0; }
+  td { padding: 9px 11px 9px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; padding-right: 18px; }
+  tbody tr:hover { background: var(--surface); }
+
+  blockquote {
+    margin: 0 0 13px; padding: 10px 0 10px 16px; border-left: 3px solid var(--accent);
+    max-width: 66ch; font-size: 16px;
+  }
+  blockquote cite { display: block; margin-top: 6px; font-style: normal; font-size: 12.5px; font-family: "Segoe UI", system-ui, sans-serif; color: var(--muted); }
+
+  .box { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 16px 18px; margin: 0 0 16px; max-width: 78ch; }
+  .box .lbl { display: block; font-family: "Segoe UI", system-ui, sans-serif; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: var(--accent); margin-bottom: 7px; }
+  .box.warn { border-left-color: var(--warn); } .box.warn .lbl { color: var(--warn); }
+  .box p:last-child { margin-bottom: 0; }
+
+  footer { padding: 32px 0 0; color: var(--muted); font-size: 13.5px; }
+  .src { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; word-break: break-word; }
+  .src a { color: var(--muted); }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow"><span>Round eight</span><span>Concept test design + pilot</span><span>2026-08-18</span><span>master 78b24dc</span></div>
+  <h1>The pilot respondent said the quiet part out loud: knowing what the machine is called is the part he does not need</h1>
+  <p class="standfirst">Round seven's corrections are accepted, including the one that matters most — "a refusal cannot be copied" was overreach, and only one of the three open positions was ever a refusal. Three concepts are specified here in full and then, rather than only describing a questionnaire, they were run blind through it and then attacked. The instrument works — it produced three findings no further analysis would have reached, and the adversarial pass caught three defects in the stimuli that would have poisoned a real panel.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<section>
+  <div class="sec-head"><span class="sec-tag">01</span><h2>Conceded, and the narrow part that survives</h2></div>
+  <p><strong>"A refusal cannot be copied without deleting a competitor's own demo" is withdrawn.</strong> The counter is correct and simple: a competitor keeps automatic counting for supported movements and softens it below confidence; keeps recognition and exposes candidates when unsure; keeps the AI answer and adds the source. Nothing is deleted, and the engineering cost is small. That sentence claimed a technical monopoly where there is only brand discipline.</p>
+  <p>One narrower version does survive, and it is worth keeping separate from the general claim it was inflated into: for a product whose <em>entire storefront is a push-up counter</em> — and the rep-counter category's storefront is push-ups — adopting this rule means shipping a blank space where the demo is. That is a real disincentive, but it applies to a handful of single-feature apps, not to the category.</p>
+  <p><strong>EVIDENCE · RESTRAINT · RECOVERY is adopted</strong> and replaces "three refusals". It is more accurate — only the middle one is a refusal — and it describes what the user gets rather than what the product withholds. As an internal doctrine: <em>show the evidence, don't fake certainty, learn from the miss.</em></p>
+  <p>Also accepted: auditable identification is a trust mechanic, not the brand. A brand that means "shows you the text it read" is narrower in two years than the product will be.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">02</span><h2>The three concepts, specified</h2></div>
+
+  <div class="cell a">
+    <span class="cell-tag">Cell A · emotional</span>
+    <p class="hero-line">Nobody has to know it's your first week.</p>
+    <p class="sub">Point your phone at any machine and find out what it's for, how to set it up, and what to do on it — without asking anyone.</p>
+    <dl>
+      <dt>Five-second visual</dt><dd>An ordinary gym. A person raises a phone briefly toward an unfamiliar machine; the screen shows the machine named and a short list of exercises. No staff, nobody watching, nothing dramatic.</dd>
+      <dt>Support</dt><dd>Works on the machine in front of you — no stickers, no gym setup · Shows the setup: seat, pad, pin · Русский и English</dd>
+      <dt>Trust proof</dt><dd>When it isn't sure, it says so — and shows the words it read off the machine</dd>
+      <dt>Brand</dt><dd>SPTR wordmark, "Spotter" set small beneath</dd>
+      <dt>Expected read</dt><dd>"An app so I don't look clueless at the gym"</dd>
+      <dt>Predicted failure</dt><dd>Skews beginner-only; risks condescension; "first week" may exclude the returning user who is the better prospect</dd>
+      <dt>Flagged before test</dt><dd><span class="chip warn">amend</span> <em>"without asking anyone"</em> — see §05. <span class="chip warn">amend</span> <em>"any machine"</em> — the registry is category-level and knows no brands; one rubbed-off decal contradicts the word in session one</dd>
+      <dt>Honesty class</dt><dd>Setup guidance is <span class="chip flat">committed</span>, not built. Everything else exists</dd>
+    </dl>
+  </div>
+
+  <div class="cell b">
+    <span class="cell-tag">Cell B · evidence</span>
+    <p class="hero-line">It shows you what it read.</p>
+    <p class="sub">SPTR reads the name printed on the machine and shows you those exact words next to its answer — so you can check it against the machine yourself, in one second.</p>
+    <dl>
+      <dt>Five-second visual</dt><dd>Split frame: the machine's shroud with ABDUCTION / ADDUCTION legible on the left; the phone on the right showing "Read on the machine: ABDUCTION ADDUCTION" and the result.</dd>
+      <dt>Support</dt><dd>Two names printed? It offers both instead of picking one · It never shows certainty it doesn't have · If it can't read the machine, it tells you</dd>
+      <dt>Trust proof</dt><dd>The same rule everywhere: reps counted only on movements where counting was tested; elsewhere, no number</dd>
+      <dt>Brand</dt><dd>As A</dd>
+      <dt>Expected read</dt><dd>"This one isn't bluffing at me"</dd>
+      <dt>Predicted failure</dt><dd>Reads as technical; a visitor may ask why they should have to check anything</dd>
+      <dt>Flagged before test</dt><dd><span class="chip warn">rewrite</span> <em>"never shows certainty it doesn't have"</em> — a double negative that inverts at glance speed into "it's never wrong", the precise opposite of intent, and has no clean Russian form. <span class="chip warn">cut</span> the rep-counting line — it announces a feature the reader didn't know existed and then withdraws it</dd>
+      <dt>Honesty class</dt><dd>Entirely <span class="chip flat">exists now</span> — every line is a shipped behaviour in both languages</dd>
+    </dl>
+  </div>
+
+  <div class="cell c">
+    <span class="cell-tag">Cell C · breadth</span>
+    <p class="hero-line">Scan it. Set it. Remember it.</p>
+    <p class="sub">Point the camera at a machine to see what it's for, how to set it up for you, and what you lifted on it last time.</p>
+    <dl>
+      <dt>Five-second visual</dt><dd>Three frames: the machine named; a setup card (seat 4, pad 2, pin at 45 kg); a card reading "Last time here: 45 kg × 10, two weeks ago" with a suggested weight.</dd>
+      <dt>Support</dt><dd>One line per verb</dd>
+      <dt>Trust proof</dt><dd>When it doesn't recognise a machine, it says so instead of guessing</dd>
+      <dt>Brand</dt><dd>As A</dd>
+      <dt>Expected read</dt><dd>"It handles the whole machine, not just the name"</dd>
+      <dt>Predicted failure</dt><dd>Reads as a feature list; three promises compete and none wins</dd>
+      <dt>Flagged before test</dt><dd><span class="chip warn">fatal</span> <em>"Set it"</em> reads as <em>a set of reps</em> in the one category where that ambiguity is worst — it renders the middle verb as set-logging and puts the concept head-on against Hevy and Strong on a feature that does not exist. <span class="chip warn">fatal</span> "how to set it up" is the nearest thing in the whole test to an implied injury-protection claim</dd>
+      <dt>Honesty class</dt><dd>Two of three verbs are <span class="chip flat">committed</span>, not built</dd>
+    </dl>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">03</span><h2>The pilot, and what it found in one pass</h2></div>
+  <p>Rather than hand over an untested questionnaire, the instrument was run: three respondents, one concept each, monadic, no context about the project, no marketing vocabulary permitted, five-second exposure framing. <strong>This is a smoke test of the instrument with a single synthetic respondent per cell. It is not evidence about the market</strong> and no decision should rest on the numbers alone. What it can do — and did — is show which questions produce signal and which produce nothing.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Measure</th><th class="num">A · emotional</th><th class="num">B · evidence</th><th class="num">C · breadth</th></tr></thead>
+      <tbody>
+        <tr><td>Comprehension — one-sentence description matched intent</td><td class="num">yes</td><td class="num">yes</td><td class="num">yes</td></tr>
+        <tr><td>Clarity</td><td class="num">4</td><td class="num">4</td><td class="num">4</td></tr>
+        <tr><td>Usefulness</td><td class="num">4</td><td class="num">3</td><td class="num">4</td></tr>
+        <tr><td>Newness</td><td class="num">3</td><td class="num">3</td><td class="num">3</td></tr>
+        <tr><td><strong>Remembered tomorrow</strong></td><td class="num"><strong>3</strong></td><td class="num"><strong>2</strong></td><td class="num"><strong>2</strong></td></tr>
+        <tr><td>Name recalled unaided</td><td class="num">yes</td><td class="num">no</td><td class="num">partly</td></tr>
+        <tr><td>SPTR → Spotter guessed without the sub-label</td><td class="num">no</td><td class="num">no</td><td class="num">no</td></tr>
+        <tr><td>Safety misread</td><td class="num">none</td><td class="num">none</td><td class="num">none</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Finding 1 — the hook is the part the user needs least</h3>
+  <blockquote>«Реально важно — "сколько я жал в прошлый раз" и настройки сиденья/упора, вот это бесит каждый раз заново. "Что это за тренажёр" — почти не нужно, воспользуюсь раза два из любопытства и всё.»
+    <cite>Cell C, asked bluntly which of the three promises matters</cite></blockquote>
+  <p>Six rounds argued about whether recognition is a moat. The respondent skipped that question and answered a better one: for a semi-experienced user it is barely a <em>benefit</em>. Identification acquires; setup and memory retain. That is exactly the order the product backlog already has — and exactly the opposite of the order every version of the hero has used.</p>
+
+  <h3>Finding 2 — the evidence concept produced a trust paradox</h3>
+  <blockquote>"More trust in the people, slightly less confidence in the thing working… if you have to say three times that you'll admit mistakes, maybe there are a lot of them."
+    <cite>Cell B, on whether transparency increased trust</cite></blockquote>
+  <p>This is the nutrition-category caution arriving in a live answer: restraint stacked three deep stops reading as integrity and starts reading as a warning label. It does not kill the mechanic — the same respondent volunteered "it admits when it doesn't know" as the thing they would tell a friend — but it caps the dose. <strong>One restraint line converts; three compound into doubt.</strong></p>
+
+  <h3>Finding 3 — the strongest analytical concept was the least memorable</h3>
+  <p>Cell B scored highest in round six's rubric at 33 points and lowest here on next-day memorability, with no unaided name recall at all: <em>"I'd remember 'the app that shows what it read' long before I'd remember what it's called."</em> A concept can be simultaneously the best argument and the worst brand vehicle. Round seven's instinct to demote it from positioning to proof is supported.</p>
+
+  <h3>Two smaller things worth keeping</h3>
+  <ul>
+    <li><strong>The "no stickers, no gym setup" line backfired mildly in cell A</strong> — it introduced a worry that did not previously exist: <em>«я и не думал, что что-то надо ставить, и на секунду засомневался»</em>. It is a real competitive advantage against half the field and it should stay in the body copy, but not in the first three lines where it answers an unasked question.</li>
+    <li><strong>Cell C left its own data source unexplained</strong> — <em>«Не понял, откуда оно знает МОИ настройки»</em>. The concept silently mixes authored guidance (the seat position for this machine type) with personal history (what you lifted). Those are different promises and the page must not blur them.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">04</span><h2>A structural bound the respondent felt before the analysis found it</h2></div>
+  <blockquote>«…но я не уверен, что оно реально узнает те железки, что стоят у нас… старые и китайские тренажёры без опознавательных знаков.»
+    <cite>Cell C, unprompted</cite></blockquote>
+  <div class="box warn">
+    <span class="lbl">The nameplate mechanic cannot address most of the gym</span>
+    <p>Measured in the registry: of 69 equipment types, <strong>28 are selectorised strength machines</strong> — the only ones that plausibly carry a printed exercise name. <strong>Twelve are free weights and bodyweight, which can never carry one.</strong> By exercise count, machines that could bear a nameplate reach <strong>533 of the 1,384 mapped exercises; free weights and bodyweight alone account for 540.</strong></p>
+    <p>So the reading-the-label story addresses roughly two fifths of the mapped catalog and none of the barbell half of the gym. That does not invalidate it — the machines it covers are precisely the ones people cannot identify — but it does mean the mechanic cannot be the whole product story, and the field study must measure nameplate prevalence <em>within the strength subset</em> rather than across gyms in general.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">05</span><h2>What the pilot could not catch</h2></div>
+  <p>All three cells passed the safety question. That question asks directly whether the app appears to supervise or protect you, and a direct question cannot catch a risk that lives in the <em>combination</em> of two lines neither of which is a safety claim on its own. A separate adversarial pass was run against the stimuli for exactly that class of defect. Three of its findings change the stimuli before any real panel sees them.</p>
+
+  <h3><span class="chip a">A</span> "without asking anyone" is the wrong kind of alone</h3>
+  <p>Two problems in one phrase. It makes staff and trainers into things to be avoided, which turns a competence product into a shame product and invites the flat retort <em>the trainer is free, just ask him</em>. And it interacts with the name: a product called after a <strong>spotter</strong>, promising you need not ask anyone, is one visual of a lone user under load away from reading as <em>this replaces the person who would otherwise be standing there</em>. In Russian the register is harsher still — «чтобы никто не узнал» is concealment, not discretion.</p>
+  <p>The emotional promise survives; the solitude promise does not. Rewrite to the outcome — <em>so you can work it out yourself</em> — and keep every frame of footage away from a loaded barbell over a solo lifter.</p>
+
+  <h3><span class="chip c">C</span> "Set it" is the worst available ambiguity in this category</h3>
+  <p>In a fitness context the first reading of <em>set</em> is a set of reps, not a machine adjustment. The middle verb therefore reads as set-logging, which points the concept head-on at Hevy and Strong on a feature the product does not have and is not planning. This is not a wording preference — it means cell C as written tests a different product than the one intended, and the pilot respondent's confusion about where the settings come from is the mild version of the same defect.</p>
+
+  <h3><span class="chip b">B</span> the restraint line inverts at glance speed</h3>
+  <p>"It never shows certainty it doesn't have" is a double negative. Read in five seconds it collapses to <em>it's never wrong</em> — the precise opposite of the intent, and the one misreading that would make the restraint doctrine actively dishonest. There is no clean Russian form either. The behaviour is right; the sentence has to go.</p>
+
+  <h3>Where the adversarial pass overreaches</h3>
+  <ul>
+    <li><strong>"A is LTV-hostile — it buys a cohort that stops being that cohort in six weeks."</strong> Directionally worth testing, but the pilot's respondent was a 32-year-old with real gym experience and read A exactly as intended without feeling addressed as a novice. Keep A; add a screener so the beginner/experienced split can be read separately rather than assumed.</li>
+    <li><strong>"B misreads as a document scanner."</strong> True of the headline alone, not of the stimulus — the frame contains a gym and a machine shroud. The pilot respondent comprehended it correctly. A headline-only critique overstates a risk the visual already answers.</li>
+    <li><strong>"Drop C before testing."</strong> The conclusion is right and it was already round seven's ruling, but note what would have been lost: the single most valuable line in this entire round came out of cell C's respondent. Drop the concept, keep the question that produced the finding.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">06</span><h2>The instrument, after the pilot</h2></div>
+  <p>Half the questionnaire earned its place. The rest should be cut before anyone spends on a real panel.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Question</th><th>Verdict</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>In one sentence, what does this app do?</td><td><span class="chip a">Keep — ask it first, unaided, typed</span></td><td>The only true comprehension measure and the only question with predictive value. If "identifies gym machines from a photo" is absent from the free-text answer, nothing downstream means anything. All three cells passed — the concepts differ in appeal, not in clarity</td></tr>
+        <tr><td>Which promise matters, which would you not use?</td><td><span class="chip a">Keep — best question in the set</span></td><td>Produced finding 1. Force the trade-off; do not ask people to rate things they can rate highly for free</td></tr>
+        <tr><td>What would you tell a friend?</td><td><span class="chip a">Keep</span></td><td>The real memorability test, and it surfaced what each concept actually transmits</td></tr>
+        <tr><td>Anything confusing or that reduced trust?</td><td><span class="chip a">Keep</span></td><td>Produced both smaller findings above</td></tr>
+        <tr><td>Does anything suggest the app supervises or protects you?</td><td><span class="chip a">Keep</span></td><td>Non-negotiable safety check, even though all three cells passed clean</td></tr>
+        <tr><td>Does SPTR mean anything to you?</td><td><span class="chip c">Reword</span></td><td>Asked next to a visible "Spotter" sub-label, it can only confirm the label. Ask it on a version with the mark alone, or it measures nothing</td></tr>
+        <tr><td>Does transparency make you trust it more or less?</td><td><span class="chip warn">Cut — replace with a behavioural probe</span></td><td>Leading five ways at once: it names the virtue, presupposes it is the operative variable, offers no "no difference", asks about a mechanism rather than a behaviour, and post-exposure it prompts rationalisation. Ask instead <em>"If the app named a machine and you weren't sure it was right, what would you do?"</em> — and measure the effect by running B with and without the evidence line rather than asking about it</td></tr>
+        <tr><td>Would you try it?</td><td><span class="chip warn">Cut</span></td><td>Everyone says yes to a free thing. The respondent said yes and then volunteered that the last three died in a folder — the caveat carried the information, not the answer. Keep one behavioural follow-up ("what would you do next?" with real options), never a purchase-intent scale on a free unlaunched app</td></tr>
+        <tr><td>Rate newness 1–5</td><td><span class="chip warn">Cut</span></td><td>All three scored 3. A rating nobody differentiates on is a wasted question</td></tr>
+        <tr><td>Who is it for?</td><td><span class="chip warn">Cut</span></td><td>All three answered "people like me", which is the only answer this framing can produce</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>What would make the whole test worthless</h3>
+  <ul>
+    <li><strong>Unequal production values between cells.</strong> If one concept gets better footage, the test measures the footage. Same gym, same machine, same device, same day.</li>
+    <li><strong>Testing copy the product cannot deliver.</strong> Two of cell C's three verbs are unbuilt; if the test wins on those and the build never follows, the result is a plan for a page that must be retracted.</li>
+    <li><strong>Synthetic respondents treated as market evidence.</strong> This pilot is a check on the instrument. Numbers from one simulated person per cell cannot rank concepts; they can only show which questions discriminate.</li>
+    <li><strong>Language drift, and worse, literal translation.</strong> One pilot respondent answered in Russian, one in English, from the same persona brief — fix the response language per cell or the verbatims are not comparable. The deeper trap: A and B live almost entirely in register, so a literally translated stimulus is a <em>different concept</em>, and pooling the two languages compares two products. Localise as concept, then back-translate to check what was actually promised.</li>
+  </ul>
+  <div class="box">
+    <span class="lbl">One structural addition</span>
+    <p>Monadic exposure is correct for comprehension, message playback and unaided recall — comparison contaminates all three, which is why the pilot ran that way. It is weak for the ship decision: monadic top-box scores across concepts tend to collapse into a narrow band that discriminates nothing, and a warm concept can out-<em>like</em> a useful one while converting worse. Add one small forced-rank cell that sees all three and analyse it separately. Do not let that cell also answer the comprehension questions.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">07</span><h2>Where this leaves the stack</h2></div>
+  <p>Round seven's layering survives the pilot with one adjustment: the acquisition hook and the retention promise should not be the same sentence, because the pilot says the hook is the weaker benefit.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Layer</th><th>Current best</th><th>Pilot signal</th></tr></thead>
+      <tbody>
+        <tr><td>Brand memory</td><td>SPTR — short for Spotter</td><td>Nobody decoded it unaided; the sub-label did all the work. Keep the sub-label indefinitely</td></tr>
+        <tr><td>Emotional promise</td><td>Not having to look lost</td><td>Strongest cell on memorability and the only one where the name stuck. <em>«Хочет, чтобы я перестал стесняться своей неопытности»</em> — read exactly as intended</td></tr>
+        <tr><td>Acquisition hook</td><td>Point the camera at the machine</td><td>Understood instantly by all three, valued least by the one asked to choose</td></tr>
+        <tr><td>Retention</td><td>Setup and last-time memory</td><td>Named unprompted as the parts that matter. Both unbuilt — this is the backlog's first two items</td></tr>
+        <tr><td>Trust</td><td>Evidence + restraint</td><td>Works at one line, backfires at three</td></tr>
+        <tr><td>Moat candidate</td><td>Contribution loop</td><td>Untested here — it is invisible in a five-second exposure by construction</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">08</span><h2>Decision and next gate</h2></div>
+  <ul>
+    <li><strong>Final positioning: still not selected</strong>, and the pilot supports waiting rather than settles it.</li>
+    <li><strong>Cell A carries the hero</strong> on current evidence, with the camera mechanic as its second line rather than its first.</li>
+    <li><strong>Cell B becomes one line in the body</strong> — its own respondent proved the mechanic transmits and the stacking does not.</li>
+    <li><strong>Cell C is dropped from the test</strong>, not merely demoted — it describes an unbuilt product, carries the only implied-safety problem in the set, and its central verb is ambiguous in the worst possible way for this category. A test whose winning answer could not be shipped is spend with no outcome. Move its sample into an A/B split that runs the evidence line as a variable rather than a concept.</li>
+  </ul>
+  <p>Four things now block a real test, and none of them is another review: the three stimulus amendments in §05, which must land before any panel sees the cells; the nameplate field study, bounded to strength machines; the two backlog items the respondent named as the ones that matter; and a matched production shoot so the cells differ in message and nothing else.</p>
+  <div class="box">
+    <span class="lbl">The formula after eight rounds</span>
+    <p>SPTR — short for Spotter. Helps you understand what is in front of you, remembers the context that matters, shows what its answer is based on, and does not pretend when it has no answer yet.</p>
+    <p>The pilot's contribution to that sentence is the order: what the product remembers is worth more to a real user than what it recognises, and the page has been leading with the wrong half.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Round eight designs the concept test, reports a one-respondent-per-cell synthetic pilot run blind to validate the instrument, and runs a separate adversarial pass against the stimuli. Pilot results are a check on the questions, not evidence about the market, and are labelled as such throughout; §05's amendments are stimulus defects found by argument, not by respondents. Repository figures were measured against the working tree at commit <span class="mono">78b24dc</span>. Review only: nothing implemented, committed or pushed.</p>
+  <p class="src">Evidence added this round: <a href="mobile/assets/data/equipment.json">mobile/assets/data/equipment.json</a> · <a href="mobile/lib/l10n/app_ru.arb">mobile/lib/l10n/app_ru.arb</a> · <a href="mobile/lib/features/scanner/scanner_page.dart">mobile/lib/features/scanner/scanner_page.dart</a></p>
+</footer>
+
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

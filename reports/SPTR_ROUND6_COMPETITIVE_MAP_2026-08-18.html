@@ -1,0 +1,388 @@
+<title>SPTR Round Six Competitive Map</title>
+<style>
+  :root {
+    --paper: #F3F4F4;
+    --surface: #FBFBFB;
+    --sunk: #E7E9E9;
+    --ink: #15181A;
+    --muted: #5A6266;
+    --rule: #D3D7D8;
+    --accent: #A34216;
+    --open: #14675A;
+    --open-soft: #DAE9E5;
+    --occ: #93332A;
+    --occ-soft: #F2DFDC;
+    --part: #86590C;
+    --part-soft: #F1E7D2;
+    --new: #1F4E7A;
+    --new-soft: #DCE6EF;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0F1213; --surface: #171A1B; --sunk: #1D2122; --ink: #E5E8E8;
+      --muted: #939B9E; --rule: #282D2E; --accent: #E28B57;
+      --open: #56C0AE; --open-soft: #112421; --occ: #E4837A; --occ-soft: #2A1817;
+      --part: #D8A25C; --part-soft: #271F11; --new: #79ADDD; --new-soft: #111E29;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0F1213; --surface: #171A1B; --sunk: #1D2122; --ink: #E5E8E8;
+    --muted: #939B9E; --rule: #282D2E; --accent: #E28B57;
+    --open: #56C0AE; --open-soft: #112421; --occ: #E4837A; --occ-soft: #2A1817;
+    --part: #D8A25C; --part-soft: #271F11; --new: #79ADDD; --new-soft: #111E29;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: Constantia, Charter, "Iowan Old Style", Georgia, serif;
+    font-size: 16.5px; line-height: 1.6; margin: 0; padding: 0 22px 88px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  h1, h2, h3, th, .sans { font-family: "Segoe UI", -apple-system, system-ui, sans-serif; font-weight: 600; }
+  .eyebrow, .sec-tag, .mono, code {
+    font-family: "Cascadia Mono", Consolas, ui-monospace, monospace;
+  }
+
+  .masthead { padding: 58px 0 26px; border-bottom: 1px solid var(--ink); }
+  .eyebrow {
+    font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 18px;
+  }
+  h1 {
+    font-size: clamp(29px, 4.8vw, 46px); line-height: 1.07; letter-spacing: -0.015em;
+    margin: 0 0 14px; text-wrap: balance;
+  }
+  .standfirst { font-size: 17.5px; color: var(--muted); max-width: 66ch; margin: 0; }
+
+  section { padding: 38px 0 6px; border-bottom: 1px solid var(--rule); }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+  .sec-tag { font-size: 12px; color: var(--accent); font-weight: 700; letter-spacing: 0.04em; padding-top: 3px; }
+  h2 { font-size: clamp(20px, 2.8vw, 27px); line-height: 1.18; margin: 0; letter-spacing: -0.008em; text-wrap: balance; }
+  h3 { font-size: 16.5px; margin: 22px 0 8px; }
+  p { margin: 0 0 13px; max-width: 74ch; }
+  ul, ol { margin: 0 0 13px; padding-left: 20px; max-width: 74ch; }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--muted); }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  code, .mono { font-size: 0.87em; }
+
+  .chip {
+    display: inline-block; font-family: "Segoe UI", system-ui, sans-serif;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 2px; white-space: nowrap;
+  }
+  .chip.open { background: var(--open-soft); color: var(--open); }
+  .chip.occ { background: var(--occ-soft); color: var(--occ); }
+  .chip.part { background: var(--part-soft); color: var(--part); }
+  .chip.new { background: var(--new-soft); color: var(--new); }
+  .chip.flat { background: var(--sunk); color: var(--muted); }
+
+  .scroll { overflow-x: auto; margin-bottom: 16px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 640px; }
+  th {
+    text-align: left; font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--muted); border-bottom: 1px solid var(--ink); padding: 0 11px 6px 0;
+  }
+  td { padding: 9px 11px 9px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tbody tr:hover { background: var(--surface); }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .box {
+    border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface);
+    padding: 16px 18px; margin: 0 0 16px; max-width: 78ch;
+  }
+  .box .lbl {
+    display: block; font-family: "Segoe UI", system-ui, sans-serif; font-size: 10px;
+    letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: var(--accent); margin-bottom: 7px;
+  }
+  .box.open { border-left-color: var(--open); } .box.open .lbl { color: var(--open); }
+  .box.occ { border-left-color: var(--occ); } .box.occ .lbl { color: var(--occ); }
+  .box.new { border-left-color: var(--new); } .box.new .lbl { color: var(--new); }
+  .box p:last-child { margin-bottom: 0; }
+
+  blockquote {
+    margin: 0 0 13px; padding-left: 16px; border-left: 3px solid var(--rule);
+    color: var(--muted); max-width: 66ch;
+  }
+  blockquote cite {
+    display: block; margin-top: 6px; font-style: normal; font-size: 12.5px;
+    font-family: "Segoe UI", system-ui, sans-serif;
+  }
+
+  footer { padding: 32px 0 0; color: var(--muted); font-size: 13.5px; }
+  .src { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; font-size: 12px; word-break: break-word; }
+  .src a { color: var(--muted); }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow">
+    <span>Round six</span><span>Feature-level competitive map</span><span>2026-08-18</span><span>master 78b24dc</span>
+  </div>
+  <h1>Every capability in the concept is occupied by someone. The three things nobody occupies are all refusals.</h1>
+  <p class="standfirst">Round five was right and the correction is accepted without qualification. Re-searched against the narrow indie products rather than the category leaders, four of the round-four territories collapse — and one of round four's own product assumptions collapses with them. What survives is a pattern nobody planned: the defensible positions in this category are not things the product does, they are things it declines to do, plus one thing it shows that everyone else hides.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<section>
+  <div class="sec-head"><span class="sec-tag">01</span><h2>Collisions, verified at source rather than accepted</h2></div>
+  <p>Round five's findings are load-bearing enough that taking them on trust would repeat the error they identify. Four were checked directly. All four hold, and the detail changes what follows.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Product</th><th>What it actually does</th><th>Collision type</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>RALLY</strong><br><span class="chip occ">Kills territory 02</span></td>
+          <td>Verbatim: <em>"Point your camera at a gym machine. RALLY identifies it, shows what it works on a body map, your last weight, and a suggested weight for today."</em> Camera, not QR. Live, free, browser PWA with native iOS "on the way". English only. Food tracking is its primary product; the machine scan is a feature.</td>
+          <td>Same feature, same user job, <strong>same promise</strong>. "The machine remembers you" is occupied outright</td>
+        </tr>
+        <tr>
+          <td><strong>GymSetup</strong><br><span class="chip part">Partly hits territory 03</span></td>
+          <td><em>"Quickly capture your ideal machine settings with photos and notes, so you always know the exact seat height, weight, and adjustments that work best for you"</em> and <em>"scan the text on the equipment to save a clear name"</em>. iOS only, free, too few ratings to display an average.</td>
+          <td>Same feature and same mechanism — but a <strong>different user job</strong>. It stores settings the user already knows. Territory 03 addressed someone with no settings to store</td>
+        </tr>
+        <tr>
+          <td><strong>SportDoma</strong><br><span class="chip occ">Kills the "empty Russian market" claim</span></td>
+          <td>Live Russian Telegram/MAX bot: <em>«Сфоткай свой тренажёр — бот подберёт упражнения под него»</em>. Operated by an equipment-<em>rental</em> company in Voronezh; tiers 190–1,990 ₽; three free workouts.</td>
+          <td>Same mechanism, same language, <strong>different user job</strong> (your own rented equipment at home, not an unfamiliar machine on a gym floor) and a different channel</td>
+        </tr>
+        <tr>
+          <td><strong>Liftd</strong><br><span class="chip part">Bounded by infrastructure</span></td>
+          <td>QR on each machine; pulls that member's history on that machine and suggests a weight from past RPE. Gym passport across cities. <strong>1,300+ equipment models from 50+ brands.</strong> The company site sells to gym owners: "Equipment-Level Intelligence for Gym Owners".</td>
+          <td>Same promise, but <strong>requires gym-side infrastructure</strong> — it cannot serve a stranger walking into a gym that has never heard of it</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>That last column is the one worth keeping. Four collision types were requested and they behave very differently: a shared <em>mechanism</em> is nearly meaningless, a shared <em>promise</em> is fatal, and a shared feature serving a different <em>user job</em> is an opportunity rather than a wall.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">02</span><h2>A correction round four owes about its own product</h2></div>
+  <div class="box occ">
+    <span class="lbl">The nameplate does not identify the machine model</span>
+    <p>Round four implied that reading the shroud gives model-level knowledge. It does not, and the code is explicit about why: the anchor <strong>deliberately discards brand words</strong> — <span class="mono">NAUTILUS</span>, <span class="mono">STAR TRAC</span>, <span class="mono">INSPIRATION</span> — because they appear on half the machines in a gym and identify nothing. What the anchor reads is the <em>exercise name</em> printed on the shroud, which resolves to a catalog category.</p>
+    <p>Confirmed in the data: all 69 equipment records carry <span class="mono">manufacturer: "Any"</span>. There is no model dimension at all. Liftd holds 1,300+ models across 50+ brands.</p>
+    <p><strong>Consequence:</strong> any positioning built on "it knows exactly which machine you are standing at" is untrue today and expensive to make true. Model resolution is a data-acquisition project, not a feature.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">03</span><h2>The candidate nobody had, found by looking closer at what already ships</h2></div>
+  <div class="box new">
+    <span class="lbl">Auditable identification</span>
+    <p>The scanner already prints the exact words it read off the machine, under the answer and the confidence: <strong>"Read on the machine: ABDUCTION ADDUCTION"</strong> / <strong>«Прочитано на тренажёре: ABDUCTION ADDUCTION»</strong>. Both languages ship; it renders in <span class="mono">scanner_page.dart:1349</span>.</p>
+    <p>So the identification is checkable by the user in one second, against the object in front of them. Every competitor asserts a result — RALLY, Gymeo, GymScan, Fitzi all hand back a name and ask for trust. Liftd's QR is verifiable but needs the gym to install it.</p>
+    <p>The supporting behaviour is unusually disciplined and also already built: confidence is capped at <strong>0.92 and never reaches 1.0</strong>, because "a confidence the model did not produce must not be shown"; two machine names in the text return <strong>two candidates at 0.55</strong> rather than a choice; three or more return the cable station at 0.75 instead of one of its six exercises.</p>
+    <p>A targeted search found no product claiming this. Stated carefully: <em>no product found claiming it</em> — not proof that none exists.</p>
+  </div>
+  <p>This matters beyond novelty. It is the one form of "show what you know, show when you don't" that a stranger understands in a second and can test immediately, without reading a methodology page or trusting a percentage. It converts the brand principle from a claim into a visible object.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">04</span><h2>The map, by column</h2></div>
+  <p>Rows are the capabilities the concept depends on. "Open" means no product was found holding it, which is weaker than proof and is marked as such.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Capability</th><th>Status</th><th>Held by</th><th>What a competitor must do to take it</th></tr></thead>
+      <tbody>
+        <tr><td>Photo machine recognition</td><td><span class="chip occ">Occupied</span></td><td>Gymeo, GymScan, GymVision, PhotoFit, Fitzi, RALLY</td><td>Nothing — it is the commodity</td></tr>
+        <tr><td>Printed-label OCR</td><td><span class="chip occ">Occupied</span></td><td>Setto, GymSetup, and <strong>RYZN — shipping, and it pairs the label read with your last performance</strong></td><td>A sprint. Already done</td></tr>
+        <tr><td>Last weight at this machine</td><td><span class="chip occ">Occupied</span></td><td>RALLY and RYZN (camera), Gymeo in weaker form, Liftd / WeightFlow / LIFTAG (QR or NFC)</td><td>Already done</td></tr>
+        <tr><td>Suggested next weight</td><td><span class="chip occ">Occupied</span></td><td>RALLY, Liftd, and every serious logger</td><td>Already done</td></tr>
+        <tr><td>Setup recall — your own settings</td><td><span class="chip occ">Occupied</span></td><td>GymSetup</td><td>Already done</td></tr>
+        <tr><td>Setup <em>guidance</em> — where the seat goes for a newcomer</td><td><span class="chip part">Partly open</span></td><td>LIFTAG shows setup video after a scan; GymSetup only stores what you chose</td><td>Author the content per machine. Cheap for 69 categories, expensive at model resolution</td></tr>
+        <tr><td>Exact machine model / brand</td><td><span class="chip occ">Occupied</span></td><td>Liftd, 1,300+ models</td><td>SPTR does not have this at all</td></tr>
+        <tr><td>Gym inventory built from photos</td><td><span class="chip occ">Occupied</span></td><td>Fitzi, GymVision, Liftd</td><td>Already done</td></tr>
+        <tr><td>Substitution when a machine is taken</td><td><span class="chip occ">Occupied</span></td><td>F/AI, Spotter — Your Gym Reference, Altor</td><td>Already done</td></tr>
+        <tr><td>Russian machine guidance</td><td><span class="chip part">Narrower than round four believed</span></td><td>SportDoma (rental-tied Telegram bot, home equipment) and <strong>Liftd, which ships Russian as one of nine in-app languages</strong> — but only inside a gym that pays for its QR tags. No camera-only Russian app for the gym floor was found</td><td>Build a Russian catalog with video. Months of content, not a sprint — but the square is now "Russian <em>and</em> camera-only <em>and</em> gym-floor", not "Russian"</td></tr>
+        <tr><td>Auditable identification — showing the words it read</td><td><span class="chip open">Open, unclaimed</span></td><td>None found</td><td>Technically trivial. Commercially awkward: it contradicts a pitch built on "our AI recognises any machine"</td></tr>
+        <tr><td>Withheld output below a measured threshold</td><td><span class="chip open">Open, unclaimed</span></td><td>None found across five rounds</td><td>Delete their own demo feature — push-ups are the rep-counter category's storefront</td></tr>
+        <tr><td>Miss → user photo → catalog growth loop</td><td><span class="chip open">Open</span></td><td>Nearest neighbour is Move Your Mass, where users add machines with photos to a gym's equipment list — but there is no recognition step, so no miss triggers it</td><td>Six commodity steps, each shippable in a quarter. The defence is operational density, not technology</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box occ">
+    <span class="lbl">Two products on the round-five list could not be found</span>
+    <p><strong>Altor</strong> returned nothing across five query angles, and no such host resolves. <strong>Muscle Diary</strong> does not appear on either store; the nearest match is an unrelated plain logger with no scanning of any kind. Both need a URL or bundle id before they can be mapped, and neither should be carried into the next round as an established collision.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">05</span><h2>The two hostile probes</h2></div>
+  <div class="box open">
+    <span class="lbl">Contribution loop — verdict OPEN, medium-high confidence</span>
+    <p>No fitness product was found running the full cycle. The closed-catalog recognisers — GymScan, GymLens, Gymeo, Exercaise, PhotoFit — have no unknown-scan submission, no moderation queue and no "we'll add it" promise anywhere in their copy. Their failure mode is the nearest-wrong-answer one this product is trying to displace.</p>
+    <p>Outside fitness the pattern is mature and worth borrowing deliberately: Seek pushes images its model cannot identify into iNaturalist, the community identifies them, and those identifications retrain the model. Open Food Facts turns a missing barcode into a user photograph that enters a public database — structurally the closest analogue, because the objects are bounded and physical and the entry is immediately useful to the next person in the same shop, or the same gym chain.</p>
+    <p><strong>The honest kill argument:</strong> this is not one moat but six commodity steps, and it only compounds if repeat-sighting density in one market actually accumulates. That is an operations bet on content throughput, not a technology bet — and a funded incumbent can buy the same density by paying gym chains for equipment lists.</p>
+  </div>
+  <div class="box part">
+    <span class="lbl">Uncertainty as a system — verdict PARTIALLY OCCUPIED</span>
+    <p>The <em>promise</em> is already claimed in nutrition. Honest Calories markets refusal of false precision as the product and cites a published tolerance as its gate; PlateLens applies the same posture to two distinct surfaces. Neither withholds output — both widen a number into a range.</p>
+    <p>In fitness, nothing occupies it: every rep counter found markets confident automatic counting.</p>
+    <p><strong>The caution worth carrying, and it is uncomfortable:</strong> showing a range is friendlier to a user than showing nothing. The version that sounds more defensible may be the commercially weaker one. That is an argument for pairing every refusal with something the user still gets — which is exactly what the shipped rep-count badge already does when it says the count is off but the form check is still running.</p>
+  </div>
+  <p>One more finding arrived independently and is worth stating on its own, because it was reached by a different reviewer looking at a different question: <em>not one</em> of the seven camera-scan products documents what happens when recognition fails, shows a confidence level, withholds an uncertain answer, or offers a contribution path. Silent-wrong-answer is the category default. That is the same conclusion section 03 reached from the code, from the opposite direction.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">05</span><h2>The pattern six rounds have been circling</h2></div>
+  <p>Read the three open rows together. Showing the evidence instead of the answer. Withholding a number that cannot be stood behind. Admitting a miss and turning it into content. None of them is a capability. All three are refusals — and all three are cheap to build and awkward to copy for exactly the same reason: they subtract from the pitch every competitor is already making.</p>
+  <blockquote>Every feature in this category can be copied in a sprint. A refusal cannot be copied without deleting a competitor's own demo.
+    <cite>The finding, stated once</cite></blockquote>
+  <p>This also resolves the tension that has run through rounds three to five. The counter-argument to restraint-as-positioning was always that nobody installs an app to be told it is unsure — which is correct, and is why restraint keeps failing as a hero line. But <em>auditable identification</em> is not a confession. It is a feature with a visible surface: the machine says <span class="mono">ABDUCTION ADDUCTION</span>, the app says it read <span class="mono">ABDUCTION ADDUCTION</span>, and the user's own eyes close the loop. That is restraint in a form a stranger can want.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">06</span><h2>The bundle, judged honestly</h2></div>
+  <p><strong>Scan it · Set it · Remember it</strong> is the right product architecture and the wrong brand. Every component is now demonstrably held by someone: RALLY has scan-and-remember without infrastructure, Liftd has it with, GymSetup has set. No single product was found holding all three, camera-only, in Russian — but a bundle assembled from commodities answers "why this app" and not "why remember this app". It is a roadmap and a comparison-table argument, not a position.</p>
+  <p>Where it does earn its place is as the <em>order of the page</em> and the order of the build: it is a coherent sequence, each step creating the reason for the next, and it absorbs future machine-level features without renaming anything.</p>
+  <div class="box open">
+    <span class="lbl">The one component worth protecting</span>
+    <p>Camera-only is the constraint doing the real work. Liftd, WeightFlow, Setto and LIFTAG all need a sticker, a QR, an NFC tag or a gym partnership — which means none of them can serve a person walking into an arbitrary gym today. RALLY can, and is the genuine competitor. Any positioning here should carry "no sticker, no setup, no permission from the gym" as an explicit clause, because it silently excludes half the field.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">07</span><h2>The contest, scored</h2></div>
+  <p>Five concepts, eight criteria, scored 1–5. Whitespace reflects this round's evidence, not round four's.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr>
+        <th>Concept</th><th class="num">Clarity</th><th class="num">Emotion</th><th class="num">Whitespace</th><th class="num">Build</th><th class="num">Proof</th><th class="num">Retention</th><th class="num">Defence</th><th class="num">Fit</th><th class="num">Total</th>
+      </tr></thead>
+      <tbody>
+        <tr><td><strong>Auditable identification</strong> — it shows you what it read</td><td class="num">4</td><td class="num">3</td><td class="num">5</td><td class="num">5</td><td class="num">5</td><td class="num">2</td><td class="num">4</td><td class="num">5</td><td class="num"><strong>33</strong></td></tr>
+        <tr><td><strong>Contribution loop</strong> — the machine it doesn't know gets added</td><td class="num">2</td><td class="num">3</td><td class="num">5</td><td class="num">3</td><td class="num">3</td><td class="num">4</td><td class="num">5</td><td class="num">4</td><td class="num"><strong>29</strong></td></tr>
+        <tr><td><strong>Scan it · Set it · Remember it</strong></td><td class="num">4</td><td class="num">3</td><td class="num">2</td><td class="num">3</td><td class="num">4</td><td class="num">5</td><td class="num">3</td><td class="num">5</td><td class="num"><strong>29</strong></td></tr>
+        <tr><td><strong>Cross-language interpreter</strong> — English label, your language</td><td class="num">5</td><td class="num">4</td><td class="num">2</td><td class="num">5</td><td class="num">2</td><td class="num">3</td><td class="num">4</td><td class="num">4</td><td class="num"><strong>29</strong></td></tr>
+        <tr><td><strong>Private confidence</strong> — nobody has to know it's your first week</td><td class="num">3</td><td class="num">5</td><td class="num">4</td><td class="num">4</td><td class="num">4</td><td class="num">3</td><td class="num">2</td><td class="num">3</td><td class="num"><strong>28</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Three things the totals hide. <em>Auditable identification</em> scores 2 on retention — a first-impression asset that gives nobody a reason to return, so it cannot stand alone. <em>Cross-language</em> lost a point of whitespace this round to Liftd's Russian interface, and still scores 2 on proof cost because it rests on an unmeasured assumption about how many real nameplates are readable and in what language. And the <em>contribution loop</em> gained a point on the open verdict, but its 2 on clarity is the real problem: a stranger does not understand a flywheel in three seconds. It is a moat that cannot be a headline.</p>
+  <div class="box occ">
+    <span class="lbl">The competitor that should worry you most</span>
+    <p><strong>RYZN.</strong> Shipping on iOS and Apple Watch, monetised, updated in July: it reads the machine's label to disambiguate <em>and</em> auto-cascades your last performance. That is nameplate OCR plus machine memory in one product — two of round four's three top territories, already live. It has no Russian, no setup guidance, and no failure handling, which is precisely where the remaining room is.</p>
+    <p>Second is <strong>GymVision</strong> on a different axis: it films the room and builds the gym profile automatically, with a shared gym map. Territory 07 is not partly open; it is taken.</p>
+    <p>And a note that cuts the other way: <strong>GymScan</strong>, whose headline the concept collided with, is a waitlist. Version 1.1, stale since September, no displayed ratings, no ship date. The sentence is occupied; the competitor behind it is not a threat.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">08</span><h2>Next gate</h2></div>
+  <p>No winner is crowned, per round five's instruction. Two measurements and one search decide it, and none of them is a landing page.</p>
+  <ol>
+    <li><strong>Nameplate field study.</strong> Across several gyms and brands: what fraction of machines carry a readable name, in what language, and what the anchor scores end to end on those photographs. This unblocks the cross-language concept and retires the two stale recognition figures still circulating from earlier rounds.</li>
+    <li><strong>The contribution-loop search</strong>, now running as a hostile probe against fitness and against the identification apps outside fitness that are famous for this pattern.</li>
+    <li><strong>A concept test, not a launch.</strong> Two hooks, one page each, same product footage: the auditable-identification line against the private-confidence line. That is a cheap answer to the one question this review genuinely cannot settle from evidence — which of a memorable mechanism and a felt emotion moves a stranger further.</li>
+  </ol>
+  <div class="box">
+    <span class="lbl">Adopted for every future round</span>
+    <p>Round five's competitive rule is now standing procedure: search the user job and its synonyms rather than the feature name; treat QR, NFC and camera implementations as separate searches; search one-feature indie apps rather than category leaders; search in English and in Russian; and record which of the four collision types applies. "Fitbod does not do it" is not evidence, and this review produced that error twice before it was caught by someone else.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Round six runs under Marketing R&amp;D Mode. Round five's corrections are accepted in full; its four load-bearing collisions were re-verified at source rather than taken on trust, and one further error in round four's own product reasoning was found in the process. Repository facts were measured against the working tree at commit <span class="mono">78b24dc</span>. Where a negative finding rests on a search rather than proof, it says so. Review only: nothing implemented, committed or pushed.</p>
+  <p class="src">Repository evidence this round: <a href="mobile/lib/features/visual_equipment/data/machine_text_anchor.dart">mobile/lib/features/visual_equipment/data/machine_text_anchor.dart</a> · <a href="mobile/assets/data/equipment.json">mobile/assets/data/equipment.json</a> · <a href="mobile/lib/features/scanner/scanner_page.dart">mobile/lib/features/scanner/scanner_page.dart</a> · <a href="core/plans/B5b_TEXT_ANCHOR_2026-08-07.md">core/plans/B5b_TEXT_ANCHOR_2026-08-07.md</a></p>
+</footer>
+
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

@@ -109,7 +109,7 @@
 <header>
   <p class="eyebrow">Fitness_App · Form Coach · 1 September 2026</p>
   <h1>Calibrated Against a Drawing</h1>
-  <p class="standfirst">The pose targets were authored in a coordinate space stretched 1.5&times; horizontally, and two multiplications papered over it at runtime. Removing them revealed that the rep counter's own thresholds had once been read off that same stretched drawing — so three of seven movements ask the user to reach a pose their own counter will not accept.</p>
+  <p class="standfirst">The pose targets were authored in a coordinate space stretched 1.5&times; horizontally, and two multiplications papered over it at runtime. Removing them revealed that the rep counter's own thresholds had once been read off that same stretched drawing — so two movements ask the user to reach a pose their own counter will not accept.</p>
 </header>
 
 <!-- report-conform:begin -->
@@ -202,7 +202,7 @@
 <thead><tr><th>Movement</th><th>Figure now</th><th>Gate needs</th><th>Old space</th><th>Result</th></tr></thead>
 <tbody>
 <tr><td>Hinge, bottom</td><td>&minus;0.717</td><td>&ge; &minus;0.600</td><td>&minus;0.565</td><td class="fail">falls short</td></tr>
-<tr><td>Lunge, bottom</td><td>&minus;0.832</td><td>&ge; &minus;0.720</td><td>&minus;0.707</td><td class="fail">falls short</td></tr>
+<tr><td>Lunge, bottom</td><td>&minus;0.832</td><td>&ge; &minus;0.720</td><td>&minus;0.707</td><td class="pass">not live</td></tr>
 <tr><td>Situp, top</td><td>0.177</td><td>&le; 0.160</td><td>0.119</td><td class="fail">falls short</td></tr>
 <tr><td>Curl</td><td>—</td><td>—</td><td>moved 0.002</td><td class="pass">unaffected</td></tr>
 <tr><td>Overhead press</td><td>—</td><td>—</td><td>moved 0.004</td><td class="pass">unaffected</td></tr>
@@ -211,10 +211,14 @@
 </div>
 
 <div class="note warn">
-  <p><strong>This is a live-behaviour defect, not a test artifact.</strong> The counter always compared these thresholds against real detector coordinates. So a user who stands exactly in the drawn hinge, lunge or situp silhouette <strong>does not reach the phase the counter is waiting for</strong>. Squat and pushup are unaffected — their signal reads the vertical axis only.</p>
+  <p><strong>This is a live-behaviour defect, not a test artifact.</strong> The counter always compared these thresholds against real detector coordinates. So a user who stands exactly in the drawn hinge or situp silhouette <strong>does not reach the phase the counter is waiting for</strong>. Squat and pushup are unaffected — their signal reads the vertical axis only.</p>
 </div>
 
 <p>I did <strong>not</strong> fix it in this gate. Fixing it means measuring real repetitions on a phone, which is its own piece of work, and this gate was scoped to stay mechanical. Rather than skip the tests, they now <em>assert</em> the defect and name which end of each pair is unreachable. When the thresholds are recalibrated the tests will fail — which is the right way to find out.</p>
+
+<div class="note warn">
+  <p><strong>Correction, made after publication.</strong> This first said "three movements". That was my error: I analysed <code>repSignalsByTag</code>, but the live counter is assembled by <code>liveRepSignalFor</code>, which prefers thresholds measured on the MM-Fit dataset whenever they clear an 80% bar on held-out sessions. Lunge scores 0.84, so it counts by measured joint angles rather than by the authored figure and is not affected. Hinge has no measured config at all; situp has one but at 0.41 it is below the bar — so both fall through to the authored path and are affected. The result: <strong>hinge and situp are affected live</strong>. On the authored path (<code>repSignalsByTag</code>) all three fall short, which is what the tests assert.</p>
+</div>
 
 <h2>What the phone showed</h2>
 

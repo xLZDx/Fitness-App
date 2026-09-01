@@ -1,0 +1,445 @@
+<title>SPTR Decision Pack</title>
+<style>
+  :root {
+    --paper: #F5F3EF; --surface: #FCFBF8; --sunk: #EAE7E0; --ink: #1A1714;
+    --muted: #625D55; --rule: #D9D4CA; --accent: #7A2233;
+    --now: #1D5B3A; --now-bg: #DDEBE2;
+    --soon: #8A5A0B; --soon-bg: #F4E8D3;
+    --hyp: #2E4E7E; --hyp-bg: #DEE6F1;
+    --never: #9B2A20; --never-bg: #F5DEDB;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #131110; --surface: #1C1917; --sunk: #241F1C; --ink: #EDE9E3;
+      --muted: #9C948A; --rule: #322C28; --accent: #E08A9B;
+      --now: #6DC698; --now-bg: #12241A; --soon: #DDA85A; --soon-bg: #261D0F;
+      --hyp: #8FAEE0; --hyp-bg: #141C28; --never: #E88A80; --never-bg: #2A1512;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #131110; --surface: #1C1917; --sunk: #241F1C; --ink: #EDE9E3;
+    --muted: #9C948A; --rule: #322C28; --accent: #E08A9B;
+    --now: #6DC698; --now-bg: #12241A; --soon: #DDA85A; --soon-bg: #261D0F;
+    --hyp: #8FAEE0; --hyp-bg: #141C28; --never: #E88A80; --never-bg: #2A1512;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: "Segoe UI", -apple-system, system-ui, sans-serif;
+    font-size: 15.5px; line-height: 1.6; margin: 0; padding: 0 22px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; }
+  .mono, code, pre, .id, .eyebrow, .cls { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; }
+
+  .masthead { padding: 62px 0 24px; border-bottom: 4px solid var(--accent); }
+  .eyebrow { font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 20px; margin-bottom: 20px; }
+  h1 { font-size: clamp(32px, 5.4vw, 54px); line-height: 1.02; letter-spacing: -0.025em; margin: 0 0 16px; font-weight: 700; text-wrap: balance; }
+  .standfirst { font-size: 17px; color: var(--muted); max-width: 70ch; margin: 0; }
+
+  section { padding: 42px 0 8px; border-bottom: 1px solid var(--rule); }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; }
+  .sec-tag { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--accent); font-weight: 700; padding-top: 5px; letter-spacing: 0.04em; }
+  h2 { font-size: clamp(21px, 2.9vw, 30px); line-height: 1.14; margin: 0; font-weight: 700; letter-spacing: -0.015em; text-wrap: balance; }
+  h3 { font-size: 16px; margin: 24px 0 9px; font-weight: 650; letter-spacing: -0.005em; }
+  p { margin: 0 0 13px; max-width: 76ch; }
+  ul, ol { margin: 0 0 13px; padding-left: 21px; max-width: 76ch; }
+  li { margin-bottom: 7px; } li::marker { color: var(--muted); }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  strong { font-weight: 650; }
+
+  .cls { display: inline-block; font-size: 9.5px; letter-spacing: 0.07em; text-transform: uppercase; padding: 3px 7px; border-radius: 2px; font-weight: 700; white-space: nowrap; }
+  .cls.now { background: var(--now-bg); color: var(--now); }
+  .cls.soon { background: var(--soon-bg); color: var(--soon); }
+  .cls.hyp { background: var(--hyp-bg); color: var(--hyp); }
+  .cls.never { background: var(--never-bg); color: var(--never); }
+  .cls.flat { background: var(--sunk); color: var(--muted); }
+
+  .legend { display: grid; gap: 10px; margin-bottom: 18px; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .legend { grid-template-columns: repeat(2, 1fr); } }
+  .legend div { border: 1px solid var(--rule); background: var(--surface); padding: 11px 14px; font-size: 13.5px; color: var(--muted); }
+  .legend b { display: block; margin-bottom: 4px; }
+
+  .scroll { overflow-x: auto; margin-bottom: 16px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 620px; }
+  th { text-align: left; font-size: 9.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); border-bottom: 1.5px solid var(--ink); padding: 0 12px 7px 0; font-weight: 700; }
+  td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tbody tr:hover { background: var(--surface); }
+  td .id { font-size: 12px; color: var(--accent); font-weight: 700; }
+  td code { font-size: 12px; background: var(--sunk); padding: 1px 4px; border-radius: 2px; }
+
+  .stack { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-bottom: 18px; }
+  .stack > div { background: var(--surface); padding: 15px 18px; display: grid; gap: 4px 22px; grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .stack > div { grid-template-columns: 150px 1fr; } }
+  .stack .k { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding-top: 5px; }
+  .stack .v { font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+  .stack .v small { display: block; font-size: 13.5px; font-weight: 400; color: var(--muted); margin-top: 3px; letter-spacing: 0; }
+
+  .box { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 16px 19px; margin: 0 0 16px; max-width: 80ch; }
+  .box .lbl { display: block; font-size: 10px; letter-spacing: 0.11em; text-transform: uppercase; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .box.now { border-left-color: var(--now); } .box.now .lbl { color: var(--now); }
+  .box.never { border-left-color: var(--never); } .box.never .lbl { color: var(--never); }
+  .box p:last-child { margin-bottom: 0; }
+
+  pre { background: var(--sunk); border-left: 3px solid var(--muted); padding: 12px 15px; overflow-x: auto; font-size: 12.5px; line-height: 1.5; margin: 0 0 14px; }
+
+  .ladder { counter-reset: rung; }
+  .ladder > div { border: 1px solid var(--rule); background: var(--surface); padding: 15px 18px; margin-bottom: 10px; }
+  .ladder .rung { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
+  .ladder .say { font-size: 16.5px; font-weight: 600; margin-bottom: 8px; }
+
+  footer { padding: 36px 0 0; color: var(--muted); font-size: 13px; }
+  .src { font-family: "Cascadia Mono", Consolas, monospace; font-size: 11.5px; word-break: break-word; }
+  .src a { color: var(--muted); }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow"><span>Marketing R&amp;D Decision Pack</span><span>v1.0 — frozen</span><span>2026-08-19</span><span>xLZDx/Fitness-App @ 78b24dc</span></div>
+  <h1>SPTR Decision Pack</h1>
+  <p class="standfirst">Eleven rounds of positioning review, consolidated into one source of truth. This document supersedes every prior round for anything it covers. It freezes the brand architecture, the claim classes, the product requirements that marketing generated, and the gate that separates what can be said today from what must be built first. It does not select the hero — that decision needs real people and has not been earned.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<section>
+  <div class="sec-head"><span class="sec-tag">00</span><h2>How to use this pack</h2></div>
+  <p>Three rules govern everything below.</p>
+  <ol>
+    <li><strong>Every public sentence carries a class.</strong> Nothing reaches a real user without one. The four classes are defined in §02 and applied in §03.</li>
+    <li><strong>An unbuilt idea is not disqualified.</strong> The purpose of this phase was to find what tomorrow's SPTR should be able to promise and then build it before advertising starts. A concept dies from infeasibility, irrationality, regulatory impossibility or inconsistency with the product — never from not existing yet.</li>
+    <li><strong>Claims are sorted by verification route, not by how many people said them.</strong> Source-verified, inspectable, lexical, hypothesis. A count of respondents — synthetic or otherwise — is never itself a reason to believe something.</li>
+  </ol>
+  <p>What this pack deliberately does not contain: a chosen headline, any conversion or demand estimate, any ranking of the three concepts, and any claim about what proportion of users will interpret anything a particular way. Those require real respondents, and no work done so far can substitute.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">01</span><h2>The system</h2></div>
+  <p>The durable conclusion of eleven rounds is that SPTR does not win on one atomic feature. It wins by owning a relationship with a specific piece of equipment: understand it now, remember it later, show the basis, and turn what it cannot recognise into future coverage.</p>
+  <div class="stack">
+    <div><span class="k">Brand memory</span><span class="v">SPTR — short for Spotter<small>Operator hypothesis, held deliberately. Semantic risk documented in §07, not measured.</small></span></div>
+    <div><span class="k">Human job</span><span class="v">Make unfamiliar equipment feel manageable<small>Not "hide that you are a beginner." The job is competence, not concealment.</small></span></div>
+    <div><span class="k">Acquisition</span><span class="v">Camera first — point it, understand it<small>The fastest possible demonstration of what the product is.</small></span></div>
+    <div><span class="k">Recurring value</span><span class="v">Machine context on return<small>Prior workout, personal setup, progression. Largely unbuilt — see §05 and §06.</small></span></div>
+    <div><span class="k">Trust doctrine</span><span class="v">Evidence · Restraint · Recovery<small>Show the basis. Don't fake certainty. When wrong, recover and learn from the gap.</small></span></div>
+    <div><span class="k">Moat hypothesis</span><span class="v">Unknown machines become future coverage<small>Strengthened by the catalogue boundary in §04. Depends on density, which is unmeasured.</small></span></div>
+  </div>
+  <p><strong>Page flow:</strong> <code>POINT → RECOGNIZE → CONTINUE</code>, replacing <em>Scan it · Set it · Remember it</em>. The critical constraint on <code>CONTINUE</code>: the user must be able to see where their own data came from. Not <em>the app decided seat 4</em> but <strong>SPTR remembered the setup you saved</strong>. Unexplained personal data reads as surveillance — a real misread found in testing, on the one dimension where this product is genuinely strong.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">02</span><h2>Claim classes</h2></div>
+  <div class="legend">
+    <div><b><span class="cls now">Exists now</span></b> True of the shipped build and verified at source. May be said publicly today.</div>
+    <div><b><span class="cls soon">Committed before marketing</span></b> Not built. Feasible, specified, and on the backlog. May be prototyped and shown internally; may not be said publicly until built and verified.</div>
+    <div><b><span class="cls hyp">Concept hypothesis</span></b> Strategically interesting, unvalidated. Internal language only. Never a public sentence.</div>
+    <div><b><span class="cls never">Never claim</span></b> Prohibited regardless of build state — false, unmeasurable, or a health/safety claim the product must not make.</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">03</span><h2>The claim register</h2></div>
+  <p>Every candidate public sentence, classified. This table is the truth gate's working content.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Claim</th><th>Class</th><th>Basis</th></tr></thead>
+      <tbody>
+        <tr><td>Point your phone at a machine and SPTR tells you what it is</td><td><span class="cls now">Exists now</span></td><td>Three recognition paths shipped; ceilings in §04</td></tr>
+        <tr><td>It shows the words it read off the machine</td><td><span class="cls now">Exists now</span></td><td><code>scannerReadOnMachine</code>, both locales</td></tr>
+        <tr><td>When unsure, it offers closest matches instead of picking one</td><td><span class="cls now">Exists now</span></td><td><code>scannerNotSureClosest</code></td></tr>
+        <tr><td>Reps are counted only on movements where counting was tested</td><td><span class="cls now">Exists now</span></td><td>0.80 holdout gate; badge shown otherwise</td></tr>
+        <tr><td>Full Russian and English, including equipment aliases</td><td><span class="cls now">Exists now</span></td><td>1,101 keys each, zero missing; 69/69 ids carry both</td></tr>
+        <tr><td>Photos are encrypted on device</td><td><span class="cls now">Exists now</span></td><td>AES-256-GCM, hardware keystore, backup excluded</td></tr>
+        <tr><td>It filters exercises against injuries you declare</td><td><span class="cls now">Exists now</span></td><td>1,527 exercises carry contraindications; coverage ratchet test</td></tr>
+        <tr><td>Works on the machine in front of you — no stickers, no gym onboarding</td><td><span class="cls now">Exists now</span></td><td>No gym-side dependency of any kind</td></tr>
+        <tr><td>It remembers what you lifted on this machine last time</td><td><span class="cls soon">Committed</span></td><td>Needs <span class="id">MRD-01</span>; type level is nearly free — see §06</td></tr>
+        <tr><td>It remembers how you set this machine up</td><td><span class="cls soon">Committed</span></td><td>Needs <span class="id">MRD-03</span> + <span class="id">MRD-04</span></td></tr>
+        <tr><td>It explains what each adjustment on the machine does</td><td><span class="cls soon">Committed</span></td><td>Authored content; scope depends on model variance</td></tr>
+        <tr><td>Machines it doesn't know become supported over time</td><td><span class="cls hyp">Hypothesis</span></td><td>Mechanism exists; the loop closing depends on unmeasured density</td></tr>
+        <tr><td>Recognition acquires, memory retains</td><td><span class="cls hyp">Hypothesis</span></td><td>Plausible, untested, internal framing only</td></tr>
+        <tr><td>It recognises any machine in any gym</td><td><span class="cls never">Never</span></td><td>False — every path terminates in a bounded catalogue (§04)</td></tr>
+        <tr><td>Any accuracy percentage for machine recognition</td><td><span class="cls never">Never</span></td><td>The production path has never been measured; the two known figures describe neither the shipped model nor the live pipeline</td></tr>
+        <tr><td>Safest position · protects your knees · correct for your body</td><td><span class="cls never">Never</span></td><td>Health claim. Mechanical values describe a machine, not a body</td></tr>
+        <tr><td>It spots you · keeps you safe while lifting · watches your form for danger</td><td><span class="cls never">Never</span></td><td>The product does not do this and must never imply it — §07</td></tr>
+        <tr><td>Counts your reps (unqualified)</td><td><span class="cls never">Never</span></td><td>True for four movements, false for the rest; unqualified it is a false claim</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">04</span><h2>Product truth: what recognition actually is</h2></div>
+  <p>Two opposite simplifications were both wrong and both circulated for several rounds. The correct model has four paths with different ceilings, and one shared terminus.</p>
+  <pre>printed-text anchor  →  needs legible words     →  ~28 of 69 registry types plausibly carry them
+cloud (Gemini)       →  sees any machine, but    →  may answer only with ~75 canonical names or "unknown"
+on-device fallback   →  10 classes
+                                     ↓
+              known catalogue category  →  result
+              outside / unresolved      →  UNKNOWN  →  machine card  →  contribution loop</pre>
+  <div class="box">
+    <span class="lbl">Why this is a better story than "our AI recognises everything"</span>
+    <p>The boundary is not a defect to hide — it is the mechanism by which coverage grows. An unresolvable answer degrades to <em>unknown</em> and opens a machine card rather than becoming a guess. That behaviour is shipped, it is the honest half of the trust doctrine, and it is the only route by which the catalogue expands. The moat hypothesis rests on it.</p>
+    <p>Caveat that must stay attached: the cloud path has <strong>never been measured in production</strong>. The two recognition figures that have circulated measure the on-device model and an unshipped 29-class variant respectively. No accuracy number may be published until the live pipeline is measured — see §08.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">05</span><h2>Two features that must never be blurred again</h2></div>
+  <p>Prior rounds repeatedly merged these under "setup guidance". They are different products, different data, different promises, and different risk.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>Setup guidance</th><th>Personal setup memory</th></tr></thead>
+      <tbody>
+        <tr><td>Says</td><td>How this machine works — where the seat adjusts, what the pad controls</td><td>How <em>you</em> set this machine up last time</td></tr>
+        <tr><td>Data</td><td>Authored content per equipment type</td><td>User-created, per physical unit</td></tr>
+        <tr><td>Needs</td><td>Reliable model scope; category guidance may be too coarse where models differ</td><td><span class="id">MRD-03</span> physical-unit identity + <span class="id">MRD-04</span> flexible values</td></tr>
+        <tr><td>Marketing role</td><td>Education — supports acquisition</td><td>Convenience — supports retention</td></tr>
+        <tr><td>Risk</td><td>Drifts toward health advice if written as "correct" or "safe"</td><td>Reads as surveillance if provenance is not visible</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box never">
+    <span class="lbl">Do not design around a numbered seat</span>
+    <p>Real equipment carries numbered detents, lettered positions, unmarked holes, continuous sliders, gas levers, worn labels, or nothing at all — welded and unbranded machines are common in exactly the gyms this product is most useful in. A schema of <code>seatPosition: int</code> encodes an assumption the physical world does not honour.</p>
+    <p>Consequence for copy as well as schema: say <strong>"remembers your setup"</strong>, never <strong>"Seat 4 on every machine"</strong>.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">06</span><h2>The memory ladder — and the rung that is nearly free</h2></div>
+  <p>"It remembers this machine" is three different products. Naming the rungs separately is what makes the roadmap tractable.</p>
+  <div class="ladder">
+    <div>
+      <div class="rung">Level 1 · equipment-type memory</div>
+      <div class="say">"Your last leg press: 45 kg × 10."</div>
+      <p style="margin:0"><strong>This needs no schema change.</strong> <code>WorkoutLogEntry</code> already carries <code>exerciseId</code>, and <strong>1,384 of 1,887 exercises already carry <code>equipmentId</code></strong>. Type-level memory is a join across data that exists today — not a migration, not a new entity. It was assumed to be a build; it is a query.</p>
+      <p style="margin:8px 0 0"><span class="cls flat">constraint</span> A different leg press has different leverage, stack calibration and geometry. Never imply physical equivalence at this level.</p>
+    </div>
+    <div>
+      <div class="rung">Level 2 · gym-machine memory</div>
+      <div class="say">"At this gym's leg press, you used 45 kg."</div>
+      <p style="margin:0">Needs gym identity plus a workout→equipment relationship. <strong>A <code>gymId</code> string already exists</strong> in <code>buddy_match.dart</code> and <code>equipment_report.dart</code> — but no code path ever assigns it a real value; it defaults to <code>'unknown'</code>. The field name exists; the identity does not. Treat this as greenfield with a name to reuse.</p>
+    </div>
+    <div>
+      <div class="rung">Level 3 · physical-unit setup memory</div>
+      <div class="say">"Seat 4 · pad 2 · 45 kg — the setup you saved here."</div>
+      <p style="margin:0">Needs a physical machine instance, flexible setup fields, a way to create and confirm them, and an answer for machines with no markings. Higher cost than any prior round implied: this is a machine-instance data problem, not a content problem.</p>
+    </div>
+  </div>
+  <p>Recognition history compounds the gap: it is keyed by <code>equipmentId</code> — one row per catalogue type — so two lat pulldowns in one gym, and the same type across two gyms, collapse to a single identity today.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">07</span><h2>The brand, and its documented risk</h2></div>
+  <p><strong>SPTR = Spotter is kept.</strong> It is the operator's hypothesis and nothing found so far justifies abandoning it.</p>
+  <p><strong>Established without any panel:</strong> in gym English, <em>spotter</em> can mean the person who physically assists a lift. The brand therefore carries an available physical-spotting reading. That is a lexical fact.</p>
+  <p><strong>Not established, and not claimable:</strong> how many users make that reading, whether it helps or harms trust, whether it creates safety expectations, whether Russian-speaking users process the English word the same way. A synthetic panel converged on it, and that convergence was then traced to three properties of the instrument — a probe that described spotting in plain words, a text medium that over-weights a wordmark against an absent image, and a probe edit that alone explained the reversal from an earlier round. It is a controlled brand hypothesis, not a measured harm.</p>
+  <div class="box never">
+    <span class="lbl">Standing constraints on brand expression</span>
+    <p>Teach the meaning through what the product does — helps you read unfamiliar equipment, brings back useful context, shows the basis for uncertain answers. Never through imagery or language suggesting a lone lifter under a heavy bar, physical rescue, supervision of a dangerous lift, or replacement of a human spotter. The name is allowed to promise attentiveness; it is never allowed to promise catching the bar.</p>
+  </div>
+  <p><strong>Model sampling of the abbreviation</strong> — asking repeatedly what <code>SPTR</code> resolves to — is retained only as <em>ambiguity enumeration</em>: it surfaces plausible expansions worth designing against. It is not decodability evidence. Frequency across samples measures a language model's association distribution, not a population. Written plainly because it is exactly the kind of number that gets quoted as a percentage two weeks later.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">08</span><h2>Product requirements generated by marketing</h2></div>
+  <p>This is the most concrete output of the whole process: a backlog that exists because positioning work hit real architecture. Status is measured against the tree at <code>78b24dc</code>.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>ID</th><th>Requirement</th><th>Status today</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id">MRD-01</span></td><td>Workout → equipment relationship: a log entry can record equipment type, optional gym, optional physical instance</td><td><span class="cls soon">Greenfield</span> <code>grep -c equipmentId workout_log.dart = 0</code>. But see §06 — the type-level join already works through <code>exerciseId</code></td></tr>
+        <tr><td><span class="id">MRD-02</span></td><td>Gym entity — required for any context that differs by location</td><td><span class="cls soon">Name only</span> <code>gymId</code> exists in two models, always <code>'unknown'</code>, never assigned</td></tr>
+        <tr><td><span class="id">MRD-03</span></td><td>Physical machine instance — gym + category + optional model, photo, local fingerprint, user confirmation</td><td><span class="cls soon">Greenfield</span> Recognition history is keyed by catalogue type only</td></tr>
+        <tr><td><span class="id">MRD-04</span></td><td>Flexible personal setup memory — number, letter, text, photo, not-applicable, unknown</td><td><span class="cls soon">Greenfield</span> Do not hard-code integers (§05)</td></tr>
+        <tr><td><span class="id">MRD-05</span></td><td>Recognition → machine-context retrieval: prior workouts, personal setup, progression, recent sighting</td><td><span class="cls soon">Greenfield</span> Depends on 01–04</td></tr>
+        <tr><td><span class="id">MRD-06</span></td><td>Shared uncertainty model across scanner, counting and generative surfaces</td><td><span class="cls now">Partly built</span> Three surfaces already expose uncertainty — closest-matches, count-not-tracked, experimental label. This is consolidation, not invention</td></tr>
+        <tr><td><span class="id">MRD-07</span></td><td>Unknown-machine contribution pipeline with measurable content growth</td><td><span class="cls now">Partly built</span> Machine cards exist and merge sightings; the measurement layer does not</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Two of the seven are further along than the process assumed, and one is much cheaper than assumed. That reorders the roadmap: <strong>Level 1 memory and the uncertainty consolidation are the first two items</strong>, because they convert existing data and existing behaviour into a visible promise without a migration.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">09</span><h2>The three prototype concepts</h2></div>
+  <p>Frozen for prototyping at equal production quality — same gym, same machine, same device, same page length, same brand treatment. <strong>No hero is selected.</strong> Ranking these requires real respondents; nothing done so far can do it.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Cell</th><th>Tests</th><th>Fixed before prototyping</th></tr></thead>
+      <tbody>
+        <tr><td><strong>A — emotional confidence</strong><br><em>New machine. No awkward pause.</em></td><td>Whether relief from gym uncertainty is the strongest territory</td><td>"Awkward pause" is ambiguous between social awkwardness and app latency — own one meaning or replace. "What you can do with it" must state the deliverable: names, instructions, or video</td></tr>
+        <tr><td><strong>B — auditable trust</strong><br><em>See what SPTR saw.</em></td><td>Whether visible evidence strengthens the story or merely technicalises it</td><td>"The match" needs its object written into the sentence. And the ABDUCTION / ADDUCTION hero pair differs by one letter — the most confusable possible demo for a text-reading feature. Choose deliberately or choose another machine</td></tr>
+        <tr><td><strong>C — recurring context</strong><br><code>POINT → RECOGNIZE → CONTINUE</code></td><td>Whether machine context beats recognition alone</td><td>"Set it up" is withdrawn — the referent was unresolvable. <strong>The camera must be visible in the concept</strong>: without it this becomes a generic training log and loses the machine-first identity entirely. Data provenance must be explicit</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Held separately, not as a fourth cell: the <strong>job-priority exercise</strong> — the three jobs stated plainly, unbranded and uncrafted, traded off against each other. A raw job list competing against two worked lines confounds message with execution, which is the one thing the equal-quality rule exists to prevent.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">10</span><h2>Evidence backlog</h2></div>
+  <p>Four measurements, none expensive, each of which converts a hypothesis into a fact or kills it.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Study</th><th>Question</th><th>Unblocks</th></tr></thead>
+      <tbody>
+        <tr><td>Nameplate prevalence</td><td>What share of strength machines carry legible printed exercise names? Bounded to the ~28 strength types — free weights can never have one</td><td>How much of the product story the evidence mechanic can carry</td></tr>
+        <tr><td>Setup-marker prevalence</td><td>What share of machines have stable, recordable adjustment positions at all — and in what form?</td><td><span class="id">MRD-04</span> field design; whether Level 3 is viable</td></tr>
+        <tr><td>Production recognition measurement</td><td>How does the live cloud path actually perform? Never measured</td><td>Any accuracy statement whatsoever</td></tr>
+        <tr><td>Catalogue density</td><td>How many unknown-machine sightings repeat, and over what user base?</td><td>The moat hypothesis</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The first two are one afternoon in two gyms with a counter. They have been deferred through eleven rounds of reasoning that could not answer them.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">11</span><h2>Pre-public truth gate</h2></div>
+  <p>Runs once, immediately before the first real advertising. Nothing aspirational reaches real users until the corresponding build and proof exist.</p>
+  <ol>
+    <li><strong>Every sentence on the page has a class from §02.</strong> Anything unclassified is not shipped.</li>
+    <li><strong>No <span class="cls soon">Committed</span> claim appears publicly unless it is built and verified at source on the release commit.</strong> Prototype visuals showing unbuilt behaviour never leave internal review.</li>
+    <li><strong>No <span class="cls hyp">Hypothesis</span> language appears publicly in any form.</strong></li>
+    <li><strong>Every numeric claim names what was measured, on what, and when.</strong> No figure that describes an unshipped asset or an unmeasured path.</li>
+    <li><strong>Health-claim sweep:</strong> no page text implies injury prevention, physical supervision, medical suitability, or correctness for a body. Mechanical description only.</li>
+    <li><strong>Both locales pass the same gate.</strong> Russian is not a translation of an approved page — it is a page that must be approved. Register carries the risk in both A and B.</li>
+    <li><strong>Disclosure check:</strong> cloud upload, sandbox payments, and platform scope stated where a reasonable user would look.</li>
+  </ol>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">12</span><h2>Unresolved — and what would settle each</h2></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>ID</th><th>Open question</th><th>Settled by</th></tr></thead>
+      <tbody>
+        <tr><td><span class="id">H1</span></td><td>Which emotional territory is strongest</td><td>Real monadic testing at equal production quality</td></tr>
+        <tr><td><span class="id">H2</span></td><td>Does visible evidence increase interest or technicalise the product</td><td>Split cell — same concept with and without the evidence line</td></tr>
+        <tr><td><span class="id">H3</span></td><td>Does recurring context materially raise perceived long-term value</td><td>Real testing, after Level 1 exists and can be shown honestly</td></tr>
+        <tr><td><span class="id">H4</span></td><td>Once taught SPTR = Spotter, what do people expect the product to do</td><td>Brand test built around expectation, not recall. Twenty real people</td></tr>
+        <tr><td><span class="id">H5</span></td><td>How many machines have stable recordable adjustment positions</td><td>Field observation (§10)</td></tr>
+        <tr><td><span class="id">H6</span></td><td>What share of the strength subset carries useful labels</td><td>Field observation (§10)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>None of these justifies another review round. Four are measurement problems and two need real respondents.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">13</span><h2>What the process actually produced</h2></div>
+  <p>The visible output was eleven documents. The useful output was four things, and only one of them is a marketing artifact.</p>
+  <ul>
+    <li><strong>A verified product-truth baseline.</strong> Which recognition figures describe what; which claims survive contact with the source; where the shipped behaviour is stronger than the documentation said, and where weaker.</li>
+    <li><strong>A backlog that marketing generated.</strong> <span class="id">MRD-01</span> through <span class="id">MRD-07</span> exist because a positioning idea was taken seriously enough to check whether it could ever be true. That is the mechanism the R&amp;D mode was created to produce, and it worked.</li>
+    <li><strong>A method that survives its own findings.</strong> Sorting by verification route rather than by agreement; deleting the instruments that manufacture false confidence rather than disclaiming them; demoting a headline within the hour when its own design predicted it.</li>
+    <li><strong>Three concepts worth real money to test</strong> — and the discipline not to pick one on evidence that cannot bear it.</li>
+  </ul>
+  <div class="box now">
+    <span class="lbl">The formula, frozen</span>
+    <p>SPTR — short for Spotter. It helps you understand the equipment in front of you, remembers the context that becomes useful when you come back, shows what its answer is based on, and turns what it cannot recognise yet into what it will cover next.</p>
+    <p>It earns the name by being useful, contextual and honest — never by implying it replaces the person who physically spots a lift.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Decision Pack v1.0, frozen 2026-08-19, consolidating rounds one through eleven. Supersedes all prior rounds for anything it covers; prior rounds remain as working record. All repository claims verified against the working tree at <span class="mono">78b24dc</span>. No hero selected, no concept ranked, no demand, conversion, retention or prevalence claim made or implied. Review only — nothing implemented, committed or pushed.</p>
+  <p class="src">Verified this session: <a href="Fitness_App/mobile/lib/features/workouts/data/workout_log.dart">Fitness_App/mobile/lib/features/workouts/data/workout_log.dart</a> · <a href="Fitness_App/mobile/lib/features/visual_equipment/data/recognition_history.dart">Fitness_App/mobile/lib/features/visual_equipment/data/recognition_history.dart</a> · <a href="Fitness_App/mobile/lib/features/visual_equipment/data/gemini_equipment_service.dart">Fitness_App/mobile/lib/features/visual_equipment/data/gemini_equipment_service.dart</a> · <a href="Fitness_App/mobile/lib/features/equipment/data/equipment_report.dart">Fitness_App/mobile/lib/features/equipment/data/equipment_report.dart</a> · <a href="Fitness_App/mobile/assets/data/exercises_vendor.json">Fitness_App/mobile/assets/data/exercises_vendor.json</a></p>
+</footer>
+
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

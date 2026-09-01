@@ -1,0 +1,525 @@
+<title>SPTR Review Adjudication</title>
+<style>
+  :root {
+    --paper: #F1F3F6;
+    --surface: #FAFBFC;
+    --sunk: #E5E9EF;
+    --ink: #131720;
+    --muted: #59616F;
+    --rule: #D0D6DE;
+    --accent: #2C4C82;
+    --up: #1C6B54;
+    --up-soft: #DCEAE4;
+    --part: #8A5A0B;
+    --part-soft: #F2E7D3;
+    --rej: #94322C;
+    --rej-soft: #F2DEDC;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0E1116;
+      --surface: #161A21;
+      --sunk: #1C212A;
+      --ink: #E5E8ED;
+      --muted: #909AA8;
+      --rule: #262C36;
+      --accent: #8CB0E8;
+      --up: #59C39C;
+      --up-soft: #12251F;
+      --part: #DCA35E;
+      --part-soft: #281F12;
+      --rej: #E5867D;
+      --rej-soft: #2A1817;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0E1116;
+    --surface: #161A21;
+    --sunk: #1C212A;
+    --ink: #E5E8ED;
+    --muted: #909AA8;
+    --rule: #262C36;
+    --accent: #8CB0E8;
+    --up: #59C39C;
+    --up-soft: #12251F;
+    --part: #DCA35E;
+    --part-soft: #281F12;
+    --rej: #E5867D;
+    --rej-soft: #2A1817;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Constantia, Charter, "Iowan Old Style", Georgia, serif;
+    font-size: 16.5px;
+    line-height: 1.62;
+    margin: 0;
+    padding: 0 22px 90px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1020px; margin: 0 auto; }
+
+  h1, h2, h3, .sans, th, .chip, .rail, .kicker, .stat .cap {
+    font-family: "Segoe UI", -apple-system, "Helvetica Neue", system-ui, sans-serif;
+  }
+
+  /* masthead */
+  .masthead { padding: 62px 0 26px; border-bottom: 2px solid var(--ink); }
+  .kicker {
+    font-size: 11.5px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 20px; margin-bottom: 18px;
+  }
+  h1 {
+    font-size: clamp(30px, 5vw, 48px); line-height: 1.07; letter-spacing: -0.014em;
+    font-weight: 600; margin: 0 0 15px; text-wrap: balance;
+  }
+  .standfirst { font-size: 18px; color: var(--muted); max-width: 64ch; margin: 0; }
+
+  /* tally */
+  .tally {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+    gap: 2px; background: var(--rule); border: 1px solid var(--rule); margin: 30px 0 0;
+  }
+  .tally div { background: var(--surface); padding: 15px 16px; }
+  .tally .n {
+    font-family: "Segoe UI", system-ui, sans-serif; font-size: 27px; font-weight: 600;
+    line-height: 1; font-variant-numeric: tabular-nums; display: block; margin-bottom: 5px;
+  }
+  .tally .cap { font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .tally .up .n { color: var(--up); }
+  .tally .part .n { color: var(--part); }
+  .tally .rej .n { color: var(--rej); }
+
+  /* dispute rows */
+  .dispute {
+    display: grid; grid-template-columns: 1fr; gap: 12px;
+    padding: 32px 0 30px; border-bottom: 1px solid var(--rule);
+  }
+  @media (min-width: 880px) {
+    .dispute { grid-template-columns: 172px minmax(0, 1fr); gap: 36px; }
+    .rail { position: sticky; top: 26px; align-self: start; }
+  }
+  .rail { display: flex; flex-direction: column; gap: 8px; }
+  .rail .num {
+    font-family: "Cascadia Mono", Consolas, ui-monospace, monospace;
+    font-size: 12.5px; color: var(--muted); letter-spacing: 0.04em;
+  }
+  .rail .who { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+  .arg { min-width: 0; }
+  .arg > * + * { margin-top: 13px; }
+  h2 { font-size: clamp(19px, 2.5vw, 24px); line-height: 1.22; font-weight: 600; margin: 0; text-wrap: balance; }
+  h3 { font-size: 16px; font-weight: 600; margin: 20px 0 -4px; font-family: "Segoe UI", system-ui, sans-serif; }
+  p { margin: 0; max-width: 70ch; }
+  ul, ol { margin: 0; padding-left: 20px; max-width: 70ch; }
+  li + li { margin-top: 6px; }
+  li::marker { color: var(--muted); }
+
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  code, .mono { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; font-size: 0.87em; }
+
+  .chip {
+    display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.09em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 2px; white-space: nowrap;
+  }
+  .chip.up { background: var(--up-soft); color: var(--up); }
+  .chip.part { background: var(--part-soft); color: var(--part); }
+  .chip.rej { background: var(--rej-soft); color: var(--rej); }
+  .chip.flat { background: var(--sunk); color: var(--muted); }
+
+  blockquote {
+    margin: 0; padding: 12px 0 12px 17px; border-left: 3px solid var(--rule);
+    color: var(--muted); max-width: 64ch;
+  }
+  blockquote.ours { border-left-color: var(--accent); }
+  blockquote cite {
+    display: block; margin-top: 7px; font-style: normal; font-size: 12.5px;
+    font-family: "Segoe UI", system-ui, sans-serif; letter-spacing: 0.03em;
+  }
+
+  .box {
+    border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    background: var(--surface); padding: 16px 18px; max-width: 74ch;
+  }
+  .box .lbl {
+    display: block; font-family: "Segoe UI", system-ui, sans-serif; font-size: 10.5px;
+    letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700;
+    color: var(--accent); margin-bottom: 7px;
+  }
+  .box.rej { border-left-color: var(--rej); }
+  .box.rej .lbl { color: var(--rej); }
+  .box.up { border-left-color: var(--up); }
+  .box.up .lbl { color: var(--up); }
+  .box p + p { margin-top: 11px; }
+
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 500px; }
+  th {
+    text-align: left; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--ink); padding: 0 12px 6px 0;
+  }
+  td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+
+  footer { padding: 34px 0 0; color: var(--muted); font-size: 13.5px; }
+  .src { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; font-size: 12px; word-break: break-word; }
+  .src a { color: var(--muted); }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">
+    <span>Round three · adjudication</span>
+    <span>Panel report vs. second-order review</span>
+    <span>2026-08-18</span>
+    <span>master 78b24dc</span>
+  </div>
+  <h1>The counter-review is right about our taxonomy, wrong about two claims we never made, and it removes the last thing that differentiates the page</h1>
+  <p class="standfirst">Seven objections adjudicated on evidence. Three are upheld and improve the concept. Two answer positions the panel report does not contain. One was a genuine factual dispute and has been settled at source — with a split outcome. And the counter-review's own recommendations, taken together, leave the landing page with nothing that four shipping competitors do not already have.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<div class="tally">
+  <div class="up"><span class="n">3</span><span class="cap">Upheld</span></div>
+  <div class="part"><span class="n">2</span><span class="cap">Partly upheld</span></div>
+  <div class="rej"><span class="n">2</span><span class="cap">Rejected</span></div>
+  <div><span class="n">4</span><span class="cap">New findings</span></div>
+  <div><span class="n">1</span><span class="cap">Verdict revised</span></div>
+</div>
+
+<!-- 1 -->
+<div class="dispute">
+  <div class="rail">
+    <span class="num">Objection 01</span>
+    <span class="chip up">Upheld</span>
+    <span class="who">Counter-review §3A — keep Spotter as a mnemonic, not as the promise</span>
+  </div>
+  <div class="arg">
+    <h2>"SPTR — short for Spotter" is a better answer than either previous position</h2>
+    <p>The panel said keep SPTR, drop the lockup, pair the mark with a functional descriptor. The counter-review's version is sharper: separate the <em>origin of the name</em> from the <em>promise of the product</em>. A mnemonic explains a spelling; a lockup makes a claim. Only the second one collides with six competitors and with the physical-safety problem. Adopted.</p>
+    <p>This resolves what looked like a disagreement and was really a missing distinction. The operator's actual objective — "SPTR should be remembered as Spotter" — survives intact, and nothing risky comes with it.</p>
+    <div class="box rej">
+      <span class="lbl">One condition the counter-review missed</span>
+      <p>A mnemonic only works in a language where the word means what you intend. In Russian, <em>споттер</em> is predominantly an auto-body spot-welding tool; the lifting role is named with a verb (<em>подстрахуешь?</em>), and <em>страховка</em> means an insurance policy. "SPTR — сокращение от Spotter" explains a Latin abbreviation with an English word that means a different object.</p>
+      <p><strong>Ruling: the mnemonic is approved for English and refused for Russian.</strong> In Russian the mark stands alone and the page earns the name through the mechanic instead. This is not a translation task — it is a decision about which market gets the wordplay, and it has to be made before a wordmark is drawn.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 2 -->
+<div class="dispute">
+  <div class="rail">
+    <span class="num">Objection 02</span>
+    <span class="chip rej">Rejected</span>
+    <span class="who">Counter-review §3B — the panel claimed "Digital Spotter" itself makes SPTR a medical device</span>
+  </div>
+  <div class="arg">
+    <h2>The panel report does not make that claim</h2>
+    <p>This objection argues against a categorical legal conclusion. The published report attaches the regulatory risk to injury claims specifically, and says so in the same sentence:</p>
+    <blockquote class="ours">"Copy like <em>trains around your injuries</em> can convert a wellness app into an unregistered medical device placed on the EU market."
+      <cite>Panel report, §14 — the only place the medical-device line is drawn</cite></blockquote>
+    <p>And on classification, the report's instruction is exactly the counter-review's: decide it with counsel, not by inference. On the name it says <em>"needs counsel, not another search"</em>; on the brand it never cites MDR at all — its three grounds for dropping the lockup are store crowding, Russian failure, and the 16+ audience.</p>
+    <p><strong>Ruling: rejected as addressed to a position not held.</strong> On the substance there is no dispute: injury-treatment and injury-compensation wording carries the exposure, the metaphor alone does not, and only a regulatory professional can classify the product. All three were already the panel's position.</p>
+    <p>Worth stating plainly, because it matters for how the operator reads both documents: the disagreement here is about wording in a review, not about what to do. Nothing in the action list changes.</p>
+  </div>
+</div>
+
+<!-- 3 -->
+<div class="dispute">
+  <div class="rail">
+    <span class="num">Objection 03</span>
+    <span class="chip part">Split — settled at source</span>
+    <span class="who">Counter-review §3C — "required verbatim" disclaimer is not established</span>
+  </div>
+  <div class="arg">
+    <h2>Half of it is mandated word-for-word; the other half was ours, not the regulator's</h2>
+    <p>This was the one genuine factual dispute in the counter-review, so it was checked against the policy text rather than argued.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Element</th><th>Status in Play policy</th><th>Ruling</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>"not a medical device and does not diagnose, treat, cure, or prevent any medical condition"</td>
+            <td>Appears <strong>inside quotation marks in the policy itself</strong>, as the disclaimer other health and medical apps must include in the app description</td>
+            <td><span class="chip up">Panel upheld</span></td>
+          </tr>
+          <tr>
+            <td>Reminder to consult a healthcare professional</td>
+            <td>Required as an obligation; the wording is <strong>not</strong> prescribed</td>
+            <td><span class="chip part">Both partly right</span></td>
+          </tr>
+          <tr>
+            <td>The long composed footer paragraph in the panel report</td>
+            <td>Not a policy text. Assembled by the reviewer as risk management</td>
+            <td><span class="chip rej">Counter-review upheld</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Ruling: the label "required, verbatim" was correct for one quoted sentence and wrong for the paragraph that surrounded it.</strong> The counter-review is right that a reviewer must not stamp composed wording as regulator-mandated, and that correction stands. The panel is right that the quoted phrase is prescribed and cannot be paraphrased.</p>
+    <p>Practical consequence: keep the quoted sentence exactly as it appears in policy, treat everything else in that footer as draft copy for counsel, and drop the word "verbatim" from it.</p>
+  </div>
+</div>
+
+<!-- 4 -->
+<div class="dispute">
+  <div class="rail">
+    <span class="num">Objection 04</span>
+    <span class="chip up">Upheld</span>
+    <span class="who">Counter-review §3D — six blockers before design conflates release with design</span>
+  </div>
+  <div class="arg">
+    <h2>The taxonomy was wrong and the counter-review's is better</h2>
+    <p>A missing signing key and a wrong launcher label do not stop anyone drawing a page. Bundling them into "not ready for design" answered a narrower question than it appeared to — and the operator's brief did ask design and implementation as one question, which is how they got merged. That is an explanation, not a defence. The three-tier split is adopted.</p>
+    <div class="box up">
+      <span class="lbl">One item moves back — and by the counter-review's own argument</span>
+      <p>It places trademark clearance under "blocks public beta" and lists "absence of a name decision" as not blocking visual design, while separately advising against committing <em>"major brand spend"</em> before clearance. Both cannot hold: a wordmark is the first thing a designer draws and the most expensive thing to redraw. Drawing an identity for a name that may not be usable <em>is</em> the brand spend the counter-review warns against.</p>
+      <p><strong>Ruling: name clearance blocks visual design. Everything else it moved out stays out.</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- 5 -->
+<div class="dispute">
+  <div class="rail">
+    <span class="num">Objection 05</span>
+    <span class="chip part">Partly upheld</span>
+    <span class="who">Counter-review §3E — "Russian-first" is an evidence-free mandate</span>
+  </div>
+  <div class="arg">
+    <h2>Right that it is a business decision; wrong that there is no evidence</h2>
+    <p>Upheld on form: the panel stated a marketing-language decision as a finding, and acquisition language belongs to the operator, not to a code review. The word "must" was not earned.</p>
+    <p>Refused on the premise that there is nothing behind it. There is, and it is stronger than the funnel arithmetic the panel actually cited — it is in the code:</p>
+    <blockquote>"Order is load-bearing: this list is passed to <span class="mono">MaterialApp.supportedLocales</span> verbatim, and Flutter falls back to the FIRST entry for any device locale it cannot match."
+      <cite>mobile/lib/core/settings/app_settings.dart — above <span class="mono">kSupportedLocaleCodes = ['ru', 'en']</span></cite></blockquote>
+    <p>Russian is not merely available. It is the fallback for every device locale the app cannot match, which makes it the product's default in the only sense that reaches a user. That is a repository fact, and it produces the finding in the next section.</p>
+    <p><strong>Ruling: the recommendation is downgraded to a recommendation.</strong> Russian remains the panel's advice on the evidence available; the decision is the operator's, and the design system must fit both languages regardless of how it goes.</p>
+  </div>
+</div>
+
+<!-- 6 -->
+<div class="dispute">
+  <div class="rail">
+    <span class="num">Objection 06</span>
+    <span class="chip rej">Rejected</span>
+    <span class="who">Counter-review §3F — the panel made refusal the hero message</span>
+  </div>
+  <div class="arg">
+    <h2>The panel's architecture already puts recognition in the hero and refusal in position four</h2>
+    <p>The report's page architecture opens with <em>"Hero fused with the recognition demo — the mechanic <strong>is</strong> the value proposition"</em>, and places the refusal section fourth, with a stated reason for the position: a disclosed negative helps only when it follows the positive material. The counter-review notes that the panel "itself effectively admits this by still putting machine recognition in the hero" — which is not an admission, it is the recommendation.</p>
+    <p><strong>Ruling: rejected as addressed to a position not held.</strong> The confusion is traceable to one thing the panel <em>did</em> do: it ranked refusal first in <em>feature priority</em> — meaning most defensible — while placing recognition first in <em>page order</em>. Two different rankings, and the report should have named the difference instead of leaving a reader to reconcile them.</p>
+    <p><strong>What is adopted:</strong> the counter-review's vocabulary. <em>Acquisition job</em> versus <em>trust differentiator</em> is a cleaner distinction than "priority" and "order", and it removes the ambiguity permanently. Use it.</p>
+  </div>
+</div>
+
+<!-- 7 -->
+<div class="dispute">
+  <div class="rail">
+    <span class="num">Objection 07</span>
+    <span class="chip rej">Rejected</span>
+    <span class="who">Counter-review §7 — keep injury filtering off the v1 page entirely</span>
+  </div>
+  <div class="arg">
+    <h2>This is the substantive disagreement, and the counter-review does not follow it to its conclusion</h2>
+    <p>Three of its recommendations are each individually defensible. Together they empty the page.</p>
+    <ol>
+      <li>It agrees machine recognition is not defensible — four to five apps ship it, one on Play with the same catalog pitch.</li>
+      <li>It demotes the refusal behaviour from lead message to trust layer.</li>
+      <li>It removes injury filtering from marketing altogether until coverage and clinical review mature.</li>
+    </ol>
+    <p>Apply all three and what remains above the fold is: photograph a machine, get exercises, from a large library. That is the description of <a href="https://gymscan.io/">GymScan</a>, Gymeo, GymVision and "Spotter — Your Gym Reference". The page would be a late fourth entrant describing a commodity — the exact outcome the counter-review agrees must be avoided.</p>
+    <p>The reason given for removal is real: nine body-region tags, no clinician review, 360 exercises that pass unfiltered. But that argues against <em>a safety claim</em>, not against <em>describing the feature</em>. The distinction has already been drawn and cleared:</p>
+    <blockquote class="ours">"You tell SPTR what to avoid; it takes those exercises off the list. That is a shorter list, not a medical clearance."
+      <cite>Panel claim matrix — the approved wording, which makes no health claim of any kind</cite></blockquote>
+    <p>That sentence promises an input and a mechanism. It does not promise safety, prevention, clearance or clinical judgement. Removing it removes the only differentiating capability the product can honestly show today — and it removes it on grounds that the wording already satisfies.</p>
+    <p><strong>Ruling: rejected. The feature stays on the page, in the approved wording, with the complement published (360 untagged).</strong> If a claim can be made truthfully and it is the only differentiator available, deleting it is not caution — it is choosing to compete on the commodity instead.</p>
+  </div>
+</div>
+
+<!-- new findings -->
+<div class="dispute">
+  <div class="rail">
+    <span class="num">New this round</span>
+    <span class="chip flat">Findings</span>
+    <span class="who">Neither document contains these</span>
+  </div>
+  <div class="arg">
+    <h2>Four things both reviews missed</h2>
+    <h3>1. The app can open in Russian for a tester recruited in English</h3>
+    <p>Because Russian is the first entry in the supported-locale list, any device whose locale the app cannot match resolves to Russian — a German, French or Polish phone included. A tester recruited through an English page, who then sideloads and opens a Russian interface, is a trust break at the same step as the wrong launcher label, and for the same reason: it happens after the risky install, when confidence is thinnest.</p>
+    <p><strong>Severity: blocks public beta.</strong> Either the fallback becomes English, or the English page tells testers the app may open in Russian and where the language switch is. This also settles the language question's urgency — it is not deferrable to "campaign evidence", because the shipped default already answers it.</p>
+    <h3>2. Stripe is in sandbox — now near-certain, from the code itself</h3>
+    <p>Earlier rounds could not determine live-versus-test because the key is a managed secret. A settings comment states it directly: <em>"Stripe is in sandbox, sandbox only accepts its own test card numbers"</em>, written to explain why a tier-override switch exists for testing paid surfaces. Still a comment rather than a deployment check, but authored by the person who hit the problem. No pricing may appear on the page.</p>
+    <h3>3. Both rounds independently wrote nearly the same headline</h3>
+    <p>The panel: <em>"The machine you always walk past — find out what it's for."</em> The counter-review: <em>"That machine you always skip? Start there."</em> Two reviews with different briefs converged on the same insight, which is the strongest signal either document produces about a line. That insight — a specific, recognisable moment of avoidance — is the hero. The remaining choice is phrasing.</p>
+    <h3>4. "Start there" is the one line in the counter-review its own framework would block</h3>
+    <p>It instructs a novice to begin on a machine they do not know. Every other proposal in that document is careful about exactly this. Minor, and easily fixed by keeping the question and dropping the instruction — but it shows the value of the rule the counter-review itself proposes: check the finalists against the safety list before publication, including your own.</p>
+    <p>Separately, its claim that multiple products already use "digital spotter" as a descriptor was not corroborated by a check. Unverified rather than wrong — but it does not carry weight in the naming decision as things stand.</p>
+  </div>
+</div>
+
+<!-- merged blockers -->
+<div class="dispute">
+  <div class="rail">
+    <span class="num">Merged</span>
+    <span class="chip flat">Action list</span>
+    <span class="who">One list, replacing both documents'</span>
+  </div>
+  <div class="arg">
+    <h2>The blocker list after adjudication</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Gate</th><th>Item</th><th>Origin</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="5"><strong>Blocks concept approval</strong></td><td>Replace "Spot the machine. Know what to do." — competitor collision</td><td>Both</td></tr>
+          <tr><td>Demote "your digital spotter" from promise to name-origin mnemonic</td><td>Counter-review, adopted</td></tr>
+          <tr><td>Replace "doesn't guess" with the observable behaviour</td><td>Both</td></tr>
+          <tr><td>Remove every safety and health promise; keep filtering in the approved mechanical wording</td><td>Panel, upheld against §7</td></tr>
+          <tr><td>Decide the mnemonic's language scope — English only, on current evidence</td><td>New, round three</td></tr>
+          <tr><td rowspan="2"><strong>Blocks visual design</strong></td><td>Name and trademark clearance, with counsel</td><td>Panel, restored</td></tr>
+          <tr><td>Nothing else — signing, labels and Play access do not block drawing</td><td>Counter-review, adopted</td></tr>
+          <tr><td rowspan="6"><strong>Blocks public beta</strong></td><td>Android launcher label — ships as <span class="mono">fitness_app</span></td><td>Both</td></tr>
+          <tr><td>Release signing key — release builds fall back to debug signing</td><td>Both</td></tr>
+          <tr><td>Locale fallback: English page must not hand over a Russian-defaulting app</td><td>New, round three</td></tr>
+          <tr><td>Tester distribution path, end to end, with one email as the join key</td><td>Panel</td></tr>
+          <tr><td>Play health declaration, privacy policy, listing and in-app disclaimers aligned — the quoted sentence exactly as policy words it</td><td>Both, corrected</td></tr>
+          <tr><td>Measure the production recognition path before any reliability claim</td><td>Both</td></tr>
+          <tr><td><strong>Blocks nothing</strong></td><td>Methodology page, pricing, iOS roadmap, Wear</td><td>Counter-review</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- decision -->
+<div class="dispute">
+  <div class="rail">
+    <span class="num">Decision</span>
+    <span class="chip up">Revised</span>
+    <span class="who">Supersedes the panel's round-two answer</span>
+  </div>
+  <div class="arg">
+    <h2>Revised decision, and what changed it</h2>
+    <p>The panel answered "not ready for design" partly because the brief asked design and implementation as a single question, and release blockers were counted against design. That was wrong, and the counter-review's taxonomy corrects it. The verdict is revised accordingly — not because a second opinion arrived, but because its argument holds.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Question</th><th>Answer</th><th>Condition</th></tr></thead>
+        <tbody>
+          <tr><td>Ready for concept and visual design</td><td><strong>Yes</strong></td><td>After the five concept items, and with name clearance in hand before a wordmark is drawn</td></tr>
+          <tr><td>Ready for public beta acquisition</td><td><strong>No</strong></td><td>Six items, all mechanical, none long</td></tr>
+          <tr><td>Ready to market recognition accuracy</td><td><strong>No</strong></td><td>Production path unmeasured; the two existing figures measure neither the shipped model nor the pipeline</td></tr>
+          <tr><td>Keep SPTR = Spotter as a mnemonic</td><td><strong>Yes in English, no in Russian</strong></td><td>Subject to clearance</td></tr>
+          <tr><td>Keep injury filtering on the page</td><td><strong>Yes</strong></td><td>Approved mechanical wording only, complement published, no safety claim</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="box">
+      <span class="lbl">The one sentence that survives all three rounds</span>
+      <p>Show what you know. Show when you don't. The counter-review proposed it as an internal rule and it is better than either document's public slogan — because it is the only formulation that stays true when the coverage numbers move.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Round three adjudicates the second-order review against the panel report and the repository at commit <span class="mono">78b24dc</span>. The Play policy question was settled by reading the policy; the locale finding and the Stripe finding were measured in the working tree this round. Review only — nothing implemented, committed or pushed.</p>
+  <p class="src">Evidence added this round: <a href="mobile/lib/core/settings/app_settings.dart">mobile/lib/core/settings/app_settings.dart</a> · <a href="mobile/lib/l10n/app_en.arb">mobile/lib/l10n/app_en.arb</a> · <a href="reports/SPTR_POSITIONING_REVIEW_2026-08-18.html">reports/SPTR_POSITIONING_REVIEW_2026-08-18.html</a></p>
+</footer>
+
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

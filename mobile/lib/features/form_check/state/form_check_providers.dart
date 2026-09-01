@@ -927,6 +927,25 @@ class RepSessionController extends Notifier<RepSessionState> {
   int _scoredFramesThisRep = 0;
   int _unscoredFramesThisRep = 0;
 
+  /// Debug-only instrumentation for `FORM_COACH_REP_SIGNAL_DEVICE_RECALIBRATION`.
+  ///
+  /// The three movements that gate needs to measure — hinge, lunge, situp — have
+  /// thresholds that their own authored shape cannot reach
+  /// (`FORMCOACH_TARGET_ISOTROPIC_2026-09-01`), which means their counter never
+  /// leaves the top phase and the per-rep log below never fires. Rep-boundary
+  /// logging is therefore useless for exactly the movements that need measuring,
+  /// and a window over the raw signal is the only way to see the distribution.
+  ///
+  /// Deliberately NOT a rolling average: what the recalibration needs is the
+  /// extremes a real body reaches and the noise around them, and an average is
+  /// the one summary that hides both.
+  final List<double> _signalWindow = [];
+  int _signalWindowStartMs = 0;
+  int _signalFramesInWindow = 0;
+  RepSignalExtractor? _debugSignal;
+  RepCounterConfig? _debugConfig;
+  String? _debugTag;
+
   @override
   RepSessionState build() {
     final svc = ref.watch(poseDetectorServiceProvider);
@@ -937,6 +956,15 @@ class RepSessionController extends Notifier<RepSessionState> {
       config: signal?.$2 ?? const RepCounterConfig(),
       signal: signal?.$1,
     );
+    assert(() {
+      _debugSignal = signal?.$1;
+      _debugConfig = signal?.$2 ?? const RepCounterConfig();
+      _debugTag = poseTagFor(exercise) ?? exercise.name;
+      _signalWindow.clear();
+      _signalFramesInWindow = 0;
+      _signalWindowStartMs = 0;
+      return true;
+    }());
 
     coach.setMuted(ref.read(voiceMutedProvider));
     ref.listen<bool>(voiceMutedProvider, (_, isMuted) {
@@ -974,6 +1002,44 @@ class RepSessionController extends Notifier<RepSessionState> {
   /// behind one more condition in the widget that draws it.
   void _publishMatch(double? match) {
     ref.read(poseMatchProvider.notifier).state = match;
+  }
+
+  /// Prints the extremes the rep signal actually reaches, once every two
+  /// seconds, in debug builds only.
+  ///
+  /// Reports the window's min and max rather than its mean, and reports how
+  /// many frames produced no signal at all -- a movement filmed from the wrong
+  /// angle yields nulls, and a distribution built without knowing how many
+  /// frames were dropped is not a distribution. The configured gates are
+  /// printed on the same line so the numbers can be read against them without
+  /// looking anything up.
+  void _logSignalWindow(PoseFrame frame, RepCounter counter) {
+    final signal = _debugSignal;
+    final config = _debugConfig;
+    if (signal == null || config == null) return;
+
+    if (_signalWindowStartMs == 0) _signalWindowStartMs = frame.timestampMs;
+    final value = signal(frame, config.minLikelihood);
+    if (value != null) _signalWindow.add(value);
+    _signalFramesInWindow++;
+
+    if (frame.timestampMs - _signalWindowStartMs < 2000) return;
+
+    if (_signalWindow.isEmpty) {
+      debugPrint('[sig] $_debugTag frames=$_signalFramesInWindow '
+          'no signal at all -- wrong camera angle, or joints missing');
+    } else {
+      final lo = _signalWindow.reduce(math.min);
+      final hi = _signalWindow.reduce(math.max);
+      debugPrint('[sig] $_debugTag n=${_signalWindow.length}'
+          '/$_signalFramesInWindow min=${lo.toStringAsFixed(3)} '
+          'max=${hi.toStringAsFixed(3)} '
+          'phase=${counter.phase.name} reps=${counter.repCount} '
+          'gates top<=${config.topEnter} bottom>=${config.bottomEnter}');
+    }
+    _signalWindow.clear();
+    _signalFramesInWindow = 0;
+    _signalWindowStartMs = frame.timestampMs;
   }
 
   void _onFrame(PoseFrame frame) {
@@ -1035,6 +1101,11 @@ class RepSessionController extends Notifier<RepSessionState> {
     if (!countingIsLiveIn(ref.read(coachPhaseControllerProvider).phase)) {
       return;
     }
+
+    assert(() {
+      _logSignalWindow(frame, counter);
+      return true;
+    }());
 
     final wasInRep = counter.phase != RepPhase.top;
     final event = counter.update(frame, feedback: result.feedback);

@@ -38833,3 +38833,26 @@ arm-position one closed, the wrong-cue one moved to third place behind the recal
 **Stated plainly in the report because it is easy to miss:** the push carried 28 commits, not the
 three this gate produced. Everything from the earlier squat gates in this session was still local
 and went public in the same push.
+
+**CORRECTION, same day, before moving on (FACT).** The entry above says three movements are affected
+live. That is wrong, and it was my error, caught by reading `liveRepSignalFor` while instrumenting
+the recalibration gate. I analysed `repSignalsByTag`; the LIVE counter is assembled by
+`liveRepSignalFor`, which prefers a config measured on the MM-Fit dataset whenever it clears an 80%
+exact rate on held-out sessions (`MeasuredRepConfig.countsReps`).
+
+| movement | measured holdout | live path | affected |
+| --- | --- | --- | --- |
+| curl | 0.93 | measured joint angle | no |
+| overhead_press | 0.93 | measured joint angle | no |
+| lunge | 0.84 | measured joint angle | **no** |
+| hinge | none exists | authored | **yes** |
+| situp | 0.41, below the bar | authored | **yes** |
+| squat / pushup | — | y-only depth | no |
+
+So the live defect is **hinge and situp**, not three movements. On the authored path all three do
+fall short, which is what `rep_signals_test` asserts and that assertion stays correct -- what was
+wrong was my claim about what ships. Both report files are corrected in place and the published
+artifact republished; the recalibration gate's scope narrows to two movements accordingly.
+
+The lesson worth keeping: `rep_signals.dart` is not the source of truth for what the counter does.
+Two layers select a config, and I read the lower one.

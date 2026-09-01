@@ -1,0 +1,804 @@
+<title>SPTR Positioning Review</title>
+<style>
+  :root {
+    --paper: #F2F3F5;
+    --surface: #FBFBFC;
+    --sunk: #E8EAEE;
+    --ink: #14161A;
+    --muted: #5C636E;
+    --rule: #D2D6DD;
+    --accent: #7A4A12;
+    --accent-soft: #F1E6D6;
+    --pass: #1D6A50;
+    --pass-soft: #DDEBE4;
+    --warn: #8A5A0B;
+    --warn-soft: #F3E7D2;
+    --stop: #9B2E28;
+    --stop-soft: #F3DEDC;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #101215;
+      --surface: #171A1F;
+      --sunk: #1D2128;
+      --ink: #E7E9ED;
+      --muted: #949CA8;
+      --rule: #2A2F37;
+      --accent: #D9A45E;
+      --accent-soft: #2A2118;
+      --pass: #5DBF97;
+      --pass-soft: #14251E;
+      --warn: #D9A45E;
+      --warn-soft: #29200F;
+      --stop: #E5847C;
+      --stop-soft: #2C1917;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #101215;
+    --surface: #171A1F;
+    --sunk: #1D2128;
+    --ink: #E7E9ED;
+    --muted: #949CA8;
+    --rule: #2A2F37;
+    --accent: #D9A45E;
+    --accent-soft: #2A2118;
+    --pass: #5DBF97;
+    --pass-soft: #14251E;
+    --warn: #D9A45E;
+    --warn-soft: #29200F;
+    --stop: #E5847C;
+    --stop-soft: #2C1917;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, "Helvetica Neue", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0 22px 88px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1000px; margin: 0 auto; }
+
+  h1, h2, h3, .serif {
+    font-family: Constantia, Charter, "Iowan Old Style", Georgia, serif;
+    font-weight: 600;
+  }
+
+  /* masthead */
+  .masthead { padding: 64px 0 0; }
+  .kicker {
+    font-size: 11.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-size: clamp(31px, 5.2vw, 50px);
+    line-height: 1.06;
+    letter-spacing: -0.012em;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  .standfirst { font-size: 18px; color: var(--muted); max-width: 64ch; margin: 0; }
+
+  /* verdict slab */
+  .verdict {
+    margin: 34px 0 0;
+    border: 1px solid var(--rule);
+    border-top: 4px solid var(--accent);
+    background: var(--surface);
+    padding: 26px 26px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .verdict-word {
+    font-family: Constantia, Charter, Georgia, serif;
+    font-size: clamp(28px, 4.4vw, 42px);
+    line-height: 1;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+  }
+  .verdict p { max-width: 70ch; margin: 0; }
+  .verdict-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    border-top: 1px solid var(--rule);
+    padding-top: 16px;
+  }
+  .vg-item .k {
+    font-size: 11px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+  }
+  .vg-item .v { font-size: 15px; font-weight: 600; }
+
+  /* sections */
+  section { padding: 40px 0 4px; border-bottom: 1px solid var(--rule); }
+  section:last-of-type { border-bottom: 0; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px; }
+  .sec-num {
+    font-family: "Cascadia Mono", Consolas, ui-monospace, monospace;
+    font-size: 13px;
+    color: var(--accent);
+    padding-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  h2 { font-size: clamp(21px, 2.9vw, 28px); line-height: 1.18; margin: 0; text-wrap: balance; }
+  h3 { font-size: 17px; margin: 22px 0 8px; }
+  p { margin: 0 0 14px; max-width: 72ch; }
+  ul, ol { margin: 0 0 14px; padding-left: 20px; max-width: 72ch; }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--muted); }
+
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  code, .mono { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; font-size: 0.87em; }
+
+  /* chips */
+  .chip {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .chip.pass { background: var(--pass-soft); color: var(--pass); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.stop { background: var(--stop-soft); color: var(--stop); }
+  .chip.flat { background: var(--sunk); color: var(--muted); }
+
+  /* tables */
+  .scroll { overflow-x: auto; margin-bottom: 16px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 520px; }
+  th {
+    text-align: left;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+    border-bottom: 1px solid var(--ink);
+    padding: 0 12px 6px 0;
+  }
+  td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tbody tr:hover { background: var(--surface); }
+
+  /* callouts */
+  .box {
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--muted);
+    background: var(--surface);
+    padding: 16px 18px;
+    margin: 0 0 16px;
+  }
+  .box.stop { border-left-color: var(--stop); }
+  .box.warn { border-left-color: var(--warn); }
+  .box.pass { border-left-color: var(--pass); }
+  .box p:last-child { margin-bottom: 0; }
+  .box .lbl {
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .box.stop .lbl { color: var(--stop); }
+  .box.warn .lbl { color: var(--warn); }
+  .box.pass .lbl { color: var(--pass); }
+
+  .copy {
+    font-family: Constantia, Charter, Georgia, serif;
+    font-size: 18px;
+    line-height: 1.45;
+    background: var(--sunk);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    margin: 0 0 16px;
+    max-width: 62ch;
+  }
+  .copy .mark {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 8px;
+    color: var(--muted);
+  }
+  .copy .small { font-size: 13.5px; font-family: "Segoe UI", system-ui, sans-serif; color: var(--muted); display: block; margin-top: 10px; }
+
+  /* score bars */
+  .score td.bar-cell { width: 42%; }
+  .bar { background: var(--sunk); height: 8px; border-radius: 1px; position: relative; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: var(--accent); }
+  .bar.good > span { background: var(--pass); }
+  .bar.bad > span { background: var(--stop); }
+
+  footer { padding: 34px 0 0; color: var(--muted); font-size: 13.5px; }
+  .src { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; font-size: 12px; color: var(--muted); word-break: break-word; }
+  .src a { color: var(--muted); }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">
+    <span>Independent review panel</span>
+    <span>SPTR positioning &amp; landing concept</span>
+    <span>2026-08-18</span>
+    <span>master 78b24dc · 1.0.0+14</span>
+  </div>
+  <h1>The brand promises certainty the product deliberately refuses to claim</h1>
+  <p class="standfirst">Eight reviewer perspectives, every product claim re-verified against the working tree rather than against documentation. The trust instinct behind this concept is right and is genuinely rare. The specific words chosen to express it collide with a live competitor sentence, overstate what the shipped build can do, and attach a safety role to a product that cannot perform one.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<div class="verdict">
+  <span class="chip flat">Executive verdict</span>
+  <div class="verdict-word">REWORK REQUIRED</div>
+  <p>Not a rejection. The underlying product holds one defensible territory that no competitor occupies, and the panel converged on it independently from three directions. But three separate blockers sit between this concept and a page that can be built: a headline that duplicates a competitor's live headline almost word for word, a set of safety claims that would move an unregistered app across the EU medical-device line, and a hero mechanic whose accuracy has never been measured in the configuration that actually ships.</p>
+  <div class="verdict-grid">
+    <div class="vg-item"><span class="k">Ready to design</span><span class="v">No — 6 blockers</span></div>
+    <div class="vg-item"><span class="k">Brand lockup</span><span class="v">Drop "Digital Spotter"</span></div>
+    <div class="vg-item"><span class="k">Territory</span><span class="v">Keep — reworded</span></div>
+    <div class="vg-item"><span class="k">Weighted score</span><span class="v">4.5 / 10</span></div>
+  </div>
+</div>
+
+<!-- 2 -->
+<section>
+  <div class="sec-head"><span class="sec-num">02</span><h2>Product truth — what actually ships today</h2></div>
+  <p>Everything below was measured against the working tree, not quoted from documentation. Where documentation and code disagree, the code wins and the disagreement is named.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Area</th><th>Status</th><th>Deciding evidence</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Exercise catalog</strong></td><td><span class="chip pass">Production</span></td><td>1,887 exercises; 1,764 male demo videos, 775 female; 1,887 posters; 1,886 with step lists; 1,480 with tips. Recomputed from <span class="mono">exercises_vendor.json</span></td></tr>
+        <tr><td><strong>Russian localization</strong></td><td><span class="chip pass">Production</span></td><td>1,101 UI keys in both languages, zero missing; RU catalog 1,887 of 1,887 with title, summary and steps</td></tr>
+        <tr><td><strong>Injury filtering</strong></td><td><span class="chip pass">Production</span></td><td>Live on the full catalog list, equipment detail, AI planner and single-exercise deep links. 1,527 exercises carry tags; 360 carry none and always pass</td></tr>
+        <tr><td><strong>Rep-count refusal</strong></td><td><span class="chip pass">Production</span></td><td><span class="mono">showRepCountFor()</span> gates the number and a visible badge says "count off — form still checked". Thresholds from MM-Fit, 6,160 reps / 21 sessions</td></tr>
+        <tr><td><strong>Auto-deload</strong></td><td><span class="chip pass">Production</span></td><td>Banner wired to the home screen; accepting it halves the next 7 days of scheduled volume</td></tr>
+        <tr><td><strong>Photo encryption</strong></td><td><span class="chip pass">Production</span></td><td>AES-256-GCM, per-account key in the hardware keystore, excluded from Android backup and device transfer, no upload path exists — <span class="mono">firebase_storage</span> is not even a dependency</td></tr>
+        <tr><td><strong>Equipment recognition</strong></td><td><span class="chip warn">Beta / unmeasured</span></td><td>Nameplate OCR first, then cloud Gemini, then on-device model. Labelled experimental on screen. <strong>The cloud path — the production path — has never been measured</strong></td></tr>
+        <tr><td><strong>On-device classifier</strong></td><td><span class="chip warn">Partial</span></td><td>The shipped asset is <span class="mono">equipment_v1.tflite</span>: <strong>10 classes serving 69 machines</strong>. The 29-class v2 that scored 28 % is <em>not shipped</em></td></tr>
+        <tr><td><strong>Form / posture check</strong></td><td><span class="chip warn">Experimental</span></td><td>Six movements mapped from the catalog; in-app banner states it "cannot give a defensible number from a single frame"</td></tr>
+        <tr><td><strong>Payments</strong></td><td><span class="chip warn">Wired, mode unknown</span></td><td>Real Stripe backend and tier mapping deployed; live-vs-test cannot be determined from the repo because the key is a managed secret</td></tr>
+        <tr><td><strong>Google Play</strong></td><td><span class="chip stop">Not shipped</span></td><td>No <span class="mono">key.properties</span> exists, so any release build today falls back to debug signing and is logged as unsuitable for Play upload</td></tr>
+        <tr><td><strong>iOS</strong></td><td><span class="chip stop">Does not exist</span></td><td>No <span class="mono">mobile/ios</span> directory at all. Not unconfigured — unbuilt</td></tr>
+        <tr><td><strong>Wear OS</strong></td><td><span class="chip stop">Broken</span></td><td><span class="mono">wear/build.gradle.kts</span> declares no signing config of any kind</td></tr>
+        <tr><td><strong>App name on device</strong></td><td><span class="chip stop">Contradicts brand</span></td><td>Launcher label is literally <span class="mono">fitness_app</span>, while <span class="mono">applicationId</span> is already <span class="mono">com.fitnessapp.fitness_app.sptr</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="box warn">
+    <span class="lbl">The finding that changed the verdict</span>
+    <p>The concept rests on two numbers: the nameplate identifies 18 of 18, the classifier 5 of 18. Read at source, they do not mean what a landing page would make them mean.</p>
+    <p>Of the operator's 30 gym photographs, <strong>18 could be labelled at all — precisely because the machine's name is printed on it</strong>. The remaining 12 are wide room shots and are ungradeable. So "18/18" is the human labeller reading a nameplate to establish ground truth; it is <strong>not a measurement of the app's OCR pipeline succeeding on those frames</strong>. And "5/18" belongs to the 29-class v2 model, which the app does not load.</p>
+    <p>Meanwhile the recognition path that actually runs in production is cloud Gemini, and the measurement plan states plainly that it was never measured. <strong>The hero mechanic currently has no accuracy figure that a page could honestly print.</strong></p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section>
+  <div class="sec-head"><span class="sec-num">03</span><h2>Claim matrix</h2></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Proposed claim</th><th>Evidence</th><th>Status</th><th>Public wording</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Photograph a machine and get its exercises</td>
+          <td>Path is real and shipping; accuracy in production configuration unmeasured</td>
+          <td><span class="chip warn">Qualify</span></td>
+          <td>"Photograph the machine. SPTR reads its printed name and shows what that machine is for — and tells you when it isn't sure."</td>
+        </tr>
+        <tr>
+          <td>Reads the machine's own nameplate</td>
+          <td>Anchor is real, runs first, returns a list not one answer, unit-tested</td>
+          <td><span class="chip pass">Safe</span></td>
+          <td>"It reads the label on the machine, not just its shape."</td>
+        </tr>
+        <tr>
+          <td>"18 out of 18" nameplate accuracy</td>
+          <td>Human ground-truth labelling, not a pipeline measurement</td>
+          <td><span class="chip stop">Remove</span></td>
+          <td>Unusable until the anchor is measured end-to-end on the same frames.</td>
+        </tr>
+        <tr>
+          <td>1,528 exercises tagged for injuries</td>
+          <td>1,527 non-empty; ratchet floor is 1,527, i.e. zero headroom; 360 untagged always pass</td>
+          <td><span class="chip warn">Qualify</span></td>
+          <td>"1,527 of 1,887 exercises carry body-area caution tags. 360 have none and are never filtered out."</td>
+        </tr>
+        <tr>
+          <td>"Trains around your injuries" / "keeps you safe"</td>
+          <td>Nine body-region tags, no clinician review, no load or progression model</td>
+          <td><span class="chip stop">Remove</span></td>
+          <td>"You tell SPTR what to avoid; it takes those exercises off the list. That is a shorter list, not a medical clearance."</td>
+        </tr>
+        <tr>
+          <td>Shows no rep count where it can't count</td>
+          <td>Gate, badge and thresholds all verified in code and tests</td>
+          <td><span class="chip pass">Safe</span></td>
+          <td>"Counting works for squats, curls, overhead press and lunges. Elsewhere SPTR shows no number rather than a wrong one."</td>
+        </tr>
+        <tr>
+          <td>Per-movement accuracy percentages, incl. 1.00</td>
+          <td>Real holdout measurements — but a printed 100 % is falsified by the first miscounted set</td>
+          <td><span class="chip warn">Qualify</span></td>
+          <td>Methodology page only, as a band, always as "counting accuracy". Never in the hero.</td>
+        </tr>
+        <tr>
+          <td>"A spotter doesn't guess. Neither does SPTR."</td>
+          <td>Contradicted by 360 unfiltered exercises, an unmeasured cloud path and an experimental form checker</td>
+          <td><span class="chip stop">Remove</span></td>
+          <td>Replace with the behaviour, not the absolute: "When SPTR isn't sure, it says so instead of guessing."</td>
+        </tr>
+        <tr>
+          <td>Progress photos encrypted on device</td>
+          <td>AES-256-GCM, per-account key in keystore, excluded from backups, no upload path, deletion removes ciphertext and key</td>
+          <td><span class="chip pass">Safe</span></td>
+          <td>"Progress photos are encrypted on your phone and never uploaded, backed up or exported."</td>
+        </tr>
+        <tr>
+          <td>Pose analysis runs on device</td>
+          <td>ML Kit, no network client in the detector</td>
+          <td><span class="chip pass">Safe</span></td>
+          <td>"Form analysis runs on your phone. No camera frame is sent anywhere."</td>
+        </tr>
+        <tr>
+          <td>Anything implying the scanner is on-device</td>
+          <td>Scanner sends the photo to Google Gemini; the shipped privacy policy already says so</td>
+          <td><span class="chip stop">Remove</span></td>
+          <td>"Machine photos are sent to Google's Gemini for recognition and stored in the EU."</td>
+        </tr>
+        <tr>
+          <td>Download / store badges</td>
+          <td>No signing key, no Play listing, no iOS project</td>
+          <td><span class="chip stop">Remove</span></td>
+          <td>"Android beta, by invitation. Not on Google Play yet."</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 4 -->
+<section>
+  <div class="sec-head"><span class="sec-num">04</span><h2>Brand verdict — keep SPTR, drop "Digital Spotter"</h2></div>
+  <p>The panel split here and then converged on evidence. The brand reviewer initially defended "digital" as the qualifier that limits the literal read; the competitive and safety reviewers argued for removing the gloss entirely. Three findings settled it.</p>
+  <ol>
+    <li><strong>The word is crowded, on the exact store SPTR must ship into.</strong> "Spotter — Your Gym Reference" is live on Google Play and its description is this product's own pitch: an exercise library plus an AI that recognizes any gym machine from a photo, 1,300+ exercises. Beside it: Spotter: AI Workout Companion, SpotterAI, Spotter: Find fitness buddies, Spotter Fitness Trainer, plus several on iOS.</li>
+    <li><strong>The metaphor does not survive Russian.</strong> In Russian, <em>споттер</em> is predominantly an auto-body spot-welding tool. Lifters use the verb — <em>подстрахуешь?</em> — not a noun-title, and <em>страховка</em> primarily means an insurance policy. With RU shipping at full parity, a metaphor that has to be explained in half the product is a metaphor that has failed.</li>
+    <li><strong>It names the one function the product cannot perform.</strong> A spotter's job is to catch a failing lift. The exposure is not that anyone expects the phone to do that; it is that "your spotter is right there with you" grants permission to attempt a rep the user would not attempt alone. Combined with a declared 16+ audience — the users most likely to train alone and accept implied supervision — this is the wrong risk to take for a metaphor.</li>
+  </ol>
+  <p><strong>SPTR itself stays.</strong> It is already the <span class="mono">applicationId</span> suffix, which the build file itself notes can never change after the first Play upload, and no app was found under that string in either store. But it must never appear alone in the early phase: SPTR is a signature, not an introduction. Pair it permanently with a functional descriptor rather than a role claim.</p>
+  <div class="box stop">
+    <span class="lbl">Unresolved — needs counsel, not another search</span>
+    <p>The one US registration that would have blocked this — SPOTTER, Reg. 5285534, Class 009, covering fitness app software — was cancelled in March 2024. Two later filings and the Spotter Inc. portfolio could not be verified. Do not treat the name as cleared on the strength of this review.</p>
+  </div>
+</section>
+
+<!-- 5 -->
+<section>
+  <div class="sec-head"><span class="sec-num">05</span><h2>Hero verdict — line by line</h2></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Proposed line</th><th>Verdict</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td><strong>SPTR</strong></td><td><span class="chip pass">Keep as mark</span></td><td>Never alone. Unreadable unaided; nearest phonetic neighbour is "sputter", which is a poor neighbour for a trust brand</td></tr>
+        <tr><td><strong>YOUR DIGITAL SPOTTER</strong></td><td><span class="chip stop">Cut</span></td><td>Section 4. Also a category label rather than a benefit — it says what you are, not why anyone should care</td></tr>
+        <tr><td><strong>Spot the machine. Know what to do.</strong></td><td><span class="chip stop">Cut — blocker</span></td><td>GymScan's live headline is <em>"Scan any machine. Know what to do."</em> and its subhead is <em>"Built for people who feel lost at the gym."</em> Verified at source. This does not read as an echo; it reads as a copy</td></tr>
+        <tr><td><strong>Take a photo / Identify the equipment / Find the right exercises / Start training</strong></td><td><span class="chip warn">Compress</span></td><td>Four steps for a product with two user actions. "Identify the equipment" is the app's step, not the user's; "start training" is the outcome, not a step</td></tr>
+        <tr><td><strong>Your SPOTTER is right there with you.</strong></td><td><span class="chip stop">Cut — unrecoverable</span></td><td>Asserts presence during the set — the exact moment the app can do nothing. Every phone is "right there with you"; the line carries no information and cannot be false</td></tr>
+        <tr><td><strong>MEET YOUR SPTR / SEE SPTR IN ACTION</strong></td><td><span class="chip stop">Cut</span></td><td>Both ask a stranger to have a relationship with a word they cannot pronounce, and the first implies availability that does not exist</td></tr>
+        <tr><td><strong>JOIN THE ANDROID BETA</strong></td><td><span class="chip warn">Keep, sharpen</span></td><td>The only honest CTA today. Make it first-person and outcome-anchored</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Recommended hero</h3>
+  <div class="copy">
+    <span class="mark">S P T R</span>
+    <strong>The machine you always walk past — find out what it's for.</strong><br>
+    Photograph it. SPTR reads the name printed on the machine and shows the exercises it's built for, with the ones you've asked to avoid already taken out.
+    <span class="small">[ Get my beta invite ] &nbsp; Android only · not on Google Play yet · English &amp; Русский<br>
+    SPTR is not a spotter and doesn't replace one. Never train to failure with free weights alone.</span>
+  </div>
+  <p>Three things this does that the proposal did not. It names a moment the reader recognises instead of a category. It carries a mechanism a competitor cannot copy by rewording — the printed name is a real architectural choice. And it states the constraint in the hero, where it converts the metaphor's biggest weakness into a demonstration of the brand's own claim.</p>
+</section>
+
+<!-- 6 -->
+<section>
+  <div class="sec-head"><span class="sec-num">06</span><h2>Message hierarchy — one line per role</h2></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Role</th><th>Line</th></tr></thead>
+      <tbody>
+        <tr><td><span class="chip flat">Primary</span></td><td>The machine you always walk past — find out what it's for.</td></tr>
+        <tr><td><span class="chip flat">Secondary</span></td><td>Photograph it. Get the exercises that machine is actually built for.</td></tr>
+        <tr><td><span class="chip flat">Trust</span></td><td>When SPTR isn't sure, it says so instead of guessing.</td></tr>
+        <tr><td><span class="chip flat">Proof</span></td><td>It shows no rep count for movements it can't count reliably — two of them, by design.</td></tr>
+        <tr><td><span class="chip flat">CTA</span></td><td>Get my beta invite.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>Killed:</strong> "A good Spotter notices / guides / respects your limits / doesn't fake confidence" — a four-clause manifesto cannot live on a button, a banner or a screenshot, and two of its clauses are the riskiest claims in the deck. "Trust starts with knowing when not to guess" — says what the trust line says, more abstractly and without the brand in it. Two lines fighting for one slot; the weaker one goes.</p>
+</section>
+
+<!-- 7 -->
+<section>
+  <div class="sec-head"><span class="sec-num">07</span><h2>Feature priority — what earns website space</h2></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Rank</th><th>Capability</th><th>Why it ranks there</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td><strong>Refusal to show an unreliable number</strong></td><td>Unoccupied and structurally hard to copy. The entire rep-counter category leads with push-ups; adopting this rule means shipping a blank space where a competitor's demo feature is. That is an economic moat, not a technical one</td></tr>
+        <tr><td class="num">2</td><td><strong>Injury-aware filtering at catalog resolution</strong></td><td>Fitbod and JEFIT offer coarse versions. 1,527 tagged exercises against a 34-step intake is a data-labelling asset — reproducible with budget, so defensible about twelve months</td></tr>
+        <tr><td class="num">3</td><td><strong>Catalog with male and female demonstration, in Russian</strong></td><td>Visible in one screenshot, needs no explanation, and no RU-market equivalent was found. A distribution advantage rather than a positioning one — but it converts</td></tr>
+        <tr><td class="num">4</td><td><strong>Privacy of progress photos</strong></td><td>Not a headline, but the strongest verified claim in the whole product and the right credibility exhibit under the fold</td></tr>
+        <tr><td class="num">5</td><td><strong>Machine recognition</strong></td><td>Demoted deliberately. It is the mechanic, so it must be shown — but as the page's demonstration, not its differentiator. See section 13</td></tr>
+        <tr><td class="num">—</td><td><span class="chip stop">Off the page</span> Form/posture check, auto-deload, Wear, pricing, iOS</td><td>Form check is experimental by the team's own admission; deload is occupied by Fitbod's recovery model; the rest do not exist for a user today</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 8 -->
+<section>
+  <div class="sec-head"><span class="sec-num">08</span><h2>Page architecture</h2></div>
+  <p>The proposed seven sections are storytelling order. This is a recruitment page whose single job is producing named Android testers, so the order is different — and one section is cut entirely.</p>
+  <ol>
+    <li><strong>Hero fused with the recognition demo.</strong> The mechanic <em>is</em> the value proposition; giving it its own scroll target wastes the only screen everyone sees. Above the fold: headline, a real screen capture of a scan, the primary CTA, and the "not on Play" line.</li>
+    <li><strong>Catalog and discovery.</strong> Scale proof, and the answer to "why not YouTube".</li>
+    <li><strong>Filtering around what you tell it.</strong> The actual differentiator among shipping features.</li>
+    <li><strong>What it won't tell you.</strong> The refusal behaviour — placed here deliberately, after every positive claim and immediately before the final ask.</li>
+    <li><strong>Final CTA</strong> with the install mechanics spelled out in full.</li>
+  </ol>
+  <p><strong>Cut for v1:</strong> the combined progress/recovery/privacy section. It bundles three claims nobody is on this page to evaluate. Keep exactly one privacy sentence beside the email field, where it does conversion work.</p>
+  <div class="box pass">
+    <span class="lbl">Why the honesty section goes at position 4, not the hero</span>
+    <p>A small disclosed negative increases choice likelihood, but only when it <em>follows</em> the positive information and is processed with low effort. Placement is therefore not a style question: the same content early produces the opposite effect. It also means one number per claim, never a methodology table — a table invites arithmetic ("so it's wrong one rep in eight"), which is exactly the high-effort processing that destroys the effect.</p>
+  </div>
+</section>
+
+<!-- 9 -->
+<section>
+  <div class="sec-head"><span class="sec-num">09</span><h2>The "don't guess" strategy, judged on its merits</h2></div>
+  <p>This is the strongest idea in the concept and the panel wants it kept. It is also the part most likely to be executed into a liability, so the distinctions matter.</p>
+  <p><strong>Is it supported by code? Partly, and the parts differ.</strong> The rep-counter refusal is real, gated, tested and visible on screen. The scanner's uncertainty behaviour is also real — offline answers are never presented as settled, and the UI has a "Not sure — closest matches" state. But the absolute form of the slogan is falsified by three things at once: 360 exercises pass the injury filter untagged, the production recognition path has no measured accuracy, and the form checker is experimental by the team's own statement.</p>
+  <p><strong>So sell the behaviour, not the absolute.</strong> "A spotter doesn't guess" is a claim about identity and can be disproved by one screenshot. "It shows no number rather than a wrong one" is a claim about a specific, demonstrable mechanism and is true.</p>
+  <p><strong>On the percentages:</strong> keep them off the marketing surface. The denominator is invisible in a marketing context, benchmark conditions are not a gym floor at a bad angle, and a printed 1.00 is a claim of infallibility that the first miscounted set disproves. If numbers are published at all, they belong on a methodology page, as a band, always labelled <em>counting</em> accuracy — because the unqualified word is what lets a reader hear "correct form guaranteed".</p>
+  <div class="box warn">
+    <span class="lbl">The guardrail that makes this territory defensible</span>
+    <p>This positioning is only defensible while it is literally true. The moment the threshold is rounded, or the app quietly starts counting push-ups, the claim inverts into the most damaging one available. If the operator builds on this, the 0.80 threshold stops being a tuning constant and becomes a written product constraint.</p>
+  </div>
+</section>
+
+<!-- 10 -->
+<section>
+  <div class="sec-head"><span class="sec-num">10</span><h2>Visual and motion direction</h2></div>
+  <p>The stated direction — bright, light, premium, product-first, for adults 20–45 — fits the product and the audience, and the exclusions are right. Five principles carry it further than adjectives do.</p>
+  <ol>
+    <li><strong>The product is the art direction.</strong> Real screens at real size, not floating devices in gradient space. This product's credibility comes from specificity; abstraction spends it.</li>
+    <li><strong>Show the gym as a place of confusion, not conquest.</strong> The reader's moment is standing in front of an unfamiliar machine — not a finishing rep. This also happens to avoid every image the safety review prohibits.</li>
+    <li><strong>Uncertainty needs a visual language.</strong> "Not sure — closest matches" is a real state and deserves design attention equal to the confident one. Designing the uncertain state well is the whole brand in one component.</li>
+    <li><strong>Bilingual by construction.</strong> Russian runs longer than English; a layout tuned to English line lengths breaks. Design in the longer language.</li>
+    <li><strong>Numbers are typography.</strong> Tabular figures, one number per claim, never a wall of statistics.</li>
+  </ol>
+</section>
+
+<!-- 11 -->
+<section>
+  <div class="sec-head"><span class="sec-num">11</span><h2>Real media plan</h2></div>
+  <p>Everything the page needs already exists or can be captured in one afternoon in a real gym with the current build.</p>
+  <ul>
+    <li><strong>The scan, uncut, 12–20 s.</strong> Phone raised to a machine, the nameplate read, the result — including the confidence state. One take, no cuts, because the cut is where a viewer assumes the failure was hidden.</li>
+    <li><strong>The refusal, 8 s.</strong> A push-up set where the count badge stays off and the coaching keeps running. This is the single most persuasive asset the product can produce.</li>
+    <li><strong>The filter, 10 s.</strong> A knee flagged in the intake, then the same list before and after.</li>
+    <li><strong>Three still screens</strong> for the catalog: male and female demonstration of the same exercise, and the Russian interface.</li>
+    <li><strong>One honest failure, optional but recommended.</strong> A scan that returns "not sure" with alternatives. A brand built on declared uncertainty that only ever shows successes is making the claim it says it doesn't make.</li>
+  </ul>
+</section>
+
+<!-- 12 -->
+<section>
+  <div class="sec-head"><span class="sec-num">12</span><h2>Generative-media rules</h2></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Asset</th><th>Rule</th></tr></thead>
+      <tbody>
+        <tr><td>Anything showing the product working</td><td><span class="chip stop">Real capture only</span> — no exceptions, no reconstructions, no "representative" mockups</td></tr>
+        <tr><td>People training</td><td><span class="chip stop">No AI-generated humans</span> — generated lifters read as fake precisely where credibility is the product; and generated footage beside an accuracy claim contaminates the claim</td></tr>
+        <tr><td>Gym environments</td><td><span class="chip stop">Real or none</span> — a real phone in a real gym is cheaper than the alternative and is the honest version</td></tr>
+        <tr><td>Backgrounds, textures, section dividers</td><td><span class="chip pass">Generated is fine</span> — decoration carries no claim</td></tr>
+        <tr><td>Logo / wordmark motion</td><td><span class="chip warn">Optional</span> — worth doing once, cheaply; it does not improve recall enough to justify a budget line</td></tr>
+        <tr><td>Autoplay</td><td><span class="chip warn">Muted, poster frame, loaded on scroll</span> — never an autoplaying hero video on mobile, which is the majority of this traffic</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 13 -->
+<section>
+  <div class="sec-head"><span class="sec-num">13</span><h2>Competitive review — the slot is taken, the territory is not</h2></div>
+  <p>The project's internal competitive assessment is dated May 2026 and its central conclusion has expired. Camera-based gym-machine identification is no longer an open field.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Mechanic</th><th>Who else ships it</th><th>Defensibility</th></tr></thead>
+      <tbody>
+        <tr><td>Photo → machine identification</td><td>Gymeo (iOS <em>and</em> Android, shipping since Aug 2025), GymScan, GymVision, PhotoFit, Spotter — Your Gym Reference</td><td><span class="chip stop">Low</span> Reproducible in a sprint with a vision model and an exercise database. Already reproduced</td></tr>
+        <tr><td>Nameplate-first OCR</td><td>Nobody describes it</td><td><span class="chip warn">Medium technically, zero commercially</span> — users cannot see the difference between OCR and a classifier</td></tr>
+        <tr><td>Injury filtering</td><td>Fitbod (Lower Back / Shoulder / Knee), JEFIT, Alpha Progression</td><td><span class="chip warn">Medium</span> The feature is table stakes; the resolution is not</td></tr>
+        <tr><td>Validated-or-silent counting</td><td>Nobody. The rep-counter category leads with push-ups — the exact movement this product refuses to count</td><td><span class="chip pass">High</span></td></tr>
+        <tr><td>Auto-deload</td><td>Fitbod recovery model, JEFIT adaptive plans</td><td><span class="chip stop">Low</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Language already occupied</h3>
+  <ul>
+    <li><strong>"Scan any machine. Know what to do."</strong> — GymScan, live headline, verified at source. The proposed hero is one verb away from it.</li>
+    <li><strong>"Know exactly what to do next — without second guessing"</strong> — Fitbod. A single competitor subheadline occupies both halves of the proposed positioning at once.</li>
+    <li><strong>"No guesswork" / "train smarter" / "your AI coach"</strong> — Fitbod, Alpha Progression, Freeletics respectively.</li>
+    <li><strong>"Built for people who feel lost at the gym"</strong> — GymScan again, which also collides with the earlier "Never feel lost at the gym" draft.</li>
+  </ul>
+  <p><strong>The one defensible territory:</strong> the app that tells you when it doesn't know. It is unoccupied, it is asymmetric against the leader — Fitbod's "we decide so you don't second-guess" cannot coexist with "we tell you when we can't" — and every existing weakness converts into evidence for it.</p>
+</section>
+
+<!-- 14 -->
+<section>
+  <div class="sec-head"><span class="sec-num">14</span><h2>Safety and privacy review</h2></div>
+  <p>The single structural point, which outranks every wording note: under EU device rules, intended purpose is established by promotional material. The code does not decide whether this is a medical device — <strong>the landing page does</strong>. Copy like "trains around your injuries" can convert a wellness app into an unregistered medical device placed on the EU market, by a developer with no legal entity and no authorised representative.</p>
+  <h3>Prohibited outright</h3>
+  <p><span class="chip stop">Never say</span> keeps you safe · prevents injury · trains around your injuries · respects your limits · knows your body · cleared / approved for you · contraindication (public-facing) · assessment · screening · rehab · physiotherapy · doesn't guess · guaranteed · 100 % · bare "accuracy" without "counting".</p>
+  <p><span class="chip stop">Never show</span> barbell bench press or squat rack under load · anyone training to failure · a lone lifter in an empty gym · a phone placed where a human spotter would stand · green checkmarks or shield glyphs on an exercise card · medical iconography · anyone who reads as under 16 · any screenshot with a numeric form score visible.</p>
+  <h3>Required, verbatim</h3>
+  <div class="box stop">
+    <p><strong>Hero region, at body-copy weight:</strong> SPTR is not a spotter and is not a substitute for one. Never train to failure with free weights alone.</p>
+    <p><strong>Footer and store listing:</strong> SPTR is a general fitness information app. It is not a medical device and does not diagnose, treat, cure, or prevent any medical condition. Filtering hides exercises tagged for body areas you select; it is not a medical clearance and does not identify every exercise that may be a problem for you. Consult a healthcare professional before starting or changing an exercise programme — especially if you have an injury or medical condition, are pregnant, have a heart condition or high blood pressure, or have had recent surgery. SPTR is for users aged 16 and over.</p>
+  </div>
+  <p>Google Play's health declaration and the marketing copy are reviewed together, and <em>inconsistency between them is itself the violation</em> — near-term, store suspension is a far more likely consequence than any regulatory action.</p>
+  <h3>The page would contradict the app</h3>
+  <p>This is the sharpest finding in the safety review, and it is specific to this product: the app's own disclaimers are more honest than the proposed marketing. Every headline claim has a near-verbatim inversion already shipping in the interface.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Proposed line</th><th>What the app already tells the user</th></tr></thead>
+      <tbody>
+        <tr><td>"A spotter doesn't guess. Neither does SPTR."</td><td>"Rep counts and technique cues are <strong>approximate</strong>."</td></tr>
+        <tr><td>"Keeps you safe" / "avoids exercises that could hurt you"</td><td>"They <strong>do not judge whether a movement is safe for you</strong>."</td></tr>
+        <tr><td>"Trains around your injuries" / "respects your limits"</td><td>"<strong>No physiotherapist has reviewed the list yet.</strong>"</td></tr>
+        <tr><td>"Your digital spotter"</td><td>"They are <strong>not coaching</strong>."</td></tr>
+        <tr><td>"Injury-aware" as a badge</td><td>"<strong>Not a medical assessment</strong>… not a diagnosis."</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The governing rule that falls out of this: <strong>the website may never claim more than the app's own disclaimers concede.</strong> The in-app language is not a constraint to work around — it is better copy than anything proposed, and it should be reused verbatim.</p>
+  <div class="box stop">
+    <span class="lbl">Why this matters more here than it would elsewhere</span>
+    <p>There is no company. Per the app's own terms, this is one independent developer in Chisinau with no legal entity — so there is no corporate veil, and under EU device rules a natural person can be the manufacturer. Marketing that creates a medical intended purpose would make an individual an unregistered device manufacturer placing a device on the EU market from outside it, without the authorised representative that non-EU manufacturers must appoint. He is also personally the data controller for the intake's health answers, and the revised EU product-liability regime now covers software explicitly.</p>
+    <p>The conclusion the panel draws is not "add more disclaimers". It is <strong>claim less</strong>. Every safety claim removed is exposure a single person does not personally carry — and since the removed claims were also the falsifiable ones, nothing of value is lost.</p>
+  </div>
+  <h3>Privacy — the strongest verified material in the product</h3>
+  <p>Progress photos: AES-256-GCM, a per-account key generated from a secure RNG and held in the hardware-backed keystore, explicitly excluded from Android cloud backup and device-to-device transfer, with no upload path in existence and no share or export flow — one was designed and deliberately not built because it would put a decrypted image into the system share sheet. Deleting the account removes both the ciphertext directory and the key. Pose analysis runs on device.</p>
+  <p>Two caveats that must travel with the claim: the photo <em>index</em> — dates, weights, notes — is stored in plaintext beside the encrypted images, and this is protection at rest on the device, not end-to-end encryption. The code says so itself, which is why the page may say "encrypted on your phone" and may not say "end-to-end".</p>
+</section>
+
+<!-- 15 -->
+<section>
+  <div class="sec-head"><span class="sec-num">15</span><h2>Devil's advocate — the strongest reasons this fails</h2></div>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Concern</th><th>Evidence</th><th>Severity</th><th>Recommendation</th></tr></thead>
+      <tbody>
+        <tr><td>The hero mechanic is a solved commodity</td><td>Four to five apps ship photo machine identification; one is on Play with the same catalog pitch</td><td><span class="chip stop">Blocker</span></td><td>Demote recognition to demonstration; lead with the refusal behaviour</td></tr>
+        <tr><td>The headline duplicates a live competitor headline</td><td>GymScan, verified at source</td><td><span class="chip stop">Blocker</span></td><td>Rewrite; check every candidate line against live competitor pages before it ships</td></tr>
+        <tr><td>Recognition is a one-time novelty</td><td>Median 4 exercises per registered machine; 29 of 69 machines have three or fewer; 4 have none</td><td><span class="chip stop">Major</span></td><td>Do not build the retention story on scanning. Scanning acquires; catalog and filtering retain. Fill the thin machines before the page claims breadth</td></tr>
+        <tr><td>The trust claim is disprovable</td><td>360 unfiltered exercises, unmeasured production recognition, experimental form check</td><td><span class="chip stop">Major</span></td><td>Claim the mechanism, never the identity</td></tr>
+        <tr><td>A polished page in front of a beta that is hard to install</td><td>No signing key exists; release builds fall back to debug signing; sideload plus Play Protect friction</td><td><span class="chip stop">Major</span></td><td>Fix signing before launch; publish the install walkthrough on the confirmation page, not only in email</td></tr>
+        <tr><td>The app installs under a different name than the site sells</td><td>Launcher label is <span class="mono">fitness_app</span></td><td><span class="chip stop">Major</span></td><td>Set the launcher label before the site is public. Trust breaks at the last step, after the sideload warning</td></tr>
+        <tr><td>An anonymous site asking for an email to send an APK</td><td>Pattern-matches to malware, most strongly for the technical Android users who make the best testers</td><td><span class="chip warn">Important</span></td><td>Name the human, show a real reply channel, name Firebase and the sender address before the invite arrives</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 16 -->
+<section>
+  <div class="sec-head"><span class="sec-num">16</span><h2>Reviewer disagreements</h2></div>
+  <p><strong>Resolved — the spotter gloss.</strong> Brand argued "digital" limits the literal read and the metaphor's trust semantics are worth keeping; competitive and safety argued for removal. Resolved against keeping it, on three independent pieces of evidence (store crowding, Russian failure, 16+ audience). Brand's own research independently found the Play collision, which narrowed the gap.</p>
+  <p><strong>Resolved — the accuracy numbers.</strong> Growth wanted one figure per movement on the page; safety wanted none. Settled by a fact neither had: the recognition figures do not measure the shipped configuration at all. Rep-counter numbers are real and may appear on a methodology page; recognition numbers may not be published in any form until the production path is measured.</p>
+  <p><strong>Standing, unresolved, for the operator.</strong> Whether to publish the 0.80 threshold as a binding public commitment. The panel recommends it and cannot decide it — it converts a tuning constant into a promise, and that is a business decision about future freedom, not an evidence question.</p>
+  <p><strong>Open verification gap.</strong> Whether the workouts feature consumes already-filtered data or bypasses the injury filter could not be settled in this pass — no direct call site exists in that feature. Until it is settled, no page may claim filtering is universal across the app.</p>
+</section>
+
+<!-- 17 -->
+<section>
+  <div class="sec-head"><span class="sec-num">17</span><h2>Scorecard</h2></div>
+  <div class="scroll">
+    <table class="score">
+      <thead><tr><th>Dimension</th><th>Score</th><th class="bar-cell"></th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Product truth</td><td class="num">4</td><td><div class="bar bad"><span style="width:40%"></span></div></td><td>Hero mechanic unmeasured in production config; trust slogan contradicted by three verified facts</td></tr>
+        <tr><td>Immediate clarity</td><td class="num">6</td><td><div class="bar"><span style="width:60%"></span></div></td><td>The mechanic reads instantly; the name and the pun both need explaining</td></tr>
+        <tr><td>Brand memorability</td><td class="num">4</td><td><div class="bar bad"><span style="width:40%"></span></div></td><td>Four consonants that spell a ticker, attached to the most crowded word in the category</td></tr>
+        <tr><td>SPTR → Spotter link</td><td class="num">3</td><td><div class="bar bad"><span style="width:30%"></span></div></td><td>Does not read unaided; "sputter" is the likelier guess; the metaphor does not survive Russian</td></tr>
+        <tr><td>Differentiation</td><td class="num">3</td><td><div class="bar bad"><span style="width:30%"></span></div></td><td>Lead mechanic occupied by four-plus apps; headline near-verbatim to a live competitor</td></tr>
+        <tr><td>Emotional appeal</td><td class="num">6</td><td><div class="bar"><span style="width:60%"></span></div></td><td>The spotter feeling is genuinely strong — it is the reason the concept is tempting, and the reason it is risky</td></tr>
+        <tr><td>Trust / credibility</td><td class="num">5</td><td><div class="bar"><span style="width:50%"></span></div></td><td>Right instinct, overclaimed execution: the absolute form is disprovable</td></tr>
+        <tr><td>Conversion potential</td><td class="num">4</td><td><div class="bar bad"><span style="width:40%"></span></div></td><td>No funnel designed behind the CTA; the install path is the hardest part and goes unmentioned</td></tr>
+        <tr><td>Visual potential</td><td class="num">7</td><td><div class="bar"><span style="width:70%"></span></div></td><td>Direction is sound and the real assets exist; loses points only for having no design language for uncertainty</td></tr>
+        <tr><td>Safety of claims</td><td class="num">2</td><td><div class="bar bad"><span style="width:20%"></span></div></td><td>Multiple claims cross the medical-device line and conflict with Play health policy</td></tr>
+        <tr><td>Evidence strength</td><td class="num">5</td><td><div class="bar"><span style="width:50%"></span></div></td><td>Rep counter and privacy are exemplary; recognition evidence does not support the use the concept makes of it</td></tr>
+        <tr><td>Brand extensibility</td><td class="num">5</td><td><div class="bar"><span style="width:50%"></span></div></td><td>"Verified silence" extends to every feature; "spotter" narrows to one room and one language</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="src">Weighted mean 4.5 / 10. Dimensions scoring 8+ would need no explanation; none reached it.</p>
+</section>
+
+<!-- 18 -->
+<section>
+  <div class="sec-head"><span class="sec-num">18</span><h2>Required before implementation</h2></div>
+  <div class="box stop">
+    <span class="lbl">Blocker — the page cannot be built until these are resolved</span>
+    <ol>
+      <li>Replace the hero line. The current one duplicates a live competitor headline.</li>
+      <li>Remove the "digital spotter" role claim and every line in the prohibited list in section 14.</li>
+      <li>Decide the name question with counsel, not with a search. SPTR is already baked into an <span class="mono">applicationId</span> that cannot change after the first Play upload.</li>
+      <li>Set the Android launcher label to the brand name. Today the app installs as <span class="mono">fitness_app</span>.</li>
+      <li>Create the release signing key. Without it there is no distributable build behind any CTA.</li>
+      <li>Withdraw the recognition accuracy figures from all copy until the production path is measured.</li>
+    </ol>
+  </div>
+  <div class="box warn">
+    <span class="lbl">Important — before the page goes public</span>
+    <ol>
+      <li>Decide the language of record. The panel recommends Russian as canonical with English maintained, on funnel arithmetic rather than preference: the testers who will actually install and report back are reachable in Russian.</li>
+      <li>Settle whether the 0.80 threshold becomes a public commitment.</li>
+      <li>Close the workouts-surface filtering question in section 16.</li>
+      <li>Fill or hide the thin machines — 29 of 69 have three exercises or fewer.</li>
+      <li>Add the stop rule the fitness reviewer asked for: stop if pain rises during a set, persists past 24 hours, or changes character. It costs nothing and does more good than the filter.</li>
+      <li>Instrument the funnel before launch, not after — the email address is the only join key between a visit and an install, and it only works if it is the same address end to end.</li>
+    </ol>
+  </div>
+  <div class="box">
+    <span class="lbl">Nice to have</span>
+    <ol>
+      <li>A methodology page for the counting figures, once someone asks for them.</li>
+      <li>A one-off wordmark animation.</li>
+      <li>Update or mark historical the May competitive assessment and the pitch deck, which still sells QR stickers removed from the product in July.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- 19 -->
+<section>
+  <div class="sec-head"><span class="sec-num">19</span><h2>The website this should be, and the decision</h2></div>
+  <p>A single-screen-deep recruitment page, in Russian first, whose job is to turn a stranger into a named Android tester the operator can reach. It opens on the moment of standing in front of an unfamiliar machine and shows a real, uncut capture of the app reading that machine's printed name. It proves scale with the catalog, proves care with the filter, and closes — immediately before the ask — with the one thing no competitor will copy: a screen where the app declines to show a number it cannot stand behind. It states plainly that it is an Android beta, not on Google Play, run by one person in Chisinau, and it says in the hero that it is not a spotter and does not replace one.</p>
+  <p>It publishes no accuracy percentage it has not measured, no store badge it does not have, and no safety claim at all.</p>
+  <div class="box stop">
+    <span class="lbl">Implementation decision</span>
+    <p><strong>Ready for website design and implementation: NO.</strong> Six blockers stand, and four of them are product-side rather than copy-side — the name decision, the launcher label, the signing key, and the unmeasured recognition path. None takes long. All must precede design, because each one changes what the page is allowed to say.</p>
+    <p>The recommendation is not to wait for Google Play. A new personal developer account cannot reach production without first running a closed test with twelve testers for fourteen consecutive days — so the tester list is not an alternative to Play, it is the prerequisite. That is the strongest argument for building this page now, at five sections, as a recruitment tool rather than a product launch.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Panel: product truth, brand and copy, growth and conversion, competitive positioning, safety and health claims, privacy and security, fitness domain, technical verification. All product figures re-measured against the working tree at commit <span class="mono">78b24dc</span>, version <span class="mono">1.0.0+14</span>, on 2026-08-18; documentation was not accepted as evidence. Competitor headlines were verified at source. Review only — no implementation, no commit, no push.</p>
+  <p class="src">Key sources in repo: <a href="mobile/lib/features/form_check/data/measured_rep_configs.dart">mobile/lib/features/form_check/data/measured_rep_configs.dart</a> · <a href="mobile/lib/features/form_check/state/form_check_providers.dart">mobile/lib/features/form_check/state/form_check_providers.dart</a> · <a href="mobile/lib/features/equipment/data/exercise_filter.dart">mobile/lib/features/equipment/data/exercise_filter.dart</a> · <a href="mobile/assets/models/README.md">mobile/assets/models/README.md</a> · <a href="core/plans/B5b_TEXT_ANCHOR_2026-08-07.md">core/plans/B5b_TEXT_ANCHOR_2026-08-07.md</a> · <a href="core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md">core/plans/B1_RECOGNITION_MEASUREMENT_2026-08-07.md</a> · <a href="core/PLATFORM_SCOPE.md">core/PLATFORM_SCOPE.md</a> · <a href="mobile/android/app/build.gradle">mobile/android/app/build.gradle</a></p>
+</footer>
+
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

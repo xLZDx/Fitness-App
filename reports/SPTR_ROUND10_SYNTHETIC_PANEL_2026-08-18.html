@@ -1,0 +1,415 @@
+<title>The Instrument Under Test</title>
+<style>
+  :root {
+    --paper: #EFEEE9; --surface: #F7F6F2; --sunk: #E3E1DA; --ink: #14161A;
+    --muted: #5A5C63; --rule: #D4D1C8; --accent: #2A3FA8;
+    --ok: #1F5D42; --ok-soft: #DEE9E3;
+    --warn: #A03328; --warn-soft: #F2E1DE;
+    --code: #6B4A12; --code-soft: #EFE6D5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0F1114; --surface: #171A1F; --sunk: #1E2128; --ink: #E6E5E1;
+      --muted: #949790; --rule: #2A2E35; --accent: #93A4F5;
+      --ok: #6FC49E; --ok-soft: #13251D; --warn: #E88C82; --warn-soft: #2B1715;
+      --code: #D6AC63; --code-soft: #262014;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0F1114; --surface: #171A1F; --sunk: #1E2128; --ink: #E6E5E1;
+    --muted: #949790; --rule: #2A2E35; --accent: #93A4F5;
+    --ok: #6FC49E; --ok-soft: #13251D; --warn: #E88C82; --warn-soft: #2B1715;
+    --code: #D6AC63; --code-soft: #262014;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: "Segoe UI", -apple-system, system-ui, sans-serif;
+    font-size: 16px; line-height: 1.62; margin: 0; padding: 0 22px 90px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; }
+  h1, h2, h3, .serif { font-family: Constantia, Charter, "Iowan Old Style", Georgia, serif; font-weight: 600; }
+  .mono, code, .eyebrow, .tag { font-family: "Cascadia Mono", Consolas, ui-monospace, monospace; }
+
+  .masthead { padding: 60px 0 26px; border-bottom: 3px double var(--rule); }
+  .eyebrow { font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 18px; }
+  h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.06; letter-spacing: -0.018em; margin: 0 0 15px; text-wrap: balance; }
+  .standfirst { font-size: 17px; color: var(--muted); max-width: 68ch; margin: 0; }
+
+  section { padding: 40px 0 8px; border-bottom: 1px solid var(--rule); }
+  .sec-head { display: flex; align-items: baseline; gap: 13px; margin-bottom: 13px; }
+  .sec-tag { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; color: var(--accent); font-weight: 700; padding-top: 4px; }
+  h2 { font-size: clamp(21px, 2.9vw, 29px); line-height: 1.16; margin: 0; text-wrap: balance; }
+  h3 { font-size: 16.5px; margin: 22px 0 8px; }
+  p { margin: 0 0 13px; max-width: 74ch; }
+  ul, ol { margin: 0 0 13px; padding-left: 21px; max-width: 74ch; }
+  li { margin-bottom: 7px; } li::marker { color: var(--muted); }
+  a { color: var(--accent); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  strong { font-weight: 650; }
+
+  .tag { display: inline-block; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; font-weight: 700; white-space: nowrap; }
+  .tag.ok { background: var(--ok-soft); color: var(--ok); }
+  .tag.warn { background: var(--warn-soft); color: var(--warn); }
+  .tag.code { background: var(--code-soft); color: var(--code); }
+  .tag.flat { background: var(--sunk); color: var(--muted); }
+
+  .voice { border-left: 3px solid var(--accent); background: var(--surface); padding: 14px 18px; margin: 0 0 14px; max-width: 76ch; }
+  .voice .who { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 7px; }
+  .voice q { font-family: Constantia, Charter, Georgia, serif; font-size: 16.5px; quotes: none; display: block; }
+  .voice q + q { margin-top: 9px; padding-top: 9px; border-top: 1px dotted var(--rule); }
+
+  .box { border: 1px solid var(--rule); border-left: 3px solid var(--accent); background: var(--surface); padding: 16px 19px; margin: 0 0 16px; max-width: 78ch; }
+  .box .lbl { display: block; font-size: 10px; letter-spacing: 0.11em; text-transform: uppercase; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+  .box.warn { border-left-color: var(--warn); } .box.warn .lbl { color: var(--warn); }
+  .box.code { border-left-color: var(--code); } .box.code .lbl { color: var(--code); }
+  .box p:last-child { margin-bottom: 0; }
+
+  .scroll { overflow-x: auto; margin-bottom: 16px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 580px; }
+  th { text-align: left; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--ink); padding: 0 12px 6px 0; }
+  td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tbody tr:hover { background: var(--surface); }
+
+  pre { background: var(--sunk); border-left: 3px solid var(--code); padding: 12px 15px; overflow-x: auto; font-family: "Cascadia Mono", Consolas, monospace; font-size: 13px; line-height: 1.5; margin: 0 0 14px; }
+
+  footer { padding: 34px 0 0; color: var(--muted); font-size: 13.5px; }
+  .src { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; word-break: break-word; }
+  .src a { color: var(--muted); }
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow"><span>Round ten</span><span>Synthetic panel — process validation</span><span>2026-08-18</span><span>master 78b24dc</span></div>
+  <h1>The panel converged on the brand — and then three properties of the panel itself turned out to predict exactly that convergence</h1>
+  <p class="standfirst">Round Nine's adjudication is accepted in full, including the ruling that matters most: Round Eight violated the operator's own Marketing R&amp;D rule by disqualifying a concept for being unbuilt. The rewritten cells were run through a diverse synthetic panel with every rating scale deleted rather than merely disclaimed, and all six respondents converged on something none of the concepts contained. An adversarial methods review then showed that the convergence is what this instrument would produce for almost any name — so the headline is demoted here, one hour after it was written, and what survives is sorted by <em>how</em> it can be checked rather than by how many respondents said it.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<section>
+  <div class="sec-head"><span class="sec-tag">01</span><h2>Accepted, and the sharpest form of the error</h2></div>
+  <p>All six downgrades stand. The pilot's answers were used to settle questions a pilot cannot settle, and the disclaimer at the top did not stop the conclusions at the bottom.</p>
+  <p><strong>The Marketing R&amp;D violation is the real one.</strong> Round Eight wrote: <em>"A test whose winning answer could not be shipped is spend with no outcome."</em> That is exactly backwards under the mode the operator set. The whole point of this phase is to find the promise worth building <em>before</em> advertising starts. A concept is disqualified by infeasibility, irrationality, regulatory impossibility or inconsistency with the product — never by not existing yet. Cell C's wording was broken. Its product hypothesis was not, and deleting the hypothesis with the wording was the round's worst move.</p>
+  <p>One further inconsistency is worth naming because it is the cleanest illustration of the over-interpretation: Round Eight's own questionnaire table ruled that asking "does SPTR mean anything to you?" beside a visible <em>Spotter</em> label <strong>"can only confirm the label — it measures nothing."</strong> Three paragraphs later the same round used that non-measurement to conclude "keep the sub-label indefinitely." A question judged incapable of producing information produced a recommendation.</p>
+  <p>Also accepted: mechanical setup values are not a health claim. Seat 4, pad 2, pin at 45 kg describe a machine, not a body. The claim risk lives in words like <em>safest</em>, <em>correct for your body</em>, <em>protects your knees</em> — and, worth noting, in a surface neither round has discussed: the app already filters exercises by injury contraindication across 1,527 exercises. That is a far more real regulatory boundary than a seat number, and the safety flag in Round Eight was pointed at the wrong object.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">02</span><h2>One correction that cuts against both rounds</h2></div>
+  <p>Round Nine is right that the text anchor is not the whole scanner, and Round Eight's coverage bound was framed as though it were — the section even used a respondent's doubt about the <em>scanner</em> as the epigraph for a measurement about <em>nameplates</em>. Two different claims, blurred.</p>
+  <p>But the correction has a second half that Round Nine does not have either. The cloud path is not open-ended. It is pinned to a closed vocabulary:</p>
+  <pre>// gemini_equipment_service.dart
+/// The prompt pins the answer to the registry's canonical names, and the
+/// reply is resolved through [EquipmentAliasIndex], so the model cannot
+/// invent a machine we have no page for: an unresolvable answer degrades
+/// to "no match", never to a guess.
+
+"machine": "&lt;name from the list below, or unknown&gt;"   // 75 canonical names</pre>
+  <div class="box code">
+    <span class="lbl">The three paths and their real ceilings</span>
+    <p><strong>Text anchor</strong> — needs printed words; plausible on roughly 28 of 69 registry types. <strong>Cloud (Gemini)</strong> — sees any machine, but may only answer with one of ~75 canonical names or <em>unknown</em>; never measured in production. <strong>On-device fallback</strong> — 10 classes.</p>
+    <p>So: "OCR cannot read the whole gym" ≠ "the scanner cannot cover the whole gym" — <em>and</em> "the scanner can cover the whole gym" is also false. Every path terminates in the same catalogue. Anything outside it becomes <em>unknown</em> and opens a machine card, which is not a failure state — it is the contribution loop, and it is the only mechanism by which coverage grows.</p>
+    <p>Round Eight's line "none of the barbell half of the gym" was true of nameplates only. The registry does carry barbell, dumbbells, kettlebell, EZ curl bar and weight plates; the cloud path answers for them.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">03</span><h2>What changed in the instrument, operationally</h2></div>
+  <p>Round Nine's rule — synthetic agents may find broken copy and generate hypotheses, but may not report what the market wants — was implemented by <strong>removing the instrument that manufactures market data</strong>, not by adding a warning label. Round Eight's disclaimer failed precisely because the questionnaire still emitted 1–5 scores, and scores get ranked.</p>
+  <ul>
+    <li><strong>Every rating scale deleted.</strong> No clarity, usefulness, newness or memorability numbers exist in this round, so there is nothing to rank.</li>
+    <li><strong>No "would you try it".</strong> Removed entirely rather than reworded.</li>
+    <li><strong>"Which matters most" replaced by "which did you work hardest to understand".</strong> Same position in the flow, comprehension instead of preference.</li>
+    <li><strong>Added: the uncharitable reading.</strong> "If someone wanted to read this mockingly, how would they read it?" This turned out to be the highest-yield question in the set.</li>
+    <li><strong>Personas varied across nine axes</strong> — experience, age, gender, goal, language, gym confidence, gym-changing frequency, comfort asking staff, equipment familiarity.</li>
+  </ul>
+  <div class="box warn">
+    <span class="lbl">A design error I introduced mid-run, disclosed</span>
+    <p>Three of the six safety questions were written with the clause <em>"the app is called SPTR, short for Spotter — does that change your answer?"</em> attached. That is leading, and those three responses cannot count toward the convergence below. Everything reported as convergent rests on the <strong>four respondents whose question mentioned no name at all</strong> and who named it anyway.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">04</span><h2>The convergence, and why it does not mean what it looked like</h2></div>
+  <p>Four respondents whose question mentioned no name were asked whether anything made the app seem to watch, protect or stand beside them, and to quote what gave that impression. All four quoted the same thing — the word under the logo, which appeared in none of the three concepts.</p>
+
+  <div class="voice">
+    <div class="who">Woman, 24 · first gym membership · Russian · Cell A</div>
+    <q>Спотер в зале — это человек, который стоит рядом и подстраховывает, когда штангу поднимаешь тяжелую. Из-за этого слова у меня прямо мелькнуло, что оно как будто рядом с тобой «стоит», подстраховывает.</q>
+    <q>Это разные вещи вообще-то, и от такого расхождения доверия чуть меньше.</q>
+  </div>
+
+  <div class="voice">
+    <div class="who">Man, 47 · twenty years training, travels constantly · English · Cell A</div>
+    <q>A spotter is a person who stands behind you when you're lifting heavy so you don't get crushed under a bar. This app doesn't do that at all… Calling it "Spotter" when it has nothing to do with safety spotting is the kind of thing that'd make me raise an eyebrow — feels like it's borrowing weight from a word it hasn't earned.</q>
+  </div>
+
+  <div class="voice">
+    <div class="who">Woman, 31 · QA engineer, sceptical of AI features · Russian · Cell B</div>
+    <q>Название работает на ощущение «она рядом, следит за мной», хотя по написанному тексту речь просто про распознавание надписи.</q>
+    <q>Громкое имя под скромную функцию считывания текста.</q>
+  </div>
+
+  <div class="voice">
+    <div class="who">Woman, 38 · returning after five years, disc injury · Russian · Cell C</div>
+    <q>Название намекает, что оно как бы «стоит рядом» и подстрахует, хотя в тексте выше прямо про безопасность ничего не сказано.</q>
+    <q>Обычная записная книжка выдаёт себя за личного тренера и «спотера», а на деле это просто заметки, которые тебя, если что, ни от чего не подстрахуют и не поймают штангу.</q>
+  </div>
+
+  <h3>And then the methods review took it apart</h3>
+  <p>Written an hour ago, the paragraph above claimed a convergent finding across three concepts and two languages. An adversarial methods review produced three separate explanations for that convergence that have nothing to do with the brand, and two of the three are verifiable against my own materials. They are.</p>
+
+  <div class="box warn">
+    <span class="lbl">Artifact 1 — the probe describes a spotter without using the word</span>
+    <p>The question asked whether anything made the app seem to <em>"watch you, protect you, or <strong>stand next to you while you lift</strong>."</em> That final clause is a plain-language definition of a spotter. It does not contain the token, but it hands over the concept, and it demands a quoted referent — so the respondent must nominate something, and in a stimulus about machine identification the only element semantically adjacent to <em>standing next to you while you lift</em> is the name.</p>
+  </div>
+
+  <div class="box warn">
+    <span class="lbl">Artifact 2 — the reversal from Round Eight is explained by my own edit, not by sample size</span>
+    <p>Round Eight ran three respondents on the same brand treatment and reported no misread anywhere. I attributed the difference to the question pointing at the headline. The actual diff:</p>
+    <pre>Round 8:  "Does anything suggest the app supervises or protects you?"
+Round 10: "…watches you, protects you, or stands next to you while you lift?"</pre>
+    <p>One added clause, and it is precisely the clause that defines the word under the logo. The reversal is a property of my instrument. A result that flips on a probe edit and does not vary with the stimulus is usually telling you about the instrument rather than the subject.</p>
+  </div>
+
+  <div class="box warn">
+    <span class="lbl">Artifact 3 — the medium over-weights the wordmark, and this is the serious one</span>
+    <p>On a real board the wordmark occupies perhaps two percent of the visual field beneath a dominant image. In the payload these respondents received, the image was a sentence of description and the brand was one line among roughly forty tokens. There is no glance, no reading order and no attentional bottleneck — the model reads everything at equal fidelity. The name is structurally over-weighted <em>by the format</em>, which predicts this exact convergence for almost any name, in any concept, in any language. Which is what was observed.</p>
+    <p>Consequence: <strong>"five seconds" must be deleted from this protocol and from every write-up of it.</strong> No exposure condition existed. Calling it a five-second test smuggles claims about noticing, salience and first impressions that this instrument cannot support — a gap the governing rule leaves open, because it bans preference claims and says nothing about salience claims.</p>
+  </div>
+
+  <h3>What the finding is now</h3>
+  <ul>
+    <li><span class="tag ok">Stands</span> <strong>The name affords a physical-spotting reading.</strong> That is a lexical fact about gym English, checkable without any panel, and it is worth acting on.</li>
+    <li><span class="tag warn">Demoted</span> <strong>Prevalence.</strong> Six respondents are not six data points — they are six samples from one prior under one prompt, and they would converge just as tidily at n=600. The count carries existence weight, not rate. No statement of the form "gym-goers will expect physical spotting" is supported.</li>
+    <li><span class="tag warn">Withdrawn</span> <strong>The trust reading.</strong> "Borrowing weight from a word it hasn't earned" and «громкое имя под скромную функцию» are brand-equity judgements — attitudes formed in a market over time. They are exactly the class Round Nine forbids, and using them as support was the same error as Round Eight's, one layer down. They illustrate the mechanism; they are not evidence of an effect.</li>
+    <li><span class="tag ok">Reframed</span> <strong>The brand test.</strong> Round Nine wants to teach <code>SPTR → Spotter</code> harder. If the association carries an expectation of physical presence, teaching it more efficiently teaches the expectation more efficiently — so the brand test must ask what people expect the product to <em>do</em> once taught, not only whether they can recall the expansion. That reframing survives, because it follows from the lexical fact rather than from the panel.</li>
+  </ul>
+  <p>One premise of the methods review does not hold, and it matters for how much to discount. The review asserted that the probe contained the brand morpheme — "spots you" — and therefore that contamination was six of six. It did not: the four clean probes say <em>watches, protects, stands next to you</em>, and the word <em>spot</em> appears nowhere in them. The prime is semantic, not lexical. That is a weaker contamination than claimed, and it is still enough to require the control below.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">05</span><h2>Cell-level stimulus QA</h2></div>
+
+  <h3><span class="tag flat">Cell A</span> NEW MACHINE. NO AWKWARD PAUSE.</h3>
+  <ul>
+    <li><strong>The shame reading survived the rewrite.</strong> Removing "without asking anyone" did not remove the social frame — one respondent read the pause as the one <em>"where you'd normally ask another person for help,"</em> and named the mocking version himself: <em>"this is for people scared to talk to strangers at the gym."</em> The Russian respondent's uncharitable reading was <em>«ты такая неловкая в зале, что даже спросить боишься, вот тебе костыль»</em>. Two words changed; the risk did not.</li>
+    <li><strong>"Awkward pause" split two ways</strong> — the human pause, versus the app responding without lag. One respondent only resolved it from the picture.</li>
+    <li><strong>"What you can do with it" was the hardest phrase for both.</strong> A list of exercise names, or actual instruction with video? Both flagged the same words independently.</li>
+    <li><strong>It missed the traveller.</strong> The 47-year-old — the exact unfamiliar-equipment-in-a-new-city case — said it read as aimed at <em>"someone unfamiliar with gyms in general… not really written for someone who already knows how to train."</em> A comprehension-of-address finding, not a preference one.</li>
+  </ul>
+
+  <h3><span class="tag flat">Cell B</span> SEE WHAT SPTR SAW.</h3>
+  <ul>
+    <li><strong>"The match" is undefined and both respondents stopped on it.</strong> <em>"Match to what, a database entry? Doesn't say."</em> / <em>«match с чем именно, непонятно»</em>. The evidence concept's core sentence does not say what the evidence is evidence <em>for</em>.</li>
+    <li><strong>The hero visual has a defect the QA persona spotted instantly.</strong> ABDUCTION and ADDUCTION differ by one letter — <em>«это прямо классический кейс, где OCR должен ошибаться чаще всего, а его выбрали для промо-картинки, это либо смело, либо не подумали»</em>. The single most legible nameplate pair in the catalogue is also the most confusable one. Either own that deliberately or choose a different machine.</li>
+    <li><strong>Trivialisation is the concept's real downside risk</strong>, not opacity: <em>"wow, groundbreaking, it can read a sign."</em></li>
+    <li>All six respondents asked for the same recovery affordance — let me correct it. <span class="tag warn">demoted</span> The question was "what would you <em>want</em> it to do next", a preference verb, and the answer is generic interaction best practice that a heuristics checklist supplies for free. It is not evidence about these users and it is not support for <em>Recovery</em> as a pillar. The reframed version — <em>based only on what you saw, what do you expect this app to do when it is unsure?</em> — would surface an expectation the copy created, which is checkable against real product behaviour.</li>
+  </ul>
+
+  <h3><span class="tag flat">Cell C</span> KNOW THE MACHINE. SET IT UP. PICK UP WHERE YOU LEFT OFF.</h3>
+  <ul>
+    <li><strong>Round Nine's fix removed one ambiguity and introduced another.</strong> "Set it" no longer reads as a set of reps — but <strong>both</strong> C respondents stalled on the referent instead: <em>«"it" это тренажёр или само приложение?»</em> and <em>"the app physically sets up the machine for you, like some kind of automated pin-mover."</em> The middle verb is still the hardest line on the page.</li>
+    <li><strong>The camera disappeared.</strong> Neither C respondent could tell whether recognition is involved at all — <em>"does it identify the machine for me (camera? QR code?), or is that just marketing-speak for 'know its name'?"</em> The retention promise crowded out the acquisition mechanic entirely. This is the structural cost of leading with memory, and it is a comprehension fact, not a preference.</li>
+    <li><strong>"Pick up where you left off" was read literally</strong> by one respondent as picking up the weight she had put down.</li>
+    <li><strong>A privacy misread appeared</strong> that nobody predicted: the returning-injury respondent, unable to work out where "Seat 4 · Chest pad 2" comes from, wondered <em>«не снимает ли оно меня через камеру телефона на тренажёре»</em>. Unexplained personal data reads as surveillance — on the one dimension where this product is genuinely strong.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">06</span><h2>The plain-jobs variant, and why it should not be a cell</h2></div>
+  <p>Round Nine's C4 — <em>WHAT IS IT? / HOW DO I SET IT UP? / WHAT DID I DO LAST TIME?</em> — was run on a deliberately unsentimental respondent: a 34-year-old site foreman whose gym is half unlabelled Soviet-era welded machines and half Chinese equipment with worn stickers.</p>
+  <p>The plain wording did what Round Nine expected, and less than it hoped:</p>
+  <div class="voice">
+    <div class="who">Man, 34 · six years in a no-frills gym · Russian · Cell C-plain</div>
+    <q>Стало понятнее в целом, сразу ясно, про что речь, без воды. Но конкретики не прибавило — я понял общую идею, а вот как оно это делает и с любым ли тренажёром сработает — так и осталось непонятно.</q>
+  </div>
+  <p>So: plain questions raise comprehension of the <em>jobs</em> and do nothing for comprehension of the <em>mechanism</em> — and the mechanism is what both C respondents were missing. The plain variant lost the camera exactly as C3 did.</p>
+  <div class="box">
+    <span class="lbl">A methodological objection to C4 as a test cell</span>
+    <p>C4 is deliberately uncrafted; A and B are crafted. Putting them in the same monadic set breaks the operator's own constraint that the cells must be of equal quality so that <em>message</em> is tested rather than execution — a raw job list against two worked lines confounds exactly what the constraint exists to protect.</p>
+    <p>C4's real value is as a <strong>separate job-priority exercise</strong>: show the three jobs alone, with no brand and no craft, and have people trade them off. That answers "which job is worth owning" cleanly. It should not compete as a concept.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">07</span><h2>The round's product finding: the retention promise has no data path</h2></div>
+  <p>Two respondents who share nothing — a Hevy power-user in a second office gym, and a site foreman in a gym full of unlabelled iron — independently arrived at the same precondition, from opposite directions.</p>
+  <div class="voice">
+    <div class="who">Man, 28 · logs every set, trains in two gyms · English · Cell C</div>
+    <q>The app has to be able to tell "this machine" apart from a same-named machine at a different gym, otherwise the numbers would be wrong when I travel between my two gyms.</q>
+  </div>
+  <div class="voice">
+    <div class="who">Man, 34 · site foreman · Russian · Cell C-plain</div>
+    <q>«Seat 4 · Chest pad 2» — это подразумевает, что на тренажёре есть цифры, промаркированные позиции сиденья и упора. У меня в зале половина станков — сварные советские, без единой таблички, ещё часть — китайские с затёртыми наклейками… Чтобы приложение выдало «сиденье 4», кто-то должен был сначала сам вручную вбить туда эти цифры для каждого конкретного станка в конкретном зале.</q>
+  </div>
+  <p>Both are correct, and the code says so.</p>
+  <pre>workout_log.dart      →  grep -c equipmentId  =  0
+                         fields: exerciseId, exerciseTitle, completedAt,
+                                 durationMinutes, weightKg, repsCompleted,
+                                 difficulty            // no equipment link at all
+
+recognition_history.dart
+  /// The store is keyed by `equipmentId`: one row per machine
+  /// users/{uid}/recognised_equipment/{equipmentId}   // catalog TYPE, not unit</pre>
+  <div class="box code">
+    <span class="lbl">What "pick up where you left off" actually requires</span>
+    <p><strong>1.</strong> A link from a workout entry to equipment — there is none today. <strong>2.</strong> A physical-unit identity: <em>this</em> leg press in <em>this</em> gym, not the catalogue type "leg press" that recognition history is keyed by. <strong>3.</strong> Somewhere to hold per-unit adjustment values. <strong>4.</strong> And the foreman's constraint, which is the one no schema fixes: those values presuppose numbered position markings that a large share of real budget-gym equipment does not carry, so the first entry for every machine is manual and the numbers are only meaningful to whoever wrote them.</p>
+    <p>This is what Marketing R&amp;D Mode is for. The retention hypothesis is not disqualified — it is now specified, with a named dependency chain and one open feasibility question that a field study can answer in an afternoon.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">08</span><h2>Sorted by how it can be checked, not by how many said it</h2></div>
+  <p>Respondent counts have been doing work they cannot do — in Round Eight as scores, in Round Ten as convergence. The durable sort is by <em>verification route</em>. A claim anyone can confirm by reading the line does not depend on the panel's stability at all; the panel was only the generator. A claim that exists solely because respondents produced it inherits every defect of the instrument.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Claim</th><th>Route</th><th>Standing</th></tr></thead>
+      <tbody>
+        <tr><td>Per-machine memory needs an equipment link that does not exist in the data model</td><td><span class="tag code">Source</span></td><td>Holds independently. <code>grep -c equipmentId workout_log.dart = 0</code>; recognition history keyed by catalogue type. Panel merely pointed</td></tr>
+        <tr><td>Every recognition path terminates in the same ~75-name catalogue</td><td><span class="tag code">Source</span></td><td>Holds independently. Prompt and resolver read directly</td></tr>
+        <tr><td>"Set it up" — referent ambiguous (machine or app?)</td><td><span class="tag ok">Inspection</span></td><td>Holds. Anyone can verify by reading it; two readers found it from opposite directions</td></tr>
+        <tr><td>"The match" — object undefined</td><td><span class="tag ok">Inspection</span></td><td>Holds. The sentence does not say what the evidence is evidence for</td></tr>
+        <tr><td>"What you can do with it" — depth undefined</td><td><span class="tag ok">Inspection</span></td><td>Holds. Names or instruction, unresolvable from the copy</td></tr>
+        <tr><td>Cell C never states that recognition is involved</td><td><span class="tag ok">Inspection</span></td><td>Holds. The word camera appears in neither C wording</td></tr>
+        <tr><td>ABDUCTION / ADDUCTION differ by one letter in the proposed hero visual</td><td><span class="tag ok">Inspection</span></td><td>Holds. Choose deliberately or choose another machine</td></tr>
+        <tr><td>The name affords a physical-spotting reading</td><td><span class="tag flat">Lexical</span></td><td>Holds as an available reading. Prevalence unknown and unmeasured</td></tr>
+        <tr><td>"Awkward pause" retains the social/shame reading</td><td><span class="tag flat">Panel</span></td><td>Hypothesis. Plausible on inspection, but the second meaning is respondent-generated</td></tr>
+        <tr><td>Users want to correct a wrong identification themselves</td><td><span class="tag warn">Demoted</span></td><td>The question asked what they would <em>want</em> — a preference verb. It returns generic UX best practice, not evidence about these users</td></tr>
+        <tr><td>The name damages trust</td><td><span class="tag warn">Withdrawn</span></td><td>Brand-equity attitude; outside what any synthetic panel may report</td></tr>
+        <tr><td>Recognition = acquisition; setup + memory = retention</td><td><span class="tag flat">Hypothesis</span></td><td>Unchanged since Round Nine. No panel has moved it</td></tr>
+        <tr><td>Which concept carries the hero</td><td><span class="tag warn">Not measurable</span></td><td>Requires real respondents. Nothing here ranks anything</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Two of the review's conclusions go too far and are not adopted. <strong>"No output of this instrument is admissible, not even as a hypothesis"</strong> over-applies: the inspection-route rows above are verifiable by reading the stimulus, and the source rows by reading the code — for those, the panel is a generator whose reliability does not bear on the result. And the <strong>full 2×2 control with k≥20 per cell</strong> is the right design for a claim the project intends to act on; it is disproportionate for a name question that a twenty-person real test settles more cheaply and more honestly.</p>
+</section>
+
+<section>
+  <div class="sec-head"><span class="sec-tag">09</span><h2>Next gate</h2></div>
+  <ol>
+    <li><strong>Fix the four ambiguities</strong> before anything else is tested: the referent of "set it up", the object of "the match", the depth of "what you can do with it", and the second meaning of "awkward pause".</li>
+    <li><strong>Restore the camera to Cell C.</strong> A concept that loses its own acquisition mechanic is not testing the product it claims to test.</li>
+    <li><strong>Rebuild the brand test around expectation, not recall.</strong> Teach the association in three treatments, then ask what the product is expected to <em>do</em> — the panel says that is where the risk is, and the current design cannot see it.</li>
+    <li><strong>Run the job-priority exercise separately</strong> using C4, unbranded and uncrafted, so job value is answered without confounding it with copywriting.</li>
+    <li><strong>Field-check the setup premise</strong> at the same time as the nameplate study: what fraction of machines carry numbered seat and pad positions at all. One afternoon, two counts, and the retention roadmap stops being speculative.</li>
+  </ol>
+
+  <h3>Three instrument repairs, adopted</h3>
+  <ul>
+    <li><strong>Delete "five seconds."</strong> No exposure condition exists in a text protocol. Either run timed exposure with people, or call this what it is — a full-fidelity artifact audit — and state plainly that the visual concepts have never been tested by anyone.</li>
+    <li><strong>Adopt the question screen.</strong> Any question containing a future tense or a <em>want / prefer / matter</em> verb is out; questions of the form <em>what does this say</em>, <em>what do you expect</em>, <em>what would be wrong if</em> are in. This removes my own "what would you want it to do next" and with it the Recovery evidence above — correctly.</li>
+    <li><strong>Keep the comparative cell, kill its dependent variable.</strong> Never "which would you try first." Instead: which of these makes the clearest claim about what the product actually does; which makes a claim you cannot verify; where do two of these contradict each other; are these describing the same product. Those compare artifacts on properties of artifacts.</li>
+  </ul>
+
+  <h3>Two cheap tests that answer the name question properly</h3>
+  <ul>
+    <li><strong>Decodability, no personas at all.</strong> Ask a blank model 50 times what <code>SPTR</code> resolves to, and count the distribution — Spotter, Sputter, Sport, spelled letters. That measures the exact thing Round Nine wants to teach, with no simulated humans and no fiction. Brand <em>learning</em> is not simulable: a respondent with no next day cannot demonstrate that repetition teaches anything, and every longitudinal persona prompt returns the model's stereotype of an experienced user, in a confident register.</li>
+    <li><strong>One control condition, not four.</strong> Re-run the safety probe with the wordmark replaced by a phonologically similar mark carrying no gym semantics. If the same structure appears — <em>the name implies supervision</em> — the instrument nominates whatever name is present and the finding is dead. That single cell is cheap and it is decisive; the rest of the matrix can wait for a claim the project actually intends to spend on.</li>
+  </ul>
+
+  <p class="serif" style="font-size:17px;max-width:70ch;">The panel found four ambiguous lines, one confusable hero visual, one missing mechanic, one privacy misread and one engineering precondition the code confirms. It also produced a headline that its own design predicted — and the useful output of this round is knowing which of those two kinds of result it just produced.</p>
+</section>
+
+<footer>
+  <p>Round ten runs the Round Nine cells through six diverse synthetic respondents with all rating scales removed, then subjects the result to an adversarial methods review and demotes its own headline accordingly. Everything here is stimulus QA, misread detection and hypothesis generation. <strong>Nothing in this document is market evidence</strong>: no preference, demand, retention, conversion or willingness-to-pay claim is made or implied, no concept is ranked, and — per §04 — no claim about noticing, salience or first impressions is supported either, since no exposure condition existed. Three of six safety questions were leading and are excluded from the convergent finding (§03); the remaining four carry a semantic prime that §04 documents and §09 proposes a control for. Code claims were verified against the working tree at <span class="mono">78b24dc</span>. Review only — nothing implemented, committed or pushed.</p>
+  <p class="src">Source evidence: <a href="Fitness_App/mobile/lib/features/visual_equipment/data/gemini_equipment_service.dart">Fitness_App/mobile/lib/features/visual_equipment/data/gemini_equipment_service.dart</a> · <a href="Fitness_App/mobile/lib/features/workouts/data/workout_log.dart">Fitness_App/mobile/lib/features/workouts/data/workout_log.dart</a> · <a href="Fitness_App/mobile/lib/features/visual_equipment/data/recognition_history.dart">Fitness_App/mobile/lib/features/visual_equipment/data/recognition_history.dart</a></p>
+</footer>
+
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

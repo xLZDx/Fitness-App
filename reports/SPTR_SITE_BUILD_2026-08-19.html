@@ -1,0 +1,317 @@
+<title>SPTR Site Build</title>
+<style>
+  :root {
+    --paper:#FAF9FC; --surface:#FFFFFF; --sunk:#F1EDF9; --ink:#17092E; --soft:#3D3151;
+    --muted:#635C74; --line:#E4DFEE; --brand:#5B21B6; --lime:#C2F562; --lime-ink:#17092E;
+    --ok:#1D5B3A; --ok-bg:#DDEBE2; --warn:#8A5A0B; --warn-bg:#F6EAD4;
+    --hyp:#2E4E7E; --hyp-bg:#DEE6F1; --bad:#9B2A20; --bad-bg:#F5DEDB;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#0C0716; --surface:#150D26; --sunk:#1B1130; --ink:#F1ECFF; --soft:#D5CBEC;
+      --muted:#9B92B0; --line:#2A1F3E; --brand:#BFA0FA;
+      --ok:#6FC49E; --ok-bg:#12251C; --warn:#DDA85A; --warn-bg:#261D0F;
+      --hyp:#8FAEE0; --hyp-bg:#131C28; --bad:#E88A80; --bad-bg:#2A1512;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#0C0716; --surface:#150D26; --sunk:#1B1130; --ink:#F1ECFF; --soft:#D5CBEC;
+    --muted:#9B92B0; --line:#2A1F3E; --brand:#BFA0FA;
+    --ok:#6FC49E; --ok-bg:#12251C; --warn:#DDA85A; --warn-bg:#261D0F;
+    --hyp:#8FAEE0; --hyp-bg:#131C28; --bad:#E88A80; --bad-bg:#2A1512;
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);margin:0;padding:0 22px 90px;
+       font-family:"Segoe UI",-apple-system,system-ui,sans-serif;font-size:16px;line-height:1.6}
+  .wrap{max-width:1020px;margin:0 auto}
+  .mono,code,pre,.eyebrow,.tag{font-family:"Cascadia Mono",Consolas,ui-monospace,monospace}
+
+  .mast{padding:58px 0 26px;border-bottom:4px solid var(--lime)}
+  .eyebrow{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--brand);
+           display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:18px;font-weight:700}
+  h1{font-size:clamp(30px,5vw,50px);line-height:1.03;letter-spacing:-.028em;margin:0 0 14px;font-weight:700;text-wrap:balance}
+  .stand{font-size:17px;color:var(--muted);max-width:68ch;margin:0}
+
+  section{padding:38px 0 6px;border-bottom:1px solid var(--line)}
+  .sh{display:flex;align-items:baseline;gap:13px;margin-bottom:13px}
+  .sn{font-size:12px;color:var(--brand);font-weight:700;padding-top:4px;font-family:"Cascadia Mono",Consolas,monospace}
+  h2{font-size:clamp(20px,2.8vw,28px);line-height:1.15;margin:0;font-weight:700;letter-spacing:-.02em;text-wrap:balance}
+  h3{font-size:16px;margin:20px 0 8px;font-weight:650}
+  p{margin:0 0 13px;max-width:76ch}
+  ul,ol{margin:0 0 13px;padding-left:21px;max-width:76ch}
+  li{margin-bottom:6px}li::marker{color:var(--muted)}
+  a{color:var(--brand);text-underline-offset:2px}
+  a:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+  strong{font-weight:650}
+
+  .tag{display:inline-block;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
+       padding:3px 7px;border-radius:3px;font-weight:700;white-space:nowrap}
+  .t-ok{background:var(--ok-bg);color:var(--ok)}
+  .t-warn{background:var(--warn-bg);color:var(--warn)}
+  .t-hyp{background:var(--hyp-bg);color:var(--hyp)}
+  .t-bad{background:var(--bad-bg);color:var(--bad)}
+  .t-flat{background:var(--sunk);color:var(--muted)}
+
+  .cells{display:grid;gap:14px;grid-template-columns:1fr;margin-bottom:16px}
+  @media(min-width:800px){.cells{grid-template-columns:repeat(3,1fr)}}
+  .cell{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--brand);
+        border-radius:12px;padding:18px 20px}
+  .cell .u{font-family:"Cascadia Mono",Consolas,monospace;font-size:11px;color:var(--muted);
+           display:block;margin-bottom:9px}
+  .cell .h{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.15;margin-bottom:8px}
+  .cell .d{font-size:13.5px;color:var(--muted);margin:0}
+
+  .scroll{overflow-x:auto;margin-bottom:16px}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+  th{text-align:left;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+     border-bottom:1.5px solid var(--ink);padding:0 12px 7px 0;font-weight:700}
+  td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top}
+  td.n{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right;padding-right:20px}
+  tbody tr:hover{background:var(--surface)}
+
+  .box{border:1px solid var(--line);border-left:3px solid var(--brand);background:var(--surface);
+       padding:16px 19px;margin:0 0 16px;max-width:80ch;border-radius:0 10px 10px 0}
+  .box .l{display:block;font-size:10px;letter-spacing:.11em;text-transform:uppercase;font-weight:700;
+          color:var(--brand);margin-bottom:8px}
+  .box.bad{border-left-color:var(--bad)}.box.bad .l{color:var(--bad)}
+  .box.ok{border-left-color:var(--ok)}.box.ok .l{color:var(--ok)}
+  .box p:last-child{margin-bottom:0}
+
+  pre{background:var(--sunk);border-left:3px solid var(--muted);padding:12px 15px;overflow-x:auto;
+      font-size:12.5px;line-height:1.5;margin:0 0 14px;border-radius:0 8px 8px 0}
+  code{font-size:12.5px}
+
+  footer{padding:32px 0 0;color:var(--muted);font-size:13px}
+  .src{font-family:"Cascadia Mono",Consolas,monospace;font-size:11.5px;word-break:break-word}
+  .src a{color:var(--muted)}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow"><span>Implementation</span><span>Internal R&amp;D prototype</span><span>2026-08-19</span><span>dd12695</span></div>
+  <h1>The site is the instrument, not the launch</h1>
+  <p class="stand">One static shell in the existing hosting root, carrying three equal-quality concept cells switched by a query parameter. No hero was selected — that decision needs real respondents. Every claim on the page carries its class in the markup, and nothing on it is a fabricated screenshot, because the repository turned out to contain no usable product footage at all.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<section>
+  <div class="sh"><span class="sn">01</span><h2>The three cells</h2></div>
+  <div class="cells">
+    <div class="cell">
+      <span class="u">/?concept=a</span>
+      <div class="h">That machine you keep walking past?</div>
+      <p class="d">Emotional territory, without the shame-coded beginner language earlier rounds kept reintroducing.</p>
+    </div>
+    <div class="cell">
+      <span class="u">/?concept=b</span>
+      <div class="h">See what SPTR saw.</div>
+      <p class="d">Auditable trust. One proof, shown once — not a three-line uncertainty manifesto.</p>
+    </div>
+    <div class="cell">
+      <span class="u">/?concept=c</span>
+      <div class="h">Point. Recognize. Continue.</div>
+      <p class="d">Future recurring value, with the camera restored to the concept and data provenance explicit.</p>
+    </div>
+  </div>
+  <p>Also live: <code>?lang=en|ru</code> and <code>?debug=1</code>. Concept and language persist in <code>localStorage</code>; an explicit query parameter always wins. The variant is resolved before first paint, so no cell ever flashes another cell's headline. Without JavaScript the page renders concept A in English, fully readable.</p>
+  <div class="box ok">
+    <span class="l">Parity, proved by measurement rather than by eye</span>
+    <p>All three cells share one layout, one stylesheet, one section count, one CTA and one image set — only the headline and its single supporting sentence differ. Objective check: <strong>initial transfer is 142&nbsp;KB for all three cells at both viewports</strong>, byte-identical, because nothing but two text nodes changes between them.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sh"><span class="sn">02</span><h2>No usable product footage exists — so none was invented</h2></div>
+  <p>The repository's only app screenshots are debugging artefacts from 30 July 2026. One shows the old on-device classifier calling <strong>two flat benches a treadmill at 100% confidence</strong>; another is a <code>PlatformException</code> stack trace. Both predate the cloud recognition path. Using either as product evidence would have been false in the opposite direction, so neither was used, and <strong>no screenshot of the app appears anywhere on the site.</strong></p>
+  <p>What was usable: the operator's own gym photographs. All four site images are crops from them, chosen to exclude identifiable people — the source set contains gym members whose faces are recognisable and who have not released them.</p>
+  <div class="box ok">
+    <span class="l">The strongest asset in the build was already on the gym floor</span>
+    <p>The evidence section uses a real Nautilus placard reading <strong>PEC FLY / REAR DELT</strong>, photographed on a real machine. That is the exact mechanic being claimed — documented, not illustrated. Six rounds of argument about whether auditable identification is real, and the proof was sitting in a photo folder.</p>
+  </div>
+  <p>Where product behaviour still has to be depicted, it is a labelled illustration built from the app's own shipped strings — <em>Not sure — closest matches</em>, <em>Not in the catalog yet</em>, <em>scanned 3 times</em>, <em>Read on the machine</em> — quoted verbatim from the ARB files rather than written for the page. Four slots are flagged in the implementation report as needing real footage before public use.</p>
+</section>
+
+<section>
+  <div class="sh"><span class="sn">03</span><h2>Claim classes live in the markup</h2></div>
+  <p>Every classified sentence carries <code>data-claim-class</code> in source. Under <code>?debug=1</code> each renders an inline badge, and media blocks reveal whether they are a real photograph or an illustration. A claim added without a class does not appear in the register's regeneration output — which is the intended failure signal for the pre-public gate.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Class</th><th class="n">Count</th><th>Meaning on this build</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag t-ok">exists</span></td><td class="n">12</td><td>True of the shipped app, verified at source. Publishable today</td></tr>
+        <tr><td><span class="tag t-warn">committed</span></td><td class="n">4</td><td>Rendered because this build is internal. Blocked on the machine-identity chain</td></tr>
+        <tr><td><span class="tag t-hyp">hypothesis</span></td><td class="n">1</td><td>The coverage loop. Its "no promise about when" clause is load-bearing</td></tr>
+        <tr><td><span class="tag t-bad">never</span></td><td class="n">0</td><td>Six prohibited claims listed in the register; none appear</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>The four <span class="tag t-warn">committed</span> claims are the retention promise, and they are blocked by something concrete rather than by effort: <code>grep -c equipmentId workout_log.dart</code> returns <strong>0</strong>, and recognition history is keyed by catalogue type rather than physical unit. The copy was written around that — "the setup you saved for it — seat, pad, pin, <em>or whatever that machine actually has</em>" — because real equipment carries numbered detents, letters, unmarked holes, or nothing.</p>
+</section>
+
+<section>
+  <div class="sh"><span class="sn">04</span><h2>Verification</h2></div>
+  <p>Chrome via Playwright, three concepts × two languages × two viewports, plus debug and reduced-motion passes.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Check</th><th>Result</th></tr></thead>
+      <tbody>
+        <tr><td>Visible heroes per cell</td><td><span class="tag t-ok">exactly 1</span> in all 12 cases — no cross-cell leakage</td></tr>
+        <tr><td>Horizontal overflow</td><td><span class="tag t-ok">0 px</span> everywhere</td></tr>
+        <tr><td>External network requests</td><td><span class="tag t-ok">none</span> — no analytics, fonts or CDN</td></tr>
+        <tr><td>Console errors, normal use</td><td><span class="tag t-ok">none</span></td></tr>
+        <tr><td><code>/privacy</code> · <code>/terms</code></td><td><span class="tag t-ok">200</span> through cleanUrls</td></tr>
+        <tr><td>Reduced motion</td><td>Nothing hidden; mark lands on its final form</td></tr>
+        <tr><td>Keyboard</td><td>Skip link first, every CTA reachable, visible focus ring</td></tr>
+        <tr><td>Translation coverage</td><td>67 keys, <span class="tag t-ok">67 translated, 0 orphans</span></td></tr>
+        <tr><td>Pre-existing hosting files</td><td><span class="tag t-ok">zero diff</span> — seven files and <code>firebase.json</code> untouched</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Six defects found and fixed in review</h3>
+  <div class="box bad">
+    <span class="l">The one that mattered</span>
+    <p>An author <code>display: grid</code> on the debug panel outranked the user-agent rule for <code>[hidden]</code>, so <strong>the internal R&amp;D switcher rendered for every visitor</strong> — concept and language controls included. Fixed with an explicit <code>.debug[hidden] { display: none }</code>. A specificity accident, invisible in code review, caught only because the first full-page screenshot showed a control that should not have been there.</p>
+  </div>
+  <p>The others: a missing favicon producing a console 404; a <code>&lt;button&gt;</code> styled as a link inheriting neither the page font nor a pointer cursor; a final CTA that scrolled to top instead of recording intent; <code>srcset</code> descriptors left stale after images were re-encoded, a layout-shift source; and one generated image that was never referenced, deleted rather than shipped as dead weight.</p>
+  <div class="box">
+    <span class="l">Two harness defects, recorded so they are not mistaken for site defects</span>
+    <p><strong>Blank sections in the first full-page capture.</strong> The page sets <code>scroll-behavior: smooth</code>, so the QA script's programmatic scroll outran the real scroll position and the reveal observer never fired below the fold. The site was never affected.</p>
+    <p><strong><code>ERR_CONNECTION_RESET</code> on mobile.</strong> Only ever produced when the harness scrolled the whole page in 90 ms bursts, flooding a single-process test server. Re-tested under a normal wheel scroll: zero console errors, zero non-200 responses, all images complete.</p>
+  </div>
+</section>
+
+<section>
+  <div class="sh"><span class="sn">05</span><h2>Found while building</h2></div>
+  <ul>
+    <li><strong>The exercise clips are not bundled.</strong> <code>assets/exercises/</code> was removed from <code>pubspec.yaml</code> on 2026-08-04. Clips stream from cloud storage over a signed URL with a bundled still as the instant fallback. The demonstration-video claim is true and <em>network-dependent</em> — the register now forbids ever phrasing it as "works offline".</li>
+    <li><strong>Progression is genuinely wired.</strong> <code>suggestNextWeight()</code> is not an orphan function — it renders a tappable suggested weight in <code>workout_player_page.dart:1258</code>, which is why that claim sits in <span class="tag t-ok">exists</span> rather than <span class="tag t-warn">committed</span>.</li>
+    <li><strong>Russian is a localisation, not a translation.</strong> <em>Point. Recognize. Continue.</em> became <em>Навести. Узнать. Продолжить.</em> — infinitives, because the natural imperative forces a formality choice and the past tense forces a gender. That makes the Russian heroes <strong>separate stimuli</strong> that must not be pooled with the English cells when testing.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="sh"><span class="sn">06</span><h2>State, and what stands between this and public</h2></div>
+  <pre>branch  marketing/site-prototype-2026-08-19   (no upstream)
+commit  dd12695   16 files, 1407 insertions, 0 deletions, 0 modifications outside DECISION_LOG
+push    NOT PERFORMED        deploy  NOT PERFORMED        truth gate  NOT RUN</pre>
+  <ol>
+    <li>Run the <strong>pre-public truth gate</strong> from Decision Pack §11 — <strong>in both languages</strong>.</li>
+    <li>Remove or build every <span class="tag t-warn">committed</span> claim: four sentences, one dependency chain.</li>
+    <li>Replace the four illustration slots with real product footage.</li>
+    <li>Wire a real destination for the prototype CTA.</li>
+    <li>Remove <code>noindex, nofollow</code> — deliberately present now.</li>
+    <li>Close the QA gaps that matter publicly: a second browser engine, a rendered dark-mode pass, an assistive-technology pass, and measured contrast.</li>
+  </ol>
+  <div class="box">
+    <span class="l">What the page still cannot tell you</span>
+    <p>No real person has seen it. Nothing in this build says whether any of the three concepts works — that is precisely why the hero is unselected and why the site was built as a switch rather than as an answer.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Internal Marketing R&amp;D prototype built against <span class="mono">78b24dc</span> under Decision Pack v1.0. Additions only; no pre-existing hosting file or config was modified. Local commit on a branch with no upstream — nothing pushed, nothing deployed, no public marketing authorised. Full detail in the three repository documents below.</p>
+  <p class="src">
+    <a href="Fitness_App/core/marketing/SPTR_MARKETING_SITE_IMPLEMENTATION_2026-08-19.md">Fitness_App/core/marketing/SPTR_MARKETING_SITE_IMPLEMENTATION_2026-08-19.md</a> ·
+    <a href="Fitness_App/core/marketing/SPTR_MARKETING_SITE_CLAIM_REGISTER_2026-08-19.md">Fitness_App/core/marketing/SPTR_MARKETING_SITE_CLAIM_REGISTER_2026-08-19.md</a> ·
+    <a href="Fitness_App/core/marketing/SPTR_MARKETING_SITE_QA_2026-08-19.md">Fitness_App/core/marketing/SPTR_MARKETING_SITE_QA_2026-08-19.md</a> ·
+    <a href="Fitness_App/public/index.html">Fitness_App/public/index.html</a>
+  </p>
+</footer>
+
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

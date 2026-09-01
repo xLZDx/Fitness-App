@@ -1,0 +1,427 @@
+<title>Citation Verification Report</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --surface-primary: #ffffff;
+  --surface-secondary: #f5f5f5;
+  --border: #e0e0e0;
+  --accent: #2563eb;
+  --success: #059669;
+  --warning: #d97706;
+  --critical: #dc2626;
+  --font-serif: 'Merriweather', 'Georgia', serif;
+  --font-sans: -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  --font-mono: 'Fira Code', 'Courier New', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --text-primary: #e5e5e5;
+    --text-secondary: #a0a0a0;
+    --surface-primary: #1a1a1a;
+    --surface-secondary: #2a2a2a;
+    --border: #404040;
+    --accent: #60a5fa;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --critical: #f87171;
+  }
+}
+
+:root[data-theme="dark"] {
+  --text-primary: #e5e5e5;
+  --text-secondary: #a0a0a0;
+  --surface-primary: #1a1a1a;
+  --surface-secondary: #2a2a2a;
+  --border: #404040;
+  --accent: #60a5fa;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --critical: #f87171;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--surface-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  font-feature-settings: "kern" 1;
+}
+
+.wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+header {
+  margin-bottom: 3rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 2rem;
+}
+
+h1 {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  font-weight: 400;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+h2 {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+h3 {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+p {
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.summary-value {
+  font-size: 1.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.findings {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.finding {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.5rem;
+  background: var(--surface-secondary);
+}
+
+.finding-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.verdict-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.verdict-supports {
+  background: var(--success);
+  color: var(--surface-primary);
+}
+
+.verdict-contradicts {
+  background: var(--critical);
+  color: var(--surface-primary);
+}
+
+.verdict-unrelated {
+  background: var(--warning);
+  color: var(--surface-primary);
+}
+
+.finding-title {
+  flex: 1;
+}
+
+.finding-title h3 {
+  margin: 0 0 0.25rem 0;
+}
+
+.finding-path {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+.finding-body {
+  margin-top: 1rem;
+}
+
+.finding-body p {
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.finding-body code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--surface-primary);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  color: var(--text-primary);
+}
+
+.conclusion {
+  margin: 3rem 0;
+  padding: 1.5rem;
+  border-left: 4px solid var(--accent);
+  background: var(--surface-secondary);
+}
+
+.conclusion h2 {
+  margin-top: 0;
+  color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .finding {
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+  
+  .finding:hover {
+    border-color: var(--accent);
+  }
+}
+</style>
+
+<header>
+  <h1>Citation Verification Report</h1>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+<div class="wrap">
+  <div class="summary">
+    <div class="summary-item">
+      <div class="summary-label">Citations verified</div>
+      <div class="summary-value">4</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Supporting claims</div>
+      <div class="summary-value">4</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Contradictions</div>
+      <div class="summary-value">0</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-label">Unrelated matches</div>
+      <div class="summary-value">0</div>
+    </div>
+  </div>
+
+  <h2>Verification Results</h2>
+  
+  <p>All citations in the reviewed report match their source material. Each claim is supported by the exact lines cited, and no contradictions or misrepresentations were found.</p>
+
+  <div class="findings">
+    <div class="finding">
+      <div class="finding-header">
+        <div class="verdict-badge verdict-supports">Supports</div>
+        <div class="finding-title">
+          <h3>Citation 1: Regex pattern definition</h3>
+          <div class="finding-path">src/p0/cloud_feasibility.ts:78–79</div>
+        </div>
+      </div>
+      <div class="finding-body">
+        <p>Lines 78–79 show the exact regex pattern described in the report. The report accurately characterizes what it matches: Google API keys (AIza prefix), OAuth tokens (ya29. prefix), and PEM-format private key headers. The report also correctly notes what the regex does <em>not</em> catch, which is an inference rather than a claim requiring source support.</p>
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-header">
+        <div class="verdict-badge verdict-supports">Supports</div>
+        <div class="finding-title">
+          <h3>Citation 2: Empty export statement</h3>
+          <div class="finding-path">src/index.ts:1–6</div>
+        </div>
+      </div>
+      <div class="finding-body">
+        <p>Line 6 explicitly shows <code>export {};</code> as claimed. The report states the file "exports nothing," which is a fair reading of an empty export statement. The surrounding comment (lines 1–5) confirms this is intentional: no production identity function is exported yet.</p>
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-header">
+        <div class="verdict-badge verdict-supports">Supports</div>
+        <div class="finding-title">
+          <h3>Citation 3: Package dependencies</h3>
+          <div class="finding-path">package.json:13–16</div>
+        </div>
+      </div>
+      <div class="finding-body">
+        <p>Lines 13–16 show the dependencies section containing only <code>firebase-admin</code> and <code>firebase-functions</code>. The claimed omission of <code>@google-cloud/aiplatform</code> and <code>@google-cloud/firestore</code> is directly visible: those packages are not present in the dependencies list.</p>
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-header">
+        <div class="verdict-badge verdict-supports">Supports</div>
+        <div class="finding-title">
+          <h3>Citation 4: Test fixture with fake credential</h3>
+          <div class="finding-path">src/__tests__/cloud_feasibility.test.ts:165</div>
+        </div>
+      </div>
+      <div class="finding-body">
+        <p>Line 165 contains the fake API key fixture <code>AIzaSyD-FAKE1234567890ABCDEFGHIJKLMNOPQ</code> as claimed. The surrounding context (test description at line 164, throw expectation at line 166) confirms this is intentionally used to test the validator's rejection of secret-like strings.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="conclusion">
+    <h2>Conclusion</h2>
+    <p>All four citations in the reviewed report accurately point to their source material. The claims made about those sources are supported by the code they reference. No misrepresentations, overstatements, or unsupported inferences were identified.</p>
+  </div>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
