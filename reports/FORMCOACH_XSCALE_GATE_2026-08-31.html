@@ -1,0 +1,330 @@
+<!doctype html>
+<title>Form Coach: Coordinate Gate</title>
+<style>
+  :root{
+    --bg:#0e1613; --surface:#151f1b; --surface-2:#1b2823; --border:#26362f;
+    --text:#e9f3ee; --text-dim:#9fb3aa; --text-faint:#6d8078;
+    --accent:#5ee6a8; --accent-dim:#2f6b52;
+    --bad:#ff8a7a; --bad-dim:#5a2e28;
+    --warn:#f2c14e; --warn-dim:#5a4a20;
+    --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --display: 'Manrope', system-ui, sans-serif;
+    --body: 'Inter', system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f3f7f5; --surface:#ffffff; --surface-2:#eef4f1; --border:#d7e3dd;
+      --text:#0f1c17; --text-dim:#4c5f57; --text-faint:#7c8f86;
+      --accent:#0f9d63; --accent-dim:#cdeee0;
+      --bad:#c23c2b; --bad-dim:#fbe1dc;
+      --warn:#93690a; --warn-dim:#faecc4;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f7f5; --surface:#ffffff; --surface-2:#eef4f1; --border:#d7e3dd;
+    --text:#0f1c17; --text-dim:#4c5f57; --text-faint:#7c8f86;
+    --accent:#0f9d63; --accent-dim:#cdeee0;
+    --bad:#c23c2b; --bad-dim:#fbe1dc;
+    --warn:#93690a; --warn-dim:#faecc4;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1613; --surface:#151f1b; --surface-2:#1b2823; --border:#26362f;
+    --text:#e9f3ee; --text-dim:#9fb3aa; --text-faint:#6d8078;
+    --accent:#5ee6a8; --accent-dim:#2f6b52;
+    --bad:#ff8a7a; --bad-dim:#5a2e28;
+    --warn:#f2c14e; --warn-dim:#5a4a20;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);margin:0;line-height:1.55}
+  .wrap{max-width:860px;margin:0 auto;padding:56px 24px 100px}
+  header{padding-bottom:28px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+  h1{font-family:var(--display);font-size:clamp(28px,4vw,40px);line-height:1.15;margin:10px 0 14px;text-wrap:balance;font-weight:800}
+  .lede{color:var(--text-dim);font-size:17px;max-width:62ch}
+  .tldr{margin-top:28px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px}
+  .tldr b{color:var(--accent)}
+  .tldr ul{margin:10px 0 0;padding-left:20px}
+  .tldr li{margin:6px 0}
+  section{margin-top:48px}
+  h2{font-family:var(--display);font-size:22px;font-weight:800;margin:0 0 6px;display:flex;align-items:center;gap:10px}
+  .sha{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;color:var(--text-dim)}
+  .commit-title{color:var(--text-dim);font-size:14.5px;margin:0 0 20px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-top:14px}
+  .card h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin:0 0 10px;font-family:var(--mono)}
+  .card p, .card li{color:var(--text);font-size:15px}
+  .num{font-family:var(--mono);color:var(--bad);font-weight:700}
+  .num.good{color:var(--accent)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+  .stat{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+  .stat .label{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em}
+  .stat .value{font-family:var(--mono);font-size:22px;margin-top:4px}
+  code, .code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px}
+  pre{font-family:var(--mono);font-size:13px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:10px 0}
+  .quote{border-left:3px solid var(--accent-dim);padding:4px 0 4px 16px;color:var(--text-dim);font-style:italic;margin:12px 0}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid}
+  .badge.fixed{color:var(--accent);border-color:var(--accent-dim);background:color-mix(in srgb, var(--accent) 12%, transparent)}
+  .badge.open{color:var(--warn);border-color:var(--warn-dim);background:color-mix(in srgb, var(--warn) 12%, transparent)}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-size:14px}
+  th{font-family:var(--mono);font-size:11.5px;text-transform:uppercase;color:var(--text-faint);letter-spacing:.04em}
+  .open-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:14px}
+  .open-list li{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .open-list .tag{font-family:var(--mono);font-size:11.5px;color:var(--warn);text-transform:uppercase}
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-faint);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness_App · Form Coach · coordinate gate</div>
+    <h1>The silhouette wasn't the bug — it was the first of two</h1>
+    <p class="lede">Three commits in one evening: enabled the live green skeleton glow, found
+    and fixed the target outline clipping off the right edge of the panel, then discovered the
+    same coordinate distortion was also inside the match-score itself — making the exercise
+    mathematically unpassable regardless of the user's actual technique.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="tldr">
+    <b>Summary.</b> The operator reported the green skeleton from the design reference never
+    appeared — and sent a video proving a real scale/position mismatch. Investigation found not
+    one but two independent bugs sharing the same root cause: the target's authored joint
+    coordinates use a fraction of screen WIDTH, while the app draws and scores everything in an
+    isotropic space where x only spans a fraction of HEIGHT. One bug broke the drawing, the other
+    broke the result. Both are fixed and unit-tested; the drawing fix is verified live on two
+    phones, the scoring fix only mathematically (needs a real body in frame).
+    <ul>
+      <li>3 commits, 417 of 417 tests passing (408 at the start of the evening)</li>
+      <li>One bug made passing a squat <b>impossible at any skill level</b> — quantified, not assumed</li>
+      <li>Workflow changed at the operator's request: debug builds only, Claude takes its own screenshots via adb</li>
+    </ul>
+  </div>
+
+  <section>
+    <h2>1. Enabled the green glow <span class="sha">525e058</span></h2>
+    <p class="commit-title">Enable live green-glow verdict for squat/hinge in avatar mode</p>
+    <div class="card">
+      <h3>Request</h3>
+      <p>Operator: "I want that green skeleton like in the mockup, but for real, not like now."
+      Before this commit, match scoring in avatar mode was deliberately disabled (a prior gate's
+      decision, Codex-reviewed) — the screen showed "Counted, but not graded" instead of a
+      verdict.</p>
+      <h3>What changed</h3>
+      <p>Re-enabled target scoring in avatar mode (the premise for disabling it — a scale
+      mismatch between the silhouette and the skeleton — had already been resolved earlier).
+      Added a <code>matchScore</code> fallback to <code>avatarVerdictSeverity</code> for squat
+      and hinge: once the match crosses the threshold, the skeleton gets green (severity 0); red/
+      amber is structurally unreachable through this path.</p>
+      <h3>Verification</h3>
+      <p>408/408 tests, including 5 new for the new logic. A side effect was reviewed and
+      confirmed correct: a rep can now come back "missed", where it used to stay silent.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Target outline shoved right and clipped <span class="sha">6677133</span></h2>
+    <p class="commit-title">Fix target silhouette clipping: authored joints used width-normalised x, not isotropic x</p>
+    <div class="card">
+      <h3>Trigger</h3>
+      <p>The operator sent a video of a real test: the target outline sat pinned to the right
+      edge of the panel and clipped, while the tracked dark figure sat correctly in place.</p>
+      <div class="quote">"tell me, does this look alike??"</div>
+      <h3>Root cause</h3>
+      <p>The target's joint coordinates (<code>squatBottomTarget</code> and others) were
+      authored as a fraction of the frame's <b>width</b> (0..1) — the ordinary convention. But
+      the app draws everything in an isotropic space where x only spans
+      <code>0..aspectRatio</code> (~0.56 on a 9:16 portrait phone). A point at x=0.5 ("centre of
+      width") landed almost at the right edge of the real 0.56-wide frame — hence the clip.</p>
+      <h3>Fix</h3>
+      <p>An <code>xScale</code> parameter on <code>buildSilhouette</code> converts the authored
+      coordinates into the real frame's space at draw time. Deliberately did <b>not</b> touch
+      <code>poseMatchScore</code> in this commit — judged that changing the calibrated threshold
+      table alongside an urgent visual fix was too risky. That call was revisited the same
+      evening (see below).</p>
+      <h3>Verification — live, on two phones</h3>
+      <div class="grid2">
+        <div class="stat"><div class="label">S23 Ultra (R5CW142SASR)</div><div class="value">centred, not clipped</div></div>
+        <div class="stat"><div class="label">S8 (ce02171299f0711005)</div><div class="value">centred, not clipped</div></div>
+      </div>
+      <p style="margin-top:12px">412/412 tests (5 new; a width-proportionality assertion had to
+      be rewritten — it turned out non-linear in <code>xScale</code> for a pose with almost no
+      natural x-spread of its own).</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>3. The same bug lived inside the score — and made passing impossible <span class="sha">7c1d123</span></h2>
+    <p class="commit-title">Fix poseMatchScore: same x-convention bug as the silhouette, but blocking every pass</p>
+    <div class="card">
+      <h3>Trigger</h3>
+      <p>The outline was centred — but the "you haven't reached the silhouette" message stayed.
+      That was the tell that the bug wasn't only visual.</p>
+      <h3>What the math showed before touching code</h3>
+      <p>Verified computationally (reproducing the exact normalisation algorithm
+      <code>poseMatchScore</code> uses): took a landmark set representing a
+      <b>perfect</b> match to the target — a real camera, correctly isotropic coordinates — and
+      scored it without the correction.</p>
+      <div class="grid2">
+        <div class="stat"><div class="label">Perfect match, uncorrected</div><div class="value num">0.7376</div></div>
+        <div class="stat"><div class="label">Passing threshold</div><div class="value num good">0.80</div></div>
+      </div>
+      <p style="margin-top:12px">A perfect repetition <b>could not clear the threshold under any
+      circumstances</b> — not a calibration margin, a structural impossibility.</p>
+      <h3>Why no test caught it</h3>
+      <p>Every existing test compared the target against poses derived <i>from the target
+      itself</i> (moved/scaled as a rigid body) — the same wrong coordinate convention carried
+      onto both sides of the comparison, so the absolute x-scale error cancelled out. The bug was
+      invisible to those tests by construction.</p>
+      <h3>Fix</h3>
+      <p>Same principle as the drawing fix: the target's x is multiplied by
+      <code>frame.aspectRatio</code> — now directly inside <code>poseMatchScore</code>, keyed to
+      the live frame's own aspect ratio rather than a constant.</p>
+      <h3>Did the fix invalidate the calibrated threshold table?</h3>
+      <p>Checked, not assumed: re-derived the same calibration-table scenarios synthetically,
+      post-fix.</p>
+      <table>
+        <tr><th>Scenario</th><th>Before fix (uncorrected)</th><th>After fix</th><th>Documented table</th></tr>
+        <tr><td>Perfect match</td><td class="num">0.7376</td><td class="num good">1.0000</td><td>1.00</td></tr>
+        <tr><td>Small perturbation (±0.02)</td><td>—</td><td class="num good">≈0.81</td><td>0.81</td></tr>
+      </table>
+      <p style="margin-top:10px">Post-fix numbers land almost exactly on the values already
+      documented in code — the threshold constants were left unchanged.</p>
+      <h3>Verification</h3>
+      <p>417/417 tests (5 new, deliberately using an independent, non-self-referential frame —
+      <code>isotropicPoseOf</code>), including proof the fix didn't flatten discrimination
+      between poses and that it works for more than one aspect ratio (9:16 and 3:4).</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>What changed in the process</h2>
+    <div class="card">
+      <p>The operator asked to stop distributing release builds via Firebase for intermediate
+      checks — each one required them to record a video just to show what was broken. Now: a
+      debug build (<code>flutter build apk --debug</code>, ~35-75s vs. ~100-220s for release)
+      installs via <code>adb install -r</code> directly on both physical phones (S23 Ultra, S8),
+      and the first-pass check is a screenshot Claude takes itself via
+      <code>adb shell screencap</code> — before asking the operator to test anything.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>What's still unverified</h2>
+    <ul class="open-list">
+      <li>
+        <div class="tag">Needs a real body in frame</div>
+        <p style="margin:6px 0 0">Match scoring is now fixed mathematically and covered by
+        tests, but the <b>live green skeleton on a real tracked body</b> — the thing that opened
+        this whole gate — has not been confirmed on-device: that needs an actual person in front
+        of the camera, which Claude cannot do.</p>
+      </li>
+      <li>
+        <div class="tag">Not confirmed as a regression</div>
+        <p style="margin:6px 0 0">The missing "start workout" button — the code governing it
+        (<code>coach_phases.dart</code>) was not touched in any of the three commits. Most
+        likely the quality gate simply hadn't yet accepted the body as fully framed — but without
+        a live retest, a separate, still-undiscovered issue can't be ruled out.</p>
+      </li>
+      <li>
+        <div class="tag">Not started</div>
+        <p style="margin:6px 0 0">The full visual target from the operator's two reference
+        screenshots (circular "Reps"/"Technique" gauges, the bottom "Trainer counters" panel, a
+        photorealistic silhouette instead of a line outline) — recorded in project memory; this
+        is the next, considerably larger gate.</p>
+      </li>
+    </ul>
+  </section>
+
+  <footer>
+    Fitness_App · reports/FORMCOACH_XSCALE_GATE_2026-08-31.html
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

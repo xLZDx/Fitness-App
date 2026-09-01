@@ -38399,3 +38399,22 @@ build, no Firebase distribution, per the new standing instruction.
 match score and a green glow on-device. The math is verified two ways (direct computation before
 the change, and unit tests after); the live claim needs the operator's own body in frame, which is
 exactly the missing piece the debug-build workflow exists to make cheap to re-check.
+
+## 2026-08-31 -- Report published for the coordinate-gate (525e058, 6677133, 7c1d123); report_conform.py's global run touched 128 unrelated reports, reverted
+
+`report_due` hook fired after 3 non-`reports/` commits. Wrote
+`reports/FORMCOACH_XSCALE_GATE_2026-08-31.ru.html`/`.html` covering the three-commit gate
+(live glow, silhouette clipping fix, poseMatchScore fix) per the `html-report` skill. Published
+the Russian file as an artifact: https://claude.ai/code/artifact/25fbf9f0-27c4-4b82-94cb-844f4d6b6261
+
+**Incidental finding, fixed before committing**: running `report_conform.py D:/Repo/Fitness_App/reports`
+(no path filter) refreshed the provenance block on all 143 files in the directory, not just the
+2 new ones -- overwriting 128 pre-existing reports' `Project`/`Folder`/`Git` stamps with this
+session's identity. One inspected sample (`SPTR_STATUS.html`) had carried a DIFFERENT worktree's
+stamp (`_wt-gates-efgh`, `HEAD @ a302171`) -- evidence of a concurrent session's earlier, valid
+provenance being silently overwritten, exactly the risk `project-repo-runs-concurrent-agent-sessions`
+(auto-memory) warns about. None of this was staged or committed; reverted via
+`git checkout -- <128 files>` before commit, leaving only the 2 new report files staged. Only
+the two new files carry today's provenance; the rest are untouched. Worth a future fix: point
+`report_conform.py` at the specific new file(s) rather than the whole directory when only
+publishing one report.

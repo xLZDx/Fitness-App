@@ -1,0 +1,334 @@
+<!doctype html>
+<title>Form Coach: гейт координат</title>
+<style>
+  :root{
+    --bg:#0e1613; --surface:#151f1b; --surface-2:#1b2823; --border:#26362f;
+    --text:#e9f3ee; --text-dim:#9fb3aa; --text-faint:#6d8078;
+    --accent:#5ee6a8; --accent-dim:#2f6b52;
+    --bad:#ff8a7a; --bad-dim:#5a2e28;
+    --warn:#f2c14e; --warn-dim:#5a4a20;
+    --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --display: 'Manrope', system-ui, sans-serif;
+    --body: 'Inter', system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f3f7f5; --surface:#ffffff; --surface-2:#eef4f1; --border:#d7e3dd;
+      --text:#0f1c17; --text-dim:#4c5f57; --text-faint:#7c8f86;
+      --accent:#0f9d63; --accent-dim:#cdeee0;
+      --bad:#c23c2b; --bad-dim:#fbe1dc;
+      --warn:#93690a; --warn-dim:#faecc4;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f7f5; --surface:#ffffff; --surface-2:#eef4f1; --border:#d7e3dd;
+    --text:#0f1c17; --text-dim:#4c5f57; --text-faint:#7c8f86;
+    --accent:#0f9d63; --accent-dim:#cdeee0;
+    --bad:#c23c2b; --bad-dim:#fbe1dc;
+    --warn:#93690a; --warn-dim:#faecc4;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1613; --surface:#151f1b; --surface-2:#1b2823; --border:#26362f;
+    --text:#e9f3ee; --text-dim:#9fb3aa; --text-faint:#6d8078;
+    --accent:#5ee6a8; --accent-dim:#2f6b52;
+    --bad:#ff8a7a; --bad-dim:#5a2e28;
+    --warn:#f2c14e; --warn-dim:#5a4a20;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:var(--body);margin:0;line-height:1.55}
+  .wrap{max-width:860px;margin:0 auto;padding:56px 24px 100px}
+  header{padding-bottom:28px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+  h1{font-family:var(--display);font-size:clamp(28px,4vw,40px);line-height:1.15;margin:10px 0 14px;text-wrap:balance;font-weight:800}
+  .lede{color:var(--text-dim);font-size:17px;max-width:62ch}
+  .tldr{margin-top:28px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px}
+  .tldr b{color:var(--accent)}
+  .tldr ul{margin:10px 0 0;padding-left:20px}
+  .tldr li{margin:6px 0}
+  section{margin-top:48px}
+  h2{font-family:var(--display);font-size:22px;font-weight:800;margin:0 0 6px;display:flex;align-items:center;gap:10px}
+  .sha{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;color:var(--text-dim)}
+  .commit-title{color:var(--text-dim);font-size:14.5px;margin:0 0 20px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-top:14px}
+  .card h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin:0 0 10px;font-family:var(--mono)}
+  .card p, .card li{color:var(--text);font-size:15px}
+  .num{font-family:var(--mono);color:var(--bad);font-weight:700}
+  .num.good{color:var(--accent)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+  .stat{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+  .stat .label{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em}
+  .stat .value{font-family:var(--mono);font-size:22px;margin-top:4px}
+  code, .code{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px}
+  pre{font-family:var(--mono);font-size:13px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:10px 0}
+  .quote{border-left:3px solid var(--accent-dim);padding:4px 0 4px 16px;color:var(--text-dim);font-style:italic;margin:12px 0}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid}
+  .badge.fixed{color:var(--accent);border-color:var(--accent-dim);background:color-mix(in srgb, var(--accent) 12%, transparent)}
+  .badge.open{color:var(--warn);border-color:var(--warn-dim);background:color-mix(in srgb, var(--warn) 12%, transparent)}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-size:14px}
+  th{font-family:var(--mono);font-size:11.5px;text-transform:uppercase;color:var(--text-faint);letter-spacing:.04em}
+  .open-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:14px}
+  .open-list li{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .open-list .tag{font-family:var(--mono);font-size:11.5px;color:var(--warn);text-transform:uppercase}
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--border);color:var(--text-faint);font-size:13px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Fitness_App · Form Coach · гейт координат</div>
+    <h1>Силуэт был не тем багом — он был первым из двух</h1>
+    <p class="lede">Три коммита за один вечер: включили живую зелёную подсветку скелета, нашли и
+    починили смещение контура цели вправо, а затем обнаружили, что то же самое искажение
+    координат сидело и в самой оценке совпадения — и делало прохождение упражнения
+    математически невозможным, независимо от техники пользователя.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7c1d123</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="tldr">
+    <b>Коротко.</b> Оператор сообщил, что зелёный скелет из макета так и не появился на
+    экране — прислал видео с реальным перекосом контура. Разбор показал не один, а два
+    независимых бага с одной и той же причиной: авторские координаты цели заданы как доля
+    от <i>ширины</i> экрана, а приложение рисует и считает всё в изотропном пространстве,
+    где x умещается только в долю от <i>высоты</i>. Один баг ломал картинку, второй —
+    результат. Оба исправлены и проверены тестами; картинка проверена живьём на двух
+    телефонах, результат оценки — только математически (нужен реальный человек в кадре).
+    <ul>
+      <li>3 коммита, 417 из 417 тестов проходят (было 408 в начале вечера)</li>
+      <li>Один баг делал прохождение приседа <b>невозможным при любой технике</b> — количественно подтверждено</li>
+      <li>Рабочий процесс изменён по просьбе оператора: теперь только debug-сборки, скриншоты снимает Claude сам через adb</li>
+    </ul>
+  </div>
+
+  <section>
+    <h2>1. Включили зелёную подсветку <span class="sha">525e058</span></h2>
+    <p class="commit-title">Enable live green-glow verdict for squat/hinge in avatar mode</p>
+    <div class="card">
+      <h3>Запрос</h3>
+      <p>Оператор: «я хочу этот зелёный скелет как в макете, только реально, а не как сейчас».
+      До этого коммита оценка совпадения в режиме аватара была намеренно отключена (решение
+      прошлого гейта, Codex-ревью) — экран показывал «Засчитано, но не оценено» вместо
+      вердикта.</p>
+      <h3>Что сделали</h3>
+      <p>Повторно включили сравнение с целью в режиме аватара (предпосылка для отключения —
+      рассинхрон масштабов между силуэтом и скелетом — была устранена ещё раньше). Добавили
+      <code>matchScore</code>-резерв в <code>avatarVerdictSeverity</code> для приседа и тяги:
+      если совпадение достигает порога, скелет получает зелёный (severity 0); красный/жёлтый
+      через этот путь невозможен в принципе.</p>
+      <h3>Проверка</h3>
+      <p>408/408 тестов, включая 5 новых на новую логику. Побочный эффект — рассмотрен и
+      подтверждён как корректный: повторение теперь может получить вердикт «не дотянул», где
+      раньше молчало.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Контур цели съезжал вправо и обрезался <span class="sha">6677133</span></h2>
+    <p class="commit-title">Fix target silhouette clipping: authored joints used width-normalised x, not isotropic x</p>
+    <div class="card">
+      <h3>Триггер</h3>
+      <p>Оператор прислал видео реального теста: контур цели упирался в правый край панели и
+      обрезался, хотя отслеженная тёмная фигура стояла на месте правильно.</p>
+      <div class="quote">«вот скажи мне разве это похоже друг на друга??»</div>
+      <h3>Причина</h3>
+      <p>Координаты суставов цели (<code>squatBottomTarget</code> и другие) были заданы как
+      доля от <b>ширины</b> кадра (0..1) — обычное соглашение. Но приложение рисует всё в
+      изотропном пространстве, где x умещается только в <code>0..aspectRatio</code>
+      (~0.56 на портретном 9:16). Точка x=0.5 («центр ширины») попадала почти к правому краю
+      реального кадра шириной 0.56 — отсюда обрезка.</p>
+      <h3>Фикс</h3>
+      <p>Параметр <code>xScale</code> в <code>buildSilhouette</code> — переводит авторские
+      координаты в реальное пространство кадра на моменте отрисовки. Сознательно
+      <b>не тронул</b> <code>poseMatchScore</code> в этом коммите — решил, что трогать
+      откалиброванную таблицу порогов вместе со срочным визуальным фиксом слишком рискованно.
+      Как выяснилось позже (см. следующий раздел) — это решение пришлось пересмотреть в тот
+      же вечер.</p>
+      <h3>Проверка — вживую, на двух телефонах</h3>
+      <div class="grid2">
+        <div class="stat"><div class="label">S23 Ultra (R5CW142SASR)</div><div class="value">по центру, не обрезан</div></div>
+        <div class="stat"><div class="label">S8 (ce02171299f0711005)</div><div class="value">по центру, не обрезан</div></div>
+      </div>
+      <p style="margin-top:12px">412/412 тестов (5 новых, тест на автопропорциональность
+      ширины пришлось переписать — оказалось, что она не линейна от <code>xScale</code>,
+      если у позы почти нет собственного разброса по x).</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>3. Тот же баг сидел в самой оценке — и делал прохождение невозможным <span class="sha">7c1d123</span></h2>
+    <p class="commit-title">Fix poseMatchScore: same x-convention bug as the silhouette, but blocking every pass</p>
+    <div class="card">
+      <h3>Триггер</h3>
+      <p>Контур стал по центру — а сообщение «вы не дошли до силуэта» осталось. Это была
+      подсказка, что баг не только визуальный.</p>
+      <h3>Что показал расчёт до правки кода</h3>
+      <p>Проверил математически (тем же алгоритмом нормализации, что использует
+      <code>poseMatchScore</code>): взял landmark-набор, который представляет
+      <b>идеальное</b> совпадение с целью — реальную камеру, координаты правильно
+      изотропные — и посчитал оценку без исправления.</p>
+      <div class="grid2">
+        <div class="stat"><div class="label">Идеальное совпадение, без фикса</div><div class="value num">0.7376</div></div>
+        <div class="stat"><div class="label">Порог прохождения</div><div class="value num good">0.80</div></div>
+      </div>
+      <p style="margin-top:12px">Идеальное повторение <b>не проходило порог ни при каких
+      условиях</b> — это не погрешность калибровки, это структурная невозможность.</p>
+      <h3>Почему ни один тест этого не поймал</h3>
+      <p>Все существующие тесты сравнивали цель с позами, полученными <i>из неё же самой</i>
+      (сдвиг/масштаб как жёсткого тела) — тот же неверный формат координат «наследовался» на
+      обе стороны сравнения, и абсолютная ошибка масштаба по x взаимно сокращалась. Баг был
+      невидим для тестов по конструкции.</p>
+      <h3>Фикс</h3>
+      <p>Тот же принцип, что и в отрисовке: координаты x цели умножаются на
+      <code>frame.aspectRatio</code> — но теперь прямо внутри <code>poseMatchScore</code>,
+      используя aspect реального текущего кадра, а не константу.</p>
+      <h3>Не сломал ли фикс откалиброванную таблицу порогов?</h3>
+      <p>Проверил, а не предположил: пересчитал те же сценарии из таблицы калибровки заново,
+      уже с фиксом.</p>
+      <table>
+        <tr><th>Сценарий</th><th>До фикса (без коррекции)</th><th>После фикса</th><th>В таблице калибровки</th></tr>
+        <tr><td>Идеальное совпадение</td><td class="num">0.7376</td><td class="num good">1.0000</td><td>1.00</td></tr>
+        <tr><td>Небольшое отклонение (±0.02)</td><td>—</td><td class="num good">≈0.81</td><td>0.81</td></tr>
+      </table>
+      <p style="margin-top:10px">После фикса цифры легли почти точно на уже задокументированные
+      в коде значения — константы порогов не менялись.</p>
+      <h3>Проверка</h3>
+      <p>417/417 тестов (5 новых, специально с независимым, не самореферентным кадром —
+      <code>isotropicPoseOf</code>), включая проверку, что фикс не «сплющил» различение
+      между позами и работает не только для 9:16, но и для другого aspect ratio (3:4).</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Что изменилось в процессе</h2>
+    <div class="card">
+      <p>Оператор попросил остановить рассылку релизных сборок через Firebase для
+      промежуточных проверок — каждая требовала от него самого записывать видео, чтобы
+      показать, что не работает. Теперь: debug-сборка (<code>flutter build apk --debug</code>,
+      ~35–75 сек вместо ~100–220 сек на релиз) ставится через <code>adb install -r</code>
+      напрямую на оба физических телефона (S23 Ultra, S8), а первичную проверку по
+      скриншотам делает Claude сам через <code>adb shell screencap</code> — до того, как
+      что-либо просить проверить у оператора.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Что осталось непроверенным</h2>
+    <ul class="open-list">
+      <li>
+        <div class="tag">Требует реального тела в кадре</div>
+        <p style="margin:6px 0 0">Оценка совпадения теперь исправлена математически и
+        покрыта тестами, но <b>живой зелёный скелет на реальном отслеженном теле</b> — то,
+        что запустило весь этот гейт — не проверен на устройстве: для этого нужен реальный
+        человек перед камерой, чего Claude сделать не может.</p>
+      </li>
+      <li>
+        <div class="tag">Не подтверждено как регрессия</div>
+        <p style="margin:6px 0 0">Пропавшая кнопка «Начать тренировку» — код,
+        управляющий этим (<code>coach_phases.dart</code>), не менялся ни в одном из трёх
+        коммитов. Похоже на то, что gate качества кадра ещё не пропустил тело как
+        «в кадре целиком» — но без реального теста нельзя исключить, что это отдельная,
+        ещё не найденная проблема.</p>
+      </li>
+      <li>
+        <div class="tag">Не начато</div>
+        <p style="margin:6px 0 0">Полная визуальная задача с двух эталонных скриншотов
+        оператора (круглые индикаторы «Повторы»/«Техника», нижняя панель «Счётчики
+        тренера», фотореалистичный силуэт вместо контурного) — зафиксирована в памяти
+        проекта, это следующий, гораздо больший по объёму гейт.</p>
+      </li>
+    </ul>
+  </section>
+
+  <footer>
+    Fitness_App · reports/FORMCOACH_XSCALE_GATE_2026-08-31.ru.html
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
