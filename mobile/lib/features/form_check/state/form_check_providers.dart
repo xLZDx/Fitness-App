@@ -430,8 +430,23 @@ final avatarFigureProvider = Provider<SilhouetteFigure?>((ref) {
   if (!ref.watch(avatarModeProvider)) return null;
   final frame = ref.watch(latestPoseFrameProvider);
   if (frame == null) return null;
-  return buildPoseAvatar(frame, build: ref.watch(silhouetteBuildProvider));
+  return buildPoseAvatar(
+    frame,
+    build: ref.watch(silhouetteBuildProvider),
+    latch: ref.watch(avatarFarSideLatchProvider),
+  );
 });
+
+/// Frame-to-frame state for the avatar, and the only piece of it there is.
+///
+/// Its own provider so it survives `avatarFigureProvider` recomputing on every
+/// frame — a latch rebuilt each frame would hold nothing and the snap it exists
+/// to remove would still be there, silently. It depends on nothing, so nothing
+/// invalidates it; leaving the mode expires it on the clock (see
+/// [AvatarFarSideLatch.gate]) rather than needing a reset hook that could be
+/// forgotten.
+final avatarFarSideLatchProvider =
+    Provider<AvatarFarSideLatch>((_) => AvatarFarSideLatch());
 
 /// A pose arrived, the mode is on, and it still yields no body to draw.
 ///
@@ -720,6 +735,33 @@ int? avatarVerdictSeverity(
   // classifier already naming what movement is being attempted.
   if (matchScore != null && matchScore >= kPoseMatchPassing) return 0;
   return null;
+}
+
+/// The joints the fault currently on screen is ABOUT, or empty when there is
+/// no fault or nothing named one.
+///
+/// G6. The live skeleton glowed one colour for the whole body off
+/// [avatarVerdictSeverity]'s single number, so "your back is rounding" lit the
+/// shins exactly as brightly as the spine and the user had to read a sentence
+/// to find out where to look. A [FormClassifier] already declares the joints it
+/// reads and is forbidden from reading any others (`requiredLandmarks`), so
+/// that set IS the answer — no new knowledge, only wiring that was missing.
+///
+/// Empty for severity 0 and for no verdict at all. A clean body is not a body
+/// with an empty fault region: the painter distinguishes them by the severity
+/// it is given, and this set only says WHERE, never WHETHER.
+Set<LandmarkType> avatarFaultJoints(
+  List<FormClassifier> activeClassifiers,
+  FormFeedback? feedback,
+) {
+  if (feedback == null || feedback.severity <= 0) return const {};
+  for (final c in activeClassifiers) {
+    if (c.rule == feedback.rule) return c.requiredLandmarks;
+  }
+  // A verdict from a rule no longer in the active set — the movement changed
+  // mid-frame. Nothing to point at, and pointing at the previous movement's
+  // joints would be worse than pointing at nothing.
+  return const {};
 }
 
 /// Speech engine. Defaults to the mock so widget tests never open a

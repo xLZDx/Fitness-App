@@ -39439,3 +39439,81 @@ behind a PIN lock. I do not have it and will not guess at one on the operator's
 personal hardware, so G3's and G4's on-screen appearance are unverified. The
 phone was left exactly as found — screen asleep, lock screen untouched. This is
 the one thing outstanding for both gates.
+
+## FORM_COACH_REDESIGN G6 — the live person, and the far side that kept vanishing (2026-09-02)
+
+Point 4 of the operator's brief has two halves. G5 did the empty target; this
+gate does the live person — "нарисован человеческим силуэтом и интерактивным
+скелетом который подсвечивается по правильности движения".
+
+**Half of it already existed and is stated here rather than re-claimed.** The
+live avatar has been built by `buildSilhouette` since the coordinate
+unification, and G5's geometry fix reshaped it along with the target. What this
+gate adds is the two things that were genuinely missing.
+
+**1. The skeleton now lights only the part of the body the rule is about.**
+It glowed one colour for the whole figure off a single worst severity, so "your
+back is rounding" lit the shins exactly as brightly as the spine and the picture
+said only "something is wrong". A `FormClassifier` already declares the joints
+it reads and is forbidden from reading any others (`requiredLandmarks`), so that
+set IS the answer — the only thing missing was wiring, and one piece of
+plumbing: `SilhouetteFigure.segmentBones` now names the two joints each bone
+runs between, index for index with `segments`.
+
+A bone lights only when BOTH ends are in the fault set. Either-end would spread
+a knee fault up through the hip into the trunk and down into the shin until most
+of the figure was red, which is the undifferentiated glow this replaced. Two
+kinds of bone are deliberately anonymous and can never light: the neck, which
+runs from the shoulder mid-point (not a landmark) to a constructed point, and
+every mirrored limb, whose points are a reflection of the observed side rather
+than an observation — lighting a guess for a rule that measured the near side
+would be reporting on something nobody looked at. A fault that names nothing
+still lights the whole skeleton, which is the pre-G6 behaviour: losing the
+verdict entirely because the region could not be resolved would be a silent
+downgrade.
+
+The painter's own `NOT IMPLEMENTED` note said this identity could not be
+threaded through `buildSilhouette` without surgery on carefully-reasoned
+geometry. The surgery was done and the note now records what is still missing:
+only the reference's 1.1s pulsing ring, which needs a clock of its own rather
+than the camera's.
+
+**2. The far-side hysteresis G5 deferred here by name.** `AvatarFarSideLatch`,
+in `pose_avatar.dart`. G5 proved the far side is gained and lost as ONE torso,
+so a detector blink took shoulder width down to chest depth and back in a single
+frame. The defect is now a test rather than a claim: without the latch, one
+frame of lost confidence moves the drawn trunk by more than 15%, measured, as
+the positive control the rest of the group depends on.
+
+The latch is bounded in time AND in space, and both bounds are load-bearing.
+200ms, so a body that genuinely turns side-on reaches its profile within a fifth
+of a second instead of refusing to turn; and 0.12 of a torso of near-shoulder
+drift, so a held far side is never pasted onto a body that has moved away from
+it. A backwards clock reads as a new stream, not a fresh latch, and a frame with
+nothing to draw resets it — the far side from before someone left the frame is
+not evidence about them when they come back.
+
+The latch never operates on the branch where only the RIGHT side survives: that
+branch re-keys the survivor onto the left, and pairing it with right-keyed held
+joints would draw one real side twice under two names. G5's settled invariant —
+the far side arrives as one whole torso, never half — is re-asserted against the
+latch specifically, because a latch that restored a shoulder without its hip
+would hand `buildSilhouette` the half-bilateral state G5 proved unreachable and
+deliberately stopped handling.
+
+**Verification.** 15 new tests. Mutation-checked, each reverted: deleting the
+clock bound fails the expiry test and the backwards-clock test; deleting the
+reset on an empty frame fails its own; deleting the distance bound fails the
+drift test — **after that test was rewritten**, because the first version of it
+passed with the check deleted. It asserted on trunk width, and a far side held
+at the old position beside a near side at the new one produces a sheared torso
+whose width lands on the same side of the threshold as an honestly-narrow one.
+It was measuring a consequence two layers downstream and could not tell the two
+apart; it now asserts on the joints the producer emits. Full suite 3416 green,
+the only failures the two pre-existing `composed_screen_golden_test` Home
+goldens.
+
+**Still not verified on the device.** The S8 is connected and the build
+installs, but the phone is PIN-locked and I will not guess at a PIN on the
+operator's own hardware. G3, G4 and G6 are all unverified on screen for that one
+reason.

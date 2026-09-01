@@ -217,6 +217,7 @@ class SilhouetteFigure {
     required this.head,
     required this.limbThickness,
     this.limbs = const [],
+    this.segmentBones = const [],
   });
 
   /// Bones, as endpoint pairs. The torso is [torso], not a segment: drawn as
@@ -234,6 +235,26 @@ class SilhouetteFigure {
 
   /// Centre and radius, or null when the torso could not be located.
   final (Offset, double)? head;
+
+  /// Which two joints each entry of [segments] runs between, index for index.
+  ///
+  /// G6. The live skeleton used to glow one colour for the whole body, off the
+  /// single worst verdict, so "your back is rounding" lit the shins as brightly
+  /// as the spine. A [FormClassifier] already declares the joints it reads
+  /// (`requiredLandmarks`), so naming each bone is all that was missing to
+  /// light only the part of the body the rule is actually about.
+  ///
+  /// Either end is null for a bone with no landmark of its own — the neck,
+  /// which runs from the shoulder MID-POINT to a constructed point under the
+  /// head, and every mirrored limb, whose points are a reflection of the
+  /// observed side rather than an observation. A null end never matches a
+  /// rule, which is the conservative direction: an unnamed bone stays neutral
+  /// instead of being lit by a rule that never looked at it.
+  ///
+  /// Empty on the degenerate figures, and on any figure built before this
+  /// existed — a painter must check the length rather than assuming it pairs
+  /// up with [segments].
+  final List<(LandmarkType?, LandmarkType?)> segmentBones;
 
   /// Closed outlines — one per limb — ready to be filled as a single body.
   ///
@@ -495,6 +516,9 @@ SilhouetteFigure buildSilhouette(
   final legTarget = turned(parallax * torso, build.hipHalfWidth * torso);
 
   final segments = <(Offset, Offset)>[];
+  // Index for index with `segments`. Appended in the same statements, so the
+  // two cannot fall out of step without the append itself being edited.
+  final segmentBones = <(LandmarkType?, LandmarkType?)>[];
   final joints = <Offset>[];
   final limbs = <List<Offset>>[];
 
@@ -632,12 +656,28 @@ SilhouetteFigure buildSilhouette(
       return points;
     }
 
-    void draw(List<Offset> points, double sign, double widen) {
+    /// [chain] names the joints [points] came from, or is null when they are a
+    /// mirrored copy of the other side. A mirrored limb is a reflection, not an
+    /// observation: it is drawn where the far limb PROBABLY is, and lighting it
+    /// for a rule that measured only the near one would be reporting on a
+    /// guess.
+    void draw(
+      List<Offset> points,
+      double sign,
+      double widen, {
+      List<LandmarkType>? chain,
+    }) {
       final placed = <Offset>[];
       Offset? previous;
+      LandmarkType? previousType;
       for (var i = 0; i < points.length; i++) {
         final p = points[i] + across * (sign * widen * taper[i]);
-        if (previous != null) segments.add((previous, p));
+        final type = chain == null || i >= chain.length ? null : chain[i];
+        if (previous != null) {
+          segments.add((previous, p));
+          segmentBones.add((previousType, type));
+        }
+        previousType = type;
         joints.add(p);
         placed.add(p);
         previous = p;
@@ -664,8 +704,8 @@ SilhouetteFigure buildSilhouette(
       final mid = (left.first + right.first) / 2;
       final obs = acrossOf(left.first, mid).abs();
       final widen = targetHalf > obs ? targetHalf - obs : 0.0;
-      draw(left, leftSign, widen);
-      draw(right, -leftSign, widen);
+      draw(left, leftSign, widen, chain: leftChain);
+      draw(right, -leftSign, widen, chain: rightChain);
       return;
     }
 
@@ -675,8 +715,13 @@ SilhouetteFigure buildSilhouette(
     if (!twoSided) {
       // One-sided figure: the chain is the mid-line and both limbs come from
       // mirroring it. Every authored target lands here, unchanged.
-      draw(only, 1.0, targetHalf);
-      draw(only, -1.0, targetHalf);
+      //
+      // The chain IS named on both, unlike the far-side mirror below: a
+      // one-sided target has no near and far side to confuse, so both copies
+      // stand for the same observed joints seen from the side.
+      final chain = left != null ? leftChain : rightChain;
+      draw(only, 1.0, targetHalf, chain: chain);
+      draw(only, -1.0, targetHalf, chain: chain);
       return;
     }
 
@@ -689,12 +734,14 @@ SilhouetteFigure buildSilhouette(
       for (final p in only) p - across * (2 * acrossOf(p, hip)),
     ];
     final sign = identical(only, left) ? leftSign : -leftSign;
+    final chain = identical(only, left) ? leftChain : rightChain;
     // Same rule again: the reflection already puts the two limbs
     // `acrossOf(only.first, hip)` either side of the spine, so widen only by
     // what is still missing.
     final obs = acrossOf(only.first, hip).abs();
     final widen = targetHalf > obs ? targetHalf - obs : 0.0;
-    draw(only, sign, widen);
+    draw(only, sign, widen, chain: chain);
+    // Deliberately unnamed — see `draw`.
     draw(mirrored, -sign, widen);
   }
 
@@ -752,6 +799,10 @@ SilhouetteFigure buildSilhouette(
   final headCentre = shoulder + up * (torso * reach);
   final neckTop = shoulder + up * (torso * neck);
   segments.add((shoulder, neckTop));
+  // The neck runs from the shoulder MID-POINT, which is not a landmark, to a
+  // point constructed under the head. Neither end is a joint any rule can have
+  // measured.
+  segmentBones.add((null, null));
 
   // The neck joins the fill too, or the head floats clear of a body it is
   // supposed to be attached to — which is most of what made the old drawing
@@ -762,8 +813,14 @@ SilhouetteFigure buildSilhouette(
   );
   if (neckOutline.isNotEmpty) limbs.add(neckOutline);
 
+  assert(
+    segmentBones.length == segments.length,
+    'every bone must be named, even if the name is (null, null): a painter '
+    'reads these two lists index for index',
+  );
   return SilhouetteFigure(
     segments: segments,
+    segmentBones: segmentBones,
     torso: trunk,
     joints: joints,
     head: (headCentre, torso * radius),

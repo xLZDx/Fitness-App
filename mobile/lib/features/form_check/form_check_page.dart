@@ -1,7 +1,7 @@
 import 'dart:async' show TimeoutException;
 
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart' show debugPrint, mapEquals;
+import 'package:flutter/foundation.dart' show debugPrint, mapEquals, setEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -1284,6 +1284,11 @@ class _PoseAvatar extends ConsumerWidget {
           figure: figure,
           frame: frame,
           severity: severity,
+          // G6. WHERE the fault is, which the severity alone cannot say.
+          faultJoints: avatarFaultJoints(
+            ref.watch(activeClassifiersProvider),
+            ref.watch(formFeedbackControllerProvider),
+          ),
           colorCorrect: colors.poseCorrect,
           colorError: colors.poseError,
         ),
@@ -1306,6 +1311,7 @@ class _PoseAvatarPainter extends CustomPainter {
     required this.severity,
     required this.colorCorrect,
     required this.colorError,
+    this.faultJoints = const {},
   });
 
   /// Already built, by the widget above, which had to look at it anyway to
@@ -1329,6 +1335,16 @@ class _PoseAvatarPainter extends CustomPainter {
 
   final Color colorCorrect;
   final Color colorError;
+
+  /// The joints the current fault is about, from [avatarFaultJoints]. Empty
+  /// means "no fault, or nowhere named" — never "the fault is everywhere".
+  ///
+  /// A bone lights in the error colour only when BOTH of its ends are in here.
+  /// One end is not enough: the thigh shares a hip with the trunk and a knee
+  /// with the shin, so an either-end rule would spread a knee fault up the body
+  /// and down the leg until most of the figure was red, which is the
+  /// undifferentiated glow this replaced.
+  final Set<LandmarkType> faultJoints;
 
   /// The reference (`core/design/reference/full_handoff_v1/README.md:109`)
   /// defines exactly two pose-overlay glow states — correct (green) and
@@ -1397,13 +1413,35 @@ class _PoseAvatarPainter extends CustomPainter {
     // Every bone in ONE path, so the glow is a single blurred draw rather than
     // one per limb. A blur is the most expensive thing on this canvas and this
     // runs at the camera's frame rate.
+    //
+    // Two paths now, not one: the bones the current fault is ABOUT, and the
+    // rest. `bones` still holds all of them, because the white skeleton on top
+    // is drawn in one pass regardless of any verdict — the reference keeps it
+    // white in every state and carries colour on a layer behind it.
     final bones = Path();
-    for (final (a, b) in figure.segments) {
+    final faultBones = Path();
+    // Tracked rather than asked of the Path afterwards: a Path has no "is this
+    // empty" and comparing two of them compares identity, not contents.
+    var hasFaultBones = false;
+    final named = figure.segmentBones.length == figure.segments.length;
+    for (var i = 0; i < figure.segments.length; i++) {
+      final (a, b) = figure.segments[i];
       final pa = place(a);
       final pb = place(b);
       bones
         ..moveTo(pa.dx, pa.dy)
         ..lineTo(pb.dx, pb.dy);
+      if (!named || faultJoints.isEmpty) continue;
+      final (ja, jb) = figure.segmentBones[i];
+      if (ja != null &&
+          jb != null &&
+          faultJoints.contains(ja) &&
+          faultJoints.contains(jb)) {
+        faultBones
+          ..moveTo(pa.dx, pa.dy)
+          ..lineTo(pb.dx, pb.dy);
+        hasFaultBones = true;
+      }
     }
     final boneWidth = (limbWidth * 0.20).clamp(2.0, 6.0);
 
@@ -1417,10 +1455,23 @@ class _PoseAvatarPainter extends CustomPainter {
     // theme-reactive `poseCorrect`/`poseError` tokens instead (already the
     // same green/red family), the same adaptation already made for the nav
     // icons against this same reference.
+    //
+    // G6 narrowed WHERE it lands. A fault used to light the entire skeleton,
+    // so "your back is rounding" glowed the shins exactly as brightly as the
+    // spine and the picture said only "something is wrong". When the rule
+    // names its own joints (`avatarFaultJoints`, off `requiredLandmarks`), the
+    // glow is restricted to the bones between them and the rest of the body
+    // stays unlit — unlit rather than green, because "the part I am not
+    // talking about" is not the same claim as "the part I have approved".
+    //
+    // A fault that names nothing still lights everything, deliberately: that
+    // is the pre-G6 behaviour, and losing the verdict entirely because the
+    // region could not be resolved would be a silent downgrade.
     final glowColor = _glowColor;
     if (glowColor != null) {
+      final target = hasFaultBones ? faultBones : bones;
       canvas.drawPath(
-        bones,
+        target,
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = boneWidth
@@ -1429,7 +1480,7 @@ class _PoseAvatarPainter extends CustomPainter {
           ..color = glowColor.withValues(alpha: 0.55),
       );
       canvas.drawPath(
-        bones,
+        target,
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = boneWidth
@@ -1460,17 +1511,13 @@ class _PoseAvatarPainter extends CustomPainter {
     // Joints last, so an articulation reads as a bright point rather than as a
     // thickening of the bone that runs through it.
     //
-    // NOT IMPLEMENTED: the reference also marks the specific faulty joint
-    // with a pulsing dashed ring (r=26, dash `4 6`, 1.1s cycle -- same doc).
-    // `SilhouetteFigure.joints` is a flat `List<Offset>` with no landmark
-    // identity by the time it reaches this painter (`pose_silhouette.dart`
-    // discards the `LandmarkType` keys `PoseTarget.joints` carried), so
-    // there is no way from here to know WHICH of these points is the one
-    // `FormFeedback.rule`/`FormClassifier.requiredLandmarks` implicates.
-    // Threading that identity through `buildSilhouette` is real surgery on
-    // carefully-reasoned, already-tested geometry code (mirroring, the B4
-    // union fix) and deliberately out of this pass -- see the DECISION_LOG
-    // entry this change belongs to.
+    // STILL NOT IMPLEMENTED: the reference also marks the faulty joint with a
+    // PULSING DASHED RING (r=26, dash `4 6`, 1.1s cycle -- same doc). G6 did
+    // the surgery this note used to say was out of scope — `segmentBones`
+    // carries landmark identity through `buildSilhouette` now, so the glow
+    // above knows which bones a rule is about. What is still missing is only
+    // the animation: this painter repaints on frame arrival, and a 1.1s cycle
+    // needs a clock of its own rather than the camera's.
     final jointCore = Paint()..color = Colors.white;
     for (final j in figure.joints) {
       canvas.drawCircle(place(j), boneWidth * 0.62, jointCore);
@@ -1480,7 +1527,12 @@ class _PoseAvatarPainter extends CustomPainter {
   @override
   bool shouldRepaint(_PoseAvatarPainter old) =>
       old.frame.timestampMs != frame.timestampMs ||
-      old.severity != severity;
+      old.severity != severity ||
+      // The region can change while the severity does not — one fault giving
+      // way to another of the same weight moves the glow without changing the
+      // number, and without this the picture would keep pointing at the old
+      // one. `Set`'s `==` is identity, so this compares contents.
+      !setEquals(old.faultJoints, faultJoints);
 }
 
 /// The camera did not start, and what to do about it.

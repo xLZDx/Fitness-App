@@ -38,6 +38,8 @@
 /// place for it, not here.
 library;
 
+import 'dart:math' as math;
+
 import 'pose_landmark.dart';
 import 'pose_silhouette.dart';
 import 'pose_target.dart';
@@ -115,10 +117,12 @@ SilhouetteFigure buildPoseAvatar(
   PoseFrame frame, {
   BodyBuild build = BodyBuild.unknown,
   double minLikelihood = 0.5,
+  AvatarFarSideLatch? latch,
 }) {
   final target = avatarTargetFrom(
     frame,
     minLikelihood: minLikelihood,
+    latch: latch,
   );
   if (target == null) return _nothing;
   return buildSilhouette(target, build: build);
@@ -145,13 +149,20 @@ SilhouetteFigure buildPoseAvatar(
 /// Returns null when neither side carries a torso, which is the only part that
 /// is not optional: without a shoulder and a hip there is no spine, no axis to
 /// mirror about, and nothing that would read as a person.
+/// [latch] carries the far side across the frames the detector drops it in.
+/// Optional, and null keeps the pure, frame-by-frame behaviour every existing
+/// test asserts — see [AvatarFarSideLatch] for what it costs and what bounds it.
 PoseTarget? avatarTargetFrom(
   PoseFrame frame, {
   double minLikelihood = 0.5,
+  AvatarFarSideLatch? latch,
 }) {
   final leftOk = _hasTorso(frame, _leftChain, minLikelihood);
   final rightOk = _hasTorso(frame, _rightChain, minLikelihood);
-  if (!leftOk && !rightOk) return null;
+  if (!leftOk && !rightOk) {
+    latch?.reset();
+    return null;
+  }
 
   final joints = <LandmarkType, (double, double)>{};
   void collect(List<LandmarkType> chain, List<LandmarkType> keys) {
@@ -167,12 +178,44 @@ PoseTarget? avatarTargetFrom(
   if (leftOk && rightOk) {
     collect(_leftChain, _leftChain);
     collect(_rightChain, _rightChain);
+  } else if (leftOk) {
+    collect(_leftChain, _leftChain);
   } else {
-    // Only one side is believable. Re-keyed onto the left, which makes this a
-    // mid-line figure exactly like an authored target, and `buildSilhouette`
-    // mirrors it back out to both sides itself. Drawing a lone half-body would
-    // be the honest reading of the data and an unusable picture.
-    collect(leftOk ? _leftChain : _rightChain, _leftChain);
+    // Only the right side is believable. Re-keyed onto the left, which makes
+    // this a mid-line figure exactly like an authored target, and
+    // `buildSilhouette` mirrors it back out to both sides itself. Drawing a
+    // lone half-body would be the honest reading of the data and an unusable
+    // picture.
+    //
+    // The latch takes no part here: it holds RIGHT-keyed joints, and this
+    // branch has just moved the surviving side onto the left keys, so pairing
+    // the two would draw one real side twice under two different names.
+    collect(_rightChain, _leftChain);
+    latch?.reset();
+  }
+
+  if (leftOk) {
+    // Observed on a two-sided frame, held on a one-sided one. The near
+    // shoulder and the torso length are what bound the hold in space — see
+    // [AvatarFarSideLatch.gate].
+    final nearShoulder = joints[LandmarkType.leftShoulder];
+    final nearHip = joints[LandmarkType.leftHip];
+    final torso = nearShoulder == null || nearHip == null
+        ? 0.0
+        : _distance(nearShoulder, nearHip);
+    final observed = rightOk
+        ? {
+            for (final t in _rightChain)
+              if (joints.containsKey(t)) t: joints[t]!,
+          }
+        : null;
+    final far = latch?.gate(
+      observed: observed,
+      nearShoulder: nearShoulder,
+      torso: torso,
+      timestampMs: frame.timestampMs,
+    );
+    if (far != null && !rightOk) joints.addAll(far);
   }
 
   // The torso is the one hard requirement, and `_hasTorso` has already proved
@@ -184,6 +227,113 @@ PoseTarget? avatarTargetFrom(
   }
 
   return PoseTarget(id: 'live', joints: joints, bones: const []);
+}
+
+/// Holds the far side of the body across the frames the detector loses it in.
+///
+/// G6, and the item G5 deferred here by name. The far side is gained and lost
+/// as ONE torso — `avatarTargetFrom` emits right-keyed joints only inside
+/// `leftOk && rightOk`, and `_hasTorso` applies the identical checks, an
+/// invariant `pose_avatar_test.dart` pins — so a body loses BOTH far torso
+/// joints at once. `buildSilhouette` then reads `facing` as 0 and draws the
+/// trunk at chest depth instead of shoulder width: about a fifth of its width,
+/// gone and back in one frame, every time the detector blinks.
+///
+/// No stateless builder can smooth that. With no far side observed there is no
+/// measurement to interpolate towards — which is exactly why the fix belongs
+/// here, at the producer, where the previous frame is still in hand.
+///
+/// **Bounded in time AND in space, deliberately.** A latch that only expired on
+/// a clock would paste a stale far side onto a body that had walked away from
+/// it; one that only checked distance would hold a guess indefinitely on
+/// someone standing still. So the held joints are dropped as soon as either
+/// [holdMs] passes or the NEAR shoulder moves further than [maxDriftFraction]
+/// of a torso from where it was when the latch was taken. Inside both bounds
+/// the far side is a good description of a body that has not moved; outside
+/// either, it is fiction.
+class AvatarFarSideLatch {
+  AvatarFarSideLatch({
+    this.holdMs = 200,
+    this.maxDriftFraction = 0.12,
+  });
+
+  /// How long a lost far side may keep being drawn.
+  ///
+  /// 200ms is a `PRODUCT_HEURISTIC`: about six frames at the camera's rate,
+  /// which covers the blink-length dropouts this exists for, and short enough
+  /// that a genuine turn to the side reaches its profile within a fifth of a
+  /// second rather than lingering as a body that will not turn.
+  final int holdMs;
+
+  /// How far the near shoulder may travel before the held far side is stale,
+  /// as a fraction of the shoulder-to-hip distance.
+  ///
+  /// Measured in torsos rather than in frame units so it means the same thing
+  /// for a lifter close to the camera and one across the room.
+  final double maxDriftFraction;
+
+  Map<LandmarkType, (double, double)>? _far;
+  (double, double)? _anchor;
+  double _torso = 0;
+  int _atMs = 0;
+
+  /// Forget everything. Call when the stream restarts or the mode is left.
+  void reset() {
+    _far = null;
+    _anchor = null;
+    _torso = 0;
+    _atMs = 0;
+  }
+
+  /// The far-side joints to draw this frame, or null for none.
+  ///
+  /// [observed] is what the detector actually reported for the far side this
+  /// frame — non-null and non-empty means there is nothing to latch for, and
+  /// the fresh observation both wins and becomes the new held value.
+  Map<LandmarkType, (double, double)>? gate({
+    required Map<LandmarkType, (double, double)>? observed,
+    required (double, double)? nearShoulder,
+    required double torso,
+    required int timestampMs,
+  }) {
+    if (observed != null && observed.isNotEmpty) {
+      _far = Map.unmodifiable(observed);
+      _anchor = nearShoulder;
+      _torso = torso;
+      _atMs = timestampMs;
+      return _far;
+    }
+
+    final held = _far;
+    if (held == null) return null;
+
+    // A clock that went backwards is a new stream, not a 0ms-old latch.
+    final age = timestampMs - _atMs;
+    if (age < 0 || age > holdMs) {
+      reset();
+      return null;
+    }
+
+    final anchor = _anchor;
+    if (anchor == null || nearShoulder == null || _torso <= 0) {
+      reset();
+      return null;
+    }
+    final dx = nearShoulder.$1 - anchor.$1;
+    final dy = nearShoulder.$2 - anchor.$2;
+    if (dx * dx + dy * dy >
+        (maxDriftFraction * _torso) * (maxDriftFraction * _torso)) {
+      reset();
+      return null;
+    }
+    return held;
+  }
+}
+
+double _distance((double, double) a, (double, double) b) {
+  final dx = a.$1 - b.$1;
+  final dy = a.$2 - b.$2;
+  return math.sqrt(dx * dx + dy * dy);
 }
 
 /// Whether this side carries a shoulder and a hip worth drawing.
