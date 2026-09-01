@@ -38691,9 +38691,14 @@ normalised radii — 22.8% of the 0.6 offset at which a joint stops contributing
 **The migration itself (FACT).** `x_new = x_old * 2/3` across all 84 joints of all 14 targets, the
 `* frame.aspectRatio` removed from `poseMatchScore` and `debugMatchBreakdown`, and `xScale` removed
 from `buildSilhouette` together with its call site in `_SilhouettePainter`. 2/3 is the reference
-device's own aspect ratio, so on that device the change is exactly nil: verified at 0.00e+00
-difference on every target. The drift across frame shapes is now 0 by construction, asserted for
-seven targets across four aspect ratios at 1e-9.
+device's own aspect ratio, so on that device the change is behaviourally EQUIVALENT -- not
+numerically identical. GPT-PM insisted on that distinction when closing the gate and was right to:
+the shipped constants are rounded to three decimals, and 0.47 * 2/3 is 0.313333..., not 0.313.
+Measured rather than asserted -- the worst coordinate lands 3.33e-4 from the exact quotient, and a
+body standing in the exact pre-migration shape scores 2.96e-3 short of a perfect match on a 2:3
+frame, against a 0.80 pass mark and the 0.6 offset at which a joint stops counting altogether. Both
+bounds are tests now, so the claim cannot quietly become false. The drift across frame shapes is 0
+by construction, asserted for all fourteen targets across four aspect ratios at 1e-9.
 
 **A defect the migration exposed, fixed here (FACT).** Once x stopped being rescaled to the frame,
 three silhouettes no longer fitted the narrowest phone. Drawn outline right edge against the 0.5625
@@ -38782,3 +38787,32 @@ while rep #4 counted at 0.840 with `0.000`. What differed was the rest of the bo
 shoulder 0.13 and ankle 0.20 normalised residuals against #4's 0.09 and 0.05. That is the concrete
 material for the diagnostic-cue taxonomy, and it is also a warning: a cue keyed on depth alone would
 have told the operator to go lower on a repetition whose depth was fine.
+
+**Gate CLOSED (DECISION, GPT-PM, 2026-09-01).** `VERDICT: APPROVE`, no BLOCKER or MAJOR inside the
+stated boundary, push authorized for `ab502a8`. Two things it added that this log would be poorer
+without:
+
+1. The precision correction above. It refused the phrase "exactly nil" for a conversion whose
+   constants are rounded, which is correct and is why the real bounds are now measured and tested.
+   It also stated plainly that its approval rests on the supplied evidence rather than an
+   independent byte-for-byte read, since the commit is not on GitHub yet.
+2. **The gate order changed, and not in my favour.** I had proposed
+   `FORM_COACH_SQUAT_DIAGNOSTIC_CUES` next. GPT-PM moved defect B ahead of it as
+   `FORM_COACH_REP_SIGNAL_DEVICE_RECALIBRATION`, on the grounds that cues improve the explanation
+   of a squat path that already works, while defect B means three shipped movements ask the user
+   to reach a pose their own counter will not accept. Correctness before refinement. Accepted.
+
+**The recalibration gate's method, set by GPT-PM in advance so it cannot drift:** do NOT simply
+replace -0.600 / -0.720 / 0.160 with the target-derived -0.717 / -0.832 / 0.177. That would repeat
+the original methodological error inside the corrected coordinate system -- thresholds read off a
+drawing rather than off a body. Measure real device reps, correctly executed AND deliberately
+incomplete, establish the top and bottom distributions and the noise between them, and only then
+place hysteresis bands with visible separation. The authored silhouette is a sanity check, never
+the calibration dataset. Preserve the hysteresis/state-machine design unless measurement proves it
+inadequate; no target redesign. Hinge target calibration and the limb-length inconsistencies stay
+on the roadmap unless recalibration proves one of them blocks the counter.
+
+**Carried forward to the cues gate, confirmed by GPT-PM against the device evidence:** depth must
+not be the cue selector. A missed rep at essentially the same hip-minus-knee depth as a counted one
+means attribution has to come from the residual structure across the scored joints -- not from
+resurrecting the withdrawn depth heuristic.

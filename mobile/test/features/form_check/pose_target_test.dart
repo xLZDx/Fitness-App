@@ -1146,6 +1146,44 @@ void main() {
       }
     });
 
+    test('on the reference device the change is equivalent, not identical', () {
+      // GPT-PM, closing this gate: do not call the conversion bit-exact when
+      // the shipped constants are rounded to three decimals. 0.47 * 2/3 is
+      // 0.313333..., and 0.313 ships. The claim this gate can actually make is
+      // behavioural equivalence on the device the targets were authored for,
+      // so it is measured here instead of asserted in prose.
+      //
+      // Two bounds, both real numbers rather than round ones: the worst
+      // coordinate lands 3.33e-4 from the exact quotient, and the worst score
+      // lands 2.96e-3 from a perfect match on a 2:3 frame -- against a 0.80
+      // pass mark and the 0.6 offset at which a joint stops counting, i.e.
+      // half a percent of the smallest quantity that matters.
+      var worstCoord = 0.0;
+      var worstScore = 0.0;
+      for (final target in allShippedTargets) {
+        final old = preMigrationJoints[target.id];
+        if (old == null) continue;
+        final exact = {
+          for (final e in old.entries)
+            e.key: (e.value.$1 * 2 / 3 - (shift[target.id] ?? 0.0), e.value.$2),
+        };
+        for (final e in exact.entries) {
+          final d = (target.joints[e.key]!.$1 - e.value.$1).abs();
+          if (d > worstCoord) worstCoord = d;
+        }
+        final score = poseMatchScore(frameFrom(exact), target);
+        final d = (1.0 - score!).abs();
+        if (d > worstScore) worstScore = d;
+      }
+      expect(worstCoord, lessThan(5e-4),
+          reason: 'rounding to three decimals should cost at most half a '
+              'thousandth; it cost ${worstCoord.toStringAsExponential(2)}');
+      expect(worstScore, lessThan(5e-3),
+          reason: 'a body standing in the exact pre-migration shape should '
+              'still score essentially 1.0 on the reference frame; the worst '
+              'was ${(1 - worstScore).toStringAsFixed(4)}');
+    });
+
     test('the table describes the shipped set, not a stale copy of it', () {
       // Guards the `if (old == null) continue` above: without this, deleting a
       // target from the table would quietly stop testing it.
