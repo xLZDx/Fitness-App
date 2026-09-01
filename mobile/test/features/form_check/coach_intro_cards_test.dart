@@ -84,7 +84,7 @@ void main() {
     await t.pumpWidget(_page(container));
     await t.pumpAndSettle();
 
-    expect(find.byKey(const Key('coach.intro.openCamera')), findsOneWidget);
+    expect(find.byKey(const Key('coach.intro.continue')), findsOneWidget);
     expect(find.byKey(const Key('coach.intro.privacy')), findsOneWidget,
         reason: 'the camera small print is readable BEFORE the prompt, which '
             'is the only point at which it can inform a decision');
@@ -123,7 +123,7 @@ void main() {
       // On both, and it must survive on the merged one.
       'coach.intro.privacy',
       // The controls.
-      'coach.intro.openCamera',
+      'coach.intro.continue',
       'coach.intro.later',
       // `coach.intro.sustainer` is deliberately NOT here: it is conditional, so
       // its absence in this loop would be indistinguishable from it being
@@ -166,7 +166,7 @@ void main() {
     await t.pumpAndSettle();
     expect(find.byKey(const Key('coach.intro.sustainer')), findsNothing,
         reason: 'selling a subscription to a subscriber');
-    expect(find.byKey(const Key('coach.intro.openCamera')), findsOneWidget);
+    expect(find.byKey(const Key('coach.intro.continue')), findsOneWidget);
   });
 
   testWidgets('a subscription stream that has not answered yet still lets the '
@@ -204,11 +204,13 @@ void main() {
     expect(find.byKey(const Key('coach.intro.sustainer')), findsNothing,
         reason: 'the upsell does, deliberately');
 
-    await t.tap(find.byKey(const Key('coach.intro.openCamera')));
+    await t.tap(find.byKey(const Key('coach.intro.continue')));
     await t.pump();
     await t.pump();
-    expect(svc.startCount, 1,
-        reason: 'the camera is not held hostage by the subscription stream');
+    expect(container.read(coachSessionProvider).phase, CoachPhase.selection,
+        reason: 'the flow is not held hostage by the subscription stream');
+    expect(svc.permissionAsks, 1,
+        reason: 'nor is the permission the card exists to explain');
   });
 
   testWidgets('the custom card-to-card back control is gone', (t) async {
@@ -227,22 +229,29 @@ void main() {
         reason: 'leaving the feature entirely is still offered');
   });
 
-  testWidgets('the camera opens on the button of that card, and only then',
-      (t) async {
+  testWidgets('the card asks for the camera and does not open one', (t) async {
+    // The split this gate introduced, and the one thing about it worth a test
+    // of its own. The PERMISSION is asked here because this is the screen that
+    // writes down why a camera is needed; the camera itself waits for the
+    // start button on the movement-picking screen — operator, 2026-09-01:
+    // «пока не нажата кнопка начать камера не включается».
     _phoneSized(t);
     final svc = _SilentService();
     final container = _container(svc);
 
     await t.pumpWidget(_page(container));
     await t.pumpAndSettle();
-    await t.tap(find.byKey(const Key('coach.intro.openCamera')));
-    // The button moves the phase; the build that follows schedules the open.
+    await t.tap(find.byKey(const Key('coach.intro.continue')));
+    // The button moves the phase; the build that follows is where a camera
+    // WOULD be scheduled, so both pumps have to happen before `startCount` is
+    // worth reading — asserting it on the tap alone would pass even if the
+    // camera were opening one frame later.
     await t.pump();
     await t.pump();
 
-    expect(container.read(coachSessionProvider).phase, isNot(CoachPhase.launch));
+    expect(container.read(coachSessionProvider).phase, CoachPhase.selection);
     expect(svc.permissionAsks, 1);
-    expect(svc.startCount, 1);
+    expect(svc.startCount, 0, reason: 'the camera waits one screen longer');
   });
 
   testWidgets('backgrounding while still on the intro card does not open a '

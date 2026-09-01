@@ -22,9 +22,31 @@ import 'pose_landmark.dart';
 /// Lifecycle: callers MUST call [start] before subscribing to [frames]
 /// and [dispose] when leaving the screen — otherwise the camera stays
 /// hot and the detector leaks resources.
+/// Builds the ML Kit detector this service drives.
+///
+/// A seam, not an abstraction: `mlkit.PoseDetector` reaches a method channel
+/// the moment it is used, so a test that wants to prove the detector is CLOSED
+/// on a failed start has no other way to observe it. Production never passes
+/// one.
+typedef PoseDetectorFactory = mlkit.PoseDetector Function();
+
 class MlKitPoseDetectorService implements PoseDetectorService {
-  MlKitPoseDetectorService({CameraSession? session})
-      : session = session ?? CameraSession(facing: SessionFacing.front);
+  MlKitPoseDetectorService({
+    CameraSession? session,
+    PoseDetectorFactory? detectorFactory,
+    Duration startSettleWait = const Duration(seconds: 5),
+  })  : session = session ?? CameraSession(facing: SessionFacing.front),
+        _newDetector = detectorFactory ?? _defaultDetector,
+        _startSettleWait = startSettleWait;
+
+  static mlkit.PoseDetector _defaultDetector() => mlkit.PoseDetector(
+        options: mlkit.PoseDetectorOptions(
+          mode: mlkit.PoseDetectionMode.stream,
+          model: mlkit.PoseDetectionModel.base,
+        ),
+      );
+
+  final PoseDetectorFactory _newDetector;
 
   /// The front camera, owned by the session rather than by this detector.
   ///
@@ -44,6 +66,46 @@ class MlKitPoseDetectorService implements PoseDetectorService {
       StreamController<PoseFrame>.broadcast();
   bool _busy = false;
   bool _initialised = false;
+
+  /// A [start] that has not finished opening the camera yet.
+  ///
+  /// The window it names is the whole point: opening a camera and loading the
+  /// ML Kit model takes a second or two, and until it finishes `_initialised`
+  /// is still false. See [stop].
+  Future<void>? _starting;
+
+  /// Which generation [_starting] belongs to.
+  ///
+  /// Bumped by every [start] and every [stop]. Two jobs, both of which the
+  /// bare `_starting` future could not do:
+  ///
+  /// 1. An open whose generation has moved on is UNWANTED, and cleaning up
+  ///    after itself is its own job — nobody else can do it without racing the
+  ///    half-finished open (`CameraSession` assigns `_camera` before
+  ///    `initialize()`, so a concurrent teardown disposes a controller the open
+  ///    then initialises and streams from).
+  /// 2. A [start] only joins an in-flight one from its OWN generation. A
+  ///    platform open that hangs forever would otherwise be joined by every
+  ///    later attempt, so a hung first visit would kill the feature for the
+  ///    life of the process — which is exactly the failure this service's
+  ///    `_initialised` latch used to cause and was fixed for.
+  int _generation = 0;
+  int _startingGeneration = -1;
+
+  /// How long [stop] waits for an in-flight open before returning.
+  ///
+  /// Bounded on purpose, and the bound does NOT license a teardown afterwards
+  /// — see [stop]. The page bounds its own `start()` at 15 s and then offers a
+  /// retry, so a teardown that waits longer than that turns a recoverable
+  /// timeout into a dead screen.
+  ///
+  /// A constructor parameter only so a test can shorten it. Driving the same
+  /// case under a fake clock was tried first and abandoned: `FakeAsync` drains
+  /// microtasks only while it is firing timers, so a subscription cancel that
+  /// resolves off the timer queue left the teardown mid-flight and the test
+  /// read a state the code never reached. A real 20 ms wait tests the real
+  /// asynchrony.
+  final Duration _startSettleWait;
 
   /// Frames lost in a row to an unexpected error.
   ///
@@ -90,13 +152,72 @@ class MlKitPoseDetectorService implements PoseDetectorService {
   @override
   Future<void> start() async {
     if (_initialised) return;
-    _detector = mlkit.PoseDetector(
-      options: mlkit.PoseDetectorOptions(
-        mode: mlkit.PoseDetectionMode.stream,
-        model: mlkit.PoseDetectionModel.base,
-      ),
-    );
-    await session.start();
+    // Re-entrancy, exactly as `CameraSession.start` handles it one layer down
+    // and for the same reason: `_initialised` does not flip until the camera
+    // has finished opening, so two callers arriving inside that window would
+    // each build a detector and each open a session. Coalescing here is also
+    // what gives [stop] something to wait for.
+    //
+    // Only within one generation, though. See [_generation]: joining an open
+    // that a [stop] has already disowned would hand this caller a future that
+    // tears itself down on completion, and joining one that never completes
+    // would make the feature permanently dead after a single hung open.
+    final pending = _starting;
+    if (pending != null && _startingGeneration == _generation) return pending;
+
+    final token = ++_generation;
+    final attempt = _startOnce(token);
+    _starting = attempt;
+    _startingGeneration = token;
+    try {
+      await attempt;
+    } finally {
+      // Only if nothing newer has claimed the slot. A start that overtook this
+      // one owns `_starting` now, and clearing it here would hide it from the
+      // next [stop].
+      if (identical(_starting, attempt)) _starting = null;
+    }
+  }
+
+  Future<void> _startOnce(int token) async {
+    final detector = _newDetector();
+    _detector = detector;
+    try {
+      await session.start();
+    } catch (_) {
+      // The detector is built BEFORE the camera opens, so a refused permission
+      // or a failed initialisation leaves one alive that nothing else will
+      // ever close: [stop] returns at its `_initialised` guard, and the next
+      // attempt overwrites `_detector` with a fresh one. Repeat that a few
+      // times and the native side is holding several. Closed here, where the
+      // failure is, rather than in a teardown path that cannot be reached.
+      await _closeDetector(detector);
+      rethrow;
+    }
+    if (token != _generation) {
+      // A [stop] arrived while this open was in flight and could not release
+      // anything itself without racing it, so undoing it falls to this method.
+      // The detector is unconditionally ours and is closed either way.
+      await _closeDetector(detector);
+      // The CAMERA is not unconditionally ours, and that distinction is the
+      // whole of this branch.
+      //
+      // `CameraSession.start` coalesces its own concurrent callers onto ONE
+      // platform open (`camera_session.dart:211`). So after a stop disowns
+      // this generation and the user retries, the newer generation's
+      // `session.start()` may be *this very open* — and stopping it here would
+      // tear the camera out from under a start that is about to report
+      // success, leaving an `_initialised` service subscribed to a dead
+      // stream. That is the exact lifecycle class this fix exists to remove,
+      // and the first version of the fix reintroduced it; caught by GPT-PM's
+      // round-2 review of this gate.
+      //
+      // The rule is: the NEWEST start generation owns the release. If one
+      // exists it runs this same branch itself when it is superseded in turn,
+      // so nothing is left holding a camera nobody wants.
+      if (_startingGeneration <= token) await session.stop();
+      return;
+    }
     _initialised = true;
     _sub = session.frames().listen(
           _onFrame,
@@ -104,6 +225,19 @@ class MlKitPoseDetectorService implements PoseDetectorService {
             if (!_ctrl.isClosed) _ctrl.addError(e, st);
           },
         );
+  }
+
+  /// Closes [detector] and clears the field if it is still the current one.
+  ///
+  /// Never throws: `close()` is a platform call, and a failure to release
+  /// something is not a reason to fail the operation that was releasing it.
+  Future<void> _closeDetector(mlkit.PoseDetector detector) async {
+    if (identical(_detector, detector)) _detector = null;
+    try {
+      await detector.close();
+    } catch (e) {
+      debugPrint('pose detector close: $e');
+    }
   }
 
   Future<void> _onFrame(InputImage inputImage) async {
@@ -304,6 +438,45 @@ class MlKitPoseDetectorService implements PoseDetectorService {
   /// controller deliberately stays open: listeners re-subscribe across visits.
   @override
   Future<void> stop() async {
+    // Disown any open still in flight, FIRST and unconditionally.
+    //
+    // The `_initialised` check below used to be this method's first line,
+    // which made stop() a silent no-op in exactly the window where a camera is
+    // being handed over: `_initialised` only flips once `session.start()` has
+    // returned, so a stop arriving during the one-to-two seconds an open takes
+    // released nothing and the open went on to finish — leaving a live camera
+    // and a live detector behind a screen the user had already left. Reachable
+    // from the coach's own back control (pressed while the preview is still a
+    // spinner) and from backgrounding the app in the same window. Found in
+    // review of the selection-screen gate, 2026-09-01.
+    //
+    // Bumping [_generation] is what actually releases it: the open re-reads
+    // the token when it settles and undoes itself. This method must NOT tear
+    // down under an unsettled open — `CameraSession` assigns `_camera` before
+    // `initialize()` (`camera_session.dart:276,294`), so disposing it here
+    // would be disposing a controller that `_open` then initialises and
+    // streams from.
+    final token = ++_generation;
+    final pending = _starting;
+    if (pending != null) {
+      // Waited on so that this future means "released" for the ordinary case,
+      // where the open is merely slow. BOUNDED, because the page bounds its
+      // own start at 15 s and then offers a retry: an unbounded wait here
+      // turns that recoverable timeout into a screen whose next start is
+      // queued forever behind a teardown that never finishes. GPT-PM caught
+      // exactly that in the first version of this fix.
+      try {
+        await pending.timeout(_startSettleWait);
+      } catch (_) {
+        // A start that FAILED has nothing left to release, and one that is
+        // still hung will release itself if it ever settles. Neither is this
+        // caller's problem, and neither is an error about leaving a screen.
+      }
+      // Something newer owns the service now, or the open is still running.
+      // Either way the teardown below is not ours to perform.
+      if (token != _generation) return;
+      if (_starting != null) return;
+    }
     if (!_initialised) return;
     _initialised = false;
     // Cleared here because the in-flight frame's `finally` may never run: stop()
@@ -316,12 +489,8 @@ class MlKitPoseDetectorService implements PoseDetectorService {
     await _sub?.cancel();
     _sub = null;
     await session.stop();
-    try {
-      await _detector?.close();
-    } catch (e) {
-      debugPrint('pose detector close: $e');
-    }
-    _detector = null;
+    final detector = _detector;
+    if (detector != null) await _closeDetector(detector);
   }
 
   /// Terminal: releases everything and closes the stream. After this the

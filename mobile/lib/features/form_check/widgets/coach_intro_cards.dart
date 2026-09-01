@@ -209,11 +209,19 @@ class CoachSustainerCard extends StatelessWidget {
 /// on screen, which is what makes the privacy sentence at the bottom true at
 /// the moment it is read rather than in retrospect.
 class CoachIntroCard extends ConsumerWidget {
-  const CoachIntroCard({super.key, required this.onOpenCamera});
+  const CoachIntroCard({super.key, required this.onContinue});
 
-  /// Opens the camera. Owned by the page, which holds the service handle and
-  /// the lifecycle token; this card only says when.
-  final VoidCallback onOpenCamera;
+  /// Asks for the camera PERMISSION and moves on to the selection screen.
+  ///
+  /// It used to open the camera outright, and the rename is the honest half of
+  /// the change: the hardware now waits for the start button one screen later
+  /// (operator, 2026-09-01). The permission is still asked here, because this
+  /// is the screen that explains why it is needed -- and the small print below
+  /// is true at the moment it is read either way.
+  ///
+  /// Owned by the page, which holds the service handle and the lifecycle
+  /// token; this card only says when.
+  final VoidCallback onContinue;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -227,9 +235,9 @@ class CoachIntroCard extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AppPrimaryButton(
-            key: const Key('coach.intro.openCamera'),
+            key: const Key('coach.intro.continue'),
             label: l10n.formcheckPrepOpenCamera,
-            onPressed: onOpenCamera,
+            onPressed: onContinue,
           ),
           const SizedBox(height: 4),
           AppTertiaryButton(

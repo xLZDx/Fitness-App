@@ -79,6 +79,7 @@ void main() {
     test('a verdict never moves the tap-driven phases', () {
       for (final p in [
         CoachPhase.launch,
+        CoachPhase.selection,
         CoachPhase.active,
         CoachPhase.paused,
         CoachPhase.summary,
@@ -89,6 +90,46 @@ void main() {
           reason: 'a verdict cannot know a button was pressed',
         );
       }
+    });
+  });
+
+  group('countingIsLiveIn', () {
+    test('the three phases where the user has not asked to be counted', () {
+      // Stated as a full enumeration rather than as the three negatives, so
+      // that a phase ADDED later has to be classified here deliberately
+      // instead of inheriting "counts" from the default.
+      const counts = {
+        CoachPhase.qualityCheck: true,
+        CoachPhase.calibration: true,
+        CoachPhase.ready: true,
+        CoachPhase.active: true,
+        // The set is not running: the user said so.
+        CoachPhase.paused: false,
+        CoachPhase.summary: false,
+        // Reached from the LIVE screen by pressing back, so a frame can still
+        // be in flight when it is entered.
+        CoachPhase.selection: false,
+        // And `launch` really does answer "yes", which looks wrong and is not:
+        // it is the DEFAULT phase, so it is the one every rep-counting test in
+        // this feature runs under. Excluding it would silently disarm them
+        // rather than tighten anything, and no frame can reach it in the app
+        // -- the intro card returns before anything subscribes to the stream.
+        CoachPhase.launch: true,
+      };
+      expect(counts.keys.toSet(), CoachPhase.values.toSet(),
+          reason: 'a phase with no answer here is a phase nobody decided');
+      counts.forEach((phase, expected) {
+        expect(countingIsLiveIn(phase), expected, reason: '$phase');
+      });
+    });
+
+    test('selection is excluded because back from a set lands there', () {
+      // The specific case, spelled out because the table above would keep
+      // passing if `selection` were excluded for some unrelated reason.
+      // Stopping the camera is asynchronous, so frames already in flight are
+      // delivered AFTER the phase has moved to `selection` -- without this
+      // they would land on the counter of a set the user has walked away from.
+      expect(countingIsLiveIn(CoachPhase.selection), isFalse);
     });
   });
 }

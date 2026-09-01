@@ -31,6 +31,17 @@ enum CoachPhase {
   /// session passes through without stopping.
   launch,
 
+  /// Which movement, and a looped demonstration of it. The camera is still
+  /// off.
+  ///
+  /// Added 2026-09-01 on the operator's own description of the screen: choose
+  /// the exercise, watch the demonstration, and press when ready -- «пока не
+  /// нажата кнопка начать камера не включается». It is a phase rather than a
+  /// flag on the page because the camera's whole lifecycle keys off the phase
+  /// already, and because "back" from the live screen has to land somewhere
+  /// nameable.
+  selection,
+
   /// Is the view usable? Blocks until the gate says yes.
   qualityCheck,
 
@@ -92,7 +103,25 @@ enum CoachBlocker {
 /// set whose numbers keep climbing while it is being read is not a summary of
 /// anything — the defect the P2 test caught, one guard short.
 bool countingIsLiveIn(CoachPhase phase) =>
-    phase != CoachPhase.paused && phase != CoachPhase.summary;
+    phase != CoachPhase.paused &&
+    phase != CoachPhase.summary &&
+    // And not on either pre-camera screen. [CoachPhase.selection] is the one
+    // that matters: it is reached from the LIVE screen by pressing back, and
+    // stopping the camera is asynchronous, so frames already in flight arrive
+    // after the phase has moved -- without this they would land on the counter
+    // of a set the user has just walked away from.
+    //
+    // [CoachPhase.launch] is deliberately NOT here, and the attempt to add it
+    // "for consistency" is what proved why. Eighteen existing cases across
+    // five files drive a real rep stream through a container left at the
+    // default phase and assert the count moves -- `paused_set_test`'s own
+    // POSITIVE CONTROL among them. `launch` is that default, so excluding it
+    // does not tighten a guard, it silently redefines what every one of those
+    // tests is exercising. The reachable-bug argument does not apply either:
+    // nothing subscribes to the frame stream while the intro card is up,
+    // because `form_check_page.dart` returns before
+    // `formFeedbackControllerProvider` is ever watched.
+    phase != CoachPhase.selection;
 
 /// The instruction that belongs to a gate verdict.
 CoachBlocker blockerFor(PoseGateVerdict verdict) {
@@ -144,6 +173,7 @@ CoachPhase phaseAfterFrame(CoachPhase phase, PoseGateVerdict verdict) {
           : CoachPhase.qualityCheck;
     case CoachPhase.calibration:
     case CoachPhase.launch:
+    case CoachPhase.selection:
     case CoachPhase.active:
     case CoachPhase.paused:
     case CoachPhase.summary:

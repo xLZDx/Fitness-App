@@ -549,8 +549,27 @@ void main() {
     // actually-measured HEAD baseline the entry above already established.
     // Worth being explicit this is not the ledger "un-fixing" anything —
     // 58 was always the real number; 55 was the wrong fix's byproduct.
+    //
+    // 58 -> 61, 2026-09-01 (Form Coach redesign, G2). `form_check_page.dart`
+    // 18 -> 21: the demonstration silhouette on the new movement-picking
+    // screen gained the skeleton the design reference draws INSIDE it
+    // (`_paintDemoSkeleton`) -- three literals, one per pass of the
+    // reference's own recipe: the two blurred glow strokes and the crisp
+    // core line share one, the joint dots the second, and the third is the
+    // core stroke itself.
+    //
+    // Same category as the avatar's existing bone/glow/joint whites two
+    // entries above, and for the same reason the 55 -> 58 correction gave:
+    // the reference keeps the SKELETON white in every state and carries
+    // colour on a separate layer behind it
+    // (`Fitness Form Coach Phone.dc.html:45`, `stroke="{{ line }}"` with
+    // `line = '#FFFFFF'` at :202 -- read directly, not paraphrased). This is
+    // the figure's own drawing, never text on a surface, so tokenising it
+    // would be recolouring the reference rather than de-duplicating a
+    // literal. It is a demonstration, so it has no verdict to recolour it by
+    // in the first place.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 58, reason: 'per file: $whites');
+    expect(total, 61, reason: 'per file: $whites');
   });
 
   group('lerp', () {

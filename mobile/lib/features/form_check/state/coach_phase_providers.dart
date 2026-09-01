@@ -40,12 +40,31 @@ class CoachPhaseController extends Notifier<CoachSessionState> {
   CoachSessionState build() =>
       CoachSessionState(phase: ref.watch(coachInitialPhaseProvider));
 
-  /// The user has read the intro card and asked for the camera.
+  /// The user has read the intro card and is going on to choose a movement.
+  ///
+  /// Does NOT open the camera — that is the whole point of the phase it moves
+  /// to. The page still asks for the camera PERMISSION here, because the intro
+  /// card is where the reason for it is written down; the hardware itself
+  /// waits for [openCamera].
+  void continueToSelection() =>
+      state = state.copyWith(phase: CoachPhase.selection);
+
+  /// The user has chosen a movement and pressed the start button.
   ///
   /// Only moves the phase. Actually opening the camera belongs to the page,
   /// which owns the service handle and the lifecycle token — a Notifier that
   /// reached for hardware would also have to own tearing it down.
   void openCamera() => state = state.copyWith(phase: CoachPhase.qualityCheck);
+
+  /// Back out of the live screen without leaving the coach.
+  ///
+  /// Operator, point 3: «если нажать назад то попадёшь на страницу выбора
+  /// упражнений с роликами». The blocker is reset with the phase — it
+  /// describes a camera that is about to be stopped, and carrying it onto a
+  /// screen with no camera would have the selection screen explaining why a
+  /// view it is not showing is unusable.
+  void backToSelection() =>
+      state = const CoachSessionState(phase: CoachPhase.selection);
 
   /// Fold the current gate verdict in.
   void onVerdict(PoseGateVerdict verdict) {

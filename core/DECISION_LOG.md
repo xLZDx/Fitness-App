@@ -38930,3 +38930,170 @@ sustainer card to be absent by default, and it was present. With no signed-in us
 stream yields null immediately, so entitlement IS resolved and the pitch shows. The loading state
 has to be constructed deliberately (`currentSubscriptionProvider` overridden to an empty stream),
 which is what the test now does -- otherwise it would have "passed" while exercising nothing.
+
+## 2026-09-01 — FORM_COACH_REDESIGN G2: the camera waits for a movement to be chosen
+
+**What the operator asked for (point 2 of five, verbatim).** «на самом экране тренера оставить
+только подогнать силует под вас и выбор упражнений и кнопку начать. Пока не нажата кнопка начать
+камера не включется а показывается ролик из макета на присед ... где человеко подобный силует с
+свичащемся скилетом присидает. На кнопки написанно нажмите когда готовы» — plus point 3, «если
+нажать назад то поподешь на страницу выбора упражнений с роликами».
+
+**`CoachPhase.selection` is a phase, not a flag (DECISION).** The camera's whole lifecycle already
+keys off the phase — `build` opens it, `didChangeAppLifecycleState` reopens it, the set controls
+switch on it — so a boolean beside the phase would have been a second source of truth for the same
+question. It also gives "back from the live screen" somewhere nameable to land.
+
+**The permission and the hardware are now asked for on different screens (DECISION).** The intro
+card asks for the PERMISSION, because that is the screen where the reason for it is written down;
+the camera itself waits for the picker's own button. The intro button was renamed accordingly —
+`coach.intro.openCamera` -> `coach.intro.continue`, «Готово — включить камеру» -> «Готово — разрешить
+камеру» — since a key and a label that still said "open the camera" would have been describing
+something that no longer happens.
+
+**And it is asked ONCE (DECISION, corrected mid-gate).** The first version left
+`_startDetector(requestPermission: true)` on the camera-open path as a harmless belt-and-braces.
+It is not harmless: Android's `denied` is *askable* (`camera_session.dart:184`), so a user who had
+just refused on the intro card would get the same dialog again one screen later — and a second
+refusal on Android 13+ is close to permanent. The retry button on the failure card still asks,
+because pressing it is an unambiguous request.
+
+**Counting is suppressed in `selection` (FACT).** `svc.stop()` is asynchronous, so frames already in
+flight are delivered after the phase has moved — without the guard they would land on the counter of
+a set the user has just walked away from. `launch` is deliberately NOT added to the same list: it is
+the DEFAULT phase, so it is the one eighteen existing rep-counting cases across five files run
+under, including `paused_set_test`'s own POSITIVE CONTROL. Adding it "for consistency" was tried and
+silently disarmed all of them; the enumeration test now records both answers and why.
+
+**The demonstration carries the reference's own skeleton.** `_paintDemoSkeleton` draws the bones
+from the same lerped target the silhouette is built from: white line, round caps, two blurred glow
+passes standing in for the reference's two drop-shadows, filled joint dots — `Fitness Form Coach
+Phone.dc.html:45` (`stroke="{{ line }}"`, and `line = '#FFFFFF'` at `:202`, read directly). Widths
+derive from `SilhouetteFigure.limbThickness` rather than transcribing that file's pixel values,
+which are pixels in a 390x844 artboard. Demo only: over a live camera the skeleton drawn from the
+USER's landmarks is the one that means anything, and a second one tracing the target would put two
+skeletons on one body. Three new `Colors.white` literals, ledgered in
+`app_semantic_colors_test.dart` (58 -> 61) in the same category as the avatar's existing bone whites.
+
+### Review of this gate (FACT)
+
+Three internal specialists ran before anything went to GPT-PM, per the one-sweep rule. Two returned
+material findings and both were real.
+
+**BLOCKER — a camera left running behind the picker.** `MlKitPoseDetectorService.stop()` opened with
+`if (!_initialised) return`, and `_initialised` does not flip until `session.start()` has returned.
+So a stop arriving during the one-to-two seconds a camera takes to open released *nothing*, and the
+start went on to finish — leaving a live camera and a live detector behind a screen the user had
+already left. Pre-existing (the backgrounding path had the same hole), but this gate is what put a
+back control on that spinner and made it ordinary to hit. Verified in source before accepting:
+`mlkit_pose_detector_service.dart` `start()` sets `_initialised = true` only after `await
+session.start()`, and `stop()`'s guard sat above everything.
+
+Fixed at the root, not at the call site: `stop()` now waits for an in-flight start before deciding
+there is nothing to release, and `start()` coalesces concurrent callers the same way
+`CameraSession.start` already does one layer down. Waiting rather than tearing down underneath it is
+deliberate — `CameraSession` assigns its controller at the END of `_open`, so a `session.stop()`
+racing that would dispose nothing and orphan the controller assigned a moment later. The wait is
+unbounded for the same reason: a timeout would resume the teardown mid-open, which is that race with
+a delay in front of it.
+
+**MAJOR — the selection screen's rep-counting suppression had no test that could fail.** Correct:
+nothing in the gate ever pushed a frame after backing out. Covered now by an enumeration over every
+`CoachPhase` (a phase with no answer there is a phase nobody decided) plus the specific case.
+
+**MAJOR — the demonstration panel was silent to a screen reader.** A `CustomPaint` emits no
+semantics, and this panel is the screen's main content rather than decoration. One static
+`Semantics` label, not a live description: re-announcing a looping animation would talk over
+everything else.
+
+**Both service guards are mutation-tested, not just asserted.** Removing the `stop()` wait fails
+`a stop that arrives while the camera is still opening still releases it` (expected 1, actual 0);
+removing the coalescing fails `two starts inside the same window open one camera, not two`
+(expected 1, actual 2).
+
+### GPT-PM round 1 on this gate: `VERDICT: MAJOR`, three findings, all real (FACT)
+
+**1 — the permission split was not serialized.** `_continueToSelection` fire-and-forgot
+`ensurePermission()`, and the selection screen is interactive immediately. Press the start button
+inside that window and `_startDetector()` reaches
+`CameraSession.start(requestPermission: false)`, which READS the status and throws on a
+still-denied one rather than waiting — so a user in the middle of GRANTING permission lands on the
+camera-failure card. The ask is now retained in `_permissionAsk` and awaited by `_startDetector`
+before it touches the camera, deliberately outside `_startTimeout` for the reason that bound
+already documents: it waits on a person reading a dialog. No second request is issued.
+
+**2 — the `stop()` repair fixed the slow open and broke the HUNG one.** The unbounded
+`await pending` meant a platform open that never returns left `_stopping` pending forever, and the
+page awaits `_stopping` before every later start — turning a timeout the page explicitly recovers
+from into a permanently dead screen. Correct, and it was a regression I introduced.
+
+Rebuilt around a generation token instead. `stop()` bumps it first and unconditionally — that is
+what actually releases an in-flight open, because the open re-reads the token when it settles and
+undoes itself. The wait is now bounded (5 s) and, critically, **a timeout does not license a
+teardown**: if the open is still unsettled, `stop()` returns and leaves the cleanup to it. Putting a
+plain timeout in front of the existing teardown would have restored the very race the fix exists to
+remove. The same token also stops a later `start()` joining a hung one, so a retry is a genuine
+second attempt rather than a second listener on the future that hung.
+
+**My stated rationale for that shape was wrong and is corrected.** I wrote that `CameraSession`
+assigns its controller at the END of `_open`. It does not: `_camera = CameraController(...)` is at
+`camera_session.dart:276`, before `initialize()` at `:294`; it is `_surface` that is published later
+(`:308`). Tearing down under an in-flight open is still wrong — it disposes a controller `_open`
+then initialises and streams from — but for that reason, not the one I gave.
+
+**3 — a failed open leaked the ML Kit detector.** The detector is built before the camera opens, and
+the only path that closes one sits below `stop()`'s `_initialised` guard, which a failed start never
+reaches. Every refused permission leaked one, and each retry overwrote the reference to the last.
+Pre-existing, fixed here because the restructure is the right place for it: `_startOnce` now closes
+the detector on any failure before rethrowing, through a single `_closeDetector` that also clears
+the field.
+
+**A test seam was added for it, and only for it.** `close()` is a method channel, so a leak is
+unobservable from outside; `MlKitPoseDetectorService` now takes an optional `PoseDetectorFactory`
+that production never passes.
+
+**Every one of the three is pinned by a test that fails without its fix**, checked by removing the
+fix rather than asserted: the permission serialization (expected 0 starts, actual 1), the hung-open
+exit (`fake_async`, teardown never completes), and the detector close count.
+
+**Known limit, stated rather than implied.** `CameraSession.start` coalesces on its own `_starting`,
+so if the underlying platform open is what hung, a retry at this layer still joins that same hung
+session-level attempt. Closing that needs cancellation inside `CameraSession`, which is a different
+gate; what this fix guarantees is that the SERVICE no longer wedges and the page's teardown always
+completes.
+
+### GPT-PM round 2: two closed, one regression found in the round-1 remediation (FACT)
+
+The permission serialization and the detector leak were confirmed closed. The third finding is a
+direct regression from my own fix for MAJOR #2, and it is a good one.
+
+**The generation token fought `CameraSession`'s own coalescing.** A hangs; the page times out; back
+disowns generation A; the user retries as B; B's `session.start()` JOINS A's still-pending platform
+open, because `CameraSession.start` coalesces (`camera_session.dart:211`). The one shared open
+finally succeeds and BOTH continuations resume — and A, seeing itself stale, called
+`session.stop()` unconditionally, tearing the camera out from under the start that was at that
+moment adopting it. An `_initialised` coach over a dead stream: exactly the lifecycle class the fix
+exists to remove.
+
+Fixed by making the release conditional on ownership: the NEWEST start generation owns it
+(`if (_startingGeneration <= token) await session.stop()`). A stale open with nothing newer behind
+it still releases what it opened; one that has been superseded leaves the camera to its successor,
+which runs the same branch itself when it is superseded in turn. Mutation-checked: removing the
+condition fails the new test with the camera stopped underneath the retry.
+
+**GPT-PM also rejected my regression test, correctly, and that is the more useful half.** Its
+double handed out a fresh completer per `start()`, so a retry looked like a second independent
+platform open — the opposite of what `CameraSession` does. A test whose double bypasses the exact
+lower-layer behaviour the code has to survive cannot see the bug. There is now a second double,
+`_CoalescingSession`, that coalesces the way the real one does, and the retry case is asserted
+against it; the non-coalescing double keeps only the cases where its shape is honest, with a
+comment saying which is which and why.
+
+**`fake_async` was tried for these two cases and abandoned, which cost real time and is worth
+recording.** `FakeAsync.elapse` drains microtasks only while it is firing timers, so with nothing
+scheduled it advances the clock past continuations that never ran — a subscription cancel resolving
+off the timer queue left `stop()` mid-teardown while the test read a state the code never reached.
+It looked exactly like a hang in production code and was a hang in the test. Two rounds of
+instrumentation went into it, one of them misled further by `debugPrint`'s own throttling timer
+reordering the output. The bound is now a constructor parameter (`startSettleWait`, default 5 s) and
+the tests use a real 20 ms wait against real asynchrony.

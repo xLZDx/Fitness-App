@@ -96,7 +96,7 @@ void main() {
     await t.pumpWidget(_page(_introContainer()));
     await t.pumpAndSettle();
 
-    expect(find.byKey(const Key('coach.intro.openCamera')), findsOneWidget);
+    expect(find.byKey(const Key('coach.intro.continue')), findsOneWidget);
     expect(find.byKey(const Key('coach.prep.angle')), findsOneWidget,
         reason: 'the how-to-stand block is on this card now, not a second one');
     expect(find.byType(HudSkyBackground), findsOneWidget);

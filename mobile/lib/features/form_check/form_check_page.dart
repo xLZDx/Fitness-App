@@ -151,16 +151,87 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
   /// when we backgrounded".
   bool _cameraRequested = false;
 
-  /// The intro card's primary button.
+  /// The intro card's primary button: ask for the camera, then choose a
+  /// movement.
+  ///
+  /// The PERMISSION is asked here and the hardware is not. That split is the
+  /// operator's own (2026-09-01): the intro card is the screen that explains
+  /// why a camera is needed, so it is the only honest place to ask — while the
+  /// camera itself must stay off until the start button one screen later.
+  ///
+  /// The ask is deliberately not awaited. `ensurePermission` reports nothing
+  /// by design (`pose_detector_service.dart:36`) — a refusal surfaces from the
+  /// later `start()` as the same typed failure every other refusal does, and
+  /// is rendered in one place. Blocking the screen transition on a dialog
+  /// would leave the user looking at the card they just dismissed.
+  void _continueToSelection() {
+    ref.read(coachPhaseControllerProvider.notifier).continueToSelection();
+    final svc = ref.read(poseDetectorServiceProvider);
+    _service = svc;
+    // Kept, not fire-and-forgotten. The screen moves on immediately — a
+    // transition that waited on a dialog would leave the user looking at the
+    // card they just dismissed — but `_startDetector` awaits this before it
+    // touches the camera. Without that, pressing the start button inside the
+    // window where the ask is still resolving reaches
+    // `CameraSession.start(requestPermission: false)`, which READS the status
+    // and throws on a still-denied one rather than waiting: the user grants
+    // permission and lands on the camera-failure card anyway. Caught by
+    // GPT-PM's review of this gate.
+    //
+    // Swallowed rather than left unhandled: a platform-channel failure in
+    // here is already re-raised by the next `start()` with its cause attached
+    // (`camera_session.dart:186-191`), and an unawaited throw would otherwise
+    // reach the zone's error handler as an unexplained crash.
+    _permissionAsk = svc.ensurePermission().catchError((Object _) {});
+  }
+
+  /// The permission ask started on the intro card, while it is still resolving.
+  ///
+  /// Cleared once awaited: it is a one-time handshake per visit, not a latch.
+  Future<void>? _permissionAsk;
+
+  /// The selection screen's primary button — «Нажмите когда готовы».
   ///
   /// Moves the phase and nothing else. Opening the camera is [build]'s job, on
-  /// the rule "past the intro means the camera belongs open" — so the phase
-  /// is the single source of truth, and anything else that legitimately puts
-  /// the session into a camera phase (a test starting at the screen it is
-  /// actually about; a future deep link into a set) gets a camera without
-  /// having to know this method exists.
-  void _openCamera() =>
+  /// the rule "past the selection screen means the camera belongs open" — so
+  /// the phase is the single source of truth, and anything else that
+  /// legitimately puts the session into a camera phase (a test starting at the
+  /// screen it is actually about; a future deep link into a set) gets a camera
+  /// without having to know this method exists.
+  void _startSet() =>
       ref.read(coachPhaseControllerProvider.notifier).openCamera();
+
+  /// Back out of the live screen to the movement picker, camera off.
+  ///
+  /// Operator, point 3. "Back" here does NOT leave the coach, so it cannot be
+  /// a `Navigator.pop` — and it has to release the camera itself, because the
+  /// page is not being unmounted and `dispose` will not run.
+  void _backToSelection() {
+    final PoseDetectorService svc =
+        _service ?? ref.read(poseDetectorServiceProvider);
+    _service = svc;
+    // Any start still in flight belongs to the session being left behind.
+    _lifecycle++;
+    _stopping = svc.stop();
+    // So the next press of the start button opens the camera again. Without
+    // this the flag would still read "already asked for on this visit" and
+    // `build` would never re-arm the detector.
+    _cameraRequested = false;
+    // The set is over, and the numbers from it belong to it. This is the same
+    // clearing `initState` performs on a fresh mount, for the same reason: a
+    // count from a set the user has walked away from, sitting over a preview
+    // that has not delivered a frame yet, is stale in the way that reads as a
+    // bug.
+    ref.read(repSessionControllerProvider.notifier).resetSet();
+    ref.read(poseMatchProvider.notifier).state = null;
+    ref.read(coachPhaseControllerProvider.notifier).backToSelection();
+    if (mounted) {
+      setState(() {
+        _started = false;
+        _startError = null;
+      });
+    }
+  }
 
   void _startDetector({bool requestPermission = false}) {
     final token = ++_lifecycle;
@@ -177,6 +248,17 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
           _stopping = null;
         }
         if (!mounted || token != _lifecycle) return;
+
+        // And any permission ask started on the intro card. Deliberately
+        // OUTSIDE the timeout below, for the same reason `ensurePermission`
+        // itself is: this waits on a person reading a dialog, and that must
+        // not share a deadline meant to catch a hung platform call.
+        final ask = _permissionAsk;
+        if (ask != null) {
+          await ask;
+          _permissionAsk = null;
+          if (!mounted || token != _lifecycle) return;
+        }
 
         final svc = ref.read(poseDetectorServiceProvider);
         _service = svc;
@@ -245,6 +327,69 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     super.dispose();
   }
 
+  /// Phase [CoachPhase.selection]: which movement, what it looks like, and the
+  /// button that turns the camera on.
+  ///
+  /// Operator, point 2: «оставить только подогнать силуэт под вас и выбор
+  /// упражнений и кнопку начать». So exactly those three things, plus the
+  /// looping demonstration that replaces the preview — no banners (they moved
+  /// to the intro card), no camera controls in the bar (there is no camera to
+  /// control), no counters, no cue card.
+  ///
+  /// The demonstration panel deliberately shares the live preview's shape:
+  /// same 9:16, same radius, same ground. It is standing in for the thing the
+  /// button opens, so a different frame would read as a different screen.
+  Widget _selectionScreen(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return HudSkyBackground(
+      selection: HudSkySelection(phase: HudSkyPhase.forTime(DateTime.now())),
+      child: FrostedScaffold(
+        appBar: GlassAppBar(title: l10n.formcheckFormCoach),
+        body: HudQuality(
+          frostedGlass: false,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 92, 20, 110),
+            children: [
+              const _CompleteProfileCard(),
+              const _ExercisePicker(),
+              const SizedBox(height: 12),
+              // Labelled, not excluded. A `CustomPaint` emits no semantics of
+              // its own, so without this the panel is a silent hole in the
+              // middle of the screen — and it is the screen's main content,
+              // not decoration. One static label rather than a live
+              // description of the pose: a screen reader re-announcing a
+              // looping animation would talk over everything else.
+              Semantics(
+                container: true,
+                label: l10n.formcheckSelectionDemoSemantics,
+                child: AspectRatio(
+                  aspectRatio: 9 / 16,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(22),
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.85),
+                      child: _Silhouette(
+                        key: const Key('coach.selection.demo'),
+                        demo: _demo,
+                        demonstrating: true,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              AppPrimaryButton(
+                key: const Key('coach.selection.start'),
+                label: l10n.formcheckSelectionStart,
+                onPressed: _startSet,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -256,10 +401,20 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     // reading.
     final phase = ref.watch(coachSessionProvider).phase;
     if (phase == CoachPhase.launch) {
-      return CoachIntroCard(onOpenCamera: _openCamera);
+      return CoachIntroCard(onContinue: _continueToSelection);
     }
 
-    // Past the intro card, so the camera belongs open. Once per visit: the flag
+    // Same argument one screen further on: the movement picker has no camera
+    // either, so it returns before anything below subscribes to frames.
+    if (phase == CoachPhase.selection) {
+      // The demonstration is the whole point of this screen, so it runs
+      // unconditionally here rather than being derived from a set that has not
+      // started. `_syncDemo` still honours reduce-motion.
+      _syncDemo(true);
+      return _selectionScreen(context);
+    }
+
+    // Past the selection screen, so the camera belongs open. Once per visit: the flag
     // is what stops a rebuild from starting a second one, and it is also what
     // the lifecycle-resume path reads to tell "stopped" from "never asked
     // for". Deferred to a post-frame callback because starting a camera is a
@@ -267,7 +422,15 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     if (!_cameraRequested) {
       _cameraRequested = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _startDetector(requestPermission: true);
+        // NOT `requestPermission: true` any more. The ask moved one screen
+        // earlier, to `_continueToSelection`, and asking a second time here
+        // would be actively harmful rather than merely redundant: a user who
+        // just refused is still in the ANDROID `denied` state, which is
+        // "askable" (`camera_session.dart:184`), so they would get the same
+        // dialog again immediately — and a second refusal on Android 13+ is
+        // close to permanent. The failure card's retry button still asks,
+        // because pressing it is an unambiguous request.
+        if (mounted) _startDetector();
       });
     }
 
@@ -341,11 +504,28 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     // lines below) and is unaffected -- this only puts the sky behind
     // the surrounding content cards (banner, upgrade, exercise picker,
     // set summary) that were sitting on flat colour either side of it.
-    return HudSkyBackground(
+    return PopScope(
+      // Operator, point 3: back from the live screen returns to the movement
+      // picker, not out of the coach. Both the bar's arrow (`leading` below)
+      // and the system gesture have to mean the same thing, and only this
+      // handles the gesture — `leading` alone would give Android Back a
+      // different destination from the arrow sitting next to it.
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _backToSelection();
+      },
+      child: HudSkyBackground(
       selection: HudSkySelection(phase: HudSkyPhase.forTime(DateTime.now())),
       child: FrostedScaffold(
       appBar: GlassAppBar(
         title: AppLocalizations.of(context).formcheckFormCoach,
+        leading: IconButton(
+          key: const Key('coach.live.back'),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          onPressed: _backToSelection,
+        ),
         actions: [
           // First, because it is the control that decides whether the coach
           // can see the user at all. The skeleton and the mute switch adjust
@@ -651,6 +831,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
               ),
       ),
       ),
+      ),
     );
   }
 }
@@ -718,6 +899,7 @@ class _SetControls extends ConsumerWidget {
       // Nothing to control: the camera is not open, or the view is not usable
       // yet and the readiness band is already saying why.
       case CoachPhase.launch:
+      case CoachPhase.selection:
       case CoachPhase.qualityCheck:
       case CoachPhase.calibration:
       case CoachPhase.summary:
@@ -1734,7 +1916,8 @@ class _ExercisePicker extends ConsumerWidget {
 /// both the same way would invite the user to chase the animation, which is
 /// exactly the shape they cannot match, because it is never in one place.
 class _Silhouette extends ConsumerWidget {
-  const _Silhouette({required this.demo, required this.demonstrating});
+  const _Silhouette(
+      {super.key, required this.demo, required this.demonstrating});
 
   final Animation<double> demo;
   final bool demonstrating;
@@ -2005,6 +2188,83 @@ class _SilhouettePainter extends CustomPainter {
         ..strokeJoin = StrokeJoin.round
         ..color = colour.withValues(alpha: alpha),
     );
+
+    if (isDemo) _paintDemoSkeleton(canvas, place, limbWidth);
+  }
+
+  /// The glowing skeleton the reference clip carries INSIDE the silhouette.
+  ///
+  /// Operator, point 2: «человекоподобный силуэт с светящимся скелетом
+  /// приседает». The silhouette on its own is a shape; the skeleton is what
+  /// makes it read as the same figure the live screen will draw over the user,
+  /// so the demonstration and the thing it is demonstrating look like one
+  /// system rather than two drawings that happen to share a screen.
+  ///
+  /// Copied from the reference's own SVG rather than invented: white line,
+  /// round caps, two drop-shadow glows (5px and 14px there), filled joint dots
+  /// — `Fitness Form Coach Phone.dc.html:45-68`. The widths are derived from
+  /// [SilhouetteFigure.limbThickness] instead of transcribing that file's pixel
+  /// values, because those are pixels in a 390x844 artboard and this paints
+  /// into whatever panel it is given.
+  ///
+  /// Demo only. Over a live camera the skeleton drawn from the USER's own
+  /// landmarks is the one that means something (`_SkeletonOverlay`), and a
+  /// second one tracing the target would put two skeletons on one body.
+  void _paintDemoSkeleton(
+      Canvas canvas, Offset Function(Offset) place, double limbWidth) {
+    Offset? at(LandmarkType j) {
+      final c = target.joints[j];
+      return c == null ? null : place(Offset(c.$1, c.$2));
+    }
+
+    final line = Path();
+    var drew = false;
+    for (final (a, b) in target.bones) {
+      final pa = at(a);
+      final pb = at(b);
+      if (pa == null || pb == null) continue;
+      line
+        ..moveTo(pa.dx, pa.dy)
+        ..lineTo(pb.dx, pb.dy);
+      drew = true;
+    }
+    if (!drew) return;
+
+    final width = (limbWidth * 0.28).clamp(2.0, 6.0);
+    // Two passes, widening and fading, standing in for the reference's two
+    // stacked drop-shadows. `MaskFilter.blur` rather than a wider opaque
+    // stroke: a hard-edged halo reads as a second, thicker skeleton.
+    for (final (mul, a, blur) in [
+      (3.2, 0.20, 7.0),
+      (1.9, 0.34, 3.0),
+    ]) {
+      canvas.drawPath(
+        line,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeWidth = width * mul
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur)
+          ..color = Colors.white.withValues(alpha: a),
+      );
+    }
+    canvas.drawPath(
+      line,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = width
+        ..color = Colors.white.withValues(alpha: 0.92),
+    );
+    // The dots sit on the joints the bones connect, not on every authored
+    // landmark: an endpoint nothing links to is a coordinate, not a joint.
+    final dots = Paint()..color = Colors.white.withValues(alpha: 0.92);
+    for (final j in {
+      for (final (a, b) in target.bones) ...[a, b],
+    }) {
+      final p = at(j);
+      if (p != null) canvas.drawCircle(p, width * 0.7, dots);
+    }
   }
 
   @override

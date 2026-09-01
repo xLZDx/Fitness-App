@@ -75,19 +75,26 @@ Widget _page(PoseDetectorService svc) => ProviderScope(
 /// the page's camera panel is 9:16 — on the default surface the retry button
 /// lands off the bottom, and scrolling it into view tucks it under the
 /// translucent app bar. Neither says anything about the code under test.
-/// Mounts the page and walks R11h's two cards, so the camera is open by the
-/// time a test starts asserting about it.
+/// Mounts the page and walks the two pre-camera screens, so the camera is open
+/// by the time a test starts asserting about it.
 ///
 /// Every case below used to begin `pumpWidget` + `pump` and have a camera. It
 /// does not any more: arriving on the coach shows what it does and how to
-/// stand, and the hardware is requested by that card's own button. The
-/// cases themselves — a start that hangs, a stop that overtakes it, a retry —
-/// are unchanged, and that is the point of routing them all through one helper
-/// rather than editing nine preludes into nine slightly different shapes.
+/// stand, then which movement it will judge, and the hardware waits for the
+/// second of those two buttons. The cases themselves — a start that hangs, a
+/// stop that overtakes it, a retry — are unchanged, and that is the point of
+/// routing them all through one helper rather than editing nine preludes into
+/// nine slightly different shapes.
 Future<void> _pumpToCamera(WidgetTester t, PoseDetectorService svc) async {
   await t.pumpWidget(_page(svc));
   await t.pumpAndSettle();
-  await t.tap(find.byKey(const Key('coach.intro.openCamera')));
+  await t.tap(find.byKey(const Key('coach.intro.continue')));
+  // `pump`, never `pumpAndSettle`: the selection screen loops a demonstration
+  // for as long as it is on screen, so there is no frame at which the tree is
+  // quiescent and `pumpAndSettle` times out instead of arriving.
+  await t.pump();
+  await t.pump();
+  await t.tap(find.byKey(const Key('coach.selection.start')));
   // Two pumps, not one: the button only moves the phase, and the camera is
   // opened by the post-frame callback the resulting build schedules.
   await t.pump();
@@ -273,21 +280,35 @@ void main() {
 
     // R11h moved this. It used to read "a fresh arrival IS the user asking for
     // the camera", which was true when arriving was the only signal there was.
-    // Now there is a card in front of it, ending on a button that says "open
-    // the camera", so arriving is no longer an ask — and this half of the test
-    // is the one that proves the card is not decoration over an
-    // already-running preview.
+    // Now there are two cards in front of it, and this test is what proves
+    // neither is decoration over an already-running preview.
     await t.pumpWidget(_page(svc));
     await t.pumpAndSettle();
     expect(svc.permissionAsks, 0, reason: 'the intro card asks for nothing');
     expect(svc.startCount, 0, reason: 'and opens nothing');
 
-    await t.tap(find.byKey(const Key('coach.intro.openCamera')));
+    // The permission and the hardware are asked for on DIFFERENT screens as of
+    // 2026-09-01, and the gap between them is the behaviour under test: the
+    // intro card is where the reason for a camera is written down, so that is
+    // where it is asked for — and the camera itself stays off through the
+    // whole movement-picking screen.
+    await t.tap(find.byKey(const Key('coach.intro.continue')));
     await t.pump();
     await t.pump();
 
     expect(svc.permissionAsks, 1,
-        reason: 'the button that says "open the camera" is the ask');
+        reason: 'the card that explains why a camera is needed is the ask');
+    expect(svc.startCount, 0,
+        reason: 'the selection screen shows a demonstration, not a camera');
+
+    await t.tap(find.byKey(const Key('coach.selection.start')));
+    await t.pump();
+    await t.pump();
+
+    expect(svc.permissionAsks, 1,
+        reason: 'asked once. A second `ensurePermission` after a refusal '
+            'would re-open the dialog while the refusal is still "askable", '
+            'and a second refusal on Android 13+ is close to permanent');
     expect(svc.calls.first, 'permission',
         reason: 'asking after opening the camera is asking too late — the '
             'open is what fails with permissionDenied');
