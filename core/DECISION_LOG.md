@@ -38672,3 +38672,113 @@ taxonomy proposal, GPT-PM approves what the product is allowed to claim and owns
 coach to `hinge.bottom` and six reps scored 0.512 / 0.855 / 0.798 / 0.736 / 0.817 / 0.825 -- mixed,
 right on the line. Unlike the squat the arm residuals there are small (0.02-0.24); shoulder and hip
 carry the error. That target has NOT been through the measurement this gate applied to the squat.
+
+---
+
+## 2026-09-01 — POSE_TARGET_ISOTROPIC_COORDINATE_MIGRATION
+
+**Decision (DECISION).** Targets are authored in the same coordinate space the pose detector emits:
+both axes divided by the post-rotation image HEIGHT, so `y` runs 0..1 and `x` runs `0..aspectRatio`.
+Nothing is converted at compare time or at draw time any more.
+
+**What was actually wrong (FACT).** Target x was a fraction of frame WIDTH, and two call sites
+multiplied by the aspect ratio to reconcile that with landmark x — `poseMatchScore` and
+`buildSilhouette(xScale:)`. Multiplying one axis is an anisotropic scale, and `poseMatchScore`
+survives only isotropic scaling, so the same physical pose scored differently on different cameras.
+Measured before the change: one pose scored 0.1366 apart between a 9:16 and a 3:4 frame, in
+normalised radii — 22.8% of the 0.6 offset at which a joint stops contributing at all.
+
+**The migration itself (FACT).** `x_new = x_old * 2/3` across all 84 joints of all 14 targets, the
+`* frame.aspectRatio` removed from `poseMatchScore` and `debugMatchBreakdown`, and `xScale` removed
+from `buildSilhouette` together with its call site in `_SilhouettePainter`. 2/3 is the reference
+device's own aspect ratio, so on that device the change is exactly nil: verified at 0.00e+00
+difference on every target. The drift across frame shapes is now 0 by construction, asserted for
+seven targets across four aspect ratios at 1e-9.
+
+**A defect the migration exposed, fixed here (FACT).** Once x stopped being rescaled to the frame,
+three silhouettes no longer fitted the narrowest phone. Drawn outline right edge against the 0.5625
+a 9:16 frame is wide: squat 0.568, pushup 0.602, situp 0.600. Before the migration the figure was
+squeezed horizontally to fit, which is the same distortion in a different disguise. Each of the
+three movements was slid left by a fixed amount — squat 0.016, pushup 0.050, situp 0.048 — the same
+delta for both ends so the demo cannot drift sideways while it plays. All seven now sit inside
+0.056..0.552. Scoring cannot see this: `poseMatchScore` centres both poses on their centroid, and a
+test asserts the invariance for every shipped target at three offsets rather than leaving it as an
+argument.
+
+**A defect the migration exposed and deliberately did NOT fix (FACT, then DECISION).**
+`rep_signals.dart` documents how each rep threshold was chosen — "Measured: ... folded to the bottom
+-0.563", "bottom of the lunge -0.707", "lying flat 0.119". Those numbers reproduce exactly, but only
+after stretching the authored targets' x back by 1.5. So the thresholds were read off the shapes in
+`pose_target.dart`, in the space where those shapes were 1.5x too wide, not off a body in front of a
+camera. Three of the five signals are horizontal, so the distortion went straight into them:
+
+| movement | authored shape, true space | its own gate | old space |
+| --- | --- | --- | --- |
+| hinge | bottom -0.717 | needs >= -0.600 | -0.565 |
+| lunge | bottom -0.832 | needs >= -0.720 | -0.707 |
+| situp | top 0.177 | needs <= 0.160 | 0.119 |
+
+`curl` and `overhead_press` moved 0.002-0.004 and are unaffected; squat and pushup read y only.
+This is a live-behaviour defect, not a test artifact — the counter always compared these thresholds
+against isotropic landmarks, so a user matching the drawn silhouette for these three does not reach
+the phase the counter waits for. It is not fixed here because fixing it means measuring real reps on
+a device, which is its own gate, and because GPT-PM set this migration's scope explicitly: "keep it
+genuinely mechanical ... do not mix hinge calibration or target redesign into that migration."
+Retuning five production constants inside a diff about coordinates would also bury the finding.
+
+`rep_signals_test.dart` therefore ASSERTS the defect through
+`thresholdsCalibratedInTheOldSpace = {'hinge', 'lunge', 'situp'}`: those three are expected to fail
+their own gates and to count 0 reps for a full lap. When the recalibration lands the tests fail, and
+the fix is to delete the tag from the set. A skip would have been forgotten; this cannot be.
+
+**Verification.** `test/features/form_check` — 434 tests, all passing. Whole suite — 3333 tests, the
+only failures being `composed_screen_golden_test` Home light/dark at a 59.6% pixel diff. Those are
+independent of this change as a matter of fact, not judgement: `lib/features/home/` contains no
+reference to `form_check` at all, and the baseline was last touched by an unrelated HUD commit
+(`f819820`). Not fixed here; not this gate's.
+
+**Still not verified on a device at the time of writing.** The migration is provably nil on the
+reference device's own 2:3 frame, so a device run confirms nothing changed rather than confirming
+something works — the multi-aspect benefit only appears on hardware with a different camera ratio,
+which is not in hand.
+
+**Internal review of this gate, and what it changed (FACT).** Two specialists read the diff before
+it went anywhere near GPT-PM. Both found real gaps in the TESTS, not in the production change:
+
+1. *The invariance tests could not detect a target that was never converted.* Every fixture in
+   `pose_target_test.dart` is built from the target under test, so a target left in the old space
+   would keep scoring 1.0 against itself on all four frame shapes and the aspect-invariance group
+   would stay green. That group proves "no correction remains"; it cannot prove "the numbers were
+   converted". Fixed by pinning the pre-migration coordinates of all 13 mechanically-converted
+   targets — 78 joints — read out of `git show HEAD:` by a script rather than retyped, and
+   asserting `x_new = round3(round3(x_old * 2/3) - shift)` plus `y_new == y_old`. A third test
+   asserts the pinned table and the shipped set have not diverged, so deleting a row cannot quietly
+   stop testing a target. `squat.bottom` is excluded and the reason is written where the exclusion
+   is: it was re-authored from measurement in the previous gate, already in the new space.
+2. *`expectStillMiscalibrated` asserted only "not both ends work".* That is satisfied by the
+   documented defect and by several other ways the same movement could break, so a retune that
+   fixed hinge's bottom while breaking its top would have gone on passing. Now the set records
+   WHICH end is unreachable per movement (`hinge`/`lunge` bottom, `situp` top) and both ends are
+   asserted, so a defect that changes shape fails as loudly as one that disappears.
+
+Also from review: the aspect-invariance group covered 7 of the 14 targets; it now iterates
+`allShippedTargets`. And the 9:16 bound in `pose_silhouette_test` is an assumption about camera
+hardware, not something production enforces — `_aspectFor` derives the ratio from real sensor
+metadata. 9:16 is the narrowest common camera FRAME (phone screens are taller, sensors are not), so
+the bound stands, but it is an inference about hardware and is recorded as one rather than as a
+guarantee.
+
+**Live device evidence, S23, on this build (FACT).** The operator ran a set while this gate was
+being finished. Of 20 laps, 17 were real repetitions and 3 were the phone being handled (gate
+`lowConfidence` / `missingJoints`, bodies inverted in frame). The 17: eight counted at 0.809-0.936,
+nine missed at 0.647-0.795. Every valid repetition had `0 unscoreable` frames, so the four-joint
+minimum introduced when the arms stopped being judged is not biting in practice. The later reps
+cluster at 0.910/0.913/0.930/0.936 — the operator's own execution converging, not a code change,
+since nothing shipped mid-set.
+
+**Carried into the cues gate, from that same set (FACT, needs interpretation, not yet a rule).**
+Depth alone does not separate counted from missed: rep #2 missed at 0.780 with `hipMinusKnee=0.001`
+while rep #4 counted at 0.840 with `0.000`. What differed was the rest of the body — #2 carried
+shoulder 0.13 and ankle 0.20 normalised residuals against #4's 0.09 and 0.05. That is the concrete
+material for the diagnostic-cue taxonomy, and it is also a warning: a cue keyed on depth alone would
+have told the operator to go lower on a repetition whose depth was fine.

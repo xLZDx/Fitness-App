@@ -137,61 +137,44 @@ void main() {
   // `projectLandmark` draws in (0..frameAspect). Confirmed on a real device
   // (`video_2026-08-31_19-01-00.mp4`): the outline drew shoved hard right and
   // clipped off the panel. `xScale` is the fix.
-  group('xScale corrects the authored width-normalised convention', () {
-    test('default (1.0) reproduces the bug: a 9:16 frame cannot contain it',
-        () {
-      // squatBottomTarget's rightmost x (the wrist, 0.58) exceeds a 9:16
-      // frame's own width in isotropic space (aspectRatio 0.5625) even before
-      // the figure is widened into a body -- this is the defect itself, not a
-      // constructed example of it.
-      const frameAspect916 = 9 / 16;
-      final figure = buildSilhouette(squatBottomTarget);
-      expect(figure.bounds.right, greaterThan(frameAspect916),
-          reason: 'without correction the outline already claims to extend '
-              'past the right edge of a 9:16 frame');
+  // FORMCOACH_TARGET_ISOTROPIC_2026-09-01 deleted `buildSilhouette`'s `xScale`
+  // parameter along with the convention that needed it. What that group used to
+  // assert -- "uncorrected, the outline spills past the right edge of a 9:16
+  // frame; corrected, it fits" -- is now a property of the DATA rather than of
+  // a parameter, so it is asserted directly on the shipped targets. The
+  // parameter was removed rather than left at its harmless default because a
+  // second, no-longer-needed x correction sitting in the drawing path is
+  // exactly how the outline got shoved off-panel in the first place.
+  group('every shipped target fits the narrowest frame it will be drawn on',
+      () {
+    // 9:16 is the tallest phone this runs on and therefore the tightest
+    // horizontal budget: isotropic x may not exceed 0.5625 there.
+    const narrowestFrame = 9 / 16;
+
+    test('no outline claims to extend past the frame edge', () {
+      for (final t in poseTargetsByTag.values.expand((p) => [p.$1, p.$2])) {
+        final figure = buildSilhouette(t);
+        expect(figure.bounds.left, greaterThanOrEqualTo(0.0),
+            reason: '${t.id} starts left of the frame');
+        expect(figure.bounds.right, lessThanOrEqualTo(narrowestFrame),
+            reason: '${t.id} reaches ${figure.bounds.right.toStringAsFixed(3)}, '
+                'past the $narrowestFrame that a 9:16 frame is wide');
+      }
     });
 
-    test('xScale: frameAspect keeps the figure inside a 9:16 frame', () {
-      const frameAspect916 = 9 / 16;
-      final figure =
-          buildSilhouette(squatBottomTarget, xScale: frameAspect916);
-      expect(figure.bounds.right, lessThanOrEqualTo(frameAspect916),
-          reason: 'corrected, the outline must fit the frame it is meant to '
-              'be drawn on, the same way a real body does');
-      expect(figure.bounds.left, greaterThanOrEqualTo(0));
+    test('and the whole figure is inside the frame vertically too', () {
+      for (final t in poseTargetsByTag.values.expand((p) => [p.$1, p.$2])) {
+        final figure = buildSilhouette(t);
+        expect(figure.bounds.top, greaterThanOrEqualTo(0.0),
+            reason: '${t.id} starts above the frame');
+        expect(figure.bounds.bottom, lessThanOrEqualTo(1.0),
+            reason: '${t.id} reaches below the frame');
+      }
     });
 
-    test('a smaller xScale narrows a target whose joints actually spread in x',
-        () {
-      // squatTopTarget is nearly a vertical column (its joints span only
-      // 0.02 in x to begin with) -- there, bounds.width is dominated by the
-      // body's WIDENING (shoulder/hip half-width, a fraction of torso
-      // length, which barely depends on x for a mostly-vertical pose), not
-      // by the joints' own x-spread. So a precise width-scales-by-xScale
-      // prediction does not hold there; it is not what this parameter
-      // claims to do. squatBottomTarget genuinely spreads in x (0.28..0.72
-      // since it was re-authored from measurement, and 0.42..0.58 before
-      // that) and is the shape that actually clipped off a real 9:16 panel
-      // -- monotonic narrowing is the true, robust claim.
-      final wide = buildSilhouette(squatBottomTarget);
-      final narrow = buildSilhouette(squatBottomTarget, xScale: 0.3);
-      expect(narrow.bounds.width, lessThan(wide.bounds.width));
-      // y is untouched directly by xScale (only x passes through it in
-      // `at()`), so the two should stay close -- but not exactly: the head
-      // radius and the limb half-widths are derived from TORSO LENGTH, which
-      // mixes x and y, so squeezing x shortens them a little and the drawn
-      // bounds follow. The headroom is 0.15 rather than 0.05 because the
-      // re-authored target genuinely spreads in x where the hand-authored one
-      // barely did, which makes that torso-mixing effect proportionally
-      // larger. Measured at 0.898 for xScale 0.3.
-      final heightRatio = narrow.bounds.height / wide.bounds.height;
-      expect(heightRatio, closeTo(1.0, 0.15));
-    });
-
-    test('does not mutate the authored target -- same contract as build',
-        () {
+    test('does not mutate the authored target -- same contract as build', () {
       final before = Map.of(squatBottomTarget.joints);
-      buildSilhouette(squatBottomTarget, xScale: 0.5625);
+      buildSilhouette(squatBottomTarget);
       expect(squatBottomTarget.joints, before);
     });
   });

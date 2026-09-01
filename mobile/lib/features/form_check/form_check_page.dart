@@ -1946,13 +1946,14 @@ class _SilhouettePainter extends CustomPainter {
     // by 1.78x on a 9:16 panel — together, the "закорючка" the operator saw
     // twice. Both faults live in `pose_silhouette.dart` now, with tests.
     //
-    // `xScale: frameAspect` is a second, separate correction on top of that
-    // one: `target.joints` are authored with x as a fraction of the frame's
-    // WIDTH (0..1), not of this app's isotropic space (0..frameAspect) —
-    // see `buildSilhouette`'s doc. Skipping it is what put the outline shoved
-    // hard right and clipped off the panel on a real device, operator video
-    // `video_2026-08-31_19-01-00.mp4` (`FORMCOACH_TARGET_XSCALE_2026-08-31`).
-    final figure = buildSilhouette(target, build: build, xScale: frameAspect);
+    // No aspect correction here any more. Until
+    // `FORMCOACH_TARGET_ISOTROPIC_2026-09-01` this passed `xScale: frameAspect`
+    // because target x was authored as a fraction of frame WIDTH while
+    // `projectLandmark` expects this app's isotropic space. The targets
+    // themselves now hold isotropic x, so the correction has nothing left to
+    // correct -- and applying it twice would shove the outline off-panel again,
+    // which is the bug that correction was introduced to fix.
+    final figure = buildSilhouette(target, build: build);
     if (figure.segments.isEmpty) return;
     // The same projection `_SkeletonPainter`/`_PoseAvatarPainter` use, not
     // `fitSilhouette` — see `_Silhouette.build`'s comment. This also means the

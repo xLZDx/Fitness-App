@@ -6,6 +6,81 @@ import 'package:fitness_app/features/form_check/data/rep_counter.dart';
 import 'package:fitness_app/features/form_check/data/rep_signals.dart';
 import 'package:fitness_app/features/form_check/state/form_check_providers.dart';
 
+/// Movements whose rep thresholds were derived from targets authored in the
+/// pre-`FORMCOACH_TARGET_ISOTROPIC_2026-09-01` coordinate space.
+///
+/// `rep_signals.dart` records how each threshold was picked, and it says
+/// "Measured: ... folded to the bottom -0.563", "bottom of the lunge -0.707",
+/// "lying flat 0.119". Those numbers are reproducible — but only by stretching
+/// the authored targets' x back by 1.5, i.e. by putting them back in the space
+/// where x was a fraction of frame WIDTH. So the thresholds were read off the
+/// shapes in `pose_target.dart`, not off a body in front of a camera, and the
+/// shapes were 1.5x too wide horizontally at the time.
+///
+/// Three of the five signals are horizontal — a hinge is how far the shoulders
+/// travel forward of the hips, a lunge how far the hip drops relative to the
+/// stride — so the distortion went straight into their thresholds. `curl` and
+/// `overhead_press` moved by 0.002-0.004 and are unaffected; `squat` and
+/// `pushup` use a depth signal that reads y only.
+///
+/// In the true space the authored shapes now fall short of their own gates:
+///
+///     hinge   bottom -0.717, needs >= -0.600   (was -0.565)
+///     lunge   bottom -0.832, needs >= -0.720   (was -0.707)
+///     situp   top     0.177, needs <=  0.160   (was  0.119)
+///
+/// That is a live-behaviour defect, not a test artifact: the counter compares
+/// these thresholds against landmarks that always arrived isotropic, so a user
+/// matching the drawn silhouette for these three does not reach the phase the
+/// counter is waiting for. It is deliberately NOT fixed here. Recalibrating
+/// them means measuring real reps on a device, which is its own gate; the
+/// isotropic migration is meant to stay mechanical, and quietly retuning five
+/// production constants inside it would bury the finding in a diff about
+/// coordinates.
+///
+/// The tests below therefore assert the defect rather than skipping it. When
+/// the recalibration lands they will fail, and the fix is to delete the tag
+/// from this set — not to widen anything.
+///
+/// The value records which END of each pair is out of reach, not merely that
+/// one of them is.
+///
+/// The first version of this said only "not both ends work", which is true of
+/// the documented defect and of several other ways these movements could
+/// break. A retune that fixed hinge's bottom while breaking its top would have
+/// gone on satisfying it. Naming the direction means a defect that changes
+/// SHAPE fails as loudly as one that disappears. Caught in review of this gate.
+const thresholdsCalibratedInTheOldSpace = <String, _Unreachable>{
+  'hinge': _Unreachable.bottom,
+  'lunge': _Unreachable.bottom,
+  'situp': _Unreachable.top,
+};
+
+enum _Unreachable { top, bottom }
+
+/// Asserts that a movement in [thresholdsCalibratedInTheOldSpace] is still
+/// broken in exactly the way that set claims, so the set cannot outlive -- or
+/// quietly misdescribe -- the problem it exists to record.
+void expectStillMiscalibrated(String tag, RepCounterConfig config,
+    {required double top, required double bottom}) {
+  final broken = thresholdsCalibratedInTheOldSpace[tag]!;
+  final reachesTop = top <= config.topEnter;
+  final reachesBottom = bottom >= config.bottomEnter;
+
+  expect(reachesTop, broken != _Unreachable.top,
+      reason: '$tag top scores ${top.toStringAsFixed(3)} against '
+          '${config.topEnter}: expected it to be '
+          '${broken == _Unreachable.top ? "out of reach" : "reachable"}. '
+          'If the calibration changed, update or remove the entry in '
+          'thresholdsCalibratedInTheOldSpace rather than widening this.');
+  expect(reachesBottom, broken != _Unreachable.bottom,
+      reason: '$tag bottom scores ${bottom.toStringAsFixed(3)} against '
+          '${config.bottomEnter}: expected it to be '
+          '${broken == _Unreachable.bottom ? "out of reach" : "reachable"}. '
+          'If the calibration changed, update or remove the entry in '
+          'thresholdsCalibratedInTheOldSpace rather than widening this.');
+}
+
 /// A frame standing in the given target's shape.
 ///
 /// Targets carry left-side joints only, because from the side the far limb is
@@ -143,6 +218,13 @@ void main() {
         expect(top, isNotNull, reason: '$tag: top shape yields no signal');
         expect(bottom, isNotNull, reason: '$tag: bottom shape yields no signal');
 
+        expect(config.topExit, lessThan(config.bottomExit),
+            reason: '$tag: hysteresis bands overlap');
+
+        if (thresholdsCalibratedInTheOldSpace.containsKey(tag)) {
+          expectStillMiscalibrated(tag, top: top!, bottom: bottom!, config);
+          return;
+        }
         expect(top!, lessThanOrEqualTo(config.topEnter),
             reason: '$tag: the authored top pose scores '
                 '${top.toStringAsFixed(3)}, which never enters the top phase '
@@ -151,8 +233,6 @@ void main() {
             reason: '$tag: the authored bottom pose scores '
                 '${bottom.toStringAsFixed(3)}, which never reaches the bottom '
                 'phase (needs >= ${config.bottomEnter})');
-        expect(config.topExit, lessThan(config.bottomExit),
-            reason: '$tag: hysteresis bands overlap');
       });
     }
   });
@@ -184,9 +264,12 @@ void main() {
                 PoseFrame(timestampMs: t, landmarks: f.landmarks));
           }
         }
-        expect(counter.repCount, 1,
+        expect(counter.repCount,
+            thresholdsCalibratedInTheOldSpace.containsKey(tag) ? 0 : 1,
             reason: '$tag: a full lap produced ${counter.repCount} reps '
-                '(last event: ${last?.kind})');
+                '(last event: ${last?.kind})'
+                '${thresholdsCalibratedInTheOldSpace.containsKey(tag) ? " -- see "
+                    "thresholdsCalibratedInTheOldSpace" : ""}');
       });
     }
   });

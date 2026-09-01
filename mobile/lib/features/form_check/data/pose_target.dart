@@ -51,34 +51,34 @@ import 'pose_landmark.dart';
 
 /// A named shape to match: joint positions for one phase of one movement.
 ///
-/// **Correction, `FORMCOACH_TARGET_XSCALE_2026-08-31`:** this used to claim
-/// coordinates were "in the same isotropic space as [PoseLandmark]". A real
-/// device proved that false: x here is authored as a fraction of the frame's
-/// WIDTH (0..1, the ordinary normalised-image convention an author reaches
-/// for without thinking), while [PoseLandmark]'s isotropic space (see
-/// `pose_coordinate_space.dart`) normalises x by HEIGHT, so it only spans
-/// `0..aspectRatio` (~0.56 on a 9:16 phone). Drawing these joints straight
-/// through `projectLandmark` — which assumes true isotropic input — put the
-/// outline's centre (x~0.5) past the right edge of a `0..0.56` frame,
-/// clipped off-panel. `buildSilhouette`'s `xScale` parameter is the fix for
-/// **drawing**: pass `xScale: frameAspect` to convert on the way in.
+/// **Coordinates are isotropic, as of `FORMCOACH_TARGET_ISOTROPIC_2026-09-01`:**
+/// x and y are both fractions of the frame's HEIGHT, exactly like
+/// [PoseLandmark]. So y spans `0..1` and x spans `0..aspectRatio` — about
+/// 0.56 on a 9:16 phone, 0.67 on a 2:3 one. Nothing multiplies these numbers
+/// by a frame's aspect ratio any more, at either of the two places that used
+/// to.
 ///
-/// **Correction, `FORMCOACH_MATCHSCORE_XSCALE_2026-08-31`, same day:**
-/// [poseMatchScore] was left uncorrected above on the theory that fixing it
-/// needed deliberate recalibration first. That was wrong — deferring it left
-/// a live, reachable defect: a landmark set that is EXACTLY the target pose,
-/// captured with a genuinely correct camera, scored only ~0.74 against the
-/// unconverted target, below [kPoseMatchPassing] (0.80) for the best
-/// possible match. No amount of correct technique could ever pass. Confirmed
-/// live: the operator reported the fixed (centred) silhouette still saying
-/// "вы не дошли до силуэта" — this is why. `poseMatchScore` now applies the
-/// same `* frame.aspectRatio` correction to `target.joints`' x before
-/// comparing. The existing calibration table below was NOT invalidated by
-/// this — re-derived synthetically post-fix, a perfect isotropic match
-/// scores 1.0 exactly (identity) and a small (±0.02) perturbation scores
-/// ~0.81, landing almost exactly on the table's own "real body... nudged:
-/// 0.114, 0.81" row, rather than off it. `_zeroScoreAtOffset` (0.6) and
-/// [kPoseMatchPassing] (0.80) are kept unchanged.
+/// They did not start that way, and the history is the reason this paragraph
+/// exists. x was originally authored as a fraction of frame WIDTH (0..1, the
+/// convention an author reaches for without thinking), which two corrections
+/// then compensated for at the point of use: `buildSilhouette` took an
+/// `xScale` for drawing, and [poseMatchScore] multiplied by
+/// `frame.aspectRatio` for scoring. Both were real fixes for real,
+/// device-confirmed bugs — an outline clipped off-panel, and a perfect match
+/// that could only score 0.74 — but they compensated at the wrong layer. A
+/// target whose x is a fraction of WIDTH is a **different shape on every
+/// phone**: measured across the fourteen shipped targets, the same authored
+/// numbers drift by 0.1366 normalised radii between a 9:16 and a 3:4 camera,
+/// which is 22.8% of the 0.6 offset that reduces a score to zero. A lifter
+/// could pass on one handset and fail on another for no reason connected to
+/// their body.
+///
+/// The migration was mechanical — every x multiplied once by 2/3, the aspect
+/// of the reference device the current numbers were measured on — so the
+/// shape is bit-for-bit unchanged there, and correct rather than merely
+/// unchanged everywhere else. `pose_target_test.dart` asserts the invariant
+/// directly: a physical pose scored at several frame aspect ratios must
+/// produce the same number.
 ///
 /// Only their **relative** arrangement is scored — [poseMatchScore] removes
 /// position and size before comparing. They are authored at plausible
@@ -190,12 +190,12 @@ const _sideViewBones = <(LandmarkType, LandmarkType)>[
 const squatTopTarget = PoseTarget(
   id: 'squat.top',
   joints: {
-    LandmarkType.leftShoulder: (0.47, 0.26),
-    LandmarkType.leftElbow: (0.48, 0.40),
-    LandmarkType.leftWrist: (0.49, 0.53),
-    LandmarkType.leftHip: (0.50, 0.53),
-    LandmarkType.leftKnee: (0.50, 0.74),
-    LandmarkType.leftAnkle: (0.49, 0.93),
+    LandmarkType.leftShoulder: (0.297, 0.26),
+    LandmarkType.leftElbow: (0.304, 0.40),
+    LandmarkType.leftWrist: (0.311, 0.53),
+    LandmarkType.leftHip: (0.317, 0.53),
+    LandmarkType.leftKnee: (0.317, 0.74),
+    LandmarkType.leftAnkle: (0.311, 0.93),
   },
   bones: _sideViewBones,
 );
@@ -238,12 +238,12 @@ const squatTopTarget = PoseTarget(
 const squatBottomTarget = PoseTarget(
   id: 'squat.bottom',
   joints: {
-    LandmarkType.leftShoulder: (0.54, 0.58),
-    LandmarkType.leftElbow: (0.62, 0.73),
-    LandmarkType.leftWrist: (0.72, 0.74),
-    LandmarkType.leftHip: (0.28, 0.77),
-    LandmarkType.leftKnee: (0.59, 0.73),
-    LandmarkType.leftAnkle: (0.49, 0.93),
+    LandmarkType.leftShoulder: (0.344, 0.58),
+    LandmarkType.leftElbow: (0.391, 0.712),
+    LandmarkType.leftWrist: (0.519, 0.731),
+    LandmarkType.leftHip: (0.171, 0.77),
+    LandmarkType.leftKnee: (0.377, 0.73),
+    LandmarkType.leftAnkle: (0.311, 0.93),
   },
   bones: _sideViewBones,
   unscoredJoints: {LandmarkType.leftWrist, LandmarkType.leftElbow},
@@ -254,12 +254,12 @@ const squatBottomTarget = PoseTarget(
 const pushupTopTarget = PoseTarget(
   id: 'pushup.top',
   joints: {
-    LandmarkType.leftShoulder: (0.35, 0.55),
-    LandmarkType.leftElbow: (0.35, 0.68),
-    LandmarkType.leftWrist: (0.35, 0.80),
-    LandmarkType.leftHip: (0.55, 0.62),
-    LandmarkType.leftKnee: (0.72, 0.70),
-    LandmarkType.leftAnkle: (0.88, 0.78),
+    LandmarkType.leftShoulder: (0.183, 0.55),
+    LandmarkType.leftElbow: (0.183, 0.68),
+    LandmarkType.leftWrist: (0.183, 0.80),
+    LandmarkType.leftHip: (0.317, 0.62),
+    LandmarkType.leftKnee: (0.430, 0.70),
+    LandmarkType.leftAnkle: (0.537, 0.78),
   },
   bones: _sideViewBones,
 );
@@ -280,12 +280,12 @@ const pushupTopTarget = PoseTarget(
 const pushupBottomTarget = PoseTarget(
   id: 'pushup.bottom',
   joints: {
-    LandmarkType.leftShoulder: (0.31, 0.72),
-    LandmarkType.leftElbow: (0.44, 0.72),
-    LandmarkType.leftWrist: (0.35, 0.80),
-    LandmarkType.leftHip: (0.52, 0.73),
-    LandmarkType.leftKnee: (0.70, 0.75),
-    LandmarkType.leftAnkle: (0.88, 0.78),
+    LandmarkType.leftShoulder: (0.157, 0.72),
+    LandmarkType.leftElbow: (0.243, 0.72),
+    LandmarkType.leftWrist: (0.183, 0.80),
+    LandmarkType.leftHip: (0.297, 0.73),
+    LandmarkType.leftKnee: (0.417, 0.75),
+    LandmarkType.leftAnkle: (0.537, 0.78),
   },
   bones: _sideViewBones,
 );
@@ -328,12 +328,12 @@ const pushupBottomTarget = PoseTarget(
 const curlBottomTarget = PoseTarget(
   id: 'curl.bottom',
   joints: {
-    LandmarkType.leftShoulder: (0.47, 0.30),
-    LandmarkType.leftElbow: (0.48, 0.46),
-    LandmarkType.leftWrist: (0.49, 0.62),
-    LandmarkType.leftHip: (0.50, 0.57),
-    LandmarkType.leftKnee: (0.50, 0.77),
-    LandmarkType.leftAnkle: (0.49, 0.95),
+    LandmarkType.leftShoulder: (0.313, 0.30),
+    LandmarkType.leftElbow: (0.320, 0.46),
+    LandmarkType.leftWrist: (0.327, 0.62),
+    LandmarkType.leftHip: (0.333, 0.57),
+    LandmarkType.leftKnee: (0.333, 0.77),
+    LandmarkType.leftAnkle: (0.327, 0.95),
   },
   bones: _sideViewBones,
 );
@@ -346,12 +346,12 @@ const curlBottomTarget = PoseTarget(
 const curlTopTarget = PoseTarget(
   id: 'curl.top',
   joints: {
-    LandmarkType.leftShoulder: (0.47, 0.30),
-    LandmarkType.leftElbow: (0.48, 0.46),
-    LandmarkType.leftWrist: (0.44, 0.31),
-    LandmarkType.leftHip: (0.50, 0.57),
-    LandmarkType.leftKnee: (0.50, 0.77),
-    LandmarkType.leftAnkle: (0.49, 0.95),
+    LandmarkType.leftShoulder: (0.313, 0.30),
+    LandmarkType.leftElbow: (0.320, 0.46),
+    LandmarkType.leftWrist: (0.293, 0.31),
+    LandmarkType.leftHip: (0.333, 0.57),
+    LandmarkType.leftKnee: (0.333, 0.77),
+    LandmarkType.leftAnkle: (0.327, 0.95),
   },
   bones: _sideViewBones,
 );
@@ -360,12 +360,12 @@ const curlTopTarget = PoseTarget(
 const hingeTopTarget = PoseTarget(
   id: 'hinge.top',
   joints: {
-    LandmarkType.leftShoulder: (0.47, 0.26),
-    LandmarkType.leftElbow: (0.48, 0.40),
-    LandmarkType.leftWrist: (0.49, 0.53),
-    LandmarkType.leftHip: (0.50, 0.53),
-    LandmarkType.leftKnee: (0.50, 0.74),
-    LandmarkType.leftAnkle: (0.49, 0.93),
+    LandmarkType.leftShoulder: (0.313, 0.26),
+    LandmarkType.leftElbow: (0.320, 0.40),
+    LandmarkType.leftWrist: (0.327, 0.53),
+    LandmarkType.leftHip: (0.333, 0.53),
+    LandmarkType.leftKnee: (0.333, 0.74),
+    LandmarkType.leftAnkle: (0.327, 0.93),
   },
   bones: _sideViewBones,
 );
@@ -381,12 +381,12 @@ const hingeTopTarget = PoseTarget(
 const hingeBottomTarget = PoseTarget(
   id: 'hinge.bottom',
   joints: {
-    LandmarkType.leftShoulder: (0.62, 0.43),
-    LandmarkType.leftElbow: (0.62, 0.57),
-    LandmarkType.leftWrist: (0.62, 0.70),
-    LandmarkType.leftHip: (0.40, 0.58),
-    LandmarkType.leftKnee: (0.53, 0.75),
-    LandmarkType.leftAnkle: (0.49, 0.93),
+    LandmarkType.leftShoulder: (0.413, 0.43),
+    LandmarkType.leftElbow: (0.413, 0.57),
+    LandmarkType.leftWrist: (0.413, 0.70),
+    LandmarkType.leftHip: (0.267, 0.58),
+    LandmarkType.leftKnee: (0.353, 0.75),
+    LandmarkType.leftAnkle: (0.327, 0.93),
   },
   bones: _sideViewBones,
 );
@@ -395,12 +395,12 @@ const hingeBottomTarget = PoseTarget(
 const lungeTopTarget = PoseTarget(
   id: 'lunge.top',
   joints: {
-    LandmarkType.leftShoulder: (0.47, 0.26),
-    LandmarkType.leftElbow: (0.48, 0.40),
-    LandmarkType.leftWrist: (0.49, 0.53),
-    LandmarkType.leftHip: (0.50, 0.53),
-    LandmarkType.leftKnee: (0.50, 0.74),
-    LandmarkType.leftAnkle: (0.49, 0.93),
+    LandmarkType.leftShoulder: (0.313, 0.26),
+    LandmarkType.leftElbow: (0.320, 0.40),
+    LandmarkType.leftWrist: (0.327, 0.53),
+    LandmarkType.leftHip: (0.333, 0.53),
+    LandmarkType.leftKnee: (0.333, 0.74),
+    LandmarkType.leftAnkle: (0.327, 0.93),
   },
   bones: _sideViewBones,
 );
@@ -415,12 +415,12 @@ const lungeTopTarget = PoseTarget(
 const lungeBottomTarget = PoseTarget(
   id: 'lunge.bottom',
   joints: {
-    LandmarkType.leftShoulder: (0.42, 0.35),
-    LandmarkType.leftElbow: (0.43, 0.49),
-    LandmarkType.leftWrist: (0.44, 0.62),
-    LandmarkType.leftHip: (0.45, 0.62),
-    LandmarkType.leftKnee: (0.60, 0.77),
-    LandmarkType.leftAnkle: (0.61, 0.95),
+    LandmarkType.leftShoulder: (0.280, 0.35),
+    LandmarkType.leftElbow: (0.287, 0.49),
+    LandmarkType.leftWrist: (0.293, 0.62),
+    LandmarkType.leftHip: (0.300, 0.62),
+    LandmarkType.leftKnee: (0.400, 0.77),
+    LandmarkType.leftAnkle: (0.407, 0.95),
   },
   bones: _sideViewBones,
 );
@@ -429,12 +429,12 @@ const lungeBottomTarget = PoseTarget(
 const situpBottomTarget = PoseTarget(
   id: 'situp.bottom',
   joints: {
-    LandmarkType.leftShoulder: (0.30, 0.72),
-    LandmarkType.leftElbow: (0.22, 0.61),
-    LandmarkType.leftWrist: (0.34, 0.57),
-    LandmarkType.leftHip: (0.55, 0.75),
-    LandmarkType.leftKnee: (0.72, 0.68),
-    LandmarkType.leftAnkle: (0.85, 0.78),
+    LandmarkType.leftShoulder: (0.152, 0.72),
+    LandmarkType.leftElbow: (0.099, 0.61),
+    LandmarkType.leftWrist: (0.179, 0.57),
+    LandmarkType.leftHip: (0.319, 0.75),
+    LandmarkType.leftKnee: (0.432, 0.68),
+    LandmarkType.leftAnkle: (0.519, 0.78),
   },
   bones: _sideViewBones,
 );
@@ -447,12 +447,12 @@ const situpBottomTarget = PoseTarget(
 const situpTopTarget = PoseTarget(
   id: 'situp.top',
   joints: {
-    LandmarkType.leftShoulder: (0.36, 0.59),
-    LandmarkType.leftElbow: (0.27, 0.49),
-    LandmarkType.leftWrist: (0.39, 0.45),
-    LandmarkType.leftHip: (0.55, 0.75),
-    LandmarkType.leftKnee: (0.72, 0.68),
-    LandmarkType.leftAnkle: (0.85, 0.78),
+    LandmarkType.leftShoulder: (0.192, 0.59),
+    LandmarkType.leftElbow: (0.132, 0.49),
+    LandmarkType.leftWrist: (0.212, 0.45),
+    LandmarkType.leftHip: (0.319, 0.75),
+    LandmarkType.leftKnee: (0.432, 0.68),
+    LandmarkType.leftAnkle: (0.519, 0.78),
   },
   bones: _sideViewBones,
 );
@@ -466,12 +466,12 @@ const situpTopTarget = PoseTarget(
 const overheadPressBottomTarget = PoseTarget(
   id: 'overhead_press.bottom',
   joints: {
-    LandmarkType.leftShoulder: (0.47, 0.36),
-    LandmarkType.leftElbow: (0.44, 0.50),
-    LandmarkType.leftWrist: (0.50, 0.39),
-    LandmarkType.leftHip: (0.50, 0.62),
-    LandmarkType.leftKnee: (0.50, 0.80),
-    LandmarkType.leftAnkle: (0.49, 0.96),
+    LandmarkType.leftShoulder: (0.313, 0.36),
+    LandmarkType.leftElbow: (0.293, 0.50),
+    LandmarkType.leftWrist: (0.333, 0.39),
+    LandmarkType.leftHip: (0.333, 0.62),
+    LandmarkType.leftKnee: (0.333, 0.80),
+    LandmarkType.leftAnkle: (0.327, 0.96),
   },
   bones: _sideViewBones,
 );
@@ -483,12 +483,12 @@ const overheadPressBottomTarget = PoseTarget(
 const overheadPressTopTarget = PoseTarget(
   id: 'overhead_press.top',
   joints: {
-    LandmarkType.leftShoulder: (0.47, 0.36),
-    LandmarkType.leftElbow: (0.47, 0.22),
-    LandmarkType.leftWrist: (0.47, 0.09),
-    LandmarkType.leftHip: (0.50, 0.62),
-    LandmarkType.leftKnee: (0.50, 0.80),
-    LandmarkType.leftAnkle: (0.49, 0.96),
+    LandmarkType.leftShoulder: (0.313, 0.36),
+    LandmarkType.leftElbow: (0.313, 0.22),
+    LandmarkType.leftWrist: (0.313, 0.09),
+    LandmarkType.leftHip: (0.333, 0.62),
+    LandmarkType.leftKnee: (0.333, 0.80),
+    LandmarkType.leftAnkle: (0.327, 0.96),
   },
   bones: _sideViewBones,
 );
@@ -621,21 +621,13 @@ const double _zeroScoreAtOffset = 0.6;
 /// judge — "cannot tell" is not a low score, and reporting it as one would tell
 /// a user their form is wrong when the truth is that their knee is out of shot.
 ///
-/// **Correction, `FORMCOACH_MATCHSCORE_XSCALE_2026-08-31`**: [target]'s x is
-/// authored as a fraction of the frame's WIDTH (see the class doc), so it is
-/// multiplied by [frame]'s own `aspectRatio` before comparing — the same
-/// correction `buildSilhouette`'s `xScale` applies for drawing, using the
-/// live frame's own aspect rather than an assumed one. Proven necessary, not
-/// theoretical: a live landmark set that is EXACTLY the target pose, captured
-/// correctly (genuinely isotropic x), scored only ~0.74 against the
-/// uncorrected target — below [kPoseMatchPassing] for the best possible
-/// match, which cannot be fixed by better technique. Every existing test
-/// before this fix compared the target against poses DERIVED from the
-/// target's own (equally wrong-convention) joints, which cancels the bug out
-/// by construction and is why it went uncaught -- see
-/// `pose_target_test.dart`'s `frameFrom`/`poseOf` and the new
-/// `FORMCOACH_MATCHSCORE_XSCALE_2026-08-31` test group, which uses an
-/// independently isotropic frame instead.
+/// [target]'s joints are already in the same isotropic space as [frame]'s
+/// landmarks, so nothing is converted here. That was not always true: until
+/// `FORMCOACH_TARGET_ISOTROPIC_2026-09-01` this multiplied the target's x by
+/// `frame.aspectRatio`, because the target held fractions of frame WIDTH. The
+/// correction was necessary then and is wrong now — the data moved, so the
+/// compensation had to go with it. Applying it on top of isotropic targets
+/// would squash every shape horizontally by the aspect ratio.
 double? poseMatchScore(
   PoseFrame frame,
   PoseTarget target, {
@@ -648,7 +640,7 @@ double? poseMatchScore(
     if (lm == null || lm.likelihood < minLikelihood) continue;
     if (lm.x.isNaN || lm.y.isNaN) continue;
     final want = entry.value;
-    pairs.add(((lm.x, lm.y), (want.$1 * frame.aspectRatio, want.$2)));
+    pairs.add(((lm.x, lm.y), want));
   }
   // Fewer than four shared joints is a fragment, not a pose: the normalisation
   // below would happily scale two points onto any other two points and report
@@ -696,8 +688,7 @@ String? debugMatchBreakdown(
     if (lm == null || lm.likelihood < minLikelihood) continue;
     if (lm.x.isNaN || lm.y.isNaN) continue;
     types.add(entry.key);
-    pairs.add(((lm.x, lm.y), (entry.value.$1 * frame.aspectRatio,
-        entry.value.$2)));
+    pairs.add(((lm.x, lm.y), entry.value));
   }
   if (pairs.length < 4) return null;
   final live = _normalise([for (final p in pairs) p.$1]);
