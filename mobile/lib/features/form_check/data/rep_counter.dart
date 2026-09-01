@@ -87,6 +87,56 @@ double? squatDepthSignal(PoseFrame frame, double minLikelihood) {
   return hipY - kneeY;
 }
 
+/// One frame's depth measured down each leg separately.
+///
+/// The whole-body [squatDepthSignal] averages the two hips and the two knees,
+/// which is exactly the right thing for counting a rep and exactly the wrong
+/// thing for noticing that one leg is doing more of the work than the other:
+/// the average is identical whether the lifter is square or listing.
+class SideDepths {
+  const SideDepths({required this.left, required this.right});
+
+  /// Left hip y minus left knee y — same units and sign convention as
+  /// [squatDepthSignal], so it rises as that side descends.
+  final double left;
+
+  final double right;
+}
+
+/// Extracts per-side depth, or null when the frame cannot support the claim.
+typedef RepSideSignalExtractor = SideDepths? Function(
+  PoseFrame frame,
+  double minLikelihood,
+);
+
+/// The default: this movement has no per-side reading defined.
+SideDepths? _noSideReading(PoseFrame frame, double minLikelihood) => null;
+
+/// Per-side squat depth, or null unless BOTH sides were genuinely seen.
+///
+/// The confidence bar here is deliberately HIGHER than the one the rep counter
+/// runs on, and that is the whole point of the function. The coach asks the
+/// lifter to stand side-on; from there the far hip and the far knee are behind
+/// the body, and BlazePose does not report them as missing — it infers them,
+/// and an inferred joint sits wherever the model's prior says a body of that
+/// pose keeps it. Compare an observed leg against an inferred one and the
+/// answer is not a measurement of the lifter, it is a measurement of the
+/// model. Returning null is the honest outcome, and the panel renders it as
+/// «—» rather than as a reassuring 50/50.
+SideDepths? squatSideDepths(PoseFrame frame, double minLikelihood) {
+  final lHip = frame.landmarks[LandmarkType.leftHip];
+  final rHip = frame.landmarks[LandmarkType.rightHip];
+  final lKnee = frame.landmarks[LandmarkType.leftKnee];
+  final rKnee = frame.landmarks[LandmarkType.rightKnee];
+  if (lHip == null || rHip == null || lKnee == null || rKnee == null) {
+    return null;
+  }
+  for (final j in [lHip, rHip, lKnee, rKnee]) {
+    if (j.likelihood < minLikelihood) return null;
+  }
+  return SideDepths(left: lHip.y - lKnee.y, right: rHip.y - rKnee.y);
+}
+
 /// Tuning for [RepCounter]. Defaults are for a squat read through
 /// [squatDepthSignal].
 class RepCounterConfig {
@@ -98,6 +148,7 @@ class RepCounterConfig {
     this.minRepDurationMs = 600,
     this.minLikelihood = 0.5,
     this.minObservedRatio = 0.5,
+    this.minSideLikelihood = 0.7,
   });
 
   /// Signal at or below this counts as standing at the top.
@@ -137,6 +188,18 @@ class RepCounterConfig {
   /// means the joint is occluded and its position is being inferred.
   final double minLikelihood;
 
+  /// Confidence floor for the per-side symmetry reading, higher than
+  /// [minLikelihood] on purpose.
+  ///
+  /// 0.5 is the bar for "this joint is worth counting a rep on", where an
+  /// averaged pair absorbs a soft reading on one side. Symmetry is the
+  /// DIFFERENCE between the two sides, so a soft reading is the entire signal
+  /// rather than half of it, and the coach's own «встаньте боком» instruction
+  /// puts one whole leg behind the other. 0.7 is a `PRODUCT_HEURISTIC`: above
+  /// the band where ML Kit is visibly inferring an occluded joint, below where
+  /// it would refuse every real front-on rep. See [squatSideDepths].
+  final double minSideLikelihood;
+
   /// How much of a repetition has to have been actually visible before its
   /// quality record is allowed to say anything.
   ///
@@ -164,6 +227,8 @@ class RepQuality {
     required this.severityByRule,
     this.observedFrames = 0,
     this.missedFrames = 0,
+    this.bottomHoldMs = 0,
+    this.peakSides,
   });
 
   /// 1-based position in the set.
@@ -184,6 +249,22 @@ class RepQuality {
   /// Frames during this rep that did not: a joint missing, or below
   /// [RepCounterConfig.minLikelihood]. No rule ran on these.
   final int missedFrames;
+
+  /// How long the lifter spent at the bottom of this repetition.
+  ///
+  /// Wall time between reaching depth and starting back up, summed over every
+  /// visit — a lifter who sinks back down mid-ascent is still in the same rep,
+  /// and their hold is the total, not the last leg of it.
+  final int bottomHoldMs;
+
+  /// Depth down each leg at the deepest frame of this rep, or null when that
+  /// frame could not support the claim (see [squatSideDepths]).
+  ///
+  /// Taken at the PEAK rather than averaged over the rep: the deepest point is
+  /// where a side that is not pulling its weight shows the difference, and an
+  /// average over the descent dilutes it with the frames where both sides are
+  /// near-identical by definition.
+  final SideDepths? peakSides;
 
   /// Share of this rep the app could actually see, or null when the rep
   /// predates frame accounting (a hand-built [RepQuality] with both counts at
@@ -267,7 +348,12 @@ class RepCounter {
   RepCounter({
     this.config = const RepCounterConfig(),
     RepSignalExtractor? signal,
-  }) : _signal = signal ?? squatDepthSignal {
+    RepSideSignalExtractor? sideSignal,
+  })  : _signal = signal ?? squatDepthSignal,
+        // No reading unless a caller names an extractor for THIS movement.
+        // Defaulting to the squat's would have every movement report a hip-vs-
+        // knee split, including the ones where the legs are not what is moving.
+        _sideSignal = sideSignal ?? _noSideReading {
     if (!config.isOrdered) {
       throw ArgumentError.value(
         config,
@@ -281,6 +367,7 @@ class RepCounter {
 
   final RepCounterConfig config;
   final RepSignalExtractor _signal;
+  final RepSideSignalExtractor _sideSignal;
 
   final List<RepQuality> _reps = <RepQuality>[];
   final Map<String, int> _severity = <String, int>{};
@@ -292,6 +379,9 @@ class RepCounter {
   double? _lastSignal;
   int _observedFrames = 0;
   int _missedFrames = 0;
+  int _bottomHoldMs = 0;
+  int? _bottomEnteredMs;
+  SideDepths? _peakSides;
 
   /// Accepted reps so far.
   int get repCount => _reps.length;
@@ -363,7 +453,14 @@ class RepCounter {
     if (_phase != RepPhase.top) {
       _observedFrames++;
       _accumulate(feedback);
-      if (s > _peakSignal) _peakSignal = s;
+      if (s > _peakSignal) {
+        _peakSignal = s;
+        // Read on the peak frame, and allowed to come back null there: a rep
+        // whose deepest moment was the one the far leg disappeared for has no
+        // symmetry reading, and the previous frame's is a different moment of
+        // a different depth.
+        _peakSides = _sideSignal(frame, config.minSideLikelihood);
+      }
     }
 
     switch (_phase) {
@@ -377,6 +474,7 @@ class RepCounter {
       case RepPhase.descending:
         if (s >= config.bottomEnter) {
           _phase = RepPhase.bottom;
+          _bottomEnteredMs = frame.timestampMs;
           return _phaseEvent();
         }
         if (s <= config.topEnter) {
@@ -388,6 +486,7 @@ class RepCounter {
       case RepPhase.bottom:
         if (s <= config.bottomExit) {
           _phase = RepPhase.ascending;
+          _closeBottomVisit(frame.timestampMs);
           return _phaseEvent();
         }
         return null;
@@ -397,8 +496,11 @@ class RepCounter {
           return _complete(frame.timestampMs);
         }
         if (s >= config.bottomEnter) {
-          // Sank back down mid-ascent — still the same rep, not a new one.
+          // Sank back down mid-ascent — still the same rep, not a new one, so
+          // this opens a SECOND visit to the bottom whose time is added to the
+          // first rather than replacing it.
           _phase = RepPhase.bottom;
+          _bottomEnteredMs = frame.timestampMs;
           return _phaseEvent();
         }
         return null;
@@ -421,6 +523,9 @@ class RepCounter {
     _severity.clear();
     _observedFrames = 1;
     _missedFrames = 0;
+    _bottomHoldMs = 0;
+    _bottomEnteredMs = null;
+    _peakSides = null;
     _accumulate(fb);
   }
 
@@ -433,7 +538,20 @@ class RepCounter {
     }
   }
 
+  /// Adds the visit that is ending to the running hold and forgets its start.
+  ///
+  /// Idempotent by way of the null: a rep that ends straight off the bottom
+  /// closes the visit on the way out and must not then count it twice.
+  void _closeBottomVisit(int timestampMs) {
+    final entered = _bottomEnteredMs;
+    if (entered == null) return;
+    final held = timestampMs - entered;
+    if (held > 0) _bottomHoldMs += held;
+    _bottomEnteredMs = null;
+  }
+
   RepEvent? _complete(int timestampMs) {
+    _closeBottomVisit(timestampMs);
     final duration = timestampMs - _repStartMs;
     if (duration < config.minRepDurationMs) {
       return _discard(RepRejectReason.tooFast);
@@ -446,6 +564,8 @@ class RepCounter {
       severityByRule: Map<String, int>.unmodifiable(_severity),
       observedFrames: _observedFrames,
       missedFrames: _missedFrames,
+      bottomHoldMs: _bottomHoldMs,
+      peakSides: _peakSides,
     );
     _reps.add(quality);
     _phase = RepPhase.top;
@@ -475,6 +595,9 @@ class RepCounter {
     _peakSignal = double.negativeInfinity;
     _observedFrames = 0;
     _missedFrames = 0;
+    _bottomHoldMs = 0;
+    _bottomEnteredMs = null;
+    _peakSides = null;
   }
 
   RepEvent _phaseEvent() => RepEvent(

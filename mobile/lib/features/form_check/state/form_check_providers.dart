@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../profile/data/profile_models.dart';
 import '../../profile/state/profile_providers.dart';
+import '../data/coach_counters.dart';
 import '../data/coach_phases.dart';
 import '../data/form_classifier.dart';
 import '../data/measured_rep_configs.dart';
@@ -164,6 +165,43 @@ bool countsRepsFor(FormExercise e) {
   }
   return repSignalFor(e);
 }
+
+/// The per-side extractor for [e], or null when this movement has none.
+///
+/// G4. Only the squat, and deliberately so: [squatSideDepths] compares hip to
+/// knee down each leg, which measures nothing at all on a push-up or a
+/// sit-up. The panel renders the absence as «—», which is the correct answer
+/// rather than a gap — a 50/50 split printed for a movement whose legs are not
+/// moving would be a fabricated reassurance.
+RepSideSignalExtractor? coachSideSignalFor(FormExercise e) =>
+    e == FormExercise.squat ? squatSideDepths : null;
+
+/// The signal value that counts as FULL amplitude for [e], or null when this
+/// movement has no defensible answer.
+///
+/// Squat only, for the same reason: 0 in [squatDepthSignal]'s convention is
+/// the hips level with the knees, the depth [SquatDepthClassifier] is tuned
+/// around and the one the coach actually asks for. The measured configs the
+/// other movements run on carry thresholds but no statement of what their own
+/// full range is, so there is nothing here to be a percentage of.
+double? coachFullAmplitudeSignalFor(FormExercise e) =>
+    e == FormExercise.squat ? 0.0 : null;
+
+/// The four trainer counters, read off the last completed repetition.
+///
+/// Off the last COMPLETED rep, like the technique gauge's cause tag and for
+/// the same reason: these are numbers about a repetition, and a value
+/// recomputed thirty times a second is not one anybody can read.
+final coachCountersProvider = Provider<CoachCounters>((ref) {
+  final session = ref.watch(repSessionControllerProvider);
+  final exercise = ref.watch(selectedExerciseProvider);
+  final signal = liveRepSignalFor(exercise);
+  return coachCountersFor(
+    session.reps.isEmpty ? null : session.reps.last,
+    config: signal?.$2 ?? const RepCounterConfig(),
+    fullAmplitudeSignal: coachFullAmplitudeSignalFor(exercise),
+  );
+});
 
 /// Whether the on-screen rep count for [e] is accurate enough to show.
 ///
@@ -955,6 +993,9 @@ class RepSessionController extends Notifier<RepSessionState> {
     _counter = RepCounter(
       config: signal?.$2 ?? const RepCounterConfig(),
       signal: signal?.$1,
+      // Only where a per-side reading has a defined meaning. See
+      // [coachSideSignalFor].
+      sideSignal: coachSideSignalFor(exercise),
     );
     assert(() {
       _debugSignal = signal?.$1;

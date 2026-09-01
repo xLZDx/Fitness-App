@@ -39375,3 +39375,67 @@ would earn "done" for G3 have not been taken. G4 (real counter values), G6 (the 
 silhouette plus the producer-side hysteresis deferred from G5) and G7 (fault explanations in
 words) are untouched. G5 is committed but still unpushed, having never received a final GPT-PM
 receipt.
+
+## FORM_COACH_REDESIGN G4 — real values behind the four counters (2026-09-02)
+
+G3 built the panel with every column at «—». This gate measures what goes in
+them, in `mobile/lib/features/form_check/data/coach_counters.dart` — pure, no
+providers, no widgets, and comparing only against the rep counter's own
+thresholds so the panel cannot disagree with the machine that produced the rep.
+
+**ТЕМП** is `RepQuality.durationMs`, which already existed. A record whose clock
+did not move reports nothing rather than zero seconds per rep.
+
+**АМПЛИТУДА** is depth from the standing gate (`topEnter`, -0.15) to PARALLEL —
+hip level with knee, signal 0 in `squatDepthSignal`'s convention — and not to
+`bottomEnter`, the gate that makes a rep count. Against the gate every counted
+rep reads 100% by construction and nothing ever reads anything else; a counter
+with one possible value is not a measurement. Below parallel is capped at 100%
+rather than reported as 118%: `PRODUCT_HEURISTIC`, stated as one in the source,
+because what the coach means by amplitude is "did you reach the depth asked of
+you". A rep that only just made the depth gate reads 73%, which is the number
+this counter exists to be able to say.
+
+**ПАУЗА** is new state on `RepCounter`: wall time between reaching depth and
+leaving it, summed over every visit, because a lifter who sinks back down
+mid-ascent is still in the same rep. It reads 0.0 rather than «—» for a rep that
+bounced — the app watched that bottom and there was no hold, which is a
+measurement and the one a bouncing lifter most needs. The hold includes the
+first frame of the ascent while the signal is still inside the hysteresis band,
+which is correct and is asserted with that reasoning written out: the lifter
+genuinely is still at the bottom there.
+
+**СИММЕТРИЯ** is the honest one. `squatSideDepths` compares hip-to-knee down
+each leg at the deepest frame, and refuses to answer unless BOTH sides clear
+`minSideLikelihood` = 0.7 — deliberately higher than the counter's own 0.5.
+The coach instructs «встаньте боком»; from there the far hip and knee are
+behind the body and BlazePose does not report them missing, it infers them.
+Comparing an observed leg against an inferred one measures the model, not the
+lifter. So on a side-on set this column stays «—», which is the correct answer
+rather than a gap — a 50/50 printed off a guessed leg is the most reassuring
+lie the screen could tell.
+
+**Neither symmetry nor amplitude is offered for a non-squat movement.**
+`RepCounter`'s side extractor now defaults to "no reading" and the squat's is
+passed explicitly (`coachSideSignalFor`); the amplitude reference is a
+parameter (`coachFullAmplitudeSignalFor`) rather than a constant. Parallel is
+squat reasoning and carries nothing over to a push-up's elbow angle; the
+measured configs the other movements run on carry thresholds but no statement
+of their own full range, so there is nothing to be a percentage of.
+
+**Verification.** 23 unit tests in `coach_counters_test.dart` plus a page-level
+acceptance test that the readings reach the panel and that amplitude lands
+above 80% on a fixture that squats to parallel — "not an em-dash" alone would
+not have caught a plausible wrong number. Mutation-checked, three ways, each
+reverted after: amplitude measured against `bottomEnter` instead of parallel
+fails the 73% test; the symmetry confidence bar dropped to the counter's own
+0.5 fails the inferred-leg test; dropping `_closeBottomVisit` on the ascent
+fails the hold test. Full suite 3401 green, the only failures the two
+pre-existing `composed_screen_golden_test` Home goldens.
+
+**Not verified on the device, and the reason is not a technical one.** The S8
+is connected and the debug build installed cleanly, but the phone is sitting
+behind a PIN lock. I do not have it and will not guess at one on the operator's
+personal hardware, so G3's and G4's on-screen appearance are unverified. The
+phone was left exactly as found — screen asleep, lock screen untouched. This is
+the one thing outstanding for both gates.

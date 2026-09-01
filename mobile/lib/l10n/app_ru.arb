@@ -1403,6 +1403,15 @@
   "@formcheckHudNotMeasured": {
     "description": "Form coach live HUD (gate G3)."
   },
+  "formcheckHudSeconds": "{value} с",
+  "@formcheckHudSeconds": {
+    "description": "Form coach live HUD (gate G4): a duration in seconds, already rounded to one decimal by the caller.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "formcheckCloseSet": "Закрыть сет",
   "@formcheckCloseSet": {
     "description": "Form coach live HUD (gate G3)."

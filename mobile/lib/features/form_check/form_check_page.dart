@@ -767,12 +767,11 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                   ),
                   const SizedBox(height: 12),
                   // The four counters, under the picture, exactly where the
-                  // reference has them. G3 builds the panel; every value in it
-                  // is still «—» because G4 is what measures them, and a number
-                  // invented to fill a gauge is worse than an honest em-dash.
-                  const CoachCountersPanel(
-                    key: Key('form_check.hud.counters'),
-                  ),
+                  // reference has them. G3 built the panel; G4 measures what
+                  // goes in it — and leaves «—» wherever the measurement does
+                  // not exist for this movement, which for symmetry is most of
+                  // the time. See `coach_counters.dart`.
+                  const _CoachCounters(),
                   const SizedBox(height: 12),
                   _SetControls(phase: phase),
                   const SizedBox(height: 4),
@@ -934,6 +933,46 @@ class _SetControls extends ConsumerWidget {
 }
 
 /// A square, icon-only control, sized to stand beside a full-height pill.
+/// The four trainer counters, formatted for the panel.
+///
+/// Formatting only. What each number MEANS, and whether it exists at all, is
+/// [coachCountersFor]'s business — this widget cannot invent a reading, which
+/// is why every field here is a null-check and none of them is a fallback.
+class _CoachCounters extends ConsumerWidget {
+  const _CoachCounters();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final c = ref.watch(coachCountersProvider);
+    String? seconds(double? v) =>
+        v == null ? null : l10n.formcheckHudSeconds(v.toStringAsFixed(1));
+    final split = c.symmetryLeftPercent;
+    final off = c.symmetryOffBy;
+    return CoachCountersPanel(
+      key: const Key('form_check.hud.counters'),
+      tempo: seconds(c.tempoSeconds),
+      amplitude:
+          c.amplitude == null ? null : '${(c.amplitude! * 100).round()}%',
+      // Written as the reference writes it — both halves, so it reads as a
+      // split rather than as a score for one leg.
+      symmetry: split == null ? null : '$split/${100 - split}',
+      // Five points off even is the same band `SquatDepthClassifier` treats as
+      // a nudge rather than a fault, and ten is where it stops being posture
+      // and starts being a limp. A `PRODUCT_HEURISTIC`: no measurement of real
+      // lifters set these, and they colour a number without changing it.
+      symmetryTone: off == null
+          ? CoachTone.neutral
+          : off < 5
+              ? CoachTone.good
+              : off < 10
+                  ? CoachTone.warn
+                  : CoachTone.fault,
+      pause: seconds(c.pauseSeconds),
+    );
+  }
+}
+
 class _RoundIconButton extends StatelessWidget {
   const _RoundIconButton({
     super.key,

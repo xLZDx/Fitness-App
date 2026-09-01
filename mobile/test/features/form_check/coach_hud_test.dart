@@ -259,6 +259,43 @@ void main() {
     expect(find.byType(CoachCueChip).evaluate().length, lessThanOrEqualTo(2));
   });
 
+  testWidgets('once a rep completes the panel stops saying «—»',
+      (tester) async {
+    // G4's acceptance test at the surface the operator actually looks at. The
+    // unit tests in `coach_counters_test.dart` prove each reading is a
+    // measurement of what its label claims; this one proves the measurement
+    // reaches the panel, which is a different failure and the one a screenshot
+    // would show.
+    _phoneSized(tester);
+    final c = _pageContainer(oneSquat(0));
+    await tester.pumpWidget(_page(c));
+    await _settle(tester);
+
+    expect(c.read(repSessionControllerProvider).reps, isNotEmpty,
+        reason: 'positive control: a rep really did complete');
+
+    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+    String read(String key) =>
+        tester.widget<Text>(find.byKey(Key(key))).data ?? '';
+
+    for (final key in const [
+      'form_check.hud.tempo',
+      'form_check.hud.amplitude',
+      'form_check.hud.pause',
+    ]) {
+      expect(read(key), isNot(l10n.formcheckHudNotMeasured),
+          reason: '$key is still blank after a completed repetition');
+    }
+    // Amplitude is a percentage of parallel, and this fixture stops with the
+    // hip level with the knee — so it is near the top of the range, and a
+    // panel printing a plausible-looking low number would be wrong in a way
+    // "not an em-dash" cannot catch.
+    final amplitude =
+        int.parse(read('form_check.hud.amplitude').replaceAll('%', ''));
+    expect(amplitude, greaterThan(80));
+    expect(amplitude, lessThanOrEqualTo(100));
+  });
+
   testWidgets('the set controls weight closing the set over pausing it',
       (tester) async {
     _phoneSized(tester);
