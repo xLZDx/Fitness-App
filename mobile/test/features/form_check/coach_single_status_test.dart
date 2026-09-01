@@ -365,10 +365,14 @@ void main() {
         reason: 'a match score is now computed in avatar mode too, driving '
             'both the rep verdict and the avatar\'s green glow '
             '(avatarVerdictSeverity)');
-    expect(find.byKey(const Key('form_check.match')), findsNothing,
-        reason: 'the numeric readout stays avatar-mode-hidden by choice, not '
-            'by necessity — its design-mandated home is the circular '
-            '"Техника" gauge from Gate 2, not yet built');
+    // Was `findsNothing`, with the reason "its design-mandated home is the
+    // circular «Техника» gauge, not yet built". G3 built it, so the readout
+    // has somewhere to live and no longer has to be withheld: the percentage
+    // that already drives the rep verdict and the avatar's glow is now also
+    // the number on the gauge, in both modes.
+    expect(find.byKey(const Key('form_check.match')), findsOneWidget,
+        reason: 'the technique gauge exists as of G3 and reports the same '
+            'score avatar mode is already grading against');
   });
 
   testWidgets('a match percentage does not outlive the frames it was measured '

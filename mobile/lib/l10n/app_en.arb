@@ -147,7 +147,9 @@
   "@equipmentReportConfirmGym": {
     "description": "Checkbox label offered when the user has a saved gym on their profile. Unchecked by default -- codex review, 2026-08-21: a report filed while the user is actually somewhere else must not silently route to this saved gym, so routing requires an explicit, per-report confirmation rather than trusting the profile.",
     "placeholders": {
-      "gymName": {"type": "String"}
+      "gymName": {
+        "type": "String"
+      }
     }
   },
   "equipmentReportSentToMaintenanceThanks": "Report recorded — thanks.",
@@ -2480,5 +2482,45 @@
   },
   "@profileLinkAccountSubtitle": {
     "description": "Why linking is worth doing, stated with its one real exception. linkWithCredential preserves the uid, so nothing is orphaned -- EXCEPT on credential-already-in-use, where FirebaseAuthRepository.signInWithGoogle falls back to signInWithCredential and this device's guest data stays orphaned but intact. That case is common (reinstall, second device), so the string must not promise around it."
+  },
+  "formcheckHudReps": "REPS",
+  "@formcheckHudReps": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudTechnique": "TECHNIQUE",
+  "@formcheckHudTechnique": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudCounters": "Coach counters",
+  "@formcheckHudCounters": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudOnDevice": "ON-DEVICE · 30 FPS",
+  "@formcheckHudOnDevice": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudTempo": "TEMPO",
+  "@formcheckHudTempo": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudAmplitude": "RANGE",
+  "@formcheckHudAmplitude": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudSymmetry": "SYMMETRY",
+  "@formcheckHudSymmetry": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudPause": "PAUSE",
+  "@formcheckHudPause": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudNotMeasured": "—",
+  "@formcheckHudNotMeasured": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckCloseSet": "Close set",
+  "@formcheckCloseSet": {
+    "description": "Form coach live HUD (gate G3)."
   }
 }

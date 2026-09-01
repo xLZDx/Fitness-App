@@ -39317,3 +39317,61 @@ blend ("turning side-on narrows the body continuously...", on the boundary asser
 the limb pair's own interpolation, by swapping its two ends ("the limb pair closes up as
 continuously as the trunk does"); and the pelvis, by zeroing the offset ("the trunk carries on past
 the hip joint").
+
+## FORM_COACH_REDESIGN G3 — the live HUD (2026-09-02)
+
+The reference screen (`core/design/reference/fitness_hud_v1/screenshots/04-form-coach.png`) draws
+the coaching HUD as five things. This gate builds their LAYOUT and changes no meaning: a movement
+strip, two ring gauges, a cue chip over the picture, the four trainer counters under it, and a
+weighted pair of set controls. What the gauges report is exactly what the two floating badges they
+replaced already reported. What the counters report is G4; every one of them reads the
+not-measured em-dash here, and a test asserts it, because a number invented to fill a gauge is
+worse than an honest dash.
+
+**`widgets/coach_hud.dart` is new**: `CoachRingGauge`, `CoachExerciseStrip`, `CoachCueChip`,
+`CoachCountersPanel`, a `CoachTone` scale and `coachToneForSeverity`.
+
+**A gauge distinguishes a measurement from the absence of one.** `form_check.rep_count` and
+`form_check.match` mean "a number is on screen"; an unmeasured gauge carries
+`form_check.rep_count_not_tracked` / `form_check.match_not_measured` instead. One key across both
+states would have made "no percentage is being shown" a string comparison rather than a checkable
+claim, and three existing tests depend on exactly that claim.
+
+**The technique gauge now reports in avatar mode too.** `coach_single_status_test.dart` asserted
+the opposite, with the reason "its design-mandated home is the circular «Техника» gauge, not yet
+built". It is built, so the score that already drives the rep verdict and the avatar's glow is now
+also the number on the gauge. The assertion was inverted deliberately, not deleted.
+
+**The passed-rule chips are the reference's «✓ Лопатки».** Only rules whose worst severity during
+the last rep was 0 — a pass, not an absence, since every shipped rule emits a severity-0
+observation on the frames it runs. The rule that FAILED is already the cue chip and the gauge's
+cause tag, and this screen has spent three gates removing surfaces that repeat each other. Capped
+at two: the picture behind them is what the user came to look at.
+
+**The cue card kept its keys, its messages and the one-voice rule, and changed only its shape** —
+from a full-width slab of verdict colour to a chip bordered in it, so the body behind it stays
+visible while it speaks.
+
+**Set controls moved below the counters panel** and stopped being two equal halves. Pause is a
+square icon, closing the set is the wide pill. They used to sit ABOVE the preview specifically to
+keep them off the cue card; that reason does not follow them, because the cue card is inside the
+preview and everything below it is not.
+
+**Two theme ratchets caught real defects in this diff, neither of them cosmetic.**
+`font_bundle_test.dart` found `FontWeight.w300` — Inter ships no 300 face, and the engine
+synthesises a missing one silently, so it would have shipped a fake weight nobody could see in a
+screenshot. `app_semantic_colors_test.dart`'s white ledger went 61 -> 68; the HUD's TEXT colours
+now resolve through `theme.colors.textPrimary`/`textSecondary` and the count is back to 61 with no
+ledger edit. The four literals left in `coach_hud.dart` are the reference's own drawing — chip and
+gauge borders — not text on a themed surface, same category as the avatar's bone whites.
+
+**Verification.** `flutter analyze lib test` clean of new issues. Full suite: 3377 passing, the
+only two failures the pre-existing `composed_screen_golden_test` Home goldens, shown independent
+of this feature in G5. Mutation-checked rather than asserted: suppressing the passed-rule chips
+fails the tick test, and making the two set controls equal halves fails the weighting test.
+
+**Not done, and not claimed.** No on-device verification of this gate yet — the screenshots that
+would earn "done" for G3 have not been taken. G4 (real counter values), G6 (the live person's
+silhouette plus the producer-side hysteresis deferred from G5) and G7 (fault explanations in
+words) are untouched. G5 is committed but still unpushed, having never received a final GPT-PM
+receipt.

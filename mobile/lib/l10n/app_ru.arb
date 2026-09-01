@@ -1366,5 +1366,45 @@
   "eligReasonProfessionalGuidance": "Вы сообщили, что беременны или недавно родили. Тренировки в этот период могут быть уместны, но подходящий план зависит от ваших личных обстоятельств — поэтому SPTR не составляет здесь персональную программу и предлагает обратиться к акушерке, врачу или квалифицированному специалисту по перинатальным тренировкам.",
   "eligProfessionalGuidanceTitle": "Сейчас мы не подходящий инструмент для этого",
   "profileLinkAccount": "Сохранить прогресс",
-  "profileLinkAccountSubtitle": "Добавьте аккаунт Google. Всё, что вы записали, перейдёт вместе с ним — если у этого аккаунта здесь ещё нет профиля."
+  "profileLinkAccountSubtitle": "Добавьте аккаунт Google. Всё, что вы записали, перейдёт вместе с ним — если у этого аккаунта здесь ещё нет профиля.",
+  "formcheckHudReps": "ПОВТОРЫ",
+  "@formcheckHudReps": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudTechnique": "ТЕХНИКА",
+  "@formcheckHudTechnique": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudCounters": "Счётчики тренера",
+  "@formcheckHudCounters": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudOnDevice": "НА УСТРОЙСТВЕ · 30 FPS",
+  "@formcheckHudOnDevice": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudTempo": "ТЕМП",
+  "@formcheckHudTempo": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudAmplitude": "АМПЛИТУДА",
+  "@formcheckHudAmplitude": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudSymmetry": "СИММЕТРИЯ",
+  "@formcheckHudSymmetry": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudPause": "ПАУЗА",
+  "@formcheckHudPause": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckHudNotMeasured": "—",
+  "@formcheckHudNotMeasured": {
+    "description": "Form coach live HUD (gate G3)."
+  },
+  "formcheckCloseSet": "Закрыть сет",
+  "@formcheckCloseSet": {
+    "description": "Form coach live HUD (gate G3)."
+  }
 }

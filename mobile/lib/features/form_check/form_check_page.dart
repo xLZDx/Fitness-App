@@ -28,6 +28,7 @@ import 'data/coach_phases.dart';
 import 'state/coach_phase_providers.dart';
 import 'state/form_check_providers.dart';
 import 'widgets/camera_flip_button.dart';
+import 'widgets/coach_hud.dart';
 import 'widgets/coach_intro_cards.dart';
 import 'widgets/coach_readiness_band.dart';
 
@@ -639,11 +640,11 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                   // before the set, not discovered after it.
                   const _ExercisePicker(),
                   const SizedBox(height: 12),
-                  // Above the preview, not overlaid on it. The bottom of the preview is
-                  // already the cue card's, and a control that shares space with the
-                  // one sentence telling you what you did wrong is a control that will
-                  // be pressed by accident mid-rep.
-                  _SetControls(phase: phase),
+                  // The set controls used to sit HERE, above the preview, to keep
+                  // them away from the cue card at the bottom of the picture. G3
+                  // moved them below the counters panel, where the reference puts
+                  // them — which does not reintroduce that defect, because the cue
+                  // card is inside the preview and everything below it is not.
                   AspectRatio(
                     aspectRatio: 9 / 16,
                     child: ClipRRect(
@@ -744,10 +745,18 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                                   left: 12,
                                   right: 12,
                                   bottom: 12,
-                                  child: _CueCard(
-                                    feedback: session.lastRepCue,
-                                    verdict: session.lastRepVerdict,
-                                    reject: session.lastReject,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      _PassedRuleChips(session: session),
+                                      _CueCard(
+                                        feedback: session.lastRepCue,
+                                        verdict: session.lastRepVerdict,
+                                        reject: session.lastReject,
+                                      ),
+                                    ],
                                   ),
                                 ),
                             ],
@@ -756,7 +765,17 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
+                  // The four counters, under the picture, exactly where the
+                  // reference has them. G3 builds the panel; every value in it
+                  // is still «—» because G4 is what measures them, and a number
+                  // invented to fill a gauge is worse than an honest em-dash.
+                  const CoachCountersPanel(
+                    key: Key('form_check.hud.counters'),
+                  ),
+                  const SizedBox(height: 12),
+                  _SetControls(phase: phase),
+                  const SizedBox(height: 4),
                   // A coach that has gone silent because the device has no voice
                   // installed is indistinguishable from a coach with nothing to say.
                   // `lastErrorMessage` existed for exactly this and nothing read it —
@@ -869,27 +888,33 @@ class _SetControls extends ConsumerWidget {
       case CoachPhase.active:
       case CoachPhase.paused:
         final paused = phase == CoachPhase.paused;
+        // Not two equal buttons any more. The reference weights them: pause is
+        // a square icon, closing the set is the wide pill with the arrow —
+        // because one of them is a step in the set and the other one ends it,
+        // and two identical halves said they were the same kind of choice.
+        // Both keep their keys and their callbacks.
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: Row(
             children: [
-              Expanded(
-                child: AppSecondaryButton(
-                  key: Key(paused
-                      ? 'form_check.resume_set'
-                      : 'form_check.pause_set'),
-                  label:
-                      paused ? l10n.formcheckResumeSet : l10n.formcheckPauseSet,
-                  icon: paused ? Icons.play_arrow : Icons.pause,
-                  onPressed: paused ? coach.resume : coach.pause,
-                ),
+              _RoundIconButton(
+                key: Key(paused
+                    ? 'form_check.resume_set'
+                    : 'form_check.pause_set'),
+                icon: paused ? Icons.play_arrow : Icons.pause,
+                // Still labelled for anyone not looking at it: an icon-only
+                // control with no semantics is a control a screen reader
+                // cannot name.
+                tooltip:
+                    paused ? l10n.formcheckResumeSet : l10n.formcheckPauseSet,
+                onPressed: paused ? coach.resume : coach.pause,
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: AppPrimaryButton(
                   key: const Key('form_check.finish_set'),
-                  label: l10n.formcheckFinishSet,
-                  icon: Icons.check,
+                  label: l10n.formcheckCloseSet,
+                  icon: Icons.arrow_forward,
                   onPressed: coach.finish,
                 ),
               ),
@@ -905,6 +930,48 @@ class _SetControls extends ConsumerWidget {
       case CoachPhase.summary:
         return const SizedBox.shrink();
     }
+  }
+}
+
+/// A square, icon-only control, sized to stand beside a full-height pill.
+class _RoundIconButton extends StatelessWidget {
+  const _RoundIconButton({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Tooltip(
+      message: tooltip,
+      child: Semantics(
+        button: true,
+        label: tooltip,
+        child: SizedBox(
+          width: 56,
+          height: 56,
+          child: Material(
+            color: theme.colors.surfaceElevated,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: BorderSide(color: theme.colors.outline),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onPressed,
+              child: Icon(icon, color: theme.colors.textPrimary, size: 24),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -1459,6 +1526,26 @@ class _StartFailure extends StatelessWidget {
 ///
 /// Public so the arrangement can be pumped without a camera. [ScanTopBar] is
 /// public for the same reason and after the same class of bug.
+/// The movement's own name.
+///
+/// Lifted out of the exercise picker in G3, where the live HUD's movement strip
+/// became a second caller: two switches over the same enum drift, and the one
+/// that drifts is the one nobody is looking at. It lives here rather than
+/// beside the other l10n mappings in `data/cue_text.dart` because
+/// [FormExercise] is declared in the state layer, and a data-layer file
+/// reaching up into state to name it would invert the dependency for the sake
+/// of one switch.
+String formExerciseName(AppLocalizations l10n, FormExercise e) => switch (e) {
+      FormExercise.squat => l10n.formcheckExerciseSquat,
+      FormExercise.pushup => l10n.formcheckExercisePushup,
+      FormExercise.deadlift => l10n.formcheckExerciseDeadlift,
+      FormExercise.curl => l10n.formcheckExerciseCurl,
+      FormExercise.hinge => l10n.formcheckExerciseHinge,
+      FormExercise.lunge => l10n.formcheckExerciseLunge,
+      FormExercise.situp => l10n.formcheckExerciseSitup,
+      FormExercise.overheadPress => l10n.formcheckExerciseOverheadPress,
+    };
+
 class CoachTopStrip extends ConsumerWidget {
   const CoachTopStrip({
     super.key,
@@ -1477,25 +1564,92 @@ class CoachTopStrip extends ConsumerWidget {
     // same two-voices defect this gate exists to remove, one surface further
     // out than the first pass looked.
     final instructing = ref.watch(coachIsInstructingProvider);
+    final l10n = AppLocalizations.of(context);
+    final exercise = ref.watch(selectedExerciseProvider);
+    final phase = ref.watch(coachSessionProvider).phase;
+    final match = ref.watch(poseMatchProvider);
+
+    // G3. The two badges that used to float in opposite corners are now the
+    // reference's two ring gauges, under a strip naming the movement. What is
+    // shown in them is unchanged — a rep count the counter is entitled to keep,
+    // and the live silhouette match — because this gate is the LAYOUT; G4 is
+    // what puts real values behind the four counters below the picture.
+    final last = session.reps.isEmpty ? null : session.reps.last;
+    // The cause tag under the technique number. Off the last COMPLETED rep, not
+    // off the live frame: a caption recomputed thirty times a second is not
+    // readable, and the reference's tag is a verdict on a repetition.
+    String? cause;
+    if (last != null && last.maxSeverity > 0) {
+      var worstRule = '';
+      var worst = 0;
+      last.severityByRule.forEach((rule, severity) {
+        if (severity > worst) {
+          worst = severity;
+          worstRule = rule;
+        }
+      });
+      if (worstRule.isNotEmpty) cause = formRuleName(l10n, worstRule);
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        CoachExerciseStrip(
+          key: const Key('form_check.hud.strip'),
+          movement: formExerciseName(l10n, exercise),
+          live: phase == CoachPhase.active,
+        ),
+        const SizedBox(height: 10),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          // `spaceBetween` + `Flexible`, not `Spacer`: a Spacer makes the row's
-          // minimum width the sum of its children, so a long enough readout
-          // pushes the other pill off a narrow screen instead of shrinking it.
-          // That is precisely how `/scan` overflowed 142px at 320dp, in Russian
-          // only, invisibly to a suite that renders English.
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Flexible(
-              child: showRepCount
-                  ? _RepBadge(session: session, showPhase: !instructing)
-                  : const _RepCountNotTrackedBadge(),
+            Expanded(
+              child: CoachRingGauge(
+                key: const Key('form_check.hud.reps'),
+                // Two keys, not one, and deliberately: everything downstream
+                // of this gauge — tests, and a reader glancing at it — has to
+                // be able to tell a COUNT from the absence of one. A single
+                // key on a field that reads "3" in one branch and an em-dash
+                // in the other says "there is a number here" in both.
+                valueKey: showRepCount
+                    ? const Key('form_check.rep_count')
+                    : const Key('form_check.rep_count_not_tracked'),
+                captionKey: const Key('form_check.phase'),
+                label: l10n.formcheckHudReps,
+                // A movement the counter cannot follow gets an em-dash and the
+                // reason, not a zero. A zero on a gauge is a measurement.
+                value: showRepCount
+                    ? '${session.repCount}'
+                    : l10n.formcheckHudNotMeasured,
+                caption: showRepCount
+                    ? (session.isArmed && !instructing
+                        ? repPhaseText(l10n, session.phase)
+                        : null)
+                    : l10n.formcheckRepCountNotTracked,
+              ),
             ),
-            const SizedBox(width: 8),
-            const Flexible(child: _MatchReadout()),
+            const SizedBox(width: 12),
+            Expanded(
+              child: CoachRingGauge(
+                key: const Key('form_check.hud.technique'),
+                // Same rule as the counter above: `form_check.match` means a
+                // percentage is on screen. An unmeasured gauge is a different
+                // key, so "no percentage is being shown" stays a checkable
+                // claim rather than becoming a string comparison.
+                valueKey: match == null
+                    ? const Key('form_check.match_not_measured')
+                    : const Key('form_check.match'),
+                label: l10n.formcheckHudTechnique,
+                value: match == null
+                    ? l10n.formcheckHudNotMeasured
+                    : '${(match * 100).round()}',
+                suffix: match == null ? null : '%',
+                caption: cause,
+                tone: match == null
+                    ? CoachTone.neutral
+                    : match >= kPoseMatchPassing
+                        ? CoachTone.good
+                        : CoachTone.warn,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -1518,103 +1672,6 @@ class CoachTopStrip extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// Sits where [_RepBadge] would, for a movement `showRepCountFor` refuses.
-///
-/// Silent omission was the first draft and was wrong: the operator's own R8
-/// decision (`core/SESSION_STATE_2026-08-08.md`) is that a movement with
-/// counting turned off says so on screen, rather than leaving a blank corner
-/// that reads as a bug. The silhouette coaching underneath keeps running
-/// either way — this replaces only the number, not the feature.
-class _RepCountNotTrackedBadge extends StatelessWidget {
-  const _RepCountNotTrackedBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 140),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.45),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Text(
-          AppLocalizations.of(context).formcheckRepCountNotTracked,
-          key: const Key('form_check.rep_count_not_tracked'),
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: Colors.white70,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Live rep count + phase, over the camera preview. Deliberately the largest
-/// text on the screen — mid-set, at arm's length, this is the only thing the
-/// user can actually read.
-class _RepBadge extends StatelessWidget {
-  const _RepBadge({required this.session, this.showPhase = true});
-  final RepSessionState session;
-
-  /// Whether to draw the phase line under the number.
-  ///
-  /// False while the status band is reporting that the coach cannot see the
-  /// user. The phase is a readout of the counter rather than an instruction, so
-  /// it does not belong in the band's priority ladder — but "ready" sitting
-  /// under the count while the band says the body is out of frame is still two
-  /// things being said at once, and the count is the half that can wait.
-  final bool showPhase;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '${session.repCount}',
-            key: const Key('form_check.rep_count'),
-            style: theme.textTheme.headlineMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              height: 1.0,
-            ),
-          ),
-          // Only once the counter has armed. Before that the badge is the
-          // number and nothing else: what is being waited for is said once, by
-          // the status band, because it is a statement about whether the coach
-          // is ready rather than about the set. Saying it here as well put
-          // "stand tall to start counting" directly above "Ready. Start when
-          // you are." — the screen telling the user both that it was waiting
-          // for them and that it was not.
-          if (session.isArmed && showPhase) ...[
-            const SizedBox(height: 2),
-            Text(
-              AppLocalizations.of(context).formcheckReps(
-                  repPhaseText(AppLocalizations.of(context), session.phase)),
-              key: const Key('form_check.phase'),
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: Colors.white70,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ],
-      ),
     );
   }
 }
@@ -1694,6 +1751,56 @@ class _SetSummaryCard extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+/// The reference's «✓ Лопатки» chip: what the coach checked on the last
+/// repetition and had nothing to say about.
+///
+/// Only the rules that PASSED. The one that did not is already the cue chip
+/// below and the cause tag under the technique gauge, and this screen has spent
+/// three gates removing surfaces that repeat each other. A tick is the half of
+/// the verdict nothing else on screen carries — without it, a rule the coach
+/// watched and approved is indistinguishable from a rule it never ran.
+///
+/// Severity 0 means "watched and clean", not "no data": every shipped rule
+/// emits a severity-0 observation on the frames it runs, which is what
+/// [RepQuality.severityByRule] records. See [coachToneForSeverity].
+class _PassedRuleChips extends StatelessWidget {
+  const _PassedRuleChips({required this.session});
+
+  final RepSessionState session;
+
+  /// At most two. The picture behind them is the thing the user is actually
+  /// looking at, and a full list of every rule in the movement would cover it.
+  static const _limit = 2;
+
+  @override
+  Widget build(BuildContext context) {
+    final last = session.reps.isEmpty ? null : session.reps.last;
+    if (last == null) return const SizedBox.shrink();
+    final passed = [
+      for (final e in last.severityByRule.entries)
+        if (e.value <= 0) e.key,
+    ]..sort();
+    if (passed.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Wrap(
+        key: const Key('form_check.hud.passed_rules'),
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final rule in passed.take(_limit))
+            CoachCueChip(
+              key: Key('form_check.hud.passed_rule.$rule'),
+              text: formRuleName(l10n, rule),
+              tone: CoachTone.good,
+            ),
         ],
       ),
     );
@@ -1796,20 +1903,43 @@ class _CueCard extends StatelessWidget {
   /// on the two surfaces, rather than by enumerating every message key either
   /// of them might contain. An enumeration goes stale the moment a message is
   /// added — which is exactly how a screen grows a second voice back.
-  Widget _band(ThemeData theme, Color colour, String text, Key key) =>
-      Container(
-        key: const Key('form_check.cue_card'),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: colour,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Text(
-          text,
-          key: key,
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
+  ///
+  /// G3 changed its SHAPE and nothing else. It was a full-width solid slab of
+  /// verdict colour across the bottom of the picture; the reference puts a
+  /// chip there — dark, bordered in the verdict's colour, only as wide as its
+  /// own sentence — so the body behind it stays visible while it speaks. The
+  /// keys, the messages and the one-voice rule are untouched: this is the
+  /// layout gate, not a rewrite of what the coach is allowed to say.
+  Widget _band(ThemeData theme, Color colour, String text, Key key) => Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          key: const Key('form_check.cue_card'),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.62),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colour.withValues(alpha: 0.7), width: 1.4),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: colour, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 9),
+              Flexible(
+                child: Text(
+                  text,
+                  key: key,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -1829,16 +1959,7 @@ class _ExercisePicker extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final selected = ref.watch(selectedExerciseProvider);
-    String label(FormExercise e) => switch (e) {
-          FormExercise.squat => l10n.formcheckExerciseSquat,
-          FormExercise.pushup => l10n.formcheckExercisePushup,
-          FormExercise.deadlift => l10n.formcheckExerciseDeadlift,
-          FormExercise.curl => l10n.formcheckExerciseCurl,
-          FormExercise.hinge => l10n.formcheckExerciseHinge,
-          FormExercise.lunge => l10n.formcheckExerciseLunge,
-          FormExercise.situp => l10n.formcheckExerciseSitup,
-          FormExercise.overheadPress => l10n.formcheckExerciseOverheadPress,
-        };
+    String label(FormExercise e) => formExerciseName(l10n, e);
     // Every other surface asks `formCoachSupports` before offering a movement
     // — the Train tab's chip, the exercise page, the player. This picker did
     // not, so the screen the feature is named after was the one place its own
@@ -2297,42 +2418,4 @@ class _SilhouettePainter extends CustomPainter {
       // frame for no visible difference.
       ((old.match ?? 0) >= kPoseMatchPassing) !=
           ((match ?? 0) >= kPoseMatchPassing);
-}
-
-/// Live match readout. Small, and only while there is something to report.
-class _MatchReadout extends ConsumerWidget {
-  const _MatchReadout();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Hidden in avatar mode by choice, not by necessity: since the
-    // coordinate-unification fix (`FORMCOACH_COORDINATE_UNIFICATION_
-    // 2026-08-31`) `poseMatchProvider` IS live here too — it drives the
-    // avatar's own glow (`avatarVerdictSeverity`) and the rep verdict. This
-    // inline badge stays camera-mode-only because its design-mandated home in
-    // avatar mode is the circular "Техника" gauge (Gate 2, not yet built), not
-    // a text badge floating over the scene.
-    if (ref.watch(avatarModeProvider)) return const SizedBox.shrink();
-    final match = ref.watch(poseMatchProvider);
-    if (match == null) return const SizedBox.shrink();
-    final pct = (match * 100).round();
-    final reached = match >= kPoseMatchPassing;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: (reached ? AppPalette.auroraTeal : Colors.black)
-            .withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        AppLocalizations.of(context).formcheckSilhouetteMatch(pct),
-        key: const Key('form_check.match'),
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
 }

@@ -161,12 +161,28 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const Key('coach.readinessBand')), findsNothing);
-    // The counter must not drift when its neighbour disappears: the whole point
-    // of a column is that removing the bottom row leaves the top row where it
-    // was. 12 from the parent's inset, and nothing else.
+    // The counter must not fall down the screen when its neighbour below
+    // disappears: the whole point of a column is that removing the bottom row
+    // leaves the top row where it was.
+    //
+    // Measured against the movement strip, which is present in every state,
+    // rather than against a pixel constant. The constant this used to carry
+    // (`< 60`) was a proxy for "still at the top", and G3 broke it by putting
+    // a movement strip and a gauge label above the number — the counter had
+    // not drifted at all, the thing above it had grown. Comparing the two
+    // states directly does not work either: the band's presence is not the
+    // only difference between them (the strip's live dot and the gauge's
+    // phase caption both turn on mid-set), so that comparison would fail on
+    // changes this test is not about.
+    final strip = tester.getRect(find.byKey(const Key('form_check.hud.strip')));
+    final gauge = tester.getRect(find.byKey(const Key('form_check.hud.reps')));
     final count = tester.getRect(find.byKey(const Key('form_check.rep_count')));
-    expect(count.top, lessThan(60),
-        reason: 'rep count fell down the screen when the band left: $count');
+    expect(gauge.top - strip.bottom, lessThan(24),
+        reason: 'the gauges fell away from the strip they hang under when the '
+            'band left: strip $strip, gauge $gauge');
+    expect(gauge.contains(count.center), isTrue,
+        reason: 'and the number is still inside its own gauge: gauge $gauge, '
+            'count $count');
   });
 
   testWidgets('mid-set, an unarmed counter is still explained — in the band, '
