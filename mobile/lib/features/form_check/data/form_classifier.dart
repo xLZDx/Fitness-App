@@ -250,6 +250,19 @@ class PushupAlignmentClassifier implements FormClassifier {
   @override
   bool get canFault => true;
 
+  /// Shoulder-hip-ankle angle at or above which the body is one line.
+  ///
+  /// G7 named these. They were bare literals inside [evaluate], which was fine
+  /// while nothing but the rule itself needed them and stopped being fine the
+  /// moment the screen started explaining WHAT the lifter is being measured
+  /// against: a target retyped into a translated sentence is a target that
+  /// drifts from the rule silently, and a wrong number in an explanation is
+  /// worse than no explanation.
+  static const straightMinDeg = 168.0;
+
+  /// Below this the hips are sagging rather than merely untucked.
+  static const tuckMinDeg = 155.0;
+
   @override
   FormFeedback? evaluate(PoseFrame frame) {
     final shoulder = frame.landmarks[LandmarkType.leftShoulder];
@@ -257,7 +270,7 @@ class PushupAlignmentClassifier implements FormClassifier {
     final ankle = frame.landmarks[LandmarkType.leftAnkle];
     if (shoulder == null || hip == null || ankle == null) return null;
     final straightnessAngle = _angleDeg(shoulder, hip, ankle);
-    if (straightnessAngle >= 168) {
+    if (straightnessAngle >= straightMinDeg) {
       return FormFeedback(
         rule: rule,
         severity: 0,
@@ -265,7 +278,7 @@ class PushupAlignmentClassifier implements FormClassifier {
         metric: straightnessAngle,
       );
     }
-    if (straightnessAngle >= 155) {
+    if (straightnessAngle >= tuckMinDeg) {
       return FormFeedback(
         rule: rule,
         severity: 1,

@@ -2528,6 +2528,38 @@
       }
     }
   },
+  "formcheckExplainTitle": "What exactly is wrong",
+  "@formcheckExplainTitle": {
+      "description": "Form coach fault explanation (gate G7): the heading of the panel under the picture."
+  },
+  "formcheckExplainPushupTuck": "Your hips are riding above the shoulder-to-ankle line, so the body is folded at the hip rather than held in one line. Tuck the pelvis and brace the stomach: the effort should run shoulder to heel in a straight line.",
+  "@formcheckExplainPushupTuck": {
+      "description": "Form coach fault explanation (gate G7): the push-up rule at severity 1."
+  },
+  "formcheckExplainPushupSagging": "Your hips are sagging below the shoulder-to-ankle line. That moves the load off the stomach and into the lower back, which tires the back and takes the point out of the exercise. Brace the stomach and glutes as if you were about to take a punch.",
+  "@formcheckExplainPushupSagging": {
+      "description": "Form coach fault explanation (gate G7): the push-up rule at severity 2."
+  },
+  "formcheckExplainSilhouetteMissed": "The repetition did not reach the shape on screen. The coach compares your joints against the whole silhouette, so this can be depth or trunk angle alike — move slower and follow the outline.",
+  "@formcheckExplainSilhouetteMissed": {
+      "description": "Form coach fault explanation (gate G7): the silhouette-match rule."
+  },
+  "formcheckExplainMeasuredAngle": "Measured: {value}°. One line is {target}° or more.",
+  "@formcheckExplainMeasuredAngle": {
+      "description": "Form coach fault explanation (gate G7): the angle a rule actually measured, beside the threshold it is compared against.",
+      "placeholders": {
+          "value": {
+              "type": "String"
+          },
+          "target": {
+              "type": "String"
+          }
+      }
+  },
+  "formcheckRuleSilhouetteMatch": "Movement shape",
+  "@formcheckRuleSilhouetteMatch": {
+    "description": "Form coach: the name of the silhouette-match rule, which is not a FormClassifier and so is missed by the l10n coverage test that walks the classifier list."
+  },
   "formcheckCloseSet": "Close set",
   "@formcheckCloseSet": {
     "description": "Form coach live HUD (gate G3)."

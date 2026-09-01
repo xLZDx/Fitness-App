@@ -773,6 +773,12 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                   // the time. See `coach_counters.dart`.
                   const _CoachCounters(),
                   const SizedBox(height: 12),
+                  // G7. Below the picture, deliberately: this is the calm half
+                  // of what the coach has to say, read standing still after a
+                  // repetition, and an overlay paragraph over a moving body is
+                  // the opposite of calm. The cue chip on the picture stays
+                  // what it was — one short instruction, readable mid-set.
+                  _FaultExplanation(session: session),
                   _SetControls(phase: phase),
                   const SizedBox(height: 4),
                   // A coach that has gone silent because the device has no voice
@@ -969,6 +975,81 @@ class _CoachCounters extends ConsumerWidget {
                   ? CoachTone.warn
                   : CoachTone.fault,
       pause: seconds(c.pauseSeconds),
+    );
+  }
+}
+
+/// What exactly was wrong with the last repetition, and what it was measured
+/// against.
+///
+/// Renders nothing at all unless a completed rep produced a fault that the rule
+/// is entitled to reach — see [formFaultExplanation], which is null for the two
+/// shipped rules that report without judging. An empty card headed "what
+/// exactly is wrong" over a rep nobody faulted would be the screen inventing a
+/// problem to look busy.
+class _FaultExplanation extends StatelessWidget {
+  const _FaultExplanation({required this.session});
+
+  final RepSessionState session;
+
+  @override
+  Widget build(BuildContext context) {
+    final feedback = session.lastRepCue;
+    if (feedback == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
+    final explanation = formFaultExplanation(l10n, feedback);
+    if (explanation == null) return const SizedBox.shrink();
+    final measurement = formFaultMeasurement(l10n, feedback);
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: HudPanel(
+        key: const Key('form_check.explain'),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.info_outline,
+                    size: 16, color: theme.colors.textSecondary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.formcheckExplainTitle,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                ),
+                Text(
+                  formRuleName(l10n, feedback.rule),
+                  key: const Key('form_check.explain.rule'),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colors.textSecondary,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              explanation,
+              key: const Key('form_check.explain.body'),
+              style: theme.textTheme.bodyMedium?.copyWith(height: 1.45),
+            ),
+            if (measurement != null) ...[
+              const SizedBox(height: 10),
+              Text(
+                measurement,
+                key: const Key('form_check.explain.measurement'),
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colors.textSecondary,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

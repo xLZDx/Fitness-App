@@ -1412,6 +1412,38 @@
       }
     }
   },
+  "formcheckExplainTitle": "Что именно не так",
+  "@formcheckExplainTitle": {
+      "description": "Form coach fault explanation (gate G7): the heading of the panel under the picture."
+  },
+  "formcheckExplainPushupTuck": "Таз выше линии плеч и щиколоток — корпус сложен в тазобедренном суставе, а не вытянут в одну линию. Подверните таз и напрягите живот: усилие должно идти от плеч к пяткам одной прямой.",
+  "@formcheckExplainPushupTuck": {
+      "description": "Form coach fault explanation (gate G7): the push-up rule at severity 1."
+  },
+  "formcheckExplainPushupSagging": "Таз провисает ниже линии плеч и щиколоток. Так нагрузка уходит с мышц живота в поясницу — это и утомляет спину, и убирает смысл из упражнения. Напрягите живот и ягодицы так, будто собираетесь удержать удар в живот.",
+  "@formcheckExplainPushupSagging": {
+      "description": "Form coach fault explanation (gate G7): the push-up rule at severity 2."
+  },
+  "formcheckExplainSilhouetteMissed": "Повторение не дошло до формы на экране. Тренер сравнивает положение суставов с силуэтом целиком, поэтому дело может быть и в глубине, и в наклоне корпуса — двигайтесь медленнее и следите за контуром.",
+  "@formcheckExplainSilhouetteMissed": {
+      "description": "Form coach fault explanation (gate G7): the silhouette-match rule."
+  },
+  "formcheckExplainMeasuredAngle": "Измерено: {value}°. Одна линия — от {target}°.",
+  "@formcheckExplainMeasuredAngle": {
+      "description": "Form coach fault explanation (gate G7): the angle a rule actually measured, beside the threshold it is compared against.",
+      "placeholders": {
+          "value": {
+              "type": "String"
+          },
+          "target": {
+              "type": "String"
+          }
+      }
+  },
+  "formcheckRuleSilhouetteMatch": "Форма движения",
+  "@formcheckRuleSilhouetteMatch": {
+    "description": "Form coach: the name of the silhouette-match rule, which is not a FormClassifier and so is missed by the l10n coverage test that walks the classifier list."
+  },
   "formcheckCloseSet": "Закрыть сет",
   "@formcheckCloseSet": {
     "description": "Form coach live HUD (gate G3)."

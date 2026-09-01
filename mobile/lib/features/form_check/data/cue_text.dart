@@ -35,6 +35,65 @@ String formCueText(AppLocalizations l10n, FormCueKey cueKey) =>
       FormCueKey.silhouetteMissed => l10n.formcheckCueSilhouetteMissed,
     };
 
+/// The calm explanation of a fault: what exactly is wrong, and why it matters.
+///
+/// G7. The cue is an instruction shouted mid-set — "Таз провисает. Напрягите
+/// живот." — and it has to be short enough to read while moving. This is the
+/// other half the operator asked for: «со спокойными объяснениями что именно не
+/// так», read afterwards, standing still, with room for a reason.
+///
+/// **Null for everything the coach is not entitled to judge, and that is most
+/// of it.** Of the three shipped rules only `pushup.alignment` can fault at all
+/// (`FormClassifier.canFault`); squat depth and the deadlift hinge report their
+/// measurement at severity 0 for a documented reason — the quantity they
+/// compare is camera-dependent, and 5.2° separates correct Romanian-deadlift
+/// technique from a genuinely rounded back at the same depth. Writing an
+/// explanation for those would be inventing a verdict the rule itself refuses
+/// to reach — so this returns null and the panel does not appear. Nothing on
+/// screen currently explains to a user WHY the squat's depth reading never
+/// becomes a verdict; that is a real gap, and a smaller one than a fabricated
+/// judgement would be.
+String? formFaultExplanation(AppLocalizations l10n, FormFeedback feedback) {
+  if (feedback.severity <= 0) return null;
+  return switch (feedback.cueKey) {
+    FormCueKey.pushupAlignTuck => l10n.formcheckExplainPushupTuck,
+    FormCueKey.pushupAlignSagging => l10n.formcheckExplainPushupSagging,
+    FormCueKey.silhouetteMissed => l10n.formcheckExplainSilhouetteMissed,
+    // Every remaining cue belongs to a rule that reports without judging, and
+    // reaches severity 0 only. Listed rather than swept into a default arm, so
+    // that a new cue which CAN fault is a compile error here instead of a
+    // silent blank.
+    FormCueKey.squatDepthGood ||
+    FormCueKey.squatDepthAlmost ||
+    FormCueKey.squatDepthHalf ||
+    FormCueKey.deadliftHipHingeShallow ||
+    FormCueKey.deadliftHipHingeDeep ||
+    FormCueKey.pushupAlignStraight =>
+      null,
+  };
+}
+
+/// The measurement the explanation rests on, in the rule's own units.
+///
+/// An explanation with no number behind it is an opinion. This is the number,
+/// beside the threshold it was compared against — both read from the rule
+/// rather than retyped, so they cannot drift from what it actually did.
+///
+/// Null wherever the metric is not an angle with a stated target: the squat's
+/// hip-minus-knee is a fraction of frame height whose meaning changes with
+/// where the phone is standing, which is the whole reason that rule does not
+/// judge, and printing it as a measurement would lend it an authority the rule
+/// itself declines.
+String? formFaultMeasurement(AppLocalizations l10n, FormFeedback feedback) {
+  final metric = feedback.metric;
+  if (metric == null || feedback.severity <= 0) return null;
+  if (feedback.rule != PushupAlignmentClassifier().rule) return null;
+  return l10n.formcheckExplainMeasuredAngle(
+    metric.toStringAsFixed(0),
+    PushupAlignmentClassifier.straightMinDeg.toStringAsFixed(0),
+  );
+}
+
 /// Human name for a rule id, for the post-set tally.
 ///
 /// Without this the summary read "Ошибки: squat.depth, deadlift.back_angle,
@@ -43,6 +102,15 @@ String formRuleName(AppLocalizations l10n, String ruleId) => switch (ruleId) {
       'squat.depth' => l10n.formcheckRuleSquatDepth,
       'deadlift.hip_hinge' => l10n.formcheckRuleDeadliftHipHinge,
       'pushup.alignment' => l10n.formcheckRulePushupAlignment,
+      // NOT a `FormClassifier`, and that is why it was missing. The silhouette
+      // match is synthesised in `RepSessionController` when a repetition never
+      // reached the shape on screen, so the l10n coverage test — which walks
+      // the shipped classifier list — could not have caught it. Found when G7
+      // put the rule's NAME on screen for the first time: the fallback below
+      // would have shown a Russian-speaking user the string
+      // "silhouette.match", which is exactly the defect this function was
+      // written to remove.
+      'silhouette.match' => l10n.formcheckRuleSilhouetteMatch,
       // Rule ids are Strings because they are also written into the rep record,
       // so this one arm cannot be made exhaustive. The l10n test walks the
       // shipped classifier list and asserts each id maps, which is what keeps

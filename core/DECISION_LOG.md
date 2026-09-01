@@ -39517,3 +39517,60 @@ goldens.
 installs, but the phone is PIN-locked and I will not guess at a PIN on the
 operator's own hardware. G3, G4 and G6 are all unverified on screen for that one
 reason.
+
+## FORM_COACH_REDESIGN G7 — the calm explanation, and what the coach refuses to explain (2026-09-02)
+
+«со спокойными объяснениями что именно не так». The cue on the picture is an
+instruction shouted mid-set — «Таз провисает. Напрягите живот.» — short enough
+to read while moving. This gate adds the other half: a panel BELOW the picture,
+read standing still, with room for a reason and for the number the reason rests
+on. `formFaultExplanation` and `formFaultMeasurement` in `cue_text.dart`, drawn
+by `_FaultExplanation`.
+
+**The scope is smaller than the brief, and the reason is in the code rather
+than in a promise to do it later.** Of the three shipped rules only
+`pushup.alignment` is entitled to fault a repetition at all
+(`FormClassifier.canFault`). Squat depth and the deadlift hinge report their
+measurement at severity 0 for a documented reason: the quantity they compare is
+camera-dependent, and 5.2° separates correct Romanian-deadlift technique from a
+genuinely rounded back at the same depth. Writing them an explanation would be
+inventing a verdict the rule refuses to reach. So the panel does not appear for
+them, and the switch lists every non-faulting cue by name instead of sweeping
+them into a default arm — a new cue that CAN fault is then a compile error here
+rather than a silent blank.
+
+**The measurement is the rule's own.** `PushupAlignmentClassifier`'s 168° and
+155° were bare literals inside `evaluate`; they are named constants now, and the
+explanation reads the threshold from the constant rather than from a number
+retyped into a translated sentence. A wrong number in an explanation is worse
+than no explanation. The squat's metric is deliberately NOT shown: it is a
+fraction of frame height whose meaning changes with where the phone stands,
+which is the very reason that rule does not judge, and printing it would lend it
+an authority the rule itself declines.
+
+**A real defect, found only because this gate put a rule's NAME on screen.**
+`formRuleName` had arms for the three classifiers and none for
+`silhouette.match` — which is not a `FormClassifier` at all; it is synthesised
+in `RepSessionController` when a repetition never reaches the shape on screen.
+Its fallback returns the raw id, so a Russian-speaking user would have been
+shown the string `silhouette.match`: exactly the defect that function exists to
+prevent, and invisible to `no_untranslated_strings_test.dart`, which walks the
+shipped classifier list and so could never have reached it. Named now, and the
+on-screen test asserts the rendered rule name contains no dot.
+
+**Two tests were rewritten after mutation testing showed them passing for the
+wrong reason**, which is worth recording as much as the feature is. The
+entitlement test passed severity 0 for the squat rule, so it only ever exercised
+the "nothing is wrong" guard one line into the function — it stayed green with
+an explanation wired to `squatDepthHalf`, the single defect it existed to catch.
+It now passes severity 2 deliberately: the claim is about the cue, not about the
+number beside it. (The same class of error as G6's drift test, found the same
+way, in the same session.)
+
+**Verification.** 8 new tests. Mutation-checked, each reverted: removing the
+`silhouette.match` name fails the on-screen test; wiring an explanation to a
+non-faulting cue fails the entitlement test. Full suite 3424 green, the only
+failures the two pre-existing `composed_screen_golden_test` Home goldens.
+
+**Still unverified on the device**, for the same reason as G3, G4 and G6: the
+S8 is connected and the build installs, but the phone is PIN-locked.
