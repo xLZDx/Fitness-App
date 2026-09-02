@@ -10,6 +10,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../core/background/hud_sky.dart';
 import '../../core/theme/app_palette.dart';
+import '../../core/theme/app_theme.dart';
 import '../../core/theme/app_semantic_colors.dart';
 import '../../core/theme/hud_tokens.dart' show HudMotionX;
 import '../../shared/widgets/app_buttons.dart';
@@ -658,7 +659,34 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                       borderRadius: BorderRadius.circular(22),
                       child: Container(
                         color: Colors.black.withValues(alpha: 0.85),
-                        child: Stack(
+                        // **This panel is dark whatever the app is.** Behind it
+                        // is a camera preview or a photograph, both dark, and
+                        // every readout drawn on it takes its colour from
+                        // `Theme.of(context).colors` — which G3 was right to do,
+                        // and which quietly made the whole HUD follow the app's
+                        // light/dark setting while the surface under it did not.
+                        //
+                        // In light mode that is dark text on a dark picture. On
+                        // an S23 at 19:02, with the phone in its normal light
+                        // theme, ПОВТОРЫ, ТЕХНИКА, the rep count and the
+                        // technique percentage were all navy on a photograph —
+                        // present, correct, and unreadable. Nothing could see
+                        // it: `test/golden/form_coach_golden_test.dart` builds
+                        // `AppTheme.dark()`, as does every widget test on this
+                        // page, so the one configuration that breaks was the one
+                        // configuration nothing rendered.
+                        //
+                        // Pinning the subtree is the fix rather than reaching
+                        // for white literals: the tokens stay semantic, the
+                        // white-literal ledger is untouched, and anything added
+                        // to this panel later inherits the right palette without
+                        // having to know about this at all. Scoped to the panel
+                        // — the counters and the set controls below it sit on
+                        // the page's own surface and must keep following the
+                        // app.
+                        child: Theme(
+                          data: AppTheme.dark(),
+                          child: Stack(
                           fit: StackFit.expand,
                           children: [
                             if (failure != null)
@@ -687,6 +715,12 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                               const _AvatarBackdrop()
                             else
                               _CameraPreview(svc: svc),
+                            // The camera needs the same treatment the avatar's
+                            // photograph gets, and never had it. See
+                            // `_PreviewScrim`.
+                            if (failure == null &&
+                                !ref.watch(avatarModeProvider))
+                              const Positioned.fill(child: _PreviewScrim()),
                             // Everything below is a readout of a running camera. With
                             // no camera there is nothing to read out, and the bottom
                             // card sat directly on top of the retry button — an error
@@ -768,6 +802,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                                 ),
                             ],
                           ],
+                          ),
                         ),
                       ),
                     ),
@@ -1144,6 +1179,52 @@ class _CameraPreview extends StatelessWidget {
       },
     );
   }
+}
+
+/// Darkens the live camera so the HUD drawn on it can be read.
+///
+/// **The avatar's photograph has had this since 2026-08-15 and the camera never
+/// did.** `_AvatarBackdrop`'s own comment calls its scrim "the layer that makes
+/// the figure legible rather than the layer that makes the picture pretty", and
+/// backs it with measured luminance over ten fixed images — but that reasoning
+/// was applied to the ten pictures the app ships and not to the one picture it
+/// cannot control. A camera pointed at a bright room is far worse than any of
+/// them: photographed on an S23 at 18:55, the target outline, both ring gauges
+/// and the words ПОВТОРЫ and ТЕХНИКА were all close to invisible against a
+/// sunlit window. Nothing in the suite could see it — a widget test has no
+/// camera, and the golden runs in avatar mode precisely because of that.
+///
+/// The reference specifies it exactly (`core/design/reference/full_handoff_v1/
+/// README.md` §8): the feed carries `saturate(.85) brightness(.72)` and a
+/// `radial-gradient(120% 80% at 50% 42%, rgba(8,10,18,.12), rgba(8,10,18,.86))`
+/// sits over it.
+///
+/// **One layer here rather than two, deliberately.** The feed's own filter is a
+/// colour matrix over a live texture, which means an offscreen pass on every
+/// camera frame; the gradient is a single blend. So the gradient carries both
+/// jobs — it starts at 0.34 in the middle where the reference starts at 0.12,
+/// which is about what `brightness(.72)` was contributing there, and reaches
+/// the same 0.86 at the edge. Same picture, no per-frame layer.
+///
+/// Centred at 42% of the height, from the reference and worth keeping: a
+/// standing body's head and chest sit above the middle of the frame, so a scrim
+/// centred at 50% puts its lightest point on the user's waist.
+class _PreviewScrim extends StatelessWidget {
+  const _PreviewScrim();
+
+  @override
+  Widget build(BuildContext context) => const IgnorePointer(
+        child: DecoratedBox(
+          key: Key('form_check.preview_scrim'),
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment(0, -0.16), // 42% of the height
+              radius: 1.2,
+              colors: [Color(0x57080A12), Color(0xDB080A12)],
+            ),
+          ),
+        ),
+      );
 }
 
 /// The body as the detector sees it, drawn over the preview.

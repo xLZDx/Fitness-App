@@ -72,10 +72,23 @@ PoseFrame _standing(int ts) {
 void main() {
   setUpAll(loadHudGoldenFonts);
 
+  /// **In the LIGHT theme, which is the one that broke.**
+  ///
+  /// This built `AppTheme.dark()` at first, as every widget test on this page
+  /// does — and that is precisely how the HUD came to be unreadable on a real
+  /// phone without a single test noticing. The coach's picture is dark whatever
+  /// the app is, its readouts take their colour from `Theme.of(context)`, and
+  /// in light mode that was navy text on a photograph. One configuration was
+  /// broken and it was the one nothing rendered.
+  ///
+  /// So the reference image is now taken the way the operator's phone is
+  /// actually set up: a light app, with a dark picture inside it.
   Widget page(ProviderContainer c) => UncontrolledProviderScope(
         container: c,
         child: MaterialApp(
-          theme: AppTheme.dark(),
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          themeMode: ThemeMode.light,
           locale: kTestLocale,
           localizationsDelegates: kTestLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,

@@ -39866,3 +39866,55 @@ Whether that reads naturally is a visual call for a device, which this session
 does not have.
 
 Full suite: **3455 green, 0 failing.**
+
+---
+
+## 2026-09-02 — G10: the phone was unlocked, and it found what nothing else could
+
+Both devices came online — the S8 (SM-G950F) and, at the operator's request, the
+S23 (SM-S918B). The debug build was installed on both and driven through the
+whole flow with adb. Two of the spec's five points are now confirmed on screen
+rather than argued from code: the first two screens ARE one screen, carrying
+both banners and the camera request; and the camera does NOT start until
+«Нажмите когда готовы» is pressed — the picker sits on a black panel with the
+demonstration looping on it. The silhouette reads as a person on both handsets.
+
+Then the device found a defect no test on this page could have.
+
+**The HUD was unreadable, and the cause was a fix.** G3's white-literal
+remediation routed the coach's readouts through `Theme.of(context).colors`,
+which is the right way to write them. But the panel they are drawn on is dark
+whatever the app is — a camera preview or one of the ten backdrop photographs —
+while the app itself follows the user's light/dark setting. On the S23 at 19:02,
+in its ordinary light theme: ПОВТОРЫ, ТЕХНИКА, the rep count and the technique
+percentage were all navy on a photograph. Present, correct, and invisible.
+
+**Nothing could see it, and the reason is the finding.** Every widget test on
+this page builds `AppTheme.dark()`, and so did the golden written this morning —
+a default copied from test to test until the only configuration that breaks was
+the only configuration nothing rendered. The panel now pins its own subtree to
+the dark theme, scoped to the picture so the counters and set controls below it
+keep following the app; `coach_panel_theme_test.dart` asserts both halves and is
+mutation-checked in both directions. The golden was re-taken in the LIGHT theme,
+which is how the operator's phone is actually set up.
+
+**And the camera never got the treatment the photograph did.**
+`_AvatarBackdrop`'s scrim calls itself "the layer that makes the figure legible
+rather than the layer that makes the picture pretty" and is backed by measured
+luminance over the ten shipped images — reasoning applied to the ten pictures
+the app controls and not to the one it does not. `_PreviewScrim` gives the live
+camera the radial scrim the reference specifies
+(`full_handoff_v1/README.md` §8), as one gradient rather than the reference's
+gradient-plus-colour-filter: a colour matrix over a live texture is an offscreen
+pass on every camera frame, so the gradient starts at 0.34 in the middle where
+the reference starts at 0.12 — about what `brightness(.72)` was contributing
+there — and reaches the same 0.86 at the edge. Verified by toggling the camera
+on over a real room: readable.
+
+Full suite: **3458 green, 0 failing.** Screenshots in
+`reports/device-check-2026-09-02/`.
+
+**Still open, and now with evidence behind it:** the demonstration is drawn at
+the camera's COVER scale (`projectLandmark`), which is right when a preview is
+behind it and wrong on the picker, where there is no camera — on the S8 the
+figure's head is cropped by the top of the panel. Not fixed in this gate.
