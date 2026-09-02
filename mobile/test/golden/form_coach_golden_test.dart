@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,14 +35,22 @@ import '../support/golden_fonts.dart';
 /// test, and the point here is the HUD and the drawn body — both of which are
 /// exactly what avatar mode shows.
 ///
-/// One limit of that, so nobody reads more into these images than they hold:
-/// `Image.asset` does not resolve the backdrop photograph in a widget test, so
-/// the panel stays on the near-black layer underneath it — and the avatar's own
-/// body is filled near-black too, by design, for legibility against a scene.
-/// Black on black. What survives in these pictures is the avatar's SKELETON,
-/// not its body, which is why the figure reads as bones here and as a filled
+/// One limit of that, so nobody reads more into these images than they hold.
+/// The avatar's own body is filled near-black by design, for legibility
+/// against a scene, so what survives in these pictures is the avatar's
+/// SKELETON, not its body — the figure reads as bones here and as a filled
 /// person on a phone (`reports/device-check-2026-09-02/`). The layout, the
 /// readouts and the target silhouette are what these images pin.
+///
+/// The backdrop photograph itself used to resolve in some of these tests and
+/// not others depending on which ran first — `Image.asset` decodes through a
+/// real asset-bundle read that the first golden to touch a given file pays
+/// for and every later one gets for free, so the same seeded scene rendered
+/// differently depending on run order even though [deterministic] pinned
+/// WHICH scene was picked. `precacheBackdrop` (below) forces that read onto
+/// each container's own clock, so a given golden now shows the same picture
+/// whether it runs alone or as part of the file — verified both ways with
+/// `--plain-name` before these images were last re-recorded.
 
 /// A body standing at the top of a squat, frontal, every joint present.
 ///
@@ -106,8 +116,35 @@ void main() {
         ),
       );
 
+  /// The backdrop photograph is chosen at RANDOM, and until 2026-09-02 that
+  /// did not show: `Image.asset` was not resolving in these tests, so every
+  /// run photographed the same near-black layer underneath it and the choice
+  /// could not matter. Once the photographs began resolving, two consecutive
+  /// runs of the same unchanged test differed by 54% and then 94% — a golden
+  /// that fails at random is worse than no golden, because the next person to
+  /// see it red will re-record it without looking.
+  ///
+  /// A seeded `Random` makes the choice deterministic — **a FRESH one per
+  /// container**, which the first version of this fix got wrong. A single
+  /// `Random(7)` instance shared across all three containers is mutable
+  /// state: each container's own `CoachBackdropController.build()` (and the
+  /// reshuffle on selection-screen entry) calls `.nextInt()` on it and
+  /// advances it, so which photograph a given test received depended on how
+  /// many `.nextInt()` calls the OTHER containers had already made — a golden
+  /// deterministic only for one fixed run order, and no more hermetic than
+  /// the flake it replaced. GPT-PM, reviewing the first version of this gate.
+  ///
+  /// A function that builds a new `Random(7)` on every call gives each
+  /// container its own sequence, starting from the same seed, so the first
+  /// pick and the reshuffle are pinned independent of what any other
+  /// container's provider tree has done.
+  List<Override> deterministic() => [
+        coachBackdropRandomProvider.overrideWithValue(math.Random(7)),
+      ];
+
   ProviderContainer container(CoachPhase phase) {
     final c = ProviderContainer(overrides: [
+      ...deterministic(),
       poseDetectorServiceProvider.overrideWithValue(
         // The same frame over and over: a still body, so the image is a
         // function of the code rather than of how many times the test pumped.
@@ -146,6 +183,33 @@ void main() {
     await tester.pump(const Duration(milliseconds: 60));
   }
 
+  /// Forces the container's chosen backdrop photo to be decoded before the
+  /// golden is captured, so its presence in the picture is a function of the
+  /// seeded [Random] this container got — not of whichever other goldens in
+  /// this file happened to run first and warm `Image.asset`'s decode cache.
+  ///
+  /// GPT-PM, round 2: [deterministic] alone pins WHICH scene each container
+  /// picks, and that was mistaken for pinning the picture. It does not —
+  /// `Image.asset` resolves through a real asset-bundle read that the first
+  /// golden to touch a given file pays for and every later one gets free,
+  /// so the same seeded pick still rendered as a photograph in a full-file
+  /// run and as the plain scrim when the same test ran alone. Caught by
+  /// running each of the three tests with `--plain-name`: the picker golden
+  /// alone was a 95.64% pixel diff against the one recorded inside the full
+  /// file. `precacheImage` makes the read happen on this container's own
+  /// clock, inside `tester.runAsync` the same way `matchesGoldenFile` itself
+  /// already requires real asset I/O to be awaited in a widget test.
+  Future<void> precacheBackdrop(WidgetTester tester, ProviderContainer c) async {
+    final path = c.read(coachBackdropProvider);
+    await tester.runAsync(
+      () => precacheImage(
+        AssetImage(path),
+        tester.element(find.byType(FormCheckPage)),
+      ),
+    );
+    await tester.pump();
+  }
+
   testWidgets('the live HUD over the drawn body', (tester) async {
     // Tall enough that the whole 9:16 preview fits above the fold. At 900 the
     // first version of this golden cut the body off at the knees, which makes
@@ -154,6 +218,7 @@ void main() {
     final c = container(CoachPhase.qualityCheck);
     c.read(avatarModeProvider.notifier).state = true;
     await tester.pumpWidget(page(c));
+    await precacheBackdrop(tester, c);
     await settle(tester, c);
 
     await expectLater(
@@ -176,6 +241,7 @@ void main() {
     // arranged to look good here.
     pinGoldenSurface(tester, size: const Size(400, 1400));
     final c = ProviderContainer(overrides: [
+      ...deterministic(),
       poseDetectorServiceProvider
           .overrideWithValue(MockPoseDetectorService(oneSquat(0))),
       coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),
@@ -183,6 +249,7 @@ void main() {
     addTearDown(c.dispose);
     c.read(avatarModeProvider.notifier).state = true;
     await tester.pumpWidget(page(c));
+    await precacheBackdrop(tester, c);
     for (var i = 0; i < 60; i++) {
       await tester.pump(const Duration(milliseconds: 33));
     }
@@ -209,6 +276,7 @@ void main() {
     pinGoldenSurface(tester, size: const Size(400, 1400));
     final c = container(CoachPhase.selection);
     await tester.pumpWidget(page(c));
+    await precacheBackdrop(tester, c);
     await settle(tester, c);
 
     await expectLater(

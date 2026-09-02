@@ -1119,6 +1119,10 @@
   "@formcheckRepNotCountedTooFast": {
     "description": "A lap completed faster than a body can move, which is usually a tracking glitch rather than the user rushing. Stated as a fact about the count, not as a correction."
   },
+  "formcheckRepNotCountedAbandoned": "That attempt did not count - the set paused part-way through. Stand tall to start the next rep.",
+  "@formcheckRepNotCountedAbandoned": {
+    "description": "A lap left in flight past the counter's ceiling, which in practice means the lifter stopped mid-movement or stepped out of the exercise. Says the set paused rather than blaming the user for a slow rep: the case this was written for is somebody who simply stopped, and telling them they failed a repetition they had abandoned half a minute earlier is the defect it fixes. Ends with what to do next, because the counter has disarmed and needs to see the top again."
+  },
   "scannerCloudDisclosure": "To recognise a machine the photo is sent to Google's Gemini. If that fails, an on-device model is used instead. Other people may be in shot.",
   "onbStepPersonal": "Personal",
   "onbStepHealth": "Health",

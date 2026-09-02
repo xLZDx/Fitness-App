@@ -47,6 +47,18 @@ enum RepRejectReason {
   /// Completed the lap faster than [RepCounterConfig.minRepDurationMs].
   /// Bodies do not move that fast; landmark glitches do.
   tooFast,
+
+  /// Still in flight after [RepCounterConfig.maxRepDurationMs] — the lifter
+  /// stopped part-way through and the machine was left holding a repetition
+  /// that was never going to end.
+  ///
+  /// Measured on an S23 on 2026-09-02: the last "repetition" of a set ran to
+  /// 980 observed frames, roughly 33 seconds, against a set whose real reps
+  /// averaged 1.9s of tempo. It completed, was scored against the target it
+  /// had never been in (peak match 0.072), and told the lifter they had not
+  /// reached the shape — of a repetition they had stopped performing half a
+  /// minute earlier.
+  abandoned,
 }
 
 /// Extracts the single scalar the state machine tracks, or null when the
@@ -146,6 +158,7 @@ class RepCounterConfig {
     this.bottomExit = -0.08,
     this.bottomEnter = -0.04,
     this.minRepDurationMs = 600,
+    this.maxRepDurationMs = 20000,
     this.minLikelihood = 0.5,
     this.minObservedRatio = 0.5,
     this.minSideLikelihood = 0.7,
@@ -184,6 +197,24 @@ class RepCounterConfig {
   /// glitch, which is what it is there to catch.
   final int minRepDurationMs;
 
+  /// Ceiling on a lap. Over this, the lap is [RepRejectReason.abandoned], the
+  /// machine returns to the top and has to be re-armed.
+  ///
+  /// The floor above exists to reject something too fast to be a body. This
+  /// exists to reject something too slow to be a repetition — a lifter who
+  /// stopped, sat down, or walked out of the movement without walking out of
+  /// the frame. Without it the machine holds the rep open indefinitely and
+  /// eventually completes it, so the set summary gains a repetition nobody
+  /// performed and the coach faults the lifter for it.
+  ///
+  /// 20 seconds is a `PRODUCT_HEURISTIC`, and deliberately far above any real
+  /// repetition rather than close to one: the tempo readout on the S23 set
+  /// this was measured from averaged 1.9s, and even a 5-3-5-3 tempo protocol
+  /// with a long pause comes to about 16s. The abandoned rep it was written
+  /// for ran to 33s. Sitting at ten times a normal repetition means a slow
+  /// lifter is never the one this catches.
+  final int maxRepDurationMs;
+
   /// Per-joint confidence floor. ML Kit's likelihood below ~0.5 usually
   /// means the joint is occluded and its position is being inferred.
   final double minLikelihood;
@@ -214,7 +245,13 @@ class RepCounterConfig {
   /// The thresholds must form a strictly increasing ladder, otherwise the
   /// hysteresis bands overlap and the machine can skip a phase.
   bool get isOrdered =>
-      topEnter < topExit && topExit < bottomExit && bottomExit < bottomEnter;
+      topEnter < topExit &&
+      topExit < bottomExit &&
+      bottomExit < bottomEnter &&
+      // A window, not a point: with the ceiling at or below the floor every
+      // lap is rejected by one bound or the other and no repetition can ever
+      // be counted.
+      minRepDurationMs < maxRepDurationMs;
 }
 
 /// Quality record for one completed rep.
@@ -423,6 +460,64 @@ class RepCounter {
   /// first thing a user noticed.
   bool get isArmed => _armed;
 
+  /// Discards the in-flight repetition if it has run past
+  /// [RepCounterConfig.maxRepDurationMs], WITHOUT requiring a scorable frame.
+  ///
+  /// **Why this is not simply inline in [update].** Production drops an
+  /// unscorable frame — the lifter stepped out of shot, or the detector lost
+  /// them — before it ever reaches [update] at all
+  /// (`RepSessionController._onFrame`'s own comment: "An unscorable frame is
+  /// dropped entirely — it must not reach the rep counter"). A lifter who
+  /// disappears mid-repetition produces exactly that kind of frame, so an
+  /// expiry check reachable only through [update] would never see the one
+  /// case it exists for: the counter would sit in `descending` or `bottom`
+  /// until a scorable frame happened to arrive again, which might be never.
+  /// GPT-PM, reviewing the first version of this gate: caught live, not
+  /// theoretical.
+  ///
+  /// So the clock runs on the frame's OWN timestamp, independent of whether
+  /// the frame carries a usable pose, and callers are expected to feed it
+  /// every frame — [update] does, for the case a caller reads no other frames
+  /// at all, and `RepSessionController._onFrame` calls it a second time,
+  /// directly, on the frames [update] never sees.
+  ///
+  /// Idempotent: once the lap is discarded [_phase] is back at
+  /// [RepPhase.top], so a second call with a later timestamp does nothing.
+  RepEvent? checkExpiry(int timestampMs) {
+    // Disarmed as well as discarded, deliberately. `_discard` returns the
+    // machine to the top phase while the SIGNAL may still be deep, and at the
+    // top a signal above `topExit` opens a new rep on the very next frame — so
+    // without this the abandoned rep would simply restart and be abandoned
+    // again every 20 seconds. Re-arming means standing up first, which is the
+    // same bar `isArmed` already sets for opening the camera mid-squat.
+    if (_phase != RepPhase.top &&
+        timestampMs - _repStartMs > config.maxRepDurationMs) {
+      _armed = false;
+      return _discard(RepRejectReason.abandoned);
+    }
+    return null;
+  }
+
+  /// Pushes the abandonment deadline out by [pausedMs] — time the set spent
+  /// paused, measured on the frame clock, must not count against a
+  /// repetition that was left open across it. A no-op with no repetition in
+  /// flight: [_repStartMs] gets overwritten the next time one opens, so
+  /// extending it while at [RepPhase.top] has nothing left to affect.
+  ///
+  /// Gating [checkExpiry] on "counting is live" only stops the check from
+  /// firing WHILE paused — the camera keeps delivering frames through a
+  /// pause by design, so the timestamp on the first frame after resume has
+  /// already advanced by the whole paused span, and comparing it straight
+  /// against a `_repStartMs` stamped before the pause abandons the rep the
+  /// instant the set resumes. This is the other half of that fix: the
+  /// caller measures the paused span on the same frame clock and shifts the
+  /// deadline to match, so paused time is excluded rather than merely
+  /// deferred. GPT-PM, round 2: the gating alone still failed
+  /// `rep_expiry_pause_test.dart`'s own positive control.
+  void extendDeadline(int pausedMs) {
+    _repStartMs += pausedMs;
+  }
+
   /// Feed one frame. [feedback] is whatever the rule classifiers said about
   /// this frame; it is folded into the in-flight rep's quality record.
   ///
@@ -431,6 +526,11 @@ class RepCounter {
     PoseFrame frame, {
     Iterable<FormFeedback> feedback = const <FormFeedback>[],
   }) {
+    // Before signal extraction, which is one of the two places this age check
+    // has to run — see [checkExpiry]'s own doc for the other.
+    final expired = checkExpiry(frame.timestampMs);
+    if (expired != null) return expired;
+
     final s = _signal(frame, config.minLikelihood);
     // Unusable frame: missing or low-confidence joints. Change nothing —
     // holding the previous phase is strictly better than guessing. It is

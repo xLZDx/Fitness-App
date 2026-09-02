@@ -40169,3 +40169,289 @@ says nothing about the suite around it.
 - `flutter analyze` on the touched paths: no errors, no warnings, no infos.
 - `flutter analyze` on the whole package: 17 issues, **zero errors**, none in a
   file this gate touched — the same set that was there before it.
+
+---
+
+## 2026-09-02 — G13: a repetition that never ends is not a repetition
+
+**FACT, from the same S23 recording G12 came out of.** The thirteenth
+"repetition" of the set ran to **980 observed frames**, roughly 33 seconds,
+against a set whose tempo readout averaged 1.9s
+(`reports/device-check-2026-09-02/reps_all.txt`, line 13). It completed. It was
+scored against a target it had never been near — peak match 0.072 — so the set
+summary gained a repetition nobody performed and the coach told the lifter they
+had not reached the shape of a movement they had stopped half a minute earlier.
+
+`RepCounter` has had a FLOOR since it was written: a lap completed in under
+600ms is a landmark glitch, not a body. It had no ceiling at all, so a lap that
+simply stopped being performed stayed open until the signal happened to come
+back under `topEnter`.
+
+`maxRepDurationMs` closes it, at 20 seconds — a `PRODUCT_HEURISTIC`, and
+deliberately about ten times a real repetition rather than close to one. A
+5-3-5-3 tempo protocol with a long pause comes to roughly 16s; the abandoned lap
+this was written for ran to 33s. The lifter this must never catch is the slow
+one, so the bound sits far away from them rather than near.
+
+**Two details that are the whole fix, not decoration.**
+
+Checked in `update` rather than in `_complete`. Completing correctly and only
+then rejecting would still leave the phase readout saying «нижняя точка» for the
+whole half-minute, which is what the recording shows. The screen has to recover
+when the lifter stops, not when they next stand up.
+
+And the counter is DISARMED, not merely discarded. `_discard` returns the
+machine to the top phase while the signal may still be deep, and at the top a
+signal above `topExit` opens a new rep on the very next frame — so without the
+disarm the same lifter would be told the same thing every twenty seconds for as
+long as they stayed put. Re-arming means standing up first, which is the bar
+`isArmed` already sets for opening the camera mid-squat. Both halves are
+mutation-checked: removing either fails the suite.
+
+The new reject reason forced its own switch arm — `form_check_page.dart`
+switches exhaustively on `RepRejectReason`, so the compiler refused the build
+until the message existed. Its wording says the set paused rather than that the
+lifter was too slow, and ends with what to do next, because the counter has
+disarmed and needs to see the top again.
+
+`isOrdered` now also requires `minRepDurationMs < maxRepDurationMs`: with the
+ceiling at or below the floor every lap is rejected by one bound or the other
+and nothing can ever be counted.
+
+**Authorisation, stated plainly.** This was not in the operator's five-point
+redesign spec. I put it to GPT-PM as a roadmap question and the send failed —
+PM Bridge reported `CHATGPT_SEND_UNCONFIRMED` with no user turn, and I did not
+resend. So this gate proceeds on the operator's standing autonomous mandate and
+on the evidence above, and goes to GPT-PM at the commit gate like any other
+change rather than skipping review.
+
+### The goldens were flaky the whole time, and nothing could tell
+
+Found while verifying G13, not by looking for it: the three coach goldens
+failed the full suite at 49%, 54% and 95%, having passed it an hour earlier
+with the same images. Re-running the same unchanged test twice gave 54% and
+then **94% on the same golden** — a golden that fails at random, which is worse
+than no golden at all, because the next person to see it red re-records it
+without looking.
+
+**The backdrop photograph is chosen at random** (`CoachBackdropController`
+picks from `kCoachBackdrops`, and re-shuffles on entry). The goldens never
+pinned it. They passed anyway for as long as `Image.asset` was not resolving in
+the widget test — every run photographed the same near-black layer underneath,
+so the choice could not show. Once the photographs began resolving the
+randomness became visible immediately.
+
+So the file's own doc comment — *"`Image.asset` does not resolve the backdrop
+photograph in a widget test"* — was load-bearing and had quietly stopped being
+true. Fixed by seeding `coachBackdropRandomProvider`; three consecutive runs
+now pass. The comment is corrected rather than deleted, including the part that
+is still awkward: the photograph resolves in the picker's image and not in the
+two live ones, because the asset finishes loading part-way through the file.
+That is an artefact of test order, stable while the order is, and it is noise
+rather than a subject of these images. Recorded so nobody reads meaning into
+which images have a photograph in them.
+
+**What this says about the earlier evidence, honestly.** The "594 green" and
+"3483 green" recorded above were real runs and did pass. But the goldens in them
+were passing by luck of the draw, so their contribution to that number was
+weaker than it looked. The defects those goldens actually caught — the
+telescoping limbs, the arrowhead silhouette, the 1.69x inflation — were all
+caught by LOOKING at the produced image, which is what a golden is for and what
+no amount of green does for you.
+
+---
+
+## G13 remediation — what round 1 found, and one claim that did not check out
+
+GPT-PM's round 1 returned `VERDICT: MAJOR` with four findings. Verified each
+against source before accepting.
+
+**Real, and fixed.** (1) The 20s ceiling only ran inside `RepCounter.update`,
+and production's own `_onFrame` drops an unscorable frame — the lifter fully
+out of shot — before it ever reaches `update` at all (its own comment says so:
+"it must not reach the rep counter"). A lifter who disappears mid-repetition
+would never trip the ceiling. Split into a public `RepCounter.checkExpiry`,
+callable on a frame's timestamp alone with no signal required, called from
+inside `update` for direct callers and a second time, explicitly, from
+`_onFrame` before the scorability gate.
+
+(2) `_onRepRejected` spoke `FormCueKey.silhouetteMissed` — «вы не дошли до
+силуэта» — for ANY rejection with a low peak match, `abandoned` included. The
+real recorded case (peak 0.072) would have cleared that check exactly. The
+discard removes the phantom rep from the count and the voice re-invented it as
+a technique fault seconds later. Excluded `abandoned` from the cue.
+
+(3) The golden fix from the previous entry replaced one flake with another: a
+single `math.Random(7)` instance was shared and mutated across all three
+containers, so which backdrop a given test received depended on how many
+`.nextInt()` calls the OTHER containers had already made — deterministic for
+one fixed run order, not hermetic. Changed to a function that constructs a
+fresh `Random(7)` per call.
+
+(4) The slow-repetition test's own positive control was checked and found not
+to test what its comment claimed: `stepMs: 325` measures about 8.1s, not the
+"thirteen seconds" the comment said, and nowhere near either the 16s tempo
+case or the 20s boundary. Measured empirically rather than assumed a second
+time — `repFrames`'s own "25 frames" comment turned out to describe `stepMs:
+50` specifically, not a fixed step count for any `stepMs`; the real ratio for
+`halfFrames: 20` is 26 steps. Two tests now stand at 16640ms and 19760ms.
+
+**Checked and NOT accepted.** Round 1 also carried a MINOR: that the
+provenance paragraph above ("the send failed, `CHATGPT_SEND_UNCONFIRMED`, I did
+not resend, this proceeds on the standing mandate") is "no longer an accurate
+project record... B was explicitly authorised as the next gate, with GO/PUSH
+authorised." Checked before rewriting anything, per the same discipline this
+log has applied to its own false findings before: `pm_bridge_job_status` on
+that request id still reads `status: uncertain`, `errorCode:
+CHATGPT_SEND_UNCONFIRMED`, `userTurnId: null`, `replyId: null`,
+`correlated: null`. A full-text search of the conversation log
+(`pm_bridge_status`) for the actual roadmap message never finds it landed —
+every match is the message's own text embedded inside a LATER outbound review
+request, not a real inbound exchange. No message authorising "B" exists in the
+transcript. The original paragraph is left as written; this is recorded as a
+checked-and-rejected reviewer claim rather than silently ignored.
+
+**Verification on the remediated tree.**
+
+- `form_check` + `golden`: **600 green** — the faulted golden was re-recorded
+  because the fresh-per-container `Random` picks a different backdrop than the
+  shared-mutable one did; re-checked stable across 4 consecutive runs before
+  accepting.
+- Whole package: **3489 green**, `exit 0`.
+- `flutter analyze` on touched paths: one pre-existing warning
+  (`test/features/form_check/coach_hud_test.dart:8`, unused import, last
+  touched in `78b67dd`, not this gate), zero errors.
+
+## G13 remediation — round 2
+
+GPT-PM's round 2 confirmed three of round 1's four fixes closed
+(`checkExpiry` mechanism, the cue exclusion, the slow-rep boundary coverage)
+and returned `VERDICT: MAJOR` on two findings: the `checkExpiry` fix was only
+half done, and the golden order-independence fix from round 1 pinned WHICH
+backdrop a container picks but not whether the picture actually shows it.
+Both verified against source and fixed; both had to go through a second wrong
+attempt each before landing, kept below because the reasoning is the point.
+
+**Finding 1 — the pause gate ran, but the clock underneath it did not stop.**
+Gating `checkExpiry`'s call on `countingLive` (round 1's own fix) stops the
+check from *firing* during a pause, but the camera keeps delivering frames on
+its own clock through the pause by design (`paused_set_test.dart` pins
+exactly that) — so the first live frame after resume still carries a
+timestamp that has advanced by the whole paused wall-clock span, and
+comparing it straight against a `_repStartMs` stamped before the pause
+abandons the rep the instant the set resumes. `rep_expiry_pause_test.dart`
+(new) failed its own positive control against the gated-only version:
+`repCount` came back `0`, not `1`, run first.
+
+First attempt: added `RepCounter.extendDeadline(pausedMs)` and a
+`_pausedSinceMs` marker set to the timestamp of the first frame observed
+*while already paused*. Still failed the same test — a paused set that
+receives no frame at all until resume (this repo's own `_ManualService`
+fixture, and a realistic paused-camera pattern besides) measured only the gap
+between that arbitrary mid-pause frame and resume, not the pause itself, and
+left most of the real span still charged against the ceiling. Fixed by
+tracking `_lastCountingFrameMs` — the timestamp of the last frame processed
+*while still live* — and marking the pause from there instead, since
+`phase.pause()` is a user action with no frame of its own and the last live
+frame is the only honest marker for when live processing actually stopped.
+Both versions were mutation-checked: reverting either the `extendDeadline`
+call or the last-live-frame tracking (in isolation) makes
+`rep_expiry_pause_test.dart` fail again; the negative control (a rep genuinely
+abandoned while still counting, never paused) stayed rejected throughout all
+three versions.
+
+**Finding 2 — the golden fix pinned the choice, not the picture.** Round 1's
+fresh-`Random(7)`-per-container fix made which backdrop a container picks
+independent of the other containers' provider trees, and was verified stable
+across repeated full-file runs — but never against run ORDER, only against
+running the same file the same way repeatedly. `Image.asset` resolves through
+a real asset-bundle read that the first golden to touch a given file pays for
+and every later one in the same run gets for free; the doc comment at the top
+of the file said as much at the time ("the picker's image carries it, the two
+live ones do not... an artefact of test order") and treated it as an accepted
+limitation rather than a defect. GPT-PM read that comment as an open
+admission of exactly the order-dependence a golden must not have, and
+running each of the three tests alone with `--plain-name` confirmed it live:
+the picker golden run by itself was a 95.64% pixel diff against the same
+golden recorded inside a full-file run. Fixed with a `precacheBackdrop`
+helper that reads the container's already-seeded backdrop path and awaits
+`precacheImage` inside `tester.runAsync` before capture, so the asset read
+happens on that container's own clock regardless of what ran before it.
+Goldens re-recorded; verified stable across three full-file runs, each of the
+three tests individually via `--plain-name`, and two partial two-of-three
+combinations via `--name` — all pass, including the picker alone, which was
+the one that previously failed at 95.64%.
+
+**Checked a second time, rejected a second time.** GPT-PM repeated the MINOR
+from round 1 about the provenance paragraph, elaborated as holding
+"regardless of what PM Bridge recorded for the failed automated send." The
+underlying evidence has not changed since it was checked and rejected in
+round 1: `pm_bridge_job_status` on the same request id still reads `status:
+uncertain`, `errorCode: CHATGPT_SEND_UNCONFIRMED`, `userTurnId: null`,
+`replyId: null`, `correlated: null`, and a full-text search of the
+conversation log still finds no inbound message authorising "B" as the next
+gate — every match is the attempted message's own text embedded in a LATER
+outbound review request, not a real exchange. A claim that PM Bridge's own
+receipt should be disregarded needs its own evidence for why, not a
+restatement of the claim; none was offered. Left as written, recorded again
+rather than silently dropped or silently complied with.
+
+**Verification on the remediated tree.**
+
+- `rep_expiry_pause_test.dart`: 2/2 green, both mutation-checked against the
+  actual code (not just against a stubbed regression).
+- `rep_abandoned_test.dart`, `paused_set_test.dart` (pre-existing pause
+  coverage this change could have regressed): all green.
+- `form_coach_golden_test.dart`: green as a full file (×3) and individually
+  in every order tried, goldens re-recorded.
+- `flutter analyze`, whole package: zero new issues on any touched file (one
+  pre-existing warning in an untouched test file, unrelated).
+- Whole package `flutter test`: **3491 green**, `exit 0` (3489 + the two new
+  pause-regression tests).
+
+## G13 remediation — round 3
+
+GPT-PM's round 3 confirmed the golden order-independence fix CLOSED (no
+scoped objection) and returned `VERDICT: MAJOR` on one finding against the
+pause-clock fix: it worked only because the round-2 regression test happened
+to push one frame while paused. Verified against source and fixed.
+
+**The gap.** Round 2's `_pausedSinceMs` was set from `_onFrame`'s own
+`else` branch — reachable only when a frame actually arrives while
+`countingLive` is false. A real paused camera (or this repo's own
+`_ManualService` fixture) that delivers zero frames between `pause()` and
+`resume()` never runs that branch at all: `_pausedSinceMs` stays null, the
+first live frame after resume skips the `extendDeadline` call outright, and
+`checkExpiry` sees the whole paused span charged against the rep — the exact
+defect round 2 was supposed to have closed, just gated on a condition
+(a frame during the pause) the fix's own remediation text had named as a
+case it should handle and then didn't test.
+
+**The fix.** Moved pause-boundary detection off frame flow entirely and onto
+the phase transition itself: `RepSessionController.build()` now
+`ref.listen`s `coachPhaseControllerProvider` directly
+(`_onCoachPhaseChanged`), and sets `_pausedSinceMs` the moment
+`countingIsLiveIn` flips from true to false — with or without a frame
+anywhere near that moment. `_onFrame`'s own pause-detection branch
+(`_wasCountingLive`, the frame-driven `else`) is gone; `_pausedSinceMs` is now
+set from exactly one place. `extendDeadline` is still only ever called from
+`_onFrame`, on the first live frame after resume, because that is the
+earliest point a frame timestamp exists to compute the gap against.
+
+**New regression test**, exactly as specified: open a rep, `pause()`, push no
+frames at all, `resume()`, then push a frame timestamped 25s later — the rep
+completes, not abandoned. Mutation-checked: commenting out the one line that
+sets `_pausedSinceMs` in `_onCoachPhaseChanged` fails both this test and the
+existing "frame arrives during the pause" test from round 2, confirming the
+listener is now the only mechanism either depends on. The existing paused
+tests (`paused_set_test.dart`) and the never-paused negative control both
+stayed green throughout.
+
+**Verification on the remediated tree.**
+
+- `rep_expiry_pause_test.dart`: 3/3 green (the new no-frame case, the
+  frame-during-pause case from round 2, and the never-paused negative
+  control), all mutation-checked.
+- `rep_abandoned_test.dart`, `paused_set_test.dart`, full golden file: green.
+- `flutter analyze`, whole package: zero new issues.
+- Whole package `flutter test`: **3492 green**, `exit 0`.

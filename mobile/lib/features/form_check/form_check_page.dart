@@ -2234,6 +2234,7 @@ class _CueCard extends StatelessWidget {
         switch (reject!) {
           RepRejectReason.incomplete => l10n.formcheckRepNotCounted,
           RepRejectReason.tooFast => l10n.formcheckRepNotCountedTooFast,
+          RepRejectReason.abandoned => l10n.formcheckRepNotCountedAbandoned,
         },
         const Key('form_check.rep_rejected'),
       );

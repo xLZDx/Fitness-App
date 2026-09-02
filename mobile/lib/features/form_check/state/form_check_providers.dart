@@ -1121,6 +1121,35 @@ class RepSessionController extends Notifier<RepSessionState> {
   StreamSubscription<PoseFrame>? _sub;
   RepCounter? _counter;
 
+  /// Timestamp of the last frame processed while counting was live, or null
+  /// before any live frame has been seen.
+  ///
+  /// This, not the timestamp of whatever frame happens to arrive first while
+  /// paused, is where a pause "starts" on the frame clock — `phase.pause()`
+  /// is a user action with no frame of its own, so the only honest marker for
+  /// when live processing stopped is the last frame that WAS live.
+  int? _lastCountingFrameMs;
+
+  /// Where [_lastCountingFrameMs] stood at the moment counting stopped being
+  /// live, or null while counting is live (or before any frame has arrived).
+  ///
+  /// Set from [_onCoachPhaseChanged] — a `ref.listen` on the phase provider
+  /// itself, not inferred from frame flow. That is the third version of this
+  /// field. Gating `checkExpiry` on `countingLive` alone stops the clock from
+  /// firing DURING a pause, but the camera keeps delivering frames on its own
+  /// clock through the pause regardless, so the first frame after resume
+  /// still carries a timestamp that has advanced by the full paused span —
+  /// `rep_expiry_pause_test.dart` caught that live. The second version fixed
+  /// it by marking the pause boundary from a frame observed while paused, but
+  /// only ever ran when at least one frame happened to arrive during the
+  /// pause; GPT-PM, round 3, caught the case a real paused camera can
+  /// genuinely produce and this repo's own `_ManualService` fixture can too —
+  /// zero frames between `pause()` and `resume()` — where nothing would ever
+  /// set this field at all and the abandonment would fire exactly as before.
+  /// A phase LISTENER fires on the pause command itself, with or without a
+  /// frame anywhere near it.
+  int? _pausedSinceMs;
+
   /// `cue()` is awaited off the frame path, so its completion can land after the
   /// controller is gone. Touching `ref` then throws.
   bool _disposed = false;
@@ -1208,6 +1237,16 @@ class RepSessionController extends Notifier<RepSessionState> {
       if (isMuted) unawaited(coach.stop());
     });
 
+    // See `_pausedSinceMs` and `_onCoachPhaseChanged`: the pause boundary for
+    // the abandonment ceiling is recorded here, off the phase transition
+    // itself, rather than inferred from whichever frame happens to arrive
+    // next — a paused camera that produces no frames at all until resume must
+    // still have the pause excluded from the ceiling.
+    ref.listen<CoachSessionState>(
+      coachPhaseControllerProvider,
+      _onCoachPhaseChanged,
+    );
+
     _sub?.cancel();
     _sub = svc.frames().listen(
           _onFrame,
@@ -1278,10 +1317,69 @@ class RepSessionController extends Notifier<RepSessionState> {
     _signalWindowStartMs = frame.timestampMs;
   }
 
+  /// Marks where a pause starts on the frame clock, from the phase
+  /// transition itself rather than from frame flow.
+  ///
+  /// `prev` is null on the first call (the listener firing with the
+  /// provider's initial state, before any real transition) and is otherwise
+  /// the state immediately before this one — both handled the same way
+  /// `_onFrame`'s own `countingLive` read already does for the current
+  /// state, so a pause is recognised exactly once, on the frame-independent
+  /// edge from live to not-live, regardless of whether any frame happens to
+  /// arrive during it.
+  void _onCoachPhaseChanged(CoachSessionState? prev, CoachSessionState next) {
+    final wasLive = prev != null && countingIsLiveIn(prev.phase);
+    final isLive = countingIsLiveIn(next.phase);
+    if (wasLive && !isLive) {
+      _pausedSinceMs = _lastCountingFrameMs;
+    }
+  }
+
   void _onFrame(PoseFrame frame) {
     _retirePoseError(ref);
     final counter = _counter;
     if (counter == null) return;
+
+    // Read once, used twice: once to gate the expiry clock immediately below,
+    // once at its usual place further down to gate the count itself. Two
+    // separate reads of the same phase would drift from each other the moment
+    // one call site changed and the other did not, which is exactly the "one
+    // answer to is the set running" the later guard's own comment already
+    // argues for — this is that same answer, reused rather than duplicated.
+    final countingLive =
+        countingIsLiveIn(ref.read(coachPhaseControllerProvider).phase);
+
+    // Before the scorability gate, and using the frame's own timestamp rather
+    // than going through `counter.update` — the comment on the early return
+    // just below explains why a frame the gate rejects would otherwise never
+    // reach the counter's clock at all. A lifter who disappears mid-repetition
+    // produces exactly the frames that early return drops, so this is the one
+    // check that has to run before it, not after. See `RepCounter.checkExpiry`.
+    // GPT-PM, round 1: caught live.
+    //
+    // Gated on `countingLive`, added in round 2 of the same review. The
+    // camera keeps delivering frames through a pause by design — see the
+    // later guard's own comment — and an ungated clock would silently spend
+    // that paused wall-clock time on the open repetition, abandoning it while
+    // the set sits frozen for a reason that has nothing to do with the
+    // lifter's body. A rep left open across a pause must still be open when
+    // the set resumes; only counting time may count against the ceiling.
+    if (countingLive) {
+      // A pause ended some time before this frame: push the deadline out by
+      // however long it lasted, measured on the camera's own clock, before
+      // this frame's timestamp is allowed anywhere near `checkExpiry`. The
+      // boundary itself is recorded by `_onCoachPhaseChanged`, not inferred
+      // here — see `_pausedSinceMs`.
+      if (_pausedSinceMs != null) {
+        counter.extendDeadline(frame.timestampMs - _pausedSinceMs!);
+        _pausedSinceMs = null;
+      }
+      final expired = counter.checkExpiry(frame.timestampMs);
+      if (expired != null) {
+        _onRepRejected(counter, expired, ref.read(poseTargetProvider));
+      }
+      _lastCountingFrameMs = frame.timestampMs;
+    }
 
     final result = evaluateGated(
       ref.read(activeClassifiersProvider),
@@ -1334,7 +1432,7 @@ class RepSessionController extends Notifier<RepSessionState> {
     // this controller's own, so the app has exactly one answer to "is the set
     // running" — the same reason R11h put the pre-set stages behind the gate
     // verdict instead of behind a second copy of it.
-    if (!countingIsLiveIn(ref.read(coachPhaseControllerProvider).phase)) {
+    if (!countingLive) {
       return;
     }
 
@@ -1543,7 +1641,20 @@ class RepSessionController extends Notifier<RepSessionState> {
     // told the operator to sink lower at the bottom of a full squat: "ниже уже
     // некуда было". A rejection measured with that signal is reported on
     // screen and never spoken aloud as a fault.
-    final cue = (target != null && peak != null && peak < kPoseMatchPassing)
+    //
+    // `abandoned` is excluded on top of that, and for a different reason: it
+    // is not a rejection about technique at all, it is the lifter having
+    // stopped. Before this guard, the real case this gate was written for —
+    // a rep abandoned mid-descent, peak match 0.072 — would clear the check
+    // above (0.072 IS below `kPoseMatchPassing`) and speak «вы не дошли до
+    // силуэта» over a repetition the lifter had stopped performing half a
+    // minute earlier. GPT-PM, reviewing the first version of this gate: the
+    // discard removes the phantom rep from the count and the voice then
+    // re-invents it as a technique fault.
+    final cue = (target != null &&
+            peak != null &&
+            peak < kPoseMatchPassing &&
+            event.rejectReason != RepRejectReason.abandoned)
         ? FormFeedback(
             rule: 'silhouette.match',
             severity: 2,
