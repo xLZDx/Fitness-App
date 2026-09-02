@@ -40473,3 +40473,19 @@ Build 965/2965 (`dbe02a9`, arm64-v8a) distributed to
 pause-safe, false-cue fix, golden order-flake fix). Device confirmation of
 G12's alignment against a real body remains outstanding — needs a body in
 frame on S8 or S23, not something this session can arrange unattended.
+
+## Form Coach workstream — HOLD, confirmed with GPT-PM
+
+Asked GPT-PM (per CLAUDE.md §16) whether to continue mining the S23
+recording for further defects, pull in deferred P1/P2/ML backlog, or hold.
+Answer: HOLD. REDESIGN G1-G8 and the device-bug-fix line G9-G13 are both
+code-closed. The only remaining Form Coach item is G12-A (real-human
+target-on-body alignment verification against the remediated build) —
+evidence work requiring the operator physically present with a phone, not
+autonomous development. Explicitly declined to manufacture a G14 from the
+S23 recording ("evidence should create a defect; we should not search until
+we can manufacture one") or to pull backlog work into Form Coach just to
+keep the stream moving.
+
+State: Form Coach redesign CLOSED. G9-G13 CLOSED. G12-A PARKED,
+operator-dependent. No open Form Coach gate.
