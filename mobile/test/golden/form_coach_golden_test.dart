@@ -11,6 +11,7 @@ import 'package:fitness_app/features/form_check/form_check_page.dart';
 import 'package:fitness_app/features/form_check/state/coach_phase_providers.dart';
 import 'package:fitness_app/features/form_check/state/form_check_providers.dart';
 
+import '../features/form_check/unscorable_frame_test.dart' show oneSquat;
 import '../helpers/test_app.dart';
 import '../support/golden_fonts.dart';
 
@@ -31,6 +32,15 @@ import '../support/golden_fonts.dart';
 /// **Avatar mode, deliberately.** The camera preview cannot render in a widget
 /// test, and the point here is the HUD and the drawn body — both of which are
 /// exactly what avatar mode shows.
+///
+/// One limit of that, so nobody reads more into these images than they hold:
+/// `Image.asset` does not resolve the backdrop photograph in a widget test, so
+/// the panel stays on the near-black layer underneath it — and the avatar's own
+/// body is filled near-black too, by design, for legibility against a scene.
+/// Black on black. What survives in these pictures is the avatar's SKELETON,
+/// not its body, which is why the figure reads as bones here and as a filled
+/// person on a phone (`reports/device-check-2026-09-02/`). The layout, the
+/// readouts and the target silhouette are what these images pin.
 
 /// A body standing at the top of a squat, frontal, every joint present.
 ///
@@ -149,6 +159,47 @@ void main() {
     await expectLater(
       find.byType(FormCheckPage),
       matchesGoldenFile('goldens/form_coach_live.png'),
+    );
+  });
+
+  testWidgets('a repetition the coach faulted, explained', (tester) async {
+    // G7 and G8, which are the newest work on this page and the least looked
+    // at: the cue on the picture, the ring on the joint the rule turns on, the
+    // four counters with something in them for once, and the calm explanation
+    // underneath. Every one of those is drawn only after a rep completes and
+    // is faulted, which is why the two images above — a body standing still —
+    // show none of them.
+    //
+    // `oneSquat` is the same fixture `fault_explanation_test.dart` asserts
+    // against, so the pose that produces this picture is one another test has
+    // already pinned as a completed, faulted repetition rather than something
+    // arranged to look good here.
+    pinGoldenSurface(tester, size: const Size(400, 1400));
+    final c = ProviderContainer(overrides: [
+      poseDetectorServiceProvider
+          .overrideWithValue(MockPoseDetectorService(oneSquat(0))),
+      coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),
+    ]);
+    addTearDown(c.dispose);
+    c.read(avatarModeProvider.notifier).state = true;
+    await tester.pumpWidget(page(c));
+    for (var i = 0; i < 60; i++) {
+      await tester.pump(const Duration(milliseconds: 33));
+    }
+    await c.read(poseDetectorServiceProvider).stop();
+    await tester.pump(const Duration(milliseconds: 60));
+
+    // Positive controls. A golden of a screen that never reached the state it
+    // is named for is worse than no golden: it would lock in the empty version
+    // and go green forever.
+    final cue = c.read(repSessionControllerProvider).lastRepCue;
+    expect(cue, isNotNull, reason: 'no repetition completed');
+    expect(cue!.severity, greaterThan(0), reason: 'the repetition passed');
+    expect(find.byKey(const Key('form_check.explain')), findsOneWidget);
+
+    await expectLater(
+      find.byType(FormCheckPage),
+      matchesGoldenFile('goldens/form_coach_faulted.png'),
     );
   });
 

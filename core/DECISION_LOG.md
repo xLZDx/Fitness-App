@@ -39934,3 +39934,30 @@ Recorded rather than quietly deleted, because the mistake is instructive: the
 finding came from a screenshot taken after an `input swipe`, and a scroll
 boundary looks exactly like a clip. A device screenshot is evidence about the
 frame it was taken in, not about the layout in general.
+
+### 2026-09-02 — a third golden: the state where G4, G7 and G8 actually draw
+
+The two images taken this morning show a body standing still, which is the one
+state in which the newest work on this page draws nothing at all: the cue, the
+ring on the faulted joint, the four counters with numbers in them and the calm
+explanation underneath all appear only after a repetition completes AND is
+faulted. `goldens/form_coach_faulted.png` is that state, driven by `oneSquat` —
+the same fixture `fault_explanation_test.dart` already pins as a completed,
+faulted rep, rather than a pose arranged to make a flattering picture.
+
+It is the first look at G4's counters as a user sees them: ТЕМП 1.0 s,
+RANGE 93%, SYMMETRY 50/50 in green, PAUSE 0.7 s. Four measurements where G3 had
+four em-dashes.
+
+Three positive controls guard it, because a golden of a screen that never
+reached the state it is named for is worse than no golden — it would lock in the
+empty version and stay green forever: a rep completed, its severity is above
+zero, and the explanation card is on screen.
+
+**What these images do not hold**, stated in the file itself: `Image.asset` does
+not resolve the backdrop photograph in a widget test, so the panel stays on the
+near-black layer beneath it, and the avatar's own body is filled near-black by
+design. Black on black — what survives is the avatar's SKELETON, not its body.
+The device screenshots are where the filled figure is evidenced.
+
+Full suite: **3459 green.**
