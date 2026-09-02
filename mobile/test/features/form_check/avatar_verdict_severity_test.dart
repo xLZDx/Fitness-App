@@ -178,5 +178,82 @@ void main() {
         );
       });
     });
+
+    group('the error half of the two overlay states', () {
+      // Found by standing in front of the camera rather than by reading the
+      // code. Thirteen squats on an S23: the skeleton was white on every
+      // frame. Green needs a live match at or above the pass mark, and a body
+      // descending into a squat is nowhere near the bottom target's shape for
+      // most of the movement — while red had no source wired to it at all. So
+      // the one shipped movement with a target and a rep counter could say
+      // "correct" and "no opinion", never "wrong", with the cue card two
+      // centimetres below it reading «Вы не дошли до силуэта».
+      //
+      // The doc comment had described this colour coming from the completed
+      // rep since the gate was written. Only the argument was missing.
+
+      test('a completed rep that missed the target paints the error colour',
+          () {
+        expect(
+          avatarVerdictSeverity([SquatDepthClassifier()], null,
+              matchScore: 0.4, lastRepMissedTarget: true),
+          2,
+        );
+      });
+
+      test('and reaching the shape live overrules it, without waiting for the '
+          'rep to end', () {
+        // The interaction that makes this usable: miss a rep, get red, then
+        // actually arrive in the shape and go green immediately rather than
+        // standing in a correct position under a red body until the next rep
+        // boundary.
+        expect(
+          avatarVerdictSeverity([SquatDepthClassifier()], null,
+              matchScore: 1.0, lastRepMissedTarget: true),
+          0,
+        );
+      });
+
+      test('a completed rep that reached it paints nothing on its own', () {
+        // `false` is a real answer — the rep was judged and it passed — but the
+        // live match is what says so, and mid-descent after a good rep there is
+        // no claim to make. Not 0: that would paint the body green while the
+        // user is standing at the top of the next rep, which is the
+        // false-safety-signal this file exists to prevent.
+        expect(
+          avatarVerdictSeverity([SquatDepthClassifier()], null,
+              matchScore: 0.4, lastRepMissedTarget: false),
+          isNull,
+        );
+      });
+
+      test('no rep has completed yet, so there is nothing to report', () {
+        expect(
+          avatarVerdictSeverity([SquatDepthClassifier()], null,
+              matchScore: 0.4, lastRepMissedTarget: null),
+          isNull,
+        );
+      });
+
+      test('a fault-capable classifier is untouched by it', () {
+        // The push-up has its own verdict and must not be second-guessed by a
+        // silhouette result belonging to a different rule.
+        expect(
+          avatarVerdictSeverity([PushupAlignmentClassifier()], null,
+              matchScore: 0.4, lastRepMissedTarget: true),
+          isNull,
+          reason: 'no feedback from its own rule means no verdict, and a '
+              'missed silhouette is not that rule speaking',
+        );
+      });
+
+      test('and no classifier at all still paints nothing', () {
+        expect(
+          avatarVerdictSeverity(const [], null,
+              matchScore: 0.4, lastRepMissedTarget: true),
+          isNull,
+        );
+      });
+    });
   });
 }

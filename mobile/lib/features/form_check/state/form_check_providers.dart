@@ -720,6 +720,7 @@ int? avatarVerdictSeverity(
   List<FormClassifier> activeClassifiers,
   FormFeedback? feedback, {
   double? matchScore,
+  bool? lastRepMissedTarget,
 }) {
   if (activeClassifiers.isEmpty) return null;
   final classifier = activeClassifiers.first;
@@ -733,7 +734,24 @@ int? avatarVerdictSeverity(
   // fallback stays scoped to the former: a shape-match result answers "does
   // this known movement match its target", which is meaningless without a
   // classifier already naming what movement is being attempted.
+  //
+  // Live first, so reaching the shape turns the body green immediately rather
+  // than waiting for the rep to end.
   if (matchScore != null && matchScore >= kPoseMatchPassing) return 0;
+  // Then the last COMPLETED rep's own verdict, which is what the paragraph
+  // above always said the error colour would come from — and which nothing
+  // passed in until 2026-09-02.
+  //
+  // Found by standing in front of the camera. Thirteen squats on an S23: the
+  // skeleton was white on every single frame. Green needs a live match at or
+  // above 0.80, and a body descending into a squat is nowhere near the
+  // bottom-target's shape for most of the movement; red had no source at all.
+  // So the one shipped movement with a target and a rep counter could show
+  // "correct" and "no opinion", never "wrong" — while the cue card two
+  // centimetres below it said «Вы не дошли до силуэта» in so many words. The
+  // reference calls for exactly two overlay states, green and red
+  // (`full_handoff_v1/README.md` §8), and this one had one and a half.
+  if (lastRepMissedTarget == true) return 2;
   return null;
 }
 

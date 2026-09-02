@@ -39961,3 +39961,48 @@ design. Black on black — what survives is the avatar's SKELETON, not its body.
 The device screenshots are where the filled figure is evidenced.
 
 Full suite: **3459 green.**
+
+---
+
+## 2026-09-02 — G11: the skeleton could say "correct" and "no opinion", never "wrong"
+
+The operator stood in front of the camera. Thirteen squats on the S23, and the
+skeleton was **white on every single frame** — the two-state overlay the
+reference specifies (`full_handoff_v1/README.md` §8: green when correct, red on
+a fault) had one and a half states.
+
+**The mechanism.** `avatarVerdictSeverity` takes its colour from the active
+classifier — and the squat's classifier is `SquatDepthClassifier`, whose
+`canFault` is false, withdrawn after it told the operator to sink lower at the
+bottom of a full squat («ниже уже некуда было»). For those movements the
+function falls back to the live silhouette match, which returns 0 (correct) at
+or above the 0.80 pass mark and **null below it** — deliberately, because a body
+descending into a squat is nowhere near the bottom target's shape for most of
+the movement and painting it red every frame would be exactly the false-fault
+defect the classifier branch already guards against.
+
+So green had a source and red had none. The one shipped movement with both a
+target and a rep counter could never be told it was wrong, while the cue card
+two centimetres below it read «Вы не дошли до силуэта» in so many words.
+
+**The fix was one argument.** The function's own doc comment has said since the
+gate was written that the error colour comes from a COMPLETED rep judged against
+the target — `lastRepMissedTarget`, decided once at the rep boundary. That field
+exists, is populated, and nothing passed it in. It is now passed, and read AFTER
+the live match, so reaching the shape turns the body green immediately rather
+than leaving it red under a correct position until the next rep boundary.
+
+`lastRepMissedTarget == false` deliberately paints nothing rather than 0: the
+rep was judged and it passed, but mid-descent after a good rep there is no claim
+to make, and green there would be the false-safety signal in the other
+direction.
+
+Six tests, mutation-checked — deleting the new branch fails the first of them.
+The faulted golden was re-taken and the bones are red in it now.
+
+**How it was found matters as much as what it was.** Every unit test of this
+function passed before and after; they assert the function's contract, and the
+contract was met. What was missing was a caller. Nothing but a person squatting
+in front of a phone was going to show that.
+
+Full suite: **3464 green.**

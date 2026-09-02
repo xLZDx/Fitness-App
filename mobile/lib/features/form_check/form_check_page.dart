@@ -1443,6 +1443,11 @@ class _PoseAvatar extends ConsumerWidget {
       ref.watch(activeClassifiersProvider),
       ref.watch(formFeedbackControllerProvider),
       matchScore: ref.watch(poseMatchProvider),
+      // The error half of the two overlay states. Watched narrowly rather than
+      // taking the whole session: this rebuilds on every camera frame already,
+      // and the rest of that object changes on every one of them.
+      lastRepMissedTarget: ref.watch(repSessionControllerProvider
+          .select((s) => s.lastRepMissedTarget)),
     );
     final colors = Theme.of(context).colors;
 
