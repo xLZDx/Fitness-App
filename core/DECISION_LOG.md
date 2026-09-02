@@ -40463,3 +40463,13 @@ covering the round 1-4 remediation above. Russian published as a Claude
 artifact and handed over in-session; English is the durable in-repo record.
 PM Bridge orchestrator mode is ON, so this is a checkpoint, not a stop —
 continuing to whatever is next in the Form Coach redesign scope.
+
+## G13 — release build distributed
+
+Build 965/2965 (`dbe02a9`, arm64-v8a) distributed to
+`korostelevivan@gmail.com` via Firebase App Distribution per the standing
+"always distribute after a gate touching mobile/lib" rule. Contains G12
+(target-on-body alignment, demo-loop removal) and G13 (abandonment ceiling,
+pause-safe, false-cue fix, golden order-flake fix). Device confirmation of
+G12's alignment against a real body remains outstanding — needs a body in
+frame on S8 or S23, not something this session can arrange unattended.
