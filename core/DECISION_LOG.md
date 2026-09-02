@@ -40006,3 +40006,166 @@ contract was met. What was missing was a caller. Nothing but a person squatting
 in front of a phone was going to show that.
 
 Full suite: **3464 green.**
+
+---
+
+## 2026-09-02 — G12: the outline goes on the user, and the live screen stops demonstrating
+
+Two defects, one screenshot. The S23 recording at 20:30 was taken to confirm G11's
+red/green verdict — which it did, on rep 11 — and the same frame showed something
+G11 had nothing to do with.
+
+**FACT, from the device.** 13 repetitions logged
+(`reports/device-check-2026-09-02/logcat_reps.txt`), peaks 0.882 / 0.892 / 0.895 /
+0.913 / 0.890 / 0.854 / 0.811 / 0.180 / 0.908 / 0.871 / 0.587 / 0.786 / 0.072
+against a 0.80 pass mark. Nine passed. So both halves of the two-state overlay
+were exercised on a real body: green at 20:30:17 (rep 2, ТЕХНИКА 85 %), red at
+20:31:36 (rep 11, 48 %).
+
+### The outline was drawn where it was authored
+
+`poseMatchScore` is invariant to translation and scale — deliberately, so camera
+distance cannot change a verdict. The outline was not: it was painted at its
+authored coordinates while the user was painted where the camera saw them.
+Measured on the recorded rep-3 frame, the centroid gap between the two was 0.19
+normalised units, roughly 270 logical pixels on that panel, while the readout
+said 0.895. The number was right and the picture disagreed with it, which is
+worse than either being wrong on its own: the entire instruction to the user is
+«попадите в силуэт».
+
+`alignTargetToFrame` now places the target on the body. **Anchored at the hip
+and sized by the torso, not by the score's own centroid and RMS radius** — and
+that distinction was not designed in, it was found. The first implementation
+reused the score's normalisation, which is the obvious choice and is wrong for a
+drawing: RMS radius is a property of the POSE. A user standing tall in front of a
+deep-squat target measured 1.687 target radii and the outline ballooned off the
+panel. **The golden caught it inside a minute**, on the frame where every set
+begins. Shoulder-to-hip barely changes through a squat, so the outline now holds
+one size while the user moves, and nothing is lost at the moment that matters:
+matching torsos plus matching shapes put every other joint on its counterpart.
+
+Facing still comes from the score's own mirror decision, on the score's own
+numbers, so the outline cannot face one way while the score credits the other.
+
+### The live screen had no target at all in the default mode
+
+The bigger half. `demonstrating` read `avatarModeProvider || (...)`, and that
+provider defaults to true — so the default mode demonstrated **forever**. The
+outline the operator was looking at was the demo loop cycling past the pose, not
+the pose to arrive at. A user at rep 11 was told «Вы не дошли до силуэта» with no
+silhouette on screen to reach. The comment directly above the exemption already
+said why that cannot work: an outline that keeps moving is not one you can hit.
+
+This was a conflict between two operator instructions, not a bug to be decided
+here: 2026-08-31 asked for the loop alongside the avatar; the five-point redesign
+puts the loop on the selection screen (point 2) and a still target plus the
+tracked body on the live screen (point 4). **Put to GPT-PM under §16 —
+`VERDICT: MAJOR`**: B supersedes A, and remove the loop from the live screen
+COMPLETELY rather than ending it at the first repetition, which would have left
+the same defect running for the first rep of every set. Done. The picker's own
+demonstration is untouched, and `demo_silhouette_test.dart` now asserts it there
+as the positive control.
+
+### Evidence
+
+- 11 new tests in `pose_alignment_test.dart`, built on the real recorded joint
+  coordinates rather than invented ones, including a round trip, the mirror and
+  its positive control, parity with `poseMatchScore` on unreadable bodies, and
+  the 1.69x inflation as a named regression guard.
+- `demo_silhouette_test.dart` rewritten to the by-screen contract;
+  `coach_single_status_test.dart`'s avatar-scene assertions inverted with the
+  superseded instruction recorded rather than deleted.
+- Both live goldens re-taken and looked at, twice — the first regeneration is
+  what exposed the inflation.
+- Full suite: **3477 green.**
+
+**Device status — stated precisely, because half of it is confirmed and half is
+not.**
+
+CONFIRMED on an S8 (`ce02171299f0711005`), debug build of the remediated tree:
+the live coach screen no longer demonstrates. Two captures three seconds apart
+(`reports/device-check-2026-09-02/s8-g12-live-static-t0.png` and
+`...-t3s.png`) show the outline in an identical pose. The demonstration
+controller runs 2000ms each way, so a running loop could not be at the same
+phase in both. With nobody in front of the camera the outline sits at its
+authored coordinates, which is the null-alignment fallback behaving as designed,
+and the band says «Встаньте боком к камере».
+
+NOT CONFIRMED: the alignment itself against a real body on the remediated build.
+The S23 was unplugged between the build and the install (`adb` reported it gone
+mid-command), and there is nobody in front of the S8. What exists is the
+PRE-remediation S23 capture at 21:12
+(`reports/device-check-2026-09-02/s23-g12-target-beside-body.png`), which is
+what exposed the midline defect: outline and body at plainly the same size and
+posture, and about half a hip-width apart. That is the frame the midline fix
+was written against and the frame the next device session should re-take.
+
+### G12 remediation — what the reviews found
+
+**Internal reviewers first (§17), then GPT-PM.** The Flutter reviewer returned no
+BLOCKER/MAJOR and one MINOR worth taking: `latestPoseFrameProvider` was not
+cleared when leaving a set, so the picker would read a frame from a session the
+user had walked out of. Nothing rendered wrongly — the picker consumes only the
+aspect ratio — but that provider is now what the outline's placement is computed
+from, and it is cleared. The test reviewer found three coverage gaps: the anchor
+choice was pinned by only one of the file's tests (every other fixture is a pure
+similarity of the target, under which ANY anchor round-trips exactly), the
+per-joint confidence filter was never exercised in isolation, and `place()` and
+`shouldRepaint` had no cover beyond two pixel-diff goldens. All three now have
+tests, and the `shouldRepaint` one was mutation-checked.
+
+**GPT-PM returned `VERDICT: MAJOR` with two findings, both real, both verified
+in source before being accepted.**
+
+**The first is the whole defect, reintroduced in one mode.** The alignment is
+computed from `latestPoseFrameProvider`, and that provider is only published
+while `showSkeleton || avatarMode` (`form_check_providers.dart`). Over the raw
+camera with the skeleton off — one toggle from the default, fully supported —
+nothing is published, the alignment is null, and the outline falls back to its
+authored coordinates. The gate would have shipped fixing the default path and
+leaving the camera path exactly as it was. The condition now counts a target
+outline as a reader, and `dropHeldPoseIfUnwatched` counts the same set, because
+the two have to agree or a toggle blanks the outline for a frame. The comment
+that justified the old condition — "with both off nothing draws a pose" — had
+simply stopped being true, and nothing failed when it did.
+
+**The second is subtler and the app already had the answer.** `AvatarFarSideLatch`
+holds a far side the detector loses for up to 200ms, because losing it moves the
+drawn trunk by over 15% — measured, with its own regression test. The alignment
+read raw landmarks, so a one-frame far-side blink would snap its anchor from the
+hip midpoint to the near hip: the outline slides half a hip-width while the
+figure beside it deliberately holds still. Both figures now come from one
+`stabilisedBodyProvider`, which is also the only caller that advances the latch —
+two callers running it over the same frame would advance mutable state twice per
+frame. `alignTargetToBody` is the entry point that takes an already-stabilised
+body; `alignTargetToFrame` stays as the filtering wrapper the unit tests use.
+
+MINOR, also correct: the function's doc still claimed it used the score's
+centroid and RMS radius. It had said that in the first version, and a maintainer
+following it would have restored the 1.69x inflation the golden rejected.
+
+**Two device findings from the same session, deliberately not fixed here.** The
+`squat.bottom` demonstration does not read as a squatting human on the S23 — that
+is the authored target's own geometry, already on the roadmap for MM-Fit
+refinement, and placing it correctly is this gate's job while re-authoring it is
+not. And rep #13 in the recording ran to 980 frames: the rep counter has no upper
+bound on a repetition's duration, so a user walking away eventually closes a
+33-second "repetition" and is told they missed the shape. Both are recorded in
+`core/G12_SCOPE.md` as out of scope rather than left unsaid.
+
+Four existing tests changed as a consequence, three of which were my own
+regression (the empty-figure-versus-no-pose distinction `avatarFigureProvider`
+has always kept, collapsed by the refactor and restored) and one a genuine
+contract change: "no readers, no frames" is still asserted, now on a movement
+with no authored outline, with its opposite asserted alongside it.
+
+**Verification on the remediated tree**, re-run after every change above rather
+than carried over from before it — GPT-PM's round-2 MAJOR, and a fair one: the
+recorded 3477 predated the provider rewiring, and a targeted regression passing
+says nothing about the suite around it.
+
+- `form_check` + `golden`: **594 green** (was 593 before the far-side test).
+- Whole package: **3483 green**, `exit 0`.
+- `flutter analyze` on the touched paths: no errors, no warnings, no infos.
+- `flutter analyze` on the whole package: 17 issues, **zero errors**, none in a
+  file this gate touched — the same set that was there before it.

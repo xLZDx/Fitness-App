@@ -475,8 +475,8 @@ void main() {
   });
 
   testWidgets(
-      'the avatar scene carries the looping demo pacer, no static target and '
-      'no second skeleton', (t) async {
+      'the avatar scene carries the still target and the tracked body, with '
+      'no demo loop and no second skeleton', (t) async {
     _phoneSized(t);
     final c = _container(oneSquat(0));
     await t.pumpWidget(_page(c));
@@ -491,20 +491,24 @@ void main() {
     expect(_skeleton, findsNothing,
         reason: 'the avatar already draws lit bones; a second, thinner set of '
             'the same joints on top reads as a tracking failure');
-    // Operator instruction, 2026-08-31: the target silhouette and the live
-    // avatar must be visible TOGETHER in avatar mode — a continuous demo
-    // pacer showing the correct rep, independent of and at a different
-    // scale from the user's own tracked body, not a hand-off between the
-    // two. `_silhouette` (the STATIC, solid, match-scored target from the
-    // non-avatar mode) stays absent — that variant belongs to the mode this
-    // test is not exercising.
-    expect(_silhouette, findsNothing,
-        reason: 'the solid, match-scored static target is the non-avatar '
-            "mode's variant; avatar mode always shows the looping demo "
-            'instead');
-    expect(_demo, findsOneWidget,
-        reason: 'the looping demo pacer must always be present alongside the '
-            'avatar, per operator instruction');
+    // The operator instruction of 2026-08-31 asked for the target and the
+    // avatar to be visible TOGETHER in avatar mode, and it shipped as a
+    // continuous demo pacer running "independent of and at a different scale
+    // from the user's own tracked body". **The five-point redesign superseded
+    // that for the live screen** — GPT-PM, 2026-09-02, `VERDICT: MAJOR`. Both
+    // halves of the old wording turned out to be the defect the operator then
+    // photographed on an S23: an animation cycling past the pose instead of
+    // holding it, and a second figure at an unrelated scale.
+    //
+    // What survives is the part the instruction was actually about: two
+    // figures on screen at once. It is now the STILL target — scored, and
+    // aligned onto the tracked body by `alignTargetToFrame` — next to the
+    // avatar, in this mode exactly as in the other.
+    expect(_silhouette, findsOneWidget,
+        reason: 'the shape to reach must be on screen while the body is');
+    expect(_demo, findsNothing,
+        reason: 'the picker demonstrates the movement; this screen is where '
+            'the user works against a fixed target');
   });
 
   testWidgets('turning the avatar off brings the camera overlays back',

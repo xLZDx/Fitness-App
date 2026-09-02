@@ -81,19 +81,56 @@ void main() {
     expect(_skeleton, findsNothing);
   });
 
-  testWidgets('and no frame is kept while it is off', (t) async {
+  testWidgets('and no frame is kept while nothing at all is drawn from it',
+      (t) async {
     // The overlay being off must also stop the controller PUBLISHING frames:
     // otherwise a provider nobody reads is notified thirty times a second for
     // the whole set, next to a camera and a pose detector.
+    //
+    // **"Nobody reads it" grew a third reader on 2026-09-02**, and this test
+    // asserted the old two. The target outline is now placed on the tracked
+    // body, so it needs the frame exactly as the skeleton and the avatar do —
+    // and over a raw camera with the skeleton off, which is one toggle from
+    // the default, publishing nothing left the outline at its authored
+    // coordinates and reproduced the whole defect that gate closed. Caught by
+    // GPT-PM reviewing the fix, not by this suite.
+    //
+    // So the movement is switched to one with no authored target. That keeps
+    // the assertion honest — it still says "no readers, no frames" — instead of
+    // pinning a reader count that has changed once and may change again.
     _phoneSized(t);
     final c = _container(oneSquat(0));
+    c.read(selectedExerciseProvider.notifier).state = FormExercise.deadlift;
     await t.pumpWidget(_page(c));
     await t.pump();
     // Long enough for the mock to finish replaying its fixtures, so the
     // start timeout's timer is cancelled rather than left pending.
     await t.pump(const Duration(seconds: 2));
 
+    expect(c.read(poseTargetProvider), isNull,
+        reason: 'positive control: this movement really has no outline to '
+            'place, so nothing is reading the frame');
     expect(c.read(latestPoseFrameProvider), isNull);
+  });
+
+  testWidgets('but a target outline is a reader, even with both toggles off',
+      (t) async {
+    // The other half, and the regression this pair exists for: the outline is
+    // drawn over the raw camera too, and it cannot be placed on a body nobody
+    // published.
+    _phoneSized(t);
+    final c = _container(oneSquat(0));
+    await t.pumpWidget(_page(c));
+    await t.pump();
+    await t.pump(const Duration(seconds: 2));
+
+    expect(c.read(showSkeletonProvider), isFalse);
+    expect(c.read(avatarModeProvider), isFalse);
+    expect(c.read(poseTargetProvider), isNotNull);
+    expect(c.read(latestPoseFrameProvider), isNotNull,
+        reason: 'the outline has no body to sit on');
+    expect(c.read(stabilisedBodyProvider), isNotNull,
+        reason: 'and no stabilised body to be aligned against');
   });
 
   testWidgets('switched on, it draws the body the detector found', (t) async {
@@ -140,8 +177,13 @@ void main() {
     await t.pump();
     expect(c.read(showSkeletonProvider), isFalse);
     expect(_skeleton, findsNothing);
-    expect(c.read(latestPoseFrameProvider), isNull,
-        reason: 'the held frame is dropped, so turning it back on cannot '
-            'flash a pose from a minute ago over a live camera');
+    // The frame STAYS, because the target outline is still reading it — see
+    // the pair of tests above. The danger this line used to guard against was
+    // a pose from a minute ago flashing over a live camera when the toggle
+    // came back on; that cannot happen while the frame is being republished
+    // every 33ms, and it is the publishing, not the dropping, that makes it
+    // safe. With nothing reading it the frame is still dropped, which the
+    // deadlift test above asserts directly.
+    expect(c.read(latestPoseFrameProvider), isNotNull);
   });
 }

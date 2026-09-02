@@ -1,0 +1,60 @@
+09-02 20:30:01.088 I/flutter (  940): [pose-probe] pose[pixels] n=22 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=111 x -0.057..0.665 y -0.105..0.953 -> OUT OF CONTRACT
+09-02 20:30:08.076 I/flutter (  940): [rep] #1 target=squat.bottom peak=0.882 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=23 scored/0 unscoreable
+09-02 20:30:08.080 I/flutter (  940): [rep]   mirror=false ar=0.667 leftShoulder=0.06(dx-0.05,dy-0.03) leftHip=0.02(dx-0.00,dy-0.02) leftKnee=0.09(dx-0.06,dy0.06) leftAnkle=0.11(dx0.11,dy-0.00)
+09-02 20:30:08.082 I/flutter (  940): [rep]   deepest hipMinusKnee=0.015 match=0.867 ar=0.667 leftShoulder=0.377,0.410 leftElbow=0.466,0.514 leftWrist=0.578,0.520 leftHip=0.236,0.571 leftKnee=0.406,0.555 leftAnkle=0.365,0.725
+09-02 20:30:12.526 I/flutter (  940): [rep] #2 target=squat.bottom peak=0.892 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=25 scored/0 unscoreable
+09-02 20:30:12.526 I/flutter (  940): [rep]   mirror=false ar=0.667 leftShoulder=0.08(dx0.06,dy0.05) leftHip=0.10(dx-0.07,dy-0.08) leftKnee=0.04(dx-0.02,dy0.04) leftAnkle=0.04(dx0.03,dy-0.01)
+09-02 20:30:12.527 I/flutter (  940): [rep]   deepest hipMinusKnee=0.018 match=0.300 ar=0.667 leftShoulder=0.371,0.324 leftElbow=0.438,0.438 leftWrist=0.487,0.474 leftHip=0.315,0.553 leftKnee=0.515,0.496 leftAnkle=0.559,0.671
+09-02 20:30:16.870 I/flutter (  940): [rep] #3 target=squat.bottom peak=0.895 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=24 scored/0 unscoreable
+09-02 20:30:16.872 I/flutter (  940): [rep]   mirror=false ar=0.667 leftShoulder=0.01(dx0.00,dy0.01) leftHip=0.12(dx-0.02,dy-0.11) leftKnee=0.09(dx-0.02,dy0.09) leftAnkle=0.04(dx0.03,dy0.01)
+09-02 20:30:16.873 I/flutter (  940): [rep]   deepest hipMinusKnee=0.010 match=0.895 ar=0.667 leftShoulder=0.410,0.418 leftElbow=0.512,0.505 leftWrist=0.629,0.546 leftHip=0.250,0.575 leftKnee=0.438,0.566 leftAnkle=0.384,0.739
+09-02 20:30:21.235 I/flutter (  940): [rep] #4 target=squat.bottom peak=0.913 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=19 scored/0 unscoreable
+09-02 20:30:21.236 I/flutter (  940): [rep]   mirror=false ar=0.667 leftShoulder=0.03(dx-0.01,dy-0.03) leftHip=0.04(dx-0.01,dy-0.04) leftKnee=0.08(dx-0.04,dy0.07) leftAnkle=0.06(dx0.06,dy-0.01)
+09-02 20:30:21.238 I/flutter (  940): [rep]   deepest hipMinusKnee=0.026 match=0.866 ar=0.667 leftShoulder=0.391,0.442 leftElbow=0.502,0.524 leftWrist=0.621,0.578 leftHip=0.234,0.599 leftKnee=0.413,0.579 leftAnkle=0.381,0.744
+09-02 20:30:25.967 I/flutter (  940): [rep] #5 target=squat.bottom peak=0.890 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=23 scored/0 unscoreable
+09-02 20:30:25.968 I/flutter (  940): [rep]   mirror=false ar=0.667 leftShoulder=0.09(dx0.08,dy0.04) leftHip=0.11(dx-0.06,dy-0.09) leftKnee=0.06(dx-0.03,dy0.05) leftAnkle=0.01(dx0.01,dy-0.00)
+09-02 20:30:25.969 I/flutter (  940): [rep]   deepest hipMinusKnee=0.014 match=0.890 ar=0.667 leftShoulder=0.424,0.434 leftElbow=0.533,0.510 leftWrist=0.651,0.551 leftHip=0.252,0.585 leftKnee=0.438,0.567 leftAnkle=0.385,0.738
+09-02 20:30:28.478 I/flutter (  940): [pose-probe] pose[pixels] n=251 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=3546 x -0.057..0.665 y -0.105..0.957 -> OUT OF CONTRACT
+09-02 20:30:28.550 I/flutter (  940): [pose-probe] pose[pixels] n=252 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=3561 x -0.057..0.665 y -0.118..0.980 -> OUT OF CONTRACT
+09-02 20:30:28.634 I/flutter (  940): [pose-probe] pose[pixels] n=253 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=3576 x -0.057..0.665 y -0.118..0.980 -> OUT OF CONTRACT
+09-02 20:30:28.693 I/flutter (  940): [pose-probe] pose[pixels] n=254 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=3591 x -0.057..0.665 y -0.139..0.980 -> OUT OF CONTRACT
+09-02 20:30:28.744 I/flutter (  940): [pose-probe] pose[pixels] n=255 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=3606 x -0.057..0.665 y -0.148..0.995 -> OUT OF CONTRACT
+09-02 20:30:28.826 I/flutter (  940): [pose-probe] pose[pixels] n=256 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=3621 x -0.057..0.665 y -0.154..0.998 -> OUT OF CONTRACT
+09-02 20:30:29.159 I/flutter (  940): [pose-probe] pose[pixels] n=260 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=3681 x -0.057..0.665 y -0.154..1.001 -> OUT OF CONTRACT
+09-02 20:30:31.796 I/flutter (  940): [pose-probe] pose[pixels] n=282 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=4011 x -0.057..0.670 y -0.154..1.001 -> OUT OF CONTRACT
+09-02 20:30:32.945 I/flutter (  940): [pose-probe] pose[pixels] n=292 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=4161 x -0.057..0.674 y -0.154..1.001 -> OUT OF CONTRACT
+09-02 20:30:33.754 I/flutter (  940): [rep] #6 target=squat.bottom peak=0.854 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=17 scored/0 unscoreable
+09-02 20:30:33.755 I/flutter (  940): [rep]   mirror=false ar=0.667 leftShoulder=0.04(dx0.04,dy-0.02) leftHip=0.09(dx-0.00,dy-0.09) leftKnee=0.15(dx0.03,dy0.14) leftAnkle=0.07(dx-0.07,dy-0.03)
+09-02 20:30:33.755 I/flutter (  940): [rep]   deepest hipMinusKnee=0.005 match=0.745 ar=0.667 leftShoulder=0.398,0.395 leftElbow=0.486,0.497 leftWrist=0.558,0.510 leftHip=0.268,0.597 leftKnee=0.437,0.575 leftAnkle=0.376,0.715
+09-02 20:30:45.434 I/flutter (  940): [rep] #7 target=squat.bottom peak=0.811 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=16 scored/0 unscoreable
+09-02 20:30:45.435 I/flutter (  940): [rep]   mirror=false ar=0.667 leftShoulder=0.08(dx0.03,dy-0.07) leftHip=0.06(dx0.05,dy-0.04) leftKnee=0.18(dx0.05,dy0.17) leftAnkle=0.14(dx-0.12,dy-0.06)
+09-02 20:30:45.436 I/flutter (  940): [rep]   deepest hipMinusKnee=-0.007 match=0.811 ar=0.667 leftShoulder=0.434,0.417 leftElbow=0.526,0.523 leftWrist=0.637,0.561 leftHip=0.284,0.589 leftKnee=0.466,0.581 leftAnkle=0.385,0.727
+09-02 20:31:15.177 I/flutter (  940): [rep] #8 target=squat.bottom peak=0.180 pass=0.8 missed=true gate=PoseGateVerdict.ok frames=27 scored/0 unscoreable
+09-02 20:31:15.178 I/flutter (  940): [rep]   mirror=true ar=0.667 leftShoulder=0.26(dx-0.00,dy-0.26) leftHip=0.92(dx-0.28,dy0.88) leftKnee=0.10(dx0.09,dy0.04) leftAnkle=0.68(dx0.20,dy-0.66)
+09-02 20:31:15.179 I/flutter (  940): [rep]   deepest hipMinusKnee=0.056 match=0.180 ar=0.667 leftShoulder=0.265,0.454 leftElbow=0.224,0.510 leftWrist=0.180,0.473 leftHip=0.315,0.591 leftKnee=0.258,0.528 leftAnkle=0.289,0.566
+09-02 20:31:21.717 I/flutter (  940): [rep] #9 target=squat.bottom peak=0.908 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=14 scored/0 unscoreable
+09-02 20:31:21.718 I/flutter (  940): [rep]   mirror=false ar=0.667 leftShoulder=0.03(dx-0.02,dy-0.02) leftHip=0.05(dx-0.05,dy0.02) leftKnee=0.06(dx0.01,dy0.06) leftAnkle=0.08(dx0.06,dy-0.06)
+09-02 20:31:21.719 I/flutter (  940): [rep]   deepest hipMinusKnee=0.017 match=0.729 ar=0.667 leftShoulder=0.378,0.417 leftElbow=0.462,0.498 leftWrist=0.569,0.555 leftHip=0.263,0.602 leftKnee=0.436,0.570 leftAnkle=0.374,0.700
+09-02 20:31:27.423 I/flutter (  940): [rep] #10 target=squat.bottom peak=0.871 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=23 scored/0 unscoreable
+09-02 20:31:27.423 I/flutter (  940): [rep]   mirror=false ar=0.667 leftShoulder=0.07(dx0.07,dy0.02) leftHip=0.12(dx-0.05,dy-0.11) leftKnee=0.10(dx-0.03,dy0.10) leftAnkle=0.01(dx0.01,dy-0.01)
+09-02 20:31:27.424 I/flutter (  940): [rep]   deepest hipMinusKnee=0.018 match=0.315 ar=0.667 leftShoulder=0.365,0.341 leftElbow=0.426,0.399 leftWrist=0.484,0.423 leftHip=0.286,0.570 leftKnee=0.500,0.511 leftAnkle=0.549,0.682
+09-02 20:31:32.051 I/flutter (  940): [rep] #11 target=squat.bottom peak=0.587 pass=0.8 missed=true gate=PoseGateVerdict.ok frames=18 scored/0 unscoreable
+09-02 20:31:32.052 I/flutter (  940): [rep]   mirror=false ar=0.667 leftShoulder=0.30(dx-0.22,dy-0.20) leftHip=0.29(dx0.26,dy-0.12) leftKnee=0.31(dx-0.12,dy0.29) leftAnkle=0.09(dx0.08,dy0.03)
+09-02 20:31:32.053 I/flutter (  940): [rep]   deepest hipMinusKnee=-0.023 match=0.350 ar=0.667 leftShoulder=0.386,0.269 leftElbow=0.448,0.381 leftWrist=0.504,0.409 leftHip=0.308,0.498 leftKnee=0.536,0.451 leftAnkle=0.567,0.623
+09-02 20:31:37.087 I/flutter (  940): [rep] #12 target=squat.bottom peak=0.786 pass=0.8 missed=true gate=PoseGateVerdict.ok frames=21 scored/0 unscoreable
+09-02 20:31:37.088 I/flutter (  940): [rep]   mirror=false ar=0.667 leftShoulder=0.14(dx-0.11,dy-0.08) leftHip=0.10(dx0.06,dy-0.08) leftKnee=0.16(dx-0.06,dy0.15) leftAnkle=0.12(dx0.12,dy0.01)
+09-02 20:31:37.090 I/flutter (  940): [rep]   deepest hipMinusKnee=-0.020 match=0.565 ar=0.667 leftShoulder=0.432,0.331 leftElbow=0.441,0.464 leftWrist=0.537,0.483 leftHip=0.309,0.508 leftKnee=0.492,0.489 leftAnkle=0.517,0.659
+09-02 20:31:39.023 I/flutter (  940): [pose-probe] pose[pixels] n=587 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=8557 x -0.057..0.674 y -0.176..1.001 -> OUT OF CONTRACT
+09-02 20:31:39.177 I/flutter (  940): [pose-probe] pose[pixels] n=588 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=8572 x -0.057..0.674 y -0.176..1.016 -> OUT OF CONTRACT
+09-02 20:31:39.301 I/flutter (  940): [pose-probe] pose[pixels] n=589 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=8587 x -0.057..0.674 y -0.238..1.024 -> OUT OF CONTRACT
+09-02 20:31:39.465 I/flutter (  940): [pose-probe] pose[pixels] n=590 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=8600 x -0.057..0.674 y -0.285..1.024 -> OUT OF CONTRACT
+09-02 20:31:39.708 I/flutter (  940): [pose-probe] pose[pixels] n=593 all x -0.255..0.751 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=8638 x -0.057..0.694 y -0.285..1.024 -> OUT OF CONTRACT
+09-02 20:31:39.793 I/flutter (  940): [pose-probe] pose[pixels] n=594 all x -0.255..0.808 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=8645 x -0.057..0.808 y -0.285..1.024 -> OUT OF CONTRACT
+09-02 20:31:39.864 I/flutter (  940): [pose-probe] pose[pixels] n=595 all x -0.255..0.820 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=8655 x -0.057..0.820 y -0.285..1.024 -> OUT OF CONTRACT
+09-02 20:31:39.953 I/flutter (  940): [pose-probe] pose[pixels] n=596 all x -0.255..0.931 y -1.998..2.448 (bound 0.667) | trusted>=0.70 k=8658 x -0.057..0.820 y -0.285..1.024 -> OUT OF CONTRACT
+09-02 20:31:40.668 I/flutter (  940): [pose-probe] pose[pixels] n=600 all x -1.758..0.931 y -3.023..2.448 (bound 0.667) | trusted>=0.70 k=8672 x -0.057..0.820 y -0.285..1.024 -> OUT OF CONTRACT
+09-02 20:31:41.434 I/flutter (  940): [pose-probe] pose[pixels] n=601 all x -1.758..0.931 y -3.023..2.573 (bound 0.667) | trusted>=0.70 k=8672 x -0.057..0.820 y -0.285..1.024 -> OUT OF CONTRACT
+09-02 20:31:41.602 I/flutter (  940): [pose-probe] pose[pixels] n=602 all x -1.758..0.931 y -3.023..4.741 (bound 0.667) | trusted>=0.70 k=8675 x -0.128..0.820 y -0.285..1.090 -> OUT OF CONTRACT
+09-02 20:31:41.780 I/flutter (  940): [pose-probe] pose[pixels] n=603 all x -1.758..0.931 y -3.023..4.741 (bound 0.667) | trusted>=0.70 k=8677 x -0.200..0.820 y -0.285..1.090 -> OUT OF CONTRACT
+09-02 20:31:41.860 I/flutter (  940): [pose-probe] pose[pixels] n=604 all x -1.758..0.931 y -3.023..4.741 (bound 0.667) | trusted>=0.70 k=8681 x -0.678..0.820 y -0.285..1.090 -> OUT OF CONTRACT
+09-02 20:31:41.949 I/flutter (  940): [pose-probe] pose[pixels] n=605 all x -1.758..0.931 y -3.023..4.741 (bound 0.667) | trusted>=0.70 k=8684 x -0.678..0.820 y -0.285..1.101 -> OUT OF CONTRACT

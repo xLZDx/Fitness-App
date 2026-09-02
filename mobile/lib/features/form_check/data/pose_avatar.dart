@@ -45,7 +45,11 @@ import 'pose_silhouette.dart';
 import 'pose_target.dart';
 
 /// Nothing to draw.
-const SilhouetteFigure _nothing = SilhouetteFigure(
+///
+/// Public because "a pose arrived and carried no torso" and "no pose arrived"
+/// are different states that want different things said about them, and the
+/// provider that has to keep them apart no longer calls [buildPoseAvatar].
+const SilhouetteFigure emptySilhouette = SilhouetteFigure(
   segments: [],
   torso: [],
   joints: [],
@@ -124,7 +128,7 @@ SilhouetteFigure buildPoseAvatar(
     minLikelihood: minLikelihood,
     latch: latch,
   );
-  if (target == null) return _nothing;
+  if (target == null) return emptySilhouette;
   return buildSilhouette(target, build: build);
 }
 

@@ -1,0 +1,13 @@
+09-02 20:30:08.076 I/flutter (  940): [rep] #1 target=squat.bottom peak=0.882 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=23 scored/0 unscoreable
+09-02 20:30:12.526 I/flutter (  940): [rep] #2 target=squat.bottom peak=0.892 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=25 scored/0 unscoreable
+09-02 20:30:16.870 I/flutter (  940): [rep] #3 target=squat.bottom peak=0.895 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=24 scored/0 unscoreable
+09-02 20:30:21.235 I/flutter (  940): [rep] #4 target=squat.bottom peak=0.913 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=19 scored/0 unscoreable
+09-02 20:30:25.967 I/flutter (  940): [rep] #5 target=squat.bottom peak=0.890 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=23 scored/0 unscoreable
+09-02 20:30:33.754 I/flutter (  940): [rep] #6 target=squat.bottom peak=0.854 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=17 scored/0 unscoreable
+09-02 20:30:45.434 I/flutter (  940): [rep] #7 target=squat.bottom peak=0.811 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=16 scored/0 unscoreable
+09-02 20:31:15.177 I/flutter (  940): [rep] #8 target=squat.bottom peak=0.180 pass=0.8 missed=true gate=PoseGateVerdict.ok frames=27 scored/0 unscoreable
+09-02 20:31:21.717 I/flutter (  940): [rep] #9 target=squat.bottom peak=0.908 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=14 scored/0 unscoreable
+09-02 20:31:27.423 I/flutter (  940): [rep] #10 target=squat.bottom peak=0.871 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=23 scored/0 unscoreable
+09-02 20:31:32.051 I/flutter (  940): [rep] #11 target=squat.bottom peak=0.587 pass=0.8 missed=true gate=PoseGateVerdict.ok frames=18 scored/0 unscoreable
+09-02 20:31:37.087 I/flutter (  940): [rep] #12 target=squat.bottom peak=0.786 pass=0.8 missed=true gate=PoseGateVerdict.ok frames=21 scored/0 unscoreable
+09-02 20:34:02.152 I/flutter (  940): [rep] #13 target=squat.bottom peak=0.072 pass=0.8 missed=true gate=PoseGateVerdict.ok frames=980 scored/4 unscoreable

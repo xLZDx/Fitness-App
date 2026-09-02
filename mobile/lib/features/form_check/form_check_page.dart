@@ -233,6 +233,15 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     // that clears frame-to-frame state reads as an omission, and the next
     // person to widen `holdMs` would make it one.
     ref.read(avatarFarSideLatchProvider).reset();
+    // The camera is stopping, so the last frame it delivered is now a
+    // photograph of a session the user has left. `_onFrame` only clears this
+    // when a NEW empty frame arrives, and no new frame is coming.
+    //
+    // Nothing renders wrongly today — the picker reads only `aspectRatio` off
+    // it, which does not change between visits — but this is the provider the
+    // silhouette's placement is now computed from, and leaving a stale body in
+    // it is a trap for whoever next reads more than the aspect ratio here.
+    ref.read(latestPoseFrameProvider.notifier).state = null;
     ref.read(coachPhaseControllerProvider.notifier).backToSelection();
     if (mounted) {
       setState(() {
@@ -475,16 +484,28 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     // надо приседать, человек повторяет это, а скелет показывает как
     // правильно человек это делает."
     //
-    // Non-avatar mode keeps the original behaviour: demonstrate until the
-    // movement starts, then get out of the way — that mode draws a SOLID,
-    // STILL target over the raw camera (`_SilhouettePainter`'s non-demo
-    // branch) that the match score is read against, and an outline that
-    // keeps moving is not one you can hit (see `_Silhouette`'s own doc).
-    // Never over a spinner or an error — there is nothing to copy it onto.
-    final demonstrating = failure == null &&
-        (ref.watch(avatarModeProvider) ||
-            (_started && session.repCount == 0 && session.phase == RepPhase.top));
-    _syncDemo(demonstrating);
+    // **The live screen never demonstrates.** Each screen owns one job: the
+    // picker shows the movement (`_selectionScreen`, which runs the same
+    // controller unconditionally), and this screen is where the user works
+    // against a still target. An outline that keeps moving is not one you can
+    // hit, and that has been written in this file the whole time.
+    //
+    // Two operator instructions met here and the newer one wins. 2026-08-31
+    // asked for the demo loop to run alongside the avatar on this screen,
+    // which shipped as `demonstrating = avatarMode || (...)` — and since
+    // `avatarModeProvider` defaults to true, the default mode demonstrated
+    // forever. Photographed on an S23 at 20:30: a user at rep 11 being told
+    // «вы не дошли до силуэта» while the only silhouette on screen was an
+    // animation cycling past the pose rather than holding it.
+    //
+    // The five-point redesign supersedes it and is explicit about where each
+    // belongs — the loop on the selection screen (point 2), a still target
+    // plus the tracked body here (point 4). Put to GPT-PM as a product
+    // conflict rather than decided here: VERDICT MAJOR, B supersedes A, and
+    // remove the loop from this screen COMPLETELY rather than merely ending it
+    // at the first repetition, which would have left the same defect running
+    // for the first rep of every set.
+    _syncDemo(false);
 
     // Two switches, one held frame. Dropping it on the way out of either mode
     // stops a pose from a minute ago flashing over a live camera on the way
@@ -496,8 +517,14 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     // clear unconditionally, so turning the skeleton off blanked the avatar
     // mid-set. A rule split across two call sites is a rule that drifts, which
     // is exactly how that happened.
+    // The same set of readers `_onFrame` publishes for, and it has to stay the
+    // same set: dropping a frame that is still about to be republished would
+    // blank the outline for one frame on every toggle, and dropping one that
+    // is NOT about to be republished is the point of this.
     void dropHeldPoseIfUnwatched() {
-      if (!ref.read(showSkeletonProvider) && !ref.read(avatarModeProvider)) {
+      if (!ref.read(showSkeletonProvider) &&
+          !ref.read(avatarModeProvider) &&
+          ref.read(poseTargetProvider) == null) {
         ref.read(latestPoseFrameProvider.notifier).state = null;
       }
     }
@@ -743,7 +770,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                                 child: IgnorePointer(
                                   child: _Silhouette(
                                     demo: _demo,
-                                    demonstrating: demonstrating,
+                                    demonstrating: false,
                                   ),
                                 ),
                               ),
@@ -2430,7 +2457,10 @@ class _Silhouette extends ConsumerWidget {
     // starts, so this is null only in the brief window before the first
     // camera frame has been processed at all. `9 / 16` matches the panel's
     // own fallback aspect ratio elsewhere on this page.
-    final frameAspect = ref.watch(latestPoseFrameProvider)?.aspectRatio ?? 9 / 16;
+    final frameAspect =
+        ref.watch(latestPoseFrameProvider.select((f) => f?.aspectRatio)) ??
+            9 / 16;
+    final body = ref.watch(stabilisedBodyProvider);
 
     if (demonstrating && pair != null) {
       final (from, to) = pair;
@@ -2461,6 +2491,12 @@ class _Silhouette extends ConsumerWidget {
         match: ref.watch(poseMatchProvider),
         build: build,
         frameAspect: frameAspect,
+        // Put the shape on the user rather than where it was authored, using
+        // the SAME body the avatar is drawn from — latched far side included,
+        // so a one-frame dropout cannot jump the outline off a body that has
+        // not moved. Null until a body is read well enough to place one, which
+        // is the same condition the readout uses to say it cannot tell.
+        alignment: body == null ? null : alignTargetToBody(body.joints, target),
       ),
     );
   }
@@ -2541,6 +2577,7 @@ class _SilhouettePainter extends CustomPainter {
     required this.match,
     required this.build,
     required this.frameAspect,
+    this.alignment,
     this.isDemo = false,
   });
 
@@ -2561,6 +2598,16 @@ class _SilhouettePainter extends CustomPainter {
   /// real body would. See `_Silhouette.build`'s comment for why this replaced
   /// `fitSilhouette`.
   final double frameAspect;
+
+  /// Where to put the outline so it sits on the tracked body, or null to draw
+  /// it where it was authored.
+  ///
+  /// Null is the honest answer in three cases and all three want the authored
+  /// position: the demonstration loop, which has no body to align to; the
+  /// moments before the camera has read one; and a body too partly seen to
+  /// score, where guessing a placement from two joints would slide the outline
+  /// around the panel on noise.
+  final PoseAlignment? alignment;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -2585,8 +2632,26 @@ class _SilhouettePainter extends CustomPainter {
     // hold a stable scale: `projectLandmark`'s transform depends only on
     // `frameAspect` and `size`, never on the pose's own bounds, so it cannot
     // rescale from one animation frame to the next in the first place.
-    Offset place(Offset p) =>
-        projectLandmark(p.dx, p.dy, frameAspect: frameAspect, canvas: size);
+    //
+    // `alignment` moves the whole figure onto the tracked body before any of
+    // that — see `alignTargetToFrame` for why the outline may not stay where
+    // it was authored.
+    final align = alignment;
+    Offset place(Offset p) {
+      var x = p.dx;
+      var y = p.dy;
+      if (align != null) {
+        final moved = align((x, y));
+        x = moved.$1;
+        y = moved.$2;
+      }
+      return projectLandmark(x, y, frameAspect: frameAspect, canvas: size);
+    }
+
+    // Limb thickness, head radius and the articulation discs are all in the
+    // target's own units, so they have to travel through the same scale the
+    // joints did — otherwise an aligned figure drawn at half size keeps
+    // full-size limbs and comes out as a blob.
     final scale = (place(const Offset(0, 1)) - place(Offset.zero)).distance;
 
     // Green once the shape is reached, so the user gets the answer while they
@@ -2793,6 +2858,12 @@ class _SilhouettePainter extends CustomPainter {
       old.isDemo != isDemo ||
       old.build != build ||
       old.frameAspect != frameAspect ||
+      // The outline follows the body now, so it repaints when the body moves —
+      // the same per-frame cost `_PoseAvatarPainter` already pays, and the
+      // reason the match-score comparison below can stay coarse. Steadier than
+      // the avatar despite that: a centroid and an RMS radius over every scored
+      // joint average out the landmark noise a single joint carries.
+      old.alignment != alignment ||
       // A demonstration is a new pose every frame and its id never changes, so
       // it has to be compared by content or the animation would render as a
       // single frozen frame.

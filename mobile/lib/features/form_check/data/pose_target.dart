@@ -831,6 +831,204 @@ double? poseMatchScore(
   return score.clamp(0.0, 1.0);
 }
 
+/// Where to draw a target so it sits on the body being scored against it.
+///
+/// A similarity transform — translate, uniform scale, and the same optional
+/// mirror [poseMatchScore] picks — with no rotation, because the score has
+/// none either. Apply it to a target's joints and the outline lands around the
+/// user at the user's own size.
+///
+/// **Anchored at the hip and sized by the torso, NOT by the score's own
+/// centroid and RMS radius.** Reusing the score's normalisation was the first
+/// attempt and the golden caught it within a minute: RMS radius is a property
+/// of the pose, not of the body, so a user standing tall in front of a
+/// deep-squat target — the ordinary state before every set — measured 1.69
+/// times the target's radius and the outline ballooned off the panel. The
+/// score may use a pose-dependent size because it only ever compares two poses
+/// that have both been normalised; a DRAWING has to hold still while the user
+/// moves.
+///
+/// Shoulder-to-hip is very nearly constant through a squat, a push-up or a
+/// hinge, so the outline keeps one size for the whole set. Nothing is lost at
+/// the moment that matters: when the user actually reaches the shape, matching
+/// torsos and matching shapes put every other joint on top of its counterpart
+/// too.
+///
+/// The hip as the anchor is a teaching choice as much as a robustness one. It
+/// is the joint the detector places most reliably, and pinning it means the
+/// gap the user sees between their feet and the outline's IS the depth they
+/// still owe.
+class PoseAlignment {
+  const PoseAlignment({
+    required this.scale,
+    required this.mirror,
+    required this.targetCentre,
+    required this.bodyCentre,
+  });
+
+  /// The body's torso length over the target's.
+  final double scale;
+
+  /// Whether the mirrored facing scored better, exactly as in [poseMatchScore].
+  final bool mirror;
+
+  /// The target's hip: the point the mirror reflects around and the scale
+  /// acts from.
+  final (double, double) targetCentre;
+
+  /// The body's own hip — where that point of the outline is put.
+  final (double, double) bodyCentre;
+
+  /// Carry one point from the target's authored space into the body's.
+  (double, double) call((double, double) p) => (
+        bodyCentre.$1 + scale * (mirror ? -1 : 1) * (p.$1 - targetCentre.$1),
+        bodyCentre.$2 + scale * (p.$2 - targetCentre.$2),
+      );
+
+  // Value equality, so a painter holding one can tell whether the body has
+  // actually moved. Without it every camera frame produces a new instance and
+  // `shouldRepaint` can only answer "yes".
+  @override
+  bool operator ==(Object other) =>
+      other is PoseAlignment &&
+      other.scale == scale &&
+      other.mirror == mirror &&
+      other.targetCentre == targetCentre &&
+      other.bodyCentre == bodyCentre;
+
+  @override
+  int get hashCode => Object.hash(scale, mirror, targetCentre, bodyCentre);
+}
+
+/// Where [target] belongs on screen so it lines up with the body in [frame].
+///
+/// **Why this exists.** [poseMatchScore] is invariant to where the user stands
+/// and how big they are, which is right — but the outline was drawn at the
+/// coordinates it was authored at, and the user is drawn where the camera sees
+/// them. Photographed on an S23 at 20:30 with a real body in shot: a large
+/// centred outline, and the tracked figure smaller and a third of a panel to
+/// the right, while the readout said 85%. The number was correct and the
+/// picture disagreed with it, which is worse than either being wrong alone —
+/// the whole instruction to the user is "match the shape on screen".
+///
+/// **What is and is not shared with [poseMatchScore].** Shared: the scored
+/// joint subset, and the mirror decision, computed on the score's own
+/// centred-and-RMS-normalised numbers — so the outline cannot face one way
+/// while the score credits the other. NOT shared: the placement itself, which
+/// translates to the torso midline and scales by torso length. Reusing the
+/// score's centroid and RMS radius was the first attempt and is the one thing
+/// this function must not go back to; see [PoseAlignment] for the measurement
+/// that ruled it out.
+///
+/// Returns null in every case [poseMatchScore] does — fewer than four shared
+/// joints, a body with no extent — **and in placement-specific cases it adds**:
+/// no usable shoulder or hip on either side, or a torso of zero length. Callers
+/// draw the target at its authored position instead, which is what the
+/// demonstration loop and the empty preview want anyway.
+PoseAlignment? alignTargetToFrame(
+  PoseFrame frame,
+  PoseTarget target, {
+  double minLikelihood = 0.5,
+}) {
+  final body = <LandmarkType, (double, double)>{};
+  for (final entry in frame.landmarks.entries) {
+    final lm = entry.value;
+    if (lm.likelihood < minLikelihood) continue;
+    if (lm.x.isNaN || lm.y.isNaN) continue;
+    body[entry.key] = (lm.x, lm.y);
+  }
+  return alignTargetToBody(body, target);
+}
+
+/// The same, from a body whose joints have already been read and stabilised.
+///
+/// **This is the entry point the live screen uses**, and the reason it exists
+/// is that "the body" has to mean one thing. The avatar is drawn from a body
+/// that has been through `AvatarFarSideLatch`, which holds a far side the
+/// detector loses for a few frames; landmarks read straight off the frame have
+/// not. Align the outline to the raw reading and a one-frame far-side blink
+/// jumps it half a hip-width sideways while the figure beside it deliberately
+/// holds still — the same displacement this alignment was written to remove,
+/// reintroduced by its own input. Raised by GPT-PM, 2026-09-02.
+///
+/// [body] is expected to carry only joints worth believing; nothing here
+/// filters by confidence, because whatever produced this map already did.
+PoseAlignment? alignTargetToBody(
+  Map<LandmarkType, (double, double)> body,
+  PoseTarget target,
+) {
+  final live = <(double, double)>[];
+  final want = <(double, double)>[];
+  for (final entry in target.joints.entries) {
+    if (target.unscoredJoints.contains(entry.key)) continue;
+    final seen = body[entry.key];
+    if (seen == null) continue;
+    live.add(seen);
+    want.add(entry.value);
+  }
+  if (live.length < 4) return null;
+
+  // The torso, which is what sets the size and the anchor. Read from the
+  // target's own joint map rather than assumed: a target that does not author
+  // both is one this cannot place, and saying so is better than placing it
+  // from whatever else happens to be there.
+  //
+  // **The midline, not the left joint** — the same rule `buildSilhouette` uses
+  // to decide where a body's spine runs (`pose_silhouette.dart`: the midpoint
+  // of a pair when both sides are observed, the one joint when only one is).
+  // Anchoring on `leftHip` while the figure is DRAWN around a midline put the
+  // outline half a hip-width to one side of the user on the S23 at 21:12 —
+  // scale and posture right, both figures plainly the same size, and still not
+  // on top of each other. Every shipped target authors one side only, so its
+  // own midline IS its left chain; a real frame has two, so the same rule
+  // reads a midpoint there. One rule, two answers, and the outline lands where
+  // the body is drawn rather than where its joints were recorded.
+  final wantHip = _midline(target.joints[LandmarkType.leftHip],
+      target.joints[LandmarkType.rightHip]);
+  final wantShoulder = _midline(target.joints[LandmarkType.leftShoulder],
+      target.joints[LandmarkType.rightShoulder]);
+  if (wantHip == null || wantShoulder == null) return null;
+  final liveHip =
+      _midline(body[LandmarkType.leftHip], body[LandmarkType.rightHip]);
+  final liveShoulder = _midline(
+      body[LandmarkType.leftShoulder], body[LandmarkType.rightShoulder]);
+  if (liveHip == null || liveShoulder == null) return null;
+  final liveTorso = _distance(liveHip, liveShoulder);
+  final wantTorso = _distance(wantHip, wantShoulder);
+  // The same 1e-9 floor `_normalise` uses. A body whose shoulder and hip land
+  // on one point is a detector artefact, and dividing by it would scale the
+  // outline to infinity rather than draw a bad match.
+  if (liveTorso < 1e-9 || wantTorso < 1e-9) return null;
+
+  // The mirror, decided on the score's own numbers — the scored joint subset,
+  // centred and RMS-normalised — so the outline cannot be drawn facing one way
+  // while the score credits the other. Only the FACING comes from here; the
+  // size and the anchor deliberately do not.
+  final liveN = _normalise(live);
+  final wantN = _normalise(want);
+  if (liveN == null || wantN == null) return null;
+  final mirror = _meanOffset(liveN, [for (final p in wantN) (-p.$1, p.$2)]) <
+      _meanOffset(liveN, wantN);
+
+  return PoseAlignment(
+    scale: liveTorso / wantTorso,
+    mirror: mirror,
+    targetCentre: wantHip,
+    bodyCentre: liveHip,
+  );
+}
+
+double _distance((double, double) a, (double, double) b) =>
+    math.sqrt((a.$1 - b.$1) * (a.$1 - b.$1) + (a.$2 - b.$2) * (a.$2 - b.$2));
+
+/// Where a body's midline runs through one pair of joints, from authored data.
+(double, double)? _midline((double, double)? left, (double, double)? right) {
+  if (left == null) return right;
+  if (right == null) return left;
+  return ((left.$1 + right.$1) / 2, (left.$2 + right.$2) / 2);
+}
+
+
 /// Where a score was lost, joint by joint. Debug diagnostics only.
 ///
 /// [poseMatchScore] answers with one number, and one number cannot distinguish

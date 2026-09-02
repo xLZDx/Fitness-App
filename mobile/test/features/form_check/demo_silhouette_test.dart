@@ -11,16 +11,25 @@ import 'package:fitness_app/features/form_check/data/rep_counter.dart';
 import 'package:fitness_app/features/form_check/form_check_page.dart';
 import 'package:fitness_app/features/form_check/state/form_check_providers.dart';
 
-/// When the page shows the movement, and when it shows the shape to hit.
+/// Which screen shows the movement, and which shows the shape to hit.
 ///
 /// Operator, after the first silhouette build: *"лучше добавить анимацию как
 /// правильно надо делать и юзер должен попытаться попадать в силуэт на экране
 /// хотя бы на 80%"*. Both halves of that, and they cannot be on screen at the
 /// same time: an outline that keeps moving is not one you can be 80% inside.
 ///
+/// **The split is now BY SCREEN, not by moment within one screen.** These
+/// tests used to assert that the live screen demonstrated until the first
+/// repetition and then handed over. It no longer demonstrates at all: the
+/// picker owns the demonstration, the live screen owns the target. Decided by
+/// GPT-PM on 2026-09-02 (`VERDICT: MAJOR`) against the redesign's own point 2
+/// and point 4, superseding the 2026-08-31 instruction that had put the loop
+/// on the live screen — ending the loop at the first rep would have left the
+/// same defect running for the first rep of every set.
+///
 /// The interpolation itself is pinned in `pose_target_test.dart`. What is
-/// checked here is the switch between the two, and that a demonstration is
-/// never painted over a camera that is not running.
+/// checked here is that each screen shows its own one thing, and that neither
+/// is painted over a camera that is not running.
 
 final _demo = find.byKey(const Key('form_check.demo'));
 final _target = find.byKey(const Key('form_check.silhouette'));
@@ -36,7 +45,7 @@ Widget _page(ProviderContainer c) => UncontrolledProviderScope(
       ),
     );
 
-ProviderContainer _container() {
+ProviderContainer _container({CoachPhase phase = CoachPhase.qualityCheck}) {
   // An empty fixture list: start() completes at once and no frame ever
   // arrives, which is precisely the state the demonstration is for.
   final c = ProviderContainer(overrides: [
@@ -44,7 +53,7 @@ ProviderContainer _container() {
         .overrideWithValue(MockPoseDetectorService(const [])),
     // R11h: this file's subject is the camera UI, so it starts where
     // that UI lives instead of tapping through the two intro cards.
-    coachInitialPhaseProvider.overrideWithValue(CoachPhase.qualityCheck),
+    coachInitialPhaseProvider.overrideWithValue(phase),
     // And camera mode specifically, since 2026-08-15 flipped the default. The
     // demonstration and the target outline are both fitted to the PANEL; the
     // avatar is placed where the body is, and Gate A stopped the two being
@@ -63,27 +72,45 @@ void _phoneSized(WidgetTester t) {
 }
 
 void main() {
-  testWidgets('before the first rep, the page demonstrates the movement',
+  testWidgets('the picker is where the movement is demonstrated', (t) async {
+    // The positive control for every "no demo" assertion below. Without it,
+    // deleting the demonstration from the app entirely would pass this file.
+    _phoneSized(t);
+    final c = _container(phase: CoachPhase.selection);
+    await t.pumpWidget(_page(c));
+    await t.pump();
+    await t.pump();
+
+    expect(find.byKey(const Key('coach.selection.demo')), findsOneWidget);
+    expect(_demo, findsOneWidget, reason: 'the loop itself, not just its host');
+    expect(_target, findsNothing,
+        reason: 'nothing to aim at yet — the camera has not started');
+  });
+
+  testWidgets('the live screen shows the target from the very first frame',
+      (t) async {
+    // Before any repetition, which is exactly the window the old behaviour
+    // filled with an animation. A user who has just pressed «Нажмите когда
+    // готовы» needs the shape to arrive at, not a preview of it.
+    _phoneSized(t);
+    final c = _container();
+    await t.pumpWidget(_page(c));
+    await t.pump();
+    await t.pump();
+
+    expect(_demo, findsNothing,
+        reason: 'an outline that keeps moving is not one you can be 80% '
+            'inside; the picker already demonstrated it');
+    expect(_target, findsOneWidget);
+  });
+
+  testWidgets('and still shows it once repetitions are being counted',
       (t) async {
     _phoneSized(t);
     final c = _container();
     await t.pumpWidget(_page(c));
     await t.pump();
     await t.pump();
-
-    expect(_demo, findsOneWidget);
-    expect(_target, findsNothing,
-        reason: 'a moving outline and a fixed one at once would ask the user '
-            'to stand in two shapes');
-  });
-
-  testWidgets('once a rep is counted it shows the target instead', (t) async {
-    _phoneSized(t);
-    final c = _container();
-    await t.pumpWidget(_page(c));
-    await t.pump();
-    await t.pump();
-    expect(_demo, findsOneWidget);
 
     // The page clears the session on mount, so this has to land after.
     c.read(repSessionControllerProvider.notifier).state =
@@ -94,11 +121,8 @@ void main() {
     expect(_target, findsOneWidget);
   });
 
-  testWidgets('it gets out of the way as soon as the movement starts',
+  testWidgets('and mid-descent, when the user most needs something to hit',
       (t) async {
-    // Mid-descent, before any rep has been counted. This is the case the
-    // repCount test above does not cover, and the one that matters: the user
-    // is already moving and needs something to arrive at.
     _phoneSized(t);
     final c = _container();
     await t.pumpWidget(_page(c));

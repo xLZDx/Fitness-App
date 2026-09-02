@@ -428,13 +428,38 @@ final coachBackdropProvider =
 /// states want different things said about them.
 final avatarFigureProvider = Provider<SilhouetteFigure?>((ref) {
   if (!ref.watch(avatarModeProvider)) return null;
+  // The two states this provider has always kept apart: no pose at all (null),
+  // and a pose that arrived carrying no torso (the empty figure). Preserved
+  // through the move to `stabilisedBodyProvider`, which collapses both into
+  // null and cannot tell them apart on its own.
+  if (ref.watch(latestPoseFrameProvider) == null) return null;
+  final body = ref.watch(stabilisedBodyProvider);
+  if (body == null) return emptySilhouette;
+  return buildSilhouette(body, build: ref.watch(silhouetteBuildProvider));
+});
+
+/// The tracked body after the far-side latch, as the one thing that draws it.
+///
+/// **One computation per frame, deliberately.** `AvatarFarSideLatch` is
+/// mutable: it records what it held and when. Two callers running
+/// `avatarTargetFrom` over the same frame would advance that state twice per
+/// frame, which is the kind of thing that works until the day the latch grows
+/// a second rule.
+///
+/// It exists because the target outline now has to be placed on the body, and
+/// "the body" has to mean the same thing to the outline as to the figure it is
+/// drawn against. GPT-PM, 2026-09-02: a one-frame far-side dropout snaps a
+/// midline computed from raw landmarks by half a hip width, while the avatar's
+/// own latch deliberately holds still — so the outline would jump off a body
+/// that had not moved. The regression test for the avatar's latch already
+/// measures that displacement at over 15% of the trunk.
+///
+/// NOT gated on [avatarModeProvider], unlike the figure above: over a raw
+/// camera there is no avatar and the outline still has to land on the user.
+final stabilisedBodyProvider = Provider<PoseTarget?>((ref) {
   final frame = ref.watch(latestPoseFrameProvider);
   if (frame == null) return null;
-  return buildPoseAvatar(
-    frame,
-    build: ref.watch(silhouetteBuildProvider),
-    latch: ref.watch(avatarFarSideLatchProvider),
-  );
+  return avatarTargetFrom(frame, latch: ref.watch(avatarFarSideLatchProvider));
 });
 
 /// Frame-to-frame state for the avatar, and the only piece of it there is.
@@ -620,10 +645,20 @@ class FormFeedbackController extends Notifier<FormFeedback?> {
     // Only while the overlay is on — otherwise this would notify a listener
     // thirty times a second for a picture nobody is drawing.
     // The avatar is drawn from this frame too, so it has to be published for
-    // either reader. Still gated rather than always on: with both off nothing
-    // draws a pose, and notifying a provider nobody reads thirty times a second
-    // is what this condition was added to stop.
-    if (ref.read(showSkeletonProvider) || ref.read(avatarModeProvider)) {
+    // either reader. Still gated rather than always on: notifying a provider
+    // nobody reads thirty times a second is what this condition was added to
+    // stop.
+    //
+    // **A target outline counts as a reader now** — it did not when this
+    // condition was written, and "with both off nothing draws a pose" stopped
+    // being true the moment the outline started being placed on the body.
+    // Caught by GPT-PM, 2026-09-02: over a raw camera with the skeleton off —
+    // a supported configuration, one toggle from the default — nothing was
+    // published, so the outline fell back to its authored coordinates and the
+    // defect this gate exists to fix came straight back in that one mode.
+    if (ref.read(showSkeletonProvider) ||
+        ref.read(avatarModeProvider) ||
+        ref.read(poseTargetProvider) != null) {
       // A frame carrying no landmarks is the detector saying it looked and
       // found nobody. Published as null rather than as itself, so the overlay
       // CLEARS instead of holding the last live pose on screen as though it
