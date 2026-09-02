@@ -40489,3 +40489,13 @@ keep the stream moving.
 
 State: Form Coach redesign CLOSED. G9-G13 CLOSED. G12-A PARKED,
 operator-dependent. No open Form Coach gate.
+
+## G12-A — build 2965 installed on S23 for real-body alignment check
+
+Operator confirmed readiness for the G12-A device check (parked in the
+previous entry). Installed the already-built release APK (build 2965,
+arm64-v8a, dbe02a9) directly via `adb install -r` onto the S23 (SM-S918B,
+serial R5CW142SASR, connected this session) rather than routing through
+Firebase App Distribution's email link, since the APK from this morning's
+distribution build was still on disk and the device was already reachable
+over adb. Same binary the tester link points to.
