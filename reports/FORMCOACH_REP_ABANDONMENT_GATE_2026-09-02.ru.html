@@ -1,0 +1,284 @@
+<title>Гейт брошенных повторений</title>
+<style>
+  :root{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+      --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+      --accent:#4f8f1f; --accent-dim:#dff2c9;
+      --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+    --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+    --accent:#4f8f1f; --accent-dim:#dff2c9;
+    --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+  }
+  :root[data-theme="dark"]{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.55;}
+  .wrap{max-width:940px;margin:0 auto;padding:48px 24px 80px;}
+  header{border-bottom:1px solid var(--border);padding-bottom:28px;margin-bottom:8px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(28px,4vw,38px);font-weight:600;margin:0 0 12px;text-wrap:balance;letter-spacing:-.01em;}
+  .lede{color:var(--ink-dim);font-size:16px;max-width:66ch;margin:0;}
+  h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:20px;font-weight:600;margin:0 0 14px;letter-spacing:-.005em;}
+  h3{font-size:15px;font-weight:600;margin:0 0 6px;color:var(--ink);}
+  section{margin-top:44px;}
+  .pillrow{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 0;}
+  .pill{font-family:var(--mono);font-size:12px;padding:6px 12px;border-radius:100px;border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px;color:var(--ink-dim);}
+  .pill b{color:var(--ink);font-weight:600;}
+  .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+  .dot.done{background:var(--accent);}
+  .dot.blocked{background:var(--block);}
+  .dot.info{background:var(--info);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px;}
+  .card + .card{margin-top:14px;}
+  .status{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px;margin-bottom:10px;}
+  .status.done{background:var(--accent-dim);color:var(--accent);}
+  .status.blocked{background:color-mix(in srgb, var(--block) 18%, transparent);color:var(--block);}
+  .status.info{background:color-mix(in srgb, var(--info) 16%, transparent);color:var(--info);}
+  p{margin:8px 0;color:var(--ink);}
+  .dim{color:var(--ink-dim);}
+  .muted{color:var(--ink-mute);font-size:13px;}
+  ul{margin:8px 0;padding-left:20px;}
+  li{margin:4px 0;}
+  code, .path{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;}
+  a{color:var(--info);text-decoration:none;border-bottom:1px solid color-mix(in srgb, var(--info) 40%, transparent);}
+  a:hover{border-bottom-color:var(--info);}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);padding:8px 10px;border-bottom:1px solid var(--border);}
+  td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+  .tablewrap table{border:none;}
+  .round{font-family:var(--mono);font-weight:700;color:var(--ink-dim);}
+  .verdict-major{color:var(--warn);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-approve{color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .stat .n{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:12px;color:var(--ink-mute);margin-top:2px;}
+  .commit{font-family:var(--mono);font-size:13px;}
+  blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--border);color:var(--ink-dim);font-size:14px;}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App / Form Coach — Гейт G13</p>
+    <h1>Повторение, которого не было, перестало засчитываться</h1>
+    <p class="lede">Брошенное на середине приседания повторение на реальном устройстве длилось 33 секунды, набрало оценку 0.072 против формы, к которой даже не приблизилось, — и всё равно было засчитано. Этот гейт даёт счётчику потолок по времени, делает этот потолок устойчивым к паузе — включая паузу, во время которой камера вообще не присылает кадров, — и попутно закрывает флейк в визуальных регрессионных тестах, зависевший от порядка запуска.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 2a1307e</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <section>
+    <h2>Что сделано</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Пункт</th><th>Изменение</th><th>Статус</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Потолок по времени</td>
+            <td><code>RepCounter.checkExpiry</code> — повторение, открытое дольше 20с, отбрасывается; для повторного счёта нужно сначала встать</td>
+            <td><span class="status done">готово</span></td>
+          </tr>
+          <tr>
+            <td>Ложная голосовая подсказка</td>
+            <td>Брошенное повторение больше не озвучивает «вы не дошли до силуэта» — эта фраза обвиняла в технике за попытку, которой не было</td>
+            <td><span class="status done">готово</span></td>
+          </tr>
+          <tr>
+            <td>Потолок, устойчивый к паузе</td>
+            <td>Граница паузы теперь фиксируется по самому переходу фазы тренера, а не выводится из потока кадров — верно даже когда во время паузы камера не прислала ни одного кадра</td>
+            <td><span class="status done">готово</span></td>
+          </tr>
+          <tr>
+            <td>Независимость golden-тестов от порядка</td>
+            <td>Фоновое фото теперь предзагружается перед снимком; golden-тест даёт одну и ту же картинку что отдельно, что внутри всего файла</td>
+            <td><span class="status done">готово</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Дефект на устройстве</h2>
+    <div class="card">
+      <p>Конец реального подхода, S23, 2026-09-02. Тринадцатое «повторение» растянулось на 980 наблюдённых кадров — около 33 секунд — при среднем темпе подхода 1.9с. Оно завершилось. Оно было оценено против цели, к которой даже не приближалось (пиковое совпадение <code>0.072</code>), сводка подхода получила повторение, которого никто не выполнял, а спортсмен — уже остановившийся полминуты назад — услышал, что не дошёл до формы.</p>
+      <p class="muted">Записано в <span class="path">reports/device-check-2026-09-02/logcat_reps.txt</span>, строка 13 файла <span class="path">reps_all.txt</span>.</p>
+    </div>
+    <p>У счётчика был порог снизу — подход короче 600мс это сбой распознавания, а не тело человека, — но не было потолка сверху. Ничто не мешало открытому повторению висеть бесконечно, если спортсмен отошёл или детектор потерял его.</p>
+  </section>
+
+  <section>
+    <h2>Почему потребовалось четыре раунда ревью</h2>
+    <p>Каждый раунд находил что-то настоящее. Последовательность приведена здесь потому, что важна именно логика, а не только итог — два из четырёх исправлений ниже сами оказались неверными с первой попытки, и каждая неверная попытка была поймана ОДНИМ И ТЕМ ЖЕ тестовым файлом, упавшим против реального кода, а не осмотром.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Раунд</th><th>Вердикт</th><th>Что найдено</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="round">1</td>
+            <td><span class="verdict-major">MAJOR ×4</span></td>
+            <td>Потолок никогда не срабатывал на кадрах, которые продакшен отбрасывает до оценки; ложная голосовая подсказка; общий изменяемый <code>Random</code> между golden-контейнерами; тест медленного повторения с неверно измеряющим себя же позитивным контролем</td>
+          </tr>
+          <tr>
+            <td class="round">2</td>
+            <td><span class="verdict-major">MAJOR ×2</span></td>
+            <td>Проверка потолка была заблокирована условием «счёт идёт», это остановило срабатывание во время паузы, но не сами часы под ним — первый живой кадр после возобновления всё равно нёс метку времени, продвинувшуюся через всю паузу. Исправление golden-теста закрепило, КАКОЙ фон выбран, но не то, успело ли изображение реально декодироваться</td>
+          </tr>
+          <tr>
+            <td class="round">3</td>
+            <td><span class="verdict-major">MAJOR ×1</span></td>
+            <td>Исправление паузы из раунда 2 фиксировало границу паузы только если во время неё случайно приходил кадр — камера на паузе, вообще ничего не присылающая до возобновления, всё ещё получала в счёт весь этот промежуток</td>
+          </tr>
+          <tr>
+            <td class="round">4</td>
+            <td><span class="verdict-approve">APPROVE (финал)</span></td>
+            <td>Граница паузы теперь фиксируется по самому переходу фазы; добавлен и мутационно проверен недостающий регрессионный тест на нулевые кадры во время паузы</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Исправление паузы в итоговом виде</h2>
+    <p>Камера по замыслу продолжает присылать кадры во время паузы — пауза это не мёртвая камера. Поэтому блокировка проверки потолка условием «счёт идёт» (раунд 1) останавливает её СРАБАТЫВАНИЕ во время паузы, но часы кадров под ней продолжают идти. Первый живой кадр после возобновления может нести метку времени на десятки секунд позже, и сравнение её напрямую с моментом открытия повторения бросило бы его в тот же момент, когда подход возобновился.</p>
+    <p>Были опробованы два более узких исправления, и оба провалили собственный регрессионный тест прежде чем третье закрепилось:</p>
+    <ul>
+      <li><strong>в1</strong> — отмечать границу паузы по первому кадру, увиденному <em>уже во время паузы</em>. Не работает, если этот кадр приходит намного позже фактического начала паузы: измеренный промежуток покрывает лишь часть реальной паузы.</li>
+      <li><strong>в2</strong> — отмечать её по <em>последнему кадру, увиденному ещё вживую</em>. Верно, если во время паузы приходит хотя бы один кадр, но не устанавливает вообще ничего, если кадров ноль — а именно так и выглядит по-настоящему зависшая камера.</li>
+      <li><strong>в3, поставлено в релиз</strong> — отмечать границу по самому переходу фазы тренера, через <code>ref.listen</code> на провайдере фазы. Верно при любом числе кадров во время паузы, включая ноль, потому что больше не зависит от прихода кадра, чтобы заметить произошедшее.</li>
+    </ul>
+    <p class="muted">Каждая версия доказывалась или опровергалась одинаково: <span class="path">rep_expiry_pause_test.dart</span> запускался против реального кода, затем проверялся мутационно — откатом исправления с подтверждением, что тест падает.</p>
+  </section>
+
+  <section>
+    <h2>Флейк golden-теста</h2>
+    <p>Набор визуальных регрессионных тестов выбирает случайное фоновое фото для каждого теста, детерминированное через seed. Исправление seed (раунд 1) сделало выбор фона в одном тесте независимым от других тестов в файле — но <code>Image.asset</code> разрешается через настоящее чтение из asset-бандла, за которое платит первый golden-тест, коснувшийся файла, а все следующие получают его бесплатно. Один и тот же выбор по seed всё ещё рендерился как фотография внутри полного файла и как обычная затемняющая заливка под ней, когда тот же тест запускался в одиночку: расхождение 95.64% пикселей, пойманное запуском каждого golden-теста по отдельности через <code>--plain-name</code>.</p>
+    <p>Исправлено через <code>precacheImage</code>, принудительно выполняемый на собственных часах каждого контейнера перед снимком. Проверена стабильность: как полный файл (×3), каждый golden-тест по отдельности и две комбинации по два из трёх — все идентичны эталону.</p>
+  </section>
+
+  <section>
+    <h2>Верификация</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="n">3492</div><div class="l">тестов пакета, зелёные</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">новых замечаний анализатора</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">версии фикса паузы проверены мутационно</div></div>
+      <div class="stat"><div class="n">4</div><div class="l">раунда ревью GPT-PM до консенсуса</div></div>
+    </div>
+    <p class="muted" style="margin-top:16px">Каждый новый или изменённый тест проверен мутационно: исправление откатывалось, тест падал, исправление восстанавливалось, тест снова проходил.</p>
+  </section>
+
+  <section>
+    <h2>Отправлено</h2>
+    <div class="card">
+      <p class="commit">2a1307e — form_check: cap abandoned reps by a ceiling that survives pauses, fix golden order-flake</p>
+      <p class="dim">Запушено в <code>origin/master</code>, авторизовано вердиктом GPT-PM раунда 4 <span class="verdict-approve">VERDICT: APPROVE</span> (финальным) по действующему правилу «ревью авторизует пуш».</p>
+    </div>
+    <blockquote>Продолжает <code>ce4231e</code> (гейт G12, тот же день): контур цели теперь размещается на отслеживаемом теле вместо места, где он был изначально нарисован, а зацикленная демонстрация на живом экране убрана в пользу неподвижной цели, на которую можно ориентироваться.</blockquote>
+  </section>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

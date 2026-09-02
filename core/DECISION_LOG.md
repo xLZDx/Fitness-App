@@ -40455,3 +40455,11 @@ stayed green throughout.
 - `rep_abandoned_test.dart`, `paused_set_test.dart`, full golden file: green.
 - `flutter analyze`, whole package: zero new issues.
 - Whole package `flutter test`: **3492 green**, `exit 0`.
+
+## G13 — report published
+
+Wrote and published the house-format report (`reports/FORMCOACH_REP_ABANDONMENT_GATE_2026-09-02.{ru.,}html`)
+covering the round 1-4 remediation above. Russian published as a Claude
+artifact and handed over in-session; English is the durable in-repo record.
+PM Bridge orchestrator mode is ON, so this is a checkpoint, not a stop —
+continuing to whatever is next in the Form Coach redesign scope.
