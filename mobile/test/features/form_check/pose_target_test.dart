@@ -728,6 +728,80 @@ void main() {
           isNot(squatTopTarget.joints[LandmarkType.leftHip]));
     });
 
+    test('a joint that does not move between the phases does not move at all',
+        () {
+      // The anchor's own contract, over every shipped movement rather than
+      // just the squat. Five of the seven have at least one still joint and
+      // the lunge has none; where a movement has exactly one, or several that
+      // are rigid with respect to each other, all of them hold exactly.
+      double slip(PoseTarget mid, PoseTarget authored, LandmarkType t) {
+        final p = mid.joints[t]!, q = authored.joints[t]!;
+        return math.sqrt(math.pow(p.$1 - q.$1, 2) + math.pow(p.$2 - q.$2, 2));
+      }
+
+      var movementsWithAStillJoint = 0;
+      for (final e in poseTargetsByTag.entries) {
+        if (e.key == 'pushup') continue; // the exception, asserted below
+        final (top, bottom) = e.value;
+        final still = [
+          for (final t in top.joints.keys)
+            if (bottom.joints[t] == top.joints[t]) t
+        ];
+        if (still.isEmpty) continue;
+        movementsWithAStillJoint++;
+        for (var i = 0; i <= 20; i++) {
+          final mid = lerpPoseTarget(top, bottom, i / 20);
+          for (final t in still) {
+            expect(slip(mid, top, t), lessThan(1e-9),
+                reason: '${e.key}: $t moved at t=${i / 20}');
+          }
+        }
+      }
+      expect(movementsWithAStillJoint, 5,
+          reason: 'positive control: a loop that skipped everything would '
+              'otherwise pass this');
+    });
+
+    test('and the push-up cannot keep both of its contacts, because its own '
+        'geometry does not allow it', () {
+      // Pinned rather than hidden. The push-up is the one movement authored
+      // with TWO still joints that are not rigid with respect to each other —
+      // wrist and ankle, hands and toes on the floor — so "least displacement"
+      // is a tie, and whichever wins it, the other contact is placed six bones
+      // down the chain and creeps. Measured: 0.019 at the ankle when the wrist
+      // leads, 0.021 at the wrist when the ankle leads.
+      //
+      // Swapping the anchor moves the error and does not remove it. A chain
+      // holds two fixed ends only when the bones between them are the same
+      // length in both poses, and this movement's shoulder-to-elbow stretches
+      // 33.8% between its two authored phases — the known deviation the
+      // length test above already excepts, and re-measuring those targets from
+      // a device is what closes this. Interpolation cannot.
+      //
+      // The bound is loose on purpose: this asserts the creep is BOUNDED and
+      // in the size it was measured at, not that it equals a magic number. If
+      // the targets are ever re-authored rigidly it will pass trivially, and
+      // the test above will then cover the push-up too.
+      var worst = 0.0;
+      for (var i = 0; i <= 40; i++) {
+        final mid = lerpPoseTarget(pushupTopTarget, pushupBottomTarget, i / 40);
+        for (final t in [LandmarkType.leftWrist, LandmarkType.leftAnkle]) {
+          final p = mid.joints[t]!, q = pushupTopTarget.joints[t]!;
+          final d = math.sqrt(math.pow(p.$1 - q.$1, 2) +
+              math.pow(p.$2 - q.$2, 2));
+          if (d > worst) worst = d;
+        }
+      }
+      expect(worst, lessThan(0.03),
+          reason: 'the creep grew past the size it was measured at: $worst');
+      expect(pushupTopTarget.joints[LandmarkType.leftWrist],
+          pushupBottomTarget.joints[LandmarkType.leftWrist],
+          reason: 'positive control: both contacts really are authored still, '
+              'so this is a real tie and not a hypothetical one');
+      expect(pushupTopTarget.joints[LandmarkType.leftAnkle],
+          pushupBottomTarget.joints[LandmarkType.leftAnkle]);
+    });
+
     test('the middle is half way through the movement, not near either end',
         () {
       // What replaced the old "exactly the arithmetic mean" assertion, which
@@ -741,6 +815,13 @@ void main() {
       // sin(t/4)/sin(t/2) of the full chord — 0.5 for a small turn, rising to
       // about 0.54 for a half circle. Anything outside 0.3..0.7 is not a half
       // way pose.
+      //
+      // Which means, and this is worth saying out loud so nobody leans on it:
+      // **this test does not detect the straight-line regression.** Under the
+      // old implementation every joint sat at exactly 0.5, comfortably inside
+      // the band. It guards a much grosser failure — a mid-pose collapsed
+      // against one end — and "a limb never changes length on the way through"
+      // above is the one that fails when the interpolation is reverted.
       double len((double, double) p, (double, double) q) =>
           math.sqrt(math.pow(p.$1 - q.$1, 2) + math.pow(p.$2 - q.$2, 2));
       final mid = lerpPoseTarget(squatTopTarget, squatBottomTarget, 0.5);

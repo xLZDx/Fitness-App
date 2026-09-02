@@ -616,30 +616,64 @@ PoseTarget lerpPoseTarget(PoseTarget from, PoseTarget to, double t) {
     // iteration order would move when a target's joints were reordered, and a
     // drawing that changes because a map literal was rearranged is the kind of
     // dependency nobody remembers is there.
-    final anchors = [...shared]..sort((a, b) {
+    final order = [...shared]..sort((a, b) {
         final byDrift = drift(a).compareTo(drift(b));
         return byDrift != 0 ? byDrift : a.index.compareTo(b.index);
       });
 
-    for (final anchor in anchors) {
-      // Every joint gets a turn at being an anchor, and all but the first of
-      // each connected group are already placed by the walk below. What is
-      // left over is a joint no bone reaches — nothing constrains its length
-      // or its angle, so a straight line is the honest answer for it.
-      if (joints.containsKey(anchor)) continue;
-      final a = from.joints[anchor]!, b = to.joints[anchor]!;
-      joints[anchor] = (a.$1 + (b.$1 - a.$1) * k, a.$2 + (b.$2 - a.$2) * k);
-
-      final queue = <LandmarkType>[anchor];
-      while (queue.isNotEmpty) {
-        final parent = queue.removeAt(0);
-        for (final child in links[parent] ?? const <LandmarkType>[]) {
-          if (joints.containsKey(child)) continue;
-          joints[child] = _swing(from, to, parent, child, joints[parent]!, k);
-          queue.add(child);
+    /// One pass of the walk, [lead] first. Every joint then gets a turn at
+    /// being an anchor, and all but the first of each connected group are
+    /// already placed by the time their turn comes. What is left over is a
+    /// joint no bone reaches — nothing constrains its length or its angle, so
+    /// a straight line is the honest answer for it.
+    Map<LandmarkType, (double, double)> walk(LandmarkType lead, double at) {
+      final placed = <LandmarkType, (double, double)>{};
+      void from0(LandmarkType anchor) {
+        if (placed.containsKey(anchor)) return;
+        final a = from.joints[anchor]!, b = to.joints[anchor]!;
+        placed[anchor] =
+            (a.$1 + (b.$1 - a.$1) * at, a.$2 + (b.$2 - a.$2) * at);
+        final queue = <LandmarkType>[anchor];
+        while (queue.isNotEmpty) {
+          final parent = queue.removeAt(0);
+          for (final child in links[parent] ?? const <LandmarkType>[]) {
+            if (placed.containsKey(child)) continue;
+            placed[child] =
+                _swing(from, to, parent, child, placed[parent]!, at);
+            queue.add(child);
+          }
         }
       }
+
+      from0(lead);
+      for (final j in order) {
+        from0(j);
+      }
+      return placed;
     }
+
+    // **One anchor holds; a second still joint cannot be promised.**
+    //
+    // A push-up is authored with the wrist AND the ankle identical in both
+    // phases — hands on the floor, toes on the floor — so "least displacement"
+    // is a tie, settled here on enum index. Whichever wins, the OTHER contact
+    // is placed six bones down the chain and creeps: measured across the loop,
+    // 0.019 at the ankle when the wrist leads, 0.021 at the wrist when the
+    // ankle leads. Swapping the anchor moves the error, it does not remove it,
+    // and a tie-break that scored the candidates was tried and reverted for
+    // exactly that reason — it added a nested walk per frame and made the
+    // push-up marginally worse.
+    //
+    // The cause is not the anchor rule. A chain can hold two fixed ends only
+    // if the bones between them are the same length in both poses, and the
+    // push-up's are not: its shoulder-to-elbow stretches 33.8% between the two
+    // authored phases. That is a known, deliberately deferred authoring defect
+    // — see the exception list in `pose_target_test.dart`'s "limbs keep their
+    // length between the two phases" — and re-measuring those targets from a
+    // device is what fixes the creep. Interpolation cannot: asked to hold two
+    // ends of a chain that changes length, it can only choose where to put the
+    // discrepancy.
+    joints.addAll(walk(order.first, k));
   }
 
   return PoseTarget(
@@ -699,6 +733,16 @@ PoseTarget lerpPoseTarget(PoseTarget from, PoseTarget to, double t) {
     // started from: a limb of the right length pointing where it already
     // pointed is a body, and a limb of the right length pointing nowhere in
     // particular is a division by zero.
+    //
+    // Stated rather than implied: this is the bone's direction in the AUTHORED
+    // `from` pose, not its direction relative to where the parent has actually
+    // been placed. Several links down a chain those differ, so the recovered
+    // heading can be stale — the length stays right and the limb stays
+    // attached, but it may point somewhere the rest of the body has rotated
+    // away from. Not fixed, because fixing it means tracking each parent's own
+    // rotation through the walk to compensate a case that no shipped target
+    // reaches: the smallest `reach` measured across every bone of every
+    // movement at t=0.5 is 0.075, eleven orders of magnitude off this branch.
     final p = from.joints[parent]!;
     dx = a.$1 - p.$1;
     dy = a.$2 - p.$2;

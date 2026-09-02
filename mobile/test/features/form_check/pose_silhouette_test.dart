@@ -900,11 +900,32 @@ void _b4() {
             .$2;
       }
 
-      // Against the outline's own half-width at that joint, which is the last
-      // point of the limb polygon measured across. Reading the girth constant
-      // out of the source instead would be asserting that a number equals
-      // itself.
-      final leg = figure.limbs.firstWhere((l) => l.length == 6);
+      // Against the outline's own half-width at that joint, which is the pair
+      // of points straddling the last joint of the limb polygon. Reading the
+      // girth constant out of the source instead would be asserting that a
+      // number equals itself.
+      //
+      // The leg is found by WHERE IT ENDS, not by its point count. The first
+      // draft took `limbs.firstWhere((l) => l.length == 6)` — and the arms are
+      // built before the legs and have three joints each, so that is an arm.
+      // It compared the ankle's disc against the WRIST's half-width, which is
+      // narrower to begin with, so the assertion passed with the ankle's
+      // rounding removed entirely: the test was structurally blind to the one
+      // defect it names. Found in review, and it is the same failure class as
+      // the anchor-on-an-import this project has hit before.
+      final ankle = figure.joints[figure.jointTypes.indexOf(
+          LandmarkType.leftAnkle)];
+      Offset tipOf(List<Offset> limb) => (limb[2] + limb[3]) / 2;
+      final leg = figure.limbs
+          .where((l) => l.length == 6)
+          .reduce((a, b) => (tipOf(a) - ankle).distance <=
+                  (tipOf(b) - ankle).distance
+              ? a
+              : b);
+      expect((tipOf(leg) - ankle).distance, lessThan(1e-9),
+          reason: 'positive control: this outline really does end at the '
+              'ankle, so its tip width is the shin and not an arm');
+
       final tip = (leg[2] - leg[3]).distance / 2;
       expect(discAt(LandmarkType.leftAnkle), greaterThan(tip),
           reason: 'the foot is no wider than the shin above it');

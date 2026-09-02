@@ -1498,11 +1498,28 @@ class _PoseAvatarPainter extends CustomPainter {
     // for the same reason the limbs are: a disc drawn over the body would get
     // a rim of its own, and a figure with a circle outlined at every knee is a
     // diagram of a person rather than a person.
+    //
+    // ALL of them in one path and ONE `combine`, not fourteen. `merge` folds
+    // its operand into a `body` that grows with every call, so N boolean ops
+    // in a row cost more than N times the first one — and this painter runs at
+    // the camera's frame rate. A path op resolves its operands' fill regions
+    // before combining, so the discs overlapping each other inside this path
+    // come out as one outline exactly as they would have one at a time.
+    final discs = Path();
+    var hasDiscs = false;
     for (final (centre, radius) in figure.blobs) {
-      merge(Path()
-        ..addOval(
-            Rect.fromCircle(center: place(centre), radius: radius * scale)));
+      final at = place(centre);
+      final r = radius * scale;
+      // Defensive, and deliberately not asserted anywhere: every radius is a
+      // product of positive constants and a torso length that `buildSilhouette`
+      // has already refused to be zero, so nothing shipped reaches this. It
+      // stays because a NaN in a path is a crash rather than a wrong picture,
+      // and the limb loop above guards its own degenerate input the same way.
+      if (!r.isFinite || r <= 0 || !at.dx.isFinite || !at.dy.isFinite) continue;
+      discs.addOval(Rect.fromCircle(center: at, radius: r));
+      hasDiscs = true;
     }
+    if (hasDiscs) merge(discs);
     final head = figure.head;
     if (head != null) {
       merge(Path()
@@ -2539,11 +2556,28 @@ class _SilhouettePainter extends CustomPainter {
     // for the same reason the limbs are: a disc drawn over the body would get
     // a rim of its own, and a figure with a circle outlined at every knee is a
     // diagram of a person rather than a person.
+    //
+    // ALL of them in one path and ONE `combine`, not fourteen. `merge` folds
+    // its operand into a `body` that grows with every call, so N boolean ops
+    // in a row cost more than N times the first one — and this painter runs at
+    // the camera's frame rate. A path op resolves its operands' fill regions
+    // before combining, so the discs overlapping each other inside this path
+    // come out as one outline exactly as they would have one at a time.
+    final discs = Path();
+    var hasDiscs = false;
     for (final (centre, radius) in figure.blobs) {
-      merge(Path()
-        ..addOval(
-            Rect.fromCircle(center: place(centre), radius: radius * scale)));
+      final at = place(centre);
+      final r = radius * scale;
+      // Defensive, and deliberately not asserted anywhere: every radius is a
+      // product of positive constants and a torso length that `buildSilhouette`
+      // has already refused to be zero, so nothing shipped reaches this. It
+      // stays because a NaN in a path is a crash rather than a wrong picture,
+      // and the limb loop above guards its own degenerate input the same way.
+      if (!r.isFinite || r <= 0 || !at.dx.isFinite || !at.dy.isFinite) continue;
+      discs.addOval(Rect.fromCircle(center: at, radius: r));
+      hasDiscs = true;
     }
+    if (hasDiscs) merge(discs);
     final head = figure.head;
     if (head != null) {
       merge(Path()

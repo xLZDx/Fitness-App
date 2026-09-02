@@ -98,6 +98,17 @@ void main() {
 
   /// Pump the fixture through, then bring the frame source to rest.
   ///
+  /// **Where in the demonstration this lands, since it matters.** The loop's
+  /// controller runs 2000ms each way and repeats reversed, so 40 pumps of 33ms
+  /// plus the 60ms settle put it about 0.69 of the way down, which
+  /// `Curves.easeInOutCubic` carries to roughly 0.86 — genuinely mid-swing,
+  /// not parked on an authored end where every interpolation agrees and the
+  /// picture would say nothing about the geometry. Raised in review as an
+  /// open question and settled by arithmetic rather than left as one. It is
+  /// also self-correcting: change the controller's duration or this loop and
+  /// the captured phase moves, which changes the image, which fails the
+  /// golden — and somebody looks.
+  ///
   /// `matchesGoldenFile` runs its comparison through `tester.runAsync`, which
   /// asserts no timers are pending — and `MockPoseDetectorService.start` awaits
   /// a 33ms delay between frames, so one is always in flight mid-stream.

@@ -39777,3 +39777,92 @@ corners it exists to round off.
 
 Full suite: **3453 green, 0 failing.** Still unverified on a device — the phone
 is PIN-locked, which is the reason this gate exists at all.
+
+### 2026-09-02 — two refusals, both recorded rather than worked around
+
+**The GPT-PM review of G3–G9 was NOT sent.** PM Bridge orchestrator mode is on
+and the daemon is current, but this session's bridge process had loaded an older
+build than the code on disk (`src/` was edited by another session — the known
+hazard). The stale side still owns project → conversation routing, so sending
+could have delivered Fitness_App's review into another project's chat. A
+restart of the daemon does not fix it; a new session does. The review is
+outstanding, not skipped-and-forgotten, and nothing here was reported as
+reviewed.
+
+**Nothing from G3 onward is verified on a device.** The S8 is connected over
+adb and the debug APK built from this commit installs cleanly, but the phone is
+behind a PIN. The code does not guess it and the device was left exactly as
+found. `mobile/test/golden/form_coach_golden_test.dart` exists precisely because
+of this gap; it narrows it and does not close it — a golden renders in a host
+Skia with bundled fonts and cannot say whether the picture is legible over a
+live camera.
+
+**One thing the canonical reference settles, worth writing down before it is
+re-litigated:** `core/design/reference/full_handoff_v1/README.md` §8 specifies
+the product's pose overlay as white bones 3–3.4 px with a green/red glow and a
+dashed r=26 `4 6` ring pulsing at 1.1 s on the faulted joint — which is what G8
+implemented — and says nothing about a filled body silhouette. The "dark filled
+human figure" requirement comes from the operator's own two screenshots
+(2026-08-31), which are not in the repository. `screenshots/04-form-coach.png`
+cannot settle it either: the figure's `<svg>` carries `display:none` in the
+prototype, so that capture has an empty body area.
+
+### 2026-09-02 — G9 remediation, from the internal review
+
+Three specialists on the G9 diff (geometry, tests, painter), run before any
+external review as §17 requires. No BLOCKER. Everything they found is fixed or
+recorded here, in one batch rather than one finding per round.
+
+**A test that was blind to the defect it names.** "the extremities are rounder
+than the limb they end" selected the leg outline with
+`limbs.firstWhere((l) => l.length == 6)` — and the arms are built first and also
+have three joints, so that is an ARM. It compared the ankle's disc against the
+WRIST's half-width, which is narrower to begin with, so it passed with the
+ankle's rounding removed entirely. Now the outline is found by WHERE IT ENDS
+(the tip nearest the ankle joint), with a positive control asserting that, and
+mutation-checked: setting the ankle's knuckle multiplier to 1.0 fails it, which
+it did not before.
+
+**A push-up whose two planted contacts cannot both be held — and the fix that
+was tried and reverted.** The push-up authors the wrist AND the ankle identical
+in both phases, so the anchor's "least displacement" rule is a tie, settled on
+enum index, and the loser creeps: 0.019 at the ankle when the wrist leads. A
+scored tie-break was implemented, measured, and removed — it moved the error to
+the other end (0.021 at the wrist) and cost a nested walk per frame. The cause
+is not the anchor rule: a chain holds two fixed ends only when the bones between
+them are the same length in both poses, and this movement's shoulder-to-elbow
+stretches 33.8% between its phases. That is the already-deferred authoring
+defect the length test excepts by name, and re-measuring those targets from a
+device is what closes it. Interpolation can only choose where to put the
+discrepancy. Both facts are now pinned by tests: every still joint in the other
+five movements holds exactly, and the push-up's creep is bounded at the size it
+was measured at, labelled as a consequence of its own geometry.
+
+**Fourteen path unions per frame became one.** `merge` folds each operand into a
+`body` that grows with every call, so N boolean ops in a row cost more than N
+times the first — in a painter that runs at the camera's frame rate. The discs
+now go into one path and one `combine`. A path op resolves its operands' fill
+regions before combining, so the result is identical, and that is not an
+argument: the goldens pass **unchanged**, byte for byte, after the refactor.
+
+**Two comments that were load-bearing and wrong by omission.** `_swing`'s
+degenerate fallback recovers the bone's direction from the AUTHORED `from`
+pose, not from where the parent was actually placed — several links down a
+chain those differ. It is unreachable in shipped data (the smallest `reach`
+across every bone of every movement at t=0.5 is 0.075, against a 1e-9
+threshold), and the comment now says so instead of implying the direction
+tracks the body. And the half-way-band test now states plainly that it does NOT
+detect the straight-line regression — under the old code every joint sat at
+exactly 0.5, inside the band — so nobody leans on it for that.
+
+**One open question closed with arithmetic.** The golden's captured demo phase:
+the controller runs 2000ms each way, 40 pumps of 33ms plus a 60ms settle land at
+0.69 raw and about 0.86 eased. Mid-swing, not parked on an authored end where
+every interpolation agrees.
+
+**Left as a judgement call, not silently accepted:** the lunge anchors on the
+knee rather than the ankle, by an 11% margin, because no joint in it is still.
+Whether that reads naturally is a visual call for a device, which this session
+does not have.
+
+Full suite: **3455 green, 0 failing.**
