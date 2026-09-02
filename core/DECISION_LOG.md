@@ -39918,3 +39918,19 @@ Full suite: **3458 green, 0 failing.** Screenshots in
 the camera's COVER scale (`projectLandmark`), which is right when a preview is
 behind it and wrong on the picker, where there is no camera — on the S8 the
 figure's head is cropped by the top of the panel. Not fixed in this gate.
+
+### Correction, same day: the cropped head was not a defect
+
+The entry above closes by recording the demonstration's head as cropped on the
+S8 picker, and that is wrong. The panel is a `9 / 16` `AspectRatio` and
+`projectLandmark` falls back to `9 / 16` when no camera frame has arrived, so
+cover and contain are the same transform there and nothing is clipped. What the
+screenshot showed was the top of a SCROLLED panel disappearing under the app
+bar, photographed mid-scroll: `reports/device-check-2026-09-02/06.png`, taken
+before scrolling, has the head and shoulders complete, and the S23's
+`s23_12.png` shows the whole figure inside the panel with margins on both sides.
+
+Recorded rather than quietly deleted, because the mistake is instructive: the
+finding came from a screenshot taken after an `input swipe`, and a scroll
+boundary looks exactly like a clip. A device screenshot is evidence about the
+frame it was taken in, not about the layout in general.
