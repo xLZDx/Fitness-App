@@ -39706,3 +39706,74 @@ fault fails it too.
 returns null, with the reason stated.
 
 Full suite: **3441 green, 0 failing.**
+
+---
+
+## 2026-09-02 — G9: the first golden of the coach screen, and the two defects it found
+
+**The gate that was not planned.** Every gate since G3 ended "unverified on the
+device", because the phone is behind a PIN. `mobile/test/golden/form_coach_golden_test.dart`
+is the answer to that: the Form Coach screen had no visual regression coverage
+at all, which is exactly how three of gate G5's six defects came to be found by
+the operator on a real phone — two of them passing the entire suite before AND
+after the fix. A suite that measures where an outline IS cannot tell whether
+anything inside it was drawn.
+
+A golden is not a phone. It renders in a host Skia with bundled fonts and
+cannot say whether the picture is legible over a live camera. What it does is
+fail when the layout moves, which is what every gate of this redesign has been
+changing, and it costs a second to run.
+
+It found two real defects on the first image.
+
+**One — the demonstration's limbs telescoped.** `lerpPoseTarget` interpolated
+every joint independently, which is the obvious implementation and is wrong the
+way a straight line between two points on a circle is wrong: a joint travelling
+in a straight line while the joint it hangs from travels in another one does not
+keep the bone between them the same length. Measured on the shipped squat, whose
+thigh is 0.210 at BOTH ends of the movement: 0.156 at t=0.25, **0.134 at t=0.5** —
+36% shorter half way through, the forearm 22%. The figure demonstrating the
+movement pulled its legs in and pushed them back out once per loop.
+
+`pose_target_test.dart`'s "limbs keep their length between the two phases"
+passed the whole time, correctly: it compares the two AUTHORED poses, and they
+are exactly equal. The stretch existed only in the frames between them, and
+nothing had ever rendered one.
+
+Fixed by walking the bone graph: each bone keeps a length interpolated between
+its own two authored lengths, and the straight-line pose supplies only the
+DIRECTION. Anchored at the joint that moves least between the two poses — for a
+squat that is the ankle, identical in both, so the feet stay planted and the
+body turns over them. Interpolating each bone's ANGLE instead is the tidier idea
+and was tried first; it re-times the movement (three bones each turning at a
+constant rate do not move the joint on the end of them at a constant rate — the
+shoulder reached 29% of its travel at the half way point), so the author's own
+joint placement stays in charge of the timing.
+
+**Two — the body came to a point where a person is roundest.** Two tapered
+outlines meeting at an angle do not bend, they cross, and their union has a
+BARB on the outside of the corner. At the bottom of a squat the torso and thigh
+close to about 40 degrees, so that barb was the seat, and the whole silhouette
+read as an arrowhead rather than as somebody squatting — the «закорючка» the
+operator has now rejected three times, still there after the depth, the fill and
+the pelvis extension were all correct.
+
+`SilhouetteFigure.blobs` — a disc at each articulation, unioned with the limbs
+and the trunk. A disc fills the corner from the inside at any angle, which is
+also how a joint is shaped. Two more dome the ends of the trunk: one across the
+shoulders, one across the seat, each sized to reach the trunk's own corners so
+that edge becomes a dome instead of two right angles. The extremities get a
+larger disc, and that is the whole of the hands and feet — a fist is rounder
+than the wrist under it and a heel rounder than the ankle, and neither is a
+shape this can know the DIRECTION of: an authored side view says nothing about
+which way the toes point, and a foot drawn pointing the wrong way is worse than
+no foot. Applied to the avatar as well as the target, since the live body is
+built by the same code.
+
+**Both are mutation-checked**, in the direction that matters. Reverting the
+interpolation to the straight line fails the length test on the squat's thigh;
+shrinking the seat dome to 40% fails the assertion that it reaches the trunk
+corners it exists to round off.
+
+Full suite: **3453 green, 0 failing.** Still unverified on a device — the phone
+is PIN-locked, which is the reason this gate exists at all.

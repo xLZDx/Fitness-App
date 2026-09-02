@@ -217,6 +217,7 @@ class SilhouetteFigure {
     required this.head,
     required this.limbThickness,
     this.limbs = const [],
+    this.blobs = const [],
     this.segmentBones = const [],
     this.jointTypes = const [],
   });
@@ -280,6 +281,27 @@ class SilhouetteFigure {
   /// the demo overlay still reads it.
   final List<List<Offset>> limbs;
 
+  /// Discs — centre and radius — filled together with [limbs] and [torso].
+  ///
+  /// A body bends at its joints, and two tapered outlines meeting at an angle
+  /// do not bend: they cross, and their union comes to a POINT on the outside
+  /// of the corner. At the bottom of a squat, where the torso and the thigh
+  /// close to about 40 degrees, that point is the seat — so the figure had a
+  /// spike where a person has the roundest part of them, and the whole
+  /// silhouette read as an arrowhead rather than as somebody squatting. Found
+  /// by looking at `test/golden/form_coach_golden_test.dart`'s first image;
+  /// every geometric test passed, because every bone was exactly where it
+  /// belonged.
+  ///
+  /// A disc at each articulation fills that corner from the inside at any
+  /// angle, which is also how the joint is shaped. The two extremities get a
+  /// larger one, and that is the whole of the hands and feet: a fist is
+  /// rounder than the wrist it sits on and a heel is rounder than the ankle,
+  /// and neither is a shape this can know the direction of — a target authored
+  /// from the side says nothing about which way the toes point, and a foot
+  /// drawn pointing the wrong way is worse than no foot at all.
+  final List<(Offset, double)> blobs;
+
   /// In the same units as [segments].
   final double limbThickness;
 
@@ -309,6 +331,12 @@ class SilhouetteFigure {
       for (final p in limb) {
         add(p.dx, p.dy);
       }
+    }
+    // A hand reaches further than the wrist bone it hangs off, by exactly the
+    // amount that makes it a hand.
+    for (final (centre, r) in blobs) {
+      add(centre.dx - r, centre.dy - r);
+      add(centre.dx + r, centre.dy + r);
     }
     final h = head;
     if (h != null) {
@@ -534,6 +562,7 @@ SilhouetteFigure buildSilhouette(
   // Index for index with `joints`, appended in the same statements.
   final jointTypes = <LandmarkType?>[];
   final limbs = <List<Offset>>[];
+  final blobs = <(Offset, double)>[];
 
   /// Turns a polyline into a closed outline that narrows along its length.
   ///
@@ -637,6 +666,25 @@ SilhouetteFigure buildSilhouette(
     leftHip + seat,
     leftWaist,
   ];
+  // And the seat is ROUND. The extension above puts mass in the corner
+  // between the trunk and the thigh, which closed the open triangle — but it
+  // put it there as a quad, so the bottom of the body ended in two square
+  // corners. With the spine inclined 40-odd degrees at the bottom of a squat
+  // the trailing one is the leftmost point of the whole figure, and it read as
+  // the barb of an arrowhead: `test/golden/form_coach_golden_test.dart` still
+  // showed the arrow after the seat existed.
+  //
+  // Radius = the trunk's own half-width there, so the disc meets the two
+  // bottom corners exactly and turns that edge into a dome. Measured off the
+  // corners actually drawn rather than off the build, for the same reason
+  // `waistHalf` is.
+  final hipHalfDrawn = acrossOf(leftHip, hip).abs();
+  final shoulderHalfDrawn = acrossOf(leftShoulder, shoulder).abs();
+  if (hipHalfDrawn > 0) blobs.add((hip + seat, hipHalfDrawn));
+  // The same at the top, where the corners are the trapezius: a person's
+  // shoulders are the roundest line on them and the quad gave them two right
+  // angles with the neck rising between.
+  if (shoulderHalfDrawn > 0) blobs.add((shoulder, shoulderHalfDrawn));
   joints.addAll([leftShoulder, rightShoulder, leftHip, rightHip]);
   jointTypes.addAll(const [
     LandmarkType.leftShoulder,
@@ -664,6 +712,11 @@ SilhouetteFigure buildSilhouette(
     double targetHalf,
     List<double> taper,
     List<double> girth,
+
+    /// How much rounder than the bone's own half-width each articulation is,
+    /// index for index with [girth]. 1.0 is exactly flush — a corner filled and
+    /// nothing more; the extremity is where this earns its keep.
+    List<double> knuckle,
   ) {
     List<Offset>? resolve(List<LandmarkType> chain) {
       final points = <Offset>[];
@@ -700,6 +753,7 @@ SilhouetteFigure buildSilhouette(
         joints.add(p);
         jointTypes.add(type);
         placed.add(p);
+        blobs.add((p, build.limbThickness * torso * girth[i] * knuckle[i]));
         previous = p;
       }
       // The outline, in the same pass and off the same placed points, so the
@@ -786,6 +840,9 @@ SilhouetteFigure buildSilhouette(
     // wrist, which is a person; the 0.46/0.36/0.26 this shipped with was a
     // pipe of near-constant bore.
     const [0.52, 0.38, 0.26],
+    // Shoulder and elbow flush; the wrist carries a fist, which is about half
+    // as wide again as the wrist itself.
+    const [1.0, 1.0, 1.55],
   );
   limbPair(
     const [
@@ -804,6 +861,10 @@ SilhouetteFigure buildSilhouette(
     // thigh narrowing to a 5 cm ankle. Drawn at an arm's girth, the legs were
     // the single loudest reason the figure read as a stick drawing.
     const [0.80, 0.50, 0.32],
+    // The hip disc is deliberately under-sized against a 0.80 thigh: at full
+    // girth it swallows the trunk and the figure loses its waist. The ankle
+    // carries a heel.
+    const [0.72, 1.0, 1.45],
   );
 
   // Head and neck. Placed along the spine so it stays over the chest when the
@@ -848,6 +909,7 @@ SilhouetteFigure buildSilhouette(
     jointTypes: jointTypes,
     torso: trunk,
     joints: joints,
+    blobs: blobs,
     head: (headCentre, torso * radius),
     limbThickness: build.limbThickness * torso,
     limbs: limbs,

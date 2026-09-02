@@ -664,15 +664,162 @@ void main() {
       }
     });
 
-    test('the middle is between them, joint by joint', () {
+    test('a limb never changes length on the way through', () {
+      // The defect this replaced a straight-line lerp for. Every joint moving
+      // independently along its own straight line does not keep the bone
+      // between two of them the same length: the shipped squat's thigh is
+      // 0.210 at both ends and measured 0.134 at t=0.5 — 36% shorter — so the
+      // figure demonstrating the movement pulled its legs in and pushed them
+      // back out once per loop.
+      //
+      // Nothing was measuring it. "limbs keep their length between the two
+      // phases", above, compares the two AUTHORED poses and passed correctly;
+      // the stretch lived only in the frames between them, and nothing drew
+      // one until `test/golden/form_coach_golden_test.dart`.
+      //
+      // The bound is the two authored lengths themselves, with room for
+      // arithmetic: a bone may interpolate between its own ends, and may not
+      // leave them. Every shipped movement, not just the squat — this is a
+      // property of the interpolation, and a per-movement exception list here
+      // would only ever be hiding the same defect somewhere else.
+      double len((double, double) p, (double, double) q) =>
+          math.sqrt(math.pow(p.$1 - q.$1, 2) + math.pow(p.$2 - q.$2, 2));
+
+      for (final e in poseTargetsByTag.entries) {
+        final (top, bottom) = e.value;
+        for (final (a, b) in top.bones) {
+          final ta = top.joints[a], tb = top.joints[b];
+          final ba = bottom.joints[a], bb = bottom.joints[b];
+          if (ta == null || tb == null || ba == null || bb == null) continue;
+          final ends = [len(ta, tb), len(ba, bb)];
+          final low = ends.reduce(math.min) - 1e-9;
+          final high = ends.reduce(math.max) + 1e-9;
+          for (var i = 0; i <= 20; i++) {
+            final mid = lerpPoseTarget(top, bottom, i / 20);
+            final l = len(mid.joints[a]!, mid.joints[b]!);
+            expect(l, inInclusiveRange(low, high),
+                reason: '${e.key}: $a-$b is ${l.toStringAsFixed(3)} at '
+                    't=${i / 20}, outside its own ends '
+                    '${ends.map((v) => v.toStringAsFixed(3)).join('..')}');
+          }
+        }
+      }
+    });
+
+    test('and the movement turns over its planted foot', () {
+      // The other half of the same choice. Keeping bone lengths is not enough
+      // on its own: a chain is anchored somewhere, and anchoring it at the
+      // joint the bone list happens to start from — the shoulder — would hold
+      // the shoulder still and slide the feet along the floor to meet it.
+      //
+      // The squat's ankle is authored identically in both phases, so the
+      // anchor rule ("the joint that moves least") has an unambiguous answer
+      // here and the foot must not move at all.
+      for (var i = 0; i <= 20; i++) {
+        final mid = lerpPoseTarget(squatTopTarget, squatBottomTarget, i / 20);
+        expect(mid.joints[LandmarkType.leftAnkle],
+            squatTopTarget.joints[LandmarkType.leftAnkle],
+            reason: 'the foot slid at t=${i / 20}');
+      }
+      // Positive control: something else in the same pose genuinely did move,
+      // so the assertion above is not passing over a frozen figure.
+      final mid = lerpPoseTarget(squatTopTarget, squatBottomTarget, 0.5);
+      expect(mid.joints[LandmarkType.leftHip],
+          isNot(squatTopTarget.joints[LandmarkType.leftHip]));
+    });
+
+    test('the middle is half way through the movement, not near either end',
+        () {
+      // What replaced the old "exactly the arithmetic mean" assertion, which
+      // was a restatement of the implementation rather than a claim about the
+      // movement — and which the fix above necessarily breaks, since a joint
+      // swinging on a bone travels an arc and an arc does not pass through the
+      // midpoint of its own chord.
+      //
+      // The band is wide because that is what the geometry allows: for a pure
+      // rotation through an angle t, the chord from the start at half way is
+      // sin(t/4)/sin(t/2) of the full chord — 0.5 for a small turn, rising to
+      // about 0.54 for a half circle. Anything outside 0.3..0.7 is not a half
+      // way pose.
+      double len((double, double) p, (double, double) q) =>
+          math.sqrt(math.pow(p.$1 - q.$1, 2) + math.pow(p.$2 - q.$2, 2));
       final mid = lerpPoseTarget(squatTopTarget, squatBottomTarget, 0.5);
       expect(mid.joints, isNotEmpty);
+      var moved = 0;
       mid.joints.forEach((k, m) {
         final a = squatTopTarget.joints[k]!;
         final b = squatBottomTarget.joints[k]!;
-        expect(m.$1, closeTo((a.$1 + b.$1) / 2, 1e-9), reason: '$k x');
-        expect(m.$2, closeTo((a.$2 + b.$2) / 2, 1e-9), reason: '$k y');
+        final travel = len(a, b);
+        if (travel < 1e-6) return; // the planted foot, asserted above
+        moved++;
+        expect(len(a, m) / travel, inInclusiveRange(0.3, 0.7), reason: '$k');
       });
+      expect(moved, greaterThan(3),
+          reason: 'positive control: most of the body moves in a squat');
+    });
+
+    test('a limb the straight line collapses keeps pointing where it did', () {
+      // The direction comes from the straight-line pose, so the one input that
+      // has no direction in it is a frame where that pose puts both ends of a
+      // bone in the same place. Constructed: a knee that swings from one side
+      // of the hip to the other, straight through it, which is a pose an
+      // author can write and no shipped target happens to contain today.
+      //
+      // A property that holds only because no current input exercises it is
+      // not one anybody can rely on — and the alternative here is a division
+      // by zero that reaches the screen as a limb at NaN, drawing nothing at
+      // all for one frame of every loop.
+      const from = PoseTarget(
+        id: 'test.collapse.from',
+        joints: {
+          LandmarkType.leftHip: (0.30, 0.50),
+          LandmarkType.leftKnee: (0.20, 0.50),
+        },
+        bones: [(LandmarkType.leftHip, LandmarkType.leftKnee)],
+      );
+      const to = PoseTarget(
+        id: 'test.collapse.to',
+        joints: {
+          LandmarkType.leftHip: (0.30, 0.50),
+          LandmarkType.leftKnee: (0.40, 0.50),
+        },
+        bones: [(LandmarkType.leftHip, LandmarkType.leftKnee)],
+      );
+      // At half way the straight line puts the knee exactly on the hip.
+      final mid = lerpPoseTarget(from, to, 0.5).joints[LandmarkType.leftKnee]!;
+      expect(mid.$1, closeTo(0.20, 1e-9), reason: 'the length it started with');
+      expect(mid.$2, closeTo(0.50, 1e-9));
+      // And every other frame is finite, which is the failure this guards.
+      for (var i = 0; i <= 20; i++) {
+        final knee = lerpPoseTarget(from, to, i / 20).joints[
+            LandmarkType.leftKnee]!;
+        expect(knee.$1.isFinite && knee.$2.isFinite, isTrue,
+            reason: 'NaN knee at t=${i / 20}');
+      }
+    });
+
+    test('a joint no bone reaches still travels', () {
+      // The leftover branch: nothing constrains its length or its angle, so a
+      // straight line is the only honest answer for it. Reachable from any
+      // target whose `bones` do not name every joint in `joints`.
+      const from = PoseTarget(
+        id: 'test.orphan.from',
+        joints: {
+          LandmarkType.leftHip: (0.30, 0.50),
+          LandmarkType.leftWrist: (0.10, 0.10),
+        },
+        bones: [],
+      );
+      const to = PoseTarget(
+        id: 'test.orphan.to',
+        joints: {
+          LandmarkType.leftHip: (0.30, 0.50),
+          LandmarkType.leftWrist: (0.30, 0.30),
+        },
+        bones: [],
+      );
+      expect(lerpPoseTarget(from, to, 0.5).joints[LandmarkType.leftWrist],
+          (0.20, 0.20));
     });
 
     test('it actually moves — every frame is a different pose', () {

@@ -1493,6 +1493,16 @@ class _PoseAvatarPainter extends CustomPainter {
       if (limb.length < 3) continue;
       merge(Path()..addPolygon([for (final p in limb) place(p)], true));
     }
+    // The articulations, into the SAME union — see `SilhouetteFigure.blobs`
+    // for why a body needs them at all. Merged rather than filled separately
+    // for the same reason the limbs are: a disc drawn over the body would get
+    // a rim of its own, and a figure with a circle outlined at every knee is a
+    // diagram of a person rather than a person.
+    for (final (centre, radius) in figure.blobs) {
+      merge(Path()
+        ..addOval(
+            Rect.fromCircle(center: place(centre), radius: radius * scale)));
+    }
     final head = figure.head;
     if (head != null) {
       merge(Path()
@@ -2523,6 +2533,16 @@ class _SilhouettePainter extends CustomPainter {
     for (final limb in figure.limbs) {
       if (limb.length < 3) continue;
       merge(Path()..addPolygon([for (final p in limb) place(p)], true));
+    }
+    // The articulations, into the SAME union — see `SilhouetteFigure.blobs`
+    // for why a body needs them at all. Merged rather than filled separately
+    // for the same reason the limbs are: a disc drawn over the body would get
+    // a rim of its own, and a figure with a circle outlined at every knee is a
+    // diagram of a person rather than a person.
+    for (final (centre, radius) in figure.blobs) {
+      merge(Path()
+        ..addOval(
+            Rect.fromCircle(center: place(centre), radius: radius * scale)));
     }
     final head = figure.head;
     if (head != null) {

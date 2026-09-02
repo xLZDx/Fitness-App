@@ -812,4 +812,128 @@ void _b4() {
       expect(figure.limbs.length, 3);
     });
   });
+
+  group('the body bends at its joints instead of coming to a point', () {
+    // Found in `test/golden/form_coach_golden_test.dart`'s first image, and
+    // findable no other way: every assertion in this file passed on the
+    // version that produced it, because every bone WAS where it belonged.
+    // Two tapered outlines meeting at an angle do not bend — they cross, and
+    // their union comes to a point on the outside of the corner. At the bottom
+    // of a squat, torso and thigh close to about 40 degrees and that point is
+    // the seat, so the figure had a barb where a person is roundest and the
+    // whole silhouette read as an arrowhead.
+
+    test('every limb articulation carries a disc', () {
+      // The trunk's own four corners are deliberately not in this list: they
+      // are rounded by the two domes the next tests are about, one across the
+      // shoulders and one across the seat, rather than by a disc each. A disc
+      // per corner there would bulge the sides of the body instead of doming
+      // its ends.
+      final figure = buildSilhouette(squatBottomTarget);
+      expect(figure.blobs, isNotEmpty);
+      const limbEnds = {
+        LandmarkType.leftElbow,
+        LandmarkType.rightElbow,
+        LandmarkType.leftWrist,
+        LandmarkType.rightWrist,
+        LandmarkType.leftKnee,
+        LandmarkType.rightKnee,
+        LandmarkType.leftAnkle,
+        LandmarkType.rightAnkle,
+      };
+      var checked = 0;
+      for (var i = 0; i < figure.joints.length; i++) {
+        if (!limbEnds.contains(figure.jointTypes[i])) continue;
+        checked++;
+        final joint = figure.joints[i];
+        expect(figure.blobs.any((b) => (b.$1 - joint).distance < 1e-9), isTrue,
+            reason: 'no disc at ${figure.jointTypes[i]} $joint — that corner '
+                'is still a point');
+      }
+      expect(checked, 8,
+          reason: 'positive control: a two-sided figure has eight of them, so '
+              'a loop that checked nothing would not pass this');
+      for (final (_, r) in figure.blobs) {
+        expect(r, greaterThan(0));
+        expect(r.isFinite, isTrue);
+      }
+    });
+
+    test('the seat disc reaches the corners it is there to round off', () {
+      // The specific one. `torso` is wound shoulders-first, so entries 3 and 4
+      // are the two bottom corners of the pelvis extension — the pair that
+      // produced the barb. A disc that merely sits NEAR them changes nothing:
+      // it has to reach them, or the union keeps the corner and gains a bump.
+      final figure = buildSilhouette(squatBottomTarget);
+      expect(figure.torso.length, 6);
+      final corners = [figure.torso[3], figure.torso[4]];
+
+      final rounding = figure.blobs.where((b) =>
+          corners.every((c) => (c - b.$1).distance <= b.$2 + 1e-9));
+      expect(rounding, isNotEmpty,
+          reason: 'no disc covers both bottom corners of the trunk: the seat '
+              'is still the sharpest point on the figure');
+    });
+
+    test('and the shoulders are domed the same way', () {
+      final figure = buildSilhouette(squatBottomTarget);
+      final corners = [figure.torso[0], figure.torso[1]];
+      expect(
+          figure.blobs.any((b) =>
+              corners.every((c) => (c - b.$1).distance <= b.$2 + 1e-9)),
+          isTrue);
+    });
+
+    test('the extremities are rounder than the limb they end', () {
+      // This is the whole of the hands and feet. A fist is wider than the
+      // wrist under it and a heel is wider than the ankle, and neither is a
+      // shape this can know the DIRECTION of — an authored side view says
+      // nothing about which way the toes point, and a foot drawn pointing the
+      // wrong way is worse than no foot.
+      final figure = buildSilhouette(squatTopTarget);
+      double discAt(LandmarkType t) {
+        final i = figure.jointTypes.indexOf(t);
+        expect(i, greaterThanOrEqualTo(0), reason: '$t is not drawn');
+        final at = figure.joints[i];
+        return figure.blobs
+            .firstWhere((b) => (b.$1 - at).distance < 1e-9)
+            .$2;
+      }
+
+      // Against the outline's own half-width at that joint, which is the last
+      // point of the limb polygon measured across. Reading the girth constant
+      // out of the source instead would be asserting that a number equals
+      // itself.
+      final leg = figure.limbs.firstWhere((l) => l.length == 6);
+      final tip = (leg[2] - leg[3]).distance / 2;
+      expect(discAt(LandmarkType.leftAnkle), greaterThan(tip),
+          reason: 'the foot is no wider than the shin above it');
+    });
+
+    test('a hand pushes the bounds out past the wrist', () {
+      // The consequence for `fitSilhouette`, which fits to these bounds: a
+      // hand outside them is a hand clipped off at the edge of the panel.
+      final figure = buildSilhouette(squatBottomTarget);
+      final b = figure.bounds;
+      for (final (centre, r) in figure.blobs) {
+        expect(
+          centre.dx - r >= b.left - 1e-9 &&
+              centre.dx + r <= b.right + 1e-9 &&
+              centre.dy - r >= b.top - 1e-9 &&
+              centre.dy + r <= b.bottom + 1e-9,
+          isTrue,
+          reason: 'a disc at $centre radius $r escapes the bounds $b',
+        );
+      }
+    });
+
+    test('a figure with no torso has no discs either', () {
+      const noHip = PoseTarget(
+        id: 'fragment',
+        joints: {LandmarkType.leftShoulder: (0.5, 0.3)},
+        bones: [],
+      );
+      expect(buildSilhouette(noHip).blobs, isEmpty);
+    });
+  });
 }

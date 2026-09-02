@@ -555,18 +555,93 @@ List<PoseTarget> get allShippedTargets =>
 /// caller driving this from an animation that overshoots — a spring curve, an
 /// `AnimationController` with a `Curves.elasticOut` — cannot fling the limbs
 /// past either end of the movement.
+/// **Limbs swing, they do not telescope** (`FORMCOACH_DEMO_ARTICULATED_2026-09-02`).
+///
+/// This used to lerp every joint independently, which is the obvious
+/// implementation and is wrong for the same reason a straight line between two
+/// points on a circle is not an arc: a joint travelling in a straight line
+/// while the joint it hangs from travels in another one does not keep the bone
+/// between them the same length. Measured on the shipped squat, whose thigh is
+/// 0.210 at BOTH ends of the movement: 0.156 at t=0.25, **0.134 at t=0.5** —
+/// 36% shorter half way through, and the forearm 22% shorter. The figure
+/// demonstrating the movement pulled its own legs in and pushed them back out
+/// once per loop.
+///
+/// Nothing caught it. `pose_target_test.dart`'s "limbs keep their length
+/// between the two phases" measures the two AUTHORED poses and passed —
+/// correctly, since the ends are exactly equal; the stretch only exists in the
+/// frames between them, which nothing rendered or measured until
+/// `test/golden/form_coach_golden_test.dart` drew one.
+///
+/// So the bones are walked instead: each one keeps a length interpolated
+/// between its own two authored lengths and swings through the shorter of the
+/// two arcs between its authored angles. The chain is anchored at the joint
+/// that moves LEAST between the two poses — for a squat that is the ankle,
+/// which is identical in both, so the feet stay planted and the body rotates
+/// over them, which is what a squat is. Anchoring at a fixed joint instead
+/// (the shoulder, say, because the bone list happens to start there) would
+/// hang the body from the part that moves most and slide the feet along the
+/// floor.
 PoseTarget lerpPoseTarget(PoseTarget from, PoseTarget to, double t) {
   final k = t.clamp(0.0, 1.0);
+  final shared = <LandmarkType>[
+    for (final key in from.joints.keys)
+      if (to.joints.containsKey(key)) key,
+  ];
   final joints = <LandmarkType, (double, double)>{};
-  for (final entry in from.joints.entries) {
-    final b = to.joints[entry.key];
-    if (b == null) continue;
-    final a = entry.value;
-    joints[entry.key] = (
-      a.$1 + (b.$1 - a.$1) * k,
-      a.$2 + (b.$2 - a.$2) * k,
-    );
+
+  if (k <= 0 || k >= 1) {
+    // The ends are the authored poses themselves, not a reconstruction of
+    // them. Polar arithmetic would land a few ulps away, and "the shape at the
+    // bottom of the movement is the shape being scored" is worth more than the
+    // three lines it costs to keep exact.
+    final end = k <= 0 ? from : to;
+    for (final key in shared) {
+      joints[key] = end.joints[key]!;
+    }
+  } else {
+    final links = <LandmarkType, List<LandmarkType>>{};
+    for (final (a, b) in from.bones) {
+      if (!shared.contains(a) || !shared.contains(b)) continue;
+      (links[a] ??= <LandmarkType>[]).add(b);
+      (links[b] ??= <LandmarkType>[]).add(a);
+    }
+
+    double drift(LandmarkType j) {
+      final a = from.joints[j]!, b = to.joints[j]!;
+      return math.sqrt(math.pow(a.$1 - b.$1, 2) + math.pow(a.$2 - b.$2, 2));
+    }
+
+    // Least-moving first, enum index to break ties: an anchor chosen by
+    // iteration order would move when a target's joints were reordered, and a
+    // drawing that changes because a map literal was rearranged is the kind of
+    // dependency nobody remembers is there.
+    final anchors = [...shared]..sort((a, b) {
+        final byDrift = drift(a).compareTo(drift(b));
+        return byDrift != 0 ? byDrift : a.index.compareTo(b.index);
+      });
+
+    for (final anchor in anchors) {
+      // Every joint gets a turn at being an anchor, and all but the first of
+      // each connected group are already placed by the walk below. What is
+      // left over is a joint no bone reaches — nothing constrains its length
+      // or its angle, so a straight line is the honest answer for it.
+      if (joints.containsKey(anchor)) continue;
+      final a = from.joints[anchor]!, b = to.joints[anchor]!;
+      joints[anchor] = (a.$1 + (b.$1 - a.$1) * k, a.$2 + (b.$2 - a.$2) * k);
+
+      final queue = <LandmarkType>[anchor];
+      while (queue.isNotEmpty) {
+        final parent = queue.removeAt(0);
+        for (final child in links[parent] ?? const <LandmarkType>[]) {
+          if (joints.containsKey(child)) continue;
+          joints[child] = _swing(from, to, parent, child, joints[parent]!, k);
+          queue.add(child);
+        }
+      }
+    }
   }
+
   return PoseTarget(
     id: '${from.id}->${to.id}',
     joints: joints,
@@ -583,6 +658,54 @@ PoseTarget lerpPoseTarget(PoseTarget from, PoseTarget to, double t) {
     // authoring bug, not something to paper over here.
     unscoredJoints: from.unscoredJoints,
   );
+}
+
+/// Where [child] lands when its bone hangs off an already-placed [parent],
+/// [k] of the way from one authored pose to the other.
+///
+/// The straight-line pose is still what aims the bone — this takes its
+/// DIRECTION and replaces only its LENGTH, which is the whole defect and
+/// nothing more. Interpolating each bone's angle instead is the tidier idea
+/// and was tried first; it re-times the movement, because three bones each
+/// turning at a constant rate do not move the joint on the end of them at a
+/// constant rate. Measured on the squat: the shoulder reached only 29% of its
+/// travel at the half way point, so the figure hung near the top and then
+/// dropped. Where the author put the joints is the better guide to when the
+/// body should be there.
+(double, double) _swing(
+  PoseTarget from,
+  PoseTarget to,
+  LandmarkType parent,
+  LandmarkType child,
+  (double, double) placed,
+  double k,
+) {
+  double lengthIn(PoseTarget p) {
+    final a = p.joints[parent]!, b = p.joints[child]!;
+    final dx = b.$1 - a.$1, dy = b.$2 - a.$2;
+    return math.sqrt(dx * dx + dy * dy);
+  }
+
+  final lengthFrom = lengthIn(from);
+  final length = lengthFrom + (lengthIn(to) - lengthFrom) * k;
+
+  final a = from.joints[child]!, b = to.joints[child]!;
+  var dx = a.$1 + (b.$1 - a.$1) * k - placed.$1;
+  var dy = a.$2 + (b.$2 - a.$2) * k - placed.$2;
+  var reach = math.sqrt(dx * dx + dy * dy);
+  if (reach < 1e-9) {
+    // The straight-line pose put the two ends of this bone on top of each
+    // other, so there is no direction in it to borrow. Keep the one the bone
+    // started from: a limb of the right length pointing where it already
+    // pointed is a body, and a limb of the right length pointing nowhere in
+    // particular is a division by zero.
+    final p = from.joints[parent]!;
+    dx = a.$1 - p.$1;
+    dy = a.$2 - p.$2;
+    reach = math.sqrt(dx * dx + dy * dy);
+    if (reach < 1e-9) return placed;
+  }
+  return (placed.$1 + dx / reach * length, placed.$2 + dy / reach * length);
 }
 
 /// Below this the pose is not the target pose. The operator's number.
