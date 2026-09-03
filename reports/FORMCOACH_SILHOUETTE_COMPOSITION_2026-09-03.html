@@ -1,0 +1,249 @@
+<title>Silhouette No Longer Crammed Into a Corner</title>
+<style>
+  :root{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+      --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+      --accent:#4f8f1f; --accent-dim:#dff2c9;
+      --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+    --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+    --accent:#4f8f1f; --accent-dim:#dff2c9;
+    --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+  }
+  :root[data-theme="dark"]{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.55;}
+  .wrap{max-width:940px;margin:0 auto;padding:48px 24px 80px;}
+  header{border-bottom:1px solid var(--border);padding-bottom:28px;margin-bottom:8px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(28px,4vw,38px);font-weight:600;margin:0 0 12px;text-wrap:balance;letter-spacing:-.01em;}
+  .lede{color:var(--ink-dim);font-size:16px;max-width:66ch;margin:0;}
+  h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:20px;font-weight:600;margin:0 0 14px;letter-spacing:-.005em;}
+  h3{font-size:15px;font-weight:600;margin:0 0 6px;color:var(--ink);}
+  section{margin-top:44px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px;}
+  .card + .card{margin-top:14px;}
+  .status{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px;margin-bottom:10px;}
+  .status.done{background:var(--accent-dim);color:var(--accent);}
+  .status.blocked{background:color-mix(in srgb, var(--block) 18%, transparent);color:var(--block);}
+  .status.info{background:color-mix(in srgb, var(--info) 16%, transparent);color:var(--info);}
+  .status.pending{background:color-mix(in srgb, var(--warn) 18%, transparent);color:var(--warn);}
+  p{margin:8px 0;color:var(--ink);}
+  .dim{color:var(--ink-dim);}
+  .muted{color:var(--ink-mute);font-size:13px;}
+  ul{margin:8px 0;padding-left:20px;}
+  li{margin:4px 0;}
+  code, .path{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;}
+  a{color:var(--info);text-decoration:none;border-bottom:1px solid color-mix(in srgb, var(--info) 40%, transparent);}
+  a:hover{border-bottom-color:var(--info);}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);padding:8px 10px;border-bottom:1px solid var(--border);}
+  td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+  .tablewrap table{border:none;}
+  .round{font-family:var(--mono);font-weight:700;color:var(--ink-dim);}
+  .verdict-major{color:var(--warn);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-block{color:var(--block);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-approve{color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .stat .n{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:12px;color:var(--ink-mute);margin-top:2px;}
+  .commit{font-family:var(--mono);font-size:13px;}
+  blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--border);color:var(--ink-dim);font-size:14px;}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App / Form Coach — live defect found by the operator on-device after G16</p>
+    <h1>The silhouette no longer crams itself into a corner</h1>
+    <p class="lede">While G9–G16 closed out the golden-test infrastructure, the operator was live-testing the app on a Mi 9T Pro and an S23 and saw a bent, cropped squat figure — not what the original mockup described. The cause was found from live on-device screenshots, not from reading code: the target outline was drawn as if it already sat inside a real camera frame, when its authored coordinates only occupy the bottom-left corner of that space.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ ce77091</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+  <section>
+    <h2>What the operator reported</h2>
+    <div class="card">
+      <p>"I already see huge discrepancies you didn't do — instead of what I asked, just a white silhouette on a black background" — followed by: "also in the trainer itself there's a white static silhouette that doesn't look like what I asked."</p>
+      <p class="dim">The second message arrived while a release build for an unrelated request was still building and distributing in the background — the investigation started immediately, without waiting for the build to finish.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Diagnosis — from live on-device screenshots, not from reading code</h2>
+    <p>Connected to both of the operator's test phones over <code>adb</code> and pulled the live screen while the app was open. Both the Mi 9T Pro and the S23 — including <code>versionCode 2976</code>, pushed and distributed that same evening and already carrying today's G14 fix — showed the identical broken shape: a bent outline crammed into the panel's bottom-left corner with a large empty area above it.</p>
+    <p>Root cause: <code>squatBottomTarget</code>'s raw coordinates (<code>pose_target.dart:240-252</code>, re-measured on a real person 2026-09-01) occupy only Y 0.58-0.93 and X 0.17-0.52 of the isotropic frame space — the bottom 35% of the height, pushed left. Correct for the anatomy it was measured from; nowhere near composed to sit well in a panel when drawn straight through <code>projectLandmark</code> — the transform that places a coordinate as if it already sat inside a real camera frame.</p>
+    <p class="dim">The demonstration panel on the exercise-selection screen does animate correctly (confirmed with two screenshots one second apart — the figure genuinely transitions from standing to squatting), but the "bottom" frame of that same animation produced the identical cropped shape — the same bug, not a second one.</p>
+  </section>
+
+  <section>
+    <h2>First attempt — rejected by the app's own tests before it shipped</h2>
+    <div class="card">
+      <p><span class="status blocked">reverted</span> Hide the outline entirely whenever there is no live body to align it to. Implemented, then tests run — <code>demo_silhouette_test.dart</code> failed 3 of its cases: that file pins a 2026-09-02 GPT-PM decision that the target must be visible from the very first frame, before a body is even tracked. Reverted before commit; nothing broken shipped.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>The actual fix</h2>
+    <p>The file already had an unused-since-2026-09-01 function, <code>fitSilhouette</code> ("one scale for both axes, centred, with a margin") — it fits a figure into a panel instead of projecting authored coordinates as if they were a real camera frame. Reintroduced, but <b>only</b> for the no-live-body case: the aligned, tracked-body path (<code>alignment != null</code>) is untouched, byte for byte.</p>
+    <p>For the demo loop: fixed bounds, computed once from the UNION of both endpoint poses (standing + squat bottom) rather than recomputed every animation frame — otherwise the scale would visibly "breathe" as the figure morphs between poses. For the live "cannot place" case: the figure's own bounds, already stable frame to frame since there is no second endpoint.</p>
+    <p class="dim">The joint coordinates of <code>squatTopTarget</code>/<code>squatBottomTarget</code> — what <code>poseMatchScore</code> and rep counting read — are untouched entirely. This is a rendering-only fix; the data that actually scores technique stayed exactly as measured.</p>
+  </section>
+
+  <section>
+    <h2>Goldens — regenerated and eyeballed</h2>
+    <p><code>form_coach_selection.png</code>, <code>form_coach_live.png</code>, <code>form_coach_faulted.png</code> were regenerated inside <code>ghcr.io/cirruslabs/flutter:3.27.1</code> — the same container G15/G16 validated against real CI. Before the fix, the figure was cropped into the panel's bottom-left corner with empty space above; after, it fills the panel, with the glowing skeleton visible on both the standing pose and the squat. Inspected by eye, not just diffed byte for byte.</p>
+  </section>
+
+  <section>
+    <h2>GPT-PM review</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Round</th><th>Verdict</th><th>What was checked</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="round">1</td>
+            <td><span class="verdict-approve">APPROVE</span></td>
+            <td>Checked the <code>alignment != null</code> boundary specifically; confirmed the fix does not touch the scored target coordinates; separately verified limb/head thickness scales through the same <code>place()</code> transform as joint positions, not left on the old camera scale. Flagged the reverted first attempt as useful regression evidence rather than noise.</td>
+          </tr>
+          <tr>
+            <td class="round">2 (final)</td>
+            <td><span class="verdict-approve">APPROVE</span></td>
+            <td>Same commit, no new delta — confirmation recorded as the final round. "ce770910 remains APPROVED. GO/PUSH authority stands."</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Verification</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="n">29/29</div><div class="l">existing silhouette tests — unchanged</div></div>
+      <div class="stat"><div class="n">592/592</div><div class="l">form_check + golden, in-container, fresh pub get</div></div>
+      <div class="stat"><div class="n">3/3</div><div class="l">affected goldens regenerated and eyeballed</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">devices, live screenshots (Mi 9T Pro, S23)</div></div>
+    </div>
+    <p class="dim">Stated honestly rather than overclaimed: the full 3497-test suite was not independently rerun under this change — a <code>--no-pub</code> attempt in the same container failed to compile unrelated files (<code>scanner_page.dart</code> and others, never touched by this fix) on stale generated state; a fresh <code>pub get</code> cleared it immediately. Files this fix never touches were not re-verified full-suite; the change's own scope (one painter, one new field) plus the passing scoped run are what this rests on.</p>
+  </section>
+
+  <section>
+    <h2>Shipped</h2>
+    <div class="card">
+      <p class="commit">ce77091 — fix(form_check): fit the unaligned/demo silhouette to the panel, not the camera frame</p>
+      <p class="dim">Pushed to <code>origin/master</code> on a final GPT-PM <span class="verdict-approve">VERDICT: APPROVE</span>. PM mode is on — the session continues rather than stopping on this report.</p>
+    </div>
+  </section>
+</div>
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

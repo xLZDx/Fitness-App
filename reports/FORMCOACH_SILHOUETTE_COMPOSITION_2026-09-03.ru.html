@@ -1,0 +1,249 @@
+<title>Силуэт больше не жмётся в угол</title>
+<style>
+  :root{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+      --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+      --accent:#4f8f1f; --accent-dim:#dff2c9;
+      --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+    --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+    --accent:#4f8f1f; --accent-dim:#dff2c9;
+    --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+  }
+  :root[data-theme="dark"]{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.55;}
+  .wrap{max-width:940px;margin:0 auto;padding:48px 24px 80px;}
+  header{border-bottom:1px solid var(--border);padding-bottom:28px;margin-bottom:8px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(28px,4vw,38px);font-weight:600;margin:0 0 12px;text-wrap:balance;letter-spacing:-.01em;}
+  .lede{color:var(--ink-dim);font-size:16px;max-width:66ch;margin:0;}
+  h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:20px;font-weight:600;margin:0 0 14px;letter-spacing:-.005em;}
+  h3{font-size:15px;font-weight:600;margin:0 0 6px;color:var(--ink);}
+  section{margin-top:44px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px;}
+  .card + .card{margin-top:14px;}
+  .status{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px;margin-bottom:10px;}
+  .status.done{background:var(--accent-dim);color:var(--accent);}
+  .status.blocked{background:color-mix(in srgb, var(--block) 18%, transparent);color:var(--block);}
+  .status.info{background:color-mix(in srgb, var(--info) 16%, transparent);color:var(--info);}
+  .status.pending{background:color-mix(in srgb, var(--warn) 18%, transparent);color:var(--warn);}
+  p{margin:8px 0;color:var(--ink);}
+  .dim{color:var(--ink-dim);}
+  .muted{color:var(--ink-mute);font-size:13px;}
+  ul{margin:8px 0;padding-left:20px;}
+  li{margin:4px 0;}
+  code, .path{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;}
+  a{color:var(--info);text-decoration:none;border-bottom:1px solid color-mix(in srgb, var(--info) 40%, transparent);}
+  a:hover{border-bottom-color:var(--info);}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);padding:8px 10px;border-bottom:1px solid var(--border);}
+  td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+  .tablewrap table{border:none;}
+  .round{font-family:var(--mono);font-weight:700;color:var(--ink-dim);}
+  .verdict-major{color:var(--warn);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-block{color:var(--block);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-approve{color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .stat .n{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:12px;color:var(--ink-mute);margin-top:2px;}
+  .commit{font-family:var(--mono);font-size:13px;}
+  blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--border);color:var(--ink-dim);font-size:14px;}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App / Form Coach — живой дефект после G16, найден оператором на устройстве</p>
+    <h1>Силуэт больше не жмётся в угол панели</h1>
+    <p class="lede">Пока G9–G16 закрывали инфраструктуру golden-тестов, оператор в реальном времени тестировал приложение на Mi 9T Pro и S23 и увидел кривую, обрезанную фигуру приседа — не то, что описано в исходном макете. Причина найдена по живым скриншотам с устройства, а не по чтению кода: контур цели рисовался так, будто уже стоит в кадре камеры, хотя авторские координаты занимают только нижний левый угол пространства.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ ce77091</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+  <section>
+    <h2>Что доложил оператор</h2>
+    <div class="card">
+      <p>«я уже вижу огромные несоответствия которые ты не сделал, например вместо того что я просил, просто белый силуэт на чёрном фоне» — и следом: «в самом тренере тоже белый неподвижный силуэт, который не похож на то что я просил сделать».</p>
+      <p class="dim">Второе сообщение пришло, пока в фоне собирался и распространялся релизный билд по другому запросу — исследование началось немедленно, не дожидаясь завершения билда.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Диагностика — по живым скриншотам с устройства, не по коду</h2>
+    <p>Подключился к обоим тестовым телефонам оператора через <code>adb</code> и снял экран в реальном времени, пока приложение было открыто. На Mi 9T Pro и на S23 — включая билд <code>versionCode 2976</code>, только что запушенный тем же вечером и включающий сегодняшний фикс G14 — видна одна и та же сломанная фигура: скрюченный контур в левом нижнем углу панели с большой пустой областью сверху.</p>
+    <p>Причина — в сырых координатах <code>squatBottomTarget</code> (<code>pose_target.dart:240-252</code>, переизмерено на реальном человеке 2026-09-01): фигура занимает только Y 0.58–0.93 и X 0.17–0.52 в изотропном пространстве кадра — нижние 35% по высоте, прижатые влево. Правильно для той анатомии, на которой это измерялось; ничем не проецируется правильно, когда рисовалось напрямую через <code>projectLandmark</code> — трансформацию, которая размещает точку так, будто уже стоит внутри реального кадра камеры.</p>
+    <p class="dim">Демо-панель на экране выбора упражнения анимируется корректно (подтверждено двумя скриншотами с разницей в секунду — фигура реально переходит от стойки к присяду), но на «нижнем» кадре анимации получалась та же самая обрезанная форма — тот же баг, не второй.</p>
+  </section>
+
+  <section>
+    <h2>Первая попытка — отклонена собственными тестами до коммита</h2>
+    <div class="card">
+      <p><span class="status blocked">откачено</span> Скрыть контур целиком, когда нет живого тела для выравнивания. Реализовано, прогнаны тесты — <code>demo_silhouette_test.dart</code> провалился на 3 сценариях: файл закрепляет решение GPT-PM от 2026-09-02, что цель должна быть видна с самого первого кадра, ещё до трекинга тела. Откачено до коммита; в репозиторий ничего сломанного не попало.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Фактический фикс</h2>
+    <p>В файле уже существовала неиспользуемая с 2026-09-01 функция <code>fitSilhouette</code> («один масштаб на обе оси, по центру, с полями») — она вписывает фигуру в панель вместо проекции авторских координат как будто это реальный кадр камеры. Включена обратно, но <b>только</b> для случая «нет живого тела»: путь с выровненным, отслеживаемым телом (<code>alignment != null</code>) не тронут ни на бит.</p>
+    <p>Для демо-петли — фиксированные границы, вычисленные один раз из объединения ОБЕИХ конечных поз (стойка + низ приседа), а не пересчитанные на каждом кадре анимации — иначе масштаб бы заметно «дышал», пока фигура морфится между позами. Для живого «не могу разместить» — границы собственной фигуры, они и так стабильны кадр от кадра, второй конечной точки нет.</p>
+    <p class="dim">Координаты суставов <code>squatTopTarget</code>/<code>squatBottomTarget</code> — то, что читают <code>poseMatchScore</code> и подсчёт повторов — не тронуты вообще. Это фикс только отрисовки; данные, по которым реально засчитывается техника, остались измеренными и как были.</p>
+  </section>
+
+  <section>
+    <h2>Голдены — пересобраны и проверены глазами</h2>
+    <p><code>form_coach_selection.png</code>, <code>form_coach_live.png</code>, <code>form_coach_faulted.png</code> пересобраны внутри <code>ghcr.io/cirruslabs/flutter:3.27.1</code> — том же контейнере, что валидировал G15/G16 против реального CI. До фикса фигура была обрезана в нижний левый угол панели с пустым пространством сверху; после — заполняет панель целиком, светящийся скелет виден и на стоячей позе, и на приседе. Просмотрены глазами, не только сверены побайтово.</p>
+  </section>
+
+  <section>
+    <h2>Ревью GPT-PM</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Раунд</th><th>Вердикт</th><th>Что проверено</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="round">1</td>
+            <td><span class="verdict-approve">APPROVE</span></td>
+            <td>Границу <code>alignment != null</code> проверил отдельно; подтвердил, что фикс не трогает целевые координаты для скоринга; отдельно проверил, что толщина конечностей/головы масштабируется тем же <code>place()</code>-преобразованием, что и позиции суставов — не съезжает на старый масштаб камеры. Отметил откаченную первую попытку как полезное регрессионное доказательство, а не шум.</td>
+          </tr>
+          <tr>
+            <td class="round">2 (финал)</td>
+            <td><span class="verdict-approve">APPROVE</span></td>
+            <td>Тот же коммит, без нового дельта — подтверждение зафиксировано финальным раундом. «ce770910 remains APPROVED. GO/PUSH authority stands.»</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Верификация</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="n">29/29</div><div class="l">существующих тестов силуэта — без изменений</div></div>
+      <div class="stat"><div class="n">592/592</div><div class="l">form_check + golden, в контейнере, свежий pub get</div></div>
+      <div class="stat"><div class="n">3/3</div><div class="l">затронутых голдена пересобраны и проверены глазами</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">устройства, живые скриншоты (Mi 9T Pro, S23)</div></div>
+    </div>
+    <p class="dim">Честно не заявлено: полный пакет из 3497 тестов повторно не гонялся под этим изменением — при попытке через <code>--no-pub</code> в том же контейнере не скомпилировались посторонние файлы (<code>scanner_page.dart</code> и другие, этим фиксом не тронутые) из-за устаревшего сгенерированного состояния; свежий <code>pub get</code> сразу всё исправил. Не тронутые этим фиксом файлы для повторной полной проверки не гонялись — опора на масштаб изменения (один painter, одно новое поле) и на прошедший прицельный прогон.</p>
+  </section>
+
+  <section>
+    <h2>Отправлено</h2>
+    <div class="card">
+      <p class="commit">ce77091 — fix(form_check): fit the unaligned/demo silhouette to the panel, not the camera frame</p>
+      <p class="dim">Запушено в <code>origin/master</code> финальным вердиктом GPT-PM <span class="verdict-approve">VERDICT: APPROVE</span>. PM-режим включён — сессия продолжает работу, не останавливается на этом отчёте.</p>
+    </div>
+  </section>
+</div>
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
