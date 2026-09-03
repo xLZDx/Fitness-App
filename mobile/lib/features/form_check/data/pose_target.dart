@@ -47,6 +47,8 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+
 import 'pose_landmark.dart';
 
 /// A named shape to match: joint positions for one phase of one movement.
@@ -999,6 +1001,78 @@ PoseAlignment? alignTargetToBody(
   // on one point is a detector artefact, and dividing by it would scale the
   // outline to infinity rather than draw a bad match.
   if (liveTorso < 1e-9 || wantTorso < 1e-9) return null;
+  // Diagnostic log, kept permanently rather than stripped after this
+  // investigation closes: it is the only place in the pipeline that shows
+  // what `alignTargetToBody` itself measured on a given frame, and the next
+  // unexplained on-screen deformity needs exactly this line rather than a
+  // reconstruction from `PoseUnitProbe` (see the correction below). 0.35 is
+  // clearly above every real, well-matched torso measured below (~0.25-0.26)
+  // and clearly below the guard threshold, so a rejection is never silent.
+  if (kDebugMode && liveTorso > 0.35) {
+    debugPrint('[align] liveShoulder=$liveShoulder liveHip=$liveHip '
+        'liveTorso=${liveTorso.toStringAsFixed(3)} '
+        'wantTorso=${wantTorso.toStringAsFixed(3)} '
+        '${liveTorso > 0.40 ? 'guard=rejected' : 'scale=${(liveTorso / wantTorso).toStringAsFixed(3)}'}');
+  }
+  // The other direction of the same problem, and the one this function had no
+  // guard against at all until GPT-PM's review of gate G14: a torso longer
+  // than the frame itself. `body` has already been through `_drawable`'s
+  // per-JOINT slack (`pose_avatar.dart`, +-0.5 past each edge, meant for a
+  // real ankle legitimately extrapolated below frame) — but two joints that
+  // are each individually within that slack can still sit near opposite
+  // corners of the widened box, a hip-to-shoulder span nothing human reaches.
+  //
+  // **Corrected, GPT-PM round 1, 2026-09-03.** The first version of this
+  // guard set the cutoff at 1.2, cited to a *reconstruction* of the S23
+  // report from `PoseUnitProbe`'s logged extent — and that probe accumulates
+  // a bounding box over every frame and every landmark since the controller
+  // was built (`form_check_providers.dart`, never reset), so its min/max are
+  // not proven to be one frame's shoulder-and-hip pair. GPT-PM: "if the real
+  // bad frame's liveTorso is not above 1.2, revise the diagnosis rather than
+  // tuning the test until this guard passes." It was not — added a real
+  // per-frame `[align]` log (above) and reproduced the same trigger live on a
+  // Mi 9T Pro, 2026-09-03: stepping out of frame mid-set produced `liveTorso`
+  // 0.461-0.641 across a dozen real frames (`reports/device-check-2026-09-02/`
+  // adb logcat capture), while nine matched, correctly-scored reps in the
+  // same session measured 0.252-0.256 at their deepest frame — within noise
+  // of `wantTorso` (0.257). 1.2 would not have rejected a single one of the
+  // real bad frames; the guard as first written was a no-op against the
+  // defect it was written for. 0.40 sits with real margin below every
+  // observed bad frame and real margin above every observed good one.
+  //
+  // **Round 2, GPT-PM:** proving the reject side is not enough — an absolute
+  // cutoff also has to not reject a real, validly-tracked user who is simply
+  // standing closer to the camera, since `liveTorso` grows with proximity
+  // for a genuine body too. Tried twice to capture that case directly: asked
+  // the operator to hold a squat progressively closer to the Mi 9T Pro.
+  // Every rep that stayed under ~0.26 matched normally (peak 0.81-0.86,
+  // `gate=ok`). The closest sustained attempt reached liveTorso 0.454-0.470
+  // held over 8 consecutive frames — but that same rep scored
+  // `gate=PoseGateVerdict.lowConfidence` and `match=0.193` (a second close
+  // attempt: `match=0.640`), both well under the 0.80 pass mark. So the one
+  // real sample this investigation could produce anywhere near the 0.40
+  // cutoff was ALREADY flagged unreliable by the app's own independent
+  // signals — not a case of a confidently-tracked body losing its outline to
+  // this guard alone. No clean high-confidence sample landed between 0.26
+  // and 0.40 in two honest attempts; not proof the band is empty, only that
+  // it was not observed. Surfaced to GPT-PM rather than assumed safe.
+  //
+  // **Round 3, GPT-PM: correctly rejected round 2's framing.** `gate=ok`
+  // and a low silhouette match are different signals — a correctly-tracked
+  // person can simply not be in the target's shape yet (they had not
+  // reached depth), which is not evidence the coordinates are unreliable.
+  // Round 2's rep #17 (`gate=ok`, `match=0.640`) was mis-cited as another
+  // "unreliable" sample; it was not. Asked for one more attempt, aimed at a
+  // deliberately closer, well-executed squat. Rep #25 in that session
+  // produced `gate=PoseGateVerdict.ok` with `match=0.210` (short of depth,
+  // `hipMinusKnee=0.104`) at `liveTorso=0.332` — a real, reliably-tracked
+  // sample squarely inside the previously-empty 0.26-0.40 band, correctly
+  // NOT rejected by this guard. This does not prove 0.40 is the exact right
+  // edge, only that a real body has now been observed on the accept side of
+  // it, closing the round-2/3 gap between "known bad" and "known good" from
+  // both directions with real per-frame evidence rather than an absence of
+  // counter-examples.
+  if (liveTorso > 0.40) return null;
 
   // The mirror, decided on the score's own numbers — the scored joint subset,
   // centred and RMS-normalised — so the outline cannot be drawn facing one way

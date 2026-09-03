@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:fitness_app/features/form_check/data/pose_avatar.dart';
 import 'package:fitness_app/features/form_check/data/pose_landmark.dart';
 import 'package:fitness_app/features/form_check/data/pose_target.dart';
 
@@ -367,6 +368,150 @@ void main() {
         for (final e in squatBottomTarget.joints.entries) e.key: e.value
       }, likelihood: 0.2);
       expect(alignTargetToFrame(unsure, squatBottomTarget), isNull);
+    });
+
+    test('a torso far longer than any real body is not scaled up either', () {
+      // The guard `alignTargetToBody` needs, added for gate G14 -- and
+      // corrected once already. The first version cited a *reconstruction*
+      // of the S23 report from `PoseUnitProbe`'s session-accumulated extent,
+      // which GPT-PM's round-1 review correctly rejected: that probe folds
+      // in every frame and every landmark since the controller was built, so
+      // its logged min/max cannot be attributed to one frame's shoulder and
+      // hip. This version uses a REAL single-frame reading instead: captured
+      // live on a Mi 9T Pro, 2026-09-03, reproducing the same trigger (step
+      // out of frame mid-set) with the `[align]` log added in response to
+      // that review. `reports/device-check-2026-09-02/` logcat, 13:51:35.894 --
+      // `liveShoulder=(0.526, 0.176) liveHip=(0.536, 0.806) liveTorso=0.630`.
+      // Both joints individually pass `pose_avatar.dart`'s own +-0.5 draw
+      // slack (meant for a real ankle legitimately extrapolated just past the
+      // frame edge) while sitting near opposite corners of that widened box.
+      // In the same session, nine matched, correctly-scored reps measured
+      // 0.252-0.256 at their deepest frame -- within noise of `wantTorso`
+      // (0.257) -- so 0.630 is not a framing choice, it is the defect.
+      final stretched = _frame({
+        for (final e in squatBottomTarget.joints.entries) e.key: e.value,
+        LandmarkType.leftShoulder: (0.5262, 0.1756),
+        LandmarkType.leftHip: (0.5359, 0.8056),
+      });
+      expect(alignTargetToFrame(stretched, squatBottomTarget), isNull);
+    });
+
+    test(
+        'and the same, fed through the actual production path rather than '
+        'the guard in isolation', () {
+      // The unit test above hand-builds a body map and calls
+      // `alignTargetToFrame`, which only filters by likelihood/NaN. The live
+      // screen never calls that -- it reads `stabilisedBodyProvider`, which
+      // runs `avatarTargetFrom` first (`pose_avatar.dart`), and THAT filters
+      // every joint through `_drawable`'s own +-0.5 slack before this
+      // function ever sees it. Flagged in review: a unit test on the guard
+      // alone cannot say whether the bad coordinates actually survive that
+      // upstream filtering unchanged, only that IF they arrive here, they are
+      // rejected. This confirms the first half too, with the same real
+      // single-frame numbers from the Mi 9T Pro reproduction above, at 0.9
+      // likelihood -- comfortably above both `avatarTargetFrom`'s 0.5 floor
+      // and the 0.70 "trusted" threshold the probe itself used.
+      final wildFrame = _frame({
+        // Knee and ankle at plausible, unremarkable positions -- their job is
+        // only to keep `live.length >= 4` past `alignTargetToBody`'s own
+        // "too few shared joints" floor, so the torso guard is the check
+        // this test actually exercises rather than that earlier one. Not a
+        // claim about what the real bad frame's knee/ankle were -- only the
+        // shoulder and hip were captured by the `[align]` log.
+        LandmarkType.leftKnee: squatBottomTarget.joints[LandmarkType.leftKnee]!,
+        LandmarkType.leftAnkle:
+            squatBottomTarget.joints[LandmarkType.leftAnkle]!,
+        LandmarkType.leftShoulder: (0.5262, 0.1756),
+        LandmarkType.leftHip: (0.5359, 0.8056),
+      }, likelihood: 0.9);
+
+      final body = avatarTargetFrom(wildFrame);
+      expect(body, isNotNull,
+          reason: 'positive control: a shoulder+hip pair this confident is '
+              'a torso `avatarTargetFrom` should still report');
+      expect(alignTargetToBody(body!.joints, squatBottomTarget), isNull);
+    });
+
+    test('a real, well-matched torso is not rejected by the same guard', () {
+      // The guard's other failure mode is not tested by anything above: a
+      // threshold set too low would reject good frames too, and both tests
+      // above only ever feed it bad ones. Positive control, using the
+      // deepest frame of a real passing rep from the same Mi 9T Pro session
+      // (`[rep] #1 ... peak=0.866 pass=0.8 missed=false`), not a fixture:
+      // `leftShoulder=0.483,0.493 leftHip=0.292,0.657`, torso 0.252 --
+      // within noise of `wantTorso` 0.257, and comfortably under the 0.40
+      // cutoff that rejects the bad frame above.
+      final goodRep = _frame(const {
+        LandmarkType.leftShoulder: (0.483, 0.493),
+        LandmarkType.leftElbow: (0.540, 0.618),
+        LandmarkType.leftWrist: (0.632, 0.643),
+        LandmarkType.leftHip: (0.292, 0.657),
+        LandmarkType.leftKnee: (0.488, 0.630),
+        LandmarkType.leftAnkle: (0.427, 0.809),
+      }, aspectRatio: 0.667);
+      expect(alignTargetToFrame(goodRep, squatBottomTarget), isNotNull);
+    });
+
+    test(
+        'a real, closer-than-usual body with a genuinely reliable tracking '
+        'read is not rejected either, even mid-band', () {
+      // GPT-PM round 3, correcting round 2: `gate=PoseGateVerdict.ok` and a
+      // low silhouette match are not the same signal -- a correctly tracked
+      // person can simply be in a shape that does not match the target
+      // (they had not reached depth yet), and that must not be read as
+      // "the coordinates are unusable for placement". This is the case
+      // round 2's search did not produce: a real sample, `gate=ok` (not
+      // `lowConfidence`), squarely inside the previously-untested band.
+      // Deepest frame of rep #25, same Mi 9T Pro session, requested as a
+      // deliberately closer-than-usual, well-EXECUTED attempt
+      // (`reports/device-check-2026-09-02/mi9_close_good_match_repro_logcat.txt`):
+      // `match=0.210` (they were not at depth: `hipMinusKnee=0.104`, well
+      // short of the ~0 the target needs) but `gate=PoseGateVerdict.ok` --
+      // the low match is explained by pose, not by broken tracking.
+      // `leftShoulder=0.345,0.486 leftHip=0.186,0.777`, torso 0.332 -- well
+      // inside the 0.26-0.40 band round 2 could not populate, and well clear
+      // of the 0.461 pathological floor. The guard must let this through.
+      final closerReliableRep = _frame(const {
+        LandmarkType.leftShoulder: (0.345, 0.486),
+        LandmarkType.leftElbow: (0.418, 0.648),
+        LandmarkType.leftWrist: (0.524, 0.556),
+        LandmarkType.leftHip: (0.186, 0.777),
+        LandmarkType.leftKnee: (0.414, 0.663),
+        LandmarkType.leftAnkle: (0.484, 0.796),
+      }, aspectRatio: 0.667);
+      expect(
+          alignTargetToFrame(closerReliableRep, squatBottomTarget), isNotNull);
+    });
+
+    test(
+        'the closest real attempt this investigation could capture is also '
+        'rejected, and it was already unreliable by the app\'s own signals',
+        () {
+      // GPT-PM's round-2 finding: proving the reject side rejects a clearly
+      // bad frame is not enough to justify an absolute cutoff, because
+      // `liveTorso` also grows for a genuine body standing closer to the
+      // camera -- so the cutoff could equally be rejecting a valid close
+      // user. Asked the operator to hold a squat progressively closer to a
+      // Mi 9T Pro to find that boundary directly. Every rep that stayed
+      // under ~0.26 matched normally. The closest sustained attempt reached
+      // liveTorso 0.454-0.470 across 8 consecutive real frames
+      // (`reports/device-check-2026-09-02/mi9_close_distance_repro_logcat.txt`,
+      // 14:16:06.7-08.9) -- but that same rep independently scored
+      // `gate=PoseGateVerdict.lowConfidence` and `match=0.193`, well under
+      // the 0.80 pass mark. This is the real coordinate pair at the middle
+      // of that cluster (14:16:07.242): not a synthetic near-boundary guess,
+      // and not proof the 0.26-0.40 band is empty of legitimate bodies --
+      // only that the one real sample this investigation could produce
+      // there was already flagged unreliable by the app's own confidence
+      // and match signals, independent of this guard.
+      final closestRealAttempt = _frame({
+        LandmarkType.leftKnee: squatBottomTarget.joints[LandmarkType.leftKnee]!,
+        LandmarkType.leftAnkle:
+            squatBottomTarget.joints[LandmarkType.leftAnkle]!,
+        LandmarkType.leftShoulder: (0.3369, 0.3688),
+        LandmarkType.leftHip: (0.1261, 0.7725),
+      });
+      expect(alignTargetToFrame(closestRealAttempt, squatBottomTarget), isNull);
     });
 
     test('a body with no extent is not scaled to infinity', () {

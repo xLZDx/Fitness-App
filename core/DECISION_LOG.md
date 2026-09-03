@@ -40499,3 +40499,306 @@ serial R5CW142SASR, connected this session) rather than routing through
 Firebase App Distribution's email link, since the APK from this morning's
 distribution build was still on disk and the device was already reachable
 over adb. Same binary the tester link points to.
+
+## G14 — target-on-body alignment: torso upper-bound guard
+
+**FACT, from the operator's own S23 verification of G12-A.** Operator ran a
+real squat set on build 2965 (`dbe02a9`). The result: an obviously distorted
+target outline -- a huge, unrecognisable loop rather than a squat silhouette
+-- frozen on screen after the set. `adb logcat --pid` correlated it with a
+`[pose-probe]` line showing a *trusted* (likelihood >= 0.70) coordinate
+extent of `x -0.35..0.72, y -0.19..1.10` right after the last rep completed --
+consistent with the lifter stepping back or picking up the phone.
+
+**Root cause.** `alignTargetToBody` (`pose_target.dart`) computes
+`scale = liveTorso / wantTorso` from the live shoulder-hip distance, guarded
+only against a near-zero torso (`< 1e-9`, division blow-up) -- never against
+an implausibly LARGE one. `pose_avatar.dart`'s own `_drawable` slack (+-0.5
+past each frame edge, meant for a real ankle legitimately extrapolated below
+frame) filters each JOINT individually, but two joints that are each
+individually within that slack can still sit near opposite corners of the
+widened box: a hip-to-shoulder span of roughly 1.6x frame height, which
+computed to a wildly inflated scale and exploded the drawn outline.
+`stabilisedBodyProvider` -> `alignTargetToBody` runs on every frame
+regardless of `gatePose`'s own verdict (by design, for the debug/skeleton
+overlay -- see `_onFrame`'s "published before the gate" comment), so
+`gatePose`'s framing/geometry checks never had a chance to catch this either.
+
+**Fix.** `alignTargetToBody` now also rejects `liveTorso > 1.2` (roughly
+4-5x any torso measured in this session or the shipped fixtures, ~0.22-0.3),
+falling back to the same "cannot place, draw at the authored position" path
+a body with too few shared joints already takes.
+
+**Internal review (flutter-reviewer, R1 per SS6 -- single domain, focused
+change).** 0 BLOCKER/MAJOR. 2 MINOR, both explicitly optional/non-blocking:
+(1) the guard was unit-tested in isolation but not proven to still catch the
+real S23 numbers once they pass through the actual production filtering
+path (`avatarTargetFrom`) -- fixed by adding a second test that runs the
+real coordinates through `avatarTargetFrom` first, exactly as
+`stabilisedBodyProvider` does, before calling `alignTargetToBody`; (2) the
+`1.2` bound is a reasoned judgment call, not independently calibrated the
+way `_zeroScoreAtOffset` is -- accepted as-is, since the practical cost of
+being too tight is graceful degradation (outline temporarily unaligned, not
+a crash) and the margin is already 4x the largest measured real torso; no
+change made, left as an explicit accepted limitation. 1 NIT, no action
+(pre-existing property of the neighbouring guard, not a regression).
+
+**The new integration test caught its own bug.** The first version of "fed
+through the actual production path" supplied only shoulder+hip to
+`avatarTargetFrom`, so `alignTargetToBody`'s own "fewer than 4 shared
+joints" floor returned null BEFORE the new torso guard ever ran -- the
+mutation check (disable the guard, confirm the test fails) instead PASSED,
+proving the test was not exercising what it claimed to. Fixed by adding
+knee+ankle at plausible positions so `live.length >= 4` is satisfied and the
+torso guard is the actual reason for the null. Re-mutation-checked: now
+fails correctly without the guard, passes with it restored.
+
+**Verification.** `pose_alignment_test.dart` + `pose_target_test.dart`: 78
+green (2 new tests). Whole-package `flutter test`: 3487/3490 green -- the 3
+failures are the pre-existing golden-test flake below, confirmed via
+`git stash` to fail identically with this change removed.
+
+## The golden-test flake regressed, unrelated to G14
+
+`form_coach_golden_test.dart`'s three goldens -- fixed in G13
+(`precacheBackdrop`) and verified stable there across repeated full-file,
+individual, and partial-combination runs -- are failing again now,
+reproducibly, including at `--concurrency=1`. Confirmed NOT caused by G14's
+change: `git stash` (removing the uncommitted `pose_target.dart`/test edits
+entirely) reproduces the identical 3 failures. The picker golden's diff
+shows the backdrop photograph simply absent (same "asset not decoded in
+time" symptom G13 diagnosed); the live/faulted goldens show a full-panel
+pixel mismatch with the actual drawn figure pixel-identical to the master,
+consistent with the same underlying cause. Not yet root-caused further --
+flagged honestly as a known regression in already-shipped test
+infrastructure, out of scope for G14, to be raised with GPT-PM rather than
+silently worked around or left unmentioned.
+
+## G14 round 1 (GPT-PM, via pm-bridge): MAJOR -- root-cause evidence not proven
+
+`review.js --round 1` (no `--final`) on the uncommitted G14 diff, scoped by
+`core/G14_SCOPE.md`, returned `VERDICT: MAJOR`, one in-scope finding: the
+1.2 threshold and its regression test were built on a misreading of
+`PoseUnitProbe`. Verified by re-reading `pose_unit_probe.dart` --
+`_Acc.add` is a running min/max over every frame and every landmark folded
+in since the last `reset()`, and `FormFeedbackController`'s own `_probe`
+field (`form_check_providers.dart:627`) is built once per controller and
+never reset -- so it accumulates for the whole time the form-check page is
+open, across every rep and every set, not one bad moment. The logged
+extent `x -0.35..0.72, y -0.19..1.10` (`s23_squat_app_logcat.txt`) is
+therefore not proven to be one shoulder-and-hip pair on one frame; it could
+be the union of several different joints across several different frames.
+The diagnosis in `pose_target.dart`'s guard comment and the coordinates in
+both new tests rest on that unproven reading. GPT-PM: "If the real bad
+frame's liveTorso is not above 1.2, revise the diagnosis rather than tuning
+the test until this guard passes." Checked the existing evidence for a
+genuine per-frame reading of the actual bad window first: the `[rep]` log
+lines do carry real per-joint coordinates, but only for the deepest frame
+of a COMPLETED rep, and both completed reps finished before the exploded-
+outline window started (~01:03:53 vs ~01:03:57-01:04:04) -- no per-frame
+landmark dump exists in the pulled evidence for the actual pathological
+moment.
+
+**Response.** Rather than revise or defend the diagnosis on inference,
+added a permanent (not throwaway) `[align]` debug log directly in
+`alignTargetToBody` (`pose_target.dart`, gated `kDebugMode &&
+liveTorso > 0.45`) printing `liveShoulder`/`liveHip`/`liveTorso`/
+`wantTorso`/the guard's actual outcome on the real per-frame call --
+0.45 sits above every torso this session or the shipped fixtures measured
+so a normal frame stays silent. Built a fresh debug APK
+(`app-debug.apk`, this instrumentation included) to reproduce the S23
+sequence live and capture the real numbers, in place of reconstructing them
+from the accumulator. Not yet reproduced: S23 is not currently on adb (only
+the S8 is), waiting on the operator to connect it. G14 stays open pending
+that evidence; the fix/tests as they stand are not being committed on the
+current, GPT-PM-rejected justification.
+
+## G14 round 1, resolved: real per-frame reproduction, threshold revised 1.2 -> 0.40
+
+S23 stayed unavailable; the operator connected a Mi 9T Pro instead. Installed
+the instrumented debug APK, launched, asked the operator to repeat the same
+sequence (squat set, then step out of frame). Real `[align]` log lines
+captured live (`reports/device-check-2026-09-02/mi9_align_repro_logcat.txt`):
+stepping out of frame mid-set produced real, single-frame `liveShoulder`/
+`liveHip` pairs with `liveTorso` 0.461-0.641 across roughly a dozen frames
+(e.g. 13:51:35.894: `liveShoulder=(0.526,0.176) liveHip=(0.536,0.806)
+liveTorso=0.630`). In the same session, nine reps were counted and matched
+normally (`[rep] #1..#9`), with deepest-frame torsos of 0.252-0.256 --
+within noise of `wantTorso` (0.257).
+
+**This falsified the original diagnosis exactly the way GPT-PM's round-1
+finding warned it might.** The real bad frames' `liveTorso` tops out at
+0.641 -- nowhere near the 1.2 cutoff the first fix used. Had that version
+shipped, the guard would have been dead code against its own motivating
+defect: every real bad frame observed would have sailed through it
+unrejected, both here and (by the same mechanism -- session-accumulated
+extents were never valid evidence for a per-frame threshold) presumably on
+the original S23 report too.
+
+**Corrected**, on the real evidence rather than on inference: threshold
+moved to `liveTorso > 0.40`, which has real margin below the lowest observed
+bad frame (0.461) and real margin above the highest observed good one
+(0.256). Guard comment in `pose_target.dart` rewritten to cite this
+reproduction instead of the disputed accumulator reading. Both regression
+tests in `pose_alignment_test.dart` rebuilt from the real captured
+coordinates (not synthetic guesses); added a third, a positive control using
+a real passing rep's deepest frame, so the guard's OTHER failure mode --
+rejecting good frames -- has a test too, which nothing before this did.
+Mutation-checked all three (temporarily raised the guard to `> 999`,
+confirmed both negative tests fail and the positive control still passes;
+restored). `pose_alignment_test.dart` + `pose_target_test.dart`: 79 green.
+Full `flutter test` re-run in progress to confirm no wider regression before
+sending this to GPT-PM as round 2.
+
+`G14_SCOPE.md` updated with the same correction. Sending round 2 to GPT-PM
+next with this evidence trail.
+
+Full suite re-run confirmed clean first: 3489/3492, the 3 failures a
+targeted re-run showed to be the identical pre-existing golden pixel-diff
+(same file, same symptom), not a new regression.
+
+## G14 round 2 (GPT-PM): MAJOR -- the 0.40 ceiling's safe side is unproven
+
+`review.js --round 2` on the corrected diff returned `VERDICT: MAJOR` again,
+one finding, and it explicitly closes the round-1 causal-evidence objection
+("this directly closes my round-1 objection to reconstructing a torso from
+PoseUnitProbe's accumulated extrema") while opening a new, correctly-scoped
+one: the round-1 remediation instructions asked for proof that "an
+ordinary/close-but-valid body immediately below the chosen acceptance
+region still aligns," and this submission only proved the two extremes --
+known-bad (0.461-0.641) rejected, and nominal-distance-good (~0.252-0.256)
+accepted. The entire 0.26-0.40 band is untested. `liveTorso` grows with
+camera proximity for a perfectly legitimate, correctly-tracked body, not
+only for the pathological case -- so a real user standing closer to the
+phone than the Mi 9T Pro session did could land in that band and get
+rejected, sending the outline back to its authored position despite a valid
+pose. Required: capture the largest legitimate `liveTorso` a real, correctly
+-framed close body reaches (same instrumented device, move progressively
+closer until framing/tracking actually breaks), place the cutoff with
+measured margin above that and below 0.461, and add a positive
+production-path regression at that near-boundary value -- or, if the
+legitimate maximum approaches/exceeds 0.40, conclude an absolute torso
+ceiling is the wrong discriminator entirely and gate on something else
+(e.g. the resulting alignment/framing) instead.
+
+**Response, in progress.** Mi 9T Pro still connected, debug build still
+running (PID 10055) -- asking the operator to stand progressively closer to
+the camera during a real squat framing and capturing `[align]` (logs at
+`liveTorso > 0.35`, below both the current 0.40 guard and the 0.461 known-
+bad floor, so the whole boundary region will be visible) to find where
+legitimate framing actually stops being trackable.
+
+## G14 round 2, resolved (honestly, not conclusively): no clean sample landed in the disputed band
+
+First attempt (natural close approach during a set) only produced two
+elevated readings tied to actual bad frames -- one (0.550) directly
+preceding a rep with anatomically inverted joints (hip above shoulder in
+frame Y) that scored `match=0.000`, not a legitimate close body. Asked for
+a second, more controlled attempt: hold a squat as close as comfortable for
+a few seconds so multiple consistent frames log, at a couple of distances.
+
+Second attempt produced a genuinely useful result, but not the one GPT-PM's
+required change was hoping for. A sustained cluster of 8 real `[align]`
+frames at 14:16:06.7-08.9 held `liveTorso` 0.454-0.470 -- squarely in the
+disputed 0.26-0.40+ band. But the SAME rep (#16) independently scored
+`gate=PoseGateVerdict.lowConfidence` (the app's own pre-existing quality
+gate, unrelated to this guard) and `match=0.193` against the 0.80 pass
+mark; a second close attempt (rep #17) scored `match=0.640`, also failing.
+Every rep that matched normally (`gate=ok`, peak >0.80) in either
+reproduction stayed at `liveTorso` 0.199-0.256.
+
+**Read honestly, not stretched:** this is not proof the 0.26-0.40 band
+contains no legitimate bodies -- it is evidence that, in two real attempts
+on real hardware, the moment `liveTorso` climbed anywhere near the disputed
+band, the app's own independent tracking-quality signals had already
+degraded too. Stated to GPT-PM as exactly that -- absence of a
+counter-example after a real search, not a proof of safety -- rather than
+either overclaiming the band is safe or fabricating a synthetic near-
+boundary "valid" test the way the original diagnosis fabricated its
+evidence. Added a fourth regression test on the real captured coordinates,
+asserting this marginal frame is (also, separately from the two clearly-bad
+frames) rejected. Mutation-checked with the rest.
+`pose_alignment_test.dart` + `pose_target_test.dart`: 80 green.
+`G14_SCOPE.md` updated. Sending round 3 to GPT-PM with this evidence and
+this explicit epistemic caveat, letting GPT-PM judge whether the evidence
+bar is met or whether the guard needs a different discriminator entirely
+(e.g. tying it to `gatePose`'s own confidence/framing verdict rather than
+an absolute torso number).
+
+## G14 round 3 (GPT-PM): MAJOR, with a correction I accepted
+
+`review.js --round 3` returned `VERDICT: MAJOR` again, closing round 1 and
+the golden out-of-scope point explicitly, but catching a real error in
+round 2's own reasoning: I had cited rep #17 (`gate=PoseGateVerdict.ok`,
+`match=0.640`) alongside rep #16 (`lowConfidence`) as both being "flagged
+unreliable by the app's own signals." GPT-PM: a low silhouette match is not
+the same claim as unreliable tracking -- a correctly-tracked person can
+simply be in a pose that does not resemble the target (not at depth yet),
+and treating "did not match the shape" as "coordinates are unusable" is
+exactly the substitution that would let a real close user's outline
+silently fall back to its authored position for no real reason. Checked
+`pose_gate.dart` on GPT-PM's second suggested path (tie the guard to an
+existing framing/tracking signal instead of a bare number): `gatePose` has
+`minTorsoSpan` (too-small) but genuinely no upper-bound torso check at all
+today -- there is no existing signal to reuse for this specific defect
+without new gate work of its own, which is a larger change than this gate
+should absorb.
+
+Asked for one more attempt, aimed differently this time: not just closer,
+but a deliberately well-executed close squat, so a real `gate=ok` sample
+near the boundary could be captured on its own terms rather than searched
+for accidentally. Rep #25 (`reports/device-check-2026-09-02/
+mi9_close_good_match_repro_logcat.txt`) delivered exactly that:
+`gate=PoseGateVerdict.ok`, `match=0.210` (genuinely short of depth --
+`hipMinusKnee=0.104`, not a tracking artefact), `liveTorso=0.332`
+(verified independently: `leftShoulder=0.345,0.486 leftHip=0.186,0.777`,
+distance 0.3316) -- squarely inside the 0.26-0.40 band, real, reliably
+tracked, and correctly NOT rejected by the current guard. Added as a fifth
+regression test on these exact coordinates. Mutation-checked all five
+(positive controls confirmed to stay green with the guard disabled too).
+`pose_alignment_test.dart` + `pose_target_test.dart`: 81 green.
+`G14_SCOPE.md` updated. Full `flutter test` re-run in progress; sending
+round 4 to GPT-PM once confirmed clean.
+
+Full suite confirmed clean before sending: 3494 total, 3 failures (the same
+pre-existing golden flake; count moved from 3492 by exactly the 2 new
+tests added across rounds 2-3).
+
+## G14 round 4 (GPT-PM): VERDICT APPROVE -- gate CLOSED
+
+`review.js --round 4` returned `VERDICT: APPROVE`, no scoped BLOCKER/MAJOR/
+MINOR remaining. GPT-PM's own summary of the final evidentiary state,
+quoted because it is the cleanest statement of what four rounds actually
+established: "known valid nominal body: ~0.252-0.256; valid closer body:
+~0.332; cutoff: 0.40; observed pathological floor: 0.461; pathological
+examples extend through ~0.641" -- 0.40 sits with real margin (~0.068)
+above the highest observed valid sample and real margin (~0.061) below the
+lowest observed pathological one, both ends now real device measurements
+rather than inference or synthetic construction. GPT-PM explicit: "It does
+not prove 0.40 is a universal physiological boundary, but G14 does not
+require that; it requires a defensible protection against the reproduced
+target explosion without demonstrated rejection of legitimate placement."
+Golden flake reconfirmed out of scope. Did not require a fresh full-package
+run for round 4 itself (rounds 2-3 only touched evidence/tests, not the
+functional cutoff, which was package-tested after round 1) -- done anyway
+as release hygiene, independently confirmed clean above.
+
+**Per global CLAUDE.md §15, this genuine APPROVE authorizes push once
+marked final.** Re-ran with `--round 5 --final` (unchanged diff) to convert
+the receipt from round-4 APPROVE-but-not-final to a receipt
+`gpt_review_gate.py` will actually honor for push -- read the reply first,
+confirmed no contradiction, before passing `--final`, per the discipline
+`review.js`'s own header requires. Proceeding to local commit and push per
+§4/§15/§20 once the final receipt is confirmed written.
+
+**Summary of the whole G14 investigation, for anyone picking this up
+later:** the operator's original S23 report was real; the first diagnosis
+of its cause was wrong (session-accumulated probe extent misread as a
+single frame); the corrected root cause and fix were built entirely from
+live per-frame device reproduction across four review rounds and three
+separate live captures on a Mi 9T Pro (S23 unavailable throughout); the one
+self-caught error along the way (conflating `gate=ok`+low-match with
+unreliable tracking, in round 2's own framing) was corrected on GPT-PM's
+challenge in round 3 rather than defended. Every number in the shipped
+guard and its five regression tests traces to a real logcat line, not a
+synthetic guess.

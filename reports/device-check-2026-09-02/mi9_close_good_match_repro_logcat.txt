@@ -1,0 +1,70 @@
+09-03 14:25:57.279 I/flutter (10055): [pose-probe] pose[pixels] n=2754 all x -1.758..2.306 y -0.270..3.191 (bound 0.667) | trusted>=0.70 k=37925 x -0.156..0.946 y -0.270..1.219 -> OUT OF CONTRACT
+09-03 14:25:59.099 I/flutter (10055): [pose-probe] pose[pixels] n=2764 all x -1.758..2.306 y -0.270..3.191 (bound 0.667) | trusted>=0.70 k=37972 x -0.156..0.969 y -0.270..1.219 -> OUT OF CONTRACT
+09-03 14:26:05.871 I/flutter (10055): [pose-probe] pose[pixels] n=2778 all x -1.758..2.306 y -0.442..3.191 (bound 0.667) | trusted>=0.70 k=38027 x -0.156..0.969 y -0.270..1.219 -> OUT OF CONTRACT
+09-03 14:26:05.932 I/flutter (10055): [sig] squat n=1/1 min=0.125 max=0.125 phase=top reps=17 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:05.968 I/flutter (10055): [align] liveShoulder=(0.2490080303615994, 0.7026081720987956) liveHip=(0.25917014016045464, 0.24006480111016168) liveTorso=0.463 wantTorso=0.257 scale=1.800
+09-03 14:26:08.012 I/flutter (10055): [sig] squat n=22/22 min=-0.263 max=0.229 phase=top reps=17 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:09.640 I/flutter (10055): [rep] #18 target=squat.bottom peak=0.000 pass=0.8 missed=true gate=PoseGateVerdict.ok frames=19 scored/0 unscoreable
+09-03 14:26:09.643 I/flutter (10055): [rep]   mirror=true ar=0.667 leftShoulder=2.32(dx0.15,dy2.32) leftHip=1.89(dx-1.11,dy-1.53) leftKnee=0.25(dx0.24,dy0.06) leftAnkle=1.11(dx0.72,dy-0.85)
+09-03 14:26:09.644 I/flutter (10055): [rep]   deepest hipMinusKnee=0.071 match=0.000 ar=0.667 leftShoulder=0.296,0.443 leftElbow=0.305,0.387 leftWrist=0.334,0.511 leftHip=0.279,0.226 leftKnee=0.297,0.153 leftAnkle=0.306,0.113
+09-03 14:26:10.054 I/flutter (10055): [sig] squat n=28/28 min=-0.164 max=0.089 phase=bottom reps=18 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:12.122 I/flutter (10055): [sig] squat n=24/24 min=-0.114 max=0.066 phase=ascending reps=18 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:12.294 I/flutter (10055): [rep] #19 target=squat.bottom peak=0.038 pass=0.8 missed=true gate=PoseGateVerdict.missingJoints frames=29 scored/0 unscoreable
+09-03 14:26:12.295 I/flutter (10055): [rep]   mirror=false ar=0.667 leftShoulder=0.45(dx-0.32,dy-0.32) leftHip=0.93(dx0.85,dy-0.37) leftKnee=0.85(dx-0.45,dy0.72) leftAnkle=0.08(dx-0.08,dy-0.03)
+09-03 14:26:12.296 I/flutter (10055): [rep]   deepest hipMinusKnee=0.089 match=0.000 ar=0.667 leftShoulder=0.307,0.455 leftElbow=0.288,0.436 leftWrist=0.333,0.530 leftHip=0.281,0.277 leftKnee=0.295,0.185 leftAnkle=0.306,0.153
+09-03 14:26:14.145 I/flutter (10055): [sig] squat n=19/19 min=-0.287 max=-0.216 phase=top reps=19 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:16.179 I/flutter (10055): [sig] squat n=25/25 min=-0.243 max=-0.079 phase=descending reps=19 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:18.259 I/flutter (10055): [sig] squat n=29/29 min=-0.086 max=-0.001 phase=bottom reps=19 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:19.575 I/flutter (10055): [rep] #20 target=squat.bottom peak=0.720 pass=0.8 missed=true gate=PoseGateVerdict.ok frames=24 scored/23 unscoreable
+09-03 14:26:19.585 I/flutter (10055): [rep]   mirror=true ar=0.667 leftShoulder=0.10(dx-0.05,dy-0.08) leftHip=0.14(dx-0.07,dy-0.13) leftKnee=0.27(dx-0.04,dy0.26) leftAnkle=0.17(dx0.16,dy-0.06)
+09-03 14:26:19.586 I/flutter (10055): [rep]   deepest hipMinusKnee=-0.001 match=null ar=0.667 leftShoulder=0.288,0.538 leftElbow=0.129,0.646 leftWrist=-0.002,0.609 leftHip=0.488,0.775 leftKnee=0.245,0.794
+09-03 14:26:20.242 I/flutter (10055): [sig] squat n=25/25 min=-0.236 max=-0.002 phase=top reps=20 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:22.333 I/flutter (10055): [sig] squat n=27/27 min=-0.247 max=-0.204 phase=top reps=20 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:24.326 I/flutter (10055): [sig] squat n=25/25 min=-0.222 max=-0.195 phase=top reps=20 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:26.420 I/flutter (10055): [sig] squat n=26/26 min=-0.197 max=-0.159 phase=top reps=20 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:28.511 I/flutter (10055): [sig] squat n=27/27 min=-0.168 max=-0.040 phase=bottom reps=20 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:30.534 I/flutter (10055): [sig] squat n=25/25 min=-0.133 max=-0.025 phase=ascending reps=20 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:30.748 I/flutter (10055): [rep] #21 target=squat.bottom peak=0.615 pass=0.8 missed=true gate=PoseGateVerdict.ok frames=46 scored/0 unscoreable
+09-03 14:26:30.750 I/flutter (10055): [rep]   mirror=false ar=0.667 leftShoulder=0.18(dx-0.07,dy-0.16) leftHip=0.29(dx0.25,dy-0.15) leftKnee=0.30(dx-0.02,dy0.30) leftAnkle=0.15(dx-0.15,dy0.01)
+09-03 14:26:30.751 I/flutter (10055): [rep]   deepest hipMinusKnee=-0.025 match=0.602 ar=0.667 leftShoulder=0.342,0.491 leftElbow=0.432,0.542 leftWrist=0.507,0.527 leftHip=0.246,0.651 leftKnee=0.377,0.667 leftAnkle=0.307,0.796
+09-03 14:26:32.602 I/flutter (10055): [sig] squat n=25/25 min=-0.180 max=-0.142 phase=top reps=21 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:34.628 I/flutter (10055): [sig] squat n=27/27 min=-0.140 max=-0.029 phase=bottom reps=21 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:36.687 I/flutter (10055): [sig] squat n=25/25 min=-0.070 max=-0.012 phase=bottom reps=21 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:36.972 I/flutter (10055): [rep] #22 target=squat.bottom peak=0.739 pass=0.8 missed=true gate=PoseGateVerdict.ok frames=54 scored/0 unscoreable
+09-03 14:26:36.973 I/flutter (10055): [rep]   mirror=false ar=0.667 leftShoulder=0.12(dx0.09,dy-0.08) leftHip=0.19(dx0.15,dy-0.12) leftKnee=0.18(dx-0.11,dy0.15) leftAnkle=0.14(dx-0.13,dy0.05)
+09-03 14:26:36.975 I/flutter (10055): [rep]   deepest hipMinusKnee=-0.012 match=0.739 ar=0.667 leftShoulder=0.361,0.505 leftElbow=0.441,0.551 leftWrist=0.516,0.512 leftHip=0.245,0.635 leftKnee=0.364,0.634 leftAnkle=0.315,0.765
+09-03 14:26:38.718 I/flutter (10055): [sig] squat n=27/27 min=-0.173 max=-0.094 phase=top reps=22 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:40.752 I/flutter (10055): [sig] squat n=27/27 min=-0.161 max=-0.076 phase=descending reps=22 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:42.751 I/flutter (10055): [sig] squat n=26/26 min=-0.074 max=0.018 phase=bottom reps=22 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:44.836 I/flutter (10055): [sig] squat n=28/28 min=-0.119 max=0.019 phase=ascending reps=22 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:46.881 I/flutter (10055): [sig] squat n=27/27 min=-0.135 max=-0.083 phase=ascending reps=22 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:48.940 I/flutter (10055): [sig] squat n=28/28 min=-0.076 max=0.016 phase=bottom reps=22 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:50.961 I/flutter (10055): [sig] squat n=27/27 min=-0.135 max=0.016 phase=ascending reps=22 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:51.465 I/flutter (10055): [rep] #23 target=squat.bottom peak=0.857 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=145 scored/0 unscoreable
+09-03 14:26:51.466 I/flutter (10055): [rep]   mirror=false ar=0.667 leftShoulder=0.07(dx0.01,dy-0.07) leftHip=0.07(dx0.07,dy-0.01) leftKnee=0.11(dx0.01,dy0.11) leftAnkle=0.09(dx-0.09,dy-0.02)
+09-03 14:26:51.467 I/flutter (10055): [rep]   deepest hipMinusKnee=0.019 match=0.825 ar=0.667 leftShoulder=0.350,0.492 leftElbow=0.426,0.523 leftWrist=0.495,0.493 leftHip=0.248,0.628 leftKnee=0.367,0.604 leftAnkle=0.318,0.721
+09-03 14:26:53.061 I/flutter (10055): [sig] squat n=27/27 min=-0.185 max=-0.133 phase=top reps=23 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:55.073 I/flutter (10055): [sig] squat n=26/26 min=-0.152 max=-0.024 phase=bottom reps=23 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:57.169 I/flutter (10055): [sig] squat n=26/26 min=-0.025 max=-0.006 phase=bottom reps=23 gates top<=-0.15 bottom>=-0.04
+09-03 14:26:58.366 I/flutter (10055): [rep] #24 target=squat.bottom peak=0.734 pass=0.8 missed=true gate=PoseGateVerdict.ok frames=64 scored/0 unscoreable
+09-03 14:26:58.368 I/flutter (10055): [rep]   mirror=false ar=0.667 leftShoulder=0.13(dx-0.01,dy-0.13) leftHip=0.18(dx0.16,dy-0.07) leftKnee=0.20(dx-0.03,dy0.20) leftAnkle=0.13(dx-0.13,dy0.00)
+09-03 14:26:58.369 I/flutter (10055): [rep]   deepest hipMinusKnee=-0.006 match=0.710 ar=0.667 leftShoulder=0.327,0.521 leftElbow=0.424,0.579 leftWrist=0.506,0.548 leftHip=0.203,0.704 leftKnee=0.360,0.696 leftAnkle=0.280,0.844
+09-03 14:26:59.269 I/flutter (10055): [sig] squat n=27/27 min=-0.196 max=-0.014 phase=top reps=24 gates top<=-0.15 bottom>=-0.04
+09-03 14:27:01.273 I/flutter (10055): [sig] squat n=24/24 min=-0.251 max=-0.183 phase=top reps=24 gates top<=-0.15 bottom>=-0.04
+09-03 14:27:03.338 I/flutter (10055): [sig] squat n=28/28 min=-0.244 max=0.104 phase=ascending reps=24 gates top<=-0.15 bottom>=-0.04
+09-03 14:27:04.326 I/flutter (10055): [pose-probe] pose[pixels] n=3522 all x -1.758..2.306 y -0.442..3.191 (bound 0.667) | trusted>=0.70 k=49047 x -0.156..0.969 y -0.270..1.231 -> OUT OF CONTRACT
+09-03 14:27:05.412 I/flutter (10055): [sig] squat n=26/26 min=-0.084 max=-0.019 phase=bottom reps=24 gates top<=-0.15 bottom>=-0.04
+09-03 14:27:07.447 I/flutter (10055): [sig] squat n=26/26 min=-0.062 max=-0.016 phase=bottom reps=24 gates top<=-0.15 bottom>=-0.04
+09-03 14:27:09.530 I/flutter (10055): [sig] squat n=25/25 min=-0.055 max=0.020 phase=bottom reps=24 gates top<=-0.15 bottom>=-0.04
+09-03 14:27:10.802 I/flutter (10055): [rep] #25 target=squat.bottom peak=0.914 pass=0.8 missed=false gate=PoseGateVerdict.ok frames=112 scored/1 unscoreable
+09-03 14:27:10.803 I/flutter (10055): [rep]   mirror=false ar=0.667 leftShoulder=0.02(dx0.00,dy-0.02) leftHip=0.08(dx-0.03,dy0.07) leftKnee=0.04(dx0.04,dy0.02) leftAnkle=0.07(dx-0.01,dy-0.07)
+09-03 14:27:10.804 I/flutter (10055): [rep]   deepest hipMinusKnee=0.104 match=0.210 ar=0.667 leftShoulder=0.345,0.486 leftElbow=0.418,0.648 leftWrist=0.524,0.556 leftHip=0.186,0.777 leftKnee=0.414,0.663 leftAnkle=0.484,0.796
+09-03 14:27:11.932 I/flutter (10055): [sig] squat n=26/26 min=-0.312 max=0.025 phase=top reps=25 gates top<=-0.15 bottom>=-0.04
+09-03 14:27:18.018 I/flutter (10055): [sig] squat n=17/17 min=-0.322 max=0.042 phase=ascending reps=25 gates top<=-0.15 bottom>=-0.04
+09-03 14:27:19.691 I/flutter (10055): [pose-probe] pose[pixels] n=3703 all x -1.758..2.306 y -4.193..3.191 (bound 0.667) | trusted>=0.70 k=51132 x -0.156..0.969 y -0.270..1.231 -> OUT OF CONTRACT
+09-03 14:27:19.766 I/flutter (10055): [pose-probe] pose[pixels] n=3704 all x -1.758..2.306 y -4.193..3.191 (bound 0.667) | trusted>=0.70 k=51135 x -0.162..0.969 y -0.270..1.231 -> OUT OF CONTRACT
+09-03 14:27:23.248 I/flutter (10055): [pose-probe] pose[pixels] n=3722 all x -1.758..2.306 y -4.193..3.191 (bound 0.667) | trusted>=0.70 k=51263 x -0.162..0.996 y -0.270..1.231 -> OUT OF CONTRACT
+09-03 14:27:23.345 I/flutter (10055): [pose-probe] pose[pixels] n=3723 all x -1.758..2.306 y -4.193..3.191 (bound 0.667) | trusted>=0.70 k=51268 x -0.162..1.036 y -0.270..1.231 -> OUT OF CONTRACT
+09-03 14:27:23.683 I/flutter (10055): [pose-probe] pose[pixels] n=3727 all x -1.758..2.306 y -4.193..3.191 (bound 0.667) | trusted>=0.70 k=51288 x -0.162..1.106 y -0.270..1.231 -> OUT OF CONTRACT
+09-03 14:27:25.363 I/flutter (10055): [pose-probe] pose[pixels] n=3748 all x -1.758..2.306 y -4.193..3.221 (bound 0.667) | trusted>=0.70 k=51364 x -0.162..1.106 y -0.270..1.231 -> OUT OF CONTRACT
+09-03 14:27:25.464 I/flutter (10055): [pose-probe] pose[pixels] n=3749 all x -1.758..2.306 y -4.193..3.222 (bound 0.667) | trusted>=0.70 k=51368 x -0.162..1.106 y -0.270..1.231 -> OUT OF CONTRACT
