@@ -40994,3 +40994,50 @@ this is now assessed as very likely a CURRENTLY live issue on master's own
 GitHub Actions CI, not merely a named-but-unconfirmed risk -- still
 explicitly out of scope for G15 per SS17 (a closed gate is not reopened for
 an unrelated finding), recorded as backlog for a future gate.
+
+## G15: round 2 APPROVE, wording cleanup, round 3 final APPROVE, shipped
+
+GPT-PM round 2 (`review.js --round 2`): VERDICT APPROVE. Quoted: "the same
+candidate PNGs now pass Flutter's byte-exact golden comparison in two
+independently constructed Linux environments... both environments still
+detect the same separate 14 HUD/composed golden failures, so this is not
+evidence that the golden comparator was accidentally disabled." One
+non-gating wording note: `G15_SCOPE.md`'s Fix section still called the
+CirrusLabs image a "CI-matching container" even after the round-1 response
+had already explained the distinction elsewhere. Fixed for audit-trail
+clarity (not gate-affecting per GPT-PM's own framing) -- reworded to "Linux
+Flutter-3.27.1 container used for regeneration... not literally the
+GitHub-hosted runner."
+
+GPT-PM round 3, requested with `--final`: VERDICT APPROVE, `final:true`, no
+contradiction. Quoted: "G15 is legitimately CLOSED... No reason to reopen
+it." Also declined to backdate-clean a historical DECISION_LOG paragraph
+that still used the pre-correction phrase, on the reasoning that rewriting
+it "would actually make the review trail less honest" -- left as-is,
+correction is the round-1-response paragraph above it, not a rewrite of
+history.
+
+Committed (`49630fb`, working tree at HEAD) and pushed to `origin/master`.
+Registered via `pm_set_gate(project=Fitness_App, gate_id=G15,
+status=passed)`, which triggered GPT-PM's own independent post-push
+re-audit against the actual pushed repo state (not just the diff it had
+already seen) -- confirmed clean: "origin/master resolves to 49630fb...
+the pushed commit contains exactly the two G15 audit documents plus the
+three Form Coach golden PNG replacements -- no production code and no
+test-code modification... G15 is legitimately CLOSED/PASSED at 49630fb on
+origin/master."
+
+One precision note GPT-PM raised, non-gating: the scope doc's claim that
+the stale masters were "captured against a different Dart Random(7)
+sequence" is a plausible mechanism, not a proven historical fact -- the
+evidence proves staleness and current determinism, not the exact original
+cause. Left as originally written since `G15_SCOPE.md` already frames it
+appropriately cautiously; noted here for the record.
+
+GPT-PM's own closing recommendation: "The next golden-infrastructure gate
+should address the separate 14 HUD/composed baselines." Recorded as the
+next backlog item, not started under G15.
+
+G15 STATUS: CLOSED/PASSED. PM Bridge orchestrator mode is ON -- per global
+CLAUDE.md SS18, publishing the house-format report next and continuing
+directly into the next gate GPT-PM named, no operator check-in.

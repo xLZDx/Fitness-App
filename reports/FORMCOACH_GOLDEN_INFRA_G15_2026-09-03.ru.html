@@ -1,0 +1,287 @@
+<title>Гейт G15: устаревшие golden-снимки</title>
+<style>
+  :root{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+      --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+      --accent:#4f8f1f; --accent-dim:#dff2c9;
+      --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+    --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+    --accent:#4f8f1f; --accent-dim:#dff2c9;
+    --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+  }
+  :root[data-theme="dark"]{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.55;}
+  .wrap{max-width:940px;margin:0 auto;padding:48px 24px 80px;}
+  header{border-bottom:1px solid var(--border);padding-bottom:28px;margin-bottom:8px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(28px,4vw,38px);font-weight:600;margin:0 0 12px;text-wrap:balance;letter-spacing:-.01em;}
+  .lede{color:var(--ink-dim);font-size:16px;max-width:66ch;margin:0;}
+  h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:20px;font-weight:600;margin:0 0 14px;letter-spacing:-.005em;}
+  h3{font-size:15px;font-weight:600;margin:0 0 6px;color:var(--ink);}
+  section{margin-top:44px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px;}
+  .card + .card{margin-top:14px;}
+  .status{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px;margin-bottom:10px;}
+  .status.done{background:var(--accent-dim);color:var(--accent);}
+  .status.blocked{background:color-mix(in srgb, var(--block) 18%, transparent);color:var(--block);}
+  .status.info{background:color-mix(in srgb, var(--info) 16%, transparent);color:var(--info);}
+  p{margin:8px 0;color:var(--ink);}
+  .dim{color:var(--ink-dim);}
+  .muted{color:var(--ink-mute);font-size:13px;}
+  ul{margin:8px 0;padding-left:20px;}
+  li{margin:4px 0;}
+  code, .path{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;}
+  a{color:var(--info);text-decoration:none;border-bottom:1px solid color-mix(in srgb, var(--info) 40%, transparent);}
+  a:hover{border-bottom-color:var(--info);}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);padding:8px 10px;border-bottom:1px solid var(--border);}
+  td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+  .tablewrap table{border:none;}
+  .round{font-family:var(--mono);font-weight:700;color:var(--ink-dim);}
+  .verdict-major{color:var(--warn);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-approve{color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .stat .n{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:12px;color:var(--ink-mute);margin-top:2px;}
+  .commit{font-family:var(--mono);font-size:13px;}
+  blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--border);color:var(--ink-dim);font-size:14px;}
+  .envgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+  @media (max-width:640px){.envgrid{grid-template-columns:1fr;}}
+  .env{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+  .env h3{font-family:var(--mono);font-size:13px;color:var(--info);margin-bottom:8px;}
+  .env .n{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--accent);}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App / Form Coach — Гейт G15</p>
+    <h1>Golden-снимки Form Coach не были нестабильны — они были устаревшими</h1>
+    <p class="lede">Три golden-теста экрана Form Coach падали на 55–96% пикселей независимо от порядка запуска. Рабочая гипотеза — расхождение рендеринга между Windows и CI (<code>ubuntu-latest</code>) — не подтвердилась: тот же результат воспроизвёлся внутри двух независимых Linux-окружений, включая реальное CI-действие. Настоящая причина — устаревшие эталонные PNG, а не флейк и не баг кода.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 49630fb</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+  <section>
+    <h2>Что сделано</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Пункт</th><th>Изменение</th><th>Статус</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>3 golden-снимка Form Coach</td>
+            <td>Перезаписаны через <code>flutter test --update-goldens</code> внутри Linux-окружения на Flutter 3.27.1; каждый снимок визуально проверен вручную</td>
+            <td><span class="status done">готово</span></td>
+          </tr>
+          <tr>
+            <td>Гипотеза «дрейф Windows vs CI»</td>
+            <td>Проверена и отклонена: тот же результат (не прошёл) воспроизвёлся внутри самого Linux-окружения — значит, дело не в разнице ОС</td>
+            <td><span class="status done">проверено</span></td>
+          </tr>
+          <tr>
+            <td>Настоящая причина</td>
+            <td>Найдена и задокументирована: сид <code>Random(7)</code> детерминирован для конкретной версии Flutter/Dart, но записанные эталоны были захвачены при другой последовательности выбора фона</td>
+            <td><span class="status done">готово</span></td>
+          </tr>
+          <tr>
+            <td>Независимая проверка через <code>act</code></td>
+            <td>Реальное действие <code>subosito/flutter-action@v2</code> запущено локально на образе, эмулирующем GitHub-раннер — второе независимое подтверждение исправления</td>
+            <td><span class="status done">готово</span></td>
+          </tr>
+          <tr>
+            <td>14 других golden-тестов (M8, OBS-1)</td>
+            <td>Обнаружено реальное расхождение 2–14% против Linux-рендеринга — не устранялось в этом гейте, зафиксировано отдельным пунктом бэклога по прямому указанию GPT-PM</td>
+            <td><span class="status info">вне рамок</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Что было найдено</h2>
+    <div class="card">
+      <p>Все три теста <code>form_coach_golden_test.dart</code> падали — целиком, по отдельности через <code>--plain-name</code>, на Windows: 54.73% / 54.46% / 95.55% отличающихся пикселей. Рабочая гипотеза, основанная на собственной документации репозитория (<span class="path">test/golden/README.md</span>, написанной ещё для гейта M8): рендеринг Windows отличается от CI (<code>ubuntu-latest</code>) на уровне суб-пиксельного сглаживания.</p>
+      <p><b>Гипотеза не подтвердилась.</b> Тот же результат (по сути тот же провал — 55.31% / 55.40% / 95.80%) воспроизвёлся внутри контейнера <code>ghcr.io/cirruslabs/flutter:3.27.1</code> — Linux, та же версия Flutter, что и CI. Два независимых свежих запуска контейнера дали побитово идентичный результат — не флейк.</p>
+      <p>Визуальное сравнение <code>masterImage</code> и <code>testImage</code> показало настоящий дефект: на записанном эталоне и на свежем рендере — <b>разные фоновые фотографии</b>. Не шум сглаживания — неверно выбранное изображение.</p>
+      <p class="muted">Механизм: <code>coachBackdropProvider</code> выбирает сцену через сид <code>math.Random(7)</code> — <code>build()</code> потребляет первый вызов <code>nextInt()</code>, а <code>FormCheckPage.initState</code> безусловно вызывает <code>shuffle()</code> (второй вызов) при каждом монтировании экрана. Полностью детерминировано для фиксированной версии Dart/Flutter — но эталонные PNG были захвачены при другой последовательности, отсюда несовпадение.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Почему одного Linux-контейнера оказалось недостаточно</h2>
+    <p>Раунд 1 ревью GPT-PM (<span class="verdict-major">MAJOR</span>) справедливо указал: контейнер CirrusLabs — не то же самое, что реальный раннер CI. <span class="path">.github/workflows/flutter.yml</span> запускает <code>subosito/flutter-action@v2</code> напрямую на <code>ubuntu-latest</code>, а не внутри стороннего образа. Даже при совпадении версии Flutter это разные окружения.</p>
+    <p>В ответ — установлен <code>act</code> (локальный исполнитель GitHub Actions) и запущено настоящее действие <code>analyze-and-test</code> на образе, специально созданном для эмуляции GitHub-раннеров. Это по-настоящему выполнило <code>subosito/flutter-action@v2</code>, загрузив ту же самую ревизию Flutter (<code>17025dd882...</code>), что независимо сообщили оба окружения.</p>
+    <div class="envgrid">
+      <div class="env">
+        <h3>ghcr.io/cirruslabs/flutter:3.27.1</h3>
+        <p>Готовый образ Flutter. 2 независимых запуска — побитово идентичный результат. 3483 теста, 14 падений, <b>0</b> в <code>form_coach_golden_test.dart</code>.</p>
+      </div>
+      <div class="env">
+        <h3>act + subosito/flutter-action@v2</h3>
+        <p>Настоящее действие CI на образе-эмуляторе GitHub-раннера. 3481 тест, 14 падений — <b>те же самые</b> 14, <b>0</b> в <code>form_coach_golden_test.dart</code>.</p>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:14px">Оба окружения продолжают ловить одни и те же 14 посторонних golden-падений — это контроль: механизм сравнения не отключился и не пропускает всё подряд, он по-прежнему отклоняет устаревшие эталоны и одновременно принимает три исправленных.</p>
+  </section>
+
+  <section>
+    <h2>Раунды ревью GPT-PM</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Раунд</th><th>Вердикт</th><th>Что найдено и что сделано</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="round">1</td>
+            <td><span class="verdict-major">MAJOR</span></td>
+            <td>Образ CirrusLabs назван «тем же, что использует CI» — неверно; реальный раннер другой. Требование: независимое подтверждение против настоящего CI-действия.</td>
+          </tr>
+          <tr>
+            <td class="round">2</td>
+            <td><span class="verdict-approve">APPROVE</span></td>
+            <td>Устранено через <code>act</code>: реальное действие, та же ревизия Flutter, та же нулевая ошибка на form_coach, те же 14 посторонних падений в обоих окружениях — «полезный отрицательный контроль».</td>
+          </tr>
+          <tr>
+            <td class="round">3</td>
+            <td><span class="verdict-approve">APPROVE (финал)</span></td>
+            <td>После мелкой правки формулировки в тексте гейта — финальный вердикт, <code>final:true</code>, без противоречий. «G15 закрыт легитимно. Причины переоткрывать нет.»</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Верификация</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="n">3/3</div><div class="l">form_coach-тестов, целиком и по отдельности</div></div>
+      <div class="stat"><div class="n">2×</div><div class="l">независимых Linux-окружения согласны</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">падений form_coach в полном прогоне пакета</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">раунда ревью до финального APPROVE</div></div>
+    </div>
+    <p class="muted" style="margin-top:16px">Изменение затрагивает только фикстуры — три PNG-файла эталонов. Ни код приложения, ни логика тестов не менялись.</p>
+  </section>
+
+  <section>
+    <h2>Отправлено</h2>
+    <div class="card">
+      <p class="commit">49630fb — fix(golden): regenerate form_coach goldens from a CI-matching Linux env</p>
+      <p class="dim">Запушено в <code>origin/master</code>, авторизовано финальным вердиктом GPT-PM <span class="verdict-approve">VERDICT: APPROVE</span> (раунд 3, <code>final:true</code>). Закрытие гейта независимо переаудировано GPT-PM против реального состояния <code>origin/master</code> — подтверждено: «G15 is legitimately CLOSED/PASSED at 49630fb on origin/master.»</p>
+    </div>
+    <blockquote>Собственная рекомендация GPT-PM по итогам: «The next golden-infrastructure gate should address the separate 14 HUD/composed baselines» — 14 предсуществующих golden-тестов (гейты M8, OBS-1), показавших реальный дрейф 2.13–13.91% против настоящего CI-окружения, зафиксированы как отдельный пункт бэклога, не расширяющий этот гейт.</blockquote>
+  </section>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
