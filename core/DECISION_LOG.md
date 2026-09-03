@@ -41152,3 +41152,33 @@ every pre-existing golden-test failure this session found: the full
 3497-test suite runs green in two independent CI-version-matched Linux
 environments, with genuine GitHub-hosted confirmation now in progress on
 the actual pushed commit.
+
+## Program status check (SS16/SS18) -- GPT-PM: COMPLETE, no G17
+
+After publishing and committing the G16 closure report (`f21014c`), the
+PM-mode Stop hook correctly fired (once per handed-over report, per its
+own design) to prevent treating that report as a stopping point. Per
+SS16, routed the "is there a next gate" judgment call to GPT-PM rather
+than guessing or stopping unilaterally.
+
+GPT-PM's answer, verbatim excerpt: "PROGRAM STATUS: COMPLETE FOR NOW. Do
+not open G17... There is no remaining known, reproducible Form Coach or
+golden-infrastructure defect that justifies another gate... A running CI
+job is an observation, not a new work item... SS18 completion condition
+is satisfied. This session can stop."
+
+Also closed the one loose end from the G16 re-audit: the real hosted
+GitHub run for `d24e40c` ended CANCELLED (superseded by the subsequent
+`f21014c` push), not failed -- not evidence against G15/G16. A replacement
+hosted run is now executing on current `master` (`f21014c`): checkout,
+Flutter setup, `pub get`, `flutter analyze` all green; `flutter test`
+still running at check time. GPT-PM explicitly declined to treat that as
+grounds for a new gate, and separately flagged that the OSV/RU-EN-drift/
+CT-1 job failures are a genuinely different, out-of-scope workstream that
+"may deserve separate project prioritization" but should not be "silently
+promoted as its continuation" of this investigation.
+
+PROGRAM STATUS: The G9-through-G16 Form Coach/golden-infrastructure
+investigation is CLOSED. No G17. Session stops here per SS18's actual-
+completion clause, on GPT-PM's own confirmation rather than this
+session's unilateral judgment.
