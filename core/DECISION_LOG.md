@@ -41041,3 +41041,73 @@ next backlog item, not started under G15.
 G15 STATUS: CLOSED/PASSED. PM Bridge orchestrator mode is ON -- per global
 CLAUDE.md SS18, publishing the house-format report next and continuing
 directly into the next gate GPT-PM named, no operator check-in.
+
+## G16: the remaining 14 pre-existing goldens, regenerated and fully green
+
+Opened via `pm_set_gate(gate_id=G16, status=in-progress)`. Scope: the 14
+`hud_golden_test.dart`/`composed_screen_golden_test.dart` failures GPT-PM
+named at G15's closure -- the original M8/OBS-1 goldens, captured on
+Windows, already predicted stale-against-CI by this repo's own
+`test/golden/README.md`.
+
+Regenerated all 14 with `flutter test --update-goldens
+test/golden/hud_golden_test.dart test/golden/composed_screen_golden_test.dart`
+inside `ghcr.io/cirruslabs/flutter:3.27.1` (the same tool G15 built and
+validated). `git diff --stat`: exactly the 14 expected PNGs, no code. Spot-
+checked two by eye (`hud_panel_dark.png`, `composed_home_dark.png`) against
+the previous Windows-generated version via `git show HEAD:...` -- visually
+identical layout/text/color in both; the byte diff is real but
+imperceptible, consistent with the README's own sub-pixel-antialiasing
+description rather than any actual widget defect.
+
+Verification, same rigor as G15: 17/17 pass on regeneration and again on a
+fresh independent container run (deterministic). Full package suite inside
+the container: **3497 tests, 0 failures** -- every previously-red golden
+(G15's 3 plus this gate's 14) now green, nothing else regressed. Second,
+independent confirmation via `act` running the real `analyze-and-test`
+job end to end (`subosito/flutter-action@v2` on
+`catthehacker/ubuntu:act-latest`): **all tests passed, job succeeded** --
+a fully clean run of the actual CI action.
+
+Full detail: `core/G16_SCOPE.md`. Requesting GPT-PM review.
+
+## G16 round 1: MAJOR (missing semantic-correctness oracle), addressed
+
+GPT-PM round 1: verdict MAJOR. Quoted: "every one of those tests compares
+against the newly regenerated expected files; therefore they cannot
+independently distinguish 'correct new baseline' from 'incorrect output
+that has just been blessed as the baseline'... One of the twelve
+uninspected replacements could contain an actual layout/text/token
+regression." Correct and well-reasoned -- the determinism/full-suite/act
+evidence proves Linux self-consistency, not semantic correctness, and only
+2 of 14 pairs had actually been eyeballed.
+
+Extracted the pre-regeneration version of all 12 remaining PNGs via `git
+show HEAD:...` and viewed each side by side with its replacement:
+`hud_button_accent_dark`, `hud_button_glass_dark`, `hud_button_glass_light`,
+`hud_chip_selected_dark`, `hud_chip_selected_light`,
+`hud_chip_unselected_dark`, `hud_nav_bar_dark`, `hud_nav_bar_light`,
+`hud_panel_light`, `composed_home_light`, `composed_workouts_dark`,
+`composed_workouts_light` -- combined with the 2 already checked
+(`hud_panel_dark`, `composed_home_dark`), all 14 pairs now inspected.
+Result: identical layout, text content, and colour in every pair, small
+HUD primitives and full composed screens alike. No structural regression,
+no missing element, no wrong copy anywhere. Updated `G16_SCOPE.md` with
+the full audit list and softened the mechanism claim from a categorical
+"is exactly" to "consistent with," per GPT-PM's own suggested wording --
+the 14-pair visual audit is what actually rules out a semantic regression,
+independent of the precise rendering-drift explanation.
+
+Re-staged, requesting GPT-PM round 2.
+
+## G16 round 2: MINOR (internal contradiction), fixed; requesting final
+
+GPT-PM round 2: verdict MINOR, 0 BLOCKER, 0 MAJOR. Round 1's substantive
+MAJOR confirmed closed: "the baselines are no longer being accepted
+merely because regenerated tests pass." Remaining nit: the scope doc's
+"What was found" section still said the drift mechanism "is exactly"
+Windows-vs-Linux rendering differences, contradicting the softened
+"consistent with" wording added a few paragraphs later for the same
+claim. Fixed -- reworded to match. Explicitly no re-test required per
+GPT-PM: "the remediation changed the audit evidence/documentation rather
+than the PNGs after those runs." Re-staged, requesting final round.
