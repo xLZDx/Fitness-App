@@ -1,0 +1,274 @@
+<title>Гейт G16: весь golden-бэклог закрыт</title>
+<style>
+  :root{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+      --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+      --accent:#4f8f1f; --accent-dim:#dff2c9;
+      --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+    --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+    --accent:#4f8f1f; --accent-dim:#dff2c9;
+    --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+  }
+  :root[data-theme="dark"]{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.55;}
+  .wrap{max-width:940px;margin:0 auto;padding:48px 24px 80px;}
+  header{border-bottom:1px solid var(--border);padding-bottom:28px;margin-bottom:8px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(28px,4vw,38px);font-weight:600;margin:0 0 12px;text-wrap:balance;letter-spacing:-.01em;}
+  .lede{color:var(--ink-dim);font-size:16px;max-width:66ch;margin:0;}
+  h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:20px;font-weight:600;margin:0 0 14px;letter-spacing:-.005em;}
+  h3{font-size:15px;font-weight:600;margin:0 0 6px;color:var(--ink);}
+  section{margin-top:44px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px;}
+  .card + .card{margin-top:14px;}
+  .status{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px;margin-bottom:10px;}
+  .status.done{background:var(--accent-dim);color:var(--accent);}
+  .status.blocked{background:color-mix(in srgb, var(--block) 18%, transparent);color:var(--block);}
+  .status.info{background:color-mix(in srgb, var(--info) 16%, transparent);color:var(--info);}
+  .status.pending{background:color-mix(in srgb, var(--warn) 18%, transparent);color:var(--warn);}
+  p{margin:8px 0;color:var(--ink);}
+  .dim{color:var(--ink-dim);}
+  .muted{color:var(--ink-mute);font-size:13px;}
+  ul{margin:8px 0;padding-left:20px;}
+  li{margin:4px 0;}
+  code, .path{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;}
+  a{color:var(--info);text-decoration:none;border-bottom:1px solid color-mix(in srgb, var(--info) 40%, transparent);}
+  a:hover{border-bottom-color:var(--info);}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);padding:8px 10px;border-bottom:1px solid var(--border);}
+  td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+  .tablewrap table{border:none;}
+  .round{font-family:var(--mono);font-weight:700;color:var(--ink-dim);}
+  .verdict-major{color:var(--warn);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-minor{color:var(--info);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-approve{color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .stat .n{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:12px;color:var(--ink-mute);margin-top:2px;}
+  .commit{font-family:var(--mono);font-size:13px;}
+  blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--border);color:var(--ink-dim);font-size:14px;}
+  .timeline{position:relative;padding-left:26px;margin-top:16px;}
+  .timeline::before{content:"";position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--border);}
+  .tstep{position:relative;margin-bottom:18px;}
+  .tstep::before{content:"";position:absolute;left:-26px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);}
+  .tstep h3{margin-bottom:4px;}
+  .live{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--warn);}
+  .live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--warn);animation:pulse 1.6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App / Form Coach — Гейт G16, финал серии</p>
+    <h1>Весь бэклог golden-тестов закрыт: 3497 тестов зелёные в двух Linux-окружениях</h1>
+    <p class="lede">Гейт G15 нашёл и исправил 3 устаревших golden-снимка Form Coach. GPT-PM сразу назвал следующий пункт: ещё 14 предсуществующих падений в тех же самых golden-тестах — и они действительно провалились по той же причине. Оба гейта вместе закрывают весь известный golden-бэклог проекта.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ d24e40c</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+  <section>
+    <h2>Что сделано</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Гейт</th><th>Что закрыто</th><th>Статус</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>G15</td>
+            <td>3 golden-снимка Form Coach — устаревшие, не флейк и не расхождение ОС</td>
+            <td><span class="status done">закрыт</span></td>
+          </tr>
+          <tr>
+            <td>G16</td>
+            <td>Оставшиеся 14 — 10 примитивов HUD (M8) и 4 составных экрана (OBS-1), устаревшие по той же причине, что уже была описана в собственной документации репозитория</td>
+            <td><span class="status done">закрыт</span></td>
+          </tr>
+          <tr>
+            <td>Полный пакет тестов</td>
+            <td>3497 тестов, 0 падений — внутри двух независимых Linux-окружений</td>
+            <td><span class="status done">зелёный</span></td>
+          </tr>
+          <tr>
+            <td>Реальный CI на GitHub</td>
+            <td>Запущен на этом самом коммите; на момент отчёта <code>flutter test</code> ещё выполняется</td>
+            <td><span class="status pending"><span class="live">в процессе</span></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Ревью GPT-PM</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Раунд</th><th>Вердикт</th><th>Что найдено и что сделано</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="round">1</td>
+            <td><span class="verdict-major">MAJOR</span></td>
+            <td>Регенерация из Linux-контейнера доказывает самосогласованность на Linux, но не смысловую корректность — из 14 пар «старое/новое» вручную проверены были только 2. Реальный дефект контента мог бы проехать незамеченным, будучи благословлённым как новый эталон.</td>
+          </tr>
+          <tr>
+            <td class="round">2</td>
+            <td><span class="verdict-minor">MINOR</span></td>
+            <td>Основная претензия закрыта: проверены все 14 пар вручную — везде идентичная разметка, текст, цвет. Осталась мелкая внутренняя нестыковка формулировок в тексте гейта (одно предложение утверждало причину категорично, соседнее — осторожно). Исправлено без повторного прогона тестов.</td>
+          </tr>
+          <tr>
+            <td class="round">3</td>
+            <td><span class="verdict-approve">APPROVE (финал)</span></td>
+            <td>Без замечаний. «G16 remains CLOSED/PASSED... No reason to reopen it.»</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>14 пар — старое и новое, каждая проверена глазами</h2>
+    <p>После MAJOR раунда 1 — не выборочная проверка, а все 14: <code>hud_panel_dark/light</code>, <code>hud_button_accent_dark</code>, <code>hud_button_glass_dark/light</code>, <code>hud_chip_selected_dark/light</code>, <code>hud_chip_unselected_dark</code>, <code>hud_nav_bar_dark/light</code>, <code>composed_home_dark/light</code>, <code>composed_workouts_dark/light</code>. В каждой паре — одинаковая разметка, текст и цвет; отличие только на уровне отдельных пикселей, невидимое глазу.</p>
+  </section>
+
+  <section>
+    <h2>Независимая переаудитория после пуша — неожиданный бонус</h2>
+    <p>Регистрация закрытия гейта через <code>pm_set_gate</code> запускает независимый повторный аудит GPT-PM против реального состояния <code>origin/master</code>. У GPT-PM есть прямой доступ к репозиторию на GitHub — и в этот раз аудит зашёл дальше: проверил сам реальный CI-прогон на GitHub-хостинге для точного запушенного коммита.</p>
+    <div class="card">
+      <p><b>На момент аудита:</b> шаги checkout, установка Flutter, <code>pub get</code>, <code>flutter analyze</code> — уже завершены успешно; <code>flutter test</code> ещё выполняется, ошибок пока не сообщено.</p>
+      <p class="muted">Также отмечено (и корректно не влияет на вердикт G16): в общем workflow есть другие, не связанные с golden-тестами падения — сканирование уязвимостей зависимостей, проверка RU/EN расхождений, CT-1 ML lifecycle. Это отдельные, посторонние проблемы.</p>
+    </div>
+    <p class="dim">Формулировка по собственной рекомендации GPT-PM: до завершения реального прогона на GitHub-хостинге — «golden-бэклог закрыт с Linux-верификацией, эквивалентной CI; настоящее подтверждение от GitHub-хостинга сейчас выполняется», а не утверждение, что реальный CI уже подтвердил все 3497 тестов.</p>
+  </section>
+
+  <section>
+    <h2>Верификация</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="n">17/17</div><div class="l">golden-тестов G16, 2 независимых прогона</div></div>
+      <div class="stat"><div class="n">3497</div><div class="l">тестов пакета, 0 падений</div></div>
+      <div class="stat"><div class="n">2×</div><div class="l">независимых Linux-окружения согласны</div></div>
+      <div class="stat"><div class="n">14/14</div><div class="l">пар изображений проверены вручную</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Отправлено</h2>
+    <div class="card">
+      <p class="commit">49630fb — fix(golden): regenerate form_coach goldens from a CI-matching Linux env (G15)</p>
+      <p class="commit">d24e40c — fix(golden): regenerate remaining 14 stale HUD/composed-screen goldens (G16)</p>
+      <p class="dim">Оба гейта запушены в <code>origin/master</code>, каждый — финальным вердиктом GPT-PM <span class="verdict-approve">VERDICT: APPROVE</span>, каждое закрытие независимо переаудировано против реального состояния репозитория.</p>
+    </div>
+  </section>
+</div>
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

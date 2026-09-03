@@ -41111,3 +41111,44 @@ Windows-vs-Linux rendering differences, contradicting the softened
 claim. Fixed -- reworded to match. Explicitly no re-test required per
 GPT-PM: "the remediation changed the audit evidence/documentation rather
 than the PNGs after those runs." Re-staged, requesting final round.
+
+## G16: final APPROVE, shipped, closure re-audit, live GitHub CI observed
+
+GPT-PM round 3, `--final`: VERDICT APPROVE, `final:true`, no contradiction.
+Committed (`d24e40c`) and pushed to `origin/master`.
+
+Registered via `pm_set_gate(gate_id=G16, status=passed)`. First attempt's
+notification transport reported an uncertain send ("No matching new
+ChatGPT user turn appeared after Enter") -- gate status was recorded
+regardless (fail-open, same design as every other receipt in this
+project). Retried with the same evidence; second attempt succeeded and
+returned GPT-PM's independent post-push re-audit: confirmed
+`origin/master` at `d24e40c...`, matching commit message and parent,
+"the pushed commit also contains the reviewed G16 audit trail and the
+intended fixture regeneration rather than a new production-code change."
+
+**Genuinely new information from this re-audit**: GPT-PM has direct GitHub
+repo access and checked the ACTUAL hosted `ubuntu-latest` Actions run that
+started for this exact pushed SHA -- the real confirmation this gate's own
+scope note had explicitly deferred to "the next push." At audit time:
+setup/checkout/Flutter-setup/pub-get/`flutter analyze` had already
+succeeded; `flutter test` was still running, no failure reported yet.
+Also flagged, correctly out of scope: the overall workflow has OTHER,
+unrelated job failures (dependency vulnerability scan, RU/EN
+semantic-drift check, CT-1 ML lifecycle) -- not golden-test regressions,
+explicitly must not affect the G16 verdict, and don't.
+
+GPT-PM's own wording guidance, followed here rather than overclaiming:
+"say 'G15/G16 golden backlog closed with CI-equivalent Linux verification;
+genuine GitHub-hosted confirmation is currently running', rather than
+claiming GitHub-hosted CI itself has already confirmed all 3497 tests."
+This session has no direct way to poll that hosted run to completion (no
+`gh` CLI available, unauthenticated fetch to the repo returned 404) --
+recorded as an open, live, in-progress confirmation rather than assumed
+complete.
+
+G16 STATUS: CLOSED/PASSED at `d24e40c`. Both G15 and G16 together closed
+every pre-existing golden-test failure this session found: the full
+3497-test suite runs green in two independent CI-version-matched Linux
+environments, with genuine GitHub-hosted confirmation now in progress on
+the actual pushed commit.
