@@ -2465,6 +2465,13 @@ class _Silhouette extends ConsumerWidget {
 
     if (demonstrating && pair != null) {
       final (from, to) = pair;
+      // Fixed for the whole loop, from both endpoints together — not
+      // recomputed per animation frame from whatever the interpolated figure
+      // currently spans, or the fit would visibly grow and shrink as the
+      // pose morphs from standing to the bottom of the movement and back.
+      final demoFitBounds = buildSilhouette(from, build: build)
+          .bounds
+          .expandToInclude(buildSilhouette(to, build: build).bounds);
       return AnimatedBuilder(
         animation: demo,
         builder: (_, __) => CustomPaint(
@@ -2479,6 +2486,7 @@ class _Silhouette extends ConsumerWidget {
             build: build,
             isDemo: true,
             frameAspect: frameAspect,
+            fitBounds: demoFitBounds,
           ),
         ),
       );
@@ -2580,6 +2588,7 @@ class _SilhouettePainter extends CustomPainter {
     required this.frameAspect,
     this.alignment,
     this.isDemo = false,
+    this.fitBounds,
   });
 
   final PoseTarget target;
@@ -2596,8 +2605,8 @@ class _SilhouettePainter extends CustomPainter {
   /// The live camera frame's aspect ratio — the same value
   /// `_SkeletonPainter` and `_PoseAvatarPainter` project against, so a target
   /// authored in the joints' own isotropic space lands at the same scale a
-  /// real body would. See `_Silhouette.build`'s comment for why this replaced
-  /// `fitSilhouette`.
+  /// real body would, once [alignment] has put it on that body. Unused when
+  /// [alignment] is null — see [fitBounds].
   final double frameAspect;
 
   /// Where to put the outline so it sits on the tracked body, or null to draw
@@ -2609,6 +2618,26 @@ class _SilhouettePainter extends CustomPainter {
   /// score, where guessing a placement from two joints would slide the outline
   /// around the panel on noise.
   final PoseAlignment? alignment;
+
+  /// Where to fit the figure when there is no body to align it to, in the
+  /// same figure-space [SilhouetteFigure.bounds] uses, or null to fit the
+  /// currently-drawn figure's own bounds.
+  ///
+  /// Authored targets are not composed to fill the panel on their own —
+  /// `squatBottomTarget` in particular sits in the isotropic frame's
+  /// bottom-left quadrant, correct for the anatomy it was measured from but
+  /// not for a picture meant to fill a panel. Projecting it through the same
+  /// camera-cover transform a tracked body uses cropped it into a corner
+  /// instead of drawing a body-sized shape to aim at — on the live screen
+  /// whenever the body could not be placed, and on the demonstration loop
+  /// always, since it never has a body to align to at all.
+  ///
+  /// The demonstration passes the UNION of both endpoints' bounds here,
+  /// fixed for the whole loop, so the fit does not visibly grow and shrink
+  /// as the interpolated figure's own bounds change shape between standing
+  /// and the bottom of the movement. The live "cannot place" case needs no
+  /// override: one target, not interpolated, has stable bounds of its own.
+  final Rect? fitBounds;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -2627,26 +2656,30 @@ class _SilhouettePainter extends CustomPainter {
     // which is the bug that correction was introduced to fix.
     final figure = buildSilhouette(target, build: build);
     if (figure.segments.isEmpty) return;
-    // The same projection `_SkeletonPainter`/`_PoseAvatarPainter` use, not
-    // `fitSilhouette` — see `_Silhouette.build`'s comment. This also means the
-    // demo loop no longer needs a `fixedBounds` union-of-endpoints hack to
-    // hold a stable scale: `projectLandmark`'s transform depends only on
-    // `frameAspect` and `size`, never on the pose's own bounds, so it cannot
-    // rescale from one animation frame to the next in the first place.
+    // `alignment` moves the whole figure onto the tracked body — see
+    // `alignTargetToFrame` for why the outline may not stay where it was
+    // authored. When there IS a body, this is the same projection
+    // `_SkeletonPainter`/`_PoseAvatarPainter` use: `projectLandmark`'s
+    // camera-cover transform, which drawing straight from `target.joints`
+    // through two DIFFERENT per-axis scales used to bypass — the "закорючка"
+    // the operator saw twice, fixed in `pose_silhouette.dart`, with tests.
     //
-    // `alignment` moves the whole figure onto the tracked body before any of
-    // that — see `alignTargetToFrame` for why the outline may not stay where
-    // it was authored.
+    // When there is no body, `projectLandmark` is the wrong transform: it
+    // places a coordinate where a REAL camera frame would put it, and an
+    // authored target is not composed to already sit well inside that frame
+    // — see [fitBounds]. `fitSilhouette` fits the figure to the panel
+    // instead, with one scale for both axes so this fault has no way back in.
     final align = alignment;
+    final (fitScale, fitOffset) = align == null
+        ? fitSilhouette(fitBounds ?? figure.bounds, size)
+        : (1.0, Offset.zero);
     Offset place(Offset p) {
-      var x = p.dx;
-      var y = p.dy;
       if (align != null) {
-        final moved = align((x, y));
-        x = moved.$1;
-        y = moved.$2;
+        final moved = align((p.dx, p.dy));
+        return projectLandmark(moved.$1, moved.$2,
+            frameAspect: frameAspect, canvas: size);
       }
-      return projectLandmark(x, y, frameAspect: frameAspect, canvas: size);
+      return p * fitScale + fitOffset;
     }
 
     // Limb thickness, head radius and the articulation discs are all in the
@@ -2856,6 +2889,7 @@ class _SilhouettePainter extends CustomPainter {
   @override
   bool shouldRepaint(_SilhouettePainter old) =>
       old.target.id != target.id ||
+      old.fitBounds != fitBounds ||
       old.isDemo != isDemo ||
       old.build != build ||
       old.frameAspect != frameAspect ||

@@ -41182,3 +41182,84 @@ PROGRAM STATUS: The G9-through-G16 Form Coach/golden-infrastructure
 investigation is CLOSED. No G17. Session stops here per SS18's actual-
 completion clause, on GPT-PM's own confirmation rather than this
 session's unilateral judgment.
+
+## New live defect: `squatBottomTarget` renders cropped, off-panel, with no
+## live body to align to -- diagnosed and fixed live against operator's
+## own device (2026-09-03, later the same day)
+
+New evidence, unrelated to G9-G16: operator, mid-session, live-testing
+`_selectionScreen`'s demo panel and the "трекинг" screen on a Mi 9T Pro
+and an S23 (`R5CW142SASR`), reported the silhouette did not match the
+original design spec, in two separate messages including two on-device
+screenshots. Investigated by pulling live `adb screencap` frames from
+both devices rather than reasoning from code alone.
+
+**Root cause, confirmed against real screenshots and the raw target
+data:** `squatBottomTarget` (`pose_target.dart:240-252`, re-authored from
+real measurement on 2026-09-01) occupies only the isotropic frame's
+bottom-left quadrant (y: 0.58-0.93, x: 0.17-0.52) -- correct for the
+anatomy it was measured from, anchored to `squatTopTarget`'s ankle so the
+demo loop's limb lengths stay consistent, but never composed to fill a
+panel on its own. `_SilhouettePainter` drew it straight through
+`projectLandmark` whenever there was no live body to align to (both the
+demonstration loop, which never has one, and the live "cannot place"
+fallback) -- exactly as if it were a real camera frame -- so it rendered
+cropped into a corner rather than as a body-sized shape. Confirmed live:
+the same distorted shape appeared identically in the demo panel
+(screenshotted mid-animation, two frames one second apart, proving the
+loop itself animates correctly) and on the live tracking screen, on the
+JUST-DISTRIBUTED release build (`versionCode 2976` == `c5ac5a5`, today's
+G14 fix included) -- so this was not a stale-build artifact.
+
+**First proposed fix, rejected by the operator's own tests before it
+shipped:** hiding the outline entirely whenever there is no body to align
+to. Implemented, then `flutter test test/features/form_check/
+demo_silhouette_test.dart` failed 3 of its cases -- that file pins a
+GPT-PM decision from 2026-09-02 ("the shape to arrive at must be on
+screen from the very first frame," specifically BEFORE a body is
+tracked). Reverted before commit; nothing broken shipped. Recorded here
+because it is exactly the "never silently reinterpret a product
+requirement" failure mode CLAUDE.md warns about, caught by the existing
+test suite rather than by review.
+
+**Actual fix, operator GO'd after the correction:** `fitSilhouette`
+(`pose_silhouette.dart:925`, "one scale for both axes, centred, with a
+margin" -- already existed, unused since the 2026-09-01 unification onto
+`projectLandmark`) is reintroduced, but ONLY for the no-live-body case:
+`_SilhouettePainter` now fits the figure's own bounds into the panel
+instead of projecting authored coordinates as a camera frame would place
+them. The aligned/live-tracked path is untouched byte-for-byte. The
+demonstration loop passes a NEW parameter, `fitBounds` -- the UNION of
+both endpoints' bounds, computed once per widget build rather than once
+per animation frame -- so the fit does not visibly grow and shrink as the
+interpolated figure's shape changes between standing and the bottom of
+the movement; the live "cannot place" case has no second endpoint and
+uses its own single figure's bounds, which are already frame-to-frame
+stable. `squatTopTarget`/`squatBottomTarget`'s own joint coordinates —
+what `poseMatchScore` and `rep_counter.dart` read — are untouched; this
+is a rendering-only fix, deliberately, since those coordinates are real
+measured data with their own documented provenance and correction
+history (`FORMCOACH_SQUAT_BOTTOM_MEASURED_2026-09-01`).
+
+**Verification:** `flutter analyze` clean on the changed file;
+`silhouette_repaint_test.dart`, `demo_silhouette_test.dart`,
+`coach_single_status_test.dart` all pass unchanged (29/29) -- the fix
+does not touch the aligned path any of them exercise. Goldens
+(`form_coach_selection.png`, `form_coach_live.png`,
+`form_coach_faulted.png`) regenerated inside the same
+`ghcr.io/cirruslabs/flutter:3.27.1` Linux container G15/G16 validated
+against CI, all three inspected by eye (not just diffed) -- the figure
+now fills and centres in the panel with the glowing skeleton visible, on
+both the standing and the crouched pose. `test/features/form_check/` +
+the golden test together: 592/592 inside the same container with a fresh
+`pub get`. One flaky detour recorded honestly rather than hidden: `--
+no-pub` reruns against the same bind-mounted directory failed to compile
+UNRELATED files (`scanner_page.dart` and others, never touched by this
+fix) with framework-mixin errors that a fresh `pub get` immediately
+cleared -- stale generated-code state from `--no-pub` skipping codegen,
+not a real regression; not chased further since the files are outside
+this change's surface and the properly-resolved run is green. The full
+3497-test suite was not independently re-verified green under this
+change; scope (one painter, one new field, no touched files outside
+`form_check_page.dart`) and the passing scoped run are the evidence this
+rests on.
