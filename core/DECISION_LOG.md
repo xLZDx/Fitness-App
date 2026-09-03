@@ -40826,3 +40826,15 @@ subject to the same fresh review-receipt window). GPT-PM's own conclusion,
 quoted verbatim as the record of what comes next: "The next legitimate
 Form Coach work item is the separate golden-test infrastructure
 regression -- not another G14 round."
+
+## G14 report published (PM mode checkpoint, not a stop)
+
+House-format bilingual report per the `html-report` skill:
+`reports/FORMCOACH_TARGET_TORSO_GUARD_G14_2026-09-03.ru.html` (Russian,
+published as an artifact) and the matching `.html` (English, in-repo
+record). `report_conform.py --check` clean. Published at
+https://claude.ai/code/artifact/c06568bd-dc18-47a3-9b97-d4cbbc88a479 .
+PM Bridge orchestrator mode is ON for this session (standing autonomous
+mandate) -- per global CLAUDE.md SS18, this is a checkpoint, not a stop:
+continuing directly to the golden-test infrastructure investigation GPT-PM
+named as the next item, no operator check-in.

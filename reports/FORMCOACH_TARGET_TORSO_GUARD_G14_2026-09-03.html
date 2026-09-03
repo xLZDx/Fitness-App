@@ -1,0 +1,305 @@
+<title>Gate G14: torso guard</title>
+<style>
+  :root{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+      --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+      --accent:#4f8f1f; --accent-dim:#dff2c9;
+      --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+    --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+    --accent:#4f8f1f; --accent-dim:#dff2c9;
+    --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+  }
+  :root[data-theme="dark"]{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.55;}
+  .wrap{max-width:940px;margin:0 auto;padding:48px 24px 80px;}
+  header{border-bottom:1px solid var(--border);padding-bottom:28px;margin-bottom:8px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(28px,4vw,38px);font-weight:600;margin:0 0 12px;text-wrap:balance;letter-spacing:-.01em;}
+  .lede{color:var(--ink-dim);font-size:16px;max-width:66ch;margin:0;}
+  h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:20px;font-weight:600;margin:0 0 14px;letter-spacing:-.005em;}
+  h3{font-size:15px;font-weight:600;margin:0 0 6px;color:var(--ink);}
+  section{margin-top:44px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px;}
+  .card + .card{margin-top:14px;}
+  .status{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px;margin-bottom:10px;}
+  .status.done{background:var(--accent-dim);color:var(--accent);}
+  .status.blocked{background:color-mix(in srgb, var(--block) 18%, transparent);color:var(--block);}
+  .status.info{background:color-mix(in srgb, var(--info) 16%, transparent);color:var(--info);}
+  p{margin:8px 0;color:var(--ink);}
+  .dim{color:var(--ink-dim);}
+  .muted{color:var(--ink-mute);font-size:13px;}
+  ul{margin:8px 0;padding-left:20px;}
+  li{margin:4px 0;}
+  code, .path{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;}
+  a{color:var(--info);text-decoration:none;border-bottom:1px solid color-mix(in srgb, var(--info) 40%, transparent);}
+  a:hover{border-bottom-color:var(--info);}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);padding:8px 10px;border-bottom:1px solid var(--border);}
+  td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+  .tablewrap table{border:none;}
+  .round{font-family:var(--mono);font-weight:700;color:var(--ink-dim);}
+  .verdict-major{color:var(--warn);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-approve{color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .stat .n{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:12px;color:var(--ink-mute);margin-top:2px;}
+  .commit{font-family:var(--mono);font-size:13px;}
+  blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--border);color:var(--ink-dim);font-size:14px;}
+  .scale{position:relative;height:56px;margin:18px 0 8px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .scale .zone{position:absolute;top:0;bottom:0;}
+  .scale .zone.good{background:color-mix(in srgb, var(--accent) 22%, transparent);}
+  .scale .zone.bad{background:color-mix(in srgb, var(--block) 20%, transparent);}
+  .scale .mark{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);}
+  .scale .lbl{position:absolute;top:6px;font-family:var(--mono);font-size:10px;color:var(--ink-dim);white-space:nowrap;transform:translateX(-50%);}
+  .scale .lbl b{display:block;color:var(--ink);font-size:12px;}
+  .scale .lbl.v{top:auto;bottom:6px;}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App / Form Coach — Gate G14</p>
+    <h1>The target outline no longer explodes when a body steps out of frame</h1>
+    <p class="lede">On the S23, the target outline froze on screen as a deformed shape right after the lifter stepped away from the camera post-set. The first diagnosis of the cause was wrong — built on a misreading of the app's own diagnostic instrumentation. The real cause and the correct threshold were only found through live, per-frame device measurement, across four GPT-PM review rounds, each of which caught a real evidentiary gap.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ be00646</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+  <section>
+    <h2>What shipped</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Item</th><th>Change</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Torso-span guard</td>
+            <td><code>alignTargetToBody</code> rejects placement when <code>liveTorso &gt; 0.40</code>, falling back to the authored position — the same path taken when too few joints are shared</td>
+            <td><span class="status done">done</span></td>
+          </tr>
+          <tr>
+            <td>Permanent diagnostic log</td>
+            <td>A new <code>[align]</code> line prints the real <code>liveShoulder</code>/<code>liveHip</code>/<code>liveTorso</code>/<code>scale</code> on every frame with a notable torso — kept in the codebase permanently, not as a throwaway investigation tool</td>
+            <td><span class="status done">done</span></td>
+          </tr>
+          <tr>
+            <td>5 regression tests</td>
+            <td>All built from real device-captured coordinates, not synthetic guesses; each mutation-checked</td>
+            <td><span class="status done">done</span></td>
+          </tr>
+          <tr>
+            <td>Golden-test flake</td>
+            <td>Confirmed unrelated to this gate (<code>git stash</code> reproduces the identical 3 failures without this change); deferred to a separate future gate on GPT-PM's explicit instruction</td>
+            <td><span class="status info">out of scope</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>The device defect</h2>
+    <div class="card">
+      <p>A real squat set, S23, build 2965. Right after a completed rep, the lifter stepped back from the camera — and the target outline stretched into an unrecognisable shape, then froze on screen in that state (no new frames arriving, nothing to repaint over it).</p>
+      <p class="muted">Screenshots: <span class="path">reports/device-check-2026-09-02/s23_squat_result.png</span>, <span class="path">s23_check2.png</span> — identical two minutes apart, confirming the frame was genuinely frozen, not still changing.</p>
+    </div>
+    <p><code>alignTargetToBody</code> already guarded the degenerate case (a zero-length torso — division blow-up) but had no upper bound at all. Each individual joint passed <code>_drawable</code>'s own tolerance (±0.5 past the frame edge, sized for a genuinely extrapolated ankle) — but a pair of joints, each individually within tolerance, could still land near opposite corners of the widened box, which is exactly what happened.</p>
+  </section>
+
+  <section>
+    <h2>The first diagnosis was wrong — and review is what caught it</h2>
+    <p>The original fix rejected <code>liveTorso &gt; 1.2</code>, justified by a <code>[pose-probe]</code> log line — a diagnostic that turned out to accumulate a bounding box across EVERY frame and EVERY landmark since the controller was built (never reset), not a measurement of any single frame. GPT-PM caught this in round 1: the cited numbers did not prove what they were cited to prove.</p>
+    <p>Rather than defend the diagnosis, a permanent per-frame <code>[align]</code> log was added directly in the placement function, and the defect was reproduced live on real hardware.</p>
+  </section>
+
+  <section>
+    <h2>Why it took four review rounds</h2>
+    <p>Every round caught something real — including one genuine reasoning error of my own, which GPT-PM corrected rather than simply rejected.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Round</th><th>Verdict</th><th>Finding and response</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="round">1</td>
+            <td><span class="verdict-major">MAJOR</span></td>
+            <td>The 1.2 threshold was justified by an accumulator reading, not a single frame. A real defect was found instead: on a <code>Mi 9T Pro</code> (S23 unavailable), stepping out of frame produced real per-frame <code>liveTorso</code> 0.461-0.641 — 1.2 would not have rejected a single one of them. Threshold recomputed to 0.40 from real data.</td>
+          </tr>
+          <tr>
+            <td class="round">2</td>
+            <td><span class="verdict-major">MAJOR</span></td>
+            <td>Only the reject side was proven. An absolute cutoff also has to not reject a genuinely valid closer body — and that was unproven. Two live attempts produced no clean sample in the 0.26-0.40 band: the one sustained cluster there (0.454-0.470) coincided with a real tracking failure (<code>gate=lowConfidence</code>).</td>
+          </tr>
+          <tr>
+            <td class="round">3</td>
+            <td><span class="verdict-major">MAJOR</span></td>
+            <td>A fair correction of my own error: a rep with <code>gate=ok</code> and low <code>match</code> was lumped in with one that had <code>gate=lowConfidence</code>, as if both meant "unreliable." Those are different signals — a low match just means the pose fell short of the target, not that the coordinates are broken. Asked for one more attempt, aimed at a deliberately well-executed close squat.</td>
+          </tr>
+          <tr>
+            <td class="round">4</td>
+            <td><span class="verdict-approve">APPROVE (final)</span></td>
+            <td>A real frame (rep #25): <code>gate=ok</code>, <code>match=0.210</code> (short of depth, not a tracking issue), <code>liveTorso=0.332</code> — squarely inside the disputed band, correctly accepted by the guard. Gap closed with real measurements on both sides.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>The final boundary, from real measurements</h2>
+    <p>Every number below is a real coordinate from a device logcat capture, not an estimate or synthetic value.</p>
+    <div class="scale">
+      <div class="zone good" style="left:0%;width:52%"></div>
+      <div class="zone bad" style="left:57.6%;width:42.4%"></div>
+      <div class="mark" style="left:31.5%"></div>
+      <div class="mark" style="left:41.5%"></div>
+      <div class="mark" style="left:50%"></div>
+      <div class="mark" style="left:57.6%"></div>
+      <div class="lbl" style="left:31.5%"><b>0.25</b>nominal</div>
+      <div class="lbl" style="left:41.5%"><b>0.33</b>close, valid</div>
+      <div class="lbl v" style="left:50%"><b>0.40</b>cutoff</div>
+      <div class="lbl v" style="left:57.6%"><b>0.46</b>pathological</div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Point</th><th>liveTorso</th><th>Nature</th></tr></thead>
+        <tbody>
+          <tr><td>Nominal distance, good match</td><td class="commit">0.252-0.256</td><td>9 counted reps, <code>gate=ok</code></td></tr>
+          <tr><td>Closer, genuinely valid body</td><td class="commit">0.332</td><td>rep #25, <code>gate=ok</code>, low match explained by insufficient depth</td></tr>
+          <tr><td><b>Rejection cutoff</b></td><td class="commit"><b>0.40</b></td><td>~0.068 margin above valid, ~0.061 margin below pathological</td></tr>
+          <tr><td>Lowest pathological reading</td><td class="commit">0.461</td><td>stepping out of frame, real per-frame data</td></tr>
+          <tr><td>Pathological range</td><td class="commit">up to 0.641</td><td>same reproduction, Mi 9T Pro</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Verification</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="n">81</div><div class="l">alignment tests, green</div></div>
+      <div class="stat"><div class="n">3494</div><div class="l">package tests, green</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">golden failures — same ones, not new</div></div>
+      <div class="stat"><div class="n">4+1</div><div class="l">review rounds to APPROVE + final</div></div>
+    </div>
+    <p class="muted" style="margin-top:16px">Every new or changed test was mutation-checked: the guard was disabled (raised to 999), the negative tests failed, the positive tests stayed green; the guard was restored.</p>
+  </section>
+
+  <section>
+    <h2>Shipped</h2>
+    <div class="card">
+      <p class="commit">10fc289 — form_check: guard target alignment against implausible torso spans (G14)</p>
+      <p class="commit">be00646 — docs(G14): correct stale scope-note claim, record gate closure/audit</p>
+      <p class="dim">Pushed to <code>origin/master</code>, authorized by GPT-PM's final verdict <span class="verdict-approve">VERDICT: APPROVE</span> (round 5, <code>final:true</code>). Gate closure independently re-audited by GPT-PM against the real state of <code>origin/master</code> — confirmed with no material objection.</p>
+    </div>
+    <blockquote>The next Form Coach item, per GPT-PM's own conclusion: "The next legitimate Form Coach work item is the separate golden-test infrastructure regression — not another G14 round" — a separate gate for the golden-test flake, not an extension of this one.</blockquote>
+  </section>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
