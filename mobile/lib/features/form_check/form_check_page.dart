@@ -1,8 +1,7 @@
 import 'dart:async' show TimeoutException;
-import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart' show debugPrint, mapEquals, setEquals;
+import 'package:flutter/foundation.dart' show debugPrint, setEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -33,6 +32,8 @@ import 'widgets/camera_flip_button.dart';
 import 'widgets/coach_hud.dart';
 import 'widgets/coach_intro_cards.dart';
 import 'widgets/coach_readiness_band.dart';
+import 'widgets/coach_demo.dart';
+import 'widgets/coach_figure_paint.dart';
 
 /// Live form-check page. Starts the pose-detection service in
 /// initState, renders the camera preview behind the cue overlay, and
@@ -386,10 +387,13 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                     borderRadius: BorderRadius.circular(22),
                     child: Container(
                       color: Colors.black.withValues(alpha: 0.85),
-                      child: _Silhouette(
+                      // G17: the reference clip for the squat, the avatar-
+                      // styled figure for every other authored movement.
+                      // Always active here — this screen exists to show it.
+                      child: CoachDemo(
                         key: const Key('coach.selection.demo'),
-                        demo: _demo,
-                        demonstrating: true,
+                        animation: _demo,
+                        active: true,
                       ),
                     ),
                   ),
@@ -461,6 +465,23 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     final session = ref.watch(repSessionControllerProvider);
     final showRepCount = showRepCountFor(ref.watch(selectedExerciseProvider));
     final muted = ref.watch(voiceMutedProvider);
+    // G17. The demonstration's clock runs on the live screen only while the
+    // demonstration is what is shown — nobody drawable — AND it is the drawn
+    // figure; the clip has a lifecycle contract of its own (`CoachDemoClip`).
+    // Same call the picker makes, same reduce-motion handling inside it.
+    //
+    // This supersedes "the live screen never demonstrates" (2026-09-02, GPT-PM
+    // MAJOR: the picker owns the loop, the live screen a still target), which
+    // was a rule about the white target outline. The outline is gone; what the
+    // live screen shows before a body is tracked is the reference's own figure
+    // performing the movement, and it hands over to the user's figure the
+    // moment there is one (`_LiveDemo`). The defect that rule fixed — a user at
+    // rep 11 told «вы не дошли до силуэта» while the only silhouette on screen
+    // was an animation cycling past the pose — cannot recur: with a body on
+    // screen nothing demonstrates, and the cue no longer names a silhouette.
+    _syncDemo(!ref.watch(coachBodyDrawableProvider) &&
+        coachDemoFor(ref.watch(selectedExerciseProvider))
+            is CoachDemoFigureSource);
     // Whether the strip above is currently telling the user that the coach
     // cannot see them. Computed once, here, and consumed by the two surfaces
     // that must not talk over it — which is the whole of the fix: the page
@@ -470,42 +491,6 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
     // Either the camera never opened, or the native detector died mid-stream.
     // Both mean "no reps will be counted", so both belong in the same slot.
     final failure = _startError ?? ref.watch(poseErrorProvider);
-
-    // Avatar mode: a continuous pacer, not a one-off cue. The target
-    // silhouette loops the correct rep for as long as the coach is open,
-    // standing in for the design reference's own auto-looping demo
-    // (`Fitness Form Coach Phone.dc.html`'s `componentDidMount` timer)
-    // before the user has even stepped into frame, and continuing alongside
-    // the live tracked skeleton once they have — the two are independent
-    // readouts (silhouette = the shape to match, skeleton = how the user is
-    // actually doing), not a hand-off from one to the other. Operator,
-    // twice, after this used to stop the loop the instant a rep started:
-    // "силуэт и скелет всегда видны... силуэт показывает как правильно
-    // надо приседать, человек повторяет это, а скелет показывает как
-    // правильно человек это делает."
-    //
-    // **The live screen never demonstrates.** Each screen owns one job: the
-    // picker shows the movement (`_selectionScreen`, which runs the same
-    // controller unconditionally), and this screen is where the user works
-    // against a still target. An outline that keeps moving is not one you can
-    // hit, and that has been written in this file the whole time.
-    //
-    // Two operator instructions met here and the newer one wins. 2026-08-31
-    // asked for the demo loop to run alongside the avatar on this screen,
-    // which shipped as `demonstrating = avatarMode || (...)` — and since
-    // `avatarModeProvider` defaults to true, the default mode demonstrated
-    // forever. Photographed on an S23 at 20:30: a user at rep 11 being told
-    // «вы не дошли до силуэта» while the only silhouette on screen was an
-    // animation cycling past the pose rather than holding it.
-    //
-    // The five-point redesign supersedes it and is explicit about where each
-    // belongs — the loop on the selection screen (point 2), a still target
-    // plus the tracked body here (point 4). Put to GPT-PM as a product
-    // conflict rather than decided here: VERDICT MAJOR, B supersedes A, and
-    // remove the loop from this screen COMPLETELY rather than merely ending it
-    // at the first repetition, which would have left the same defect running
-    // for the first rep of every set.
-    _syncDemo(false);
 
     // Two switches, one held frame. Dropping it on the way out of either mode
     // stops a pose from a minute ago flashing over a live camera on the way
@@ -758,21 +743,40 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                               // against the input rather than on top of the verdicts.
                               // Under the skeleton, which is a diagnostic drawn ON the
                               // picture — and in avatar mode this IS the picture.
+                              // G17. The demonstration, shown while there is
+                              // nobody to draw and faded out the moment there
+                              // is — see `_LiveDemo`. Above the picture, below
+                              // the figure that replaces it.
+                              //
+                              // KEYED, all of these layers, and the reason is
+                              // a real defect rather than tidiness. The cue
+                              // column at the end of this list comes and goes
+                              // with `instructing`, and `Stack` matches
+                              // unkeyed children by POSITION from the bottom:
+                              // when the column disappeared, every `Positioned`
+                              // above it was paired with its neighbour's old
+                              // element — the avatar's slot received the
+                              // demonstration's widget, could not update it,
+                              // and re-inflated the whole layer. For a
+                              // `CustomPaint` that was an invisible rebuild;
+                              // for a video decoder it is a re-initialisation
+                              // on every status change, and in the widget test
+                              // it was a controller used after dispose. Keys
+                              // make the pairing by identity, so a layer only
+                              // ever updates itself.
+                              Positioned.fill(
+                                key: const Key('form_check.layer.demo'),
+                                child: IgnorePointer(
+                                  child: _LiveDemo(animation: _demo),
+                                ),
+                              ),
                               const Positioned.fill(
+                                key: Key('form_check.layer.avatar'),
                                 child: IgnorePointer(child: _PoseAvatar()),
                               ),
                               const Positioned.fill(
+                                key: Key('form_check.layer.skeleton'),
                                 child: IgnorePointer(child: _SkeletonOverlay()),
-                              ),
-                              // Over the preview, under the readouts: what to do, then
-                              // the shape to arrive at.
-                              Positioned.fill(
-                                child: IgnorePointer(
-                                  child: _Silhouette(
-                                    demo: _demo,
-                                    demonstrating: false,
-                                  ),
-                                ),
                               ),
                               // One strip, laid out top-down. Previously these were
                               // three independently positioned children of this Stack,
@@ -788,6 +792,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                               // and same fix as `ScanTopBar`'s sibling in
                               // scanner_page.dart.
                               Positioned(
+                                key: const Key('form_check.layer.top_strip'),
                                 left: 0,
                                 right: 0,
                                 top: 0,
@@ -810,6 +815,7 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
                               // how three messages ended up disagreeing in one frame.
                               if (!instructing)
                                 Positioned(
+                                  key: const Key('form_check.layer.cues'),
                                   left: 12,
                                   right: 12,
                                   bottom: 12,
@@ -1292,65 +1298,146 @@ class _SkeletonOverlay extends ConsumerWidget {
     // that cannot hold still. The toggle still governs the camera view, which
     // is the view the diagnostic was built for.
     if (ref.watch(avatarModeProvider)) return const SizedBox.shrink();
+    // Only over a body the panel has accepted — the same acceptance that
+    // hands the panel over from the demonstration (`coachBodyDrawableProvider`
+    // is `stabilisedBodyProvider != null` in this mode). A raw frame the
+    // stabiliser rejects — a partial pose from the room, a spurious one —
+    // still reaches `latestPoseFrameProvider`, and drawing its fragments here
+    // while the demonstration is still up put two figures on the panel, seen
+    // on the S23 with the toggle on (GPT-PM, G17 commit review, MAJOR).
+    if (!ref.watch(coachBodyDrawableProvider)) return const SizedBox.shrink();
     final frame = ref.watch(latestPoseFrameProvider);
     if (frame == null) return const SizedBox.shrink();
+    // G17. The same verdict inputs the avatar reads, so the camera view and
+    // the avatar view agree about what is right and what is wrong — the
+    // reference specifies ONE pose overlay (`fitness_hud_v1/README.md` §8),
+    // and this was a violet diagnostic while the avatar was the design.
+    final severity = avatarVerdictSeverity(
+      ref.watch(activeClassifiersProvider),
+      ref.watch(formFeedbackControllerProvider),
+      matchScore: ref.watch(poseMatchProvider),
+      lastRepMissedTarget: ref.watch(repSessionControllerProvider
+          .select((s) => s.lastRepMissedTarget)),
+    );
+    final colors = Theme.of(context).colors;
     return CustomPaint(
       key: const Key('form_check.skeleton'),
-      painter: _SkeletonPainter(frame: frame, bones: _bones),
+      painter: _SkeletonPainter(
+        frame: frame,
+        bones: _bones,
+        severity: severity,
+        faultJoints: avatarFaultJoints(
+          ref.watch(activeClassifiersProvider),
+          ref.watch(formFeedbackControllerProvider),
+        ),
+        faultVertices: avatarFaultVertices(
+          ref.watch(activeClassifiersProvider),
+          ref.watch(formFeedbackControllerProvider),
+        ),
+        colorCorrect: colors.poseCorrect,
+        colorError: colors.poseError,
+      ),
     );
   }
 }
 
+/// The reference's pose overlay over the live camera image.
+///
+/// G17. Until this gate it drew violet 3 px lines with a white dot per joint —
+/// a diagnostic, and it looked like one. The reference's live view is the
+/// darkened camera image of the user with white glowing bones on them
+/// (`fitness_hud_v1/README.md` §8: bones 3–3.4 px `#FFFFFF`, green or red
+/// drop-shadow glow, dashed pulsing ring on the faulty joint), which is the
+/// "same figure, performing the exercise" the operator asked for when the
+/// camera is what is on screen. Drawn through `coach_figure_paint.dart`, the
+/// same helpers as the avatar and the demonstration.
+///
+/// Still behind [showSkeletonProvider], off by default: the projection from
+/// camera space to preview space has not been verified on a real device with a
+/// tracked body against the raw `CameraPreview`, and a skeleton a few percent
+/// off reads as "the app cannot see me". Flipping the default is a separate
+/// gate with that evidence (GPT-PM, G17 plan review, BLOCKER).
 class _SkeletonPainter extends CustomPainter {
-  const _SkeletonPainter({required this.frame, required this.bones});
+  const _SkeletonPainter({
+    required this.frame,
+    required this.bones,
+    required this.severity,
+    required this.colorCorrect,
+    required this.colorError,
+    this.faultJoints = const {},
+    this.faultVertices = const {},
+  });
 
   final PoseFrame frame;
   final List<(LandmarkType, LandmarkType)> bones;
 
-  Offset? _at(LandmarkType t, Size size) {
-    final lm = frame.landmarks[t];
-    if (lm == null) return null;
-    return projectLandmark(lm.x, lm.y,
-        frameAspect: frame.aspectRatio, canvas: size);
-  }
+  /// See `_PoseAvatarPainter.severity` — the same contract.
+  final int? severity;
+  final Color colorCorrect;
+  final Color colorError;
+  final Set<LandmarkType> faultJoints;
+  final Set<LandmarkType> faultVertices;
+
+  /// The reference's 3.4 px bone, in logical pixels.
+  static const _boneWidth = 3.4;
+
+  /// The reference's 4.5 px joint dot.
+  static const _jointRadius = 4.5;
+
+  Color? get _glowColor => switch (severity) {
+        null => null,
+        0 => colorCorrect,
+        _ => colorError,
+      };
 
   @override
   void paint(Canvas canvas, Size size) {
-    final stroke = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round
-      ..color = AppPalette.auroraViolet.withValues(alpha: 0.85);
+    Offset place(PoseLandmark lm) => projectLandmark(lm.x, lm.y,
+        frameAspect: frame.aspectRatio, canvas: size);
 
-    for (final (a, b) in bones) {
-      final pa = _at(a, size);
-      final pb = _at(b, size);
-      // A bone is drawn only when both ends exist. Reaching for a missing
-      // joint's coordinate would put it at the origin, and a limb running to
-      // the top-left corner looks like a detector that has lost its mind
-      // rather than one that simply cannot see an ankle.
-      if (pa != null && pb != null) canvas.drawLine(pa, pb, stroke);
-    }
+    paintSkeleton(
+      canvas,
+      buildLandmarkBonePaths(frame.landmarks, bones, place,
+          faultJoints: faultJoints),
+      boneWidth: _boneWidth,
+      glowColor: _glowColor,
+    );
 
+    // Confidence is still the point of a joint dot here: a joint the detector
+    // is guessing at is drawn faint, so "it sees me but is unsure about my
+    // left ankle" is visible without reading a number.
     for (final entry in frame.landmarks.entries) {
-      final p = _at(entry.key, size);
-      if (p == null) continue;
-      // Confidence is the point of showing this at all: a joint the detector
-      // is guessing at is drawn faint, so "it sees me but is unsure about my
-      // left ankle" is visible without reading a number.
       canvas.drawCircle(
-        p,
-        4,
+        place(entry.value),
+        _jointRadius,
         Paint()
           ..color = Colors.white.withValues(
               alpha: 0.25 + 0.7 * entry.value.likelihood.clamp(0, 1)),
+      );
+    }
+
+    final vertexColour = _glowColor;
+    if (faultVertices.isEmpty || vertexColour == null) return;
+    final phase = faultRingPhase(frame.timestampMs);
+    for (final type in faultVertices) {
+      final lm = frame.landmarks[type];
+      if (lm == null) continue;
+      paintFaultRing(
+        canvas,
+        place(lm),
+        boneWidth: _boneWidth,
+        color: vertexColour,
+        phase: phase,
       );
     }
   }
 
   @override
   bool shouldRepaint(_SkeletonPainter old) =>
-      old.frame.timestampMs != frame.timestampMs;
+      old.frame.timestampMs != frame.timestampMs ||
+      old.severity != severity ||
+      !setEquals(old.faultJoints, faultJoints) ||
+      !setEquals(old.faultVertices, faultVertices);
 }
 
 /// The scene the avatar stands in.
@@ -1430,6 +1517,73 @@ class _AvatarBackdrop extends ConsumerWidget {
       );
 }
 
+/// The demonstration on the live panel: shown while there is nobody to draw,
+/// faded out the moment there is.
+///
+/// G17. The white target outline this replaces was drawn on top of the user
+/// at all times; the reference has ONE figure on the panel, and the operator's
+/// instruction was «либо динамический двигающийся ... или вообще без него» —
+/// a moving demonstration, or nothing, and once the user is in frame their
+/// own figure. So: the clip (squat) or the drawn figure (other movements)
+/// while `coachBodyDrawableProvider` is false, cross-faded to the tracked
+/// body when it turns true.
+///
+/// The clip's decoder is told it is inactive only AFTER the fade has finished
+/// (`CoachDemoClip`'s contract): switching it off at the start of the fade
+/// would freeze the last frame mid-fade, and leaving it on after would decode
+/// a loop nobody can see underneath the avatar.
+class _LiveDemo extends ConsumerStatefulWidget {
+  const _LiveDemo({required this.animation});
+
+  final Animation<double> animation;
+
+  @override
+  ConsumerState<_LiveDemo> createState() => _LiveDemoState();
+}
+
+class _LiveDemoState extends ConsumerState<_LiveDemo> {
+  /// True from the moment the demonstration starts fading out until the fade
+  /// has completed. The clip stays active through it.
+  bool _fadingOut = false;
+
+  /// Null until the first build: a layer that mounts with a body already on
+  /// screen starts hidden and has no fade to wait out — `AnimatedOpacity`
+  /// does not animate its initial value, so `onEnd` would never come.
+  bool? _wasVisible;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = !ref.watch(coachBodyDrawableProvider);
+    final was = _wasVisible;
+    if (was != null && visible != was) {
+      // Reappearing cancels a fade-out in progress; disappearing starts one.
+      _fadingOut = !visible;
+    }
+    _wasVisible = visible;
+    return AnimatedOpacity(
+      key: const Key('form_check.live_demo'),
+      opacity: visible ? 1 : 0,
+      duration: context.hudMotionDuration(const Duration(milliseconds: 300)),
+      onEnd: () {
+        if (!mounted || visible) return;
+        // Deferred a frame: under reduce motion the fade is zero-length and
+        // `AnimatedOpacity` completes it — and calls this — synchronously
+        // from its own `didUpdateWidget`, i.e. inside the build that started
+        // it, where a `setState` on this ancestor is an error. Re-checked on
+        // arrival, since the body may have been lost again in between.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_fadingOut || _wasVisible == true) return;
+          setState(() => _fadingOut = false);
+        });
+      },
+      child: CoachDemo(
+        animation: widget.animation,
+        active: visible || _fadingOut,
+      ),
+    );
+  }
+}
+
 /// The user, drawn as a figure instead of shown on camera.
 class _PoseAvatar extends ConsumerWidget {
   const _PoseAvatar();
@@ -1505,11 +1659,11 @@ class _PoseAvatar extends ConsumerWidget {
 
 /// A dark body with a lit skeleton inside it.
 ///
-/// Deliberately the inverse of [_SilhouettePainter], which draws a translucent
-/// shape for the user to stand INSIDE while the camera shows them through it.
-/// This one is not something to aim at — it is the user, so it is opaque, and
-/// the bones read as light because that is what distinguishes a body from a
-/// shadow on a dusk backdrop.
+/// The reference's figure (`fitness_hud_v1`): it is the user, so it is
+/// opaque, and the bones read as light because that is what distinguishes a
+/// body from a shadow on a dusk backdrop. The demonstration draws the same
+/// figure through the same helpers (`DemoFigurePainter`), which is what makes
+/// "the same figure, performing the exercise" true rather than approximate.
 class _PoseAvatarPainter extends CustomPainter {
   const _PoseAvatarPainter({
     required this.figure,
@@ -1576,9 +1730,9 @@ class _PoseAvatarPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // The same projection the skeleton uses, so the avatar lands exactly where
     // the body is rather than being re-fitted to the panel. `fitSilhouette` is
-    // right for a target — a fixed shape centred in the box — and wrong here:
-    // scaling to the figure's own bounds every frame would make the avatar
-    // grow when the user raised their arms.
+    // right for a demonstration — a fixed shape centred in the box — and wrong
+    // here: scaling to the figure's own bounds every frame would make the
+    // avatar grow when the user raised their arms.
     Offset place(Offset p) => projectLandmark(
           p.dx,
           p.dy,
@@ -1593,224 +1747,48 @@ class _PoseAvatarPainter extends CustomPainter {
     final scale = (place(const Offset(0, 1)) - place(Offset.zero)).distance;
     final limbWidth = (figure.limbThickness * scale).clamp(4.0, 40.0);
 
-    // One body, unioned — the B4 lesson. Adding parts as separate subpaths
-    // strokes every internal seam, which is what made the target outline read
-    // as a lattice of quadrilaterals on a real phone.
-    var body = Path();
-    void merge(Path part) {
-      body = Path.combine(PathOperation.union, body, part);
-    }
-
-    merge(Path()..addPolygon([for (final p in figure.torso) place(p)], true));
-    for (final limb in figure.limbs) {
-      if (limb.length < 3) continue;
-      merge(Path()..addPolygon([for (final p in limb) place(p)], true));
-    }
-    // The articulations, into the SAME union — see `SilhouetteFigure.blobs`
-    // for why a body needs them at all. Merged rather than filled separately
-    // for the same reason the limbs are: a disc drawn over the body would get
-    // a rim of its own, and a figure with a circle outlined at every knee is a
-    // diagram of a person rather than a person.
-    //
-    // ALL of them in one path and ONE `combine`, not fourteen. `merge` folds
-    // its operand into a `body` that grows with every call, so N boolean ops
-    // in a row cost more than N times the first one — and this painter runs at
-    // the camera's frame rate. A path op resolves its operands' fill regions
-    // before combining, so the discs overlapping each other inside this path
-    // come out as one outline exactly as they would have one at a time.
-    final discs = Path();
-    var hasDiscs = false;
-    for (final (centre, radius) in figure.blobs) {
-      final at = place(centre);
-      final r = radius * scale;
-      // Defensive, and deliberately not asserted anywhere: every radius is a
-      // product of positive constants and a torso length that `buildSilhouette`
-      // has already refused to be zero, so nothing shipped reaches this. It
-      // stays because a NaN in a path is a crash rather than a wrong picture,
-      // and the limb loop above guards its own degenerate input the same way.
-      if (!r.isFinite || r <= 0 || !at.dx.isFinite || !at.dy.isFinite) continue;
-      discs.addOval(Rect.fromCircle(center: at, radius: r));
-      hasDiscs = true;
-    }
-    if (hasDiscs) merge(discs);
-    final head = figure.head;
-    if (head != null) {
-      merge(Path()
-        ..addOval(
-          Rect.fromCircle(center: place(head.$1), radius: head.$2 * scale),
-        ));
-    }
-
-    canvas.drawPath(body, Paint()..color = const Color(0xE60A0912));
-    canvas.drawPath(
-      body,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = (limbWidth * 0.14).clamp(1.5, 4.0)
-        ..strokeJoin = StrokeJoin.round
-        ..color = Colors.white.withValues(alpha: 0.45),
+    // G17: the drawing itself lives in `coach_figure_paint.dart`, shared with
+    // the demonstration figure and the camera-mode skeleton, so the three
+    // cannot drift apart again. Everything below is the avatar's original
+    // sequence — body, glow, bones, joints, ring — expressed through it; the
+    // goldens pinned the pixels across the move.
+    paintFigureBody(
+      canvas,
+      buildFigureBody(figure, place, scale),
+      limbWidth: limbWidth,
     );
 
-    // Every bone in ONE path, so the glow is a single blurred draw rather than
-    // one per limb. A blur is the most expensive thing on this canvas and this
-    // runs at the camera's frame rate.
-    //
-    // Two paths now, not one: the bones the current fault is ABOUT, and the
-    // rest. `bones` still holds all of them, because the white skeleton on top
-    // is drawn in one pass regardless of any verdict — the reference keeps it
-    // white in every state and carries colour on a layer behind it.
-    final bones = Path();
-    final faultBones = Path();
-    // Tracked rather than asked of the Path afterwards: a Path has no "is this
-    // empty" and comparing two of them compares identity, not contents.
-    var hasFaultBones = false;
-    final named = figure.segmentBones.length == figure.segments.length;
-    for (var i = 0; i < figure.segments.length; i++) {
-      final (a, b) = figure.segments[i];
-      final pa = place(a);
-      final pb = place(b);
-      bones
-        ..moveTo(pa.dx, pa.dy)
-        ..lineTo(pb.dx, pb.dy);
-      if (!named || faultJoints.isEmpty) continue;
-      final (ja, jb) = figure.segmentBones[i];
-      if (ja != null &&
-          jb != null &&
-          faultJoints.contains(ja) &&
-          faultJoints.contains(jb)) {
-        faultBones
-          ..moveTo(pa.dx, pa.dy)
-          ..lineTo(pb.dx, pb.dy);
-        hasFaultBones = true;
-      }
-    }
+    final bones = buildBonePaths(figure, place, faultJoints: faultJoints);
     final boneWidth = (limbWidth * 0.20).clamp(2.0, 6.0);
-
-    // The verdict is a GLOW behind the bone, not a recolour of it — the
-    // reference keeps the skeleton itself white in every state
-    // (`full_handoff_v1/README.md:109`: "кости 3-3.4 px, цвет #FFFFFF").
-    // Drawn before the white strokes below so the white line sits on top of
-    // its own halo. Two blurred passes approximate the reference's stacked
-    // `drop-shadow(0 0 5px)` + `drop-shadow(0 0 14px)`; the exact rgba
-    // literals it specifies are single-theme, so this uses the app's own
-    // theme-reactive `poseCorrect`/`poseError` tokens instead (already the
-    // same green/red family), the same adaptation already made for the nav
-    // icons against this same reference.
-    //
-    // G6 narrowed WHERE it lands. A fault used to light the entire skeleton,
-    // so "your back is rounding" glowed the shins exactly as brightly as the
-    // spine and the picture said only "something is wrong". When the rule
-    // names its own joints (`avatarFaultJoints`, off `requiredLandmarks`), the
-    // glow is restricted to the bones between them and the rest of the body
-    // stays unlit — unlit rather than green, because "the part I am not
-    // talking about" is not the same claim as "the part I have approved".
-    //
-    // A fault that names nothing still lights everything, deliberately: that
-    // is the pre-G6 behaviour, and losing the verdict entirely because the
-    // region could not be resolved would be a silent downgrade.
-    final glowColor = _glowColor;
-    if (glowColor != null) {
-      final target = hasFaultBones ? faultBones : bones;
-      canvas.drawPath(
-        target,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = boneWidth
-          ..strokeCap = StrokeCap.round
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, boneWidth * 2.3)
-          ..color = glowColor.withValues(alpha: 0.55),
-      );
-      canvas.drawPath(
-        target,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = boneWidth
-          ..strokeCap = StrokeCap.round
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, boneWidth * 0.9)
-          ..color = glowColor.withValues(alpha: 0.85),
-      );
-    }
-
-    canvas.drawPath(
-      bones,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = boneWidth * 2.0
-        ..strokeCap = StrokeCap.round
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, boneWidth * 1.4)
-        ..color = Colors.white.withValues(alpha: 0.45),
-    );
-    canvas.drawPath(
-      bones,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = boneWidth
-        ..strokeCap = StrokeCap.round
-        ..color = Colors.white.withValues(alpha: 0.95),
+    paintSkeleton(canvas, bones, boneWidth: boneWidth, glowColor: _glowColor);
+    paintJointDots(
+      canvas,
+      figure.joints.map(place),
+      radius: boneWidth * 0.62,
     );
 
-    // Joints last, so an articulation reads as a bright point rather than as a
-    // thickening of the bone that runs through it.
-    //
-    // STILL NOT IMPLEMENTED: the reference also marks the faulty joint with a
-    // PULSING DASHED RING (r=26, dash `4 6`, 1.1s cycle -- same doc). G6 did
-    // the surgery this note used to say was out of scope — `segmentBones`
-    // carries landmark identity through `buildSilhouette` now, so the glow
-    // above knows which bones a rule is about. What is still missing is only
-    // the animation: this painter repaints on frame arrival, and a 1.1s cycle
-    // needs a clock of its own rather than the camera's.
-    final jointCore = Paint()..color = Colors.white;
-    for (final j in figure.joints) {
-      canvas.drawCircle(place(j), boneWidth * 0.62, jointCore);
-    }
-
-    // The reference's marker for the offending joint: «пунктирный круг r=26,
-    // `4 6`, пульсация 1.1 s» (`full_handoff_v1/README.md`, section 8).
-    //
+    // The reference's marker for the offending joint — see `paintFaultRing`.
     // The 1.1s cycle runs off the FRAME's own timestamp rather than off a
-    // Ticker. The painter already repaints on every frame, the timestamps are
+    // Ticker: the painter already repaints on every frame, the timestamps are
     // monotonic and in milliseconds, and a clock of its own would keep
-    // animating a ring over a body the detector had stopped seeing — this one
-    // stops exactly when the picture does, which is the correct behaviour and
-    // is also the cheaper one.
+    // animating a ring over a body the detector had stopped seeing.
     final vertexColour = _glowColor;
     if (faultVertices.isEmpty ||
         vertexColour == null ||
         figure.jointTypes.length != figure.joints.length) {
       return;
     }
-    const cycleMs = 1100;
-    final phase = (frame.timestampMs % cycleMs) / cycleMs;
-    // A single smooth swell rather than a sawtooth: the ring grows and settles
-    // once per cycle instead of snapping back at the seam.
-    final swell = 0.5 - 0.5 * math.cos(phase * 2 * math.pi);
-    final radius = boneWidth * (3.4 + 0.9 * swell);
-    final ring = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = (boneWidth * 0.34).clamp(1.2, 3.0)
-      ..strokeCap = StrokeCap.round
-      ..color = vertexColour.withValues(alpha: 0.55 + 0.35 * swell);
-    // The reference's `4 6` dash: four parts drawn to every six skipped, which
-    // over a full turn is ten arcs of 0.4 of their slot. Drawn as arcs because
-    // Flutter has no dashed stroke, and the arithmetic is the dash pattern
-    // rather than a look-alike chosen by eye.
-    const dashes = 10;
-    const drawn = 4 / (4 + 6);
-    const slot = 2 * math.pi / dashes;
+    final phase = faultRingPhase(frame.timestampMs);
     for (var i = 0; i < figure.jointTypes.length; i++) {
       final type = figure.jointTypes[i];
       if (type == null || !faultVertices.contains(type)) continue;
-      final centre = place(figure.joints[i]);
-      final box = Rect.fromCircle(center: centre, radius: radius);
-      for (var d = 0; d < dashes; d++) {
-        canvas.drawArc(
-          box,
-          d * slot + phase * slot,
-          slot * drawn,
-          false,
-          ring,
-        );
-      }
+      paintFaultRing(
+        canvas,
+        place(figure.joints[i]),
+        boneWidth: boneWidth,
+        color: vertexColour,
+        phase: phase,
+      );
     }
   }
 
@@ -2421,96 +2399,6 @@ class _ExercisePicker extends ConsumerWidget {
 /// that "get 80% of the way into this" is a question with an answer. Drawing
 /// both the same way would invite the user to chase the animation, which is
 /// exactly the shape they cannot match, because it is never in one place.
-class _Silhouette extends ConsumerWidget {
-  const _Silhouette(
-      {super.key, required this.demo, required this.demonstrating});
-
-  final Animation<double> demo;
-  final bool demonstrating;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Drawn together with the avatar now, deliberately (operator instruction,
-    // 2026-08-31 — see `demonstrating`'s comment above): the silhouette is
-    // the shape to match, the avatar is the user's own tracked body, and the
-    // design reference shows both at once.
-    //
-    // This used to be "avoided by construction, not by coordinate
-    // unification" — a claim that turned out to be wrong. A real device video
-    // (operator, same day, second video) showed the two figures at wildly
-    // different scales the instant a real body was tracked: the avatar,
-    // projected through `projectLandmark` at the camera's real scale, next to
-    // a silhouette fitted independently to fill the panel margin
-    // (`fitSilhouette`) — unrelated coordinate systems that only coincide by
-    // accident. `pose_target.dart`'s own doc comment already said the fix:
-    // targets are "authored at plausible screen positions so the same numbers
-    // can be drawn as the on-screen outline without a second source of
-    // truth" — i.e. target joints live in the SAME isotropic, per-image-height
-    // space real landmarks do, and were always meant to be projected the same
-    // way. `_SilhouettePainter` now does that instead of calling
-    // `fitSilhouette`, which unifies the two coordinate systems for real
-    // rather than hoping they never appear together at a clashing scale.
-    final target = ref.watch(poseTargetProvider);
-    final pair = ref.watch(poseDemoProvider);
-    final build = ref.watch(silhouetteBuildProvider);
-    // The empty-frame case still carries a real aspect ratio (`_emptyFrame`
-    // in `mlkit_pose_detector_service.dart`) from the moment the camera
-    // starts, so this is null only in the brief window before the first
-    // camera frame has been processed at all. `9 / 16` matches the panel's
-    // own fallback aspect ratio elsewhere on this page.
-    final frameAspect =
-        ref.watch(latestPoseFrameProvider.select((f) => f?.aspectRatio)) ??
-            9 / 16;
-    final body = ref.watch(stabilisedBodyProvider);
-
-    if (demonstrating && pair != null) {
-      final (from, to) = pair;
-      // Fixed for the whole loop, from both endpoints together — not
-      // recomputed per animation frame from whatever the interpolated figure
-      // currently spans, or the fit would visibly grow and shrink as the
-      // pose morphs from standing to the bottom of the movement and back.
-      final demoFitBounds = buildSilhouette(from, build: build)
-          .bounds
-          .expandToInclude(buildSilhouette(to, build: build).bounds);
-      return AnimatedBuilder(
-        animation: demo,
-        builder: (_, __) => CustomPaint(
-          key: const Key('form_check.demo'),
-          painter: _SilhouettePainter(
-            // Eased rather than linear: a real repetition does not travel at a
-            // constant speed, and a constant-speed stick figure reads as a
-            // machine rather than as a movement to copy.
-            target: lerpPoseTarget(
-                from, to, Curves.easeInOutCubic.transform(demo.value)),
-            match: null,
-            build: build,
-            isDemo: true,
-            frameAspect: frameAspect,
-            fitBounds: demoFitBounds,
-          ),
-        ),
-      );
-    }
-
-    if (target == null) return const SizedBox.shrink();
-    return CustomPaint(
-      key: const Key('form_check.silhouette'),
-      painter: _SilhouettePainter(
-        target: target,
-        match: ref.watch(poseMatchProvider),
-        build: build,
-        frameAspect: frameAspect,
-        // Put the shape on the user rather than where it was authored, using
-        // the SAME body the avatar is drawn from — latched far side included,
-        // so a one-frame dropout cannot jump the outline off a body that has
-        // not moved. Null until a body is read well enough to place one, which
-        // is the same condition the readout uses to say it cannot tell.
-        alignment: body == null ? null : alignTargetToBody(body.joints, target),
-      ),
-    );
-  }
-}
-
 /// Offers to fill in the intake answers the outline would use.
 ///
 /// Renders nothing when there is nothing missing, which includes the user who
@@ -2578,334 +2466,4 @@ class _CompleteProfileCard extends ConsumerWidget {
       ),
     );
   }
-}
-
-class _SilhouettePainter extends CustomPainter {
-  const _SilhouettePainter({
-    required this.target,
-    required this.match,
-    required this.build,
-    required this.frameAspect,
-    this.alignment,
-    this.isDemo = false,
-    this.fitBounds,
-  });
-
-  final PoseTarget target;
-
-  /// Live match, 0..1, or null when the body cannot be read.
-  final double? match;
-
-  /// How broad to draw it, from the intake.
-  final BodyBuild build;
-
-  /// Drawing the movement rather than the position to reach.
-  final bool isDemo;
-
-  /// The live camera frame's aspect ratio — the same value
-  /// `_SkeletonPainter` and `_PoseAvatarPainter` project against, so a target
-  /// authored in the joints' own isotropic space lands at the same scale a
-  /// real body would, once [alignment] has put it on that body. Unused when
-  /// [alignment] is null — see [fitBounds].
-  final double frameAspect;
-
-  /// Where to put the outline so it sits on the tracked body, or null to draw
-  /// it where it was authored.
-  ///
-  /// Null is the honest answer in three cases and all three want the authored
-  /// position: the demonstration loop, which has no body to align to; the
-  /// moments before the camera has read one; and a body too partly seen to
-  /// score, where guessing a placement from two joints would slide the outline
-  /// around the panel on noise.
-  final PoseAlignment? alignment;
-
-  /// Where to fit the figure when there is no body to align it to, in the
-  /// same figure-space [SilhouetteFigure.bounds] uses, or null to fit the
-  /// currently-drawn figure's own bounds.
-  ///
-  /// Authored targets are not composed to fill the panel on their own —
-  /// `squatBottomTarget` in particular sits in the isotropic frame's
-  /// bottom-left quadrant, correct for the anatomy it was measured from but
-  /// not for a picture meant to fill a panel. Projecting it through the same
-  /// camera-cover transform a tracked body uses cropped it into a corner
-  /// instead of drawing a body-sized shape to aim at — on the live screen
-  /// whenever the body could not be placed, and on the demonstration loop
-  /// always, since it never has a body to align to at all.
-  ///
-  /// The demonstration passes the UNION of both endpoints' bounds here,
-  /// fixed for the whole loop, so the fit does not visibly grow and shrink
-  /// as the interpolated figure's own bounds change shape between standing
-  /// and the bottom of the movement. The live "cannot place" case needs no
-  /// override: one target, not interpolated, has stable bounds of its own.
-  final Rect? fitBounds;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // A two-sided body, and ONE scale for both axes. Drawing straight from
-    // `target.joints` gave half a skeleton, and multiplying x by the panel
-    // width while multiplying y by its height squeezed that half horizontally
-    // by 1.78x on a 9:16 panel — together, the "закорючка" the operator saw
-    // twice. Both faults live in `pose_silhouette.dart` now, with tests.
-    //
-    // No aspect correction here any more. Until
-    // `FORMCOACH_TARGET_ISOTROPIC_2026-09-01` this passed `xScale: frameAspect`
-    // because target x was authored as a fraction of frame WIDTH while
-    // `projectLandmark` expects this app's isotropic space. The targets
-    // themselves now hold isotropic x, so the correction has nothing left to
-    // correct -- and applying it twice would shove the outline off-panel again,
-    // which is the bug that correction was introduced to fix.
-    final figure = buildSilhouette(target, build: build);
-    if (figure.segments.isEmpty) return;
-    // `alignment` moves the whole figure onto the tracked body — see
-    // `alignTargetToFrame` for why the outline may not stay where it was
-    // authored. When there IS a body, this is the same projection
-    // `_SkeletonPainter`/`_PoseAvatarPainter` use: `projectLandmark`'s
-    // camera-cover transform, which drawing straight from `target.joints`
-    // through two DIFFERENT per-axis scales used to bypass — the "закорючка"
-    // the operator saw twice, fixed in `pose_silhouette.dart`, with tests.
-    //
-    // When there is no body, `projectLandmark` is the wrong transform: it
-    // places a coordinate where a REAL camera frame would put it, and an
-    // authored target is not composed to already sit well inside that frame
-    // — see [fitBounds]. `fitSilhouette` fits the figure to the panel
-    // instead, with one scale for both axes so this fault has no way back in.
-    final align = alignment;
-    final (fitScale, fitOffset) = align == null
-        ? fitSilhouette(fitBounds ?? figure.bounds, size)
-        : (1.0, Offset.zero);
-    Offset place(Offset p) {
-      if (align != null) {
-        final moved = align((p.dx, p.dy));
-        return projectLandmark(moved.$1, moved.$2,
-            frameAspect: frameAspect, canvas: size);
-      }
-      return p * fitScale + fitOffset;
-    }
-
-    // Limb thickness, head radius and the articulation discs are all in the
-    // target's own units, so they have to travel through the same scale the
-    // joints did — otherwise an aligned figure drawn at half size keeps
-    // full-size limbs and comes out as a blob.
-    final scale = (place(const Offset(0, 1)) - place(Offset.zero)).distance;
-
-    // Green once the shape is reached, so the user gets the answer while they
-    // are still in the position and can feel what it corresponds to.
-    final reached = (match ?? 0) >= kPoseMatchPassing;
-    final colour = reached ? AppPalette.auroraTeal : Colors.white;
-    final alpha = isDemo
-        ? 0.45
-        : reached
-            ? 0.95
-            : 0.65;
-
-    final limbWidth = (figure.limbThickness * scale).clamp(4.0, 30.0);
-
-    // B4 — ONE body, not a set of parts.
-    //
-    // This used to stroke each bone as a thick round-capped line and outline
-    // the head separately. However wide the strokes, that is a stick figure —
-    // the operator rejected it three times and was right: limbs of constant
-    // width joined by visible caps do not read as a person. Every part now
-    // arrives as a closed outline (`SilhouetteFigure.limbs`, plus the trunk
-    // and the head) and they are unioned into a single non-zero path, so what
-    // is filled is one continuous silhouette with no seams where an arm meets
-    // a shoulder.
-    // UNION, not a path with many subpaths.
-    //
-    // The first version added each part as its own subpath under
-    // `PathFillType.nonZero`. That merges what is FILLED and does nothing to
-    // what is STROKED: `drawPath` outlines every subpath separately, so the
-    // seams where an arm enters a shoulder and a thigh enters the hip were all
-    // drawn. On a real camera at 0.28 fill the faint interior vanished and only
-    // that lattice remained — the figure read as a heap of overlapping
-    // quadrilaterals, which is worse than the sticks it replaced. Found by
-    // opening it on a phone; the emulator has no camera to show it, and every
-    // geometric test passed the whole time because the geometry was right.
-    //
-    // `Path.combine` resolves the overlaps into ONE outline, so the rim traces
-    // the body and nothing else.
-    var body = Path();
-    void merge(Path part) {
-      body = Path.combine(PathOperation.union, body, part);
-    }
-
-    if (figure.torso.isNotEmpty) {
-      merge(Path()..addPolygon([for (final p in figure.torso) place(p)], true));
-    }
-    for (final limb in figure.limbs) {
-      if (limb.length < 3) continue;
-      merge(Path()..addPolygon([for (final p in limb) place(p)], true));
-    }
-    // The articulations, into the SAME union — see `SilhouetteFigure.blobs`
-    // for why a body needs them at all. Merged rather than filled separately
-    // for the same reason the limbs are: a disc drawn over the body would get
-    // a rim of its own, and a figure with a circle outlined at every knee is a
-    // diagram of a person rather than a person.
-    //
-    // ALL of them in one path and ONE `combine`, not fourteen. `merge` folds
-    // its operand into a `body` that grows with every call, so N boolean ops
-    // in a row cost more than N times the first one — and this painter runs at
-    // the camera's frame rate. A path op resolves its operands' fill regions
-    // before combining, so the discs overlapping each other inside this path
-    // come out as one outline exactly as they would have one at a time.
-    final discs = Path();
-    var hasDiscs = false;
-    for (final (centre, radius) in figure.blobs) {
-      final at = place(centre);
-      final r = radius * scale;
-      // Defensive, and deliberately not asserted anywhere: every radius is a
-      // product of positive constants and a torso length that `buildSilhouette`
-      // has already refused to be zero, so nothing shipped reaches this. It
-      // stays because a NaN in a path is a crash rather than a wrong picture,
-      // and the limb loop above guards its own degenerate input the same way.
-      if (!r.isFinite || r <= 0 || !at.dx.isFinite || !at.dy.isFinite) continue;
-      discs.addOval(Rect.fromCircle(center: at, radius: r));
-      hasDiscs = true;
-    }
-    if (hasDiscs) merge(discs);
-    final head = figure.head;
-    if (head != null) {
-      merge(Path()
-        ..addOval(
-          Rect.fromCircle(center: place(head.$1), radius: head.$2 * scale),
-        ));
-    }
-
-    // Translucent fill, opaque rim. The rim is what the user actually lines
-    // themselves up against; the fill only has to say which side is body. A
-    // solid fill over a live camera would hide the person trying to match it —
-    // the same reason the head used to be drawn as an outline rather than a
-    // disc, kept now that the head is part of the filled body.
-    // 0.34, up from 0.28: measured on a phone against a white wall, where the
-    // interior was effectively invisible and the outline had to carry the whole
-    // shape on its own. Still translucent — a solid fill over a live camera
-    // would hide the person trying to match it, which is the reason the head
-    // used to be an empty circle.
-    //
-    // The demonstration is the exception, and on the device it was the whole
-    // problem. It is painted on an OPAQUE dark panel with nobody behind it, so
-    // there is nothing for translucency to protect — and 0.45 x 0.34 is a 15%
-    // white body, which disappears into the panel and leaves the rim carrying
-    // the entire figure on its own. That is exactly the thin geometric outline
-    // the operator rejected («квадраты»), reintroduced by an alpha rather than
-    // by the geometry: G5 fixed the shape, and the shape was then invisible.
-    // The reference clip is a FILLED body with the skeleton glowing on top of
-    // it, so the demonstration gets a filled body.
-    final fillAlpha = isDemo ? 0.58 : alpha * 0.34;
-    final rimAlpha = isDemo ? 0.85 : alpha;
-    canvas.drawPath(body, Paint()..color = colour.withValues(alpha: fillAlpha));
-    canvas.drawPath(
-      body,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = (limbWidth * 0.22).clamp(2.0, 5.0)
-        ..strokeJoin = StrokeJoin.round
-        ..color = colour.withValues(alpha: rimAlpha),
-    );
-
-    if (isDemo) _paintDemoSkeleton(canvas, place, limbWidth);
-  }
-
-  /// The glowing skeleton the reference clip carries INSIDE the silhouette.
-  ///
-  /// Operator, point 2: «человекоподобный силуэт с светящимся скелетом
-  /// приседает». The silhouette on its own is a shape; the skeleton is what
-  /// makes it read as the same figure the live screen will draw over the user,
-  /// so the demonstration and the thing it is demonstrating look like one
-  /// system rather than two drawings that happen to share a screen.
-  ///
-  /// Copied from the reference's own SVG rather than invented: white line,
-  /// round caps, two drop-shadow glows (5px and 14px there), filled joint dots
-  /// — `Fitness Form Coach Phone.dc.html:45-68`. The widths are derived from
-  /// [SilhouetteFigure.limbThickness] instead of transcribing that file's pixel
-  /// values, because those are pixels in a 390x844 artboard and this paints
-  /// into whatever panel it is given.
-  ///
-  /// Demo only. Over a live camera the skeleton drawn from the USER's own
-  /// landmarks is the one that means something (`_SkeletonOverlay`), and a
-  /// second one tracing the target would put two skeletons on one body.
-  void _paintDemoSkeleton(
-      Canvas canvas, Offset Function(Offset) place, double limbWidth) {
-    Offset? at(LandmarkType j) {
-      final c = target.joints[j];
-      return c == null ? null : place(Offset(c.$1, c.$2));
-    }
-
-    final line = Path();
-    var drew = false;
-    for (final (a, b) in target.bones) {
-      final pa = at(a);
-      final pb = at(b);
-      if (pa == null || pb == null) continue;
-      line
-        ..moveTo(pa.dx, pa.dy)
-        ..lineTo(pb.dx, pb.dy);
-      drew = true;
-    }
-    if (!drew) return;
-
-    // 0.15, down from 0.28 (2026-09-01). Once the body was actually filled and
-    // drawn at a real chest's depth, the bones at the old weight were the
-    // brightest thing on the panel and the figure read as a glowing wireframe
-    // with a grey shadow behind it — the reference has it the other way round:
-    // a body, with the skeleton glowing INSIDE it.
-    final width = (limbWidth * 0.15).clamp(2.0, 4.5);
-    // Two passes, widening and fading, standing in for the reference's two
-    // stacked drop-shadows. `MaskFilter.blur` rather than a wider opaque
-    // stroke: a hard-edged halo reads as a second, thicker skeleton.
-    for (final (mul, a, blur) in [
-      (3.2, 0.14, 7.0),
-      (1.9, 0.24, 3.0),
-    ]) {
-      canvas.drawPath(
-        line,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeCap = StrokeCap.round
-          ..strokeWidth = width * mul
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur)
-          ..color = Colors.white.withValues(alpha: a),
-      );
-    }
-    canvas.drawPath(
-      line,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..strokeWidth = width
-        ..color = Colors.white.withValues(alpha: 0.92),
-    );
-    // The dots sit on the joints the bones connect, not on every authored
-    // landmark: an endpoint nothing links to is a coordinate, not a joint.
-    final dots = Paint()..color = Colors.white.withValues(alpha: 0.92);
-    for (final j in {
-      for (final (a, b) in target.bones) ...[a, b],
-    }) {
-      final p = at(j);
-      if (p != null) canvas.drawCircle(p, width * 0.7, dots);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_SilhouettePainter old) =>
-      old.target.id != target.id ||
-      old.fitBounds != fitBounds ||
-      old.isDemo != isDemo ||
-      old.build != build ||
-      old.frameAspect != frameAspect ||
-      // The outline follows the body now, so it repaints when the body moves —
-      // the same per-frame cost `_PoseAvatarPainter` already pays, and the
-      // reason the match-score comparison below can stay coarse. Steadier than
-      // the avatar despite that: a centroid and an RMS radius over every scored
-      // joint average out the landmark noise a single joint carries.
-      old.alignment != alignment ||
-      // A demonstration is a new pose every frame and its id never changes, so
-      // it has to be compared by content or the animation would render as a
-      // single frozen frame.
-      (isDemo && !mapEquals(old.target.joints, target.joints)) ||
-      // Otherwise only when the score crosses the line: repainting on every
-      // decimal of a live score would rebuild this overlay on every camera
-      // frame for no visible difference.
-      ((old.match ?? 0) >= kPoseMatchPassing) !=
-          ((match ?? 0) >= kPoseMatchPassing);
 }

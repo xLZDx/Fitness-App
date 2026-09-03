@@ -1,0 +1,199 @@
+<title>The Reference Figure</title>
+<style>
+  :root{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+      --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+      --accent:#4f8f1f; --accent-dim:#dff2c9;
+      --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+    --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+    --accent:#4f8f1f; --accent-dim:#dff2c9;
+    --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+  }
+  :root[data-theme="dark"]{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.55;}
+  .wrap{max-width:940px;margin:0 auto;padding:48px 24px 80px;}
+  header{border-bottom:1px solid var(--border);padding-bottom:28px;margin-bottom:8px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(28px,4vw,38px);font-weight:600;margin:0 0 12px;text-wrap:balance;letter-spacing:-.01em;}
+  .lede{color:var(--ink-dim);font-size:16px;max-width:66ch;margin:0;}
+  h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:20px;font-weight:600;margin:0 0 14px;letter-spacing:-.005em;}
+  h3{font-size:15px;font-weight:600;margin:0 0 6px;color:var(--ink);}
+  section{margin-top:44px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px;}
+  .status{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px;margin-bottom:10px;}
+  .status.done{background:var(--accent-dim);color:var(--accent);}
+  .status.blocked{background:color-mix(in srgb, var(--block) 18%, transparent);color:var(--block);}
+  .status.info{background:color-mix(in srgb, var(--info) 16%, transparent);color:var(--info);}
+  .status.pending{background:color-mix(in srgb, var(--warn) 18%, transparent);color:var(--warn);}
+  p{margin:8px 0;color:var(--ink);}
+  .dim{color:var(--ink-dim);}
+  .muted{color:var(--ink-mute);font-size:13px;}
+  ul{margin:8px 0;padding-left:20px;}
+  li{margin:4px 0;}
+  code, .path{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;}
+  a{color:var(--info);text-decoration:none;border-bottom:1px solid color-mix(in srgb, var(--info) 40%, transparent);}
+  a:hover{border-bottom-color:var(--info);}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);padding:8px 10px;border-bottom:1px solid var(--border);}
+  td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+  .tablewrap table{border:none;}
+  .verdict-major{color:var(--warn);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-block{color:var(--block);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-approve{color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .stat .n{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:12px;color:var(--ink-mute);margin-top:2px;}
+  .commit{font-family:var(--mono);font-size:13px;}
+  blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--border);color:var(--ink-dim);font-size:14px;}
+  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-top:14px;}
+  .shot img{width:100%;height:auto;border-radius:10px;border:1px solid var(--border);display:block;}
+  .shot figcaption{font-size:12px;color:var(--ink-dim);margin-top:6px;}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App / Form Coach — gate G17, Rosetta plan rev2, GPT-PM APPROVE</p>
+    <h1>The Form Coach figure is the design reference's figure</h1>
+    <p class="lede">The operator asked more than ten times for a demonstration that is one hundred percent the mock, and for the same figure, performing the movement, during the exercise. Three repairs of the white target outline (filled, unified, composed — the last one yesterday, ce770910, with an APPROVE and green tests) fixed the outline's geometry and never asked whether an outline was what was requested. The reference answers that itself: behind the HUD in the mock is a video of a real person, and "the silhouette" is the dark figure in that video. The app now shows exactly that.</p>
+  </header>
+
+  <section>
+    <h2>Outcome</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="n">723 / 723</div><div class="l">form_check + theme + l10n, Windows</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">goldens regenerated in the CI image and inspected by eye</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">phones, S23 and S8: the clip plays in the picker and on the live screen</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">white outlines: <code>form_check.silhouette</code> exists in no tree</div></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <span class="status done">Done</span>
+      <p>The squat, in the picker and on the live screen before a person appears, is the reference clip itself (540×960, 10 s, 680 KB), bundled with the app. Every other movement is the same dark figure with glowing bones the avatar draws, animated between the movement's two authored ends. The moment a body is in frame the demonstration cross-fades out behind the user's own figure in 300 ms, and the decoder stops only after that fade has finished. The camera-mode skeleton is redrawn to the reference (3.4 px white bones, green/red glow, a pulsing ring on the faulty joint) but stays behind the existing toggle — default off, as GPT-PM required.</p>
+    </div>
+    @@GPT_REVIEW_SUMMARY@@
+  </section>
+
+  <section>
+    <h2>What was asked, and what there was</h2>
+    <blockquote>«я уже больше 10 раз просил чтобы демо было 100% похоже на это и при упражнении был тот же силует только исполняющий упражнения, почему в двацатый раз это игнорируешь» — operator, 2026-09-04, with the mock's screenshot attached: "I have asked more than ten times for the demo to be 100% like this, and for the same silhouette, performing the exercise, during the exercise".</blockquote>
+    <p>The reference <code>core/design/reference/fitness_hud_v1/Fitness Form Coach Phone.dc.html</code>, lines 22–25: a video, <code>uploads/clip2-1786933639870-ww0q.mp4</code>, sits behind the HUD — a person squatting side-on, dark against a dusk lake, a lit white skeleton on the body. <code>README.md</code> §8, line 109: the product replaces the glow layer with a real pose overlay — bones 3–3.4 px <code>#FFFFFF</code>, green/red drop-shadow glow, a dashed pulsing ring r=26 on the faulty joint.</p>
+    <p>The app drew, instead, a white filled <b>target outline</b> (<code>_Silhouette</code> / <code>_SilhouettePainter</code>) everywhere and always — an abstract shape authored for scoring, never for looking at. "Silhouette" had meant that outline in the app since the picker was built; the operator's word meant the dark figure in the video.</p>
+  </section>
+
+  <section>
+    <h2>Rosetta plan: planned / definition of done / status</h2>
+    <p class="muted">Plan <code>fitness_app-2026-09-03T21-35-35-727Z-06c378</code> (rev2), hash <code>75d08377…7a165</code>, base <code>c5c4b29f</code>. Rev1 (<code>…6a7e57</code>) was refused by GPT-PM with <span class="verdict-block">VERDICT: BLOCKER</span> and four required changes — all adopted in rev2, which received <span class="verdict-approve">VERDICT: APPROVE</span>.</p>
+    <div class="tablewrap"><table>
+      <tr><th>Planned</th><th>Definition of done (GPT-PM)</th><th>Status</th><th>Tail</th></tr>
+      <tr><td>Squat demo = the bundled reference clip, cropped 9:16 around the figure</td><td>Clip plays in the picker and on the live screen on S23 and S8; ROI diff of two frames 1 s apart &gt; 2 % of panel pixels changed by &gt; 24/255</td><td><span class="status done">Done</span></td><td class="num">S23 picker 31.7 %, live 23.9 %; S8 picker 33.8 %, live 44.8 %</td></tr>
+      <tr><td>Every other authored movement — an avatar-styled animated figure (rev1 MAJOR #2: no movement loses its demonstration)</td><td>Widget test: pair from <code>poseTargetsFor</code>; the figure moves on device</td><td><span class="status done">Done</span></td><td>Single snapshots kept landing in the slow ends of the 4 s cycle; a 5 s screen recording shows peaks of 5.7–6.5 % every ~2 s</td></tr>
+      <tr><td>White target outline removed everywhere</td><td><code>form_check.silhouette</code> found by no test; goldens without the outline</td><td><span class="status done">Done</span></td><td>—</td></tr>
+      <tr><td>Live panel: demo only while no body, cross-fade to the user's figure</td><td>Tests: no body → opacity 1 and play; body → opacity 0 and pause after the fade; body lost → back; with-body transition on device</td><td><span class="status pending">Partial</span></td><td>All tests present, including the mid-fade check. The with-body transition on a device was <b>not obtained in-session</b>: nobody stood in front of either camera. Per the plan's evidence semantics this does not gate</td></tr>
+      <tr><td>Camera-mode skeleton restyled to the reference, toggle default OFF (rev1 BLOCKER #1)</td><td>Styled through the shared helpers; default untouched; flipping it is a separate gate with real-body evidence</td><td><span class="status done">Done</span></td><td>With nobody in frame the skeleton has nothing to draw; only the toggle itself was exercised on device</td></tr>
+      <tr><td>Video lifecycle contract (rev1 MAJOR #3)</td><td>Every clause a widget test against a recording controller: active, background/resume, reduce motion, error, unmount</td><td><span class="status done">Done</span></td><td>Added after internal review: play failure, decoder error after start, unmount while opening, reduce motion on the live screen</td></tr>
+      <tr><td>Shared figure-paint helpers</td><td>Avatar, drawn demo and camera skeleton draw through one file</td><td><span class="status done">Done</span></td><td><code>coach_figure_paint.dart</code></td></tr>
+      <tr><td>Tests, goldens, docs</td><td>Touched files green; goldens from the CI image; <code>G17_SCOPE.md</code> + DECISION_LOG</td><td><span class="status done">Done</span></td><td>—</td></tr>
+      <tr><td>GPT-PM commit review, commit, push</td><td>review.js receipt, APPROVE, push after --final</td><td>@@ROW_REVIEW_STATUS@@</td><td>@@ROW_REVIEW_TAIL@@</td></tr>
+      <tr><td>Release build and tester distribution</td><td><code>build_release.ps1 -Distribute</code> finished, version recorded</td><td>@@ROW_RELEASE_STATUS@@</td><td>@@ROW_RELEASE_TAIL@@</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>What changed in the code</h2>
+    <div class="card">
+      <ul>
+        <li><code>mobile/assets/coach_demo/squat_side.mp4</code> and <code>squat_side_poster.jpg</code> — from the reference clip via ffmpeg: delogo on the bottom toast, crop 342×608 around the figure, scale 540×960, no audio, x264 crf 24. The "stand tall to start counting" line stays in the top 3–7 % of the frame — the mock shows it there too; an attempt to erase it smeared the face and was rejected. <code>.gitignore</code> gained an exception for <code>mobile/assets/coach_demo/*.mp4</code>: without it a file declared in pubspec would silently have missed the commit.</li>
+        <li><code>widgets/coach_figure_paint.dart</code> — body, rim, bone glow, joint dots and fault ring, extracted from <code>_PoseAvatarPainter</code>.</li>
+        <li><code>widgets/coach_demo.dart</code> — <code>coachDemoFor(exercise)</code>: the clip for the squat, a target pair for the rest, null for movements without targets; <code>DemoFigurePainter</code>.</li>
+        <li><code>widgets/coach_demo_clip.dart</code> — <code>video_player</code> 2.10.0 behind an injectable controller factory; plays only while active ∧ foreground ∧ ¬reduce-motion; any failure (open, play, pause, decoder error) keeps the poster, drops the platform view, and records a non-fatal in Crashlytics under the same guard the rest of the app uses.</li>
+        <li><code>form_check_page.dart</code> — <code>_Silhouette</code> deleted; a <code>_LiveDemo</code> layer with the cross-fade; the panel's five layers keyed (unkeyed <code>Stack</code> children were remounted on every status change — for a video that is a decoder restart); the camera skeleton redrawn; the demonstration clock runs on the live screen while the drawn figure is shown.</li>
+        <li><code>coachBodyDrawableProvider</code> — one answer to "is there a figure to hand the panel to" for both modes.</li>
+        <li>l10n: the three strings that said "silhouette" now speak of the target shape and the demonstration; keys unchanged. White-literal ledger: 61 → 57.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Internal review before GPT-PM</h2>
+    <p class="dim">Three specialists in parallel, cold: Flutter lifecycle, functional-test, silent-failure. Everything accepted was fixed in one batch, each with a test.</p>
+    <div class="tablewrap"><table>
+      <tr><th>Finding</th><th>Basis</th><th>Done</th></tr>
+      <tr><td><span class="verdict-major">MAJOR</span> play/pause futures unobserved; no <code>value.hasError</code> listener; failure only in <code>debugPrint</code></td><td>FACT</td><td>One <code>_fail</code> path for every failure; Crashlytics non-fatal; tests "a decoder that will not play" and "a decoder that drops the clip mid-loop"</td></tr>
+      <tr><td><span class="verdict-major">MAJOR</span> double dispose on unmount during <code>initialize()</code></td><td>FACT (call site)</td><td>Second dispose removed; completer-gated test for unmount while opening — exactly one dispose</td></tr>
+      <tr><td><span class="verdict-major">MAJOR</span> setLooping/setVolume before initialize might not reach the player</td><td>HYPOTHESIS → falsified</td><td><code>video_player-2.10.0/lib/video_player.dart:507–509</code> re-applies them from the initialized event. Left as written, with the citation in a comment</td></tr>
+      <tr><td><span class="verdict-major">MAJOR</span> the hand-over test checked only the settled state: a pause at the start of the fade would have passed</td><td>FACT</td><td>Assertion 150 ms into the fade: no pause; after it: pause</td></tr>
+      <tr><td>MINOR, and the one that mattered most: the live screen computed the demo-clock condition and 45 lines later still called <code>_syncDemo(false)</code> unconditionally</td><td>FACT</td><td>The drawn demonstration on the live screen would have been a frozen frame for every movement but the squat. Fixed; test "the drawn demonstration moves on the live screen while nobody is tracked"</td></tr>
+      <tr><td>MINOR: under reduce motion a zero-length fade completes synchronously inside build — <code>setState</code> from <code>onEnd</code> would have thrown</td><td>INFERENCE → confirmed against the framework</td><td>Reset deferred to a post-frame callback; test with <code>FakeAccessibilityFeatures(disableAnimations: true)</code></td></tr>
+      <tr><td>Deferred: reopening the clip on an <code>asset</code> change; a test for the demo layer coming down on camera failure</td><td>—</td><td>Unreachable today (one clip, its own key); camera failure is pre-existing conditional rendering. Recorded in DECISION_LOG</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Device evidence</h2>
+    <p class="dim">Debug build of this tree, installed over the existing <code>.debug</code> package, driven by adb and uiautomator, screenshots via screencap. The playback criterion is the plan's own: the fraction of panel pixels whose RGB sum moved by more than 24/255 between two frames 1 s apart; above 2 % means moving.</p>
+    <div class="shots">
+      <figure class="shot"><img alt="S23, picker, squat: the reference clip filling the panel" src="@@IMG:s23_p_full@@"><figcaption>S23, picker, squat. The clip fills the panel — <span class="num">31.7 %</span> of pixels change per second.</figcaption></figure>
+      <figure class="shot"><img alt="S23, live screen with nobody in frame: the clip behind the HUD" src="@@IMG:s23_l1@@"><figcaption>S23, live screen, nobody in frame: the clip behind the chip, gauges and status — <span class="num">23.9 %</span>.</figcaption></figure>
+      <figure class="shot"><img alt="S23, live screen, lower part of the panel" src="@@IMG:s23_l_full1@@"><figcaption>S23, the same panel after scrolling; the debug-only <code>pose[pixels]</code> line confirms the camera path is live.</figcaption></figure>
+      <figure class="shot"><img alt="S23, picker, biceps curl: the drawn figure" src="@@IMG:s23_c1@@"><figcaption>S23, biceps curl: the same dark figure with glowing bones the avatar draws.</figcaption></figure>
+      <figure class="shot"><img alt="S8, live screen with nobody in frame: the clip behind the HUD" src="@@IMG:s8_l1@@"><figcaption>S8, live screen, nobody in frame — <span class="num">44.8 %</span>. The S8 picker — <span class="num">33.8 %</span>.</figcaption></figure>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <span class="status info">A false alarm, kept on record</span>
+      <p>The session's first "live" screenshot showed the old white outline on the S23. It was the release app v2978, left on the coach screen by the operator's own testing and brought back to the foreground by a BACK from the debug build's home screen — <code>dumpsys window</code> showed <code>com.fitnessapp.fitness_app.sptr</code>, no <code>.debug</code>. The package in focus was verified before every screenshot after that.</p>
+    </div>
+    <div class="card">
+      <span class="status pending">Not obtained in-session</span>
+      <p>The panel's hand-over from the demonstration to the user's figure with a real body in frame. Nobody stood in front of either camera; the behaviour is proven by the widget tests in <code>live_demo_test.dart</code> (fade, then pause; back on losing the body). Per the plan's evidence semantics this does not gate.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>GPT-PM commit review</h2>
+    <div class="card">
+      <span class="verdict-major">Round 1 — VERDICT: MAJOR</span>
+      <p class="muted">review.js --uncommitted, request <code>c1b2bbd2…</code>, reply <code>9438af1e…</code>, scope note <code>G17_SCOPE.md</code>. No BLOCKER; the reference-video substitution, the non-squat fallback, the outline removal, the keyed layers, the clip's lifetime to the end of the fade, reduce motion, the shared helpers and the untouched skeleton default were confirmed consistent with the approved direction. Three MAJORs, each verified against the code before acting:</p>
+      <ul>
+        <li><b>A rejected <code>pause()</code> left the decoder running.</b> FACT: <code>_fail</code> only hid the view and disabled <code>_sync</code> for good; the controller was released only on unmount. Fixed: failure is terminal and quiescent — the controller is detached and disposed (only if it actually opened: a controller whose <code>initialize</code> threw has no player, and the real <code>dispose</code> would wait forever on its unfinished creation). Test: a controller whose <code>pause</code> throws and stays playing ends in exactly one dispose.</li>
+        <li><b>The camera skeleton drew raw landmarks over the demonstration.</b> FACT: <code>_SkeletonOverlay</code> read <code>latestPoseFrameProvider</code>, not the stabilised body the hand-over reads — with the toggle on, a partial room pose (the very "OUT OF CONTRACT" one from the S23) drew bone fragments over the clip: two figures on the panel. Fixed: the overlay is gated on the same <code>coachBodyDrawableProvider</code>. Tests: camera mode + toggle, partial frames → demo visible, no skeleton; a body → demo hidden, skeleton present.</li>
+        <li><b>The Linux-container verification of the final tree had not been done.</b> FACT, and admitted in the log: the run overlapped the internal-review remediation. Accepted: rerun in <code>ghcr.io/cirruslabs/flutter:3.27.1</code> with no edits to <code>mobile/</code> during it — see below.</li>
+      </ul>
+    </div>
+    @@GPT_ROUND2@@
+  </section>
+
+  <section>
+    <h2>Commit, push, release</h2>
+    @@SHIP_BODY@@
+  </section>
+
+  <section>
+    <h2>Where this is recorded</h2>
+    <ul>
+      <li><code>core/G17_SCOPE.md</code> — the gate's invariant and what is outside it.</li>
+      <li><code>core/DECISION_LOG.md</code>, entry "G17 — the Form Coach figure is the design reference's figure".</li>
+      <li>Rosetta plan <code>fitness_app-2026-09-03T21-35-35-727Z-06c378</code>, GPT-PM requests <code>6f1c2a58…</code> (rev1, BLOCKER) and <code>b3e7d2a4…</code> (rev2, APPROVE).</li>
+    </ul>
+  </section>
+</div>

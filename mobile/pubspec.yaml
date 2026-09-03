@@ -183,6 +183,16 @@ flutter:
     # party to credit. Stated because every other image directory here does have
     # one, and silence would read as an omission.
     - assets/coach_bg/
+    # G17. The Form Coach demonstration: the design reference's own clip
+    # (`core/design/reference/fitness_hud_v1/uploads/clip2-*.mp4`, a real
+    # person squatting side-on with a lit skeleton) cropped to 9:16 around the
+    # figure so the prototype's baked-in chrome is outside the frame, 540x960,
+    # 10 s loop, ~680 KB, plus its first frame as a poster for the moment
+    # before the decoder is ready and for reduce-motion. Bundled for the same
+    # reason the backdrops are: it is the first thing on the picker, and the
+    # operator's requirement is that it looks exactly like the reference — a
+    # drawn figure standing in for it was rejected on device (2026-09-04).
+    - assets/coach_demo/
 
   # The two families the design uses, bundled rather than fetched.
   #

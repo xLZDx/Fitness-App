@@ -201,12 +201,14 @@ void main() {
   /// already requires real asset I/O to be awaited in a widget test.
   Future<void> precacheBackdrop(WidgetTester tester, ProviderContainer c) async {
     final path = c.read(coachBackdropProvider);
-    await tester.runAsync(
-      () => precacheImage(
-        AssetImage(path),
-        tester.element(find.byType(FormCheckPage)),
-      ),
-    );
+    final element = tester.element(find.byType(FormCheckPage));
+    await tester.runAsync(() => precacheImage(AssetImage(path), element));
+    // G17: the demonstration's poster, for the same reason. A widget test has
+    // no video platform, so the clip falls back to its poster — which is the
+    // honest picture of the picker here, and it has to be decoded on this
+    // container's clock too.
+    await tester.runAsync(() => precacheImage(
+        const AssetImage('assets/coach_demo/squat_side_poster.jpg'), element));
     await tester.pump();
   }
 

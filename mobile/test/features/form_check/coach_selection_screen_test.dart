@@ -98,9 +98,17 @@ Future<void> _pumpToSelection(WidgetTester t, ProviderContainer c) async {
   await t.pump();
 }
 
-/// The demonstration's painter for the frame currently on screen.
-CustomPainter _demoPainter(WidgetTester t) =>
-    t.widget<CustomPaint>(find.byKey(const Key('form_check.demo'))).painter!;
+/// The drawn demonstration's painter for the frame currently on screen.
+///
+/// G17: the squat demonstrates with the reference clip, so the painter
+/// comparisons below select a movement that is still DRAWN (the curl). The
+/// clip's own "it moves" is `coach_demo_test.dart`'s lifecycle contract.
+CustomPainter _demoPainter(WidgetTester t) => t
+    .widget<CustomPaint>(find.byKey(const Key('form_check.demo_figure')))
+    .painter!;
+
+final _clip = find.byKey(const Key('form_check.demo_clip'));
+final _figure = find.byKey(const Key('form_check.demo_figure'));
 
 void main() {
   testWidgets(
@@ -116,10 +124,12 @@ void main() {
     expect(find.byKey(const Key('coach.selection.start')), findsOneWidget);
     expect(find.text('Нажмите когда готовы'), findsOneWidget);
     expect(find.byKey(const Key('form_check.demo')), findsOneWidget);
-    // A `CustomPaint` announces nothing on its own, so the screen's main
-    // content would otherwise be a silent hole for a screen reader.
+    expect(_clip, findsOneWidget, reason: 'the squat is the reference clip');
+    // Neither a video texture nor a `CustomPaint` announces anything on its
+    // own, so the screen's main content would otherwise be a silent hole for
+    // a screen reader.
     expect(
-        find.bySemanticsLabel('Показ выбранного движения: силуэт повторяет его'),
+        find.bySemanticsLabel('Показ выбранного движения: фигура выполняет его'),
         findsOneWidget);
 
     // «оставить только». The banners moved to the intro card in the previous
@@ -166,6 +176,8 @@ void main() {
     _phoneSized(t);
     final c = _container(_SilentService());
     await _pumpToSelection(t, c);
+    await t.tap(find.byKey(const Key('form_check.exercise.curl')));
+    await t.pump();
 
     final first = _demoPainter(t);
     await t.pump(const Duration(milliseconds: 500));
@@ -173,7 +185,7 @@ void main() {
 
     expect(identical(first, later), isFalse);
     expect(first.shouldRepaint(later), isTrue,
-        reason: 'the demonstrated pose is the same at both times');
+        reason: 'the demonstrated pose is not the same at both times');
   });
 
   testWidgets('the demonstration follows the chosen movement', (t) async {
@@ -182,14 +194,23 @@ void main() {
     await _pumpToSelection(t, c);
 
     expect(c.read(selectedExerciseProvider), FormExercise.squat);
-    final squat = _demoPainter(t);
+    expect(_clip, findsOneWidget, reason: 'the squat: the reference clip');
+    expect(_figure, findsNothing);
 
     await t.tap(find.byKey(const Key('form_check.exercise.curl')));
     await t.pump();
     expect(c.read(selectedExerciseProvider), FormExercise.curl);
+    // No clip for the curl yet, so the drawn figure — in the same look —
+    // takes over the panel rather than a squat clip pretending to be a curl.
+    expect(_clip, findsNothing);
+    expect(_figure, findsOneWidget);
+    final curl = _demoPainter(t);
+
+    await t.tap(find.byKey(const Key('form_check.exercise.lunge')));
+    await t.pump();
     // Same animation clock, different movement: whatever the loop is doing,
     // the shape being drawn changed with the chip.
-    expect(squat.shouldRepaint(_demoPainter(t)), isTrue);
+    expect(curl.shouldRepaint(_demoPainter(t)), isTrue);
   });
 
   testWidgets('the start button is what opens the camera', (t) async {

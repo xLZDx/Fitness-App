@@ -520,7 +520,7 @@
   "formcheckExerciseLunge": "Выпад",
   "formcheckExerciseSitup": "Скручивание",
   "formcheckExerciseOverheadPress": "Жим над головой",
-  "formcheckCueSilhouetteMissed": "Вы не дошли до силуэта. Повторите форму на экране.",
+  "formcheckCueSilhouetteMissed": "Вы не дошли до целевой формы. Повторите движение как в демонстрации.",
   "formcheckSilhouetteMatch": "Совпадение: {percent}%",
   "formcheckRuleSilhouetteMatch": "Совпадение с силуэтом",
   "formcheckGateUnitMismatch": "Это сбой на нашей стороне: камера отдаёт координаты, которые приложение не может разобрать. Подсчёт и проверка техники приостановлены.",
@@ -1253,7 +1253,7 @@
   "formcheckPrepClothingSub": "Не белое на белой стене",
   "formcheckPrepOpenCamera": "Готово — разрешить камеру",
   "formcheckSelectionStart": "Нажмите когда готовы",
-  "formcheckSelectionDemoSemantics": "Показ выбранного движения: силуэт повторяет его",
+  "formcheckSelectionDemoSemantics": "Показ выбранного движения: фигура выполняет его",
   "photosConsentTitle": "Перед первым фото прогресса",
   "photosConsentOnDevice": "Фото шифруется на этом телефоне. Копии на сервере нет, и отсюда его нельзя ни отправить, ни выгрузить.",
   "photosConsentNoBackup": "Из этого же следует, что резервной копии нет. Переустановка приложения или потеря ключа — и фото не восстановит никто.",
@@ -1425,7 +1425,7 @@
   "@formcheckExplainPushupSagging": {
       "description": "Form coach fault explanation (gate G7): the push-up rule at severity 2."
   },
-  "formcheckExplainSilhouetteMissed": "Повторение не дошло до формы на экране. Тренер сравнивает положение суставов с силуэтом целиком, поэтому дело может быть и в глубине, и в наклоне корпуса — двигайтесь медленнее и следите за контуром.",
+  "formcheckExplainSilhouetteMissed": "Повторение не дошло до целевой формы. Тренер сравнивает положение суставов с эталонной позой целиком, поэтому дело может быть и в глубине, и в наклоне корпуса — двигайтесь медленнее, как в демонстрации.",
   "@formcheckExplainSilhouetteMissed": {
       "description": "Form coach fault explanation (gate G7): the silhouette-match rule."
   },

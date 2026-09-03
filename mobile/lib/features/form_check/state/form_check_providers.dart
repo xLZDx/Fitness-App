@@ -490,6 +490,24 @@ final avatarCannotPlaceBodyProvider = Provider<bool>((ref) {
   return figure != null && figure.torso.isEmpty;
 });
 
+/// Whether the live panel currently has a body to draw — the avatar in avatar
+/// mode, the skeleton over the camera otherwise.
+///
+/// G17. The demonstration is shown exactly while this is false: the reference
+/// has one figure on the panel at a time, and the operator asked for the
+/// demonstration to give way to the user's own figure the moment there is one
+/// («либо динамический двигающийся ... или вообще без него»). One provider
+/// rather than two conditions in the widget, so the status band and the panel
+/// cannot reach different conclusions about whether somebody is there — the
+/// same reason [avatarFigureProvider] exists.
+final coachBodyDrawableProvider = Provider<bool>((ref) {
+  if (ref.watch(avatarModeProvider)) {
+    final figure = ref.watch(avatarFigureProvider);
+    return figure != null && figure.torso.isNotEmpty;
+  }
+  return ref.watch(stabilisedBodyProvider) != null;
+});
+
 /// Whether the coach is about to tell the user to do something, so everything
 /// else on the page should get out of the way.
 ///

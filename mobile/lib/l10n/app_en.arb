@@ -1087,7 +1087,7 @@
   "formcheckExerciseLunge": "Lunge",
   "formcheckExerciseSitup": "Crunch",
   "formcheckExerciseOverheadPress": "Overhead press",
-  "formcheckCueSilhouetteMissed": "You did not reach the outline. Match the shape on screen.",
+  "formcheckCueSilhouetteMissed": "You did not reach the target shape. Repeat the movement as demonstrated.",
   "formcheckSilhouetteMatch": "Match: {percent}%",
   "formcheckRuleSilhouetteMatch": "Matching the outline",
   "@formcheckSilhouetteMatch": {
@@ -2282,7 +2282,7 @@
   "formcheckPrepClothingSub": "Not white against a white wall",
   "formcheckPrepOpenCamera": "Ready - allow the camera",
   "formcheckSelectionStart": "Press when you are ready",
-  "formcheckSelectionDemoSemantics": "Demonstration of the chosen movement: a silhouette repeating it",
+  "formcheckSelectionDemoSemantics": "Demonstration of the chosen movement: a figure performing it",
   "photosConsentTitle": "Before your first progress photo",
   "photosConsentOnDevice": "The photo is encrypted on this phone. There is no copy on a server, and nothing here can share or export one.",
   "photosConsentNoBackup": "Which also means there is no backup. Reinstalling the app, or losing its key, loses the photos - nobody can restore them for you.",
@@ -2544,7 +2544,7 @@
   "@formcheckExplainPushupSagging": {
       "description": "Form coach fault explanation (gate G7): the push-up rule at severity 2."
   },
-  "formcheckExplainSilhouetteMissed": "The repetition did not reach the shape on screen. The coach compares your joints against the whole silhouette, so this can be depth or trunk angle alike — move slower and follow the outline.",
+  "formcheckExplainSilhouetteMissed": "The repetition did not reach the target shape. The coach compares your joints against the whole reference pose, so this can be depth or trunk angle alike — move slower, as in the demonstration.",
   "@formcheckExplainSilhouetteMissed": {
       "description": "Form coach fault explanation (gate G7): the silhouette-match rule."
   },

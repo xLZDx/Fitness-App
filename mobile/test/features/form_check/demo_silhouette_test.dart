@@ -11,27 +11,32 @@ import 'package:fitness_app/features/form_check/data/rep_counter.dart';
 import 'package:fitness_app/features/form_check/form_check_page.dart';
 import 'package:fitness_app/features/form_check/state/form_check_providers.dart';
 
-/// Which screen shows the movement, and which shows the shape to hit.
+/// Which screen shows the movement — and that nothing shows the old outline.
 ///
-/// Operator, after the first silhouette build: *"лучше добавить анимацию как
-/// правильно надо делать и юзер должен попытаться попадать в силуэт на экране
-/// хотя бы на 80%"*. Both halves of that, and they cannot be on screen at the
-/// same time: an outline that keeps moving is not one you can be 80% inside.
+/// **G17 (2026-09-04) superseded the split this file used to pin.** From
+/// 2026-09-02 the picker owned the demonstration and the live screen owned a
+/// STILL white target outline, "visible from the very first frame" (GPT-PM,
+/// `VERDICT: MAJOR`). The operator (CEO) overruled that on a real S23 after
+/// the outline had been through three rounds of repair: filled, composed and
+/// tested, it still read as an abstract shape and not as a person, and the
+/// design reference never had one — its figure is a video of a real person.
+/// So:
 ///
-/// **The split is now BY SCREEN, not by moment within one screen.** These
-/// tests used to assert that the live screen demonstrated until the first
-/// repetition and then handed over. It no longer demonstrates at all: the
-/// picker owns the demonstration, the live screen owns the target. Decided by
-/// GPT-PM on 2026-09-02 (`VERDICT: MAJOR`) against the redesign's own point 2
-/// and point 4, superseding the 2026-08-31 instruction that had put the loop
-/// on the live screen — ending the loop at the first rep would have left the
-/// same defect running for the first rep of every set.
+/// - the picker demonstrates the movement (the reference clip for the squat,
+///   the avatar-styled figure for every other authored movement);
+/// - the live screen shows the SAME demonstration while there is nobody to
+///   draw, and the user's own figure once there is (`live_demo_test.dart`
+///   covers the hand-over);
+/// - the white target outline (`form_check.silhouette`) exists on NO screen
+///   in NO state. That is the structural half of the operator's requirement,
+///   and a widget test is the only thing that can prove it — a screenshot
+///   proves the pixels, not the tree.
 ///
-/// The interpolation itself is pinned in `pose_target_test.dart`. What is
-/// checked here is that each screen shows its own one thing, and that neither
-/// is painted over a camera that is not running.
+/// Scoring still reads the same targets; only the drawing changed.
 
 final _demo = find.byKey(const Key('form_check.demo'));
+final _clip = find.byKey(const Key('form_check.demo_clip'));
+final _figure = find.byKey(const Key('form_check.demo_figure'));
 final _target = find.byKey(const Key('form_check.silhouette'));
 
 Widget _page(ProviderContainer c) => UncontrolledProviderScope(
@@ -45,20 +50,17 @@ Widget _page(ProviderContainer c) => UncontrolledProviderScope(
       ),
     );
 
-ProviderContainer _container({CoachPhase phase = CoachPhase.qualityCheck}) {
+ProviderContainer _container({
+  CoachPhase phase = CoachPhase.qualityCheck,
+  bool avatar = false,
+}) {
   // An empty fixture list: start() completes at once and no frame ever
   // arrives, which is precisely the state the demonstration is for.
   final c = ProviderContainer(overrides: [
     poseDetectorServiceProvider
         .overrideWithValue(MockPoseDetectorService(const [])),
-    // R11h: this file's subject is the camera UI, so it starts where
-    // that UI lives instead of tapping through the two intro cards.
     coachInitialPhaseProvider.overrideWithValue(phase),
-    // And camera mode specifically, since 2026-08-15 flipped the default. The
-    // demonstration and the target outline are both fitted to the PANEL; the
-    // avatar is placed where the body is, and Gate A stopped the two being
-    // drawn together. This file is about the panel-fitted pair.
-    avatarModeProvider.overrideWith((_) => false),
+    avatarModeProvider.overrideWith((_) => avatar),
   ]);
   addTearDown(c.dispose);
   return c;
@@ -72,9 +74,8 @@ void _phoneSized(WidgetTester t) {
 }
 
 void main() {
-  testWidgets('the picker is where the movement is demonstrated', (t) async {
-    // The positive control for every "no demo" assertion below. Without it,
-    // deleting the demonstration from the app entirely would pass this file.
+  testWidgets('the picker demonstrates the movement — the reference clip for '
+      'the squat', (t) async {
     _phoneSized(t);
     final c = _container(phase: CoachPhase.selection);
     await t.pumpWidget(_page(c));
@@ -82,30 +83,55 @@ void main() {
     await t.pump();
 
     expect(find.byKey(const Key('coach.selection.demo')), findsOneWidget);
-    expect(_demo, findsOneWidget, reason: 'the loop itself, not just its host');
-    expect(_target, findsNothing,
-        reason: 'nothing to aim at yet — the camera has not started');
+    expect(_demo, findsOneWidget, reason: 'the host, not just its panel');
+    expect(_clip, findsOneWidget, reason: 'the squat is the reference clip');
+    expect(_figure, findsNothing);
+    expect(_target, findsNothing);
   });
 
-  testWidgets('the live screen shows the target from the very first frame',
-      (t) async {
-    // Before any repetition, which is exactly the window the old behaviour
-    // filled with an animation. A user who has just pressed «Нажмите когда
-    // готовы» needs the shape to arrive at, not a preview of it.
+  testWidgets('and the drawn figure for a movement without a clip', (t) async {
+    _phoneSized(t);
+    final c = _container(phase: CoachPhase.selection);
+    c.read(selectedExerciseProvider.notifier).state = FormExercise.curl;
+    await t.pumpWidget(_page(c));
+    await t.pump();
+    await t.pump();
+
+    expect(_demo, findsOneWidget);
+    expect(_figure, findsOneWidget,
+        reason: 'no movement lost its demonstration when the squat got a clip');
+    expect(_clip, findsNothing);
+    expect(_target, findsNothing);
+  });
+
+  testWidgets('the live screen shows the demonstration while nobody is '
+      'tracked, camera mode', (t) async {
+    // The window the old outline filled. A user who has just pressed «Нажмите
+    // когда готовы» sees the movement being performed, not a shape.
     _phoneSized(t);
     final c = _container();
     await t.pumpWidget(_page(c));
     await t.pump();
     await t.pump();
 
-    expect(_demo, findsNothing,
-        reason: 'an outline that keeps moving is not one you can be 80% '
-            'inside; the picker already demonstrated it');
-    expect(_target, findsOneWidget);
+    expect(_demo, findsOneWidget);
+    expect(_clip, findsOneWidget);
+    expect(_target, findsNothing);
   });
 
-  testWidgets('and still shows it once repetitions are being counted',
-      (t) async {
+  testWidgets('and in avatar mode, the default', (t) async {
+    _phoneSized(t);
+    final c = _container(avatar: true);
+    await t.pumpWidget(_page(c));
+    await t.pump();
+    await t.pump();
+
+    expect(_demo, findsOneWidget);
+    expect(_target, findsNothing);
+  });
+
+  testWidgets('still demonstrating once repetitions are being counted but '
+      'the body is not readable', (t) async {
     _phoneSized(t);
     final c = _container();
     await t.pumpWidget(_page(c));
@@ -117,12 +143,11 @@ void main() {
         const RepSessionState(repCount: 1, isArmed: true);
     await t.pump();
 
-    expect(_demo, findsNothing);
-    expect(_target, findsOneWidget);
+    expect(_demo, findsOneWidget);
+    expect(_target, findsNothing);
   });
 
-  testWidgets('and mid-descent, when the user most needs something to hit',
-      (t) async {
+  testWidgets('and mid-descent', (t) async {
     _phoneSized(t);
     final c = _container();
     await t.pumpWidget(_page(c));
@@ -133,14 +158,14 @@ void main() {
         const RepSessionState(phase: RepPhase.descending, isArmed: true);
     await t.pump();
 
-    expect(_demo, findsNothing);
-    expect(_target, findsOneWidget);
+    expect(_demo, findsOneWidget);
+    expect(_target, findsNothing);
   });
 
-  testWidgets('a movement with no authored demonstration shows the target',
+  testWidgets('a movement with nothing authored demonstrates nothing',
       (t) async {
-    // The deadlift has a rep signal but no target pair. Neither outline is
-    // drawn rather than half of one.
+    // The deadlift has a rep signal but no target pair. Nothing is drawn
+    // rather than half of something.
     _phoneSized(t);
     final c = _container();
     c.read(selectedExerciseProvider.notifier).state = FormExercise.deadlift;
@@ -149,7 +174,7 @@ void main() {
     await t.pump();
 
     expect(_demo, findsNothing);
-    expect(_target, findsNothing, reason: 'the deadlift has no target either');
+    expect(_target, findsNothing);
   });
 
   testWidgets('nothing is demonstrated over a camera that is not running',

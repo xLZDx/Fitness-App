@@ -1,0 +1,199 @@
+<title>Фигура из референса</title>
+<style>
+  :root{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+      --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+      --accent:#4f8f1f; --accent-dim:#dff2c9;
+      --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f3f4f7; --surface:#ffffff; --surface-2:#eceff4; --border:#dbe0e8;
+    --ink:#1b2129; --ink-dim:#5b6472; --ink-mute:#8892a0;
+    --accent:#4f8f1f; --accent-dim:#dff2c9;
+    --info:#1f6fa3; --warn:#9a6a11; --block:#a83f1e;
+  }
+  :root[data-theme="dark"]{
+    --bg:#12151a; --surface:#181c23; --surface-2:#1f2530; --border:#2a3140;
+    --ink:#e9edf3; --ink-dim:#9aa5b6; --ink-mute:#6b7688;
+    --accent:#8fe94b; --accent-dim:#4c7a2a;
+    --info:#5eb3e0; --warn:#e0b04a; --block:#e0704a;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;line-height:1.55;}
+  .wrap{max-width:940px;margin:0 auto;padding:48px 24px 80px;}
+  header{border-bottom:1px solid var(--border);padding-bottom:28px;margin-bottom:8px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 10px;}
+  h1{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(28px,4vw,38px);font-weight:600;margin:0 0 12px;text-wrap:balance;letter-spacing:-.01em;}
+  .lede{color:var(--ink-dim);font-size:16px;max-width:66ch;margin:0;}
+  h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:20px;font-weight:600;margin:0 0 14px;letter-spacing:-.005em;}
+  h3{font-size:15px;font-weight:600;margin:0 0 6px;color:var(--ink);}
+  section{margin-top:44px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:14px;}
+  .status{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:6px;margin-bottom:10px;}
+  .status.done{background:var(--accent-dim);color:var(--accent);}
+  .status.blocked{background:color-mix(in srgb, var(--block) 18%, transparent);color:var(--block);}
+  .status.info{background:color-mix(in srgb, var(--info) 16%, transparent);color:var(--info);}
+  .status.pending{background:color-mix(in srgb, var(--warn) 18%, transparent);color:var(--warn);}
+  p{margin:8px 0;color:var(--ink);}
+  .dim{color:var(--ink-dim);}
+  .muted{color:var(--ink-mute);font-size:13px;}
+  ul{margin:8px 0;padding-left:20px;}
+  li{margin:4px 0;}
+  code, .path{font-family:var(--mono);font-size:.92em;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 6px;}
+  a{color:var(--info);text-decoration:none;border-bottom:1px solid color-mix(in srgb, var(--info) 40%, transparent);}
+  a:hover{border-bottom-color:var(--info);}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th{text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-mute);padding:8px 10px;border-bottom:1px solid var(--border);}
+  td{padding:10px;border-bottom:1px solid var(--border);vertical-align:top;}
+  tr:last-child td{border-bottom:none;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;}
+  .tablewrap table{border:none;}
+  .verdict-major{color:var(--warn);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-block{color:var(--block);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .verdict-approve{color:var(--accent);font-family:var(--mono);font-size:12px;font-weight:700;}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px;}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+  .stat .n{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .stat .l{font-size:12px;color:var(--ink-mute);margin-top:2px;}
+  .commit{font-family:var(--mono);font-size:13px;}
+  blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--border);color:var(--ink-dim);font-size:14px;}
+  .shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-top:14px;}
+  .shot img{width:100%;height:auto;border-radius:10px;border:1px solid var(--border);display:block;}
+  .shot figcaption{font-size:12px;color:var(--ink-dim);margin-top:6px;}
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App / Form Coach — гейт G17, план Rosetta rev2, GPT-PM APPROVE</p>
+    <h1>Фигура в тренере по технике — это фигура из референса</h1>
+    <p class="lede">Оператор больше десяти раз просил, чтобы демонстрация была на сто процентов как в макете, а во время упражнения был тот же силуэт, только выполняющий движение. Три починки белого контура (заливка, унификация, компоновка — последняя вчера, ce770910, с APPROVE и зелёными тестами) чинили геометрию контура и ни разу не спросили, нужен ли контур вообще. Референс отвечает сам: за HUD в макете стоит видео реального человека, а «силуэт» — это тёмная фигура на этом видео. Теперь в приложении именно она.</p>
+  </header>
+
+  <section>
+    <h2>Итог</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="n">723 / 723</div><div class="l">form_check + theme + l10n, Windows</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">голдена перегенерированы в CI-образе и проверены глазами</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">телефона: S23 и S8, клип играет в пикере и на живом экране</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">белых контуров: <code>form_check.silhouette</code> нет ни в одном дереве</div></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <span class="status done">Сделано</span>
+      <p>Присед в пикере и на живом экране до появления человека — сам референсный клип (540×960, 10 с, 680 КБ), встроенный в приложение. Остальные движения — та же тёмная фигура со светящимися костями, что рисует аватар, анимированная между двумя авторскими концами движения. Как только в кадре появляется тело, демонстрация растворяется за фигурой пользователя за 300 мс и декодер останавливается только после того, как затухание закончилось. Скелет в режиме камеры перерисован по референсу (белые кости 3,4 px, зелёное/красное свечение, пульсирующее кольцо на ошибочном суставе), но остаётся за существующим переключателем — по умолчанию выключен, как потребовал GPT-PM.</p>
+    </div>
+    @@GPT_REVIEW_SUMMARY@@
+  </section>
+
+  <section>
+    <h2>Что просили и что было</h2>
+    <blockquote>«я уже больше 10 раз просил чтобы демо было 100% похоже на это и при упражнении был тот же силует только исполняющий упражнения, почему в двацатый раз это игнорируешь» — оператор, 2026-09-04, с прикреплённым скриншотом макета.</blockquote>
+    <p>Референс <code>core/design/reference/fitness_hud_v1/Fitness Form Coach Phone.dc.html</code>, строки 22–25: за HUD стоит видео <code>uploads/clip2-1786933639870-ww0q.mp4</code> — человек приседает боком, тёмный на фоне вечернего озера, на теле подсвеченный белый скелет. <code>README.md</code> §8, строка 109: в продукте слой свечения заменяется реальным pose-оверлеем — кости 3–3,4 px <code>#FFFFFF</code>, зелёное/красное свечение, пунктирное пульсирующее кольцо r=26 на ошибочном суставе.</p>
+    <p>В приложении вместо этого всегда и везде рисовался белый залитый <b>контур цели</b> (<code>_Silhouette</code> / <code>_SilhouettePainter</code>) — абстрактная форма, придуманная для скоринга, а не для показа. Слово «силуэт» в приложении с момента создания пикера читалось как этот контур; оператор этим словом называл тёмную фигуру из видео.</p>
+  </section>
+
+  <section>
+    <h2>План Rosetta: запланировано / критерий готовности / статус</h2>
+    <p class="muted">План <code>fitness_app-2026-09-03T21-35-35-727Z-06c378</code> (rev2), hash <code>75d08377…7a165</code>, база <code>c5c4b29f</code>. Rev1 (<code>…6a7e57</code>) отклонён GPT-PM с <span class="verdict-block">VERDICT: BLOCKER</span> и четырьмя обязательными изменениями — все приняты в rev2, который получил <span class="verdict-approve">VERDICT: APPROVE</span>.</p>
+    <div class="tablewrap"><table>
+      <tr><th>Запланировано</th><th>Критерий готовности (GPT-PM)</th><th>Статус</th><th>Хвост</th></tr>
+      <tr><td>Демо приседа = встроенный референсный клип, вырезанный 9:16 вокруг фигуры</td><td>Клип играет в пикере и на живом экране на S23 и S8; ROI-дифф двух кадров через 1 с &gt; 2 % пикселей панели с изменением &gt; 24/255</td><td><span class="status done">Сделано</span></td><td class="num">S23 пикер 31,7 %, живой 23,9 %; S8 пикер 33,8 %, живой 44,8 %</td></tr>
+      <tr><td>Остальные авторские движения — анимированная фигура в стиле аватара (MAJOR #2 rev1: ни одно движение не теряет демонстрацию)</td><td>Виджет-тест: пара целей из <code>poseTargetsFor</code>; на устройстве фигура двигается</td><td><span class="status done">Сделано</span></td><td>Единичные снимки попадали в замедление на концах 4-секундного цикла; 5-секундная запись экрана показала пики 5,7–6,5 % каждые ~2 с</td></tr>
+      <tr><td>Белый контур цели убран отовсюду</td><td><code>form_check.silhouette</code> не находится ни в одном тесте; голдены без контура</td><td><span class="status done">Сделано</span></td><td>—</td></tr>
+      <tr><td>Живая панель: демо только пока нет тела, кросс-фейд к фигуре пользователя</td><td>Тесты: нет тела → opacity 1 и play; тело → opacity 0 и pause после фейда; потеря тела → обратно; переход с телом на устройстве</td><td><span class="status pending">Частично</span></td><td>Все тесты есть, включая проверку середины фейда. Переход с реальным телом на устройстве <b>не получен в сессии</b>: перед камерами никого не было. По семантике плана это не блокирует</td></tr>
+      <tr><td>Скелет в режиме камеры перерисован по референсу, переключатель по умолчанию OFF (BLOCKER #1 rev1)</td><td>Стиль через общие хелперы; дефолт не тронут; включение дефолта — отдельный гейт с доказательствами на реальном теле</td><td><span class="status done">Сделано</span></td><td>На устройстве без тела скелету нечего рисовать; проверено только включение переключателя</td></tr>
+      <tr><td>Контракт жизненного цикла видео (MAJOR #3 rev1)</td><td>Каждое условие — виджет-тест против записывающего контроллера: active, фон/возврат, reduce-motion, ошибка, unmount</td><td><span class="status done">Сделано</span></td><td>После внутреннего ревью добавлены: ошибка play, ошибка декодера после старта, unmount во время открытия, reduce-motion на живом экране</td></tr>
+      <tr><td>Общие хелперы рисования фигуры</td><td>Аватар, рисованное демо и скелет камеры рисуют через один файл</td><td><span class="status done">Сделано</span></td><td><code>coach_figure_paint.dart</code></td></tr>
+      <tr><td>Тесты, голдены, документация</td><td>Затронутые файлы зелёные; голдены из CI-образа; <code>G17_SCOPE.md</code> + DECISION_LOG</td><td><span class="status done">Сделано</span></td><td>—</td></tr>
+      <tr><td>GPT-PM ревью коммита, коммит, push</td><td>Квитанция review.js, APPROVE, push после --final</td><td>@@ROW_REVIEW_STATUS@@</td><td>@@ROW_REVIEW_TAIL@@</td></tr>
+      <tr><td>Релизная сборка и раздача тестировщикам</td><td><code>build_release.ps1 -Distribute</code> завершился, версия записана</td><td>@@ROW_RELEASE_STATUS@@</td><td>@@ROW_RELEASE_TAIL@@</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Что изменилось в коде</h2>
+    <div class="card">
+      <ul>
+        <li><code>mobile/assets/coach_demo/squat_side.mp4</code> и <code>squat_side_poster.jpg</code> — из референсного клипа через ffmpeg: delogo нижнего тоста, crop 342×608 вокруг фигуры, scale 540×960, без звука, x264 crf 24. Строка «stand tall to start counting» оставлена в верхних 3–7 % кадра — в макете она там же; попытка её стереть смазала лицо и была отброшена. В <code>.gitignore</code> добавлено исключение для <code>mobile/assets/coach_demo/*.mp4</code>: без него файл, объявленный в pubspec, молча не попал бы в коммит.</li>
+        <li><code>widgets/coach_figure_paint.dart</code> — тело, кайма, свечение костей, точки суставов и кольцо ошибки, вынесенные из <code>_PoseAvatarPainter</code>.</li>
+        <li><code>widgets/coach_demo.dart</code> — <code>coachDemoFor(exercise)</code>: клип для приседа, пара целей для остальных, null для движений без целей; <code>DemoFigurePainter</code>.</li>
+        <li><code>widgets/coach_demo_clip.dart</code> — <code>video_player</code> 2.10.0 за инжектируемой фабрикой контроллера; играет только при active ∧ foreground ∧ ¬reduce-motion; любой сбой (открытие, play, pause, ошибка декодера) — постер остаётся, платформенный вид снимается, non-fatal в Crashlytics с тем же guard, что и в остальном приложении.</li>
+        <li><code>form_check_page.dart</code> — <code>_Silhouette</code> удалён; слой <code>_LiveDemo</code> с кросс-фейдом; пять слоёв панели получили ключи (незаключённые дети <code>Stack</code> перемонтировались при каждой смене статуса — для видео это перезапуск декодера); скелет камеры перерисован; часы демонстрации на живом экране работают, пока показана рисованная фигура.</li>
+        <li><code>coachBodyDrawableProvider</code> — один ответ на «есть ли фигура, которой передать панель» для обоих режимов.</li>
+        <li>l10n: три строки со словом «силуэт» теперь говорят о целевой форме и демонстрации; ключи прежние. Реестр белых литералов: 61 → 57.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Внутреннее ревью перед GPT-PM</h2>
+    <p class="dim">Три специалиста параллельно, вслепую: Flutter-lifecycle, functional-test, silent-failure. Всё принятое исправлено одним пакетом, каждое — с тестом.</p>
+    <div class="tablewrap"><table>
+      <tr><th>Находка</th><th>Основание</th><th>Что сделано</th></tr>
+      <tr><td><span class="verdict-major">MAJOR</span> play/pause без наблюдения futures; нет слушателя <code>value.hasError</code>; сбой только в <code>debugPrint</code></td><td>FACT</td><td>Один путь <code>_fail</code> для всех сбоев; Crashlytics non-fatal; тесты «декодер не хочет играть» и «декодер уронил клип посреди цикла»</td></tr>
+      <tr><td><span class="verdict-major">MAJOR</span> двойной dispose при unmount во время <code>initialize()</code></td><td>FACT (место вызова)</td><td>Второй dispose убран; тест с completer-ом на unmount во время открытия — ровно один dispose</td></tr>
+      <tr><td><span class="verdict-major">MAJOR</span> setLooping/setVolume до initialize могут не дойти до плеера</td><td>HYPOTHESIS → опровергнута</td><td><code>video_player-2.10.0/lib/video_player.dart:507–509</code> переприменяет их из события initialized. Оставлено как есть, с цитатой в комментарии</td></tr>
+      <tr><td><span class="verdict-major">MAJOR</span> тест передачи проверял только конечное состояние: пауза в начале фейда прошла бы</td><td>FACT</td><td>Ассерт на 150 мс внутри фейда: паузы нет; после — есть</td></tr>
+      <tr><td>MINOR, но самая важная: живой экран считал условие часов демо и через 45 строк безусловно вызывал <code>_syncDemo(false)</code></td><td>FACT</td><td>Рисованная демонстрация на живом экране была бы застывшим кадром для всех движений кроме приседа. Исправлено; тест «фигура двигается на живом экране, пока никого нет»</td></tr>
+      <tr><td>MINOR: при reduce-motion фейд нулевой длины завершается синхронно внутри build — <code>setState</code> из <code>onEnd</code> бросил бы исключение</td><td>INFERENCE → подтверждена по фреймворку</td><td>Сброс отложен в post-frame callback; тест с <code>FakeAccessibilityFeatures(disableAnimations: true)</code></td></tr>
+      <tr><td>Отложено: перезапуск клипа при смене <code>asset</code>; тест на снятие слоя демо при ошибке камеры</td><td>—</td><td>Недостижимо сегодня (один клип, свой ключ); ошибка камеры — существующая условная отрисовка. Записано в DECISION_LOG</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Доказательства с устройств</h2>
+    <p class="dim">Debug-сборка этого дерева, установлена поверх существующего <code>.debug</code>-пакета, управление через adb и uiautomator, скриншоты через screencap. Критерий воспроизведения — из плана: доля пикселей панели, сумма RGB которых сдвинулась больше чем на 24/255 между двумя кадрами через 1 с; больше 2 % — движется.</p>
+    <div class="shots">
+      <figure class="shot"><img alt="S23, пикер, присед: референсный клип на всю панель" src="@@IMG:s23_p_full@@"><figcaption>S23, пикер, присед. Клип во всю панель — <span class="num">31,7 %</span> пикселей меняется за секунду.</figcaption></figure>
+      <figure class="shot"><img alt="S23, живой экран без человека: клип за HUD" src="@@IMG:s23_l1@@"><figcaption>S23, живой экран, в кадре никого: клип за чипом, датчиками и статусом — <span class="num">23,9 %</span>.</figcaption></figure>
+      <figure class="shot"><img alt="S23, живой экран, нижняя часть панели" src="@@IMG:s23_l_full1@@"><figcaption>S23, та же панель после прокрутки; debug-строка <code>pose[pixels]</code> подтверждает живой путь камеры.</figcaption></figure>
+      <figure class="shot"><img alt="S23, пикер, сгибание на бицепс: рисованная фигура" src="@@IMG:s23_c1@@"><figcaption>S23, сгибание на бицепс: та же тёмная фигура со светящимися костями, что рисует аватар.</figcaption></figure>
+      <figure class="shot"><img alt="S8, живой экран без человека: клип за HUD" src="@@IMG:s8_l1@@"><figcaption>S8, живой экран, в кадре никого — <span class="num">44,8 %</span>. Пикер на S8 — <span class="num">33,8 %</span>.</figcaption></figure>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <span class="status info">Ложная тревога, оставлена в записи</span>
+      <p>Первый «живой» скриншот сессии показал на S23 старый белый контур. Это было релизное приложение v2978, оставшееся на экране тренера после тестов оператора и вернувшееся на передний план по BACK из домашнего экрана debug-сборки — <code>dumpsys window</code> показал <code>com.fitnessapp.fitness_app.sptr</code> без <code>.debug</code>. После этого пакет в фокусе проверялся перед каждым снимком.</p>
+    </div>
+    <div class="card">
+      <span class="status pending">Не получено в сессии</span>
+      <p>Передача панели от демонстрации к фигуре пользователя с реальным телом в кадре. Перед камерами никого не было; поведение доказано виджет-тестами <code>live_demo_test.dart</code> (фейд, затем пауза; обратно при потере тела). По семантике доказательств плана это не блокирует гейт.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>GPT-PM ревью коммита</h2>
+    <div class="card">
+      <span class="verdict-major">Раунд 1 — VERDICT: MAJOR</span>
+      <p class="muted">review.js --uncommitted, запрос <code>c1b2bbd2…</code>, ответ <code>9438af1e…</code>, scope note <code>G17_SCOPE.md</code>. Без BLOCKER; подмена на референсное видео, фолбэк для остальных движений, удаление контура, ключи слоёв, время жизни клипа до конца фейда, reduce-motion, общие хелперы и нетронутый дефолт скелета подтверждены как соответствующие утверждённому направлению. Три MAJOR, каждая проверена по коду перед действием:</p>
+      <ul>
+        <li><b>Отказ <code>pause()</code> оставлял декодер работать.</b> FACT: <code>_fail</code> только прятал вид и навсегда отключал <code>_sync</code>, контроллер освобождался лишь при размонтировании. Исправлено: сбой терминален и тих — контроллер отключается и освобождается (только если действительно открылся: у контроллера с упавшим <code>initialize</code> нет плеера, а настоящий <code>dispose</code> вечно ждал бы незавершённого создания). Тест: контроллер, у которого <code>pause</code> бросает и остаётся играющим, заканчивает ровно одним dispose.</li>
+        <li><b>Скелет камеры рисовал сырые landmarks поверх демонстрации.</b> FACT: <code>_SkeletonOverlay</code> смотрел на <code>latestPoseFrameProvider</code>, а не на стабилизированное тело, по которому происходит передача панели — при включённом переключателе частичная поза из комнаты (та самая «OUT OF CONTRACT» с S23) рисовала обрывки костей поверх клипа: две фигуры на панели. Исправлено: оверлей закрыт тем же <code>coachBodyDrawableProvider</code>. Тесты: режим камеры + переключатель, частичные кадры → демо видно, скелета нет; тело → демо скрыто, скелет есть.</li>
+        <li><b>Финальная проверка в Linux-контейнере не выполнена для итогового дерева.</b> FACT и честно признано в логе: прогон перекрылся с ремедиацией внутреннего ревью. Принято: повторный прогон в <code>ghcr.io/cirruslabs/flutter:3.27.1</code> без правок в <code>mobile/</code> во время него — см. ниже.</li>
+      </ul>
+    </div>
+    @@GPT_ROUND2@@
+  </section>
+
+  <section>
+    <h2>Коммит, push, релиз</h2>
+    @@SHIP_BODY@@
+  </section>
+
+  <section>
+    <h2>Где это записано</h2>
+    <ul>
+      <li><code>core/G17_SCOPE.md</code> — инвариант гейта и что вне его.</li>
+      <li><code>core/DECISION_LOG.md</code>, запись «G17 — the Form Coach figure is the design reference's figure».</li>
+      <li>Rosetta-план <code>fitness_app-2026-09-03T21-35-35-727Z-06c378</code>, запросы GPT-PM <code>6f1c2a58…</code> (rev1, BLOCKER) и <code>b3e7d2a4…</code> (rev2, APPROVE).</li>
+    </ul>
+  </section>
+</div>

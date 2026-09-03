@@ -568,8 +568,32 @@ void main() {
     // would be recolouring the reference rather than de-duplicating a
     // literal. It is a demonstration, so it has no verdict to recolour it by
     // in the first place.
+    //
+    // 61 -> 57, 2026-09-04 (G17, the figure = the design reference). Two
+    // movements, both inside the Form Coach and both category one (the
+    // figure's own drawing, never text on a surface):
+    //
+    //   * `form_check_page.dart` 17 -> 9. Four literals LEFT the app with the
+    //     white target outline: `_SilhouettePainter`'s own `Colors.white`
+    //     colour and `_paintDemoSkeleton`'s three (the 58 -> 61 entry above),
+    //     because the outline exists on no screen any more — the operator
+    //     rejected it on device after three rounds of repair, and the
+    //     reference never had one. The other four MOVED, not vanished: the
+    //     avatar's rim, bone halo, bone core and joint dots now live in
+    //   * `widgets/coach_figure_paint.dart`, 0 -> 4 — the one implementation
+    //     the avatar, the drawn demonstration and the camera-mode skeleton all
+    //     draw through, so the three cannot drift apart again. Same four
+    //     whites, same reference recipe (`Fitness Form Coach Phone.dc.html:45`,
+    //     `stroke="{{ line }}"`, white in every state, colour on a glow layer
+    //     behind), counted once instead of once per painter.
+    //
+    // The camera skeleton's own joint-dot literal stays in the page (the
+    // confidence-faded `Colors.white.withValues(alpha: 0.25 + 0.7 * ...)`),
+    // unchanged in kind; its bones are now drawn through the helper's whites
+    // instead of `AppPalette.auroraViolet`, which is a token going away, not
+    // a literal arriving. Net: 61 - 8 + 4 = 57.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 61, reason: 'per file: $whites');
+    expect(total, 57, reason: 'per file: $whites');
   });
 
   group('lerp', () {

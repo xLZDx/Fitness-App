@@ -41279,3 +41279,286 @@ artifact and handed over) and the English durable copy in the same
 directory. PM mode is on for this session -- continuing past this
 report rather than stopping on it, per SS18/the html-report skill's own
 "PM mode" section.
+
+
+## G17 -- the Form Coach figure is the design reference's figure
+## (2026-09-04; supersedes 2026-09-02 "picker owns the demonstration, live
+## screen owns the target" and yesterday's three outline repairs)
+
+**Trigger, operator, verbatim, with the reference screenshot attached:**
+"я уже больше 10 раз просил чтобы демо было 100% похоже на это и при
+упражнении был тот же силует только исполняющий упражнения, почему в
+двацатый раз это игнорируешь". Yesterday's composition fix (`ce770910`,
+GPT-PM APPROVE, goldens regenerated, 592/592 green) shipped as v2978 and
+was rejected on the S23 within minutes: the composed outline was
+correctly composed and still not what was asked for. Three rounds of
+repairing the white target outline -- filled (2026-09-01), unified onto
+`projectLandmark`, then fitted (2026-09-03) -- each fixed the outline's
+geometry and none asked whether an outline was the requested figure.
+
+**Root cause, read from the reference rather than the code.** `core/design/
+reference/fitness_hud_v1/Fitness Form Coach Phone.dc.html` lines 22-25 put a
+VIDEO behind the HUD (`uploads/clip2-1786933639870-ww0q.mp4`, 1280x720,
+10 s, 24 fps: a real person squatting side-on, dark against a dusk lake,
+white lit skeleton on the body, the prototype's own chrome baked into the
+frame). `README.md` SS8 line 109 says the product replaces the clip's glow
+layer with a real pose-overlay: bones 3-3.4 px `#FFFFFF`, green
+`rgba(110,255,130,.9)` / red `rgba(255,70,70,.95)` drop-shadow glow, a
+dashed pulsing ring r=26 `4 6` 1.1 s on the faulty joint. The figure in the
+mock is therefore the clip, and the figure during the exercise is the
+user's own body in the same visual language -- never a drawn target shape.
+The white outline had been read as "the silhouette" since the picker was
+built; the operator's word "силуэт" meant the dark figure in the video.
+
+**Plan, two revisions.** Rev1 (`fitness_app-2026-09-03T21-27-13-456Z-6a7e57`)
+was refused, `VERDICT: BLOCKER`, request `6f1c2a58-9b7e-4c4d-8e2a-
+3d5f7b9a1c21`, four required changes -- each adopted: (1) `showSkeleton
+Provider` stays default OFF; flipping it needs real-device tracked-body
+evidence on the production camera path (person off-centre, both lens/flip
+paths, S23 + S8), a separate gate; (2) every other authored movement keeps
+a demonstration -- the avatar's own figure animated between the movement's
+two authored ends, not "nothing"; (3) a video lifecycle/power contract with
+tests, not a decoder left running next to a camera and a pose detector;
+(4) evidence semantics named up front: structural = widget tests, visual =
+screenshots, playback = ROI pixel diff (>2 % of panel pixels changed by
+>24/255 between two frames 1 s apart), with-body transition on device.
+Rev2 (`fitness_app-2026-09-03T21-35-35-727Z-06c378`, hash `75d08377ee4d70
+eca2c09a1bc93173b4390048ad0d1a7621f44d2f725e97a165`, base `c5c4b29f`)
+`VERDICT: APPROVE`, request `b3e7d2a4-5c16-4f8b-9a0d-2e6f8c1b7d43`, reply
+`7db1463b-2077-4d4f-8ea8-e6cdad13b7f3`; GO recorded via `pm_rosetta_go`.
+Scope note: `core/G17_SCOPE.md`.
+
+**What shipped.**
+- `mobile/assets/coach_demo/squat_side.mp4` (680 KB, 540x960, 10 s loop) and
+  `squat_side_poster.jpg` (frame 0), derived from the reference clip with
+  ffmpeg 8.1: `delogo` on the bottom toast, `crop=342:608:392:50` to 9:16
+  around the figure (the "Form coach" bar and "reps 0" fall outside),
+  `scale=540:960` lanczos, `-an`, x264 crf 24 `+faststart`. A first cut
+  that delogo'd the "stand tall to start counting" line smeared the standing
+  face and was rejected; the line stays, at the top 3-7 % of the frame
+  under the exercise chip -- the reference artboard shows it there too.
+  Registered in `pubspec.yaml` under `assets/coach_demo/`.
+- `widgets/coach_figure_paint.dart` (new): the avatar's body fill, white
+  rim, glow bones, joint dots and fault ring extracted into shared helpers;
+  `_PoseAvatarPainter`, the drawn demonstration and the camera skeleton
+  all draw through them. One figure, one visual language.
+- `widgets/coach_demo.dart` (new): `coachDemoFor(exercise)` -> the clip for
+  the squat, `CoachDemoFigureSource(from, to)` for every other movement with
+  an authored target pair, null for none (deadlift, as pinned before);
+  `CoachDemo` mounts either under `form_check.demo`; `DemoFigurePainter`
+  lerps the pair through `fitSilhouette` on the union of both endpoints'
+  bounds (yesterday's stability fix, kept).
+- `widgets/coach_demo_clip.dart` (new): `video_player` 2.10.0 behind an
+  injectable controller factory. Plays only while `active` AND foreground
+  AND not reduce-motion; pauses otherwise; poster under it always; failure
+  -> poster, reported. See "Internal review" below for the shape this
+  ended up in.
+- `form_check_page.dart`: `_Silhouette`/`_SilhouettePainter` deleted
+  (`form_check.silhouette` exists in no tree); the picker's panel is
+  `CoachDemo`; the live panel gets a `_LiveDemo` layer that is visible
+  while `coachBodyDrawableProvider` is false and cross-fades out (300 ms,
+  `hudMotionDuration`) behind the user's own figure, deactivating the clip
+  only when the fade has ended; the five panel layers are keyed
+  (`form_check.layer.demo/avatar/skeleton/top_strip/cues`); the camera
+  skeleton (`_SkeletonPainter`) is the reference overlay -- 3.4 px white
+  bones with severity glow, faded joint dots, fault rings -- behind the
+  unchanged toggle. `_syncDemo` on the live screen now runs the clock
+  while the drawn demonstration is what is shown; the unconditional
+  `_syncDemo(false)` and the 35-line "the live screen never demonstrates"
+  comment it carried are gone -- that rule was about the outline.
+- `state/form_check_providers.dart`: `coachBodyDrawableProvider` -- avatar
+  mode: the avatar has a torso; camera mode: a stabilised body exists. The
+  one answer both modes use for "is there a figure to hand over to".
+- l10n: the three strings that said "silhouette" (`formcheckCueSilhouette
+  Missed`, `formcheckSelectionDemoSemantics`, `formcheckExplainSilhouette
+  Missed`) now say target shape / demonstration, ru + en. Keys unchanged.
+- `test/theme/app_semantic_colors_test.dart` ledger: 61 -> 57 raw white
+  literals (the outline painter's four gone, `coach_figure_paint.dart`'s
+  four are the avatar's own, moved).
+
+**Found while building, recorded because it was invisible before.**
+`Stack` pairs unkeyed children by position from the bottom, and the panel's
+cue column comes and goes with `instructing` -- so every status change
+re-inflated the avatar and skeleton layers (a silent rebuild for a
+`CustomPaint`, a re-initialised decoder for a video, a controller used
+after dispose in the widget test). Keyed now; `live_demo_test.dart` asserts
+the clip mounts exactly once across the nobody -> body transition that
+flips the column, which is the transition that used to remount it.
+
+**Internal review before GPT-PM (SS17 sequencing), three specialists in
+parallel, cold.** Flutter lifecycle, functional-test, silent-failure.
+Findings accepted and fixed in one batch:
+- silent-failure MAJOR x3, all FACT on `coach_demo_clip.dart`: `play()`/
+  `pause()` futures were fire-and-forget; no listener on the controller's
+  own error channel after a successful open; `_failed` surfaced only via
+  `debugPrint`, which is exactly the channel a release build on a phone
+  does not have. Now every path -- open, play, pause, `value.hasError` --
+  lands in one `_fail` that keeps the poster, drops the platform view, and
+  records a non-fatal through `FirebaseCrashlytics.instance.recordError`
+  under the same try/catch guard `mlkit_live_equipment_service.dart` and
+  `main.dart` use (telemetry never breaks the feature; no app in
+  `flutter test`). Tests: a decoder that opens but refuses to play, a
+  decoder that drops the clip mid-loop (and that the fallback is final).
+- Flutter MAJOR (FACT at the call site): unmount while `initialize()` is
+  in flight disposed the controller twice (`State.dispose`, then `_open`'s
+  `!mounted` branch). `video_player` 2.10.0 guards the platform dispose
+  with `_isDisposed`, so it was a debug-assert risk, not a leak; the second
+  dispose is removed and a test with a completer-gated `initialize`
+  asserts exactly one.
+- Flutter MAJOR (HYPOTHESIS) that `setLooping`/`setVolume` before
+  `initialize()` might not reach the native player: FALSIFIED against the
+  installed package source -- `video_player-2.10.0/lib/video_player.dart`
+  507-509 re-applies looping, volume and play/pause from the initialized
+  event. Left as written, with the citation in a comment.
+- Flutter MINOR, FACT, the one that mattered most: the live screen's
+  `build()` computed the G17 demo-clock condition and then, 45 lines
+  later, still called `_syncDemo(false)` unconditionally -- the drawn
+  demonstration for every non-squat movement would have been a frozen
+  frame on the live screen, and no test looked. Fixed; test "the drawn
+  demonstration moves on the live screen while nobody is tracked" (curl,
+  two painter targets 500 ms apart must differ).
+- silent-failure MINOR, INFERENCE, confirmed by reading the framework:
+  under reduce motion `AnimatedOpacity`'s duration is zero and
+  `AnimationController.forward()` completes synchronously inside the
+  widget's own `didUpdateWidget`, so `onEnd` ran during build and its
+  `setState` on `_LiveDemo` would have thrown for exactly the users
+  reduce-motion serves. The reset is deferred to a post-frame callback and
+  re-checked on arrival; test with `FakeAccessibilityFeatures(disable
+  Animations: true)` asserts the clip ends inactive and never played.
+- functional-test MAJOR, FACT: the hand-over test only checked the settled
+  state, so pausing at the START of the fade (freezing the last frame
+  mid-fade) would have passed. Added the mid-fade assertion: 150 ms into
+  the fade, no `pause`; after it, `pause`.
+- Deferred, recorded: `CoachDemoClip` does not reopen on an `asset`
+  change (unreachable today -- one clip, mounted under its own key; a
+  second clip needs an asset-derived key or a reopen); page-level camera
+  failure tearing the demo layer down is pre-existing conditional
+  rendering, not re-tested here.
+
+**Verification.**
+- Windows, after the mandatory `flutter clean && pub get` following the
+  container's own `pub get` (the `.dart_tool` collision recorded in
+  memory): the five touched test files 60/60; `flutter analyze` on
+  `lib/features/form_check` + `test/features/form_check` clean apart from
+  one pre-existing unused import in `coach_hud_test.dart` (untouched).
+- Linux `ghcr.io/cirruslabs/flutter:3.27.1` (the CI image): the three
+  form-coach goldens regenerated and inspected by eye -- the picker shows
+  the reference clip's first frame (the poster: in a widget test the video
+  platform is unimplemented, so the clip fails soft, which is the contract
+  working), the live and faulted screens show the avatar figure and no
+  outline anywhere. The container's suite run after the goldens overlapped
+  the internal-review remediation on the same bind mount, so it is not
+  cited as evidence; the Windows runs below are.
+- Windows, full `test/features/form_check test/theme test/l10n` after the
+  internal-review remediation: 723/723.
+- Devices, debug build of this tree (`app-debug.apk`, arm64, 01:50),
+  installed over the existing `.debug` package on both phones, driven by
+  adb + uiautomator, screenshots pulled with `screencap`, playback judged
+  by the plan's own criterion (fraction of panel pixels whose RGB sum
+  moved by more than 24/255 between two frames 1 s apart; >2 % = moving):
+  - S23 (`R5CW142SASR`, 1080x2316) picker, squat: the reference clip, the
+    real person with the lit skeleton, filling the 9:16 panel -- 31.7 %
+    moving. Live screen, nobody in frame, avatar mode: the clip plays
+    behind the HUD (chip, gauges, status pill) -- 23.9 % moving. Avatar
+    toggled off: still the clip, 41.6 % moving, over the (hidden under it)
+    camera; skeleton toggle on: nothing to draw, nobody tracked. The
+    debug-only `pose[pixels]` readout confirmed the camera path was live
+    (n=15 "in contract" in avatar mode, n=41 "OUT OF CONTRACT" in camera
+    mode) -- a partial spurious pose from the room, which is exactly the
+    "body the avatar cannot place keeps the demonstration up" case the
+    widget test pins, seen on hardware. Toggles restored afterwards.
+  - S23 picker, curl (drawn figure): two frames 0.7 s apart came out 0.06 %
+    -- and three more pairs 0.5 s apart 0.13-0.27 % -- because the cycle is
+    4 s with `easeInOutCubic` at both ends, so single snapshots kept
+    landing in the slow turnaround. A 5 s `screenrecord` sampled at 4 fps
+    settles it: consecutive-frame change peaks at 5.7 %, 6.5 %, 5.7 %
+    every ~2 s (the arm swinging through the middle of the curl), 0.1-0.3 %
+    at the ends; first frame vs frame 10: 6.1 %. The drawn demonstration
+    moves on device.
+  - S8 (`ce02171299f0711005`, 1080x2220 override): picker squat clip
+    33.8 % moving; live screen, nobody in frame, clip behind the HUD
+    44.8 % moving. The S8 needs ~20 s to reach the home screen and ~10 s
+    per navigation; the first automated pass timed out on it, not a
+    product finding.
+  - With-body hand-over on device: **not obtained in-session** -- nobody
+    was in front of either camera; it is proven by `live_demo_test.dart`
+    (fade, then pause; fade back on losing the body) and does not gate,
+    per the plan's own evidence semantics.
+  - A false alarm worth keeping: the first "live" screenshot of the
+    session showed the OLD white outline on the S23. It was the RELEASE
+    app (v2978) -- left on the Form Coach screen by the operator's own
+    testing and brought back to the foreground by a BACK from the debug
+    app's home -- not this build; `dumpsys window` showed
+    `com.fitnessapp.fitness_app.sptr`, no `.debug`. Verified the package
+    in focus before every screenshot after that.
+
+**GPT-PM commit review, round 1** (`review.js --uncommitted`, request
+`c1b2bbd2-1b6e-4c0b-9f82-c87d53f2a707`, reply `9438af1e-6c85-4b55-9607-
+e4885f973041`, input hash `618d0b9b…e51569`, scope note `G17_SCOPE.md`):
+`VERDICT: MAJOR`, three findings, no BLOCKER; the reference-video
+substitution, the non-squat fallback, the outline removal, the keyed
+layers, the mid-fade lifetime, reduce-motion handling, the shared
+rendering extraction and the unchanged skeleton default were confirmed
+consistent with the approved direction. Each finding verified against the
+code before acting:
+- MAJOR, FACT: a rejected `pause()` went through `_fail`, which only set
+  `_failed` and hid the platform view — `_sync` then returned early for
+  good and the controller was disposed only on unmount, so a decoder whose
+  pause the platform refused could keep running behind the poster for as
+  long as the panel was mounted, beside the camera and the pose detector.
+  Fixed: failure is terminal AND quiescent — `_fail` nulls `_ctrl`, removes
+  the value listener and disposes the controller (only if it had actually
+  opened: a controller whose `initialize` threw has no player behind it and
+  the real `dispose` would wait forever on its unfinished creation,
+  `video_player` 2.10.0 `_creatingCompleter`). Test: a controller whose
+  `pause` throws and stays playing ends in exactly one `dispose`, and
+  neither a later activation nor the unmount touches it again.
+- MAJOR, FACT: `_SkeletonOverlay` drew on `latestPoseFrameProvider !=
+  null`, not on the stabilised body the hand-over reads — so in camera
+  mode with the toggle on, a frame the stabiliser rejects (the partial
+  room pose seen on the S23, "OUT OF CONTRACT") drew bone fragments and
+  joint dots over the still-visible demonstration: two figures on the
+  panel, the gate's own invariant broken. Fixed: the overlay is gated on
+  `coachBodyDrawableProvider`, the same acceptance. Tests: camera mode +
+  toggle on, hips/knees-only frames → demo opacity 1, no skeleton;
+  `oneSquat` → demo opacity 0, skeleton present.
+- MAJOR, FACT: the plan's Linux-container verification of the FINAL tree
+  had not been satisfied — the container run overlapped the internal-
+  review remediation on the shared bind mount and was (honestly) not
+  cited, leaving only Windows 723/723 for the remediated tree. Accepted:
+  rerun below, with no edits to `mobile/` during it.
+- Windows after this remediation: the two touched test files 25/25,
+  `test/features/form_check test/theme test/l10n` 726/726.
+- Linux `ghcr.io/cirruslabs/flutter:3.27.1`, the FINAL remediated tree,
+  no edits to `mobile/` during the run: fresh `pub get`; `test/golden`
+  in verify mode (no `--update-goldens`) 20/20 -- the goldens regenerated
+  earlier match the final tree byte for byte; `test/features/form_check
+  test/theme test/l10n` 726/726. Windows `flutter clean && pub get`
+  re-run afterwards, as always after a container `pub get`.
+
+**GPT-PM commit review, round 2** (request `954dd875-77a9-4f3a-bd65-
+03da69e6e666`, reply `df6fe8ad-fe01-4287-b150-e727e2bfdec1`, input hash
+`19be503e…27af7d`): `VERDICT: MAJOR`. The two functional MAJORs of round 1
+were accepted as closed (the `_WontPauseController` test; the skeleton
+gated on `coachBodyDrawableProvider` with both camera-mode tests). The
+remaining MAJOR was round 1's #3 -- the review input did not contain the
+final container result. Cause, not a disagreement: the container
+evidence line above was appended to this log AFTER the diff for round 2
+had been staged (the `git add` and the review ran as one chained command;
+the append ran concurrently), so the reviewer saw a log that still ended
+at "rerun below". Round 3 re-sends with the evidence in the diff. One
+MINOR, FACT: the clip's library doc still said "the poster stays, the
+decoder is left alone" -- stale after the terminal-and-quiescent fix;
+rewritten to the actual contract (opened decoder disposed, unopened one
+only dropped, nothing retries). Comment-only change: no behaviour moved,
+so the container verification above still stands for this tree.
+
+**GPT-PM commit review, round 3** (request `0e470d78-cf66-4dd0-a99d-
+f1b16bc4cde5`, reply `d46a46d0-b658-467d-ae6e-df8f391a8dda`, input hash
+`8b43f165…adc4c7`): `VERDICT: APPROVE` -- "G17 APPROVED for push/closure
+under the current Gate policy". The container evidence closed round 1's
+#3 ("closes the evidence gap rather than replacing it with a Windows
+run"); the doc rewrite closed the MINOR; no new BLOCKER/MAJOR, no
+regression from the remediation. Per CLAUDE.md SS20 this APPROVE is what
+authorises the push and the tester distribution below; the `--final`
+receipt for the push gate is taken on the commit itself.

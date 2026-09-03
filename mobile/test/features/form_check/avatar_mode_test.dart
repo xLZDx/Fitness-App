@@ -184,13 +184,14 @@ void main() {
     await t.pump();
     expect(c.read(avatarModeProvider), isFalse);
     expect(_backdrop, findsNothing);
-    // Held rather than dropped, since 2026-09-02: the target outline is now
-    // placed on the tracked body and reads this frame over the raw camera too,
-    // so leaving avatar mode no longer leaves nobody watching. The stale-pose
-    // worry this line was written for is answered by the frame continuing to
-    // arrive every 33ms rather than by clearing it — and the case where
-    // genuinely nothing reads it is asserted directly in
-    // `skeleton_overlay_test.dart`, on a movement with no authored outline.
+    // Held rather than dropped, since 2026-09-02: the match readout and, since
+    // G17, the live demonstration's hand-over (`coachBodyDrawableProvider`)
+    // read this frame over the raw camera too, so leaving avatar mode no
+    // longer leaves nobody watching. The stale-pose worry this line was
+    // written for is answered by the frame continuing to arrive every 33ms
+    // rather than by clearing it — and the case where genuinely nothing reads
+    // it is asserted directly in `skeleton_overlay_test.dart`, on a movement
+    // with no authored target.
     expect(c.read(latestPoseFrameProvider), isNotNull);
 
     await t.tap(find.byTooltip('Draw me as a figure'));

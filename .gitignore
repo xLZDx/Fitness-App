@@ -20,6 +20,10 @@ logs/
 # full_handoff_v1 for Form Coach) -- see MEMORY project-fitness-app-design-
 # reference-canonical-source.md for why this must not go stale again.
 !core/design/reference/fitness_hud_v1/uploads/*.mp4
+# And for the bundled Form Coach demonstration clips derived from that
+# reference (G17, 2026-09-04): shipped in the app, declared in pubspec, so a
+# checkout without them builds a demonstration that fails soft to its poster.
+!mobile/assets/coach_demo/*.mp4
 docs/rec_frames/
 docs/v3_*.png
 docs/01_*.png
