@@ -40838,3 +40838,159 @@ PM Bridge orchestrator mode is ON for this session (standing autonomous
 mandate) -- per global CLAUDE.md SS18, this is a checkpoint, not a stop:
 continuing directly to the golden-test infrastructure investigation GPT-PM
 named as the next item, no operator check-in.
+
+## Golden-test flake investigation (new gate, not yet numbered) -- root cause found
+
+Reproduced fresh: all 3 `form_coach_golden_test.dart` goldens now fail
+INDIVIDUALLY as well as together (previously only 2/3 failed together;
+this is worse than the state G13 left it in). Diff magnitudes: live 54.73%,
+faulted 54.46%, selection 95.55%.
+
+**Confirmed NOT a G14 or code regression at all**: reproduced the identical
+3 failures in a clean detached `git worktree` checked out at the exact G13
+commit (`2a1307e`) that this repo's own decision log claims was "verified
+stable across repeated full-file, individual, and partial-combination
+runs." It fails there too, right now, on this machine.
+
+**Root cause, from the actual diff images** (`test/golden/failures/`):
+- `form_coach_selection`: the backdrop photograph is entirely absent in the
+  freshly-rendered image (flat grey/white where the master shows a sunset
+  photo through the translucent panel) -- `precacheImage` in
+  `precacheBackdrop` is not actually completing before the golden snapshot
+  is taken for this specific test.
+- `form_coach_live`/`form_coach_faulted`: visually near-identical to their
+  masters (verified by eye), but ~54% of pixels differ by enough to fail
+  Flutter's byte-exact `LocalFileComparator` -- consistent with a rendering-
+  engine-level difference (antialiasing, subpixel text/image compositing),
+  not a missing element.
+
+**Both point to the same already-documented, pre-existing risk**:
+`test/golden/README.md` (written for the original 13 HUD-primitive
+goldens, M8 gate) states explicitly that those PNGs "were generated and
+verified on a Windows host... not on `ubuntu-latest`" (CI's actual
+environment, `.github/workflows/flutter.yml`: `subosito/flutter-action@v2`,
+`flutter-version: 3.27.1`, `runs-on: ubuntu-latest`), and that
+`flutter_tester`'s per-OS engine binary "can still differ at the level of
+exact sub-pixel antialiasing" even on the identical Flutter version. The
+README's own stated correct fix: regenerate from a Linux environment
+matching CI, never loosen the comparator. It also records a PRIOR attempt
+at exactly that during this same repo's history: "A Docker-based attempt
+to do this directly during this gate did not complete... the local Docker
+daemon did not respond to `docker pull` within a reasonable wait."
+
+**Docker now responds** (`docker info` returned cleanly, Docker Desktop /
+WSL2 backend, 20 CPUs, 31GB) -- unlike that prior attempt. Pulling
+`ghcr.io/cirruslabs/flutter:3.27.1` (matches CI's pinned version exactly)
+to actually test the hypothesis: run these 3 goldens inside a Linux
+container and see whether they pass there. If they do, this confirms pure
+host-rendering drift and the fix is regenerating the 3 PNGs from that
+container. If they still fail there too, the cause is something else
+entirely and this hypothesis is wrong -- not assuming the conclusion before
+checking.
+
+## G15: OS-drift hypothesis disproven; real cause found and fixed
+
+Ran the 3 `form_coach_golden_test.dart` goldens inside
+`ghcr.io/cirruslabs/flutter:3.27.1` (CI's exact pinned version). Result:
+55.31%/55.40%/95.80% diff -- essentially the SAME failure as Windows
+(54.73%/54.46%/95.55%), not a pass. **The Windows-vs-CI rendering-drift
+hypothesis is disproven.** A second, fully independent container run (fresh
+`pub get`, fresh container, no shared state) reproduced BIT-IDENTICAL diff
+percentages and pixel counts both times -- fully deterministic, not flaky.
+
+Visually inspected `test/golden/failures/*_masterImage.png` vs
+`*_testImage.png`. The real defect: the committed master and the current
+render show DIFFERENT backdrop photographs -- e.g. `form_coach_selection`'s
+whole-page ambient background is a warm sunset/mountain scene in the master
+and a cool blue-grey mountain scene in the fresh render, while the panel
+itself (correctly black, with the demonstration silhouette) matches. Not
+sub-pixel antialiasing noise -- a wrong-image selection.
+
+Traced the mechanism: `coachBackdropProvider`
+(`form_check_providers.dart:391-409`) picks a scene via a seeded
+`math.Random(7)` -- `build()` consumes the first `nextInt()` call,
+`FormCheckPage.initState` unconditionally schedules a `shuffle()` call (a
+second `nextInt()` call) in a post-frame callback on EVERY mount
+(`form_check_page.dart:142`), regardless of the page's initial phase. Fully
+deterministic given a fixed Dart/Flutter version -- confirmed by the two
+identical container runs. A worktree pinned to the exact commit the goldens
+were last regenerated at (`2a1307e`, G13) reproduced the identical failures
+too, ruling out any code/asset drift since. Conclusion: the previously
+committed PNGs were simply STALE relative to what Flutter 3.27.1 / Dart
+3.6.0 (the version this repo, CI, and this container all use) actually,
+deterministically produces now -- not a flaky test, not a code bug.
+
+**Fix**: `flutter test --update-goldens test/golden/form_coach_golden_test.dart`
+run inside the CI-matching container. `git diff --stat` confirms only the 3
+expected PNGs changed. Each inspected by eye: correct layout, correct HUD
+readouts, correct demonstration silhouette, a real (if different) backdrop
+photo in every case.
+
+**Verification**: full file 3/3 pass in the container; each test
+individually via `--plain-name` passes in isolation (the exact
+order-independence concern G13's own fix comments already worried about);
+repeated across 2 independent fresh container runs, identical pass both
+times. Full package suite inside the container (matching CI's own
+`flutter test --no-pub --reporter=expanded` step): 3483 tests, 14 failures,
+**zero in `form_coach_golden_test.dart`**.
+
+**Related finding, flagged not fixed**: that same full-suite run showed the
+ORIGINAL 13 HUD-primitive goldens (M8) and 4 composed-screen goldens (OBS-1)
+-- captured on Windows -- do show real 2.13%-13.91% drift against the actual
+CI-matching container. This is exactly the risk `test/golden/README.md`
+already named in writing but whose actual CI outcome was apparently never
+confirmed (this session's attempt to check the repo's Actions history via
+an unauthenticated fetch returned 404; no `gh` CLI available in either
+shell). Per SS17, a closed gate is not reopened for an unrelated finding --
+recorded in `core/G15_SCOPE.md` as a distinct backlog item for a future
+gate, using the same regenerate-from-CI-matching-container method just
+validated here. Cleaned up the diagnostic worktree
+(`git worktree remove` on the `g13-golden-check` detached checkout).
+
+Full detail: `core/G15_SCOPE.md`.
+
+## G15 round 1: GPT-PM MAJOR, addressed with a second independent CI-emulation
+
+GPT-PM round 1 (`review.js --round 1`): verdict MAJOR. Correctly caught that
+this gate had called `ghcr.io/cirruslabs/flutter:3.27.1` "the same image
+used by CI" when the real workflow runs directly on GitHub's `ubuntu-latest`
+via `subosito/flutter-action@v2` -- a different environment even at the
+same pinned SDK version. Quoted: "the submission incorrectly treats the
+CirrusLabs Flutter container as CI-matching... this distinction is material
+for this exact test class." Remediation requested: real evidence from the
+actual `analyze-and-test` GitHub Actions environment, or a genuinely
+equivalent reproduction.
+
+Installed `act` (nektos/act v0.2.89, via winget) -- a local GitHub Actions
+runner. Configured non-interactively to `catthehacker/ubuntu:act-latest`
+(the "Medium" image, purpose-built to emulate GitHub-hosted runners) via
+`C:\Users\koros\AppData\Local\act\actrc`. Ran `act -j analyze-and-test -W
+.github/workflows/flutter.yml` against the working tree with the 3
+regenerated PNGs staged (uncommitted, so this used the actual candidate
+files, not a stale checkout). This genuinely executed
+`subosito/flutter-action@v2`'s real composite action -- confirmed by its
+own `::set-output::` lines: `VERSION=3.27.1`,
+`CACHE-KEY=flutter-linux-stable-3.27.1-x64-17025dd88227cd9532c33fa78f5250d548d87e9a`
+-- the exact same Flutter framework revision hash the CirrusLabs container
+independently reported, now fetched via the real action instead of a
+prebuilt image. `flutter pub get`, `flutter analyze`, `flutter test
+--no-pub --reporter=expanded` ran as the workflow's own steps, unmodified.
+
+Result: 3481 tests, 14 failures. Extracted every `[E]` line: exactly the
+same 14 as the CirrusLabs container run (`hud_golden_test.dart` x10,
+`composed_screen_golden_test.dart` x4) -- **zero in
+`form_coach_golden_test.dart`**. Two independent Linux environments, one of
+them running the literal CI action rather than an approximation, agree.
+This is the strongest evidence this session could produce without pushing
+to a branch (which would need its own SS14 authorization).
+
+Updated `G15_SCOPE.md` to correct the "same image as CI" overclaim and add
+this second, independent line of evidence. Re-staged and requesting GPT-PM
+round 2.
+
+Also sharpened the "related finding" framing: since `act`'s run used the
+literal CI action and still shows the same 14 HUD/composed golden failures,
+this is now assessed as very likely a CURRENTLY live issue on master's own
+GitHub Actions CI, not merely a named-but-unconfirmed risk -- still
+explicitly out of scope for G15 per SS17 (a closed gate is not reopened for
+an unrelated finding), recorded as backlog for a future gate.
