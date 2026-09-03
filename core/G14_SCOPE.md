@@ -116,6 +116,8 @@ than silently worked around or silently left unmentioned.
 Full `flutter test` re-run after the round-1 correction: 3489/3492 green,
 the 3 failures confirmed by a targeted re-run to be the identical
 pre-existing `form_coach_golden_test.dart` flake (same pixel-diff symptom,
-same file) -- not a new regression from this correction. Not re-run again
-after rounds 2/3 (only `pose_target.dart` and its own test file changed
-each time, both covered directly above).
+same file) -- not a new regression from this correction. Re-run again
+before round 4: 3494 total, still the same 3 pre-existing golden failures
+(count moved by exactly the 2 tests added across rounds 2-3). Final
+verified state: `pose_alignment_test.dart` + `pose_target_test.dart` 81
+green; whole-package suite 3494 total / 3 pre-existing golden failures.

@@ -40802,3 +40802,27 @@ unreliable tracking, in round 2's own framing) was corrected on GPT-PM's
 challenge in round 3 rather than defended. Every number in the shipped
 guard and its five regression tests traces to a real logcat line, not a
 synthetic guess.
+
+## G14 closed and pushed; formally registered; independently re-audited
+
+Committed `10fc289` (guard + 5 tests + evidence files + this log) and
+pushed to `origin/master`, authorized by the round-5 `final:true` APPROVE
+receipt per global CLAUDE.md SS15/SS20. Registered via `pm_set_gate(project=
+"Fitness_App", gate_id="G14", status="passed")` -- G12/G13/G14 had only
+ever existed as informal labels in this log, never as pm-bridge-tracked
+gates; `pm_gate_status` confirmed no such entries existed before this call.
+
+The notification triggered an independent GPT-PM closure audit against the
+actual pushed repository state (not the conversation record) -- confirmed
+`origin/master` at exactly `10fc289`, re-derived the same evidentiary
+separation (nominal ~0.252-0.256 / closer-valid ~0.332 / cutoff 0.40 /
+pathological floor 0.461-0.641) from the pushed commit alone, and returned
+`VERDICT: APPROVE`, "G14 is legitimately CLOSED/PASSED ... No reason to
+reopen it." One non-gating documentation catch: `G14_SCOPE.md`'s closing
+line still said the full suite was "not re-run again after rounds 2/3,"
+stale against the round-4 3494-total re-run already in this log. Fixed in
+a follow-up commit (trivial doc correction, not a functional change, still
+subject to the same fresh review-receipt window). GPT-PM's own conclusion,
+quoted verbatim as the record of what comes next: "The next legitimate
+Form Coach work item is the separate golden-test infrastructure
+regression -- not another G14 round."
