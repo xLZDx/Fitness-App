@@ -1,0 +1,301 @@
+<title>SCAN-G1: Reference Fidelity</title>
+<style>
+  :root{
+    --bg:#0c0e16; --bg-panel:#12151f; --bg-panel-2:#171b28;
+    --line:#262b3c; --line-soft:#1c2030;
+    --ink:#eef0f8; --ink-dim:#9aa0b8; --ink-faint:#666c85;
+    --accent:#c9ff47; --accent-ink:#131a05;
+    --pass:#5fe0a0; --fail:#ff6f6f; --blocker:#ffb454; --warn:#ffb454;
+    --mono: 'Roboto Mono', ui-monospace, monospace;
+    --disp: 'Archivo', system-ui, sans-serif;
+    --body: 'IBM Plex Sans', system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f4f5f9; --bg-panel:#ffffff; --bg-panel-2:#eceef5;
+      --line:#dbdfec; --line-soft:#e6e9f3;
+      --ink:#151827; --ink-dim:#565d78; --ink-faint:#8890a8;
+      --accent:#5a8a00; --accent-ink:#f4ffe0;
+      --pass:#1f9d63; --fail:#d13f3f; --blocker:#b8720a; --warn:#b8720a;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#f4f5f9; --bg-panel:#ffffff; --bg-panel-2:#eceef5;
+    --line:#dbdfec; --line-soft:#e6e9f3;
+    --ink:#151827; --ink-dim:#565d78; --ink-faint:#8890a8;
+    --accent:#5a8a00; --accent-ink:#f4ffe0;
+    --pass:#1f9d63; --fail:#d13f3f; --blocker:#b8720a; --warn:#b8720a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);
+    font-size:15px;line-height:1.55;}
+  .wrap{max-width:920px;margin:0 auto;padding:48px 24px 80px;}
+  header{padding-bottom:20px;border-bottom:1px solid var(--line);}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 10px;}
+  h1{font-family:var(--disp);font-weight:800;font-size:34px;line-height:1.12;margin:0 0 8px;
+    text-wrap:balance;letter-spacing:-.01em;}
+  .subtitle{color:var(--ink-dim);font-size:15.5px;margin:0;max-width:60ch;}
+  .status-strip{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px;}
+  .pill{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.02em;
+    padding:7px 13px;border-radius:999px;border:1px solid var(--line);display:flex;align-items:center;gap:7px;}
+  .pill .dot{width:7px;height:7px;border-radius:50%;flex:none;}
+  .pill.pass{color:var(--pass);border-color:color-mix(in srgb, var(--pass) 35%, var(--line));}
+  .pill.pass .dot{background:var(--pass);box-shadow:0 0 8px var(--pass);}
+  .pill.blocker{color:var(--blocker);border-color:color-mix(in srgb, var(--blocker) 35%, var(--line));}
+  .pill.blocker .dot{background:var(--blocker);box-shadow:0 0 8px var(--blocker);}
+
+  section{margin-top:44px;}
+  h2{font-family:var(--disp);font-weight:800;font-size:20px;margin:0 0 6px;letter-spacing:-.005em;}
+  .lede{color:var(--ink-dim);font-size:14px;margin:0 0 18px;max-width:68ch;}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top;}
+  thead th{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-faint);background:var(--bg-panel-2);font-weight:600;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--bg-panel-2);}
+  td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .badge{font-family:var(--mono);font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;
+    display:inline-block;white-space:nowrap;}
+  .badge.done{color:var(--pass);background:color-mix(in srgb, var(--pass) 14%, transparent);}
+  .badge.blocked{color:var(--blocker);background:color-mix(in srgb, var(--blocker) 16%, transparent);}
+  .badge.partial{color:var(--warn);background:color-mix(in srgb, var(--warn) 16%, transparent);}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .card{background:var(--bg-panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;}
+  .card .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink-faint);margin:0 0 8px;}
+  .card .v{font-family:var(--mono);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .card .v.pass{color:var(--pass);} .card .v.fail{color:var(--fail);}
+  .card .d{color:var(--ink-dim);font-size:12.5px;margin-top:6px;}
+
+  .finding{background:var(--bg-panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:14px;}
+  .finding-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+  .sev{font-family:var(--mono);font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:3px 9px;border-radius:6px;}
+  .sev.major{color:var(--blocker);background:color-mix(in srgb, var(--blocker) 16%, transparent);}
+  .sev.blocker{color:var(--fail);background:color-mix(in srgb, var(--fail) 16%, transparent);}
+  .finding h3{font-family:var(--body);font-weight:700;font-size:14.5px;margin:0;color:var(--ink);}
+  .finding p{margin:6px 0;color:var(--ink-dim);font-size:13.5px;}
+  .finding p b{color:var(--ink);font-weight:600;}
+  .finding .outcome{color:var(--pass);font-weight:600;}
+
+  .blocker-box{background:color-mix(in srgb, var(--blocker) 8%, var(--bg-panel));
+    border:1px solid color-mix(in srgb, var(--blocker) 40%, var(--line));border-radius:14px;padding:20px 22px;}
+  .blocker-box h2{color:var(--blocker);}
+
+  code, .mono{font-family:var(--mono);}
+  .hashline{font-family:var(--mono);font-size:11.5px;color:var(--ink-faint);word-break:break-all;}
+
+  footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink-faint);font-size:12px;}
+  a{color:var(--accent);}
+
+  .copy-btn{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.02em;
+    background:var(--bg-panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;
+    padding:8px 14px;cursor:pointer;}
+  .copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Fitness_App · SCAN-G1</p>
+    <h1>The Scan screen matches the reference.<br>The device doesn't: it's behind a PIN.</h1>
+    <p class="subtitle">Gate R6 (pixel-level fidelity of the Scan screen against the design reference) is closed
+      and GPT-PM confirmed. The only thing keeping the whole SCAN-G1 gate from closing is on-device evidence
+      (S8), which is currently locked behind a PIN.</p>
+    <div class="status-strip">
+      <span class="pill pass"><span class="dot"></span>R6 fidelity fix — CLOSED / PASS</span>
+      <span class="pill pass"><span class="dot"></span>Internal review (4 specialists) — CLOSED</span>
+      <span class="pill pass"><span class="dot"></span>Tests: Windows 1082/1082, container 1107/1107</span>
+      <span class="pill blocker"><span class="dot"></span>S8 evidence (R1/R2/R7) — OPEN BLOCKER</span>
+    </div>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ b062491</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+  <section>
+    <h2>What's needed from the operator</h2>
+    <p class="lede">Unlock the Samsung S8 (<span class="mono">ce02171299f0711005</span>) — physically, or supply
+      the PIN. The device went into thermal/lock protection and now requires an unlock code; this session
+      does not have it. Without it, the mandatory R1/R2/R7 evidence (camera liveness, the real recognition
+      path, the "black viewfinder" regression check) cannot be captured, and without that the whole SCAN-G1
+      gate cannot close and ship to distribution.</p>
+  </section>
+
+  <section>
+    <h2>R6(c) outcome: fidelity against the reference</h2>
+    <p class="lede">Four frames (aiming/found × dark/light theme) are compared against a headless render of the
+      canonical reference HTML. aiming_dark stayed slightly above the original 2.5% threshold throughout
+      remediation — broken out separately below.</p>
+    <div class="cards">
+      <div class="card"><p class="k">aiming · dark</p><p class="v pass">2.965%</p><p class="d">mean 4.388 · ceiling 3.2% (GPT-PM approved)</p></div>
+      <div class="card"><p class="k">aiming · light</p><p class="v pass">2.041%</p><p class="d">mean 3.010 · ceiling 2.5%</p></div>
+      <div class="card"><p class="k">found · dark</p><p class="v pass">2.287%</p><p class="d">mean 4.145 · ceiling 2.5%</p></div>
+      <div class="card"><p class="k">found · light</p><p class="v pass">1.725%</p><p class="d">mean 2.733 · ceiling 2.5%</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Planned / DoD / status</h2>
+    <p class="lede">For every item of the approved plan (Rosetta <span class="mono">fitness_app-2026-09-04T01-00-12-787Z-9ccb13</span>,
+      rev5, GPT-PM APPROVE): what was planned, what proved it done, and the current status with a tail where one exists.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>Item</th><th>Definition of Done</th><th>Status</th><th>Tail</th></tr></thead>
+      <tbody>
+        <tr><td>R1 — camera liveness (evidence mode)</td><td>2 screenshots 1s apart, &gt;2% interior pixel change inside the card, advancing frame counter</td><td><span class="badge blocked">not obtained</span></td><td>Debug build compiled and installed on S8; screen is PIN-locked, operator did not answer in-session</td></tr>
+        <tr><td>R2/R7 — camera recognition path</td><td>Recognise → captureStill → cropToViewfinder → classifyFilePath on a gallery photo, last_crop.jpg captured against the bracket window</td><td><span class="badge blocked">not obtained</span></td><td>Same cause — device unreachable</td></tr>
+        <tr><td>R3 — crop contract</td><td>Inverse mapping of BoxFit.cover, unit tests at 358×230/328×230 and EXIF</td><td><span class="badge done">done</span></td><td>—</td></tr>
+        <tr><td>R4 — match card ends at the CTA</td><td>LastSessionCard and everything else sits below the primary button, never inside the card</td><td><span class="badge done">done</span></td><td>Regression found and fixed: the printed-text note was rendering inside the card — extracted, regression test added</td></tr>
+        <tr><td>R5 — exact glass recipes</td><td>New scanPrimaryButton/scanCta recipes; existing HUD goldens unmoved</td><td><span class="badge done">done</span></td><td>Regression found and fixed: the shadow/tracking fix was global — made Scan-local via <span class="mono">shadowOutsideOnly</span></td></tr>
+        <tr><td>R6 — pixel fidelity gate</td><td>1:1 geometry/identity, 4 frames ≤2.5%/5.0 (aiming_dark: approved exception ≤3.2%)</td><td><span class="badge done">done</span></td><td>Methodology defect found and fixed: the reference renderer had substituted Google Archivo for the app's own fonts — reverted to canonical; numbers unchanged after the revert</td></tr>
+        <tr><td>R7 — crop equals the bracket window</td><td>last_crop.jpg with the bracket window outlined</td><td><span class="badge blocked">not obtained</span></td><td>Needs the same device capture as R2</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Regressions found and fixed along the way</h2>
+    <div class="finding">
+      <div class="finding-head"><span class="sev major">MAJOR</span><h3>The shadow/tracking fix touched the whole HUD, not just Scan</h3></div>
+      <p>Fixing a real <span class="mono">HudSurface</span> defect (the glow bled through an almost-transparent
+        panel fill) and a letter-spacing leak was applied globally — Home, Workouts, and ordinary HUD
+        buttons/chips/nav-bar goldens all moved, even though R5 requires them to stay byte-identical.</p>
+      <p><b>Outcome:</b> <span class="outcome">fixed</span> — both fixes became opt-in via a new
+        <span class="mono">shadowOutsideOnly</span> parameter and an explicit <span class="mono">letterSpacing: 0</span>
+        only at Scan's own call sites; all 14 non-Scan goldens were restored byte-identical, confirmed by a
+        CI-matching container run.</p>
+    </div>
+    <div class="finding">
+      <div class="finding-head"><span class="sev major">MAJOR</span><h3>The "read on the machine" honesty note rendered inside the canonical card</h3></div>
+      <p>On a printed-text match, the match card grew below the boundary R6 actually measures — a production
+        detail ended up inside the very surface the gate compares 1:1 against the reference.</p>
+      <p><b>Outcome:</b> <span class="outcome">fixed</span> — the note now renders below the primary button
+        alongside other production elements; a new test asserts the card keeps its canonical shape and the
+        note is never its descendant.</p>
+    </div>
+    <div class="finding">
+      <div class="finding-head"><span class="sev major">MAJOR</span><h3>Methodology: the reference renderer substituted the app's font for the canonical one</h3></div>
+      <p>While drafting a narrow threshold revision for aiming_dark, GPT-PM caught an earlier defect: the
+        reference renderer had been substituting the app's static font cuts for the canonical variable
+        Google Archivo — moving the reference toward the app instead of the other way around, which could
+        mask a real app typography defect as "now they match."</p>
+      <p><b>Outcome:</b> <span class="outcome">fixed</span> — canonical Archivo restored; re-measuring after
+        the revert changed nothing (within thousandths of a percent) — the substitution wasn't masking
+        anything in practice, but the contract is now clean.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Approved exception: aiming_dark ≤ 3.2%</h2>
+    <p class="lede">After every plausible fix attempt (fonts, letter-spacing, geometricPrecision, leading
+      distribution), the residual difference (2.965% vs. the original ≤2.5%) stayed confined to
+      text/glyph/hairline anti-aliasing edges across the whole frame — the signature of rasterizer noise
+      between Chromium and Skia, not a geometry or token defect. Through a formal Rosetta revision (plan
+      <span class="mono">fitness_app-2026-09-04T16-17-19-994Z-588ce5</span>), GPT-PM approved a narrow,
+      single-frame exception — <span class="mono">3.2%</span> instead of the shared threshold — with the
+      other three frames and the mean-diff ceiling untouched.</p>
+  </section>
+
+  <section class="blocker-box">
+    <h2>What's next</h2>
+    <p class="lede">Once S8 is unlocked: capture R1 (liveness), R2/R7 (the camera recognition path,
+      <span class="mono">last_crop.jpg</span>), check the "black viewfinder" regression, then commit, a final
+      review round, push (on GPT-PM approval), build and distribute via Firebase App Distribution. Until then
+      the gate's code is ready and verified, but not yet committed.</p>
+  </section>
+
+  <footer>
+    Full file list, numbers and GPT-PM decision quotes live in <span class="mono">core/DECISION_LOG.md</span>.
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
