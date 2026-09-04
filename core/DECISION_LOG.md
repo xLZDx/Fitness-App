@@ -41562,3 +41562,19 @@ run"); the doc rewrite closed the MINOR; no new BLOCKER/MAJOR, no
 regression from the remediation. Per CLAUDE.md SS20 this APPROVE is what
 authorises the push and the tester distribution below; the `--final`
 receipt for the push gate is taken on the commit itself.
+
+**Committed and pushed:** `a35f9ed93bbc7827ce929e78c7bfba3a372ec551` ->
+`origin/master` (c5c4b29..a35f9ed). Final receipt on the commit itself
+(round 4, `--final`, request `d666f2fc-3474-4e2b-9fa9-f9bc20ab0a95`, reply
+`f92755be-d3df-49a6-84b2-46dc63da58ac`): `VERDICT: APPROVE` -- the blob
+hashes of every reviewed file match the committed tree, the only delta
+being this log's own round-3 record; "APPROVED for push under the current
+Gate policy". `final_overridden: false`. Push authorised by that APPROVE
+(CLAUDE.md SS20), not by a separate operator word.
+
+**Release:** `scripts/dev/build_release.ps1 -Distribute` from a35f9ed9 ->
+Firebase App Distribution 1.0.0 (2979), 109.5 MB, distributed to
+korostelevivan@gmail.com with G17 notes (previous: v2978, yesterday's
+outline). GitHub CI for the push was not observed in-session (no `gh` on
+this machine; the private repo's API needs a token); the same CI image
+run locally on the final tree is the evidence above.
