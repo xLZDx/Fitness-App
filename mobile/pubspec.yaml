@@ -296,6 +296,20 @@ flutter:
           weight: 600
         - asset: assets/fonts/RobotoMono-Bold.ttf
           weight: 700
+    # SCAN-G1 (core/SCAN_G1_SCOPE.md, R6). The design reference draws the
+    # Scan screen's glyphs with Google's Material Symbols Sharp; the app used
+    # to draw them with Flutter's Material Icons, whose shapes differ, so the
+    # reference-fidelity gate would have had to mask every icon. This is a
+    # six-glyph variable subset (FILL, GRAD, opsz, wght kept) of that font,
+    # 10.7 KB, built by tools/design/build_symbols_subset.py; Apache-2.0,
+    # notice in assets/fonts/LICENSE-MaterialSymbols.txt. Weight 300 is what
+    # the reference asks for (`opsz,wght,FILL,GRAD@20..48,300,0,0`) and is
+    # selected at draw time through `fontVariations`, so the single face is
+    # declared at the default weight.
+    - family: Material Symbols Sharp
+      fonts:
+        - asset: assets/fonts/MaterialSymbolsSharp-scan.ttf
+          weight: 400
 
   # To add assets to your application, add an assets section, like this:
   # assets:

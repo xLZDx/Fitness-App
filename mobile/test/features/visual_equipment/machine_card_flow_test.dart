@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
 import '../../helpers/test_app.dart';
 import 'package:fitness_app/core/theme/app_theme.dart';
@@ -50,6 +51,20 @@ class _CountingDescriber implements MachineDescriber {
     calls++;
     return card;
   }
+}
+
+/// Routes a gallery pick to a fixed path, so the ScannerPage's own Recognise
+/// flow can be driven from a test without a real picker or camera.
+class _FakeImagePicker extends ImagePickerPlatform {
+  _FakeImagePicker(this.path);
+  final String path;
+
+  @override
+  Future<XFile?> getImageFromSource({
+    required ImageSource source,
+    ImagePickerOptions options = const ImagePickerOptions(),
+  }) async =>
+      XFile(path);
 }
 
 void main() {
@@ -102,6 +117,24 @@ void main() {
     return ProviderScope.containerOf(tester.element(find.byType(ScannerPage)));
   }
 
+  /// Drives a scan through the real Recognise-from-gallery flow (a fake
+  /// picker + a tap), instead of poking `classifyFilePath` on the provider
+  /// directly. `ScannerPage` gates its "nothing to see" hint on its own
+  /// `_attempted` flag -- deliberately, since a fresh scan and a genuine
+  /// no-match both resolve to the identical `ScanOutcome.noEquipment` at the
+  /// provider level, and only a real Recognise action tells them apart. A
+  /// test that wants to observe that hint has to go through the flow that
+  /// sets the flag, not the provider that cannot.
+  Future<void> tapGalleryRecognise(WidgetTester tester,
+      {String path = '/tmp/dog.jpg'}) async {
+    final previous = ImagePickerPlatform.instance;
+    ImagePickerPlatform.instance = _FakeImagePicker(path);
+    addTearDown(() => ImagePickerPlatform.instance = previous);
+    await tester.tap(find.byKey(const Key('scan-recognise-gallery')));
+    await tester.pump();
+    await tester.pump();
+  }
+
   group('a machine the catalog has no page for', () {
     testWidgets('is explained instead of shrugged at', (tester) async {
       // The old answer was "Couldn't tell what that is" and nothing else,
@@ -131,7 +164,12 @@ void main() {
       expect(find.byType(MachineCardView), findsWidgets);
       expect(find.text('Belt Squat Machine'), findsWidgets);
       expect(find.text('Belt squats'), findsWidgets);
-      expect(find.text('Point at a machine and tap Recognise'), findsNothing);
+      // A `findsNothing` for the pristine "Point at a machine..." hint used
+      // to sit here. Dropped (SCAN-G1 functional-test review): `_HintCard`
+      // is only ever instantiated with `noMatch: true` in production now, so
+      // that string is unreachable from any code path -- the assertion could
+      // never fail and was proving nothing beyond what the three lines above
+      // already do.
     });
 
     testWidgets('says plainly that the demonstration is not ready',
@@ -236,19 +274,21 @@ void main() {
 
   group('when the second question has nothing to say either', () {
     testWidgets('the honest empty answer comes back', (tester) async {
-      final container = await pumpScan(tester, overrides: [
+      await pumpScan(tester, overrides: [
         visualEquipmentServiceProvider.overrideWithValue(_NoMatch()),
         machineDescriberProvider.overrideWithValue(MockMachineDescriber()),
       ]);
-      await container
-          .read(visualEquipmentControllerProvider.notifier)
-          .classifyFilePath('/tmp/dog.jpg');
-      await tester.pump();
+      await tapGalleryRecognise(tester);
 
       expect(find.byType(MachineCardView), findsNothing);
-      // Back to the plain hint: nothing was recognised and nothing could be
-      // explained, and the screen says so rather than showing a blank.
-      expect(find.text('Point at a machine and tap Recognise'), findsOneWidget);
+      // The screen says so rather than showing a blank -- the honest
+      // "couldn't tell" hint, not the pristine "point at a machine" prompt.
+      // `_HintCard` (`scanner_page.dart`) always passes `noMatch: true` on a
+      // genuinely attempted, empty result, and reserves the pristine prompt
+      // for the state before any scan; `_attempted` (SCAN-G1) is exactly
+      // what tells the two apart, since both resolve to the identical
+      // `ScanOutcome.noEquipment` at the provider level.
+      expect(find.text("Couldn't tell what that is"), findsOneWidget);
     });
 
     testWidgets('a failing store does not take the answer off the screen',

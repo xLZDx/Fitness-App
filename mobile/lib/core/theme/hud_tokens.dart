@@ -246,6 +246,8 @@ class HudTokens extends ThemeExtension<HudTokens> {
     required this.button,
     required this.chip,
     required this.navBar,
+    required this.scanPrimaryButton,
+    required this.scanCta,
     required this.trackFill,
     required this.trackBorder,
     required this.progressFill,
@@ -329,6 +331,32 @@ class HudTokens extends ThemeExtension<HudTokens> {
 
   /// The floating tab bar.
   final HudGlass navBar;
+
+  /// The Scan screen's one glass button ("Recognise" / "Scan again").
+  ///
+  /// SCAN-G1 (core/SCAN_G1_SCOPE.md, R5). Not [button]: the reference's Scan
+  /// button is a *different* recipe from the panel-family button every other
+  /// screen uses -- on dark it is the nav bar's ink wash, not white glass:
+  /// `Sunset.dc.html:221` = `linear-gradient(180deg, rgba(26,15,34,.5),
+  /// rgba(26,15,34,.3)); blur(22px); inset 0 1px 0 rgba(255,255,255,.4);
+  /// inset 0 0 0 1px rgba(255,255,255,.2); 0 20px 36px -16px rgba(12,7,24,.85);
+  /// 0 6px 14px -8px rgba(12,7,24,.5)`. On light (`Light.dc.html:221`) it is
+  /// exactly the light panel recipe. Held as its own token, verified by
+  /// `scan_glass_recipes_test.dart` against those lines, rather than
+  /// approximated with [button] -- a "close enough" recipe is exactly the
+  /// class of drift that gate exists to stop.
+  final HudGlass scanPrimaryButton;
+
+  /// The Scan match card's "Open exercises" call to action.
+  ///
+  /// `Sunset.dc.html:214` / `Light.dc.html:214`: `linear-gradient(180deg,
+  /// accentSoft, accentFaint)` (accent @ .35 -> .12, the same arithmetic as
+  /// [accentChipGradient]) over `blur(18px) saturate(160%)`, `inset 0 1px 0
+  /// rgba(255,255,255,.55)`, an `accentLine` (accent @ .40) inner ring, and
+  /// two drop shadows (`0 20px 34px -16px` + `0 6px 14px -8px`, ink
+  /// `rgba(12,7,24,.85/.5)` on dark, `rgba(42,52,74,.18)` twice on light).
+  /// Derived from [accent] in [_withAccent] so an accent preset carries it.
+  final HudGlass scanCta;
 
   /// Indicator tracks: `rgba(255,255,255,.16)` dark, `rgba(27,32,48,.10)` light.
   final Color trackFill;
@@ -527,6 +555,36 @@ class HudTokens extends ThemeExtension<HudTokens> {
         ),
       ],
     ),
+    // `Sunset.dc.html:221` -- see the field's doc comment.
+    scanPrimaryButton: HudGlass(
+      fill: const Color(0x801A0F22), // rgba(26,15,34,.5) -- the top stop
+      fillGradient: const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: <Color>[
+          Color(0x801A0F22), // rgba(26,15,34,.5)
+          Color(0x4D1A0F22), // rgba(26,15,34,.3)
+        ],
+      ),
+      cssBlur: 22,
+      innerBorder: const Color(0x33FFFFFF), // white @ .20
+      topHighlight: const Color(0x66FFFFFF), // white @ .40
+      dropShadows: <BoxShadow>[
+        BoxShadow(
+          color: const Color(0xD90C0718), // rgba(12,7,24,.85)
+          blurRadius: 36,
+          spreadRadius: -16,
+          offset: const Offset(0, 20),
+        ),
+        BoxShadow(
+          color: const Color(0x800C0718), // rgba(12,7,24,.5)
+          blurRadius: 14,
+          spreadRadius: -8,
+          offset: const Offset(0, 6),
+        ),
+      ],
+    ),
+    scanCta: scanCtaFor(const Color(0xFFC9FF47), Brightness.dark),
     trackFill: const Color(0x29FFFFFF), // white @ .16
     trackBorder: const Color(0x00000000),
     progressFill: const Color(0xFFFFFFFF),
@@ -639,6 +697,26 @@ class HudTokens extends ThemeExtension<HudTokens> {
         ),
       ],
     ),
+    // `Light.dc.html:221` -- the light Scan button is the light panel recipe
+    // verbatim (`rgba(255,255,255,.3); blur(14px) saturate(150%); inset ring
+    // .85; ink ring .16; 0 18px 34px -22px rgba(42,52,74,.35)`), restated
+    // here rather than aliased so the two cannot drift apart silently.
+    scanPrimaryButton: HudGlass(
+      fill: const Color(0x4DFFFFFF), // white @ .30
+      cssBlur: 14,
+      saturate: 1.5,
+      innerBorder: const Color(0xD9FFFFFF), // white @ .85
+      outerBorder: const Color(0x291B2030), // ink @ .16
+      dropShadows: <BoxShadow>[
+        BoxShadow(
+          color: const Color(0x592A344A), // rgba(42,52,74,.35)
+          blurRadius: 34,
+          spreadRadius: -22,
+          offset: const Offset(0, 18),
+        ),
+      ],
+    ),
+    scanCta: scanCtaFor(const Color(0xFF4B7A00), Brightness.light),
     trackFill: const Color(0x1A1B2030), // ink @ .10
     trackBorder: const Color(0x291B2030), // ink @ .16
     progressFill: const Color(0xFF4B7A00),
@@ -709,6 +787,46 @@ class HudTokens extends ThemeExtension<HudTokens> {
   /// defined in the handoff as arithmetic on the accent
   /// (`accentSoft = accent+'59'`, `accentFaint = accent+'1f'`,
   /// `accentLine = accent+'80'`), and an accent preset must carry it along.
+  /// The Scan CTA recipe for an accent -- `Sunset.dc.html:214` /
+  /// `Light.dc.html:214`; see [scanCta]. A static so the two static token
+  /// sets and [_withAccent] all build it the same way.
+  static HudGlass scanCtaFor(Color accent, Brightness brightness) {
+    final bool dark = brightness == Brightness.dark;
+    return HudGlass(
+      fill: accent.withValues(alpha: 0.35), // accentSoft = accent + '59'
+      fillGradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: <Color>[
+          accent.withValues(alpha: 0.35), // accentSoft = accent + '59'
+          accent.withValues(alpha: 0.12), // accentFaint = accent + '1f'
+        ],
+      ),
+      cssBlur: 18,
+      saturate: 1.6,
+      innerBorder: accent.withValues(alpha: 0.40), // accentLine = accent + '66'
+      topHighlight: const Color(0x8CFFFFFF), // white @ .55
+      dropShadows: <BoxShadow>[
+        BoxShadow(
+          color: dark
+              ? const Color(0xD90C0718) // rgba(12,7,24,.85)
+              : const Color(0x2E2A344A), // rgba(42,52,74,.18)
+          blurRadius: 34,
+          spreadRadius: -16,
+          offset: const Offset(0, 20),
+        ),
+        BoxShadow(
+          color: dark
+              ? const Color(0x800C0718) // rgba(12,7,24,.5)
+              : const Color(0x2E2A344A), // rgba(42,52,74,.18)
+          blurRadius: 14,
+          spreadRadius: -8,
+          offset: const Offset(0, 6),
+        ),
+      ],
+    );
+  }
+
   LinearGradient get accentChipGradient => LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
@@ -756,6 +874,8 @@ class HudTokens extends ThemeExtension<HudTokens> {
         button: button,
         chip: chip,
         navBar: navBar,
+        scanPrimaryButton: scanPrimaryButton,
+        scanCta: scanCtaFor(next, brightness),
         trackFill: trackFill,
         trackBorder: trackBorder,
         progressFill: progressFill,
@@ -798,6 +918,9 @@ class HudTokens extends ThemeExtension<HudTokens> {
       button: HudGlass.lerp(button, other.button, t),
       chip: HudGlass.lerp(chip, other.chip, t),
       navBar: HudGlass.lerp(navBar, other.navBar, t),
+      scanPrimaryButton:
+          HudGlass.lerp(scanPrimaryButton, other.scanPrimaryButton, t),
+      scanCta: HudGlass.lerp(scanCta, other.scanCta, t),
       trackFill: Color.lerp(trackFill, other.trackFill, t)!,
       trackBorder: Color.lerp(trackBorder, other.trackBorder, t)!,
       progressFill: Color.lerp(progressFill, other.progressFill, t)!,

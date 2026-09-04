@@ -6,6 +6,7 @@
 /// when the frame budget is measured.
 library;
 
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show KeyDownEvent, KeyEvent, LogicalKeyboardKey;
@@ -131,6 +132,7 @@ class HudSurface extends StatelessWidget {
     this.overlay,
     this.border,
     this.topHighlight,
+    this.shadowOutsideOnly = false,
   });
 
   final HudGlass glass;
@@ -150,6 +152,17 @@ class HudSurface extends StatelessWidget {
   /// still falls back to the glass recipe's own value — pass
   /// [Colors.transparent] to suppress it outright.
   final Color? topHighlight;
+
+  /// SCAN-G1 (core/SCAN_G1_SCOPE.md, R5): paint [glass]'s glow/drop-shadows
+  /// clipped to outside the border box (true CSS `box-shadow` semantics --
+  /// see `_OutsideShadowPainter`'s doc) instead of `BoxDecoration.boxShadow`,
+  /// which fills the whole shadow shape including the interior and relies on
+  /// an opaque-enough fill to cover it -- wrong for a ~1.4%-alpha panel,
+  /// where the glow bleeds straight through and brightens the fill past the
+  /// token's own value (found by SCAN-G1's pixel gate). Defaults to `false`
+  /// because R5 requires every existing HUD surface's goldens to stay
+  /// byte-identical; only Scan's own surfaces opt in.
+  final bool shadowOutsideOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -207,6 +220,24 @@ class HudSurface extends StatelessWidget {
       ...glass.dropShadows,
     ];
 
+    // Painted OUTSIDE the box only, when `shadowOutsideOnly` opts in (see its
+    // own doc). `BoxDecoration.boxShadow` fills the whole shadow shape,
+    // interior included, and relies on the decoration's own fill to cover it
+    // -- which an `rgba(255,255,255,.014)` fill does not. Found by SCAN-G1's
+    // pixel gate (`tools/design/scan_fidelity_check.py`): every dark panel
+    // measured `(84,87,101)` inside against the reference's `(23,27,47)` --
+    // exactly base + the `0 0 26px -6px rgba(255,255,255,.26)` glow at .26,
+    // i.e. the halo painted through the glass. CSS clips an outer
+    // `box-shadow` to the outside of the border box; this does the same, for
+    // the glow, the drop shadows and the light theme's outer ring alike (the
+    // ring is a zero-blur spread, which `boxShadow` would have painted as an
+    // ink wash over the whole panel for the same reason).
+    if (shadowOutsideOnly) {
+      return CustomPaint(
+        painter: _OutsideShadowPainter(shadows, borderRadius),
+        child: ClipRRect(borderRadius: borderRadius, child: surface),
+      );
+    }
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: borderRadius,
@@ -215,6 +246,41 @@ class HudSurface extends StatelessWidget {
       child: ClipRRect(borderRadius: borderRadius, child: surface),
     );
   }
+}
+
+/// Draws [shadows] around a rounded box, clipped to the region outside it --
+/// CSS `box-shadow` semantics. See [HudSurface.build] for why.
+class _OutsideShadowPainter extends CustomPainter {
+  const _OutsideShadowPainter(this.shadows, this.borderRadius);
+
+  final List<BoxShadow> shadows;
+  final BorderRadius borderRadius;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (shadows.isEmpty) return;
+    final RRect box = borderRadius.toRRect(Offset.zero & size);
+    // Everything except the box: a generous outer rect minus the rounded
+    // box, even-odd. 400px covers any blur + spread + offset this design
+    // uses (the largest is `0 20px 36px -16px`).
+    final Path outside = Path()
+      ..fillType = PathFillType.evenOdd
+      ..addRect((Offset.zero & size).inflate(400))
+      ..addRRect(box);
+    canvas.save();
+    canvas.clipPath(outside);
+    for (final BoxShadow s in shadows) {
+      canvas.drawRRect(
+        box.shift(s.offset).inflate(s.spreadRadius),
+        s.toPaint(),
+      );
+    }
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_OutsideShadowPainter old) =>
+      old.borderRadius != borderRadius || !listEquals(old.shadows, shadows);
 }
 
 /// A semantic fill override for [HudPanel], for the one recurring case a
@@ -500,6 +566,14 @@ class HudButton extends StatefulWidget {
     this.padding = const EdgeInsets.fromLTRB(16, 15, 16, 15),
     this.centered = false,
     this.enabled = true,
+    this.glass,
+    this.overlay,
+    this.hairline,
+    this.leading,
+    this.trailing,
+    this.labelStyle,
+    this.foreground,
+    this.shadowOutsideOnly = false,
   });
 
   final String label;
@@ -515,6 +589,40 @@ class HudButton extends StatefulWidget {
 
   final bool enabled;
 
+  /// SCAN-G1 (core/SCAN_G1_SCOPE.md, R5): a recipe override for the one
+  /// screen whose buttons are not the panel-family [HudTokens.button] --
+  /// [HudTokens.scanPrimaryButton] and [HudTokens.scanCta]. When set, [tone]
+  /// no longer chooses the glass, wash or hairline; [overlay] and [hairline]
+  /// are used as given (null = none / the glass's own inner border). Null,
+  /// the default, leaves every existing button byte-identical -- the HUD
+  /// goldens pin that.
+  final HudGlass? glass;
+  final Gradient? overlay;
+  final Color? hairline;
+
+  /// Drawn before the label. The reference's Scan button puts its glyph
+  /// FIRST (`Sunset.dc.html:222`: icon span, then "Recognise"), where every
+  /// other handoff button puts [icon] after the label; and the glyph is a
+  /// [Text] in the Material Symbols subset, not an [Icon], so the reference's
+  /// own outline is what gets drawn. Same 9px gap as [centered]'s icon.
+  final Widget? leading;
+
+  /// Drawn after the label in place of [icon] (same slot, same gaps).
+  final Widget? trailing;
+
+  /// Overrides [HudType.panelTitle] -- the Scan CTA is `700 13.5px`
+  /// (`Sunset.dc.html:215`), not the handoff's 14. Colour still comes from
+  /// [foreground] / the tone.
+  final TextStyle? labelStyle;
+
+  /// Overrides the tone's ink for label and icon.
+  final Color? foreground;
+
+  /// Forwarded to the button's own [HudSurface] -- see that class's doc.
+  /// `false` (the default) leaves every existing button's shadow painted the
+  /// old way, byte-identical; only Scan's [glass] overrides pass `true`.
+  final bool shadowOutsideOnly;
+
   @override
   State<HudButton> createState() => _HudButtonState();
 }
@@ -527,26 +635,26 @@ class _HudButtonState extends State<HudButton> {
     final HudTokens t = context.hud;
     final bool live = widget.enabled && widget.onPressed != null;
 
-    final HudGlass glass;
-    Gradient? overlay;
-    Color? hairline;
-    switch (widget.tone) {
-      case HudButtonTone.glass:
-        glass = t.button;
-      case HudButtonTone.accent:
-        glass = t.button;
-        overlay = t.accentChipGradient;
-        hairline = t.accent.withValues(alpha: 0.40);
-      case HudButtonTone.ink:
-        glass = t.button;
-        overlay = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: t.brightness == Brightness.dark
-              ? const <Color>[Color(0x801A0F22), Color(0x4D1A0F22)]
-              : const <Color>[Color(0xB3FFFFFF), Color(0x80FFFFFF)],
-        );
-        hairline = t.textPrimary.withValues(alpha: 0.20);
+    final HudGlass glass = widget.glass ?? t.button;
+    Gradient? overlay = widget.overlay;
+    Color? hairline = widget.hairline;
+    if (widget.glass == null) {
+      switch (widget.tone) {
+        case HudButtonTone.glass:
+          break;
+        case HudButtonTone.accent:
+          overlay = t.accentChipGradient;
+          hairline = t.accent.withValues(alpha: 0.40);
+        case HudButtonTone.ink:
+          overlay = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: t.brightness == Brightness.dark
+                ? const <Color>[Color(0x801A0F22), Color(0x4D1A0F22)]
+                : const <Color>[Color(0xB3FFFFFF), Color(0x80FFFFFF)],
+          );
+          hairline = t.textPrimary.withValues(alpha: 0.20);
+      }
     }
 
     // `accent` paints a bright lime (dark theme) / saturated green (light
@@ -556,25 +664,36 @@ class _HudButtonState extends State<HudButton> {
     // exists in this exact token set for this exact case and was defined but
     // never wired to a button; every other tone keeps `textPrimary`, since
     // `glass`/`ink` fill dark regardless of theme.
-    final Color base =
-        widget.tone == HudButtonTone.accent ? t.onAccent : t.textPrimary;
+    final Color base = widget.foreground ??
+        (widget.tone == HudButtonTone.accent ? t.onAccent : t.textPrimary);
     final Color foreground = live ? base : base.withValues(alpha: 0.38);
+    final TextStyle labelStyle =
+        (widget.labelStyle ?? HudType.panelTitle(t)).copyWith(color: foreground);
+
+    final Widget? trailing = widget.trailing ??
+        (widget.icon != null
+            ? Icon(widget.icon, size: 20, color: foreground)
+            : null);
 
     final List<Widget> content = <Widget>[
+      if (widget.leading != null) ...<Widget>[
+        widget.leading!,
+        const SizedBox(width: 9),
+      ],
       Flexible(
         child: Text(
           widget.label,
-          style: HudType.panelTitle(t).copyWith(color: foreground),
+          style: labelStyle,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
       ),
-      if (widget.icon != null) ...<Widget>[
+      if (trailing != null) ...<Widget>[
         if (widget.centered)
           const SizedBox(width: 9)
         else
           const SizedBox(width: 12),
-        Icon(widget.icon, size: 20, color: foreground),
+        trailing,
       ],
     ];
 
@@ -613,6 +732,7 @@ class _HudButtonState extends State<HudButton> {
                 border: hairline,
                 borderRadius: BorderRadius.circular(widget.radius),
                 padding: widget.padding,
+                shadowOutsideOnly: widget.shadowOutsideOnly,
                 child: ExcludeSemantics(
                   child: Row(
                     mainAxisAlignment: widget.centered
@@ -622,6 +742,10 @@ class _HudButtonState extends State<HudButton> {
                         widget.centered ? MainAxisSize.min : MainAxisSize.max,
                     children: widget.centered
                         ? <Widget>[
+                            if (widget.leading != null) ...<Widget>[
+                              widget.leading!,
+                              const SizedBox(width: 9),
+                            ],
                             if (widget.icon != null) ...<Widget>[
                               Icon(widget.icon, size: 20, color: foreground),
                               const SizedBox(width: 9),
@@ -629,12 +753,15 @@ class _HudButtonState extends State<HudButton> {
                             Flexible(
                               child: Text(
                                 widget.label,
-                                style: HudType.panelTitle(t)
-                                    .copyWith(color: foreground),
+                                style: labelStyle,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                            if (widget.trailing != null) ...<Widget>[
+                              const SizedBox(width: 9),
+                              widget.trailing!,
+                            ],
                           ]
                         : content,
                   ),

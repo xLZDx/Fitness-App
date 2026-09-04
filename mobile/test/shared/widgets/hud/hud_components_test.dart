@@ -150,6 +150,45 @@ void main() {
           isNot(HudTokens.dark.chip.topHighlight),
           reason: 'selected must read as a distinct, stronger highlight');
     });
+
+    // SCAN-G1 (core/SCAN_G1_SCOPE.md, R5): `shadowOutsideOnly` is the one
+    // place `HudSurface`'s pixel-correct outside-clipped shadow (the fix
+    // above) is reachable at all -- Scan's own surfaces opt in via this
+    // flag; every existing panel/button/chip keeps the old
+    // `DecoratedBox.boxShadow` path by leaving it at its `false` default (the
+    // whole point being that those goldens do not move). Both halves proven
+    // directly on a raw `HudSurface` rather than only inferred from Scan's
+    // own golden pixels.
+    testWidgets(
+        'shadowOutsideOnly switches between the two paint paths, default off',
+        (t) async {
+      Widget raw({required bool outsideOnly}) => HudSurface(
+            glass: HudTokens.dark.panel,
+            borderRadius: BorderRadius.circular(12),
+            shadowOutsideOnly: outsideOnly,
+            child: const SizedBox(width: 40, height: 40),
+          );
+
+      await t.pumpWidget(_host(raw(outsideOnly: false)));
+      expect(
+        find.descendant(
+            of: find.byType(HudSurface), matching: find.byType(CustomPaint)),
+        findsNothing,
+        reason: 'default false must not reach the outside-shadow painter',
+      );
+      expect(_shadowDecoration(t).boxShadow, isNotEmpty);
+
+      await t.pumpWidget(_host(raw(outsideOnly: true)));
+      final CustomPaint outer = t.widget<CustomPaint>(find
+          .descendant(
+            of: find.byType(HudSurface),
+            matching: find.byType(CustomPaint),
+          )
+          .first);
+      // `_OutsideShadowPainter` is library-private, but its `shadows` field
+      // is not a private identifier, so a `dynamic` read reaches it.
+      expect((outer.painter as dynamic).shadows, isNotEmpty);
+    });
   });
 
   group('HudQuality', () {

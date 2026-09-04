@@ -592,8 +592,24 @@ void main() {
     // unchanged in kind; its bones are now drawn through the helper's whites
     // instead of `AppPalette.auroraViolet`, which is a token going away, not
     // a literal arriving. Net: 61 - 8 + 4 = 57.
+    // 57 -> 52, 2026-09-04 (SCAN-G1: the Scan screen is the reference's Scan
+    // screen). The sixth decrease, and the mirror image of R11c above:
+    // `_ScanTopBar` and the pre-SCAN-G1 `ScanFrame` are the two entries that
+    // put `scanner_page.dart` and `scan_frame.dart` in this ledger at all
+    // (57 -> 59.. history, "R11c" comment), and SCAN-G1 replaced both
+    // wholesale with `HudScreenTitle`/`ScanViewfinder`/`ScanFrame`'s rewrite,
+    // whose title, subtitle, hint and bracket colours all come from
+    // `HudTokens`/`overPhoto` now, not a literal. `scanner_page.dart` 4 -> 0
+    // (the title pill and Live label R11c added), `scan_frame.dart` 1 -> 0
+    // (the bracket outline, the one R11c's own comment says "took the
+    // outline's own `Colors.white` with it" -- it is this decrease that
+    // outline's replacement was always going to produce, five gates later).
+    // Net: 57 - 4 - 1 = 52. Confirmed by diffing HEAD vs the working tree
+    // for exactly these two files (`git show HEAD:<f> | grep -v '^\s*//' |
+    // grep -oE 'Colors\.white[0-9]*' | wc -l`): 4 and 1, nothing else in
+    // `lib/` moved.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 57, reason: 'per file: $whites');
+    expect(total, 52, reason: 'per file: $whites');
   });
 
   group('lerp', () {

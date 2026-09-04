@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/debug/g3_step10b_probe.dart';
 import '../../../core/settings/state/settings_providers.dart';
 import '../../equipment/state/equipment_providers.dart';
 import '../data/machine_card.dart';
@@ -78,6 +80,13 @@ class VisualEquipmentController extends Notifier<AsyncValue<ScanResult>> {
 
   /// The file route decodes JPEG + EXIF rotation correctly
   /// (see VisualEquipmentService — the raw-bytes route is gone).
+  /// Back to the untouched state -- what the Scan screen's "Scan again" does
+  /// (SCAN-G1, core/SCAN_G1_SCOPE.md R4): the match card leaves, the
+  /// viewfinder's hint returns to "align", and the next capture starts from
+  /// nothing rather than over a stale answer.
+  void reset() => state =
+      const AsyncValue.data(ScanResult(outcome: ScanOutcome.noEquipment));
+
   Future<void> classifyFilePath(String path) async {
     final timeout = ref.read(recogniseTimeoutProvider);
     state = const AsyncValue.loading();
@@ -136,9 +145,27 @@ class VisualEquipmentController extends Notifier<AsyncValue<ScanResult>> {
     } on TimeoutException {
       state = const AsyncValue.data(ScanResult.timeout());
     } catch (e, st) {
-      // Kept as an AsyncError as well as an outcome: the error and stack are
-      // what a bug report needs, while the outcome is what the screen renders.
+      // SCAN-G1 review: this used to claim "kept as an AsyncError as well as
+      // an outcome", but only ever set `AsyncValue.data` -- the error and
+      // stack reached nothing but `debugPrint`, which is not collected in
+      // production. An unexpected failure here (not a timeout -- a real bug
+      // in the classification pipeline) would look identical to an ordinary
+      // transient failure, with zero signal that recognition is broken.
+      // Same guard as `scanner_page.dart`'s camera-init reporting and
+      // `gemini_equipment_service.dart`'s: telemetry must never break the
+      // feature it instruments.
       debugPrint('recognition failed: $e\n$st');
+      try {
+        if (G3Step10bProbe.kEnabled) {
+          unawaited(G3Step10bProbe.recordError(e, st,
+              fatal: false, reason: 'scan classification failed'));
+        } else {
+          unawaited(FirebaseCrashlytics.instance.recordError(e, st,
+              fatal: false, reason: 'scan classification failed'));
+        }
+      } catch (_) {
+        // Reporting failure is not itself reportable.
+      }
       state = const AsyncValue.data(ScanResult.failed());
     }
   }

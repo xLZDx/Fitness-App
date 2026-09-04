@@ -431,6 +431,14 @@ void main() {
         // the flow nothing has been saved, so `currentProfileProvider` would
         // screen against the answers the user had before they answered.
         'plan_preview_provider.dart',
+        // SCAN-G1's match card subtitle ("Strength · Lats, Biceps"): reads
+        // only `ExerciseItem.muscles`/`primaryMuscles` tag strings, voted and
+        // truncated to two, to describe what a machine trains. Same shape as
+        // `workouts_page.dart` above -- it never surfaces an exercise's id,
+        // title, video or any other field an eligibility screen would need
+        // to withhold, only the muscle groups the physical machine already
+        // announces to anyone standing in front of it.
+        'scan_match_providers.dart',
       };
       final readers = <String>{};
       for (final file in dartFiles()) {

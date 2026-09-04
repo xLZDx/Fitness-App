@@ -13,17 +13,17 @@ import '../../core/camera/camera_availability.dart';
 import '../../core/camera/camera_session.dart';
 import '../../core/camera/centre_crop.dart';
 import '../../core/debug/g3_step10b_probe.dart';
-import '../../core/theme/app_palette.dart';
 import '../../core/theme/app_semantic_colors.dart';
+import '../../core/theme/hud_tokens.dart';
+import '../../core/theme/hud_typography.dart';
+import '../equipment/data/catalog_labels.dart';
 import '../equipment/state/equipment_providers.dart';
 import '../equipment/widgets/last_session_card.dart';
 import '../safety/state/eligibility_providers.dart' show safetyContextProvider;
 import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/experimental_banner.dart';
-import '../../shared/widgets/glass.dart' show FrostedScaffold;
-import '../../shared/widgets/hud/hud_metric.dart';
+import '../../shared/widgets/hud/hud_scaffold.dart';
 import '../../shared/widgets/hud/hud_surface.dart';
-import '../../shared/widgets/shell_insets.dart';
 import '../visual_equipment/data/live_recognition.dart';
 import '../visual_equipment/data/scan_outcome.dart';
 import '../visual_equipment/data/recognition_history.dart';
@@ -33,9 +33,14 @@ import '../visual_equipment/state/live_equipment_providers.dart';
 import '../visual_equipment/state/machine_card_providers.dart';
 import '../visual_equipment/state/recognition_history_providers.dart';
 import '../visual_equipment/state/visual_equipment_providers.dart';
-import '../visual_equipment/widgets/live_equipment_preview.dart';
 import '../visual_equipment/widgets/machine_card_view.dart';
+import 'scan_evidence.dart';
+import 'state/scan_match_providers.dart';
+import 'state/scan_preview_provider.dart';
 import 'widgets/scan_frame.dart';
+import 'widgets/scan_glyph.dart';
+import 'widgets/scan_match_card.dart';
+import 'widgets/scan_viewfinder.dart';
 
 /// The Scan tab.
 ///
@@ -49,6 +54,31 @@ import 'widgets/scan_frame.dart';
 /// open, because "I cannot see what I am pointing at" was a real defect. What
 /// the Live switch gates is the equipment LABELER, not the camera: that is the
 /// expensive part, and it burns battery for nothing when not asked for.
+///
+/// ## SCAN-G1: the screen is the reference's Scan screen
+///
+/// `core/SCAN_G1_SCOPE.md`. The layout is `core/design/reference/
+/// fitness_hud_v1/Fitness Glass Phone v1 - Sunset.dc.html:180-226` (and
+/// `Light.dc.html`, same lines) reproduced element for element, and it is
+/// held to that by a mechanical gate rather than by anyone's eye:
+/// `tools/design/render_reference_scan.js` renders the reference itself to
+/// `test/golden/reference/`, `scan_reference_geometry_test.dart` places every
+/// element against the DOM anchors it extracts, and
+/// `tools/design/scan_fidelity_check.py` diffs the app's pixels with the
+/// reference's. Top to bottom: title and subtitle ([HudScreenTitle]), the
+/// 230px viewfinder card ([ScanViewfinder]), the match card when a machine
+/// is locked ([ScanMatchCard]), the one primary button ("Recognise" /
+/// "Scan again"). Everything the reference does not model -- the gallery
+/// path, the live labeler toggle, the disclosure, the AI coach entry,
+/// history -- sits BELOW that button, where the reference has nothing, so
+/// production capability is kept without the reference's own region ever
+/// carrying an element the reference does not draw.
+///
+/// The full-bleed camera with a pull-up sheet that stood here before was a
+/// legitimate production decision at the time; it is replaced because the
+/// operator's instruction for this gate was that the screen look like the
+/// reference, both states, so the Form Coach story (a screen "in the spirit
+/// of" the reference, ten rounds of "no, like the picture") does not repeat.
 class ScannerPage extends ConsumerStatefulWidget {
   const ScannerPage({super.key});
 
@@ -61,7 +91,8 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   bool _handling = false;
 
   /// Distinguishes "you haven't tried yet" from "we looked and found nothing" —
-  /// the two used to render the same hint card.
+  /// the two used to render the same hint card. Also what flips the primary
+  /// button from "Recognise" to "Scan again".
   bool _attempted = false;
 
   /// Set when the camera could not be opened at all, so the page can say WHY
@@ -87,6 +118,10 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// already flagged disposed. Fields, not ref, on every teardown path.
   CameraSession? _session;
   StateController<bool>? _liveMode;
+
+  /// The viewfinder card, so a capture can read the size the user actually
+  /// framed through (SCAN-G1, R7) instead of assuming the reference's 358px.
+  final GlobalKey _viewfinderKey = GlobalKey(debugLabel: 'scan-viewfinder');
 
   @override
   void initState() {
@@ -286,7 +321,11 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         debugPrint('live-mode off on disarm skipped: $e');
       }
     }
-    await _session?.stop();
+    try {
+      await _session?.stop();
+    } catch (e) {
+      debugPrint('camera session stop on disarm failed: $e');
+    }
   }
 
   /// Every confident identification is remembered, whatever found it.
@@ -348,6 +387,15 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     await GoRouter.of(context).push('/equipment/$id');
   }
 
+  /// The viewfinder card's rendered size right now, or the reference's own
+  /// 358x230 if the card has not laid out (it always has by the time a
+  /// button under it can be tapped; the fallback is for completeness).
+  Size _viewfinderSize() {
+    final RenderObject? box = _viewfinderKey.currentContext?.findRenderObject();
+    if (box is RenderBox && box.hasSize) return box.size;
+    return const Size(358, ScanViewfinder.height);
+  }
+
   /// Primary action: photograph the machine WITHOUT leaving the app.
   ///
   /// Shoots through the same session the viewfinder shows. The old path used
@@ -367,9 +415,17 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         return;
       }
       // Classify what the user FRAMED, not the whole crowded gym: the shot is
-      // cropped to the same central region the guide frame shows. Gallery
-      // picks are deliberately not cropped — the user composed those.
-      await _classify(await centreCropForClassification(shot.path));
+      // cropped to the bracket window of the card they aimed through, mapped
+      // back through the preview's cover fit (SCAN-G1, R3/R7). Gallery picks
+      // are deliberately not cropped — the user composed those.
+      final Size card = _viewfinderSize();
+      final String cropped = await cropToViewfinder(
+        shot.path,
+        viewport: card,
+        windowNormalized: ScanViewfinder.windowNormalized(card),
+      );
+      if (kScanEvidence) await saveScanEvidenceCrop(cropped);
+      await _classify(cropped);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -412,6 +468,12 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     await ref
         .read(visualEquipmentControllerProvider.notifier)
         .classifyFilePath(path);
+    // Same mistake this file's own dispose/route-change/lifecycle paths
+    // guard against (see the class doc): a `ref.read` after an `await` can
+    // run once the page's Element is unmounted (a genuine `dispose()` mid
+    // classification -- logout, a full tree rebuild, shutdown), and would
+    // throw there instead of just being a no-op.
+    if (!mounted) return;
     final result = ref.read(visualEquipmentControllerProvider).valueOrNull;
     // The rule lives on ScanResult, not as an `if` here: this method needs a
     // real camera file to run, so a decision written inline would be one no
@@ -422,6 +484,18 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
         _remember(top.equipmentId, top.confidence, RecognitionSource.photo);
       }
     }
+  }
+
+  /// "Scan again" (SCAN-G1, R4): back to the aiming state. The controller
+  /// forgets its answer, the match card leaves, the hint returns to "align",
+  /// and the button reads "Recognise" once more. The camera never stopped.
+  void _scanAgain() {
+    if (_handling) return;
+    ref.read(visualEquipmentControllerProvider.notifier).reset();
+    setState(() {
+      _attempted = false;
+      _lastScannedPath = null;
+    });
   }
 
   /// Re-runs recognition on the same shot. Offered only for outcomes where a
@@ -445,9 +519,33 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     }
   }
 
+  /// "Strength · Lats, Biceps": the catalogue's category for the machine,
+  /// then the muscles its exercises are for, both localised. Either half may
+  /// be missing (catalogue still loading, no exercises); the line is whatever
+  /// is known, never a placeholder.
+  String _matchSubtitle(AppLocalizations l10n, String equipmentId) {
+    final String? category =
+        (ref.watch(equipmentListProvider).valueOrNull ?? const [])
+            .where((eq) => eq.id == equipmentId)
+            .map((eq) => eq.category)
+            .firstOrNull;
+    final List<String> muscles =
+        ref.watch(scanMatchMusclesProvider(equipmentId)).valueOrNull ??
+            const <String>[];
+    final List<String> parts = <String>[
+      if (category != null && category.isNotEmpty)
+        CatalogLabels.category(l10n, category),
+      if (muscles.isNotEmpty)
+        muscles.map((m) => CatalogLabels.muscle(l10n, m)).join(', '),
+    ];
+    return parts.join(' · ');
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
+    final HudTokens t = context.hud;
     final scan = ref.watch(visualEquipmentControllerProvider);
     final card = ref.watch(lastMachineCardProvider);
     final liveOn = ref.watch(liveModeEnabledProvider);
@@ -467,577 +565,373 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
       if (!_shouldWriteLive(r.equipmentId, DateTime.now())) return;
       _remember(r.equipmentId, r.confidence, RecognitionSource.live);
     });
-    return FrostedScaffold(
-      // R11c: no app bar, no page-level list. The design hands this screen to
-      // the camera -- the preview fills it edge to edge, the chrome floats on
-      // glass over it, and everything else lives in a sheet the user pulls up.
-      //
-      // The cited source for this, `App.tsx:2565-2720`, does not exist in
-      // this repository (confirmed absent, 2026-08-30 Scan mapping gate) --
-      // treat that citation as unverifiable legacy provenance, not a
-      // checkable source. There is also no `full_handoff_v1` equivalent to
-      // cite in its place: the checked-in reference's own Scan screen has no
-      // live-camera concept at all -- a static background photo with one
-      // small fixed aim-frame card
-      // (`core/design/reference/full_handoff_v1/README.md:90-91`). Per
-      // GPT-PM's explicit ruling on this gate, this full-bleed live-camera
-      // architecture is a legitimate production decision in its own right
-      // (see the operator quote two paragraphs below), not something the
-      // reference is authoritative over -- so it stays exactly as built.
-      //
-      // The screen was already most of the way there in intent: the preview
-      // was 68% of the height because "recognition is aiming, and aiming is
-      // the whole screen's job" (operator: "камера была почти во весь экран").
-      // It was still a card in a scroll view, so aiming scrolled away.
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                  if (_cameraFailure != null)
-                    _CameraUnavailable(
-                      failure: _cameraFailure!,
-                      busy: _retrying,
-                      onRetry: _retryCamera,
-                      onOpenSettings: _openCameraSettings,
-                    )
-                  else ...[
-                    LiveEquipmentPreview(session: session),
-                    // Only over a live viewfinder. An aiming frame drawn on
-                    // top of "camera access is blocked" tells the user to aim
-                    // at something that is not there — and, being the topmost
-                    // Stack child, it also sat over the overlay's own action
-                    // button. IgnorePointer because it is decoration: it must
-                    // never be what a tap lands on.
-                    //
-                    // R11c: corner brackets with a sweep line, and a pulse
-                    // while a capture is classified. The plain outline this
-                    // replaces marked the right area and said nothing else --
-                    // a two-second classification looked like a frozen
-                    // screen, because nothing on the viewfinder distinguished
-                    // "aim" from "working". The corner-bracket concept and
-                    // stroke are confirmed against the checked-in reference,
-                    // not the missing `App.tsx` this used to cite -- see
-                    // `ScanFrame`'s own doc comment for what does and does
-                    // not match it.
-                    IgnorePointer(
-                      child: ScanFrame(
-                        key: const Key('scan-frame'),
-                        phase: scan.isLoading
-                            ? ScanFramePhase.analyzing
-                            : ScanFramePhase.ready,
-                      ),
-                    ),
-                  ],
-                ],
-            ),
-          ),
-          // The design's top chrome: a title pill on
-          // glass, with the live-labelling toggle where its capture-mode
-          // button sits. No back arrow -- the design's returns to Home, and
-          // here Scan IS a root tab, so the bottom nav already does that. A
-          // second control doing the same thing is one more thing to explain.
-          //
-          // Was cited to `App.tsx:2584-2590`, a source that does not exist in
-          // this repository (confirmed absent, 2026-08-30 Scan mapping gate).
-          // No `full_handoff_v1` equivalent exists to cite instead: the
-          // checked-in reference's Scan screen has a plain title + subtitle,
-          // not a floating glass pill, and no live-labelling toggle at all --
-          // this top bar is production-only, retained as-is per this gate's
-          // "preserve production capability the reference doesn't model"
-          // ruling.
-          //
-          // MVP1.G2: the low-light banner used to be a second, independently
-          // `Align(topCenter)`-ed overlay inside the camera Stack below.
-          // Fixing its missing SafeArea in isolation made it collide with
-          // this bar instead -- both then started at the same safe-area-
-          // adjusted top. Same defect `CoachTopStrip` documents in
-          // form_check_page.dart: two Stack children positioned
-          // independently from the same edge collide the moment either
-          // one's height changes. One Column under one SafeArea instead, so
-          // they cannot overlap by construction.
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ScanTopBar(
-                    live: liveOn,
-                    onLive: (on) =>
-                        ref.read(liveModeEnabledProvider.notifier).state =
-                            on,
-                  ),
-                  // R2.2 state 9. Over the viewfinder, not instead of it:
-                  // the guidance is "add light", and a user who cannot see
-                  // what the camera sees cannot tell whether they followed
-                  // it. Non-blocking by construction.
-                  ValueListenableBuilder<bool>(
+
+    final ScanResult? result = scan.valueOrNull;
+    // "Locked": one confident answer. Only that state gets the reference's
+    // match card and the MACHINE LOCKED hint; `alternatives` is the app
+    // saying it does not know which, and is listed below the button instead.
+    final VisualMatch? locked = !scan.isLoading &&
+            result != null &&
+            result.outcome == ScanOutcome.confident &&
+            result.matches.isNotEmpty
+        ? result.matches.first
+        : null;
+    // The same honesty rule as `_MatchDetails`: only a printed-text
+    // identification is captioned "read on the machine". Kept OUTSIDE
+    // `ScanMatchCard` and rendered below the primary button, with the rest
+    // of what the reference does not model -- the invariant is that the
+    // canonical found surface is the match card ending at its CTA, then the
+    // one button; a production-only string inside the card would grow it
+    // past the reference on exactly the branch the fidelity gate's fixture
+    // never exercises (SCAN-G1 review).
+    final String? printedTextNote =
+        locked != null && locked.source == MatchSource.printedText && locked.labelHint != null
+            ? l10n.scannerReadOnMachine(locked.labelHint!.toUpperCase())
+            : null;
+    final bool scanned = _attempted && !scan.isLoading;
+    final String hint = scan.isLoading
+        ? l10n.scannerHintRecognising
+        : locked != null
+            ? l10n.scannerHintLocked
+            : l10n.scannerHintAlign;
+
+    // A transparent Material: the shell's Scaffold provides one in the app,
+    // but this page is also pumped as a bare route, and the Material widgets
+    // below the reference region (chips, expansion tiles, the Switch) assert
+    // one. The `FrostedScaffold` this replaces used to be that ancestor.
+    return Material(
+      type: MaterialType.transparency,
+      child: HudScreenBody(
+      // The reference's screen starts at the status bar and its title block
+      // carries the only top padding (`padding:6px 20px 14px`, line 182):
+      // title at y=52 with a 46px inset. `HudScreenBody`'s own 6px would
+      // double it.
+      topPadding: 0,
+      children: <Widget>[
+        HudScreenTitle(
+          l10n.scannerTitle,
+          subtitle: l10n.scannerSubtitle,
+          bottomPadding: 14,
+          // Lines 183-184 declare no text-shadow; the cards below do.
+          readabilityShadow: false,
+          subtitleColor: t.brightness == Brightness.dark
+              ? const Color(0xB8FFFFFF) // rgba(255,255,255,.72), line 184
+              : const Color(0xC71B2030), // rgba(27,32,48,.78)
+          // The handoff declares no tracking here; `HudType.body`'s shared
+          // default is left alone for every other screen (R5), so Scan pins
+          // its own subtitle instead.
+          subtitleLetterSpacing: 0,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: ScanViewfinder(
+            key: _viewfinderKey,
+            phase: scan.isLoading
+                ? ScanFramePhase.analyzing
+                : ScanFramePhase.ready,
+            hint: hint,
+            // No aiming frame over "camera access is blocked" — it would tell
+            // the user to aim at something that is not there. Evidence mode
+            // (R1) draws the bare preview so screenshots prove liveness.
+            guides: _cameraFailure == null && !kScanEvidence,
+            preview: _cameraFailure != null
+                ? _CameraUnavailable(
+                    failure: _cameraFailure!,
+                    busy: _retrying,
+                    onRetry: _retryCamera,
+                    onOpenSettings: _openCameraSettings,
+                  )
+                : ref.watch(scanPreviewBuilderProvider)(session),
+            // R2.2 state 9. Over the viewfinder, not instead of it: the
+            // guidance is "add light", and a user who cannot see what the
+            // camera sees cannot tell whether they followed it.
+            banner: _cameraFailure == null
+                ? ValueListenableBuilder<bool>(
                     valueListenable: session.isLowLight,
                     builder: (context, dark, _) => dark
-                        ? Padding(
-                            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                            child: _ViewfinderBanner(
-                              key: const Key('scan-low-light'),
-                              icon: Icons.light_mode_outlined,
-                              text: AppLocalizations.of(context)
-                                  .scannerLowLight,
-                            ),
+                        ? _ViewfinderBanner(
+                            key: const Key('scan-low-light'),
+                            icon: Icons.light_mode_outlined,
+                            text: l10n.scannerLowLight,
                           )
                         : const SizedBox.shrink(),
+                  )
+                : null,
+            corner: kScanEvidence && _cameraFailure == null
+                ? ScanEvidenceCounter(session: session)
+                : null,
+          ),
+        ),
+        if (locked != null) ...<Widget>[
+          const SizedBox(height: 14),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: ScanMatchCard(
+              confidence: locked.confidence,
+              name: equipmentDisplayName(ref, locked.equipmentId),
+              subtitle: _matchSubtitle(l10n, locked.equipmentId),
+              onOpen: () => unawaited(_openEquipment(locked.equipmentId)),
+            ),
+          ),
+        ],
+        // `margin:14px 16px 18px` -- the one primary button. Its key is the
+        // one every scanner test has always driven; the shutter it replaces
+        // carried the same key, so the tests' contract is unchanged.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+          child: HudButton(
+            key: const Key('scan-recognise-camera'),
+            label: scanned ? l10n.scannerScanAgain : l10n.scannerRecognise,
+            onPressed: scanned ? _scanAgain : _recogniseWithCamera,
+            enabled: !scan.isLoading,
+            glass: t.scanPrimaryButton,
+            // See `HudSurface.shadowOutsideOnly`'s doc -- Scan opts in, the
+            // panel-family default (every other button) does not.
+            shadowOutsideOnly: true,
+            radius: 24,
+            padding: const EdgeInsets.all(16),
+            // `font:700 14px` at line-height normal -- a 15px line box
+            // (`scan_anchors.json` `primary_label`). Height set explicitly
+            // because the Material ancestor's `DefaultTextStyle` would
+            // otherwise lend the label its 1.43 body line-height, which is
+            // where a 52px button quietly became 56; letter-spacing pinned
+            // to 0 for the same reason `scan_match_card.dart`'s styles are --
+            // the handoff declares none, `HudType.panelTitle`'s shared
+            // default is left alone for every other button (R5).
+            //
+            // The light button (`Light.dc.html:221`) carries the light
+            // panel's `text-shadow:0 1px 12px rgba(255,255,255,.9)`; the dark
+            // one (`Sunset.dc.html:221`) declares none.
+            labelStyle: t.brightness == Brightness.dark
+                ? HudType.panelTitle(t)
+                    .copyWith(height: 15 / 14, letterSpacing: 0)
+                : HudType.panelTitle(t)
+                    .copyWith(height: 15 / 14, letterSpacing: 0)
+                    .overPhoto(t),
+            centered: true,
+            leading: ScanGlyph(
+              codePoint: scanned
+                  ? ScanGlyph.refresh
+                  : ScanGlyph.centerFocusStrong,
+              size: 20,
+              color: t.textPrimary,
+            ),
+          ),
+        ),
+        // Everything the reference does not model, below its last element.
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              ScanControlsRow(
+                onGallery: _recogniseFromGallery,
+                live: liveOn,
+                onLive: (on) =>
+                    ref.read(liveModeEnabledProvider.notifier).state = on,
+              ),
+              const SizedBox(height: 10),
+              // A1. The claim this qualifies is "that machine is a lat
+              // pulldown", and this is where it is made. Right under the
+              // answer and the button, still on the first screen.
+              ExperimentalBanner(message: l10n.experimentalScanner),
+              if (locked != null) ...<Widget>[
+                // Level-1 equipment-type memory, right where the user just
+                // identified the machine -- not inside the match card,
+                // because a "last time here" fact and a "how sure the
+                // classifier is" fact come from two different sources of
+                // truth and must not read as one (and SCAN-G1 R4: the card
+                // ends at its CTA). Same widget the equipment detail page
+                // uses, unchanged: it hides itself for a confirmed
+                // no-history and only ever shows real logged numbers.
+                const SizedBox(height: 10),
+                LastSessionCard(equipmentId: locked.equipmentId),
+                // R2.8. Only for a confident answer: the coach needs ONE
+                // subject, and `alternatives` is the app saying it does not
+                // know which of them the user is standing at.
+                const SizedBox(height: 10),
+                _ScanAiCoachEntry(match: locked),
+                if (printedTextNote != null) ...<Widget>[
+                  const SizedBox(height: 10),
+                  _ScanNote(
+                    key: const Key('scan-match-note'),
+                    icon: Icons.text_fields_rounded,
+                    text: printedTextNote,
                   ),
                 ],
-              ),
-            ),
-          ),
-          // Everything that is not the viewfinder. A sheet rather than a list
-          // under the camera: at rest it shows the capture controls and the
-          // top of the answer, and it pulls up over the preview when the user
-          // wants the history or the alternatives.
-          // Sized in PIXELS, not in a fraction of the screen.
-          //
-          // `MainShell` sets `extendBody: true`, so this Stack is laid out
-          // against the full height and the nav bar is then painted over its
-          // bottom ~110-130px. The old `minChildSize: 0.24` ignored that: on a
-          // 780px phone the sheet's lowest position was 187px tall, of which
-          // 128 were behind the bar — the caption under the shutter was gone
-          // and the scrollable strip, the ONLY surface that can drag the sheet
-          // back up, was entirely hidden. The sheet became unrecoverable, not
-          // merely cramped, which is exactly what the operator hit.
-          //
-          // LayoutBuilder rather than `MediaQuery.sizeOf`: `FrostedScaffold`
-          // decides this body's height, and a screen-height guess would be
-          // wrong by the status bar in the unsafe direction.
-          LayoutBuilder(builder: (context, box) {
-            const maxFrac = 0.92;
-            final obstruction = shellBottomObstruction(context);
-            double frac(double content, double designed) => sheetMinChildSize(
-                  viewportHeight: box.maxHeight,
-                  obstruction: obstruction,
-                  visibleContentNeeded: content,
-                  floor: designed,
-                  ceiling: maxFrac,
-                );
-            // The design's own 0.24 / 0.34 are kept as the FLOOR. On a screen
-            // tall enough for them they are what the sheet uses, unchanged;
-            // the pixel budget only lifts them where the bar would otherwise
-            // eat the controls.
-            final minFrac = frac(_kScanSheetHead + _kScanSheetDragStrip, 0.24);
-            final restFrac = frac(
-                _kScanSheetHead +
-                    _kScanSheetRestingPeek +
-                    _kScanSheetBannerAllowance,
-                0.34);
-            return DraggableScrollableSheet(
-            initialChildSize: restFrac,
-            minChildSize: minFrac,
-            maxChildSize: maxFrac,
-            snap: true,
-            builder: (context, controller) => _ScanSheet(
-              controller: controller,
-              bottomInset: obstruction,
-              capture: _CaptureCluster(
-                onCamera: _recogniseWithCamera,
-                onGallery: _recogniseFromGallery,
-              ),
-              children: [
-          const _ScanPrivacyStrip(),
-          // Also gated on `_cameraFailure == null`, the same condition the
-          // viewfinder itself branches on above: without it, denying camera
-          // permission left this card showing regardless, its `_LiveCard`
-          // spinner stuck on "Ищем..." forever -- no frames were ever going
-          // to arrive to settle it, and nothing on screen said why.
-          if (liveOn && _cameraFailure == null) ...[
-            const SizedBox(height: 14),
-            _LiveSection(onOpen: _openEquipment),
-          ],
-          const SizedBox(height: 14),
-          scan.when(
-            loading: () => const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: Center(child: CircularProgressIndicator()),
-            ),
-            // Kept for a state the controller no longer produces — it now
-            // converts every failure into a ScanResult so the outcome, not an
-            // exception, drives the screen. Left as a safety net rather than
-            // a `!`: an unexpected AsyncError must not blank the page.
-            error: (e, _) => HudPanel(
-              tone: HudPanelTone.error,
-              child: Text(
-                  AppLocalizations.of(context).scannerRecognitionFailed(e)),
-            ),
-            data: (result) => switch (result.outcome) {
-              ScanOutcome.confident || ScanOutcome.alternatives => Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // R2.8. Only for a confident answer: the coach needs ONE
-                    // subject, and `alternatives` is the app saying it does
-                    // not know which of them the user is standing at. Offering
-                    // "ask about this machine" there would pick one silently —
-                    // the same thing the alternatives list exists to avoid.
-                    if (result.outcome == ScanOutcome.confident &&
-                        result.matches.isNotEmpty) ...[
-                      _ScanAiCoachEntry(match: result.matches.first),
-                      const SizedBox(height: 10),
-                    ],
-                    // R2.2 state 12. The hybrid recogniser falls back to the
-                    // on-device model "silently-but-logged" — the user got the
-                    // weaker answer and was never told why it was weaker, so a
-                    // low-confidence result in a basement gym read as the app
-                    // being bad rather than the network being absent.
-                    if (result.answeredOffline) ...[
-                      _ScanNote(
-                        key: const Key('scan-offline-answer'),
-                        icon: Icons.cloud_off_rounded,
-                        text: AppLocalizations.of(context)
-                            .scannerOfflineAnswer,
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                    _Matches(matches: result.matches, onOpen: _openEquipment),
-                  ],
-                ),
-              // Not in the catalogue, but the describer could name it. That
-              // card IS the answer -- "не удалось понять" stops being true the
-              // moment the app can say what the machine is.
-              ScanOutcome.unknown => card != null
-                  ? MachineCardView(card: card)
-                  : _HintCard(theme: theme, noMatch: _attempted),
-              // Nothing machine-like in the frame. Distinct from unknown:
-              // telling someone pointing at a wall that their machine is
-              // missing from our catalogue is a lie about our data.
-              ScanOutcome.noEquipment =>
-                _HintCard(theme: theme, noMatch: _attempted),
-              ScanOutcome.timeout => _ScanProblemCard(
-                  key: const Key('scan-timeout'),
-                  title: AppLocalizations.of(context).scannerTimeoutTitle,
-                  body: AppLocalizations.of(context).scannerTimeoutBody,
-                  busy: _handling,
-                  onRetry: _retryLastScan,
-                ),
-              ScanOutcome.failed => _ScanProblemCard(
-                  key: const Key('scan-failed'),
-                  title: AppLocalizations.of(context).scannerFailedTitle,
-                  body: AppLocalizations.of(context).scannerFailedBody,
-                  busy: _handling,
-                  onRetry: _retryLastScan,
-                ),
-            },
-          ),
-          const SizedBox(height: 20),
-          _HistorySection(onOpen: _openEquipment),
-          const _PreparingSection(),
               ],
-            ),
-            );
-          }),
-        ],
+              // R2.2 state 12. The hybrid recogniser falls back to the
+              // on-device model "silently-but-logged" — the user got the
+              // weaker answer and was never told why it was weaker.
+              if (result != null && !scan.isLoading && result.answeredOffline)
+                ...<Widget>[
+                const SizedBox(height: 10),
+                _ScanNote(
+                  key: const Key('scan-offline-answer'),
+                  icon: Icons.cloud_off_rounded,
+                  text: l10n.scannerOfflineAnswer,
+                ),
+              ],
+              const SizedBox(height: 10),
+              scan.when(
+                // The viewfinder already says RECOGNISING and pulses; a
+                // second spinner here would compete with it.
+                loading: () => const SizedBox.shrink(),
+                // Kept for a state the controller no longer produces — it
+                // now converts every failure into a ScanResult so the
+                // outcome, not an exception, drives the screen. Left as a
+                // safety net rather than a `!`: an unexpected AsyncError
+                // must not blank the page.
+                error: (e, _) => HudPanel(
+                  tone: HudPanelTone.error,
+                  child: Text(l10n.scannerRecognitionFailed(e)),
+                ),
+                data: (result) => switch (result.outcome) {
+                  // The locked match is the card above; the runners-up are
+                  // listed here so a wrong first guess is one tap from the
+                  // right one.
+                  ScanOutcome.confident => result.matches.length > 1
+                      ? _Matches(
+                          matches: result.matches.skip(1).toList(),
+                          heading: l10n.scannerBestMatches,
+                          onOpen: _openEquipment,
+                        )
+                      : const SizedBox.shrink(),
+                  ScanOutcome.alternatives => _Matches(
+                      matches: result.matches,
+                      heading: l10n.scannerNotSureClosest,
+                      onOpen: _openEquipment,
+                    ),
+                  // Not in the catalogue, but the describer could name it.
+                  // That card IS the answer -- "не удалось понять" stops
+                  // being true the moment the app can say what the machine
+                  // is.
+                  ScanOutcome.unknown => card != null
+                      ? MachineCardView(card: card)
+                      : _attempted
+                          ? _HintCard(theme: theme, noMatch: true)
+                          : const SizedBox.shrink(),
+                  // Nothing machine-like in the frame. Distinct from unknown:
+                  // telling someone pointing at a wall that their machine is
+                  // missing from our catalogue is a lie about our data. Before
+                  // any attempt this is the controller's initial state, and
+                  // the subtitle under the title already says what to do.
+                  ScanOutcome.noEquipment => _attempted
+                      ? _HintCard(theme: theme, noMatch: true)
+                      : const SizedBox.shrink(),
+                  ScanOutcome.timeout => _ScanProblemCard(
+                      key: const Key('scan-timeout'),
+                      title: l10n.scannerTimeoutTitle,
+                      body: l10n.scannerTimeoutBody,
+                      busy: _handling,
+                      onRetry: _retryLastScan,
+                    ),
+                  ScanOutcome.failed => _ScanProblemCard(
+                      key: const Key('scan-failed'),
+                      title: l10n.scannerFailedTitle,
+                      body: l10n.scannerFailedBody,
+                      busy: _handling,
+                      onRetry: _retryLastScan,
+                    ),
+                },
+              ),
+              // Also gated on `_cameraFailure == null`, the same condition the
+              // viewfinder itself branches on: without it, denying camera
+              // permission left this card showing regardless, its `_LiveCard`
+              // spinner stuck on "Ищем..." forever -- no frames were ever
+              // going to arrive to settle it, and nothing on screen said why.
+              if (liveOn && _cameraFailure == null) ...<Widget>[
+                const SizedBox(height: 10),
+                _LiveSection(onOpen: _openEquipment),
+              ],
+              const SizedBox(height: 10),
+              const _ScanPrivacyStrip(),
+              const SizedBox(height: 20),
+              _HistorySection(onOpen: _openEquipment),
+              const _PreparingSection(),
+            ],
+          ),
+        ),
+      ],
       ),
     );
   }
 }
 
-/// The glass strip over the top of the viewfinder.
+/// The production controls under the reference's button: the gallery path
+/// and the live-labeler toggle, in one row.
 ///
 /// Public so its layout can be pumped at a given width and locale without a
-/// camera. It was private, and the only way to reach it was through the whole
-/// scanner page — which is why the 12px Russian overflow it shipped with was
-/// found by a device walk rather than by a widget test that costs milliseconds.
-/// Testability is a design property; see `scan_strip_overflow_test.dart`.
-class ScanTopBar extends StatelessWidget {
-  const ScanTopBar({super.key, required this.live, required this.onLive});
+/// camera: the strip this replaces overflowed by 12px in Russian on a real
+/// device while every host test rendered it in English
+/// (`scan_strip_overflow_test.dart`). Both keys are the ones every scanner
+/// test drives (`scan-recognise-gallery`, `scan-live-toggle`).
+class ScanControlsRow extends StatelessWidget {
+  const ScanControlsRow({
+    super.key,
+    required this.onGallery,
+    required this.live,
+    required this.onLive,
+  });
 
+  final VoidCallback onGallery;
   final bool live;
   final ValueChanged<bool> onLive;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-      // Both pills shrink; neither is allowed to push the row past the screen.
-      //
-      // This strip overflowed by 12px on a real device in Russian, and the
-      // reason it was never caught is worth keeping: the host suite renders in
-      // English (`kTestLocale`), where these read "Scan" and "Live". Production
-      // pins Russian — "Распознавание" and "Живой режим" — so the overflow was
-      // visible to every actual user and to none of the 2,039 host tests. The
-      // device walk found it on the first run.
-      // Both pills shrink; neither may push the row past the screen.
-      //
-      // This strip overflowed on a real device in Russian, and the reason no
-      // host test saw it is worth keeping: the suite renders in English
-      // (`kTestLocale`), where these read "Scan" and "Live" -- four characters
-      // each. Production pins Russian (`main.dart`): "Распознавание" and
-      // "Живой режим". Measured against the pre-fix layout, the overflow was
-      // 142px at 320 logical pixels, 102px at 360 and 51px at 411 -- so it was
-      // visible to every Russian-speaking user, worst on the cheapest phones,
-      // and invisible to all 2,039 host tests. The device walk found it on its
-      // first run; `scan_strip_overflow_test.dart` now holds it.
-      child: Row(
-        // Keeps the two pills at opposite ends the way `Spacer` did, without
-        // `Spacer`'s side effect: it takes every pixel the children do not,
-        // which makes the row's minimum width the sum of two unshrinkable
-        // pills plus a Switch, whatever the screen is.
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: theme.colors.cameraOverlay,
-                borderRadius: BorderRadius.circular(99),
-              ),
-              child: Text(
-                l10n.scannerScan,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
+    final HudTokens t = context.hud;
+    return Row(
+      children: <Widget>[
+        // The gallery button shrinks (its label ellipsises); the toggle keeps
+        // its intrinsic size, because an ellipsised label is still readable
+        // and a squeezed Switch is not reliably tappable.
+        Expanded(
+          child: HudButton(
+            key: const Key('scan-recognise-gallery'),
+            label: l10n.scannerFromGallery,
+            onPressed: onGallery,
+            centered: true,
+            leading: ScanGlyph(
+              codePoint: ScanGlyph.photoLibrary,
+              size: 20,
+              color: t.textPrimary,
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        HudPanel(
+          radius: HudTokens.radiusButton,
+          padding: const EdgeInsets.fromLTRB(14, 2, 4, 2),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              // Gates the labeler, not the camera.
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 96),
+                child: Text(
+                  l10n.scannerLive,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: HudType.rowTitle(t),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Gates the labeler, not the camera. On the scrim rather than in a
-          // bar, so it stays the same control it was -- the tests that drive
-          // `scan-live-toggle` still find a Switch.
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.only(left: 12),
-              decoration: BoxDecoration(
-                color: theme.colors.cameraOverlay,
-                borderRadius: BorderRadius.circular(99),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      l10n.scannerLive,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelLarge
-                          ?.copyWith(color: Colors.white),
-                    ),
-                  ),
-                  // The Switch keeps its intrinsic size on purpose: an
-                  // ellipsised label is still readable, a squeezed toggle is
-                  // not reliably tappable.
-                  Switch(
-                    key: const Key('scan-live-toggle'),
-                    value: live,
-                    onChanged: onLive,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Gallery, shutter, and the room the design leaves for a flash control.
-///
-/// The shutter is a 68px circle rather than the old full-width filled button.
-/// Was cited to `App.tsx:2636-2700`, a source that does not exist in this
-/// repository (confirmed absent, 2026-08-30 Scan mapping gate). No
-/// `full_handoff_v1` equivalent exists to cite instead: the checked-in
-/// reference's Scan screen has one labelled pill button ("Recognise"/"Scan
-/// again"), not a circular shutter plus a separate gallery affordance -- this
-/// capture cluster is production-only, retained as-is per this gate's
-/// "preserve production capability the reference doesn't model" ruling
-/// (2026-08-30 Scan mapping gate -- this comment corrects the stale App.tsx
-/// citation only; it makes no layout change of its own). Both keys are
-/// unchanged (`scan-recognise-camera`, `scan-recognise-gallery`) because they
-/// are what every scanner test drives; the earlier scanner layout gate this
-/// widget was built in changed where these controls sit, not what they do.
-class _CaptureCluster extends StatelessWidget {
-  const _CaptureCluster({required this.onCamera, required this.onGallery});
-
-  final VoidCallback onCamera;
-  final VoidCallback onGallery;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    return Column(
-      children: [
-        Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Not `AppIconButton`: that wraps `IconButton`, which drops the
-        // visible outline this control has always had. `Tooltip` is the same
-        // fix `IconButton.tooltip` applies internally, applied by hand.
-        SizedBox(
-          width: 56,
-          child: Tooltip(
-            message: l10n.scannerPickFromGallery,
-            child: OutlinedButton(
-              key: const Key('scan-recognise-gallery'),
-              onPressed: onGallery,
-              child: const Icon(Icons.photo_library_outlined),
-            ),
-          ),
-        ),
-        const SizedBox(width: 28),
-        Tooltip(
-          message: l10n.scannerRecogniseMachine,
-          child: Semantics(
-            button: true,
-            label: l10n.scannerRecogniseMachine,
-            child: Material(
-              color: theme.colors.accentPrimary,
-              shape: const CircleBorder(),
-              child: InkWell(
-                key: const Key('scan-recognise-camera'),
-                customBorder: const CircleBorder(),
-                onTap: onCamera,
-                child: SizedBox(
-                  width: 68,
-                  height: 68,
-                  child: Icon(Icons.photo_camera_outlined,
-                      size: 28, color: theme.colors.onAccent),
+              // `Switch` asserts a `Material` ancestor. The shell's Scaffold
+              // is one in the app; a bare route in a test is not, and the
+              // HUD surfaces this row sits on are not Material either.
+              Material(
+                type: MaterialType.transparency,
+                child: Switch(
+                  key: const Key('scan-live-toggle'),
+                  value: live,
+                  onChanged: onLive,
                 ),
               ),
-            ),
+            ],
           ),
-        ),
-        // The design's third slot is a flash toggle. Left empty rather than
-        // faked: `CameraSession` has no torch API, and a button that cannot
-        // turn the light on is worse than a gap. Balanced so the shutter stays
-        // centred.
-        const SizedBox(width: 28),
-        const SizedBox(width: 56),
-      ],
-        ),
-        const SizedBox(height: 6),
-        // The design's shutter is a bare circle. This app names its controls:
-        // an icon-only PRIMARY action is discoverable only to someone who
-        // already knows what it does, and `gallery_button_a11y_test.dart`
-        // exists because that exact gap was found here before. The caption
-        // keeps the design's shape and the control's name.
-        Text(
-          l10n.scannerRecogniseMachine,
-          style: theme.textTheme.labelMedium
-              ?.copyWith(color: theme.colors.textSecondary),
         ),
       ],
-    );
-  }
-}
-
-/// The scan sheet's fixed head: `8 + 4` for the drag handle, `12`, then the
-/// capture cluster (a 68px shutter, a 6px gap and its ~18px caption), then 12.
-///
-/// Named because the sheet's minimum height is DERIVED from it. Written as the
-/// sum rather than as `128` so that changing the shutter changes the number
-/// that keeps it on screen.
-const double _kScanSheetHead = 8 + 4 + 12 + 68 + 6 + 18 + 12;
-
-/// The scrollable strip kept visible when the sheet is at its lowest.
-///
-/// This is the load-bearing one. The head does not scroll, so the list is the
-/// only surface a drag can reach, and `DraggableScrollableSheet` grows the
-/// sheet from that list's overscroll. A minimum that hides the list leaves the
-/// sheet with no way back up at all.
-const double _kScanSheetDragStrip = 72;
-
-/// How much of the answer sits under the head when the sheet is at rest.
-///
-/// A1 note: the disclosure banner is now the first thing in this list, so this
-/// budget alone no longer describes what is visible — the banner eats into it
-/// before the answer starts. [_kScanSheetBannerAllowance] is added at the call
-/// site so the answer keeps the visibility this number was chosen for.
-const double _kScanSheetRestingPeek = 150;
-
-/// Room for the experimental disclosure that now precedes the answer.
-///
-/// An allowance, not a measurement: the banner is two text lines at default
-/// scale and grows with the user's text size, so no constant can be exactly
-/// right. It is sized for the default case, which is the one where a too-small
-/// value would silently push the scan result under the fold.
-///
-/// The cost is a slightly taller sheet at rest, i.e. slightly less viewfinder.
-/// That is the deliberate trade: this screen's job is aiming, but a disclosure
-/// the user must drag to discover is not a disclosure, and an answer they must
-/// drag to discover is not an answer either. Both fit instead.
-const double _kScanSheetBannerAllowance = 96;
-
-/// The pull-up sheet holding everything that is not the viewfinder.
-class _ScanSheet extends StatelessWidget {
-  const _ScanSheet({
-    required this.controller,
-    required this.capture,
-    required this.children,
-    required this.bottomInset,
-  });
-
-  final ScrollController controller;
-  final Widget capture;
-  final List<Widget> children;
-
-  /// Pixels at the bottom covered by the nav bar. The list pads past it so its
-  /// last row can be scrolled clear of the bar instead of resting under it.
-  final double bottomInset;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        // Opaque, not the card's translucent fill: this sheet sits over a live
-        // camera frame, and at card opacity the preview reads straight through
-        // the text on top of it -- the same defect `GlassCard.floating`
-        // documents for bottom sheets.
-        color: theme.colors.surfaceElevated,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        border: Border(top: BorderSide(color: theme.colors.outline)),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          Container(
-            width: 38,
-            height: 4,
-            decoration: BoxDecoration(
-              color: theme.colors.textDisabled,
-              borderRadius: BorderRadius.circular(99),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: capture,
-          ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: ListView(
-              controller: controller,
-              // Was a flat `110`, which was a guess at the bar's height and
-              // ignored the gesture inset underneath it entirely.
-              padding: EdgeInsets.fromLTRB(12, 0, 12, bottomInset + 12),
-              children: [
-                // A1. In the sheet rather than over the viewfinder: the claim
-                // this qualifies is "that machine is a lat pulldown", and the
-                // sheet is where it is made. A permanent band across a camera
-                // whose whole job is aiming would be read once and then be in
-                // the way for every scan after.
-                ExperimentalBanner(
-                    message: AppLocalizations.of(context).experimentalScanner),
-                ...children,
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -1252,8 +1146,6 @@ class _HintCard extends StatelessWidget {
   }
 }
 
-/// Live-mode readout. What the camera has settled on, how much of the vote
-/// agreed, and a way straight into the exercises.
 /// The catalogue's own localised name for [equipmentId], or the prettified id
 /// while the catalogue is still loading.
 ///
@@ -1273,6 +1165,8 @@ String equipmentDisplayName(WidgetRef ref, String equipmentId) =>
         .firstOrNull ??
     equipmentId.replaceAll('_', ' ');
 
+/// Live-mode readout. What the camera has settled on, how much of the vote
+/// agreed, and a way straight into the exercises.
 class _LiveCard extends ConsumerWidget {
   const _LiveCard({required this.recognition, required this.onOpen});
   final LiveRecognition? recognition;
@@ -1377,48 +1271,37 @@ class _LiveCard extends ConsumerWidget {
   }
 }
 
+/// A headed list of plain match rows: the runners-up under a locked match,
+/// or every candidate of an undecided (`alternatives`) result.
+///
+/// No hero here any more: the confident top match is the reference's match
+/// card ([ScanMatchCard]), drawn by the page above the primary button.
 class _Matches extends ConsumerWidget {
-  const _Matches({required this.matches, required this.onOpen});
+  const _Matches({
+    required this.matches,
+    required this.heading,
+    required this.onOpen,
+  });
 
   /// Routed through the page so navigation is uniform; the route listener is
   /// what releases the camera.
   final Future<void> Function(String equipmentId) onOpen;
   final List<VisualMatch> matches;
-
-  /// Below this the header stops claiming "best matches" and says the app is
-  /// not sure. With honest (un-renormalised) confidences a weak top match is
-  /// visible again — the old pipeline inflated any lone survivor to 100%.
-  static const _unsureBelow = 0.45;
+  final String heading;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final unsure = matches.isEmpty || matches.first.confidence < _unsureBelow;
-    // A hero only for a match confident enough to headline -- the same bar
-    // that already decides "Best matches" vs "Not sure", so the ring never
-    // claims a certainty the header itself is denying.
-    final hero = unsure ? null : matches.first;
-    final rest = hero == null ? matches : matches.skip(1);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          unsure
-              ? AppLocalizations.of(context).scannerNotSureClosest
-              : AppLocalizations.of(context).scannerBestMatches,
+          heading,
           style: theme.textTheme.titleMedium
               ?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 8),
-        if (hero != null) ...[
-          _HeroMatchCard(
-            match: hero,
-            name: equipmentDisplayName(ref, hero.equipmentId),
-            onOpen: onOpen,
-          ),
-          const SizedBox(height: 8),
-        ],
-        for (final m in rest) ...[
+        for (final m in matches) ...[
           HudPanel(
             onTap: () => onOpen(m.equipmentId),
             child: Row(
@@ -1440,16 +1323,14 @@ class _Matches extends ConsumerWidget {
   }
 }
 
-/// The name/confidence/printed-text-hint column shared by the hero card and
-/// every plain match row -- one place, so the honesty rule on
-/// [VisualMatch.labelHint] (only captioned "read on the machine" for
-/// [MatchSource.printedText]) cannot drift between the two.
+/// The name/confidence/printed-text-hint column of a plain match row -- one
+/// place, so the honesty rule on [VisualMatch.labelHint] (only captioned
+/// "read on the machine" for [MatchSource.printedText]) cannot drift.
 class _MatchDetails extends StatelessWidget {
-  const _MatchDetails({required this.match, required this.name, this.titleStyle});
+  const _MatchDetails({required this.match, required this.name});
 
   final VisualMatch match;
   final String name;
-  final TextStyle? titleStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -1460,7 +1341,7 @@ class _MatchDetails extends StatelessWidget {
       children: [
         Text(
           name,
-          style: titleStyle ??
+          style:
               theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
         Text(
@@ -1477,80 +1358,6 @@ class _MatchDetails extends StatelessWidget {
                 ?.copyWith(color: theme.colors.textSecondary),
           ),
       ],
-    );
-  }
-}
-
-/// The confident top match, headlined with a real confidence ring.
-///
-/// `HudRing` was already sized for this exact screen ("Scan 78" — `r 34,
-/// 2.5pt, no guide` — `hud_metric.dart`), just never wired to a real value
-/// here. The ring binds [VisualMatch.confidence] directly: `rankTopK`
-/// deliberately does not renormalise surviving candidates
-/// (`visual_equipment_match.dart`) after a past bug inflated a lone weak
-/// survivor to "100%", so this must never re-derive or invent a number either
-/// -- what the ring draws is the same figure the row below it has always
-/// printed as "N% confidence".
-class _HeroMatchCard extends StatelessWidget {
-  const _HeroMatchCard(
-      {required this.match, required this.name, required this.onOpen});
-
-  final VisualMatch match;
-  final String name;
-  final Future<void> Function(String equipmentId) onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
-    return HudPanel(
-      onTap: () => onOpen(match.equipmentId),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              HudRing(
-                size: 78,
-                radius: 34,
-                strokeWidth: 2.5,
-                glowBlur: 6,
-                progress: match.confidence,
-                semanticsLabel: l10n.scannerMatchLabel,
-                child: HudRingLabel(
-                  // Same rounding as the confidence line beside it
-                  // (`_MatchDetails`) -- `.round()` here disagreed with that
-                  // `toStringAsFixed(0)` on a binary-tie percentage, showing
-                  // two different numbers for the one figure this file is
-                  // most careful never to invent.
-                  value: (match.confidence * 100).toStringAsFixed(0),
-                  caption: l10n.scannerMatchLabel,
-                  valueSize: 22,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _MatchDetails(
-                  match: match,
-                  name: name,
-                  titleStyle: theme.textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w800),
-                ),
-              ),
-              const Icon(Icons.chevron_right_rounded),
-            ],
-          ),
-          // Level-1 equipment-type memory, surfaced right where the user
-          // just identified the machine -- not folded into the recognition
-          // row above, because a "last time here" fact and a "how sure the
-          // classifier is" fact come from two different sources of truth and
-          // must not read as one. Same widget the equipment detail page
-          // uses (`LastSessionCard`), unchanged: it already hides itself for
-          // a confirmed no-history and only ever shows real logged numbers.
-          const SizedBox(height: 12),
-          LastSessionCard(equipmentId: match.equipmentId),
-        ],
-      ),
     );
   }
 }
@@ -1785,12 +1592,17 @@ class _ScanProblemCard extends StatelessWidget {
   }
 }
 
-/// The camera-off overlay, with the reason and the action that fixes it.
+/// The camera-off state, inside the viewfinder card, with the reason and the
+/// action that fixes it.
 ///
 /// R2.9. The previous version took a raw `Object error`, printed one title for
 /// every cause, and interpolated the exception into the body — which is both
 /// the "never show internal exceptions" prohibition and, for a user who had
 /// simply refused the permission, no path back: there was no button at all.
+///
+/// SCAN-G1: it now fills the 230px card rather than the whole screen, so the
+/// rest of the reference layout (title, button, the gallery path that still
+/// works without a camera) stays where the reference puts it.
 class _CameraUnavailable extends StatelessWidget {
   const _CameraUnavailable({
     required this.failure,
@@ -1841,8 +1653,8 @@ class _CameraUnavailable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+    final HudTokens t = context.hud;
     // Settings for a permission only Settings can change; retry for anything
     // the user could plausibly have just fixed. `noCamera` gets neither —
     // offering a retry for absent hardware would be a lie with a button on it.
@@ -1862,52 +1674,49 @@ class _CameraUnavailable extends StatelessWidget {
               )
             : null;
 
-    return Container(
+    // The dark token set explicitly: this is drawn where the camera would
+    // be, and the camera is dark whatever theme the app is in.
+    final AppSemanticColors dark = AppSemanticColors.dark;
+    return ColoredBox(
       key: const Key('scan-camera-unavailable'),
-      color: Colors.black.withValues(alpha: 0.65),
-      padding: const EdgeInsets.all(24),
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  gradient: const LinearGradient(colors: [
-                    AppPalette.auroraViolet,
-                    AppPalette.auroraBlue,
-                  ]),
+      color: dark.cameraOverlay,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(_icon, color: dark.textPrimary, size: 28),
+                const SizedBox(height: 8),
+                Text(
+                  _title(l10n),
+                  textAlign: TextAlign.center,
+                  style: HudType.panelTitle(t).copyWith(color: dark.textPrimary),
                 ),
-                child: Icon(_icon,
-                    color: AppSemanticColors.onGradientInk, size: 36),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                _title(l10n),
-                textAlign: TextAlign.center,
-                style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.white, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                _body(l10n),
-                style:
-                    theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
-                textAlign: TextAlign.center,
-              ),
-              if (action != null) ...[
-                const SizedBox(height: 16),
-                AppPrimaryButton(
-                  key: action.key,
-                  onPressed: busy ? null : () => unawaited(action.onPressed()),
-                  loading: busy,
-                  label: action.label,
+                const SizedBox(height: 4),
+                Text(
+                  _body(l10n),
+                  style: HudType.body(t, size: 11.5)
+                      .copyWith(color: dark.textSecondary),
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                if (action != null) ...[
+                  const SizedBox(height: 10),
+                  HudButton(
+                    key: action.key,
+                    label: action.label,
+                    onPressed: busy ? null : () => unawaited(action.onPressed()),
+                    enabled: !busy,
+                    centered: true,
+                    padding: const EdgeInsets.fromLTRB(16, 11, 16, 11),
+                    foreground: dark.textPrimary,
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),

@@ -230,6 +230,17 @@ abstract final class HudType {
         fontSize: size,
         fontWeight: weight,
         height: height,
+        // A null field here INHERITS from the ambient `DefaultTextStyle`,
+        // which under a Material ancestor is the theme's `bodyMedium` and
+        // its 0.3px tracking -- the handoff declares no letter-spacing on
+        // these styles, so that is a real leak (measured by SCAN-G1's
+        // fidelity diff: the Scan subtitle came out 12 logical px wider than
+        // the same string in Chrome). Left as `letterSpacing` unchanged
+        // rather than pinned to 0 here: this is every screen's shared base,
+        // and R5 (core/SCAN_G1_SCOPE.md) requires existing HUD goldens not
+        // to move. Scan pins its own affected styles to 0 explicitly at its
+        // own call sites instead (`HudScreenTitle.subtitleLetterSpacing`,
+        // `scan_match_card.dart`'s `.copyWith(letterSpacing: 0)`).
         letterSpacing: letterSpacing,
         color: color,
       );

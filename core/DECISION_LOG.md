@@ -42640,3 +42640,46 @@ font bytes and SDK version -- and NOT a defect introduced by anything done
 tonight. No remediation performed and none needed; recording it so the
 failing Windows numbers cannot later be mistaken for a fresh regression.
 The authoritative evidence for these goldens remains the container run.
+
+**SCAN-G1 implementation snapshot committed with R2 still OPEN, on GPT-PM's
+explicit GO (2026-09-05).** Option B of a §16 question, not a unilateral call.
+
+**Why it was asked at all.** Option B's remaining step is physical: the
+Mi 9T Pro holds the only non-anonymous session available, MIUI refuses
+injected taps, and GPT-PM had already ruled that boundary must not be
+engineered around. No `sendevent` or other bypass was attempted, and none
+will be. Meanwhile the gate's own 51-path diff had been sitting uncommitted
+across a long session in a checkout this workspace routinely runs concurrent
+sessions against -- an uncommitted tree is precisely the state another
+session can silently damage (see auto-memory
+`concurrent-sessions-in-workspace`). So the real question was not "how do I
+get the tap" but "what happens to reviewed, validated, uncommitted work
+while it waits".
+
+**Options put to GPT-PM:** (A) commit nothing and keep waiting; (B) commit
+the SCAN-G1 diff now with R2 explicitly recorded as OPEN/BLOCKED, no push,
+no distribution, and close R2 in a short follow-up round after the tap;
+(C) its own alternative. Recommended (B) on the grounds that committing is
+reversible, protects reviewed work, and asserts nothing about closure.
+
+**GPT-PM: `GO: Option B. COMMIT: AUTHORIZED now. PUSH: HOLD.`** Its
+conditions, all met: verify the commit contains only the 51 SCAN-G1 paths
+and nothing from a concurrent session (checked against `git status
+--porcelain` and `git log` before committing -- all 51 are scanner/golden/
+reference/tools-design/l10n/hud/test paths plus `core/SCAN_G1_SCOPE.md`, and
+the three preceding commits are this session's own); state R1/R3-R7 CLOSED
+and R2 OPEN/BLOCKED in the message; state that the commit does NOT close
+SCAN-G1 and implies no release or distribution authorization; keep the SHA
+as the immutable baseline for final R2 verification.
+
+**Its reasoning on push, worth preserving:** push authority exists, but it is
+deliberately held so `origin` does not come to look like a finished SCAN-G1
+state before the mandatory live evidence exists. And explicitly: **if the tap
+eventually shows the security path passing but recognition returning the
+wrong machine or insufficient confidence, the snapshot commit must NOT be
+rewritten** -- record the actual R2 failure and remediate on top of it. It
+also rejected `git stash` as the protection mechanism: in a shared checkout a
+stash is less visible to other sessions and easier to lose than a commit.
+
+**Not blocking this snapshot, still operator-only:** revoking the
+historically exposed debug token and deleting the two dead ones.

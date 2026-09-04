@@ -1,0 +1,1371 @@
+{
+ "meta": {
+  "generated_by": "tools/design/render_reference_scan.js",
+  "viewport": {
+   "width": 390,
+   "height": 844
+  },
+  "device_scale_factor": 2,
+  "coordinates": "logical px relative to the 390x844 phone; multiply by 2 for the PNGs",
+  "sources": {
+   "dark": {
+    "file": "core/design/reference/fitness_hud_v1/Fitness Glass Phone v1 - Sunset.dc.html",
+    "sha256": "98636c23fab43f0007c14aff3112922c61f2eb95f1ffa39533a518bacae96e43"
+   },
+   "light": {
+    "file": "core/design/reference/fitness_hud_v1/Fitness Glass Phone v1 - Light.dc.html",
+    "sha256": "8c37012e358aa582311ebe91335e0b4a1a0e4ff8535c145fb0959806b641c166"
+   }
+  },
+  "flat": "dc-import and the two rotate(24deg) streaks hidden; hint font-family forced to Roboto Mono 600; animations paused at t=0",
+  "fonts": "Archivo is the canonical reference's own Google webfont, unmodified; Roboto Mono 600 is R6(a)'s one approved substitution -- the app's own mobile/assets/fonts/RobotoMono-SemiBold.ttf, for the hint only",
+  "icon_codepoints": {
+   "center_focus_weak": "e3b5",
+   "center_focus_strong": "e3b4",
+   "refresh": "e5d5",
+   "arrow_forward": "e5c8",
+   "photo_library": "e413",
+   "videocam": "e04b"
+  }
+ },
+ "dark_aiming": {
+  "screen": {
+   "rect": {
+    "x": 0,
+    "y": 46,
+    "w": 390,
+    "h": 640,
+    "right": 390,
+    "bottom": 686
+   },
+   "style": {
+    "borderRadius": "0px"
+   }
+  },
+  "title": {
+   "rect": {
+    "x": 20,
+    "y": 52,
+    "w": 350,
+    "h": 26.39,
+    "right": 370,
+    "bottom": 78.39
+   },
+   "text": "Scan",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "24px",
+    "fontWeight": "800",
+    "letterSpacing": "normal",
+    "lineHeight": "26.4px",
+    "color": "rgb(255, 255, 255)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "subtitle": {
+   "rect": {
+    "x": 20,
+    "y": 83.39,
+    "w": 350,
+    "h": 18.75,
+    "right": 370,
+    "bottom": 102.14
+   },
+   "text": "Point the camera at one machine and tap Recognise.",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.75px",
+    "color": "rgba(255, 255, 255, 0.72)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "card": {
+   "rect": {
+    "x": 16,
+    "y": 116.14,
+    "w": 358,
+    "h": 230,
+    "right": 374,
+    "bottom": 346.14
+   },
+   "style": {
+    "borderRadius": "30px"
+   }
+  },
+  "bracket_tl": {
+   "rect": {
+    "x": 36,
+    "y": 136.14,
+    "w": 36,
+    "h": 36,
+    "right": 72,
+    "bottom": 172.14
+   },
+   "style": {
+    "borderRadius": "15px 0px 0px"
+   }
+  },
+  "bracket_tr": {
+   "rect": {
+    "x": 318,
+    "y": 136.14,
+    "w": 36,
+    "h": 36,
+    "right": 354,
+    "bottom": 172.14
+   },
+   "style": {
+    "borderRadius": "0px 10px 0px 0px"
+   }
+  },
+  "bracket_bl": {
+   "rect": {
+    "x": 36,
+    "y": 290.14,
+    "w": 36,
+    "h": 36,
+    "right": 72,
+    "bottom": 326.14
+   },
+   "style": {
+    "borderRadius": "0px 0px 0px 10px"
+   }
+  },
+  "bracket_br": {
+   "rect": {
+    "x": 318,
+    "y": 290.14,
+    "w": 36,
+    "h": 36,
+    "right": 354,
+    "bottom": 326.14
+   },
+   "style": {
+    "borderRadius": "0px 0px 10px"
+   }
+  },
+  "sweep": {
+   "rect": {
+    "x": 36,
+    "y": 134.14,
+    "w": 318,
+    "h": 2,
+    "right": 354,
+    "bottom": 136.14
+   },
+   "style": {
+    "borderRadius": "0px"
+   }
+  },
+  "centre_glyph": {
+   "rect": {
+    "x": 177,
+    "y": 202.14,
+    "w": 36,
+    "h": 36,
+    "right": 213,
+    "bottom": 238.14
+   },
+   "name": "center_focus_weak",
+   "codepoint": "e3b5",
+   "style": {
+    "fontFamily": "\"Material Symbols Sharp\"",
+    "fontSize": "36px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "36px",
+    "color": "rgba(255, 255, 255, 0.9)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "hint": {
+   "rect": {
+    "x": 98.78,
+    "y": 247.14,
+    "w": 192.44,
+    "h": 13,
+    "right": 291.22,
+    "bottom": 260.14
+   },
+   "text": "ALIGN THE MACHINE IN FRAME",
+   "style": {
+    "fontFamily": "\"Roboto Mono\", monospace",
+    "fontSize": "10px",
+    "fontWeight": "600",
+    "letterSpacing": "1.4px",
+    "lineHeight": "normal",
+    "color": "rgba(255, 255, 255, 0.8)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "primary_button": {
+   "rect": {
+    "x": 16,
+    "y": 360.14,
+    "w": 358,
+    "h": 52,
+    "right": 374,
+    "bottom": 412.14
+   },
+   "style": {
+    "borderRadius": "24px"
+   }
+  },
+  "primary_label": {
+   "rect": {
+    "x": 173.77,
+    "y": 378.64,
+    "w": 71.47,
+    "h": 15,
+    "right": 245.23,
+    "bottom": 393.64
+   },
+   "text": "Recognise",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "14px",
+    "fontWeight": "700",
+    "letterSpacing": "normal",
+    "lineHeight": "normal",
+    "color": "rgb(255, 255, 255)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "primary_glyph": {
+   "rect": {
+    "x": 144.77,
+    "y": 376.14,
+    "w": 20,
+    "h": 20,
+    "right": 164.77,
+    "bottom": 396.14
+   },
+   "name": "center_focus_strong",
+   "codepoint": "e3b4",
+   "style": {
+    "fontFamily": "\"Material Symbols Sharp\"",
+    "fontSize": "20px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "20px",
+    "color": "rgb(255, 255, 255)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  }
+ },
+ "dark_found": {
+  "screen": {
+   "rect": {
+    "x": 0,
+    "y": 46,
+    "w": 390,
+    "h": 640,
+    "right": 390,
+    "bottom": 686
+   },
+   "style": {
+    "borderRadius": "0px"
+   }
+  },
+  "title": {
+   "rect": {
+    "x": 20,
+    "y": 52,
+    "w": 350,
+    "h": 26.39,
+    "right": 370,
+    "bottom": 78.39
+   },
+   "text": "Scan",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "24px",
+    "fontWeight": "800",
+    "letterSpacing": "normal",
+    "lineHeight": "26.4px",
+    "color": "rgb(255, 255, 255)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "subtitle": {
+   "rect": {
+    "x": 20,
+    "y": 83.39,
+    "w": 350,
+    "h": 18.75,
+    "right": 370,
+    "bottom": 102.14
+   },
+   "text": "Point the camera at one machine and tap Recognise.",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.75px",
+    "color": "rgba(255, 255, 255, 0.72)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "card": {
+   "rect": {
+    "x": 16,
+    "y": 116.14,
+    "w": 358,
+    "h": 230,
+    "right": 374,
+    "bottom": 346.14
+   },
+   "style": {
+    "borderRadius": "30px"
+   }
+  },
+  "bracket_tl": {
+   "rect": {
+    "x": 36,
+    "y": 136.14,
+    "w": 36,
+    "h": 36,
+    "right": 72,
+    "bottom": 172.14
+   },
+   "style": {
+    "borderRadius": "15px 0px 0px"
+   }
+  },
+  "bracket_tr": {
+   "rect": {
+    "x": 318,
+    "y": 136.14,
+    "w": 36,
+    "h": 36,
+    "right": 354,
+    "bottom": 172.14
+   },
+   "style": {
+    "borderRadius": "0px 10px 0px 0px"
+   }
+  },
+  "bracket_bl": {
+   "rect": {
+    "x": 36,
+    "y": 290.14,
+    "w": 36,
+    "h": 36,
+    "right": 72,
+    "bottom": 326.14
+   },
+   "style": {
+    "borderRadius": "0px 0px 0px 10px"
+   }
+  },
+  "bracket_br": {
+   "rect": {
+    "x": 318,
+    "y": 290.14,
+    "w": 36,
+    "h": 36,
+    "right": 354,
+    "bottom": 326.14
+   },
+   "style": {
+    "borderRadius": "0px 0px 10px"
+   }
+  },
+  "sweep": {
+   "rect": {
+    "x": 36,
+    "y": 134.14,
+    "w": 318,
+    "h": 2,
+    "right": 354,
+    "bottom": 136.14
+   },
+   "style": {
+    "borderRadius": "0px"
+   }
+  },
+  "centre_glyph": {
+   "rect": {
+    "x": 177,
+    "y": 202.14,
+    "w": 36,
+    "h": 36,
+    "right": 213,
+    "bottom": 238.14
+   },
+   "name": "center_focus_weak",
+   "codepoint": "e3b5",
+   "style": {
+    "fontFamily": "\"Material Symbols Sharp\"",
+    "fontSize": "36px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "36px",
+    "color": "rgba(255, 255, 255, 0.9)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "hint": {
+   "rect": {
+    "x": 143.19,
+    "y": 247.14,
+    "w": 103.63,
+    "h": 13,
+    "right": 246.81,
+    "bottom": 260.14
+   },
+   "text": "MACHINE LOCKED",
+   "style": {
+    "fontFamily": "\"Roboto Mono\", monospace",
+    "fontSize": "10px",
+    "fontWeight": "600",
+    "letterSpacing": "1.4px",
+    "lineHeight": "normal",
+    "color": "rgba(255, 255, 255, 0.8)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "primary_button": {
+   "rect": {
+    "x": 16,
+    "y": 545.14,
+    "w": 358,
+    "h": 52,
+    "right": 374,
+    "bottom": 597.14
+   },
+   "style": {
+    "borderRadius": "24px"
+   }
+  },
+  "primary_label": {
+   "rect": {
+    "x": 172.63,
+    "y": 563.64,
+    "w": 73.73,
+    "h": 15,
+    "right": 246.36,
+    "bottom": 578.64
+   },
+   "text": "Scan again",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "14px",
+    "fontWeight": "700",
+    "letterSpacing": "normal",
+    "lineHeight": "normal",
+    "color": "rgb(255, 255, 255)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "primary_glyph": {
+   "rect": {
+    "x": 143.63,
+    "y": 561.14,
+    "w": 20,
+    "h": 20,
+    "right": 163.63,
+    "bottom": 581.14
+   },
+   "name": "refresh",
+   "codepoint": "e5d5",
+   "style": {
+    "fontFamily": "\"Material Symbols Sharp\"",
+    "fontSize": "20px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "20px",
+    "color": "rgb(255, 255, 255)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "match_card": {
+   "rect": {
+    "x": 16,
+    "y": 360.14,
+    "w": 358,
+    "h": 171,
+    "right": 374,
+    "bottom": 531.14
+   },
+   "style": {
+    "borderRadius": "30px"
+   }
+  },
+  "eyebrow": {
+   "rect": {
+    "x": 128,
+    "y": 390.22,
+    "w": 228,
+    "h": 10,
+    "right": 356,
+    "bottom": 400.22
+   },
+   "text": "Match",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "9px",
+    "fontWeight": "600",
+    "letterSpacing": "1.44px",
+    "lineHeight": "normal",
+    "color": "rgba(255, 255, 255, 0.72)",
+    "opacity": "1",
+    "textTransform": "uppercase",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "name": {
+   "rect": {
+    "x": 128,
+    "y": 403.22,
+    "w": 228,
+    "h": 21.84,
+    "right": 356,
+    "bottom": 425.06
+   },
+   "text": "Lat pulldown",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "19px",
+    "fontWeight": "800",
+    "letterSpacing": "normal",
+    "lineHeight": "21.85px",
+    "color": "rgb(255, 255, 255)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "category": {
+   "rect": {
+    "x": 128,
+    "y": 428.06,
+    "w": 228,
+    "h": 12,
+    "right": 356,
+    "bottom": 440.06
+   },
+   "text": "Strength · Lats, Biceps",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "11.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "normal",
+    "color": "rgba(255, 255, 255, 0.8)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "ring": {
+   "rect": {
+    "x": 34,
+    "y": 376.14,
+    "w": 78,
+    "h": 78,
+    "right": 112,
+    "bottom": 454.14
+   },
+   "style": {
+    "borderRadius": "0px"
+   }
+  },
+  "ring_value": {
+   "rect": {
+    "x": 34,
+    "y": 376.14,
+    "w": 78,
+    "h": 78,
+    "right": 112,
+    "bottom": 454.14
+   },
+   "text": "92",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "20px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "normal",
+    "color": "rgb(255, 255, 255)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "cta": {
+   "rect": {
+    "x": 34,
+    "y": 468.14,
+    "w": 322,
+    "h": 47,
+    "right": 356,
+    "bottom": 515.14
+   },
+   "style": {
+    "borderRadius": "22px"
+   }
+  },
+  "cta_label": {
+   "rect": {
+    "x": 50,
+    "y": 484.14,
+    "w": 99.84,
+    "h": 15,
+    "right": 149.84,
+    "bottom": 499.14
+   },
+   "text": "Open exercises",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "13.5px",
+    "fontWeight": "700",
+    "letterSpacing": "normal",
+    "lineHeight": "normal",
+    "color": "rgb(255, 255, 255)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "cta_arrow": {
+   "rect": {
+    "x": 321,
+    "y": 482.14,
+    "w": 19,
+    "h": 19,
+    "right": 340,
+    "bottom": 501.14
+   },
+   "name": "arrow_forward",
+   "codepoint": "e5c8",
+   "style": {
+    "fontFamily": "\"Material Symbols Sharp\"",
+    "fontSize": "19px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "19px",
+    "color": "rgb(255, 255, 255)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  }
+ },
+ "light_aiming": {
+  "screen": {
+   "rect": {
+    "x": 0,
+    "y": 46,
+    "w": 390,
+    "h": 640,
+    "right": 390,
+    "bottom": 686
+   },
+   "style": {
+    "borderRadius": "0px"
+   }
+  },
+  "title": {
+   "rect": {
+    "x": 20,
+    "y": 52,
+    "w": 350,
+    "h": 26.39,
+    "right": 370,
+    "bottom": 78.39
+   },
+   "text": "Scan",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "24px",
+    "fontWeight": "800",
+    "letterSpacing": "normal",
+    "lineHeight": "26.4px",
+    "color": "rgb(27, 32, 48)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "subtitle": {
+   "rect": {
+    "x": 20,
+    "y": 83.39,
+    "w": 350,
+    "h": 18.75,
+    "right": 370,
+    "bottom": 102.14
+   },
+   "text": "Point the camera at one machine and tap Recognise.",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.75px",
+    "color": "rgba(27, 32, 48, 0.78)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "card": {
+   "rect": {
+    "x": 16,
+    "y": 116.14,
+    "w": 358,
+    "h": 230,
+    "right": 374,
+    "bottom": 346.14
+   },
+   "style": {
+    "borderRadius": "30px"
+   }
+  },
+  "bracket_tl": {
+   "rect": {
+    "x": 36,
+    "y": 136.14,
+    "w": 36,
+    "h": 36,
+    "right": 72,
+    "bottom": 172.14
+   },
+   "style": {
+    "borderRadius": "15px 0px 0px"
+   }
+  },
+  "bracket_tr": {
+   "rect": {
+    "x": 318,
+    "y": 136.14,
+    "w": 36,
+    "h": 36,
+    "right": 354,
+    "bottom": 172.14
+   },
+   "style": {
+    "borderRadius": "0px 10px 0px 0px"
+   }
+  },
+  "bracket_bl": {
+   "rect": {
+    "x": 36,
+    "y": 290.14,
+    "w": 36,
+    "h": 36,
+    "right": 72,
+    "bottom": 326.14
+   },
+   "style": {
+    "borderRadius": "0px 0px 0px 10px"
+   }
+  },
+  "bracket_br": {
+   "rect": {
+    "x": 318,
+    "y": 290.14,
+    "w": 36,
+    "h": 36,
+    "right": 354,
+    "bottom": 326.14
+   },
+   "style": {
+    "borderRadius": "0px 0px 10px"
+   }
+  },
+  "sweep": {
+   "rect": {
+    "x": 36,
+    "y": 134.14,
+    "w": 318,
+    "h": 2,
+    "right": 354,
+    "bottom": 136.14
+   },
+   "style": {
+    "borderRadius": "0px"
+   }
+  },
+  "centre_glyph": {
+   "rect": {
+    "x": 177,
+    "y": 202.14,
+    "w": 36,
+    "h": 36,
+    "right": 213,
+    "bottom": 238.14
+   },
+   "name": "center_focus_weak",
+   "codepoint": "e3b5",
+   "style": {
+    "fontFamily": "\"Material Symbols Sharp\"",
+    "fontSize": "36px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "36px",
+    "color": "rgba(27, 32, 48, 0.92)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "hint": {
+   "rect": {
+    "x": 98.78,
+    "y": 247.14,
+    "w": 192.44,
+    "h": 13,
+    "right": 291.22,
+    "bottom": 260.14
+   },
+   "text": "ALIGN THE MACHINE IN FRAME",
+   "style": {
+    "fontFamily": "\"Roboto Mono\", monospace",
+    "fontSize": "10px",
+    "fontWeight": "600",
+    "letterSpacing": "1.4px",
+    "lineHeight": "normal",
+    "color": "rgba(27, 32, 48, 0.86)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "primary_button": {
+   "rect": {
+    "x": 16,
+    "y": 360.14,
+    "w": 358,
+    "h": 52,
+    "right": 374,
+    "bottom": 412.14
+   },
+   "style": {
+    "borderRadius": "24px"
+   }
+  },
+  "primary_label": {
+   "rect": {
+    "x": 173.77,
+    "y": 378.64,
+    "w": 71.47,
+    "h": 15,
+    "right": 245.23,
+    "bottom": 393.64
+   },
+   "text": "Recognise",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "14px",
+    "fontWeight": "700",
+    "letterSpacing": "normal",
+    "lineHeight": "normal",
+    "color": "rgb(27, 32, 48)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "primary_glyph": {
+   "rect": {
+    "x": 144.77,
+    "y": 376.14,
+    "w": 20,
+    "h": 20,
+    "right": 164.77,
+    "bottom": 396.14
+   },
+   "name": "center_focus_strong",
+   "codepoint": "e3b4",
+   "style": {
+    "fontFamily": "\"Material Symbols Sharp\"",
+    "fontSize": "20px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "20px",
+    "color": "rgb(27, 32, 48)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  }
+ },
+ "light_found": {
+  "screen": {
+   "rect": {
+    "x": 0,
+    "y": 46,
+    "w": 390,
+    "h": 640,
+    "right": 390,
+    "bottom": 686
+   },
+   "style": {
+    "borderRadius": "0px"
+   }
+  },
+  "title": {
+   "rect": {
+    "x": 20,
+    "y": 52,
+    "w": 350,
+    "h": 26.39,
+    "right": 370,
+    "bottom": 78.39
+   },
+   "text": "Scan",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "24px",
+    "fontWeight": "800",
+    "letterSpacing": "normal",
+    "lineHeight": "26.4px",
+    "color": "rgb(27, 32, 48)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "subtitle": {
+   "rect": {
+    "x": 20,
+    "y": 83.39,
+    "w": 350,
+    "h": 18.75,
+    "right": 370,
+    "bottom": 102.14
+   },
+   "text": "Point the camera at one machine and tap Recognise.",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "12.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "18.75px",
+    "color": "rgba(27, 32, 48, 0.78)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "card": {
+   "rect": {
+    "x": 16,
+    "y": 116.14,
+    "w": 358,
+    "h": 230,
+    "right": 374,
+    "bottom": 346.14
+   },
+   "style": {
+    "borderRadius": "30px"
+   }
+  },
+  "bracket_tl": {
+   "rect": {
+    "x": 36,
+    "y": 136.14,
+    "w": 36,
+    "h": 36,
+    "right": 72,
+    "bottom": 172.14
+   },
+   "style": {
+    "borderRadius": "15px 0px 0px"
+   }
+  },
+  "bracket_tr": {
+   "rect": {
+    "x": 318,
+    "y": 136.14,
+    "w": 36,
+    "h": 36,
+    "right": 354,
+    "bottom": 172.14
+   },
+   "style": {
+    "borderRadius": "0px 10px 0px 0px"
+   }
+  },
+  "bracket_bl": {
+   "rect": {
+    "x": 36,
+    "y": 290.14,
+    "w": 36,
+    "h": 36,
+    "right": 72,
+    "bottom": 326.14
+   },
+   "style": {
+    "borderRadius": "0px 0px 0px 10px"
+   }
+  },
+  "bracket_br": {
+   "rect": {
+    "x": 318,
+    "y": 290.14,
+    "w": 36,
+    "h": 36,
+    "right": 354,
+    "bottom": 326.14
+   },
+   "style": {
+    "borderRadius": "0px 0px 10px"
+   }
+  },
+  "sweep": {
+   "rect": {
+    "x": 36,
+    "y": 134.14,
+    "w": 318,
+    "h": 2,
+    "right": 354,
+    "bottom": 136.14
+   },
+   "style": {
+    "borderRadius": "0px"
+   }
+  },
+  "centre_glyph": {
+   "rect": {
+    "x": 177,
+    "y": 202.14,
+    "w": 36,
+    "h": 36,
+    "right": 213,
+    "bottom": 238.14
+   },
+   "name": "center_focus_weak",
+   "codepoint": "e3b5",
+   "style": {
+    "fontFamily": "\"Material Symbols Sharp\"",
+    "fontSize": "36px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "36px",
+    "color": "rgba(27, 32, 48, 0.92)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "hint": {
+   "rect": {
+    "x": 143.19,
+    "y": 247.14,
+    "w": 103.63,
+    "h": 13,
+    "right": 246.81,
+    "bottom": 260.14
+   },
+   "text": "MACHINE LOCKED",
+   "style": {
+    "fontFamily": "\"Roboto Mono\", monospace",
+    "fontSize": "10px",
+    "fontWeight": "600",
+    "letterSpacing": "1.4px",
+    "lineHeight": "normal",
+    "color": "rgba(27, 32, 48, 0.86)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "primary_button": {
+   "rect": {
+    "x": 16,
+    "y": 545.14,
+    "w": 358,
+    "h": 52,
+    "right": 374,
+    "bottom": 597.14
+   },
+   "style": {
+    "borderRadius": "24px"
+   }
+  },
+  "primary_label": {
+   "rect": {
+    "x": 172.63,
+    "y": 563.64,
+    "w": 73.73,
+    "h": 15,
+    "right": 246.36,
+    "bottom": 578.64
+   },
+   "text": "Scan again",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "14px",
+    "fontWeight": "700",
+    "letterSpacing": "normal",
+    "lineHeight": "normal",
+    "color": "rgb(27, 32, 48)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "primary_glyph": {
+   "rect": {
+    "x": 143.63,
+    "y": 561.14,
+    "w": 20,
+    "h": 20,
+    "right": 163.63,
+    "bottom": 581.14
+   },
+   "name": "refresh",
+   "codepoint": "e5d5",
+   "style": {
+    "fontFamily": "\"Material Symbols Sharp\"",
+    "fontSize": "20px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "20px",
+    "color": "rgb(27, 32, 48)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "match_card": {
+   "rect": {
+    "x": 16,
+    "y": 360.14,
+    "w": 358,
+    "h": 171,
+    "right": 374,
+    "bottom": 531.14
+   },
+   "style": {
+    "borderRadius": "30px"
+   }
+  },
+  "eyebrow": {
+   "rect": {
+    "x": 128,
+    "y": 390.22,
+    "w": 228,
+    "h": 10,
+    "right": 356,
+    "bottom": 400.22
+   },
+   "text": "Match",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "9px",
+    "fontWeight": "600",
+    "letterSpacing": "1.44px",
+    "lineHeight": "normal",
+    "color": "rgba(27, 32, 48, 0.78)",
+    "opacity": "1",
+    "textTransform": "uppercase",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "name": {
+   "rect": {
+    "x": 128,
+    "y": 403.22,
+    "w": 228,
+    "h": 21.84,
+    "right": 356,
+    "bottom": 425.06
+   },
+   "text": "Lat pulldown",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "19px",
+    "fontWeight": "800",
+    "letterSpacing": "normal",
+    "lineHeight": "21.85px",
+    "color": "rgb(27, 32, 48)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "category": {
+   "rect": {
+    "x": 128,
+    "y": 428.06,
+    "w": 228,
+    "h": 12,
+    "right": 356,
+    "bottom": 440.06
+   },
+   "text": "Strength · Lats, Biceps",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "11.5px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "normal",
+    "color": "rgba(27, 32, 48, 0.86)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "ring": {
+   "rect": {
+    "x": 34,
+    "y": 376.14,
+    "w": 78,
+    "h": 78,
+    "right": 112,
+    "bottom": 454.14
+   },
+   "style": {
+    "borderRadius": "0px"
+   }
+  },
+  "ring_value": {
+   "rect": {
+    "x": 34,
+    "y": 376.14,
+    "w": 78,
+    "h": 78,
+    "right": 112,
+    "bottom": 454.14
+   },
+   "text": "92",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "20px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "normal",
+    "color": "rgb(27, 32, 48)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "cta": {
+   "rect": {
+    "x": 34,
+    "y": 468.14,
+    "w": 322,
+    "h": 47,
+    "right": 356,
+    "bottom": 515.14
+   },
+   "style": {
+    "borderRadius": "22px"
+   }
+  },
+  "cta_label": {
+   "rect": {
+    "x": 50,
+    "y": 484.14,
+    "w": 99.84,
+    "h": 15,
+    "right": 149.84,
+    "bottom": 499.14
+   },
+   "text": "Open exercises",
+   "style": {
+    "fontFamily": "Archivo",
+    "fontSize": "13.5px",
+    "fontWeight": "700",
+    "letterSpacing": "normal",
+    "lineHeight": "normal",
+    "color": "rgb(27, 32, 48)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  },
+  "cta_arrow": {
+   "rect": {
+    "x": 321,
+    "y": 482.14,
+    "w": 19,
+    "h": 19,
+    "right": 340,
+    "bottom": 501.14
+   },
+   "name": "arrow_forward",
+   "codepoint": "e5c8",
+   "style": {
+    "fontFamily": "\"Material Symbols Sharp\"",
+    "fontSize": "19px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "19px",
+    "color": "rgb(27, 32, 48)",
+    "opacity": "1",
+    "textTransform": "none",
+    "borderRadius": "0px",
+    "fontVariationSettings": "normal"
+   }
+  }
+ }
+}

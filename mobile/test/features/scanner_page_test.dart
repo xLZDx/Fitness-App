@@ -36,6 +36,7 @@ import 'package:fitness_app/features/visual_equipment/state/visual_equipment_pro
 import 'package:fitness_app/features/scanner/widgets/scan_frame.dart';
 import 'package:fitness_app/features/visual_equipment/widgets/live_equipment_preview.dart';
 import 'package:fitness_app/shared/widgets/app_buttons.dart';
+import 'package:fitness_app/shared/widgets/hud/hud_surface.dart';
 
 /// Records lifecycle calls without touching a camera.
 class _SpySession extends CameraSession {
@@ -326,7 +327,16 @@ void main() {
     final router = GoRouter(
       initialLocation: '/scan',
       routes: [
-        GoRoute(path: '/scan', builder: (_, __) => const ScannerPage()),
+        // Under a Scaffold, as `MainShell` hosts it in the app: the page's
+        // SnackBars need a Scaffold to land on, and since SCAN-G1 the page
+        // no longer brings its own (`FrostedScaffold` is gone).
+        GoRoute(
+          path: '/scan',
+          builder: (_, __) => const Scaffold(
+            backgroundColor: Colors.transparent,
+            body: ScannerPage(),
+          ),
+        ),
         GoRoute(
           path: '/equipment/:id',
           builder: (_, s) =>
@@ -372,7 +382,7 @@ void main() {
       expect(tester.takeException(), isNull);
 
       expect(find.byKey(const Key('scan-recognise-camera')), findsOneWidget);
-      expect(find.text('Recognise machine'), findsOneWidget);
+      expect(find.text('Recognise'), findsOneWidget);
       expect(find.byKey(const Key('scan-recognise-gallery')), findsOneWidget);
       expect(find.textContaining('QR'), findsNothing);
     });
@@ -406,58 +416,66 @@ void main() {
           reason: 'bystanders in a gym are the part users do not expect');
     });
 
-    testWidgets('the viewfinder takes most of the screen', (tester) async {
-      // Operator point 4 asked for a viewfinder big enough to fit a machine;
-      // point 6, later, asked for the rest of it — "камера была почти во весь
-      // экран" — after a screen recording showed a wide empty band above it.
-      // So this no longer pins a 3:4 box, it pins the share of the screen.
+    // SCAN-G1 (core/SCAN_G1_SCOPE.md). The screen is the reference's Scan
+    // screen: a 230px viewfinder card with 16px gutters under the title, the
+    // one primary button under it, and no sheet. The four tests that pinned
+    // the previous full-bleed-camera-plus-sheet layout are replaced by these;
+    // the pixel-level contract is `scan_reference_geometry_test.dart` and
+    // `tools/design/scan_fidelity_check.py`, this is the structural one.
+    testWidgets('the viewfinder is the reference card: 230px tall, 16px in',
+        (tester) async {
+      await pumpScan(tester);
+      final width =
+          tester.view.physicalSize.width / tester.view.devicePixelRatio;
+      final preview = tester.getRect(find.byType(LiveEquipmentPreview));
+      expect(preview.height, closeTo(230, 0.5),
+          reason: '`height:230px` (Sunset.dc.html:186)');
+      expect(preview.left, closeTo(16, 0.5), reason: '`margin:0 16px`');
+      expect(preview.width, closeTo(width - 32, 0.5));
+      expect(find.byType(ScanFrame), findsOneWidget);
+      expect(find.byKey(const Key('scan-hint')), findsOneWidget);
+      expect(find.text('ALIGN THE MACHINE IN FRAME'), findsOneWidget);
+    });
+
+    testWidgets('the card sits under the title at the reference spacing',
+        (tester) async {
+      // Reference: title top 52, card top 116.1 with a 46px status bar --
+      // 64.1px apart. The test harness has no status bar, so only the
+      // distance is pinned here; the absolute position is the geometry
+      // test's job.
+      await pumpScan(tester);
+      final title = tester.getTopLeft(find.text('Scan'));
+      final card = tester.getRect(find.byType(LiveEquipmentPreview));
+      expect(card.top - title.dy, closeTo(64.1, 3));
+      expect(
+        find.ancestor(
+          of: find.byType(LiveEquipmentPreview),
+          matching: find.byType(SafeArea),
+        ),
+        findsNothing,
+        reason: 'HudScreenBody already pads the status bar; a SafeArea here '
+            'would count it twice',
+      );
+    });
+
+    testWidgets('no sheet: one list, controls visible without a drag',
+        (tester) async {
       await pumpScan(tester);
       final screen =
           tester.view.physicalSize.height / tester.view.devicePixelRatio;
-      final preview = tester.getRect(find.byType(LiveEquipmentPreview));
-      expect(preview.height / screen, greaterThan(0.6));
 
-      // Scoped to the frame. R11c put the rest of the page in a
-      // `DraggableScrollableSheet`, which builds its own `FractionallySizedBox`
-      // to carry the sheet's current extent — an unscoped `byType` finder now
-      // matches two and `tester.widget` throws "Too many elements". The
-      // assertion was always about the aiming frame.
-      final frame = tester.widget<FractionallySizedBox>(find.descendant(
-        of: find.byType(ScanFrame),
-        matching: find.byType(FractionallySizedBox),
-      ));
-      expect(frame.widthFactor, 0.75);
-      expect(frame.heightFactor, 0.75);
-    });
-
-    testWidgets('the viewfinder is full-bleed, not a card in a list',
-        (tester) async {
-      // R11c. The preview used to be a rounded card occupying 68% of a
-      // scrolling page, so aiming scrolled away. The design gives the screen
-      // to the camera and puts everything else in a sheet over it.
-      await pumpScan(tester);
-      final screen =
-          tester.view.physicalSize.height / tester.view.devicePixelRatio;
-      final preview = tester.getRect(find.byType(LiveEquipmentPreview));
-
-      expect(preview.top, lessThanOrEqualTo(0.5),
-          reason: 'the preview starts at the top edge, under the status bar');
-      expect(preview.height / screen, greaterThan(0.95),
-          reason: 'edge to edge, not a card');
-    });
-
-    testWidgets('everything that is not the viewfinder is in a pull-up sheet',
-        (tester) async {
-      await pumpScan(tester);
-
-      expect(find.byType(DraggableScrollableSheet), findsOneWidget);
-      // The sheet's resting extent has to show the capture controls: a
-      // shutter the user must first discover by dragging is not a shutter.
-      expect(find.byKey(const Key('scan-recognise-camera')), findsOneWidget);
+      expect(find.byType(DraggableScrollableSheet), findsNothing);
+      final primary = tester.getRect(find.byKey(const Key('scan-recognise-camera')));
+      final card = tester.getRect(find.byType(LiveEquipmentPreview));
+      expect(primary.top - card.bottom, closeTo(14, 0.5),
+          reason: '`margin:14px 16px 18px` (Sunset.dc.html:221)');
+      expect(primary.height, closeTo(52, 1),
+          reason: 'padding 16 + 20px glyph line');
+      expect(primary.bottom, lessThan(screen));
       expect(find.byKey(const Key('scan-recognise-gallery')), findsOneWidget);
     });
 
-    testWidgets('the live toggle moved onto the scrim and still works',
+    testWidgets('the live toggle sits in the controls row and still works',
         (tester) async {
       final container = await pumpScan(tester);
       expect(container.read(liveModeEnabledProvider), isFalse);
@@ -466,28 +484,70 @@ void main() {
       await tester.pump();
 
       expect(container.read(liveModeEnabledProvider), isTrue,
-          reason: 'the control moved out of the app bar, not out of the app');
+          reason: 'the control moved under the button, not out of the app');
     });
 
-    testWidgets('nothing separates the app bar from the viewfinder',
-        (tester) async {
-      // The band the operator circled: this page wrapped its list in a
-      // SafeArea AND padded 88 from the top, but `FrostedScaffold` already
-      // draws the body behind the bar — so the status-bar inset was counted
-      // twice, about 128 logical points of empty purple.
-      await pumpScan(tester);
-      expect(
-        find.ancestor(
-          of: find.byType(LiveEquipmentPreview),
-          matching: find.byType(SafeArea),
+    testWidgets('Scan again returns to the aiming state', (tester) async {
+      // SCAN-G1 R4. After a locked match the primary button reads "Scan
+      // again"; tapping it forgets the answer -- the match card leaves, the
+      // hint returns to "align", the button reads "Recognise" -- without
+      // touching the camera.
+      final spy = _SpySession();
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(spy),
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(equipmentId: 'leg_press', confidence: 0.92),
+          ]),
         ),
-        findsNothing,
-        reason: 'a SafeArea here double-counts the status bar',
-      );
-      // The viewfinder starts just under a 64pt bar plus the inset, not a
-      // screen-eighth below it.
-      final top = tester.getRect(find.byType(LiveEquipmentPreview)).top;
-      expect(top, lessThan(110));
+      ]);
+      await tester.pump();
+      final stopsBefore = spy.stops;
+      _useFakePicker();
+      await tapGallery(tester);
+
+      expect(find.byKey(const Key('scan-match-card')), findsOneWidget);
+      expect(find.text('MACHINE LOCKED'), findsOneWidget);
+      expect(find.text('Scan again'), findsOneWidget);
+      expect(find.text('Recognise'), findsNothing);
+      expect(find.text('92'), findsOneWidget, reason: 'the ring value');
+
+      await tester.tap(find.byKey(const Key('scan-recognise-camera')));
+      await tester.pump();
+
+      expect(find.byKey(const Key('scan-match-card')), findsNothing);
+      expect(find.text('ALIGN THE MACHINE IN FRAME'), findsOneWidget);
+      expect(find.text('Recognise'), findsOneWidget);
+      expect(container.read(visualEquipmentControllerProvider).requireValue.outcome,
+          ScanOutcome.noEquipment);
+      expect(spy.stops, stopsBefore, reason: 'the camera never stopped');
+    });
+
+    testWidgets('the hint says RECOGNISING while a capture is classified',
+        (tester) async {
+      final container = await pumpScan(tester, overrides: [
+        scanCameraSessionProvider.overrideWithValue(_SpySession()),
+        // A short timeout so the hanging call settles before the test ends
+        // (a pending 30s Timer fails the binding's teardown).
+        recogniseTimeoutProvider
+            .overrideWithValue(const Duration(milliseconds: 30)),
+        visualEquipmentServiceProvider.overrideWithValue(_HangingService()),
+      ]);
+      final scan = container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/hangs.jpg');
+      await tester.pump();
+
+      expect(find.text('RECOGNISING…'), findsOneWidget);
+      final button = tester.widget<HudButton>(
+          find.byKey(const Key('scan-recognise-camera')));
+      expect(button.enabled, isFalse,
+          reason: 'no second capture while one is in flight');
+
+      await tester.pump(const Duration(milliseconds: 50));
+      await scan;
+      await tester.pump();
+      expect(find.text('RECOGNISING…'), findsNothing);
     });
 
     testWidgets('the viewfinder is present whether or not live mode is on',
@@ -534,8 +594,11 @@ void main() {
           .read(visualEquipmentControllerProvider.notifier)
           .classifyFilePath('/tmp/machine.jpg');
       await tester.pump();
-      await tester.scrollUntilVisible(find.text('leg press'), 120);
-      await tester.tap(find.text('leg press'));
+      // The match card's CTA (the reference's "Open exercises"); the name
+      // itself is not the tap target and also appears on the history chip.
+      final cta = find.byKey(const Key('scan-open-exercises'));
+      await tester.scrollUntilVisible(cta, 120);
+      await tester.tap(cta);
       await tester.pumpAndSettle();
 
       expect(find.text('equipment leg_press'), findsOneWidget);
@@ -562,13 +625,66 @@ void main() {
           .classifyFilePath('/tmp/machine.jpg');
       await tester.pump();
 
-      expect(find.text('Best matches'), findsOneWidget);
+      // The confident match is the reference's match card (ring + name);
+      // the runner-up is a plain row under the button, with its own figure.
+      expect(find.byKey(const Key('scan-match-card')), findsOneWidget);
       expect(find.text('leg press'), findsOneWidget);
-      expect(find.text('80% confidence'), findsOneWidget);
+      expect(find.text('80'), findsOneWidget,
+          reason: 'the ring shows the classifier\'s own confidence, unrounded '
+              'differently from the row below');
+      expect(find.text('Best matches'), findsOneWidget);
       expect(find.text('treadmill'), findsOneWidget);
+      expect(find.text('20% confidence'), findsOneWidget);
       // The classifier fills labelHint too, with its own internal label. That
       // must never be captioned as something read off the machine.
       expect(find.textContaining('Read on the machine'), findsNothing);
+    });
+
+    // SCAN-G1 review (MAJOR): the printed-text honesty note used to render
+    // INSIDE ScanMatchCard, so a reachable production state grew the
+    // canonical card past what R6's fidelity gate measures (whose fixture
+    // never exercises this branch). Proves both halves of the fix: the note
+    // still reaches the user, and the card it describes stays exactly the
+    // shape the reference defines.
+    testWidgets(
+        'a printed-text match keeps its honesty note out of the canonical card',
+        (tester) async {
+      final container = await pumpScan(tester, overrides: [
+        visualEquipmentServiceProvider.overrideWithValue(
+          MockVisualEquipmentService(fixedResults: const [
+            VisualMatch(
+              equipmentId: 'leg_press',
+              confidence: 0.8,
+              source: MatchSource.printedText,
+              labelHint: 'leg press 9000',
+            ),
+          ]),
+        ),
+      ]);
+
+      await container
+          .read(visualEquipmentControllerProvider.notifier)
+          .classifyFilePath('/tmp/machine.jpg');
+      await tester.pump();
+
+      final noteFinder = find.textContaining('LEG PRESS 9000');
+      expect(noteFinder, findsOneWidget,
+          reason: 'the honesty note must still reach the user');
+      expect(
+        find.descendant(
+            of: find.byKey(const Key('scan-match-card')),
+            matching: noteFinder),
+        findsNothing,
+        reason: 'R4: the canonical match card ends at its CTA -- the note '
+            'is a production extra below the one button, not inside it',
+      );
+      expect(
+        find.descendant(
+            of: find.byKey(const Key('scan-match-card')),
+            matching: find.byKey(const Key('scan-open-exercises'))),
+        findsOneWidget,
+        reason: 'the card itself is still the reference card, CTA and all',
+      );
     });
 
     // Gate D -> Scanner wiring: the same Level-1 equipment-type memory the
@@ -1147,16 +1263,14 @@ void main() {
     });
 
     testWidgets(
-        'the low-light banner clears the status bar and never overlaps ScanTopBar',
+        'the low-light banner stays inside the viewfinder card, under the status bar',
         (tester) async {
-      // MVP1.G2 regression guard. The prior widget test above only asserted
-      // the banner's presence, not its geometry -- which is exactly how a
-      // missing-SafeArea defect (drawing under the status bar) and its own
-      // first fix (colliding with ScanTopBar once both were independently
-      // safe-area-aligned) both stayed invisible to this suite while live
-      // on a real Android-16 device. A non-zero top inset is required to
-      // reproduce either: on the test harness's default zero inset,
-      // SafeArea is a no-op and both defects are unobservable here too.
+      // MVP1.G2 regression guard, carried over the SCAN-G1 layout change. The
+      // banner used to be a second overlay over a full-bleed camera and twice
+      // ended up in the wrong place (under the status bar; colliding with
+      // the top strip) while this suite, with its zero inset, saw nothing.
+      // It now lives INSIDE the card, so the only geometry that matters is
+      // that it is within the card -- and the card is below the padded top.
       tester.view.padding = const FakeViewPadding(top: 94);
       addTearDown(tester.view.resetPadding);
 
@@ -1165,14 +1279,15 @@ void main() {
           overrides: [scanCameraSessionProvider.overrideWithValue(session)]);
       await tester.pump();
 
-      final topBarBottom = tester.getBottomLeft(find.byType(ScanTopBar)).dy;
-      final bannerTop =
-          tester.getTopLeft(find.byKey(const Key('scan-low-light'))).dy;
+      final card = tester.getRect(find.byType(LiveEquipmentPreview));
+      final banner = tester.getRect(find.byKey(const Key('scan-low-light')));
 
-      expect(bannerTop, greaterThanOrEqualTo(94),
-          reason: 'the banner must clear the simulated status bar inset');
-      expect(bannerTop, greaterThanOrEqualTo(topBarBottom),
-          reason: 'the banner must not overlap ScanTopBar above it');
+      expect(card.top, greaterThanOrEqualTo(94),
+          reason: 'the whole card clears the simulated status bar inset');
+      expect(banner.top, greaterThanOrEqualTo(card.top));
+      expect(banner.bottom, lessThanOrEqualTo(card.bottom));
+      expect(banner.left, greaterThanOrEqualTo(card.left));
+      expect(banner.right, lessThanOrEqualTo(card.right));
     });
 
     testWidgets('an offline answer says it came from the device',

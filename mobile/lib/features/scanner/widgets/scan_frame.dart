@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/theme/hud_tokens.dart' show HudMotionX;
 
 /// What the frame is currently saying.
@@ -13,53 +12,71 @@ enum ScanFramePhase {
   analyzing,
 }
 
-/// The design's aiming frame: four corner brackets, a sweep line, and a pulse
-/// while a capture is classified.
+/// The reference's aiming frame, at the reference's geometry.
 ///
-/// The corner-bracket/sweep-line concept traces to `App.tsx:2592-2614`, a
-/// design source that no longer exists in this repository (confirmed absent,
-/// 2026-08-30 Scan mapping gate) -- treat that citation as unverifiable
-/// legacy provenance, not a checkable source. The corner-bracket *concept*
-/// and its 2px stroke are independently confirmed against the checked-in
-/// reference: `core/design/reference/full_handoff_v1/README.md:91`
-/// ("Рамка наведения -- четыре уголка `2px solid rgba(255,255,255,.9)`") and
-/// the matching markup, `Fitness Glass Phone v1 - Sunset.dc.html:180-226`.
-/// The rest of the geometry does NOT match that markup and is not meant to:
-/// the reference draws a fixed 230px card with 34px arms and 10/15px corner
-/// radii, while this stays a 75%-of-preview frame with `_armFraction = 0.18`
-/// and `_radius = 6.0` -- an intentional divergence (see "The 75% is
-/// load-bearing" below), not an unreconciled gap.
+/// SCAN-G1 (core/SCAN_G1_SCOPE.md, R6). Everything here is a number read
+/// from `core/design/reference/fitness_hud_v1/Fitness Glass Phone v1 -
+/// Sunset.dc.html:187-191` (identical geometry in `Light.dc.html`):
 ///
-/// ## Why this replaced a rectangle
+///  * four corner brackets, `width:34px;height:34px` with a `2px solid`
+///    border on two sides -- content-box, so the rendered box is **36x36**
+///    (`scan_anchors.json` `bracket_*`), `20px` in from every edge of the
+///    card, top-left radius `15px`, the other three `10px` (lines 187-190)
+///    -- drawn as the CSS draws a bordered box's corner: the 2px stroke hugs
+///    the outer edge, so its centre line runs 1px inside;
+///  * a `2px` sweep line `20px` in from the sides, starting `18px` from the
+///    top, `linear-gradient(90deg, transparent, rgba(255,255,255,.95),
+///    transparent)`, animated `glassScan 3.4s ease-in-out infinite`
+///    (line 191), whose keyframes (line 18) are `0% translateY(0) opacity 0;
+///    12% opacity 1; 88% opacity 1; 100% translateY(196px) opacity 0`.
 ///
-/// The viewfinder drew a plain rounded outline at 75% of the preview. It
-/// marked the right area and said nothing else: nothing distinguished "aim"
-/// from "working", so a two-second classification looked like a frozen screen.
-/// The prototype's frame carries both states, which is the whole reason it has
-/// corners instead of a border.
+/// The previous frame was a 75%-of-preview box with proportional arms
+/// (`_armFraction = 0.18`, radius 6): honest about the crop it stood for,
+/// and nothing like the reference. The crop now follows the frame instead
+/// (`core/camera/centre_crop.dart`, `viewfinderSourceRect`), so the frame
+/// is free to be the design's fixed geometry -- and it is compared with the
+/// design pixel by pixel (`tools/design/scan_fidelity_check.py`).
 ///
-/// ## The 75% is load-bearing, not styling
+/// The analysing pulse is production-only (the reference has no analysing
+/// state) and keeps its previous look; the sweep line hides while it runs so
+/// "working" and "aim" stay two different pictures.
 ///
-/// The classifier receives a centre crop of exactly that fraction
-/// (`core/camera/centre_crop.dart`). The frame is sized as a fraction rather
-/// than at the design's fixed 260px so it keeps meaning what it means on every
-/// screen size: inside the brackets IS what gets classified. A fixed box would
-/// be honest only on the one phone it was measured against.
-///
-/// Decoration only — the caller wraps it in [IgnorePointer]; a tap must land
+/// Decoration only -- the caller wraps it in [IgnorePointer]; a tap must land
 /// on the preview underneath, never on this.
 class ScanFrame extends StatefulWidget {
   const ScanFrame({
     super.key,
     required this.phase,
-    this.fraction = 0.75,
+    required this.bracket,
+    required this.accent,
+    this.sweepVisible = true,
   });
 
   final ScanFramePhase phase;
 
-  /// Side of the frame as a fraction of the preview. Defaults to the crop the
-  /// classifier actually receives.
-  final double fraction;
+  /// The bracket stroke: `rgba(255,255,255,.9)` on dark, `rgba(27,32,48,.42)`
+  /// on light. Given by the caller, which owns the theme decision.
+  final Color bracket;
+
+  /// The analysing pulse's colour.
+  final Color accent;
+
+  /// False hides the sweep line without touching the brackets -- the
+  /// evidence mode of the Scan page (R1) uses it.
+  final bool sweepVisible;
+
+  /// Geometry, public so the fidelity test can assert against it.
+  static const double inset = 20;
+
+  /// The bracket's outer box: 34px content + 2px border.
+  static const double arm = 36;
+  static const double stroke = 2;
+  static const double radiusTopLeft = 15;
+  static const double radiusOther = 10;
+  static const double sweepTop = 18;
+  static const double sweepHeight = 2;
+  static const double sweepTravel = 196;
+  static const Duration sweepPeriod = Duration(milliseconds: 3400);
 
   @override
   State<ScanFrame> createState() => _ScanFrameState();
@@ -72,10 +89,7 @@ class _ScanFrameState extends State<ScanFrame>
   @override
   void initState() {
     super.initState();
-    _c = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2200),
-    );
+    _c = AnimationController(vsync: this, duration: ScanFrame.sweepPeriod);
     // Not started here: `MediaQuery` (read by [_syncMotion]) is not safely
     // readable in `initState` -- `didChangeDependencies` runs immediately
     // after and is where this loop actually starts.
@@ -86,6 +100,10 @@ class _ScanFrameState extends State<ScanFrame>
   /// reduce motion exists to suppress. Whether the loop should be running is
   /// re-decided here rather than once: `didChangeDependencies` also fires if
   /// the OS accessibility setting flips while this screen is open.
+  ///
+  /// Stopped at `t = 0`, where the reference's own keyframes put the sweep at
+  /// opacity 0 -- so a reduced-motion user sees the brackets alone, and a
+  /// golden taken at rest is the same picture the reference renders paused.
   void _syncMotion() {
     if (context.reduceMotion) {
       if (_c.isAnimating) _c.stop();
@@ -109,36 +127,39 @@ class _ScanFrameState extends State<ScanFrame>
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colors;
-    final analyzing = widget.phase == ScanFramePhase.analyzing;
-    // White at 0.8 while aiming, per the design. It sits on a live camera
-    // frame, whose colour nothing controls, which is the same reason the pose
-    // colours carry no contrast guarantee -- and why the shape, not the hue,
-    // is what communicates here.
-    final bracket = analyzing ? colors.accentPrimary : Colors.white70;
-
-    return Center(
-      child: FractionallySizedBox(
-        widthFactor: widget.fraction,
-        heightFactor: widget.fraction,
-        child: AnimatedBuilder(
-          animation: _c,
-          builder: (context, _) {
-            return CustomPaint(
-              painter: _ScanFramePainter(
-                bracket: bracket,
-                accent: colors.accentPrimary,
-                t: _c.value,
-                analyzing: analyzing,
-              ),
-              size: Size.infinite,
-            );
-          },
-        ),
-      ),
+    final bool analyzing = widget.phase == ScanFramePhase.analyzing;
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (BuildContext context, _) {
+        return CustomPaint(
+          painter: _ScanFramePainter(
+            bracket: analyzing ? widget.accent : widget.bracket,
+            accent: widget.accent,
+            t: _c.value,
+            analyzing: analyzing,
+            sweep: widget.sweepVisible && !analyzing,
+          ),
+          size: Size.infinite,
+        );
+      },
     );
   }
 }
+
+/// `glassScan`'s opacity track: `0% 0; 12% 1; 88% 1; 100% 0`, each keyframe
+/// interval eased the way the declared `ease-in-out` eases it.
+@visibleForTesting
+double scanSweepOpacity(double t) {
+  if (t < 0.12) return Curves.easeInOut.transform(t / 0.12);
+  if (t < 0.88) return 1;
+  return 1 - Curves.easeInOut.transform((t - 0.88) / 0.12);
+}
+
+/// `glassScan`'s transform track: `translateY(0)` to `translateY(196px)`
+/// over the whole period, `ease-in-out`.
+@visibleForTesting
+double scanSweepOffset(double t) =>
+    ScanFrame.sweepTravel * Curves.easeInOut.transform(t.clamp(0, 1));
 
 class _ScanFramePainter extends CustomPainter {
   _ScanFramePainter({
@@ -146,6 +167,7 @@ class _ScanFramePainter extends CustomPainter {
     required this.accent,
     required this.t,
     required this.analyzing,
+    required this.sweep,
   });
 
   final Color bracket;
@@ -154,78 +176,86 @@ class _ScanFramePainter extends CustomPainter {
   /// 0..1, looping.
   final double t;
   final bool analyzing;
-
-  /// How far along each edge a corner bracket runs.
-  static const _armFraction = 0.18;
-
-  /// Reference: `README.md:91` -- `2px solid rgba(255,255,255,.9)`. Was 3.0,
-  /// a pre-reference-check guess; the sweep line stays its own 2px literal
-  /// below (`Rect.fromLTWH(0, y - 1, size.width, 2)`) -- already correct, not
-  /// touched.
-  static const _stroke = 2.0;
-  static const _radius = 6.0;
+  final bool sweep;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final arm = size.shortestSide * _armFraction;
-    final p = Paint()
+    const double inset = ScanFrame.inset;
+    const double arm = ScanFrame.arm;
+    const double half = ScanFrame.stroke / 2;
+    final Paint p = Paint()
       ..color = bracket
-      ..strokeWidth = _stroke
-      ..strokeCap = StrokeCap.round
+      ..strokeWidth = ScanFrame.stroke
+      ..strokeCap = StrokeCap.butt
       ..style = PaintingStyle.stroke;
 
-    void corner(Offset origin, double dx, double dy) {
-      final path = Path()
-        ..moveTo(origin.dx + dx * arm, origin.dy)
-        ..lineTo(origin.dx + dx * _radius, origin.dy)
-        ..quadraticBezierTo(origin.dx, origin.dy, origin.dx, origin.dy + dy * _radius)
-        ..lineTo(origin.dx, origin.dy + dy * arm);
+    // One corner of a CSS bordered box: the outer edge of the border sits on
+    // the box edge, so the stroke's centre line is `half` inside it, and the
+    // rounded corner's centre line has radius `r - half`. `sx`/`sy` are the
+    // corner's direction (+1 grows right/down), `ox`/`oy` its box corner.
+    void corner(double ox, double oy, double sx, double sy, double r) {
+      final double cx = ox + sx * half;
+      final double cy = oy + sy * half;
+      final double rr = r - half;
+      final Path path = Path()
+        ..moveTo(cx, oy + sy * arm)
+        ..lineTo(cx, cy + sy * rr)
+        ..arcToPoint(
+          Offset(cx + sx * rr, cy),
+          radius: Radius.circular(rr),
+          clockwise: sx * sy > 0,
+        )
+        ..lineTo(ox + sx * arm, cy);
       canvas.drawPath(path, p);
     }
 
-    corner(Offset.zero, 1, 1);
-    corner(Offset(size.width, 0), -1, 1);
-    corner(Offset(0, size.height), 1, -1);
-    corner(Offset(size.width, size.height), -1, -1);
+    corner(inset, inset, 1, 1, ScanFrame.radiusTopLeft);
+    corner(size.width - inset, inset, -1, 1, ScanFrame.radiusOther);
+    corner(inset, size.height - inset, 1, -1, ScanFrame.radiusOther);
+    corner(size.width - inset, size.height - inset, -1, -1,
+        ScanFrame.radiusOther);
 
     if (analyzing) {
       // A ring expanding out of the frame, fading as it goes: the design's
       // `animate-pulse-ring`. It reads as "working" without a spinner, which
       // would compete with the classifier's own progress indicator.
-      final grow = 28.0 * t;
-      final ring = Paint()
+      final Rect window = Rect.fromLTRB(
+          inset, inset, size.width - inset, size.height - inset);
+      final double grow = 28.0 * t;
+      final Paint ring = Paint()
         ..color = accent.withValues(alpha: (1 - t) * 0.7)
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke;
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromLTWH(-grow, -grow, size.width + grow * 2,
-              size.height + grow * 2),
+          window.inflate(grow),
           const Radius.circular(10),
         ),
         ring,
       );
-      canvas.drawRect(
-        Offset.zero & size,
-        Paint()..color = accent.withValues(alpha: 0.06),
-      );
+      canvas.drawRect(window, Paint()..color = accent.withValues(alpha: 0.06));
       return;
     }
 
-    // Sweep line. Travels down and back so the eye is led across the whole
-    // crop rather than snapping back to the top every cycle.
-    final travel = t < 0.5 ? t * 2 : (1 - t) * 2;
-    final y = size.height * travel;
+    if (!sweep) return;
+    final double opacity = scanSweepOpacity(t);
+    if (opacity <= 0) return;
+    final Rect line = Rect.fromLTWH(
+      inset,
+      ScanFrame.sweepTop + scanSweepOffset(t),
+      size.width - inset * 2,
+      ScanFrame.sweepHeight,
+    );
     canvas.drawRect(
-      Rect.fromLTWH(0, y - 1, size.width, 2),
+      line,
       Paint()
         ..shader = LinearGradient(
-          colors: [
-            accent.withValues(alpha: 0),
-            accent.withValues(alpha: 0.9),
-            accent.withValues(alpha: 0),
+          colors: <Color>[
+            const Color(0x00FFFFFF),
+            Color.fromRGBO(255, 255, 255, 0.95 * opacity),
+            const Color(0x00FFFFFF),
           ],
-        ).createShader(Rect.fromLTWH(0, y - 1, size.width, 2)),
+        ).createShader(line),
     );
   }
 
@@ -233,6 +263,7 @@ class _ScanFramePainter extends CustomPainter {
   bool shouldRepaint(_ScanFramePainter old) =>
       old.t != t ||
       old.analyzing != analyzing ||
+      old.sweep != sweep ||
       old.bracket != bracket ||
       old.accent != accent;
 }

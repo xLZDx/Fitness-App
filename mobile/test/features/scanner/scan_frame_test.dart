@@ -4,27 +4,34 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fitness_app/features/scanner/widgets/scan_frame.dart';
 import '../../helpers/test_app.dart';
 
-/// R11c replaced the viewfinder's plain 75% outline with the design's corner
-/// brackets, sweep line and analyzing pulse (`App.tsx:2592-2614`).
+/// SCAN-G1 rebuilt the viewfinder frame at the reference's fixed geometry
+/// (`Sunset.dc.html:187-191`, keyframes at line 18).
 ///
-/// The pixels are not asserted — a golden of an animating frame over a camera
-/// preview would be a test of the renderer. What IS asserted is everything the
-/// widget decides: that it still covers exactly the crop the classifier
-/// receives, that the two phases paint differently, that it keeps animating,
-/// and that it tears its controller down.
+/// The pixels are not asserted here -- the reference-fidelity gate
+/// (`tools/design/scan_fidelity_check.py`, `scan_reference_geometry_test.dart`)
+/// does that against the rendered reference. What IS asserted is everything
+/// the widget decides: the numbers it draws with are the reference's, the
+/// two phases paint differently, it keeps animating, the sweep follows the
+/// reference's keyframes and is invisible at t=0, reduce motion parks it
+/// there, and it tears its controller down.
 
 Future<void> _pumpFrame(
   WidgetTester tester,
   ScanFramePhase phase, {
-  double fraction = 0.75,
   bool disableAnimations = false,
+  bool sweepVisible = true,
 }) async {
   Widget harness = testHarness(
     child: Center(
       child: SizedBox(
-        width: 400,
-        height: 400,
-        child: ScanFrame(phase: phase, fraction: fraction),
+        width: 358,
+        height: 230,
+        child: ScanFrame(
+          phase: phase,
+          bracket: const Color(0xE6FFFFFF),
+          accent: const Color(0xFFC9FF47),
+          sweepVisible: sweepVisible,
+        ),
       ),
     ),
   );
@@ -48,30 +55,48 @@ CustomPaint _paintOf(WidgetTester tester) => tester.widget<CustomPaint>(
     );
 
 void main() {
-  testWidgets('covers exactly the centre crop the classifier receives',
-      (tester) async {
-    await _pumpFrame(tester, ScanFramePhase.ready);
-
-    final size = tester.getSize(find.descendant(
-      of: find.byType(ScanFrame),
-      matching: find.byType(CustomPaint),
-    ).first);
-
-    // 75% of the 400x400 parent. The fraction is load-bearing: it is the
-    // crop `centre_crop.dart` hands the classifier, so "inside the brackets"
-    // has to keep meaning "what gets classified" at any screen size.
-    expect(size.width, closeTo(300, 0.5));
-    expect(size.height, closeTo(300, 0.5));
+  test('draws with the reference numbers, not approximations of them', () {
+    // Sunset.dc.html:187-190: `left/top/right/bottom:20px; width:34px;
+    // height:34px; border:2px` (36px outer box); radii `15px` top-left,
+    // `10px` elsewhere. Line 191: `left/right:20px; top:18px; height:2px`;
+    // line 18: `translateY(196px)` over `3.4s`.
+    expect(ScanFrame.inset, 20);
+    expect(ScanFrame.arm, 36);
+    expect(ScanFrame.stroke, 2);
+    expect(ScanFrame.radiusTopLeft, 15);
+    expect(ScanFrame.radiusOther, 10);
+    expect(ScanFrame.sweepTop, 18);
+    expect(ScanFrame.sweepHeight, 2);
+    expect(ScanFrame.sweepTravel, 196);
+    expect(ScanFrame.sweepPeriod, const Duration(milliseconds: 3400));
   });
 
-  testWidgets('an explicit fraction is honoured', (tester) async {
-    await _pumpFrame(tester, ScanFramePhase.ready, fraction: 0.5);
+  test('the sweep follows glassScan: invisible at both ends, full between', () {
+    // `0% opacity 0; 12% 1; 88% 1; 100% 0`, `translateY(0 -> 196px)`.
+    expect(scanSweepOpacity(0), 0);
+    expect(scanSweepOpacity(0.12), closeTo(1, 1e-9));
+    expect(scanSweepOpacity(0.5), 1);
+    expect(scanSweepOpacity(0.88), 1);
+    expect(scanSweepOpacity(1), closeTo(0, 1e-9));
+    expect(scanSweepOpacity(0.06), inExclusiveRange(0, 1));
+    expect(scanSweepOffset(0), 0);
+    expect(scanSweepOffset(1), closeTo(196, 1e-9));
+    expect(scanSweepOffset(0.5), closeTo(98, 1e-9),
+        reason: 'ease-in-out is symmetric about the midpoint');
+    expect(scanSweepOffset(0.25), lessThan(49),
+        reason: 'eased, not linear: slow at the start');
+  });
 
+  testWidgets('fills the card it is given -- the frame is the card', (tester) async {
+    await _pumpFrame(tester, ScanFramePhase.ready);
     final size = tester.getSize(find.descendant(
       of: find.byType(ScanFrame),
       matching: find.byType(CustomPaint),
     ).first);
-    expect(size.width, closeTo(200, 0.5));
+    // No 75% fraction any more: the brackets sit a fixed 20px inside the
+    // card's own edges, and the crop follows the brackets
+    // (`viewfinderSourceRect`), not the other way round.
+    expect(size, const Size(358, 230));
   });
 
   testWidgets('the two phases do not paint the same thing', (tester) async {
@@ -98,11 +123,14 @@ void main() {
         reason: 'a still sweep line is not a sweep line');
   });
 
-  testWidgets('reduce motion freezes the sweep/pulse loop', (tester) async {
+  testWidgets('reduce motion parks the loop at t=0, where the sweep is unseen',
+      (tester) async {
     // The sweep line and analyzing pulse are purely decorative, continuous,
     // looping motion over a live camera preview -- exactly what reduce motion
-    // exists to suppress. The brackets and corner colour still say "ready" vs
-    // "analyzing" without it.
+    // exists to suppress. Parked at t=0 rather than anywhere: the reference's
+    // own keyframes put the sweep at opacity 0 there, so a reduced-motion
+    // user sees the brackets alone, the same picture the reference renders
+    // paused at its start.
     await _pumpFrame(tester, ScanFramePhase.ready, disableAnimations: true);
     final first = _paintOf(tester).painter!;
 
@@ -111,6 +139,17 @@ void main() {
 
     expect(later.shouldRepaint(first), isFalse,
         reason: 'reduce motion must stop the loop, not merely slow it');
+  });
+
+  testWidgets('sweepVisible=false paints a different frame', (tester) async {
+    // Evidence mode (R1) hides the sweep; the flag has to reach the painter.
+    await _pumpFrame(tester, ScanFramePhase.ready);
+    final withSweep = _paintOf(tester).painter!;
+    await _pumpFrame(tester, ScanFramePhase.ready, sweepVisible: false);
+    final without = _paintOf(tester).painter!;
+    // Compared at the same t (both freshly pumped), so the only difference
+    // is the flag.
+    expect(without.shouldRepaint(withSweep), isTrue);
   });
 
   testWidgets('disposes its controller when removed', (tester) async {

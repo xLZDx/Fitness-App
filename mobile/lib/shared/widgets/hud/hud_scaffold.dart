@@ -109,26 +109,70 @@ class HudScrollFade extends StatelessWidget {
 
 /// `font:800 24px/1.1` at `padding:6px 20px 12px`, drawn on the photograph.
 class HudScreenTitle extends StatelessWidget {
-  const HudScreenTitle(this.title, {super.key, this.subtitle});
+  const HudScreenTitle(
+    this.title, {
+    super.key,
+    this.subtitle,
+    this.bottomPadding = 12,
+    this.subtitleColor,
+    this.readabilityShadow = true,
+    this.subtitleLetterSpacing,
+  });
 
   final String title;
   final String? subtitle;
+
+  /// False draws the title and subtitle without `readabilityShadow`. Scan's
+  /// title block declares no `text-shadow` (`Sunset.dc.html:182-184`; only
+  /// its cards do), and its reference-fidelity gate measures the halo.
+  final bool readabilityShadow;
+
+  /// The handoff's screens differ by two pixels here: `padding:6px 20px
+  /// 12px` on most, `6px 20px 14px` on Scan (`Sunset.dc.html:182`). Scan's
+  /// value is pinned by its reference-geometry test, so it is a parameter
+  /// rather than a rounding.
+  final double bottomPadding;
+
+  /// Replaces `textSecondary` for the subtitle -- Scan's is
+  /// `rgba(255,255,255,.72)` / `rgba(27,32,48,.78)` (line 184), not the
+  /// token's .8/.86. Null keeps the token.
+  final Color? subtitleColor;
+
+  /// Overrides `HudType.body`'s letter-spacing for the subtitle alone. Null
+  /// (the default) leaves the token's own value untouched -- Scan is the
+  /// only caller that pins this to 0 (SCAN-G1, core/SCAN_G1_SCOPE.md), since
+  /// its fidelity gate measured the ambient Material tracking this style
+  /// would otherwise inherit.
+  final double? subtitleLetterSpacing;
 
   @override
   Widget build(BuildContext context) {
     final HudTokens t = context.hud;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-          HudTokens.headerGutter, 6, HudTokens.headerGutter, 12),
+      padding: EdgeInsets.fromLTRB(
+          HudTokens.headerGutter, 6, HudTokens.headerGutter, bottomPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(title, style: HudType.screenTitle(t).overPhoto(t)),
+          Text(
+            title,
+            style: readabilityShadow
+                ? HudType.screenTitle(t).overPhoto(t)
+                : HudType.screenTitle(t),
+          ),
           if (subtitle != null) ...<Widget>[
             const SizedBox(height: 5),
             Text(
               subtitle!,
-              style: HudType.body(t, size: 12.5).overPhoto(t),
+              style: readabilityShadow
+                  ? HudType.body(t, size: 12.5)
+                      .copyWith(
+                          color: subtitleColor,
+                          letterSpacing: subtitleLetterSpacing)
+                      .overPhoto(t)
+                  : HudType.body(t, size: 12.5).copyWith(
+                      color: subtitleColor,
+                      letterSpacing: subtitleLetterSpacing),
             ),
           ],
         ],
