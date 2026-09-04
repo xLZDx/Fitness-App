@@ -1,4 +1,4 @@
-<title>SCAN-G1: Reference Fidelity</title>
+<title>SCAN-G1: reference fidelity</title>
 <style>
   :root{
     --bg:#0c0e16; --bg-panel:#12151f; --bg-panel-2:#171b28;
@@ -99,16 +99,16 @@
 
 <div class="wrap">
   <header>
-    <p class="eyebrow">Fitness_App · SCAN-G1</p>
-    <h1>The Scan screen matches the reference.<br>The device doesn't: it's behind a PIN.</h1>
-    <p class="subtitle">Gate R6 (pixel-level fidelity of the Scan screen against the design reference) is closed
-      and GPT-PM confirmed. The only thing keeping the whole SCAN-G1 gate from closing is on-device evidence
-      (S8), which is currently locked behind a PIN.</p>
+    <p class="eyebrow">Fitness_App &middot; SCAN-G1 &middot; AUTH-DIAG-1</p>
+    <h1>The Scan screen is done.<br>Recognition took three layers of fixing.</h1>
+    <p class="subtitle">Six of the gate's seven contracts are closed. The seventh (R2) was never a UI problem:
+      hiding behind what looked like an authentication error was a dead App Check registration.
+      That is fixed, and closing the gate now takes exactly one tap on a screen.</p>
     <div class="status-strip">
-      <span class="pill pass"><span class="dot"></span>R6 fidelity fix — CLOSED / PASS</span>
-      <span class="pill pass"><span class="dot"></span>Internal review (4 specialists) — CLOSED</span>
-      <span class="pill pass"><span class="dot"></span>Tests: Windows 1082/1082, container 1107/1107</span>
-      <span class="pill blocker"><span class="dot"></span>S8 evidence (R1/R2/R7) — OPEN BLOCKER</span>
+      <span class="pill pass"><span class="dot"></span>R1, R3&ndash;R7 &mdash; CLOSED</span>
+      <span class="pill blocker"><span class="dot"></span>R2 &mdash; one manual tap</span>
+      <span class="pill pass"><span class="dot"></span>AUTH-DIAG-1 &mdash; PASS / APPROVE</span>
+      <span class="pill pass"><span class="dot"></span>App Check &mdash; repaired</span>
     </div>
   </header>
 
@@ -137,7 +137,7 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ b062491</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 64463e8</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
@@ -146,100 +146,173 @@
 <!-- report-conform:end -->
 
   <section>
-    <h2>What's needed from the operator</h2>
-    <p class="lede">Unlock the Samsung S8 (<span class="mono">ce02171299f0711005</span>) — physically, or supply
-      the PIN. The device went into thermal/lock protection and now requires an unlock code; this session
-      does not have it. Without it, the mandatory R1/R2/R7 evidence (camera liveness, the real recognition
-      path, the "black viewfinder" regression check) cannot be captured, and without that the whole SCAN-G1
-      gate cannot close and ship to distribution.</p>
-  </section>
-
-  <section>
-    <h2>R6(c) outcome: fidelity against the reference</h2>
-    <p class="lede">Four frames (aiming/found × dark/light theme) are compared against a headless render of the
-      canonical reference HTML. aiming_dark stayed slightly above the original 2.5% threshold throughout
-      remediation — broken out separately below.</p>
-    <div class="cards">
-      <div class="card"><p class="k">aiming · dark</p><p class="v pass">2.965%</p><p class="d">mean 4.388 · ceiling 3.2% (GPT-PM approved)</p></div>
-      <div class="card"><p class="k">aiming · light</p><p class="v pass">2.041%</p><p class="d">mean 3.010 · ceiling 2.5%</p></div>
-      <div class="card"><p class="k">found · dark</p><p class="v pass">2.287%</p><p class="d">mean 4.145 · ceiling 2.5%</p></div>
-      <div class="card"><p class="k">found · light</p><p class="v pass">1.725%</p><p class="d">mean 2.733 · ceiling 2.5%</p></div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Planned / DoD / status</h2>
-    <p class="lede">For every item of the approved plan (Rosetta <span class="mono">fitness_app-2026-09-04T01-00-12-787Z-9ccb13</span>,
-      rev5, GPT-PM APPROVE): what was planned, what proved it done, and the current status with a tail where one exists.</p>
+    <h2>What the operator has to do</h2>
+    <p class="lede">Three items. The first unblocks the gate; the other two are security, and they are the
+      operator's alone: deleting and revoking credentials are outside autonomous authority.</p>
     <div class="scroll">
-    <table>
-      <thead><tr><th>Item</th><th>Definition of Done</th><th>Status</th><th>Tail</th></tr></thead>
-      <tbody>
-        <tr><td>R1 — camera liveness (evidence mode)</td><td>2 screenshots 1s apart, &gt;2% interior pixel change inside the card, advancing frame counter</td><td><span class="badge blocked">not obtained</span></td><td>Debug build compiled and installed on S8; screen is PIN-locked, operator did not answer in-session</td></tr>
-        <tr><td>R2/R7 — camera recognition path</td><td>Recognise → captureStill → cropToViewfinder → classifyFilePath on a gallery photo, last_crop.jpg captured against the bracket window</td><td><span class="badge blocked">not obtained</span></td><td>Same cause — device unreachable</td></tr>
-        <tr><td>R3 — crop contract</td><td>Inverse mapping of BoxFit.cover, unit tests at 358×230/328×230 and EXIF</td><td><span class="badge done">done</span></td><td>—</td></tr>
-        <tr><td>R4 — match card ends at the CTA</td><td>LastSessionCard and everything else sits below the primary button, never inside the card</td><td><span class="badge done">done</span></td><td>Regression found and fixed: the printed-text note was rendering inside the card — extracted, regression test added</td></tr>
-        <tr><td>R5 — exact glass recipes</td><td>New scanPrimaryButton/scanCta recipes; existing HUD goldens unmoved</td><td><span class="badge done">done</span></td><td>Regression found and fixed: the shadow/tracking fix was global — made Scan-local via <span class="mono">shadowOutsideOnly</span></td></tr>
-        <tr><td>R6 — pixel fidelity gate</td><td>1:1 geometry/identity, 4 frames ≤2.5%/5.0 (aiming_dark: approved exception ≤3.2%)</td><td><span class="badge done">done</span></td><td>Methodology defect found and fixed: the reference renderer had substituted Google Archivo for the app's own fonts — reverted to canonical; numbers unchanged after the revert</td></tr>
-        <tr><td>R7 — crop equals the bracket window</td><td>last_crop.jpg with the bracket window outlined</td><td><span class="badge blocked">not obtained</span></td><td>Needs the same device capture as R2</td></tr>
-      </tbody>
-    </table>
+      <table>
+        <thead><tr><th>Action</th><th>Why</th><th>Why it was not done automatically</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>One tap on the Mi&nbsp;9T&nbsp;Pro:</b> Scan tab &rarr; Recognise</td>
+            <td>Closes R2, the gate's last open contract</td>
+            <td>MIUI blocks injected taps (<span class="mono">SecurityException: INJECT_EVENTS</span>).
+              Engineering around a platform security boundary is forbidden by this project's own rules</td>
+          </tr>
+          <tr>
+            <td><b>Revoke</b> the App&nbsp;Check debug token committed in plaintext at
+              <span class="mono">core/DECISION_LOG.md:19740</span>, and drop its
+              <span class="mono">.gitleaksignore</span> line</td>
+            <td>A real, live secret in the repository's history (found by this repo's own gitleaks audit, 2026-08-21)</td>
+            <td>Revoking credentials is operator-only (CLAUDE.md &sect;16/&sect;17); a GPT-PM APPROVE does not cover it</td>
+          </tr>
+          <tr>
+            <td><b>Delete</b> the two dead debug tokens from the App&nbsp;Check registration</td>
+            <td>They no longer work but still sit registered</td>
+            <td>Deletion is operator-only (&sect;4/&sect;20), no exception</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
   <section>
-    <h2>Regressions found and fixed along the way</h2>
-    <div class="finding">
-      <div class="finding-head"><span class="sev major">MAJOR</span><h3>The shadow/tracking fix touched the whole HUD, not just Scan</h3></div>
-      <p>Fixing a real <span class="mono">HudSurface</span> defect (the glow bled through an almost-transparent
-        panel fill) and a letter-spacing leak was applied globally — Home, Workouts, and ordinary HUD
-        buttons/chips/nav-bar goldens all moved, even though R5 requires them to stay byte-identical.</p>
-      <p><b>Outcome:</b> <span class="outcome">fixed</span> — both fixes became opt-in via a new
-        <span class="mono">shadowOutsideOnly</span> parameter and an explicit <span class="mono">letterSpacing: 0</span>
-        only at Scan's own call sites; all 14 non-Scan goldens were restored byte-identical, confirmed by a
-        CI-matching container run.</p>
-    </div>
-    <div class="finding">
-      <div class="finding-head"><span class="sev major">MAJOR</span><h3>The "read on the machine" honesty note rendered inside the canonical card</h3></div>
-      <p>On a printed-text match, the match card grew below the boundary R6 actually measures — a production
-        detail ended up inside the very surface the gate compares 1:1 against the reference.</p>
-      <p><b>Outcome:</b> <span class="outcome">fixed</span> — the note now renders below the primary button
-        alongside other production elements; a new test asserts the card keeps its canonical shape and the
-        note is never its descendant.</p>
-    </div>
-    <div class="finding">
-      <div class="finding-head"><span class="sev major">MAJOR</span><h3>Methodology: the reference renderer substituted the app's font for the canonical one</h3></div>
-      <p>While drafting a narrow threshold revision for aiming_dark, GPT-PM caught an earlier defect: the
-        reference renderer had been substituting the app's static font cuts for the canonical variable
-        Google Archivo — moving the reference toward the app instead of the other way around, which could
-        mask a real app typography defect as "now they match."</p>
-      <p><b>Outcome:</b> <span class="outcome">fixed</span> — canonical Archivo restored; re-measuring after
-        the revert changed nothing (within thousandths of a percent) — the substitution wasn't masking
-        anything in practice, but the contract is now clean.</p>
+    <h2>Three layers behind one error</h2>
+    <p class="lede">Every recognition attempt tonight failed with the same string,
+      <span class="mono">firebase_functions/unauthenticated</span>. It turned out to be three distinct causes
+      wearing one mask: the client SDK returns that same code for genuinely different rejections.</p>
+    <div class="cards">
+      <div class="card">
+        <p class="k">Layer 1 &mdash; what the client showed</p>
+        <div class="v fail">unauthenticated</div>
+        <p class="d">It looked like broken auth. The AUTH-DIAG-1 diagnostic proved otherwise: the ID token was valid,
+          <span class="mono">aud</span>/<span class="mono">iss</span> correct, and Auth and Functions resolved to
+          the same Firebase app.</p>
+      </div>
+      <div class="card">
+        <p class="k">Layer 2 &mdash; what the server said</p>
+        <div class="v fail">app: INVALID</div>
+        <p class="d">Cloud Functions logs showed <span class="mono">auth: VALID</span> on every call and an App&nbsp;Check
+          rejection. Both debug tokens registered in the project were dead &mdash; proven by exchanging them directly
+          against the API, with no device involved.</p>
+      </div>
+      <div class="card">
+        <p class="k">Layer 3 &mdash; what is left</p>
+        <div class="v">permission-denied</div>
+        <p class="d">With a fresh token, App&nbsp;Check and Auth both pass and the request reaches business logic.
+          The refusal is now honest and on-topic: the S8 session is anonymous, and AI features require a real account.</p>
+      </div>
     </div>
   </section>
 
   <section>
-    <h2>Approved exception: aiming_dark ≤ 3.2%</h2>
-    <p class="lede">After every plausible fix attempt (fonts, letter-spacing, geometricPrecision, leading
-      distribution), the residual difference (2.965% vs. the original ≤2.5%) stayed confined to
-      text/glyph/hairline anti-aliasing edges across the whole frame — the signature of rasterizer noise
-      between Chromium and Skia, not a geometry or token defect. Through a formal Rosetta revision (plan
-      <span class="mono">fitness_app-2026-09-04T16-17-19-994Z-588ce5</span>), GPT-PM approved a narrow,
-      single-frame exception — <span class="mono">3.2%</span> instead of the shared threshold — with the
-      other three frames and the mean-diff ceiling untouched.</p>
+    <h2>Planned / Definition of Done / status</h2>
+    <p class="lede">The gate's contracts from <span class="mono">core/SCAN_G1_SCOPE.md</span>. The DoD was set by
+      GPT-PM, not by the implementer. The one row marked partial carries an explicit tail &mdash; exactly what remains.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Contract</th><th>Definition of Done</th><th>Status</th><th>Evidence / tail</th></tr></thead>
+        <tbody>
+          <tr><td>R1 &mdash; camera liveness</td>
+              <td>Card interior changes &gt;2% between frames, frame counter advances</td>
+              <td><span class="badge done">done</span></td>
+              <td class="num">19.43% diff, counter 43186&rarr;43614</td></tr>
+          <tr><td>R2 &mdash; found state from the camera path</td>
+              <td>Recognise &rarr; captureStill &rarr; cropToViewfinder &rarr; classifyFilePath &rarr; a real match card</td>
+              <td><span class="badge blocked">partial</span></td>
+              <td>The whole path runs, network and both security checks included.
+                <b>Tail:</b> one manual tap on the device that already holds a real account (Mi&nbsp;9T&nbsp;Pro)</td></tr>
+          <tr><td>R3 &mdash; crop contract</td>
+              <td>EXIF &rarr; cover mapping &rarr; inverse, covered by tests</td>
+              <td><span class="badge done">done</span></td>
+              <td class="num">centre_crop_test.dart &mdash; green</td></tr>
+          <tr><td>R4 &mdash; bracket geometry</td>
+              <td>Matches the reference anchors</td>
+              <td><span class="badge done">done</span></td>
+              <td class="num">scan_reference_geometry_test.dart</td></tr>
+          <tr><td>R5 &mdash; typography and tokens</td>
+              <td>Fonts and colours from the design system, nothing hard-coded</td>
+              <td><span class="badge done">done</span></td>
+              <td class="num">scan_glass_recipes_test.dart</td></tr>
+          <tr><td>R6 &mdash; pixel fidelity</td>
+              <td>Deviation from the reference within threshold, all goldens green</td>
+              <td><span class="badge done">done</span></td>
+              <td class="num">Container: 1105/1105</td></tr>
+          <tr><td>R7 &mdash; crop equals the bracket window</td>
+              <td>The pulled last_crop.jpg matches the window, not the whole card</td>
+              <td><span class="badge done">done</span></td>
+              <td class="num">Aspect 1.518 vs 1.542 (window) and 1.445 (card)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Two mistakes of mine that review caught</h2>
+    <p class="lede">GPT-PM caught both, both were verified against the actual source, and both are recorded in the
+      decision log alongside the successes &mdash; a log that only records wins stops being evidence.</p>
+
+    <div class="finding">
+      <div class="finding-head"><span class="sev blocker">BLOCKER</span>
+        <h3>A live secret's value went into a plan-closure payload</h3></div>
+      <p>Closing AUTH-DIAG-1, I pasted the App&nbsp;Check debug token's actual value into the evidence text.
+        The token was already sitting in the repository in plaintext, but I added one more leak channel &mdash;
+        the review exchange itself.</p>
+      <p class="outcome">Fixed: the value was removed and the re-submitted closure carried none. No token is printed
+        into the log, the reports or any GPT-PM message from here on &mdash; verified after every write.</p>
+    </div>
+
+    <div class="finding">
+      <div class="finding-head"><span class="sev major">MAJOR</span>
+        <h3>I called signing in &ldquo;reversible&rdquo;. It is not</h3></div>
+      <p>To close R2 autonomously I proposed signing into Google on the S8, arguing it could be undone with the app's
+        own Sign out. GPT-PM rejected it; I checked the source and it is right:
+        <span class="mono">linkWithCredential</span> permanently attaches the Google identity to the same UID
+        (<span class="mono">mobile/lib/features/auth/data/firebase_auth_repository.dart:155-165</span>), and on
+        <span class="mono">credential-already-in-use</span> the guest data is left unreachable
+        (same file, <span class="mono">:193-199</span>).</p>
+      <p class="outcome">The option was dropped in favour of one manual tap on the device that already has a real account.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Verification</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Check</th><th>Result</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>Container test run (CI image)</td><td class="num">1105/1105</td>
+              <td>The authoritative run, including all 8 Scan goldens</td></tr>
+          <tr><td>Golden tests on Windows</td><td class="num">8 diffs, 2.23&ndash;2.88%</td>
+              <td>The known cross-OS sub-pixel AA effect documented in
+                <span class="mono">mobile/test/golden/README.md</span>. Not a regression: the band matches the
+                previously recorded 2.28&ndash;3.10%</td></tr>
+          <tr><td><span class="mono">flutter analyze</span></td><td class="num">17 issues</td>
+              <td>Exactly the count from before this gate &mdash; none new</td></tr>
+          <tr><td>Working-tree integrity</td><td class="num">hash matched</td>
+              <td>The temporary diagnostic was reversed by hand;
+                <span class="mono">mobile/lib/features/scanner/scanner_page.dart</span> is byte-identical to baseline
+                <span class="mono">f323ca4e</span></td></tr>
+          <tr><td>New App&nbsp;Check token</td><td class="num">HTTP 200, ttl 3600s</td>
+              <td>Verified by direct exchange before building; on-device App&nbsp;Check errors disappeared entirely</td></tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 
   <section class="blocker-box">
-    <h2>What's next</h2>
-    <p class="lede">Once S8 is unlocked: capture R1 (liveness), R2/R7 (the camera recognition path,
-      <span class="mono">last_crop.jpg</span>), check the "black viewfinder" regression, then commit, a final
-      review round, push (on GPT-PM approval), build and distribute via Firebase App Distribution. Until then
-      the gate's code is ready and verified, but not yet committed.</p>
+    <h2>What happens next</h2>
+    <p class="lede" style="margin-bottom:10px">After the tap on the Mi&nbsp;9T&nbsp;Pro, everything else runs without the
+      operator: the final review round over the whole gate, the commit of the prepared diff, the push, and the
+      release build with distribution.</p>
+    <p class="lede" style="margin-bottom:0">Recorded separately for later (GPT-PM's call, outside this gate): autonomous
+      device testing needs a dedicated QA Google identity enrolled on the S8 in advance, so a personal account is not
+      linked every time a non-anonymous session is required.</p>
   </section>
 
   <footer>
-    Full file list, numbers and GPT-PM decision quotes live in <span class="mono">core/DECISION_LOG.md</span>.
+    This report is updated in place at a fixed link. The diagnostic build carrying a debug token must never be
+    distributed through App&nbsp;Distribution &mdash; GPT-PM's condition when it approved the diagnostic.
   </footer>
 </div>
 

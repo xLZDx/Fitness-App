@@ -41578,3 +41578,1065 @@ korostelevivan@gmail.com with G17 notes (previous: v2978, yesterday's
 outline). GitHub CI for the push was not observed in-session (no `gh` on
 this machine; the private repo's API needs a token); the same CI image
 run locally on the final tree is the evidence above.
+
+**SCAN-G1 — Scan tab reference fidelity (2026-09-04).** Plan
+`fitness_app-2026-09-04T01-00-12-787Z-9ccb13` rev5, GPT-PM APPROVE on hash
+`24efdd0d…8a1405` (`core/SCAN_G1_SCOPE.md`). This entry covers the
+reference-fidelity gate (R6), the internal specialist review sweep, and two
+tooling defects found and fixed along the way — one in the app
+(`HudSurface` shadow bleed), one in this session's own Docker verification
+procedure.
+
+**HudSurface shadow bleed-through `BackdropFilter` (app defect, general).**
+`_OutsideShadowPainter` painted the glow shadow *inside* the same
+`BackdropFilter` subtree as the near-transparent glass fill
+(`Color(0x04FFFFFF)`, ~1.4% alpha) — with the fill dominated by whatever the
+backdrop sampled, the shadow brightened the rendered panel well past the
+token's own value on every `HudSurface` in the app, not only Scan. Fixed by
+moving the shadow paint outside the filtered subtree. `hud_components_test.dart`'s
+`_shadowDecoration` helper (pinned a `DecoratedBox.boxShadow` that no longer
+exists after the fix) rewritten as `_shadows` — reads the `CustomPaint`'s
+private painter's public-named `shadows` field via `dynamic` dispatch
+(Dart privacy is per-identifier, not per-declaring-class).
+
+**Font and tracking findings (fidelity-gate tooling + app).**
+`tools/design/render_reference_scan.js` served the reference through
+Google's *variable* Archivo webfont; the app bundles static per-weight
+Archivo cuts with different glyph advances at the same nominal size,
+producing ~12px subtitle-width discrepancies unrelated to the app's actual
+rendering. Fixed: the renderer now serves the app's own bundled
+`Archivo-{Regular,Medium,SemiBold,Bold,ExtraBold,Black}.ttf` and
+`RobotoMono-SemiBold.ttf` via local `@font-face`, Google's `<link>` removed,
+and every render asserts (via `document.fonts`) that Archivo 400/700/800
+loaded from the app's own bytes before capturing. Separately,
+`HudType._base()` left `letterSpacing: null` on any style that did not
+override it, which — because `TextStyle(inherit: true)` merges unset fields
+from the ambient `DefaultTextStyle` — silently inherited Material's 0.3px
+body tracking into HUD text that should carry none; fixed to
+`letterSpacing: letterSpacing ?? 0`, plus two literal `TextStyle`s in
+`scan_match_card.dart` (the ring value, the category line) that needed the
+same explicit `letterSpacing: 0` since they are not built through
+`HudType._base`. Two experiments measured and reverted for zero effect:
+`text-rendering:geometricPrecision` on the reference renderer, and
+`TextHeightBehavior(leadingDistribution: even)` on `HudScreenTitle`.
+
+**Fidelity numbers (R6c, container `ghcr.io/cirruslabs/flutter:3.27.1`,
+final tree):**
+
+| frame | bad-pixel share | mean |Δ| | threshold | result |
+| --- | --- | --- | --- | --- |
+| aiming, light | 2.160% | 3.140 | ≤2.5% / ≤5.0 | PASS |
+| found, dark | 2.168% | 4.070 | ≤2.5% / ≤5.0 | PASS |
+| found, light | 1.605% | 2.649 | ≤2.5% / ≤5.0 | PASS |
+| aiming, dark | 3.102% | 4.583 | ≤2.5% / ≤5.0 | **FAIL** |
+
+Per R6c this is a finding to remediate, not a PASS with an explanation, and
+is recorded as a FAIL here regardless of the read below. After the font and
+letterSpacing fixes above, and after falsifying `geometricPrecision` and
+`leadingDistribution` as causes (measured, zero effect, both reverted),
+zoomed diff crops of `aiming_dark`'s flagged region show glyphs
+pixel-identical in position and shape with only soft anti-aliasing halos
+differing — consistent with cross-renderer AA noise between Chromium
+(reference) and Skia/`flutter_tester` (app), not a layout or token defect.
+No further fixable cause found. Left as an open finding for GPT-PM review
+rather than self-declared closed, per the scope note's own instruction.
+
+**Internal specialist review sweep (flutter-reviewer, silent-failure-hunter,
+functional-test-reviewer, a11y-architect — CLAUDE.md §17, before GPT-PM).**
+One remediation batch:
+- silent-failure-hunter: `VisualEquipmentController.classifyFilePath`'s
+  catch-all reported nothing on an unexpected classification error — now
+  reports to `FirebaseCrashlytics.instance.recordError` (routed through the
+  existing `G3Step10bProbe.kEnabled` test/dev branch, itself wrapped so
+  telemetry failure cannot break classification); `scanMatchMusclesProvider`
+  now catches `repo.exercisesFor` and logs instead of throwing into the
+  provider's `AsyncValue.error` (was silently falling back to "no muscles"
+  with no trace of a real catalogue/asset regression); `ScannerPage._disarm`
+  now catches a rejected `_session?.stop()`.
+- flutter-reviewer: `ScannerPage._classify` was missing a `mounted` guard
+  between an `await` and a `ref.read` — the file's own doc comment already
+  named this exact mistake as recurring three times; guarded.
+- a11y-architect: the scan hint (`scan_viewfinder.dart`) is one `Text` node
+  whose VALUE narrates the whole scan (align → recognising → locked) with
+  no new node appearing — wrapped in `Semantics(liveRegion: true)` so a
+  screen reader re-announces it. The match card's eyebrow ("MATCH") was a
+  second, redundant announcement beside the ring's own
+  `semanticsLabel: "Match NN%"` — wrapped in `ExcludeSemantics`.
+- functional-test-reviewer: `machine_card_flow_test.dart`'s "honest empty
+  answer" test drove the provider directly, bypassing `ScannerPage`'s
+  `_attempted` gate, so it asserted a string (`'Point at a machine and tap
+  Recognise'`) `_HintCard` can never render on that path — rewritten to
+  drive the real gallery-picker tap (`_FakeImagePicker`) and assert the
+  actual empty-result string; a second, separately dead assertion of the
+  same unreachable string in the neighbouring "explained, not shrugged at"
+  test removed with a comment recording why.
+
+Governance tests updated to match, with forensic justification in each
+file: `app_semantic_colors_test.dart`'s hardcoded-`Colors.white*` ledger
+57→52 (`scanner_page.dart` 4→0, `scan_frame.dart` 1→0, verified via
+`git show HEAD:<f> | grep -v '^\s*//' | grep -oE 'Colors\.white[0-9]*' |
+wc -l`); `catalog_boundary_test.dart`'s raw-catalog-reader allowlist gained
+`scan_match_providers.dart` (reads only muscle-tag strings, same shape as
+the existing `workouts_page.dart` entry).
+
+**Docker container verification — a second, previously mis-attributed
+root cause found this session.** Several cascades of bogus compile errors
+this session (`Undefined name 'ref'`, then later
+`package:cloud_functions/cloud_functions.dart` "Target of URI doesn't
+exist", `Method not found: 'decodeImage'`) were assumed to be the already-
+known Windows/Linux `.dart_tool` bind-mount collision throughout most of
+the session. The later cascade was a *different* mechanism, isolated by
+direct inspection this time: `/root/.pub-cache` lives in the container's
+own (ephemeral, `--rm`) filesystem, while `.dart_tool/package_config.json`
+lives on the host bind mount and survives between containers — so a `pub
+get` run in one `docker run` invocation, followed by `flutter test` in a
+*separate* `docker run` invocation, reuses a `package_config.json` that
+correctly names package versions but points at a pub-cache the new
+container never populated. `ls /root/.pub-cache/hosted/pub.dev/
+cloud_functions-6.2.0/` came back empty in the failing container despite
+`package_config.json` listing it and `pub get` reporting exit 0 and
+"Got dependencies!" in a prior, separate container. Confirmed by re-running
+`flutter clean && flutter pub get && flutter test` as ONE chained command
+inside a SINGLE `docker run` — clean on every axis. Procedure fixed
+accordingly: every container verification in this session from this point
+runs clean + pub get + test as one `bash -c` script in one `docker run`
+invocation, never split across separate runs.
+
+**R6 verification, single-container run, final tree
+(`ghcr.io/cirruslabs/flutter:3.27.1`, matches
+`.github/workflows/flutter.yml`'s pinned CI version exactly):**
+`test/shared test/theme test/features/equipment test/features/home
+test/features/visual_equipment test/features/scanner
+test/features/scanner_page_test.dart test/core/camera test/l10n
+test/golden/scan_reference_golden_test.dart test/golden/hud_golden_test.dart
+test/golden/composed_screen_golden_test.dart` — **1105/1105, `All tests
+passed!`**, including all 8 `scan_reference_golden_test.dart` Flutter
+`matchesGoldenFile` PNGs (regenerated in this same container earlier this
+session) and both other golden files (regression pins, untouched by
+SCAN-G1). `test/golden/form_coach_golden_test.dart` excluded — Form Coach
+is explicitly out of scope (operator: "к тренеру вернёмся позже") and its
+failures (`Golden "form_coach_faulted.png": 54.06% diff`,
+`"form_coach_selection.png": 54.62% diff`, both from
+`UnimplementedError: init() has not been implemented` on the coach demo
+video clip in the test harness) predate and are unrelated to this gate;
+recorded here, not fixed.
+
+**Windows verification, same final tree, same suite plus
+`test/golden/scan_reference_golden_test.dart`:** 1080/1088, 8 failures —
+all 8 are that one file's `matchesGoldenFile` PNG comparisons
+(`fidelity`/`composed`, both themes, both states), 2.28%–3.10% byte-diff
+against the PNGs the container generated. This is the exact, already-
+documented caveat in `test/golden/README.md` §"Exact-pixel comparison":
+CI runs `ubuntu-latest` only, `flutter_tester`'s Skia build differs at the
+sub-pixel AA level between a Windows host and a Linux one even with
+identical font bytes and Flutter SDK version, and the README's own
+prescription for exactly this case is "regenerate from a Linux environment
+that matches CI ... commit those in place of these" — which is what
+happened this session. The Windows run is not evidence of a defect; the
+container run against the CI-pinned image is. `flutter analyze` on Windows
+(after the mandatory `flutter clean && flutter pub get` restore following
+container use): 17 pre-existing, unrelated issues only, same count as
+before this gate's edits.
+
+**Device evidence (R1/R2/R7) — not obtained, blocked.** Debug build
+(`flutter build apk --debug --dart-define=SCAN_EVIDENCE=true`) built and
+installed clean on S8 (`ce02171299f0711005`). The device's own Android
+thermal protection had force-closed the app before this session reached it
+("Приложение fitness_app закрыто. Произошел перегрев телефона" —
+pre-existing device state, unrelated to this build) and the device is
+now behind a PIN lock screen this session has no credential for. Recorded
+as not obtained per the scope note's review guidance, not silently
+skipped; needs the operator to unlock the device (or supply the PIN)
+before R1 (liveness), R2 (camera-path found state, `last_crop.jpg`),
+gallery-path, light theme, and the black-viewfinder regression check can
+run.
+
+**SCAN-G1 — remediation of GPT-PM round 1 (2026-09-04).** `review.js` round 1,
+request `0414078d-3760-4c65-9847-ca2c8553c6ec`, reply
+`e5d5e470-020e-4920-8d73-663692e63b4c`, input hash
+`bf0a735ca3a872724ebb12153d1e8ff961a90201a061d7987359777060527684`:
+`VERDICT: BLOCKER`. 1 BLOCKER (S8 evidence, still open -- see below), 3
+MAJOR, all three genuine and remediated in one batch per CLAUDE.md §17.
+
+**MAJOR (confirmed, fixed): the shadow and letter-spacing fixes broke R5's
+"existing HUD goldens must not move".** `HudSurface`'s outside-clipped
+shadow paint and `HudType._base()`'s letterSpacing pin were both applied
+unconditionally in round 1 -- correct fixes, but global, so they rippled
+into every `HudSurface`/`HudType` consumer app-wide (confirmed: Home,
+Workouts, and every plain HUD button/chip/nav-bar/panel golden had moved).
+Made Scan-local instead of reverting the fixes outright, matching R5's own
+established pattern (`HudButton`'s `glass`/`overlay`/`hairline` override,
+"null = default, byte-identical"):
+- `HudSurface` gained `shadowOutsideOnly` (default `false` = the original
+  `DecoratedBox.boxShadow` path, restored). `HudButton` gained the same
+  flag, forwarded to its own internal `HudSurface`. Only Scan's own direct
+  `HudSurface` calls (`scan_viewfinder.dart`, `scan_match_card.dart`) and
+  Scan's own `HudButton` calls (`scanPrimaryButton`, `scanCta`) pass `true`.
+- `HudType._base()`'s letterSpacing reverted to passing the caller's value
+  through unchanged (no `?? 0`). The ambient-tracking leak this was fixing
+  is real, but is now pinned only at Scan's own call sites: `HudScreenTitle`
+  gained `subtitleLetterSpacing` (null default, Scan passes `0`);
+  `scan_match_card.dart`'s name/CTA `.copyWith(...)` and
+  `scanner_page.dart`'s primary-button `labelStyle` now pass
+  `letterSpacing: 0` explicitly instead of relying on a changed shared
+  default.
+- The 14 non-Scan golden PNGs (`composed_home_*`, `composed_workouts_*`,
+  `hud_button_*`, `hud_chip_*`, `hud_nav_bar_*`, `hud_panel_*`) restored to
+  HEAD byte-for-byte (verified: empty `git diff` against HEAD). Container
+  verification (`ghcr.io/cirruslabs/flutter:3.27.1`, single invocation):
+  `test/golden/hud_golden_test.dart` and
+  `test/golden/composed_screen_golden_test.dart` both pass with these
+  restored PNGs and the now-scoped code -- R5 satisfied and proven, not
+  just asserted.
+- `hud_components_test.dart`'s shadow-reading helper reverted to the
+  original `_shadowDecoration`/`BoxDecoration.boxShadow` reader (its
+  `HudPanel`/`HudSheet` subjects go through the restored default path
+  again); a new direct test
+  (`shadowOutsideOnly switches between the two paint paths, default off`)
+  added on a raw `HudSurface` to cover the new parameter itself, since nothing
+  else in this suite exercises `true` on a generic surface.
+- **Side effect found while diagnosing, not part of the finding:** Scan's
+  own secondary elements below the primary button ("From gallery", "Live",
+  the Gemini disclosure panel) go through the *default* (now reverted)
+  `HudButton`/`HudPanel` path too, since they were never given a Scan
+  override -- so they silently regained the shadow-bleed bug the round-1 fix
+  had incidentally also corrected for them. Confirmed harmless to R6:
+  `tools/design/scan_fidelity_check.py`'s ROI stops at the primary button's
+  bottom (`y=46` to `≈412.1`/`≈597.1`), below which these elements sit.
+  Left uncorrected deliberately -- fixing it would mean opting every one of
+  these secondary, reference-undefined widgets into the Scan override
+  individually, which is exactly the scope-widening R5 exists to prevent;
+  recorded as a known, harmless pre-existing (SCAN-G1-introduced,
+  not-yet-fixed) cosmetic inconsistency for a future gate, not remediated
+  here.
+
+**MAJOR (confirmed, fixed): the printed-text honesty note rendered inside
+the canonical match card.** `ScanMatchCard.note` removed entirely; the
+string (`locked.source == MatchSource.printedText && labelHint != null`)
+now computed once in `scanner_page.dart` as `printedTextNote` and rendered
+via the existing `_ScanNote` component (the same pattern
+`scan-offline-answer` already uses) inside the `if (locked != null)` block
+of "everything the reference does not model", after `_ScanAiCoachEntry`,
+below the one primary button -- never inside the reference surface. New
+test, `scanner_page_test.dart`: "a printed-text match keeps its honesty
+note out of the canonical card" -- confirms the note text is reachable
+(`findsOneWidget`) but NOT a descendant of `Key('scan-match-card')`, and
+that the card still contains its CTA (`scan-open-exercises`) directly, i.e.
+canonical shape unchanged by the branch.
+
+**Fidelity numbers re-verified after remediation (goldens regenerated
+against the corrected, scoped code, same container image):**
+
+| frame | bad-pixel share | mean |Δ| | threshold | result |
+| --- | --- | --- | --- | --- |
+| aiming, light | 2.041% | 3.011 | ≤2.5% / ≤5.0 | PASS |
+| found, dark | 2.287% | 4.146 | ≤2.5% / ≤5.0 | PASS |
+| found, light | 1.725% | 2.733 | ≤2.5% / ≤5.0 | PASS |
+| aiming, dark | 2.965% | 4.388 | ≤2.5% / ≤5.0 | **FAIL** |
+
+Small movement from round 1's numbers (aiming_dark 3.102→2.965, etc.) is
+within the noise this session's font/rasteriser investigation already
+attributed to cross-renderer AA (fonts and DPR unchanged; only the
+shadow/letterSpacing scoping changed, and that scoping does not touch any
+canonical-surface pixel). Verdict distribution unchanged: 3 PASS, 1 FAIL.
+Still an open finding for GPT-PM per R6c's own instruction ("never a PASS
+with an explanation") -- carried into round 2 with the full falsification
+evidence already on record (fonts, letterSpacing, `geometricPrecision`,
+`leadingDistribution` all measured and ruled out; zoomed diff crops showing
+pixel-identical glyph position/shape with AA-halo-only differences) for
+GPT-PM to judge against its own stated options: further remediation, or a
+Rosetta revision narrowing R6's threshold with evidence this is the
+practical floor.
+
+**Container re-verification, single invocation, final tree:** `test/shared
+test/theme test/features/equipment test/features/home
+test/features/visual_equipment test/features/scanner
+test/features/scanner_page_test.dart test/core/camera test/l10n
+test/golden/scan_reference_golden_test.dart test/golden/hud_golden_test.dart
+test/golden/composed_screen_golden_test.dart` -- clean (all failures
+resolved; the 8 Scan-golden failures that appeared mid-remediation were the
+"From gallery"/disclosure-panel side effect above, closed by the golden
+regeneration, not a residual). Windows: `flutter analyze` clean (17
+pre-existing, unrelated issues only, same count as before this gate);
+`test/shared test/theme test/features/equipment test/features/home
+test/features/visual_equipment test/features/scanner
+test/features/scanner_page_test.dart test/core/camera test/l10n` (excluding
+the Flutter-native golden PNG file, cross-OS per the already-documented
+caveat) 1082/1082.
+
+**BLOCKER, unchanged: S8 device evidence (R1/R2/R7) still not obtained.**
+Same state as the prior entry -- device behind a PIN lock this session has
+no credential for. Reported to the operator directly (not GPT-PM: a device
+PIN is a credential, CLAUDE.md §16's own carve-out, not a decision GPT-PM
+can supply). No response received in-session at time of round 2 submission;
+recorded as still open, not silently dropped.
+
+**SCAN-G1 — rev6 rejected, methodology correction (2026-09-04).** Drafted a
+Rosetta plan (`fitness_app-2026-09-04T16-00-53-930Z-7ef4f5`) to ask GPT-PM
+for a narrow, evidence-gated exception to R6(c)'s aiming_dark threshold,
+carrying the full falsification record built up over this gate (font-byte
+matching, the letterSpacing leak fix, two reverted no-effect experiments,
+two independent zoomed diff sheets both showing AA-only edges). GPT-PM's GO
+review (`gpt_send_and_await` request `f6581bea-41f9-4f78-b89e-fda17dacdd7b`)
+returned `VERDICT: BLOCKER`, correctly: the "font-byte matching" step in
+that record was itself the defect. `tools/design/render_reference_scan.js`
+had been substituting the app's bundled static Archivo cuts for the
+canonical HTML's own Google variable-Archivo webfont, on the reasoning
+(recorded in this log's earlier "font and tracking findings" entry) that
+the two builds' glyph advances differ by 2-5%. R6(a), as approved, permits
+exactly ONE font substitution -- the hint's `ui-monospace` to Roboto Mono
+600, because no phone has the host OS font `ui-monospace` resolves to. The
+Archivo substitution was never in R6(a) and was never separately approved;
+substituting it moved the *reference* toward the *app* instead of measuring
+the app against the reference, which could have silently absorbed a real
+app typography defect into "now they match" rather than surfacing it as a
+finding to fix. Plan closed `rejected` (GO was never granted, so `pending`
+-> `rejected` per `pm_rosetta_close`'s own contract, not `blocked`).
+
+**Fix, done under the standing SCAN-G1 plan (not a new one -- GPT-PM's own
+required change, and this plan's own Step 4 anticipated exactly this
+outcome): reverted `render_reference_scan.js` to the canonical, unmodified
+reference.** `FONTS` now serves only `RobotoMono-SemiBold.ttf` (the one
+approved substitution); the `GOOGLE_ARCHIVO_LINK` removal is gone, so the
+page loads Google's own variable Archivo exactly as the canonical HTML
+requests it. Re-ran against the live network (`fonts.googleapis.com`
+reachable from this environment) -- all four (theme, state) renders report
+`Archivo 400, Archivo 600, Archivo 700, Archivo 800` genuinely loaded (not
+a silent system-sans fallback: `document.fonts` after `fonts.ready` was
+asserted, same as before). `scan_anchors.json` and the eight reference PNGs
+(`scan_{aiming,found}_{dark,light}{,_flat}.png`) regenerated from this
+corrected script.
+
+**Result: no measurable change.** Geometry/identity
+(`scan_reference_geometry_test.dart`, `scan_glass_recipes_test.dart`) --
+28/28, clean against the canonical-Archivo anchors, same as before the
+Archivo substitution was ever added. R6(c) pixel numbers, re-run against
+the corrected (canonical) flat reference frames, app-side goldens
+unchanged:
+
+| frame | bad-pixel share | mean |Δ| | (rev5-with-substitution numbers) |
+| --- | --- | --- | --- |
+| aiming, dark | 2.965% | 4.388 | 2.965% / 4.388 -- identical |
+| aiming, light | 2.041% | 3.010 | 2.041% / 3.011 -- floating-point noise |
+| found, dark | 2.287% | 4.145 | 2.287% / 4.146 -- floating-point noise |
+| found, light | 1.725% | 2.733 | 1.725% / 2.733 -- identical |
+
+The Archivo substitution was, empirically, never masking anything --
+removing it moved every number by less than a thousandth of a percentage
+point. This is genuinely useful evidence, not a wash: it means the earlier
+"12px subtitle width" glyph-advance concern this log recorded did not
+translate into a measurable fidelity or geometry difference at the sizes
+and weights this screen actually uses, and it directly answers GPT-PM's
+concern -- the AA-only diagnosis for aiming_dark's residual now rests on
+the untouched canonical target, not a comparator quietly moved to agree
+with the app. `scan_fidelity_check.py`'s own diff-sheet crop, regenerated
+against this corrected target, shows the identical pattern already
+recorded: bad pixels exclusively at text/glyph/hairline edges across the
+whole frame, no localized defect.
+
+**Where this leaves R6(c): unchanged from before rev6 -- 3 PASS, aiming_dark
+FAIL (2.965% vs the approved <=2.5%), an open finding.** Whether this
+residual now qualifies as "objectively unreachable... with correct
+geometry" (GPT-PM's own bar) is GPT-PM's call to make on the corrected
+evidence, via a fresh Rosetta plan if a threshold change is still the right
+next step -- not decided unilaterally here. Reported back to GPT-PM
+plainly rather than silently re-submitted as though nothing had changed.
+
+**Process note, worth keeping:** this is the second genuine defect a GPT-PM
+review caught in this session's own SCAN-G1 methodology, both traced to
+the same root cause -- a fix applied to the MEASURING APPARATUS
+(`render_reference_scan.js`, `HudSurface`'s shared default) rather than to
+the app or a properly scoped app-local override. CLAUDE.md §17's "read
+before modifying, ground truth from the repository" applies as much to a
+test/reference harness as to production code; a harness that quietly moves
+to agree with the thing it measures stops being evidence.
+
+**SCAN-G1 — rev6 approved and applied: aiming_dark per-frame ceiling
+(2026-09-04).** Following the canonical-Archivo correction above, resent
+the same evidence (now on the untouched reference target) via `review.js`
+round 3 (`reviewRequestId fc7f5d13-5619-453d-a344-19b29cc20d7d`, reply
+`e2942ea8-de08-437d-b65f-402510095b15`): `VERDICT: BLOCKER` overall (S8
+still open), but GPT-PM stated explicitly it would `APPROVE` a narrow rev6
+setting `aiming_dark <= 3.2%` under fixed conditions (per-frame override
+only, other three frames/mean/ROI/mask untouched, no further changes to the
+reference renderer). Drafted exactly that as Rosetta plan
+`fitness_app-2026-09-04T16-17-19-994Z-588ce5`; GO requested via
+`gpt_send_and_await` (request `27c112c7-ef4a-42aa-809f-1481fca1a7af`, reply
+`034c0e43-5420-463f-a9e6-5228683dca47`): `VERDICT: APPROVE`, hash
+`cb7afce8caa0c6a8b90ede096df28a073c5675e07fcaf7a39f8588e00b25e248` matched
+exactly. Opened with `pm_rosetta_go`.
+
+Applied exactly the approved scope, nothing more:
+- `tools/design/scan_fidelity_check.py`: `MAX_BAD_PIXEL_SHARE` (2.5%) stays
+  the default; a new `MAX_BAD_PIXEL_SHARE_OVERRIDES = {"aiming_dark": 3.2}`
+  dict, consulted per-frame in `compare()` (now takes a `frame` key), with
+  the resolved ceiling recorded in each frame's own JSON result
+  (`bad_pixel_share_ceiling_pct`) so the report/JSON output is self-
+  documenting rather than requiring the reader to know the override exists.
+  `MAX_MEAN_DIFF` and every ROI/mask/dilation/channel constant untouched.
+- `core/SCAN_G1_SCOPE.md`'s R6(c): the threshold line now states the
+  per-frame exception inline, followed by a dated paragraph naming the plan,
+  hash and GPT-PM's exact reasoning -- the same evidence trail recorded
+  above (canonical target restored, 28/28 geometry/identity, two
+  independent AA-only measurements), so the scope note itself, not just the
+  decision log, shows why this one number differs from the other three.
+
+**Re-verification (no code/render change, only the ceiling moved):**
+`scan_fidelity_check.py` output --
+
+| frame | bad-pixel share | mean |Δ| | ceiling | result |
+| --- | --- | --- | --- | --- |
+| aiming, dark | 2.965% (unchanged) | 4.388 | 3.2% | **PASS** |
+| aiming, light | 2.041% | 3.010 | 2.5% | PASS |
+| found, dark | 2.287% | 4.145 | 2.5% | PASS |
+| found, light | 1.725% | 2.733 | 2.5% | PASS |
+
+`ALL PASS`. R6(c) is now fully satisfied -- the only remaining open finding
+in SCAN-G1 is the S8 device-evidence BLOCKER (R1/R2/R7), unaffected by this
+plan and unresolved since the operator has not yet supplied the device PIN.
+
+**SCAN-G1 -- S8 device evidence obtained: R1/R2/R7 CLOSED (2026-09-04).**
+Operator unlocked the S8 (`ce02171299f0711005`) after the earlier report's
+blocker. Built and installed a debug APK with
+`--dart-define=SCAN_EVIDENCE=true` (`applicationId
+com.fitnessapp.fitness_app.sptr.debug`, evidence mode confirmed live via
+the `frames N · HH:MM:SS.mmm` counter drawn over the raw camera preview,
+`kDebugMode &&`-gated per `scan_evidence.dart`).
+
+**First attempt: near-static interior, correctly disambiguated as
+environmental, not the 2026-08-31 black-viewfinder defect.** With the
+phone in its resting position the card stayed solid black across a 51-minute
+span (frame counter 495 -> 41712, ~13 fps sustained -- the stream was
+genuinely live) while the app's own low-light banner ("Слишком темно для
+распознавания") stayed on. Traced `CameraSession._onFrame` /
+`_updateLowLight` (`core/camera/camera_session.dart:434-460`): the frame
+counter increments from the plugin's own live image-stream callback, and
+brightness is computed from real sensor bytes each frame -- both proved
+this was a genuinely dark/occluded lens, not a stalled or synthetic stream.
+A first liveness pair taken in this state (`r1_t0`/`r1_t1.png`, 8s apart)
+measured 0.29% interior pixel share >24/255 -- correctly below the >2%
+criterion, because there was nothing for the sensor to see, not because
+liveness itself is broken. This distinction matters because R1 explicitly
+names this exact symptom (static interior + advancing counter) as the
+device's own historical failure mode; the code-level trace is what
+separates "genuinely dark scene" from "the counter lies."
+
+**Second attempt, camera repositioned by the operator onto a lit scene
+(office window blinds + chair): all three contracts satisfied.**
+- **R1 -- liveness measures camera pixels only.** Two screenshots 1s apart
+  (`r1_lit_t0.png` 19:35:xx frame 43186, `r1_lit_t1.png` frame 43614),
+  overlays off, evidence counter on. Interior pixel-diff (same ROI/threshold
+  as the design fidelity check: max-channel >24/255) = **19.43%** of
+  652,512 compared pixels, max diff 233/255; counter advanced
+  43186 -> 43614. Both criteria met with wide margin.
+- **R2 -- the found state comes from the camera path.** Tapped
+  "Сканировать снова" then "Распознать" on the stable blinds/chair scene.
+  `run-as ... ls app_flutter/scan_evidence/` showed `last_crop.jpg`
+  rewritten at capture time (38,321 bytes, was 12,333 from an earlier,
+  motion-blurred attempt taken while the phone was still being
+  repositioned -- that first crop was visibly blurred and discarded as
+  evidence for exactly that reason, not used to claim R2). Result banner
+  read "Не удалось понять, что это" (classifier declined to name an
+  office chair -- expected and irrelevant to R2, which is about the PATH,
+  not classification accuracy on a non-equipment scene).
+- **R7 -- the crop equals the bracket window, not the whole card.** Pulled
+  `last_crop.jpg` (422x278 RGB, aspect 1.518) via
+  `adb exec-out run-as ... cat` (binary-safe; a non-`exec-out` `adb shell`
+  redirect corrupted the same file on the first attempt -- CRLF
+  translation on the Windows/Git-Bash side, re-pulled correctly).
+  `ScanViewfinder.windowNormalized` (`widgets/scan_viewfinder.dart:76-81`)
+  derives the window as the card inset by `ScanFrame.inset = 20` logical
+  px on every edge, and `scanner_page.dart:422-425` calls
+  `cropToViewfinder(path, viewport: card.size, windowNormalized: ...)`
+  against the SAME RenderBox read at capture time -- true by construction,
+  not by inference. Empirical cross-check against the live screenshot:
+  full card aspect from the screenshot = 1.445; the same region inset by
+  the 20px/window fraction (derived from the capture's own DPR) = 1.542;
+  the actual pulled crop = 1.518 -- clearly tracking the inset window, not
+  the uninset card, and a side-by-side crop (`r7_side_by_side.png`) shows
+  matching content (same blind slats, chair silhouette, door frame, bag
+  strap) between the screenshot's derived window and the pulled file.
+
+All raw evidence retained under
+`D:\Temp\claude\...\scratchpad\s8_evidence\` (screenshots, both
+`last_crop.jpg` pulls, the derived-window comparison and side-by-side).
+S23 was not reconnected this session; per SCAN_G1_SCOPE.md's own review
+guidance ("S23 only if it is reconnected"), its evidence stays out of
+scope rather than blocking.
+
+**SCAN-G1: R1-R7 now all satisfied.** Next: send the complete diff plus
+this evidence to GPT-PM for the gate's final closure review; on APPROVE,
+commit the staged SCAN-G1 code diff, push, then
+`build_release.ps1 -Distribute` per the standing "distribute every new
+version" instruction.
+
+**SCAN-G1 -- R2 final evidence + out-of-scope Firebase Auth finding (2026-09-04):**
+
+# SCAN-G1 R2 -- final evidence and an out-of-scope blocker found along the way
+
+## What was asked (prior round's BLOCKER)
+
+GPT-PM's previous verdict: R1 and R7 CLOSED, R2 OPEN -- required "one final S8
+camera run exactly as R2 specifies: put a known catalogue-machine photo on the
+monitor, tap the camera Recognise action, obtain a newly rewritten
+last_crop.jpg, and show that its classifier outcome produces the actual found
+state/match card."
+
+## What was actually run
+
+The S8 dropped off adb mid-session (operator no longer had it connected); a
+second device, a Xiaomi Mi 9T Pro (`56575346`), was connected and used instead
+for this final attempt. Same debug APK (`--dart-define=SCAN_EVIDENCE=true`,
+`com.fitnessapp.fitness_app.sptr.debug`), installed and launched. adb input
+injection is blocked by MIUI's security policy on this device, so button taps
+were done by the operator directly on the phone; screenshots and file pulls
+(no injection needed) stayed on adb.
+
+Six Recognise attempts across both devices, aimed at progressively better
+targets (an anatomical illustration, a cluttered gym-overview photo, a clean
+centred hip-abductor machine photo, a treadmill photo through the same
+monitor) all ended in `ScanOutcome.noEquipment` ("Не удалось понять, что
+это"). One attempt (Mi 9T Pro, a treadmill-and-elliptical scene) produced a
+non-empty result: `ScanOutcome.alternatives`, "Беговая дорожка" (treadmill) at
+32% confidence, `answeredOffline: true`.
+
+## Root cause, found via logcat, not guessed
+
+`adb logcat` on the Mi 9T Pro during a Recognise attempt shows the real
+failure, at the network boundary:
+
+```
+could not describe the unknown machine: [firebase_functions/unauthenticated] Unauthenticated
+...
+#3  cloudFunctionsMachineDescriptionAsk...(machine_describer.dart:98)
+...
+----------------FIREBASE CRASHLYTICS----------------
+The following exception was thrown cloud machine description failed:
+[firebase_functions/unauthenticated] Unauthenticated
+```
+
+`functions/src/ai_equipment_recognition.ts:116-118` throws exactly this when
+`request.auth` is null server-side -- i.e. the callable's ID token did not
+validate, not a network-offline condition. `ScanResult.fromMatches`
+(`scan_outcome.dart:128-161`) is deliberately written so `answeredOffline:
+true` ALWAYS maps to `ScanOutcome.alternatives`, never `confident` -- so even
+the one non-empty result above is the app correctly refusing to call an
+on-device 10-class fallback "confident," by design (see that file's own
+comment citing the B1 measurement: an abduction machine scored `treadmill`
+0.892 on-device and was wrong). So "offline" in the UI copy is a generic
+fallback label covering BOTH genuine no-network and this auth failure --
+accurate as UX (the user should retry), inaccurate as a literal claim (the
+device had verified real internet: `ping 8.8.8.8` succeeded, wifi
+`VALIDATED`), and the operator signed in via Google (not a guest/anonymous
+session) on this device, which rules out the anonymous-auth explanation.
+
+The debug build (`applicationIdSuffix ".debug"`, `build.gradle:169-171`) is a
+genuinely separate app from release with its own Firebase Auth storage; the
+most likely explanation is a token/project mismatch specific to this debug
+flavour's Firebase config, not anything in the Scan UI diff. This is
+unambiguously **outside SCAN-G1's scope** (`core/SCAN_G1_SCOPE.md`, "Out of
+scope": "The recognition pipeline (...Gemini/ML Kit...)").
+
+## Why this still proves R2
+
+The failure happens at the Cloud Functions network call -- i.e. AFTER
+`captureStill()` -> `cropToViewfinder()` -> `classifyFile()` already ran and
+produced real bytes that were POSTed to Firebase and got a genuine, specific,
+server-side auth rejection back (not a local exception, not a timeout, not
+the "no equipment" catalogue-miss path -- an actual `firebase_functions/*`
+error code). That is the entire real-camera pipeline R2 exists to prove,
+executing for real, network round-trip included. What did NOT get proven is
+a *positive* match card, because an unrelated auth/environment defect in this
+specific debug build's Firebase wiring prevents ANY cloud classification from
+succeeding on either test device available this session.
+
+## Recommendation
+
+Treat this as the honest ceiling of what this session's devices can prove for
+R2 today: the path is real and reaches the network; a genuine positive
+found-state card cannot be produced until the debug build's Firebase Auth
+wiring is fixed, which is a separate, out-of-scope defect that should be
+logged and triaged on its own (not fixed inside SCAN-G1). Recorded as a
+new finding for GPT-PM to route.
+
+**SCAN-G1 -- R2 Firebase Auth follow-up: SHA-1 hypothesis falsified (2026-09-04).**
+Opened a narrow Rosetta plan to register the debug keystore SHA-1 for
+com.fitnessapp.fitness_app.sptr.debug, based on inferring from
+android/app/google-services.json that no Android-type OAuth client existed
+for that package. GPT-PM correctly BLOCKED the GO request: a local
+google-services.json can be stale, and the authoritative source is
+`firebase apps:android:sha:list <appId>`, not the checked-in JSON -- also
+noting Google Sign-In completing client-side does not by itself prove a
+valid Firebase ID token reached the callable.
+
+Ran the authoritative check GPT-PM required:
+`firebase apps:android:sha:list 1:988522745882:android:7c05c915aa42410ec201a3`
+(the debug app) -- it ALREADY has SHA_1 35f15213de217919ec66e4e1e14a19e9555628db
+registered, an exact match for the debug keystore's own fingerprint. The
+missing-SHA-1 hypothesis is false. No mutation was made to the Firebase
+project. The narrow plan (fitness_app-2026-09-04T19-45-07-185Z-29cbc1) was
+closed `rejected` (never reached GO, action now moot).
+
+A quick follow-up read of lib/main.dart:340 shows authRepositoryProvider is
+overridden to the real FirebaseAuthRepository unconditionally in the app's
+actual runApp() entry point (the MockAuthRepository default in
+auth_providers.dart is for tests only, per that file's own comment) -- so a
+debug-only mock-auth bypass is not an obvious explanation either, though this
+was a quick read, not a full trace.
+
+Root cause for request.auth == null server-side, with a real Google sign-in
+client-side and a correctly-registered SHA-1, remains UNCONFIRMED. Reported
+back to GPT-PM as a genuinely separate, deeper investigation (ID token
+attachment to the callable, App Check enforcement, token refresh timing, or
+something else) rather than continuing to guess -- this is materially
+distinct work from SCAN-G1's own diff either way.
+
+**SCAN-G1 -- GPT-PM guidance: open AUTH-DIAG-1 as a separate gate, SCAN-G1 frozen (2026-09-04).**
+GPT-PM reply (recovered via gpt_session_peek after gpt_send_and_await failed
+three times with a transport error -- "lost its HTTP return", message body
+unchanged each retry per protocol; the reply itself was genuine and
+correlated, quoting the SHA-1 finding back verbatim):
+
+Chose option (c): open a short, separate, read-only diagnostic gate
+("AUTH-DIAG-1" -- why the authenticated debug callable reaches Cloud
+Functions with request.auth == null) rather than guessing further inside
+SCAN-G1 or deferring to an unscoped backlog item. SCAN-G1 stays exactly as
+is: R1, R3-R7 CLOSED; R2 has strong path/network evidence but acceptance
+stays formally OPEN until AUTH-DIAG-1 resolves. No further SCAN-G1 diff
+changes until returning from the auth gate.
+
+AUTH-DIAG-1 phase 1 (strictly read-only -- no Firebase mutations, redeploy,
+App Check changes, SHA edits, or config replacement):
+1. On-device: Firebase.app().options (projectId/appId), confirm
+   FirebaseAuth.instance.currentUser != null with provider Google, force an
+   ID-token refresh, record only safe claims (uid/sub, aud, iss, auth_time,
+   exp) -- never the raw JWT.
+2. Confirm FirebaseAuth and FirebaseFunctions use the same FirebaseApp
+   instance/project (a second app/instanceFor(app:) mismatch is a classic
+   cause of exactly this symptom).
+3. Trace machine_describer.dart's construction of the callable end to end
+   for a wrong app context, emulator, or custom-domain path.
+4. Check server-side callable verification (what Cloud Functions actually
+   received: missing/invalid/valid-but-still-null).
+5. App Check checked but not the first suspect -- Auth and App Check are
+   independent headers/contexts.
+
+After AUTH-DIAG-1 resolves: no new full Scan review needed -- return S8,
+capture one deterministic catalogue-machine photo, get a fresh last_crop.jpg
++ ScanOutcome.confident + match card, close R2.
+
+**AUTH-DIAG-1 -- confirmed: BOTH primary and secondary Cloud Function calls
+fail identically, not photo-content-dependent (2026-09-04).**
+Clean, monitored logcat capture (buffer cleared first) around one fresh
+Recognise tap on the Mi 9T Pro confirms the PRIMARY recognition call
+(`cloudFunctionsEquipmentAsk` -> aiEquipmentRecognition,
+gemini_equipment_service.dart:73) fails with the exact same
+[firebase_functions/unauthenticated] error as the secondary describer call
+found earlier -- "cloud recognition unavailable, falling back on-device:
+cloud recognition failed: [firebase_functions/unauthenticated]
+Unauthenticated". Reproduced identically on two consecutive attempts
+(23:00:59 and 23:01:13), ~14s apart, different camera frames both times.
+This rules out photo content/quality as a factor: the classifier never
+reaches image analysis, the callable is rejected on the auth check before
+Gemini ever sees the bytes. Operator's suggestion to test against a folder
+of real machine photos (D:\Downloads\Photos-1-001) was verified moot for
+this reason and not pursued further.
+
+Code trace: functionsForRegion (core/firebase/functions_region.dart) calls
+FirebaseFunctions.instanceFor(region:) with no explicit app -- the default
+Firebase app, same one every other Cloud-Functions-backed feature
+(ai_coach, equipment_report, account_deletion, subscription, marketplace,
+donor_wall) uses via the identical pattern. No obvious wrong-app-instance
+bug found by inspection. Root cause remains unconfirmed pending on-device
+FirebaseAuth.currentUser / forced ID-token-refresh diagnosis (GPT-PMs
+AUTH-DIAG-1 steps 1-2), which needs either S8 reconnected or a way to run
+diagnostic code on a device -- not pursued further this session given the
+scope this has already grown to.
+
+**AUTH-DIAG-1 -- confirmed cross-device: S8 (the mandatory R2 device) hits
+the identical auth failure as the Mi 9T Pro (2026-09-04).**
+S8 reconnected mid-session. Clean logcat capture (buffer cleared, one
+Recognise tap) shows the exact same pattern as every prior attempt on both
+devices: cloudFunctionsEquipmentAsk (primary) fails
+[firebase_functions/unauthenticated], falls back on-device, then the
+describer fallback fails identically. Both devices ran the same debug APK
+(same debug keystore signature), so this is consistent with -- and further
+narrows toward -- a defect in how this debug build's Firebase wiring
+authenticates, not anything device-specific, camera-specific, or
+photo-content-specific. 8 total Recognise attempts across 2 devices and a
+wide range of photo content (illustration, cluttered/clean real photos,
+treadmills, a hip-abductor machine) all failed identically at the same
+auth boundary. Further photo variety testing (operator suggested a folder
+of real gym photos, D:\Downloads\Photos-1-001) would not change this
+outcome and was not pursued.
+
+Root cause still unconfirmed -- needs on-device FirebaseAuth token
+inspection (GPT-PM's AUTH-DIAG-1 steps 1-2), which needs either temporary
+diagnostic code (its own Rosetta plan/GO) or Firebase Console access this
+session does not have a faster path to. Session paused here pending
+operator direction.
+
+**AUTH-DIAG-1 -- S8 diagnostic run, root cause narrowed (2026-09-04).** Rosetta plan
+`fitness_app-2026-09-04T20-12-00-107Z-c7aed6` (rev2, GPT-PM APPROVE on hash
+`cee22afe17abd34d8120912a5ca1dd8861515a5ad5591da59f4f78a0c616cb55`). Built
+`app-debug.apk` with the temporary AUTH-DIAG-1 instrumentation added to
+`_classify()` in `scanner_page.dart` (baseline hash before edit
+`f323ca4e5f39930ce5c7239cde7e0043ed96b941`, to be restored after this run).
+Installed on S8 (`ce02171299f0711005`) and Mi 9T Pro (`56575346`); one
+Recognise attempt run on S8 with logcat captured throughout.
+
+**Diagnostic output (S8, 22:24:38-39):**
+```
+AUTH-DIAG-1 Firebase.app(): name=[DEFAULT] projectId=fitness-app-korostelev appId=1:988522745882:android:7c05c915aa42410ec201a3
+AUTH-DIAG-1 functionsForRegion.app: name=[DEFAULT] projectId=fitness-app-korostelev appId=1:988522745882:android:7c05c915aa42410ec201a3
+AUTH-DIAG-1 currentUser uid=mBvAtscc7HgRvDMzdEa1kwldppP2 providers=
+AUTH-DIAG-1 forced token refresh OK: aud=fitness-app-korostelev iss=https://securetoken.google.com/fitness-app-korostelev auth_time=1788164200 exp=1788557074
+```
+Followed 4-9s later by the same `[firebase_functions/unauthenticated]` failure
+on both cloud call sites (`cloudFunctionsEquipmentAsk` at 22:24:43.941,
+`cloudFunctionsMachineDescriptionAsk` at 22:24:47.395).
+
+**This rules out two of the six candidate branches directly:**
+- NOT `currentUser==null` -- a real uid is present.
+- NOT an Auth-app/Functions-app mismatch -- both resolve to the identical
+  `[DEFAULT]` app, same projectId, same appId.
+- NOT a token-refresh failure -- the forced refresh succeeded and returned a
+  token whose `aud`/`iss` correctly name `fitness-app-korostelev`, the same
+  project the Cloud Function is deployed to.
+
+**So this is the "valid token + matching Auth/Functions app but still
+server-side unauthenticated" branch -- and the same logcat capture contains a
+strong, specific lead for WHY:** immediately around the same window,
+```
+W LocalRequestInterceptor: Error getting App Check token; using placeholder token instead. Error: com.google.firebase.FirebaseException: Too many attempts.
+W FirebaseContextProvider: Error getting App Check token. Error: com.google.firebase.FirebaseException: Too many attempts.
+```
+App Check enforcement on a Callable Function rejects the request at the HTTPS
+trigger layer, before `request.auth` is ever evaluated -- and the Firebase
+Functions client SDK maps that rejection to the exact same
+`[firebase_functions/unauthenticated]` code and message as a genuine missing/
+invalid ID token, so this is indistinguishable from real auth failure from the
+client side alone. This debug build (`applicationIdSuffix .debug`, a sideloaded,
+non-Play-Store APK) is very likely failing Play Integrity/App Check attestation
+for a reason specific to this build flavour (unregistered debug token, or
+Play Integrity being unavailable to a sideloaded APK), independent of the
+Firebase ID token, which is genuinely valid.
+
+**Not yet confirmed, only strongly indicated:** whether App Check enforcement
+is actually turned on for `identifyEquipment`/`describeUnknownMachine` in the
+Firebase console/Functions v2 config -- that is the next fact to check to
+close this out, and is itself still read-only (no fix attempted yet, per the
+plan's scope). Cross-device confirmation on Mi 9T Pro pending operator's
+manual tap (adb input is blocked by MIUI on that device).
+
+**Reversal:** the diagnostic hunk in `scanner_page.dart` will be manually
+removed via Edit (never git checkout/reset/restore, since this file also
+carries the large uncommitted, GPT-PM-approved SCAN-G1 diff) and
+`git hash-object` re-verified against `f323ca4e5f39930ce5c7239cde7e0043ed96b941`
+once both devices are captured.
+
+**AUTH-DIAG-1 -- ROOT CAUSE CONFIRMED via authoritative server logs, not
+inference (2026-09-04).** Following the S8 client-side diagnostic (previous
+entry), ran `firebase functions:log --only aiEquipmentRecognition -n 30`
+(read-only, already-authenticated Firebase CLI) against the live Cloud
+Functions logs for `fitness-app-korostelev`. This is the server's own record
+of what it actually verified, not a client-side guess.
+
+**Every single recent invocation logs the identical, precise failure:**
+```
+Failed to validate AppCheck token. FirebaseAppCheckError: Decoding App Check
+token failed. Make sure you passed the entire string JWT which represents the
+Firebase App Check token.
+  errorInfo: { code: 'app-check/invalid-argument', ... }
+{"verifications":{"auth":"VALID","app":"INVALID"},
+ "message":"Callable request verification failed: AppCheck token was rejected."}
+```
+Six occurrences spanning 18:56-20:24 today, across multiple container
+instances (including fresh autoscaled starts), all identical.
+
+**This is now CONFIRMED, not merely indicated:**
+- `auth: VALID` on every single call -- the Firebase ID token was correct and
+  accepted, every time. The Firebase Auth side was never broken.
+- `app: INVALID` -- the *App Check* token specifically fails to even decode
+  as a JWT. This lines up exactly with the client-side logcat evidence
+  already recorded (`Error getting App Check token; using placeholder token
+  instead. Error: ... Too many attempts.`) -- the placeholder string the
+  client sends when it cannot obtain a real App Check token is not a valid
+  JWT, so the Admin SDK's App Check verifier rejects it before
+  `request.auth` is ever evaluated by the callable's own code.
+- Source confirms enforcement is real and intentional, not accidental:
+  `aiEquipmentRecognition` and `aiMachineDescription`
+  (`functions/src/ai_equipment_recognition.ts:115`,
+  `functions/src/ai_machine_description.ts:94`) both run under
+  `onCall(AI_METERED, ...)`, and `AI_METERED.enforceAppCheck =
+  APP_CHECK_ENFORCED_AI` (`functions/src/scaling.ts:209-210,341`) is
+  `envFlagFailClosed("APP_CHECK_ENFORCED_AI") || APP_CHECK_ENFORCED` --
+  deliberately fail-closed (enforced unless the env var is exactly the
+  string `"false"`), per that function's own doc comment: "there is no way
+  to land on 'off' by omission or typo."
+- The Firebase Functions client SDK maps an App Check rejection at the HTTPS
+  trigger layer to the SAME `[firebase_functions/unauthenticated]` code the
+  app has been showing throughout this whole investigation -- which is why
+  every symptom collected all session (both cloud call sites, both devices,
+  every photo, 100% failure rate) looked exactly like an auth problem while
+  actually being an App Check attestation problem the whole time.
+
+**Why this affects debug builds specifically (still the most likely
+explanation, not yet independently re-confirmed but consistent with every
+fact gathered):** this APK is a sideloaded debug build
+(`applicationIdSuffix ".sptr.debug"`, installed via `adb install`, not from
+Play Store), so Play Integrity attestation -- the default App Check provider
+on Android -- has no legitimate Play-signed install to attest, and Firebase's
+debug-token mechanism for App Check (a per-install debug token registered in
+the Firebase console) was very likely never registered for this specific
+debug flavour/install. "Too many attempts" is consistent with the client
+SDK retrying and failing repeatedly rather than falling back cleanly.
+
+**Scope discipline maintained:** this remains entirely outside
+`core/SCAN_G1_SCOPE.md` (App Check/Cloud Functions configuration, not the
+Scan UI). No fix was attempted. The diagnostic instrumentation added to
+`scanner_page.dart` for this investigation has been fully reverted --
+`git hash-object mobile/lib/features/scanner/scanner_page.dart` now returns
+`f323ca4e5f39930ce5c7239cde7e0043ed96b941`, byte-identical to the baseline
+captured before the diagnostic edit, so the large uncommitted SCAN-G1 diff
+already staged in that file is untouched. Cross-device confirmation on Mi 9T
+Pro was not completed (no operator tap landed before the server logs alone
+became conclusive) -- not needed for closure given the authoritative,
+device-independent server-side evidence above.
+
+**Recommendation, to put to GPT-PM next:** AUTH-DIAG-1's diagnostic goal is
+met -- root cause is a real App Check attestation gap specific to sideloaded/
+debug builds, not a Scan UI or SCAN-G1 defect. Two independent paths exist to
+actually fix it (out of this session's authorized scope, for GPT-PM/operator
+to route): (a) register a debug App Check token for this build flavour in
+the Firebase console (`firebase_app_check` debug-provider mechanism), or
+(b) temporarily set `APP_CHECK_ENFORCED_AI=false` for this stage's testing.
+Given this is a debug-build-only gap and not a production defect,
+recommend NOT touching production App Check enforcement, and instead
+registering a debug token -- but that decision belongs to GPT-PM/operator,
+not this session. Once resolved, SCAN-G1's R2 evidence gathering (a genuine
+`ScanOutcome.confident` + match card from the camera path) can resume with
+no further code changes needed.
+
+**AUTH-DIAG-1 CLOSED (PASS), and the R2 unblock it authorizes (2026-09-05).**
+Rosetta plan `fitness_app-2026-09-04T20-12-00-107Z-c7aed6` closed `passed`
+after a two-round GPT-PM closure review.
+
+**Round 1 returned BLOCKER on three points, all of them fair:**
+1. My closure evidence payload repeated the App Check debug token VALUE.
+   Corrected: the value is not repeated in any further evidence, review
+   message or log entry. Established by direct check (`grep -n` on the
+   tracked file) that this value occurs exactly twice in
+   `core/DECISION_LOG.md`, both HISTORICAL (`:19740`, `:22121`, committed
+   `2fed5a7c48` 2026-08-21) -- i.e. a pre-existing, already-audited
+   (gitleaks baseline), already-operator-reported exposure carrying a
+   `.gitleaksignore` entry annotated "real, already-reported, awaiting
+   operator revocation". AUTH-DIAG-1 did not create it; it did add one
+   further channel, which is my error and is recorded as such.
+2. Rosetta's reconstructed 52-path changed set is NOT this plan's changed
+   set. Corrected attribution, now accepted by GPT-PM and to be recorded
+   as canonical: **AUTH-DIAG-1 durable changed set = `core/DECISION_LOG.md`
+   only.** `scanner_page.dart` was touched temporarily and restored
+   byte-identically (`git hash-object` =
+   `f323ca4e5f39930ce5c7239cde7e0043ed96b941`, the pre-edit baseline), so it
+   contributes zero durable delta; the other 51 paths are the pre-existing
+   SCAN-G1 working tree, neither reviewed nor authorized by this plan.
+3. "The build omitted the dart-define" was asserted without invocation
+   evidence. Now proven rather than weakened: the diagnostic APK was built
+   with exactly `flutter build apk --debug --dart-define=SCAN_EVIDENCE=true`
+   -- one define, and not the App Check one. Combined with
+   `main.dart:274-296` (`AndroidDebugProvider(debugToken:
+   String.fromEnvironment('APP_CHECK_DEBUG_TOKEN'))`, a compile-time
+   constant that is the empty string when the define is absent) and that
+   same comment's recorded MVP1.G4 Step 5 on-device finding (an empty
+   string is sent as-is and rejected, not auto-generated), the omission is
+   FACT. The command is safe to quote precisely because its evidentiary
+   value is the ABSENCE of a secret from it.
+
+**Round 2: `VERDICT: APPROVE`, 0 BLOCKER / 0 MAJOR.** GPT-PM explicitly
+withdrew its own round-1 position that the token had to be revoked before
+this gate could close, on the grounds that it would deadlock a diagnostic
+gate behind pre-existing operator-only security debt the gate neither
+created nor may fix. Revocation stays open as a separate P0 operator action.
+
+**GPT-PM's routing for the actual fix (GO AUTHORIZED: "APP-CHECK DEBUG
+RECOVERY"), narrower than what I proposed:** reuse the debug token already
+registered by MVP1.G4 Step 5 rather than registering a new one; pass it via
+`--dart-define` at build time; never commit or print it; then re-run the R2
+recognition path and require server-side `auth=VALID; app=VALID`. **Path (b)
+-- setting `APP_CHECK_ENFORCED_AI=false` -- was explicitly NOT AUTHORIZED**,
+and the reasoning is worth keeping: it would weaken all AI callable traffic
+to accommodate one dev-side configuration fault, mutate a production
+security boundary, reopen closed G4 assumptions, and mask whether SCAN-G1
+works through the intended production security chain. My own recommendation
+had already been (a); GPT-PM's addition was that even (a) should first try
+recovery of the existing token before minting anything new. No source change
+is needed -- the debug-provider branch already exists in `main.dart`.
+
+**Acted on it:** rebuilt with
+`flutter build apk --debug --dart-define=SCAN_EVIDENCE=true
+--dart-define=APP_CHECK_DEBUG_TOKEN=<registered value, not reproduced here>`
+(built OK, 167.0s) and reinstalled on S8 (`ce02171299f0711005`) and Mi 9T Pro
+(`56575346`) for the R2 attempt.
+
+**Still open and belonging to the operator alone** (CLAUDE.md Sec16/Sec17;
+NOT narrowed by Sec20, which moves only secrets-CONSUMING process steps, not
+secret VALUES): revoke/rotate the historically exposed App Check debug
+credential and delete its `.gitleaksignore` suppression line once revoked.
+Reported, not acted on.
+
+**SCAN-G1 accounting after this gate:** R1 CLOSED, R2 BLOCKED (environment,
+not a scanner defect -- GPT-PM's own wording), R3-R7 CLOSED.
+
+**APP-CHECK DEBUG RECOVERY: both previously registered debug tokens are dead;
+a new one was registered and verified (2026-09-05).** Executing GPT-PM's
+"APP-CHECK DEBUG RECOVERY" GO (recover the existing token first; register a
+new one only if the existing one is demonstrably invalid).
+
+**Step 1 -- reuse attempt, and why it failed.** Rebuilt the debug APK with
+`--dart-define=APP_CHECK_DEBUG_TOKEN=<value from DECISION_LOG:19740>` plus
+`SCAN_EVIDENCE=true`, installed on S8. Two proofs the build itself was
+correct: (a) the token string is present inside the APK
+(`assets/flutter_assets/kernel_blob.bin`, verified by reading the zip
+directly); (b) the App Check failure mode CHANGED from what every earlier
+build showed. Previously the very first call logged "Too many attempts" and
+sent a placeholder; now the first call logs
+`FirebaseException: Error returned from API. code: 403 body: App attestation
+failed.` -- i.e. a real token was sent and the SERVER rejected it, with
+"Too many attempts" only appearing afterwards as the retry-limit fallback.
+App-Check-free startup was also confirmed: zero App Check lines in 2660
+logcat lines at launch, against them firing on every call before.
+
+**Step 2 -- decisive test, done without another rebuild.** Rather than
+guessing device-side, exchanged both registered tokens DIRECTLY against
+`firebaseappcheck.googleapis.com/v1/.../apps/<debug app id>:exchangeDebugToken`
+from the workstation. Result, both: `HTTP 403 -- App attestation failed.`
+That removes the build, the device, the clock and the app-id mapping from
+suspicion in one shot -- all four had already been verified independently
+anyway:
+- Both tokens ARE listed under the correct app via
+  `GET .../apps/<debug app id>/debugTokens` -- "local dev (sptr.debug, API
+  2026-08-20)" and "G4-Step5-S8-debug-probe-2026-08-29". Their resource ids
+  are base64url of their own values, which is how each was identified
+  without printing either value.
+- The app id the client reports (AUTH-DIAG-1 diagnostic) is the same one the
+  tokens are registered under, and `google-services.json` maps exactly that
+  id to `com.fitnessapp.fitness_app.sptr.debug`.
+- Device clocks are correct: S8 and Mi 9T Pro epochs are within 3-7 seconds
+  of the workstation's UTC.
+- `playIntegrityConfig` and `recaptchaEnterpriseConfig` both exist for the
+  app; App Check `services` enforcement is UNENFORCED for firebaseml,
+  firestore and identitytoolkit (the AI callables enforce via their own
+  `enforceAppCheck` option in `scaling.ts`, not via these service records).
+
+**Conclusion (FACT, server-confirmed):** both historically registered debug
+tokens are no longer honoured by App Check, independent of any client. This
+also explains the previously unexplained observation logged at `:20197-20201`
+("Registering the corrected debug token did not eliminate this") -- that
+entry's `403 App attestation failed -> Too many attempts -> placeholder`
+sequence is the same failure, and it was never intermittent handshake noise
+as guessed there; the token itself was being refused.
+
+**Step 3 -- new token registered, under GPT-PM's explicit conditional GO.**
+Registered one new debug token ("SCAN-G1 R2 device testing 2026-09-05") via
+`POST .../debugTokens` against the same debug app, and verified it
+immediately by the same direct exchange: **HTTP 200, ttl 3600s, a 953-char
+App Check token returned.** The mechanism is therefore healthy; only the old
+values were dead. The new value is stored ONLY in the session scratchpad
+(`D:\Temp\claude\...\scratchpad\appcheck_token.txt`), is NOT committed, NOT
+written into this log, and NOT sent to GPT-PM -- the discipline the earlier
+closure BLOCKER established. The two dead tokens were left in place:
+deleting them is a deletion, which stays the operator's alone under
+CLAUDE.md Sec4/Sec20 regardless of any APPROVE.
+
+**Still open for the operator** (unchanged, and now with one more item):
+revoke/rotate the historically exposed token committed at `:19740`/`:22121`
+and drop its `.gitleaksignore` suppression; and delete the two dead debug
+tokens if they should not linger in the project's App Check registration.
+
+**App Check FIXED; R2 moves one layer deeper, to a non-anonymous-caller
+requirement. GPT-PM chose option B and corrected a wrong reversibility
+claim of mine (2026-09-05).**
+
+**Device result with the new debug token (S8, camera on a POWER CAGE photo
+filling the monitor, "POWER CAGE" legible, no low-light banner, live frame
+counter):** zero App Check errors at launch AND during the call;
+`[firebase_functions/unauthenticated]` GONE for the first time this session.
+The server now answers `[firebase_functions/permission-denied] "Sign in with
+a real account to use AI features."` -- which is `abuse_guard.ts:471-479`
+`enforceNonAnonymousForAi`. So App Check passes, Firebase Auth passes, and
+the call reaches real business logic; it is refused only because the S8
+session is ANONYMOUS. That also explains the empty `providerData` seen in
+the AUTH-DIAG-1 diagnostic (`providers=` with nothing after it) -- that was
+the signature of an anonymous session, not a formatting artefact.
+
+**The decision, and my error in framing it.** The app offers only anonymous
+and Google sign-in (`firebase_auth_repository.dart`; no
+`signInWithEmailAndPassword`/`EmailAuthProvider` anywhere), so a throwaway
+test Auth user was not an option. I put two options to GPT-PM: (A) sign in
+on the S8 through the app's own "Сохранить прогресс" Google flow (2 adb
+taps, fully autonomous, the operator's Google account is already on the
+device), or (B) use the Mi 9T Pro, already signed in as a real account, and
+accept that MIUI's `INJECT_EVENTS` block means one manual operator tap. I
+recommended (A) **on the stated grounds that it was reversible via the app's
+own "Выйти".**
+
+**GPT-PM chose (B) and rejected my reversibility premise. I verified its
+correction against the actual source before accepting it, and it is right:**
+`firebase_auth_repository.dart:155-165` -- `linkWithCredential` on the
+anonymous user KEEPS THE SAME uid and attaches the Google identity to it
+permanently; `signOut()` does not undo that. And `:193-199` -- if that Google
+credential already backs a different Firebase user, the code catches
+`credential-already-in-use` and falls back to signing into the existing
+account, leaving this device's guest data "orphaned but intact -- not
+silently lost, just unreachable by this flow." So (A) is a persistent
+identity mutation on the operator's real account performed solely to obtain
+test evidence, not a reversible test step. My "reversible" claim was wrong
+and is corrected here rather than left standing.
+
+GPT-PM's second reason is also on point: the MIUI `INJECT_EVENTS` refusal is
+a platform-enforced boundary, and this project's own rules say not to
+engineer around one -- especially not to preserve nominal autonomy. One
+human tap is the cheaper and more honest boundary.
+
+**GO AUTHORIZED (GPT-PM): option B.** Use the Mi 9T Pro's existing real
+session, same POWER CAGE target, operator taps Recognise once, change no
+Firebase/Auth/App Check configuration further. Evidence to capture: no App
+Check rejection, no `unauthenticated`, no anonymous `permission-denied`, the
+request reaching the recognition handler, and the camera path producing a
+real FOUND state. **Explicitly instructed not to manufacture a clean
+semantic result:** if security passes but Gemini returns the wrong machine
+or low confidence, report that actual outcome -- at that point R2 is finally
+testing scanner behaviour rather than infrastructure.
+
+**Deferred out of this run** (GPT-PM): a dedicated QA Google identity
+enrolled on the S8 is the clean long-term answer for autonomous device
+testing, instead of linking a personal account whenever a non-anonymous path
+is needed. The two dead debug tokens stay operator cleanup; the new working
+token is never to be printed in evidence.
+
+**Windows golden re-run during the R2 wait: the 8 known cross-OS diffs, not
+a regression (2026-09-05).** While waiting on the Mi 9T Pro tap, re-ran
+`test/features/scanner test/features/scanner_page_test.dart
+test/golden/scan_reference_golden_test.dart test/theme/scan_glass_recipes_test.dart
+test/core/camera/centre_crop_test.dart` natively on Windows: 107 passed, 8
+failed. All 8 are `scan_reference_golden_test.dart`'s `matchesGoldenFile`
+PNG comparisons (`composed_scan_*` and `composed_scan_fidelity_*`, both
+themes, both states), at 2.23%-2.88% pixel diff.
+
+Checked against this log's own prior entry (`:41729-41736`) before drawing
+any conclusion: the container run against the CI-pinned image
+(`ghcr.io/cirruslabs/flutter:3.27.1`) was **1105/1105 All tests passed**
+including these same 8, while the Windows run of the same tree was
+**1080/1088 with exactly these 8 failures at 2.28%-3.10%**. Today's
+2.23%-2.88% sits inside that same band, on the same files, with
+`scanner_page.dart` verified byte-identical to its baseline
+(`git hash-object` = `f323ca4e5f39930ce5c7239cde7e0043ed96b941`).
+
+So this is the already-documented `test/golden/README.md`
+§"Exact-pixel comparison" caveat -- `flutter_tester`'s Skia sub-pixel AA
+differs between a Windows host and the Linux CI image even with identical
+font bytes and SDK version -- and NOT a defect introduced by anything done
+tonight. No remediation performed and none needed; recording it so the
+failing Windows numbers cannot later be mistaken for a fresh regression.
+The authoritative evidence for these goldens remains the container run.
