@@ -42806,6 +42806,12 @@ a different gym photo and wrote: "вот посмотри он несумел р
 тренажер" and, decisively, "и это ровно то как будут люди делать снимки под
 разными углами и с другими тренажерами в окружении."
 
+**[ERRATUM -- the machine description in this paragraph is WRONG; see the
+CORRECTION entry at the end of this file, 2026-09-05 12:40. It is a
+plate-loaded LAT PULLDOWN, an upper-body back machine; the visible branding
+suggests Star Trac, which is not independently established -- see the
+correction for what the identification does and does not rest on.]**
+
 **The observed result, captured rather than paraphrased.** Frame: a leg-press
 / hack-squat style machine, seat and inclined back pad, photographed at an
 angle inside a busy gym with several other machines behind it. Outcome:
@@ -42845,3 +42851,131 @@ angles) and stated the acceptance bar he wants -- honest recognition on every
 one of them, with no memory of previous runs on the same images. That is a
 measurable target and belongs in its own gate with its own baseline number
 before any fix is attempted, rather than being patched blindly.
+
+**CORRECTION — I misidentified the machine, and the analysis built on that
+misidentification is withdrawn with it (2026-09-05, 12:40 local).**
+
+**What I wrote, and where.** The entry immediately above (committed as
+`8e24b1b`, this file at the paragraph beginning "The observed result,
+captured rather than paraphrased") describes the failing frame as "a
+leg-press / hack-squat style machine, seat and inclined back pad,
+photographed at an angle inside a busy gym". The operator rejected that on
+sight -- "нет щас на экране фото не гак машины посмотри лучше" -- and was
+right. I had described the machine from a 422x278 crop of a photo of a
+monitor without ever opening the source image.
+
+**What the machine actually is, on evidence rather than on a squint.** The
+frame on the monitor is `D:\Downloads\Photos-1-001\20260810_131311.jpg`,
+identified by matching the hexagonal ceiling luminaire, the exit sign, the
+corridor and the machine itself; the same machine appears from a second angle
+in `D:\Downloads\Photos-1-001\20260730_135543.jpg`. At full resolution it is
+unmistakable as a **plate-loaded LAT PULLDOWN** -- a rubber footplate at
+floor level, a horizontal thigh restraint pad above it, a saddle seat, a tall
+inclined torso pad, two long arms arching over the top and converging into
+handles, and weight horns loaded with plates low on both sides. An
+**upper-body back machine**. Not a leg press, not a hack squat, not any
+lower-body machine.
+
+The footplate carries a moulded STAR TRAC logo, which makes Star Trac's
+plate-loaded line the obvious make; that part is read off branding in the
+photograph rather than confirmed against a model catalogue, so it is recorded
+as the likely make and not as a verified model number. The load-bearing claim
+here needs neither: it is that the machine is an upper-body pulldown, and that
+rests on the geometry above, which is visible in both frames. GPT-PM raised
+exactly this in review -- a correction written because a visual claim was made
+too confidently must not replace it with a second one -- and narrowing the
+claim is the remedy, together with embedding the frames themselves in the
+report so the identification can be checked rather than trusted.
+
+**So the second claim in that entry falls too.** It read the failure as one of
+shooting conditions -- "the two runs differ not in the machine class but in
+the SHOOTING CONDITIONS". That is now wrong on its own terms: R2's correct
+answer ("Гакк-машина", 85) was a genuinely different machine in a different
+photograph, so the two runs were never the same machine class photographed
+differently. The real shape of the failure is worse and more specific: **the
+model maps an upper-body back machine onto lower-body glute/hip machines**,
+in both recorded attempts on this photograph. Only those two attempts have
+captured outputs; the seven server calls cited below prove transport success,
+not seven classifications, and are not evidence of a larger sample.
+
+**The run the operator asked about, captured directly.** Same photo, last
+Recognise tap at **11:28 local** (`last_crop.jpg`, 29,766 bytes, 422x278 --
+the pulled file is byte-identical to the one analysed). Result:
+**`ScanOutcome.confident`** -- the "СОВПАДЕНИЕ" state, with the "Открыть
+упражнения" CTA -- naming **"Отведение ноги назад (ягодичные)" at 55**,
+category "Силовой". The earlier run on the same photo produced
+`ScanOutcome.alternatives` with "Отведение ноги назад (ягодичные)" 45,
+"Мульти-хип машина" 35, "Подъёмы на носки (тренажёр)" 15. Four wrong answers
+across two runs, all four lower-body, on an upper-body machine.
+
+**The correct answer was available.** `lat pulldown` is in
+`CANONICAL_MACHINES` (`functions/src/ai_equipment_recognition.ts:76`). The
+model was not forced into a wrong label by a missing class; it had the right
+one and did not choose it, at any confidence, in either run.
+
+**This is accuracy, not transport -- proven, not assumed.** Seven consecutive
+server calls between 09:22:03 and 09:27:57 UTC, each one
+`{"verifications":{"auth":"VALID","app":"VALID"}}`, `"attested":true`,
+`"outcome":"success"` with latencies 1291-2595 ms. Nothing in the pipeline
+failed. The pipeline delivered a confident wrong answer.
+
+**A structural finding in OUR code, which is the part worth acting on.**
+`ScanResult.fromMatches`
+(`mobile/lib/features/visual_equipment/data/scan_outcome.dart:128-160`)
+separates `confident` from `alternatives` **on the top1-top2 margin alone**
+(`confidentMargin = 0.15`), and returns `confident` unconditionally when
+`ranked.length == 1`. There is **no absolute floor on the top-1 confidence**.
+So 0.55 with nothing close behind enters the same `confident` UI state as
+the correct 0.85 -- the same "СОВПАДЕНИЕ" header, the same CTA, and the same
+persistence eligibility via `isWorthRemembering` -- while displaying a lower
+number. The score is visible; the state it produces is not differentiated by
+it at all.
+The same file already refuses to let the on-device path look settled
+"however sure the model sounds"; the cloud path has no symmetric protection
+against looking settled while being *unsure*. That asymmetry is ours, it is
+cheap to state, and it is measurable.
+
+**Disposition unchanged where it should be.** This is still not a SCAN-G1
+defect and does not reopen the gate -- `core/SCAN_G1_SCOPE.md` puts the
+recognition pipeline out of scope, "recorded, not fixed". It goes to the
+separate measured recognition gate, with the operator's corpus
+(`D:\Downloads\Photos-1-001`, 52 photographs) as its baseline set. The
+confidence-floor question above belongs to that gate too, but is app code
+rather than model behaviour and can be answered without touching the model.
+
+**Recorded as my error, plainly.** Two claims went into a committed decision
+log on a glance at a low-resolution crop, when the source photograph was on
+this machine the whole time and took one command to open. The operator caught
+both. The rule this violates is already written down -- inspect the real
+source of truth before a load-bearing factual claim -- and the cost of
+skipping it here was an entry that pointed the next piece of work at the
+wrong hypothesis.
+
+**The exposed App Check debug token is one of the two proven-dead ones
+(2026-09-05, established while remediating a GPT-PM review MINOR).**
+
+GPT-PM caught the reports calling the value exposed at
+`core/DECISION_LOG.md:19740` a "live secret" while the same reports record
+that both historically registered debug tokens are dead. It was right to
+push on it, and the linkage is checkable in this file without printing
+anything: `:19738-19740` is the entry that created that value, via
+`POST .../debugTokens {"displayName":"local dev (sptr.debug, API
+2026-08-20)"}` -- and "local dev (sptr.debug, API 2026-08-20)" is one of the
+exact two `displayName`s listed at `:42518-42521` as dead, each refused
+`HTTP 403 -- App attestation failed` on a direct `exchangeDebugToken` from
+the workstation, with no client involved.
+
+**So the honest statement is narrower than what was written**: a real
+credential that was valid when it was committed, exposed in plaintext, and
+which the server no longer honours. The exposure is a fact and does not
+expire; the registration entry still exists and is still the operator's to
+remove. What is NOT true is that a currently usable credential sits in git
+history, and saying so overstates live risk while blurring what actually
+remains to be done.
+
+Worth recording for its own sake: the line that leaked the value
+(`:19740`) says, in the same sentence, "not committed anywhere". It was
+being committed as it said so. The rule that came out of this session --
+never print a secret's value into a log, a report or a review message --
+cannot be conditional on believing the secret is safe, because the belief
+is exactly the part that fails.
