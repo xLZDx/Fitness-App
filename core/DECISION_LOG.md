@@ -43775,3 +43775,58 @@ One test I wrote this round was deleted before it ever ran: it iterated a list o
 asserting `expect(needle, isNotEmpty)`, which proves nothing about the code. Recorded because the
 same shape has now appeared three times in this gate, twice caught by mutation and once by
 reading — a test that cannot fail is worse than no test, since it also reports coverage.
+
+### GPT-PM rounds 2 and 3: three closed, one open, then APPROVE
+
+**Round 2 — `VERDICT: MAJOR`** (reply `d81a0bd9-0358-460a-b1ff-aa813f9173d0`, input hash
+`7f01ece6266c6296e3a29a2bf5418ba7a52c558f6acb6cc215ae1c8ec3e37b26`, correlated). BLOCKER 1,
+BLOCKER 2 and MAJOR 2 confirmed closed. MAJOR 1 only half remediated, and the half I missed is
+the important one: **I had made the deploy script compute the plan's hash from the very file it
+was about to push**, then compile that value into the APK. Both sides of the equality therefore
+came from the same possibly-stale artifact. The on-device check proved "the plan on the device is
+the plan this build expects" — which is true and useless, because it cannot prove either of them
+is the frozen plan. The dirty-tree case was also only a warning, which is something a run
+discovers it ignored after the day's calls are spent.
+
+Fixed by making the reference independent of the artifact:
+
+- `core/plans/RECOG_C1_FREEZE_MANIFEST.json`, committed, holds the authoritative
+  newline-normalised hashes — the run plan's being the reproducible `4f4ef743...325d`.
+- `recog_c1_deploy.ps1` reads it via `git show HEAD:...`, out of the COMMITTED tree and never the
+  working copy, and compares before anything is staged. A missing manifest in `HEAD` is a hard
+  stop; falling back to the working copy would have reintroduced the defect through the back door.
+- No local recomputation of the plan hash exists any more, so "edit the plan and recompute the
+  hash consistently" has nothing left to recompute.
+- Dirty tree became a `throw`, moved ahead of any staging.
+- New `-VerifyOnly` switch runs the provenance checks with no adb, so the guards are testable on
+  their own rather than only as a side effect of a real deployment.
+
+Mutation evidence, run as GPT-PM required:
+
+| case | result |
+| --- | --- |
+| clean tree, frozen plan | `provenance OK: ... (4f4ef743...325d), tree is clean` |
+| one byte of the plan changed | refused; `local: 8a086c86aad95841b13e20bd95556a88f0b62eac9192928721fd69831957dbdf` |
+| plan restored | passes |
+| one tracked source file dirtied | refused: `the working tree is dirty...` |
+| tree restored | passes |
+
+**Round 3 — `VERDICT: APPROVE`** (reply `140c8002-3f3b-4f99-a571-0a04a2332f30`, input hash
+`a22efe1f9afee02d10bd37c313b1db2ad095e88522bb24be0a5b1d9cea78daa9`, correlated, 0 BLOCKER /
+0 MAJOR). Step 5 approved; all 2 BLOCKER + 2 MAJOR from the sequence are closed.
+
+**Carried forward to step 6, raised by GPT-PM's own regression check and worth recording because
+it is a latent trap rather than a present defect:** the Dart side hashes the on-device
+`run_plan.csv` RAW bytes, while the manifest reference is newline-normalised. That is only safe
+because this particular plan is byte-identical in both forms — verified:
+`4f4ef743734ce710e6e82e968db41a4c682af1f230f2c8ff2aad0d6b9828325d` raw and normalised alike. If
+the file were ever checked out CRLF, the compiled `RECOG_C1_PLAN_SHA` would not match the pushed
+raw bytes and the harness would REFUSE — a fail-closed stop, not a false pass, but a confusing
+one. Check the raw hash before building at step 6 rather than rediscovering this from a device
+refusal.
+
+**Deliberate deviation from the usual review shape, stated rather than hidden:** §17 budgets one
+sweep, one remediation, one verification. This gate took three rounds. Rounds 2 and 3 were not a
+spiral — each verified the previous remediation and round 2 found that one of the four fixes was
+genuinely incomplete, which is exactly what a verification round is for. No round introduced a
+new concern outside the original four findings.

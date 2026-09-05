@@ -287,13 +287,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7955dac</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 81d2237</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -375,9 +377,9 @@ reviewer, not after it by the implementer.</p>
     <tr>
       <td class="step">5</td>
       <td>Commit the measurement harness: a debug-only seam driving the production service directly, recording the exact bytes, the raw reply and the production outcome.</td>
-      <td>(e) Every scored row carries run_id, attempt_no, pair_id, the sha256 of the bytes sent, the raw reply, resolved ids, its class, and either the production outcome or the captured parser exception.</td>
-      <td><span class="tag open">not started</span></td>
-      <td>Whole step. No production edit is needed — the service already takes an injectable ask seam.</td>
+      <td>(e) Every scored row carries run_id, attempt_no, pair_id, the sha256 of the bytes sent, the raw reply, resolved ids, its class, and either the production outcome or the captured parser exception. Plus the plan's own requirement: a <strong>server correlation id</strong>.</td>
+      <td><span class="tag part">partial</span></td>
+      <td><strong>The tail is exactly one item, and it is impossible rather than deferred.</strong> No server correlation id exists: the callable returns <code>{ text }</code> and nothing else (<code>functions/src/ai_equipment_recognition.ts:165</code>). Every row carries <code>server_correlation_id: null</code> plus the reason, and records instead a client observation id, exact UTC start and end, the callable name and region, and on a failure the <code>FirebaseFunctionsException</code> code, message and details verbatim. This is also a real observability gap in the product itself: nothing today links a client-side failure to a server log line. Raised for the backlog rather than quietly re-scoped. Everything else in (e) is done, commit <code>81d2237</code>, GPT-PM verdict APPROVE.</td>
     </tr>
     <tr>
       <td class="step">6</td>
@@ -541,10 +543,16 @@ permits, and the pairing rule is what keeps the split from contaminating the com
 
 <h2><span class="num">08</span>What is not green</h2>
 
-<div class="lede bad">25 golden tests fail. They fail identically on the clean commit this gate
-started from — verified by stashing the work and re-running — so they are pre-existing and untouched
-by anything here. This is stated rather than omitted: &ldquo;the suite is green&rdquo; is not a
-claim this gate can make, and will not be made.</div>
+<div class="lede bad">The full suite is <code>+3623 −25</code>. All 25 failures are in
+<code>test/golden/</code> and none outside it. Stated rather than omitted:
+&ldquo;the suite is green&rdquo; is not a claim this gate can make, and will not be made.</div>
+
+<p>Verified rather than assumed: HEAD's <code>main.dart</code> was restored into the working tree
+and the golden suite re-run — the diffs match to the pixel (<code>hud_panel_dark.png</code> 8.99% /
+3272px both ways). The diffs are text-only, so this is font substitution, not a layout regression.
+Unrelated to RECOG-C1; under the one-sweep rule it does not enter this gate, but it is not buried
+either — the next gate that touches goldens should start from a known number instead of
+rediscovering it.</p>
 
 <p>Also recorded and deliberately <em>not</em> fixed in this gate (plan item C3): the scanner's
 error path catches a malformed model reply and a dead network with the same generic handler, so a
@@ -553,27 +561,122 @@ a real defect, it belongs to a different gate, and it is written down rather tha
 
 <h2><span class="num">09</span>What happens next, without waiting</h2>
 
+<p>Steps 1–5 are committed and step 5 closed with a GPT-PM <strong>APPROVE</strong>. Next:</p>
+
 <ol>
-  <li>Freeze the ground truth (step 4) — incorporating your answer on the three photographs if it
-  arrives, otherwise freezing them as unresolved, exactly as the plan permits.</li>
-  <li>Commit the measurement harness (step 5). No production code changes: the recognition service
-  already accepts an injectable call seam, so the harness wraps the real one.</li>
-  <li>Build the measurement APK, then run the paired observations across the UTC windows.</li>
-  <li>Compute the metrics with the committed script, commit the visual evidence, revert the harness
-  and prove the tree byte-identical to where it started.</li>
+  <li><strong>Step 6.</strong> Build the measurement APK from a clean HEAD. The deploy script now
+  refuses a dirty tree and refuses a plan that does not match the committed manifest, so
+  &ldquo;built the wrong thing&rdquo; has stopped being a silent possibility.</li>
+  <li><strong>Step 7.</strong> Run the 104 paired observations across two UTC windows. That is at
+  least two calendar days; section 07 explains why, and the reason is arithmetic rather than
+  organisational.</li>
+  <li><strong>Step 8.</strong> Compute the metrics with the committed script. Declared in advance:
+  a pair counts toward the crop effect only when both arms share <code>pair_id</code> AND
+  <code>session_id</code>.</li>
+  <li><strong>Steps 9–10.</strong> Commit the visual evidence, revert the harness, and prove the
+  tree byte-identical.</li>
 </ol>
 
-<p>Only step 4 has a question in it, and that question does not block it.</p>
+<p>The question about the three photographs (section 06) is still open and still blocks nothing:
+they are frozen as <code>unresolved</code> and enter no correctness metric. An answer arriving
+before the first inference re-opens exactly those six rows.</p>
 
 </div>
 
 <footer>
-  <p>RECOG-C1 checkpoint · 2026-09-05 · steps 1–3 of 10 committed · no cloud observation exists yet.
+  <p>RECOG-C1 checkpoint · 2026-09-05 · steps 1–5 of 10 committed (<code>81d2237</code>) · no cloud
+  observation exists yet.
   Ground truth: <code>core/plans/RECOG_C1_GROUND_TRUTH_2026-09-05.csv</code> ·
   arm manifest: <code>core/plans/RECOG_C1_ARM_MANIFEST_2026-09-05.csv</code> ·
   per-arm labelling: <code>core/plans/RECOG_C1_LABELS_2026-09-05.csv</code>.</p>
 </footer>
+<h2><span class="num">10</span>Step 5: what three review rounds caught</h2>
+
+<p>Not one cloud call has been made yet — and that is not incidental, it is the reason every
+finding below cost a test edit instead of a discarded day of quota and a spoiled measurement. The
+internal reviewers ran before anything went to GPT-PM, as the sequencing rule requires.</p>
+
+<p>The quota is 60 calls per user per UTC day and it is <strong>charged before the model
+runs</strong>. So most of what follows is not reliability in the general sense; it is protection of
+exactly one unrecoverable resource.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Found by</th><th>What</th><th>Why it matters</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>flutter-reviewer<br><span class="tag open">MAJOR</span></td>
+      <td>The abort valve read <code>transport_error</code> — a field a timeout never sets.</td>
+      <td>Production applies its time budget <em>outside</em> the injected ask, and
+      <code>Future.timeout</code> races a timer rather than cancelling the future. So a timeout
+      reset the consecutive-failure counter and the run would grind through the whole window
+      against a wall. That is the exact stall this codebase has already hit in production.</td>
+    </tr>
+    <tr>
+      <td>silent-failure-hunter<br><span class="tag open">MAJOR</span></td>
+      <td>The abort record was written through the same <code>IOSink</code> whose failure triggers
+      it.</td>
+      <td>On a storage failure the record could not be written, a secondary exception replaced the
+      real one, and a run that died of a full disk looked identical in the file to a run that was
+      planned short.</td>
+    </tr>
+    <tr>
+      <td>code-reviewer<br><span class="tag open">MAJOR</span></td>
+      <td>The consecutive-failure stop left nothing on disk.</td>
+      <td>And that is the most likely stop condition of all — the quota wall.
+      <code>debugPrint</code> goes to <code>adb logcat</code>, which the pull script does not
+      retrieve.</td>
+    </tr>
+    <tr>
+      <td>GPT-PM, round 1<br><span class="tag open">BLOCKER</span></td>
+      <td>One forgotten define ran all 104 observations in a single day.</td>
+      <td><code>RECOG_C1_WINDOW</code> had no non-zero default and 0 means "every row". Forgetting
+      a define was <em>more</em> dangerous than passing a wrong one — for the very resource the
+      two-window design exists to protect.</td>
+    </tr>
+    <tr>
+      <td>GPT-PM, round 1<br><span class="tag open">BLOCKER</span></td>
+      <td>Process death between the charge and the row.</td>
+      <td>I argued for documenting this rather than fixing it. The reviewer's counter-design
+      removes my objection: the marker records that a call was <em>about to be made</em>, not that
+      quota was burned, and a dangling marker is held uncertain rather than re-run. I was
+      defending the weaker option.</td>
+    </tr>
+    <tr>
+      <td>GPT-PM, round 2<br><span class="tag open">MAJOR</span></td>
+      <td>The instrument validated itself in a circle.</td>
+      <td>I had made the deploy script hash the plan <em>from the file it was about to push</em>,
+      so both sides of the equality came from the same possibly-stale artifact. The reference now
+      comes from a committed manifest via <code>git show HEAD:</code> — not the working copy, and
+      never the plan.</td>
+    </tr>
+  </tbody>
+</table>
 </div>
+
+<p>Round 3 returned <strong>APPROVE</strong>, 0 BLOCKER / 0 MAJOR.</p>
+
+<h3>Three tests in this gate passed against broken code</h3>
+
+<p>Worth saying plainly, because "the tests are green" was untrue here three times.</p>
+
+<ul>
+  <li>The first abort-record regression drove the path through an <code>observe</code> failure,
+  which leaves the sink <em>healthy</em> — so it tested the wrong thing. Caught by mutation.</li>
+  <li>The id-uniqueness test could not fail: all 104 rows are <code>attempt_no = 1</code> and
+  <code>(pair_id, arm)</code> is already unique, so dropping <code>attempt_no</code> from the
+  formula would have gone unnoticed — and a retry would have been silently marked already done.
+  Found by functional-test-reviewer.</li>
+  <li>The first configuration-guard test asserted only "something was refused", which any of five
+  checks satisfies; deleting the window branch left it green. Caught by mutation.</li>
+</ul>
+
+<p>So every guarantee here is mutation-checked: break the guard, require the suite to go red,
+restore the file byte-identically. Thirteen such checks in step 5 alone.</p>
+
+</div>
+
+
 
 
 
