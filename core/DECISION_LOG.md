@@ -43830,3 +43830,96 @@ sweep, one remediation, one verification. This gate took three rounds. Rounds 2 
 spiral — each verified the previous remediation and round 2 found that one of the four fixes was
 genuinely incomplete, which is exactly what a verification round is for. No round introduced a
 new concern outside the original four findings.
+
+## 2026-09-05 — RECOG-C1 step 6: the measurement APK, window 1
+
+Operator said "го" after the step-5 report. Step 5 closed with GPT-PM
+`VERDICT: APPROVE` (reply `140c8002-3f3b-4f99-a571-0a04a2332f30`).
+
+### The CRLF condition, checked before building rather than discovered on the device
+
+GPT-PM's round-3 regression check raised it and dismissed it on the evidence; this verifies the
+evidence still holds at build time rather than trusting a note. The Dart side hashes the on-device
+`run_plan.csv` RAW bytes; the freeze manifest stores the newline-normalised hash. Measured on
+disk immediately before the push:
+
+| form | sha256 |
+| --- | --- |
+| raw bytes | `4f4ef743734ce710e6e82e968db41a4c682af1f230f2c8ff2aad0d6b9828325d` |
+| newline-normalised | `4f4ef743734ce710e6e82e968db41a4c682af1f230f2c8ff2aad0d6b9828325d` |
+| committed manifest | `4f4ef743734ce710e6e82e968db41a4c682af1f230f2c8ff2aad0d6b9828325d` |
+
+No CRLF in the file, so all three agree and the trap does not bite this run.
+
+**It is a real latent trap, and it is NOT fixed here — deliberately.** Git warned on commit that
+it will hand this file back as CRLF the next time it touches it, so a fresh clone would produce a
+plan whose raw hash differs from the compiled `RECOG_C1_PLAN_SHA`, and the harness would refuse.
+That refusal is fail-CLOSED — it costs a build, never quota, and never a wrong measurement — which
+is why the proportionate response is to record it rather than to churn a just-approved gate
+minutes before executing it. The durable fix is one `.gitattributes` line marking these CSVs
+`-text`; it belongs to step 9/10, where the scripts are touched anyway, and it is written down
+here so it is not rediscovered from a device refusal.
+
+### Push evidence
+
+`recog_c1_deploy.ps1 -Push -Window 1 -RunId w1` on `ce02171299f0711005` (Galaxy S8, the
+permanently attached test device):
+
+- `provenance OK: plan matches the committed manifest (4f4ef743...325d), tree is clean` — the
+  guard ran before anything was staged, as designed;
+- window 1 selected 52 observations; 26 files pushed to `images/A` (93.3 MB) and 26 to `images/B`
+  (27.6 MB), confirmed on device by `ls | wc -l` returning 26 and 26;
+- the full 104-row plan pushed; the harness filters by its own `window` column.
+
+The arm-B total being under a third of arm A's is itself consistent with the crop discarding 57 %
+of a portrait frame's height.
+
+### Build
+
+`flutter build apk --debug` from HEAD `7656a3dfff7c140afa87791a823026e818d80d51`, tree clean, with
+all six required defines. No token value appears in the build command, in this entry, or in the
+deploy script's output — verified mechanically after writing, as for every entry in this gate.
+
+### Build evidence, and step 8's script written before step 7 runs
+
+APK built from HEAD `7656a3dfff7c140afa87791a823026e818d80d51`, clean tree,
+`Running Gradle task 'assembleDebug'... 265.6s`, exit 0.
+`build/app/outputs/flutter-apk/app-debug.apk`, 423650343 bytes, sha256
+`992c26fbf0a38018c9de68bcd6248e5241d473e5e4fe338acbdded843ce1e3d8`.
+
+**Step 8's metric script was written and tested while the APK was building — deliberately, and for
+the same reason the scoring contract was frozen first.** A rule chosen after seeing the results is
+not a measurement, and that applies to the join and the denominators exactly as it applies to the
+scoring matrix. `mobile/test/tools/recog_c1_compute_metrics.dart` contains no thresholds and no
+scoring of its own; every judgement comes from the frozen contract. It was split into a pure
+`computeMetrics(...)` plus a thin environment wrapper so its rules could be driven with synthetic
+rows — testing it against the real run would have made the test a description of whatever happened
+rather than a check of the rules.
+
+15 tests in `mobile/test/features/visual_equipment/recog_c1_metrics_test.dart`, each guard proved
+load-bearing:
+
+| mutation | suite |
+| --- | --- |
+| stop re-deriving the class from the raw reply (clause f) | `+14 -1` |
+| silently deduplicate a repeated observation id | `+14 -1` |
+| compare pairs split across a restart | `+13 -2` |
+| compare pairs whose crop changed the task | `+14 -1` |
+| score unresolved rows into the crop comparison | `+14 -1` |
+| drop control records instead of reporting them | `+14 -1` |
+| let operational failures into the semantic denominator | `+14 -1` |
+
+**One mutation result worth recording rather than smoothing over.** The operational-exclusion
+guard survived being broken in either single place, and the first reading of that was "the test is
+weak". It is not: the exclusion is enforced twice, once by this script's own `reachedModel` filter
+and once by the frozen contract, which returns null for an operational failure. Breaking either
+alone leaves the other holding — correct defence in depth — and breaking BOTH is caught. The
+finding was only visible because the mutation was retargeted at the real guard instead of being
+recorded as a pass.
+
+### On the "short run" reporting
+
+The script compares the observation count against the plan and prints an explicit warning plus the
+control records when they differ, rather than reporting whatever it found as if it were complete.
+This is the analysis-side half of the harness's control-record work: the device makes a short run
+explainable, and this makes it impossible to read a short file as a finished one.
