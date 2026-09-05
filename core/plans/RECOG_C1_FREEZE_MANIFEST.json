@@ -1,0 +1,35 @@
+{
+  "_comment": [
+    "The authoritative identity of every RECOG-C1 measurement artifact, in a form a",
+    "script can read. It exists because a hash computed FROM the artifact under",
+    "suspicion proves only that the artifact agrees with itself: the deploy step used",
+    "to hash the very plan it was about to push and compile that value into the APK,",
+    "so a stale or hand-edited plan supplied both sides of the equality and passed",
+    "every check on both ends perfectly.",
+    "",
+    "The reference must therefore be independent of the artifact. recog_c1_deploy.ps1",
+    "reads this file out of the COMMITTED tree (git show HEAD:...), never from the",
+    "working copy, so editing it locally changes nothing. Editing it for real means",
+    "committing it, which puts it in the history where a reviewer can see it.",
+    "",
+    "Hashes are of the newline-normalised bytes. Git checks these files out as CRLF on",
+    "the machine that produced them while the generators write LF, so the raw",
+    "working-tree hash is not stable across checkouts and would fail for the wrong",
+    "reason. See RECOG_C1_GT_FREEZE_2026-09-05.md, which records both forms."
+  ],
+  "plan": "fitness_app-2026-09-05T11-25-16-919Z-377ee0",
+  "artifacts": {
+    "core/plans/RECOG_C1_RUN_PLAN_2026-09-05.csv": {
+      "sha256_lf": "4f4ef743734ce710e6e82e968db41a4c682af1f230f2c8ff2aad0d6b9828325d",
+      "rows": 104,
+      "windows": 2,
+      "rows_per_window": 52,
+      "pairs_per_window": 26,
+      "reproducible_by": "flutter test test/tools/recog_c1_generate_run_plan.dart"
+    },
+    "core/plans/RECOG_C1_GROUND_TRUTH_2026-09-05.csv": {
+      "sha256_lf": "2e631f5c80011ef350ff483c4fd47bbefd9fc46f1faa7ca2c72d7954664921c3",
+      "rows": 104
+    }
+  }
+}

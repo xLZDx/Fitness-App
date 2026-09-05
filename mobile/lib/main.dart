@@ -60,6 +60,8 @@ import 'features/visual_equipment/data/mlkit_live_equipment_service.dart';
 import 'features/ai_coach/generated_exercise_repository.dart';
 import 'features/visual_equipment/data/gemini_equipment_service.dart';
 import 'features/visual_equipment/data/mlkit_text_recogniser.dart';
+// RECOG-C1 measurement harness — removed again by step 10 of the plan.
+import 'features/visual_equipment/measurement/recog_c1_harness.dart';
 import 'features/visual_equipment/data/mlkit_visual_equipment_service.dart';
 import 'features/visual_equipment/state/live_equipment_providers.dart';
 import 'features/equipment/data/firestore_equipment_setup_notes.dart';
@@ -332,6 +334,17 @@ Future<void> main() async {
   // Copy any bundled ML models out of the APK into the docs dir so
   // ML Kit's LocalLabelerOptions can read them by absolute path.
   await AssetBootstrap().ensureBundledAssets();
+
+  // RECOG-C1 measurement harness. Dead code in every normal build:
+  // `RecogC1Harness.kEnabled` is `kDebugMode && bool.fromEnvironment(...)`,
+  // both compile-time constants, so this whole branch is removed by the
+  // compiler unless the build asked for it. Same shape and the same reasoning
+  // as `G3Step10bProbe`. Fire-and-forget on purpose: it waits for sign-in
+  // internally and must never delay the first frame. Step 10 of the plan
+  // deletes this and proves the file byte-identical again.
+  if (RecogC1Harness.kEnabled) {
+    unawaited(RecogC1Runner.runWhenSignedIn());
+  }
 
   runApp(
     ProviderScope(

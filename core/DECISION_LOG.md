@@ -43467,3 +43467,311 @@ truth edited in sight of the outputs is not a ground truth.
 is computed over `gt_status = resolved` rows only, so these three photographs
 contribute to no accuracy number in either direction.
 
+
+---
+
+## 2026-09-05 — RECOG-C1 step 5: the measurement harness, and what three review rounds took out of it
+
+Plan `fitness_app-2026-09-05T11-25-16-919Z-377ee0` (hash `b78bffa5...`), step 5. What was
+PLANNED: a debug-only harness that drives the production recognition path over the committed
+run plan and writes one JSON row per observation, carrying a server correlation id. What was
+ACTUALLY DONE differs from that in one named respect, recorded below rather than quietly
+re-scoped.
+
+### The deviation: the plan's "server correlation id" does not exist
+
+The plan's step-5 DoD requires every row to carry a server-side correlation id. The callable's
+contract has none. `functions/src/ai_equipment_recognition.ts:165` returns `{ text }` and
+nothing else — there is no request id, no trace id, no log key a client could record. So every
+row carries `server_correlation_id: null` plus `server_correlation_note` saying why, and
+records instead what does exist: a client-side observation id, exact UTC start and end, the
+callable name and region, and on a failure the `FirebaseFunctionsException` code, message and
+details verbatim.
+
+This is a real observability gap in the PRODUCT, not just in this measurement: today nothing
+links a client-side recognition failure to a server log line. It is written down as a finding
+for the roadmap. The step-5 DoD is therefore **partial**, and the tail is exactly that: the
+correlation id cannot be supplied until the callable returns one.
+
+### Three defects found before a single cloud call existed
+
+The order matters. All three were found while the harness could still only be run against
+fakes, so each cost a test edit rather than a discarded experiment and a day of burnt quota.
+
+**1. `flutter-reviewer`, MAJOR — the abort valve read a field a timeout never sets.**
+`GeminiVisualEquipmentService` applies its client-side budget OUTSIDE the injected ask
+(`gemini_equipment_service.dart:147` — `_cloud(bytes).timeout(timeout)`), and `Future.timeout`
+races a timer rather than cancelling the inner future. So on a timeout the recording closure
+has not run its catch: `transport_error` stays null. The valve that exists to stop a run
+grinding through a whole window against a wall was keyed on exactly that field, and would have
+reset to zero on every timeout — the precise stall this codebase has already hit in
+production.
+
+Fixed by reading the FROZEN contract predicate instead:
+`responseClass == RecogC1ResponseClass.operationalFailure`. Deliberately NOT the reviewer's
+own proposed `|| classify_error != null`, which would have counted a malformed reply as
+operational — a malformed reply means the model answered, and the observation counts.
+
+**2. `silent-failure-hunter`, MAJOR — the abort record could not record the failure it exists
+for.** The `run_aborted` control row was written through the same `IOSink` whose failure is one
+of the two paths that reaches that catch block. On a storage failure the record could not be
+written, the secondary exception replaced the real one, `rethrow` never ran, and an unguarded
+`sink.close()` in `finally` could supersede whatever was still in flight. A run that died of a
+full volume would look, in the raw JSONL, exactly like a run that was planned short.
+
+Fixed three ways: the sink is closed first and its error swallowed (so a half-written line
+cannot be spliced onto the abort line); the record is written through a fresh
+`File.writeAsStringSync(mode: FileMode.append)` handle that gives up loudly rather than
+throwing; `finally`'s close is guarded.
+
+**3. `silent-failure-hunter`, MINOR ×2.** `runWhenSignedIn`'s try started after the sign-in
+wait, so a closing auth stream escaped into `unawaited(...)` — and Crashlytics collection is
+off in debug, the only mode this can run in, so nothing anywhere would have recorded it. And a
+callable that RETURNED with null text was stamped `operationalFailure`, the one class the
+contract excludes from every semantic denominator: a server answering uselessly would have been
+counted as network noise and quietly deflated the measured model-failure rate. Production
+itself throws on that reply (`gemini_equipment_service.dart:263`) and sets no transport error,
+so the harness is the only layer that can tell the two apart.
+
+The frozen contract was NOT edited to fix the second one. `classifyResponse` decides
+"operational" from `rawReply == null`, which cannot distinguish "answered with nothing" from
+"never answered" — so the harness now tracks `callReturned` and passes `''` rather than null
+when the call returned. The frozen classifier reaches `jsonDecode('')`, throws, and returns
+`malformedParseFailure`: the model answered and the answer was unusable, which is the truthful
+class. `call_returned` is on every row so the offline script re-derives this instead of
+trusting it.
+
+### A green suite that proved nothing, and how it was caught
+
+The first regression test for defect 2 passed against the UNFIXED code. It drove the abort path
+by making `observe` throw on a sha mismatch — which leaves the sink perfectly healthy, so
+writing the record through it worked either way. The mutation (`_writeAbortRecord` reverted to
+`sink.writeln` + `sink.flush`) went green, which is the only reason it was caught.
+
+Replaced with a test that supplies a sink which actually fails, through a new
+`@visibleForTesting openSink` seam — added for no other purpose, because without it the abort
+path can only ever be exercised with a working sink. The fake's second failure carries a
+different message from its first, which is what makes "the original error propagated"
+distinguishable from "the error raised while reporting it propagated". Against the unfixed
+code that test now fails with `sink is already faulted` in place of `no space left on device` —
+the reviewer's diagnosis, reproduced mechanically.
+
+Mutation results, all restored byte-identical afterwards:
+
+| mutation | suite |
+| --- | --- |
+| `_writeAbortRecord` → write through the sink | `+19 -1` |
+| `replyForClassification` → `cap.rawReply` | `+20 -1` |
+| (earlier) `'operational_failure': cap.transportError != null` | `+15 -1` |
+
+Defect 3's sign-in half is **not** covered by a test and this says so rather than implying
+otherwise: it needs a live `FirebaseAuth.instance`, which a `flutter test` run has no app for.
+The fix is a `try` moved four lines up and is verifiable by reading; the honest statement is
+that it is reviewed, not tested.
+
+### Unrelated, found while verifying: 25 golden tests fail on main
+
+`flutter test` is `+3609 -25`. All 25 are in `test/golden/` and all are pixel diffs on text
+only — a font-substitution artifact, not a layout regression. Confirmed pre-existing and
+unrelated by restoring HEAD's `main.dart` into the working tree and re-running
+`test/golden/hud_golden_test.dart`: identical percentages, to the pixel
+(`hud_panel_dark.png` 8.99% / 3272px both ways). Not this gate's to fix under the one-sweep
+rule — recorded here so the next gate that touches goldens starts from a known number rather
+than discovering it again.
+
+### Second internal sweep, same gate: two more defects, one of them the likeliest stop condition
+
+Run after the first remediation, before anything went to GPT-PM, per the sequencing rule
+(internal specialists first). Both reviewers hit their turn limit mid-read and were asked to
+report what they had actually verified and mark the rest UNKNOWN rather than infer it. That
+produced a shorter report and a more honest one; two of the items below came with their own
+"I did not check this" caveats, which is what made them cheap to resolve.
+
+**`code-reviewer`, MAJOR — the abort valve stopped the run with nothing on disk.** The
+consecutive-operational-failure valve ended the loop with a bare `break` and a `debugPrint`. No
+record. That is the same ambiguity the `run_aborted` row exists to remove — a short JSONL that
+reads identically as "killed", "planned short", and "stopped deliberately" — except on the stop
+condition that is by far the MOST likely to fire, because it is the quota wall. And
+`debugPrint` does not close it: that goes to `adb logcat`, and `recog_c1_deploy.ps1 -Pull`
+retrieves only the JSONL.
+
+Fixed by writing a `run_stopped_consecutive_failures` control row carrying the failure count,
+the threshold, how many observations were written and how many were left unrun — so the
+analysis checks the file against the plan instead of assuming. Both control rows now share one
+`_controlRecord` builder, so a third cannot drift from the first two the way this one drifted
+from `run_aborted`.
+
+**`functional-test-reviewer`, MINOR (verified true, and it matters more than "minor" suggests)
+— the id-uniqueness test could not have failed.** `expect(ids.length, rows.length)` over the
+104 committed rows proves nothing about the id FORMULA: every one of those rows is
+`attempt_no` 1, and `(pair_id, arm)` is already unique across all 104. Confirmed by counting
+rather than reasoning: `Counter({'1': 104})`, 104 distinct `(pair_id, arm)`. So dropping
+`attempt_no` from `observationId` entirely would have left the suite green — and a retry is
+DEFINED as a fresh run reusing a pair id with a higher attempt number, which means
+`alreadyObserved` would have recognised the first attempt's id and skipped the retry, leaving a
+photograph permanently unmeasured while the file claimed otherwise. Fixed with a direct test on
+two rows differing only in `attempt_no`.
+
+**`functional-test-reviewer`, MAJOR — the failing-sink fake did not fail the way a sink fails.**
+`_FailingSink.writeln` threw synchronously. A real `File.openWrite` sink buffers whatever
+`writeln` hands it and only discovers a full or detached volume when the bytes are pushed — so
+the fake never let `await sink.flush()` be reached at all, which is the ordering this file's own
+production comment names as the realistic one. It did not produce a false green today, because
+both statements sit inside one shared `try`; it would the moment anyone narrowed that block.
+Fixed by making the fake buffer like a real sink and fail on `flush`, and running the assertion
+through both orderings.
+
+The reviewer also confirmed, correctly, that the first `run_aborted` test cannot distinguish the
+fixed code from the broken code — the same thing I had already found by mutation and written
+into that test's own comment. It is kept for what it does prove (the ordinary abort record is
+well-formed and the original error propagates) and is NOT cited as regression coverage for the
+MAJOR. Only the `_FailingSink` test is.
+
+**One finding accepted as a documented residual risk rather than fixed.** The quota is charged
+BEFORE the model call and the row is written AFTER it returns, so a process death in between —
+one `writeln` plus one `flush` — spends a charged call that leaves no record, and resume will
+re-run that row. Not fixed, and the reason is that the obvious fix is worse: a "call started"
+marker written before every call doubles the writes and opens its own crash window between the
+marker and the call, where the failure mode is a row that looks spent but never was, and is
+therefore never measured. Silently losing one call out of sixty beats silently losing a
+photograph. Recorded in the file header next to the `server_correlation_id` gap.
+
+**One reviewer UNKNOWN resolved clean.** Whether any `source_file` name repeats within a single
+arm, which would let the deploy script's staging loop overwrite one image with another: it does
+not — 52 distinct names across 104 rows, no `(arm, source_file)` duplicated.
+
+### Mutation results, this round
+
+Every new guarantee was proved load-bearing by breaking the thing it guards. Files restored and
+re-verified green afterwards.
+
+| mutation | suite |
+| --- | --- |
+| remove the stop record, restore the silent `break` | `+24 -1` |
+| drop `attempt_no` from `observationId` | `+24 -1` |
+| let a control record count as an observation on resume | `+23 -2` |
+| write the abort record through the sink (re-check after refactor) | `+23 -2` |
+| `replyForClassification` → `cap.rawReply` (re-check after refactor) | `+24 -1` |
+
+Suite is 25 tests, `flutter analyze` clean on both files.
+
+### Verification clause discharged: the run plan is reproducible
+
+Re-running the committed generator against the frozen ground truth reproduces
+`core/plans/RECOG_C1_RUN_PLAN_2026-09-05.csv` byte-identically —
+`4f4ef743734ce710e6e82e968db41a4c682af1f230f2c8ff2aad0d6b9828325d`, and identical raw and
+newline-normalised, so unlike the ground-truth artifacts this one carries no CRLF ambiguity.
+The alternation rule is therefore committed data a reviewer can re-derive, not a claim.
+
+Correction to a command in an earlier session note: the generator is run with
+`flutter test test/tools/recog_c1_generate_run_plan.dart`, not `dart run` — it imports
+`flutter_test`, and `dart run` fails compiling Flutter's own `text_painter.dart`. The file's own
+header already said so.
+
+### GPT-PM round 1 on step 5: VERDICT BLOCKER, 2 BLOCKER + 2 MAJOR — all four accepted
+
+Reply id `4a8c4b73-534d-434c-afc6-4400b7614539`, review request `433a7157-119f-4890-9992-4e959f0916d5`,
+input hash `39e23bd260855951af1851e3f94674bc74425916f988cdd3323e55937641a51d`, correlated, not
+truncated. Every finding was checked against the source before being accepted; none was taken on
+the reviewer's word, and none turned out to be a confabulation.
+
+**BLOCKER — a forgotten define runs the entire measurement in one day.** `RECOG_C1_WINDOW` had no
+non-zero default and the code defines 0 as "every row"; `runWhenSignedIn` validated only `dir`
+and `runId`. So a build that switched the harness ON and omitted this one define would not run a
+smaller measurement — it would start all 104 observations inside a single UTC day against a
+60-call allowance, hit the wall around 60, and spend the remainder failing until the abort valve
+fired. Forgetting a define was strictly more dangerous than passing a wrong one, which is exactly
+backwards for the resource the entire two-window design exists to protect. Verified at
+`recog_c1_harness.dart` before the fix: `static const int window =
+int.fromEnvironment('RECOG_C1_WINDOW');` with no `defaultValue`, and `if (RecogC1Harness.window >
+0)` as the only filter.
+
+Now fails CLOSED at the production entry: `configurationProblem()` refuses unless the window is
+1 or 2 and `RECOG_C1_PLAN_SHA` and `RECOG_C1_SOURCE_SHA` are both set. Window 0 remains available
+to `run()` itself, which is what the tests drive with their own small plans — the guard lives at
+the entry point production actually uses.
+
+**BLOCKER — a process death between the charge and the row.** The plan's own invariant is that
+the harness must not spend a recognition call it cannot account for. The quota is charged BEFORE
+the model call; the row is written AFTER the answer returns. A death in between left nothing, and
+resume then re-ran the row and paid twice.
+
+I had argued in the previous entry for documenting this rather than fixing it, on the grounds
+that a write-ahead marker introduces its own crash window in which a row looks spent but never
+was — the worse failure. **GPT-PM's counter-design answers that objection directly and I was
+defending the weaker option:** the marker records that a call was ABOUT TO BE MADE, which is the
+strongest true statement available at that instant, and a dangling marker is therefore treated as
+UNCERTAIN — neither re-run nor counted as done. A crash before the call cannot retire a
+photograph, because nothing about the marker claims the call happened. The prior reasoning
+assumed a marker must mean "spent"; it does not have to.
+
+Implemented as `attempt_started`, written and flushed inside the recording ask after the exact
+bytes are known and before `real(bytes)`, carrying the observation id, pair, arm, attempt and the
+`sent_sha256` — so a later retry can prove it is repeating the same call. `readJournal` returns
+`observed` and `uncertain` separately; uncertain rows are skipped and named in an
+`attempts_uncertain` control record for a deliberate retry plan.
+
+**A real defect this introduced, caught by an existing test rather than by review.** The marker
+write happens inside the ask, and the production service wraps ANYTHING the ask throws in a
+`VisualEquipmentException` (`gemini_equipment_service.dart:227`). So a storage failure while
+writing the marker was swallowed into `classify_error` — a full disk would have been recorded as
+a MODEL failure on that row, and the real cause lost. The failing-sink tests went red with
+`sink is already faulted` in place of `no space left on device`, which is what surfaced it. Fixed
+by carrying the cause on the capture (`journalError`) and re-raising it from `observe`, so it
+reaches `run`'s abort path as itself. The run also stops: every later marker would fail the same
+way, and a run that cannot account for its calls must not keep making them.
+
+**MAJOR — the instrument validated itself in a circle.** `observe` checks each image against a
+hash it reads OUT OF the run plan, so a stale or hand-edited plan pushed together with its own
+matching images passed every check on both sides perfectly, and the day's calls would be spent
+measuring the wrong instrument. Nothing bound the pushed plan to the committed one, and
+`RECOG_C1_SOURCE_SHA` was an unvalidated optional string that `git rev-parse HEAD` fills in even
+from a dirty tree.
+
+Now: `RECOG_C1_PLAN_SHA` is compiled into the binary — the one artifact the deploy step cannot
+silently substitute — `run()` hashes `run_plan.csv` on device and refuses a mismatch, every
+observation and control record carries `plan_sha256`, `configurationProblem` requires a non-empty
+`sourceSha`, and `recog_c1_deploy.ps1` computes the hash from the bytes it just pushed and warns
+when the tree is dirty.
+
+**MAJOR — resume was observation-atomic, not pair-atomic.** The crop comparison rests entirely on
+A and B running back to back; that adjacency is what makes drift cancel instead of accumulate. A
+restart between the two arms still produced two rows sharing a `pair_id` and sitting adjacent in
+the file, separated in reality by however long the app was down, and no row carried any session
+identity to reveal it. Both arms are still run — each is a valid single-arm observation — but
+every row now carries a random-per-invocation `session_id`, and a resume that is about to split a
+pair writes a `pairs_split_by_resume` control record naming it. **Methodology addition, declared
+here before any inference:** step 8 admits a pair to the crop-effect metric only when both arms
+share `pair_id` AND `session_id`.
+
+GPT-PM explicitly declined to promote the missing server correlation id to a finding, agreeing it
+is a genuine disclosed DoD limitation that does not make an observation semantically false.
+
+### Mutation results, this round
+
+Eight new guarantees, each proved load-bearing. The first attempt at the window guard was
+**not** load-bearing and the mutation said so: the test asserted only "the configuration was
+refused", which any one of the five checks satisfies, so deleting the window branch left it
+green. Fixed by giving `configurationProblem` per-input parameters defaulting to the compile-time
+constants, so each branch can be isolated — the constants are absent in a `flutter test` run,
+which is precisely the all-missing state where every guard looks correct.
+
+| mutation | suite |
+| --- | --- |
+| delete the window guard | `+34 -1` |
+| stop checking the plan against the compiled hash | `+34 -1` |
+| drop the 52-rows/26-pairs window-shape assertion | `+34 -1` |
+| remove the write-ahead marker's durability | `+33 -2` |
+| treat a dangling marker as done instead of uncertain | `+34 -1` |
+| swallow a journal failure back into `classify_error` | `+32 -3` |
+| stop naming pairs split by a resume | `+34 -1` |
+| give every invocation the same session id | `+34 -1` |
+
+35 tests, `flutter analyze` clean on both files, `recog_c1_deploy.ps1` parses clean. Full suite
+`+3623 -25`; all 25 failures are in `test/golden/` and were confirmed pre-existing earlier by
+restoring HEAD's `main.dart` and reproducing the pixel diffs exactly.
+
+One test I wrote this round was deleted before it ever ran: it iterated a list of define names
+asserting `expect(needle, isNotEmpty)`, which proves nothing about the code. Recorded because the
+same shape has now appeared three times in this gate, twice caught by mutation and once by
+reading — a test that cannot fail is worse than no test, since it also reports coverage.
