@@ -42683,3 +42683,54 @@ stash is less visible to other sessions and easier to lose than a commit.
 
 **Not blocking this snapshot, still operator-only:** revoking the
 historically exposed debug token and deleting the two dead ones.
+
+**Mi 9T Pro dropped off adb; GPT-PM re-decided and chose B' -- hold R2 open
+rather than sign in on the S8 (2026-09-05).**
+
+**What changed.** The Mi 9T Pro (`56575346`) disappeared from `adb devices`
+entirely -- a call against it hung until the adb server was restarted, after
+which only the S8 (`ce02171299f0711005`) remained. That device held the only
+non-anonymous session in reach, so option B (one operator tap there) became
+physically impossible, not merely unattended. In the same window the operator
+wrote "Го продолжай автономно по плану я проверю потом" -- authority to keep
+running, with them reviewing afterwards rather than participating now.
+
+**Why this was re-asked instead of re-decided locally.** I had already got a
+reversibility judgement wrong once tonight, so rather than treat new facts as
+licence to revive the option GPT-PM had rejected, I put the facts back to it:
+(1) the operator's Google account is ALREADY a Firebase user in this project
+-- that is exactly what the Mi9 "Ivan" session was -- so signing in on the S8
+creates no new identity, only the same account on a second device;
+(2) because that user exists, `linkWithCredential` would hit
+`credential-already-in-use` and fall through to `signInWithCredential`, i.e.
+an ordinary sign-in rather than a fresh permanent binding; (3) the S8 guest
+profile that would become unreachable is empty -- age/height/weight/activity/
+goals all blank, 0 workouts, 0 kg, 0 records; (4) the project is pre-launch
+with no real users and the S8 is a dedicated test device.
+
+**GPT-PM's decision: B'.** It accepted the facts -- explicitly agreeing A' can
+no longer be called dangerous or irreversible in the earlier sense -- and
+still refused it, on the ground that A' remains an account-state mutation
+performed to obtain one piece of test evidence rather than to fix the
+product, and that nothing currently forces it: `d3c456f` already protects the
+validated work, the tree is clean, push is held, every other round is closed.
+Its words on the authority question are worth keeping verbatim in substance:
+the operator's "continue autonomously" grants authority to continue ordinary
+technical work, but is NOT read as specific permission to sign into their
+Google/Firebase account on an additional device while the gate can safely stay
+open. The only motivation for A' was finishing sooner, and that is not enough.
+
+**Disposition recorded:** snapshot `d3c456f` stands; R1 and R3-R7 CLOSED;
+**R2 OPEN/BLOCKED -- an external physical/account-state prerequisite, not an
+implementation failure**; SCAN-G1 gate OPEN; PUSH HELD. Do not change Auth
+state on the S8, do not attempt to bypass MIUI's `INJECT_EVENTS` refusal, and
+make no further Firebase/App Check mutations. When a non-anonymous device is
+reachable again, run exactly one R2 camera run and close the gate on whatever
+that actually produces.
+
+**One explicit unlock, recorded so it is not lost:** GPT-PM stated that if the
+operator later says something at the level of "sign in with my Google account
+on the S8 for the test", then A' becomes permissible -- on the facts now
+known it would already have approved it. So a single sentence from the
+operator is enough to let R2 close autonomously; what is missing is that
+specific permission, not any technical capability.

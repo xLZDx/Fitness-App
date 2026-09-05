@@ -103,10 +103,10 @@
     <h1>The Scan screen is done.<br>Recognition took three layers of fixing.</h1>
     <p class="subtitle">Six of the gate's seven contracts are closed. The seventh (R2) was never a UI problem:
       hiding behind what looked like an authentication error was a dead App Check registration.
-      That is fixed, and closing the gate now takes exactly one tap on a screen.</p>
+      That is fixed, and one external prerequisite remains — a camera run under a non-anonymous session.</p>
     <div class="status-strip">
       <span class="pill pass"><span class="dot"></span>R1, R3&ndash;R7 &mdash; CLOSED</span>
-      <span class="pill blocker"><span class="dot"></span>R2 &mdash; one manual tap</span>
+      <span class="pill blocker"><span class="dot"></span>R2 &mdash; awaiting a real session</span>
       <span class="pill pass"><span class="dot"></span>AUTH-DIAG-1 &mdash; PASS / APPROVE</span>
       <span class="pill pass"><span class="dot"></span>App Check &mdash; repaired</span>
     </div>
@@ -137,13 +137,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 64463e8</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ d3c456f</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
   <section>
     <h2>What the operator has to do</h2>
@@ -154,10 +156,12 @@
         <thead><tr><th>Action</th><th>Why</th><th>Why it was not done automatically</th></tr></thead>
         <tbody>
           <tr>
-            <td><b>One tap on the Mi&nbsp;9T&nbsp;Pro:</b> Scan tab &rarr; Recognise</td>
+            <td><b>Either one:</b> tap Recognise on a device holding a real account &mdash;
+              <i>or</i> one sentence along the lines of &ldquo;sign in with my Google account on the S8 for the test&rdquo;</td>
             <td>Closes R2, the gate's last open contract</td>
-            <td>MIUI blocks injected taps (<span class="mono">SecurityException: INJECT_EVENTS</span>).
-              Engineering around a platform security boundary is forbidden by this project's own rules</td>
+            <td>The Mi&nbsp;9T&nbsp;Pro dropped off adb, and the S8's session is anonymous, which AI features refuse.
+              GPT-PM confirmed that on the facts now known your explicit sentence is enough for it to authorise the
+              sign-in and let R2 close autonomously &mdash; what is missing is the permission, not the capability</td>
           </tr>
           <tr>
             <td><b>Revoke</b> the App&nbsp;Check debug token committed in plaintext at
@@ -221,7 +225,8 @@
               <td>Recognise &rarr; captureStill &rarr; cropToViewfinder &rarr; classifyFilePath &rarr; a real match card</td>
               <td><span class="badge blocked">partial</span></td>
               <td>The whole path runs, network and both security checks included.
-                <b>Tail:</b> one manual tap on the device that already holds a real account (Mi&nbsp;9T&nbsp;Pro)</td></tr>
+                <b>Tail:</b> one run under a non-anonymous session. That is an external prerequisite
+                (device availability and permission), not an implementation defect</td></tr>
           <tr><td>R3 &mdash; crop contract</td>
               <td>EXIF &rarr; cover mapping &rarr; inverse, covered by tests</td>
               <td><span class="badge done">done</span></td>
@@ -302,9 +307,11 @@
 
   <section class="blocker-box">
     <h2>What happens next</h2>
-    <p class="lede" style="margin-bottom:10px">After the tap on the Mi&nbsp;9T&nbsp;Pro, everything else runs without the
-      operator: the final review round over the whole gate, the commit of the prepared diff, the push, and the
-      release build with distribution.</p>
+    <p class="lede" style="margin-bottom:10px">The validated code is already captured in commit
+      <span class="mono">d3c456f</span>, so the tree is clean and the work is no longer exposed to concurrent
+      sessions. Push is deliberately held so <span class="mono">origin</span> never looks like a finished gate
+      without live evidence. Once a non-anonymous session is available, one camera run remains, then the final
+      review round, gate closure, push and distribution &mdash; all of it without the operator.</p>
     <p class="lede" style="margin-bottom:0">Recorded separately for later (GPT-PM's call, outside this gate): autonomous
       device testing needs a dedicated QA Google identity enrolled on the S8 in advance, so a personal account is not
       linked every time a non-anonymous session is required.</p>
@@ -315,6 +322,8 @@
     distributed through App&nbsp;Distribution &mdash; GPT-PM's condition when it approved the diagnostic.
   </footer>
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>

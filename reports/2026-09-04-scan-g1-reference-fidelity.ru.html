@@ -103,10 +103,10 @@
     <h1>Скан-экран готов.<br>Распознавание чинили три слоя подряд.</h1>
     <p class="subtitle">Шесть из семи контрактов гейта закрыты. Седьмой (R2) упирался не в UI, а в инфраструктуру:
       под видом &laquo;ошибки авторизации&raquo; пряталась мёртвая регистрация App Check. Она починена,
-      и до закрытия гейта остался ровно один тап пальцем по экрану.</p>
+      и до закрытия гейта осталось одно внешнее условие — прогон камеры под не-анонимной сессией.</p>
     <div class="status-strip">
       <span class="pill pass"><span class="dot"></span>R1, R3&ndash;R7 &mdash; CLOSED</span>
-      <span class="pill blocker"><span class="dot"></span>R2 &mdash; один ручной тап</span>
+      <span class="pill blocker"><span class="dot"></span>R2 &mdash; ждёт не-анонимную сессию</span>
       <span class="pill pass"><span class="dot"></span>AUTH-DIAG-1 &mdash; PASS / APPROVE</span>
       <span class="pill pass"><span class="dot"></span>App Check &mdash; исправлен</span>
     </div>
@@ -137,13 +137,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 64463e8</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ d3c456f</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
   <section>
     <h2>Что нужно от оператора</h2>
@@ -154,10 +156,12 @@
         <thead><tr><th>Действие</th><th>Зачем</th><th>Почему не сделано автоматически</th></tr></thead>
         <tbody>
           <tr>
-            <td><b>Один тап на Mi&nbsp;9T&nbsp;Pro:</b> вкладка &laquo;Скан&raquo; &rarr; &laquo;Распознать&raquo;</td>
+            <td><b>Одно из двух, на выбор:</b> тап &laquo;Распознать&raquo; на устройстве с реальным аккаунтом &mdash;
+              <i>либо</i> одна фраза вида &laquo;войди моим Google-аккаунтом на S8 для теста&raquo;</td>
             <td>Закрывает R2 — последний открытый контракт гейта</td>
-            <td>MIUI блокирует программные тапы (<span class="mono">SecurityException: INJECT_EVENTS</span>).
-              Обходить платформенную защиту запрещено правилами проекта</td>
+            <td>Mi&nbsp;9T&nbsp;Pro отключился от adb, а на S8 сессия анонимная и AI-функции её отвергают.
+              GPT-PM подтвердил: при известных сейчас фактах вашей явной фразы достаточно, чтобы разрешить вход
+              и закрыть R2 автономно &mdash; не хватает именно разрешения, а не технической возможности</td>
           </tr>
           <tr>
             <td><b>Отозвать</b> App&nbsp;Check debug-токен, попавший в открытый вид в <span class="mono">core/DECISION_LOG.md:19740</span>,
@@ -220,7 +224,8 @@
               <td>Распознать &rarr; captureStill &rarr; cropToViewfinder &rarr; classifyFilePath &rarr; реальная карточка находки</td>
               <td><span class="badge blocked">частично</span></td>
               <td>Путь проходит целиком, включая сеть и обе проверки безопасности.
-                <b>Хвост:</b> нужен один ручной тап на устройстве с реальным аккаунтом (Mi&nbsp;9T&nbsp;Pro)</td></tr>
+                <b>Хвост:</b> нужен один прогон с не-анонимной сессией. Это внешнее условие
+                (устройство и права доступа), а не дефект реализации</td></tr>
           <tr><td>R3 — контракт кропа</td>
               <td>EXIF &rarr; cover-маппинг &rarr; обратное преобразование, покрыто тестами</td>
               <td><span class="badge done">сделано</span></td>
@@ -298,8 +303,11 @@
 
   <section class="blocker-box">
     <h2>Что дальше</h2>
-    <p class="lede" style="margin-bottom:10px">После тапа на Mi&nbsp;9T&nbsp;Pro всё остальное выполняется без участия оператора:
-      финальный раунд ревью по всему гейту, коммит подготовленного диффа, пуш и сборка с раздачей через дистрибуцию.</p>
+    <p class="lede" style="margin-bottom:10px">Проверенный код уже зафиксирован коммитом
+      <span class="mono">d3c456f</span> &mdash; рабочее дерево чистое, работа не висит под риском параллельных сессий.
+      Пуш намеренно удержан, чтобы <span class="mono">origin</span> не выглядел завершённым гейтом без живого
+      доказательства. Как только появится не-анонимная сессия, остаётся один прогон камеры, затем финальный раунд
+      ревью, закрытие гейта, пуш и раздача через дистрибуцию &mdash; всё это без вашего участия.</p>
     <p class="lede" style="margin-bottom:0">Отдельно зафиксировано на будущее (решение GPT-PM, вне этого гейта):
       для автономного тестирования на устройствах нужна выделенная QA-учётка Google, заранее заведённая на S8 —
       чтобы не привязывать личный аккаунт каждый раз, когда требуется не-анонимная сессия.</p>
@@ -310,6 +318,8 @@
     не подлежит раздаче через App&nbsp;Distribution — условие GPT-PM при одобрении диагностики.
   </footer>
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>
