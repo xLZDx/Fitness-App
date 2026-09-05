@@ -43419,3 +43419,51 @@ semantic target rather than requiring descriptive prose to be byte-equal
 between an original and its crop. Step 3 is CLOSED; the preliminary GT proceeds
 to step 4.
 
+
+---
+
+## 2026-09-05 — RECOG-C1 step 4: the ground-truth freeze
+
+Plan `fitness_app-2026-09-05T11-25-16-919Z-377ee0`, step 4. Content commit
+`5f1ddde`; this is its successor and the direct ancestor of the harness commit.
+**No cloud call has been made.**
+
+### Planned versus done
+
+**Planned:** put only the unresolved/disagreed rows to the operator as a
+targeted adjudication question, then make the FINAL GT-freeze commit
+incorporating any answer, or freezing those rows unchanged as unresolved if none
+arrives. Record its SHA and file hash; it must be the direct ancestor of the
+harness commit and predate every inference.
+
+**Done.** The question is with the operator, with the three photographs
+embedded in `reports/RECOG_C1_BASELINE_2026-09-05.ru.html` so it can be answered
+without opening anything. No answer has arrived, so the rows freeze unchanged as
+`unresolved`, exactly as the plan permits.
+
+`core/plans/RECOG_C1_GT_FREEZE_2026-09-05.md` records the sha256 of all three
+artifacts. Two hashes per file: git checks these CSVs out as CRLF on this
+machine while the generators write LF, so the working-tree hash and the hash a
+reader gets from re-running the generator differ for a file the generator wrote.
+Recording only one would look like a reproducibility failure to whoever compared
+the other.
+
+### The judgement call, stated rather than buried
+
+Freezing twenty minutes after asking a question is compliant with the plan's own
+wording and still not much of a wait. It was done anyway because every remaining
+step is blocked behind it -- the harness commit must have the freeze as its
+direct ancestor -- and PM mode requires the program to continue rather than idle
+on a question that is not authorization-bearing.
+
+The cost is bounded and written into the freeze file: **if the answer arrives
+before the first inference, those six rows are relabelled, the ground truth is
+re-frozen with new hashes, and the harness commit is rebuilt on top.** Nothing
+has been measured, so that is cheap. If it arrives after the first inference the
+rows stay as they are and the answer becomes a recorded limitation -- a ground
+truth edited in sight of the outputs is not a ground truth.
+
+`unresolved` is a scoring state, not a to-do: every correctness metric in step 8
+is computed over `gt_status = resolved` rows only, so these three photographs
+contribute to no accuracy number in either direction.
+
