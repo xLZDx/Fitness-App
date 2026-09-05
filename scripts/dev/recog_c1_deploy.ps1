@@ -25,6 +25,8 @@ param(
     # copied -- so the guards below can be mutation-tested on their own, which
     # is the only way anyone can know they still work.
     [switch]$VerifyOnly,
+    # Installs the measurement APK and PROVES it landed. See Install-Measured.
+    [string]$Install,
     [int]$Window = 1,
     [Parameter(Mandatory = $true)][string]$RunId,
     [string]$Serial,
@@ -126,6 +128,46 @@ if ($Serial) {
     throw "expected exactly one attached device, found $($devices.Count): $($devices -join ', '). Pass -Serial."
 }
 $adbArgs = @('-s', $Serial)
+
+# Installs the APK and then proves the device actually took it.
+#
+# `adb install` reporting success is not evidence that it installed. On
+# 2026-09-06 this exact step returned exit code 0 with no output while leaving
+# the previous day's build in place; the run then launched that old build,
+# which has the harness compiled out, so it printed nothing and did nothing --
+# and "no RECOG-C1 output" is indistinguishable from "the harness declined to
+# start". The failure was found by hand, after the fact. Nothing should have to
+# be found by hand twice.
+#
+# The check is `lastUpdateTime` moving forward. Coarse, and deliberately so: it
+# needs no cooperation from the app, no version bump, and no parsing of
+# anything the build itself controls -- it is the package manager's own record
+# of whether it did the thing.
+function Install-Measured([string]$ApkPath) {
+    if (-not (Test-Path $ApkPath)) { throw "no APK at $ApkPath" }
+
+    $before = (& $adb @adbArgs shell "dumpsys package $Package | grep lastUpdateTime") -join ' '
+    $mb = [math]::Round((Get-Item $ApkPath).Length / 1MB)
+    Write-Host "installing $([System.IO.Path]::GetFileName($ApkPath)) ($mb MB)"
+
+    $output = & $adb @adbArgs install -r $ApkPath 2>&1
+    $code = $LASTEXITCODE
+    $output | ForEach-Object { Write-Host "  $_" }
+    if ($code -ne 0) {
+        throw "adb install failed with exit $code. INSTALL_FAILED_INSUFFICIENT_STORAGE means the device is full: rebuild with --target-platform android-arm64 rather than uninstalling anything, which is the operator's call and not this script's."
+    }
+
+    $after = (& $adb @adbArgs shell "dumpsys package $Package | grep lastUpdateTime") -join ' '
+    if (-not $after -or $after.Trim() -eq $before.Trim()) {
+        throw "adb install reported success but the package manager's lastUpdateTime did not move ('$($before.Trim())' -> '$($after.Trim())'). The device is still running the previous build, and a measurement started now would silently be no measurement at all."
+    }
+    Write-Host "install verified: lastUpdateTime moved to $($after.Trim())"
+}
+
+if ($Install) {
+    Install-Measured $Install
+    exit 0
+}
 Write-Host "device: $Serial"
 Write-Host "package: $Package"
 

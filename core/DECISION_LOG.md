@@ -43923,3 +43923,62 @@ The script compares the observation count against the plan and prints an explici
 control records when they differ, rather than reporting whatever it found as if it were complete.
 This is the analysis-side half of the harness's control-record work: the device makes a short run
 explainable, and this makes it impossible to read a short file as a finished one.
+
+## 2026-09-06 — RECOG-C1 step 7, first attempt: the run never happened, and nearly looked like it had
+
+The operator asked to finish the technical tasks and review correctness the next day. The first
+thing that finishing required was discovering that nothing had run.
+
+**What was believed:** window 1 was executing on the S8. The APK had built (exit 0), `adb install`
+had returned **exit code 0**, the app had been launched, and a logcat capture plus a Monitor were
+armed. Every step reported success.
+
+**What was true:** the harness never ran a single observation, and no quota was spent.
+
+The evidence that settled it, in the order it was checked:
+
+| check | result |
+| --- | --- |
+| raw JSONL on device | absent — only `images/` and `run_plan.csv` |
+| `RECOG-C1` lines in logcat | **0** |
+| app process | alive, and logging (`Dart VM service`, `B6: session log armed`) |
+| `dumpsys package ... lastUpdateTime` | `2026-09-05 01:31:38` — **over a day old** |
+
+So the app running was the previous day's debug build, which has no harness in it. The install had
+not taken effect despite reporting success.
+
+**Why the silence was total rather than a visible error, and why that is by design:** `kEnabled` is
+checked in `main.dart` BEFORE `runWhenSignedIn` is called, and an old build has it compile-time
+false, so no code path exists to print anything. That is correct for a harness that must be
+invisible in a normal build — but it means "no RECOG-C1 output" is ambiguous between "the harness
+is absent" and "the harness declined to start". The `configurationProblem()` guard added in step 5
+covers only the second case.
+
+**The real cause, found by re-running the install in the foreground:**
+`INSTALL_FAILED_INSUFFICIENT_STORAGE`. `/data` is 98 % full with 1.3 GB free, and the debug APK is
+423 MB (`flutter build apk --debug` bundles every ABI), which needs roughly twice that during
+installation. The first attempt had ALSO hit a second, different failure: the device dropped off
+adb entirely mid-command (`device 'ce02171299f0711005' not found`, and it returned with a new
+transport id), which is what produced exit 0 with no output at all and killed the logcat capture
+with exit 255.
+
+**Remediation:** rebuild with `--target-platform android-arm64` — the device reports
+`ro.product.cpu.abi = arm64-v8a`, so the other ABIs in that 423 MB were never going to be used.
+Nothing was uninstalled to make room: removing the coexisting release build is a deletion on the
+operator's own test device and is theirs to authorise, not a convenience for this gate.
+
+**Two things carried forward rather than fixed now**, because both are step 9/10 hardening and
+neither affects the measurement's correctness:
+
+1. `recog_c1_deploy.ps1` should verify the installed package's `lastUpdateTime` (or a build
+   fingerprint) after installing, instead of trusting an exit code. An `adb install` that reports
+   success without installing is exactly the failure this gate's whole design is built to refuse
+   elsewhere, and it was caught here by hand rather than by a guard.
+2. The harness could print one line when `kEnabled` is false in a build that was asked to run —
+   but it cannot, by construction, since the code is compiled out. The deploy script is the right
+   place for that check, which is the same conclusion as (1).
+
+**Provenance note:** the rebuild compiles HEAD `fc313e01b4d5232cefc3a0a6afd43e1026f901aa`, not the
+`7656a3d` recorded for the discarded 423 MB artifact, because step 8's metric script was committed
+in between. The tree was verified clean immediately before building. The earlier recorded sha256
+`992c26fb...` names an APK that was never installed and is not the instrument.
