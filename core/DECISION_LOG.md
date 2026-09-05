@@ -43038,3 +43038,177 @@ are outside autonomous authority under CLAUDE.md §4/§16/§20.
 cloud recognition accuracy over the operator's 52-photograph corpus, plus the
 absolute-confidence-floor question in `scan_outcome.dart`. Its own plan, its
 own GO.
+
+---
+
+## 2026-09-05 — RECOG-C1 steps 1-2: the viewfinder measured, Arm B generated, and the scoring rules frozen before any inference
+
+**Plan:** `fitness_app-2026-09-05T11-25-16-919Z-377ee0` (rev7), GPT-PM
+`VERDICT: APPROVE` 0 BLOCKER / 0 MAJOR on hash
+`b78bffa57739e2835795f85ded6dbad3bd667dbe0188891405c8031d0d01fddc`.
+Base `cd5108a`. Measurement only: no prompt, model, catalogue, threshold or
+quota is touched by this gate.
+
+**Seven revisions, and what that cost bought.** rev1 4 BLOCKER / 2 MAJOR ->
+rev2 2 BLOCKER / 5 MAJOR -> rev3 0/4 -> rev4 0/3 -> rev5 0/2 -> rev6 0/2 ->
+rev7 APPROVE. Every finding in every round was checked against real source
+before being accepted and every one of them held. The four rev1 BLOCKERs are
+worth naming, because each would have produced a confident number measuring
+something other than what it claimed: UI-driven runs would have measured the
+OCR anchor, the on-device fallback and the machine describer and called the
+result cloud accuracy; ground truth restricted to `CANONICAL_MACHINES` cannot
+label a photograph of a machine the catalogue does not have; 104 observations
+do not fit in a 60/day quota; and 1.542 was not the real crop aspect. The
+spiral risk in CLAUDE.md §17 is real and this was close to it -- but the
+rounds converged monotonically and every round was about the METHOD, never
+about a result, because no result existed yet.
+
+**Step 1 -- the viewfinder card, measured rather than assumed.** Computed:
+the S8 reports `1080x2220` at density 480, so 360 logical px across, and
+`scanner_page.dart:626` wraps the card in `EdgeInsets.symmetric(horizontal:
+16)` -- 328 px wide, 230 px tall (`ScanViewfinder.height`). Measured: a live
+`adb exec-out screencap` of the Scan screen, analysed pixel by pixel rather
+than by eye, puts the card at x 48..1031 and y 339..1028 -- **984 x 690
+device px, which at dpr 3 is exactly 328.0 x 230.0**. Computation and
+measurement agree to the pixel. The bracket window is therefore
+`Rect.fromLTRB(20/328, 20/230, 1 - 20/328, 1 - 20/230)`, i.e. 288 x 190
+logical px, aspect **1.5158** -- the number rev1 had wrong as 1.542.
+
+**Step 1 -- Arm B produced BY the production function, not by a copy of it.**
+`mobile/test/tools/recog_c1_generate_arm_b.dart` runs under `flutter test`
+precisely so it can call the real `cropToViewfinder` /
+`viewfinderSourceRect` (`core/camera/centre_crop.dart`) with dart:ui's
+`Rect`/`Size`. A re-implementation in Python would have been quicker and
+would have drifted from the shipped mapping the moment either changed; this
+cannot. All 52 photographs cropped, 0 failures. `cropToViewfinder` is
+fail-open -- it returns the INPUT path on any error -- so the generator
+treats an unchanged path as a stop rather than a warning, which is the one
+way a silently uncropped Arm B could have made the whole comparison measure
+nothing.
+
+**What the crop actually does, worth stating because it is larger than it
+sounds.** A 3000x4000 portrait photo maps to a 2634x1738 window: the card is
+a cover fit, so it keeps the full width and **discards 57% of the frame's
+height**. Arm B is not a mild trim of Arm A.
+
+Per-image crop coordinates and both arms' sha256:
+`core/plans/RECOG_C1_ARM_MANIFEST_2026-09-05.csv` (52 rows). The originals
+were never written to; each is copied first and both arms hash from files
+this run owns.
+
+**Step 2 -- the scoring rules exist as tested code before any image was
+sent.** `mobile/lib/features/visual_equipment/measurement/recog_c1_contract.dart`
+is the plan's P1 (response-class precedence over the raw primary `machine`
+field) and P2 (GT kind x production outcome x response class) as executable
+code; `mobile/test/features/visual_equipment/recog_c1_contract_test.dart`
+covers every cell, 21 tests, all passing. It lives under `lib/` for one
+reason -- the on-device harness and the offline metric script must share ONE
+implementation, and only `lib/` is importable from both. Nothing in the
+shipped app imports it.
+
+**Two of those tests are load-bearing rather than decorative.** The first
+parses the real `functions/src/ai_equipment_recognition.ts` and asserts the
+Dart copy of `CANONICAL_MACHINES` equals it byte-for-byte in the same order
+(71 entries) -- the copy exists only because the on-device harness cannot
+read TypeScript, and an unchecked copy is exactly the drift this gate cannot
+afford. The second asserts **every canonical name resolves through the
+production alias index** -- true, and useful, but NOT sufficient for the
+conclusion this entry originally drew from it. See the correction below.
+
+**The green suite was not taken on trust** (§17). The decisive rule -- a
+`noEquipment` earns abstention credit ONLY behind an explicit `unknown` --
+was mutated to credit `off_list_unresolvable` as well, and the run failed on
+exactly the test written to catch it. Reverted immediately; the test earns
+its place.
+
+**One evidence-based deviation from GPT-PM's own prescription, stated out
+loud.** Its rev6 MAJOR was right that a malformed reply can never carry a
+`ScanResult.fromMatches` outcome, because `parseResponse` throws first
+(`gemini_equipment_service.dart:286`, `:289`). Its proposed remedy was a new
+semantic state invented for this plan. Production already has the state: the
+exception propagates out of the service and `classifyFilePath`'s generic
+catch turns it into `ScanResult.failed()`
+(`visual_equipment_providers.dart:169`; `ScanOutcome.failed`,
+`scan_outcome.dart:47`). rev7 binds to the shipped behaviour instead, which
+GPT-PM then approved. Repository over recommendation, as §17 requires.
+
+**A defect found while resolving that, recorded and deliberately not fixed.**
+That same generic catch also swallows transport failures, so a malformed
+MODEL answer and a dead NETWORK render identically -- one
+`ScanResult.failed()`, one retry prompt, with nothing in the user-visible
+outcome or in outcome-keyed telemetry able to tell a broken model contract
+from a broken connection. The measurement seam sits upstream of the catch and
+holds the raw reply, so it can separate them; that is why the raw response
+class is kept as an axis independent of the production outcome. Changing the
+catch is out of scope for a measurement gate and is a candidate for a later
+one.
+
+**The harness will need no production edit at all.**
+`GeminiVisualEquipmentService`'s constructor already takes a public
+`CloudRecognitionAsk ask` (`gemini_equipment_service.dart:90-97`), so the
+seam can wrap the real `cloudFunctionsEquipmentAsk()` to hash the exact bytes
+handed to the callable and capture the raw reply, with the real preprocessing
+(`compute(resizeForCloud, path)`, `:159`), the real deployed callable and
+real Auth/App Check untouched. Step 10's revert therefore has no modified
+production file to restore.
+
+**Not yet done, and named as such:** ground truth is not labelled, the
+harness is not written, and **not one cloud call has been made**. Everything
+above is preparation whose entire value is that it predates the first
+observation.
+
+**The test suite is NOT green on this machine, and saying otherwise would be the
+exact failure §17 warns about.** `flutter test` reports 3570 passing and **25
+failing**, every one of them a golden-image test
+(`test/golden/hud_golden_test.dart`, `composed_screen_golden_test.dart`,
+`scan_reference_golden_test.dart`, `form_coach_golden_test.dart`). They are
+**pre-existing and unrelated to this gate**, proven rather than assumed: the
+working tree was stashed and `flutter test test/golden` re-run on clean
+`cd5108a`, which produced the identical `+3 -25`. This gate adds no widget
+code, so it cannot move a golden. Recorded here because a later reader
+comparing runs deserves to know the baseline is 25 red, and because it is a
+real (if separate) piece of debt: the repository's golden suite does not
+currently reproduce on this host's font rendering.
+
+**CORRECTION, from GPT-PM's round-1 review of this very commit: 2 MAJOR, both
+true, both verified against source before being accepted.**
+
+**(1) The "impossible cell" was not impossible, and the contract would have
+crashed on real data.** I reasoned that a canonical or alias-resolved primary
+always becomes a candidate, so `noEquipment` behind one contradicts the
+production parser -- and made `scoreObservation` THROW on that combination. The
+reasoning skipped a step that is right there in the code: after resolution,
+`parseResponse` applies `rankTopK(best.values, minConfidence: 0.01, ...)`
+(`gemini_equipment_service.dart:321`), and `rankTopK` keeps only candidates
+with `confidence >= minConfidence` (`visual_equipment_match.dart:50-58`). So
+`{"machine": "lat pulldown", "confidence": 0.0}` classifies as
+`canonical_response`, resolves, is then dropped by the 0.01 floor, yields an
+empty ranked list and `ScanOutcome.noEquipment`. On an `out_of_catalog_single`,
+`multiple` or `none` row the frozen matrix would have raised `StateError` --
+i.e. the analysis would have had to be edited AFTER the observations existed,
+which is the one thing step 2 exists to prevent. My "every canonical name
+resolves" test proved resolution and I let it stand in for survival; those are
+different claims. Fixed: that combination is now scored `unusable_answer` --
+the model named a machine, the user was shown nothing, and the frozen credit
+rule gives credit only behind an explicit `unknown`. `canonical_single` is
+unchanged at `missed`. Proven end to end through the REAL
+`GeminiVisualEquipmentService.parseResponse` at confidence 0.0 and 0.005, with
+a control at 0.9 that still produces `confident`.
+
+**(2) The fail-closed checks were `assert`s, which Dart strips outside debug
+mode.** Both load-bearing guards in `scoreObservation` -- "a parsed reply must
+carry a production outcome" and "the outcome must be one `fromMatches` can
+return" -- were assertions. `flutter test` enables them, so they passed here and
+looked like enforcement; the offline metric script imports the same file and a
+plain `dart run` has assertions OFF. A row carrying `failed`, `timeout` or
+`unknown` would then have fallen through the `switch`'s `default:` and been
+scored `missed` or routed into the abstention logic. The contract written to
+stop bad rows would have quietly normalised them. Fixed: both are now
+unconditional `if (...) throw StateError(...)`, there is no executable `assert`
+left in the file, and three new tests prove each forbidden outcome throws.
+
+Contract tests: 21 -> 23, all passing. Nothing else in the gate changed, and
+still **no cloud call has been made** -- which is exactly why this cost a test
+edit rather than a re-analysis. Two rounds of review have now each found a real
+defect in the frozen contract before it could touch a number.
+
