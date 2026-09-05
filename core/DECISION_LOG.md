@@ -42979,3 +42979,62 @@ being committed as it said so. The rule that came out of this session --
 never print a secret's value into a log, a report or a review message --
 cannot be conditional on believing the secret is safe, because the belief
 is exactly the part that fails.
+
+**SCAN-G1 fully closed: push, release distribution, and the Rosetta plan
+(2026-09-05, 13:33 local).**
+
+**Distribution receipt**, the item that held the plan closed for one extra
+round. `build_release.ps1 -Distribute` from the clean pushed HEAD:
+- Stamped SHA `a25a4a9`, derived by the script from HEAD rather than typed --
+  the script exists precisely so an unstamped build cannot be produced.
+- `BUILT_AT 2026-09-05T10:24:36Z`; version **1.0.0 (986)**, arm64 split
+  presenting as **2986**.
+- Split-per-ABI release APKs: armeabi-v7a 94.6 MB, arm64-v8a 109.5 MB,
+  x86_64 110.6 MB. Distributed artifact: the arm64-v8a one.
+- Firebase App Distribution, app `1:988522745882:android:b9af40bb887a0388c201a3`:
+  upload, release notes and tester distribution all reported successful.
+  Release id `0iiok2gto3usg`, delivered to the configured tester.
+- The one-hour signed binary-download URL the CLI printed is deliberately NOT
+  recorded here: it carries an access token, and the rule this gate's own
+  BLOCKER established is that no credential-shaped value goes into a log, a
+  report or a review message. The release id identifies the same build.
+
+**Clean-head provenance, which is the part that makes the receipt worth
+anything.** HEAD was `a25a4a9da87cae04d063d70cd1d42da6dc1096bd` before the
+build and is still exactly that after it; `git status --porcelain` empty both
+times, because the build writes only gitignored output under `mobile/build/`.
+So no governance commit was needed, and the distributed binary's stamped SHA,
+the repository HEAD and `origin/master` are one and the same commit.
+
+**A standing trap, avoided deliberately rather than by luck:** `flutter clean
+&& flutter pub get` was run natively on Windows first. The authoritative test
+run for this gate was in the Linux container (1105/1105), and a container
+`pub get` leaves `.dart_tool` in a state that breaks the next native Windows
+build. Skipping that reset is how this step would have produced a build
+failure that had nothing to do with the code.
+
+**GPT-PM held the Rosetta plan for exactly one thing, and was right to.** The
+first closure submission carried the full R1-R7 evidence, the push
+verification and the security disposition -- and no distribution receipt. The
+plan's own verification text, written before the work, says "push; release
+distributed with the version recorded". GPT-PM verified independently that
+GitHub `master` resolved to `a25a4a9`, accepted everything else, and refused
+`passed` on the missing half. That is the protocol working as designed: the
+verification was stated when it was inconvenient to state, and it was then
+enforced against the person who wrote it.
+
+**Final disposition.** SCAN-G1 CLOSED / PASSED. Documentation correction
+CLOSED / APPROVED (5 review rounds, final verdict APPROVE 0/0/0). Push
+complete. Distribution complete. Rosetta plan
+`fitness_app-2026-09-04T01-00-12-787Z-9ccb13` closed `passed`, review class
+promoted STANDARD -> HIGH from the real changed set (54 paths, 6 commits).
+
+**Residual, operator-only, unchanged:** revoke the App Check debug token
+exposed at `:19740` and drop its `.gitleaksignore` line; delete the two dead
+debug tokens from the App Check registration. Neither blocks anything; both
+are outside autonomous authority under CLAUDE.md §4/§16/§20.
+
+**Next, and it is not a SCAN-G1 item:** RECOG-C1, a measured baseline of
+cloud recognition accuracy over the operator's 52-photograph corpus, plus the
+absolute-confidence-floor question in `scan_outcome.dart`. Its own plan, its
+own GO.
