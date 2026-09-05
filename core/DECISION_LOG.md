@@ -42734,3 +42734,114 @@ on the S8 for the test", then A' becomes permissible -- on the facts now
 known it would already have approved it. So a single sentence from the
 operator is enough to let R2 close autonomously; what is missing is that
 specific permission, not any technical capability.
+
+**R2 CLOSED -- a real found state from the camera path, with server-side
+confirmation (2026-09-05, 11:22 local / 09:22 UTC).**
+
+**The permission that unblocked it.** The operator replied "2 заходи и там
+камера смотрит на монитор с тренажером" -- i.e. explicitly chose option A'
+(sign in with their Google account on the S8) and confirmed the camera was
+aimed at a machine on the monitor. That is exactly the sentence GPT-PM said
+would make A' permissible on the facts already established, so it was carried
+out under that standing conditional approval rather than on my own judgement.
+
+**Sign-in behaved exactly as GPT-PM predicted.** Profile -> "Сохранить
+прогресс" -> "Продолжить с Google" -> selected the operator's account. The S8
+home screen changed from the guest name "Спортсмен" to "Ivan" and came up
+carrying the SAME data the Mi 9T Pro session had (1 workout this week, the
+same muscle-recovery rows) -- which is the `credential-already-in-use` ->
+`signInWithCredential` fallback documented at
+`firebase_auth_repository.dart:193-199`: an ordinary sign-in into the already
+existing Firebase user, not a new identity. The empty guest profile is the
+part left behind, exactly as analysed beforehand.
+
+**The R2 run itself.** Scan tab, live viewfinder (frame counter advancing
+124 -> 1409), camera aimed at a gym photo on the monitor with one machine
+centred, no low-light banner. Tapped Recognise once.
+
+**Result: `ScanOutcome.confident` with a real match card** -- "СОВПАДЕНИЕ /
+Гакк-машина, 85, Силовой · Икры, Квадрицепс" plus the "Открыть упражнения"
+CTA. `hack squat machine` is in `CANONICAL_MACHINES`
+(`ai_equipment_recognition.ts:77`), and the crop confirms the call was right:
+the pulled image shows an inclined sled-and-backrest machine centred in
+frame. This is a genuine positive identification, not a manufactured one.
+
+**Evidence, all four axes:**
+- **Client logcat: zero failures.** `grep -icE
+  "unauthenticated|permission-denied|App attestation|Too many attempts"` over
+  the whole run = **0**. Every error class that dominated this investigation
+  is gone at once.
+- **Server, authoritative, timestamps matching the run to the second**
+  (`firebase functions:log --only aiEquipmentRecognition`):
+  `{"verifications":{"auth":"VALID","app":"VALID"},"message":"Callable
+  request verification passed"}`, then `{"message":"appcheck",
+  "attested":true,"fn":"aiEquipmentRecognition"}`, then
+  `{"operation":"aiEquipmentRecognition","outcome":"success",
+  "latencyMs":2095,"promptTokenCount":1493,"candidatesTokenCount":37}`.
+  So App Check attested, Auth valid, and the model call succeeded -- the
+  complete security chain the gate is supposed to exercise, passing for real.
+- **The crop was rewritten by THIS run:** `run-as ... ls -la
+  app_flutter/scan_evidence/` shows `last_crop.jpg` at **11:22**, 34,073
+  bytes -- distinct from every earlier pull.
+- **R7 holds on the fresh file too:** the pulled crop is 422x278, aspect
+  **1.518** -- the same figure recorded when R7 closed, tracking the
+  inset-20 bracket window (1.542) rather than the full card (1.445).
+
+**So R2's contract is satisfied end to end as written:** Recognise ->
+`captureStill()` -> `cropToViewfinder` -> `classifyFilePath` -> a real found
+state, on a catalogue machine, from the camera path -- not the gallery path,
+not an on-device fallback (which by design can never be `confident`), and not
+a network-boundary claim standing in for a positive result.
+
+**SCAN-G1: R1-R7 all satisfied.** Next: final GPT-PM review round for the
+whole gate against snapshot `d3c456f`, then push (held until now precisely so
+`origin` would not look finished without this evidence), then
+`build_release.ps1 -Distribute`, then close the standing Rosetta plan.
+
+**Operator-found recognition-QUALITY defect, recorded the same session R2
+closed -- and deliberately NOT folded into SCAN-G1 (2026-09-05).**
+
+Minutes after the successful R2 run, the operator pointed the same camera at
+a different gym photo and wrote: "вот посмотри он несумел распознать простой
+тренажер" and, decisively, "и это ровно то как будут люди делать снимки под
+разными углами и с другими тренажерами в окружении."
+
+**The observed result, captured rather than paraphrased.** Frame: a leg-press
+/ hack-squat style machine, seat and inclined back pad, photographed at an
+angle inside a busy gym with several other machines behind it. Outcome:
+`ScanOutcome.alternatives` -- the "Не уверен — самое похожее" state -- with
+three suggestions, **all three wrong**: "Отведение ноги назад (ягодичные)"
+45%, "Мульти-хип машина" 35%, "Подъёмы на носки (тренажёр)" 15%. The correct
+answer was not offered at any confidence. Contrast with the R2 run twenty
+minutes earlier, which correctly returned "Гакк-машина" at 85 on a cleaner,
+more frontal frame of a similar machine.
+
+**Why the operator's framing is the important part.** The two runs differ not
+in the machine class but in the SHOOTING CONDITIONS: angle, distance, and how
+much competing equipment shares the frame. The R2 evidence frame was close to
+ideal; this one is what a real gym photo actually looks like. So the honest
+reading is that the pipeline currently performs acceptably on clean, centred,
+near-frontal shots and degrades on realistic ones -- which is the condition
+that matters for the product, since users photograph machines in crowded
+rooms from wherever they happen to stand. The prompt does instruct the model
+to "Look ONLY at the machine closest to the center of the photo"
+(`ai_equipment_recognition.ts:101-112`), so the failure is not a missing
+instruction; it is accuracy under real conditions.
+
+**Scope discipline, stated explicitly so this is not read as either a
+regression or a dismissal.** This is NOT a SCAN-G1 defect and does not
+reopen it: `core/SCAN_G1_SCOPE.md` puts the recognition pipeline (Gemini/ML
+Kit) out of scope with the standing rule that anything found there is
+"recorded, not fixed", and SCAN-G1's own contracts are about the Scan
+screen's fidelity and the camera PATH, all of which passed. Equally, "out of
+scope" is not a verdict that it does not matter -- the app's core promise is
+naming the machine in front of the user, and on this evidence it does that
+unreliably in exactly the setting it was built for.
+
+**Recorded as the seed of a separate, measured piece of work**, not as a
+closing note: the operator has already supplied a corpus for it
+(`D:\Downloads\Photos-1-001`, real gym photographs, multiple machines and
+angles) and stated the acceptance bar he wants -- honest recognition on every
+one of them, with no memory of previous runs on the same images. That is a
+measurable target and belongs in its own gate with its own baseline number
+before any fix is attempted, rather than being patched blindly.
