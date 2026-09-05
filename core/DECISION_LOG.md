@@ -43212,3 +43212,210 @@ still **no cloud call has been made** -- which is exactly why this cost a test
 edit rather than a re-analysis. Two rounds of review have now each found a real
 defect in the frozen contract before it could touch a number.
 
+
+---
+
+## 2026-09-05 — RECOG-C1 step 3: the PRELIMINARY ground truth, 104 rows
+
+Plan `fitness_app-2026-09-05T11-25-16-919Z-377ee0`, hash `b78bffa5...`, step 3.
+Steps 1-2 landed at `7955dac` after GPT-PM round 2 returned
+`VERDICT: APPROVE` (0 BLOCKER / 0 MAJOR, reply `4a2f1de7-ef31-472c-8dd0-7284d4047ac3`,
+correlated, `review_status: RAN`). Still **no cloud call has been made**.
+
+### Planned versus done
+
+**Planned (step 3, verbatim):** label GT-A (originals) and GT-B (crops) into
+`core/plans/RECOG_C1_GROUND_TRUTH_2026-09-05.csv` keyed by `(image_id, arm)`
+with the fourteen named columns; second pass blind; disagreements resolved
+against the source; genuinely unresolved rows stay unresolved; generate
+`canonical_equipment_id` through the production alias data and assert
+one-to-one; a label resolving to zero or several ids is a stop. Commit as the
+PRELIMINARY GT.
+
+**Done.** 104 rows, 52 images x 2 arms, the plan's fourteen columns verbatim
+and in the plan's order. Nothing was added to the schema: the one piece of
+labelling detail it has no column for -- which KIND of multiplicity a
+`multiple` frame has -- is carried as a bracketed prefix inside
+`features_the_label_rests_on` rather than as a fifteenth column, so the frozen
+schema stays frozen and the information still survives.
+
+**Generated, not typed.** `mobile/test/tools/recog_c1_generate_ground_truth.dart`
+runs under `flutter test` so `canonical_equipment_id` comes from the
+PRODUCTION `EquipmentAliasIndex`, not a lookup table written by hand. Four
+properties are stops, not warnings:
+
+1. every `canonical_single` label resolves through the production index;
+2. it resolves by EXACT alias match, not by the resolver's longest-substring
+   fallback -- a label matching only as a substring would silently depend on
+   which other aliases happen to exist in the catalogue;
+3. the label -> id mapping is one-to-one in both directions;
+4. every label is a member of `CANONICAL_MACHINES`, i.e. an answer the cloud
+   prompt actually offers the model. A ground truth the model was never asked
+   to be able to produce would make "wrong answer" unmeasurable.
+
+Result: 9 distinct labels -> 9 distinct ids, all exact aliases, all in the
+server list. `bench press station` -> `bench_press` is the one case where the
+label text and the id differ, which is exactly why the id is resolved rather
+than derived from the string.
+
+### Verification (b) is a test, not a claim
+
+`mobile/test/features/visual_equipment/recog_c1_ground_truth_test.dart` reads
+the COMMITTED CSV back off disk and re-derives everything from the three
+primary sources -- the CSV, the TypeScript constant parsed out of
+`functions/src/ai_equipment_recognition.ts`, and the production alias asset.
+The generator asserting its own output would only prove the generator agrees
+with itself. 13 tests, all passing.
+
+Mutation-checked rather than assumed green, per the "a green suite is a claim
+that has to be earned" rule: a wrong `canonical_equipment_id` turns it `-3`, a
+wrong Arm-B `transformed_sha256` `-1`, a deleted row `-4`. The file was
+restored byte-identical afterwards (sha256
+`3cd2443423d1c5a300314d073a2b30a2832a5450982feb5062d40b38bc14614d`).
+
+### A real defect found in the labelling sheet
+
+The hand-labelled sheet had one row (index 38) whose `central_subject` text
+contains a comma and was not quoted, so a naive reader shifted five columns
+right and read `gt_status = "same_type_plate_loaded"`. Found by counting
+distinct `gt_status` values before writing any Dart, not by the Dart. Two
+consequences, both kept: the row was fixed at source, and both the generator
+and the validator now use a real RFC4180 reader that treats a cell-count
+mismatch as a stop -- a lenient reader would have turned that shift into wrong
+ground truth silently.
+
+The labelled sheet itself stays in the session scratchpad and is deliberately
+NOT committed (sha256
+`63178228b7aad554b5982134c61823f9e9772e003b4377d5bbbc4d21e7127cf1`). Committing
+an input that can drift from its output with nothing checking the drift would
+create a second source of truth for the same labels. The CSV is the frozen
+artifact and the validator guards it.
+
+### The corpus gap, asserted so it cannot become a stale sentence
+
+26 `canonical_single`, 26 `multiple`, **0 `out_of_catalog_single`, 0 `none`**,
+3 unresolved. The zeroes are a genuine limitation of this corpus, not a
+labelling choice: the overclaim-on-an-unknown-machine property and the
+honest-abstention-on-an-empty-frame property **cannot be measured here at
+all**. That is asserted in the validator, so a later edit that changes the
+composition turns a test red instead of leaving a wrong sentence in a report.
+
+### The three unresolved rows
+
+Indices 15, 29 and 47 are the SAME Star Trac plate-loaded unit from three
+angles, and #47 is the photograph from the failing recognition the operator
+raised. My first reading ("leg press / hack squat") was rejected by the
+operator; my second was "lat pulldown", which the published SCAN-G1 report
+carries as an ERRATUM. The full-resolution view shows an inclined back pad, a
+thigh/lap pad with a red adjustment lever, a STAR TRAC foot platform, plate
+horns and a handle bar above the seat -- consistent with a plate-loaded lat
+pulldown, since a downward pull is what needs a thigh restraint. Having already
+read this machine two different ways, a third self-assessment is worth less
+than an adjudication, so these rows stay `unresolved` by design and go to the
+operator with the images. Per the plan's own step 4, if no answer arrives they
+freeze unchanged as `unresolved` and are excluded from every correctness
+metric; the run is not blocked on them.
+
+### Verification (d), discharged: Arm B reproduces bit-for-bit
+
+Re-ran the committed generator from the originals plus the recorded viewfinder
+size into a fresh working directory: **all 52 `arm_b_sha256` values are
+identical** to the committed manifest's. The manifest TEXT differs
+(`dfde087a...` in the working tree vs `b8522ae6...` as generated) purely
+because git checks this CSV out as CRLF on this machine while the tool writes
+LF; the files are equal after newline normalisation and the image bytes -- what
+the claim is about -- are identical. Recorded so a later reviewer comparing the
+two hashes does not read a line-ending artifact as a reproducibility failure.
+
+### Report handed over
+
+`reports/RECOG_C1_BASELINE_2026-09-05.ru.html` (published) and
+`reports/RECOG_C1_BASELINE_2026-09-05.html`, both conformed. It carries the
+Rosetta planned/DoD/status table for all ten steps, states the corpus gap, the
+25 pre-existing golden failures, C3, and the three-photograph adjudication
+question with the images embedded so the operator can answer without opening
+anything.
+
+### CORRECTION, same day: GPT-PM returned a BLOCKER on step 3, and it was right
+
+`VERDICT: BLOCKER`, 1 BLOCKER / 0 MAJOR, reply
+`cd3b74c5-656e-4431-ab3a-26d7773237fc`, correlated, round 1.
+
+**The finding.** The preliminary ground truth was not genuinely arm-specific. The
+labelling input had no `arm` column at all -- one row per image index -- and
+the generator wrote those same values into BOTH arms in a loop while
+hard-coding `gt_equivalent` to `'true'`. The validator could not have caught
+it: its equivalence test only confirmed that the already-duplicated rows
+agreed with each other.
+
+**Verified before accepting.** `head -1` on the labelling sheet showed the ten
+columns with no `arm` among them; the generator's own loop wrote one label
+into both arms. Both halves of the finding are fact.
+
+**Why it mattered, in the reviewer's own failure scenario.** A crop can
+genuinely turn a `multiple` frame into a `canonical_single`, or move the
+central subject. A generator that duplicates A into B cannot encode that even
+when the labeller saw it -- so step 8 would compare the two arms as the same
+target and read a difference in the model's answers as an effect of the crop
+on RECOGNITION, when the semantic task itself had changed. That is exactly the
+contamination the arm-specific requirement exists to prevent.
+
+**What was done -- a relabelling, not a schema change.** All 52 Arm-B crops
+were re-inspected from their own contact sheets, followed by a second pass over
+the 26 single-machine crops rendered larger, where the accuracy metric rests.
+Every Arm-B cell is authored from the crop. `pass1` and `pass2` agree on all 26;
+there were no disagreements to resolve.
+
+- `core/plans/RECOG_C1_LABELS_2026-09-05.csv` is now **104 records keyed by
+  (index, arm)** and is COMMITTED, so the arm-specific provenance lives in the
+  repository rather than in a scratchpad. This reverses the earlier decision
+  not to commit the labelling input: the reason for that decision was drift
+  between an input and its output with nothing checking it, and the validator
+  now re-derives the output from the input, so the drift is checked.
+- The generator builds each arm's row ONLY from that arm's record; a missing
+  `(index, arm)` key is a stop, so it cannot fall back to the other arm.
+- `gt_equivalent` is **derived** by `armsAreEquivalent` -- one frozen rule in
+  `mobile/test/support/recog_c1_csv.dart` used by both the generator and the
+  validator, so they cannot drift. Equivalent iff the arms agree on `gt_kind`,
+  `canonical_label`, the resolved equipment id AND `gt_status`.
+- The validator gained an `arm provenance` group that proves what it could not
+  before: every GT row is matched back to its own arm's record field by field;
+  the per-arm evidence text must DIFFER between the two arms of every image;
+  and `gt_equivalent` is recomputed from the frozen rule rather than trusted.
+  13 -> 16 tests, all passing.
+
+**The result is now a finding, not an assumption.** All 52 images still come out
+`gt_equivalent = true` -- but that is the OBSERVED outcome of two separate
+labellings meeting the frozen rule, rather than a value typed into a column.
+
+**Mutation-checked.** Duplicating Arm A into Arm B for one image turns the suite
+`-2`; flipping one `gt_equivalent` turns it `-1`; and changing one Arm-B label
+in the input so the crop genuinely turns a `multiple` into a `canonical_single`
+regenerates to A `multiple` / B `canonical_single` -> `bench_press` with
+`gt_equivalent` **false for that image alone** (51/52). The contamination the
+reviewer described is now representable and visible. Both files were restored
+byte-identical after every mutation, verified by sha256.
+
+**Honest limits, unchanged by the fix.** Both arms were labelled by the same
+labeller, in the same session, with knowledge of the other arm's labels -- so
+the second pass is not blind in the strict sense, and the report says so. What
+the fix buys is that a genuine A/B difference is now REPRESENTABLE and would be
+visible; it does not buy independence of judgement.
+
+Two of the three things I explicitly invited as findings, GPT-PM declined to
+raise: the corpus gap (a disclosed limitation on which open-set properties can
+be estimated, not a blocker) and the uncommitted labelling input (not
+independently a blocker, but it asked for enough arm-specific provenance in the
+artifact after the fix -- which is why the input is now committed). Neither is
+treated here as raised.
+
+**Round 2: `VERDICT: APPROVE`, 0 BLOCKER / 0 MAJOR**, reply
+`b81bc2eb-a91b-4c86-a32f-751b34acc68e`, correlated. The reviewer confirmed each
+half of the remediation against the diff and stated the point that matters:
+"the specific failure scenario from Round 1 is therefore representable now ...
+it is no longer structurally forced into a same-target pair." It also found no
+regression caused by the fix, and explicitly endorsed comparing the SCORED
+semantic target rather than requiring descriptive prose to be byte-equal
+between an original and its crop. Step 3 is CLOSED; the preliminary GT proceeds
+to step 4.
+
