@@ -44166,3 +44166,27 @@ rows corrected. One correction to the report's own earlier claim, made rather th
 step-8 row said "every guard proved load-bearing by breaking it", which was true of the pure
 function's rules and false about the path that runs against the frozen artifacts — that path had
 never executed. The row now says so and points at section 12.
+
+## 2026-09-06 — RECOG-C1: the harness's own header corrected, and a window-2 runbook
+
+**The harness file described a safeguard it has as a gap it accepted.** Its header still carried
+step 5's original reasoning — that a "call started" marker was deliberately NOT written, because such
+a marker introduces a worse failure (a row that looks spent but never was). Review closed that gap
+during step 5 and the header was never updated: `_recordingAsk` writes an `attempt_started` marker
+before every call, `readJournal` splits the file into observed and uncertain, and an uncertain row is
+neither retried nor retired. Window 1's file contains 52 markers against 52 observations, so the
+mechanism the comment denied having is visible in the committed data.
+
+Left standing, that paragraph would have told tomorrow's reviewer that a quota-loss window is open
+which is in fact closed — a false record inside the instrument itself. Corrected in place.
+
+**Mechanically confirmed comment-only**: `git diff` on that file, with comment lines filtered out,
+leaves zero changed lines, and `mobile/lib` is otherwise byte-identical to `fc313e0`, the commit
+window 1 was built from. Window 2 will therefore run the same instrument, differing only in text
+nobody compiles.
+
+**`core/plans/RECOG_C1_WINDOW2_RUNBOOK.md`** records the run itself: the UTC boundary and why it is a
+hard precondition, `--split-per-abi` and why `--target-platform android-arm64` is not a substitute,
+the guarded install, the ambiguity of silence, the run-id rule (reusing `w1` would find every row
+already done and do nothing), and the both-windows invocation of the metric script. It also records
+what window 1 already established, so tomorrow does not pay for it twice.

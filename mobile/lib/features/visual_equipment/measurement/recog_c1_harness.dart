@@ -22,18 +22,24 @@
 //     run plan pushed to the device, so the alternation rule is auditable data
 //     rather than a line of code nobody re-reads.
 //
-// Second known gap, in the same spirit. The quota is charged BEFORE the model
-// call, and the row is written AFTER the call returns, so a process death in
-// the window between those two -- one `writeln` plus one `flush` -- spends a
-// charged call that leaves no record. On resume `alreadyObserved` cannot know
-// it happened and re-runs that row, spending a second call for a photograph
-// already answered once. This is accepted rather than fixed: closing it needs
-// a "call started" marker written before every call, which doubles the writes
-// and introduces its own crash window between the marker and the call, where
-// the failure mode is worse -- a row that looks spent but never was, and is
-// therefore never measured. The window here is microseconds against a 3-second
-// gap between observations, and the cost when it does occur is one call out of
-// sixty. Named here so a short file is never mistaken for a clean one.
+// Second gap, in the same spirit -- CLOSED during step 5's review, and this
+// paragraph is the corrected record of it. The quota is charged BEFORE the
+// model call while the row is written AFTER it returns, so a process death
+// between the two spends a charged call that leaves no trace. The original
+// design accepted that, reasoning that a "call started" marker would introduce
+// its own crash window -- one where a row looks spent but never was, and is
+// therefore never measured, which is the worse failure.
+//
+// That reasoning was wrong in one respect: it assumed the two states have to be
+// conflated. They do not. `_recordingAsk` writes an `attempt_started` marker
+// before the call and `readJournal` splits the file into OBSERVED (marker plus
+// observation) and UNCERTAIN (marker, no observation). An uncertain row is
+// neither retried nor retired -- it is skipped and named in a control record,
+// so a later retry plan can decide about it deliberately. The marker write is
+// fail-closed: if it cannot be written, the observation is not attempted.
+//
+// Window 1, 2026-09-06, produced 52 markers and 52 observations with zero
+// uncertain rows, which is the first real evidence that the two agree.
 //
 // Known gap, recorded rather than worked around: the plan asks each row to
 // carry a SERVER CORRELATION ID, and the callable contract has none. The Cloud
