@@ -44327,3 +44327,34 @@ an already-LF working copy proves nothing about a fresh clone. Settled by readin
 Five mutations on the new guarantees — the duplicate-pair stop, the row identifier on a contract stop,
 the missing-file stop, the empty-variable stop, and file order — all five went red, and the file
 restored byte-identically afterwards.
+
+## 2026-09-06 — RECOG-C1: the runbook's commands could not have been run as written
+
+The operator asked for the commands to run. Writing them out found that the runbook's own blocks were
+not executable on this machine:
+
+- **The build block used bash line continuations (`\`).** This shell is PowerShell, where the
+  continuation is a backtick. Pasted as written, every `--dart-define` after the first would have been
+  dropped — which the harness's fail-closed configuration check would have caught rather than
+  producing a wrong measurement, but only after a ten-minute build.
+- **The metrics invocation used `VAR=x cmd` prefixes**, a form PowerShell does not have at all.
+- **`<path to apk>` and `<remote dir>` were placeholders.** Filled in with the real values, and with
+  the warning that `--split-per-abi` emits three APKs and only `app-arm64-v8a-debug.apk` matches the
+  device — installing `app-debug.apk` is the 423 MB fat build that caused the storage failure.
+- **The launch step said "launch the app"** with no command. It now carries the resolved activity
+  (`com.fitnessapp.fitness_app.sptr.debug/com.fitnessapp.fitness_app.MainActivity`, read from the
+  device rather than guessed) and a progress command that counts records in the file rather than
+  tailing a log.
+- **`-Pull` now names `-OutDir` explicitly.** Its default is this session's scratchpad, which the
+  session that actually runs window 2 will not have.
+
+The progress command carries its own footnote: the pattern has no space after the colon, because
+`jsonEncode` writes none. A pattern with a space returns 0 against a perfectly healthy file, which is
+how this run's first progress check made a working run look like a dead one.
+
+Step 8 of the runbook now carries the step-10 commands too, with the file deletion marked as the one
+action in the entire plan that is the operator's under §20, and with the reason
+`recog_c1_contract.dart` must survive it.
+
+A runbook whose commands have never been run is a plan, not a runbook. These are now the exact
+strings, with the real paths in them.

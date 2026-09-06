@@ -27,7 +27,8 @@ observations across two quota days and leaves window 2 short. Check with
 
 ## 1. Provenance, with no device attached
 
-    pwsh -NoProfile -Command "& scripts/dev/recog_c1_deploy.ps1 -VerifyOnly -RunId w2"
+    cd D:\Repo\Fitness_App
+    .\scripts\dev\recog_c1_deploy.ps1 -VerifyOnly -RunId w2
 
 Passes only when the working tree is clean AND the local run plan matches the hash in
 `core/plans/RECOG_C1_FREEZE_MANIFEST.json` **as committed** (read via `git show HEAD:`, never from
@@ -50,7 +51,8 @@ needed again, pass that absolute path as `-WorkDir`.
 
 Confirm what the device holds, which costs nothing and takes seconds:
 
-    pwsh -NoProfile -Command "& scripts/dev/recog_c1_deploy.ps1 -VerifyDevice -Window 2 -RunId w2"
+    cd D:\Repo\Fitness_App
+    .\scripts\dev\recog_c1_deploy.ps1 -VerifyDevice -Window 2 -RunId w2
 
 It hashes every image **on the device** and compares against the plan's `transformed_sha256`, and
 checks the device's `run_plan.csv` against the committed freeze manifest. Expected output:
@@ -60,13 +62,19 @@ single byte makes it name that file and stop.
 
 ## 3. Build
 
-    flutter build apk --debug --split-per-abi \
-      --dart-define=RECOG_C1_HARNESS=true \
-      --dart-define=RECOG_C1_DIR=<remote dir> \
-      --dart-define=RECOG_C1_RUN_ID=w2 \
-      --dart-define=RECOG_C1_WINDOW=2 \
-      --dart-define=RECOG_C1_PLAN_SHA=4f4ef743734ce710e6e82e968db41a4c682af1f230f2c8ff2aad0d6b9828325d \
+    cd D:\Repo\Fitness_App\mobile
+    flutter build apk --debug --split-per-abi `
+      --dart-define=RECOG_C1_HARNESS=true `
+      --dart-define=RECOG_C1_DIR=/sdcard/Android/data/com.fitnessapp.fitness_app.sptr.debug/files/recog_c1 `
+      --dart-define=RECOG_C1_RUN_ID=w2 `
+      --dart-define=RECOG_C1_WINDOW=2 `
+      --dart-define=RECOG_C1_PLAN_SHA=4f4ef743734ce710e6e82e968db41a4c682af1f230f2c8ff2aad0d6b9828325d `
       --dart-define=RECOG_C1_SOURCE_SHA=$(git rev-parse HEAD)
+
+This machine's shell is PowerShell: the continuation character is a backtick, not a backslash, and
+an earlier draft of this file used backslashes, which would have made every `--dart-define` after the
+first one vanish -- producing a build the harness refuses to start rather than one that measures the
+wrong thing, but still a wasted build.
 
 `--split-per-abi` is not optional. Without it the APK is 423 MB, `/data` is 98 % full, and the
 install fails with `INSTALL_FAILED_INSUFFICIENT_STORAGE` — which on 2026-09-05 surfaced as exit code
@@ -79,7 +87,12 @@ the log.**
 
 ## 4. Install, and prove it landed
 
-    pwsh -NoProfile -Command "& scripts/dev/recog_c1_deploy.ps1 -Install <path to apk> -RunId w2"
+    cd D:\Repo\Fitness_App
+    .\scripts\dev\recog_c1_deploy.ps1 -Install mobile\build\app\outputs\flutter-apk\app-arm64-v8a-debug.apk -RunId w2
+
+`--split-per-abi` names the output per ABI; the device reports `arm64-v8a`, so that is the one file
+of the three that matters. Do NOT install `app-debug.apk` -- that is the 423 MB fat build the device
+has no room for.
 
 The script requires the package manager's own `lastUpdateTime` to move and throws otherwise. `adb
 install` printing `Success` is not evidence — that exact output accompanied a build that never
@@ -87,7 +100,18 @@ installed.
 
 ## 5. Run
 
-Launch the app. The harness runs from `main()`. Watch for `RECOG-C1` lines in logcat.
+    $adb = 'D:\android-sdk\platform-tools\adb.exe'
+    $dev = 'ce02171299f0711005'
+    & $adb -s $dev shell am start -n com.fitnessapp.fitness_app.sptr.debug/com.fitnessapp.fitness_app.MainActivity
+
+Progress, without tailing a log (the file is the source of truth, not the console):
+
+    & $adb -s $dev shell "grep -c '\"record_type\":\"observation\"' /sdcard/Android/data/com.fitnessapp.fitness_app.sptr.debug/files/recog_c1/recog_c1_raw_w2.jsonl"
+
+The pattern has no space after the colon because `jsonEncode` writes none -- a pattern with a space
+returns 0 on a perfectly healthy file, which is how a working run first looked like a dead one.
+
+The harness runs from `main()`. `RECOG-C1` lines also appear in logcat.
 
 **Silence is ambiguous and must be treated as failure.** `kEnabled` is compile-time false in a build
 without the defines, so the branch is removed and there is nothing left to print: "no RECOG-C1 lines"
@@ -102,12 +126,16 @@ done and do nothing at all.
 
 ## 6. Pull
 
-    pwsh -NoProfile -Command "& scripts/dev/recog_c1_deploy.ps1 -Pull -RunId w2"
+    cd D:\Repo\Fitness_App
+    .\scripts\dev\recog_c1_deploy.ps1 -Pull -RunId w2 -OutDir D:\Repo\Fitness_App\core\plans\recog_c1_raw
+
+`-OutDir` is given explicitly so the file lands where it is committed from. Its default is the
+scratchpad of the session that wrote this script, which a later session does not have.
 
 It reports observations counted by record type, plus any `attempt_started` marker with no matching
 observation. A marker without an observation is an attempt that may have spent quota and whose
-outcome nobody knows — it is never absorbed into a total. Copy the file to
-`core/plans/recog_c1_raw/recog_c1_raw_w2.jsonl` and commit it.
+outcome nobody knows — it is never absorbed into a total. With the `-OutDir` above the file already
+lands at `core/plans/recog_c1_raw/recog_c1_raw_w2.jsonl`; commit it from there.
 
 Expected: 52 observations, 52 markers, 0 orphaned.
 
@@ -119,12 +147,18 @@ also has, so it was never sufficient on its own.
 
 ## 7. Compute the baseline — both windows together
 
-    cd mobile
-    RECOG_C1_RAW=<w1 path>,<w2 path> \
-    RECOG_C1_GT=core/plans/RECOG_C1_GROUND_TRUTH_2026-09-05.csv \
-    RECOG_C1_PLAN=core/plans/RECOG_C1_RUN_PLAN_2026-09-05.csv \
-    RECOG_C1_OUT=core/plans/RECOG_C1_MEASUREMENT_2026-09-05.md \
+    cd D:\Repo\Fitness_App\mobile
+    $p = 'D:/Repo/Fitness_App/core/plans'
+    $env:RECOG_C1_RAW  = "$p/recog_c1_raw/recog_c1_raw_w1.jsonl,$p/recog_c1_raw/recog_c1_raw_w2.jsonl"
+    $env:RECOG_C1_GT   = "$p/RECOG_C1_GROUND_TRUTH_2026-09-05.csv"
+    $env:RECOG_C1_PLAN = "$p/RECOG_C1_RUN_PLAN_2026-09-05.csv"
+    $env:RECOG_C1_OUT  = "$p/RECOG_C1_MEASUREMENT_2026-09-05.md"
     flutter test test/tools/recog_c1_compute_metrics.dart
+
+PowerShell has no inline `VAR=x cmd` form, so these are set as `$env:` first. Forward slashes
+throughout: they go into Dart's `File`, which takes them on Windows, and a backslash inside a
+double-quoted PowerShell string is not an escape but a comma-separated path list is easier to read
+this way.
 
 Both raw files, comma-separated. With only one the script correctly reports the run as short of its
 plan — useful as a check, useless as a baseline.
@@ -139,6 +173,23 @@ otherwise produce a number that looks fine and is false.
 Revert the harness, prove the tree is byte-identical to its pre-harness state, and write the
 measurement document and the final report. The harness is debug-only and compile-gated, but "it
 cannot run in release" is a weaker claim than "it is not in the tree".
+
+**The first command below is a file deletion, which `~/.claude/CLAUDE.md` §20 reserves to the
+operator regardless of any review approval.** It is the only step in this whole plan that does.
+
+    cd D:\Repo\Fitness_App
+    git rm mobile/lib/features/visual_equipment/measurement/recog_c1_harness.dart
+    git checkout 7eb4392 -- mobile/lib/main.dart
+    .\scripts\dev\recog_c1_verify_revert.ps1
+
+`recog_c1_contract.dart` stays. It predates the harness, is present in the baseline, and five
+committed analysis files import it -- removing it would leave a tree that looks correctly cleaned
+while making every number in the measurement unreproducible. The verify script asserts it is still
+there for exactly that reason.
+
+Expected: `revert verified: ... byte-identical to 7eb439202563d924983bacc3987723f9591fb28c ...`.
+Run it BEFORE the revert too, once: it must exit 1. A check that has never failed is not known to
+work.
 
 ## What window 1 already showed, so it is not rediscovered
 
