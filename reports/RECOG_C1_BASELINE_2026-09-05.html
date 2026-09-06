@@ -287,13 +287,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ d94af15</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 2ca2792</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -397,16 +399,18 @@ reviewer, not after it by the implementer.</p>
       <td>Run paired A/B observations across UTC windows, order alternated by the predeclared rule, nothing silently dropped.</td>
       <td>(i) Crop effect computed only over images equivalent in both arms and same-pair eligible; non-comparable pairs counted and named.</td>
       <td><span class="tag part">partial</span></td>
-      <td>Window 1 (52 observations) runs inside UTC day 09-06. Window 2 <strong>cannot</strong>
-      run the same day: 52 + 52 against a 60-call allowance. Tail: window 2, UTC day 09-07.</td>
+      <td><strong>Window 1 is closed:</strong> 52 observations, 52 markers, no attempt with an
+      unknown outcome, one session, all 26 pairs intact, zero operational failures. The raw file is
+      committed. Tail: window 2, UTC day 09-07 — 52 + 52 does not fit a 60-call allowance.</td>
     </tr>
     <tr>
       <td class="step">8</td>
       <td>Compute the metrics with the committed script, joining on (image_id, arm) and applying the already-tested matrix.</td>
       <td>(f) The reconstruction assertion passes for every scored row that parsed; (h)(j) both failure rates appear under their frozen names with denominators; correctness uses resolved rows only.</td>
       <td><span class="tag part">partial</span></td>
-      <td>The script is written, committed and tested <strong>before the numbers exist</strong> —
-      15 tests, every guard proved load-bearing by breaking it. Tail: the numbers, after window 2.</td>
+      <td>Written and committed <strong>before the numbers existed</strong>, and broken three times
+      by its first contact with the real file — see section 12. It now runs against window 1's data,
+      22 tests. Tail: the final numbers, after window 2.</td>
     </tr>
     <tr>
       <td class="step">9</td>
@@ -741,7 +745,91 @@ makes this a commit into the operator's own private repository rather than publi
 to an external review, do not make the repository public without the operator's explicit say-so,
 and blur faces first if the sheets ever need to travel. No number in this measurement depends on a
 face being legible.</p>
+<h2><span class="num">12</span>Window 1 is closed, and what that cost step 8</h2>
+
+<div class="lede">Window 1 ran in eight minutes and produced <strong>52 observations out of 52</strong>.
+The analysis script — written and tested in advance precisely for the honesty of it — then broke
+three times against the real data.</div>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Window 1 property</th><th>Value</th><th>Why it is checked</th></tr></thead>
+  <tbody>
+    <tr><td>observations</td><td><strong>52</strong></td><td>the whole window, nothing lost</td></tr>
+    <tr><td><code>attempt_started</code> markers with no observation</td><td><strong>0</strong></td>
+        <td>no attempt has an unknown outcome</td></tr>
+    <tr><td>distinct <code>session_id</code></td><td>1</td>
+        <td>no restart split a pair</td></tr>
+    <tr><td>pairs</td><td>26, both arms on each</td><td>the crop comparison is intact</td></tr>
+    <tr><td>operational failures</td><td><strong>0</strong></td>
+        <td>the model was measured, not the transport</td></tr>
+    <tr><td><code>plan_sha256</code> on every row</td><td><code>4f4ef743…</code></td>
+        <td>the frozen plan ran, not a local edit</td></tr>
+  </tbody>
+</table>
 </div>
+
+<h3>Three defects that 15 green tests could not catch</h3>
+
+<p>All three share one shape: the tests drove the pure function with fixtures the tests themselves
+invented, so the path that actually runs against the frozen artifacts had never executed once.</p>
+
+<p><strong>1. It could not start.</strong> The alias table is read through <code>rootBundle</code>,
+so the wrapper died on <code>Binding has not yet been initialized</code> before reading a row.</p>
+
+<p><strong>2. It could not read the frozen ground truth.</strong> The CSV writes <code>gt_kind</code>
+in snake_case (<code>canonical_single</code>); the frozen contract names the same four cases in
+Dart's camelCase (<code>canonicalSingle</code>). Both files are committed and hashed, so neither may
+be edited to agree with the other — the translation has to live in the script. It is an explicit
+table that stops on anything unrecognised: a mechanical de-snake would accept a typo as a category.
+The test fixtures wrote a third vocabulary matching neither file.</p>
+
+<p><strong>3. It silently lost a pair.</strong> The report printed "Comparable pairs: 25. Not
+comparable: 0" about a 26-pair window, directly beneath its own sentence saying a pair dropped
+without a reason is a pair nobody can check. The pair universe was built from the <em>resolved</em>
+rows, so a pair unresolved on both arms — <code>p15</code>, one of the three photographs nobody could
+name — appeared in neither list. It now reads 25 + 1 = 26, with the reason stated.</p>
+
+<p>Alongside: the control-records section listed all 52 routine markers as individual rows, burying
+what the section exists for. They are summarised now, and a marker with no matching observation — an
+attempt that was sent, may have spent quota, and whose outcome nobody knows — is named on its own.</p>
+
+<p><strong>Mutation-checked, with one guard reported honestly.</strong> Five mutations, four went
+red. The pair-accounting invariant survived its own: with the pair universe correct, nothing can fall
+out. It is marked <em>defensive</em> in the source rather than presented as a proven guarantee.</p>
+
+<h3>Window 1's numbers — and what they are not</h3>
+
+<div class="lede bad">This is <strong>half the corpus</strong>. The baseline is both windows together,
+and window 2 runs in UTC day 09-07. Nothing below is the result.</div>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Score over resolved rows</th><th>arm A (full frame)</th><th>arm B (viewfinder crop)</th></tr></thead>
+  <tbody>
+    <tr><td><code>correctConfident</code></td><td>8</td><td>8</td></tr>
+    <tr><td><code>overclaimed</code></td><td>16</td><td>16</td></tr>
+    <tr><td><code>safeNonOverclaim</code></td><td>1</td><td>1</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The split that makes these numbers mean something — by what the photograph actually contains:</p>
+
+<ul>
+  <li><strong>16 resolved rows whose frame holds one catalogue machine: 16 correct and confident.</strong>
+  No misses.</li>
+  <li><strong>34 rows whose frame holds several machines and no single subject: 32 answered
+  confidently with one machine anyway</strong>, and 2 returned alternatives.</li>
+</ul>
+
+<p>That second line is the operator's own complaint — photographs taken at angles with other
+equipment in shot — as a measured rate rather than an impression. The two arms match on every count
+in window 1, so the viewfinder crop moved nothing here. Both statements wait on window 2 before they
+become claims.</p>
+</div>
+
+
 
 
 

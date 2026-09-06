@@ -44158,3 +44158,11 @@ something:
 
 The two arms are identical on every count in window 1, so the viewfinder crop moved nothing here. Both
 statements wait on window 2 before they are claims.
+
+## 2026-09-06 — RECOG-C1: report updated with window 1 and step 8's real-data findings
+
+Sections 11 and 12 added to `reports/RECOG_C1_BASELINE_2026-09-05.{ru.,}html`, and the step 7/8 status
+rows corrected. One correction to the report's own earlier claim, made rather than left standing: the
+step-8 row said "every guard proved load-bearing by breaking it", which was true of the pure
+function's rules and false about the path that runs against the frozen artifacts — that path had
+never executed. The row now says so and points at section 12.
