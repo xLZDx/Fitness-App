@@ -22,7 +22,10 @@ param(
     # The commit the tree must match on these paths. Defaults to the parent of
     # the commit that introduced the harness (81d2237), i.e. step 4's ground-truth
     # freeze, which is the last state of mobile/lib before any measurement code.
-    [string]$Baseline = '7eb4392'
+    [string]$Baseline = '7eb4392',
+    # Runs the comparison even when the measurement document is still missing.
+    # Read-only either way; this only lifts the refusal explained at step 0.
+    [switch]$Force
 )
 
 $ErrorActionPreference = 'Stop'
@@ -43,6 +46,38 @@ $productionPaths = @(
 $failures = New-Object System.Collections.Generic.List[string]
 
 function Fail([string]$Message) { $failures.Add($Message) }
+
+# --- 0. is it even TIME to revert? -------------------------------------------
+# This runs before anything else because of what happened on 2026-09-06: the
+# operator was told "run it before the revert, it must exit 1", ran it, and got
+# a list of 34 items naming every line to remove. That reads as a to-do list,
+# not as a warning. They then reverted -- with window 2 still unmeasured, which
+# takes the harness out of the tree and makes the second half of the experiment
+# unbuildable.
+#
+# So the script now refuses to print that list at all until the measurement it
+# exists to follow actually exists. The output of a check should never be
+# mistakable for instructions to do the thing the check is guarding.
+$measurement = Join-Path $repo 'core\plans\RECOG_C1_MEASUREMENT_2026-09-05.md'
+$harnessPath = Join-Path $repo ($harness -replace '/', '\')
+if ((Test-Path $harnessPath) -and -not (Test-Path $measurement)) {
+    Write-Host "STOP -- do not revert yet." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "  The measurement document does not exist:"
+    Write-Host "    core/plans/RECOG_C1_MEASUREMENT_2026-09-05.md"
+    Write-Host ""
+    Write-Host "  That file is written by step 7, from BOTH windows. Removing the"
+    Write-Host "  harness before it exists takes the instrument out of the tree while"
+    Write-Host "  half the corpus is still unmeasured -- window 2 could not then be"
+    Write-Host "  built at all without first undoing the revert."
+    Write-Host ""
+    Write-Host "  Run scripts\dev\recog_c1_window2.ps1 first. Come back here after."
+    Write-Host ""
+    Write-Host "  (Nothing was checked. Pass -Force to run the comparison anyway --"
+    Write-Host "   it only reads, it changes nothing.)"
+    if (-not $Force) { exit 2 }
+    Write-Host ""
+}
 
 # --- 1. the baseline must exist, or every comparison below is vacuous ---------
 & git -C $repo rev-parse --verify "$Baseline^{commit}" *> $null

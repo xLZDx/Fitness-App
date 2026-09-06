@@ -44358,3 +44358,64 @@ action in the entire plan that is the operator's under §20, and with the reason
 
 A runbook whose commands have never been run is a plan, not a runbook. These are now the exact
 strings, with the real paths in them.
+
+## 2026-09-06 — RECOG-C1: the command list was run out of order, and the checklist was the defect
+
+The operator ran the commands handed to them. Step 8's revert went first, at 13:19Z, with window 2
+still unmeasured: `git rm` removed the harness and `git checkout 7eb4392 -- main.dart` undid its hook,
+so the instrument left the working tree while half the corpus was unmeasured. Then the window-2
+sequence was attempted against a tree that could no longer build it.
+
+**Nothing was lost, and that is a fact rather than a hope.** Verified before anything was touched:
+
+| check | result |
+| --- | --- |
+| window 1's file on the device | sha256 `556480993b…`, byte-identical to the committed copy |
+| its mtime | 02:09, unchanged since the original run |
+| `recog_c1_raw_w2.jsonl` on the device | absent |
+| the revert | staged, never committed |
+
+The app WAS relaunched against the reinstalled window-1 build, and it spent nothing — every row for
+run id `w1` was already recorded, so the resume path skipped all 52 without a single call. That is the
+first time that guarantee has been tested by accident rather than by a unit test, and it held. Today's
+quota still has its remaining eight calls.
+
+Restored with `git checkout HEAD -- <harness> <main.dart>`; the tree is clean and `mobile/lib` is
+again identical to window 1's build except the comment-only header.
+
+### The defect was mine, and it was not in any script
+
+A list of command blocks can be run in any order, and eventually is. Two guards now make the ordering
+mechanical instead of narrated:
+
+**1. `recog_c1_verify_revert.ps1` refuses before it prints anything.** My own instruction was "run it
+before the revert, it must exit 1" — and what it printed was 34 lines naming every symbol to remove,
+which reads as a to-do list, not a warning. It now checks first whether
+`core/plans/RECOG_C1_MEASUREMENT_2026-09-05.md` exists; while the harness is present and that document
+is not, it prints a STOP explaining that reverting now makes window 2 unbuildable, and exits 2 without
+listing anything. `-Force` still runs the comparison, since it only reads. **The output of a check
+must never be mistakable for instructions to do the thing it guards.**
+
+**2. `scripts/dev/recog_c1_window2.ps1` runs steps 1–7 as one ordered thing**, with the preconditions
+enforced rather than described: the quota day (derived from `utc_start` in window 1's own file, not a
+hardcoded date — it reports the hours remaining), the harness present in the tree, window 2 not
+already run, and a clean tree. `-PreflightOnly` answers "can tonight's run go ahead" while changing
+nothing. It also checks the built APK's age, because a stale APK installs perfectly and measures the
+wrong window. The revert is deliberately not in it and never will be: it deletes a tracked file, which
+is the operator's under §20.
+
+Both proved capable of firing, today: the revert check refuses with exit 2, and the window-2 script
+refuses with "window 1 ran on 2026-09-06 UTC … 10.6 hours to go".
+
+### Two smaller things the live run exposed
+
+- **The progress command I handed over did not work.** `grep -c '\"record_type\":\"observation\"'`
+  came back as `grep: trailing backslash` — PowerShell's own handling of escaped quotes in a native
+  argument mangled it. Replaced with `grep -c response_class`, which needs no quoting at all and is
+  exact: `response_class` appears on all 52 observation records and on none of the 52 markers,
+  verified against the real file.
+- **`-Install` was given the window-1 APK**, because the build had been interrupted (a stray pasted
+  line turned the build block into a continuation, then Ctrl-C). The install guard did its job and
+  reported a genuine `lastUpdateTime` move — it proves an install happened, which is all it claims;
+  it does not know which window the APK was compiled for. The new script closes that by building
+  immediately before installing and refusing an APK older than half an hour.
