@@ -44039,3 +44039,61 @@ but not about the whitespace around it — each run adds two blank lines at each
 it at a directory rewrites the provenance HEAD of every historical report in it. The 161 unrelated
 reports it touched were reverted so this commit stays atomic. The tool lives in `~/.claude/tools`,
 outside this repository, and fixing it is not this gate's work.
+
+## 2026-09-06 — RECOG-C1 step 7, window 1: 52 observations, and two defects the run itself exposed
+
+Window 1 completed at `00:09:2xZ`, roughly eight minutes after it started. The raw file is committed
+at `core/plans/recog_c1_raw/recog_c1_raw_w1.jsonl`, sha256
+`556480993b8de6d1308031f4a5b4b4d028bad8c98a223b4c35c8f2fd87e0f989`, 102 072 bytes.
+
+| property | value | why it is checked |
+| --- | --- | --- |
+| observations | **52** | the whole window, none missing |
+| `attempt_started` markers | 52 | write-ahead markers with no matching observation = 0, so no attempt has an unknown outcome |
+| distinct observation ids | 52 | no double-count, no double-spend of quota |
+| distinct `session_id` | 1 (`df455b74`) | no resume split a pair across restarts, so every pair is comparable |
+| distinct `pair_id` | 26, each with arm A and arm B | crop comparison is intact for all 26 |
+| `response_class` | 52 × `canonicalResponse` | zero operational failures, zero malformed replies |
+| `transport_error` | 52 × null | nothing was measuring the transport instead of the model |
+| `plan_sha256` on every row | `4f4ef743…` | the run executed the frozen plan, not a local edit |
+| `production_outcome` | 50 `confident`, 2 `alternatives` | the production path's own verdict, recorded separately from correctness |
+
+No accuracy number is claimed here. Correctness is step 8's, over both windows, and window 2 cannot
+run before UTC day 09-07.
+
+### Two defects in `recog_c1_deploy.ps1`, both found by using it rather than by reading it
+
+**1. `-Serial` auto-detection resolved to the letter `c`.** PowerShell unwraps a single-element
+pipeline result into a bare string; a string answers `.Count` with 1 and `[0]` with its first
+character. So the branch written for "exactly one device attached" — the normal case — set
+`$Serial = 'c'` and every adb call failed with `device 'c' not found`. It had never fired before
+because `-Push` and `-Install` were both invoked with an explicit `-Serial`. Fixed by wrapping the
+pipeline in `@(...)`.
+
+**2. `-Pull` reported "104 observations" for a 52-observation window.** It counted non-blank lines,
+and the file interleaves a write-ahead `attempt_started` marker with every observation, so a line
+count reads exactly double. 104 is also the size of the FULL two-window run — the one number this
+gate must never claim by accident. Now counted by `record_type`, and it names any attempt started
+without a matching observation instead of leaving it inside a total.
+
+Both are the same class of defect this gate keeps finding: a number that looks right, produced by
+something that never verified what it was counting.
+
+### `.gitattributes`: pinning the artifacts the freeze manifest identifies by hash
+
+The freeze manifest records `sha256_lf` — the hash of newline-normalised bytes — because with
+`core.autocrlf` on, a checkout can hand back CRLF where the generator wrote LF, and the raw hash
+then fails for a reason that has nothing to do with the content. Normalising at each comparison site
+works, but only where someone remembered to do it. `core/plans/RECOG_C1_*.csv` and
+`core/plans/recog_c1_raw/*.jsonl` are now `-text`, following the `core/audit/**` precedent already in
+that file, so raw bytes equal normalised bytes on every platform and the manifest's hashes verify
+directly.
+
+Measured, not assumed, while doing it: the run plan and the ground truth were **already** LF in the
+working tree and matched the manifest byte-for-byte; the arm manifest and the labels file were CRLF
+and are now normalised. Their content in git was already LF, so the normalisation changes the
+working tree only — `git status` shows nothing for them, which is the proof.
+
+An earlier measurement of this in the session was wrong and is corrected here: `grep -c $'\r'`
+reported every line of every file as CRLF, because the pattern reached grep empty and an empty
+pattern matches every line. The reliable count came from reading the bytes.

@@ -19,3 +19,18 @@ core/audit/** -text
 # same bytes regardless of platform. Flagged in P0.G4's review round.
 mobile/assets/data/equipment.json text eol=lf
 core/equipment_identity/p0/*.json text eol=lf
+
+# RECOG-C1's measurement artifacts are identified by hash, and the freeze
+# manifest (core/plans/RECOG_C1_FREEZE_MANIFEST.json) records the hash of the
+# NEWLINE-NORMALISED bytes precisely because these files were not pinned: with
+# core.autocrlf on, the run plan sits in the working tree as CRLF while the
+# generator wrote LF, so the raw hash differs from the recorded one on this
+# machine and would differ again, differently, on a Linux CI runner.
+#
+# Normalising at every comparison site works but has to be remembered at every
+# comparison site, and the JSONL the device writes is LF regardless of what any
+# checkout thinks. Pinning -text makes raw bytes == normalised bytes on every
+# platform, so the manifest's hash is verifiable directly and a fresh clone
+# cannot produce a different file than the one that was frozen.
+core/plans/RECOG_C1_*.csv -text
+core/plans/recog_c1_raw/*.jsonl -text

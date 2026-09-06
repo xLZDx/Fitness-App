@@ -117,9 +117,15 @@ $adb = Get-Adb
 
 # A wrong device is a wrong measurement, so an ambiguous device list is a stop
 # rather than a guess.
-$devices = & $adb devices | Select-Object -Skip 1 |
+# @() is load-bearing, not style. PowerShell unwraps a single-element pipeline
+# result into a bare string, and a string answers .Count with 1 and [0] with its
+# FIRST CHARACTER -- so with exactly one device attached (the normal case) this
+# resolved $Serial to "c" and every adb call failed with "device 'c' not found".
+# Caught on the first real -Pull, after the same code had already run -Push and
+# -Install by being handed an explicit -Serial each time.
+$devices = @(& $adb devices | Select-Object -Skip 1 |
     Where-Object { $_ -match '\sdevice$' } |
-    ForEach-Object { ($_ -split '\s+')[0] }
+    ForEach-Object { ($_ -split '\s+')[0] })
 if ($Serial) {
     if ($devices -notcontains $Serial) { throw "device $Serial is not attached" }
 } elseif ($devices.Count -eq 1) {
@@ -250,8 +256,18 @@ if ($Pull) {
     if ($exists -ne 'yes') { throw "no raw file on the device at $remoteFile" }
     $dest = Join-Path $OutDir "recog_c1_raw_$RunId.jsonl"
     & $adb @adbArgs pull $remoteFile $dest | Out-Null
-    $lines = (Get-Content $dest | Where-Object { $_.Trim() }).Count
-    Write-Host "pulled $lines observations -> $dest"
+    # Counted by record type, not by line. The file interleaves a write-ahead
+    # `attempt_started` marker with each observation, so a line count reads
+    # exactly double and would have reported window 1's 52 observations as 104
+    # -- the full two-window run, which is the one number this gate must never
+    # claim by accident.
+    $content = @(Get-Content $dest | Where-Object { $_.Trim() })
+    $observations = @($content | Where-Object { $_ -match '"record_type":"observation"' }).Count
+    $started = @($content | Where-Object { $_ -match '"record_type":"attempt_started"' }).Count
+    Write-Host "pulled $observations observations ($started attempts started, $($content.Count) records) -> $dest"
+    if ($observations -ne $started) {
+        Write-Host "  NOTE: $($started - $observations) attempt(s) started without a matching observation -- outcome unknown, not a failure." -ForegroundColor Yellow
+    }
     Write-Host "sha256: $((Get-FileHash $dest -Algorithm SHA256).Hash.ToLower())"
 }
 
