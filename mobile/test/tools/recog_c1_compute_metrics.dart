@@ -206,8 +206,7 @@ RecogC1Metrics computeMetrics({
     final scores = <_Row, RecogC1SemanticScore>{};
     for (final r in reachedModel) {
       final s = scoreObservation(
-        gtKind: RecogC1GtKind.values
-            .firstWhere((k) => k.name == r.gt['gt_kind']!.trim()),
+        gtKind: _gtKind(r.gt['gt_kind']!, r.id),
         responseClass: r.responseClass,
         productionOutcome: r.productionOutcome,
         topMatchesGt: r.topMatchesGt,
@@ -247,6 +246,19 @@ RecogC1Metrics computeMetrics({
     // and — the rule declared before any inference — the SAME session, because
     // a pair split by a restart is not the back-to-back pair the plan
     // designed.
+    // The universe is every pair that was OBSERVED, not every pair that
+    // survived the filters. Building it from `resolved` alone made a pair whose
+    // ground truth is unresolved on both arms disappear from the report
+    // entirely: it was in neither list, and 25 comparable + 0 not-comparable
+    // silently described 26 pairs. The report's own sentence -- "a pair dropped
+    // without a reason is a pair nobody can check" -- was false about itself.
+    // Found by running this against the real window 1; the unit test for
+    // unresolved rows asserted only that such a pair is not COMPARED, which was
+    // true and insufficient.
+    final observedPairs = <String, List<_Row>>{};
+    for (final r in observations) {
+      observedPairs.putIfAbsent(r.pairId, () => <_Row>[]).add(r);
+    }
     final byPair = <String, List<_Row>>{};
     for (final r in resolved) {
       byPair.putIfAbsent(r.pairId, () => <_Row>[]).add(r);
@@ -254,10 +266,25 @@ RecogC1Metrics computeMetrics({
 
     final comparable = <String, List<_Row>>{};
     final notComparable = <String, String>{};
-    for (final entry in byPair.entries) {
+    for (final pairId in observedPairs.keys) {
+      final entry = MapEntry(pairId, byPair[pairId] ?? const <_Row>[]);
+      final observedArms = {for (final r in observedPairs[pairId]!) r.arm};
+      if (entry.value.isEmpty) {
+        notComparable[pairId] = observedArms.length == 2
+            ? 'neither arm entered a correctness number: ground truth '
+                'unresolved, or the attempt never reached the model'
+            : 'only arm ${observedArms.join()} was observed, and it is not '
+                'scorable';
+        continue;
+      }
       final arms = {for (final r in entry.value) r.arm: r};
       if (arms.length != 2) {
-        notComparable[entry.key] = 'only arm ${arms.keys.join()} is scorable';
+        final missing = observedArms.difference(arms.keys.toSet());
+        notComparable[entry.key] = missing.isEmpty
+            ? 'only arm ${arms.keys.join()} is scorable'
+            : 'only arm ${arms.keys.join()} is scorable; arm '
+                '${missing.join()} was observed but is unresolved or never '
+                'reached the model';
         continue;
       }
       if (arms['A']!.gt['gt_equivalent']!.trim() != 'true') {
@@ -273,6 +300,25 @@ RecogC1Metrics computeMetrics({
         continue;
       }
       comparable[entry.key] = entry.value;
+    }
+
+    // Every observed pair lands in exactly one bucket. Without this, a pair can
+    // fall out of both and the two published counts describe fewer pairs than
+    // the corpus has, with nothing in the output saying so.
+    //
+    // DEFENSIVE, and said plainly rather than dressed up as a tested guarantee:
+    // this check survived its own mutation. With the loop above iterating the
+    // observed pairs, no pair can fall out, so disabling this line leaves all
+    // 22 tests green. It is kept as a backstop for a future edit that adds a
+    // `continue` without recording a reason -- the exact shape of the defect it
+    // was written after -- not because any test proves it load-bearing today.
+    final accounted = comparable.length + notComparable.length;
+    if (accounted != observedPairs.length) {
+      throw StateError(
+        'pair accounting is short: ${observedPairs.length} pairs were '
+        'observed but only $accounted are reported as comparable or '
+        'not-comparable',
+      );
     }
 
     int correctIn(String arm) => comparable.values
@@ -315,13 +361,50 @@ RecogC1Metrics computeMetrics({
     b
       ..writeln('## Control records')
       ..writeln();
-    if (control.isEmpty) {
-      b.writeln('None — every stop condition would have left one.');
+    // `attempt_started` is a write-ahead marker written before EVERY attempt,
+    // so listing them individually buries the records this section exists for
+    // under one routine row per observation -- 52 of them for a full window.
+    // What matters about them is the count and, above all, any marker with no
+    // matching observation, which is an attempt whose outcome nobody knows.
+    final markers =
+        control.where((c) => c['record_type'] == 'attempt_started').toList();
+    final exceptional =
+        control.where((c) => c['record_type'] != 'attempt_started').toList();
+    final observedIds = {for (final r in observations) r.id};
+    final orphaned = markers
+        .where((m) => !observedIds.contains(m['observation_id']))
+        .toList();
+
+    if (markers.isNotEmpty) {
+      b
+        ..writeln('${markers.length} write-ahead `attempt_started` markers, '
+            '${orphaned.length} of them with no matching observation.')
+        ..writeln();
+      if (orphaned.isNotEmpty) {
+        b
+          ..writeln('> **${orphaned.length} attempt(s) started and never '
+              'finished.** Each was sent, so each may have spent quota, and '
+              'nothing here says what came back. They are named individually '
+              'below because an unknown outcome must never be averaged into a '
+              'total.')
+          ..writeln();
+        for (final m in orphaned) {
+          b.writeln('- `${m['observation_id']}` '
+              '(pair `${m['pair_id']}`, arm ${m['arm']}, '
+              'attempt ${m['attempt_no']})');
+        }
+        b.writeln();
+      }
+    }
+
+    if (exceptional.isEmpty) {
+      b.writeln('No stop, abort or resume record — every stop condition would '
+          'have left one.');
     } else {
       b
         ..writeln('| type | detail |')
         ..writeln('| --- | --- |');
-      for (final c in control) {
+      for (final c in exceptional) {
         final detail = Map<String, Object?>.from(c)
           ..remove('record_type')
           ..remove('run_id')
@@ -404,7 +487,49 @@ RecogC1Metrics computeMetrics({
   );
 }
 
+/// The frozen ground truth writes `gt_kind` in snake_case; the frozen contract
+/// names the same four cases in Dart's camelCase. Both files are committed and
+/// hashed, so neither can be edited to agree with the other -- the translation
+/// has to live here.
+///
+/// It is an explicit table rather than a name transformation on purpose. A
+/// mechanical de-snake would silently accept `canonical_singles` or a typo'd
+/// `cannonical_single` as something, and a wrong `gt_kind` changes what an
+/// answer is worth without changing anything visible in the output. Anything
+/// not in this table is a stop.
+///
+/// This existed as a latent crash until the script was first run against the
+/// real CSV: `RecogC1GtKind.values.firstWhere((k) => k.name == ...)` threw
+/// `Bad state: No element` on the first `canonical_single` row. The unit tests
+/// missed it because their fixtures wrote `canonicalSingle` -- a format the
+/// frozen data has never used.
+RecogC1GtKind _gtKind(String raw, String observationId) {
+  const table = <String, RecogC1GtKind>{
+    'canonical_single': RecogC1GtKind.canonicalSingle,
+    'out_of_catalog_single': RecogC1GtKind.outOfCatalogSingle,
+    'multiple': RecogC1GtKind.multiple,
+    'none': RecogC1GtKind.none,
+  };
+  final kind = table[raw.trim()];
+  if (kind == null) {
+    throw StateError(
+      'unknown gt_kind "${raw.trim()}" on $observationId; the frozen ground '
+      'truth may only use ${table.keys.join(", ")}',
+    );
+  }
+  return kind;
+}
+
 void main() {
+  // Required, not boilerplate: `EquipmentAliasIndex.load()` reads the alias
+  // table through `rootBundle`, and without an initialised binding the whole
+  // run dies with "Binding has not yet been initialized" before it reads a
+  // single observation. The unit tests never caught it because they exercise
+  // `computeMetrics` directly with an injected index -- so every guarantee in
+  // this file was proved, and the one path that actually runs against real
+  // data had never executed once.
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('compute the RECOG-C1 metrics', () async {
     final rawLines = <String>[];
     for (final path in _env('RECOG_C1_RAW').split(',')) {

@@ -24,7 +24,12 @@ import '../../tools/recog_c1_compute_metrics.dart';
 Map<String, String> gt(
   String imageId,
   String arm, {
-  String kind = 'canonicalSingle',
+  // snake_case, because that is what the frozen ground-truth CSV actually
+  // writes. This fixture used to say 'canonicalSingle' -- Dart's enum spelling,
+  // which appears nowhere in the data -- so every test here passed against an
+  // input shape the script would never receive, and the script crashed on its
+  // first contact with the real file.
+  String kind = 'canonical_single',
   String equipmentId = 'treadmill',
   String status = 'resolved',
   String equivalent = 'true',
@@ -269,7 +274,125 @@ void main() {
     });
   });
 
+  group('the ground truth is read in the format it is actually written in', () {
+    // Three tests for one defect, because the defect was not "a wrong string" —
+    // it was that nothing anywhere connected the frozen CSV's vocabulary to the
+    // frozen enum's, and the tests invented a third vocabulary of their own.
+    test('every gt_kind the frozen CSV uses is accepted', () {
+      for (final kind in ['canonical_single', 'multiple']) {
+        final m = run([obs('i1', 'A')], [gt('i1', 'A', kind: kind)]);
+        expect(m.observations, 1, reason: '$kind should parse');
+      }
+    });
+
+    test('the enum spelling is REJECTED, not quietly accepted', () {
+      // The exact value this test file used to pass in. If a future edit makes
+      // the lookup permissive — a de-snake, a case-insensitive compare — this
+      // goes green again and the guard is gone.
+      expect(
+        () => run([obs('i1', 'A')], [gt('i1', 'A', kind: 'canonicalSingle')]),
+        throwsA(isA<StateError>()
+            .having((e) => '$e', 'message', contains('unknown gt_kind'))),
+      );
+    });
+
+    test('an unrecognised gt_kind names the observation it came from', () {
+      expect(
+        () => run([obs('i1', 'A')], [gt('i1', 'A', kind: 'canonical_singles')]),
+        throwsA(isA<StateError>()
+            .having((e) => '$e', 'message', contains('w1-p00-A-1'))),
+      );
+    });
+  });
+
+  group('every observed pair is accounted for', () {
+    test('a pair unresolved on BOTH arms is named, not silently dropped', () {
+      // The defect the real window-1 file exposed: `byPair` was built from the
+      // resolved rows only, so a pair unresolved on both arms appeared in
+      // neither list. The report then said "25 comparable, 0 not comparable"
+      // about a 26-pair corpus, under a sentence promising that never happens.
+      final m = run(
+        [obs('i1', 'A'), obs('i1', 'B')],
+        [
+          gt('i1', 'A', status: 'unresolved'),
+          gt('i1', 'B', status: 'unresolved'),
+        ],
+      );
+      expect(m.comparablePairs, isEmpty);
+      expect(m.notComparable.keys, contains('p00'),
+          reason: 'the pair must appear somewhere, with a reason');
+      expect(m.markdown, contains('p00'));
+    });
+
+    test('comparable + not-comparable equals the observed pair count', () {
+      // The invariant itself, over a mixed corpus: one comparable pair, one
+      // unresolved pair, one pair with a single observed arm.
+      final m = run(
+        [
+          obs('i1', 'A'), obs('i1', 'B'),
+          obs('i2', 'A', pair: 'p01'), obs('i2', 'B', pair: 'p01'),
+          obs('i3', 'A', pair: 'p02'),
+        ],
+        [
+          gt('i1', 'A'), gt('i1', 'B'),
+          gt('i2', 'A', status: 'unresolved'),
+          gt('i2', 'B', status: 'unresolved'),
+          gt('i3', 'A'), gt('i3', 'B'),
+        ],
+        planned: 6,
+      );
+      expect(m.comparablePairs, {'p00'});
+      expect(m.notComparable.keys, containsAll(<String>['p01', 'p02']));
+      expect(m.comparablePairs.length + m.notComparable.length, 3,
+          reason: 'three pairs were observed, three must be reported');
+    });
+  });
+
   group('control records survive into the report', () {
+    test('routine write-ahead markers are summarised, not listed one by one',
+        () {
+      // 52 markers per window, one per observation. Listing them individually
+      // buried the records this section exists for under a wall of routine
+      // rows, which is how a real stop record becomes invisible.
+      final m = run(
+        [
+          obs('i1', 'A'),
+          jsonEncode({
+            'record_type': 'attempt_started',
+            'observation_id': 'w1-p00-A-1',
+            'pair_id': 'p00',
+            'arm': 'A',
+            'attempt_no': 1,
+          }),
+        ],
+        [gt('i1', 'A')],
+      );
+      expect(m.markdown, contains('1 write-ahead'));
+      expect(m.markdown, isNot(contains('| `attempt_started` |')),
+          reason: 'a routine marker must not get its own table row');
+    });
+
+    test('a marker with no matching observation is named individually', () {
+      // The one case where a marker matters more than any observation: the
+      // attempt was sent, it may have spent quota, and nothing says what came
+      // back. It must never be absorbed into a count.
+      final m = run(
+        [
+          obs('i1', 'A'),
+          jsonEncode({
+            'record_type': 'attempt_started',
+            'observation_id': 'w1-p09-B-1',
+            'pair_id': 'p09',
+            'arm': 'B',
+            'attempt_no': 1,
+          }),
+        ],
+        [gt('i1', 'A')],
+      );
+      expect(m.markdown, contains('w1-p09-B-1'));
+      expect(m.markdown, contains('never finished'));
+    });
+
     test('a stop record is counted and printed, not dropped', () {
       // The whole reason those records exist: a short file must never read as
       // a complete one.

@@ -44097,3 +44097,64 @@ working tree only — `git status` shows nothing for them, which is the proof.
 An earlier measurement of this in the session was wrong and is corrected here: `grep -c $'\r'`
 reported every line of every file as CRLF, because the pattern reached grep empty and an empty
 pattern matches every line. The reliable count came from reading the bytes.
+
+## 2026-09-06 — RECOG-C1 step 8: the analysis script's first contact with real data broke it three times
+
+The step-8 script was written, committed and tested before any observation existed — deliberately, so
+that no rule could be chosen after seeing results. Running it against window 1's real file found three
+defects in a row, none of which any of its 15 tests could have caught. All three share one shape: the
+tests exercised `computeMetrics` directly with fixtures the tests themselves invented, so the path
+that actually runs against the frozen artifacts had never executed once.
+
+**1. It could not start.** `EquipmentAliasIndex.load()` reads through `rootBundle`, so the env wrapper
+died on `Binding has not yet been initialized` before parsing a single row. Fixed with
+`TestWidgetsFlutterBinding.ensureInitialized()`.
+
+**2. It could not read the frozen ground truth.** The CSV writes `gt_kind` in snake_case
+(`canonical_single`); the frozen contract names the same four cases in Dart's camelCase
+(`canonicalSingle`). `RecogC1GtKind.values.firstWhere((k) => k.name == …)` threw `Bad state: No
+element` on the first such row. Both files are committed and hashed, so neither may be edited to agree
+with the other — the translation belongs in the script, as an explicit table that stops on anything
+unrecognised rather than a mechanical de-snake that would accept a typo as a category. The test
+fixtures had written `canonicalSingle`, a third vocabulary matching neither file, which is exactly why
+15 green tests proved nothing about this.
+
+**3. It silently lost a pair.** The report said "Comparable pairs: 25. Not comparable: 0" about a
+26-pair window, directly under its own sentence "a pair dropped without a reason is a pair nobody can
+check". The pair universe was built from the RESOLVED rows, so a pair unresolved on both arms — `p15`,
+one of the three photographs nobody could name — appeared in neither list. Fixed by building the
+universe from every OBSERVED pair and naming the reason. The output now reads 25 + 1 = 26.
+
+A fourth, smaller thing was fixed at the same time: the control-records section listed all 52
+write-ahead `attempt_started` markers as individual rows, burying the records the section exists for.
+They are now summarised, and a marker with no matching observation — an attempt that was sent, may
+have spent quota, and whose outcome nobody knows — is named individually instead.
+
+**Mutation-checked, and one guard reported honestly.** Five mutations: the permissive `gt_kind`
+lookup, the resolved-only pair universe, the accounting invariant, listing every control record, and
+dropping the orphan-marker names. Four went red. The accounting invariant survived its own mutation —
+with the pair universe correct no pair can fall out, so disabling it leaves all 22 tests green. It is
+marked DEFENSIVE in the source rather than presented as a tested guarantee.
+
+### Window 1's numbers, and what they are not
+
+These are **half the corpus**. Window 2 runs in UTC day 09-07 and the baseline is both windows
+together. Nothing below is the result.
+
+| | arm A (full frame) | arm B (viewfinder crop) |
+| --- | --- | --- |
+| `correctConfident` | 8 | 8 |
+| `overclaimed` | 16 | 16 |
+| `safeNonOverclaim` | 1 | 1 |
+
+Split by what the photograph actually contains, which is the split that makes the numbers mean
+something:
+
+- **16 resolved rows whose frame holds one catalogue machine: 16 correct and confident.** No misses.
+- **34 rows whose frame holds several machines with no single subject: 32 answered confidently with
+  one machine anyway**, and 2 returned alternatives. That is the operator's own complaint —
+  photographs taken at angles with other equipment in shot — appearing as a measured rate rather than
+  an impression.
+
+The two arms are identical on every count in window 1, so the viewfinder crop moved nothing here. Both
+statements wait on window 2 before they are claims.
