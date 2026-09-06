@@ -287,13 +287,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 81d2237</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ d94af15</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -385,29 +387,35 @@ reviewer, not after it by the implementer.</p>
       <td class="step">6</td>
       <td>Build the measurement APK from that clean HEAD; record the SHA and the non-secret defines.</td>
       <td>No token value is recorded anywhere.</td>
-      <td><span class="tag open">not started</span></td>
-      <td>Whole step.</td>
+      <td><span class="tag done">done</span></td>
+      <td>Built from a clean tree at <code>fc313e0</code>, sha256 recorded, and the install
+      <strong>verified</strong> by <code>lastUpdateTime</code> moving rather than by adb's exit
+      code. No token value appears in the build command or the log. Section 11 has the detail.</td>
     </tr>
     <tr>
       <td class="step">7</td>
       <td>Run paired A/B observations across UTC windows, order alternated by the predeclared rule, nothing silently dropped.</td>
       <td>(i) Crop effect computed only over images equivalent in both arms and same-pair eligible; non-comparable pairs counted and named.</td>
-      <td><span class="tag open">not started</span></td>
-      <td>Whole step. Section 07 explains why it spans at least two calendar days.</td>
+      <td><span class="tag part">partial</span></td>
+      <td>Window 1 (52 observations) runs inside UTC day 09-06. Window 2 <strong>cannot</strong>
+      run the same day: 52 + 52 against a 60-call allowance. Tail: window 2, UTC day 09-07.</td>
     </tr>
     <tr>
       <td class="step">8</td>
       <td>Compute the metrics with the committed script, joining on (image_id, arm) and applying the already-tested matrix.</td>
       <td>(f) The reconstruction assertion passes for every scored row that parsed; (h)(j) both failure rates appear under their frozen names with denominators; correctness uses resolved rows only.</td>
-      <td><span class="tag open">not started</span></td>
-      <td>Whole step.</td>
+      <td><span class="tag part">partial</span></td>
+      <td>The script is written, committed and tested <strong>before the numbers exist</strong> —
+      15 tests, every guard proved load-bearing by breaking it. Tail: the numbers, after window 2.</td>
     </tr>
     <tr>
       <td class="step">9</td>
       <td>Commit durable visual evidence: indexed contact sheets for both arms plus a hash manifest.</td>
       <td>A later reviewer can see which image is row N without any local screenshot.</td>
-      <td><span class="tag open">not started</span></td>
-      <td>Whole step. The sheets exist in the session scratchpad already; they are not yet committed.</td>
+      <td><span class="tag done">done</span></td>
+      <td>26 contact sheets (13 per arm), every tile captioned <code>#index filename</code>, plus a
+      sha256 per sheet. Stated plainly: identifiable people appear in them, including a child — see
+      section 11.</td>
     </tr>
     <tr>
       <td class="step">10</td>
@@ -674,7 +682,68 @@ exactly one unrecoverable resource.</p>
 <p>So every guarantee here is mutation-checked: break the guard, require the suite to go red,
 restore the file byte-identically. Thirteen such checks in step 5 alone.</p>
 
+<h2><span class="num">11</span>Steps 6 and 9: what went wrong, and how it surfaced</h2>
+
+<div class="lede bad">The first attempt at window 1 <strong>never ran</strong> — and looked exactly
+as though it had. The build returned 0, <code>adb install</code> returned 0, the app launched, the
+log filled. What was actually running was the previous day's build, which has no harness in it. No
+quota was spent, precisely because no call was made.</div>
+
+<p>What this exposed: silence has two causes and they are indistinguishable. The harness prints
+<code>NOT RUNNING</code> when it refuses to start — but when it is not in the build at all,
+<code>kEnabled</code> is compile-time false, the branch is removed, and there is nothing left to
+print. "No RECOG-C1 lines" means "the harness refused" and "the harness is absent" equally.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Check</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><td>raw JSONL on device</td><td>absent</td></tr>
+    <tr><td><code>RECOG-C1</code> lines in the log</td><td><strong>0</strong></td></tr>
+    <tr><td>app process</td><td>alive and logging</td></tr>
+    <tr><td>package <code>lastUpdateTime</code></td><td><strong>over a day old</strong></td></tr>
+  </tbody>
+</table>
 </div>
+
+<p>The real cause appeared on re-running the install in the foreground:
+<code>INSTALL_FAILED_INSUFFICIENT_STORAGE</code>. <code>/data</code> is 98 % full with 1.3 GB free
+and the debug APK was 423 MB. The first attempt had also hit a second, different failure: the
+device dropped off adb mid-command and returned with a new transport id, which is what produced
+exit 0 with no output at all.</p>
+
+<p><strong>What was done, and what was deliberately not.</strong>
+<code>--target-platform android-arm64</code> did not shrink the APK at all — unpacking it showed
+all four ABIs still present, because that flag governs only the Flutter engine's own libraries
+while the plugin native libraries come from Gradle. <code>--split-per-abi</code> gave 183 MB
+instead of 423, a 240 MB saving with no source change. Nothing was <em>deleted</em> from the
+device: removing the coexisting release build is a deletion on the operator's test device and is
+theirs to authorise, not a convenience for this gate.</p>
+
+<p>And the guard that was missing now exists: <code>-Install</code> requires the package manager's
+own <code>lastUpdateTime</code> to move, or it throws. adb's "Success" has stopped being a word and
+become evidence. It behaved correctly on its first real use.</p>
+
+<h3>Why the run waited for the UTC boundary</h3>
+
+<p>At 23:58 UTC the quota day had two minutes left. Starting then would have put a handful of
+observations in 09-05 and the remaining ~50 in 09-06, leaving window 2 about ten calls out of
+sixty. The two-window design only works if each window sits wholly inside one UTC day, and that is
+a property of <em>when the run starts</em>, not of the plan file.</p>
+
+<h3>The contact sheets: a factor that cannot be committed silently</h3>
+
+<p>Identifiable people appear in them, including a child. A commit is durable, and removing the
+files later needs a history rewrite, which is the operator's call. Verified before committing
+rather than assumed: GitHub returns 404 unauthenticated, so the repository is private. That is what
+makes this a commit into the operator's own private repository rather than publication. A
+<code>README.md</code> sits beside the files carrying the constraint: do not publish, do not attach
+to an external review, do not make the repository public without the operator's explicit say-so,
+and blur faces first if the sheets ever need to travel. No number in this measurement depends on a
+face being legible.</p>
+</div>
+
+
 
 
 

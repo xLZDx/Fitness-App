@@ -43982,3 +43982,60 @@ neither affects the measurement's correctness:
 `7656a3d` recorded for the discarded 423 MB artifact, because step 8's metric script was committed
 in between. The tree was verified clean immediately before building. The earlier recorded sha256
 `992c26fb...` names an APK that was never installed and is not the instrument.
+
+## 2026-09-06 — RECOG-C1 step 7: window 1 runs, behind a guard that makes "Success" mean something
+
+The second attempt at window 1 launched at `00:00:56Z` on 2026-09-06 and is producing observations.
+This entry records the two changes that stand between the first attempt (which silently did nothing,
+see the previous entry) and this one.
+
+**1. `--split-per-abi`, not `--target-platform android-arm64`.** The previous entry proposed the
+latter. It was measured rather than believed, and it is wrong: unpacking the resulting APK showed
+all four ABIs still present — `arm64-v8a` 96 MB, `x86_64` 44 MB, `x86` 44 MB, `armeabi-v7a` 30 MB —
+because that flag governs only the Flutter engine's own libraries, while the plugin native libraries
+arrive from Gradle regardless. `--split-per-abi` produces a genuinely single-ABI APK: **183 MB
+against 423 MB**, a 240 MB reduction with no source change and nothing deleted from the device.
+
+**2. `recog_c1_deploy.ps1 -Install` now proves the install landed.** Carried-forward item (1) from
+the previous entry, done rather than deferred, because the failure it guards against is the one that
+cost this gate a day. The check is that the package manager's own `lastUpdateTime` moved:
+
+    $after = (& $adb @adbArgs shell "dumpsys package $Package | grep lastUpdateTime") -join ' '
+    if (-not $after -or $after.Trim() -eq $before.Trim()) { throw ... }
+
+It needs no cooperation from the app, no version bump, and no parsing of anything the build itself
+controls. On its first real use it reported `install verified: lastUpdateTime moved to
+lastUpdateTime=2026-09-06 01:58:45` — the first time in this gate that an `adb install` success was
+evidence rather than a word.
+
+Carried-forward item (2) — the harness printing a line when `kEnabled` is compile-time false — stays
+impossible by construction and stays closed by (2) above instead. That is the same conclusion the
+previous entry reached; it is recorded here as settled, not re-opened.
+
+**Why the run waited for the UTC boundary.** At 23:58Z the quota day had two minutes left.
+`QUOTAS.aiEquipmentRecognition = 60` is enforced per user per UTC day, before the model call
+(`functions/src/ai_equipment_recognition.ts:124-128`), so starting then would have put a handful of
+observations in 09-05 and the remaining ~50 in 09-06, leaving window 2 roughly ten calls out of
+sixty. The two-window design only works when each window sits wholly inside one UTC day, and that is
+a property of when the run starts, not of the frozen plan file.
+
+**Step 7 is therefore PARTIAL, and structurally so.** 52 + 52 observations cannot both fit inside a
+60-call day. Window 2 runs in UTC day 09-07. Step 8's numbers wait on it; the step-8 script itself is
+already written, committed and tested against synthetic rows, deliberately before any real number
+exists.
+
+**Step 9's contact sheets and the fact that names a factor rather than assuming it away.** The 26
+sheets contain identifiable people, including a child. A commit is durable and removing files later
+needs a history rewrite, which is the operator's call. Verified before committing rather than
+assumed: GitHub returns 404 unauthenticated, so the repository is private — which is what makes this
+a commit into the operator's own private repository rather than publication.
+`core/plans/recog_c1_sheets/README.md` carries the constraint alongside the files: do not publish,
+do not attach to an external review, do not make the repository public without the operator's
+explicit say-so, and blur faces first if the sheets ever need to travel. No number in this
+measurement depends on a face being legible.
+
+**Small wart found and not fixed here:** `report_conform.py` is idempotent about its injected block
+but not about the whitespace around it — each run adds two blank lines at each anchor, and pointing
+it at a directory rewrites the provenance HEAD of every historical report in it. The 161 unrelated
+reports it touched were reverted so this commit stays atomic. The tool lives in `~/.claude/tools`,
+outside this repository, and fixing it is not this gate's work.
