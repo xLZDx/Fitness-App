@@ -44190,3 +44190,55 @@ hard precondition, `--split-per-abi` and why `--target-platform android-arm64` i
 the guarded install, the ambiguity of silence, the run-id rule (reusing `w1` would find every row
 already done and do nothing), and the both-windows invocation of the metric script. It also records
 what window 1 already established, so tomorrow does not pay for it twice.
+
+## 2026-09-06 — RECOG-C1 step 10, prepared before it is convenient: the revert must be provable
+
+`scripts/dev/recog_c1_verify_revert.ps1` is written now, before the revert, because a check authored
+afterwards describes whatever the revert happened to produce. It compares `mobile/lib`,
+`mobile/pubspec.yaml` and `mobile/android` against **7eb4392** — the parent of `81d2237`, the commit
+that introduced the harness — using `git diff --name-status`, which compares blob hashes, so
+"byte-identical" is a measurement rather than a phrase.
+
+**Proved capable of failing**: run against the current, un-reverted tree it exits 1 and names 34
+problems. A verification that has never failed is not known to work.
+
+### The revert surface is exactly two files, and one file must NOT be touched
+
+`git diff --name-status 7eb4392..HEAD -- mobile/lib` is two lines: `recog_c1_harness.dart` added,
+`main.dart` modified (an import plus a nine-line `if (RecogC1Harness.kEnabled)` block). Nothing else
+in the shipped app changed across the whole gate.
+
+**`recog_c1_contract.dart` is not part of that surface and must survive.** The first version of this
+script searched `mobile/lib` for `recog_c1` and flagged the contract as a surviving reference — wrong,
+and the script was wrong, not the tree. The contract was committed two steps earlier (`7955dac`), it
+is present in the baseline, and five committed files import it, including the step-8 metric script.
+An over-broad revert that took it along would leave a tree that looks correctly cleaned while making
+every number in the measurement unreproducible. The check is now scoped to the harness's own symbols,
+and a POSITIVE assertion was added that the contract is still present — mutation-checked by pointing
+it at a non-existent path, which makes it fire.
+
+**One defect in my own check, found by running it**: the `-replace '/', '\'` in that new assertion
+lost its backslash to a heredoc, so the path was built without separators and the contract read as
+missing. Rewritten through the editor rather than a heredoc, which is the recorded rule for exactly
+this.
+
+### A dated landmine found in the window-2 preconditions
+
+Window 2 uses **26 entirely different images per arm** — `git`-checked against the frozen plan, the
+two windows share zero `image_id`. The device currently holds 26 per arm, window 1's. So
+`-Push -Window 2` is a real precondition, not the formality the runbook's wording implied.
+
+Worse: `-Push` reads the corpus from `$WorkDir`, which defaults to **this session's scratchpad**.
+Tomorrow's run will almost certainly be a different session with a different scratchpad path, and the
+push would throw `missing image directory` at 00:00Z with the quota window open and nothing to
+measure. Images for window 2 are therefore pushed today, while the corpus is still reachable, and the
+runbook is corrected to name the absolute corpus path.
+
+### Step 10 contains the gate's only operator-only action
+
+Removing `recog_c1_harness.dart` from the tree is a file deletion, which `~/.claude/CLAUDE.md` §20
+reserves to the operator regardless of any GPT-PM approval. It is recorded here rather than raised at
+00:00Z tomorrow: the exact command is
+`git rm mobile/lib/features/visual_equipment/measurement/recog_c1_harness.dart`, followed by
+restoring `main.dart` to its `7eb4392` blob `ab6f609911583ef0d358bdb98c629a8ff45f5bd7`. Nothing else
+in the plan needs the operator.
