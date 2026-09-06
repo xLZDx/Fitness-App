@@ -205,13 +205,28 @@ RecogC1Metrics computeMetrics({
     // ------------------------------------------------- the semantic axis
     final scores = <_Row, RecogC1SemanticScore>{};
     for (final r in reachedModel) {
-      final s = scoreObservation(
-        gtKind: _gtKind(r.gt['gt_kind']!, r.id),
-        responseClass: r.responseClass,
-        productionOutcome: r.productionOutcome,
-        topMatchesGt: r.topMatchesGt,
-        gtAmongCandidates: r.gtAmongCandidates,
-      );
+      // The contract has two fail-closed stops of its own -- a parsed reply
+      // with no production outcome, and an outcome from a layer this
+      // measurement sits above (`recog_c1_contract.dart:229-246`). Both are
+      // correct to throw and neither carries a row identifier, because the
+      // contract is a pure function and does not have one. Reaching the
+      // operator as "unexpected production outcome at the service boundary:
+      // ScanOutcome.timeout" with 104 rows in the file and no way to tell
+      // which one is a stop nobody can act on, so the identifier is added
+      // here, where it exists.
+      final RecogC1SemanticScore? s;
+      try {
+        s = scoreObservation(
+          gtKind: _gtKind(r.gt['gt_kind']!, r.id),
+          responseClass: r.responseClass,
+          productionOutcome: r.productionOutcome,
+          topMatchesGt: r.topMatchesGt,
+          gtAmongCandidates: r.gtAmongCandidates,
+        );
+      } on StateError catch (e) {
+        throw StateError('${e.message} (observation ${r.id}, image '
+            '${r.imageId}, arm ${r.arm})');
+      }
       if (s != null) scores[r] = s;
     }
 
@@ -262,6 +277,46 @@ RecogC1Metrics computeMetrics({
     final byPair = <String, List<_Row>>{};
     for (final r in resolved) {
       byPair.putIfAbsent(r.pairId, () => <_Row>[]).add(r);
+    }
+
+    // Two rows for the same (pair_id, arm) is a stop, and it is a stop for a
+    // reason that is not "it must be a mistake".
+    //
+    // `pair_id` is globally unique across the frozen plan -- p00..p25 in window
+    // 1, p26..p51 in window 2, zero overlap -- so the ordinary two-window
+    // baseline can never produce one. The one thing that can is a RETRY run,
+    // which the harness's own design anticipates: a retry gets a fresh run id
+    // and re-runs a WHOLE pair, so its rows carry different observation ids and
+    // sail past the id-uniqueness check above.
+    //
+    // The bug this replaces was silent and would have published a false number:
+    // the comparability gate read `{for (r in rows) r.arm: r}`, which is
+    // last-wins, while `correctIn` read the same list with `firstWhere`, which
+    // is first-wins. With two arm-A rows the pair could be certified comparable
+    // on the strength of one observation and then scored from the other.
+    //
+    // The fix is not to pick one. WHICH row a retry supersedes is a
+    // methodology decision the frozen contract does not make, and inventing it
+    // here -- silently, in the arithmetic -- is exactly what this instrument
+    // exists to prevent. So it stops and says so, and whoever runs a retry
+    // extends the contract deliberately.
+    for (final entry in byPair.entries) {
+      final byArm = <String, List<_Row>>{};
+      for (final r in entry.value) {
+        byArm.putIfAbsent(r.arm, () => <_Row>[]).add(r);
+      }
+      for (final arm in byArm.entries) {
+        if (arm.value.length > 1) {
+          final ids = arm.value.map((r) => r.id).toList()..sort();
+          throw StateError(
+            'pair ${entry.key} arm ${arm.key} has ${arm.value.length} scorable '
+            'observations (${ids.join(", ")}). That can only come from a retry '
+            'run, and which observation supersedes which is not part of the '
+            'frozen scoring contract -- this analysis will not choose one for '
+            'you.',
+          );
+        }
+      }
     }
 
     final comparable = <String, List<_Row>>{};
@@ -520,6 +575,42 @@ RecogC1GtKind _gtKind(String raw, String observationId) {
   return kind;
 }
 
+/// Reads the raw JSONL of one or more windows, in the order given.
+///
+/// Extracted from `main()` so it can be tested at all. It used to be four lines
+/// inline, which meant the ONE path guaranteed to be exercised for the first
+/// time when window 2 arrives -- two files, comma-separated -- had no test
+/// anywhere, in a suite whose entire purpose is that the real path is proved
+/// before it runs against real data. The same lesson as `gt_kind`: what the
+/// tests never touch is what breaks on contact.
+///
+/// A missing file is a stop, and it names the path. Silently skipping one would
+/// produce a half-length run that reads exactly like a run the abort valve cut
+/// short.
+List<String> readRawLines(
+  String commaSeparatedPaths, {
+  // Injectable so a test can drive the multi-file join without writing real
+  // files, and so "the second path is missing" is testable at all.
+  File Function(String path)? opener,
+}) {
+  final open = opener ?? File.new;
+  final lines = <String>[];
+  final paths = commaSeparatedPaths
+      .split(',')
+      .map((p) => p.trim())
+      .where((p) => p.isNotEmpty)
+      .toList();
+  if (paths.isEmpty) {
+    throw StateError('RECOG_C1_RAW named no files');
+  }
+  for (final path in paths) {
+    final f = open(path);
+    if (!f.existsSync()) throw StateError('no raw file at ${f.path}');
+    lines.addAll(const LineSplitter().convert(f.readAsStringSync()));
+  }
+  return lines;
+}
+
 void main() {
   // Required, not boilerplate: `EquipmentAliasIndex.load()` reads the alias
   // table through `rootBundle`, and without an initialised binding the whole
@@ -531,15 +622,8 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('compute the RECOG-C1 metrics', () async {
-    final rawLines = <String>[];
-    for (final path in _env('RECOG_C1_RAW').split(',')) {
-      final f = File(path.trim());
-      if (!f.existsSync()) throw StateError('no raw file at ${f.path}');
-      rawLines.addAll(const LineSplitter().convert(f.readAsStringSync()));
-    }
-
     final result = computeMetrics(
-      rawLines: rawLines,
+      rawLines: readRawLines(_env('RECOG_C1_RAW')),
       gtRows: readCsv(File(_env('RECOG_C1_GT'))),
       planRows: readCsv(File(_env('RECOG_C1_PLAN'))),
       index: await EquipmentAliasIndex.load(),

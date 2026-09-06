@@ -32,5 +32,13 @@ core/equipment_identity/p0/*.json text eol=lf
 # checkout thinks. Pinning -text makes raw bytes == normalised bytes on every
 # platform, so the manifest's hash is verifiable directly and a fresh clone
 # cannot produce a different file than the one that was frozen.
-core/plans/RECOG_C1_*.csv -text
+# Narrowed to the artifacts the freeze manifest actually identifies by hash,
+# plus the raw output. A wildcard over RECOG_C1_*.csv also caught the arm
+# manifest, the label sheet and the contact-sheet manifest -- none of which is
+# hash-tracked, and all of which would then have shown as "Binary files differ"
+# in review, since -text governs diffing as well as checkout. Losing a row-level
+# diff on three files, in a repo whose whole review discipline is reading
+# diffs, buys nothing here.
+core/plans/RECOG_C1_RUN_PLAN_2026-09-05.csv -text
+core/plans/RECOG_C1_GROUND_TRUTH_2026-09-05.csv -text
 core/plans/recog_c1_raw/*.jsonl -text

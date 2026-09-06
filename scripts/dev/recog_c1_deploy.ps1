@@ -27,6 +27,11 @@ param(
     [switch]$VerifyOnly,
     # Installs the measurement APK and PROVES it landed. See Install-Measured.
     [string]$Install,
+    # Checks that the device holds exactly what this window's rows require --
+    # every image, right bytes, and the frozen run plan -- without pushing
+    # anything. Separate from -Push so the check can be exercised, and usable
+    # on its own before a run to answer "did the earlier push actually land".
+    [switch]$VerifyDevice,
     [int]$Window = 1,
     [Parameter(Mandatory = $true)][string]$RunId,
     [string]$Serial,
@@ -135,6 +140,93 @@ if ($Serial) {
 }
 $adbArgs = @('-s', $Serial)
 
+# Every adb call goes through here, and that is the point.
+#
+# `$ErrorActionPreference = 'Stop'` does NOT make a native executable's non-zero
+# exit throw. That is precisely how an `adb install` reported success on
+# 2026-09-05 having installed nothing, and `Install-Measured` below was written
+# to close it -- for install only. Every `push`, `pull` and `shell` in this file
+# still discarded its exit code afterwards, which left the same hole one step
+# earlier in the pipeline: a run plan that never reaches the device makes the
+# harness print one line and return, and "one line and nothing else" is the same
+# silence the install incident produced.
+#
+# A wrapper rather than a check at each call site, because the sites that matter
+# are exactly the ones nobody remembers to check.
+function Invoke-Adb {
+    param(
+        [Parameter(Mandatory = $true)][string]$What,
+        [switch]$AllowFailure,
+        [Parameter(Mandatory = $true, ValueFromRemainingArguments = $true)]
+        [string[]]$Arguments
+    )
+    $out = & $adb @adbArgs @Arguments 2>&1
+    $code = $LASTEXITCODE
+    if (-not $AllowFailure -and $code -ne 0) {
+        throw "$What failed (adb exit $code): $($out -join ' ')"
+    }
+    return $out
+}
+
+# sha256 of a file ON THE DEVICE. The only way to know that what was pushed is
+# what arrived: `adb push` reporting a byte count describes what it sent, not
+# what landed.
+function Get-RemoteSha256([string]$RemotePath) {
+    $line = (Invoke-Adb -What "sha256sum $RemotePath" -- shell "sha256sum '$RemotePath'") -join ' '
+    if ($line -notmatch '^([0-9a-f]{64})\s') {
+        throw "could not read a sha256 for $RemotePath from the device (got: '$line')"
+    }
+    return $Matches[1]
+}
+
+# Proof that what the push SENT is what the device HOLDS.
+#
+# Everything here exists because a push that half-happened produced the same
+# output as one that succeeded: `adb push` printed a byte count, the script
+# printed "pushed to ...", and the first thing that would have noticed a missing
+# image is the harness reaching that row -- after a build, an install, and some
+# of the day's sixty calls already spent on the rows before it.
+#
+# A separate function, reachable through -VerifyDevice, so the check can be
+# exercised on its own. A verification that can only run as a side effect of the
+# thing it verifies cannot be shown to work.
+function Assert-DeviceMatchesPlan($Rows, [string]$AuthoritativePlanSha) {
+    # 1. the plan on the device is the frozen plan, byte for byte.
+    $remotePlanSha = Get-RemoteSha256 "$Remote/run_plan.csv"
+    if ($remotePlanSha -ne $AuthoritativePlanSha) {
+        throw "the run plan on the device does not match the committed manifest: device has $remotePlanSha, manifest says $AuthoritativePlanSha. A run started now would measure a plan nobody agreed to."
+    }
+
+    # 2. every image this window needs is present, with the right bytes.
+    #    Hashed ON THE DEVICE: a push's byte count describes what was sent.
+    $remoteHashes = @{}
+    foreach ($arm in @('A', 'B')) {
+        foreach ($line in (Invoke-Adb -What "hashing arm $arm images" -- shell "sha256sum $Remote/images/$arm/* 2>/dev/null")) {
+            if ($line -match '^([0-9a-f]{64})\s+(\S+)$') {
+                $remoteHashes["$arm/$([System.IO.Path]::GetFileName($Matches[2]))"] = $Matches[1]
+            }
+        }
+    }
+    $missing = 0
+    $wrong = 0
+    foreach ($r in $Rows) {
+        $key = "$($r.arm)/$($r.source_file)"
+        if (-not $remoteHashes.ContainsKey($key)) {
+            Write-Host "  MISSING on device: $key" -ForegroundColor Red
+            $missing++
+        }
+        elseif ($remoteHashes[$key] -ne $r.transformed_sha256) {
+            Write-Host "  WRONG BYTES on device: $key" -ForegroundColor Red
+            $wrong++
+        }
+    }
+    if ($missing -gt 0 -or $wrong -gt 0) {
+        throw "$missing image(s) missing and $wrong with the wrong bytes on the device, out of $($Rows.Count) this window needs. adb reported success for all of them."
+    }
+
+    Write-Host "device verified: $($Rows.Count) images match the plan's hashes, run plan matches the committed manifest ($remotePlanSha)"
+}
+
 # Installs the APK and then proves the device actually took it.
 #
 # `adb install` reporting success is not evidence that it installed. On
@@ -160,7 +252,7 @@ function Install-Measured([string]$ApkPath) {
     $code = $LASTEXITCODE
     $output | ForEach-Object { Write-Host "  $_" }
     if ($code -ne 0) {
-        throw "adb install failed with exit $code. INSTALL_FAILED_INSUFFICIENT_STORAGE means the device is full: rebuild with --target-platform android-arm64 rather than uninstalling anything, which is the operator's call and not this script's."
+        throw "adb install failed with exit $code. INSTALL_FAILED_INSUFFICIENT_STORAGE means the device is full: rebuild with --split-per-abi rather than uninstalling anything, which is the operator's call and not this script's. NOT --target-platform android-arm64: that was tried on 2026-09-06 and did not shrink the APK at all, because it governs only the Flutter engine's own libraries while the plugin native libraries come from Gradle -- unpacking showed all four ABIs still present."
     }
 
     $after = (& $adb @adbArgs shell "dumpsys package $Package | grep lastUpdateTime") -join ' '
@@ -168,6 +260,26 @@ function Install-Measured([string]$ApkPath) {
         throw "adb install reported success but the package manager's lastUpdateTime did not move ('$($before.Trim())' -> '$($after.Trim())'). The device is still running the previous build, and a measurement started now would silently be no measurement at all."
     }
     Write-Host "install verified: lastUpdateTime moved to $($after.Trim())"
+}
+
+if ($VerifyDevice) {
+    # The authoritative hash comes from the COMMITTED manifest, same as -Push.
+    # The dirty-tree stop is deliberately NOT applied here: nothing is being
+    # compiled, so there is no build whose provenance a dirty tree could
+    # misdescribe -- and requiring a clean tree would make this check
+    # unrunnable while anyone is editing the script that contains it.
+    $manifestJson = & git -C $repo show "HEAD:$manifestRel" 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $manifestJson) {
+        throw "$manifestRel is not in HEAD; there is no authoritative hash to check the device against"
+    }
+    $expectedPlanSha = ($manifestJson | ConvertFrom-Json).artifacts.$planRel.sha256_lf
+    if (-not $expectedPlanSha) { throw "no sha256_lf for $planRel in the committed manifest" }
+
+    $rows = Import-Csv $planSrc | Where-Object { [int]$_.window -eq $Window }
+    if (-not $rows) { throw "run plan has no rows for window $Window" }
+    Write-Host "window ${Window}: checking $($rows.Count) observations against the device"
+    Assert-DeviceMatchesPlan $rows $expectedPlanSha
+    exit 0
 }
 
 if ($Install) {
@@ -196,7 +308,7 @@ if ($Push) {
     if (-not $rows) { throw "run plan has no rows for window $Window" }
     Write-Host "window ${Window}: $($rows.Count) observations"
 
-    & $adb @adbArgs shell "mkdir -p $Remote/images/A $Remote/images/B" | Out-Null
+    Invoke-Adb -What 'creating the remote image directories' -- shell "mkdir -p $Remote/images/A $Remote/images/B" | Out-Null
 
     $staged = Join-Path ([System.IO.Path]::GetTempPath()) "recog_c1_$RunId"
     if (Test-Path $staged) { Remove-Item $staged -Recurse -Force }
@@ -220,13 +332,12 @@ if ($Push) {
     foreach ($arm in @('A', 'B')) {
         $local = Join-Path $staged $arm
         if ((Get-ChildItem $local -File).Count -eq 0) { continue }
-        & $adb @adbArgs push "$local\." "$Remote/images/$arm/" | Out-Null
+        Invoke-Adb -What "pushing arm $arm images" -- push "$local\." "$Remote/images/$arm/" | Out-Null
     }
-    & $adb @adbArgs push $planSrc "$Remote/run_plan.csv" | Out-Null
+    Invoke-Adb -What 'pushing the run plan' -- push $planSrc "$Remote/run_plan.csv" | Out-Null
     Remove-Item $staged -Recurse -Force
 
-    Write-Host "pushed to $Remote"
-    & $adb @adbArgs shell "ls $Remote/images/A | wc -l; ls $Remote/images/B | wc -l"
+    Assert-DeviceMatchesPlan $rows $authoritativePlanSha
 
     # Not recomputed from the pushed bytes: taken from the committed manifest,
     # which is the only value independent of the artifact being checked.
@@ -234,7 +345,7 @@ if ($Push) {
 
     Write-Host ""
     Write-Host "Now build and install the measurement APK:"
-    Write-Host "  flutter build apk --debug ``"
+    Write-Host "  flutter build apk --debug --split-per-abi ``"
     Write-Host "    --dart-define=RECOG_C1_HARNESS=true ``"
     Write-Host "    --dart-define=RECOG_C1_DIR=$Remote ``"
     Write-Host "    --dart-define=RECOG_C1_RUN_ID=$RunId ``"
@@ -252,10 +363,28 @@ if ($Pull) {
     if (-not $OutDir) { $OutDir = Join-Path $WorkDir 'raw' }
     New-Item -ItemType Directory -Force $OutDir | Out-Null
     $remoteFile = "$Remote/recog_c1_raw_$RunId.jsonl"
-    $exists = (& $adb @adbArgs shell "test -f $remoteFile && echo yes || echo no").Trim()
+    $exists = ((Invoke-Adb -What 'checking for the raw file' -- shell "test -f $remoteFile && echo yes || echo no") -join '').Trim()
     if ($exists -ne 'yes') { throw "no raw file on the device at $remoteFile" }
     $dest = Join-Path $OutDir "recog_c1_raw_$RunId.jsonl"
-    & $adb @adbArgs pull $remoteFile $dest | Out-Null
+
+    # Remove any earlier copy FIRST. `$dest` is deterministic per run id, so a
+    # pull that fails leaves the previous attempt's file sitting there, and the
+    # consistency check below -- which only compares the file against itself --
+    # would pass on it happily. A stale 48-observation file and a genuine
+    # 48-observation run that hit the abort valve print the same line.
+    if (Test-Path $dest) { Remove-Item $dest -Force }
+
+    $remoteSha = Get-RemoteSha256 $remoteFile
+    Invoke-Adb -What 'pulling the raw file' -- pull $remoteFile $dest | Out-Null
+    if (-not (Test-Path $dest)) { throw "adb pull reported success but $dest does not exist" }
+
+    # Compared against the DEVICE, not against itself. Internal consistency
+    # (52 observations, 52 markers) is a property a truncated file can also
+    # have.
+    $localSha = (Get-FileHash $dest -Algorithm SHA256).Hash.ToLower()
+    if ($localSha -ne $remoteSha) {
+        throw "the pulled file does not match the device: device $remoteSha, local $localSha. The transfer was incomplete or something else wrote to $dest."
+    }
     # Counted by record type, not by line. The file interleaves a write-ahead
     # `attempt_started` marker with each observation, so a line count reads
     # exactly double and would have reported window 1's 52 observations as 104
@@ -271,4 +400,4 @@ if ($Pull) {
     Write-Host "sha256: $((Get-FileHash $dest -Algorithm SHA256).Hash.ToLower())"
 }
 
-if (-not $Push -and -not $Pull) { throw "pass -Push or -Pull" }
+if (-not $Push -and -not $Pull) { throw "pass -Push, -Pull, -VerifyDevice, -VerifyOnly or -Install" }

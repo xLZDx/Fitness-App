@@ -287,13 +287,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 2ca2792</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 77633d1</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -401,16 +403,18 @@ reviewer, not after it by the implementer.</p>
       <td><span class="tag part">partial</span></td>
       <td><strong>Window 1 is closed:</strong> 52 observations, 52 markers, no attempt with an
       unknown outcome, one session, all 26 pairs intact, zero operational failures. The raw file is
-      committed. Tail: window 2, UTC day 09-07 — 52 + 52 does not fit a 60-call allowance.</td>
+      committed, and window 2's images are pushed and <strong>hash-verified on the device</strong>
+      (104 of 104). Tail: window 2, UTC day 09-07 — 52 + 52 does not fit a 60-call allowance.</td>
     </tr>
     <tr>
       <td class="step">8</td>
       <td>Compute the metrics with the committed script, joining on (image_id, arm) and applying the already-tested matrix.</td>
       <td>(f) The reconstruction assertion passes for every scored row that parsed; (h)(j) both failure rates appear under their frozen names with denominators; correctness uses resolved rows only.</td>
       <td><span class="tag part">partial</span></td>
-      <td>Written and committed <strong>before the numbers existed</strong>, and broken three times
-      by its first contact with the real file — see section 12. It now runs against window 1's data,
-      22 tests. Tail: the final numbers, after window 2.</td>
+      <td>Written and committed <strong>before the numbers existed</strong>, broken three times by
+      its first contact with the real file (section 12), and given three more MAJORs by the internal
+      review round (section 13). It now runs against window 1's data, 28 tests. Tail: the final
+      numbers, after window 2.</td>
     </tr>
     <tr>
       <td class="step">9</td>
@@ -827,7 +831,82 @@ and window 2 runs in UTC day 09-07. Nothing below is the result.</div>
 equipment in shot — as a measured rate rather than an impression. The two arms match on every count
 in window 1, so the viewfinder crop moved nothing here. Both statements wait on window 2 before they
 become claims.</p>
+<h2><span class="num">13</span>The internal review round: three MAJORs before GPT-PM sees any of it</h2>
+
+<div class="lede">Four specialists in parallel over <code>fc313e0..769f0c1</code>. Every citation was
+verified against the real files before it was accepted, and the remediation is <strong>one
+batch</strong>, not one finding per cycle.</div>
+
+<h3>A retry run could have published a false number</h3>
+
+<p>The comparability gate built <code>{for (r in rows) r.arm: r}</code> — a map literal, so
+<strong>last wins</strong> — while the correctness count read the same list with
+<code>firstWhere</code>, so <strong>first wins</strong>. With two scorable rows for one
+<code>(pair_id, arm)</code>, a pair could be certified comparable on the strength of one observation
+and then scored from another, silently, with the pair accounting still adding up — that invariant
+counts pairs, not rows within a pair.</p>
+
+<p>Reachable only through a retry: <code>pair_id</code> is globally unique across the frozen plan
+(p00–p25 in window 1, p26–p51 in window 2, zero overlap — checked, not assumed), so the ordinary
+two-window baseline cannot produce it. The harness's own documented retry design re-runs a whole pair
+under a fresh run id, whose rows carry different observation ids.</p>
+
+<p><strong>Not fixed by choosing a row.</strong> Which observation supersedes which is a methodology
+decision the frozen contract does not make, and making it silently inside the arithmetic is exactly
+what this instrument exists to prevent. It stops, names both ids, and says the contract does not cover
+the case.</p>
+
+<h3>The two-window join had no test, and it runs for the first time tomorrow</h3>
+
+<p>The comma-split of <code>RECOG_C1_RAW</code> lived inline in <code>main()</code>, so the one path
+guaranteed to be exercised for the first time against real data was the one path nothing could
+falsify — the same shape as this morning's <code>gt_kind</code> defect. Extracted as
+<code>readRawLines(...)</code> and covered: concatenation order, a missing second file naming its
+path, and an empty variable stopping instead of producing an empty measurement.</p>
+
+<h3>Every <code>adb push</code> and <code>adb pull</code> discarded its exit code</h3>
+
+<p><code>$ErrorActionPreference = 'Stop'</code> does not make a native executable throw on a non-zero
+exit — which is exactly how the 2026-09-05 install reported success having installed nothing. That was
+closed for install at the time; it stayed open on every push and pull, one step earlier in the
+pipeline.</p>
+
+<p>All adb calls now go through a wrapper that throws on a non-zero exit, and both transfers prove
+themselves:</p>
+
+<ul>
+  <li><strong>Push</strong> hashes every image <em>on the device</em> against the plan, and checks the
+  device's run plan against the committed manifest. A byte count from <code>adb push</code> describes
+  what was sent, not what arrived.</li>
+  <li><strong>Pull</strong> deletes any earlier copy first (a failed pull used to leave a stale file
+  that reads exactly like a legitimately short run), checks the exit code, and compares the pulled
+  bytes against a device-computed digest. Internal consistency — 52 observations against 52 markers —
+  is a property a truncated file also has.</li>
+</ul>
+
+<p><strong>Made testable, then tested.</strong> The verification is a separate
+<code>-VerifyDevice</code> switch: a check that only runs as a side effect of the thing it verifies
+cannot be shown to work. Proved end to end — appending one byte to a device-side image makes it name
+that file and stop, and restoring the file makes it pass again.</p>
+
+<h3>Minor, in the same batch</h3>
+
+<ul>
+  <li>The install failure message recommended <code>--target-platform android-arm64</code>, a flag
+  measured this morning to not shrink the APK at all. It now says <code>--split-per-abi</code> and
+  records why the other is not a substitute.</li>
+  <li><code>.gitattributes</code> matched five CSVs where the manifest hash-tracks two. Since
+  <code>-text</code> governs diffing as well as checkout, three files would have shown as "Binary
+  files differ" in review for no benefit. Narrowed.</li>
+  <li>The reviewer's open question — are the committed blobs really LF? — is settled by fact rather
+  than argument: <code>git show HEAD:… | sha256sum</code> returns exactly the manifest's hashes.</li>
+</ul>
+
+<p><strong>Verification:</strong> 86 tests green across the three RECOG-C1 suites, analyzer clean, and
+five mutations on the new guarantees all went red, with the file restored byte-identically.</p>
 </div>
+
+
 
 
 

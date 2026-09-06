@@ -33,11 +33,30 @@ Passes only when the working tree is clean AND the local run plan matches the ha
 `core/plans/RECOG_C1_FREEZE_MANIFEST.json` **as committed** (read via `git show HEAD:`, never from
 the working copy — a plan that hashes itself proves nothing).
 
-## 2. Push the images and the plan for window 2
+## 2. The images — already done, and here is how to confirm it
 
-    pwsh -NoProfile -Command "& scripts/dev/recog_c1_deploy.ps1 -Push -Window 2 -RunId w2"
+**Window 2 needs 26 entirely different images per arm.** Checked against the frozen plan: the two
+windows share zero `image_id`, and `pair_id` is globally unique (p00–p25 in window 1, p26–p51 in
+window 2). So this is a real step, not the formality an earlier draft of this file implied.
 
-Window 1's images are already on the device; the push is idempotent.
+**They were pushed and verified on 2026-09-06**, deliberately early, because `-Push` reads the corpus
+from `-WorkDir`, which defaults to the SESSION scratchpad that produced it:
+
+    D:\Temp\claude\d--Repo\5c302c91-31c2-4e5a-8695-d3eb4d063e24\scratchpad\recog_c1
+
+Tomorrow's session has a different scratchpad path, so a `-Push` run then would have thrown
+`missing image directory` at 00:00Z with the quota window open and nothing to measure. If a push IS
+needed again, pass that absolute path as `-WorkDir`.
+
+Confirm what the device holds, which costs nothing and takes seconds:
+
+    pwsh -NoProfile -Command "& scripts/dev/recog_c1_deploy.ps1 -VerifyDevice -Window 2 -RunId w2"
+
+It hashes every image **on the device** and compares against the plan's `transformed_sha256`, and
+checks the device's `run_plan.csv` against the committed freeze manifest. Expected output:
+`device verified: 52 images match the plan's hashes`. A byte count from `adb push` describes what was
+sent; this describes what arrived. Proved capable of failing: corrupting one device-side image by a
+single byte makes it name that file and stop.
 
 ## 3. Build
 
@@ -91,6 +110,12 @@ outcome nobody knows — it is never absorbed into a total. Copy the file to
 `core/plans/recog_c1_raw/recog_c1_raw_w2.jsonl` and commit it.
 
 Expected: 52 observations, 52 markers, 0 orphaned.
+
+The pull now proves itself rather than asking you to eyeball it: any earlier copy at the destination
+is deleted first (so a failed pull cannot resurrect a stale file that reads as a short run), the
+transfer's exit code is checked, and the pulled bytes are compared against a digest computed **on the
+device**. Internal consistency — 52 observations against 52 markers — is a property a truncated file
+also has, so it was never sufficient on its own.
 
 ## 7. Compute the baseline — both windows together
 

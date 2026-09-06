@@ -12,6 +12,7 @@
 // of the rules.
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
@@ -75,6 +76,27 @@ String obs(
             {'equipment_id': 'treadmill', 'confidence': 0.91},
           ],
     });
+
+/// A file that exists only as a string, so the multi-file join can be tested
+/// without touching the disk. `null` content means the file is absent.
+class _FakeFile implements File {
+  _FakeFile(this._path, this._content);
+  final String _path;
+  final String? _content;
+
+  @override
+  String get path => _path;
+
+  @override
+  bool existsSync() => _content != null;
+
+  @override
+  String readAsStringSync({Encoding encoding = utf8}) => _content!;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw UnsupportedError('_FakeFile only supports existsSync/readAsString');
+}
 
 void main() {
   late EquipmentAliasIndex index;
@@ -345,6 +367,99 @@ void main() {
       expect(m.notComparable.keys, containsAll(<String>['p01', 'p02']));
       expect(m.comparablePairs.length + m.notComparable.length, 3,
           reason: 'three pairs were observed, three must be reported');
+    });
+  });
+
+  group('the two-window join, which runs for the first time tomorrow', () {
+    // This path had no test at all until it was pointed out: `main()` split
+    // RECOG_C1_RAW on commas inline, so the one thing guaranteed to be
+    // exercised for the first time against real data was the one thing nothing
+    // could falsify. Exactly the shape of the gt_kind defect.
+    test('two files are concatenated in the order given', () {
+      final files = <String, String>{
+        'w1.jsonl': 'a\nb',
+        'w2.jsonl': 'c\nd',
+      };
+      final lines = readRawLines(
+        ' w1.jsonl , w2.jsonl ',
+        opener: (p) => _FakeFile(p, files[p]),
+      );
+      expect(lines, ['a', 'b', 'c', 'd'],
+          reason: 'order matters: it decides which duplicate is seen first');
+    });
+
+    test('a missing second file is a stop that names the path', () {
+      // Silently skipping it would produce a 52-row file where 104 were
+      // expected, which reads exactly like a run the abort valve cut short.
+      expect(
+        () => readRawLines(
+          'w1.jsonl,w2.jsonl',
+          opener: (p) => _FakeFile(p, p == 'w1.jsonl' ? 'a' : null),
+        ),
+        throwsA(isA<StateError>()
+            .having((e) => '$e', 'message', contains('w2.jsonl'))),
+      );
+    });
+
+    test('an empty RECOG_C1_RAW is a stop, not an empty measurement', () {
+      expect(
+        () => readRawLines('  ', opener: (p) => _FakeFile(p, '')),
+        throwsA(isA<StateError>()
+            .having((e) => '$e', 'message', contains('named no files'))),
+      );
+    });
+
+    test('the same pair and arm twice is a stop, not a silent choice', () {
+      // Only a retry run can produce this: pair_id is globally unique across
+      // the frozen plan, so the ordinary two-window baseline cannot. Before
+      // this stop existed, the comparability gate read the LAST such row and
+      // the correctness count read the FIRST, so a pair could be certified
+      // comparable on one observation and scored from another.
+      expect(
+        () => run(
+          [
+            obs('i1', 'A', observationId: 'w1-p00-A-1'),
+            obs('i1', 'B', observationId: 'w1-p00-B-1'),
+            obs('i1', 'A', observationId: 'retry-p00-A-1'),
+          ],
+          [gt('i1', 'A'), gt('i1', 'B')],
+        ),
+        throwsA(isA<StateError>()
+            .having((e) => '$e', 'message', contains('retry'))
+            .having((e) => '$e', 'message', contains('w1-p00-A-1'))
+            .having((e) => '$e', 'message', contains('retry-p00-A-1'))),
+      );
+    });
+  });
+
+  group('a contract stop must say which row caused it', () {
+    test('an out-of-range production outcome names the observation', () {
+      // The frozen contract throws for an outcome from a layer this
+      // measurement sits above. It is a pure function with no row identifier,
+      // so "unexpected production outcome: ScanOutcome.timeout" reaches the
+      // operator with 104 rows and no way to tell which. The identifier is
+      // added where it exists.
+      expect(
+        () => run(
+          [obs('i1', 'A', productionOutcome: 'timeout')],
+          [gt('i1', 'A')],
+        ),
+        throwsA(isA<StateError>()
+            .having((e) => '$e', 'message', contains('unexpected production'))
+            .having((e) => '$e', 'message', contains('w1-p00-A-1'))),
+      );
+    });
+
+    test('a parsed reply with no production outcome names the observation', () {
+      expect(
+        () => run(
+          [obs('i1', 'A', productionOutcome: null)],
+          [gt('i1', 'A')],
+        ),
+        throwsA(isA<StateError>()
+            .having((e) => '$e', 'message', contains('production outcome'))
+            .having((e) => '$e', 'message', contains('w1-p00-A-1'))),
+      );
     });
   });
 

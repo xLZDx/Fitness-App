@@ -44242,3 +44242,88 @@ reserves to the operator regardless of any GPT-PM approval. It is recorded here 
 `git rm mobile/lib/features/visual_equipment/measurement/recog_c1_harness.dart`, followed by
 restoring `main.dart` to its `7eb4392` blob `ab6f609911583ef0d358bdb98c629a8ff45f5bd7`. Nothing else
 in the plan needs the operator.
+
+## 2026-09-06 — RECOG-C1: the internal review round §17 requires, run before GPT-PM sees any of it
+
+Four specialists in parallel over `fc313e0..769f0c1` — functional-test-reviewer, code-reviewer,
+silent-failure-hunter, comment-analyzer. Every citation below was verified against the real files
+before it was accepted; the remediation is one batch, not one finding per cycle.
+
+### MAJOR — a retry run could have published a false crop-effect number
+
+`code-reviewer`, verified. The comparability gate built `{for (r in rows) r.arm: r}`, a map literal,
+which is **last-wins**; `correctIn` read the same undeduplicated list with `firstWhere`, which is
+**first-wins**. With two scorable rows for one `(pair_id, arm)`, a pair could be certified comparable
+on the strength of one observation and then scored from a different one — silently, with the pair
+accounting still adding up, because that invariant counts pairs and not rows within a pair.
+
+Reachable only through a retry run: `pair_id` is globally unique across the frozen plan (p00–p25 in
+window 1, p26–p51 in window 2, zero overlap — checked, not assumed), so the ordinary two-window
+baseline cannot produce it, but the harness's own documented retry design re-runs a WHOLE pair under
+a fresh run id, whose rows carry different observation ids and pass the id-uniqueness check.
+
+**Not fixed by choosing a row.** Which observation supersedes which is a methodology decision the
+frozen contract does not make, and making it silently inside the arithmetic is the exact failure this
+instrument exists to prevent. It stops, names both observation ids, and says the contract does not
+cover it.
+
+### MAJOR — the two-window join had no test, and runs for the first time tomorrow
+
+`functional-test-reviewer`, verified. The comma-split of `RECOG_C1_RAW` lived inline in `main()`, so
+the one path guaranteed to be exercised for the first time against real data was the one path nothing
+could falsify — the same shape as the `gt_kind` defect found this morning. Extracted as
+`readRawLines(...)` with an injectable opener, and tested: order of concatenation, a missing second
+file naming its path, and an empty variable stopping instead of producing an empty measurement.
+
+### MAJOR — every `adb push` and `adb pull` discarded its exit code
+
+`silent-failure-hunter`, verified at `recog_c1_deploy.ps1` lines 199/223/225/229/258.
+`$ErrorActionPreference = 'Stop'` does not make a native executable's non-zero exit throw — which is
+exactly how the 2026-09-05 install reported success having installed nothing. `Install-Measured` was
+written to close that for install; the same hole was still open one step earlier, on every push and
+pull in the file.
+
+Now every adb call goes through `Invoke-Adb`, which throws on a non-zero exit. A wrapper rather than a
+check at each site, because the sites that matter are the ones nobody remembers to check.
+
+Beyond exit codes, both transfers now prove themselves:
+
+- **Push** — `Assert-DeviceMatchesPlan` hashes every image **on the device** with `sha256sum` and
+  compares against the plan's `transformed_sha256`, and checks the device's `run_plan.csv` against the
+  committed freeze manifest. A push's byte count describes what was sent, not what arrived.
+- **Pull** — any earlier copy at the destination is deleted first (a failed pull used to leave a stale
+  file that reads exactly like a legitimately short run), the exit code is checked, and the pulled
+  bytes are compared against a device-computed digest. Internal consistency — 52 observations against
+  52 markers — is a property a truncated file also has.
+
+**Made testable, then tested.** The verification is a separate `-VerifyDevice` switch rather than a
+side effect of `-Push`, because a check that only runs as part of the thing it verifies cannot be
+shown to work — and `-Push` refuses on a dirty tree, so it could not be exercised while its own script
+was being edited. Proved end to end: appending one byte to a device-side image makes it name that file
+and stop; restoring the file makes it pass again.
+
+### MINOR, fixed in the same batch
+
+- The install failure message recommended `--target-platform android-arm64` (`comment-analyzer`,
+  verified) — a flag measured this morning to not shrink the APK at all. It now says `--split-per-abi`
+  and records why the other one is not a substitute. The printed build instruction gained the flag too.
+- `.gitattributes` matched `core/plans/RECOG_C1_*.csv` (`code-reviewer`, verified), five files, while
+  the freeze manifest hash-tracks two. `-text` governs diffing as well as checkout, so three files
+  would have shown as "Binary files differ" in review for no provenance benefit. Narrowed to the two
+  tracked artifacts plus the raw JSONL.
+- The runbook's "window 1's images are already on the device; the push is idempotent" understated a
+  real precondition and is rewritten.
+
+### Settled rather than left open
+
+`code-reviewer` flagged as UNKNOWN whether the committed blobs are genuinely LF, noting correctly that
+an already-LF working copy proves nothing about a fresh clone. Settled by reading the blobs:
+`git show HEAD:<path> | sha256sum` returns `4f4ef743…` and `2e631f5c…`, matching the freeze manifest's
+`sha256_lf` exactly for both artifacts. FACT, not inference.
+
+### Verification
+
+86 tests green across all three RECOG-C1 suites (28 metrics, 35 harness, 23 contract), analyzer clean.
+Five mutations on the new guarantees — the duplicate-pair stop, the row identifier on a contract stop,
+the missing-file stop, the empty-variable stop, and file order — all five went red, and the file
+restored byte-identically afterwards.
