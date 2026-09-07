@@ -287,13 +287,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 5a9b91e</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ bad2836</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -389,7 +391,7 @@ reviewer, not after it by the implementer.</p>
       <td>Commit the measurement harness: a debug-only seam driving the production service directly, recording the exact bytes, the raw reply and the production outcome.</td>
       <td>(e) Every scored row carries run_id, attempt_no, pair_id, the sha256 of the bytes sent, the raw reply, resolved ids, its class, and either the production outcome or the captured parser exception. Plus the plan's own requirement: a <strong>server correlation id</strong>.</td>
       <td><span class="tag part">partial</span></td>
-      <td><strong>The tail is exactly one item, and it is impossible rather than deferred.</strong> No server correlation id exists: the callable returns <code>{ text }</code> and nothing else (<code>functions/src/ai_equipment_recognition.ts:165</code>). Every row carries <code>server_correlation_id: null</code> plus the reason, and records instead a client observation id, exact UTC start and end, the callable name and region, and on a failure the <code>FirebaseFunctionsException</code> code, message and details verbatim. This is also a real observability gap in the product itself: nothing today links a client-side failure to a server log line. Raised for the backlog rather than quietly re-scoped. Everything else in (e) is done, commit <code>81d2237</code>, GPT-PM verdict APPROVE.</td>
+      <td><strong>The tail is exactly one item; it is closed after the fact, but it was not closed in time.</strong> I wrote &laquo;impossible&raquo; here and that was <strong>wrong</strong>: the id was recoverable from the server logs, see section 18. What is true is only that the harness could not record one. No server correlation id exists in the reply: the callable returns <code>{ text }</code> and nothing else (<code>functions/src/ai_equipment_recognition.ts:165</code>). Every row carries <code>server_correlation_id: null</code> plus the reason, and records instead a client observation id, exact UTC start and end, the callable name and region, and on a failure the <code>FirebaseFunctionsException</code> code, message and details verbatim. This is also a real observability gap in the product itself: nothing today links a client-side failure to a server log line. Raised for the backlog rather than quietly re-scoped. Everything else in (e) is done, commit <code>81d2237</code>, GPT-PM verdict APPROVE.</td>
     </tr>
     <tr>
       <td class="step">6</td>
@@ -1136,7 +1138,130 @@ objects from history. One decision, three answers, all of them the operator's:</
 9's evidence contract promises: hashes prove integrity and remove remote visual inspectability. If
 that is the choice, the contract should be amended explicitly rather than declared equivalent.</p>
 
+
+<h2><span class="num">18</span>The server correlation id: 104 of 104, recovered after the fact</h2>
+
+<div class="lede warn">The closure review returned a <strong>BLOCKER</strong> on verification (e), and
+it was right. The clause requires every scored row to <em>carry</em> a server correlation id, and
+states the sanction in the same sentence: <em>a row missing any of those is not scored and the count
+is reported</em>. All 104 rows were scored carrying <code>server_correlation_id: null</code>, and the
+sanction was never applied.</div>
+
+<h3>The correction first, because the error is mine</h3>
+
+<p>In the plan table above I wrote that this tail was <strong>impossible</strong>. That is wrong.
+What was impossible was recording the id <em>at the moment of the call</em>: the callable returns
+<code>{ text }</code> and nothing else, so the client had nothing to write down. But the id existed
+on the server the whole time — in the Cloud Run request log — and recovering it turned out to be
+possible without re-running a single model call. I made the &laquo;impossible&raquo; claim without
+checking the server side.</p>
+
+<h3>What was recovered</h3>
+
+<p><a href="core/plans/RECOG_C1_SERVER_CORRELATION_2026-09-07.json">core/plans/RECOG_C1_SERVER_CORRELATION_2026-09-07.json</a>
+gives all 104 observations a Cloud Trace id. It rebuilds byte-for-byte from
+<a href="scripts/dev/recog_c1_build_correlation.py">scripts/dev/recog_c1_build_correlation.py</a>
+over the two raw files plus the request-log extract
+<a href="core/plans/recog_c1_raw/recog_c1_server_requests_2026-09-06_07.json">core/plans/recog_c1_raw/recog_c1_server_requests_2026-09-06_07.json</a>.
+Tested the only way that means anything: the manifest was deleted and rebuilt from the in-repo
+script, and the sha256 came back identical.</p>
+
+<h3>Why this is evidence rather than a plausible-looking join</h3>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>What is checked</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Segmentation touches no timestamp at all.</strong> The log holds 110
+    request-level entries: exactly 104 with status 200 and 6 with 401. The 104 are the completed
+    calls, the 6 the refusals of the two aborted attempts.</td><td><span class="tag done">104 + 6 = 110</span></td></tr>
+    <tr><td><strong>Exhaustiveness.</strong> Every one of the 104 served requests falls inside
+    exactly one run window — none outside both, none in two. So &laquo;52 and 52&raquo; cannot have
+    matched by one real call being missed and one stranger let in.</td><td><span class="tag done">0 / 0 / 0</span></td></tr>
+    <tr><td><strong>Purity.</strong> No 401 falls inside a scored window: they sit three at 08:32 and
+    three at 09:11, which are precisely the two aborted attempts, both finished before window 2 began
+    at 09:49.</td><td><span class="tag done">0 inside</span></td></tr>
+    <tr><td><strong>One constant against 52 constraints.</strong> Is there <em>one</em> constant clock
+    offset per run under which <em>every</em> server request lands inside its own paired client
+    interval? One unknown, 52 simultaneous conditions — the problem is allowed to have no
+    solution.</td><td><span class="tag done">window 1: [−5.686, −4.029] s<br>window 2: [−5.490, −3.830] s</span></td></tr>
+    <tr><td><strong>Local uniqueness.</strong> Under that offset no server request lands inside any
+    <em>other</em> observation's interval. The boundary of the claim matters: this rules out other
+    windows <em>at the derived offset</em>, and the shift test rules out near reorderings. All 52!
+    permutations were not enumerated, so a distant reordering paired with some different offset is
+    not exhaustively excluded.</td>
+    <td><span class="tag done">0 ambiguous</span></td></tr>
+    <tr><td><strong>The test can reject.</strong> The same criterion on pairings shifted −3…+3: all
+    twelve are infeasible. The narrowest rejection is window 2 at shift +1, where the interval is
+    empty by only <strong>0.649 s</strong>; the other eleven fail by 6 to 40 s. Reported by the
+    narrowest margin, not the most flattering one.</td>
+    <td><span class="tag done">12 of 12 rejected</span></td></tr>
+    <tr><td><strong>The guards are mutation-tested</strong>
+    (<a href="scripts/dev/recog_c1_build_correlation.tests.py">scripts/dev/recog_c1_build_correlation.tests.py</a>),
+    and the test had to be strengthened before it proved anything: its first version asserted only
+    &laquo;no manifest appeared&raquo;, which a script crashing on its first line also satisfies. Each
+    case now requires the named guard to print <em>its own</em> marker, no other guard's marker to
+    appear, the exit code to be non-zero and stderr to be empty. Plus a case that swaps in a stub
+    exiting immediately with 1: against it <em>every</em> other case must fail.</td>
+    <td><span class="tag done">6 of 6</span></td></tr>
+  </tbody>
+</table>
 </div>
+
+<h3>The internal review round: four findings, all real</h3>
+
+<p>Three specialists read the script and the test <strong>before</strong> any of it went to GPT-PM.
+Not one finding turned out to be spurious:</p>
+
+<ol>
+  <li><strong>BLOCKER: the script exited 0 when it REFUSED.</strong> The precondition block exited 1,
+  but every later rejection — count mismatch, empty interval, an accepted shift, failed containment —
+  printed its refusal and terminated successfully. A wrapper trusting the return code would have read
+  a rejected correlation as a passing step. Every path that writes no manifest now exits 1.</li>
+  <li><strong>MAJOR: the mutation test could not tell a fired guard from a crash.</strong> Fixed
+  above.</li>
+  <li><strong>MAJOR: &laquo;no alternative pairing exists&raquo; claimed more than was tested.</strong>
+  Narrowed everywhere — in the script, in the manifest (a <code>what_is_not_claimed</code> field), in
+  the decision log and in the table above.</li>
+  <li><strong>MINOR: a duplicate <code>observation_id</code> would have been silently
+  overwritten</strong>, quietly correlating 103 observations while reporting 104. There is now a
+  guard that names the colliding id, and a mutation proving it fires.</li>
+</ol>
+
+<p>Every refusal path also gained a stable marker (<code>FAIL-PURITY</code>,
+<code>FAIL-FEASIBILITY</code>, and so on) so the test can assert <em>which</em> guard fired rather
+than merely that something did. Two of the four findings were about my evidence being weaker than my
+description of it — precisely the failure this gate has hit before, and the reason the reviewers run
+before GPT-PM rather than after.</p>
+
+<h3>Three formulations that failed before this one</h3>
+
+<p>The first joined on raw timestamps and could not work: the device clock runs 4–5 s ahead. The
+second estimated the offset as a median and tested residuals — it rejected <code>w1-p07-A-1</code>,
+where the pairing was in fact correct and the server had simply received the request 4.3 s after the
+call began, still inside the client's own interval; that test was measuring the wrong quantity. The
+third took the earliest log line per trace, which on a cold start is an instance-startup line rather
+than the request. Each was rejected by its own stated criterion rather than loosened until it passed,
+which is the only reason the fourth is worth anything.</p>
+
+<h3>What this repairs and what it does not</h3>
+
+<div class="lede bad">Every scored row now has a unique server-side identity and the one-to-one join
+is mechanically proved. But the id is <strong>recovered after the fact, not recorded by the
+harness</strong> — weaker than what (e) literally asks, and no reconstruction changes the order in
+which things happened: the rows were scored when no id existed for them. <strong>This gate was not
+executed exactly as frozen</strong>, and must not be described as if it were. No number, inference or
+metric changed because of the manifest: it is evidence about the run, never an input to it.</div>
+
+<p>The durable fix belongs to the callable, not to a script: <code>aiEquipmentRecognition</code>
+should return its own request id alongside <code>text</code>, so the next measurement records the
+correlation at the moment of the call instead of reconstructing it afterwards. That also closes a
+real observability gap in the product: nothing today links a client-side failure to a server log
+line. Recorded as the next step; not done in this gate, which is measurement-only.</p>
+
+</div>
+
+
 
 
 

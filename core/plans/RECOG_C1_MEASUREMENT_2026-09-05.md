@@ -54,3 +54,81 @@ Comparable pairs: **49**. Not comparable: **3** — each named below, because a 
 - The corpus holds **0** out-of-catalogue single machines and **0** frames with no equipment, so it cannot measure whether the model overclaims on a machine it was never told about, nor whether it abstains honestly on an empty frame. Two of the most important properties are simply not covered.
 - Three photographs are frozen `unresolved` and enter no correctness number in either direction.
 - Both arms were labelled by one person in one sitting, each from its own images. Per-arm structure makes a genuine divergence visible; it does not make the judgement independent.
+
+## Protocol deviation: the server correlation id
+
+Rev7 verification (e) requires every scored row to carry, among other fields, **a server
+correlation id**, and states the sanction plainly: *a row missing any of those is not scored and
+the count is reported.*
+
+**All 104 rows were scored while carrying `server_correlation_id: null`, and the sanction was not
+applied.** The cause is structural rather than an oversight in the run: `aiEquipmentRecognition`
+returns `{ text }` and nothing else, so no server-side identifier ever reaches the client, and the
+harness had nothing to record. The clause was frozen before the work and was unsatisfiable by the
+harness from the moment it was written — which is exactly the kind of thing stating verification up
+front is supposed to catch, and did not.
+
+A correlation id has since been recovered for every one of the 104 observations, from immutable
+server-side evidence, **without re-running a single model call**:
+[core/plans/RECOG_C1_SERVER_CORRELATION_2026-09-07.json](core/plans/RECOG_C1_SERVER_CORRELATION_2026-09-07.json),
+rebuilt byte-for-byte by
+[scripts/dev/recog_c1_build_correlation.py](scripts/dev/recog_c1_build_correlation.py) from
+[core/plans/recog_c1_raw/recog_c1_server_requests_2026-09-06_07.json](core/plans/recog_c1_raw/recog_c1_server_requests_2026-09-06_07.json)
+and the two raw files.
+
+How it is established, and why it is more than a plausible-looking join:
+
+- **Segmentation uses no timestamp at all.** The Cloud Run request log holds 110 request-level
+  entries across the two days — exactly **104 with status 200 and 6 with 401**. The 104 are the
+  completed calls; the 6 are the refusals of the two aborted App Check attempts, which are
+  preserved separately as evidence.
+- **Ordinal pairing inside each run.** One device, one call at a time, each awaited before the
+  next: both sequences are totally ordered with no interleaving, so client call *k* is server
+  request *k* once the counts agree.
+- **That identification is then tested, not assumed.** Does *one* constant clock offset per run
+  place *every* server request inside its own paired client `[utc_start, utc_end]` window? One
+  unknown against 52 simultaneous constraints, so it can fail. It does not: the feasible interval
+  is `[-5.686s, -4.029s]` for window 1 and `[-5.490s, -3.830s]` for window 2.
+- **No alternative pairing survives the checks that were run** — and the boundary of that claim
+  matters. Under the derived offset, no server request falls inside any other observation's window
+  (0 ambiguous pairings in both runs), and every positional shift of −3…+3 is infeasible. What this
+  does **not** do is enumerate all 52! permutations: a distant reordering paired with some different
+  offset is not exhaustively excluded. For strictly sequential, non-overlapping calls on one device
+  that is strong evidence — but it is evidence, and an earlier draft of this section overstated it
+  as a proof that no alternative pairing exists at all. A reviewer caught that; it is corrected
+  here rather than left standing.
+- **The test can reject a wrong answer.** Re-run on pairings shifted by −3…+3 positions, every one
+  of the twelve is infeasible. The narrowest rejection is window 2 at shift +1, whose interval is
+  empty by only **0.649s**; the other eleven fail by 6s to 40s. A test that accepted a shifted
+  pairing would prove nothing, and this one is stated with its narrowest margin rather than its
+  most flattering.
+
+- **The 52+52 split is exhaustive, not a lucky count.** Every one of the 104 served requests falls
+  inside exactly one run window, none inside both, and none outside both — so the counts cannot
+  have matched by one real call being missed and one stranger let in. And none of the six 401s
+  falls inside a scored window: they sit three at 08:32 and three at 09:11 on 2026-09-07, which
+  are precisely the two aborted three-observation attempts, both finishing before window 2 began
+  at 09:49.
+- **The guards are mutation-tested**, by
+  [scripts/dev/recog_c1_build_correlation.tests.py](scripts/dev/recog_c1_build_correlation.tests.py),
+  and the test had to be strengthened before it proved anything. Its first version asserted only
+  that no manifest appeared — so a script crashing on its first line would have printed PASS while
+  naming guards that never ran. Two reviewers found that independently. Each case now asserts that
+  the named guard printed **its own marker**, that no other guard's marker appears, that the exit
+  code is non-zero, and that stderr is empty, so a traceback can no longer pass for a deliberate
+  refusal. Five mutations — a 401 planted inside a run, a served request moved outside both runs, a
+  request displaced inside its own run, an observation id duplicated across the two runs, and an
+  unmutated control — plus a sixth case that swaps in a stub exiting immediately and requires
+  **every** other case to fail against it. 6/6.
+
+**What this does and does not repair.** Every scored row now has a unique, immutable server-side
+identity, and the join is mechanically proved one-to-one. But the id is **recovered after the fact,
+not recorded by the harness** — which is weaker than what rev7 literally asks for, and no
+reconstruction can change the order in which things happened: the rows were scored when no id
+existed for them. **This gate was therefore not executed exactly as frozen.** No inference, score
+or headline number in this document changed as a result of the manifest; it is evidence about the
+run, not an input to it.
+
+The durable fix belongs to the callable, not to a script: `aiEquipmentRecognition` should return
+its own request id alongside `text`, so a future measurement records the correlation at the moment
+of the call instead of reconstructing it afterwards.

@@ -1,0 +1,772 @@
+[
+ {
+  "timestamp": "2026-09-06T00:01:08.649313Z",
+  "trace": "projects/fitness-app-korostelev/traces/bcd49a4805add228f3fd825f08b6dd06",
+  "insertId": "6a9cad4a000278cb1c5f12d2",
+  "status": 200,
+  "latency": "5.264598040s"
+ },
+ {
+  "timestamp": "2026-09-06T00:01:18.737321Z",
+  "trace": "projects/fitness-app-korostelev/traces/8716485bec45a16e1b9bee0e7a21ce8a",
+  "insertId": "6a9cad500000ed80d1afc557",
+  "status": 200,
+  "latency": "1.321301969s"
+ },
+ {
+  "timestamp": "2026-09-06T00:01:24.413154Z",
+  "trace": "projects/fitness-app-korostelev/traces/3f9dcd8506744e072ff4e13e09f35a8e",
+  "insertId": "6a9cad55000af8da7281f222",
+  "status": 200,
+  "latency": "1.303739488s"
+ },
+ {
+  "timestamp": "2026-09-06T00:01:30.761719Z",
+  "trace": "projects/fitness-app-korostelev/traces/27e9563a7a0375ca8bf0a64f0fb7593b",
+  "insertId": "6a9cad5c0007bd210191de26",
+  "status": 200,
+  "latency": "1.742763818s"
+ },
+ {
+  "timestamp": "2026-09-06T00:01:39.776543Z",
+  "trace": "projects/fitness-app-korostelev/traces/a82a67dc625f33edde6f85ea268e3afe",
+  "insertId": "6a9cad650004e793bf38d71c",
+  "status": 200,
+  "latency": "1.542713503s"
+ },
+ {
+  "timestamp": "2026-09-06T00:01:47.554321Z",
+  "trace": "projects/fitness-app-korostelev/traces/8a8d597666615085fd4f0fcb45780ac5",
+  "insertId": "6a9cad6d0000c19c62400461",
+  "status": 200,
+  "latency": "1.491466965s"
+ },
+ {
+  "timestamp": "2026-09-06T00:01:55.222787Z",
+  "trace": "projects/fitness-app-korostelev/traces/e29da60262862c3cac7662e5dded2204",
+  "insertId": "6a9cad7c0005bd8654d72f4c",
+  "status": 200,
+  "latency": "9.150955399s"
+ },
+ {
+  "timestamp": "2026-09-06T00:02:12.503820Z",
+  "trace": "projects/fitness-app-korostelev/traces/71a41a8fe8a3ea69f7e8159004a5573f",
+  "insertId": "6a9cad85000e49f7f59183da",
+  "status": 200,
+  "latency": "1.429230051s"
+ },
+ {
+  "timestamp": "2026-09-06T00:02:21.430985Z",
+  "trace": "projects/fitness-app-korostelev/traces/2159e12e0ae8cc6aa53afab068ea5718",
+  "insertId": "6a9cad8f000a3810534b17c4",
+  "status": 200,
+  "latency": "2.236266850s"
+ },
+ {
+  "timestamp": "2026-09-06T00:02:29.343262Z",
+  "trace": "projects/fitness-app-korostelev/traces/d8f0206de2f39fee78ea12dae1deeb65",
+  "insertId": "6a9cad96000f2133072e0235",
+  "status": 200,
+  "latency": "1.645064538s"
+ },
+ {
+  "timestamp": "2026-09-06T00:02:36.448732Z",
+  "trace": "projects/fitness-app-korostelev/traces/a0eb6cce579eb477b06bf2fb2134b841",
+  "insertId": "6a9cada4000231d1b51779f7",
+  "status": 200,
+  "latency": "7.692651042s"
+ },
+ {
+  "timestamp": "2026-09-06T00:02:51.939397Z",
+  "trace": "projects/fitness-app-korostelev/traces/c6705deb09815d9cddb2810ed32fd48c",
+  "insertId": "6a9cadae0002f115d9f76691",
+  "status": 200,
+  "latency": "2.251193849s"
+ },
+ {
+  "timestamp": "2026-09-06T00:03:01.833433Z",
+  "trace": "projects/fitness-app-korostelev/traces/c895165594534a896990872728a55fe1",
+  "insertId": "6a9cadb70004949cf39a6b17",
+  "status": 200,
+  "latency": "1.464365616s"
+ },
+ {
+  "timestamp": "2026-09-06T00:03:08.802789Z",
+  "trace": "projects/fitness-app-korostelev/traces/be57d642d57cb2d9a9bc389609c02387",
+  "insertId": "6a9cadc50006011cec2ae577",
+  "status": 200,
+  "latency": "8.586989748s"
+ },
+ {
+  "timestamp": "2026-09-06T00:03:23.221087Z",
+  "trace": "projects/fitness-app-korostelev/traces/cf150c2d35fb8e760019877533424730",
+  "insertId": "6a9cadcc0009c6df65fbc3e4",
+  "status": 200,
+  "latency": "1.416867503s"
+ },
+ {
+  "timestamp": "2026-09-06T00:03:36.749292Z",
+  "trace": "projects/fitness-app-korostelev/traces/026caff0934d108025d44bdb60bcb755",
+  "insertId": "6a9caddb00036a4a02c38033",
+  "status": 200,
+  "latency": "2.471769894s"
+ },
+ {
+  "timestamp": "2026-09-06T00:03:47.671033Z",
+  "trace": "projects/fitness-app-korostelev/traces/8e4bf0674a53731010946ae5febc03fc",
+  "insertId": "6a9cade500033632a9b4927b",
+  "status": 200,
+  "latency": "1.536737452s"
+ },
+ {
+  "timestamp": "2026-09-06T00:03:54.369556Z",
+  "trace": "projects/fitness-app-korostelev/traces/66bc97ca34dc2d83d32c955e0de5d702",
+  "insertId": "6a9cadeb000caef82aca0c6b",
+  "status": 200,
+  "latency": "1.458581248s"
+ },
+ {
+  "timestamp": "2026-09-06T00:04:00.860032Z",
+  "trace": "projects/fitness-app-korostelev/traces/91f64a1540e4331960e5463f005dd35f",
+  "insertId": "6a9cadf20005b3334a5bd65e",
+  "status": 200,
+  "latency": "1.510702699s"
+ },
+ {
+  "timestamp": "2026-09-06T00:04:09.394771Z",
+  "trace": "projects/fitness-app-korostelev/traces/79fd73aa14776e86b5cefb6c70b918ea",
+  "insertId": "6a9cae0300002bd1e1818c22",
+  "status": 200,
+  "latency": "9.612363177s"
+ },
+ {
+  "timestamp": "2026-09-06T00:04:26.884003Z",
+  "trace": "projects/fitness-app-korostelev/traces/b0214dfcc68b26e69ce7287eabba8c0c",
+  "insertId": "6a9cae0c0005c9c19b7c59e9",
+  "status": 200,
+  "latency": "1.491072784s"
+ },
+ {
+  "timestamp": "2026-09-06T00:04:34.236819Z",
+  "trace": "projects/fitness-app-korostelev/traces/2e295fdac87f51550131f98c261a039c",
+  "insertId": "6a9cae13000c395da0696907",
+  "status": 200,
+  "latency": "1.560866768s"
+ },
+ {
+  "timestamp": "2026-09-06T00:04:41.366145Z",
+  "trace": "projects/fitness-app-korostelev/traces/9e1501967d2b344a49d7482b04718c47",
+  "insertId": "6a9cae1a000b82a055397957",
+  "status": 200,
+  "latency": "1.385982234s"
+ },
+ {
+  "timestamp": "2026-09-06T00:04:50.232014Z",
+  "trace": "projects/fitness-app-korostelev/traces/b402d9973210ad0063aedee38eaa1851",
+  "insertId": "6a9cae27000032635b7e8cc8",
+  "status": 200,
+  "latency": "4.778118100s"
+ },
+ {
+  "timestamp": "2026-09-06T00:05:02.426166Z",
+  "trace": "projects/fitness-app-korostelev/traces/1a559254d9ca51d81043420ecafebe35",
+  "insertId": "6a9cae2f000deba80e3cb4d5",
+  "status": 200,
+  "latency": "1.484026540s"
+ },
+ {
+  "timestamp": "2026-09-06T00:05:09.768566Z",
+  "trace": "projects/fitness-app-korostelev/traces/2c1d2f4db1a7837ce1f459f03471e9c5",
+  "insertId": "6a9cae3e000cf6879a2f87be",
+  "status": 200,
+  "latency": "9.078528545s"
+ },
+ {
+  "timestamp": "2026-09-06T00:05:24.568942Z",
+  "trace": "projects/fitness-app-korostelev/traces/8837af0fee93feb1977f943d3c14a515",
+  "insertId": "6a9cae460001edaeef2a728e",
+  "status": 200,
+  "latency": "1.554974927s"
+ },
+ {
+  "timestamp": "2026-09-06T00:05:34.134523Z",
+  "trace": "projects/fitness-app-korostelev/traces/aeb269bc811c7b0b768abcc0a5a05dee",
+  "insertId": "6a9cae4f0008f7211c91e2d9",
+  "status": 200,
+  "latency": "1.450756488s"
+ },
+ {
+  "timestamp": "2026-09-06T00:05:43.462059Z",
+  "trace": "projects/fitness-app-korostelev/traces/497bfd41d251e73f7c94e01d485bc784",
+  "insertId": "6a9cae59000a25cb29bab683",
+  "status": 200,
+  "latency": "2.200397623s"
+ },
+ {
+  "timestamp": "2026-09-06T00:05:51.065450Z",
+  "trace": "projects/fitness-app-korostelev/traces/935629fe031e28b67414d5d5adb5a869",
+  "insertId": "6a9cae60000bf7a448e7340d",
+  "status": 200,
+  "latency": "1.715539780s"
+ },
+ {
+  "timestamp": "2026-09-06T00:05:57.919333Z",
+  "trace": "projects/fitness-app-korostelev/traces/dad7c74066652949336b7e427bbddc5a",
+  "insertId": "6a9cae690001d9f5f0f3c703",
+  "status": 200,
+  "latency": "3.199611176s"
+ },
+ {
+  "timestamp": "2026-09-06T00:06:08.419440Z",
+  "trace": "projects/fitness-app-korostelev/traces/2798945dec82cbfca9d77cfe2c3468f9",
+  "insertId": "6a9cae7300011b0abc617d7d",
+  "status": 200,
+  "latency": "2.649464781s"
+ },
+ {
+  "timestamp": "2026-09-06T00:06:18.699639Z",
+  "trace": "projects/fitness-app-korostelev/traces/6264fc53424281b61027dc580c066a20",
+  "insertId": "6a9cae7d0003766b251a1e97",
+  "status": 200,
+  "latency": "2.525296410s"
+ },
+ {
+  "timestamp": "2026-09-06T00:06:28.051191Z",
+  "trace": "projects/fitness-app-korostelev/traces/56bbf1dca5dc05ec76ea053faeac2180",
+  "insertId": "6a9cae8500065b5765a88411",
+  "status": 200,
+  "latency": "1.362925181s"
+ },
+ {
+  "timestamp": "2026-09-06T00:06:35.846480Z",
+  "trace": "projects/fitness-app-korostelev/traces/33ddeecf915ef6626b5674edcb258767",
+  "insertId": "6a9cae950003a7387564fab1",
+  "status": 200,
+  "latency": "9.390511119s"
+ },
+ {
+  "timestamp": "2026-09-06T00:06:51.759795Z",
+  "trace": "projects/fitness-app-korostelev/traces/dfb288cec9419ca8ab15d39c62e03060",
+  "insertId": "6a9cae9d00063106e2a83b14",
+  "status": 200,
+  "latency": "1.643613670s"
+ },
+ {
+  "timestamp": "2026-09-06T00:07:00.847728Z",
+  "trace": "projects/fitness-app-korostelev/traces/786014967a9f78deb67fc98359114e1e",
+  "insertId": "6a9caea70000068ceb550658",
+  "status": 200,
+  "latency": "2.150849641s"
+ },
+ {
+  "timestamp": "2026-09-06T00:07:08.164079Z",
+  "trace": "projects/fitness-app-korostelev/traces/6f8e890ee111831089531929b759a779",
+  "insertId": "6a9caead000ae9ee991862bb",
+  "status": 200,
+  "latency": "1.548115496s"
+ },
+ {
+  "timestamp": "2026-09-06T00:07:14.794198Z",
+  "trace": "projects/fitness-app-korostelev/traces/585afde4becb5c2f2a6f53e8b4e30dfc",
+  "insertId": "6a9caebc000091552e318393",
+  "status": 200,
+  "latency": "9.240490113s"
+ },
+ {
+  "timestamp": "2026-09-06T00:07:30.922307Z",
+  "trace": "projects/fitness-app-korostelev/traces/53e1585bc723eff7ca00c49aa4c19d30",
+  "insertId": "6a9caec400068ec8dfe77e90",
+  "status": 200,
+  "latency": "1.505166192s"
+ },
+ {
+  "timestamp": "2026-09-06T00:07:39.712143Z",
+  "trace": "projects/fitness-app-korostelev/traces/d89fdf550e2535c462d13ae2d47036af",
+  "insertId": "6a9caece0003ce9d9df61bd6",
+  "status": 200,
+  "latency": "2.534997333s"
+ },
+ {
+  "timestamp": "2026-09-06T00:07:47.585869Z",
+  "trace": "projects/fitness-app-korostelev/traces/9a2ee4df3900fbfa43cd51605e1266b1",
+  "insertId": "6a9caed4000ecf76bbdc733c",
+  "status": 200,
+  "latency": "1.382078530s"
+ },
+ {
+  "timestamp": "2026-09-06T00:07:54.061966Z",
+  "trace": "projects/fitness-app-korostelev/traces/44a2123ef94eeb91a78d32237738b98d",
+  "insertId": "6a9caee000040b69c68dccc8",
+  "status": 200,
+  "latency": "6.200558766s"
+ },
+ {
+  "timestamp": "2026-09-06T00:08:07.104888Z",
+  "trace": "projects/fitness-app-korostelev/traces/716d6369e49f5d071094b9efc694bfe7",
+  "insertId": "6a9caee800075a4b64a9e07e",
+  "status": 200,
+  "latency": "1.373753384s"
+ },
+ {
+  "timestamp": "2026-09-06T00:08:15.324130Z",
+  "trace": "projects/fitness-app-korostelev/traces/aa93c6643f28c737925daff3b9e143e2",
+  "insertId": "6a9caef0000daa88cb36c4de",
+  "status": 200,
+  "latency": "1.568720435s"
+ },
+ {
+  "timestamp": "2026-09-06T00:08:21.842194Z",
+  "trace": "projects/fitness-app-korostelev/traces/3a7746f76c3b7e0da544f6a21eeb567c",
+  "insertId": "6a9caef800046f406c054295",
+  "status": 200,
+  "latency": "2.444521217s"
+ },
+ {
+  "timestamp": "2026-09-06T00:08:29.294328Z",
+  "trace": "projects/fitness-app-korostelev/traces/dc1833d6f676d06e4eec6ea4433748f6",
+  "insertId": "6a9caf010007253b9a5d8141",
+  "status": 200,
+  "latency": "4.171253019s"
+ },
+ {
+  "timestamp": "2026-09-06T00:08:40.372186Z",
+  "trace": "projects/fitness-app-korostelev/traces/4454142fd9b2127988a5c1ba8ce173dd",
+  "insertId": "6a9caf0a000b302af9e53a31",
+  "status": 200,
+  "latency": "2.359000879s"
+ },
+ {
+  "timestamp": "2026-09-06T00:08:49.627995Z",
+  "trace": "projects/fitness-app-korostelev/traces/5d880f46ad2b1ee7fe5e8d5c206ac94e",
+  "insertId": "6a9caf13000d1c1d340e944e",
+  "status": 200,
+  "latency": "2.228143914s"
+ },
+ {
+  "timestamp": "2026-09-06T00:08:56.902140Z",
+  "trace": "projects/fitness-app-korostelev/traces/d8d451ef3968463d1dd43435976d4143",
+  "insertId": "6a9caf1d0002b7bb7ecdbba4",
+  "status": 200,
+  "latency": "4.273627170s"
+ },
+ {
+  "timestamp": "2026-09-06T00:09:06.314828Z",
+  "trace": "projects/fitness-app-korostelev/traces/6a6ef9deef408ef2861563a2810f5e42",
+  "insertId": "6a9caf2b000c3e7e53ecab79",
+  "status": 200,
+  "latency": "9.484934176s"
+ },
+ {
+  "timestamp": "2026-09-06T00:09:22.936717Z",
+  "trace": "projects/fitness-app-korostelev/traces/fcab08d821b6076c09119bd2d7bb0118",
+  "insertId": "6a9caf3c00082245e0eff3cf",
+  "status": 200,
+  "latency": "9.594025518s"
+ },
+ {
+  "timestamp": "2026-09-07T08:32:07.863837Z",
+  "trace": "projects/fitness-app-korostelev/traces/848811db00af50155a559e75e3e3bf13",
+  "insertId": "6a9e768a000cf1d7a657f889",
+  "status": 401,
+  "latency": "2.685065223s"
+ },
+ {
+  "timestamp": "2026-09-07T08:32:16.386081Z",
+  "trace": "projects/fitness-app-korostelev/traces/77b9d291d90bb370ee3fb1d2cae4898f",
+  "insertId": "6a9e76900006179bdbc1bcbe",
+  "status": 401,
+  "latency": "0.010687341s"
+ },
+ {
+  "timestamp": "2026-09-07T08:32:21.562524Z",
+  "trace": "projects/fitness-app-korostelev/traces/d1537263eddd37b35d0a0e25b196c7fc",
+  "insertId": "6a9e76950008daffd9feb64e",
+  "status": 401,
+  "latency": "0.015601270s"
+ },
+ {
+  "timestamp": "2026-09-07T09:10:53.002163Z",
+  "trace": "projects/fitness-app-korostelev/traces/88cb8474f4ab31452246d8074d9bc00c",
+  "insertId": "6a9e7f9f00050effc4dfa7aa",
+  "status": 401,
+  "latency": "2.153926866s"
+ },
+ {
+  "timestamp": "2026-09-07T09:11:01.178Z",
+  "trace": "projects/fitness-app-korostelev/traces/18f553a1a923cf1b367ae5d9f5120a13",
+  "insertId": "6a9e7fa50002e9f19db8abfc",
+  "status": 401,
+  "latency": "0.009546777s"
+ },
+ {
+  "timestamp": "2026-09-07T09:11:06.317372Z",
+  "trace": "projects/fitness-app-korostelev/traces/d1469bf4261d9b40c1ec50ded3b96654",
+  "insertId": "6a9e7faa0005207db5e0840d",
+  "status": 401,
+  "latency": "0.015674517s"
+ },
+ {
+  "timestamp": "2026-09-07T09:50:11.454617Z",
+  "trace": "projects/fitness-app-korostelev/traces/53d2268fe7dfa4741f1d9031133c0733",
+  "insertId": "6a9e88d8000076712c005fce",
+  "status": 200,
+  "latency": "4.388846819s"
+ },
+ {
+  "timestamp": "2026-09-07T09:50:21.614733Z",
+  "trace": "projects/fitness-app-korostelev/traces/f0ea4fb3ee6cef793f4a7029e04c7930",
+  "insertId": "6a9e88df0002e64cc190b74e",
+  "status": 200,
+  "latency": "1.572762502s"
+ },
+ {
+  "timestamp": "2026-09-07T09:50:28.329800Z",
+  "trace": "projects/fitness-app-korostelev/traces/262ec891993e5ffb1108169ad223d64b",
+  "insertId": "6a9e88e600074c09f550edf9",
+  "status": 200,
+  "latency": "2.146197353s"
+ },
+ {
+  "timestamp": "2026-09-07T09:50:37.294398Z",
+  "trace": "projects/fitness-app-korostelev/traces/5f8660396fb05d3250dd27289e84f490",
+  "insertId": "6a9e88ee000d2787397a822d",
+  "status": 200,
+  "latency": "1.564915278s"
+ },
+ {
+  "timestamp": "2026-09-07T09:50:46.104811Z",
+  "trace": "projects/fitness-app-korostelev/traces/069e7b7e8a8c26ae6e724e5cff7e3cde",
+  "insertId": "6a9e88f7000b6eb108d08e8c",
+  "status": 200,
+  "latency": "1.641546449s"
+ },
+ {
+  "timestamp": "2026-09-07T09:50:52.870855Z",
+  "trace": "projects/fitness-app-korostelev/traces/4506621ba4d26177e4c625e9effdf2e0",
+  "insertId": "6a9e88fe000b084acc1d61c7",
+  "status": 200,
+  "latency": "1.849387101s"
+ },
+ {
+  "timestamp": "2026-09-07T09:50:59.796446Z",
+  "trace": "projects/fitness-app-korostelev/traces/c92fa838bdeff24c565b41a554b800d5",
+  "insertId": "6a9e89050007d9bbd199ad3b",
+  "status": 200,
+  "latency": "1.715574905s"
+ },
+ {
+  "timestamp": "2026-09-07T09:51:08.661176Z",
+  "trace": "projects/fitness-app-korostelev/traces/2ea63e49654f1de918b4067859f91faa",
+  "insertId": "6a9e890e00021becaf729ae2",
+  "status": 200,
+  "latency": "1.473882343s"
+ },
+ {
+  "timestamp": "2026-09-07T09:51:17.560597Z",
+  "trace": "projects/fitness-app-korostelev/traces/d5a538ecdd38d0e7b0c9d9bdeb4acaf3",
+  "insertId": "6a9e891700031a646f3803bb",
+  "status": 200,
+  "latency": "1.640418550s"
+ },
+ {
+  "timestamp": "2026-09-07T09:51:24.281610Z",
+  "trace": "projects/fitness-app-korostelev/traces/250312db66bdb912fb1bc758f8718efe",
+  "insertId": "6a9e891d000cc15aba813248",
+  "status": 200,
+  "latency": "1.551662572s"
+ },
+ {
+  "timestamp": "2026-09-07T09:51:31.025382Z",
+  "trace": "projects/fitness-app-korostelev/traces/4bf5a56634d354931700d3548a3113b8",
+  "insertId": "6a9e8924000da6e0f61f2bce",
+  "status": 200,
+  "latency": "1.866993034s"
+ },
+ {
+  "timestamp": "2026-09-07T09:51:40.335808Z",
+  "trace": "projects/fitness-app-korostelev/traces/a111b7fdf5fb9aeacc1e81d1fd14b3cd",
+  "insertId": "6a9e892f000a30595d586e46",
+  "status": 200,
+  "latency": "3.329078006s"
+ },
+ {
+  "timestamp": "2026-09-07T09:51:51.070565Z",
+  "trace": "projects/fitness-app-korostelev/traces/95ee7722720af46b946b9f5bc85bf39c",
+  "insertId": "6a9e8938000726202944dc96",
+  "status": 200,
+  "latency": "1.394671675s"
+ },
+ {
+  "timestamp": "2026-09-07T09:51:57.583934Z",
+  "trace": "projects/fitness-app-korostelev/traces/2e7b4e6a586538067c2426493eeda5f4",
+  "insertId": "6a9e893f0000eb394e99ae61",
+  "status": 200,
+  "latency": "1.473695447s"
+ },
+ {
+  "timestamp": "2026-09-07T09:52:03.982053Z",
+  "trace": "projects/fitness-app-korostelev/traces/ba163595d276564a6797bc81696f871f",
+  "insertId": "6a9e894a000ad865bb851b2f",
+  "status": 200,
+  "latency": "6.725953111s"
+ },
+ {
+  "timestamp": "2026-09-07T09:52:17.569242Z",
+  "trace": "projects/fitness-app-korostelev/traces/8e0115fba434d3905bf38646da261be3",
+  "insertId": "6a9e8952000f3b81cee6cdff",
+  "status": 200,
+  "latency": "1.426510255s"
+ },
+ {
+  "timestamp": "2026-09-07T09:52:25.984648Z",
+  "trace": "projects/fitness-app-korostelev/traces/f024d958196cc579159e207698aebab8",
+  "insertId": "6a9e8964000049536fa7e74f",
+  "status": 200,
+  "latency": "10.031720850s"
+ },
+ {
+  "timestamp": "2026-09-07T09:52:41.035979Z",
+  "trace": "projects/fitness-app-korostelev/traces/a552cd44f59ef3233743c6b7e02510ff",
+  "insertId": "6a9e896a000858e17c7362d5",
+  "status": 200,
+  "latency": "1.508358619s"
+ },
+ {
+  "timestamp": "2026-09-07T09:52:47.624921Z",
+  "trace": "projects/fitness-app-korostelev/traces/43b0b4d62627c203e2b9087bc452fd44",
+  "insertId": "6a9e8971000240530005eaa1",
+  "status": 200,
+  "latency": "1.519670901s"
+ },
+ {
+  "timestamp": "2026-09-07T09:52:56.339543Z",
+  "trace": "projects/fitness-app-korostelev/traces/0d56ab34b64560e2de2f780ec8a296cc",
+  "insertId": "6a9e8983000104d5c0bb8b4f",
+  "status": 200,
+  "latency": "10.724196667s"
+ },
+ {
+  "timestamp": "2026-09-07T09:53:14.386967Z",
+  "trace": "projects/fitness-app-korostelev/traces/1b921fab537212a781e3b76e694729b2",
+  "insertId": "6a9e898e000a47a5705d59c7",
+  "status": 200,
+  "latency": "4.283635385s"
+ },
+ {
+  "timestamp": "2026-09-07T09:53:23.768734Z",
+  "trace": "projects/fitness-app-korostelev/traces/d4b6b75dda6aefd0b6b696cc2daa41d7",
+  "insertId": "6a9e899e000210c96f47a18b",
+  "status": 200,
+  "latency": "10.363744938s"
+ },
+ {
+  "timestamp": "2026-09-07T09:53:39.182943Z",
+  "trace": "projects/fitness-app-korostelev/traces/ceee3f26cb188109726680dda9ee8a5a",
+  "insertId": "6a9e89ab000b47612074d3db",
+  "status": 200,
+  "latency": "8.554182178s"
+ },
+ {
+  "timestamp": "2026-09-07T09:53:54.649079Z",
+  "trace": "projects/fitness-app-korostelev/traces/cc413a477f7314682164a689b21acab7",
+  "insertId": "6a9e89b50003cd4fa7c0e8c2",
+  "status": 200,
+  "latency": "2.597733344s"
+ },
+ {
+  "timestamp": "2026-09-07T09:54:04.233085Z",
+  "trace": "projects/fitness-app-korostelev/traces/7467a450ad6a6945e685ec6077fe7e52",
+  "insertId": "6a9e89be00007e6bfe4e5256",
+  "status": 200,
+  "latency": "1.796694444s"
+ },
+ {
+  "timestamp": "2026-09-07T09:54:11.014118Z",
+  "trace": "projects/fitness-app-korostelev/traces/8401dc513ce59aab2d8074b9ecd33311",
+  "insertId": "6a9e89cc000b4f697b66be6b",
+  "status": 200,
+  "latency": "9.724100600s"
+ },
+ {
+  "timestamp": "2026-09-07T09:54:25.779105Z",
+  "trace": "projects/fitness-app-korostelev/traces/237a4a4abd82768e065dd0bbdd4b0e6d",
+  "insertId": "6a9e89d3000b6c373e49afc6",
+  "status": 200,
+  "latency": "1.966617271s"
+ },
+ {
+  "timestamp": "2026-09-07T09:54:34.735585Z",
+  "trace": "projects/fitness-app-korostelev/traces/8ce84d2917f1095f831529667d39992c",
+  "insertId": "6a9e89dc000363f5c1cd3753",
+  "status": 200,
+  "latency": "1.483480692s"
+ },
+ {
+  "timestamp": "2026-09-07T09:54:43.199836Z",
+  "trace": "projects/fitness-app-korostelev/traces/7996a1ee85e34da39b284e6323cd01b7",
+  "insertId": "6a9e89ec00095d3cffe10356",
+  "status": 200,
+  "latency": "9.410918180s"
+ },
+ {
+  "timestamp": "2026-09-07T09:54:57.704152Z",
+  "trace": "projects/fitness-app-korostelev/traces/58bbf41dfb28de953f99720a78c52051",
+  "insertId": "6a9e89f30005d112c90b2a62",
+  "status": 200,
+  "latency": "1.674604880s"
+ },
+ {
+  "timestamp": "2026-09-07T09:55:04.470175Z",
+  "trace": "projects/fitness-app-korostelev/traces/20eea970cc39265d58dc143264f221db",
+  "insertId": "6a9e89f9000d7efdc2fe7892",
+  "status": 200,
+  "latency": "1.411905673s"
+ },
+ {
+  "timestamp": "2026-09-07T09:55:12.829619Z",
+  "trace": "projects/fitness-app-korostelev/traces/893ba994eac86b3f654d024144d0f4dd",
+  "insertId": "6a9e8a030007ec86e190e446",
+  "status": 200,
+  "latency": "2.686910145s"
+ },
+ {
+  "timestamp": "2026-09-07T09:55:22.413881Z",
+  "trace": "projects/fitness-app-korostelev/traces/c086661057518fbf877c8dccbd691d99",
+  "insertId": "6a9e8a0c0000f53d2d955947",
+  "status": 200,
+  "latency": "1.646316638s"
+ },
+ {
+  "timestamp": "2026-09-07T09:55:29.063898Z",
+  "trace": "projects/fitness-app-korostelev/traces/a17a48201c4d4fd64aa72cb7103cf241",
+  "insertId": "6a9e8a120005e4f9dfb0d4a2",
+  "status": 200,
+  "latency": "1.320197463s"
+ },
+ {
+  "timestamp": "2026-09-07T09:55:35.547604Z",
+  "trace": "projects/fitness-app-korostelev/traces/bc9f8f59ecd5b1b46ce4aae7af18277b",
+  "insertId": "6a9e8a190003e416bea548ad",
+  "status": 200,
+  "latency": "1.704363911s"
+ },
+ {
+  "timestamp": "2026-09-07T09:55:44.249505Z",
+  "trace": "projects/fitness-app-korostelev/traces/bf15beca59ad1abd51d679bcdd1cc51c",
+  "insertId": "6a9e8a21000e20d476c4b031",
+  "status": 200,
+  "latency": "1.673866464s"
+ },
+ {
+  "timestamp": "2026-09-07T09:55:52.903079Z",
+  "trace": "projects/fitness-app-korostelev/traces/a339470cfa09ba1ebcbd9cab2a4c2a46",
+  "insertId": "6a9e8a3200095a4e781d172c",
+  "status": 200,
+  "latency": "9.707174282s"
+ },
+ {
+  "timestamp": "2026-09-07T09:56:07.715959Z",
+  "trace": "projects/fitness-app-korostelev/traces/e2ef8f1943e102e68d96d9336fc880eb",
+  "insertId": "6a9e8a42000e14f8bd3c52e4",
+  "status": 200,
+  "latency": "11.204397022s"
+ },
+ {
+  "timestamp": "2026-09-07T09:56:23.915793Z",
+  "trace": "projects/fitness-app-korostelev/traces/88d933f49bea2af30aeaf44d050ceadd",
+  "insertId": "6a9e8a490005459b44fbd65a",
+  "status": 200,
+  "latency": "1.427198057s"
+ },
+ {
+  "timestamp": "2026-09-07T09:56:32.043683Z",
+  "trace": "projects/fitness-app-korostelev/traces/4b20dc8c8d824c81ce506e42aca1fc3d",
+  "insertId": "6a9e8a510006c3ef09091a28",
+  "status": 200,
+  "latency": "1.395811738s"
+ },
+ {
+  "timestamp": "2026-09-07T09:56:40.316392Z",
+  "trace": "projects/fitness-app-korostelev/traces/0ca6d75d0b5a29d42a897732afa87402",
+  "insertId": "6a9e8a59000c5d6d8bf1a4d3",
+  "status": 200,
+  "latency": "1.491695724s"
+ },
+ {
+  "timestamp": "2026-09-07T09:56:46.949452Z",
+  "trace": "projects/fitness-app-korostelev/traces/07b951f294c1c012def4e694c453b04f",
+  "insertId": "6a9e8a610006add382b1f959",
+  "status": 200,
+  "latency": "2.485609398s"
+ },
+ {
+  "timestamp": "2026-09-07T09:56:54.487933Z",
+  "trace": "projects/fitness-app-korostelev/traces/b77b20f20ee655fc293f86f12199743a",
+  "insertId": "6a9e8a700000abadb50473dd",
+  "status": 200,
+  "latency": "9.553585684s"
+ },
+ {
+  "timestamp": "2026-09-07T09:57:10.972012Z",
+  "trace": "projects/fitness-app-korostelev/traces/e21d26b69eecaff4e99299cd72c65b85",
+  "insertId": "6a9e8a780009b272b26fc781",
+  "status": 200,
+  "latency": "1.660983509s"
+ },
+ {
+  "timestamp": "2026-09-07T09:57:19.933707Z",
+  "trace": "projects/fitness-app-korostelev/traces/52f7ce24d3191961e655ca0113cb9138",
+  "insertId": "6a9e8a89000e1fd2960d8efe",
+  "status": 200,
+  "latency": "9.989322522s"
+ },
+ {
+  "timestamp": "2026-09-07T09:57:35.086795Z",
+  "trace": "projects/fitness-app-korostelev/traces/4bb5cd7f916fbfa9fe5baaf1a977374b",
+  "insertId": "6a9e8a91000e295df562397a",
+  "status": 200,
+  "latency": "2.838532860s"
+ },
+ {
+  "timestamp": "2026-09-07T09:57:42.957981Z",
+  "trace": "projects/fitness-app-korostelev/traces/2c16c9573ce9f66f0d20826748cadad3",
+  "insertId": "6a9e8a98000ab36d332926cc",
+  "status": 200,
+  "latency": "1.740425198s"
+ },
+ {
+  "timestamp": "2026-09-07T09:57:51.584615Z",
+  "trace": "projects/fitness-app-korostelev/traces/0930740b28cddd792d60ece5cd37d353",
+  "insertId": "6a9e8aa90002b016fbdd6be2",
+  "status": 200,
+  "latency": "9.588985598s"
+ },
+ {
+  "timestamp": "2026-09-07T09:58:08.139635Z",
+  "trace": "projects/fitness-app-korostelev/traces/1b8aa0e474a12428ff428b2d73e869de",
+  "insertId": "6a9e8ab1000d7caba0808ecd",
+  "status": 200,
+  "latency": "1.740883502s"
+ },
+ {
+  "timestamp": "2026-09-07T09:58:14.847889Z",
+  "trace": "projects/fitness-app-korostelev/traces/c9bde915f4aa2c04c629c1c02f92bbb3",
+  "insertId": "6a9e8ab80005d9aeb767d415",
+  "status": 200,
+  "latency": "1.533593745s"
+ },
+ {
+  "timestamp": "2026-09-07T09:58:21.487244Z",
+  "trace": "projects/fitness-app-korostelev/traces/672539782441bce704824217281393fa",
+  "insertId": "6a9e8abe000df9a708ecbe32",
+  "status": 200,
+  "latency": "1.425910964s"
+ },
+ {
+  "timestamp": "2026-09-07T09:58:30.222143Z",
+  "trace": "projects/fitness-app-korostelev/traces/ddb1207037835326608f90bc355e8fdb",
+  "insertId": "6a9e8ac7000cf054fd12c629",
+  "status": 200,
+  "latency": "1.622713874s"
+ }
+]

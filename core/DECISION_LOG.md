@@ -44867,3 +44867,127 @@ the remediation — which round 2 explicitly found none of. Spending a live roun
 for a push that is being withheld anyway would be the tail wagging the dog. The loop concluded at
 round 2 with an APPROVE; a `--final` receipt is required at the moment the operator resolves the
 contact-sheet question and the push actually happens, not before.
+
+## 2026-09-07 — RECOG-C1: the server correlation id, recovered and its absence recorded
+
+The Rosetta closure review returned a BLOCKER on rev7 verification (e), and it was right. The
+clause requires every scored row to carry a server correlation id and states the sanction in the
+same sentence: *a row missing any of those is not scored and the count is reported.* All 104 rows
+were scored carrying `server_correlation_id: null`, and the sanction was never applied.
+
+### What was planned, and what was actually done
+
+**Planned** (rev7, frozen before the work): the harness records a server correlation id per
+observation; rows without one are excluded from scoring and counted.
+
+**Done**: the harness recorded `null` on all 104 rows and every one of them was scored anyway.
+The cause is structural — `aiEquipmentRecognition` returns `{ text }` and nothing else, so no
+server-side identifier ever reaches the client and there was nothing for the harness to record.
+The clause was unsatisfiable from the moment it was frozen. Stating verification up front is
+supposed to catch exactly that, and here it did not.
+
+**Status: PARTIAL.** The evidentiary gap is now closed; the sequencing cannot be.
+
+### The instruction this follows
+
+GPT-PM, verbatim: *"Do not rerun the 104 model calls merely to satisfy bookkeeping, and do not
+silently delete the correlation requirement from rev7 after seeing the results... First determine
+whether immutable server-side evidence already exists that can supply a unique, one-to-one
+correlation for all 104 completed calls without changing inference or scoring... If it is not
+possible, record an explicit protocol deviation... this exact Rosetta plan must not be represented
+as 'executed exactly as frozen / passed'."*
+
+Both halves are honoured below: the manifest exists **and** the deviation is recorded. Not one in
+place of the other.
+
+### The manifest, and why it is evidence rather than a plausible join
+
+`core/plans/RECOG_C1_SERVER_CORRELATION_2026-09-07.json` gives all 104 observations a Cloud Trace
+id, recovered from Cloud Logging with no model call re-run. It rebuilds byte-for-byte from
+`scripts/dev/recog_c1_build_correlation.py` over the two raw files plus
+`core/plans/recog_c1_raw/recog_c1_server_requests_2026-09-06_07.json`, the request-level log
+extract committed as evidence. Reproduction was tested the only way that means anything: the
+manifest was deleted and rebuilt from the in-repo script, and the hash came back identical.
+
+| artifact | sha256 |
+| --- | --- |
+| `core/plans/RECOG_C1_SERVER_CORRELATION_2026-09-07.json` | `932c47d6caa66a396c5490e86afdca3b8c6a1c85ec8c13cd6492e3dbe8a27333` |
+| `core/plans/recog_c1_raw/recog_c1_server_requests_2026-09-06_07.json` | `b6e672ed03514ae64da7cf6eb6e8ca06c5f8d9804ae17d7a5987f26b14f9c921` |
+| `core/plans/recog_c1_raw/recog_c1_raw_w1.jsonl` (unchanged) | `556480993b8de6d1308031f4a5b4b4d028bad8c98a223b4c35c8f2fd87e0f989` |
+| `core/plans/recog_c1_raw/recog_c1_raw_w2.jsonl` (unchanged) | `dd0f478c7dcfaf0e29f818e2d0e076025d77895234278fba906d6b1597aa9f9c` |
+
+- **Segmentation touches no timestamp.** 110 request-level entries over the two days: exactly 104
+  with status 200 and 6 with 401. The 104 are the completed calls, the 6 the refusals of the two
+  aborted App Check attempts.
+- **Ordinal pairing** inside each strictly sequential run — one device, one awaited call at a time,
+  no interleaving — then **tested**: does one constant clock offset per run put every server
+  request inside its own paired client window? One unknown, 52 simultaneous constraints. Feasible
+  intervals `[-5.686s, -4.029s]` (w1) and `[-5.490s, -3.830s]` (w2); 52/52 contained in both.
+- **Local uniqueness**: at the derived offset, 0 server requests fall inside any other
+  observation's window, in either run. Stated precisely, because an earlier draft did not: this
+  rules out other windows AT that offset, and the shift test rules out near reorderings. It does
+  not enumerate all 52! permutations. Given one device making strictly sequential, non-overlapping
+  calls that is strong evidence, and it is recorded as evidence rather than rounded up to a proof —
+  the manifest carries a `what_is_not_claimed` field saying so in the artifact itself.
+- **Falsification**: the same test on pairings shifted −3…+3 rejects all twelve. Narrowest is w2 at
+  shift +1, empty by **0.649s**; the rest fail by 6–40s. Recorded with the narrowest margin, not
+  the most flattering one.
+
+- **Exhaustiveness and purity, checked every run rather than once by hand.** All 104 served
+  requests fall inside exactly one run window — none outside both, none in two — so 52+52 cannot
+  be a coincidence of one call missed and one stranger admitted. No 401 falls inside a scored
+  window; the six sit three at 08:32 and three at 09:11 on 2026-09-07, the two aborted attempts,
+  both ending before window 2 opened at 09:49.
+- **The guards are mutation-tested** (`scripts/dev/recog_c1_build_correlation.tests.py`, 6/6) —
+  after the test itself was found wanting. Its first version asserted only that no manifest
+  appeared, which a script crashing on line one also satisfies; three of its four cases would have
+  printed PASS while naming guards that never ran. Each case now asserts the named guard's own
+  marker is present, no other guard's marker is, the exit code is non-zero and stderr is empty. Six
+  cases: a 401 planted inside a run, a served request stranded outside both, a request displaced
+  within its own run, an observation id duplicated across runs, an unmutated control, and a
+  `test_the_test` that swaps in a stub exiting immediately and requires every other case to fail
+  against it.
+
+### The internal review round, and what it cost me
+
+Three specialists read the script and the test before any of this went to GPT-PM, per §17's
+sequencing. They returned four findings and every one was real:
+
+1. **BLOCKER — the script exited 0 when it REFUSED.** The precondition block exited 1, but every
+   later rejection path — count mismatch, empty feasible interval, an accepted shift, failed
+   containment — printed its refusal and fell off the end with status 0. Any wrapper trusting the
+   return code would have read a rejected correlation as a passing step, for evidence a gate
+   closure rests on. Now every path that writes no manifest exits 1.
+2. **MAJOR — the mutation test could not tell a guard from a crash.** Covered above.
+3. **MAJOR — "no alternative pairing exists" claimed more than was tested.** Covered above.
+4. **MINOR — a duplicate `observation_id` would have been silently overwritten**, quietly
+   correlating 103 observations while reporting 104. There is now a guard that names the colliding
+   id, and a mutation that proves the guard fires.
+
+Every refusal path also gained a stable marker (`FAIL-PURITY`, `FAIL-FEASIBILITY`, and so on) so
+the test can assert *which* guard fired rather than merely that something did. Two of the four
+findings were about my evidence being weaker than my description of it — which is precisely the
+failure this gate has hit before, and the reason the reviewers ran before GPT-PM rather than after.
+
+### Two earlier formulations that failed, and why the failures were useful
+
+A first attempt joined on raw timestamps and could not work: the device clock runs ~4–5s ahead.
+A second estimated the offset as a median and tested residuals — it rejected `w1-p07-A-1`, where
+the pairing was in fact correct and the server had simply received the request 4.3s after the
+client began the call, still well inside the client's own interval. That test was measuring the
+wrong quantity. A third took the earliest log line per trace, which on a cold start is an
+instance-startup line rather than the request. Each was rejected by its own stated criterion rather
+than loosened until it passed, which is the only reason the fourth is worth anything.
+
+### What is repaired and what is not
+
+Every scored row now has a unique, immutable server-side identity and the join is mechanically
+proved one-to-one. The id is nonetheless **recovered after the fact, not recorded by the harness** —
+weaker than the clause literally asks, and no reconstruction changes the order in which things
+happened. **RECOG-C1 was not executed exactly as frozen**, and must not be described as if it were.
+No inference, score or headline number changed: the manifest is evidence about the run, never an
+input to it.
+
+The durable fix is in the callable, not in a script — `aiEquipmentRecognition` should return its own
+request id alongside `text`, so the next measurement records the correlation at the moment of the
+call. Recorded here as the follow-up; not done in this gate, which is measurement-only.
