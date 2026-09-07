@@ -1,0 +1,425 @@
+<title>The Seal Before the Experiment</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ink:#101820; --ink-2:#3d4a56; --ink-3:#6b7a88;
+    --paper:#f7f8f7; --surface:#ffffff; --line:#dde3e4;
+    --accent:#12557a; --accent-soft:#e6eef3;
+    --pass:#1f6f52; --pass-soft:#e4f0ea;
+    --warn:#8a6210; --warn-soft:#f8efdc;
+    --stop:#98301f; --stop-soft:#f8e6e2;
+    --mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+    --sans:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#e8edee; --ink-2:#b3c0c8; --ink-3:#8695a1;
+      --paper:#0e1418; --surface:#151d22; --line:#26333a;
+      --accent:#6cb6dd; --accent-soft:#152a36;
+      --pass:#68c69c; --pass-soft:#12251d;
+      --warn:#dcac52; --warn-soft:#2a2214;
+      --stop:#e08272; --stop-soft:#2c1712;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#e8edee; --ink-2:#b3c0c8; --ink-3:#8695a1;
+    --paper:#0e1418; --surface:#151d22; --line:#26333a;
+    --accent:#6cb6dd; --accent-soft:#152a36;
+    --pass:#68c69c; --pass-soft:#12251d;
+    --warn:#dcac52; --warn-soft:#2a2214;
+    --stop:#e08272; --stop-soft:#2c1712;
+  }
+
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;
+       font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:850px;margin:0 auto;padding:0 24px 96px;}
+  header{padding:56px 0 28px;border-bottom:3px solid var(--ink);margin-bottom:8px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+           color:var(--accent);margin:0 0 14px;font-weight:600;}
+  h1{font-size:clamp(30px,5.4vw,46px);line-height:1.08;margin:0 0 16px;font-weight:600;
+     letter-spacing:-.022em;text-wrap:balance;}
+  .standfirst{font-size:19px;color:var(--ink-2);margin:0;max-width:62ch;text-wrap:pretty;}
+  h2{font-size:25px;margin:52px 0 14px;font-weight:600;letter-spacing:-.015em;text-wrap:balance;
+     padding-top:18px;border-top:1px solid var(--line);}
+  h3{font-size:17px;margin:30px 0 8px;font-weight:600;color:var(--ink);}
+  p{margin:0 0 15px;max-width:68ch;}
+  code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);color:var(--ink);
+       padding:1px 5px;border-radius:3px;}
+  strong{font-weight:600;}
+  a{color:var(--accent);}
+
+  .callout{border-left:4px solid var(--accent);background:var(--surface);padding:16px 20px;
+           margin:22px 0;border-radius:0 6px 6px 0;}
+  .callout.stop{border-left-color:var(--stop);background:var(--stop-soft);}
+  .callout.pass{border-left-color:var(--pass);background:var(--pass-soft);}
+  .callout.warn{border-left-color:var(--warn);background:var(--warn-soft);}
+  .callout p:last-child{margin-bottom:0;}
+  .callout .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+                font-weight:600;display:block;margin-bottom:6px;color:var(--ink-3);}
+
+  .tablewrap{overflow-x:auto;margin:22px 0;border:1px solid var(--line);border-radius:7px;
+             background:var(--surface);}
+  table{border-collapse:collapse;width:100%;font-size:14.5px;}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+     color:var(--ink-3);font-weight:600;background:var(--paper);}
+  tbody tr:last-child td{border-bottom:none;}
+  td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .tag{font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 7px;border-radius:3px;
+       white-space:nowrap;letter-spacing:.04em;}
+  .t-done{background:var(--pass-soft);color:var(--pass);}
+  .t-part{background:var(--warn-soft);color:var(--warn);}
+  .t-no{background:var(--stop-soft);color:var(--stop);}
+
+  .bands{margin:26px 0;border:1px solid var(--line);border-radius:7px;overflow:hidden;
+         background:var(--surface);}
+  .band{display:flex;align-items:stretch;border-bottom:1px solid var(--line);}
+  .band:last-child{border-bottom:none;}
+  .band .key{flex:0 0 132px;padding:14px;font-family:var(--mono);font-size:12.5px;font-weight:600;
+             letter-spacing:.06em;display:flex;align-items:center;}
+  .band .body{padding:14px 16px;font-size:14.5px;border-left:1px solid var(--line);flex:1;}
+  .band .body ul{margin:0;padding-left:18px;}
+  .band .body li{margin:2px 0;}
+  .band.pass .key{background:var(--pass-soft);color:var(--pass);}
+  .band.inc .key{background:var(--warn-soft);color:var(--warn);}
+  .band.fail .key{background:var(--stop-soft);color:var(--stop);}
+
+  .digest{font-family:var(--mono);font-size:12px;color:var(--ink-3);word-break:break-all;}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;
+         background:var(--line);border:1px solid var(--line);border-radius:7px;overflow:hidden;
+         margin:24px 0;}
+  .fact{background:var(--surface);padding:15px 16px;}
+  .fact .v{font-family:var(--mono);font-size:26px;font-weight:600;line-height:1.1;
+           font-variant-numeric:tabular-nums;}
+  .fact .k{font-size:12.5px;color:var(--ink-3);margin-top:5px;line-height:1.35;}
+  ul.plain{max-width:68ch;padding-left:20px;}
+  ul.plain li{margin:6px 0;}
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);
+         font-size:13.5px;color:var(--ink-3);}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App · RECOG-SO1 · 7 September 2026</p>
+  <h1>The Seal Before the Experiment</h1>
+  <p class="standfirst">This gate freezes every methodological choice in SO1 before a single real
+  photograph can be sent, and builds a runner that physically cannot start without affirmative
+  consent. Not one frame was transmitted in the whole gate.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ c82637b</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>What happened here</h2>
+
+<p>RECOG-C1 ended on a negative result: across 104 observations the recogniser answered
+<strong>unknown not once</strong>, and neither its stated confidence, nor the lead over the second
+candidate, nor the number of alternatives separated frames that have a single right answer from
+frames that do not. The abstention signal cannot come from the model's opinion of itself.</p>
+
+<p>SO1 asks whether a <em>second, independent</em> model supplies it: do two models disagree more
+often on frames where no single machine is the subject than on frames where one is? It is
+<strong>a pre-registered hypothesis test, not the beginning of an ensemble implementation</strong> —
+GPT-PM's framing, adopted verbatim. Nothing in production changes.</p>
+
+<div class="facts">
+  <div class="fact"><div class="v">0</div><div class="k">frames transmitted in this gate</div></div>
+  <div class="fact"><div class="v">12</div><div class="k">artefacts under a sha256 seal</div></div>
+  <div class="fact"><div class="v">47/47</div><div class="k">checks, no network call anywhere</div></div>
+  <div class="fact"><div class="v">3</div><div class="k">guards shown failing under mutation</div></div>
+</div>
+
+<h2>Two operator answers, closing both of GPT-PM's conditions</h2>
+
+<p><strong>Which subset may be transmitted.</strong> Verbatim: <em>"весь корпус (52 фото,
+максимальная статистическая сила)"</em> — the whole corpus, 52 photographs, maximum statistical
+power.</p>
+
+<p><strong>The provider's retention state.</strong> GPT-PM required it be recorded <em>before</em> a
+real run, with zero-data-retention enabled if available. It is not readable from the API — there is
+no data-controls endpoint and <code>/models</code> carries no retention field. The operator sent the
+console:</p>
+
+<div class="callout pass">
+  <span class="lbl">Groq Data Controls, recorded 2026-09-07</span>
+  <p><strong>Global ZDR: Enabled</strong> — "input and output data will not be logged, and features
+  that require data storage will be disabled for members of your organization".
+  <code>Inference APIs ZDR</code> is overridden by the global toggle. Batch: Off. Fine-tuning &amp;
+  LoRA: Off. Both paths where data would outlive the request are closed.</p>
+</div>
+
+<h2>People in frame: the operator's correction that decided the outcome</h2>
+
+<p>The operator pointed out that a person in the room and a poster on the gym wall are different
+things, and that the difference has to be established rather than assumed. A regex over the frozen
+labels named a person in <strong>3</strong> photographs and was reported as a lower bound. A visual
+pass over all 13 contact sheets — all 52 source photographs — puts it at <strong>21</strong>. The
+earlier count missed 18.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>property</th><th>of 52</th><th>what it is</th></tr></thead>
+  <tbody>
+    <tr><td>real people</td><td class="n">21</td><td>a trainer, two children, the photographer's own reflection, members in the depth of the room</td></tr>
+    <tr><td>printed human figures</td><td class="n">22</td><td>a wall mural of an athlete recurring across 8 frames, banners, and photographs of models on the machines' own instruction placards</td></tr>
+    <tr><td>both at once</td><td class="n">10</td><td>"contains a human shape" and "contains a person" are not the same question</td></tr>
+    <tr><td>a face is legible</td><td class="n">5</td><td>the trainer and two children</td></tr>
+    <tr><td>no real people</td><td class="n">31</td><td></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The operator was right that printed figures are in the corpus and that there are many of them — a
+naive people-detector would flag 22 frames. That does not make the corpus people-free.</p>
+
+<div class="callout">
+  <span class="lbl">Why this decided the outcome rather than merely refining the picture</span>
+  <p>GPT-PM set a power floor: at least 20 unique source photographs in each ground-truth kind of
+  each arm, or the result is INCONCLUSIVE whatever the numbers say. The whole corpus gives
+  <strong>26 and 26</strong>. The people-free subset would have given <strong>16 and 15</strong> —
+  pre-registered to return INCONCLUSIVE no matter what Qwen produced. The operator's choice was not
+  "more statistics" as a preference; it was the only option under which SO1 can reach a verdict at
+  all.</p>
+</div>
+
+<div class="callout warn">
+  <span class="lbl">The survey's own limit</span>
+  <p>One visual pass by one reviewer over downscaled contact-sheet tiles, not the full-resolution
+  originals. <code>real_people = no</code> means "no person visible at tile resolution", not a
+  guarantee of absence. A far better lower bound than the label regex, and still a lower bound.</p>
+</div>
+
+<h2>GPT-PM's five findings, and how each was closed</h2>
+
+<p>The first plan came back <code>VERDICT: REVISE</code> — 1 BLOCKER, 4 MAJOR. All five accepted
+without argument.</p>
+
+<h3>BLOCKER — the gate checked that the operator <em>answered</em>, not that they <em>authorised</em></h3>
+<p>A well-formed record saying <code>do_not_send</code> would have satisfied a presence-and-shape
+check. <code>decision</code> is now a closed enum <code>whole_corpus | people_free_only | deny</code>,
+and <code>deny</code>, an unknown value, a missing field, an unparseable file, an absent file, an
+undefined property, or a binding to the wrong manifest or pre-registration each
+<strong>refuse</strong> — evaluated <em>before</em> any image byte is read and <em>before</em> the
+HTTP client is constructed. Shown, not asserted: on a <code>deny</code> record the transport is never
+constructed and no output file appears.</p>
+
+<h3>MAJOR 1 — recording a hash after sending is forensics, not a frozen-dataset rule</h3>
+<p>A 104-row observation manifest carries the expected sha256 of every image, derived from the frozen
+RECOG-C1 arm manifest. The runner rehashes the bytes and re-verifies the prompt, vocabulary and
+configuration seal immediately before each request. A <strong>one-byte change</strong> refuses that
+observation and sends nothing.</p>
+
+<h3>MAJOR 2 — the power floor was promised and not implemented</h3>
+<p>It is the one rule that fires exactly when a consent choice shrinks the data. It is now executable
+and can override a numerically passing result. It also exposed that the <code>people_free_only</code>
+policy had <strong>no input at all</strong>: no frozen artefact carried a people flag. Hence the
+survey above.</p>
+
+<h3>MAJOR 3 — the vocabulary generator was in the verification and absent from scope</h3>
+<p>The vocabulary is now <em>derived</em> from production <code>CANONICAL_MACHINES</code> and the
+alias registry by a port of <code>EquipmentAliasIndex.normalise</code> and <code>resolve</code>
+(passes 1–2), and the suite cross-checks that port against the shipped TypeScript one
+<strong>by running it</strong>, over 78 probes. 71 canonical names resolve to 69 ids:
+<code>plyo box</code>/<code>aerobic step</code> and <code>parallettes</code>/<code>push-up
+blocks</code> collapse, so scoring raw strings would have manufactured two disagreement classes that
+are agreements.</p>
+
+<h3>MAJOR 4 — "the runner never opens the ground-truth file" proves one thing about one file</h3>
+<p>The runner's input schema is now <strong>closed</strong> — exactly five fields, any extra column
+refuses — and a capturing transport inspects the <em>serialized request body</em>: the frozen prompt,
+the frozen machine list, exactly one image, and no occurrence of a ground-truth kind, a first-model
+answer, an arm hint or a scorer field.</p>
+
+<h2>The decision regions, fixed in advance</h2>
+
+<div class="bands">
+  <div class="band pass"><div class="key">PASS</div><div class="body">
+    all five required:
+    <ul>
+      <li><code>D_multiple ≥ 60%</code></li>
+      <li><code>D_canonical ≤ 20%</code></li>
+      <li><code>Δ ≥ 40 pp</code></li>
+      <li>the direction holds separately in both arms</li>
+      <li>source-photo-clustered permutation test, <code>p &lt; 0.05</code></li>
+    </ul>
+  </div></div>
+  <div class="band fail"><div class="key">FAIL</div><div class="body">
+    any one suffices:
+    <ul>
+      <li><code>D_multiple &lt; 50%</code></li>
+      <li><code>D_canonical &gt; 25%</code></li>
+      <li><code>Δ &lt; 25 pp</code></li>
+      <li>Qwen accuracy <code>&lt; 80%</code>, or more than 10 pp worse than Gemini</li>
+      <li>the direction reverses in either arm</li>
+    </ul>
+  </div></div>
+  <div class="band inc"><div class="key">INCONCLUSIVE</div><div class="body">
+    everything else — a real outcome, and <strong>not permission to tune thresholds on these same
+    52 photographs</strong>. A threshold chosen after the data is seen is not a threshold.
+    Separately: fewer than 20 unique sources in either kind of either arm returns INCONCLUSIVE
+    however good the estimates look.
+  </div></div>
+</div>
+
+<h2>Planned against delivered</h2>
+
+<p>Plan <code>fitness_app-2026-09-07T16-22-42-159Z-2801e8</code>, GPT-PM <code>VERDICT: APPROVE</code>,
+0 BLOCKER / 0 MAJOR. The Definition of Done for each item was set by GPT-PM, not by the
+implementer.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>#</th><th>Planned</th><th>Definition of Done (GPT-PM)</th><th>Status</th><th>Tail</th></tr></thead>
+  <tbody>
+    <tr><td class="n">1</td><td>Pre-registration document carrying the criteria verbatim</td><td>every frozen artefact with its sha256; INCONCLUSIVE as a real outcome</td><td><span class="tag t-done">done</span></td><td></td></tr>
+    <tr><td class="n">2</td><td>Consent schema as a state machine</td><td>deny/unknown/missing all refuse before byte access and before transport construction; deny yields zero transport calls</td><td><span class="tag t-done">done</span></td><td></td></tr>
+    <tr><td class="n">3</td><td>Source-level privacy policy plus the power floor</td><td>a numerically passing but underpowered fixture returns INCONCLUSIVE</td><td><span class="tag t-done">done</span></td><td></td></tr>
+    <tr><td class="n">4</td><td>Vocabulary generator derived from production</td><td>every canonical name to exactly one id; unknown never resolves; regeneration byte-identical</td><td><span class="tag t-done">done</span></td><td></td></tr>
+    <tr><td class="n">5</td><td>Observation manifest with expected digests</td><td>104 rows, 52 sources; its digest is what consent binds</td><td><span class="tag t-done">done</span></td><td></td></tr>
+    <tr><td class="n">6</td><td>Frozen prompt and request configuration</td><td>request shaping explicit, never inherited from provider defaults</td><td><span class="tag t-part">partial</span></td><td><code>reasoning_effort</code> was not verified against the live API, because this gate committed to making no new calls. Recorded as UNVERIFIED; a synthetic-image preflight must pass before the corpus run, and a 4xx naming it stops the run</td></tr>
+    <tr><td class="n">7</td><td>Runner: closed schema, pre-send verification</td><td>a one-byte change refuses; the seal is re-checked</td><td><span class="tag t-done">done</span></td><td></td></tr>
+    <tr><td class="n">8</td><td>Scorer built strictly to the given bars</td><td>source clustering, conservative unresolved rule, power floor able to override</td><td><span class="tag t-done">done</span></td><td></td></tr>
+    <tr><td class="n">9</td><td>Consent, integrity and blindness tests</td><td>zero network calls; the request body is inspected, not inferred from absent files</td><td><span class="tag t-done">done</span></td><td></td></tr>
+    <tr><td class="n">10</td><td>Fixtures reaching all three outcomes</td><td>PASS, FAIL, INCONCLUSIVE, direction reversal, effect of unresolved observations</td><td><span class="tag t-done">done</span></td><td></td></tr>
+    <tr><td class="n">11</td><td>Mutation-test the three guards</td><td>each shown failing, then passing on the real code</td><td><span class="tag t-done">done</span></td><td></td></tr>
+    <tr><td class="n">12</td><td>Seal, decision log, commit, report</td><td>no corpus image, no production change, no push</td><td><span class="tag t-done">done</span></td><td></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>The evidence that the guards are load-bearing</h2>
+
+<p><code>scripts/dev/recog_so1.tests.py</code> — 47 checks, <strong>no network call anywhere</strong>.
+Three guards are shown failing under mutation and passing on the real code:</p>
+
+<ul class="plain">
+  <li>removing the power floor turns the underpowered fixture into a PASS;</li>
+  <li>weakening the clustering to per-observation collapses the permutation <code>p</code>;</li>
+  <li>counting an unresolved observation as disagreement turns a run that mostly did not work into a
+  significant result in the hypothesised direction.</li>
+</ul>
+
+<p>The file closes with <code>test_the_test</code>: a <code>verdict()</code> stubbed to always return
+PASS, and a consent gate stubbed to always authorise, must each be rejected by every expectation
+written against them. A check that cannot fail proves nothing.</p>
+
+<h3>Verified mechanically, not from memory</h3>
+<ul class="plain">
+  <li>The frozen RECOG-C1 set, <code>functions/src</code> and <code>mobile/lib</code> are
+  byte-identical.</li>
+  <li>The Groq key appears in no committed file.</li>
+  <li>All 104 images on disk hash exactly to the frozen RECOG-C1 digests.</li>
+  <li>All <strong>12 of 12</strong> sealed digests survive a fresh checkout through git's own filters
+  — after <code>.gitattributes</code> pinned their line endings. Without that pin the seal would have
+  refused forever on any fresh clone.</li>
+</ul>
+
+<h2>What remains, and what blocks it</h2>
+
+<div class="callout stop">
+  <span class="lbl">The run is not authorised</span>
+  <p>GPT-PM's GO covers this gate explicitly and the real run explicitly <strong>not</strong>. For
+  104 requests to leave, <code>core/plans/RECOG_SO1_CONSENT.json</code> must exist and satisfy the
+  state machine: an affirmative decision, the operator's verbatim words, a binding to the manifest
+  digest <code class="digest">367af387…</code>, a binding to the pre-registration digest, and the
+  recorded Data Controls state. Both substantive answers already exist; what remains is writing them
+  into that record and confirming it.</p>
+</div>
+
+<p>Then, in order: a <strong>preflight</strong> on one synthetic image to settle the unverified
+configuration parameter; the corpus pass (roughly 26–40 minutes against the measured ceiling of 8000
+tokens per minute); and the scorer printing a verdict by the bars above and by nothing else.</p>
+
+<footer>
+  RECOG-SO1 pre-registration gate. Commit <code>c82637b</code>, 15 files, 3294 lines.
+  Plan <code>fitness_app-2026-09-07T16-22-42-159Z-2801e8</code>. This report contains, and cannot
+  contain, no corpus photograph.
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

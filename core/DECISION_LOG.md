@@ -45844,3 +45844,61 @@ Two hook interactions worth recording, because both are the safety layer working
    heredoc payload. The fix was to write the text with a file tool instead of embedding it in a
    shell command — the gate was not weakened, disabled, or worked around; the prose simply stopped
    travelling through a shell.
+
+## 2026-09-07 — RECOG-SO1 pre-registration gate closed and reported
+
+Plan `fitness_app-2026-09-07T16-22-42-159Z-2801e8`, GPT-PM `VERDICT: APPROVE`, 0 BLOCKER / 0 MAJOR.
+Commit `c82637b`, 15 files, 3294 insertions. Report:
+`reports/RECOG_SO1_PREREGISTRATION_2026-09-07.{ru,}.html`, artifact
+`https://claude.ai/code/artifact/aef6154a-cea7-4cbc-b868-443f7bd8efe9`.
+
+**Eleven of twelve planned items are done; one is PARTIAL and the tail is named rather than
+absorbed.** `recog_so1_config.json` pins the request shape explicitly as GPT-PM's MAJOR 1 required —
+model, temperature, top_p, seed, output limit, response format, retry policy — but the
+`reasoning_effort` parameter is recorded as **UNVERIFIED**. The model advertises a `reasoning`
+feature; the accepted parameter name and values were never probed, because this gate's own
+verification committed to making **no new Groq calls at all**, and honouring that commitment was
+worth more than settling one parameter. The runner therefore treats a 4xx naming that parameter as a
+configuration failure that STOPS the run; it never silently falls back to provider defaults. A
+preflight on one synthetic image must settle it before the corpus pass, and whatever it establishes
+is appended to the pre-registration before that pass begins.
+
+**GPT-PM's five findings against plan revision 1, and what each actually cost.**
+
+- **BLOCKER.** The gate tested that the operator ANSWERED, not that they AUTHORISED — a well-formed
+  `do_not_send` record would have passed a presence-and-shape check. Fixed with a closed enum and a
+  state machine evaluated before any image byte is read and before the HTTP client is constructed.
+  The `deny` fixture asserts zero transport constructions and no output file, so the ordering is
+  demonstrated rather than described.
+- **MAJOR 1.** Hashing an image after sending it is forensics, not a frozen-dataset rule. A 104-row
+  manifest carries expected digests; the runner rehashes and re-verifies the seal before every
+  request. A one-byte change refuses with nothing sent.
+- **MAJOR 2.** The plan claimed GPT-PM's criteria "wholesale" and then omitted the >= 20
+  unique-source power floor — the one rule that fires exactly when a consent choice shrinks the
+  data. Implementing it exposed a second, larger hole: the `people_free_only` policy had **no input
+  at all**, so the branch was inert. That is what produced the people survey.
+- **MAJOR 3.** The vocabulary generator was promised in the verification and absent from the file
+  list. Now committed, derived from production, and cross-checked against the shipped TypeScript port
+  by RUNNING it over 78 probes rather than by reading both.
+- **MAJOR 4.** "The runner never opens the ground-truth file" proves one thing about one file. The
+  input schema is now closed and a capturing transport inspects the serialized request body.
+
+**A design decision worth recording on its own: the SO1 prompt is production's, byte for byte**,
+extracted from `buildPrompt()` rather than rewritten. A differently-worded question would confound
+every measured disagreement with the wording, and the experiment would be comparing two prompts
+rather than two models.
+
+**A measurable consequence of the frozen vocabulary.** 71 canonical prompt names resolve to 69
+equipment ids: `plyo box`/`aerobic step` collapse to `plyo_box`, and `parallettes`/`push-up blocks`
+to `parallettes`. Comparing raw strings would have manufactured two classes of disagreement that are
+agreements — which is precisely why GPT-PM required comparison on resolved identity.
+
+**Verified mechanically before the commit, not from recollection:** the frozen RECOG-C1 set and both
+production trees byte-identical; no Groq key in any committed file; all 104 corpus images on disk
+hashing exactly to the frozen RECOG-C1 digests; all 12 sealed digests surviving a fresh checkout
+through git's own filters.
+
+**Still blocking the real run, and it is the operator's:** `core/plans/RECOG_SO1_CONSENT.json` does
+not exist. GPT-PM's GO covers this gate explicitly and the real-photo run explicitly not. Both
+substantive answers are now on record — the whole corpus, and Global ZDR enabled — so what remains is
+writing them into a record that the state machine accepts, and confirming it.

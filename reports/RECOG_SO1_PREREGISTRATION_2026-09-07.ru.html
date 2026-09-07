@@ -1,0 +1,420 @@
+<title>Печать до эксперимента</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ink:#101820; --ink-2:#3d4a56; --ink-3:#6b7a88;
+    --paper:#f7f8f7; --surface:#ffffff; --line:#dde3e4;
+    --accent:#12557a; --accent-soft:#e6eef3;
+    --pass:#1f6f52; --pass-soft:#e4f0ea;
+    --warn:#8a6210; --warn-soft:#f8efdc;
+    --stop:#98301f; --stop-soft:#f8e6e2;
+    --mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+    --sans:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#e8edee; --ink-2:#b3c0c8; --ink-3:#8695a1;
+      --paper:#0e1418; --surface:#151d22; --line:#26333a;
+      --accent:#6cb6dd; --accent-soft:#152a36;
+      --pass:#68c69c; --pass-soft:#12251d;
+      --warn:#dcac52; --warn-soft:#2a2214;
+      --stop:#e08272; --stop-soft:#2c1712;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#e8edee; --ink-2:#b3c0c8; --ink-3:#8695a1;
+    --paper:#0e1418; --surface:#151d22; --line:#26333a;
+    --accent:#6cb6dd; --accent-soft:#152a36;
+    --pass:#68c69c; --pass-soft:#12251d;
+    --warn:#dcac52; --warn-soft:#2a2214;
+    --stop:#e08272; --stop-soft:#2c1712;
+  }
+
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.62;
+       font-size:16px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:850px;margin:0 auto;padding:0 24px 96px;}
+  header{padding:56px 0 28px;border-bottom:3px solid var(--ink);margin-bottom:8px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+           color:var(--accent);margin:0 0 14px;font-weight:600;}
+  h1{font-size:clamp(30px,5.4vw,46px);line-height:1.08;margin:0 0 16px;font-weight:600;
+     letter-spacing:-.022em;text-wrap:balance;}
+  .standfirst{font-size:19px;color:var(--ink-2);margin:0;max-width:62ch;text-wrap:pretty;}
+  h2{font-size:25px;margin:52px 0 14px;font-weight:600;letter-spacing:-.015em;text-wrap:balance;
+     padding-top:18px;border-top:1px solid var(--line);}
+  h3{font-size:17px;margin:30px 0 8px;font-weight:600;color:var(--ink);}
+  p{margin:0 0 15px;max-width:68ch;}
+  code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);color:var(--ink);
+       padding:1px 5px;border-radius:3px;}
+  strong{font-weight:600;}
+  a{color:var(--accent);}
+
+  .callout{border-left:4px solid var(--accent);background:var(--surface);padding:16px 20px;
+           margin:22px 0;border-radius:0 6px 6px 0;}
+  .callout.stop{border-left-color:var(--stop);background:var(--stop-soft);}
+  .callout.pass{border-left-color:var(--pass);background:var(--pass-soft);}
+  .callout.warn{border-left-color:var(--warn);background:var(--warn-soft);}
+  .callout p:last-child{margin-bottom:0;}
+  .callout .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+                font-weight:600;display:block;margin-bottom:6px;color:var(--ink-3);}
+
+  .tablewrap{overflow-x:auto;margin:22px 0;border:1px solid var(--line);border-radius:7px;
+             background:var(--surface);}
+  table{border-collapse:collapse;width:100%;font-size:14.5px;}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+     color:var(--ink-3);font-weight:600;background:var(--paper);}
+  tbody tr:last-child td{border-bottom:none;}
+  td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .tag{font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 7px;border-radius:3px;
+       white-space:nowrap;letter-spacing:.04em;}
+  .t-done{background:var(--pass-soft);color:var(--pass);}
+  .t-part{background:var(--warn-soft);color:var(--warn);}
+  .t-no{background:var(--stop-soft);color:var(--stop);}
+
+  /* decision regions */
+  .bands{margin:26px 0;border:1px solid var(--line);border-radius:7px;overflow:hidden;
+         background:var(--surface);}
+  .band{display:flex;align-items:stretch;border-bottom:1px solid var(--line);}
+  .band:last-child{border-bottom:none;}
+  .band .key{flex:0 0 132px;padding:14px;font-family:var(--mono);font-size:12.5px;font-weight:600;
+             letter-spacing:.06em;display:flex;align-items:center;}
+  .band .body{padding:14px 16px;font-size:14.5px;border-left:1px solid var(--line);flex:1;}
+  .band .body ul{margin:0;padding-left:18px;}
+  .band .body li{margin:2px 0;}
+  .band.pass .key{background:var(--pass-soft);color:var(--pass);}
+  .band.inc .key{background:var(--warn-soft);color:var(--warn);}
+  .band.fail .key{background:var(--stop-soft);color:var(--stop);}
+
+  .digest{font-family:var(--mono);font-size:12px;color:var(--ink-3);word-break:break-all;}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;
+         background:var(--line);border:1px solid var(--line);border-radius:7px;overflow:hidden;
+         margin:24px 0;}
+  .fact{background:var(--surface);padding:15px 16px;}
+  .fact .v{font-family:var(--mono);font-size:26px;font-weight:600;line-height:1.1;
+           font-variant-numeric:tabular-nums;}
+  .fact .k{font-size:12.5px;color:var(--ink-3);margin-top:5px;line-height:1.35;}
+  ul.plain{max-width:68ch;padding-left:20px;}
+  ul.plain li{margin:6px 0;}
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);
+         font-size:13.5px;color:var(--ink-3);}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App · RECOG-SO1 · 7 сентября 2026</p>
+  <h1>Печать до эксперимента</h1>
+  <p class="standfirst">Гейт замораживает каждое методологическое решение SO1 до того, как хоть одна
+  реальная фотография может быть отправлена, и строит раннер, который физически не запускается без
+  утвердительного согласия. За весь гейт не передано ни одного кадра.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ c82637b</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<h2>Что здесь произошло</h2>
+
+<p>RECOG-C1 закончился отрицательным результатом: распознаватель <strong>ни разу</strong> из 104
+наблюдений не сказал «не знаю», и ни уверенность, ни отрыв от второго кандидата, ни число
+альтернатив не отделяют кадр, где правильный ответ есть, от кадра, где его нет. Сигнал воздержания
+не берётся из самооценки модели.</p>
+
+<p>SO1 спрашивает, даёт ли его <em>вторая, независимая</em> модель: расходятся ли две модели чаще на
+кадрах, где единственного тренажёра нет, чем на кадрах, где он есть. Это
+<strong>предрегистрированная проверка гипотезы, а не начало реализации ансамбля</strong> —
+формулировка GPT-PM, принятая дословно. В production ничего не меняется.</p>
+
+<div class="facts">
+  <div class="fact"><div class="v">0</div><div class="k">кадров передано в этом гейте</div></div>
+  <div class="fact"><div class="v">12</div><div class="k">артефактов под печатью sha256</div></div>
+  <div class="fact"><div class="v">47/47</div><div class="k">проверок, ни одного сетевого вызова</div></div>
+  <div class="fact"><div class="v">3</div><div class="k">защиты показаны падающими под мутацией</div></div>
+</div>
+
+<h2>Два ответа оператора, оба закрывают условия GPT-PM</h2>
+
+<p><strong>Какое подмножество передавать.</strong> Дословно: <em>«весь корпус (52 фото, максимальная
+статистическая сила)»</em>. Это решило вопрос подмножества.</p>
+
+<p><strong>Состояние удержания данных у провайдера.</strong> GPT-PM требовал зафиксировать его
+<em>до</em> реального прогона и включить zero-data-retention, если он доступен. Через API это не
+читается — эндпоинта нет, в <code>/models</code> поля нет. Оператор прислал консоль:</p>
+
+<div class="callout pass">
+  <span class="lbl">Groq Data Controls, записано 2026-09-07</span>
+  <p><strong>Global ZDR: Enabled</strong> — «вход и выход не логируются, функции, требующие хранения,
+  отключены для организации». <code>Inference APIs ZDR</code> перекрыт глобальным. Batch — Off,
+  Fine-tuning &amp; LoRA — Off. Оба пути, где данные жили бы дольше запроса, закрыты.</p>
+</div>
+
+<h2>Люди в кадре: поправка оператора, которая изменила исход</h2>
+
+<p>Оператор указал, что «человек в кадре» и «постер на стене зала» — разные вещи, и что это надо
+различать. Проверка по тексту замороженной разметки давала <strong>3</strong> фотографии и была
+названа нижней границей. Визуальный обход всех 13 контактных листов — всех 52 исходников — дал
+<strong>21</strong>. Прежняя оценка промахнулась на 18.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>признак</th><th>кадров из 52</th><th>что это</th></tr></thead>
+  <tbody>
+    <tr><td>живые люди</td><td class="n">21</td><td>тренер, двое детей, отражение фотографа, посетители в глубине зала</td></tr>
+    <tr><td>печатные фигуры</td><td class="n">22</td><td>настенное панно с атлетом (8 кадров), баннеры, фотографии моделей на инструкционных табличках тренажёров</td></tr>
+    <tr><td>и то, и другое</td><td class="n">10</td><td>«есть человеческая фигура» и «есть человек» — разные вопросы</td></tr>
+    <tr><td>лицо читается</td><td class="n">5</td><td>тренер и двое детей</td></tr>
+    <tr><td>ни одного человека</td><td class="n">31</td><td></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Оператор был прав, что печатные фигуры в корпусе есть, и их много — наивный детектор людей
+пометил бы 22 кадра. Но корпус от этого не безлюден.</p>
+
+<div class="callout">
+  <span class="lbl">Почему это решило исход, а не просто уточнило картину</span>
+  <p>GPT-PM задал порог мощности: минимум 20 уникальных исходных фотографий в каждом классе разметки
+  каждого плеча, иначе результат INCONCLUSIVE независимо от цифр. Весь корпус даёт
+  <strong>26 и 26</strong>. Безлюдное подмножество дало бы <strong>16 и 15</strong> — и было бы
+  предрегистрировано на INCONCLUSIVE, что бы Qwen ни показал. Выбор оператора был не «побольше
+  статистики», а единственный вариант, способный дать вердикт.</p>
+</div>
+
+<div class="callout warn">
+  <span class="lbl">Граница самой разметки</span>
+  <p>Это один визуальный проход одного проверяющего по уменьшенным тайлам контактных листов, а не по
+  оригиналам. <code>real_people = no</code> означает «на этом разрешении человека не видно», а не
+  гарантию отсутствия. Существенно лучшая нижняя граница, чем regex по тексту, — но по-прежнему
+  нижняя.</p>
+</div>
+
+<h2>Пять замечаний GPT-PM и как каждое закрыто</h2>
+
+<p>Первый вариант плана получил <code>VERDICT: REVISE</code> — 1 BLOCKER и 4 MAJOR. Все пять приняты
+без спора.</p>
+
+<h3>BLOCKER — гейт проверял, что оператор <em>ответил</em>, а не что он <em>разрешил</em></h3>
+<p>Корректно оформленная запись <code>do_not_send</code> прошла бы проверку на наличие и форму. Теперь
+<code>decision</code> — закрытое перечисление <code>whole_corpus | people_free_only | deny</code>, и
+<code>deny</code>, неизвестное значение, отсутствующее поле, нечитаемый файл, отсутствующий файл,
+неописанное свойство, привязка к чужому манифесту или чужой предрегистрации — каждое
+<strong>отказывает</strong>, причём <em>до</em> чтения первого байта изображения и <em>до</em>
+создания HTTP-клиента. Показано, а не заявлено: на записи <code>deny</code> транспорт не создан ни
+разу и выходной файл не появился.</p>
+
+<h3>MAJOR 1 — записать хеш отправленного постфактум это криминалистика, а не заморозка датасета</h3>
+<p>Манифест из 104 наблюдений несёт ожидаемый sha256 каждого изображения, выведенный из замороженного
+манифеста RECOG-C1. Раннер пересчитывает хеш и заново сверяет печать промпта, словаря и конфигурации
+непосредственно перед каждым запросом. <strong>Изменение одного байта</strong> в картинке —
+наблюдение отказано, запрос не ушёл.</p>
+
+<h3>MAJOR 2 — порог мощности был обещан и не реализован</h3>
+<p>Это единственное правило, которое срабатывает ровно тогда, когда выбор согласия сокращает данные.
+Теперь оно исполнимо и способно перекрыть численно проходной результат. Побочно вскрылось, что у
+политики отбора <code>people_free_only</code> вообще <strong>не было входа</strong>: флага «в кадре
+человек» не нёс ни один замороженный артефакт. Отсюда и появилась разметка выше.</p>
+
+<h3>MAJOR 3 — генератор словаря был в проверке и отсутствовал в составе работ</h3>
+<p>Словарь теперь <em>выводится</em> из production <code>CANONICAL_MACHINES</code> и реестра алиасов
+портом <code>EquipmentAliasIndex.normalise</code> и <code>resolve</code> (проходы 1–2), а набор тестов
+сверяет этот порт с уже отгруженным TypeScript-портом <strong>запуском</strong>, на 78 пробах.
+71 каноническое имя разрешается в 69 идентификаторов: <code>plyo box</code>/<code>aerobic step</code>
+и <code>parallettes</code>/<code>push-up blocks</code> схлопываются — сравнение сырых строк
+изготовило бы два класса расхождений, которые на деле согласие.</p>
+
+<h3>MAJOR 4 — «раннер не открывает файл разметки» доказывает только про этот файл</h3>
+<p>Схема входа раннера теперь <strong>закрытая</strong> — ровно пять полей, любая лишняя колонка
+отказывает, — а перехватывающий транспорт проверяет <em>сериализованное тело запроса</em>: замороженный
+промпт, замороженный список тренажёров, ровно одно изображение, и ни одного вхождения класса разметки,
+ответа первой модели, признака плеча или поля скорера.</p>
+
+<h2>Области решения, зафиксированные заранее</h2>
+
+<div class="bands">
+  <div class="band pass"><div class="key">PASS</div><div class="body">
+    нужны все пять:
+    <ul>
+      <li><code>D_multiple ≥ 60%</code></li>
+      <li><code>D_canonical ≤ 20%</code></li>
+      <li><code>Δ ≥ 40 п.п.</code></li>
+      <li>направление держится отдельно в обоих плечах</li>
+      <li>перестановочный тест с кластеризацией по исходной фотографии, <code>p &lt; 0.05</code></li>
+    </ul>
+  </div></div>
+  <div class="band fail"><div class="key">FAIL</div><div class="body">
+    достаточно любого одного:
+    <ul>
+      <li><code>D_multiple &lt; 50%</code></li>
+      <li><code>D_canonical &gt; 25%</code></li>
+      <li><code>Δ &lt; 25 п.п.</code></li>
+      <li>точность Qwen <code>&lt; 80%</code> или хуже Gemini более чем на 10 п.п.</li>
+      <li>направление разворачивается в любом плече</li>
+    </ul>
+  </div></div>
+  <div class="band inc"><div class="key">INCONCLUSIVE</div><div class="body">
+    всё остальное — и это настоящий исход, а <strong>не разрешение подкручивать пороги на этих же
+    52 фотографиях</strong>. Порог, выбранный после того, как данные увидены, — не порог.
+    Отдельно: менее 20 уникальных исходников в любом классе любого плеча даёт INCONCLUSIVE, как бы
+    хорошо ни выглядели оценки.
+  </div></div>
+</div>
+
+<h2>Что было запланировано и что сделано</h2>
+
+<p>План <code>fitness_app-2026-09-07T16-22-42-159Z-2801e8</code>, GPT-PM
+<code>VERDICT: APPROVE</code>, 0 BLOCKER / 0 MAJOR. Критерий готовности по каждому пункту задавал
+GPT-PM, а не исполнитель.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>#</th><th>Запланировано</th><th>Definition of Done (GPT-PM)</th><th>Статус</th><th>Хвост</th></tr></thead>
+  <tbody>
+    <tr><td class="n">1</td><td>Документ предрегистрации с критериями дословно</td><td>каждый замороженный артефакт с sha256, INCONCLUSIVE как реальный исход</td><td><span class="tag t-done">сделано</span></td><td></td></tr>
+    <tr><td class="n">2</td><td>Схема согласия как машина состояний</td><td>deny/неизвестное/отсутствующее отказывают до чтения байтов и до создания клиента; deny даёт ноль вызовов транспорта</td><td><span class="tag t-done">сделано</span></td><td></td></tr>
+    <tr><td class="n">3</td><td>Политика приватности на уровне исходника + порог мощности</td><td>численно проходная, но маломощная фикстура выдаёт INCONCLUSIVE</td><td><span class="tag t-done">сделано</span></td><td></td></tr>
+    <tr><td class="n">4</td><td>Генератор словаря из production</td><td>каждое каноническое имя в ровно один id; unknown не разрешается; регенерация побайтова</td><td><span class="tag t-done">сделано</span></td><td></td></tr>
+    <tr><td class="n">5</td><td>Манифест наблюдений с ожидаемыми хешами</td><td>104 строки, 52 источника, дайджест — то, что связывает согласие</td><td><span class="tag t-done">сделано</span></td><td></td></tr>
+    <tr><td class="n">6</td><td>Заморозка промпта и конфигурации запроса</td><td>формирование запроса явное, не наследуется от умолчаний провайдера</td><td><span class="tag t-part">частично</span></td><td>параметр <code>reasoning_effort</code> не проверен живым вызовом, потому что гейт обязался не делать новых вызовов. Записан как UNVERIFIED; preflight с синтетической картинкой обязан пройти до корпусного прогона, 4xx останавливает прогон</td></tr>
+    <tr><td class="n">7</td><td>Раннер: закрытая схема, сверка перед каждым вызовом</td><td>изменение одного байта отказывает; печать перепроверяется</td><td><span class="tag t-done">сделано</span></td><td></td></tr>
+    <tr><td class="n">8</td><td>Скорер строго по заданным порогам</td><td>кластеризация по исходнику, консервативное правило, порог мощности может перекрыть</td><td><span class="tag t-done">сделано</span></td><td></td></tr>
+    <tr><td class="n">9</td><td>Тесты согласия, целостности и слепоты</td><td>ноль сетевых вызовов; тело запроса проверяется, а не выводится из отсутствия файлов</td><td><span class="tag t-done">сделано</span></td><td></td></tr>
+    <tr><td class="n">10</td><td>Фикстуры на все три исхода</td><td>PASS, FAIL, INCONCLUSIVE, разворот направления, влияние нерешённых</td><td><span class="tag t-done">сделано</span></td><td></td></tr>
+    <tr><td class="n">11</td><td>Мутационная проверка трёх защит</td><td>каждая показана падающей и затем проходящей на настоящем коде</td><td><span class="tag t-done">сделано</span></td><td></td></tr>
+    <tr><td class="n">12</td><td>Печать, журнал решений, коммит, отчёт</td><td>ни одного кадра корпуса, ни одного изменения в production, без push</td><td><span class="tag t-done">сделано</span></td><td></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Чем доказано, что защиты работают</h2>
+
+<p><code>scripts/dev/recog_so1.tests.py</code> — 47 проверок, <strong>ни одного сетевого вызова</strong>.
+Три защиты показаны падающими под мутацией и проходящими на настоящем коде:</p>
+
+<ul class="plain">
+  <li>снятие порога мощности превращает маломощную фикстуру в PASS;</li>
+  <li>ослабление кластеризации до по-наблюденческой обрушивает <code>p</code>;</li>
+  <li>засчитывание нерешённого наблюдения как расхождения превращает прогон, который в основном
+  не сработал, в значимый результат в нужную сторону.</li>
+</ul>
+
+<p>Файл заканчивается <code>test_the_test</code>: подменённый <code>verdict()</code>, всегда
+возвращающий PASS, и подменённый гейт согласия, всегда разрешающий, обязаны быть отвергнуты каждым
+ожиданием, написанным против них. Проверка, которая не может упасть, ничего не доказывает.</p>
+
+<h3>Проверено механически, а не по памяти</h3>
+<ul class="plain">
+  <li>Замороженный набор RECOG-C1 и <code>functions/src</code>, <code>mobile/lib</code> — побайтово
+  не изменились.</li>
+  <li>Ключа Groq нет ни в одном файле коммита.</li>
+  <li>Все 104 изображения на диске побайтово совпадают с замороженными хешами RECOG-C1.</li>
+  <li>Все <strong>12 из 12</strong> дайджестов печати переживают свежий checkout через фильтры git —
+  после того как <code>.gitattributes</code> закрепил перевод строк. Без этого печать отказывала бы
+  навсегда на любой свежей копии репозитория.</li>
+</ul>
+
+<h2>Что осталось и чем оно заблокировано</h2>
+
+<div class="callout stop">
+  <span class="lbl">Прогон не разрешён</span>
+  <p>GPT-PM выдал GO явно на этот гейт и явно <strong>не</strong> на реальный прогон. Чтобы 104
+  запроса ушли, нужен файл <code>core/plans/RECOG_SO1_CONSENT.json</code>, который проходит машину
+  состояний: утвердительное решение, дословные слова оператора, привязка к дайджесту манифеста
+  <code class="digest">367af387…</code>, привязка к дайджесту предрегистрации и записанное состояние
+  Data Controls. Оба содержательных ответа уже есть — их осталось записать в файл и подтвердить.</p>
+</div>
+
+<p>Следом по дорожной карте: <strong>preflight</strong> одним синтетическим изображением, чтобы
+подтвердить незапрошенный параметр конфигурации; затем корпусный прогон (~26–40 минут при измеренном
+потолке 8000 токенов в минуту); затем скорер печатает вердикт по порогам выше и ни по каким другим.</p>
+
+<footer>
+  Гейт RECOG-SO1, предрегистрация. Коммит <code>c82637b</code>, 15 файлов, 3294 строки.
+  План <code>fitness_app-2026-09-07T16-22-42-159Z-2801e8</code>. Отчёт не содержит и не может
+  содержать фотографий корпуса.
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
