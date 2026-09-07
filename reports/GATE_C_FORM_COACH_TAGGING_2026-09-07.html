@@ -1,0 +1,411 @@
+<title>Silhouette Versus Joint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --ground: #F2F4F3;
+    --surface: #FFFFFF;
+    --sunken: #E8ECEA;
+    --ink: #14181A;
+    --muted: #5A6568;
+    --rule: #D8DEDC;
+    --accent: #0F6E63;
+    --signal: #96600F;
+    --alarm: #8F3636;
+    --display: 'Bricolage Grotesque', 'Trebuchet MS', system-ui, sans-serif;
+    --body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121614; --surface: #1A1F1D; --sunken: #101412;
+      --ink: #E8EDEA; --muted: #93A09B; --rule: #2B3330;
+      --accent: #57C4B3; --signal: #D9A441; --alarm: #DE8B8B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121614; --surface: #1A1F1D; --sunken: #101412;
+    --ink: #E8EDEA; --muted: #93A09B; --rule: #2B3330;
+    --accent: #57C4B3; --signal: #D9A441; --alarm: #DE8B8B;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--body); font-size: 17px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 62rem; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem) 5rem; }
+  .col { max-width: 40rem; }
+
+  header { padding: clamp(2.5rem, 7vw, 4.5rem) 0 1.75rem; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(2.1rem, 5.5vw, 3.4rem); line-height: 1.04;
+    letter-spacing: -0.02em; margin: 0 0 0.7rem; text-wrap: balance;
+  }
+  .standfirst {
+    font-size: clamp(1.05rem, 2.2vw, 1.25rem); color: var(--muted);
+    margin: 0; max-width: 44rem;
+  }
+
+  h2 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(1.4rem, 3vw, 1.9rem); line-height: 1.15;
+    letter-spacing: -0.015em; margin: 3.2rem 0 0.4rem; text-wrap: balance;
+  }
+  h2 .num {
+    font-family: var(--mono); font-size: 0.7em; color: var(--accent);
+    margin-right: 0.5em; font-weight: 400;
+  }
+  h3 {
+    font-family: var(--display); font-weight: 600; font-size: 1.08rem;
+    letter-spacing: 0.005em; margin: 2rem 0 0.3rem;
+  }
+  p { margin: 0.85rem 0; }
+  a { color: var(--accent); }
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+  code { background: var(--sunken); padding: 0.08em 0.34em; border-radius: 3px; word-break: break-word; }
+  strong { font-weight: 600; }
+
+  .strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 2rem 0 0;
+  }
+  .strip div { background: var(--surface); padding: 0.85rem 1rem; }
+  .strip dt {
+    font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 0.3rem;
+  }
+  .strip dd {
+    margin: 0; font-family: var(--display); font-weight: 600;
+    font-size: 1.02rem; line-height: 1.25;
+  }
+
+  .lede {
+    border-left: 3px solid var(--accent); padding: 0.2rem 0 0.2rem 1.15rem;
+    margin: 1.6rem 0; font-size: 1.08rem;
+  }
+  .lede.warn { border-left-color: var(--signal); }
+  .lede.bad { border-left-color: var(--alarm); }
+
+  .tablewrap { overflow-x: auto; margin: 1.4rem 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 40rem; font-size: 0.93rem; }
+  th, td {
+    text-align: left; vertical-align: top; padding: 0.62rem 0.8rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  thead th {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    border-bottom: 1.5px solid var(--ink); white-space: nowrap;
+  }
+  tbody tr:nth-child(even) { background: color-mix(in srgb, var(--sunken) 55%, transparent); }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.hot td { color: var(--alarm); font-weight: 600; }
+
+  .tag {
+    display: inline-block; font-family: var(--mono); font-size: 0.66rem;
+    letter-spacing: 0.08em; text-transform: uppercase; padding: 0.14em 0.5em;
+    border: 1px solid currentColor; border-radius: 2px; white-space: nowrap;
+  }
+  .tag.done { color: var(--accent); }
+  .tag.part { color: var(--signal); }
+  .tag.bad  { color: var(--alarm); }
+
+  ul, ol { padding-left: 1.25rem; margin: 0.85rem 0; }
+  li { margin: 0.35rem 0; }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.2rem; border-top: 1px solid var(--rule);
+    font-size: 0.85rem; color: var(--muted);
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App &middot; Gate C &middot; 7 September 2026</p>
+  <h1>The coach was demonstrating a different movement</h1>
+  <p class="standfirst">A tagging rule confused what the joint does with what the silhouette looks
+  like. 43 exercises performed lying on the back were given a standing deadlift animation.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 698c698</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<dl class="strip">
+  <div><dt>Plan</dt><dd>rev.3, <code>494e0539</code></dd></div>
+  <div><dt>GPT-PM verdict</dt><dd>APPROVE after two REVISE</dd></div>
+  <div><dt>Tags removed</dt><dd>86</dd></div>
+  <div><dt>Tags added</dt><dd>0</dd></div>
+  <div><dt>Offered</dt><dd>450 &rarr; 374</dd></div>
+  <div><dt>Tests</dt><dd>74 + 39 + 614</dd></div>
+</dl>
+
+<div class="col">
+
+<h2><span class="num">01</span>The root: a joint is not a silhouette</h2>
+
+<p>The catalogue maps an exercise onto one of seven hand-drawn animations by matching words in its
+title. <code>hinge</code>'s <code>matchTitle</code> contained <code>hip thrust|glute bridge</code>.
+That was not a typo &mdash; a hip thrust really is a hinge at the hip joint, and somebody put it
+there deliberately. But the tagger's own header defines the tag differently:</p>
+
+<div class="lede"><code>poseTargetId: "squat"</code> means: this row's silhouette, <strong>seen
+from the side</strong>, is the squat pattern.</div>
+
+<p>A hip thrust is performed supine; the <code>hinge</code> animation is a standing deadlift. The
+rule had substituted <em>what the joint does</em> for <em>what the shape looks like</em>. The same
+substitution produced five more families.</p>
+
+<h2><span class="num">02</span>The narrowing, pattern-local only</h2>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Pattern</th><th>Change</th><th>Rows</th><th>Why the silhouette differs</th></tr></thead>
+  <tbody>
+    <tr><td><code>hinge</code></td><td><code>matchTitle</code> drops <code>hip thrust|glute bridge</code></td><td class="num">43</td><td>supine, not standing</td></tr>
+    <tr><td><code>curl</code></td><td><code>notTitle</code> = <code>wrist curl</code></td><td class="num">11</td><td>the wrist moves, the elbow does not</td></tr>
+    <tr><td><code>situp</code></td><td><code>notTitle</code> = <code>oblique|twist|hollow hold</code></td><td class="num">11</td><td>rotation is edge-on; a hold is not a rep</td></tr>
+    <tr><td><code>lunge</code></td><td><code>matchTitle</code> drops <code>step[- ]?up</code></td><td class="num">7</td><td>rises onto a platform, not down into a lunge</td></tr>
+    <tr><td><code>pushup</code></td><td><code>notTitle</code> = <code>side plank</code></td><td class="num">7</td><td>rolled ninety degrees out of the plank shape</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="lede warn">The shared <code>excludeWhen</code> list is <strong>byte-identical</strong>,
+and that was GPT-PM's BLOCKER against the plan's first revision. It is shared on purpose: "what
+makes a movement unjudgeable by one side-on camera is the same in each case". Putting
+<code>plank</code> in it would have stripped 73 legitimate <code>pushup</code> tags. Every
+exclusion here is pattern-local, through the <code>notTitle</code> mechanism <code>squat</code>
+already uses in the same file.</div>
+
+<p><code>squat</code>, <code>overhead_press</code> and <code>calf_raise</code> are untouched, which
+deliberately leaves <strong>ten borderline rows</strong> tagged: six jump and pulse squats and four
+push presses. Their silhouette IS the tagged pattern; what differs is tempo or an added leg dip.
+Removing them would have been a different argument than the one this gate made, so they stay and
+are named rather than quietly swept along. Verified after the write: all ten kept their tags.</p>
+
+<h2><span class="num">03</span>The seal went in before the rule, not after</h2>
+
+<p>The whole gate rests on one claim: exactly what was argued for changed, and nothing else. That
+claim is worth nothing if the "expected" set is written <em>after</em> the rule and takes the shape
+of whatever the rule happened to do. GPT-PM raised this as a MAJOR against the second revision: a
+list in a scratchpad proves no ordering, and a final diff cannot establish which came first.</p>
+
+<p>So the manifest went into git <strong>first, in its own commit</strong> &mdash;
+<code>5beea15</code>, 86 rows, sha256
+<code>1301162912e7a072bb2636f0f35116c3bd434bdf8e3409b3ec0f81536d9b221f</code>, the same digest
+recorded in the approved plan, so the plan hash freezes it too. <code>git show --stat</code> on that
+commit is the proof that no rule, asset or test is in it.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Subset</th><th>Rows</th><th>What it is</th></tr></thead>
+  <tbody>
+    <tr><td><code>GATE</code></td><td class="num">72</td><td>this gate's own decision</td></tr>
+    <tr><td><code>DRIFT</code></td><td class="num">7</td><td>the asset already disagreed with the <em>current</em> rules</td></tr>
+    <tr><td><code>SIDEPLK</code></td><td class="num">7</td><td>side planks tagged <code>pushup</code>, found by GPT-PM</td></tr>
+    <tr><td><code>AMBIG</code></td><td class="num">0</td><td>deliberately empty: no row may gain a tag</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2><span class="num">04</span>What changed on disk</h2>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Tag</th><th>Before</th><th>After</th><th>&Delta;</th><th>Reaches a user</th></tr></thead>
+  <tbody>
+    <tr class="hot"><td><code>hinge</code></td><td class="num">103</td><td class="num">60</td><td class="num">&minus;43</td><td>yes</td></tr>
+    <tr><td><code>situp</code></td><td class="num">61</td><td class="num">47</td><td class="num">&minus;14</td><td>yes</td></tr>
+    <tr><td><code>curl</code></td><td class="num">114</td><td class="num">102</td><td class="num">&minus;12</td><td>yes</td></tr>
+    <tr><td><code>pushup</code></td><td class="num">73</td><td class="num">64</td><td class="num">&minus;9</td><td>no</td></tr>
+    <tr><td><code>lunge</code></td><td class="num">102</td><td class="num">95</td><td class="num">&minus;7</td><td>yes</td></tr>
+    <tr><td><code>calf_raise</code></td><td class="num">17</td><td class="num">16</td><td class="num">&minus;1</td><td>no</td></tr>
+    <tr><td><code>squat</code></td><td class="num">37</td><td class="num">37</td><td class="num">0</td><td>yes</td></tr>
+    <tr><td><code>overhead_press</code></td><td class="num">33</td><td class="num">33</td><td class="num">0</td><td>yes</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>Offered to a user: 450 &rarr; 374.</strong> 76 fewer &mdash; 72 this gate's decision plus
+4 drift rows that happened to reach a user. Total tagged 540 &rarr; 454.
+<code>exercises_vendor.ru.json</code> carries no <code>poseTargetId</code> at all and is
+byte-identical, as are all 29 files under <code>mobile/lib/features/form_check/</code>. The gate
+changes what is <em>offered</em>, never how a demonstration is drawn or scored.</p>
+
+<h2><span class="num">05</span>Planned / Definition of Done / status</h2>
+
+<p>The DoD is not mine. GPT-PM issued the acceptance table with the second REVISE; plan rev.3
+adopted it whole, reject conditions included.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>#</th><th>Planned</th><th>DoD (GPT-PM)</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td>Seal 86 transitions in a commit of their own, before the rules</td><td>Bytes hash to the digest in the plan; ids unique and sorted; no rule, asset or test in that commit</td><td><span class="tag done">done</span></td></tr>
+    <tr><td class="num">2</td><td><code>--transitions</code> and <code>--expect</code> on the tagger</td><td>Compares (id, old, new) triples, not ids or counts; demonstrates both MISSING and SURPLUS detection; writes nothing</td><td><span class="tag done">done</span></td></tr>
+    <tr><td class="num">3</td><td>Narrow the rules pattern-locally</td><td><code>excludeWhen</code> byte-identical; no exercise-id exception; Side Plank does not become pushup, Front Plank stays</td><td><span class="tag done">done</span></td></tr>
+    <tr><td class="num">4</td><td>Dry run against the seal</td><td>exit 0, no MISSING and no SURPLUS; working-tree hashes unchanged</td><td><span class="tag done">done</span></td></tr>
+    <tr><td class="num">5</td><td>One authoritative write</td><td>Asset and audit CSV agree; the RU asset does not mutate</td><td><span class="tag done">done</span></td></tr>
+    <tr><td class="num">6</td><td>Mechanical proof across all 1887 rows</td><td>Every transition sealed and every seal occurred; no field but <code>poseTargetId</code> changed; counts reconcile</td><td><span class="tag done">done</span></td></tr>
+    <tr><td class="num">7</td><td>Update the rule tests</td><td>Every removed family plus keep-cases; Front Plank pinned; Side Plank pinned to the new behaviour</td><td><span class="tag done">done</span></td></tr>
+    <tr><td class="num">8</td><td>Asset-equals-rules test</td><td>All 1887 rows including nulls; no sampling, no normalising a mismatch away</td><td><span class="tag done">done</span></td></tr>
+    <tr><td class="num">9</td><td>Mutation-prove both new tests</td><td>The mutation fails the right test, the clean tree is green again, no mutation residue</td><td><span class="tag done">done</span></td></tr>
+    <tr><td class="num">10</td><td>Three suites</td><td>All three actually executed and passed; "not run" is not reported as a pass</td><td><span class="tag done">done</span></td></tr>
+    <tr><td class="num">11</td><td>Decision log and commit</td><td>Numbers agree with the mechanical evidence; only gate scope in the commit; <code>form_check/</code> unchanged</td><td><span class="tag done">done</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>Two deviations from the plan, both declared here rather than found later.</strong> First,
+the seal commit carries a third file the plan did not name: <code>.gitattributes</code>. This
+repository has <code>core.autocrlf=true</code>, and without pinning <code>eol=lf</code> a fresh
+Windows checkout would hand back CRLF &mdash; the seal's digest would fail to verify for anyone but
+me, which is to say it would stop being a seal. Second, the Python interpreter resolves to
+<code>D:\Repo\ERP\.venv</code>; this repository has none of its own, and the tagger and its tests
+are stdlib plus pytest, so the result stands &mdash; but it is recorded rather than glossed.</p>
+
+<h2><span class="num">06</span>Three things the gate got wrong before it got them right</h2>
+
+<p><strong>The first count was 69 and it was wrong.</strong> It came from regexes over exercise
+<em>ids</em> rather than from running the tagger's own <code>classify()</code> over titles: the
+<code>situp</code> family is 11 rows, not 8. The real classifier says 72. A claim broader than the
+check behind it &mdash; the recurring defect of this session, and the reason the seal is now
+computed rather than typed.</p>
+
+<p><strong>A heredoc silently destroyed the first comparator run.</strong> <code>\\b</code>
+collapsed to <code>\b</code>, Python read it as a backspace, <code>\blunge</code> and
+<code>\bswing\b</code> stopped matching anything, and the run reported 146 phantom transitions and
+five reversals. This hazard was already in memory, and I walked into it anyway. Every script in this
+gate is written with a file-writing tool, none with a heredoc.</p>
+
+<p><strong>"<code>pushup</code> reaches no user, so the false tag is harmless" was wrong in kind,
+not only in conclusion.</strong> GPT-PM refused it correctly: the tag asserts <em>what the
+silhouette is</em>, and stays valid for the day the pattern becomes coachable &mdash; support is a
+separate decision, which the module header states outright. I had weighed today's reachability
+against a contract that excludes it. The seven already-wrong Side Plank rows are cleaned here as a
+result, rather than preserved.</p>
+
+<h2><span class="num">07</span>What now prevents this recurring</h2>
+
+<div class="lede bad">The asset had drifted from the rules and nothing noticed. Seven rows carried
+tags the rules had long stopped producing &mdash; six on <code>Weight bench</code>, one on
+<code>Bench (flat / adjustable)</code>, all rejected by <code>excludeWhen.equipmentLabel</code>.
+Nothing in the repository compared the asset against the rules.</div>
+
+<p><code>test_the_shipped_catalog_matches_the_rules</code> now asserts equality across all 1887
+rows, nulls on both sides included. <strong>That test, not the 86 removals, is the durable
+fix.</strong> A test over a list of families would never have found those seven rows; only equality
+does.</p>
+
+<p>The tagger gained <code>--transitions</code> (<em>which</em> rows changed, not how many) and
+<code>--expect PATH</code> (compare full triples against a sealed file, exit non-zero naming MISSING
+and SURPLUS separately). Neither writes; <code>--write</code> combined with either is refused. The
+comparator was shown failing <em>before</em> it was trusted: against a wrong file carrying
+<strong>the same 86 rows</strong> &mdash; so a count-based check would have passed it &mdash; and it
+named both classes.</p>
+
+<h2><span class="num">08</span>Not done</h2>
+
+<p>The ten borderline rows. Everything in the recogniser: gates B (a sealed corpus with negative
+strata) and A (teach the recogniser to abstain) remain open. No push &mdash; the plan put it
+explicitly out of scope and GPT-PM confirmed that in the verdict.</p>
+
+</div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

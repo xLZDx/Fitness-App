@@ -45387,3 +45387,21 @@ check would have passed it, and it named both classes.
 ### Not done here
 
 The 10 borderline rows. Anything in the recogniser — gates B and A are still open. No push.
+
+### Report, and a correction to the S23 report of the same day
+
+`reports/GATE_C_FORM_COACH_TAGGING_2026-09-07.{ru,}.html`, published at
+`https://claude.ai/code/artifact/8cc920e5-da5e-4942-8f65-69ef05166af1`. It carries the
+planned / Definition-of-Done / status table per item that a Rosetta-governed run owes, with GPT-PM's
+own acceptance criteria in the DoD column rather than criteria I wrote for my own work.
+
+`reports/S23_RECOGNITION_FIELD_2026-09-07.{ru,}.html` is corrected in both languages and
+republished to its existing URL. Its Form Coach section cited
+`ea_dumbbell_plank_pullthrough` and `ea_alternate_leg_raise_from_reverse_plank_position` as visible
+wrong demonstrations. They cannot be: `pushup` is absent from `kPosePatternToExercise`, so
+`formCoachSupports` is false for it and no exercise carrying that tag has ever been offered a
+demonstration. The observation was right and the example was not — it cited a defect nobody could
+see. Replaced with `ea_dumbbell_single_leg_step_up` and `ea_plate_hollow_hold`, both of which did
+reach a user and both of which this gate untagged; the stated blast radius is corrected from 540
+across seven tags to 450 across six; the tense is corrected to the past, since the rows no longer
+carry those tags; and the section now records that Gate C closed it the same day.

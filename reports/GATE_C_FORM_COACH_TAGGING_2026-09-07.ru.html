@@ -1,0 +1,411 @@
+<title>Силуэт против сустава</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --ground: #F2F4F3;
+    --surface: #FFFFFF;
+    --sunken: #E8ECEA;
+    --ink: #14181A;
+    --muted: #5A6568;
+    --rule: #D8DEDC;
+    --accent: #0F6E63;
+    --signal: #96600F;
+    --alarm: #8F3636;
+    --display: 'Bricolage Grotesque', 'Trebuchet MS', system-ui, sans-serif;
+    --body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121614; --surface: #1A1F1D; --sunken: #101412;
+      --ink: #E8EDEA; --muted: #93A09B; --rule: #2B3330;
+      --accent: #57C4B3; --signal: #D9A441; --alarm: #DE8B8B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121614; --surface: #1A1F1D; --sunken: #101412;
+    --ink: #E8EDEA; --muted: #93A09B; --rule: #2B3330;
+    --accent: #57C4B3; --signal: #D9A441; --alarm: #DE8B8B;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--body); font-size: 17px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 62rem; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem) 5rem; }
+  .col { max-width: 40rem; }
+
+  header { padding: clamp(2.5rem, 7vw, 4.5rem) 0 1.75rem; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(2.1rem, 5.5vw, 3.4rem); line-height: 1.04;
+    letter-spacing: -0.02em; margin: 0 0 0.7rem; text-wrap: balance;
+  }
+  .standfirst {
+    font-size: clamp(1.05rem, 2.2vw, 1.25rem); color: var(--muted);
+    margin: 0; max-width: 44rem;
+  }
+
+  h2 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(1.4rem, 3vw, 1.9rem); line-height: 1.15;
+    letter-spacing: -0.015em; margin: 3.2rem 0 0.4rem; text-wrap: balance;
+  }
+  h2 .num {
+    font-family: var(--mono); font-size: 0.7em; color: var(--accent);
+    margin-right: 0.5em; font-weight: 400;
+  }
+  h3 {
+    font-family: var(--display); font-weight: 600; font-size: 1.08rem;
+    letter-spacing: 0.005em; margin: 2rem 0 0.3rem;
+  }
+  p { margin: 0.85rem 0; }
+  a { color: var(--accent); }
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+  code { background: var(--sunken); padding: 0.08em 0.34em; border-radius: 3px; word-break: break-word; }
+  strong { font-weight: 600; }
+
+  .strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 2rem 0 0;
+  }
+  .strip div { background: var(--surface); padding: 0.85rem 1rem; }
+  .strip dt {
+    font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 0.3rem;
+  }
+  .strip dd {
+    margin: 0; font-family: var(--display); font-weight: 600;
+    font-size: 1.02rem; line-height: 1.25;
+  }
+
+  .lede {
+    border-left: 3px solid var(--accent); padding: 0.2rem 0 0.2rem 1.15rem;
+    margin: 1.6rem 0; font-size: 1.08rem;
+  }
+  .lede.warn { border-left-color: var(--signal); }
+  .lede.bad { border-left-color: var(--alarm); }
+
+  .tablewrap { overflow-x: auto; margin: 1.4rem 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 40rem; font-size: 0.93rem; }
+  th, td {
+    text-align: left; vertical-align: top; padding: 0.62rem 0.8rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  thead th {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    border-bottom: 1.5px solid var(--ink); white-space: nowrap;
+  }
+  tbody tr:nth-child(even) { background: color-mix(in srgb, var(--sunken) 55%, transparent); }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.hot td { color: var(--alarm); font-weight: 600; }
+
+  .tag {
+    display: inline-block; font-family: var(--mono); font-size: 0.66rem;
+    letter-spacing: 0.08em; text-transform: uppercase; padding: 0.14em 0.5em;
+    border: 1px solid currentColor; border-radius: 2px; white-space: nowrap;
+  }
+  .tag.done { color: var(--accent); }
+  .tag.part { color: var(--signal); }
+  .tag.bad  { color: var(--alarm); }
+
+  ul, ol { padding-left: 1.25rem; margin: 0.85rem 0; }
+  li { margin: 0.35rem 0; }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.2rem; border-top: 1px solid var(--rule);
+    font-size: 0.85rem; color: var(--muted);
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App · Gate C · 7 сентября 2026</p>
+  <h1>Тренер показывал чужое движение</h1>
+  <p class="standfirst">Правило разметки перепутало то, что делает сустав, с тем, как выглядит
+  силуэт. 43 упражнения, выполняемых лёжа на спине, получили анимацию становой тяги стоя.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 698c698</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<dl class="strip">
+  <div><dt>План</dt><dd>rev.3, <code>494e0539</code></dd></div>
+  <div><dt>Вердикт GPT-PM</dt><dd>APPROVE после двух REVISE</dd></div>
+  <div><dt>Снято тегов</dt><dd>86</dd></div>
+  <div><dt>Добавлено</dt><dd>0</dd></div>
+  <div><dt>Предлагается</dt><dd>450 → 374</dd></div>
+  <div><dt>Тестов</dt><dd>74 + 39 + 614</dd></div>
+</dl>
+
+<div class="col">
+
+<h2><span class="num">01</span>Корень: сустав — это не силуэт</h2>
+
+<p>Каталог связывает упражнение с одной из семи нарисованных анимаций, сопоставляя слова в
+названии. У паттерна <code>hinge</code> в <code>matchTitle</code> стояло
+<code>hip thrust|glute bridge</code>. Это не была опечатка — хип-траст действительно шарнир в
+тазобедренном суставе, и кто-то добавил его туда осознанно. Но заголовок самого разметчика
+определяет тег иначе:</p>
+
+<div class="lede"><code>poseTargetId: "squat"</code> означает: силуэт этой строки, <strong>если
+смотреть сбоку</strong>, — это паттерн приседа.</div>
+
+<p>Хип-траст выполняется лёжа на спине; анимация <code>hinge</code> — становая тяга стоя. Правило
+подменило <em>то, что делает сустав</em>, на <em>то, как выглядит форма</em>. Та же подмена
+породила ещё пять семейств.</p>
+
+<h2><span class="num">02</span>Сужение — только внутри паттернов</h2>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Паттерн</th><th>Изменение</th><th>Строк</th><th>Почему силуэт другой</th></tr></thead>
+  <tbody>
+    <tr><td><code>hinge</code></td><td><code>matchTitle</code> теряет <code>hip thrust|glute bridge</code></td><td class="num">43</td><td>лёжа, а не стоя</td></tr>
+    <tr><td><code>curl</code></td><td><code>notTitle</code> = <code>wrist curl</code></td><td class="num">11</td><td>двигается запястье, локоть — нет</td></tr>
+    <tr><td><code>situp</code></td><td><code>notTitle</code> = <code>oblique|twist|hollow hold</code></td><td class="num">11</td><td>ротация видна с торца; удержание — не повтор</td></tr>
+    <tr><td><code>lunge</code></td><td><code>matchTitle</code> теряет <code>step[- ]?up</code></td><td class="num">7</td><td>подъём на платформу, а не спуск в выпад</td></tr>
+    <tr><td><code>pushup</code></td><td><code>notTitle</code> = <code>side plank</code></td><td class="num">7</td><td>повёрнут на 90° от формы планки</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="lede warn">Общий список <code>excludeWhen</code> — <strong>побайтово нетронут</strong>, и
+это был BLOCKER GPT-PM против первой редакции плана. Он общий намеренно: «что делает движение
+неразличимым для одной боковой камеры — одинаково в каждом случае». Слово <code>plank</code> в нём
+снесло бы 73 законных тега <code>pushup</code>. Каждое исключение здесь — внутри своего паттерна,
+через механизм <code>notTitle</code>, который <code>squat</code> в этом же файле уже применяет.</div>
+
+<p><code>squat</code>, <code>overhead_press</code> и <code>calf_raise</code> не тронуты — и это
+намеренно оставляет размеченными <strong>десять пограничных строк</strong>: шесть прыжковых и
+пульсовых приседов и четыре швунга. Их силуэт и есть заявленный паттерн; отличается темп или
+добавленный подсед ногами. Снять их было бы другим доводом, чем тот, который этот гейт привёл, —
+поэтому они остаются и названы поимённо, а не уносятся заодно. Проверено после записи: все десять
+теги сохранили.</p>
+
+<h2><span class="num">03</span>Печать поставлена до правила, а не после</h2>
+
+<p>Весь гейт держится на одном утверждении: изменилось ровно то, о чём договорились, и ничего
+сверх. Утверждение ничего не стоит, если «ожидаемый» набор написан <em>после</em> правила и принял
+форму того, что правило случайно сделало. GPT-PM выставил это как MAJOR против второй редакции:
+список в scratchpad не доказывает порядка, а финальный diff не устанавливает, что было раньше.</p>
+
+<p>Поэтому манифест ушёл в git <strong>первым и отдельным коммитом</strong> —
+<code>5beea15</code>, 86 строк, sha256 <code>1301162912e7a072bb2636f0f35116c3bd434bdf8e3409b3ec0f81536d9b221f</code>,
+тот же дайджест записан в одобренном плане, так что его замораживает и хеш плана.
+<code>git show --stat</code> на этом коммите — доказательство, что ни правил, ни ассета, ни тестов
+в нём нет.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Подмножество</th><th>Строк</th><th>Что это</th></tr></thead>
+  <tbody>
+    <tr><td><code>GATE</code></td><td class="num">72</td><td>решение этого гейта</td></tr>
+    <tr><td><code>DRIFT</code></td><td class="num">7</td><td>ассет уже расходился с <em>текущими</em> правилами</td></tr>
+    <tr><td><code>SIDEPLK</code></td><td class="num">7</td><td>боковые планки с тегом <code>pushup</code>, находка GPT-PM</td></tr>
+    <tr><td><code>AMBIG</code></td><td class="num">0</td><td>намеренно пусто: ни одна строка не должна получить тег</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2><span class="num">04</span>Что изменилось на диске</h2>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Тег</th><th>Было</th><th>Стало</th><th>Δ</th><th>Доходит до пользователя</th></tr></thead>
+  <tbody>
+    <tr class="hot"><td><code>hinge</code></td><td class="num">103</td><td class="num">60</td><td class="num">−43</td><td>да</td></tr>
+    <tr><td><code>situp</code></td><td class="num">61</td><td class="num">47</td><td class="num">−14</td><td>да</td></tr>
+    <tr><td><code>curl</code></td><td class="num">114</td><td class="num">102</td><td class="num">−12</td><td>да</td></tr>
+    <tr><td><code>pushup</code></td><td class="num">73</td><td class="num">64</td><td class="num">−9</td><td>нет</td></tr>
+    <tr><td><code>lunge</code></td><td class="num">102</td><td class="num">95</td><td class="num">−7</td><td>да</td></tr>
+    <tr><td><code>calf_raise</code></td><td class="num">17</td><td class="num">16</td><td class="num">−1</td><td>нет</td></tr>
+    <tr><td><code>squat</code></td><td class="num">37</td><td class="num">37</td><td class="num">0</td><td>да</td></tr>
+    <tr><td><code>overhead_press</code></td><td class="num">33</td><td class="num">33</td><td class="num">0</td><td>да</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>Предлагается пользователю: 450 → 374.</strong> На 76 меньше — 72 решения этого гейта
+плюс 4 строки дрейфа, которые до пользователя доходили. Размечено всего 540 → 454.
+<code>exercises_vendor.ru.json</code> не содержит <code>poseTargetId</code> вовсе и побайтово тот
+же; как и все 29 файлов под <code>mobile/lib/features/form_check/</code>. Гейт меняет то, что
+<em>предлагается</em>, и никогда — то, как демонстрация рисуется или оценивается.</p>
+
+<h2><span class="num">05</span>Планировалось / Definition of Done / статус</h2>
+
+<p>DoD писал не я. GPT-PM выдал таблицу критериев приёмки вместе со вторым REVISE; план rev.3
+принял её целиком, включая условия отказа.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>№</th><th>Планировалось</th><th>DoD (GPT-PM)</th><th>Статус</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td>Запечатать 86 переходов отдельным коммитом до правил</td><td>Байты совпадают с дайджестом в плане; id уникальны и отсортированы; в коммите нет ни правил, ни ассета, ни тестов</td><td><span class="tag done">сделано</span></td></tr>
+    <tr><td class="num">2</td><td><code>--transitions</code> и <code>--expect</code> в разметчике</td><td>Сравнение по тройкам (id, old, new), а не по id или счётчикам; показать отказ и на MISSING, и на SURPLUS; ничего не пишет</td><td><span class="tag done">сделано</span></td></tr>
+    <tr><td class="num">3</td><td>Сузить правила pattern-local</td><td><code>excludeWhen</code> побайтово; никаких исключений по id упражнения; Side Plank не становится pushup, Front Plank остаётся</td><td><span class="tag done">сделано</span></td></tr>
+    <tr><td class="num">4</td><td>Сухой прогон против печати</td><td>exit 0, ни MISSING, ни SURPLUS; хеши рабочего дерева не изменились</td><td><span class="tag done">сделано</span></td></tr>
+    <tr><td class="num">5</td><td>Одна авторитетная запись</td><td>Ассет и аудиторский CSV согласованы; RU-ассет не мутирует</td><td><span class="tag done">сделано</span></td></tr>
+    <tr><td class="num">6</td><td>Механическое доказательство по всем 1887 строкам</td><td>Каждый переход в печати и каждая печать состоялась; ни одно поле кроме <code>poseTargetId</code> не изменилось; счётчики сходятся</td><td><span class="tag done">сделано</span></td></tr>
+    <tr><td class="num">7</td><td>Обновить тесты правил</td><td>Каждое снятое семейство и парные keep-кейсы; Front Plank закреплён; Side Plank закреплён на новом поведении</td><td><span class="tag done">сделано</span></td></tr>
+    <tr><td class="num">8</td><td>Тест равенства ассета правилам</td><td>Все 1887 строк, включая null; без выборки и без сглаживания расхождений</td><td><span class="tag done">сделано</span></td></tr>
+    <tr><td class="num">9</td><td>Мутационное доказательство обоих тестов</td><td>Мутация валит нужный тест, чистое дерево снова зелёное, следов мутации нет</td><td><span class="tag done">сделано</span></td></tr>
+    <tr><td class="num">10</td><td>Три набора тестов</td><td>Все три реально выполнены и прошли; «не запускался» не выдаётся за «прошёл»</td><td><span class="tag done">сделано</span></td></tr>
+    <tr><td class="num">11</td><td>Журнал решений и коммит</td><td>Числа совпадают с механическими доказательствами; в коммите только объём гейта; <code>form_check/</code> не изменился</td><td><span class="tag done">сделано</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>Два отклонения от плана, оба заявляю сам.</strong> Первое: в коммит-печать вошёл третий
+файл, <code>.gitattributes</code>, которого план не называл. В репозитории
+<code>core.autocrlf=true</code>, и без закрепления <code>eol=lf</code> свежий checkout на Windows
+отдал бы CRLF — дайджест печати перестал бы проверяться у всех, кроме меня, то есть печать
+перестала бы быть печатью. Второе: интерпретатор Python резолвится в
+<code>D:\Repo\ERP\.venv</code> — своего у этого репозитория нет, разметчик и его тесты живут на
+stdlib и pytest, так что результат верен, но записываю это, а не заминаю.</p>
+
+<h2><span class="num">06</span>Три ошибки, которые гейт совершил, прежде чем стал прав</h2>
+
+<p><strong>Первый счёт был 69 и был неверен.</strong> Он получен регулярками по <em>идентификаторам</em>
+упражнений, а не прогоном собственного <code>classify()</code> разметчика по названиям: семейство
+<code>situp</code> — 11 строк, а не 8. Настоящий классификатор даёт 72. Утверждение шире проверки,
+стоящей за ним, — повторяющийся дефект этой сессии и причина, по которой печать теперь вычисляется,
+а не набирается.</p>
+
+<p><strong>Heredoc молча уничтожил первый прогон компаратора.</strong> <code>\\b</code> схлопнулось в
+<code>\b</code>, Python прочитал это как символ backspace, <code>\blunge</code> и
+<code>\bswing\b</code> перестали совпадать с чем бы то ни было, и прогон отрапортовал 146
+фантомных переходов и пять обратных. Эта ловушка уже была у меня в памяти — и я всё равно в неё
+наступил. Каждый скрипт гейта написан файловым инструментом, ни один — heredoc'ом.</p>
+
+<p><strong>«<code>pushup</code> до пользователя не доходит, значит ложный тег безвреден» — ошибка не
+в выводе, а в роде довода.</strong> GPT-PM отклонил его верно: тег утверждает, <em>каков силуэт</em>,
+и остаётся действительным до того дня, когда паттерн станет обучаемым — доступность решается
+отдельно, о чём заголовок модуля говорит прямо. Я взвесил сегодняшнюю видимость против контракта,
+который её исключает. Семь уже неверных строк Side Plank поэтому вычищены здесь, а не сохранены.</p>
+
+<h2><span class="num">07</span>Что теперь не даст этому повториться</h2>
+
+<div class="lede bad">Ассет разошёлся с правилами, и этого никто не заметил. Семь строк несли теги,
+которые правила давно перестали выдавать — шесть на <code>Weight bench</code>, одна на
+<code>Bench (flat / adjustable)</code>, все отсекаются по <code>excludeWhen.equipmentLabel</code>.
+Ничто в репозитории не сравнивало ассет с правилами.</div>
+
+<p><code>test_the_shipped_catalog_matches_the_rules</code> теперь требует равенства по всем 1887
+строкам, включая null с обеих сторон. <strong>Именно этот тест, а не 86 снятий, — долговременное
+исправление.</strong> Тест по списку семейств этих семи строк не нашёл бы; находит только
+равенство.</p>
+
+<p>Разметчик получил <code>--transitions</code> (<em>какие</em> строки изменились, а не сколько) и
+<code>--expect PATH</code> (сравнить полные тройки с запечатанным файлом, выйти ненулевым кодом,
+назвав MISSING и SURPLUS раздельно). Ни один не пишет; <code>--write</code> в паре с любым из них
+отвергается. Компаратор показан падающим <em>до</em> того, как ему поверили: против неверного
+файла, содержащего <strong>те же 86 строк</strong> — то есть проверка по счётчику его бы
+пропустила, — и он назвал обе категории.</p>
+
+<h2><span class="num">08</span>Что не сделано</h2>
+
+<p>Десять пограничных строк. Всё, что относится к распознавателю: гейты B (запечатанный корпус с
+отрицательными стратами) и A (научить распознаватель воздерживаться) по-прежнему открыты. Push не
+делался — план явно вывел его из объёма, и GPT-PM это в вердикте подтвердил.</p>
+
+</div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

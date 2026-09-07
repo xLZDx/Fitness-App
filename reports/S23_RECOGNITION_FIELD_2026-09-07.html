@@ -162,13 +162,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 3c18de4</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 698c698</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 <dl class="strip">
   <div><dt>Device</dt><dd>SM-S918B, adb</dd></div>
@@ -261,23 +263,39 @@ the next measurement gate.</p>
 <code>curl</code>, <code>hinge</code>, <code>lunge</code>, <code>situp</code>,
 <code>overhead_press</code>. <strong>540 exercises out of 1887</strong> are tagged onto them. So every
 tagged exercise is demonstrated by a generic figure for its category, and where the category fits
-poorly the demonstration is literally a different movement. Straight from the catalogue:</p>
+poorly the demonstration was literally a different movement. Straight from the catalogue as it stood that day:</p>
 
 <ul>
-  <li><code>pushup</code> carries <code>ea_dumbbell_plank_pullthrough</code> and
-  <code>ea_alternate_leg_raise_from_reverse_plank_position</code> &mdash; neither is a push-up;</li>
-  <li><code>hinge</code> carries <code>ea_dumbbell_single_leg_hip_thrust</code> and
+  <li><code>hinge</code> carried <code>ea_dumbbell_single_leg_hip_thrust</code> and
   <code>ea_barbell_feet_elevated_single_leg_glute_bridge</code> &mdash; a glute bridge is performed
   lying down, while the animation shows a standing deadlift;</li>
-  <li><code>curl</code> carries <code>ea_barbell_standing_back_wrist_curl</code> &mdash; a wrist curl
+  <li><code>curl</code> carried <code>ea_barbell_standing_back_wrist_curl</code> &mdash; a wrist curl
   shown as a full biceps curl.</li>
 </ul>
 
+<ul>
+  <li><code>lunge</code> carried <code>ea_dumbbell_single_leg_step_up</code> &mdash; a step onto a
+  platform instead of a lunge toward the floor;</li>
+  <li><code>situp</code> carried <code>ea_plate_hollow_hold</code> &mdash; a static hold instead of a
+  curl-up.</li>
+</ul>
+
+<div class="lede warn"><strong>Correction to this report's first edition.</strong> Two further
+examples stood here, both tagged <code>pushup</code>, and both were badly chosen.
+<code>pushup</code> is absent from <code>kPosePatternToExercise</code>, so
+<code>formCoachSupports</code> is false for it and no exercise carrying that tag has ever been
+offered a demonstration. The observation was right and the example was not: it cited a defect
+nobody could see. The real blast radius is <strong>450 exercises across six tags</strong>, not 540
+across seven.</div>
+
 <p>This is a catalogue tagging problem, not a defect in the demo renderer, and no recent commit
-introduced it: nothing has touched <code>form_check/</code> since 28 August. Two possible fixes
-&mdash; retag the 540, or narrow which exercises are offered a demonstration at all
-(<code>formCoachSupports</code> already exists as that gate). Not attempted: it needs its own plan and
-a GO.</p>
+introduced it: nothing has touched <code>form_check/</code> since 28 August.</p>
+
+<div class="lede"><strong>Fixed the same day.</strong> Gate C narrowed the tagging at its source
+rather than retagging 540 by hand. 86 tags removed, none added, against a set sealed in git
+<em>before</em> the rules were written. A user is now offered <strong>374 exercises instead of
+450</strong>: 16.9% of coverage spent on not demonstrating the wrong movement. Ten borderline rows
+(jump squats, push presses) keep their tags &mdash; their silhouette IS the pattern.</div>
 
 <h2><span class="num">05</span>Four icons, one of them dead</h2>
 
@@ -322,6 +340,8 @@ measure whether it has learned to abstain. That is the first gap worth closing.<
 
 </div>
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>
