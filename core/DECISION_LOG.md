@@ -45902,3 +45902,50 @@ through git's own filters.
 not exist. GPT-PM's GO covers this gate explicitly and the real-photo run explicitly not. Both
 substantive answers are now on record — the whole corpus, and Global ZDR enabled — so what remains is
 writing them into a record that the state machine accepts, and confirming it.
+
+## 2026-09-07 — SO1 closure review returned REVISE; both findings were right and are fixed
+
+`pm_rosetta_close` on plan `fitness_app-2026-09-07T16-22-42-159Z-2801e8` returned
+`VERDICT: REVISE`, 0 BLOCKER / 2 MAJOR. Neither is a scope disagreement; both are places where the
+evidence did not establish what the plan's own verification promised.
+
+**MAJOR 1 — a deferred value is a degree of freedom, not a pending detail.** The config pinned
+`reasoning_effort: "none"` but labelled it UNVERIFIED and deferred confirmation to a synthetic
+preflight, on the reasoning that this gate had committed to making no new Groq calls. GPT-PM's
+objection: had the preflight rejected that value, someone would have been *choosing a replacement
+after the experiment was supposedly frozen* — which is exactly the freedom pre-registration exists to
+remove. And no probe was needed anyway: Groq's API documentation specifies `reasoning_effort` for
+`qwen/qwen3.8-27b` with values `none | default | low | medium | high` and documents `none` as
+instruct / non-thinking mode.
+
+Frozen at `none`, on GPT-PM's ruling and its reasoning: it is the closest methodological analogue to
+the production Gemini recognition path, which runs with thinking disabled, and it keeps
+reasoning-token behaviour out of what is meant to be a visual-classification second opinion. The file
+now also states the consequence explicitly: **if the provider later stops accepting this frozen
+configuration, SO1 stops and requires a new pre-registration revision.** A 4xx is a hard experiment
+failure, never permission to edit the config in place and carry on. Digest recomputed and the seal
+updated.
+
+**MAJOR 2 — and this one is about a claim of mine that was broader than its evidence, again.** The
+plan's verification promised that a denial refuses *before any image byte is read* and before the
+transport exists. The closure evidence showed zero transport-factory calls and no output file. GPT-PM
+pointed out that those two facts do not establish the first half: a runner could open the image,
+then refuse consent, and satisfy both assertions exactly. No privacy breach was alleged — nothing was
+transmitted — but the accepted Definition of Done was not proven.
+
+Fixed by making the claim mechanically testable rather than by arguing it. Every image read now goes
+through a single named function, `read_image_bytes`. The suite replaces it with one that counts its
+calls and raises, and requires a `deny` record, an absent record and an unrecognised decision each to
+finish with an image-read count of **zero**, a transport count of **zero**, and no output file. A
+positive control was added alongside it — an authorised run must reach the reader exactly twice on
+the two-observation fixture — because a counter that never counts proves nothing, which is the same
+argument `test_the_test` already makes elsewhere in that file.
+
+Suite: 47 checks -> **51**, still with no network call anywhere. Seal re-verified end to end against
+the real repository: 12 artefacts unchanged, consent refused, exit 3, no output file.
+
+**This is the sixth instance this session of the same defect class: a claim stated more broadly than
+the check behind it.** The previous five were the "69" transition count, the builder-reverts-hand-
+edits claim, the free-tier "does not arise for your own photographs" claim, the `lead` denominators,
+and the hand-typed base64 in the Groq vision probe. This one is distinguishable in one respect only:
+it was caught by an external reviewer rather than by me.

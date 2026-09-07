@@ -82,8 +82,16 @@ satisfy `RECOG_SO1_CONSENT.schema.json`: `decision` is a closed enum
 `whole_corpus | people_free_only | deny`; a `deny`, an unrecognised value, a missing field, an
 unparseable file, an absent file, an undefined property, or a binding to the wrong manifest or the
 wrong pre-registration each REFUSE — evaluated **before any image byte is read and before the HTTP
-client is constructed**. The test suite asserts that a `deny` record produces **zero** transport
-constructions and **no** output file, not merely a non-zero exit code.
+client is constructed**.
+
+**Both halves of that claim are proven, and the second one had to be added.** GPT-PM's closure review
+pointed out that zero transport constructions and no output file do NOT establish that no image was
+opened: a runner could read the file, then refuse, and satisfy both assertions. Every image read now
+goes through the single function `read_image_bytes`, and the suite replaces it with one that raises
+on any call. A `deny` record, an absent record and an unrecognised decision each finish with an
+image-read count of **zero**, a transport count of **zero**, and no output file. A positive control
+accompanies it — an authorised run must reach the reader exactly twice on the two-observation fixture
+— because a counter that never counts proves nothing.
 
 ## 4. What the second model is asked
 
@@ -105,12 +113,21 @@ refuses), and the test suite inspects the **serialized request body** through a 
 `top_p` 1; `seed` 20260907; `max_completion_tokens` 4096; `response_format`
 `{"type": "json_object"}`; `extra_body` `{"reasoning_effort": "none"}`.
 
-**One thing is explicitly UNVERIFIED and is recorded as such rather than presented as settled.** The
-model advertises a `reasoning` feature, but the accepted parameter name and values were not probed,
-because this gate committed to making no new Groq calls at all. The runner's preflight sends exactly
-this configuration with a synthetic image before any corpus image; a 4xx naming that parameter is a
-**configuration failure that stops the run**, never a silent fallback to provider defaults. Whatever
-preflight establishes is appended here before the corpus pass begins.
+**`reasoning_effort` is FROZEN at `none`, not pending.** An earlier revision of this document marked
+it UNVERIFIED and deferred it to a synthetic preflight. GPT-PM's closure review rejected that, and
+correctly: a value still to be chosen after a preflight is a **methodological degree of freedom left
+open after pre-registration** — had the preflight rejected it, someone would have been picking a
+replacement once the experiment was supposedly frozen. No probe is needed to settle it, because
+Groq's API documentation specifies `reasoning_effort` for `qwen/qwen3.8-27b` with the values
+`none | default | low | medium | high` and documents `none` as instruct / non-thinking mode.
+
+`none` is GPT-PM's ruling and its reasoning is adopted here: it is the closest methodological
+analogue to the production Gemini recognition path, which runs with thinking disabled, and it keeps
+reasoning-token behaviour out of what is meant to be a visual-classification second opinion.
+
+**If the provider later stops accepting this frozen configuration, SO1 STOPS** and requires a new
+pre-registration revision. A 4xx is a hard experiment failure — never permission to edit the config
+in place and carry on, which is precisely the freedom this document exists to remove.
 
 **Retry policy.** At most 3 attempts. Retried: 429, 5xx, connection errors, read timeouts — they say
 nothing about the model's opinion. **Never retried:** 4xx configuration errors, and any well-formed
@@ -180,7 +197,7 @@ per arm.
 
 ## 9. Evidence that the guards are load-bearing
 
-`scripts/dev/recog_so1.tests.py`, 47 checks, **no network call anywhere**. It shows the scorer
+`scripts/dev/recog_so1.tests.py`, 51 checks, **no network call anywhere**. It shows the scorer
 reaching PASS, FAIL and INCONCLUSIVE on synthetic data with known answers, plus FAIL on a single-arm
 reversal and on an incompetent second model; it shows twelve distinct consent refusals; it shows a
 one-byte image change and a mutated prompt, vocabulary or configuration each refusing with no
@@ -209,13 +226,13 @@ start-up and refuses to send anything if one has changed.
   "core/plans/RECOG_SO1_CONSENT.schema.json": "22dade06f4628c1f56d45c614607891b184394fc1d7fc852a5832b2e643e6cd6",
   "scripts/dev/recog_so1_prompt.txt": "d83b9b66c0c540617cb5c61d78181aa2917cd9c902ae745e8cd6d171ceb9f3af",
   "scripts/dev/recog_so1_vocab.json": "58d1886f38f72f096a62a504c6560b90e175f28f45df0466cc92b7a7e491973a",
-  "scripts/dev/recog_so1_config.json": "a17e21a5abf2adab69e5c2790fa0842c05c94b8ad21c8cfeea17a16934d07ae9",
+  "scripts/dev/recog_so1_config.json": "374ed487025a1a9601935d419bbcbd527a20a8ceb720ec1ceee5dd935b2b55ac",
   "scripts/dev/recog_so1_build_vocab.py": "da2bb7998ce51be9d9a397b0de98c2962f33f3c6f9394d0324181f68ddf4ca1b",
   "scripts/dev/recog_so1_build_prompt.py": "bb319229a476946ed4ceecbc609d093a8268fdc3104735ddd7d9dca8ea45d96e",
   "scripts/dev/recog_so1_build_manifest.py": "8a8f81ce93f89cf147d507d5bcf6cc3e9ad2a4a1c02e6595ff868d87dda272d6",
-  "scripts/dev/recog_so1_run.py": "bf5165d3bd2481a70dc7d1f715003843a73b6629af3d60b716459f0f58f04db2",
+  "scripts/dev/recog_so1_run.py": "70b0ae582c87986e8d419ecf5ef1d802c6287a1c4cc17432a2cc1cef48b1909c",
   "scripts/dev/recog_so1_score.py": "24edecd877cbb196d0acf946eed95fa3f9eb5ca68bd46742d864ed92a0cf7c9f",
-  "scripts/dev/recog_so1.tests.py": "bdd14f53f6ff34d7d4a77eca6a7a42b8ef518f68943d739f26208e95a629e28b"
+  "scripts/dev/recog_so1.tests.py": "64123ffa70d0053ec5148908acbad15020586c5ad11729a373a9c0985b8d8272"
 }
 ```
 

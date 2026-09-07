@@ -132,13 +132,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ c82637b</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ c5a18d1</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 <h2>What happened here</h2>
 
@@ -155,7 +157,7 @@ GPT-PM's framing, adopted verbatim. Nothing in production changes.</p>
 <div class="facts">
   <div class="fact"><div class="v">0</div><div class="k">frames transmitted in this gate</div></div>
   <div class="fact"><div class="v">12</div><div class="k">artefacts under a sha256 seal</div></div>
-  <div class="fact"><div class="v">47/47</div><div class="k">checks, no network call anywhere</div></div>
+  <div class="fact"><div class="v">51/51</div><div class="k">checks, no network call anywhere</div></div>
   <div class="fact"><div class="v">3</div><div class="k">guards shown failing under mutation</div></div>
 </div>
 
@@ -306,7 +308,7 @@ implementer.</p>
     <tr><td class="n">3</td><td>Source-level privacy policy plus the power floor</td><td>a numerically passing but underpowered fixture returns INCONCLUSIVE</td><td><span class="tag t-done">done</span></td><td></td></tr>
     <tr><td class="n">4</td><td>Vocabulary generator derived from production</td><td>every canonical name to exactly one id; unknown never resolves; regeneration byte-identical</td><td><span class="tag t-done">done</span></td><td></td></tr>
     <tr><td class="n">5</td><td>Observation manifest with expected digests</td><td>104 rows, 52 sources; its digest is what consent binds</td><td><span class="tag t-done">done</span></td><td></td></tr>
-    <tr><td class="n">6</td><td>Frozen prompt and request configuration</td><td>request shaping explicit, never inherited from provider defaults</td><td><span class="tag t-part">partial</span></td><td><code>reasoning_effort</code> was not verified against the live API, because this gate committed to making no new calls. Recorded as UNVERIFIED; a synthetic-image preflight must pass before the corpus run, and a 4xx naming it stops the run</td></tr>
+    <tr><td class="n">6</td><td>Frozen prompt and request configuration</td><td>request shaping explicit, never inherited from provider defaults</td><td><span class="tag t-done">done</span></td><td>after GPT-PM's closure finding: <code>reasoning_effort</code> is frozen at <code>none</code> from Groq's documentation, with no probe. A deferred value would have been a methodological degree of freedom left open <em>after</em> pre-registration</td></tr>
     <tr><td class="n">7</td><td>Runner: closed schema, pre-send verification</td><td>a one-byte change refuses; the seal is re-checked</td><td><span class="tag t-done">done</span></td><td></td></tr>
     <tr><td class="n">8</td><td>Scorer built strictly to the given bars</td><td>source clustering, conservative unresolved rule, power floor able to override</td><td><span class="tag t-done">done</span></td><td></td></tr>
     <tr><td class="n">9</td><td>Consent, integrity and blindness tests</td><td>zero network calls; the request body is inspected, not inferred from absent files</td><td><span class="tag t-done">done</span></td><td></td></tr>
@@ -319,7 +321,7 @@ implementer.</p>
 
 <h2>The evidence that the guards are load-bearing</h2>
 
-<p><code>scripts/dev/recog_so1.tests.py</code> — 47 checks, <strong>no network call anywhere</strong>.
+<p><code>scripts/dev/recog_so1.tests.py</code> — 51 checks, <strong>no network call anywhere</strong>.
 Three guards are shown failing under mutation and passing on the real code:</p>
 
 <ul class="plain">
@@ -356,9 +358,11 @@ written against them. A check that cannot fail proves nothing.</p>
   into that record and confirming it.</p>
 </div>
 
-<p>Then, in order: a <strong>preflight</strong> on one synthetic image to settle the unverified
-configuration parameter; the corpus pass (roughly 26–40 minutes against the measured ceiling of 8000
-tokens per minute); and the scorer printing a verdict by the bars above and by nothing else.</p>
+<p>After that, only the corpus pass (roughly 26–40 minutes against the measured ceiling of 8000
+tokens per minute), and the scorer printing a verdict by the bars above and by nothing else. The
+configuration is now frozen outright: if the provider stops accepting it, SO1 <strong>stops</strong>
+and requires a new pre-registration revision — a 4xx is an experiment failure, not permission to edit
+the file mid-run.</p>
 
 <footer>
   RECOG-SO1 pre-registration gate. Commit <code>c82637b</code>, 15 files, 3294 lines.
@@ -366,6 +370,8 @@ tokens per minute); and the scorer printing a verdict by the bars above and by n
   contain, no corpus photograph.
 </footer>
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>

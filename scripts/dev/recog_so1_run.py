@@ -207,6 +207,21 @@ def load_manifest(path: Path) -> list[Observation]:
 # Transport -- injectable, so blindness can be inspected without a network
 # --------------------------------------------------------------------------
 
+def read_image_bytes(path: Path) -> bytes:
+    """The ONLY place this program reads an image.
+
+    Funnelled through a single named function so that "no image byte is read
+    before consent is evaluated" is a testable claim rather than a description
+    of the source. GPT-PM's closure review made exactly this point: proving that
+    no transport was constructed and no output file was written does NOT prove
+    an image was never opened -- a runner could read the file, then refuse, and
+    satisfy both of those assertions. `recog_so1.tests.py` replaces this
+    function with one that counts its calls and raises, and requires a `deny`,
+    absent or malformed consent record to finish with a call count of ZERO.
+    """
+    return path.read_bytes()
+
+
 class Transport(Protocol):
     def post(self, url: str, headers: dict[str, str], body: bytes) -> tuple[int, dict[str, str], str]: ...
 
@@ -341,7 +356,7 @@ def run(
                 unresolved += 1
                 continue
 
-            image_bytes = path.read_bytes()
+            image_bytes = read_image_bytes(path)
             got = hashlib.sha256(image_bytes).hexdigest()
             if got != obs.expected_sha256:
                 # Refuse rather than measure. A corpus that no longer hashes to

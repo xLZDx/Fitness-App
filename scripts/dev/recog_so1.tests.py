@@ -305,12 +305,61 @@ with tempfile.TemporaryDirectory() as _td:
     check(code == 3 and spy.constructed == 0, "an absent consent record: no transport is constructed",
           f"exit {code}, constructed {spy.constructed}")
 
+# ---- GPT-PM's closure MAJOR 2: zero transport calls does NOT prove zero image
+# ---- reads. A runner could open the file, then refuse consent, and satisfy
+# ---- every assertion above. So instrument the ONE function that reads an image
+# ---- and make any call to it fatal.
+class ImageReadTrap:
+    def __init__(self):
+        self.calls = 0
+
+    def __call__(self, path):
+        self.calls += 1
+        raise AssertionError(f"an image was read before consent was settled: {path}")
+
+
+real_reader = run_mod.read_image_bytes
+for label, record in (("deny", {**GOOD, "decision": "deny"}),
+                      ("absent", None),
+                      ("an unrecognised decision", {**GOOD, "decision": "sure_go_ahead"})):
+    with tempfile.TemporaryDirectory() as _td:
+        td = Path(_td)
+        trap = ImageReadTrap()
+        run_mod.read_image_bytes = trap
+        try:
+            code, spy, out = invoke(td, record)
+        finally:
+            run_mod.read_image_bytes = real_reader
+        check(code == 3 and trap.calls == 0 and spy.constructed == 0 and not out.exists(),
+              f"consent '{label}': ZERO image reads, ZERO transports, no output",
+              f"exit {code}, image reads {trap.calls}, transports {spy.constructed}, "
+              f"output {out.exists()}")
+
 with tempfile.TemporaryDirectory() as _td:
     td = Path(_td)
     code, spy, out = invoke(td, GOOD)
     check(code == 0 and spy.constructed == 1 and len(spy.transport.calls) == 2,
           "affirmative consent: exactly one transport, one request per observation",
           f"exit {code}, constructed {spy.constructed}, calls {len(spy.transport.calls)}")
+
+# Positive control for the trap above. A counter that never counts proves
+# nothing, so the authorised path must actually reach the reader.
+with tempfile.TemporaryDirectory() as _td:
+    td = Path(_td)
+    counted = {"n": 0}
+
+    def counting_reader(path, _real=real_reader):
+        counted["n"] += 1
+        return _real(path)
+
+    run_mod.read_image_bytes = counting_reader
+    try:
+        code, spy2, out2 = invoke(td, GOOD)
+    finally:
+        run_mod.read_image_bytes = real_reader
+    check(code == 0 and counted["n"] == 2,
+          "the image-read counter does count: an authorised run reads both images",
+          f"exit {code}, image reads {counted['n']}")
 
     # ---- blindness, inspected on the SERIALIZED body -----------------------
     body = spy.transport.calls[0]["body"].decode("utf-8")
