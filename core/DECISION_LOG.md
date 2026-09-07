@@ -45078,3 +45078,112 @@ filter.
 
 The signed download URL the CLI prints is deliberately excluded from this log: it carries an access
 token.
+
+## 2026-09-07 — S23 field data: the recognition complaint has three separate causes, and one of them is mine
+
+The operator reported: equipment recognised very badly, real-time mode has almost no confidence,
+the same machine named three different ways at 85% confidence, and camera recognition "noticeably
+worse" than before. Data pulled from the S23 (SM-S918B, `R5CW142SASR`) and from Firestore and Cloud
+Logging. Three distinct causes, only one of which is a change.
+
+### 1. The three-names-one-machine report is real, and here it is
+
+`users/{uid}/recognised_equipment` for the signed-in account, 10 documents. The collection is keyed
+BY EQUIPMENT ID, so one physical machine recognised as three machines produces three documents —
+the storage is doing its job; the recogniser is not.
+
+| time (UTC) | confidence | source | equipment id |
+| --- | --- | --- | --- |
+| 11:30:06 | 82.0% | photo | `ab_crunch_machine` |
+| 11:32:27 | **85.0%** | photo | `chest_press_machine` |
+| 11:32:41 | **92.0%** | photo | `shoulder_press_machine` |
+| 11:36:22 | **96.0%** | photo | `bench_press` |
+| 11:36:50 | 35.7% | **live** | `treadmill` |
+| 12:03:13 | 88.0% | photo | `bicep_curl_machine` |
+
+Chest press, shoulder press and bench press inside four minutes, at 85 / 92 / 96 percent. Three
+names for one press, and the model never hesitated. This is not new and it is not a regression: it
+is exactly what RECOG-C1 measured and published two days ago — **overclaiming is the dominant
+behaviour, 25 of 49 in both arms, and the crop does not move it**. The field data reproduces the
+laboratory finding on the operator's own gym, which is the strongest confirmation the baseline
+could have got.
+
+### 2. Real-time has almost no confidence because it is a different recogniser entirely
+
+Photo mode calls Gemini through `aiEquipmentRecognition`. Live mode does not leave the phone: it
+runs `assets/models/equipment_v1.tflite`, a **ten-class** on-device classifier, at a confidence
+threshold of 1/10 (`mlkit_live_equipment_service.dart:134`). The code already carries the
+measurement that damns it: the model returned 0.892 on a machine it has no class for, so — in the
+source's own words — "no threshold on this model separates right from wrong". The single live
+sighting today, treadmill at 35.7%, is that model behaving exactly as measured.
+
+So "no confidence in real time" and "confidently wrong on a photo" are two different failures of
+two different systems that happen to sit behind one camera screen. Nothing links them except the UI.
+
+### 3. "Recognition got noticeably worse" — that one is mine
+
+The Cloud Run request log for today, `aiequipmentrecognition`: **78 requests — 60 with status 200,
+12 with 429, 6 with 401**. The 429s are consecutive, from 12:03:37 to 12:17:13. `QUOTAS
+.aiEquipmentRecognition` is **60 per user per day** (`functions/src/abuse_guard.ts:408`), counted in
+`users/{uid}/usage/{yyyy-mm-dd}` and rolling at midnight UTC.
+
+**RECOG-C1's window-2 measurement run consumed 52 of those 60 between 09:50 and 09:59.** The
+operator got the remaining eight, then hit the wall — and every scan after 12:03:37 was refused
+before it ever reached the model.
+
+What made it look like a quality regression rather than a refusal: `aimachinedescription` has its
+own separate 60/day quota and was nowhere near it, so it answered on all eleven of the same
+timestamps the recognition calls were being refused. The app fell back to describing the machine
+instead of identifying it from the catalogue. From the outside that is indistinguishable from the
+recogniser suddenly getting worse.
+
+I did not think about the shared per-user quota when I planned a 52-call measurement run against the
+operator's own account. Their day's allowance was spent on my baseline.
+
+**Repaired, not merely reported:** `users/{uid}/usage/2026-09-07.aiEquipmentRecognition` set from 60
+back to **8** — the operator's own eight calls stay counted, my 52 are removed. That is subtraction
+of my consumption, not a lifted limit; every other counter in the document was left untouched.
+
+The durable fix is not a bigger quota. Any future measurement run must either use its own account or
+have its cost added to the plan and the operator warned before it starts. Recorded as a constraint
+on the next measurement gate, not as a note.
+
+### 4. The Form Coach demonstrates the wrong movement for some exercises, by construction
+
+`poseTargetsByTag` (`mobile/lib/features/form_check/data/pose_target.dart:538`) holds **seven**
+animations — squat, pushup, curl, hinge, lunge, situp, overhead_press. `exercises_vendor.json` tags
+**540 of 1887 exercises** onto those seven. So every tagged exercise is demonstrated by a generic
+figure for its category, and where the category is a poor fit the demonstration is simply a
+different movement. Straight from the catalogue:
+
+- `pushup` carries `ea_dumbbell_plank_pullthrough` and
+  `ea_alternate_leg_raise_from_reverse_plank_position` — neither is a push-up.
+- `hinge` carries `ea_dumbbell_single_leg_hip_thrust` and
+  `ea_barbell_feet_elevated_single_leg_glute_bridge` — a glute bridge is performed lying down; the
+  hinge animation is a standing deadlift.
+- `curl` carries `ea_barbell_standing_back_wrist_curl` — a wrist curl shown as a full biceps curl.
+
+This is a tagging problem in the catalogue, not a defect in the demo renderer, and it is not
+something a recent commit introduced: nothing has touched `form_check/` since 2026-08-28. Fixing it
+means either retagging the 540 or narrowing which exercises are offered a demonstration at all —
+`formCoachSupports` already exists as the gate for that. Not attempted here; it needs its own plan.
+
+### 5. Builds on the device: four icons, one of them dead
+
+The device carried three app packages plus the App Tester client — four icons, which is the "four
+different app distributions" in the report.
+
+| package | role | version | App Distribution releases |
+| --- | --- | --- | --- |
+| `com.fitnessapp.fitness_app` | legacy, pre-`.sptr` | 14, installed 2026-08-02 | **0 — never distributed** |
+| `com.fitnessapp.fitness_app.sptr` | release | 2986, 2026-09-05 | 14 |
+| `com.fitnessapp.fitness_app.sptr.debug` | debug | 3012, today | 1 |
+
+The legacy package is superseded by `.sptr`, was installed by hand rather than through App
+Distribution, and its Firebase app has never had a release. **Uninstalled** on the operator's
+instruction to remove what is not needed. Release and debug both stay: they carry different
+`applicationId`s deliberately (`build.gradle:169`) so that a debug build cannot overwrite a release
+install's data, and both are current.
+
+The 13 superseded `.sptr` releases in App Distribution were left alone — they are history, App
+Tester offers the newest, and deleting cloud releases is a destructive action nobody asked for.

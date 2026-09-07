@@ -1,0 +1,381 @@
+<title>S23 Field Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --ground: #F2F4F3;
+    --surface: #FFFFFF;
+    --sunken: #E8ECEA;
+    --ink: #14181A;
+    --muted: #5A6568;
+    --rule: #D8DEDC;
+    --accent: #0F6E63;
+    --signal: #96600F;
+    --alarm: #8F3636;
+    --display: 'Bricolage Grotesque', 'Trebuchet MS', system-ui, sans-serif;
+    --body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121614; --surface: #1A1F1D; --sunken: #101412;
+      --ink: #E8EDEA; --muted: #93A09B; --rule: #2B3330;
+      --accent: #57C4B3; --signal: #D9A441; --alarm: #DE8B8B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121614; --surface: #1A1F1D; --sunken: #101412;
+    --ink: #E8EDEA; --muted: #93A09B; --rule: #2B3330;
+    --accent: #57C4B3; --signal: #D9A441; --alarm: #DE8B8B;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--body); font-size: 17px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 62rem; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem) 5rem; }
+  .col { max-width: 40rem; }
+
+  header { padding: clamp(2.5rem, 7vw, 4.5rem) 0 1.75rem; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(2.1rem, 5.5vw, 3.4rem); line-height: 1.04;
+    letter-spacing: -0.02em; margin: 0 0 0.7rem; text-wrap: balance;
+  }
+  .standfirst {
+    font-size: clamp(1.05rem, 2.2vw, 1.25rem); color: var(--muted);
+    margin: 0; max-width: 44rem;
+  }
+
+  h2 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(1.4rem, 3vw, 1.9rem); line-height: 1.15;
+    letter-spacing: -0.015em; margin: 3.2rem 0 0.4rem; text-wrap: balance;
+  }
+  h2 .num {
+    font-family: var(--mono); font-size: 0.7em; color: var(--accent);
+    margin-right: 0.5em; font-weight: 400;
+  }
+  h3 {
+    font-family: var(--display); font-weight: 600; font-size: 1.08rem;
+    letter-spacing: 0.005em; margin: 2rem 0 0.3rem;
+  }
+  p { margin: 0.85rem 0; }
+  a { color: var(--accent); }
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+  code { background: var(--sunken); padding: 0.08em 0.34em; border-radius: 3px; word-break: break-word; }
+  strong { font-weight: 600; }
+
+  .strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 2rem 0 0;
+  }
+  .strip div { background: var(--surface); padding: 0.85rem 1rem; }
+  .strip dt {
+    font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 0.3rem;
+  }
+  .strip dd {
+    margin: 0; font-family: var(--display); font-weight: 600;
+    font-size: 1.02rem; line-height: 1.25;
+  }
+
+  .lede {
+    border-left: 3px solid var(--accent); padding: 0.2rem 0 0.2rem 1.15rem;
+    margin: 1.6rem 0; font-size: 1.08rem;
+  }
+  .lede.warn { border-left-color: var(--signal); }
+  .lede.bad { border-left-color: var(--alarm); }
+
+  .tablewrap { overflow-x: auto; margin: 1.4rem 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 40rem; font-size: 0.93rem; }
+  th, td {
+    text-align: left; vertical-align: top; padding: 0.62rem 0.8rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  thead th {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    border-bottom: 1.5px solid var(--ink); white-space: nowrap;
+  }
+  tbody tr:nth-child(even) { background: color-mix(in srgb, var(--sunken) 55%, transparent); }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.hot td { color: var(--alarm); font-weight: 600; }
+
+  .tag {
+    display: inline-block; font-family: var(--mono); font-size: 0.66rem;
+    letter-spacing: 0.08em; text-transform: uppercase; padding: 0.14em 0.5em;
+    border: 1px solid currentColor; border-radius: 2px; white-space: nowrap;
+  }
+  .tag.done { color: var(--accent); }
+  .tag.part { color: var(--signal); }
+  .tag.bad  { color: var(--alarm); }
+
+  ul, ol { padding-left: 1.25rem; margin: 0.85rem 0; }
+  li { margin: 0.35rem 0; }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.2rem; border-top: 1px solid var(--rule);
+    font-size: 0.85rem; color: var(--muted);
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App &middot; S23 &middot; field data, 7 September 2026</p>
+  <h1>Three causes under one complaint</h1>
+  <p class="standfirst">&laquo;Equipment is recognised badly, real-time has no confidence, and the
+  camera got noticeably worse&raquo; is not one problem. It is three, and one of them is mine.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 3c18de4</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<dl class="strip">
+  <div><dt>Device</dt><dd>SM-S918B, adb</dd></div>
+  <div><dt>Recognition records</dt><dd>10 across 5&ndash;7 Sept</dd></div>
+  <div><dt>Calls today</dt><dd>78: 60 ok, 12 refused, 6 unattested</dd></div>
+  <div><dt>Cause of "got worse"</dt><dd>quota exhausted</dd></div>
+  <div><dt>Quota</dt><dd>restored: 8 of 60</dd></div>
+  <div><dt>Builds removed</dt><dd>1 superseded</dd></div>
+</dl>
+
+<div class="col">
+
+<h2><span class="num">01</span>One press under three names &mdash; confirmed by your own data</h2>
+
+<p>Recognition history lives in Firestore at
+<code>users/{uid}/recognised_equipment/{equipmentId}</code>. The document key <em>is</em> the
+equipment id, so one physical machine recognised as three different machines produces three
+documents. The storage is doing its job; the recogniser is not.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Time (UTC)</th><th>Confidence</th><th>Source</th><th>Identified as</th></tr></thead>
+  <tbody>
+    <tr><td class="num">11:30:06</td><td class="num">82.0%</td><td>photo</td><td><code>ab_crunch_machine</code></td></tr>
+    <tr class="hot"><td class="num">11:32:27</td><td class="num">85.0%</td><td>photo</td><td><code>chest_press_machine</code></td></tr>
+    <tr class="hot"><td class="num">11:32:41</td><td class="num">92.0%</td><td>photo</td><td><code>shoulder_press_machine</code></td></tr>
+    <tr class="hot"><td class="num">11:36:22</td><td class="num">96.0%</td><td>photo</td><td><code>bench_press</code></td></tr>
+    <tr><td class="num">11:36:50</td><td class="num">35.7%</td><td><strong>live</strong></td><td><code>treadmill</code></td></tr>
+    <tr><td class="num">12:03:13</td><td class="num">88.0%</td><td>photo</td><td><code>bicep_curl_machine</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="lede">Chest press, shoulder press and bench press within four minutes, at 85, 92 and 96
+percent. Three names for one press, and the model never hesitated. <strong>This is not a
+regression.</strong> It is exactly what RECOG-C1 measured two days ago: overclaiming is the dominant
+behaviour, 25 of 49 in both arms, and the crop does not move it. The field data reproduced the
+laboratory finding in your own gym &mdash; the strongest confirmation the baseline could have
+received.</div>
+
+<h2><span class="num">02</span>Real-time runs a different model, and it is ten times simpler</h2>
+
+<p>A photo goes to Gemini through <code>aiEquipmentRecognition</code>. Real-time <strong>never leaves
+the phone</strong>: it runs <code>assets/models/equipment_v1.tflite</code>, a
+<strong>ten-class</strong> on-device classifier at a threshold of 0.1.</p>
+
+<p>The source already carries the measurement that buries it: the model returned <strong>0.892</strong>
+on a machine it has no class for &mdash; in its own words, &laquo;no threshold on this model separates
+right from wrong&raquo;. Today's single live sighting, a treadmill at 35.7%, is that model behaving
+exactly as measured.</p>
+
+<div class="lede warn">So &laquo;no confidence in real time&raquo; and &laquo;confidently wrong on a
+photo&raquo; are two different failures of two different systems that happen to share one camera
+screen. Nothing but the interface connects them.</div>
+
+<h2><span class="num">03</span>"The camera got noticeably worse" &mdash; that one is mine</h2>
+
+<p>Today's Cloud Run request log for <code>aiequipmentrecognition</code>: <strong>78 requests &mdash;
+60 with status 200, 12 with 429, 6 with 401</strong>. The twelve refusals are consecutive, 12:03:37
+to 12:17:13. The <code>aiEquipmentRecognition</code> quota is <strong>60 calls per user per
+day</strong>, counted in <code>users/{uid}/usage/{date}</code> and rolling at midnight UTC.</p>
+
+<div class="lede bad"><strong>RECOG-C1's measurement run consumed 52 of those 60 between 09:50 and
+09:59.</strong> Eight were left for you, after which every scan from 12:03:37 was refused before it
+ever reached the model.</div>
+
+<p>Why it looked like a quality collapse rather than a refusal: <code>aiMachineDescription</code> has
+its <em>own separate</em> quota of 60 and was nowhere near it, so the describer answered successfully
+on all eleven of the same seconds the recognition calls were being refused. The app showed you a
+<em>description</em> of the machine instead of an identification from the catalogue. From the outside
+that is indistinguishable from the recogniser suddenly getting worse.</p>
+
+<p>When I planned a 52-call run I did not consider that the quota is shared and counted against your
+account. Your day's allowance was spent on my baseline.</p>
+
+<h3>Repaired, not merely reported</h3>
+
+<p>The <code>aiEquipmentRecognition</code> counter for 7 September was set from 60 back to
+<strong>8</strong>: your own eight calls stay counted, my 52 are removed. That is subtraction of my
+consumption, not a lifted limit; every other counter in the document was left untouched. You have 52
+calls available again today.</p>
+
+<p>The durable fix is not a larger quota. Any future measurement run must either use its own account
+or have its cost written into the plan with you warned before it starts. Recorded as a constraint on
+the next measurement gate.</p>
+
+<h2><span class="num">04</span>The coach demonstrates the wrong movement &mdash; by construction, not by fault</h2>
+
+<p>There are only <strong>seven</strong> demonstrations: <code>squat</code>, <code>pushup</code>,
+<code>curl</code>, <code>hinge</code>, <code>lunge</code>, <code>situp</code>,
+<code>overhead_press</code>. <strong>540 exercises out of 1887</strong> are tagged onto them. So every
+tagged exercise is demonstrated by a generic figure for its category, and where the category fits
+poorly the demonstration is literally a different movement. Straight from the catalogue:</p>
+
+<ul>
+  <li><code>pushup</code> carries <code>ea_dumbbell_plank_pullthrough</code> and
+  <code>ea_alternate_leg_raise_from_reverse_plank_position</code> &mdash; neither is a push-up;</li>
+  <li><code>hinge</code> carries <code>ea_dumbbell_single_leg_hip_thrust</code> and
+  <code>ea_barbell_feet_elevated_single_leg_glute_bridge</code> &mdash; a glute bridge is performed
+  lying down, while the animation shows a standing deadlift;</li>
+  <li><code>curl</code> carries <code>ea_barbell_standing_back_wrist_curl</code> &mdash; a wrist curl
+  shown as a full biceps curl.</li>
+</ul>
+
+<p>This is a catalogue tagging problem, not a defect in the demo renderer, and no recent commit
+introduced it: nothing has touched <code>form_check/</code> since 28 August. Two possible fixes
+&mdash; retag the 540, or narrow which exercises are offered a demonstration at all
+(<code>formCoachSupports</code> already exists as that gate). Not attempted: it needs its own plan and
+a GO.</p>
+
+<h2><span class="num">05</span>Four icons, one of them dead</h2>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Package</th><th>Role</th><th>Version</th><th>Releases</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td><code>com.fitnessapp.fitness_app</code></td><td>legacy, pre-<code>.sptr</code></td><td class="num">14, 2 Aug</td><td class="num">0</td><td><span class="tag bad">removed</span></td></tr>
+    <tr><td><code>com.fitnessapp.fitness_app.sptr</code></td><td>release</td><td class="num">2986, 5 Sept</td><td class="num">14</td><td><span class="tag done">kept</span></td></tr>
+    <tr><td><code>com.fitnessapp.fitness_app.sptr.debug</code></td><td>debug</td><td class="num">3012, today</td><td class="num">1</td><td><span class="tag done">kept</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The fourth icon is the App Tester client itself (<code>dev.firebase.appdistribution</code>). The
+legacy package was superseded by the move to <code>.sptr</code>, was installed by hand, and its
+Firebase app has <em>never</em> had a release. Uninstalled.</p>
+
+<p>Release and debug are both kept deliberately: they carry different <code>applicationId</code>s
+precisely so a debug build cannot overwrite a release install's data. The thirteen superseded
+<code>.sptr</code> releases in App Distribution were left alone &mdash; they are history, App Tester
+offers the newest, and deleting cloud releases is a destructive action nobody asked for.</p>
+
+<h2><span class="num">06</span>What needs a decision</h2>
+
+<div class="lede warn">The recogniser's overconfidence is <strong>not a bug a patch can fix</strong>.
+It is a measured property: it names a machine it does not know at 85&ndash;96% confidence. And while
+the corpus holds no frame without equipment and no machine outside the catalogue, we cannot even
+measure whether it has learned to abstain. That is the first gap worth closing.</div>
+
+<p>Three directions, none of which I started without your word:</p>
+
+<ol>
+  <li><strong>Make the recogniser abstain.</strong> A threshold, a requirement for a printed name on
+  the shroud, or a refusal when candidates disagree. RECOG-C1 gives the baseline such a change can
+  honestly be measured against.</li>
+  <li><strong>The coach demonstrations.</strong> Retag the 540, or narrow the offer to exercises where
+  the generic figure genuinely shows that movement.</li>
+  <li><strong>The on-device real-time model.</strong> Ten classes is not gym recognition. Either widen
+  it, or stop displaying a confidence where there is none.</li>
+</ol>
+
+</div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

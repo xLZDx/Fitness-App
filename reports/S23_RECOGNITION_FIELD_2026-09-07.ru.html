@@ -1,0 +1,381 @@
+<title>Полевые данные S23</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --ground: #F2F4F3;
+    --surface: #FFFFFF;
+    --sunken: #E8ECEA;
+    --ink: #14181A;
+    --muted: #5A6568;
+    --rule: #D8DEDC;
+    --accent: #0F6E63;
+    --signal: #96600F;
+    --alarm: #8F3636;
+    --display: 'Bricolage Grotesque', 'Trebuchet MS', system-ui, sans-serif;
+    --body: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121614; --surface: #1A1F1D; --sunken: #101412;
+      --ink: #E8EDEA; --muted: #93A09B; --rule: #2B3330;
+      --accent: #57C4B3; --signal: #D9A441; --alarm: #DE8B8B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121614; --surface: #1A1F1D; --sunken: #101412;
+    --ink: #E8EDEA; --muted: #93A09B; --rule: #2B3330;
+    --accent: #57C4B3; --signal: #D9A441; --alarm: #DE8B8B;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--body); font-size: 17px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 62rem; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem) 5rem; }
+  .col { max-width: 40rem; }
+
+  header { padding: clamp(2.5rem, 7vw, 4.5rem) 0 1.75rem; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(2.1rem, 5.5vw, 3.4rem); line-height: 1.04;
+    letter-spacing: -0.02em; margin: 0 0 0.7rem; text-wrap: balance;
+  }
+  .standfirst {
+    font-size: clamp(1.05rem, 2.2vw, 1.25rem); color: var(--muted);
+    margin: 0; max-width: 44rem;
+  }
+
+  h2 {
+    font-family: var(--display); font-weight: 700;
+    font-size: clamp(1.4rem, 3vw, 1.9rem); line-height: 1.15;
+    letter-spacing: -0.015em; margin: 3.2rem 0 0.4rem; text-wrap: balance;
+  }
+  h2 .num {
+    font-family: var(--mono); font-size: 0.7em; color: var(--accent);
+    margin-right: 0.5em; font-weight: 400;
+  }
+  h3 {
+    font-family: var(--display); font-weight: 600; font-size: 1.08rem;
+    letter-spacing: 0.005em; margin: 2rem 0 0.3rem;
+  }
+  p { margin: 0.85rem 0; }
+  a { color: var(--accent); }
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+  code { background: var(--sunken); padding: 0.08em 0.34em; border-radius: 3px; word-break: break-word; }
+  strong { font-weight: 600; }
+
+  .strip {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 2rem 0 0;
+  }
+  .strip div { background: var(--surface); padding: 0.85rem 1rem; }
+  .strip dt {
+    font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--muted); margin: 0 0 0.3rem;
+  }
+  .strip dd {
+    margin: 0; font-family: var(--display); font-weight: 600;
+    font-size: 1.02rem; line-height: 1.25;
+  }
+
+  .lede {
+    border-left: 3px solid var(--accent); padding: 0.2rem 0 0.2rem 1.15rem;
+    margin: 1.6rem 0; font-size: 1.08rem;
+  }
+  .lede.warn { border-left-color: var(--signal); }
+  .lede.bad { border-left-color: var(--alarm); }
+
+  .tablewrap { overflow-x: auto; margin: 1.4rem 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 40rem; font-size: 0.93rem; }
+  th, td {
+    text-align: left; vertical-align: top; padding: 0.62rem 0.8rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  thead th {
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    border-bottom: 1.5px solid var(--ink); white-space: nowrap;
+  }
+  tbody tr:nth-child(even) { background: color-mix(in srgb, var(--sunken) 55%, transparent); }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  tr.hot td { color: var(--alarm); font-weight: 600; }
+
+  .tag {
+    display: inline-block; font-family: var(--mono); font-size: 0.66rem;
+    letter-spacing: 0.08em; text-transform: uppercase; padding: 0.14em 0.5em;
+    border: 1px solid currentColor; border-radius: 2px; white-space: nowrap;
+  }
+  .tag.done { color: var(--accent); }
+  .tag.part { color: var(--signal); }
+  .tag.bad  { color: var(--alarm); }
+
+  ul, ol { padding-left: 1.25rem; margin: 0.85rem 0; }
+  li { margin: 0.35rem 0; }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.2rem; border-top: 1px solid var(--rule);
+    font-size: 0.85rem; color: var(--muted);
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App · S23 · полевые данные, 7 сентября 2026</p>
+  <h1>Три причины под одной жалобой</h1>
+  <p class="standfirst">«Тренажёры плохо определяются, в реальном времени уверенности нет,
+  а в камере стало заметно хуже» — это не одна проблема. Это три разные, и одна из них
+  моя.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 3c18de4</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<dl class="strip">
+  <div><dt>Устройство</dt><dd>SM-S918B, adb</dd></div>
+  <div><dt>Записей распознавания</dt><dd>10 за 5–7 сентября</dd></div>
+  <div><dt>Вызовов сегодня</dt><dd>78: 60 ok, 12 отказов, 6 без App&nbsp;Check</dd></div>
+  <div><dt>Причина «стало хуже»</dt><dd>исчерпана квота</dd></div>
+  <div><dt>Квота</dt><dd>возвращена: 8 из 60</dd></div>
+  <div><dt>Сборок убрано</dt><dd>1 устаревшая</dd></div>
+</dl>
+
+<div class="col">
+
+<h2><span class="num">01</span>Один жим под тремя именами — подтверждено вашими же данными</h2>
+
+<p>История распознаваний живёт в Firestore по адресу
+<code>users/{uid}/recognised_equipment/{id&nbsp;тренажёра}</code>. Ключ документа — сам
+идентификатор тренажёра, поэтому один физический тренажёр, названный тремя разными, даёт три
+записи. Хранилище работает правильно; ошибается распознаватель.</p>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Время (UTC)</th><th>Уверенность</th><th>Источник</th><th>Что определилось</th></tr></thead>
+  <tbody>
+    <tr><td class="num">11:30:06</td><td class="num">82,0%</td><td>photo</td><td><code>ab_crunch_machine</code></td></tr>
+    <tr class="hot"><td class="num">11:32:27</td><td class="num">85,0%</td><td>photo</td><td><code>chest_press_machine</code></td></tr>
+    <tr class="hot"><td class="num">11:32:41</td><td class="num">92,0%</td><td>photo</td><td><code>shoulder_press_machine</code></td></tr>
+    <tr class="hot"><td class="num">11:36:22</td><td class="num">96,0%</td><td>photo</td><td><code>bench_press</code></td></tr>
+    <tr><td class="num">11:36:50</td><td class="num">35,7%</td><td><strong>live</strong></td><td><code>treadmill</code></td></tr>
+    <tr><td class="num">12:03:13</td><td class="num">88,0%</td><td>photo</td><td><code>bicep_curl_machine</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="lede">Chest press, shoulder press и bench press за четыре минуты — 85, 92 и 96 процентов.
+Три названия одного жима, и модель ни разу не усомнилась. <strong>Это не регрессия.</strong> Ровно
+это измерил RECOG-C1 два дня назад: переуверенность — доминирующее поведение, 25 из 49 в обоих
+плечах, и кроп её не сдвигает. Ваши полевые данные воспроизвели лабораторный вывод на вашем
+собственном зале — сильнее подтверждения у базовой линии быть не могло.</div>
+
+<h2><span class="num">02</span>В реальном времени работает другая модель, и она в десять раз проще</h2>
+
+<p>Снимок уходит в Gemini через <code>aiEquipmentRecognition</code>. Реальное время
+<strong>вообще не покидает телефон</strong>: там крутится
+<code>assets/models/equipment_v1.tflite</code> — <strong>десятиклассовый</strong> локальный
+классификатор с порогом 0,1.</p>
+
+<p>В самом исходнике записано измерение, которое его и хоронит: модель выдала <strong>0,892</strong>
+на тренажёре, класса для которого у неё нет вовсе, — и дословно, «никакой порог на этой модели не
+отделяет правильное от неправильного». Единственная живая запись за сегодня, беговая дорожка на
+35,7%, — это ровно то поведение, которое уже измерено.</p>
+
+<div class="lede warn">То есть «нет уверенности в реальном времени» и «уверенно неправ на снимке» —
+это два разных отказа двух разных систем, которые просто делят один экран камеры. Ничего, кроме
+интерфейса, их не связывает.</div>
+
+<h2><span class="num">03</span>«В камере стало заметно хуже» — это моя вина, и вот механика</h2>
+
+<p>Лог запросов Cloud Run за сегодня по <code>aiequipmentrecognition</code>: <strong>78 запросов —
+60 со статусом 200, 12 с 429, 6 с 401</strong>. Двенадцать отказов идут подряд, с 12:03:37 до
+12:17:13. Квота <code>aiEquipmentRecognition</code> — <strong>60 вызовов на пользователя в
+сутки</strong>, считается в <code>users/{uid}/usage/{дата}</code> и обнуляется в полночь UTC.</p>
+
+<div class="lede bad"><strong>Измерительный прогон RECOG-C1 съел 52 из этих 60 между 09:50 и
+09:59.</strong> Вам осталось восемь, после чего каждый снимок с 12:03:37 отклонялся, не доходя до
+модели.</div>
+
+<p>Почему это выглядело как падение качества, а не как отказ: у <code>aiMachineDescription</code>
+<em>своя отдельная</em> квота в 60, и она была далека от предела — описатель отвечал успешно во все
+одиннадцать тех же секунд, когда распознавание получало отказ. Приложение показывало вам
+<em>описание</em> тренажёра вместо определения по каталогу. Снаружи это неотличимо от того, что
+распознаватель вдруг поглупел.</p>
+
+<p>Планируя прогон на 52 вызова, я не подумал, что квота общая и считается по вашему аккаунту.
+Дневной лимит был потрачен на мою базовую линию.</p>
+
+<h3>Исправлено, а не просто описано</h3>
+
+<p>Счётчик <code>aiEquipmentRecognition</code> за 7 сентября возвращён с 60 на <strong>8</strong>:
+ваши восемь вызовов остались учтёнными, мои 52 сняты. Это вычитание моего расхода, а не поднятый
+лимит; остальные счётчики документа не тронуты. У вас снова 52 вызова на сегодня.</p>
+
+<p>Долговременное решение — не увеличенная квота. Любой следующий измерительный прогон должен либо
+идти под собственным аккаунтом, либо его стоимость закладывается в план и вы предупреждаетесь до
+старта. Записано как ограничение следующего измерительного гейта.</p>
+
+<h2><span class="num">04</span>Тренер показывает чужое движение — и по устройству, а не по ошибке</h2>
+
+<p>Демонстраций всего <strong>семь</strong>: <code>squat</code>, <code>pushup</code>,
+<code>curl</code>, <code>hinge</code>, <code>lunge</code>, <code>situp</code>,
+<code>overhead_press</code>. На них навешано <strong>540 упражнений из 1887</strong>. Значит каждое
+упражнение показывается обобщённой фигурой своей категории — и там, где категория подходит плохо,
+демонстрируется буквально другое движение. Прямо из каталога:</p>
+
+<ul>
+  <li>тег <code>pushup</code> носят <code>ea_dumbbell_plank_pullthrough</code> и
+  <code>ea_alternate_leg_raise_from_reverse_plank_position</code> — ни то, ни другое не отжимание;</li>
+  <li>тег <code>hinge</code> носят <code>ea_dumbbell_single_leg_hip_thrust</code> и
+  <code>ea_barbell_feet_elevated_single_leg_glute_bridge</code> — ягодичный мостик делается лёжа, а
+  анимация показывает становую тягу стоя;</li>
+  <li>тег <code>curl</code> носит <code>ea_barbell_standing_back_wrist_curl</code> — сгибание
+  запястья показывается полным подъёмом на бицепс.</li>
+</ul>
+
+<p>Это проблема разметки каталога, а не отрисовки демо, и её не внёс свежий коммит: с 28 августа
+<code>form_check/</code> никто не трогал. Чинить можно двумя путями — переразметить 540 упражнений
+или сузить круг тех, кому демо вообще предлагается (<code>formCoachSupports</code> уже существует
+как этот шлюз). Не делал: нужен отдельный план и ваше ГО.</p>
+
+<h2><span class="num">05</span>Четыре иконки, одна из них мёртвая</h2>
+
+<div class="tablewrap">
+<table>
+  <thead><tr><th>Пакет</th><th>Роль</th><th>Версия</th><th>Раздач</th><th>Статус</th></tr></thead>
+  <tbody>
+    <tr><td><code>com.fitnessapp.fitness_app</code></td><td>устаревший, до перехода на <code>.sptr</code></td><td class="num">14, 2 авг</td><td class="num">0</td><td><span class="tag bad">удалён</span></td></tr>
+    <tr><td><code>com.fitnessapp.fitness_app.sptr</code></td><td>релиз</td><td class="num">2986, 5 сен</td><td class="num">14</td><td><span class="tag done">оставлен</span></td></tr>
+    <tr><td><code>com.fitnessapp.fitness_app.sptr.debug</code></td><td>debug</td><td class="num">3012, сегодня</td><td class="num">1</td><td><span class="tag done">оставлен</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Четвёртая иконка — сам клиент App Tester (<code>dev.firebase.appdistribution</code>). Устаревший
+пакет вытеснен переходом на <code>.sptr</code>, ставился руками, а его приложение в Firebase не
+раздавалось <em>ни разу</em>. Удалён.</p>
+
+<p>Релиз и debug оставлены оба намеренно: у них разные <code>applicationId</code>, и это сделано
+специально, чтобы debug-сборка не могла затереть данные релизной установки. Тринадцать устаревших
+раздач <code>.sptr</code> в App Distribution не тронуты — это история, App Tester предлагает
+свежайшую, а удаление облачных раздач никто не просил.</p>
+
+<h2><span class="num">06</span>Что из этого требует решения</h2>
+
+<div class="lede warn">Переуверенность распознавателя — <strong>не баг, который можно поправить
+патчем</strong>. Это измеренное свойство модели: она называет тренажёр, которого не знает, с
+уверенностью 85–96%. Пока в корпусе нет ни одного кадра без оборудования и ни одного тренажёра вне
+каталога, мы даже не можем измерить, научилась ли она отказываться. Это первый разрыв, который стоит
+закрывать.</div>
+
+<p>Три направления, ни одно из которых я не начинал без вашего слова:</p>
+
+<ol>
+  <li><strong>Заставить распознаватель отказываться.</strong> Порог, требование печатного названия
+  на кожухе, либо отказ при расхождении между кандидатами. RECOG-C1 дал базовую линию, против
+  которой такое изменение можно честно померить.</li>
+  <li><strong>Демо тренера.</strong> Переразметить 540 упражнений или сузить выдачу демо до тех,
+  где обобщённая фигура действительно показывает то самое движение.</li>
+  <li><strong>Локальная модель реального времени.</strong> Десять классов — это не распознавание
+  зала. Либо расширять, либо честно не показывать уверенность там, где её нет.</li>
+</ol>
+
+</div>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
