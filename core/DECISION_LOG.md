@@ -44911,14 +44911,18 @@ manifest was deleted and rebuilt from the in-repo script, and the hash came back
 
 | artifact | sha256 |
 | --- | --- |
-| `core/plans/RECOG_C1_SERVER_CORRELATION_2026-09-07.json` | `bb8e6025c41103b3ce6f885e86a72d52bcdb9151969ad0efb62c30f69579ce6e` |
+| `core/plans/RECOG_C1_SERVER_CORRELATION_2026-09-07.json` | `816d4314a383b01c50846639e087897f12cf0350681974f1691655e31ca61a69` |
 | `core/plans/recog_c1_raw/recog_c1_server_requests_2026-09-06_07.json` | `b6e672ed03514ae64da7cf6eb6e8ca06c5f8d9804ae17d7a5987f26b14f9c921` |
 | `core/plans/recog_c1_raw/recog_c1_raw_w1.jsonl` (unchanged) | `556480993b8de6d1308031f4a5b4b4d028bad8c98a223b4c35c8f2fd87e0f989` |
 | `core/plans/recog_c1_raw/recog_c1_raw_w2.jsonl` (unchanged) | `dd0f478c7dcfaf0e29f818e2d0e076025d77895234278fba906d6b1597aa9f9c` |
 
-- **Segmentation touches no timestamp.** 110 request-level entries over the two days: exactly 104
-  with status 200 and 6 with 401. The 104 are the completed calls, the 6 the refusals of the two
-  aborted App Check attempts.
+- **Segmentation, and precisely which half of it is timing-free.** The 110 request-level entries
+  split by HTTP status alone — exactly 104 with status 200 and 6 with 401, the completed calls and
+  the refusals of the two aborted App Check attempts. That partition consults no timestamp.
+  Sorting the 104 into run 1 and run 2 then does use their timestamps against the two recorded run
+  windows, which are disjoint and 38 hours apart. An earlier wording here said "segmentation
+  touches no timestamp", flat; GPT-PM's closure review caught it as a MINOR and was right — the
+  claim was true of the status partition and carried over to a step it does not cover.
 - **Ordinal pairing** inside each strictly sequential run — one device, one awaited call at a time,
   no interleaving — then **tested**: does one constant clock offset per run put every server
   request inside its own paired client window? One unknown, 52 simultaneous constraints. Feasible

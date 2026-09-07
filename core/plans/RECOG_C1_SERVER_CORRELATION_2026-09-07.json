@@ -144,7 +144,7 @@
    "offset_used_seconds": -4.66
   }
  },
- "segmentation": "Independent of all timing: the request log carries 110 requests, exactly 104 with status 200 and 6 with 401. The 104 are the completed calls; the 6 are the refusals of the two aborted App Check attempts.",
+ "segmentation": "Two steps, and only the first is timing-free. (1) The request log carries 110 requests, split by HTTP status alone into exactly 104 with status 200 and 6 with 401 -- the 104 completed calls and the 6 refusals of the two aborted App Check attempts. No timestamp is consulted. (2) The 104 are then assigned to run 1 or run 2 by their timestamps against the two recorded run windows, which are disjoint and 38 hours apart; that step does use clock evidence, and the exhaustiveness check (every served request in exactly one window, none in two, none in neither) is what holds it.",
  "what": "A server-side correlation id for every completed RECOG-C1 observation, recovered from Cloud Logging AFTER the run.",
  "what_is_not_claimed": "This does not enumerate all 52! permutations. Checks (2) and (3) rule out other windows AT the derived offset and all near reorderings; they do not exhaustively exclude some distant permutation paired with a different offset. Given strictly sequential, non-overlapping calls on one device that is strong evidence -- but it is evidence, and the difference is stated here rather than rounded up to a proof.",
  "why_it_was_not_recorded": "aiEquipmentRecognition returns { text } and nothing else, so no server id ever reaches the client. The harness recorded null on all 104 rows and they were scored anyway, which violates rev7 verification (e). This file is the remediation of that violation, not a claim that it did not happen."

@@ -228,9 +228,18 @@ if ok and len(manifest) == 104 and len(set(manifest.values())) == 104:
         'id_kind': 'Cloud Trace id of the Cloud Run request that served the call',
         'recorded_by_harness': False,
         'recovered_after_the_fact': True,
-        'segmentation': ('Independent of all timing: the request log carries 110 requests, exactly '
-                         '104 with status 200 and 6 with 401. The 104 are the completed calls; the '
-                         '6 are the refusals of the two aborted App Check attempts.'),
+        # Precise about which half is timing-free. GPT-PM's closure review caught
+        # this as a MINOR: the 104/6 split is timestamp-independent, but sorting
+        # the 104 into w1 and w2 plainly is not.
+        'segmentation': ('Two steps, and only the first is timing-free. (1) The request log carries '
+                         '110 requests, split by HTTP status alone into exactly 104 with status 200 '
+                         'and 6 with 401 -- the 104 completed calls and the 6 refusals of the two '
+                         'aborted App Check attempts. No timestamp is consulted. (2) The 104 are '
+                         'then assigned to run 1 or run 2 by their timestamps against the two '
+                         'recorded run windows, which are disjoint and 38 hours apart; that step '
+                         'does use clock evidence, and the exhaustiveness check (every served '
+                         'request in exactly one window, none in two, none in neither) is what '
+                         'holds it.'),
         # Computed, never typed. The first version of this sentence carried a
         # hand-written range that was wrong by more than double at the top end,
         # and it was wrong exactly because it was a literal sitting next to the

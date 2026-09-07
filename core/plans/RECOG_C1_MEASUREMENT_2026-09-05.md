@@ -78,10 +78,12 @@ and the two raw files.
 
 How it is established, and why it is more than a plausible-looking join:
 
-- **Segmentation uses no timestamp at all.** The Cloud Run request log holds 110 request-level
-  entries across the two days — exactly **104 with status 200 and 6 with 401**. The 104 are the
-  completed calls; the 6 are the refusals of the two aborted App Check attempts, which are
-  preserved separately as evidence.
+- **Segmentation, in two steps, only the first of which is timing-free.** The Cloud Run request
+  log holds 110 request-level entries across the two days, and HTTP status alone splits them into
+  exactly **104 with status 200 and 6 with 401** — the completed calls, and the refusals of the two
+  aborted App Check attempts (preserved separately as evidence). No timestamp is consulted for
+  that. Assigning the 104 to window 1 or window 2 then *does* use their timestamps against the two
+  recorded run windows, 38 hours apart; the exhaustiveness check below is what holds that step.
 - **Ordinal pairing inside each run.** One device, one call at a time, each awaited before the
   next: both sequences are totally ordered with no interleaving, so client call *k* is server
   request *k* once the counts agree.

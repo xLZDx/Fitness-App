@@ -287,13 +287,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 300015b</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 51b33d2</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -1174,9 +1176,12 @@ script, and the sha256 came back identical.</p>
 <table>
   <thead><tr><th>What is checked</th><th>Result</th></tr></thead>
   <tbody>
-    <tr><td><strong>Segmentation touches no timestamp at all.</strong> The log holds 110
-    request-level entries: exactly 104 with status 200 and 6 with 401. The 104 are the completed
-    calls, the 6 the refusals of the two aborted attempts.</td><td><span class="tag done">104 + 6 = 110</span></td></tr>
+    <tr><td><strong>Segmentation, in two steps, and only the first is timing-free.</strong> The log
+    holds 110 request-level entries, and HTTP status alone splits them into exactly 104 with status
+    200 and 6 with 401 — the completed calls and the refusals of the two aborted attempts. No
+    timestamp is consulted there. Assigning those 104 to window 1 or window 2 then does use their
+    timestamps against the two recorded run windows, 38 hours apart; the exhaustiveness row below
+    is what holds that step.</td><td><span class="tag done">104 + 6 = 110</span></td></tr>
     <tr><td><strong>Exhaustiveness.</strong> Every one of the 104 served requests falls inside
     exactly one run window — none outside both, none in two. So &laquo;52 and 52&raquo; cannot have
     matched by one real call being missed and one stranger let in.</td><td><span class="tag done">0 / 0 / 0</span></td></tr>
@@ -1265,6 +1270,8 @@ real observability gap in the product: nothing today links a client-side failure
 line. Recorded as the next step; not done in this gate, which is measurement-only.</p>
 
 </div>
+
+
 
 
 
