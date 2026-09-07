@@ -45405,3 +45405,38 @@ see. Replaced with `ea_dumbbell_single_leg_step_up` and `ea_plate_hollow_hold`, 
 reach a user and both of which this gate untagged; the stated blast radius is corrected from 540
 across seven tags to 450 across six; the tense is corrected to the past, since the rows no longer
 carry those tags; and the section now records that Gate C closed it the same day.
+
+## 2026-09-07 — Whose 60 calls a day? Ours, and per signed-in user
+
+The operator asked, of the quota that swallowed their afternoon: *«60 вызовов на аккаунт в сутки —
+а чей это лимит?»* Worth answering in the log rather than only in chat, because the answer changes
+how every future measurement run must be planned.
+
+**It is our own limit, not Google's and not Gemini's.** `functions/src/abuse_guard.ts:408` sets
+`aiEquipmentRecognition: 60`, "per user per day". The counter lives in Firestore at
+`users/{uid}/usage/{yyyy-mm-dd}` (`abuse_guard.ts:103`), rolls at midnight **UTC**, is incremented
+inside a transaction before the model is called, and throws `HttpsError('resource-exhausted')`,
+which reaches the client as HTTP 429. The twelve consecutive 429s in the 7 September Cloud Run log
+were therefore our own refusals, not Vertex's.
+
+**It is keyed on the signed-in Firebase uid** — one user, not one app and not one project. That is
+the whole answer to the operator's question: RECOG-C1's measurement run authenticated as *their*
+account, so its 52 calls were charged to *their* day, and the 8 that remained were what they got.
+`aiMachineDescription` has a separate counter of its own, nowhere near full, which is why the app
+kept describing machines in the very seconds it could no longer identify them — a quota wall
+wearing the costume of a quality regression.
+
+Anonymous callers get `limit / 8` (`ANONYMOUS_QUOTA_DIVISOR`), and the four AI callables refuse
+anonymous sign-in outright unless `AI_ALLOW_ANONYMOUS=true`, because each one pays for a real Vertex
+invocation and a fresh anonymous uid costs an attacker nothing.
+
+**The part that sharpens yesterday's entry.** The 52-call spend was not an oversight of arithmetic.
+`mobile/test/tools/recog_c1_generate_run_plan.dart`'s own header states the budget outright: "the
+daily quota is 60 recognition calls per user per UTC day ... 26 pairs = 52 calls per window leaves
+8 calls of retry budget inside the same window". The budget was designed, written down, and
+reviewed. What nobody wrote down is that "per user" meant *the operator's own account*, and so the
+8-call retry margin was silently the operator's entire remaining day.
+
+**The constraint this fixes, for every future run:** a measurement or boundary run must state its
+call budget in the plan **and name the account it runs under**, and that account must not be the
+operator's. Restoring their counter afterwards is repair, not a fix.
