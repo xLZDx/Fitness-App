@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "RECOG_SO1_CONSENT.schema.json",
+  "title": "RECOG-SO1 transmission consent record",
+
+  "description": "The record that authorises transmitting the operator's own gym photographs to a third-party inference provider. GPT-PM's BLOCKER on plan revision 1 was that the previous design checked a consent record EXISTED and was well-formed -- which a record saying 'do not send' would also satisfy. This schema therefore describes affirmative authorisation, and 'deny' is a first-class terminal value rather than an absence. The corpus contains identifiable people including two children whose faces are legible; a gate that confuses 'the operator answered' with 'the operator authorised' is not acceptable here.",
+
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["decision", "recorded_at", "operator_statement"],
+
+  "properties": {
+    "decision": {
+      "description": "A closed enum. Anything else -- a new value, a typo, a missing field -- refuses. 'deny' refuses BEFORE any image byte is read and BEFORE the HTTP client is constructed, so a denial cannot leak data through a partially-built request.",
+      "enum": ["whole_corpus", "people_free_only", "deny"]
+    },
+
+    "recorded_at": {
+      "type": "string",
+      "description": "ISO-8601 date or timestamp at which the operator gave this answer."
+    },
+
+    "operator_statement": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The operator's own words, verbatim and untranslated. Not a summary written by the session: a paraphrase is the session authorising itself in the operator's name."
+    },
+
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Digest of RECOG_SO1_OBSERVATION_MANIFEST_2026-09-07.csv. Binds the authorisation to an exact set of photographs, so consent given for one corpus cannot silently cover a later, larger one. REQUIRED for an affirmative decision."
+    },
+
+    "preregistration_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Digest of the pre-registration document in force when consent was given. Binds the authorisation to a fixed experimental protocol. REQUIRED for an affirmative decision."
+    },
+
+    "groq_data_controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["global_zdr", "recorded_from", "recorded_at"],
+      "description": "The provider's retention state at the moment of consent. GPT-PM: if zero-data-retention is available it must be enabled, and if it is unavailable the operator's consent must be informed by that fact rather than described as 'the provider stores nothing'. This object is REQUIRED for an affirmative decision, and 'unknown' is an accepted value precisely so that an uninformed consent is recorded as uninformed instead of being blocked into a comfortable silence.",
+      "properties": {
+        "global_zdr": {
+          "enum": ["enabled", "disabled", "unknown"],
+          "description": "The console's Global ZDR toggle. 'enabled' means input and output are not logged and storage-requiring features are disabled for the organisation."
+        },
+        "inference_apis_zdr": { "enum": ["enabled", "disabled", "overridden_by_global", "unknown"] },
+        "batch_storage": { "enum": ["on", "off", "unknown"] },
+        "fine_tuning_storage": { "enum": ["on", "off", "unknown"] },
+        "recorded_from": {
+          "type": "string",
+          "minLength": 1,
+          "description": "How this state was established. It is NOT readable from the API -- there is no data-controls endpoint and /models carries no retention field -- so it can only come from the operator's own console."
+        },
+        "recorded_at": { "type": "string" }
+      }
+    },
+
+    "notes": { "type": "string" }
+  },
+
+  "allOf": [
+    {
+      "description": "An affirmative decision must bind the exact corpus, the exact protocol, and a recorded retention state. A denial requires none of them: refusing must never be the harder path to express.",
+      "if": { "properties": { "decision": { "enum": ["whole_corpus", "people_free_only"] } } },
+      "then": { "required": ["manifest_sha256", "preregistration_sha256", "groq_data_controls"] }
+    }
+  ],
+
+  "_state_machine": {
+    "AUTHORISED": "decision is 'whole_corpus' or 'people_free_only', every binding present, manifest_sha256 equals the digest of the manifest actually loaded, preregistration_sha256 equals the digest of the pre-registration actually on disk, and groq_data_controls is present.",
+    "REFUSED": [
+      "the file does not exist",
+      "the file does not parse",
+      "decision is absent",
+      "decision is 'deny'",
+      "decision is any value outside the enum",
+      "an affirmative decision is missing manifest_sha256, preregistration_sha256 or groq_data_controls",
+      "manifest_sha256 does not equal the digest of the manifest the runner loaded",
+      "preregistration_sha256 does not equal the digest of the pre-registration on disk",
+      "the file carries a property this schema does not define"
+    ],
+    "_ordering": "The state machine is evaluated before any image file is opened and before the HTTP client object is constructed. The test suite asserts a 'deny' record produces ZERO transport calls and ZERO image reads -- not merely a non-zero exit code."
+  }
+}

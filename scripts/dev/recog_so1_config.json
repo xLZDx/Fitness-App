@@ -1,0 +1,48 @@
+{
+  "_comment": "Frozen SO1 request configuration. GPT-PM's MAJOR 1: request-shaping must be explicit here, not inherited from whatever the provider defaults to on the day the run happens. Every field below is sent on every call; the runner refuses to start if this file's digest does not match the one sealed in the pre-registration.",
+
+  "model": "qwen/qwen3.8-27b",
+  "_model_evidence": "Read from Groq's own /v1/models/qwen/qwen3.8-27b on 2026-09-07: input_modalities ['text','image'], supported_features ['tools','json_mode','reasoning'], supported_sampling_parameters ['temperature','top_p','stop','seed','max_tokens'], max_completion_tokens 16384, owned_by 'Alibaba Cloud', image pricing 0.",
+
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 20260907,
+  "_determinism_note": "temperature 0 plus a pinned seed makes the run reproducible rather than merely repeatable. This is also why a reply that fails to parse is NOT retried -- see retry_policy.",
+
+  "max_completion_tokens": 4096,
+  "_max_tokens_note": "The answer is a short JSON object, but this is a reasoning-capable model and hidden reasoning tokens count toward the completion. 4096 leaves generous headroom; a truncated completion is classified as a parse failure and scored as unresolved, never retried into a scoreable answer.",
+
+  "response_format": { "type": "json_object" },
+  "_response_format_note": "json_object, not a json_schema: the model metadata advertises 'json_mode' and does not advertise structured-output schemas, so the shape is enforced by this repository's own parser rather than claimed from a feature that was never verified to exist. The parser is the authority and its version is sealed with this file.",
+
+  "extra_body": { "reasoning_effort": "none" },
+  "_reasoning_UNVERIFIED": "The model advertises a 'reasoning' feature but the accepted parameter NAME and VALUES were not probed, because this gate committed to making no new Groq calls at all. So this value is declared intent, not a verified setting. The runner's --preflight mode sends exactly this configuration with a synthetic image before any corpus image, and a 4xx naming this parameter is a CONFIGURATION FAILURE that stops the run -- it is never silently dropped and the run never proceeds on provider defaults. Whatever preflight establishes is recorded in the pre-registration before the corpus pass begins.",
+
+  "expected_output_schema": {
+    "machine": "string; a name from the frozen canonical list, or the sentinel 'unknown'",
+    "confidence": "number in [0,1]",
+    "alternatives": "array of at most 2 objects {machine: string, confidence: number}; may be absent or empty"
+  },
+  "_schema_note": "This is production's own reply contract, because the SO1 prompt is production's own prompt. A reply that does not satisfy it is 'unresolved', which counts AGAINST the second-opinion signal -- an invalid answer is never read as an abstention.",
+
+  "retry_policy": {
+    "max_attempts": 3,
+    "retry_on": ["http_429", "http_500", "http_502", "http_503", "http_504", "connection_error", "read_timeout"],
+    "never_retry_on": ["http_400", "http_401", "http_403", "http_404", "parse_failure", "schema_failure", "empty_completion"],
+    "backoff": "honour Retry-After when the response carries one; otherwise 5s, 10s between attempts",
+    "on_exhaustion": "record the observation as unresolved with its failure class; do not drop it, do not substitute a value"
+  },
+  "_retry_reasoning": "Transport failures are retried because they say nothing about the model's opinion. A well-formed HTTP 200 whose body will not parse is NOT retried, for two reasons that point the same way: at temperature 0 with a fixed seed a retry returns the same answer anyway, and retrying until a reply becomes scoreable is sampling for a usable result -- the exact tuning the pre-registration forbids. Configuration errors (4xx) stop the run rather than burning the corpus against a broken request.",
+
+  "rate_limits_measured": {
+    "requests_per_day": 1000,
+    "tokens_per_minute": 8000,
+    "_source": "x-ratelimit-limit-requests and x-ratelimit-limit-tokens response headers observed 2026-09-07, not documentation",
+    "_binding_constraint": "the token bucket binds first: a crop-shaped frame measured 1813 prompt tokens and the tall full frame 789, so a 104-observation pass takes roughly 26-40 minutes at this ceiling",
+    "pacing": "the runner sleeps to stay under the measured token ceiling rather than relying on 429s to pace it"
+  },
+
+  "endpoint": "https://api.groq.com/openai/v1/chat/completions",
+  "user_agent": "fitness-app-recog-so1/1.0",
+  "_user_agent_note": "A default Python-urllib User-Agent was blocked by Cloudflare with error 1010 on 2026-09-07 -- a WAF rule, not an authentication failure. Pinned here so that diagnosis is not repeated by the next reader."
+}

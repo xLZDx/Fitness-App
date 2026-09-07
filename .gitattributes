@@ -49,3 +49,25 @@ core/plans/recog_c1_raw/*.jsonl -text
 # CRLF and the digest would fail to verify -- destroying the only thing the
 # seal exists to prove. Same reason as the rules above.
 core/pose_targets/GATE_C_EXPECTED_TRANSITIONS.tsv text eol=lf
+
+# RECOG-SO1 seals twelve artefacts by SHA-256 over their exact bytes, recorded
+# in RECOG_SO1_PREREGISTRATION_2026-09-07.md before any Qwen output existed, and
+# the runner re-hashes every one of them at start-up and REFUSES to transmit if
+# one has changed. Under core.autocrlf=true a fresh Windows checkout would hand
+# back CRLF, every digest would miss, and the seal would refuse forever -- fail-
+# safe, but it would make the experiment unrunnable by anyone who cloned the
+# repository, which destroys the reproducibility the seal exists to provide.
+# Same reason as the Gate C line above.
+core/plans/RECOG_SO1_OBSERVATION_MANIFEST_2026-09-07.csv text eol=lf
+core/plans/RECOG_SO1_PEOPLE_SURVEY_2026-09-07.csv text eol=lf
+core/plans/RECOG_SO1_CONSENT.schema.json text eol=lf
+core/plans/RECOG_SO1_PREREGISTRATION_2026-09-07.md text eol=lf
+scripts/dev/recog_so1_prompt.txt text eol=lf
+scripts/dev/recog_so1_vocab.json text eol=lf
+scripts/dev/recog_so1_config.json text eol=lf
+scripts/dev/recog_so1_build_vocab.py text eol=lf
+scripts/dev/recog_so1_build_prompt.py text eol=lf
+scripts/dev/recog_so1_build_manifest.py text eol=lf
+scripts/dev/recog_so1_run.py text eol=lf
+scripts/dev/recog_so1_score.py text eol=lf
+scripts/dev/recog_so1.tests.py text eol=lf

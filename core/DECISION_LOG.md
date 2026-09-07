@@ -45719,3 +45719,128 @@ including a child, to a third party. Good contract terms lower the risk; they do
 call, and it cannot be undone once sent. Put to the operator with the verified terms rather than
 assumed from their instruction to try the API — "try this key" is consent to test the API, which is
 what was done with synthetic images only, not consent to transmit their family photographs.
+
+## 2026-09-07 — RECOG-SO1: the operator authorised the whole corpus, and Groq's Global ZDR is on
+
+**Operator, verbatim, asked which of three options to take:** *"весь корпус (52 фото, максимальная
+статистическая сила)"* — the whole corpus, 52 photographs, maximum statistical power. That answers
+the transmission question left open by the previous entry.
+
+**The second condition GPT-PM set is also now satisfied, and by the operator rather than by me.**
+GPT-PM required that the Groq Data Controls state be RECORDED before a real-photo run, and that if
+zero-data-retention is available it be enabled — and that if it is not, the operator's consent be
+informed by that fact rather than described as "Groq stores nothing". The operator sent the console
+page. Recorded from it:
+
+- **Global ZDR: Enabled** — the page's own wording, *"Enabled - API specific settings are overriden"*,
+  against the description *"When enabled, input and output data will not be logged, and features that
+  require data storage will be disabled for members of your organization."*
+- Inference APIs ZDR: its own toggle is off, but the page states Global ZDR overrides API-specific
+  settings. The same section records that from 2025-10-15 Groq may otherwise store inputs and outputs
+  for up to 30 days for reliability and compliance — which is precisely what the global toggle opts
+  out of.
+- Batch: **Off**. Fine-tuning & LoRA Inference: **Off**. Both are the paths the page describes as
+  requiring storage (batch files for 30 days; fine-tune weights and datasets until deleted).
+
+This state is not readable from the API. `/v1/models/qwen/qwen3.8-27b` carries no retention field and
+there is no data-controls endpoint; the state exists only in the console. So it is recorded here from
+the operator's own screenshot, and the SO1 consent record must name it — the runner refuses without it.
+
+**The API Keys page, from the same operator screenshot:** the key pasted into the chat transcript
+(`gggg`) shows `LAST USED 9/7/2026` and `7 API Calls` in 24 hours — those are this session's probes
+(model metadata, the synthetic-image capability probe, the rate-limit probes) and nothing else. It
+remains compromised by having been pasted into a transcript and still needs revoking; revocation is
+the operator's action, not this session's. A second key (`wwww`, created 9/4, never used) has never
+appeared in the transcript. Both are set to never expire.
+
+## 2026-09-07 — A people survey of the corpus, because the labels cannot tell a person from a poster
+
+**Operator, verbatim:** *"по поводу людей в кадре, ты должен понимать если это реальные люди или
+посторы на стенах клуба"* — you must tell whether those are real people or posters on the club's
+walls. The correction is right and the distinction turned out to be load-bearing.
+
+**What had been claimed, and how weak the check behind it was.** A regex over the frozen labels'
+`semantic_label` and `features_the_label_rests_on` fields named a person in **3** source photographs.
+It was reported as a lower bound rather than a survey, on the grounds that those fields describe the
+equipment subject and not who else is in frame. A visual pass over all 13 arm-A contact sheets — all
+52 source photographs — puts the real figure at **21**. The regex missed **18 of 21**.
+
+**The survey**, recorded at `core/plans/RECOG_SO1_PEOPLE_SURVEY_2026-09-07.csv`, one row per source
+photograph with `real_people`, `printed_human_figures`, `legible_face` and a note:
+
+| | of 52 |
+| --- | --- |
+| real people present | **21** |
+| printed human figures present | **22** |
+| both at once | 10 |
+| a face legible | **5** |
+| no real people | 31 |
+
+**The operator's point, confirmed.** 22 photographs contain human imagery that is not a person: a
+large printed mural of a bearded bodybuilder that recurs across eight frames, purple printed banners
+of a woman, and — the case a naive detector would find hardest — printed photographs of models on the
+Nautilus instruction placards bolted to the machines themselves (`PEC FLY / REAR DELT`, `ABDOMINAL`).
+Ten photographs contain a printed figure AND a real person at once, so "contains a human shape" and
+"contains a person" are not the same question in this corpus and cannot be answered by one test.
+
+**And the part that does not go away.** 21 photographs do contain real people, and in 5 a face is
+fully legible: a trainer (indices 0, 1, 4) and **two children** (indices 2 and 3 — one in a green
+shirt, one in blue, both present in the same minute on 2026-05-18). In two further frames the
+photographer is reflected in a mirror. The earlier constraint on the contact sheets — do not publish,
+do not attach to an external review, blur faces if they ever travel — stands unchanged and is if
+anything better evidenced now than when it was written.
+
+**The survey's own limit, stated rather than implied.** It is a single visual pass by one reviewer
+over downscaled contact-sheet tiles, not over the full-resolution originals. `real_people = no` means
+"no person visible at tile resolution", not a guarantee that none is present. It is a far better
+lower bound than the label regex, and it is still a lower bound.
+
+**Why this had to exist before the experiment could run: GPT-PM's MAJOR 2 was unimplementable without
+it.** The approved plan pre-registers a source-level `people_free_only` selection policy, and GPT-PM's
+SO1 ruling sets a power floor of >= 20 unique source photographs per ground-truth kind. No frozen
+artefact carried a people flag, so that branch had no input at all and the policy would have been
+present but inert — the same defect class as an acceptance criterion with no test behind it.
+
+**Applying the floor to the subset the operator did NOT choose:**
+
+| arm / kind | all | people-free | outcome |
+| --- | --- | --- | --- |
+| A `canonical_single` | 26 | **16** | below the >= 20 floor -> INCONCLUSIVE |
+| A `multiple` | 26 | **15** | below the >= 20 floor -> INCONCLUSIVE |
+| B `canonical_single` | 26 | **16** | below the >= 20 floor -> INCONCLUSIVE |
+| B `multiple` | 26 | **15** | below the >= 20 floor -> INCONCLUSIVE |
+
+So `people_free_only` was pre-registered to return INCONCLUSIVE in every arm and every kind
+regardless of what Qwen produced. The operator's choice of the whole corpus was not "more power" as a
+preference — it was the only option under which SO1 can reach a verdict at all. The whole corpus gives
+26 and 26 unique sources per kind per arm, clearing the floor.
+
+**Decision:** the survey is committed as an SO1 input and its digest is sealed with the other frozen
+artefacts, so which photographs were understood to contain people is fixed before any result exists,
+not adjustable afterwards.
+
+## 2026-09-07 — The SO1 seal needed a `.gitattributes` pin or it would have been unrunnable after a clone
+
+`git add` warned that all twelve sealed SO1 artefacts would have LF replaced by CRLF, because this
+machine has `core.autocrlf=true`. The runner re-hashes every sealed artefact at start-up and refuses
+to transmit if one has changed, so a fresh Windows checkout would have handed back CRLF, missed every
+digest, and refused forever. Fail-safe in direction, but it would have made the experiment
+unrunnable by anyone who cloned the repository — which destroys the reproducibility the seal exists
+to provide.
+
+Fixed the same way Gate C's own seal was, with the same reasoning recorded beside it: thirteen
+`text eol=lf` lines in `.gitattributes`, one per sealed artefact plus the pre-registration itself.
+
+Verified rather than assumed, and non-destructively: `git checkout-index -a -f --prefix=<fresh dir>`
+materialises the index through git's own filters, and all **12/12** sealed digests match there.
+
+Two hook interactions worth recording, because both are the safety layer working:
+
+1. A recursive force delete of that scratch directory was refused by the shell policy gate. Correct
+   — deletion is the operator's under §4/§20 — so the directory was simply left in the session
+   scratchpad rather than the command being reformulated to slip past the gate.
+2. The commit that carried this very paragraph was then itself refused, because the paragraph
+   *quoted* the blocked command and the gate classifies the whole command line including its
+   heredoc payload. The fix was to write the text with a file tool instead of embedding it in a
+   shell command — the gate was not weakened, disabled, or worked around; the prose simply stopped
+   travelling through a shell.
