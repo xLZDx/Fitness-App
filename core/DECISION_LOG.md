@@ -44625,3 +44625,19 @@ that looks correctly cleaned while making every number above unreproducible.
 
 The analysis script, its 28 tests, the frozen plan, the ground truth and both raw files stay. What
 leaves is only what the app itself would have carried.
+
+## 2026-09-07 — RECOG-C1 report: sections 14–16, published to the same artifact
+
+`reports/RECOG_C1_BASELINE_2026-09-05.{ru.,}html` gain three sections — the two aborted window-2 runs
+and the corrected diagnosis, the finished baseline, and step 10 with what remains the operator's — and
+the plan table's steps 7, 8 and 10 move from `частично`/`не начат` to `сделано` with their real tails.
+
+Republished in place at the existing URL rather than as a new artifact, so the link the operator
+already has keeps working. Before publishing, the live version was read back and the local file
+checked to be a strict superset of it: all 13 published sections and all 41 published paragraphs
+present verbatim, plus the three new ones. A republish that silently dropped someone else's edit
+would be indistinguishable from a successful one otherwise.
+
+The report carries no image beyond the three Star Trac frames that were already published. **The
+contact sheets in `core/plans/recog_c1_sheets/` are still not published anywhere and must not be:**
+they show identifiable people including a child.

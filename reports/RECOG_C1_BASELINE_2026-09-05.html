@@ -287,13 +287,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 77633d1</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 1defe69</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -400,21 +402,15 @@ reviewer, not after it by the implementer.</p>
       <td class="step">7</td>
       <td>Run paired A/B observations across UTC windows, order alternated by the predeclared rule, nothing silently dropped.</td>
       <td>(i) Crop effect computed only over images equivalent in both arms and same-pair eligible; non-comparable pairs counted and named.</td>
-      <td><span class="tag part">partial</span></td>
-      <td><strong>Window 1 is closed:</strong> 52 observations, 52 markers, no attempt with an
-      unknown outcome, one session, all 26 pairs intact, zero operational failures. The raw file is
-      committed, and window 2's images are pushed and <strong>hash-verified on the device</strong>
-      (104 of 104). Tail: window 2, UTC day 09-07 — 52 + 52 does not fit a 60-call allowance.</td>
+      <td>done</td>
+      <td>Both windows closed: 52 + 52 observations, 104 markers, zero attempts with an unknown outcome, zero operational failures, all 52 pairs intact, the frozen plan's hash on every row. Window 2 took three launches — the first two died on App Check (section 14) and cost no quota at all.</td>
     </tr>
     <tr>
       <td class="step">8</td>
       <td>Compute the metrics with the committed script, joining on (image_id, arm) and applying the already-tested matrix.</td>
       <td>(f) The reconstruction assertion passes for every scored row that parsed; (h)(j) both failure rates appear under their frozen names with denominators; correctness uses resolved rows only.</td>
-      <td><span class="tag part">partial</span></td>
-      <td>Written and committed <strong>before the numbers existed</strong>, broken three times by
-      its first contact with the real file (section 12), and given three more MAJORs by the internal
-      review round (section 13). It now runs against window 1's data, 28 tests. Tail: the final
-      numbers, after window 2.</td>
+      <td>done</td>
+      <td>Computed over both windows: 104 observations, 49 comparable pairs. The script was written and committed before any number existed; first contact with real data broke it three times (section 12), internal review found three more MAJORs (section 13), 28 tests. The measurement is core/plans/RECOG_C1_MEASUREMENT_2026-09-05.md.</td>
     </tr>
     <tr>
       <td class="step">9</td>
@@ -429,8 +425,8 @@ reviewer, not after it by the implementer.</p>
       <td class="step">10</td>
       <td>Revert the harness, verify the touched files byte-identical to their pre-gate hashes, then write the measurement doc and the report.</td>
       <td>(l) The harness is gone at closure, shown as hashes; (m) the report states its own limits; (n) the C3 defect is recorded as found-and-not-fixed.</td>
-      <td><span class="tag open">not started</span></td>
-      <td>Whole step.</td>
+      <td>done</td>
+      <td>The harness is out of the tree and main.dart is back at 7eb4392. The check was run BEFORE the revert and exited 1 with 34 named problems; after it, mobile/lib, mobile/pubspec.yaml and mobile/android are byte-identical to the baseline, no harness symbol survives, and the frozen contract is still present.</td>
     </tr>
   </tbody>
 </table>
@@ -904,7 +900,176 @@ that file and stop, and restoring the file makes it pass again.</p>
 
 <p><strong>Verification:</strong> 86 tests green across the three RECOG-C1 suites, analyzer clean, and
 five mutations on the new guarantees all went red, with the file restored byte-identically.</p>
+
+<h2><span class="num">14</span>Window 2: two aborted runs, and a diagnosis I got wrong</h2>
+
+<div class="lede">Both runs died at observation 3 of 52 with every call refused as
+<code>unauthenticated</code>. I named a cause, committed it, and the very next run disproved it.
+This section is what it actually was, and why the first explanation looked convincing.</div>
+
+<p><strong>What I claimed:</strong> the build carried five <code>--dart-define</code>s instead of six,
+missing <code>APP_CHECK_DEBUG_TOKEN</code>; App Check is enforced on the AI callables, an empty token
+is rejected, and every call is then refused as <code>unauthenticated</code> — a message that names
+neither App Check nor the build.</p>
+
+<p><strong>What disproved it.</strong> The second attempt carried all six defines, with the value the
+decision log calls "the registered token", and died identically at 3 of 52. Two facts, neither of
+which I checked before writing that conclusion:</p>
+
+<ul>
+  <li><strong>Window 1 ran with five defines and succeeded.</strong> Its build command is in this
+  session's own transcript, and <code>mobile/lib/main.dart</code> is byte-identical between that
+  build (<code>fc313e01</code>) and today's. A missing define cannot be what separates a working
+  window from a failing one.</li>
+  <li><strong>The Cloud Functions logs say what the device cannot.</strong></li>
+</ul>
+
+<table>
+  <thead><tr><th>UTC day</th><th>calls</th><th><code>verifications</code></th></tr></thead>
+  <tbody>
+    <tr><td>2026-09-06 (window 1)</td><td>52</td><td><code>app=VALID auth=VALID</code></td></tr>
+    <tr><td>2026-09-07 (both aborted attempts)</td><td>6</td><td><code>app=INVALID auth=VALID</code></td></tr>
+  </tbody>
+</table>
+
+<p><code>auth=VALID</code> on every refused call disposes of the sign-in reading entirely, and
+<code>Decoding App Check token failed</code> is the backend receiving the SDK's error placeholder —
+the client never obtained an attestation token at all.</p>
+
+<h3>The real cause: a resource id, not a secret</h3>
+
+<p>The value recorded in <code>core/DECISION_LOG.md</code>, and passed to builds ever since as
+<code>APP_CHECK_DEBUG_TOKEN</code>, is <strong>a debug token's resource ID, not its secret</strong>.
+The App Check API names a token <code>projects/../apps/../debugTokens/&lt;base64 id&gt;</code>, and
+that id is an unrelated server-generated UUID. <em>An id looks exactly as much like a credential as
+the credential does.</em></p>
+
+<p><strong>Proved rather than inferred.</strong> A token was minted with a locally generated value,
+so the value was known independently of the response. The server returned a resource id decoding to a
+<em>different</em> UUID and carried no token field at all — the value is returned only to whoever
+supplied or first received it, which is precisely why it must be recorded at that moment and never
+reconstructed from the id afterwards.</p>
+
+<p>Everything follows: exchanging all three "registered" values returns <code>403 App attestation
+failed</code> for both app ids; exchanging the freshly minted token returns <code>200 OK, ttl
+3600s</code> and a real three-part JWT.</p>
+
+<p><strong>Why window 1 nonetheless worked</strong> is an inference, not a fact, and is labelled as
+one in the decision log. Most likely the device still held a persisted debug secret from the
+2026-09-05 device-testing session, which the Android provider reuses when a build supplies none. The
+facts are that this store is absent from the device today, that window 1's build passed no token, and
+that its 52 calls verified <code>app=VALID</code>. What removed the store between 09-06 and 09-07 is
+<strong>unknown</strong> and was not established.</p>
+
+<h3>The missing guard was not another presence check</h3>
+
+<p>Both attempts passed every check that existed, because every check asked "is a token present" and
+none asked "is this a token". <code>recog_c1_window2.ps1</code> now <strong>exchanges the token
+against <code>firebaseappcheck.googleapis.com</code> before it builds anything</strong> and refuses on
+anything but <code>200</code>. It is the same endpoint the device's SDK uses, and it spends no AI
+quota — this is App Check's own API, not a callable.</p>
+
+<p>That it works is shown by running <em>the shipped lines themselves</em> against two inputs: it
+throws on the value from the decision log and passes on the minted token. A check that has never
+failed is not known to work.</p>
+
+<p><strong>All six refusals cost zero quota.</strong> App Check is rejected by the Functions framework
+before the handler runs, and <code>enforceDailyQuota</code> is inside it. The UTC day stayed intact
+and window 2 ran the same day.</p>
+
+<p><strong>One side effect, and it cuts the other way from the earlier assumption:</strong>
+<code>.gitleaksignore</code> suppresses <code>core/DECISION_LOG.md:22121</code> as "a registered
+Firebase App Check debug token committed in plaintext", pending operator revocation. On this evidence
+that string is <strong>a resource id, not a working credential</strong> — it cannot be exchanged, as
+the 403s show directly. Re-examining the suppression and the revocation is the operator's call;
+nothing in <code>.gitleaksignore</code> was changed.</p>
+
+<h2><span class="num">15</span>The baseline: 104 observations</h2>
+
+<div class="lede">Computed by <code>test/tools/recog_c1_compute_metrics.dart</code>, committed before
+the first observation existed. Every scoring decision comes from the frozen
+<code>recog_c1_contract.dart</code>; the report contributes the join, the denominators and the
+arithmetic only.</div>
+
+<table>
+  <thead><tr><th>&nbsp;</th><th>&nbsp;</th></tr></thead>
+  <tbody>
+    <tr><td>observations recorded</td><td>104</td></tr>
+    <tr><td>planned</td><td>104</td></tr>
+    <tr><td>reached the model</td><td>104</td></tr>
+    <tr><td>operational failures</td><td>0</td></tr>
+    <tr><td>scored and resolved</td><td>98</td></tr>
+    <tr><td>control records (markers)</td><td>104, of which 0 orphaned</td></tr>
+  </tbody>
+</table>
+
+<p>No stop, abort or resume record — every one of those conditions would have left one.</p>
+
+<table>
+  <thead><tr><th>score, over resolved rows</th><th>arm A (full frame)</th><th>arm B (viewfinder crop)</th></tr></thead>
+  <tbody>
+    <tr><td>correct and confident</td><td>18</td><td>22</td></tr>
+    <tr><td><strong>overclaimed</strong></td><td><strong>25</strong></td><td><strong>25</strong></td></tr>
+    <tr><td>safe non-overclaim</td><td>1</td><td>1</td></tr>
+    <tr><td>wrong and confident</td><td>5</td><td>1</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Overclaiming is the dominant behaviour and the crop does not touch it: 25 of 49 in both
+arms.</strong> That is the operator's own observation as a measured share rather than an impression:
+shown a frame holding several machines with no single subject, the model names one confidently
+instead of declining.</p>
+
+<p>The crop is not useless: it moves correct-confident from 18 to 22 and wrong-confident from 5 to 1.
+It helps where a subject <em>exists</em>; it does not make the model abstain where none does.</p>
+
+<p>Comparable pairs: <strong>49</strong>, not 52. Three pairs (<code>p15</code>, <code>p29</code>,
+<code>p47</code> — the Star Trac plate-loaded unit) are frozen <code>unresolved</code> and enter no
+correctness number in either direction. They are <em>named</em> in the measurement rather than
+silently dropped.</p>
+
+<h3>What these numbers cannot tell you</h3>
+
+<ul>
+  <li>The corpus holds <strong>zero</strong> out-of-catalogue single machines and <strong>zero</strong>
+  frames with no equipment, so it cannot measure whether the model overclaims on a machine nobody told
+  it about, nor whether it abstains honestly on an empty frame. Two of the most important properties
+  are simply not covered.</li>
+  <li>Three photographs are frozen <code>unresolved</code> and enter no correctness number.</li>
+  <li>Both arms were labelled by one person in one sitting, each from its own images. Per-arm
+  structure makes a genuine divergence visible; it does not make the judgement independent.</li>
+</ul>
+
+<h2><span class="num">16</span>Step 10, and what stays with the operator</h2>
+
+<p>The harness is out of the tree (<code>git rm</code> plus restoring <code>main.dart</code> to
+<code>7eb4392</code>). That tracked-file deletion is the only step of the whole plan needing the
+operator's own authorization under §20, and it was given explicitly.</p>
+
+<p>The check ran <strong>before</strong> the revert and exited 1 naming 34 problems; after it,
+<code>mobile/lib</code>, <code>mobile/pubspec.yaml</code> and <code>mobile/android</code> are
+byte-identical to the baseline, no harness symbol survives, and the frozen contract is still present.
+The analysis script, its 28 tests, the plan, the ground truth and both raw files stay: what leaves is
+only what the app itself would have carried.</p>
+
+<p><strong>Left with the operator, and none of it touched:</strong></p>
+
+<ul>
+  <li>Re-examine the <code>core/DECISION_LOG.md:22121</code> suppression in
+  <code>.gitleaksignore</code> and the revocation attached to it — on section 14's evidence that
+  string is a resource id, not a working secret.</li>
+  <li>The three debug tokens registered for <code>.sptr.debug</code> are now known to be unusable:
+  their secrets exist nowhere. Deleting them is an operator action.</li>
+  <li>The token minted today lives only in this session's scratchpad, outside the repository. It
+  should either be kept deliberately or deleted along with the rest.</li>
+  <li>The identity of the Star Trac plate-loaded unit in photographs #15, #29 and #47 remains open.
+  It is not a blocker: those rows are frozen <code>unresolved</code> and excluded in both
+  directions.</li>
+</ul>
+
 </div>
+
+
 
 
 
