@@ -81,17 +81,53 @@ if (Test-Path $w2) {
 }
 Write-Host "  window 2 not yet run (repository)"
 
+# KNOWN LIMIT, stated rather than papered over: this derives the quota day from
+# window 1's own file, so it can tell you window 1 did not run today -- and
+# nothing more. An earlier window-2 attempt that spent calls today and whose
+# device file was then removed is invisible to every check in this script. Such
+# a run does not pass silently (the poll loop times out against the quota wall)
+# but it costs a build, an install and part of the day's remaining calls before
+# saying so. Closing it needs a local record of calls spent, which does not
+# exist yet.
+
 # And on the DEVICE, which is the copy the harness actually resumes from. A
 # partial file there is worse than an absent one: rows already written for this
 # run id are skipped by design, so a leftover file silently shortens the window
 # instead of stopping it. On 2026-09-07 an aborted attempt left three rows; a
 # blind re-run would have measured 49 of 52 and reported a complete window.
 $remoteRaw = "$remote/recog_c1_raw_w2.jsonl"
-$remoteState = ((& $adb -s $Serial shell "test -f $remoteRaw && grep -c response_class $remoteRaw || echo absent" 2>$null) -join '').Trim()
-if ($remoteState -ne 'absent') {
-    throw "the device already holds $remoteRaw with $remoteState observation(s) in it. Rows already written for run id w2 are SKIPPED on resume, so running now would measure only what is missing and still report a finished window. Preserve that file and remove it from the device before re-running, or use a fresh run id."
+
+# The probe reports one of three THINGS, and anything else is a stop.
+#
+# The first version of this was `test -f F && grep -c X F || echo absent`, and
+# it had two ways to lie. Shell `A && B || C` runs C whenever B fails, so a
+# device whose `grep` was missing or errored printed `absent` for a file that
+# genuinely existed -- a false all-clear on the one check standing between a
+# leftover partial file and a window that measures 49 targets while reporting
+# 52. And if adb itself failed, the empty output was not 'absent' either, so the
+# script threw the RIGHT refusal with the WRONG reason, sending whoever read it
+# to look for a data conflict instead of a disconnected phone.
+#
+# So: the remote script always exits 0 and carries its state in stdout, adb's
+# own exit code is the connectivity signal, and an unrecognised answer refuses
+# rather than being read as good news. Single-quoted so PowerShell does not
+# expand the device-side $(...) itself.
+$remoteProbe = 'if [ -f ' + $remoteRaw + ' ]; then echo COUNT=$(grep -c response_class ' + $remoteRaw + '); else echo NOFILE; fi; exit 0'
+$probeOut = & $adb -s $Serial shell $remoteProbe 2>&1
+$probeExit = $LASTEXITCODE
+$remoteState = (($probeOut) -join "`n").Trim()
+if ($probeExit -ne 0) {
+    throw "adb could not talk to device $Serial (exit $probeExit). This is a connectivity or device fault, NOT a data conflict -- do not go looking for a leftover file until the device is reachable.`n  output: $remoteState"
 }
-Write-Host "  window 2 not yet run (device)"
+if ($remoteState -eq 'NOFILE') {
+    Write-Host "  window 2 not yet run (device)"
+}
+elseif ($remoteState -match '^COUNT=(\d+)$') {
+    throw "the device already holds $remoteRaw with $($Matches[1]) observation(s) in it. Rows already written for run id w2 are SKIPPED on resume, so running now would measure only what is missing and still report a finished window. Preserve that file and remove it from the device before re-running, or use a fresh run id."
+}
+else {
+    throw "the device probe returned something this script does not recognise, so it cannot say whether window 2 has already partly run. Refusing rather than guessing -- a wrong 'no' here costs the window.`n  output: $remoteState"
+}
 
 # The SIXTH define. App Check is enforced on the AI callables
 # (`APP_CHECK_ENFORCED_AI`, fail-closed in functions/src/scaling.ts), and a debug
@@ -163,6 +199,9 @@ if (-not $exchanged.token) { throw "the App Check exchange returned no token; re
 Write-Host "  App Check token verified: exchanged for a real attestation token (ttl $($exchanged.ttl))"
 
 $dirty = @(& git -C $repo status --porcelain | Where-Object { $_ })
+if ($LASTEXITCODE -ne 0) {
+    throw "git status failed with exit $LASTEXITCODE; an empty result would otherwise read as a clean tree and bake a source sha this build does not have."
+}
 if ($dirty.Count -gt 0) {
     throw "the working tree is dirty, so the build's RECOG_C1_SOURCE_SHA would name a commit whose contents are not what gets compiled:`n  $(($dirty | Select-Object -First 10) -join "`n  ")"
 }
@@ -189,6 +228,9 @@ Step '3/7 build'
 # code 0 with no output. --target-platform android-arm64 does not substitute --
 # measured, it leaves all four ABIs in place.
 $sourceSha = (& git -C $repo rev-parse HEAD).Trim()
+if ($LASTEXITCODE -ne 0 -or $sourceSha.Length -ne 40) {
+    throw "git rev-parse HEAD did not return a commit sha (exit $LASTEXITCODE, got '$sourceSha'); RECOG_C1_SOURCE_SHA must name the commit this build came from or the provenance is a guess."
+}
 Push-Location (Join-Path $repo 'mobile')
 try {
     & flutter build apk --debug --split-per-abi `

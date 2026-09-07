@@ -44693,3 +44693,67 @@ show it passed, and reported the result — and it was still wrong, because it c
 reasons I had thought of. Showing a check *can* fail is not the same as showing it fails for the
 right class of reason. The analyzer gate is the correction: it does not need me to have anticipated
 the failure.
+
+## 2026-09-07 — the silent-failure review, remediated as one batch
+
+Six findings against the window-2 scripts. Every one verified against the real files before being
+accepted; every fix proved by breaking it.
+
+**MAJOR — `recog_c1_verify_revert.ps1` never looked at the working tree.** `git diff baseline..HEAD`
+compares two COMMITS, so an uncommitted edit under any verified path was invisible, and the script
+could print "byte-identical to the baseline" while the files on disk were not. This checkout runs
+concurrent sessions, so a stray edit landing mid-check is real rather than theoretical. Added
+`git status --porcelain -- <production paths>`. **Proved:** appending one line to
+`mobile/lib/main.dart` now fails with `uncommitted change in a verified path, so HEAD is not what is
+on disk`; the same mutation passed before.
+
+**MAJOR — `git diff` and `git grep` exit codes were discarded.** A failed git command prints nothing
+and exits non-zero, which is indistinguishable from "no drift" / "no surviving reference" if output
+is all you read. Both now checked, with `git grep`'s exit 1 (no matches — the wanted outcome)
+distinguished from 2+ (a real error).
+
+**MAJOR — the runbook told you to verify before committing.** `git rm`, and restoring a path from a
+ref, only STAGE; HEAD does not move. The verify script asks whether the harness is still tracked at
+HEAD, so following the runbook literally produces `REVERT NOT VERIFIED` with a long list — the exact
+to-do-list-shaped output that caused the out-of-order revert on 2026-09-06, reproduced by following
+the instructions correctly. The runbook now commits first, and also removes the harness test.
+
+**MINOR — the device probe could report "absent" for a file that exists.** It was
+`test -f F && grep -c X F || echo absent`, and shell `A && B || C` runs C whenever B fails: a device
+whose `grep` errored printed `absent` for a file that was there. That is a false all-clear on the one
+check standing between a leftover partial file and a window that measures 49 targets while reporting
+52. Rewritten so the remote script always exits 0 and carries its state in stdout, adb's own exit
+code is the connectivity signal, and an unrecognised answer refuses rather than reading as good news.
+
+**MINOR — the same probe blamed the wrong thing when adb failed.** Empty output is not `absent`, so
+it did throw, but with "the device already holds ... with  observation(s)" — the right refusal for
+the wrong reason, sending the reader after a data conflict instead of a disconnected phone.
+
+**Proved, on the real device, running the shipped lines:** absent path passes; a file with 3
+observations throws naming 3; **a file with 0 observations throws rather than reading as absent**;
+a bogus serial throws naming connectivity. Four outcomes, four distinct behaviours.
+
+**MINOR — `git status --porcelain` and `git rev-parse HEAD` in `recog_c1_window2.ps1` discarded their
+exit codes**, so a git failure would have read as a clean tree and baked an unverified
+`RECOG_C1_SOURCE_SHA` into the build. Both checked; the sha is also required to be 40 characters.
+
+**MINOR, documented rather than engineered around:** the quota-day precondition derives the day from
+window 1's own file, so it cannot see an earlier same-day window-2 attempt whose device file was
+removed. Such a run fails loud eventually (the poll loop hits the quota wall) but costs a build and
+an install first. Closing it needs a local record of calls spent, which does not exist. Stated in the
+script.
+
+### And the mutation test caught a defect in the fix itself
+
+Running `verify_revert` with `-SkipAnalyze` still printed **"the analyzer reports zero errors"** — the
+script asserting a check it had not run, which is precisely the species of false evidence it exists
+to prevent, produced by the script itself. The summary line is now assembled from whether the
+analyzer actually reached a verdict, and says "the analyzer was NOT run, so nothing here says the
+project still builds" when it did not.
+
+### Accepted without change
+
+The reviewer flagged, honestly, that it could not verify whether `exit 0` inside a script invoked
+with `&` terminates the caller. It does not: today's window-2 run called `recog_c1_deploy.ps1` four
+times through `&` and continued through all seven steps each time. Recorded as FACT from that run
+rather than left as an open inference.

@@ -206,8 +206,22 @@ operator regardless of any review approval.** It is the only step in this whole 
 
     cd D:\Repo\Fitness_App
     git rm mobile/lib/features/visual_equipment/measurement/recog_c1_harness.dart
+    git rm mobile/test/features/visual_equipment/recog_c1_harness_test.dart
     git checkout 7eb4392 -- mobile/lib/main.dart
+    git add -A core/DECISION_LOG.md
+    git commit
     .\scripts\dev\recog_c1_verify_revert.ps1
+
+**The commit is not optional and it is not tidiness.** `git rm` and
+`git checkout <ref> -- <path>` only stage; HEAD does not move. The verify script asks whether the
+harness is still tracked AT HEAD, so running it before the commit reports `REVERT NOT VERIFIED`
+with a long list of items — which is exactly the to-do-list-shaped output that caused the
+out-of-order revert on 2026-09-06, produced here by following the runbook correctly. Commit first.
+
+**The test file goes with the harness.** It was left behind on the first attempt and the project
+stopped analysing: 42 errors, all of them a test importing code that no longer exists. The
+measurement's OTHER tests (contract, ground truth, metrics) stay — they test the analysis, which
+survives.
 
 `recog_c1_contract.dart` stays. It predates the harness, is present in the baseline, and five
 committed analysis files import it -- removing it would leave a tree that looks correctly cleaned

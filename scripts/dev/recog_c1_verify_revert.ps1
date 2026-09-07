@@ -105,6 +105,13 @@ if ($LASTEXITCODE -eq 0) {
 # not a "looks the same" comparison. It also catches a file ADDED since the
 # baseline that nobody thought to look for.
 $drift = @(& git -C $repo diff --name-status "$baselineSha..HEAD" -- $productionPaths | Where-Object { $_ })
+# A failed `git diff` prints nothing to stdout and exits non-zero, which is
+# indistinguishable from "no drift" once the output is all you look at. That is
+# the same false-success shape this script exists to catch, so the exit code is
+# checked rather than assumed.
+if ($LASTEXITCODE -ne 0) {
+    throw "git diff failed with exit $LASTEXITCODE, so its empty output proves nothing about drift from the baseline."
+}
 foreach ($line in $drift) {
     Fail "differs from the baseline: $line"
 }
@@ -130,6 +137,12 @@ foreach ($line in $drift) {
 # matter how much the rest of the measurement's tests are meant to.
 $harnessSymbols = 'RecogC1Harness|RecogC1Runner|RecogC1Journal|recog_c1_harness'
 $refs = @(& git -C $repo grep -n -E $harnessSymbols -- 'mobile' 2>$null | Where-Object { $_ })
+# `git grep` exits 1 for "no matches", which is the outcome this check WANTS,
+# and 2 or more for a real error. Only the latter is a problem -- but silence
+# from a broken grep would otherwise read exactly like a clean tree.
+if ($LASTEXITCODE -gt 1) {
+    throw "git grep failed with exit $LASTEXITCODE, so finding no harness references means nothing here."
+}
 foreach ($r in $refs) {
     Fail "surviving harness reference under mobile/: $r"
 }
@@ -146,6 +159,24 @@ if (-not (Test-Path (Join-Path $repo ($contract -replace '/', '\')))) {
     Fail "$contract is MISSING. It is not part of the harness: it predates it, it is in the baseline, and the committed analysis imports it. A revert that removes it is too broad."
 }
 
+# --- 5b. the WORKING TREE, not just the two commits --------------------------
+# `git diff baseline..HEAD` compares two COMMITS. An uncommitted edit under any
+# verified path is invisible to it, so the script could report the paths
+# "byte-identical to the baseline" while the files on disk were not -- and this
+# workspace routinely runs concurrent sessions against the same checkout, so a
+# stray edit landing mid-check is a real risk rather than a theoretical one.
+#
+# The header of this script promises to catch "a tree that merely looks
+# reverted". Until now it could only see the half of the tree that had been
+# committed.
+$worktree = @(& git -C $repo status --porcelain -- $productionPaths | Where-Object { $_ })
+if ($LASTEXITCODE -ne 0) {
+    throw "git status failed with exit $LASTEXITCODE, so an empty result says nothing about the working tree."
+}
+foreach ($w in $worktree) {
+    Fail "uncommitted change in a verified path, so HEAD is not what is on disk: $w"
+}
+
 # --- 6. and the tree must actually still ANALYSE -----------------------------
 # Byte-identity with a baseline is not the same as a working project, which is
 # exactly how the 2026-09-07 revert passed while leaving 42 analyzer errors: the
@@ -155,6 +186,7 @@ if (-not (Test-Path (Join-Path $repo ($contract -replace '/', '\')))) {
 # This is the check that would have caught it without knowing what to look for.
 # It asserts zero ERRORS specifically -- pre-existing infos and warnings are not
 # this script's business and must not make a revert unverifiable.
+$analyzerRan = $false
 if (-not $SkipAnalyze) {
     $mobile = Join-Path $repo 'mobile'
     if (-not (Get-Command flutter -ErrorAction SilentlyContinue)) {
@@ -175,6 +207,7 @@ if (-not $SkipAnalyze) {
         }
         else {
             $errorLines = @($analysis -split "`n" | Where-Object { $_ -match '^\s*error\s' })
+            $analyzerRan = $true
             foreach ($e in $errorLines) { Fail "analyzer error after the revert: $($e.Trim())" }
             if ($errorLines.Count -eq 0) { Write-Host "  analyzer: 0 errors" }
         }
@@ -190,5 +223,14 @@ if ($failures.Count -gt 0) {
     exit 1
 }
 
-Write-Host "revert verified: mobile/lib, mobile/pubspec.yaml and mobile/android are byte-identical to $baselineSha; no harness symbol survives anywhere under mobile/ (lib AND test); the analyzer reports zero errors; the frozen scoring contract is still present."
+# The summary must not claim a check that did not run. Caught by its own
+# mutation test on 2026-09-07: with -SkipAnalyze the line still read "the
+# analyzer reports zero errors", which is the precise species of false evidence
+# this script exists to prevent, produced by the script itself.
+$analyzerClause = if ($SkipAnalyze -or -not $analyzerRan) {
+    "the analyzer was NOT run, so nothing here says the project still builds"
+} else {
+    "the analyzer reports zero errors"
+}
+Write-Host "revert verified: mobile/lib, mobile/pubspec.yaml and mobile/android are byte-identical to $baselineSha; the working tree matches HEAD on those paths; no harness symbol survives anywhere under mobile/ (lib AND test); $analyzerClause; the frozen scoring contract is still present."
 exit 0
