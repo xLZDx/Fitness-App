@@ -45261,3 +45261,129 @@ It was nearly missed: the first attempt to add it was denied wholesale by the de
 hook, and the denial happens before the command runs at all, so the `cat` that was to write
 the rule never executed while the paragraph claiming it did was already in the log. A hook
 denial rejects the whole command, not the part it objected to.
+
+## 2026-09-07 — Gate C: the Form Coach stops demonstrating a movement the user is not performing
+
+Closes the defect the operator reported from the S23 alongside the recognition complaints: "ты
+добавил не тут демо к тренеру". Plan `fitness_app-2026-09-07T14-52-28-511Z-d3b3ed`, hash
+`494e0539...`, approved by GPT-PM with `VERDICT: APPROVE` after two REVISE rounds. Seal commit
+`5beea15`; this is the implementation commit.
+
+### What was wrong, at its root
+
+`scripts/catalog/pose_patterns.json` mapped a catalogue row onto one of seven hand-authored
+animations by matching words in its title. `hinge`'s `matchTitle` contained `hip thrust|glute
+bridge`. That was not an oversight — a hip thrust IS a hip hinge at the joint, and somebody put it
+there deliberately. But `tag_pose_targets.py`'s own header defines the tag differently:
+
+> `poseTargetId: "squat"` means: this row's silhouette, seen from the side, is the squat pattern.
+
+A hip thrust is performed supine; the hinge animation is a standing deadlift. The rule had
+conflated **what the joint does** with **what the shape looks like**, and the same conflation had
+produced five more families. The user saw a standing deadlift while lying on their back.
+
+### The narrowing, pattern-local
+
+| pattern | change | rows | why the silhouette is different |
+| --- | --- | --- | --- |
+| `hinge` | `matchTitle` drops `hip thrust\|glute bridge` | 43 | supine, not standing |
+| `curl` | `notTitle` = `wrist curl` | 11 | the wrist moves, the elbow does not |
+| `situp` | `notTitle` = `oblique\|twist\|hollow hold` | 11 | rotation is edge-on; a hold has no rep |
+| `lunge` | `matchTitle` drops `step[- ]?up` | 7 | rises onto a platform, not down into a lunge |
+| `pushup` | `notTitle` = `side plank` | 7 | rolled ninety degrees out of the plank shape |
+
+The shared `excludeWhen` is **byte-identical**, and that was GPT-PM's BLOCKER against the plan's
+first revision: it is shared on purpose ("what makes a movement unjudgeable by one side-on camera
+is the same in each case"), so putting `plank` in it would have stripped 73 legitimate `pushup`
+tags. Every exclusion here is pattern-local, using the `notTitle` mechanism `squat` already
+established in the same file.
+
+`squat`, `overhead_press` and `calf_raise` are untouched, which deliberately **leaves ten
+borderline rows tagged**: six jump/pulse squats and four push presses. Their silhouette IS the
+tagged pattern; what differs is tempo or an added leg dip. Removing them would have been a
+different argument than the one this gate made, so they stay and are named rather than quietly
+swept along — verified present after the write.
+
+### What actually changed on disk
+
+86 rows, **every one a tag being removed**. Not one row gained a tag.
+
+| subset | rows | |
+| --- | --- | --- |
+| `GATE` | 72 | this gate's decision |
+| `DRIFT` | 7 | the asset already disagreed with the CURRENT rules |
+| `SIDEPLK` | 7 | side planks tagged `pushup`, found by GPT-PM |
+| `AMBIG` | 0 | deliberately empty |
+
+| tag | before | after | | tag | before | after |
+| --- | --- | --- | --- | --- | --- | --- |
+| `curl` | 114 | 102 | | `squat` | 37 | 37 |
+| `hinge` | 103 | 60 | | `overhead_press` | 33 | 33 |
+| `lunge` | 102 | 95 | | `pushup` | 73 | 64 |
+| `situp` | 61 | 47 | | `calf_raise` | 17 | 16 |
+
+**Offered to a user: 450 → 374.** 76 fewer, being this gate's 72 plus 4 drift rows that happened
+to reach a user. Total tagged 540 → 454. `mobile/assets/data/exercises_vendor.ru.json` carries no
+`poseTargetId` at all and is byte-identical; so is every file under
+`mobile/lib/features/form_check/` (29 Dart files, combined sha256 `dfd50d8e...`). This gate changes
+what is OFFERED, never how a demonstration is drawn or scored.
+
+### Three things this gate got wrong before it got them right
+
+**The first count was 69 and it was wrong.** It came from regexes over exercise IDs rather than
+from running the tagger's own `classify()` over titles; the `situp` family is 11 rows, not 8. The
+real classifier says 72. A claim broader than the check behind it — the recurring defect of this
+session, and the reason the seal is computed rather than typed.
+
+**A heredoc silently destroyed the first comparator run.** `\\b` collapsed to `\b`, Python read it
+as a backspace, `\blunge` and `\bswing\b` matched nothing, and the run reported 146 phantom
+transitions plus five reversals. Already in memory as a hazard; hit anyway. Every script in this
+gate is written with a file-writing tool, never a heredoc.
+
+**"`pushup` reaches no user, so the false tag is harmless" was wrong in kind.** GPT-PM refused
+that argument, correctly: the tag asserts what the silhouette IS, and stays valid for the day the
+pattern becomes coachable — support is a separate decision, which the module header says
+explicitly. I had weighed current reachability against a contract that excludes it. The seven
+already-wrong Side Plank rows are cleaned here as a result, rather than preserved.
+
+And one correction to a claim in the plan's own second revision: a hand edit to `poseTargetId`
+would **not** be reverted by the next catalogue build. `build_vendor_catalog.py:106` puts the field
+in `CURATED` and `merge_rows` keeps the file's value; `test_build_vendor_catalog.py:112-120` pins
+both. The rules are authoritative because the new equality test reconciles the asset against them,
+not because the builder overwrites.
+
+### What now prevents this recurring
+
+**The asset had drifted from the rules and nothing noticed.** Seven rows carried tags the rules had
+stopped producing — six on `Weight bench`, one on `Bench (flat / adjustable)`, all rejected by
+`excludeWhen.equipmentLabel`. `test_the_shipped_catalog_matches_the_rules` now asserts equality
+across all 1887 rows, nulls included. That test, not the seven removals, is the durable fix.
+
+`tag_pose_targets.py` gained `--transitions` (which rows changed, not how many) and `--expect PATH`
+(compare full `id, old, new` triples against a sealed file, exit non-zero naming MISSING and
+SURPLUS). Neither writes; `--write` combined with either is refused. The comparator was shown
+failing before it was trusted: against a wrong file **carrying the same 86 rows**, so a count-based
+check would have passed it, and it named both classes.
+
+### Evidence
+
+- Dry run `--expect` against the seal: exit 0, 86 transitions, MISSING 0, SURPLUS 0. Five file
+  hashes identical before and after, so the dry run mutated nothing.
+- Post-write comparison of HEAD against the working tree, all 1887 rows: 86 changed tags matching
+  the seal in both directions, 0 rows gained a tag, **0 fields other than `poseTargetId` changed**,
+  counts reconciled, audit CSV equal to the tagging on disk with no blank reasons, 10 of 10
+  borderline rows kept.
+- Mutation proof, run in an isolated copy of the tree rather than in place (this workspace runs
+  concurrent sessions, and an in-place mutation has previously made another session's suite report
+  failures that were mine): restoring `hip thrust|glute bridge` fails `test_the_silhouette_not_the
+  _joint`; restoring one drifted tag fails **only** `test_the_shipped_catalog_matches_the_rules`;
+  the copy is green before and after both.
+- Suites: `test_tag_pose_targets.py` 74 passed, `test_build_vendor_catalog.py` 39 passed,
+  `mobile/test/features/form_check/` 614 passed. The Python interpreter resolves to
+  `D:\Repo\ERP\.venv\Scripts\python.exe` — this repository has no interpreter of its own and the
+  tagger and its tests are stdlib plus pytest, so the result stands, but it is recorded rather than
+  glossed.
+
+### Not done here
+
+The 10 borderline rows. Anything in the recogniser — gates B and A are still open. No push.

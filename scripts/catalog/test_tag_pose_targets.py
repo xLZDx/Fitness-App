@@ -33,9 +33,7 @@ def tag(vocab, title, equipment=None):
     ("Air Squat", "squat"),
     ("Barbell Romanian Deadlift", "hinge"),
     ("Kettlebell Swing", "hinge"),
-    ("Glute Bridge", "hinge"),
     ("Walking Lunge", "lunge"),
-    ("Dumbbell Step-up", "lunge"),
     ("Wide Push-up", "pushup"),
     ("Front Plank", "pushup"),
     ("Dumbbell Shoulder Press", "overhead_press"),
@@ -146,6 +144,95 @@ def test_the_camera_cannot_see_these(vocab, title):
 def test_equipment_alone_can_exclude(vocab):
     assert tag(vocab, "Squat") == "squat"
     assert tag(vocab, "Squat", equipment="Smith Machine") is None
+
+
+@pytest.mark.parametrize("title", [
+    # Supine. The hinge target draws a standing deadlift; these are done on
+    # the back. A hip hinge at the JOINT is not the hinge SILHOUETTE, and the
+    # tag is about the silhouette.
+    "Glute Bridge",
+    "Barbell Hip Thrust",
+    "Dumbbell Feet Elevated Single Leg Glute Bridge",
+    "Kettlebell Hip Thrusts",
+    # The wrist moves and the elbow does not, which is the whole signal.
+    "Barbell Standing Back Wrist Curl",
+    "Dumbbell One Arm Reverse Wrist Curl",
+    # Rotation and lateral flexion: a side-on camera sees them edge-on.
+    "Oblique Crunch",
+    "Air Twisting Crunch",
+    "Hanging Oblique Crunches",
+    # A hold never completes a lap of the phase ladder.
+    "Hollow Hold",
+    "Plate Hollow Hold",
+    # A step-up rises onto a platform; the lunge target drops a knee toward
+    # the floor. Opposite direction, and the platform is not in the drawing.
+    "Dumbbell Step-up",
+    "Barbell Side Step Up",
+    # Rolled ninety degrees out of the plank shape this pattern draws.
+    "Side Plank",
+    "Dumbbell Side Plank with Rear Fly",
+])
+def test_the_silhouette_not_the_joint(vocab, title):
+    """Gate C, 2026-09-07: six families where the rule had matched the movement
+    rather than the shape.
+
+    The distinction is the module header's own: a tag says this row's
+    silhouette, seen from the side, IS the pattern. `Glute Bridge` was tagged
+    `hinge` because a hip thrust hinges at the hip, and 43 rows inherited a
+    standing deadlift animation for a movement performed on the back.
+
+    `Side Plank` is here on GPT-PM's finding, not mine: `pushup` reaches no
+    user today, and I argued that made the false tag harmless. It does not.
+    The tag asserts what the shape is, so it stays wrong until the day the
+    pattern becomes coachable and then it is wrong in front of someone.
+    """
+    assert tag(vocab, title) is None
+
+
+@pytest.mark.parametrize("title,expected", [
+    # The narrowing is title-shaped, so the risk is that it reaches further
+    # than it was argued to. These are the neighbours of each removed family.
+    ("Barbell Romanian Deadlift", "hinge"),
+    ("Kettlebell Swing", "hinge"),
+    ("Barbell Good Morning", "hinge"),
+    ("Walking Lunge", "lunge"),
+    ("Dumbbell Rear Lunge From Step", "lunge"),   # a lunge that starts on a step
+    ("Bulgarian Split Squat", "lunge"),
+    ("Hammer Curl", "curl"),
+    ("Barbell Preacher Curl", "curl"),
+    ("Bicycle Crunch", "situp"),
+    ("Decline Sit Up", "situp"),
+    ("Front Plank", "pushup"),                    # deliberately still a pushup
+    ("Wide Push-up", "pushup"),
+])
+def test_the_narrowing_took_nothing_real_with_it(vocab, title, expected):
+    assert tag(vocab, title) == expected
+
+
+def test_the_shipped_catalog_matches_the_rules(vocab):
+    """The asset must equal what the rules produce -- every row, nulls included.
+
+    This is the control whose absence let seven rows drift: they carried tags
+    the rules had stopped producing (all seven excluded by `equipmentLabel`,
+    six on `Weight bench`), and nothing anywhere compared the two. A test over
+    a list of families would not have found them; only equality does.
+
+    It also means a hand edit to `poseTargetId` fails here rather than
+    surviving quietly -- `build_vendor_catalog.py` treats the field as CURATED
+    and preserves it, so the builder will not correct one.
+    """
+    patterns, ex_title, ex_equipment = vocab
+    rows = json.loads(CATALOG.read_text("utf-8"))
+    assert len(rows) == 1887, "the catalog changed size; re-read this test"
+    wrong = [
+        (r["id"], r.get("poseTargetId"), classify(r, patterns, ex_title, ex_equipment)[0])
+        for r in rows
+        if r.get("poseTargetId") != classify(r, patterns, ex_title, ex_equipment)[0]
+    ]
+    assert not wrong, (
+        f"{len(wrong)} of {len(rows)} rows disagree with the rules; "
+        f"run `python scripts/catalog/tag_pose_targets.py --transitions`: {wrong[:10]}"
+    )
 
 
 def test_the_shipped_catalog_carries_only_known_patterns(vocab):

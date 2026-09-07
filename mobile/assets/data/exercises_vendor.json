@@ -2112,8 +2112,7 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ],
-    "poseTargetId": "situp"
+    ]
   },
   {
     "id": "ea_all_fours_quad_stretch",
@@ -2758,8 +2757,7 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ],
-    "poseTargetId": "situp"
+    ]
   },
   {
     "id": "ea_alternate_punching",
@@ -3309,8 +3307,7 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ],
-    "poseTargetId": "situp"
+    ]
   },
   {
     "id": "ea_alternating_plank_lunge",
@@ -8809,7 +8806,6 @@
       "elbow",
       "wrist"
     ],
-    "poseTargetId": "curl",
     "purpose": "Builds the wrist flexors one arm at a time, so a weaker side cannot hide behind a stronger one. Grip strength is what usually fails first on rows, deadlifts and carries, and a band loads the wrist without the joint stress of a heavy bar."
   },
   {
@@ -8888,8 +8884,7 @@
     "poster": {
       "girl": "assets/posters/girl/ea_banded_feet_elevated_hip_thrusters.jpg",
       "men": "assets/posters/men/ea_banded_feet_elevated_hip_thrusters.jpg"
-    },
-    "poseTargetId": "hinge"
+    }
   },
   {
     "id": "ea_barbell_alternate_biceps_curl",
@@ -10641,8 +10636,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_barbell_feet_elevated_glute_bridge",
@@ -10685,8 +10679,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_barbell_feet_elevated_single_leg_glute_bridge",
@@ -10729,8 +10722,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_barbell_feet_elevated_staggered_glute_bridge",
@@ -10773,8 +10765,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_barbell_floor_chest_press",
@@ -11480,8 +11471,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_barbell_glute_bridge_hands_on_bar",
@@ -11521,8 +11511,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_barbell_good_morning",
@@ -11639,8 +11628,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_barbell_hooklying_bench_press",
@@ -12072,8 +12060,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_barbell_kneeling_squat",
@@ -12930,8 +12917,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_barbell_overhead_lunges",
@@ -14575,8 +14561,7 @@
       "hip",
       "knee",
       "upper_back"
-    ],
-    "poseTargetId": "lunge"
+    ]
   },
   {
     "id": "ea_barbell_silverback_shrug",
@@ -15479,8 +15464,7 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ],
-    "poseTargetId": "curl"
+    ]
   },
   {
     "id": "ea_barbell_standing_close_grip_curl",
@@ -15918,8 +15902,7 @@
       "hip",
       "knee",
       "upper_back"
-    ],
-    "poseTargetId": "lunge"
+    ]
   },
   {
     "id": "ea_barbell_step_up_on_bench",
@@ -16407,8 +16390,7 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ],
-    "poseTargetId": "curl"
+    ]
   },
   {
     "id": "ea_barbell_wrist_curl_wide_legs",
@@ -16446,8 +16428,7 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ],
-    "poseTargetId": "curl"
+    ]
   },
   {
     "id": "ea_barbell_wrist_extension_on_knees",
@@ -18006,8 +17987,7 @@
     },
     "contraindications": [
       "elbow"
-    ],
-    "poseTargetId": "curl"
+    ]
   },
   {
     "id": "ea_biceps_stretch_behind_the_back",
@@ -18123,8 +18103,7 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ],
-    "poseTargetId": "situp"
+    ]
   },
   {
     "id": "ea_bicycles",
@@ -18586,8 +18565,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_bodyweight_feet_elevated_staggered_glute_bridge",
@@ -18626,8 +18604,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_bodyweight_forward_lunge",
@@ -20093,8 +20070,7 @@
     "contraindications": [
       "hip",
       "knee"
-    ],
-    "poseTargetId": "lunge"
+    ]
   },
   {
     "id": "ea_bodyweight_svend_press",
@@ -25895,8 +25871,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_chair_back_lunge_left_resistance_band",
@@ -26113,8 +26088,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_chair_feet_elevated_glute_bridge",
@@ -26155,8 +26129,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_chair_frog_feet_elevated_glute_bridge_bodyweight",
@@ -26198,8 +26171,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_chair_pose",
@@ -29982,8 +29954,7 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ],
-    "poseTargetId": "situp"
+    ]
   },
   {
     "id": "ea_decline_chair_push_up_diamond",
@@ -30071,8 +30042,7 @@
       "elbow",
       "shoulder",
       "wrist"
-    ],
-    "poseTargetId": "pushup"
+    ]
   },
   {
     "id": "ea_decline_kneeling_push_up",
@@ -30199,8 +30169,7 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ],
-    "poseTargetId": "situp"
+    ]
   },
   {
     "id": "ea_decline_push_up",
@@ -30242,8 +30211,7 @@
       "elbow",
       "shoulder",
       "wrist"
-    ],
-    "poseTargetId": "pushup"
+    ]
   },
   {
     "id": "ea_decline_push_up_against_wall",
@@ -30363,8 +30331,7 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ],
-    "poseTargetId": "situp"
+    ]
   },
   {
     "id": "ea_decline_sit_ups_dumbbells",
@@ -30919,8 +30886,7 @@
     },
     "contraindications": [
       "ankle"
-    ],
-    "poseTargetId": "calf_raise"
+    ]
   },
   {
     "id": "ea_donkey_kicks_bodyweight",
@@ -33614,7 +33580,6 @@
       "elbow",
       "wrist"
     ],
-    "poseTargetId": "pushup",
     "purpose": "A side plank with weight added, which trains the side of the trunk to resist being bent sideways. That is the job those muscles do in real life, far more often than bending you sideways on purpose."
   },
   {
@@ -33837,7 +33802,6 @@
     "contraindications": [
       "hip"
     ],
-    "poseTargetId": "hinge",
     "purpose": "Crossing one ankle over the opposite knee forces a single glute to do all the work, and raising the feet lengthens the range. Together they make a bodyweight bridge hard enough to actually build the muscle."
   },
   {
@@ -33880,8 +33844,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_dumbbell_feet_elevated_single_leg_glute_bridge",
@@ -33923,8 +33886,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_dumbbell_feet_elevated_staggered_glute_bridge",
@@ -33966,8 +33928,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_dumbbell_figure_four_glute_bridge",
@@ -34009,8 +33970,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_dumbbell_figure_four_hip_thrust",
@@ -34452,8 +34412,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_dumbbell_goblet_2_sec_hold_squat",
@@ -35132,7 +35091,6 @@
       "elbow",
       "wrist"
     ],
-    "poseTargetId": "pushup",
     "purpose": "The straight-arm version adds a shoulder-stability demand on top of the side plank, so the shoulder has to hold a position while the trunk resists bending. Harder than the elbow version for most people."
   },
   {
@@ -35288,8 +35246,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_dumbbell_hip_thrust_version_2",
@@ -35328,8 +35285,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_dumbbell_incline_alternate_bicep_curl",
@@ -37682,8 +37638,7 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ],
-    "poseTargetId": "curl"
+    ]
   },
   {
     "id": "ea_dumbbell_one_arm_row_rack_support",
@@ -37961,8 +37916,7 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ],
-    "poseTargetId": "curl"
+    ]
   },
   {
     "id": "ea_dumbbell_one_arm_zottman_preacher_curl",
@@ -39361,8 +39315,7 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ],
-    "poseTargetId": "curl"
+    ]
   },
   {
     "id": "ea_dumbbell_romanian_deadlift",
@@ -40537,7 +40490,6 @@
       "elbow",
       "wrist"
     ],
-    "poseTargetId": "pushup",
     "purpose": "Moving between elbow and hand in a side plank adds a shoulder-strength demand to a hold that is normally static. It also makes the trunk work harder, because the position keeps changing under it."
   },
   {
@@ -40580,8 +40532,7 @@
       "shoulder",
       "upper_back",
       "wrist"
-    ],
-    "poseTargetId": "pushup"
+    ]
   },
   {
     "id": "ea_dumbbell_side_squat_side_to_side",
@@ -41096,8 +41047,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_dumbbell_single_leg_hip_thrust",
@@ -41131,7 +41081,6 @@
     "contraindications": [
       "hip"
     ],
-    "poseTargetId": "hinge",
     "purpose": "One leg at a time, with the shoulders raised on a bench for a long range — this is the strongest position there is for loading the glute. It also shows which side has been doing less work."
   },
   {
@@ -41337,8 +41286,7 @@
     "contraindications": [
       "hip",
       "knee"
-    ],
-    "poseTargetId": "lunge"
+    ]
   },
   {
     "id": "ea_dumbbell_skullcrusher",
@@ -41571,7 +41519,6 @@
     "contraindications": [
       "hip"
     ],
-    "poseTargetId": "hinge",
     "purpose": "Shifting most of the load onto one leg while the other stays down for support builds each glute separately without the balance demands of a true single-leg bridge. A good way to even out a side difference."
   },
   {
@@ -41606,7 +41553,6 @@
     "contraindications": [
       "hip"
     ],
-    "poseTargetId": "hinge",
     "purpose": "The raised shoulders give a longer range than a floor bridge, and the staggered feet load one glute at a time. This is the version to use when a full single-leg thrust is still too hard to control."
   },
   {
@@ -42563,8 +42509,7 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ],
-    "poseTargetId": "curl"
+    ]
   },
   {
     "id": "ea_dumbbell_starfish_crunch_alternating",
@@ -42732,8 +42677,7 @@
     "contraindications": [
       "hip",
       "knee"
-    ],
-    "poseTargetId": "lunge"
+    ]
   },
   {
     "id": "ea_dumbbell_stiff_leg_deadlift",
@@ -42852,8 +42796,7 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ],
-    "poseTargetId": "situp"
+    ]
   },
   {
     "id": "ea_dumbbell_straight_leg_deadlift",
@@ -46575,7 +46518,6 @@
     "contraindications": [
       "hip"
     ],
-    "poseTargetId": "hinge",
     "purpose": "The starting point for glute training and the first exercise given after most back problems. It teaches the hips to extend without the lower back arching to do the job for them."
   },
   {
@@ -46616,8 +46558,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_goblet_kettlebell_squats",
@@ -48421,8 +48362,7 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ],
-    "poseTargetId": "situp"
+    ]
   },
   {
     "id": "ea_happy_baby",
@@ -48885,8 +48825,7 @@
     "equipmentLabel": "None",
     "poster": {
       "men": "assets/posters/men/ea_hollow_hold.jpg"
-    },
-    "poseTargetId": "situp"
+    }
   },
   {
     "id": "ea_horizontal_leg_press",
@@ -50362,7 +50301,6 @@
     "contraindications": [
       "hip"
     ],
-    "poseTargetId": "hinge",
     "purpose": "Adds load to the basic bridge, which is what turns it from a warm-up into an exercise that actually builds the glutes. The kettlebell sits neatly in the hip crease, which most other weights do not."
   },
   {
@@ -50506,7 +50444,6 @@
     "contraindications": [
       "hip"
     ],
-    "poseTargetId": "hinge",
     "purpose": "Thrusting from the floor with the weight on the hips is one of the most direct ways to load the glutes, with almost nothing asked of the lower back. It's a reliable choice for building them."
   },
   {
@@ -51354,7 +51291,6 @@
     "contraindications": [
       "hip"
     ],
-    "poseTargetId": "hinge",
     "purpose": "One leg doubles the load on the glute without needing any more weight, which makes it a genuinely hard exercise you can do on a floor with one bell. It also makes a side difference impossible to miss."
   },
   {
@@ -51398,8 +51334,7 @@
     "contraindications": [
       "hip",
       "shoulder"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_kettlebell_single_leg_hip_thrust",
@@ -51433,7 +51368,6 @@
     "contraindications": [
       "hip"
     ],
-    "poseTargetId": "hinge",
     "purpose": "The bench raises the shoulders for a longer range and one leg carries everything, which makes this one of the hardest glute exercises available without a barbell. Keeping the hips level is half the work."
   },
   {
@@ -51849,8 +51783,7 @@
     "contraindications": [
       "hip",
       "knee"
-    ],
-    "poseTargetId": "lunge"
+    ]
   },
   {
     "id": "ea_kettlebell_strict_press",
@@ -52447,7 +52380,6 @@
       "elbow",
       "wrist"
     ],
-    "poseTargetId": "curl",
     "purpose": "The same wrist flexion as a dumbbell curl, but the kettlebell's weight hangs below your hand, so the load pulls the wrist open through a longer range. Useful when your grip gives out before the muscle you were actually training."
   },
   {
@@ -53343,7 +53275,6 @@
       "girl": "assets/posters/girl/ea_landmine_hollow_hold.jpg",
       "men": "assets/posters/men/ea_landmine_hollow_hold.jpg"
     },
-    "poseTargetId": "situp",
     "purpose": "The hollow hold is the position gymnasts use to teach the stomach to hold the ribs and hips together; adding a landmine gives it load, so it keeps working after the bodyweight version gets easy."
   },
   {
@@ -57553,8 +57484,7 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ],
-    "poseTargetId": "situp"
+    ]
   },
   {
     "id": "ea_one_arm_cow_face_pose_easy",
@@ -59235,7 +59165,6 @@
       "hip",
       "shoulder"
     ],
-    "poseTargetId": "hinge",
     "purpose": "Trains the two halves of the body that most people neglect together: the glutes hold the hips up while the chest presses. One plate, no bench, and both ends working at once when time is short."
   },
   {
@@ -59271,7 +59200,6 @@
       "hip",
       "shoulder"
     ],
-    "poseTargetId": "hinge",
     "purpose": "Holds the hips up with the glutes while the lats work overhead, so the front of your body is stretched open at both ends. A useful counter to a day spent folded forward at a desk."
   },
   {
@@ -59408,7 +59336,6 @@
       "girl": "assets/posters/girl/ea_plate_hollow_hold.jpg",
       "men": "assets/posters/men/ea_plate_hollow_hold.jpg"
     },
-    "poseTargetId": "situp",
     "purpose": "The hollow position teaches the stomach to hold the ribs and hips together against the floor, which is the foundation for every harder movement. The plate adds load so it keeps being useful."
   },
   {
@@ -62202,8 +62129,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_resistance_band_glute_bridge_abduction",
@@ -62244,8 +62170,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_resistance_band_glute_bridge_version2",
@@ -62286,8 +62211,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_resistance_band_hip_thrust_version_2",
@@ -62328,8 +62252,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_resistance_band_hip_thrusts_on_knees",
@@ -62370,8 +62293,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_resistance_band_kneeling_cross_body_single_straight_arm_supinated_pulldown",
@@ -62812,8 +62734,7 @@
     },
     "contraindications": [
       "hip"
-    ],
-    "poseTargetId": "hinge"
+    ]
   },
   {
     "id": "ea_resistance_band_one_leg_kickback_bent_position",
@@ -63096,8 +63017,7 @@
       "elbow",
       "hip",
       "wrist"
-    ],
-    "poseTargetId": "pushup"
+    ]
   },
   {
     "id": "ea_resistance_band_squat",
@@ -66002,8 +65922,7 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ],
-    "poseTargetId": "pushup"
+    ]
   },
   {
     "id": "ea_side_plank_oblique_crunch",
@@ -66083,8 +66002,7 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ],
-    "poseTargetId": "pushup"
+    ]
   },
   {
     "id": "ea_side_to_side_punch",
@@ -68580,8 +68498,7 @@
     "contraindications": [
       "lower_back",
       "neck"
-    ],
-    "poseTargetId": "situp"
+    ]
   },
   {
     "id": "ea_standing_one_arm_chest_stretch",
@@ -69189,8 +69106,7 @@
     "contraindications": [
       "hip",
       "knee"
-    ],
-    "poseTargetId": "lunge"
+    ]
   },
   {
     "id": "ea_stepmill_machine_steps",
@@ -72830,8 +72746,7 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ],
-    "poseTargetId": "curl"
+    ]
   },
   {
     "id": "ea_wrist_curl_dumbbell",
@@ -72869,8 +72784,7 @@
     "contraindications": [
       "elbow",
       "wrist"
-    ],
-    "poseTargetId": "curl"
+    ]
   },
   {
     "id": "ea_wrist_extension_barbell",

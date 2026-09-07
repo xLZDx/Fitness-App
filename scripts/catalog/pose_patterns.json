@@ -61,17 +61,54 @@
     {
       "id": "hinge",
       "label": "Hip hinge",
-      "matchTitle": "deadlift|romanian|good morning|hip thrust|glute bridge|kettlebell swing|\\bswing\\b"
+      "_matchTitleWhy": [
+        "`hip thrust` and `glute bridge` were in this list and are gone. They",
+        "ARE a hip hinge at the joint, which is why someone put them here --",
+        "but a tag claims the SILHOUETTE seen from the side is this pattern,",
+        "and both are performed supine while the hinge target draws a standing",
+        "deadlift. The rule had conflated the joint action with the shape.",
+        "43 rows, the largest single group this gate removes.",
+        "",
+        "Removed from `matchTitle` rather than cancelled by a `notTitle`:",
+        "cancelling a token this file itself chose to match would leave the",
+        "mistake on the page with a correction stapled underneath it."
+      ],
+      "matchTitle": "deadlift|romanian|good morning|kettlebell swing|\\bswing\\b"
     },
     {
       "id": "lunge",
       "label": "Lunge and split stance",
-      "matchTitle": "\\blunge|split squat|step[- ]?up|bulgarian"
+      "_matchTitleWhy": [
+        "`step[- ]?up` was in this list and is gone. A step-up RISES onto a",
+        "platform; the lunge target drops one knee toward the floor from",
+        "standing. Opposite vertical direction, and the platform the movement",
+        "depends on is not in the drawing at all. 7 rows.",
+        "",
+        "'Dumbbell Rear Lunge From Step' keeps its tag and should: it matches",
+        "`\\blunge`, and it is a lunge that happens to begin on a step."
+      ],
+      "matchTitle": "\\blunge|split squat|bulgarian"
     },
     {
       "id": "pushup",
       "label": "Push-up and plank",
-      "matchTitle": "push[- ]?up|\\bplank\\b"
+      "_notTitleWhy": [
+        "A side plank lies on ONE side, supported on a forearm, with the",
+        "shoulder-hip-ankle line rolled ninety degrees out of the push-up and",
+        "front-plank shape this pattern draws. A side-on camera sees that",
+        "shape edge-on -- the same reason `squat` excludes lateral, curtsy and",
+        "cossack work.",
+        "",
+        "Seven rows already carried this tag and were wrong. Nothing offers",
+        "`pushup` to a user today, and that is deliberately not the test: a tag",
+        "asserts what the silhouette IS, not what the coach can score, so the",
+        "tag stays valid for the day the pattern becomes coachable. See this",
+        "file's sibling module header. Found by GPT-PM reviewing this gate's",
+        "own plan -- the pass that wrote the original rule missed it, and so",
+        "did the first two revisions of the plan to fix it."
+      ],
+      "matchTitle": "push[- ]?up|\\bplank\\b",
+      "notTitle": "side plank"
     },
     {
       "id": "overhead_press",
@@ -81,12 +118,36 @@
     {
       "id": "curl",
       "label": "Standing curl",
-      "matchTitle": "\\bcurl\\b"
+      "_notTitleWhy": [
+        "A wrist curl moves the wrist and holds the elbow still. Elbow flexion",
+        "is the entire signal the curl target scores, so it would read a",
+        "correct wrist curl as a rep that never began. 11 rows.",
+        "",
+        "`leg curl` needs no rule here -- the shared `excludeWhen` already drops",
+        "it, and for the right reason: it is done lying on a machine."
+      ],
+      "matchTitle": "\\bcurl\\b",
+      "notTitle": "wrist curl"
     },
     {
       "id": "situp",
       "label": "Sit-up and crunch",
-      "matchTitle": "sit[- ]?up|crunch|\\bv[- ]?up\\b|hollow"
+      "_notTitleWhy": [
+        "Three shapes that are not a sagittal curl-up. 11 rows.",
+        "",
+        "  oblique / twist   rotation and lateral flexion cross the frontal and",
+        "                    transverse planes, which a side-on camera sees",
+        "                    edge-on -- the same reason `squat` drops curtsy",
+        "                    and cossack variants.",
+        "  hollow hold       a hold. RepCounter needs a full lap of the phase",
+        "                    ladder, and a hold never leaves the top.",
+        "",
+        "`hanging` is deliberately NOT a rule: the one hanging row here is",
+        "'Hanging Oblique Crunches', already caught by `oblique`. A rule that",
+        "fires on nothing is a claim with no evidence under it."
+      ],
+      "matchTitle": "sit[- ]?up|crunch|\\bv[- ]?up\\b|hollow",
+      "notTitle": "oblique|twist|hollow hold"
     },
     {
       "id": "calf_raise",

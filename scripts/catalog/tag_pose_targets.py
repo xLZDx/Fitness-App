@@ -37,10 +37,26 @@ poorly, and the user can ignore it. So these rules do not lean toward tagging:
 an untagged exercise loses a feature, a wrongly tagged one teaches the user
 that the coach is unreliable, and the second costs more.
 
+CHANGING A RULE
+
+The counts this prints say how many rows carry each pattern. They do not say
+WHICH rows changed, and a rule edit is judged on exactly that: an unexpected id
+in either direction means the rule is wrong, not that the number needs
+adjusting. So state the expected set first, in a file, and let `--expect` fail
+if reality disagrees:
+
+    python scripts/catalog/tag_pose_targets.py --transitions
+    python scripts/catalog/tag_pose_targets.py --expect core/pose_targets/EXPECTED.tsv
+
+`--expect` compares full (id, old, new) triples, not ids and not counts, and
+exits non-zero naming what is MISSING and what is SURPLUS. Neither flag writes.
+
 Usage:
     python scripts/catalog/tag_pose_targets.py
     python scripts/catalog/tag_pose_targets.py --write
     python scripts/catalog/tag_pose_targets.py --pattern squat
+    python scripts/catalog/tag_pose_targets.py --transitions
+    python scripts/catalog/tag_pose_targets.py --expect <file.tsv>
 """
 
 from __future__ import annotations
@@ -106,12 +122,81 @@ def classify(row: dict, patterns, ex_title, ex_equipment) -> tuple[str | None, s
     return hits[0]["id"], "title match"
 
 
+def read_expected(path: Path) -> set[tuple[str, str | None, str | None]]:
+    """The sealed transition set: `id<TAB>old<TAB>new`, `-` for an absent tag.
+
+    Any further columns are the author's own notes and are ignored -- the
+    comparison is over the triple, because a set that matched on ids alone
+    would accept a row moving to the WRONG new tag, and one that matched on
+    counts would accept any 86 changes at all.
+
+    A duplicate id is an error rather than a last-one-wins: the file exists to
+    be exhaustive, and a repeated id means it was assembled by hand from two
+    lists that disagree.
+    """
+    out: set[tuple[str, str | None, str | None]] = set()
+    seen: set[str] = set()
+    for n, line in enumerate(path.read_text("utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        cells = line.split("\t")
+        if len(cells) < 3:
+            sys.exit(f"{path}:{n}: expected id<TAB>old<TAB>new, got {line!r}")
+        rid, old, new = (c.strip() for c in cells[:3])
+        if rid in seen:
+            sys.exit(f"{path}:{n}: duplicate id {rid!r}")
+        seen.add(rid)
+        out.add((rid, None if old == "-" else old, None if new == "-" else new))
+    return out
+
+
+def report_transitions(actual, expected, path) -> int:
+    """Prints the transitions, then judges them if a sealed set was supplied.
+
+    Returns the process exit code. Missing and surplus are named separately
+    because they mean opposite things: a missing transition is a rule that did
+    not fire, a surplus one is a rule that reached further than it claimed.
+    """
+    print(f"\ntransitions   {len(actual)}")
+    for rid, old, new in sorted(actual):
+        print(f"  {rid:60s} {old or '-'} -> {new or '-'}")
+    if expected is None:
+        return 0
+    missing = sorted(expected - actual)
+    surplus = sorted(actual - expected)
+    print(f"\nagainst {path}")
+    print(f"  expected    {len(expected)}")
+    print(f"  MISSING     {len(missing)}   (sealed, but did not happen)")
+    print(f"  SURPLUS     {len(surplus)}   (happened, but was not sealed)")
+    for rid, old, new in missing:
+        print(f"    MISSING  {rid:58s} {old or '-'} -> {new or '-'}")
+    for rid, old, new in surplus:
+        print(f"    SURPLUS  {rid:58s} {old or '-'} -> {new or '-'}")
+    if missing or surplus:
+        print("\nFAIL-EXPECT: the rules do not produce the sealed set.")
+        return 1
+    print("\nOK: the rules produce exactly the sealed set.")
+    return 0
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--write", action="store_true",
                     help="apply to the catalog; without it nothing is written")
     ap.add_argument("--pattern", help="report on one pattern only")
+    ap.add_argument("--transitions", action="store_true",
+                    help="list every row whose stored tag differs from the "
+                         "recomputed one")
+    ap.add_argument("--expect", metavar="PATH", type=Path,
+                    help="compare those transitions against a sealed file and "
+                         "exit non-zero on any difference")
     args = ap.parse_args()
+
+    # "Neither flag writes anything" is a property the gate that introduced
+    # them depends on, so it is enforced here rather than left to the caller.
+    if args.write and (args.transitions or args.expect):
+        sys.exit("--write cannot be combined with --transitions/--expect: "
+                 "the comparison is against what is on disk NOW.")
 
     patterns, ex_title, ex_equipment = load_vocab()
     known = {p["id"] for p in patterns}
@@ -122,9 +207,15 @@ def main() -> None:
     rows = json.loads(CATALOG.read_text("utf-8"))
     tagged: list[tuple[str, str, str, str]] = []
     counts: collections.Counter = collections.Counter()
+    # Captured BEFORE the loop, because the loop pops the field off rows it
+    # would not tag -- so after it there is nothing left to compare against.
+    stored = {row["id"]: row.get(FIELD) for row in rows}
+    transitions: set[tuple[str, str | None, str | None]] = set()
 
     for row in rows:
         pid, reason = classify(row, patterns, ex_title, ex_equipment)
+        if pid != stored[row["id"]]:
+            transitions.add((row["id"], stored[row["id"]], pid))
         if pid is None:
             row.pop(FIELD, None)
             continue
@@ -141,6 +232,10 @@ def main() -> None:
         if args.pattern and p["id"] != args.pattern:
             continue
         print(f"  {p['id']:16s} {counts[p['id']]:5d}  {p['label']}")
+
+    if args.transitions or args.expect:
+        expected = read_expected(args.expect) if args.expect else None
+        raise SystemExit(report_transitions(transitions, expected, args.expect))
 
     if args.write:
         # indent=2 + a trailing newline is what the catalog is already written
