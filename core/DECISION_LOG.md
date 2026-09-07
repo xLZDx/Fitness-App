@@ -44911,7 +44911,7 @@ manifest was deleted and rebuilt from the in-repo script, and the hash came back
 
 | artifact | sha256 |
 | --- | --- |
-| `core/plans/RECOG_C1_SERVER_CORRELATION_2026-09-07.json` | `932c47d6caa66a396c5490e86afdca3b8c6a1c85ec8c13cd6492e3dbe8a27333` |
+| `core/plans/RECOG_C1_SERVER_CORRELATION_2026-09-07.json` | `bb8e6025c41103b3ce6f885e86a72d52bcdb9151969ad0efb62c30f69579ce6e` |
 | `core/plans/recog_c1_raw/recog_c1_server_requests_2026-09-06_07.json` | `b6e672ed03514ae64da7cf6eb6e8ca06c5f8d9804ae17d7a5987f26b14f9c921` |
 | `core/plans/recog_c1_raw/recog_c1_raw_w1.jsonl` (unchanged) | `556480993b8de6d1308031f4a5b4b4d028bad8c98a223b4c35c8f2fd87e0f989` |
 | `core/plans/recog_c1_raw/recog_c1_raw_w2.jsonl` (unchanged) | `dd0f478c7dcfaf0e29f818e2d0e076025d77895234278fba906d6b1597aa9f9c` |
@@ -44930,8 +44930,8 @@ manifest was deleted and rebuilt from the in-repo script, and the hash came back
   calls that is strong evidence, and it is recorded as evidence rather than rounded up to a proof —
   the manifest carries a `what_is_not_claimed` field saying so in the artifact itself.
 - **Falsification**: the same test on pairings shifted −3…+3 rejects all twelve. Narrowest is w2 at
-  shift +1, empty by **0.649s**; the rest fail by 6–40s. Recorded with the narrowest margin, not
-  the most flattering one.
+  shift +1, empty by **0.649s**; the other eleven fail by **5.964s to 18.937s**. Recorded with the
+  narrowest margin, not the most flattering one.
 
 - **Exhaustiveness and purity, checked every run rather than once by hand.** All 104 served
   requests fall inside exactly one run window — none outside both, none in two — so 52+52 cannot
@@ -44947,6 +44947,25 @@ manifest was deleted and rebuilt from the in-repo script, and the hash came back
   within its own run, an observation id duplicated across runs, an unmutated control, and a
   `test_the_test` that swaps in a stub exiting immediately and requires every other case to fail
   against it.
+
+### A fifth error, found by re-checking my own published number
+
+After the four review findings were remediated I re-derived the falsification margins from the raw
+files, and the range I had written everywhere — "the other eleven fail by 6s to 40s" — was wrong.
+The real spread is **5.964s to 18.937s**. I had overstated the top of the range by more than
+double.
+
+It matters less that the figure was wrong than *why*. It was a literal, typed by hand into the
+manifest's own `falsification` field, sitting a few lines away from the loop that computes exactly
+those margins. So the fix is not the corrected number: the script now derives the sentence from
+`shift_margins` and prints the spread on every run, and the same figure can no longer drift from
+the computation behind it. The corrected value propagated to the measurement document and both
+report languages.
+
+This is the third instance in one gate of the same defect — a claim slightly broader than the check
+that supports it — and the first one I caught myself rather than having a reviewer catch it. The
+narrowest margin, 0.649s, was right all along and is the number that actually carries the argument;
+the one I got wrong was the flattering half.
 
 ### The internal review round, and what it cost me
 
@@ -44991,3 +45010,67 @@ input to it.
 The durable fix is in the callable, not in a script — `aiEquipmentRecognition` should return its own
 request id alongside `text`, so the next measurement records the correlation at the moment of the
 call. Recorded here as the follow-up; not done in this gate, which is measurement-only.
+
+### GPT-PM's verdict on the closure: APPROVE, and close the plan FAILED
+
+Round 3, commit `300015b`, 0 BLOCKER / 0 MAJOR / 0 MINOR. Verbatim on the status question I put to
+it:
+
+> *"passed — NO. That would make the Rosetta status contradict the durable evidence saying 'this
+> gate was not executed exactly as frozen.' blocked — NO. Nothing remains blocked... failed — YES.
+> failed here means the frozen plan failed one mandatory verification clause, not 'the scientific
+> measurement is worthless.'"*
+
+And on what the recovery does and does not achieve:
+
+> *"The recovered manifest supplies the missing identity after the run; it cannot retroactively make
+> the harness have recorded the field or make the prescribed exclusion have happened... That is
+> sufficient evidence to preserve the measurement and its conclusions."*
+
+So RECOG-C1 closes **FAILED on protocol conformance, with its measurement intact**. The 104
+observations, the response classes, the crop comparison and every number in
+`core/plans/RECOG_C1_MEASUREMENT_2026-09-05.md` stand; what failed is verification (e), and
+permanently, because no reconstruction changes the order in which things happened.
+
+The push hold is untouched and GPT-PM said so unprompted:
+
+> *"this APPROVE does not authorize the push. The contact-sheet privacy hold is unchanged and
+> independent of the Rosetta status; the 26 sheets with identifiable people, including a child,
+> still require the operator's separate decision/history rewrite before any GitHub push."*
+
+**One correction owed to that round:** the evidence package I sent still carried the wrong
+falsification range ("6s to 40s"). I found and fixed it after sending, and the corrected figure —
+5.964s to 18.937s — is in the committed artifacts. The verdict did not rest on that number (the
+narrowest margin, 0.649s, is the one that carries the argument and was always right), but the
+reviewer read a wrong figure and is owed the correction rather than a silent fix.
+
+### 2026-09-07 — debug build distributed to App Tester, with the App Check token compiled in
+
+The operator asked for a debug build on App Tester. A debug build takes the App Check *debug*
+provider (`mobile/lib/main.dart:294`), whose token arrives as a compile-time define; empty is not a
+"generate one for me" signal but a value the backend rejects outright. So without the token the
+build installs and runs but every Gemini call — equipment recognition, coach advice — returns
+`unauthenticated`, which is not a testable app.
+
+Embedding a bypass credential in a distributed binary is not a call I should make silently, so it
+went to the operator as a two-option question with the exposure stated: the value can be extracted
+from the APK, and App Distribution stores the binary in the project's cloud. **Operator chose to
+embed it**, so recognition works in this build.
+
+| | |
+| --- | --- |
+| artifact | `mobile/build/app/outputs/flutter-apk/app-arm64-v8a-debug.apk` |
+| package | `com.fitnessapp.fitness_app.sptr.debug` — installs *beside* the release app, never over it |
+| version | 1.0.0 (3012), HEAD `300015b` |
+| size | 192 MB (the fat all-ABI debug APK was 424 MB; both test devices are arm64) |
+| App Distribution app id | `1:988522745882:android:7c05c915aa42410ec201a3` (the debug package's own) |
+
+Two verifications rather than assumptions. The package name came from `aapt2 dump packagename`, not
+from the gradle suffix I expected. And the token's presence was checked inside
+`assets/flutter_assets/kernel_blob.bin` after extraction — my first check grepped the APK directly
+and reported "not found", which was wrong: an APK is a zip, and a raw grep over compressed bytes
+proves nothing. The token value was never printed; build output was piped through a redaction
+filter.
+
+The signed download URL the CLI prints is deliberately excluded from this log: it carries an access
+token.

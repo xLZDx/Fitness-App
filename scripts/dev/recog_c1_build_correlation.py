@@ -122,7 +122,7 @@ if stranded or overlapping or straddling:
     print('PRECONDITION FAILED -- the segmentation does not hold. Nothing written.')
     raise SystemExit(1)
 
-manifest, report, ok = {}, {}, True
+manifest, report, ok, shift_margins = {}, {}, True, {}
 
 for w, rows in runs.items():
     lo = rows[0]['start'].timestamp() - 60
@@ -157,7 +157,9 @@ for w, rows in runs.items():
         kb = min((s2[i][1] - r2[i]['start']).total_seconds() for i in range(len(r2)))
         shifts[k] = (ka, kb, ka <= kb)
     accepted_shifts = [k for k, v in shifts.items() if v[2]]
-    tightest = min((v[0] - v[1], k) for k, v in shifts.items())
+    margins = sorted((v[0] - v[1], k) for k, v in shifts.items())
+    tightest = margins[0]
+    shift_margins[w] = margins
     print(f'  falsification: shifted pairings accepted: {accepted_shifts or "none"}; '
           f'narrowest rejection is shift {tightest[1]:+d}, empty by {tightest[0]:.3f}s')
     if accepted_shifts:
@@ -209,7 +211,12 @@ for w, rows in runs.items():
         print('  FAIL-CONTAINMENT: a request missed its own window, or fits more than one.')
     print()
 
+_all_margins = sorted((m, w, k) for w, ms in shift_margins.items() for m, k in ms)
+
 if ok and len(manifest) == 104 and len(set(manifest.values())) == 104:
+    print(f'falsification margins across both runs: narrowest {_all_margins[0][0]:.3f}s '
+          f'({_all_margins[0][1]} shift {_all_margins[0][2]:+d}), '
+          f'then {_all_margins[1][0]:.3f}s .. {_all_margins[-1][0]:.3f}s')
     json.dump({
         'what': ('A server-side correlation id for every completed RECOG-C1 observation, recovered '
                  'from Cloud Logging AFTER the run.'),
@@ -224,12 +231,18 @@ if ok and len(manifest) == 104 and len(set(manifest.values())) == 104:
         'segmentation': ('Independent of all timing: the request log carries 110 requests, exactly '
                          '104 with status 200 and 6 with 401. The 104 are the completed calls; the '
                          '6 are the refusals of the two aborted App Check attempts.'),
+        # Computed, never typed. The first version of this sentence carried a
+        # hand-written range that was wrong by more than double at the top end,
+        # and it was wrong exactly because it was a literal sitting next to the
+        # code that could have produced it.
         'falsification': ('The same feasibility test was re-run on pairings shifted by -3..+3 '
-                          'positions. Every shifted pairing is infeasible, in both runs, so the '
-                          'test can reject a wrong answer and its acceptance of the true pairing '
-                          'is evidence rather than arithmetic. Stated plainly: the narrowest '
-                          'rejection is w2 at shift +1, whose feasible interval is empty by only '
-                          '0.650s -- the other eleven fail by 6s to 40s.'),
+                          'positions. All twelve shifted pairings are infeasible, so the test can '
+                          'reject a wrong answer and its acceptance of the true pairing is '
+                          'evidence rather than arithmetic. Reported by the narrowest margin '
+                          'rather than the most flattering: the tightest rejection is '
+                          f'{_all_margins[0][1]} at shift {_all_margins[0][2]:+d}, whose feasible '
+                          f'interval is empty by only {_all_margins[0][0]:.3f}s; the other eleven '
+                          f'fail by {_all_margins[1][0]:.3f}s to {_all_margins[-1][0]:.3f}s.'),
         'method': ('Ordinal pairing within each strictly sequential run, then tested three ways. '
                    '(1) FEASIBILITY: there exists ONE constant clock offset per run under which '
                    'every server request falls inside its own paired client [utc_start, utc_end] '

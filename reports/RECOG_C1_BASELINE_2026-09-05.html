@@ -287,13 +287,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ bad2836</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 300015b</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -1193,8 +1195,11 @@ script, and the sha256 came back identical.</p>
     <td><span class="tag done">0 ambiguous</span></td></tr>
     <tr><td><strong>The test can reject.</strong> The same criterion on pairings shifted −3…+3: all
     twelve are infeasible. The narrowest rejection is window 2 at shift +1, where the interval is
-    empty by only <strong>0.649 s</strong>; the other eleven fail by 6 to 40 s. Reported by the
-    narrowest margin, not the most flattering one.</td>
+    empty by only <strong>0.649 s</strong>; the other eleven fail by <strong>5.964 s to
+    18.937 s</strong>. Reported by the narrowest margin, not the most flattering one. An earlier
+    draft said &laquo;6 to 40 s&raquo; — a hand-typed range, wrong by more than double at the top
+    end; the script now computes the figure rather than carrying a literal, which is the real
+    fix.</td>
     <td><span class="tag done">12 of 12 rejected</span></td></tr>
     <tr><td><strong>The guards are mutation-tested</strong>
     (<a href="scripts/dev/recog_c1_build_correlation.tests.py">scripts/dev/recog_c1_build_correlation.tests.py</a>),
@@ -1260,6 +1265,8 @@ real observability gap in the product: nothing today links a client-side failure
 line. Recorded as the next step; not done in this gate, which is measurement-only.</p>
 
 </div>
+
+
 
 
 

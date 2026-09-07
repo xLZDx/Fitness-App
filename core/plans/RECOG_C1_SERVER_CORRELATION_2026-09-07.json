@@ -106,7 +106,7 @@
   "w2-p51-B-1": "projects/fitness-app-korostelev/traces/672539782441bce704824217281393fa"
  },
  "distinct_traces": 104,
- "falsification": "The same feasibility test was re-run on pairings shifted by -3..+3 positions. Every shifted pairing is infeasible, in both runs, so the test can reject a wrong answer and its acceptance of the true pairing is evidence rather than arithmetic. Stated plainly: the narrowest rejection is w2 at shift +1, whose feasible interval is empty by only 0.650s -- the other eleven fail by 6s to 40s.",
+ "falsification": "The same feasibility test was re-run on pairings shifted by -3..+3 positions. All twelve shifted pairings are infeasible, so the test can reject a wrong answer and its acceptance of the true pairing is evidence rather than arithmetic. Reported by the narrowest margin rather than the most flattering: the tightest rejection is w2 at shift +1, whose feasible interval is empty by only 0.649s; the other eleven fail by 5.964s to 18.937s.",
  "id_kind": "Cloud Trace id of the Cloud Run request that served the call",
  "method": "Ordinal pairing within each strictly sequential run, then tested three ways. (1) FEASIBILITY: there exists ONE constant clock offset per run under which every server request falls inside its own paired client [utc_start, utc_end] window -- one unknown against 52 simultaneous constraints, feasible interval non-empty. (2) LOCAL UNIQUENESS: at the offset derived from that pairing, no server request falls inside any OTHER observation window. (3) FALSIFICATION: every positional shift of -3..+3 is infeasible under its own re-derived interval.",
  "observations": 104,

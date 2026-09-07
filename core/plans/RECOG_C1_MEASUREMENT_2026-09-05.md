@@ -99,7 +99,10 @@ How it is established, and why it is more than a plausible-looking join:
   here rather than left standing.
 - **The test can reject a wrong answer.** Re-run on pairings shifted by −3…+3 positions, every one
   of the twelve is infeasible. The narrowest rejection is window 2 at shift +1, whose interval is
-  empty by only **0.649s**; the other eleven fail by 6s to 40s. A test that accepted a shifted
+  empty by only **0.649s**; the other eleven fail by **5.964s to 18.937s**. (An earlier draft of
+  this line said "6s to 40s" — a hand-typed range, wrong by more than double at the top end. The
+  script now computes the figure instead of carrying a literal, which is the actual fix.) A test
+  that accepted a shifted
   pairing would prove nothing, and this one is stated with its narrowest margin rather than its
   most flattering.
 
