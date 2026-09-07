@@ -69,7 +69,21 @@ single byte makes it name that file and stop.
       --dart-define=RECOG_C1_RUN_ID=w2 `
       --dart-define=RECOG_C1_WINDOW=2 `
       --dart-define=RECOG_C1_PLAN_SHA=4f4ef743734ce710e6e82e968db41a4c682af1f230f2c8ff2aad0d6b9828325d `
-      --dart-define=RECOG_C1_SOURCE_SHA=$(git rev-parse HEAD)
+      --dart-define=RECOG_C1_SOURCE_SHA=$(git rev-parse HEAD) `
+      --dart-define=APP_CHECK_DEBUG_TOKEN=$env:APP_CHECK_DEBUG_TOKEN
+
+**The sixth define is the one that has no guard and cost a run.** App Check is enforced on the AI
+callables (`APP_CHECK_ENFORCED_AI`, fail-closed), and a debug build takes its App Check token from
+this define at build time. Leaving it out is not "generate one for me": the backend answers `400 the
+debug_token cannot be empty`, `activate()` throws, the app carries on with no App Check token at all,
+and every call is refused as `unauthenticated` — a message that mentions neither App Check nor the
+build, while the log line right above it says the user IS signed in.
+
+That is what happened on 2026-09-07: five defines instead of six, three refusals, the abort valve
+stopping the window. No quota was spent (App Check rejects before the handler runs, and the quota is
+charged inside it), but the run was lost. `recog_c1_window2.ps1` now refuses to build without it.
+
+The value is never echoed, logged or committed. Set it in the environment before running.
 
 This machine's shell is PowerShell: the continuation character is a backtick, not a backslash, and
 an earlier draft of this file used backslashes, which would have made every `--dart-define` after the

@@ -44419,3 +44419,66 @@ refuses with "window 1 ran on 2026-09-06 UTC … 10.6 hours to go".
   reported a genuine `lastUpdateTime` move — it proves an install happened, which is all it claims;
   it does not know which window the APK was compiled for. The new script closes that by building
   immediately before installing and refusing an APK older than half an hour.
+
+## 2026-09-07 — RECOG-C1 window 2, attempt 1: App Check refused every call
+
+Window 2 started cleanly and died at 3 of 52. Every one of the three observations came back
+`operationalFailure` with `FirebaseFunctionsException(unauthenticated): Unauthenticated`, the abort
+valve fired on three consecutive failures exactly as designed, and the run stopped.
+
+**Root cause: five `--dart-define`s instead of six.** The build was missing
+`APP_CHECK_DEBUG_TOKEN`.
+
+App Check is enforced on the AI callables — `AI_METERED.enforceAppCheck = APP_CHECK_ENFORCED_AI`
+(`functions/src/scaling.ts:336-341`, `:209-210`), fail-closed by default — and a debug build takes
+its App Check token from a **build-time** define: `mobile/lib/main.dart:277`,
+`AndroidDebugProvider(debugToken: String.fromEnvironment('APP_CHECK_DEBUG_TOKEN'))`, empty unless a
+`--dart-define` supplies it. **Empty is not "generate one for me".** The backend answers `400 the
+debug_token cannot be empty`, `activate()` throws, the exception is caught and logged as
+`R0: App Check activate() failed, continuing without it`, and the app then makes every call with no
+App Check token at all.
+
+**Why this was not obvious from the failure.** The rejection happens in the Functions framework
+*before* the handler runs, so the client sees a generic `unauthenticated` / "Unauthenticated" that
+mentions neither App Check nor the build — while the logcat line directly above it reads
+`RECOG-C1: signed in as <redacted>, starting run w2`. Auth was present and correct; the thing that
+was missing has no name in the error.
+
+**No quota was spent.** `enforceDailyQuota` runs *inside* the callable handler
+(`functions/src/ai_equipment_recognition.ts`), i.e. after both auth and App Check, so a call rejected
+by App Check is never counted. The day's 60 calls are intact and window 2 can still run today.
+
+### Evidence, preserved
+
+The partial run is committed as `core/plans/recog_c1_raw/recog_c1_raw_w2_aborted_appcheck.jsonl`
+(sha256 `310144dd143aac39938820fd70fdb301b69e4f51faa82757b145eda89121c2af`, 10 279 bytes, LF only,
+no token-shaped strings). Record types: `attempt_started` 3, `observation` 3,
+`run_stopped_consecutive_failures` 1. It is deliberately NOT named `recog_c1_raw_w2.jsonl` — the
+analysis joins both windows by filename and an aborted 3-row file must never be mistakable for the
+window it failed to produce.
+
+### Three fixes, and what each one is worth
+
+**1. `recog_c1_window2.ps1` refuses to build without the token.** Checked in the preconditions
+block, before anything is compiled or installed; it prints the length and never the value. Verified
+firing.
+
+**2. The same script refuses when the DEVICE already holds a partial window-2 file.** This is the
+more dangerous of the two. Rows already written for a run id are skipped on resume — that is the
+resume guarantee, and it is correct — so a leftover 3-row file would have made a re-run measure 49
+targets and report a complete 52-observation window. The check reads `grep -c response_class` on the
+remote file and stops with the count named. Verified firing on the real leftover file, which was
+then removed from the device (leaving `images`, `recog_c1_raw_w1.jsonl`, `run_plan.csv`).
+
+**3. The sixth define added to the two places that tell a human what to build** —
+`core/plans/RECOG_C1_WINDOW2_RUNBOOK.md` step 3 and `recog_c1_deploy.ps1`'s printed instructions.
+Both now also say *why* it has no automatic guard on the harness side and what its absence looks
+like, because the failure mode is a message that names the wrong subsystem.
+
+The asymmetry is worth stating plainly: the harness checks its own five defines and refuses to run
+without them. It cannot check the sixth, because App Check is not its dependency — it is the app's,
+established long before the harness starts. So the sixth had to be guarded one level up, in the
+thing that constructs the build command.
+
+**No token value appears in this entry, in either script, in the runbook, in the preserved evidence
+file, or in any log this run produced.** Checked mechanically after every write.

@@ -79,7 +79,43 @@ Write-Host "  harness present"
 if (Test-Path $w2) {
     throw "window 2's raw file already exists at $w2. If this run genuinely needs repeating, move that file aside deliberately -- re-running spends another 52 calls on targets already measured."
 }
-Write-Host "  window 2 not yet run"
+Write-Host "  window 2 not yet run (repository)"
+
+# And on the DEVICE, which is the copy the harness actually resumes from. A
+# partial file there is worse than an absent one: rows already written for this
+# run id are skipped by design, so a leftover file silently shortens the window
+# instead of stopping it. On 2026-09-07 an aborted attempt left three rows; a
+# blind re-run would have measured 49 of 52 and reported a complete window.
+$remoteRaw = "$remote/recog_c1_raw_w2.jsonl"
+$remoteState = ((& $adb -s $Serial shell "test -f $remoteRaw && grep -c response_class $remoteRaw || echo absent" 2>$null) -join '').Trim()
+if ($remoteState -ne 'absent') {
+    throw "the device already holds $remoteRaw with $remoteState observation(s) in it. Rows already written for run id w2 are SKIPPED on resume, so running now would measure only what is missing and still report a finished window. Preserve that file and remove it from the device before re-running, or use a fresh run id."
+}
+Write-Host "  window 2 not yet run (device)"
+
+# The SIXTH define, and the one this script exists partly to stop anyone
+# forgetting again.
+#
+# App Check is enforced on the AI callables (`APP_CHECK_ENFORCED_AI`, fail-closed
+# by default in functions/src/scaling.ts), and a debug build's App Check token is
+# supplied at BUILD time -- `String.fromEnvironment('APP_CHECK_DEBUG_TOKEN')` in
+# main.dart, empty unless a --dart-define provides it. Empty is not "generate one
+# for me": the backend answers `400 the debug_token cannot be empty`, activate()
+# throws, the app continues with no App Check token at all, and every call comes
+# back `unauthenticated` -- which is not a message about App Check and reads like
+# a sign-in problem while the log plainly says the user IS signed in.
+#
+# That is exactly what happened on 2026-09-07: a build with five of the six
+# defines, three consecutive rejections, the abort valve stopping the run. It
+# cost no quota (App Check rejects before the handler runs, and the quota is
+# charged inside it) but it cost the run.
+#
+# The value is never echoed, never written to a log, and never committed. Pass it
+# in the environment:  $env:APP_CHECK_DEBUG_TOKEN = '<registered value>'
+if (-not $env:APP_CHECK_DEBUG_TOKEN -or $env:APP_CHECK_DEBUG_TOKEN.Trim().Length -eq 0) {
+    throw "APP_CHECK_DEBUG_TOKEN is not set in the environment. Without it the build carries an empty App Check debug token, activate() fails, and every call is refused as 'unauthenticated' -- which does not mention App Check and looks like a sign-in fault. Set it (the registered value; never echo it) and re-run."
+}
+Write-Host "  App Check debug token present ($($env:APP_CHECK_DEBUG_TOKEN.Trim().Length) chars, value not shown)"
 
 $dirty = @(& git -C $repo status --porcelain | Where-Object { $_ })
 if ($dirty.Count -gt 0) {
@@ -116,7 +152,8 @@ try {
         --dart-define=RECOG_C1_RUN_ID=w2 `
         --dart-define=RECOG_C1_WINDOW=2 `
         --dart-define=RECOG_C1_PLAN_SHA=$planSha `
-        --dart-define=RECOG_C1_SOURCE_SHA=$sourceSha
+        --dart-define=RECOG_C1_SOURCE_SHA=$sourceSha `
+        --dart-define=APP_CHECK_DEBUG_TOKEN=$($env:APP_CHECK_DEBUG_TOKEN.Trim())
     if ($LASTEXITCODE -ne 0) { throw "flutter build failed with exit $LASTEXITCODE" }
 }
 finally { Pop-Location }
