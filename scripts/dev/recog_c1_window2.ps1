@@ -139,11 +139,14 @@ else {
 # a message that names neither App Check nor the build, while the log line above
 # it says the user IS signed in.
 #
-# Window 1 nonetheless ran with five defines and verified `app=VALID` server-side,
-# because the device still held a persisted debug secret the Android provider
-# reuses when a build supplies none. That store is gone, so the define is now
-# genuinely required -- but "window 1 didn't need it" is exactly why a check for
-# mere PRESENCE is not enough.
+# Window 1 nonetheless ran with five defines and verified `app=VALID`
+# server-side. WHY is UNKNOWN. A persisted device-side debug secret reused by
+# the Android provider is the only mechanism proposed that fits, but it is a
+# hypothesis and it sits badly against this project's own measurement that an
+# empty String.fromEnvironment value is sent as-is and rejected. The facts are:
+# no token in that build, app=VALID on all 52 calls, and no debug-secret store
+# on the device today. The define is required now regardless -- and "window 1
+# didn't need it" is exactly why a check for mere PRESENCE is not enough.
 if (-not $env:APP_CHECK_DEBUG_TOKEN -or $env:APP_CHECK_DEBUG_TOKEN.Trim().Length -eq 0) {
     throw "APP_CHECK_DEBUG_TOKEN is not set in the environment. The device no longer holds a persisted App Check debug secret to fall back on, so without this the client obtains no attestation token and every call is refused as 'unauthenticated' -- which does not mention App Check and looks like a sign-in fault. Set it (never echo it) and re-run."
 }

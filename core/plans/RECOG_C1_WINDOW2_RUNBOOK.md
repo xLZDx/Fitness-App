@@ -79,10 +79,14 @@ error placeholder; the backend logs `Decoding App Check token failed` and refuse
 `unauthenticated` — a message that mentions neither App Check nor the build, while the log line right
 above it says the user IS signed in.
 
-Window 1 nonetheless ran with only five defines and verified `app=VALID` server-side, because the
-device still held a persisted debug secret that the Android provider reuses when a build supplies
-none. That store is gone from the device now, so the define is genuinely required — but "window 1
-did not need it" is exactly why a check for mere presence is not enough.
+Window 1 nonetheless ran with only five defines and verified `app=VALID` server-side. **Why it did
+is UNKNOWN and is deliberately left that way.** A persisted device-side debug secret, reused by the
+Android provider when a build supplies none, is the only mechanism anyone has proposed that fits —
+but it is a hypothesis, and it sits awkwardly against this project's own measurement that an empty
+`String.fromEnvironment` value is sent as-is and rejected rather than treated as "reuse one". What is
+FACT: window 1's build passed no token, its 52 calls verified `app=VALID`, and the debug-secret store
+is absent from the device today. Do not build on the hypothesis; "window 1 did not need the define"
+is exactly why a check for mere presence is not enough.
 
 **What failed twice was not an absent token but a value that was never a token.** The string recorded
 in `core/DECISION_LOG.md` is a debug token's RESOURCE ID: the App Check API names a token
@@ -133,10 +137,17 @@ installed.
 
 Progress, without tailing a log (the file is the source of truth, not the console):
 
-    & $adb -s $dev shell "grep -c '\"record_type\":\"observation\"' /sdcard/Android/data/com.fitnessapp.fitness_app.sptr.debug/files/recog_c1/recog_c1_raw_w2.jsonl"
+    & $adb -s $dev shell "grep -c response_class /sdcard/Android/data/com.fitnessapp.fitness_app.sptr.debug/files/recog_c1/recog_c1_raw_w2.jsonl"
 
-The pattern has no space after the colon because `jsonEncode` writes none -- a pattern with a space
-returns 0 on a perfectly healthy file, which is how a working run first looked like a dead one.
+**Deliberately quote-free.** The obvious command — grepping for the `record_type` field — was handed
+over once and did not run at all: PowerShell mangled the escaped quotes in the native argument and
+adb's shell answered `grep: trailing backslash`. `response_class` needs no quoting, and it is exact:
+it appears on all 52 observation records and on none of the 52 `attempt_started` markers, checked
+against the real file rather than assumed.
+
+(If you ever do grep the record type, the pattern has no space after the colon, because `jsonEncode`
+writes none — a spaced pattern returns 0 on a perfectly healthy file, which is how a working run
+first looked like a dead one.)
 
 The harness runs from `main()`. `RECOG-C1` lines also appear in logcat.
 

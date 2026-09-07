@@ -44757,3 +44757,63 @@ The reviewer flagged, honestly, that it could not verify whether `exit 0` inside
 with `&` terminates the caller. It does not: today's window-2 run called `recog_c1_deploy.ps1` four
 times through `&` and continued through all seven steps each time. Recorded as FACT from that run
 rather than left as an open inference.
+
+## 2026-09-07 — GPT-PM closure review, round 1: MAJOR. Remediated in one batch.
+
+`VERDICT: MAJOR — 0 BLOCKER / 1 MAJOR / 2 MINOR`, correlated, untruncated, over `09764f9..HEAD`.
+GPT-PM found no evidence invalidating the 104-observation baseline itself: the finding set is entirely
+in the closure tooling and documentation around it. All three were verified against the real files
+before being accepted, and all three were real.
+
+**MAJOR — the analyzer gate fails OPEN when the toolchain is absent.** I had added the gate precisely
+so a check would not need me to have anticipated the failure, and then wrote it so that
+`flutter` missing from PATH printed a warning, fell through to the success branch, and exited 0. So
+"the check could not run" became "the check passed" — the exact class the gate exists to eliminate,
+reintroduced by the fix for it. A degraded mode must be ASKED for, never entered implicitly.
+
+Now a hard failure unless `-SkipAnalyze` is passed deliberately. **Proved by removing `D:\flutter\bin`
+from PATH:** the default run exits 1 naming the missing toolchain; the same run with `-SkipAnalyze`
+exits 0 and its summary says "the analyzer was NOT run, so nothing here says the project still
+builds".
+
+**MINOR — I let a hypothesis harden into a fact between artifacts.** The decision log correctly labels
+the persisted-device-secret explanation for window 1's success as INFERENCE. The runbook and
+`recog_c1_window2.ps1` then both stated it flatly as the reason. GPT-PM also pointed out it sits badly
+against this project's own measurement that an empty `String.fromEnvironment` value is sent as-is and
+rejected rather than reused. Both artifacts now say **UNKNOWN**, keep the hypothesis labelled as one,
+and list only what is FACT: no token in that build, `app=VALID` on all 52 calls, no debug-secret store
+on the device today.
+
+The strong conclusion is unchanged and stays narrowly scoped: **the value used on the two failed
+attempts was a resource ID, not a usable debug token.** GPT-PM's own falsifier test — the value would
+have exchanged successfully, or the minted token's id would have equalled its value — went the other
+way in both cases.
+
+**MINOR — the runbook still handed over a command this same session had proved broken.** I replaced
+the quoted `record_type` grep in the script and told the operator it was replaced, but left it in
+`RECOG_C1_WINDOW2_RUNBOOK.md`, where the operator would actually read it. It is the command that
+answered `grep: trailing backslash`. Replaced with the quote-free `grep -c response_class`, with the
+reason recorded next to it.
+
+### What GPT-PM said about the lesson, and it sharpened mine
+
+I asked whether "write a check that does not need me to have anticipated the failure" was the right
+lesson. The answer narrowed it usefully: *assert an independent system invariant, require positive
+evidence that the checker actually ran, and make checker unavailability fail closed.* I had the first
+two and had got the third exactly backwards in the same file.
+
+### On the contact sheets — the hold stands, and GPT-PM agrees it should
+
+Asked whether a reviewer's APPROVE should be able to authorize this push, GPT-PM answered that the
+privacy hold is correct and **must survive its own eventual verdict**: a GitHub push is the "travel"
+the operator's instruction names, and a later revert cannot erase pushed objects from history.
+
+Its recommendation on the evidence question: **blurred contact sheets, not hashes-only.** Hashes plus
+locally-held originals prove identity but remove remote visual inspectability, which is what step 9's
+DoD asked for; blurring preserves the evidentiary purpose. If hashes-only is preferred, amend the
+step-9 evidence contract explicitly rather than claiming the same DoD is met.
+
+And a constraint I had not stated sharply enough to the operator: because the unblurred commits are
+**unpushed**, redaction has to replace that history *before* the first push. Adding a later "blurred
+images" commit and pushing the whole ancestry would still send the original identifiable JPEG blobs.
+That is a history rewrite, which is the operator's alone.

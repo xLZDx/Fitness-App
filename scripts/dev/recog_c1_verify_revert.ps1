@@ -190,7 +190,13 @@ $analyzerRan = $false
 if (-not $SkipAnalyze) {
     $mobile = Join-Path $repo 'mobile'
     if (-not (Get-Command flutter -ErrorAction SilentlyContinue)) {
-        Write-Host "flutter is not on PATH; skipping the analyzer gate. This is a WEAKER verification -- byte-identity alone did not catch the 2026-09-07 breakage."
+        # NOT a warning. An absent toolchain used to print this line and let the
+        # script reach its success branch and exit 0 -- so "the check could not
+        # run" became "the check passed", which is the precise class this gate
+        # was added to eliminate. A degraded mode has to be ASKED for: pass
+        # -SkipAnalyze deliberately, and the summary will then say the analyzer
+        # did not run.
+        Fail "flutter is not on PATH, so the analyzer gate -- the check that caught the 2026-09-07 broken revert -- could not run. A verification that cannot perform its own strongest check must not report success. Install the toolchain, or pass -SkipAnalyze to accept a deliberately weaker verification."
     }
     else {
         Write-Host "running the analyzer (this is slow, and it is the check that would have caught the 2026-09-07 miss)..."
