@@ -44482,3 +44482,91 @@ thing that constructs the build command.
 
 **No token value appears in this entry, in either script, in the runbook, in the preserved evidence
 file, or in any log this run produced.** Checked mechanically after every write.
+
+## 2026-09-07 — correction: the App Check diagnosis above was wrong, and here is what was actually true
+
+The entry immediately above names "five `--dart-define`s instead of six" as the root cause of window
+2's first failure. **That is wrong.** It was written from the client-side symptom without checking
+the server, and the very next run disproved it: a build carrying all six defines, with the token the
+entry called "the registered one", failed identically at 3 of 52.
+
+Two facts settle it, neither of which was consulted before that entry was written.
+
+**Window 1 ran with FIVE defines and succeeded.** Its build command is in this session's own
+transcript — `RECOG_C1_HARNESS/DIR/RUN_ID/WINDOW/PLAN_SHA/SOURCE_SHA`, no `APP_CHECK_DEBUG_TOKEN` —
+and `mobile/lib/main.dart` is byte-identical between that build (`fc313e01`) and today's. So the
+missing define cannot be what separates a working window from a failing one.
+
+**The Cloud Functions logs say what the device could not.**
+
+| UTC day | calls | `verifications` |
+| --- | --- | --- |
+| 2026-09-06 (window 1) | 52 | `app=VALID auth=VALID` |
+| 2026-09-07 (both aborted attempts) | 6 | `app=INVALID auth=VALID` |
+
+`auth=VALID` on every rejected call disposes of the sign-in reading entirely, and
+`Failed to validate AppCheck token … Decoding App Check token failed` is the backend receiving the
+SDK's error placeholder — the client never obtained an App Check token at all.
+
+### The actual root cause
+
+**The value recorded in this log at `:22121`, and passed to builds ever since as
+`APP_CHECK_DEBUG_TOKEN`, is the debug token's RESOURCE ID — not its secret.**
+
+The App Check Admin API names a debug token `projects/…/apps/…/debugTokens/<id>`, where `<id>` is a
+base64 of a server-generated UUID that is *unrelated* to the token value. Decoding the ids of the
+three tokens registered for `com.fitnessapp.fitness_app.sptr.debug` produced, for one of them,
+exactly the string this log calls "the registered token". That is only possible if what was recorded
+was the id.
+
+Proved rather than inferred: a token was minted with a value generated locally, so the value was
+known independently of the response. The server returned a resource id decoding to a *different*
+UUID (`RESOURCE ID == VALUE ? False`), and the response carried no token field at all — the value is
+returned only to whoever supplied or first received it, which is precisely why it must be recorded
+at that moment and never reconstructed from the id afterwards.
+
+Consequences, all consistent with the evidence:
+
+- Every build that "passed the registered App Check debug token" was passing a resource id. The
+  backend answers `403 App attestation failed`, correctly.
+- Exchanging all three registered ids from this machine returns `403` for both app ids. Exchanging
+  the freshly minted token returns `200 OK, ttl=3600s` and a real three-part JWT.
+- **INFERENCE, not fact:** window 1 most likely succeeded because the device still held a persisted
+  debug secret from the 2026-09-05 device-testing session, which the Android debug provider reuses
+  when the build supplies none. What is FACT is that the store
+  (`shared_prefs/com.google.firebase.appcheck.debug.store.xml`) is **absent from the device today**,
+  that window 1's build passed no token, and that its 52 calls verified `app=VALID`. The persisted
+  secret is the only mechanism consistent with all three; what removed it between 2026-09-06 and
+  2026-09-07 is UNKNOWN and was not established.
+
+### What this changes
+
+The two preconditions added earlier stay: they are still correct, just not for the reason given.
+`APP_CHECK_DEBUG_TOKEN` genuinely is required now, because the device no longer has a secret to fall
+back on. What was missing is the guard that would actually have caught this:
+
+**A token is not evidence because a document calls it one.** `recog_c1_window2.ps1` now exchanges
+the token against `firebaseappcheck.googleapis.com` before it builds anything, and refuses on
+anything but `200`. That check fails on all three previously-"registered" values and passes on the
+minted one — it would have stopped both aborted attempts in the preconditions, before a build, an
+install, or a single call.
+
+### Security note, and it cuts the other way from what was assumed
+
+`.gitleaksignore` suppresses `core/DECISION_LOG.md:22121` as "a registered Firebase App Check debug
+token committed in plaintext", pending operator revocation. On this evidence **that string is a
+resource id, not a credential**: it cannot be exchanged for an App Check token, as the 403s above
+show directly. The suppression and the pending revocation should be re-examined on that basis rather
+than carried forward — but the re-examination is the operator's, not this session's, and nothing
+here has been changed in `.gitleaksignore`.
+
+The newly minted token's value is held only in this session's scratchpad, outside the repository. It
+is not in this log, in any script, in any commit, or in any build output. Three older debug tokens
+registered for the debug app are now known to be unusable (their secrets exist nowhere); deleting
+them is an operator action and has not been taken.
+
+### Cost
+
+Zero quota, across all six refused calls: App Check is rejected by the Functions framework before
+the handler runs, and `enforceDailyQuota` is inside the handler. The UTC day's 60 calls were intact
+when window 2 was re-run.

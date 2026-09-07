@@ -72,16 +72,29 @@ single byte makes it name that file and stop.
       --dart-define=RECOG_C1_SOURCE_SHA=$(git rev-parse HEAD) `
       --dart-define=APP_CHECK_DEBUG_TOKEN=$env:APP_CHECK_DEBUG_TOKEN
 
-**The sixth define is the one that has no guard and cost a run.** App Check is enforced on the AI
-callables (`APP_CHECK_ENFORCED_AI`, fail-closed), and a debug build takes its App Check token from
-this define at build time. Leaving it out is not "generate one for me": the backend answers `400 the
-debug_token cannot be empty`, `activate()` throws, the app carries on with no App Check token at all,
-and every call is refused as `unauthenticated` — a message that mentions neither App Check nor the
-build, while the log line right above it says the user IS signed in.
+**The sixth define, and the thing that actually cost two runs on 2026-09-07.** App Check is enforced
+on the AI callables (`APP_CHECK_ENFORCED_AI`, fail-closed), and a debug build takes its App Check
+token from this define at build time. When the client cannot obtain an attestation token it sends an
+error placeholder; the backend logs `Decoding App Check token failed` and refuses the call as
+`unauthenticated` — a message that mentions neither App Check nor the build, while the log line right
+above it says the user IS signed in.
 
-That is what happened on 2026-09-07: five defines instead of six, three refusals, the abort valve
-stopping the window. No quota was spent (App Check rejects before the handler runs, and the quota is
-charged inside it), but the run was lost. `recog_c1_window2.ps1` now refuses to build without it.
+Window 1 nonetheless ran with only five defines and verified `app=VALID` server-side, because the
+device still held a persisted debug secret that the Android provider reuses when a build supplies
+none. That store is gone from the device now, so the define is genuinely required — but "window 1
+did not need it" is exactly why a check for mere presence is not enough.
+
+**What failed twice was not an absent token but a value that was never a token.** The string recorded
+in `core/DECISION_LOG.md` is a debug token's RESOURCE ID: the App Check API names a token
+`projects/../apps/../debugTokens/<base64 id>`, and that id is an unrelated server-generated UUID, so
+an id looks exactly as much like a credential as the credential does. The value is returned only when
+the token is created and cannot be recovered from the id afterwards. Firebase answers
+`403 App attestation failed`, correctly, and the device reports only `unauthenticated`.
+
+`recog_c1_window2.ps1` now **exchanges the token against `firebaseappcheck.googleapis.com` before it
+builds anything** and refuses on anything but `200`. It costs no AI quota — that is App Check's own
+API, not a callable — and it fails on all three previously "registered" values while passing on a
+freshly minted one, which is how it is known to discriminate rather than merely to run.
 
 The value is never echoed, logged or committed. Set it in the environment before running.
 

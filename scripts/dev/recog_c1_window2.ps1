@@ -93,29 +93,67 @@ if ($remoteState -ne 'absent') {
 }
 Write-Host "  window 2 not yet run (device)"
 
-# The SIXTH define, and the one this script exists partly to stop anyone
-# forgetting again.
+# The SIXTH define. App Check is enforced on the AI callables
+# (`APP_CHECK_ENFORCED_AI`, fail-closed in functions/src/scaling.ts), and a debug
+# build's App Check token is supplied at BUILD time --
+# `String.fromEnvironment('APP_CHECK_DEBUG_TOKEN')` in main.dart, empty unless a
+# --dart-define provides it. When the client cannot obtain an App Check token it
+# sends an error placeholder, the backend logs
+# `Decoding App Check token failed` and refuses the call as `unauthenticated` --
+# a message that names neither App Check nor the build, while the log line above
+# it says the user IS signed in.
 #
-# App Check is enforced on the AI callables (`APP_CHECK_ENFORCED_AI`, fail-closed
-# by default in functions/src/scaling.ts), and a debug build's App Check token is
-# supplied at BUILD time -- `String.fromEnvironment('APP_CHECK_DEBUG_TOKEN')` in
-# main.dart, empty unless a --dart-define provides it. Empty is not "generate one
-# for me": the backend answers `400 the debug_token cannot be empty`, activate()
-# throws, the app continues with no App Check token at all, and every call comes
-# back `unauthenticated` -- which is not a message about App Check and reads like
-# a sign-in problem while the log plainly says the user IS signed in.
-#
-# That is exactly what happened on 2026-09-07: a build with five of the six
-# defines, three consecutive rejections, the abort valve stopping the run. It
-# cost no quota (App Check rejects before the handler runs, and the quota is
-# charged inside it) but it cost the run.
-#
-# The value is never echoed, never written to a log, and never committed. Pass it
-# in the environment:  $env:APP_CHECK_DEBUG_TOKEN = '<registered value>'
+# Window 1 nonetheless ran with five defines and verified `app=VALID` server-side,
+# because the device still held a persisted debug secret the Android provider
+# reuses when a build supplies none. That store is gone, so the define is now
+# genuinely required -- but "window 1 didn't need it" is exactly why a check for
+# mere PRESENCE is not enough.
 if (-not $env:APP_CHECK_DEBUG_TOKEN -or $env:APP_CHECK_DEBUG_TOKEN.Trim().Length -eq 0) {
-    throw "APP_CHECK_DEBUG_TOKEN is not set in the environment. Without it the build carries an empty App Check debug token, activate() fails, and every call is refused as 'unauthenticated' -- which does not mention App Check and looks like a sign-in fault. Set it (the registered value; never echo it) and re-run."
+    throw "APP_CHECK_DEBUG_TOKEN is not set in the environment. The device no longer holds a persisted App Check debug secret to fall back on, so without this the client obtains no attestation token and every call is refused as 'unauthenticated' -- which does not mention App Check and looks like a sign-in fault. Set it (never echo it) and re-run."
 }
 Write-Host "  App Check debug token present ($($env:APP_CHECK_DEBUG_TOKEN.Trim().Length) chars, value not shown)"
+
+# --- and it must actually WORK, not merely exist ------------------------------
+# Both aborted attempts on 2026-09-07 passed every check that existed, because
+# every check asked "is a token present" and none asked "is this a token". The
+# value carried in core/DECISION_LOG.md turned out to be the debug token's
+# RESOURCE ID: the App Check API names a token
+# `projects/../apps/../debugTokens/<base64 id>` where the id is an unrelated
+# server-generated UUID, so an id looks exactly as much like a credential as the
+# credential does. Proved by minting a token with a locally-generated value and
+# watching the server return a different id for it.
+#
+# One HTTPS call settles it, against the same endpoint the device's SDK uses, so
+# a 200 here means the device will get a token too and a 403 here is the failure
+# the run would otherwise discover one build and 52 refusals later. It spends no
+# AI quota: this is App Check's own API, not a callable. The token travels in a
+# request body, never on a command line, and neither it nor the returned JWT is
+# printed.
+$gsPath = Join-Path $repo 'mobile/android/app/google-services.json'
+if (-not (Test-Path $gsPath)) {
+    throw "google-services.json is missing at $gsPath, so the App Check token cannot be verified against the app it must attest for."
+}
+$gs = Get-Content -Raw $gsPath | ConvertFrom-Json
+$appIdForPackage = $null
+foreach ($client in $gs.client) {
+    if ($client.client_info.android_client_info.package_name -eq $package) {
+        $appIdForPackage = $client.client_info.mobilesdk_app_id
+    }
+}
+if (-not $appIdForPackage) { throw "google-services.json has no client for $package, so there is no app id to attest as." }
+$apiKey = $gs.client[0].api_key[0].current_key
+if (-not $apiKey) { throw "no api_key in google-services.json" }
+$exchangeUri = "https://firebaseappcheck.googleapis.com/v1/projects/$($gs.project_info.project_number)/apps/${appIdForPackage}:exchangeDebugToken?key=$apiKey"
+try {
+    $exchanged = Invoke-RestMethod -Method Post -Uri $exchangeUri -ContentType 'application/json' `
+        -Body (@{ debug_token = $env:APP_CHECK_DEBUG_TOKEN.Trim() } | ConvertTo-Json) -TimeoutSec 30
+}
+catch {
+    $detail = $_.ErrorDetails.Message; if (-not $detail) { $detail = $_.Exception.Message }
+    throw "the App Check debug token was REJECTED by Firebase, so this build would be refused on every call.`n  app      : $package ($appIdForPackage)`n  response : $detail`n`n'403 App attestation failed' means the value is not a registered debug token for this app. The cause that took two runs on 2026-09-07 is that it was a debug token's RESOURCE ID rather than its secret -- the id is a different UUID from the value, and the value is returned only when the token is created, so it cannot be recovered from the id afterwards. Mint a new token against this app, keep the value out of the repository, and set it here."
+}
+if (-not $exchanged.token) { throw "the App Check exchange returned no token; refusing to build against an unverified attestation path." }
+Write-Host "  App Check token verified: exchanged for a real attestation token (ttl $($exchanged.ttl))"
 
 $dirty = @(& git -C $repo status --porcelain | Where-Object { $_ })
 if ($dirty.Count -gt 0) {
