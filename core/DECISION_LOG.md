@@ -44817,3 +44817,53 @@ And a constraint I had not stated sharply enough to the operator: because the un
 **unpushed**, redaction has to replace that history *before* the first push. Adding a later "blurred
 images" commit and pushing the whole ancestry would still send the original identifiable JPEG blobs.
 That is a history rewrite, which is the operator's alone.
+
+## 2026-09-07 — GPT-PM round 2: APPROVE. RECOG-C1 is closed.
+
+`VERDICT: APPROVE — 0 BLOCKER / 0 MAJOR / 0 MINOR`, correlated, untruncated, scoped to the round-1
+remediation and direct regressions only, as §17 requires.
+
+All three findings verified closed by the reviewer against the real files:
+
+- **The analyzer gate now fails closed.** Missing `flutter` calls `Fail(...)`, which feeds the
+  existing failure branch and terminates non-zero instead of reaching a false success; `-SkipAnalyze`
+  remains the only deliberate degraded mode. The reviewer exercised both sides of the submitted
+  mutation evidence and found no regression.
+- **Window 1's causality is no longer stated as fact** in either durable artifact. The reviewer
+  specifically checked the remaining sentence in `recog_c1_window2.ps1` that says the device "no
+  longer holds a persisted App Check debug secret to fall back on" and judged, correctly, that it
+  describes the current device condition the precondition operates on rather than reasserting the
+  rejected causal claim — and declined to manufacture a finding from the distinction.
+- **The operator-facing runbook now carries the command that actually works**, matching the automated
+  path instead of maintaining two divergent sets of instructions.
+
+### The gate is closed. The push is not authorized, and the reviewer says so itself.
+
+Under §20 a genuine GPT-PM APPROVE authorizes a push. **This one deliberately does not**, and the
+reviewer wrote the exclusion into its own verdict: *"The separate contact-sheet push hold remains in
+force and is not altered by this verdict... The unblurred history must not be pushed merely because
+RECOG-C1 is now technically closed; the privacy/history-rewrite decision remains with the
+operator."*
+
+So the 23 commits stay local. What the operator has to decide is a single question with three
+answers, all of which are theirs alone:
+
+1. Push as-is, accepting that 26 contact sheets showing identifiable people including a child reach
+   GitHub and stay in its history.
+2. Replace the unpushed history with a blurred set **before** the first push — GPT-PM's recommended
+   option, because it keeps the visual inspectability step 9's DoD asked for. This is a history
+   rewrite, operator-only regardless of any review.
+3. Keep the work local indefinitely.
+
+Hashes-plus-local-originals is a fourth option, and GPT-PM's view is that it changes what step 9's
+evidence contract promises — so if it is chosen, the contract should be amended explicitly rather
+than declared equivalent.
+
+### No `--final` receipt was written, on purpose
+
+§15's push gate wants the latest receipt marked `--final`. `review.js` cannot mark one without
+sending another live review round, and a third round exists in §17 only for a regression caused by
+the remediation — which round 2 explicitly found none of. Spending a live round purely to set a flag
+for a push that is being withheld anyway would be the tail wagging the dog. The loop concluded at
+round 2 with an APPROVE; a `--final` receipt is required at the moment the operator resolves the
+contact-sheet question and the push actually happens, not before.

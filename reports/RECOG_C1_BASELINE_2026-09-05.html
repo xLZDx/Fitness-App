@@ -287,7 +287,7 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 1defe69</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 5a9b91e</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
@@ -309,13 +309,15 @@
 
 
 
+
+
 <dl class="strip">
-  <div><dt>Gate</dt><dd>RECOG-C1, steps 1–3 of 10</dd></div>
+  <div><dt>Gate</dt><dd>RECOG-C1, 10 of 10 — CLOSED</dd></div>
   <div><dt>Commit</dt><dd class="mono">7955dac + this one</dd></div>
-  <div><dt>GPT-PM</dt><dd>APPROVE · steps 1&ndash;3</dd></div>
-  <div><dt>Cloud calls</dt><dd>0 — none yet</dd></div>
+  <div><dt>GPT-PM</dt><dd>APPROVE · gate closure</dd></div>
+  <div><dt>Cloud calls</dt><dd>104 of 104, 0 failures</dd></div>
   <div><dt>Open question</dt><dd>3 photographs, for you</dd></div>
-  <div><dt>Suite</dt><dd>not green (pre-existing)</dd></div>
+  <div><dt>Push</dt><dd>held — operator decision</dd></div>
 </dl>
 
 <div class="col">
@@ -1067,7 +1069,76 @@ only what the app itself would have carried.</p>
   directions.</li>
 </ul>
 
+
+<h2><span class="num">17</span>Gate closure: two internal rounds, two external, and what stays with the operator</h2>
+
+<div class="lede">The gate closed on GPT-PM's <strong>APPROVE — 0 BLOCKER / 0 MAJOR / 0 MINOR</strong>.
+The push is <strong>not</strong> authorized by it, and that exclusion is written into the verdict
+itself. Below is what four review rounds found, because the findings were real and nearly all of them
+were mine.</div>
+
+<h3>The internal specialists found what my own check had called clean</h3>
+
+<p>I reported step 10 as verified. It was not: the revert left the project unable to analyse — the
+harness's test file still imported the deleted code and <code>flutter analyze</code> returned
+<strong>42 errors</strong> — while the script written specifically to prove the revert printed
+<code>revert verified</code>, because it searched for symbols only in <code>mobile/lib</code>. The
+byte-comparison could not have caught it either: that test was added <em>after</em> the baseline.</p>
+
+<p>A second pass found six more silent failures. The most dangerous was the device probe:
+<code>test -f F &amp;&amp; grep -c X F || echo absent</code>. The shell runs <code>C</code> whenever
+<code>B</code> fails, so a device whose <code>grep</code> errored reported a file that exists as
+absent — the one check standing between a leftover partial file and a window that measures 49 targets
+and reports 52.</p>
+
+<h3>Then the mutation test caught a defect in the fix</h3>
+
+<p>With <code>-SkipAnalyze</code> the summary still printed "the analyzer reports zero errors" — the
+script asserting a check it had not run.</p>
+
+<h3>GPT-PM round 1: MAJOR, and it was the same thing one level deeper</h3>
+
+<p>I added the analyzer gate precisely so a check would not depend on my having anticipated the
+failure, then wrote it so that <strong><code>flutter</code> missing from PATH printed a warning and
+fell through to the success branch</strong>. "Could not run" became "passed", inside the fix for
+exactly that class.</p>
+
+<p>The rule it offered in place of mine is sharper: <em>assert an independent invariant, require
+positive evidence that the checker actually ran, and make checker unavailability fail closed.</em> I
+had the first two and had the third backwards.</p>
+
+<p>Two more findings: the persisted-device-secret hypothesis, labelled INFERENCE in the decision log,
+stood as fact in the runbook and the script — both now say <strong>UNKNOWN</strong>; and the runbook
+still carried the <code>grep</code> command this same session had proved returns
+<code>grep: trailing backslash</code>. I fixed it in the script, reported it fixed, and left it in the
+file the operator actually opens.</p>
+
+<h3>What stays with the operator, and why the verdict does not settle it</h3>
+
+<div class="lede warn">Under §20 a genuine GPT-PM APPROVE authorizes a push. <strong>This one
+deliberately does not</strong>, and the exclusion is in the verdict: "The separate contact-sheet push
+hold remains in force and is not altered by this verdict... The unblurred history must not be pushed
+merely because RECOG-C1 is now technically closed."</div>
+
+<p>The 23 commits carry 26 contact sheets showing identifiable people including a child. A push to
+GitHub is the "travel" the operator's own instruction names, and a revert does not remove pushed
+objects from history. One decision, three answers, all of them the operator's:</p>
+
+<ol>
+  <li><strong>Push as-is</strong>, accepting that the sheets reach GitHub and stay in its history.</li>
+  <li><strong>Replace the unpushed history with a blurred set before the first push</strong> —
+  GPT-PM's recommendation, because it preserves the visual inspectability the sheets were committed
+  for. That is a history rewrite, and it is the operator's alone.</li>
+  <li><strong>Keep the work local.</strong></li>
+</ol>
+
+<p>Hashes plus locally-held originals is a fourth option, but on GPT-PM's reading it changes what step
+9's evidence contract promises: hashes prove integrity and remove remote visual inspectability. If
+that is the choice, the contract should be amended explicitly rather than declared equivalent.</p>
+
 </div>
+
+
 
 
 
