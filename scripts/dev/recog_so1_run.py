@@ -320,6 +320,50 @@ def parse_reply(text: str, vocab: dict) -> tuple[str | None, dict]:
 # The run
 # --------------------------------------------------------------------------
 
+def pace_after_failure(resp_headers: dict[str, str], pacing_seconds: float) -> float:
+    """How long to wait before the NEXT observation, after a request that failed.
+
+    A request that came back 429 still SPENT its input tokens: the token bucket
+    does not care that the reply was a refusal. Skipping the pacing interval
+    here is how one 429 cascades into a run of them -- the bounded retry backoff
+    alone (5s then 10s, and the final attempt's Retry-After is by definition
+    never honoured because there is no further attempt) totals 15s, under the
+    frozen 20s interval, so observation N+1 would fire EARLY at exactly the
+    moment the provider has just said the bucket is empty. Found by GPT-PM as a
+    MAJOR against the first revision of this change, which paced only the
+    successful path.
+
+    The provider's own Retry-After wins when it asks for longer than the frozen
+    interval; a malformed or HTTP-date value falls back to the frozen interval
+    rather than to zero.
+    """
+    raw = resp_headers.get("Retry-After")
+    try:
+        asked = float(raw) if raw else 0.0
+    except (TypeError, ValueError):
+        asked = 0.0
+    return max(pacing_seconds, asked)
+
+
+@dataclass(frozen=True)
+class RunOutcome:
+    """A completed run and a stopped run are different results, not one integer.
+
+    The previous version returned only the unresolved count, so a run that
+    aborted on its first observation and a run that finished with one bad
+    observation were indistinguishable to the caller.
+    """
+
+    observations_total: int
+    observations_processed: int
+    unresolved: int
+    aborted_on: str | None = None
+
+    @property
+    def aborted(self) -> bool:
+        return self.aborted_on is not None
+
+
 def run(
     observations: Iterable[Observation],
     corpus_root: Path,
@@ -329,8 +373,14 @@ def run(
     api_key: str,
     transport: Transport,
     out: Path,
-    sleep: Callable[[float], None] = time.sleep,
-) -> int:
+    sleep: Callable[[float], None] | None = None,
+) -> RunOutcome:
+    # Resolved here rather than as a default argument value, so that `time` is
+    # looked up at call time. The suite substitutes a recording stand-in and
+    # asserts on the actual backoff and pacing intervals; a default bound at
+    # definition time would have made a 503 retry sleep for five real seconds
+    # inside a test whose whole point is that it makes no network call.
+    nap = sleep if sleep is not None else time.sleep
     url = config["endpoint"]
     headers_base = {
         "Content-Type": "application/json",
@@ -339,11 +389,24 @@ def run(
     }
     policy = config["retry_policy"]
     retry_on = set(policy["retry_on"])
+    #: Configuration-class statuses stop the WHOLE run. The request shape is
+    #: frozen and identical for every observation, so a 400/401/403/404 is a
+    #: property of the request, never of the photograph in front of it:
+    #: continuing would burn all 104 photographs against a broken request and
+    #: produce 104 unresolved observations that look like data. Read from the
+    #: sealed config rather than hard-coded, so the rule is part of what the
+    #: pre-registration froze.
+    abort_on = set(policy.get("abort_run_on", ()))
     max_attempts = int(policy["max_attempts"])
+    pacing_seconds = float(config["rate_limits_measured"]["seconds_between_requests"])
 
+    observations = list(observations)
     unresolved = 0
+    processed = 0
+    aborted_on: str | None = None
     with out.open("w", encoding="utf-8", newline="\n") as fh:
         for obs in observations:
+            processed += 1
             path = corpus_root / obs.image_path
             record: dict = {
                 "observation_id": obs.observation_id,
@@ -381,16 +444,29 @@ def run(
                     break
                 if cls in retry_on and attempt < max_attempts:
                     wait = float(resp_headers.get("Retry-After") or (5 * attempt))
-                    sleep(wait)
+                    nap(wait)
                     continue
                 break
 
             record["attempts"] = attempt
             record["http_status"] = status
             if status != 200:
-                record.update(status="unresolved", failure=f"http_{status}", detail=text[:400])
+                cls = f"http_{status}"
+                record.update(status="unresolved", failure=cls, detail=text[:400])
+                if cls in abort_on:
+                    # Record this observation with its failure class, then STOP.
+                    # No further request is made and no pacing sleep happens.
+                    record["run_aborted"] = cls
+                    fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    unresolved += 1
+                    aborted_on = cls
+                    break
                 fh.write(json.dumps(record, ensure_ascii=False) + "\n")
                 unresolved += 1
+                # A request WAS sent and its input tokens WERE spent, so this
+                # observation is paced exactly like a successful one. Only the
+                # abort path above skips the wait, because the run ends there.
+                nap(pace_after_failure(resp_headers, pacing_seconds))
                 continue
 
             machine, diag = parse_reply(text, vocab)
@@ -406,9 +482,14 @@ def run(
 
             # Pace against the measured token ceiling rather than waiting to be
             # told off by a 429.
-            sleep(float(config["rate_limits_measured"].get("seconds_between_requests", 14)))
+            nap(pacing_seconds)
 
-    return unresolved
+    return RunOutcome(
+        observations_total=len(observations),
+        observations_processed=processed,
+        unresolved=unresolved,
+        aborted_on=aborted_on,
+    )
 
 
 def main(argv: list[str], transport_factory: Callable[[], Transport] = HttpTransport) -> int:
@@ -454,7 +535,7 @@ def main(argv: list[str], transport_factory: Callable[[], Transport] = HttpTrans
 
     # ---- 3. only now does a transport exist ------------------------------
     transport = transport_factory()
-    unresolved = run(
+    outcome = run(
         observations,
         Path(args.corpus_root),
         PROMPT.read_text("utf-8"),
@@ -464,7 +545,20 @@ def main(argv: list[str], transport_factory: Callable[[], Transport] = HttpTrans
         transport,
         Path(args.out),
     )
-    print(f"done; {unresolved} unresolved of {len(observations)}")
+    if outcome.aborted:
+        print(
+            f"ABORTED on {outcome.aborted_on} after {outcome.observations_processed} of "
+            f"{outcome.observations_total} observations. No further request was made."
+        )
+        print(
+            "A configuration-class status is a property of the frozen request shape, not of the "
+            "photograph. SO1 stops here; the remaining observations were NOT transmitted. Editing "
+            "the sealed configuration to make the request acceptable and continuing is exactly the "
+            "freedom the pre-registration exists to remove -- it requires a new pre-registration "
+            "revision, reviewed before any further transmission."
+        )
+        return 5
+    print(f"done; {outcome.unresolved} unresolved of {outcome.observations_total}")
     return 0
 
 

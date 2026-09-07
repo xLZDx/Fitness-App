@@ -12,8 +12,38 @@
   "max_completion_tokens": 4096,
   "_max_tokens_note": "The answer is a short JSON object, but this is a reasoning-capable model and hidden reasoning tokens count toward the completion. 4096 leaves generous headroom; a truncated completion is classified as a parse failure and scored as unresolved, never retried into a scoreable answer.",
 
-  "response_format": { "type": "json_object" },
-  "_response_format_note": "json_object, not a json_schema: the model metadata advertises 'json_mode' and does not advertise structured-output schemas, so the shape is enforced by this repository's own parser rather than claimed from a feature that was never verified to exist. The parser is the authority and its version is sealed with this file.",
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "equipment_recognition",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "machine": { "type": "string" },
+          "confidence": { "type": "number" },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "machine": { "type": "string" },
+                "confidence": { "type": "number" }
+              },
+              "required": ["machine", "confidence"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["machine", "confidence", "alternatives"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "_response_format_note": "Strict structured output, adopted on GPT-PM's MAJOR against revision 1 of the execution plan. An earlier revision of this file used json_object and justified it by the model metadata, which on 2026-09-07 returned supported_features ['tools','json_mode','reasoning'] -- no structured outputs. THAT METADATA IS INCOMPLETE: a probe against the primary source, with synthetic images only, returned HTTP 200 for exactly this response_format. The objection was mine, the measurement settled it, and the measurement went against me.",
+  "_response_format_evidence": "Probe of 2026-09-07 with THIS EXACT schema (nested alternatives array, all properties required, additionalProperties false at both levels) and the real frozen prompt read from recog_so1_prompt.txt: HTTP 200, content {\"alternatives\": [], \"confidence\": 0.0, \"machine\": \"unknown\"}, prompt_tokens 1686, completion_tokens 21. The exact schema was probed rather than a simplified two-field stand-in, because testing the small one and shipping the big one is a claim broader than its check.",
+  "_response_format_envelope_difference": "Strict mode requires 'alternatives' to be PRESENT in every reply. Production's own contract (expected_output_schema below) allows it absent. This is an envelope difference, not a measurement one: an empty array is the natural encoding of 'no alternatives', the scorer never reads alternatives at all, and 'machine' is an unconstrained string so the schema cannot steer WHICH equipment is named. What it does remove is the parse-failure class, which would otherwise be counted as unresolved and pushed against the signal. Recorded here rather than left implicit because it is a real difference from production, however small.",
+  "_response_format_why_strict": "Under best-effort (non-strict) json_schema a 400 is ambiguous -- it could be a configuration error or a schema-mismatch refusal -- and the runner would need a provider-specific error-text classifier to tell them apart. Under strict:true that class does not arise, so the abort rule below can be a plain status check.",
 
   "extra_body": { "reasoning_effort": "none" },
   "_reasoning_FROZEN": "FROZEN, not pending. An earlier revision of this file marked this UNVERIFIED and deferred it to a synthetic preflight; GPT-PM's closure review rejected that as leaving a methodological degree of freedom AFTER pre-registration -- if a preflight had rejected the value, someone would have been choosing a replacement once the experiment was supposedly frozen. Groq's API documentation specifies reasoning_effort for qwen/qwen3.8-27b with values none | default | low | medium | high, and documents 'none' as instruct / non-thinking mode, so no capability probe is needed to settle it. GPT-PM's ruling: 'none' -- the closest methodological analogue to the production Gemini recognition path, which runs with thinking disabled, and it keeps reasoning-token behaviour out of what is meant to be a visual-classification second opinion.",
@@ -30,17 +60,24 @@
     "max_attempts": 3,
     "retry_on": ["http_429", "http_500", "http_502", "http_503", "http_504", "connection_error", "read_timeout"],
     "never_retry_on": ["http_400", "http_401", "http_403", "http_404", "parse_failure", "schema_failure", "empty_completion"],
+    "abort_run_on": ["http_400", "http_401", "http_403", "http_404"],
     "backoff": "honour Retry-After when the response carries one; otherwise 5s, 10s between attempts",
     "on_exhaustion": "record the observation as unresolved with its failure class; do not drop it, do not substitute a value"
   },
+  "_abort_reasoning": "A configuration-class status is not a property of the photograph in front of it -- it is a property of the request shape, which is frozen and identical for all 104 observations. Continuing past one would burn the entire corpus against a broken request and produce 104 unresolved observations that look like data. So the run STOPS: the current observation is recorded with its failure class, no further request is made, and the exit code reports a stopped run rather than a completed one. This was found as a defect in the already-closed pre-registration gate: the config and the pre-registration both said a 4xx stops the run, and the runner recorded it and continued. 429, 5xx and transport errors are NOT in this list -- they are transient and keep the bounded retry above.",
   "_retry_reasoning": "Transport failures are retried because they say nothing about the model's opinion. A well-formed HTTP 200 whose body will not parse is NOT retried, for two reasons that point the same way: at temperature 0 with a fixed seed a retry returns the same answer anyway, and retrying until a reply becomes scoreable is sampling for a usable result -- the exact tuning the pre-registration forbids. Configuration errors (4xx) stop the run rather than burning the corpus against a broken request.",
 
   "rate_limits_measured": {
     "requests_per_day": 1000,
-    "tokens_per_minute": 8000,
-    "_source": "x-ratelimit-limit-requests and x-ratelimit-limit-tokens response headers observed 2026-09-07, not documentation",
-    "_binding_constraint": "the token bucket binds first: a crop-shaped frame measured 1813 prompt tokens and the tall full frame 789, so a 104-observation pass takes roughly 26-40 minutes at this ceiling",
-    "pacing": "the runner sleeps to stay under the measured token ceiling rather than relying on 429s to pace it"
+    "input_tokens_per_minute": 7000,
+    "_input_tokens_per_minute_source": "Read from the body of a REAL 429 on 2026-09-07: 'Limit 7000, Used 6671, Requested 2096'. This is the limit the provider actually enforces.",
+    "_retired_tokens_per_minute": 8000,
+    "_retired_tokens_per_minute_why": "RETIRED, not deleted: an earlier revision of this file recorded 8000 from the x-ratelimit-limit-tokens response header and paced the run at 14 seconds on that number. The header value is not the enforced ceiling -- the enforced one is INPUT tokens per minute and it is 7000. At 1813 prompt tokens per request, 14s pacing is 4.29 req/min = 7778 input tokens/min, which is OVER the real limit: the run would have spent itself in continuous 429s. Kept visible because a silently corrected number leaves no trace that the pacing was ever wrong.",
+    "seconds_between_requests": 20,
+    "_pacing_arithmetic": "7000 input tokens/min divided by the measured worst case of 1813 prompt tokens (a crop-shaped frame, 1640x1082) = 3.86 requests/min = one request every 15.5s minimum. Frozen at 20s, which is 3.0 requests/min = 5439 input tokens/min, comfortably inside 7000 with headroom for a frame larger than the measured worst case. 104 observations at 20s is roughly 35 minutes.",
+    "_measured_prompt_tokens": { "crop_1640x1082": 1813, "tall_full_frame_1868x4000": 789 },
+    "pacing": "the runner sleeps seconds_between_requests after every observation that ACTUALLY SENT A REQUEST -- including one whose retries were exhausted on 429s, because a refused request still spent its input tokens -- so it stays under the measured ceiling by construction rather than relying on 429s to pace it. An observation whose image was missing or failed its digest check sends nothing and is not paced. The abort path is not paced either, because the run ends there. Where the response carries a Retry-After longer than this interval, the provider's own number wins.",
+    "_pacing_on_failure_reasoning": "GPT-PM's MAJOR against the first revision of this change: the pacing was applied only on the successful path, so an observation that spent three attempts on 429s wrote its unresolved record and went straight to the next photograph after only the 5s + 10s retry backoff -- 15s, under this frozen interval, at exactly the moment the provider had just said the bucket was empty. One 429 could then cascade and manufacture unresolved observations, which the sealed scorer counts AGAINST the signal for transport reasons rather than recognition ones."
   },
 
   "endpoint": "https://api.groq.com/openai/v1/chat/completions",

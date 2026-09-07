@@ -199,16 +199,17 @@ JPEG = bytes.fromhex("ffd8ffe000104a46494600010100000100010000ffdb004300"
 
 
 class FactorySpy:
-    def __init__(self):
+    def __init__(self, replies=None):
         self.constructed = 0
-        self.transport = run_mod.CapturingTransport()
+        self.transport = run_mod.CapturingTransport(replies=list(replies or []))
 
     def __call__(self):
         self.constructed += 1
         return self.transport
 
 
-def make_env(td: Path, consent_record, images=True, manifest_extra_col=False, corrupt_image=False):
+def make_env(td: Path, consent_record, images=True, manifest_extra_col=False, corrupt_image=False,
+             config_patch=None):
     """A complete, self-contained runner environment with two observations."""
     import hashlib
 
@@ -244,6 +245,8 @@ def make_env(td: Path, consent_record, images=True, manifest_extra_col=False, co
     config_f = td / "config.json"
     cfg = json.loads((DEV / "recog_so1_config.json").read_text("utf-8"))
     cfg["rate_limits_measured"]["seconds_between_requests"] = 0
+    if config_patch is not None:
+        config_patch(cfg)
     config_f.write_text(json.dumps(cfg), encoding="utf-8", newline="")
 
     def d(p: Path) -> str:
@@ -281,10 +284,10 @@ def make_env(td: Path, consent_record, images=True, manifest_extra_col=False, co
     return key
 
 
-def invoke(td: Path, consent_record, **env):
+def invoke(td: Path, consent_record, replies=None, spy=None, **env):
     key = make_env(td, consent_record, **env)
     out = td / "out.jsonl"
-    spy = FactorySpy()
+    spy = spy if spy is not None else FactorySpy(replies)
     code = run_mod.main(
         ["--corpus-root", str(td), "--out", str(out), "--api-key-file", str(key)],
         transport_factory=spy,
@@ -413,6 +416,175 @@ for artefact, label in (("prompt.txt", "prompt"), ("vocab.json", "vocabulary"), 
         check(code == 2 and spy.constructed == 0,
               f"a mutated {label} fails the seal and no transport is constructed",
               f"exit {code}, constructed {spy.constructed}")
+
+
+# ---- a configuration-class status ABORTS the whole run --------------------
+# The pre-registration and the config both said a 4xx stops the run. The runner
+# recorded it as unresolved and carried on -- so a single broken request would
+# have been sent 104 times, producing 104 unresolved observations that look like
+# data. Four cases prove the abort FIRES. The 503 case proves it does not
+# OVER-fire, which is the half that a "the run stopped" assertion alone cannot
+# distinguish: a runner that aborts on every non-200 would pass the first four
+# and be wrong. The mutation proves the abort is what causes the difference.
+
+class RecordingClock:
+    """Stands in for the `time` module inside the runner: records, never waits.
+
+    `log` pairs every wait with the number of requests made so far, which is how
+    a test can tell WHERE a wait happened without a second journal: a 20-second
+    wait recorded at 3 requests, on a fixture whose first observation costs three
+    attempts, is a wait that happened BEFORE the second observation's request.
+    """
+
+    def __init__(self, watch=None):
+        self.slept: list[float] = []
+        self.log: list[tuple[float, int]] = []
+        self._watch = watch
+
+    def sleep(self, seconds):
+        self.slept.append(float(seconds))
+        self.log.append((float(seconds), len(self._watch.calls) if self._watch is not None else -1))
+
+
+# The body of a real configuration 400, provoked deliberately against Groq on
+# 2026-09-07 with an invalid reasoning_effort. Used verbatim so the fixture is
+# the shape the runner will actually meet, not an invented one.
+CONFIG_400_BODY = json.dumps({
+    "error": {
+        "message": "'reasoning_effort' : value is not one of the allowed values "
+                   "['none','default','minimal','low','medium','high','xhigh','max']",
+        "type": "invalid_request_error",
+    }
+})
+
+real_time_module = run_mod.time
+
+for status in (400, 401, 403, 404):
+    with tempfile.TemporaryDirectory() as _td:
+        td = Path(_td)
+        run_mod.time = RecordingClock()
+        try:
+            code, spy, out = invoke(td, GOOD, replies=[(status, {}, CONFIG_400_BODY)])
+        finally:
+            run_mod.time = real_time_module
+        records = [json.loads(l) for l in out.read_text("utf-8").splitlines()]
+        check(code == 5
+              and len(spy.transport.calls) == 1
+              and len(records) == 1
+              and records[0].get("run_aborted") == f"http_{status}"
+              and records[0].get("status") == "unresolved",
+              f"HTTP {status} ABORTS: exactly ONE request on a two-observation corpus, "
+              f"the failing observation recorded with its class",
+              f"exit {code}, requests {len(spy.transport.calls)}, records {len(records)}, "
+              f"first {records[0] if records else None}")
+
+with tempfile.TemporaryDirectory() as _td:
+    td = Path(_td)
+    clock = RecordingClock()
+    run_mod.time = clock
+    try:
+        code, spy, out = invoke(td, GOOD, replies=[(503, {}, "upstream busy")])
+    finally:
+        run_mod.time = real_time_module
+    records = [json.loads(l) for l in out.read_text("utf-8").splitlines()]
+    check(code == 0
+          and len(spy.transport.calls) == 3
+          and len(records) == 2
+          and all(r.get("status") == "answered" for r in records)
+          and 5.0 in clock.slept,
+          "HTTP 503 does NOT abort: it retries with backoff, succeeds, and reaches the second observation",
+          f"exit {code}, requests {len(spy.transport.calls)}, records {len(records)}, "
+          f"slept {clock.slept}, statuses {[r.get('status') for r in records]}")
+
+
+# ---- an EXHAUSTED retryable failure is paced like any other request --------
+# GPT-PM's MAJOR against the first revision of this change, and it was right:
+# the pacing was applied only on the successful path, so an observation that
+# spent three attempts on 429s wrote its unresolved record and went straight to
+# the next photograph. The retry backoff alone is 5s + 10s -- the final
+# attempt's Retry-After is by definition never honoured, because there is no
+# further attempt -- which is 15s, UNDER the frozen 20s interval, at exactly the
+# moment the provider has just said the token bucket is empty. One 429 could
+# therefore cascade, manufacturing unresolved observations that the sealed
+# scorer counts against the signal for transport reasons rather than
+# recognition ones.
+
+def _pace_at_20(cfg):
+    cfg["rate_limits_measured"]["seconds_between_requests"] = 20
+
+
+TOO_MANY = json.dumps({"error": {"message": "Rate limit reached. Limit 7000, Used 6671, Requested 2096",
+                                 "type": "rate_limit_exceeded"}})
+
+with tempfile.TemporaryDirectory() as _td:
+    td = Path(_td)
+    spy = FactorySpy([(429, {}, TOO_MANY)] * 3)
+    clock = RecordingClock(spy.transport)
+    run_mod.time = clock
+    try:
+        code, spy, out = invoke(td, GOOD, spy=spy, config_patch=_pace_at_20)
+    finally:
+        run_mod.time = real_time_module
+    records = [json.loads(l) for l in out.read_text("utf-8").splitlines()]
+    paced_before_second = [s for s, n in clock.log if n == 3]
+    check(code == 0
+          and len(spy.transport.calls) == 4
+          and records[0].get("failure") == "http_429" and records[0].get("attempts") == 3
+          and records[1].get("status") == "answered"
+          and paced_before_second == [20.0],
+          "an EXHAUSTED 429 still waits the frozen 20s before the next observation's request",
+          f"exit {code}, requests {len(spy.transport.calls)}, waits {clock.log}, "
+          f"statuses {[r.get('status') for r in records]}")
+
+with tempfile.TemporaryDirectory() as _td:
+    td = Path(_td)
+    spy = FactorySpy([(429, {}, TOO_MANY), (429, {}, TOO_MANY), (429, {"Retry-After": "45"}, TOO_MANY)])
+    clock = RecordingClock(spy.transport)
+    run_mod.time = clock
+    try:
+        code, spy, out = invoke(td, GOOD, spy=spy, config_patch=_pace_at_20)
+    finally:
+        run_mod.time = real_time_module
+    paced_before_second = [s for s, n in clock.log if n == 3]
+    check(code == 0 and paced_before_second == [45.0],
+          "the provider's own Retry-After WINS over the frozen interval when it asks for longer",
+          f"exit {code}, waits {clock.log}")
+
+with tempfile.TemporaryDirectory() as _td:
+    td = Path(_td)
+    spy = FactorySpy([(429, {}, TOO_MANY)] * 3)
+    clock = RecordingClock(spy.transport)
+    real_pace = run_mod.pace_after_failure
+    run_mod.time = clock
+    run_mod.pace_after_failure = lambda headers, pacing: 0.0
+    try:
+        code, spy, out = invoke(td, GOOD, spy=spy, config_patch=_pace_at_20)
+    finally:
+        run_mod.time = real_time_module
+        run_mod.pace_after_failure = real_pace
+    paced_before_second = [s for s, n in clock.log if n == 3]
+    check(code == 0 and paced_before_second == [0.0],
+          "MUTATION: with the post-failure pacing removed, the next observation fires with NO wait",
+          f"exit {code}, waits {clock.log}")
+check(run_mod.pace_after_failure is real_pace, "the pacing mutation was reverted cleanly")
+
+
+def _remove_the_abort(cfg):
+    cfg["retry_policy"].pop("abort_run_on")
+
+
+with tempfile.TemporaryDirectory() as _td:
+    td = Path(_td)
+    run_mod.time = RecordingClock()
+    try:
+        code, spy, out = invoke(td, GOOD, replies=[(400, {}, CONFIG_400_BODY)],
+                                config_patch=_remove_the_abort)
+    finally:
+        run_mod.time = real_time_module
+    records = [json.loads(l) for l in out.read_text("utf-8").splitlines()]
+    check(code == 0 and len(spy.transport.calls) == 2 and len(records) == 2,
+          "MUTATION: with the abort removed, the SAME 400 fixture proceeds to a SECOND request",
+          f"exit {code}, requests {len(spy.transport.calls)}, records {len(records)}")
 
 
 # ==========================================================================

@@ -110,8 +110,60 @@ refuses), and the test suite inspects the **serialized request body** through a 
 ## 5. Configuration, pinned
 
 `scripts/dev/recog_so1_config.json`, sealed below. Model `qwen/qwen3.8-27b`; `temperature` 0;
-`top_p` 1; `seed` 20260907; `max_completion_tokens` 4096; `response_format`
-`{"type": "json_object"}`; `extra_body` `{"reasoning_effort": "none"}`.
+`top_p` 1; `seed` 20260907; `max_completion_tokens` 4096; `response_format` a **strict
+`json_schema`**; `extra_body` `{"reasoning_effort": "none"}`.
+
+**The response format is strict structured output, and the objection to it was mine and was wrong.**
+An earlier revision of this document used `{"type": "json_object"}` and justified it from the model
+metadata, which on 2026-09-07 returned `supported_features` `['tools','json_mode','reasoning']` — no
+structured outputs. GPT-PM read Groq's documentation as saying otherwise. Rather than choose between
+two secondary readings, the primary source was probed with **synthetic images only**: that metadata
+list is incomplete, and `json_schema` with `strict: true` returns HTTP 200. The probe used the
+**exact** schema this experiment freezes — nested `alternatives` array of objects, every property
+required, `additionalProperties: false` at both levels — together with the real frozen prompt read
+from `recog_so1_prompt.txt`, because testing a simplified two-field stand-in and shipping the real
+one is a claim broader than its check. Result: HTTP 200,
+`{"alternatives": [], "confidence": 0.0, "machine": "unknown"}`, 1686 prompt / 21 completion tokens.
+
+**One honest consequence, recorded rather than left implicit.** Strict mode requires `alternatives`
+to be *present* in every reply, where production's own contract allows it absent. That is an
+envelope difference, not a measurement one: an empty array is the natural encoding of "no
+alternatives", the scorer never reads the field, and `machine` is an unconstrained string, so the
+schema cannot steer *which* equipment is named. What it removes is the parse-failure class, which
+would otherwise be scored `unresolved` and pushed against the signal. Strictly speaking a change of
+decoding constraint *can* move a result — constrained decoding alters generation probabilities — and
+that is precisely why it is permissible here and would not be later: **no real observation exists
+yet.** After the first corpus reply exists, this field is frozen like every other.
+
+**Configuration-class statuses ABORT the whole run.** 400, 401, 403 and 404 record the current
+observation with its failure class, make no further request, and exit reporting a *stopped* run. The
+request shape is frozen and identical for all 104 observations, so such a status is a property of
+the request, never of the photograph in front of it; continuing would burn the entire corpus against
+a request the provider already rejected and produce 104 unresolved observations that look like data.
+This was a defect found in this document's own already-closed gate: the text said a 4xx stops the
+run and the runner recorded it and carried on. Under strict mode there is also no best-effort
+schema-mismatch 400 to confuse with a configuration 400, so the rule is a plain status check with no
+provider-specific error-text classifier. 429, 5xx and transport errors are **not** in this class.
+
+**Pacing is derived from a measured limit, not from a response header.** The enforced ceiling is
+**input** tokens per minute and it is **7000**, read from the body of a real 429:
+`Limit 7000, Used 6671, Requested 2096`. The `x-ratelimit-limit-tokens` header says 8000; an earlier
+revision recorded that number and paced at 14 s, which at the measured worst case of 1813 prompt
+tokens is 7778 input tokens/min — over the real limit, and the run would have spent itself in
+continuous 429s. Frozen at **20 s between requests**: 3.0 req/min = 5439 input tokens/min, inside
+7000 with headroom. 104 observations ≈ 35 minutes. The retired 8000 is kept in the config beside its
+replacement rather than deleted, so nothing hides that the pacing was once wrong.
+
+**Pacing applies to every observation that actually sent a request, including a failed one.** A
+request refused with 429 still spent its input tokens; the bucket does not care that the reply was a
+refusal. The first revision of this change paced only the successful path, so an observation whose
+three attempts were exhausted on 429s went straight to the next photograph after the 5 s + 10 s
+retry backoff alone — 15 s, under the frozen interval, at exactly the moment the provider had said
+the bucket was empty, and one 429 could then cascade into a run of them. That would manufacture
+unresolved observations, which this document's own conservative rule counts AGAINST the signal, for
+transport reasons rather than recognition ones. Where the response carries a `Retry-After` longer
+than 20 s, the provider's number wins. An observation whose image is missing or fails its digest
+check sends nothing and is not paced; the abort path is not paced either, because the run ends there.
 
 **`reasoning_effort` is FROZEN at `none`, not pending.** An earlier revision of this document marked
 it UNVERIFIED and deferred it to a synthetic preflight. GPT-PM's closure review rejected that, and
@@ -130,7 +182,8 @@ pre-registration revision. A 4xx is a hard experiment failure — never permissi
 in place and carry on, which is precisely the freedom this document exists to remove.
 
 **Retry policy.** At most 3 attempts. Retried: 429, 5xx, connection errors, read timeouts — they say
-nothing about the model's opinion. **Never retried:** 4xx configuration errors, and any well-formed
+nothing about the model's opinion, and they never abort the run. **Never retried:** 4xx configuration
+errors, which stop the run outright as described above, and any well-formed
 HTTP 200 whose body will not parse. At temperature 0 with a fixed seed a retry returns the same
 answer anyway, and retrying until a reply becomes scoreable is sampling for a usable result — the
 exact tuning this document forbids. On exhaustion the observation is recorded `unresolved` with its
@@ -226,13 +279,13 @@ start-up and refuses to send anything if one has changed.
   "core/plans/RECOG_SO1_CONSENT.schema.json": "22dade06f4628c1f56d45c614607891b184394fc1d7fc852a5832b2e643e6cd6",
   "scripts/dev/recog_so1_prompt.txt": "d83b9b66c0c540617cb5c61d78181aa2917cd9c902ae745e8cd6d171ceb9f3af",
   "scripts/dev/recog_so1_vocab.json": "58d1886f38f72f096a62a504c6560b90e175f28f45df0466cc92b7a7e491973a",
-  "scripts/dev/recog_so1_config.json": "374ed487025a1a9601935d419bbcbd527a20a8ceb720ec1ceee5dd935b2b55ac",
+  "scripts/dev/recog_so1_config.json": "60fe272d5e7db7c9c32323f7f3bf6dc4b1662eff5d7322c2f6221a85110487c6",
   "scripts/dev/recog_so1_build_vocab.py": "da2bb7998ce51be9d9a397b0de98c2962f33f3c6f9394d0324181f68ddf4ca1b",
   "scripts/dev/recog_so1_build_prompt.py": "bb319229a476946ed4ceecbc609d093a8268fdc3104735ddd7d9dca8ea45d96e",
   "scripts/dev/recog_so1_build_manifest.py": "8a8f81ce93f89cf147d507d5bcf6cc3e9ad2a4a1c02e6595ff868d87dda272d6",
-  "scripts/dev/recog_so1_run.py": "70b0ae582c87986e8d419ecf5ef1d802c6287a1c4cc17432a2cc1cef48b1909c",
+  "scripts/dev/recog_so1_run.py": "0c4b14e6b28029ed7cbfd84ae346156890219abd5fe5fbbbe016ba63d7733e79",
   "scripts/dev/recog_so1_score.py": "24edecd877cbb196d0acf946eed95fa3f9eb5ca68bd46742d864ed92a0cf7c9f",
-  "scripts/dev/recog_so1.tests.py": "64123ffa70d0053ec5148908acbad15020586c5ad11729a373a9c0985b8d8272"
+  "scripts/dev/recog_so1.tests.py": "6f01d97fbba5b3a62df24f633a6c6a16cbbd1dd0db70ecbd38df9d40d074bad5"
 }
 ```
 

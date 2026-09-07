@@ -45949,3 +45949,129 @@ the check behind it.** The previous five were the "69" transition count, the bui
 edits claim, the free-tier "does not arise for your own photographs" claim, the `lead` denominators,
 and the hand-typed base64 in the Groq vision probe. This one is distinguishable in one respect only:
 it was caught by an external reviewer rather than by me.
+
+## 2026-09-08 — SO1 execution rev.2: the request shape is frozen strictly, the pacing was wrong, and consent is committed before anything moves
+
+Plan `fitness_app-2026-09-07T21-41-30-290Z-7cec38`, hash
+`73d62e5bdd8e51f08369b726a7d295d81b52d89f55f67a35f2948c642b6d6b2d`, GPT-PM `VERDICT: APPROVE`,
+0 BLOCKER / 0 MAJOR, reply `b0720eda-ae66-4adc-b850-6088b8f23735`. Planned against actual, per step.
+
+**The GO was refused twice before it was recorded, and the reason is worth keeping.** `pm_rosetta_go`
+verifies the outbound plan-review body BYTE FOR BYTE against what `pm_rosetta_plan` printed. The tool
+prints its steps with a duplicated ordinal (`1. 1. Freeze the response format...`); I had tidied that
+away when sending, so no exact durable outbound record existed for the approval that had genuinely
+been granted. Re-sent verbatim, duplicated ordinals included, and the same APPROVE recorded cleanly.
+The approval was never in doubt; the *record* of it was, which is the whole point of that check.
+
+**MY OBJECTION TO THE PLAN WAS WRONG, AND A MEASUREMENT SETTLED IT.** GPT-PM's MAJOR against
+revision 1 said the response format should be a strict `json_schema`. I objected from Groq's own
+model-metadata endpoint, which on 2026-09-07 returned `supported_features`
+`['tools','json_mode','reasoning']` — no structured outputs. Rather than pick between a documentation
+reading and a metadata reading, I probed the primary source with **synthetic images only**. That
+metadata list is INCOMPLETE: `json_schema` with `strict: true` returns HTTP 200. I probed the exact
+schema this experiment freezes — nested `alternatives` array of objects, all properties required,
+`additionalProperties: false` at both levels — with the real frozen prompt, because testing a
+simplified stand-in and shipping the real one is the defect this session keeps finding. Result:
+HTTP 200, `{"alternatives": [], "confidence": 0.0, "machine": "unknown"}`, 1686 prompt / 21
+completion tokens.
+
+Recorded alongside it, because it is a real difference from production however small: strict mode
+requires `alternatives` to be PRESENT where production's contract allows it absent. An envelope
+difference, not a measurement one — the scorer never reads the field and `machine` is an
+unconstrained string, so the schema cannot steer which equipment is named. GPT-PM also corrected my
+wording that this change "cannot move a result": constrained decoding does alter generation
+probabilities, so strictly it can. It is permissible only because **no real observation exists yet**.
+
+**AND THE PROBE FOUND AN ERROR IN THE ALREADY-SEALED CONFIG.** The file recorded
+`tokens_per_minute: 8000` from the `x-ratelimit-limit-tokens` response header and paced the run at
+14 s on that number. The enforced ceiling is INPUT tokens per minute and it is **7000** — read from
+the body of a real 429: `Limit 7000, Used 6671, Requested 2096`. At the measured worst case of 1813
+prompt tokens, 14 s is 7778 input tokens/min, over the real limit: the 35-minute run would have spent
+itself in continuous 429s. Frozen at **20 s** (3.0 req/min = 5439 input tokens/min). The wrong 8000
+is retired IN PLACE beside its replacement rather than deleted, so nothing hides that the pacing was
+once wrong.
+
+**A 4xx now stops the run, which the documents already claimed and the code did not.** Config and
+pre-registration both said a configuration error is a hard experiment failure; the runner recorded it
+as one unresolved observation and continued to the next photograph. A frozen request shape is
+identical for all 104 observations, so a 400/401/403/404 is a property of the request and never of
+the photograph in front of it — continuing would have transmitted the entire corpus against a request
+the provider had already rejected, and produced 104 unresolved observations that look like data. The
+abort list lives in the sealed config (`retry_policy.abort_run_on`), the runner returns a `RunOutcome`
+that distinguishes a stopped run from a completed one, and `main` exits 5 rather than 0. 429, 5xx and
+transport errors keep the bounded retry unchanged.
+
+**The evidence is arranged so it can fail, in both directions.** Four cases prove the abort FIRES:
+400, 401, 403 and 404 each leave exactly ONE request on a two-observation fixture, counted by the
+capturing transport itself rather than inferred from an exit code, with the failing observation
+recorded and `run_aborted` set. One case proves it does not OVER-fire: a 503 retries with backoff,
+succeeds, and reaches the second observation — a runner that aborted on every non-200 would pass the
+first four checks and be wrong. The mutation removes `abort_run_on` from the fixture's config and the
+SAME 400 fixture then proceeds to a second request, which also proves the rule is read from the seal
+rather than hard-coded. Suite: 51 checks -> **57**, still with no network call anywhere.
+
+One supporting change: `run()`'s retry backoff was reachable only through a default argument bound at
+definition time, so a 503 test would have slept five real seconds. The sleep is resolved at call time
+now, and the suite substitutes a recording stand-in and asserts on the actual 5.0 s backoff rather
+than merely on the fact that the run continued.
+
+**Seal.** Three artefacts changed and were re-sealed: `recog_so1_config.json`
+`374ed487...` -> `b34bb6ca...`, `recog_so1_run.py` `70b0ae58...` -> `3342eabb...`,
+`recog_so1.tests.py` `64123ffa...` -> `0666d5ae...`. Re-verified end to end against the real
+repository: 12 artefacts unchanged, and with no consent record on disk the runner refused with
+exit 3 and wrote no output file.
+
+**CONSENT IS COMMITTED BEFORE THE RUN, DELIBERATELY.** `core/plans/RECOG_SO1_CONSENT.json`,
+`decision: whole_corpus`, validated against its own schema and accepted by the runner's gate
+(`AUTHORISED (whole_corpus, retention state global_zdr='enabled')`, 104 observations). It is
+committed BEFORE any photograph is transmitted so that git proves the authorisation predates the
+transmission rather than being written up afterwards to match what was done.
+
+It binds two operator statements, not one. The first, *"весь корпус (52 фото, максимальная
+статистическая сила)"*, was given against a people count of **3** that I had produced by eye — and
+that count was **wrong by 18**. The operator's own question — *"по поводу людей в кадре, ты должен
+понимать если это реальные люди или посторы на стенах клуба"* — is what caused the survey to be
+redone properly: 21 of 52 photographs contain real people, 22 contain printed human figures that are
+not people, 10 contain both, and in 5 a face is fully legible, among them a trainer and two children.
+Consent given against a materially understated privacy fact is not consent to the real thing, so the
+record binds the operator's later *"пуш и продолжай ГО"*, said once the corrected counts were in the
+published report and in section 3 of the pre-registration, and marks it explicitly as a
+reaffirmation.
+
+The record also states what the alternative would have cost, because that was told to the operator
+before they chose: the source-level people-free subset holds 16 and 15 unique sources per
+ground-truth kind, both under the pre-registered power floor of 20, so that branch was
+pre-registered to return INCONCLUSIVE whatever Qwen produced. The whole corpus was the only option
+that could reach a verdict.
+
+**Still the operator's alone, unchanged:** revoking the compromised Groq key, publishing the contact
+sheets, the `.gitleaksignore` line, the dead App Check debug tokens.
+
+### Remediation, same gate: the pacing was applied only on the successful path
+
+GPT-PM's pre-commit review returned `VERDICT: REVISE`, 0 BLOCKER / 1 MAJOR, and the finding is
+correct on the code rather than on a reading of it. `run()` wrote an unresolved record for a
+non-abort non-200 and then `continue`d, skipping the pacing sleep entirely. So an observation whose
+three attempts were exhausted on 429s advanced to the next photograph after only the retry backoff
+-- 5s + 10s, because the final attempt's `Retry-After` is by definition never honoured, there being
+no further attempt. Fifteen seconds, under the frozen twenty, at exactly the moment the provider had
+just said the input-token bucket was empty. One 429 could cascade into a run of them and manufacture
+unresolved observations, which the sealed scorer counts AGAINST the signal -- a transport artefact
+arriving in the result as if it were recognition behaviour.
+
+Fixed by pacing every observation that ACTUALLY SENT A REQUEST, failed or not: a refused request
+still spent its input tokens. `pace_after_failure(resp_headers, pacing_seconds)` returns
+`max(frozen interval, Retry-After)`, so the provider's own number wins when it asks for longer, and
+a malformed or HTTP-date value falls back to the frozen interval rather than to zero. Two paths are
+deliberately NOT paced: an observation whose image is missing or fails its digest check sends
+nothing, and the abort path ends the run.
+
+Three checks, on a fixture whose first observation costs three attempts so that a wait recorded at
+three requests is provably a wait BEFORE the second observation's request: an exhausted 429 waits
+20.0s there; a final `Retry-After: 45` waits 45.0s there; and the mutation -- `pace_after_failure`
+stubbed to return 0.0 -- waits 0.0s there and is then reverted, asserted. 57 checks -> **61**.
+
+**This is the seventh instance this session of a claim broader than the check behind it**, and the
+second caught by the reviewer rather than by me. The config text said the runner "sleeps after every
+completed observation" and the four new abort tests plus the 503 test all passed; none of them
+exercised an exhausted retryable failure, which is the one path where the sentence was false.
