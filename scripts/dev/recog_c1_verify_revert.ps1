@@ -25,7 +25,12 @@ param(
     [string]$Baseline = '7eb4392',
     # Runs the comparison even when the measurement document is still missing.
     # Read-only either way; this only lifts the refusal explained at step 0.
-    [switch]$Force
+    [switch]$Force,
+    # Skips the analyzer gate at step 6. Only for a machine with no Flutter
+    # toolchain -- the gate is the reason this script now catches what it
+    # missed on 2026-09-07, so skipping it is a weaker verification, not an
+    # equivalent one.
+    [switch]$SkipAnalyze
 )
 
 $ErrorActionPreference = 'Stop'
@@ -115,10 +120,18 @@ foreach ($line in $drift) {
 # and five committed analysis files import it, including the step-8 metric
 # script. Removing it would not be a cleaner revert; it would permanently break
 # the tooling that produces the measurement.
+#
+# Scoped to `mobile`, NOT to `mobile/lib`, and that widening is the whole point
+# of this comment. The first real revert, on 2026-09-07, passed this script and
+# left the project unable to analyse: `mobile/test/.../recog_c1_harness_test.dart`
+# still imported the deleted harness, 42 analyzer errors. The check was looking
+# only where the shipped app lives, so it could not see a test that tests code
+# that no longer exists -- and a test file cannot survive the thing it tests, no
+# matter how much the rest of the measurement's tests are meant to.
 $harnessSymbols = 'RecogC1Harness|RecogC1Runner|RecogC1Journal|recog_c1_harness'
-$refs = @(& git -C $repo grep -n -E $harnessSymbols -- 'mobile/lib' 2>$null | Where-Object { $_ })
+$refs = @(& git -C $repo grep -n -E $harnessSymbols -- 'mobile' 2>$null | Where-Object { $_ })
 foreach ($r in $refs) {
-    Fail "surviving harness reference in mobile/lib: $r"
+    Fail "surviving harness reference under mobile/: $r"
 }
 
 # --- 5. the frozen contract must STILL be there ------------------------------
@@ -133,6 +146,41 @@ if (-not (Test-Path (Join-Path $repo ($contract -replace '/', '\')))) {
     Fail "$contract is MISSING. It is not part of the harness: it predates it, it is in the baseline, and the committed analysis imports it. A revert that removes it is too broad."
 }
 
+# --- 6. and the tree must actually still ANALYSE -----------------------------
+# Byte-identity with a baseline is not the same as a working project, which is
+# exactly how the 2026-09-07 revert passed while leaving 42 analyzer errors: the
+# harness came OUT of the baseline paths, but its test was ADDED after the
+# baseline, so no comparison against the baseline could ever mention it.
+#
+# This is the check that would have caught it without knowing what to look for.
+# It asserts zero ERRORS specifically -- pre-existing infos and warnings are not
+# this script's business and must not make a revert unverifiable.
+if (-not $SkipAnalyze) {
+    $mobile = Join-Path $repo 'mobile'
+    if (-not (Get-Command flutter -ErrorAction SilentlyContinue)) {
+        Write-Host "flutter is not on PATH; skipping the analyzer gate. This is a WEAKER verification -- byte-identity alone did not catch the 2026-09-07 breakage."
+    }
+    else {
+        Write-Host "running the analyzer (this is slow, and it is the check that would have caught the 2026-09-07 miss)..."
+        Push-Location $mobile
+        try { $analysis = & flutter analyze 2>&1 | Out-String }
+        finally { Pop-Location }
+        # An analyzer that never RAN produces output matching no error pattern,
+        # so "found no errors" and "never started" would look identical -- the
+        # exact shape of failure this whole gate keeps being bitten by. Require
+        # positive evidence that it reached a verdict before believing the
+        # verdict.
+        if ($analysis -notmatch 'issues found|No issues found') {
+            Fail "the analyzer did not reach a verdict, so its silence proves nothing. Output was:`n$($analysis.Trim())"
+        }
+        else {
+            $errorLines = @($analysis -split "`n" | Where-Object { $_ -match '^\s*error\s' })
+            foreach ($e in $errorLines) { Fail "analyzer error after the revert: $($e.Trim())" }
+            if ($errorLines.Count -eq 0) { Write-Host "  analyzer: 0 errors" }
+        }
+    }
+}
+
 # --- report ------------------------------------------------------------------
 if ($failures.Count -gt 0) {
     Write-Host "REVERT NOT VERIFIED against $baselineSha" -ForegroundColor Red
@@ -142,5 +190,5 @@ if ($failures.Count -gt 0) {
     exit 1
 }
 
-Write-Host "revert verified: mobile/lib, mobile/pubspec.yaml and mobile/android are byte-identical to $baselineSha; no harness symbol survives in mobile/lib; the frozen scoring contract is still present."
+Write-Host "revert verified: mobile/lib, mobile/pubspec.yaml and mobile/android are byte-identical to $baselineSha; no harness symbol survives anywhere under mobile/ (lib AND test); the analyzer reports zero errors; the frozen scoring contract is still present."
 exit 0

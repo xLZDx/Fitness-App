@@ -44641,3 +44641,55 @@ would be indistinguishable from a successful one otherwise.
 The report carries no image beyond the three Star Trac frames that were already published. **The
 contact sheets in `core/plans/recog_c1_sheets/` are still not published anywhere and must not be:**
 they show identifiable people including a child.
+
+## 2026-09-07 — the internal review caught what my own revert check could not
+
+I reported step 10 as verified. It was not: the revert left the project unable to analyse, and the
+script I wrote specifically to prove the revert said `revert verified` anyway.
+
+**The defect.** `mobile/test/features/visual_equipment/recog_c1_harness_test.dart` (943 lines) still
+imported the harness that `1defe69` deleted. `flutter analyze` in `mobile/`: **42 errors**, every one
+of them that file. Confirmed by running it, not by reading the diff.
+
+**Why the check missed it, which matters more than the miss.** `recog_c1_verify_revert.ps1` searched
+for harness symbols in `mobile/lib` only — deliberately, with a comment explaining that the
+measurement's tests are the durable record of the experiment and are meant to survive. That reasoning
+is right for the ANALYSIS tests (contract, ground truth, metrics — all still present and passing) and
+wrong for the harness's own test, which cannot survive the thing it tests. The byte-comparison could
+not have caught it either: the harness test was ADDED after the baseline, so no comparison against
+the baseline could ever mention it.
+
+**Fixed as a class, not an instance:**
+
+1. The orphaned test is removed. It tested code that no longer exists.
+2. The symbol search now covers `mobile/` — lib AND test.
+3. **The script now runs the analyzer** and fails on any error. Byte-identity with a baseline is not
+   the same as a working project; this is the check that would have caught the miss without knowing
+   what to look for.
+4. That analyzer gate requires **positive evidence it reached a verdict** (`issues found` /
+   `No issues found` in the output) before believing its silence. An analyzer that never ran produces
+   output matching no error pattern, and "found nothing" and "never started" would otherwise be
+   indistinguishable — the exact shape of failure this gate keeps repeating.
+
+**Proved by mutation, on the real state.** Restoring the orphaned test makes the script exit 1 with
+53 problems: 27 surviving-reference lines AND 26 analyzer errors, i.e. both new checks fire
+independently. Removing it again: `analyzer: 0 errors`, `revert verified`. 306 tests pass across the
+RECOG-C1 suites.
+
+### Accepted, not overlooked
+
+The review also noted that `recog_c1_window2.ps1` passes the App Check debug token as a literal
+`--dart-define`, so it is visible in that build process's command line to anything running as the
+same user for the duration. That is this project's existing convention for this debug-only value and
+is not introduced here. What WAS wrong is that the script's own comment claimed the token "travels in
+a request body, never on a command line" — true of the exchange check it sits in, false as a
+statement about the script. The comment is now scoped to what it actually guarantees and names the
+gap, with `--dart-define-from-file` recorded as the fix if it is ever judged worth closing.
+
+### The lesson, stated plainly
+
+I wrote a check to prove a revert, ran it before the revert to show it could fail, ran it after to
+show it passed, and reported the result — and it was still wrong, because it could only fail for the
+reasons I had thought of. Showing a check *can* fail is not the same as showing it fails for the
+right class of reason. The analyzer gate is the correction: it does not need me to have anticipated
+the failure.

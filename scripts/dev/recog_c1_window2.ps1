@@ -126,9 +126,16 @@ Write-Host "  App Check debug token present ($($env:APP_CHECK_DEBUG_TOKEN.Trim()
 # One HTTPS call settles it, against the same endpoint the device's SDK uses, so
 # a 200 here means the device will get a token too and a 403 here is the failure
 # the run would otherwise discover one build and 52 refusals later. It spends no
-# AI quota: this is App Check's own API, not a callable. The token travels in a
-# request body, never on a command line, and neither it nor the returned JWT is
-# printed.
+# AI quota: this is App Check's own API, not a callable.
+#
+# In THIS check the token travels in an HTTP request body and neither it nor the
+# returned JWT is printed. That guarantee is scoped to this check and must not be
+# read as covering the script: the build below passes the token as a literal
+# --dart-define, so it is visible in that process's command line to anything
+# running as the same user while the build lasts. That is the project's existing
+# convention for this debug-only value (core/DECISION_LOG.md around :19741) and
+# is accepted, not overlooked -- --dart-define-from-file with a gitignored file
+# would close it if it is ever judged worth closing.
 $gsPath = Join-Path $repo 'mobile/android/app/google-services.json'
 if (-not (Test-Path $gsPath)) {
     throw "google-services.json is missing at $gsPath, so the App Check token cannot be verified against the app it must attest for."
