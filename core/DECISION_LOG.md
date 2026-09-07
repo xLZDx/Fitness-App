@@ -45480,3 +45480,47 @@ client already handles it (`gemini_equipment_service.dart:295`). A different mod
 prompt would most likely overclaim identically. RECOG-C1 now makes this answerable rather than
 arguable: 104 observations against sealed ground truth, so a candidate model can be run over exactly
 the same photographs and compared — and on a free key that comparison costs nothing.
+
+### Same day, an hour later: the free tier is NOT the answer, and I had this wrong
+
+The entry above reasoned that Google AI Studio's free tier would carry a training-data problem for
+real users but that it "does not arise for a run over the operator's own photographs". That is
+wrong, and it would have led to a bad decision, so it is corrected rather than quietly amended.
+
+Checked against Google's own terms (`https://ai.google.dev/gemini-api/terms`) rather than against
+the workspace catalogue. For the **Unpaid Services**, verbatim:
+
+> Google uses the content you submit to the Services and any generated responses to provide,
+> improve, and develop Google products and services
+
+> Human reviewers may read, annotate, and process your API input and output.
+
+> Do not submit sensitive, confidential, or personal information to the Unpaid Services.
+
+And the exception, verbatim:
+
+> If you're in the European Economic Area, Switzerland, or the United Kingdom, the terms under
+> "How Google uses Your Data" in "Paid Services" apply to all Services, including Google AI Studio
+> and unpaid quota in the Gemini API, even though they are offered free of charge.
+
+The operator's entity is a Moldovan IE in Chișinău. **Moldova is in none of the three**, so the
+override does not apply and the unpaid tier's terms stand in full. The RECOG-C1 corpus is 52
+photographs of the operator's own gym containing identifiable people **including a child**
+(`core/plans/recog_c1_sheets/README.md`). Putting those through the unpaid tier would hand them to
+product improvement and to human reviewers. It is not an option for the corpus any more than for
+real users.
+
+Google's public rate-limit page no longer lists per-model free-tier numbers at all — it defers to
+AI Studio, behind a login — so the catalogue's "15 RPM / 1,500 RPD" could not be confirmed either.
+It stays REFERENCE.
+
+**The correct fix is smaller than the one proposed.** The 60/day ceiling is OUR OWN, keyed on the
+Firebase uid. A measurement run therefore only needs **a separate account on the same paid Vertex
+path the operator already pays for**: identical per-call cost, the paid tier's protections ("Google
+doesn't use your prompts ... or responses to improve our products"), and the operator's personal
+counter untouched. No free key, no new provider, no new privacy exposure. The free tier remains
+appropriate only where the input carries no personal data at all.
+
+The general lesson, and it is the same one this session has now recorded five times: the catalogue
+was a secondary source and I reasoned from it as though it settled the question. Reading the primary
+source took two minutes and reversed the conclusion.
