@@ -45524,3 +45524,69 @@ appropriate only where the input carries no personal data at all.
 The general lesson, and it is the same one this session has now recorded five times: the catalogue
 was a secondary source and I reasoned from it as though it settled the question. Reading the primary
 source took two minutes and reversed the conclusion.
+
+## 2026-09-07 — The recogniser has never abstained: zero out of 104, and nothing it reports separates
+
+Measured from the observations RECOG-C1 already recorded. **Zero further model calls.** The raw
+replies have been in `core/plans/recog_c1_raw/` since the run; nobody had asked them this question.
+
+### It never abstains
+
+Across all 104 observations: **0** replies contained `{"machine": "unknown"}`, **0** failed to
+parse, **0** produced zero candidates. Lowest top-1 confidence in the entire run **0.45**, median
+**0.95**, maximum 0.99. The app's own classification: 102 `confident`, 2 `alternatives`.
+
+The path exists end to end and is unused. The server prompt offers `unknown` explicitly and asks
+for "low values when unsure" (`functions/src/ai_equipment_recognition.ts:107-110`); the client drops
+an `unknown` candidate and any name the registry cannot resolve
+(`mobile/lib/features/visual_equipment/data/gemini_equipment_service.dart:295-300`). The model has
+simply never taken either option.
+
+### The slice that settles it
+
+52 observations carry the frozen ground-truth kind `multiple` — no single machine is the subject,
+so naming one is not a wrong choice between candidates, it is an answer to a question with no
+answer.
+
+| | answered `unknown` | named one at >= 0.80 | median |
+| --- | --- | --- | --- |
+| `multiple`, 52 | 0 | **50 (96%)** | 0.93 |
+| `canonical_single`, 52 | 0 | 52 (100%) | 0.95 |
+
+### A scalar threshold is ruled out, with numbers
+
+Confidence ranges overlap almost completely: 0.82–0.99 on answerable frames, 0.45–0.99 on
+unanswerable ones.
+
+| cut on `top1` | kept of 52 answerable | refused of 52 unanswerable |
+| --- | --- | --- |
+| 0.80 | 52 (100%) | **2 (4%)** |
+| 0.90 | 32 (62%) | 24 (46%) |
+| 0.93 | 29 (56%) | 26 (50%) |
+
+The lead over the second candidate does not rescue it, and fails in an instructive way: the signal
+is **absent on 18 of the 52 answerable observations entirely**, because the model offered a single
+candidate — it is missing exactly where the model is most committed. Where it exists (34 answerable,
+38 unanswerable), refusing 74% of the unanswerable costs 62% of the answerable. Candidate counts are
+distributed almost identically (18/32/2 against 14/32/6). The crop changes nothing whatever: 96%
+overclaiming in both arms.
+
+**A denominator correction I made before publishing this rather than after:** the first version of
+the sweep printed the `lead` percentages against 52, when `lead` exists on only 34 and 38. The
+labels were wrong, not the arithmetic, and reporting "100% of 52" would have overstated coverage
+for every cut. Same defect class as the other four this session — a claim wider than its check.
+
+### What this forces on gate A
+
+**The abstention signal cannot come from the model's own self-report.** Not confidence, not lead,
+not the number of alternatives, not the framing. Whatever makes the recogniser stay silent has to
+come from outside it — a second independent opinion, the name printed on the machine's shroud, a
+consistency check across evidence — and a gate A that proposes to tune a threshold is proposing
+something these 104 observations already rule out.
+
+This also weakens the case for simply swapping model vendors: the failure is not that the model
+picks the wrong machine, it is that it answers at all when there is nothing to answer, and no
+instruction in the current prompt tells it when not to. A different model given the same prompt
+would have to be measured, not assumed, against exactly this baseline.
+
+Published as section 19 of the RECOG-C1 baseline report, both languages.
