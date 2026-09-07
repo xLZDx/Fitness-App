@@ -45653,3 +45653,69 @@ not mine.
 (опционально)". Their own page says an API key is required. Not fixed here — the catalogue is a
 workspace-level shared file and this is a Fitness_App session; recorded so the next session that
 needs it does not inherit the wrong assumption.
+
+## 2026-09-07 — Groq: the operator's suggestion, tested, and it is the second opinion the evidence asked for
+
+The operator, after learning the 60/day ceiling is ours: *«а если попробывать бесплатный API
+GRog?»*, and supplied a key in chat. **The key is treated as compromised** — it is now in a chat
+transcript — and is stored only in the session scratchpad, outside the repository. It has not been
+written to any file in git, any report, or any message to GPT-PM. Recommended to the operator that
+it be revoked and reissued regardless of whether it is used.
+
+### The catalogue said Groq is text-only. It is wrong.
+
+`free_llm_apis.json` lists five Groq models, all `Text`. Live against the API, the key sees 14
+models, and **`qwen/qwen3.8-27b` accepts images**: given a generated 256x256 test image it answered
+"Red squares and black lines on a white background", which is what was drawn. `openai/gpt-oss-120b`
+and `groq/compound` reject the multimodal message shape outright ("content must be a string"), so
+the capability is specific to the Qwen model, not general to the provider. Second catalogue
+correction of the day, recorded and not applied — that file is workspace-level.
+
+A false start worth recording: the first probe used a hand-typed base64 PNG literal and got "invalid
+image data", which reads exactly like "no vision support". Generating a real image instead reversed
+the conclusion. Same defect shape as the "6s to 40s" sentence and the `lead` denominators — a
+hand-written literal sitting where a computed value belonged.
+
+### Its data terms are the opposite of Google's unpaid tier
+
+From Groq's own Services Agreement, verbatim: *"Groq is not permitted to use Inputs or Outputs for
+training or fine-tuning any AI Model Services or other models, unless explicitly granted permission
+or instructed by Customer"*, and *"Groq does not access, use, store, or retain Inputs or Outputs
+except as necessary to provide the Cloud Services..."*. A zero-data-retention setting exists in the
+Console. The training prohibition is not tiered. Caveat, stated: *"Groq's DPA and BAA do not apply
+to Beta Services"* — if free access counts as Beta, the separate processing addendum does not cover
+it, though the agreement's own training prohibition still reads as uniform.
+
+### Measured limits, from response headers rather than from the catalogue
+
+`x-ratelimit-limit-requests: 1000` per day, `x-ratelimit-limit-tokens: 8000` per minute. **The token
+bucket binds first, not the request count.** Measured with synthetic images at the corpus's real
+geometry: an arm-B crop (1640x1082) costs **1813 prompt tokens**, about 4 per minute; an arm-A full
+frame (1868x4000) costs **789**, about 10 per minute.
+
+That last number is itself a finding: the taller image costs *fewer* tokens, so the encoder is
+downsampling the extreme portrait aspect ratio harder — the full frame reaches the model with less
+detail than the crop does. Worth knowing before comparing arms on any second-opinion run.
+
+A complete second-opinion pass over all 104 observations is therefore feasible in roughly 26-40
+minutes at zero cost.
+
+### Why this matters more than "a cheaper vendor"
+
+Today's four negative findings ruled out every abstention signal available from Gemini's own
+self-report — confidence, lead, candidate count, and agreement between two views of one photograph.
+The one candidate left standing is a genuinely independent second opinion, and the cross-arm test
+could not supply it because both arms are the same model. Qwen on Groq is a different model family
+entirely, free, fast, and contractually barred from training on the input.
+
+**So the operator's instinct was right for a better reason than the one they gave.** Not a
+replacement for Gemini — a disagreement detector, which is the only untested source of the signal
+gate A needs.
+
+### The one thing that is not mine to decide
+
+Running it means sending 52 photographs of the operator's own gym, containing identifiable people
+including a child, to a third party. Good contract terms lower the risk; they do not make it my
+call, and it cannot be undone once sent. Put to the operator with the verified terms rather than
+assumed from their instruction to try the API — "try this key" is consent to test the API, which is
+what was done with synthetic images only, not consent to transmit their family photographs.
