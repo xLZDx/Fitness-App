@@ -42,3 +42,10 @@ core/equipment_identity/p0/*.json text eol=lf
 core/plans/RECOG_C1_RUN_PLAN_2026-09-05.csv -text
 core/plans/RECOG_C1_GROUND_TRUTH_2026-09-05.csv -text
 core/plans/recog_c1_raw/*.jsonl -text
+
+# Gate C seals the expected poseTargetId change as a SHA-256 over this file's
+# exact bytes, recorded in the approved plan before the rule that produces the
+# change was written. core.autocrlf=true would hand a fresh Windows checkout
+# CRLF and the digest would fail to verify -- destroying the only thing the
+# seal exists to prove. Same reason as the rules above.
+core/pose_targets/GATE_C_EXPECTED_TRANSITIONS.tsv text eol=lf

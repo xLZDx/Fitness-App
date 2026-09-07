@@ -45187,3 +45187,77 @@ install's data, and both are current.
 
 The 13 superseded `.sptr` releases in App Distribution were left alone — they are history, App
 Tester offers the newest, and deleting cloud releases is a destructive action nobody asked for.
+
+## 2026-09-07 — Gate C, step 1: the expected tagging change, sealed before the rule that produces it
+
+Gate C narrows which exercises the Form Coach offers a demonstration for. The whole gate rests on
+one claim — that the change is exactly the set argued for and nothing else — and that claim is
+worth nothing if the "expected" set is written after the rule and shaped by whatever the rule
+happened to do. GPT-PM raised this as a MAJOR against the plan's second revision: a list in a
+scratchpad proves no ordering, and a git diff at the end cannot establish which came first.
+
+So the manifest goes in first, alone, in this commit. Nothing else here: no rule, no asset, no
+test, no Form Coach file. `git show --stat` on this commit is the proof.
+
+`core/pose_targets/GATE_C_EXPECTED_TRANSITIONS.tsv` — 86 rows, `id`, `old`, `new`, `subset`,
+tab-separated, unique ids, sorted by id, LF line endings, 4001 bytes,
+sha256 `1301162912e7a072bb2636f0f35116c3bd434bdf8e3409b3ec0f81536d9b221f`. That digest is recorded
+in the approved plan (`fitness_app-2026-09-07T14-52-28-511Z-d3b3ed`, hash `494e0539...`), so the
+plan hash freezes it as well.
+
+Every one of the 86 is a tag being removed. Not one row gains a tag.
+
+| subset | rows | what it is |
+| --- | --- | --- |
+| `GATE` | 72 | this gate's own decision: the side-on silhouette is a different shape |
+| `DRIFT` | 7 | the shipped asset already disagreed with the CURRENT rules |
+| `SIDEPLK` | 7 | side planks tagged `pushup`; found by GPT-PM's review, not by me |
+| `AMBIG` | 0 | deliberately empty — no row may gain a tag |
+
+### The starting state this is measured against
+
+Counted from `mobile/assets/data/exercises_vendor.json` as shipped: 1887 rows, 540 tagged.
+
+| tag | rows | reaches a user |
+| --- | --- | --- |
+| `curl` | 114 | yes |
+| `hinge` | 103 | yes |
+| `lunge` | 102 | yes |
+| `situp` | 61 | yes |
+| `squat` | 37 | yes |
+| `overhead_press` | 33 | yes |
+| `pushup` | 73 | no |
+| `calf_raise` | 17 | no |
+
+450 of the 540 reach a user. `pushup` and `calf_raise` are absent from `kPosePatternToExercise` /
+`repSignalsByTag`, so `formCoachSupports` is false for them and no exercise carrying either has
+ever been offered a demonstration.
+
+### Two things the sealing pass itself found
+
+**The asset has drifted from the rules.** Seven rows carry a tag the current rules would not
+produce, all seven rejected by `excludeWhen.equipmentLabel`: six on `Weight bench`
+(`ea_biceps_leg_concentration_curl`, `ea_decline_bent_leg_reverse_crunch`,
+`ea_decline_diamond_pike_push_up`, `ea_decline_levitating_sit_ups_bodyweight`,
+`ea_decline_push_up`, `ea_decline_sit_up`) and one on `Bench (flat / adjustable)`
+(`ea_donkey_calf_raise`). Any `--write` removes them whatever this gate decides, so they are
+declared here in advance rather than discovered during verification. Nothing in the repository
+was comparing the asset against the rules; step 8 of the gate adds the test that would have
+caught this, and that test is the durable fix, not the seven removals.
+
+**My first count was wrong, and wrong in the way this session keeps repeating.** The plan's first
+revision said 69 rows. That number came from regexes over exercise IDs, not from running the
+tagger's own `classify()` over titles — the `situp` family is 11 rows, not 8. Running the real
+classifier gives 72. A claim broader than the check behind it, for the fifth time today.
+
+Nothing is changed by this commit except the addition of the manifest and this entry.
+
+**A pin the seal would have been worthless without.** `core.autocrlf` is `true` in this repository
+and `.gitattributes` already carries two rules written for exactly this reason. Without a third,
+the manifest's blob would stay LF in git while a fresh Windows checkout handed back CRLF, and the
+sha256 above — the only thing the seal exists to prove — would fail to verify for anyone but me.
+`core/pose_targets/GATE_C_EXPECTED_TRANSITIONS.tsv text eol=lf` is in this same commit.
+It was nearly missed: the first attempt to add it was denied wholesale by the decision-log
+hook, and the denial happens before the command runs at all, so the `cat` that was to write
+the rule never executed while the paragraph claiming it did was already in the log. A hook
+denial rejects the whole command, not the part it objected to.
