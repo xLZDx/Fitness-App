@@ -44570,3 +44570,58 @@ them is an operator action and has not been taken.
 Zero quota, across all six refused calls: App Check is rejected by the Functions framework before
 the handler runs, and `enforceDailyQuota` is inside the handler. The UTC day's 60 calls were intact
 when window 2 was re-run.
+
+## 2026-09-07 — RECOG-C1 steps 7 and 10: the baseline exists, and the instrument is out of the tree
+
+Window 2 ran 52/52 with zero operational failures, all 26 pairs intact, the frozen plan's hash on
+every row, and the same session id throughout. Pulled to
+`core/plans/recog_c1_raw/recog_c1_raw_w2.jsonl` (sha256
+`dd0f478c7dcfaf0e29f818e2d0e076025d77895234278fba906d6b1597aa9f9c`, 103 812 bytes, LF), verified
+against a digest computed on the device rather than against a byte count from `adb`.
+
+`core/plans/RECOG_C1_MEASUREMENT_2026-09-05.md` is computed from both windows by
+`test/tools/recog_c1_compute_metrics.dart`, which was committed before the first observation existed.
+104 observations, 104 planned, 104 reached the model, 0 operational failures, 104 write-ahead markers
+with 0 orphans, and no stop/abort/resume record of any kind.
+
+### What the corpus says
+
+| score, over resolved rows | arm A (full frame) | arm B (viewfinder crop) |
+| --- | --- | --- |
+| correct and confident | 18 | 22 |
+| **overclaimed** | **25** | **25** |
+| safe non-overclaim | 1 | 1 |
+| wrong and confident | 5 | 1 |
+
+**Overclaiming is the dominant behaviour and the crop does not touch it: 25 of 49 in both arms.**
+That is the operator's own observation, measured: shown a frame holding several machines with no
+single subject, the model names one machine confidently rather than declining. The crop moves
+correct-confident 18 -> 22 and wrong-confident 5 -> 1, so it helps where a subject exists; it does
+not make the model abstain where none does.
+
+Three pairs (`p15`, `p29`, `p47` — the Star Trac plate-loaded unit) are frozen `unresolved` and enter
+no correctness number in either direction, which is why 49 pairs are comparable and not 52. They are
+named in the measurement rather than silently dropped.
+
+**What this measurement cannot answer, stated in the document itself:** the corpus holds zero
+out-of-catalogue single machines and zero empty frames, so it cannot say whether the model overclaims
+on a machine nobody told it about, nor whether it abstains honestly on a frame with no equipment.
+Two of the properties that matter most are simply not covered, and no number here should be read as
+if they were.
+
+### Step 10, the revert
+
+`git rm mobile/lib/features/visual_equipment/measurement/recog_c1_harness.dart` plus
+`git checkout 7eb4392 -- mobile/lib/main.dart`. This is a tracked-file deletion, reserved to the
+operator by CLAUDE.md §20; the operator authorized it explicitly for this session, and it is the only
+step of this plan that needed that.
+
+`scripts/dev/recog_c1_verify_revert.ps1` was run BEFORE the revert and exited 1 with 34 named
+problems — a check that has never failed is not known to work. After the revert it must report
+`mobile/lib`, `mobile/pubspec.yaml` and `mobile/android` byte-identical to `7eb4392`, no surviving
+harness symbol, and `recog_c1_contract.dart` still present. That contract predates the harness, is in
+the baseline, and five committed analysis files import it; a revert that took it would leave a tree
+that looks correctly cleaned while making every number above unreproducible.
+
+The analysis script, its 28 tests, the frozen plan, the ground truth and both raw files stay. What
+leaves is only what the app itself would have carried.
