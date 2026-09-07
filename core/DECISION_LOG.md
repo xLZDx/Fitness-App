@@ -45635,3 +45635,21 @@ before anything rests on it, exactly as Google's were.
 
 Four candidate signals are now ruled out from data already collected, at zero cost: confidence,
 lead over the second candidate, number of alternatives offered, and cross-view agreement.
+
+### OVHcloud's data terms, checked at the source rather than taken from the catalogue
+
+Since the Google check reversed a conclusion, the second-opinion candidate got the same treatment
+before being proposed to anyone. From OVHcloud AI Endpoints' own page, verbatim: **"Your data will
+never be used to train or improve our AI models"** and **"Zero data retention: We keep only the data
+required for billing purposes."** European hosting, ISO 27000 / SOC / healthcare-data
+certifications.
+
+That is the opposite of Google's unpaid tier and makes Qwen2.5-VL-72B on OVHcloud a viable place to
+run a second-opinion experiment over a corpus containing identifiable people — subject to the
+operator's own say-so about their photographs leaving for a third party at all, which is theirs and
+not mine.
+
+**One correction to the workspace catalogue:** `FREE_LLM_APIS.md` lists OVHcloud's key as "нет
+(опционально)". Their own page says an API key is required. Not fixed here — the catalogue is a
+workspace-level shared file and this is a Fitness_App session; recorded so the next session that
+needs it does not inherit the wrong assumption.
