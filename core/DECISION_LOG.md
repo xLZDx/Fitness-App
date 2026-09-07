@@ -45440,3 +45440,43 @@ reviewed. What nobody wrote down is that "per user" meant *the operator's own ac
 **The constraint this fixes, for every future run:** a measurement or boundary run must state its
 call budget in the plan **and name the account it runs under**, and that account must not be the
 operator's. Restoring their counter afterwards is repair, not a fix.
+
+## 2026-09-07 — "Can we use a different AI?" — the cheapest answer is the same AI on a different key
+
+The operator, on learning that the 60/day ceiling is ours rather than Google's: *«может другой аи
+использовать»*. Recorded because the answer splits into two decisions that must not be conflated.
+
+**What we call today.** `aiEquipmentRecognition` sends the photo to Google **Vertex AI**, model
+`gemini-3.6-flash` (`functions/src/ai_gateway.ts:85`), project `fitness-app-korostelev`, location
+`global`. Every call is a real paid Vertex invocation. Live camera mode is not in this at all — it
+runs `equipment_v1.tflite` on the phone, free and unlimited, which is why the live view kept
+answering while photo scans were being refused.
+
+**The finding.** The workspace catalogue (`D:\Repo\FREE_LLM_APIS.md`, `free_llm_apis.json`) lists
+**the same model** — `gemini-3.6-flash` — on Google AI Studio's free tier at **15 RPM / 1,500 RPD**,
+commercial use permitted. That is 25x our self-imposed 60/day, at no cost, for the identical model.
+Other vision-capable free options with commercial use: `nvidia/nemotron-nano-12b-v2-vl:free` and
+`google/gemma-4-31b-it:free` via OpenRouter (20 RPM / 50 RPD), and OVHcloud's Qwen2.5-VL-72B, which
+needs no key at all (2 RPM per IP, EU, states it does not train on prompts). Cohere's vision models
+are 20 RPM but **non-commercial**, so they are usable for evaluation and not for production.
+
+**BASIS: this is REFERENCE, not FACT.** Those limits come from a workspace catalogue, not from
+Google's own documentation, and free-tier terms move. Nothing may be built on them until they are
+checked against the provider's live docs and a real call.
+
+**Decision 1 — measurement runs: yes, and this is the fix already required.** Yesterday's entry
+made it a constraint that a measurement run must name the account it runs under and that it must not
+be the operator's. A separate AI Studio key at 1,500/day implements that constraint for nothing, and
+removes the quota as a design pressure on the run plan entirely — the two-window, 26-pairs-per-window
+structure exists only because 104 observations did not fit inside 60.
+
+**Decision 2 — production: test, do not swap.** Two reasons to be slow here. First, the AI Studio
+free tier permits Google to use prompts to improve its products (except EEA/UK/CH users); real
+users' gym photographs entering training data is a privacy decision belonging to the operator, and
+it does not arise for a run over the operator's own photographs. Second, and more important, the
+S23 evidence points away from model quality being the defect: the prompt never tells the model WHEN
+to answer `unknown`, although the format permits it (`ai_equipment_recognition.ts:107`) and the
+client already handles it (`gemini_equipment_service.dart:295`). A different model given the same
+prompt would most likely overclaim identically. RECOG-C1 now makes this answerable rather than
+arguable: 104 observations against sealed ground truth, so a candidate model can be run over exactly
+the same photographs and compared — and on a free key that comparison costs nothing.
