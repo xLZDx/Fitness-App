@@ -45590,3 +45590,48 @@ instruction in the current prompt tells it when not to. A different model given 
 would have to be measured, not assumed, against exactly this baseline.
 
 Published as section 19 of the RECOG-C1 baseline report, both languages.
+
+### And cross-view disagreement does not separate either — a fourth signal ruled out for free
+
+RECOG-C1 ran every photograph twice: arm A the full frame, arm B the scanner's crop. That is two
+looks at one scene, so it can be asked the obvious follow-up question at no cost — does disagreement
+between them mark the frames where there is nothing to answer?
+
+It does not, and the symmetry is complete:
+
+| ground truth (arm A) | photographs | arms agreed | disagreed | agreement |
+| --- | --- | --- | --- | --- |
+| `canonical_single` | 26 | 22 | 4 | **85%** |
+| `multiple` | 26 | 22 | 4 | **85%** |
+
+As a rule — "refuse when the two views disagree" — it would refuse 15% of the answerable frames and
+15% of the unanswerable ones. No discrimination whatever.
+
+The four disagreements on ANSWERABLE frames are the operator's S23 complaint reproduced inside the
+laboratory data:
+
+| full frame | crop |
+| --- | --- |
+| `chest_press_machine` 0.92 | `shoulder_press_machine` 0.94 |
+| `chest_press_machine` 0.82 | `seated_row_machine` 0.88 |
+| `chest_press_machine` 0.85 | `shoulder_press_machine` 0.94 |
+| `tricep_extension_machine` 0.85 | `ab_crunch_machine` 0.88 |
+
+One press, two views of one photograph, different names, both confident. That is exactly what the
+operator reported seeing three times in four minutes.
+
+**The caveat, stated because it bounds the claim.** The two arms are the SAME model on two crops of
+one photograph, not two different models. What is ruled out is "ask the same recogniser twice"; a
+genuine second opinion from a DIFFERENT recogniser remains untested, and is now the most promising
+untested candidate rather than an idea with no evidence behind it.
+
+That also gives the operator's own question — *«может другой аи использовать»* — a precise purpose
+it did not have an hour ago: not to replace Gemini, but to serve as the independent second opinion
+the abstention signal could be built from. Testing that against the sealed corpus needs a vendor
+that does not train on its input, which rules out the AI Studio free tier for this corpus (see the
+correction above). OVHcloud's Qwen2.5-VL-72B is EU-hosted, needs no key, and states it does not
+train on prompts — REFERENCE from the workspace catalogue, to be verified against their own terms
+before anything rests on it, exactly as Google's were.
+
+Four candidate signals are now ruled out from data already collected, at zero cost: confidence,
+lead over the second candidate, number of alternatives offered, and cross-view agreement.
