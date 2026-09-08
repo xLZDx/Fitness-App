@@ -46706,3 +46706,35 @@ MINOR on test evidence quality. This is exactly the "verify the fix, not just th
 §17 assigns to a round-2 review -- and exactly why it matters: the round-1 fix was reviewed and
 genuinely correct on its own terms, and still cost the protocol a real invariant in the process of
 closing the first gap.
+
+### §15 mandatory commit review, round 3 (b948780): `VERDICT: APPROVE`, gate closed -- and the transport recovered on its own
+
+Commit `b948780` (the round-2 remediation) needed a `review.js`-recorded, `correlated:true`,
+`final:true` receipt before push -- a content verdict obtained through `gpt_send_and_await` does
+not by itself satisfy that mechanical check (see the round-1/round-2 entries above). `review.js`
+itself failed identically 3 times in a row for this repo's conversation specifically
+(`"ChatGPT's send button never became enabled"`, receipts at 15:26:44Z, 15:29:18Z, 15:32:58Z),
+while `AI_trading_assistance` and `Ferma` succeeded under the SAME daemon in the same window --
+`gpt_send_and_await` then failed identically twice more (`pm_bridge_job_status` confirmed both as
+genuinely `sendPhase: not-started`, not a limbo/unconfirmed-send case), meaning both available
+transport paths were down specifically for this conversation at the same time. Reported the
+blocker plainly rather than routing around the mechanical gate -- `gpt_review_gate.py`'s own
+history documents an identical Fitness_App-specific transport bug from 2026-08-26 whose temporary
+push-gate exclusion the operator explicitly reversed on 2026-08-30 ("надо включить обратно"), so
+re-adding that exclusion unilaterally would have directly undone a specific, recent, dated operator
+decision -- not a routine technical call this gate's autonomy covers.
+
+The transport recovered on its own: `Ferma` got a genuine `final:true` receipt at 15:31:16Z, and a
+retry of `review.js --round 3 --final` for Fitness_App immediately after that succeeded cleanly --
+`VERDICT: APPROVE`, 0 BLOCKER / 0 MAJOR / 0 MINOR, `correlated:true`, `final:true`. GPT-PM's content
+matches what was already independently verified against the actual source before this round was
+even sent: the restored `zip(ordered, ordered[1:])` pairwise check, the rewritten non-vacuous
+MAJOR-1 test, and the new out-of-order regression test all confirmed present and correct. No new
+regression found. Pushed `3856193..b948780` to `origin/master` immediately after.
+
+Total across the gate's mandatory review: 3 rounds, 2 real MAJOR + 1 real MAJOR (introduced by
+remediation) + 1 real MINOR, all independently verified against source before being accepted or
+acted on, all fixed, final round clean. The transport outage cost real time (roughly 20 minutes
+across ~7 failed attempts spanning two independent send mechanisms) but never blocked forward
+progress on the actual defect-finding work -- only the final mechanical receipt, which resolved
+itself once the shared browser session recovered.
