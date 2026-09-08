@@ -1,0 +1,347 @@
+<title>SO1 Instrument Failure</title>
+<style>
+  :root {
+    --paper: #FBFAF7;
+    --surface: #FFFFFF;
+    --ink: #1A1D21;
+    --ink-soft: #5C646D;
+    --rule: #E2DED6;
+    --steel: #2F6274;
+    --steel-soft: #E8F0F2;
+    --amber: #A85826;
+    --amber-soft: #FBEFE6;
+    --green: #40704F;
+    --code-bg: #F4F2ED;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14171C;
+      --surface: #1B1F26;
+      --ink: #E8E6E1;
+      --ink-soft: #98A0A9;
+      --rule: #2C323B;
+      --steel: #7FB6C7;
+      --steel-soft: #1E2A31;
+      --amber: #D99358;
+      --amber-soft: #2A2019;
+      --green: #7FB08D;
+      --code-bg: #12161B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14171C;
+    --surface: #1B1F26;
+    --ink: #E8E6E1;
+    --ink-soft: #98A0A9;
+    --rule: #2C323B;
+    --steel: #7FB6C7;
+    --steel-soft: #1E2A31;
+    --amber: #D99358;
+    --amber-soft: #2A2019;
+    --green: #7FB08D;
+    --code-bg: #12161B;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.62;
+    margin: 0;
+  }
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 0 1.5rem 6rem; }
+
+  header { padding: 3.5rem 0 1.75rem; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--steel); margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-family: "Newsreader", Georgia, "Times New Roman", serif;
+    font-weight: 500; font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.12;
+    margin: 0 0 0.7rem; text-wrap: balance; letter-spacing: -0.015em;
+  }
+  .standfirst { font-size: 1.1rem; color: var(--ink-soft); margin: 0; max-width: 34rem; }
+
+  h2 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 500; font-size: 1.5rem; line-height: 1.25;
+    margin: 3.2rem 0 0.9rem; text-wrap: balance;
+  }
+  h3 {
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--steel); margin: 2.1rem 0 0.6rem;
+  }
+  p { margin: 0 0 1.05rem; }
+  strong { font-weight: 650; }
+  a { color: var(--steel); }
+
+  .verdict {
+    margin: 2rem 0 0; padding: 1.4rem 1.6rem;
+    background: var(--amber-soft); border-left: 4px solid var(--amber);
+    border-radius: 0 4px 4px 0;
+  }
+  .verdict .label {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 1.25rem; font-weight: 700; color: var(--amber); letter-spacing: 0.02em;
+    display: block; margin-bottom: 0.4rem;
+  }
+  .verdict p { margin: 0; color: var(--ink); }
+
+  .ledger { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 1.4rem 0 1.6rem; }
+  .ledger-row { display: grid; grid-template-columns: 1fr auto; gap: 1rem; background: var(--surface); padding: 0.7rem 1rem; align-items: baseline; }
+  .ledger-row .k { color: var(--ink-soft); font-size: 0.95rem; }
+  .ledger-row .v {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums; font-size: 0.95rem; font-weight: 600;
+  }
+  .v.bad { color: var(--amber); }
+  .v.good { color: var(--green); }
+
+  .budget { margin: 1.6rem 0 1.9rem; }
+  .budget-track {
+    position: relative; height: 2.6rem; background: var(--code-bg);
+    border: 1px solid var(--rule); border-radius: 3px; overflow: hidden;
+  }
+  .budget-fill { position: absolute; inset: 0 auto 0 0; width: 89.3%; background: var(--steel-soft); border-right: 2px solid var(--steel); }
+  .budget-over { position: absolute; inset: 0 0 0 89.3%; background: repeating-linear-gradient(135deg, var(--amber-soft), var(--amber-soft) 6px, transparent 6px, transparent 12px); border-left: 2px solid var(--amber); }
+  .budget-cap {
+    position: absolute; top: 0; bottom: 0; left: 89.3%; width: 0;
+    border-left: 2px dashed var(--amber);
+  }
+  .budget-labels {
+    display: flex; justify-content: space-between; margin-top: 0.5rem;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.75rem; font-variant-numeric: tabular-nums; color: var(--ink-soft);
+  }
+  .budget-labels .over { color: var(--amber); font-weight: 600; }
+
+  pre {
+    background: var(--code-bg); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 0.85rem 1rem; overflow-x: auto; margin: 0 0 1.1rem;
+    font-family: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 0.82rem; line-height: 1.55;
+  }
+  code {
+    font-family: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    font-size: 0.87em; background: var(--code-bg); padding: 0.1em 0.34em; border-radius: 3px;
+  }
+  pre code { background: none; padding: 0; font-size: 1em; }
+
+  table { width: 100%; border-collapse: collapse; margin: 1.2rem 0 1.6rem; font-size: 0.94rem; }
+  .scroller { overflow-x: auto; }
+  th, td { text-align: left; padding: 0.6rem 0.8rem 0.6rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; }
+  td.num { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .st-done { color: var(--green); font-weight: 650; }
+  .st-no { color: var(--amber); font-weight: 650; }
+
+  .note { border-left: 3px solid var(--rule); padding-left: 1.1rem; color: var(--ink-soft); margin: 1.4rem 0; }
+  ul { margin: 0 0 1.1rem; padding-left: 1.2rem; }
+  li { margin-bottom: 0.5rem; }
+  footer { margin-top: 4rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); color: var(--ink-soft); font-size: 0.88rem; }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">RECOG-SO1 · run #1 · 2026-09-08</p>
+  <h1>Instrument Failure</h1>
+  <p class="standfirst">The photographs were transmitted; the experiment did not happen. This is a report on an unusable instrument — it carries no figure about either model, and it never will.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 709906c</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="verdict">
+  <span class="label">INVALID_INSTRUMENT</span>
+  <p>This is <strong>not</strong> PASS, <strong>not</strong> FAIL and <strong>not</strong> INCONCLUSIVE. The sealed scorer was never run — GPT-PM's explicit ruling, refusing it "even for information": 46 answers alongside 58 quota refusals would convert the provider's quota behaviour into evidence about models.</p>
+</div>
+
+<h2>What happened</h2>
+
+<p>104 observations were attempted under the sealed protocol. The seal verified 12 of 12 artefacts, consent evaluated to AUTHORISED, and the abort rule never fired — correctly, by its own terms, because no 4xx status ever arrived.</p>
+
+<div class="ledger">
+  <div class="ledger-row"><span class="k">Observations planned</span><span class="v">104</span></div>
+  <div class="ledger-row"><span class="k">Parsable answer received</span><span class="v good">46</span></div>
+  <div class="ledger-row"><span class="k">Unresolved</span><span class="v bad">58</span></div>
+  <div class="ledger-row"><span class="k">Of those, HTTP 429</span><span class="v bad">58 — every one</span></div>
+  <div class="ledger-row"><span class="k">Requests actually sent</span><span class="v">260</span></div>
+  <div class="ledger-row"><span class="k">Observations that spent all 3 attempts</span><span class="v">61</span></div>
+</div>
+
+<h2>Two limits, and neither is the one the pacing was built against</h2>
+
+<h3>TPD — tokens per day, 200,000, per organization</h3>
+<p>48 of the 58 failures. It struck at observation 47 of 104 and killed everything after it. The limit is enforced per organization rather than per key, so the second key in the operator's console would have changed nothing.</p>
+<div class="scroller"><pre><code>Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_...`
+service tier `on_demand` on tokens per day (TPD):
+Limit 200000, Used 199789, Requested 2495. Please try again in 16m26.688s.</code></pre></div>
+
+<h3>OTPM — output tokens per minute, 1,000</h3>
+<p>10 failures, and <strong>two of them while the daily budget was still intact</strong>. Groq estimates expected output pessimistically from the sealed <code>max_completion_tokens: 4096</code> and refuses the whole request when that estimate exceeds 1,000. The estimates across the ten ranged from 1,072 to 2,123. The actual completions on answered requests were <strong>22–41 tokens</strong>.</p>
+<div class="scroller"><pre><code>Request too large for model `qwen/qwen3.8-27b` ... on output tokens per
+minute (OTPM): Limit 1000, Requested 1072. The request's expected output
+tokens exceed the enforced limit; reduce max_tokens ...</code></pre></div>
+<p class="note">This is <strong>not a rate — it is a per-request ceiling</strong>. No interval between requests reaches it: slowing down does not shrink the estimate for a single request.</p>
+
+<h2>The arithmetic that settles it</h2>
+
+<p>From the run's own <code>usage</code> blocks: the mean prompt is <strong>2,153</strong> tokens and the maximum <strong>2,198</strong> (arm A 2,113, arm B 2,198). I planned against <strong>1,813</strong>. An 18% underestimate, and it was mine — not a change in the provider's behaviour.</p>
+
+<div class="budget">
+  <div class="budget-track">
+    <div class="budget-fill"></div>
+    <div class="budget-over"></div>
+    <div class="budget-cap"></div>
+  </div>
+  <div class="budget-labels">
+    <span>0</span>
+    <span>daily ceiling 200,000</span>
+    <span class="over">needs 223,962 · +12%</span>
+  </div>
+</div>
+
+<p><strong>A clean 104-observation pass, with zero retries, costs roughly 2,153 × 104 = 223,962 input tokens against a 200,000 daily ceiling.</strong> The experiment does not fit into one day on this tier at all. The retry policy made it worse — 260 requests for 104 observations — but even a flawless run is 112% of a day.</p>
+
+<h2>A defect in the sealed pre-registration itself</h2>
+
+<p>The power floor was meant to be the guard against exactly this: a degraded run must not produce a verdict. It does not do that.</p>
+
+<p><code>unique_sources</code> in <a href="scripts/dev/recog_so1_score.py">scripts/dev/recog_so1_score.py</a> counts <strong>rows</strong>, not <strong>answers</strong>. For this run it reports 26/26/26/26 and passes: all 104 rows exist — 58 of them simply have no reply. The guard's description is broader than the check behind it.</p>
+
+<p class="note">The scorer was <strong>not</strong> edited. Changing a sealed scorer once a run exists is precisely what the seal forbids. The defect is recorded and goes into the revision, not into a quiet patch.</p>
+
+<h2>GPT-PM's ruling, adopted in full</h2>
+
+<ul>
+  <li><strong>Option A.</strong> The run is an invalid instrument, preserved unscored; a new pre-registration revision and a clean re-run follow. Changing provider was rejected — it would change the hypothesis while Groq remains feasible across two days. Scoring what exists was rejected.</li>
+  <li><strong>A run-validity gate before scoring</strong>, separating <code>INVALID_INSTRUMENT</code> (a provider, configuration or quota failure makes the measurement structurally invalid — no statistics produced) from <code>INCONCLUSIVE</code> (execution valid, too few valid answers survived).</li>
+  <li><strong>An answer-coverage floor</strong>: at least 20 unique source photographs per ground-truth kind carrying a valid parsed answer <strong>in both arms</strong>. A 429, timeout, 5xx or parse failure does not count toward it merely because its manifest row exists.</li>
+  <li><strong>The re-run is two deterministic day partitions</strong>, frozen before transmission: 13 + 13 sources per day, both arms of a source always on the same day, so day and quota conditions cannot confound ground-truth kind or arm.</li>
+  <li><strong>Retry policy by quota class, not by status code.</strong> TPD exhaustion stops that day's partition; an OTPM refusal is an instrument failure and also stops; ordinary ITPM honours <code>Retry-After</code> with a tight bound. <strong>No cycling of keys or accounts to evade an organization limit.</strong></li>
+</ul>
+
+<h2>Consent: GPT-PM read the record more strictly than I did</h2>
+
+<p>I proposed that the committed consent covers a re-run — the same photographs, the same endpoint, the same retention state. GPT-PM disagreed, and is right: the record authorised that manifest <strong>once</strong>, and the completed run consumed that authorisation. Identical files and endpoint reduce the incremental privacy change; they do not turn "once" into "as many attempts as it takes".</p>
+
+<p><strong>A second transmission requires a new explicit operator reaffirmation</strong> — recording that the first 104-observation transmission occurred and failed as an instrument, that a second pass over the same 52 photographs to the same frozen model is proposed, that it will span several days, and that Global ZDR remains enabled. That decision belongs to the operator and to nobody else.</p>
+
+<h2>Planned versus actual</h2>
+
+<div class="scroller">
+<table>
+<thead><tr><th>Step</th><th>Definition of Done (GPT-PM)</th><th>Status</th><th>Tail</th></tr></thead>
+<tbody>
+<tr><td>1. Strict response schema</td><td>Exact schema proven by probe; envelope difference recorded</td><td class="st-done">Done</td><td>—</td></tr>
+<tr><td>2. Corrected limits and pacing</td><td>8000 retired in place, arithmetic recorded</td><td class="st-done">Done</td><td>Proved insufficient: ITPM was the wrong limit</td></tr>
+<tr><td>3. Abort on 4xx</td><td>Exactly one request, distinct exit code</td><td class="st-done">Done</td><td>Never fired in the run — no 4xx occurred</td></tr>
+<tr><td>4. Tests and mutations</td><td>Abort fires and does not over-fire; mutations fail the suite</td><td class="st-done">Done</td><td>51 → 61 checks</td></tr>
+<tr><td>5. Re-seal</td><td>12/12 artefacts; refusal without consent</td><td class="st-done">Done</td><td>Seal survives a fresh checkout too</td></tr>
+<tr><td>6. Consent in git before the run</td><td>Commit precedes transmission</td><td class="st-done">Done</td><td>`914491f`</td></tr>
+<tr><td>7. 104 observations</td><td>Run completes with a recorded result per observation</td><td class="st-no">Partial</td><td>Executed but invalid: 46 of 104. Re-run after the revision and new consent</td></tr>
+<tr><td>8. Score against the seal</td><td>Verdict against the sealed bars</td><td class="st-no">Not done</td><td>Forbidden by GPT-PM. No figure about either model was computed</td></tr>
+<tr><td>9. Log, report, publish</td><td>Planned-vs-actual, both languages, Russian published</td><td class="st-done">Done</td><td>Converted to an instrument-failure report — this document</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Contamination, said out loud</h2>
+
+<p>While classifying the failures I saw 46 raw equipment names. No agreement, disagreement, delta or accuracy was computed, and none will be. Every change the coming revision makes is dictated by measured properties of the instrument — token ceilings, quota classes, day partitioning, retry behaviour, the validity gate — not by anything visible in the answers. Until the new revision is sealed, those 46 names are quarantined.</p>
+
+<footer>
+  <p>The run's raw output is preserved unscored at <a href="core/plans/recog_so1_raw/RECOG_SO1_RUN_2026-09-08.jsonl">core/plans/recog_so1_raw/RECOG_SO1_RUN_2026-09-08.jsonl</a>. Full decision record: <a href="core/DECISION_LOG.md">core/DECISION_LOG.md</a>. Pre-registration: <a href="core/plans/RECOG_SO1_PREREGISTRATION_2026-09-07.md">core/plans/RECOG_SO1_PREREGISTRATION_2026-09-07.md</a>.</p>
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

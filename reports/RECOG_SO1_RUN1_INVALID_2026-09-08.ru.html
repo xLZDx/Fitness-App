@@ -1,0 +1,347 @@
+<title>Приборный сбой SO1</title>
+<style>
+  :root {
+    --paper: #FBFAF7;
+    --surface: #FFFFFF;
+    --ink: #1A1D21;
+    --ink-soft: #5C646D;
+    --rule: #E2DED6;
+    --steel: #2F6274;
+    --steel-soft: #E8F0F2;
+    --amber: #A85826;
+    --amber-soft: #FBEFE6;
+    --green: #40704F;
+    --code-bg: #F4F2ED;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #14171C;
+      --surface: #1B1F26;
+      --ink: #E8E6E1;
+      --ink-soft: #98A0A9;
+      --rule: #2C323B;
+      --steel: #7FB6C7;
+      --steel-soft: #1E2A31;
+      --amber: #D99358;
+      --amber-soft: #2A2019;
+      --green: #7FB08D;
+      --code-bg: #12161B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #14171C;
+    --surface: #1B1F26;
+    --ink: #E8E6E1;
+    --ink-soft: #98A0A9;
+    --rule: #2C323B;
+    --steel: #7FB6C7;
+    --steel-soft: #1E2A31;
+    --amber: #D99358;
+    --amber-soft: #2A2019;
+    --green: #7FB08D;
+    --code-bg: #12161B;
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.62;
+    margin: 0;
+  }
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 0 1.5rem 6rem; }
+
+  header { padding: 3.5rem 0 1.75rem; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--steel); margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-family: "Newsreader", Georgia, "Times New Roman", serif;
+    font-weight: 500; font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.12;
+    margin: 0 0 0.7rem; text-wrap: balance; letter-spacing: -0.015em;
+  }
+  .standfirst { font-size: 1.1rem; color: var(--ink-soft); margin: 0; max-width: 34rem; }
+
+  h2 {
+    font-family: "Newsreader", Georgia, serif;
+    font-weight: 500; font-size: 1.5rem; line-height: 1.25;
+    margin: 3.2rem 0 0.9rem; text-wrap: balance;
+  }
+  h3 {
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--steel); margin: 2.1rem 0 0.6rem;
+  }
+  p { margin: 0 0 1.05rem; }
+  strong { font-weight: 650; }
+  a { color: var(--steel); }
+
+  .verdict {
+    margin: 2rem 0 0; padding: 1.4rem 1.6rem;
+    background: var(--amber-soft); border-left: 4px solid var(--amber);
+    border-radius: 0 4px 4px 0;
+  }
+  .verdict .label {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 1.25rem; font-weight: 700; color: var(--amber); letter-spacing: 0.02em;
+    display: block; margin-bottom: 0.4rem;
+  }
+  .verdict p { margin: 0; color: var(--ink); }
+
+  .ledger { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 1.4rem 0 1.6rem; }
+  .ledger-row { display: grid; grid-template-columns: 1fr auto; gap: 1rem; background: var(--surface); padding: 0.7rem 1rem; align-items: baseline; }
+  .ledger-row .k { color: var(--ink-soft); font-size: 0.95rem; }
+  .ledger-row .v {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums; font-size: 0.95rem; font-weight: 600;
+  }
+  .v.bad { color: var(--amber); }
+  .v.good { color: var(--green); }
+
+  .budget { margin: 1.6rem 0 1.9rem; }
+  .budget-track {
+    position: relative; height: 2.6rem; background: var(--code-bg);
+    border: 1px solid var(--rule); border-radius: 3px; overflow: hidden;
+  }
+  .budget-fill { position: absolute; inset: 0 auto 0 0; width: 89.3%; background: var(--steel-soft); border-right: 2px solid var(--steel); }
+  .budget-over { position: absolute; inset: 0 0 0 89.3%; background: repeating-linear-gradient(135deg, var(--amber-soft), var(--amber-soft) 6px, transparent 6px, transparent 12px); border-left: 2px solid var(--amber); }
+  .budget-cap {
+    position: absolute; top: 0; bottom: 0; left: 89.3%; width: 0;
+    border-left: 2px dashed var(--amber);
+  }
+  .budget-labels {
+    display: flex; justify-content: space-between; margin-top: 0.5rem;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 0.75rem; font-variant-numeric: tabular-nums; color: var(--ink-soft);
+  }
+  .budget-labels .over { color: var(--amber); font-weight: 600; }
+
+  pre {
+    background: var(--code-bg); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 0.85rem 1rem; overflow-x: auto; margin: 0 0 1.1rem;
+    font-family: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-size: 0.82rem; line-height: 1.55;
+  }
+  code {
+    font-family: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    font-size: 0.87em; background: var(--code-bg); padding: 0.1em 0.34em; border-radius: 3px;
+  }
+  pre code { background: none; padding: 0; font-size: 1em; }
+
+  table { width: 100%; border-collapse: collapse; margin: 1.2rem 0 1.6rem; font-size: 0.94rem; }
+  .scroller { overflow-x: auto; }
+  th, td { text-align: left; padding: 0.6rem 0.8rem 0.6rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; }
+  td.num { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .st-done { color: var(--green); font-weight: 650; }
+  .st-no { color: var(--amber); font-weight: 650; }
+
+  .note { border-left: 3px solid var(--rule); padding-left: 1.1rem; color: var(--ink-soft); margin: 1.4rem 0; }
+  ul { margin: 0 0 1.1rem; padding-left: 1.2rem; }
+  li { margin-bottom: 0.5rem; }
+  footer { margin-top: 4rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); color: var(--ink-soft); font-size: 0.88rem; }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">RECOG-SO1 · прогон №1 · 2026-09-08</p>
+  <h1>Приборный сбой</h1>
+  <p class="standfirst">Снимки ушли, эксперимент не состоялся. Отчёт о неработоспособности инструмента — здесь нет и не будет ни одной величины о моделях.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 709906c</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="verdict">
+  <span class="label">INVALID_INSTRUMENT</span>
+  <p>Это <strong>не</strong> PASS, <strong>не</strong> FAIL и <strong>не</strong> INCONCLUSIVE. Запечатанный скорер не запускался — по прямому решению GPT-PM, отказавшего в этом «даже для сведения»: 46 ответов вместе с 58 отказами по квоте превратили бы поведение квоты провайдера в свидетельство о моделях.</p>
+</div>
+
+<h2>Что произошло</h2>
+
+<p>104 наблюдения были предприняты под запечатанным протоколом. Печать проверена на 12 из 12 артефактов, согласие получило статус AUTHORISED, правило аварийной остановки не срабатывало — и правильно, по его же условиям: ни одного статуса 4xx не было.</p>
+
+<div class="ledger">
+  <div class="ledger-row"><span class="k">Запланировано наблюдений</span><span class="v">104</span></div>
+  <div class="ledger-row"><span class="k">Получен разбираемый ответ</span><span class="v good">46</span></div>
+  <div class="ledger-row"><span class="k">Не разрешено</span><span class="v bad">58</span></div>
+  <div class="ledger-row"><span class="k">Из них HTTP 429</span><span class="v bad">58 — все до одного</span></div>
+  <div class="ledger-row"><span class="k">Запросов фактически отправлено</span><span class="v">260</span></div>
+  <div class="ledger-row"><span class="k">Наблюдений, израсходовавших все 3 попытки</span><span class="v">61</span></div>
+</div>
+
+<h2>Два лимита, и ни один из них не тот, под который считался темп</h2>
+
+<h3>TPD — токенов в сутки, 200 000, на организацию</h3>
+<p>48 отказов из 58. Наступил на наблюдении 47 из 104 и убил всё, что шло после. Лимит применяется к организации, а не к ключу, поэтому второй ключ в консоли оператора ничего бы не изменил.</p>
+<div class="scroller"><pre><code>Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_...`
+service tier `on_demand` on tokens per day (TPD):
+Limit 200000, Used 199789, Requested 2495. Please try again in 16m26.688s.</code></pre></div>
+
+<h3>OTPM — выходных токенов в минуту, 1 000</h3>
+<p>10 отказов, причём <strong>два из них — когда суточный бюджет был ещё цел</strong>. Groq оценивает ожидаемый объём вывода пессимистично, исходя из запечатанного <code>max_completion_tokens: 4096</code>, и отклоняет запрос целиком, если оценка превышает 1 000. Оценки по десяти отказам: от 1 072 до 2 123. Фактические же завершения на отвеченных запросах — <strong>22–41 токен</strong>.</p>
+<div class="scroller"><pre><code>Request too large for model `qwen/qwen3.8-27b` ... on output tokens per
+minute (OTPM): Limit 1000, Requested 1072. The request's expected output
+tokens exceed the enforced limit; reduce max_tokens ...</code></pre></div>
+<p class="note">Это <strong>не скорость, а потолок на запрос</strong>. Никакая пауза между запросами до него не дотягивается: замедление не уменьшает оценку одного запроса.</p>
+
+<h2>Арифметика, которая всё решает</h2>
+
+<p>Из блоков <code>usage</code> самого прогона: средний промпт — <strong>2153</strong> токена, максимум — <strong>2198</strong> (плечо A: 2113, плечо B: 2198). Я планировал против цифры <strong>1813</strong>. Ошибка на 18% в меньшую сторону, и это моя ошибка, а не изменившееся поведение провайдера.</p>
+
+<div class="budget">
+  <div class="budget-track">
+    <div class="budget-fill"></div>
+    <div class="budget-over"></div>
+    <div class="budget-cap"></div>
+  </div>
+  <div class="budget-labels">
+    <span>0</span>
+    <span>суточный потолок 200 000</span>
+    <span class="over">нужно 223 962 · +12%</span>
+  </div>
+</div>
+
+<p><strong>Чистый проход по 104 наблюдениям, с нулём повторов, стоит около 2153 × 104 = 223 962 входных токенов при суточном потолке в 200 000.</strong> Эксперимент не помещается в одни сутки на этом тарифе вообще. Политика повторов усугубила положение — 260 запросов на 104 наблюдения, — но даже безупречный прогон это 112% суток.</p>
+
+<h2>Дефект в самой запечатанной предрегистрации</h2>
+
+<p>Порог мощности задумывался как защита ровно от такого случая: деградировавший прогон не должен выдавать вердикт. Он этого не делает.</p>
+
+<p><code>unique_sources</code> в <a href="scripts/dev/recog_so1_score.py">scripts/dev/recog_so1_score.py</a> считает <strong>строки</strong>, а не <strong>ответы</strong>. Для этого прогона он отрапортует 26/26/26/26 и пропустит его: все 104 строки существуют — просто у 58 из них нет ответа. Описание защиты шире, чем стоящая за ним проверка.</p>
+
+<p class="note">Скорер <strong>не</strong> правился. Править запечатанный скорер после того, как прогон уже существует, — именно то, что печать запрещает. Дефект зафиксирован и уходит в ревизию, а не в тихую заплатку.</p>
+
+<h2>Решение GPT-PM, принятое целиком</h2>
+
+<ul>
+  <li><strong>Вариант A.</strong> Прогон — недействительный прибор, сохраняется без оценки; далее новая ревизия предрегистрации и чистый повтор. Вариант «сменить провайдера» отклонён: он сменил бы саму гипотезу, пока Groq технически осуществим за двое суток. Вариант «оценить что есть» отклонён.</li>
+  <li><strong>Шлюз достоверности перед скорингом</strong>, разделяющий <code>INVALID_INSTRUMENT</code> (сбой провайдера/конфигурации/квоты делает измерение структурно недействительным — статистика не производится) и <code>INCONCLUSIVE</code> (исполнение корректно, но валидных ответов не хватило).</li>
+  <li><strong>Порог покрытия по ответам</strong>: не менее 20 уникальных исходных фотографий на каждый вид разметки, имеющих валидный разобранный ответ <strong>в обоих плечах</strong>. Отказ 429, таймаут, 5xx или сбой разбора не засчитывается только потому, что строка манифеста существует.</li>
+  <li><strong>Повтор — двумя детерминированными суточными разделами</strong>, замороженными до передачи: 13 + 13 источников в день, оба плеча одного источника всегда в один день, чтобы суточные условия не смешивались с видом разметки или плечом.</li>
+  <li><strong>Политика повторов по классу квоты, а не по коду статуса.</strong> Исчерпание TPD останавливает раздел суток; отказ OTPM — приборный сбой, тоже остановка; обычный ITPM уважает <code>Retry-After</code> с жёсткой границей. <strong>Никакой ротации ключей или аккаунтов ради обхода лимита организации.</strong></li>
+</ul>
+
+<h2>Согласие: GPT-PM прочёл запись строже меня</h2>
+
+<p>Я предположил, что записанное согласие покрывает повтор — те же снимки, та же конечная точка, то же состояние хранения. GPT-PM не согласился, и он прав: запись авторизовала этот манифест <strong>однократно</strong>, и состоявшийся прогон эту авторизацию израсходовал. Совпадение файлов и адреса снижает приращение приватного риска, но не превращает «один раз» в «сколько потребуется попыток».</p>
+
+<p><strong>Вторая передача требует нового явного подтверждения оператора</strong> — с фиксацией того, что первая передача 104 наблюдений состоялась и провалилась как прибор; что предлагается второй проход тех же 52 фотографий к той же замороженной модели; что он займёт несколько суток; что Global ZDR остаётся включённым. Это решение оператора и ничьё больше.</p>
+
+<h2>Что было запланировано и что вышло</h2>
+
+<div class="scroller">
+<table>
+<thead><tr><th>Шаг</th><th>Definition of Done (GPT-PM)</th><th>Статус</th><th>Хвост</th></tr></thead>
+<tbody>
+<tr><td>1. Строгая схема ответа</td><td>Точная схема, доказанная зондом; envelope-разница зафиксирована</td><td class="st-done">Сделано</td><td>—</td></tr>
+<tr><td>2. Исправленные лимиты и темп</td><td>8000 выведён из строя на месте, арифметика записана</td><td class="st-done">Сделано</td><td>Оказалось недостаточным: ITPM был не тем лимитом</td></tr>
+<tr><td>3. Abort на 4xx</td><td>Ровно один запрос, отдельный код выхода</td><td class="st-done">Сделано</td><td>За прогон ни разу не сработал — 4xx не было</td></tr>
+<tr><td>4. Тесты и мутации</td><td>Abort срабатывает и не пересрабатывает; мутации валят тесты</td><td class="st-done">Сделано</td><td>51 → 61 проверка</td></tr>
+<tr><td>5. Переопечатывание</td><td>12/12 артефактов; отказ без согласия</td><td class="st-done">Сделано</td><td>Печать переживает и свежий checkout</td></tr>
+<tr><td>6. Согласие в git до прогона</td><td>Коммит предшествует передаче</td><td class="st-done">Сделано</td><td>`914491f`</td></tr>
+<tr><td>7. 104 наблюдения</td><td>Прогон завершается с записанным результатом по каждому наблюдению</td><td class="st-no">Частично</td><td>Выполнен, но недействителен: 46 из 104. Повтор — после ревизии и нового согласия</td></tr>
+<tr><td>8. Скоринг по печати</td><td>Вердикт по запечатанным порогам</td><td class="st-no">Не сделано</td><td>Запрещено GPT-PM. Ни одной величины о моделях не вычислено</td></tr>
+<tr><td>9. Лог, отчёт, публикация</td><td>Planned-vs-actual, два языка, публикация русского</td><td class="st-done">Сделано</td><td>Преобразован в отчёт о приборном сбое — этот документ</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Загрязнение, названное вслух</h2>
+
+<p>При разборе классов отказов я видел 46 сырых названий оборудования. Ни согласие, ни расхождение, ни дельта, ни точность не вычислялись и вычисляться не будут. Все изменения в грядущей ревизии продиктованы измеренными свойствами прибора — потолками токенов, классами квот, разделением по суткам, поведением повторов, шлюзом достоверности, — а не тем, что видно в ответах. До запечатывания новой ревизии эти 46 названий помещены в карантин.</p>
+
+<footer>
+  <p>Сырьё прогона сохранено без оценки: <a href="core/plans/recog_so1_raw/RECOG_SO1_RUN_2026-09-08.jsonl">core/plans/recog_so1_raw/RECOG_SO1_RUN_2026-09-08.jsonl</a>. Полная запись решений: <a href="core/DECISION_LOG.md">core/DECISION_LOG.md</a>. Предрегистрация: <a href="core/plans/RECOG_SO1_PREREGISTRATION_2026-09-07.md">core/plans/RECOG_SO1_PREREGISTRATION_2026-09-07.md</a>.</p>
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

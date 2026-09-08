@@ -46086,6 +46086,19 @@ Raw output preserved unscored at `core/plans/recog_so1_raw/RECOG_SO1_RUN_2026-09
 before step 8, it refused to authorise scoring "even for information": 46 answered plus 58 quota
 failures would convert provider quota behaviour into model evidence.
 
+**Precisely which steps that ruling covers, corrected after GPT-PM's closure review.** My first
+closure said "steps 8-9 were refused", and that was too broad — a claim wider than what was actually
+said, which is this session's own recurring defect turned on a reviewer's words instead of on code.
+**Step 8 was refused; step 9 was NOT.** GPT-PM required the opposite of a refusal there: preserve
+this run and report it as an instrument-feasibility failure. So step 9 is DONE, converted from a
+verdict report into an instrument-failure report with all hypothesis scoring prohibited —
+`reports/RECOG_SO1_RUN1_INVALID_2026-09-08.{ru,}.html`, carrying the planned counts, the failure
+classes, the TPD and OTPM findings, the 260 requests, the measured 2153 mean / 2198 max prompt
+tokens, why one-day execution is structurally impossible, the `INVALID_INSTRUMENT` label stated as
+explicitly not PASS/FAIL/INCONCLUSIVE, the fact that the scorer was never executed, the row-based
+power-floor defect, and the requirement of a new pre-registration plus new operator consent before
+any re-run. It carries no model-performance statistic of any kind.
+
 ### The 58 failures are two limits, and neither is the one the pacing was built against
 
 **TPD — tokens per day, 200,000, enforced per ORGANIZATION.** 48 of the 58. From the real body:
