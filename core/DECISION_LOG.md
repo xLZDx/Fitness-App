@@ -46646,3 +46646,63 @@ until a real ledger entry for partition 2 is appended, at which point both `aggr
 `validate_bundle()` refuse and name the contradicted claim. Full suite: **232/232** (was 222/222; the
 existing 222 were unaffected by either fix, confirming no regression -- and confirming, exactly as
 GPT-PM's review noted, that the original suite never exercised either adversarial case).
+
+### §15 mandatory commit review, round 2 (196f69a): `VERDICT: REVISE`, 1 MAJOR + 1 MINOR -- both real, both fixed
+
+`review.js`'s automated composer transport was down machine-wide at review time -- the identical
+"ChatGPT's send button never became enabled after the payload landed" error hit three concurrent
+projects (AI_trading_assistance round 4, Ferma round 12, this repo's own round 2) within the same
+few minutes, confirming this was a transport-wide outage, not anything specific to this diff. Used
+`gpt_send_and_await` directly again, one message this time (the delta diff was 17KB, well under
+whatever made the 81KB round-1 diff need a two-message split). GPT-PM gave a genuine, correlated
+review of the round-1 remediation and returned `VERDICT: REVISE`, 0 BLOCKER / 1 MAJOR / 1 MINOR --
+confirming MAJOR 2's fix was correct, and finding that the MAJOR-1 fix itself introduced a new
+defect plus shipped with a vacuous regression test:
+
+**MAJOR** -- merging "partition 1 vs any earlier ledger entry" and "later partitions vs the
+previous partition's own last entry" into one "any earlier entry, whichever is closest" rule
+silently dropped the OTHER invariant the frozen preregistration states separately (section 7):
+*"Each later partition may not start until 24 hours after the previous partition's last ledger
+entry."* That is a claim about partition NUMBER order specifically, not merely "some entry >=24h
+ago" -- the old pairwise `zip(ordered, ordered[1:])` check enforced it as a side effect (a partition
+run before its predecessor produced a negative gap, which always fails), and the round-1 rewrite
+removed that loop entirely. GPT-PM's concrete counter-example: run partition 2, then 25h later
+partition 1, then 25h later partition 3, then 25h later partition 4 -- every partition individually
+sees its closest preceding ledger entry >=24h away, so the any-class check alone passes all four,
+even though the actual run order (2, 1, 3, 4) directly contradicts the frozen ordering. Verified
+against the pre-fix source before accepting: confirmed `verify_isolation_gaps()` (post-196f69a) had
+exactly one loop, over `sorted(present_partitions)` against the whole ledger, with no pairwise
+predecessor check left anywhere in the function or its callers. Fixed by restoring the pairwise
+`zip(ordered, ordered[1:])` loop ALONGSIDE the any-class loop, not instead of it -- both
+requirements are independently real and independently stated in the protocol; one does not subsume
+the other.
+
+**MINOR** -- the MAJOR-1 regression test built partition 2's real `run_partition()` call only 12h
+after the interposed stress probe. `run_partition()`'s own live `isolation_ok()` gate runs BEFORE
+the output file is opened (`recog_so1_run_r2.py`, guard at line 590, `out.open()` at line 642), so
+that call refused before ever writing `part_2.jsonl`. `aggregate()` then failed on `"partition 2
+output file ... does not exist"` (`recog_so1_aggregate_r2.py:488`) -- a message containing the
+exact substring `"partition 2"` the test's second assertion checked for -- so both assertions
+passed without `verify_isolation_gaps()` itself ever running. Verified against the pre-fix test and
+the runner source before accepting. Fixed by building all four partition files for real first (25h
+gaps throughout, so `run_partition()` never refuses any of them), THEN splicing the stress probe
+directly into the ledger post-hoc -- the same technique section (ff)/(ii2) already use -- so the
+only thing that can make the re-run `aggregate()` call refuse is `verify_isolation_gaps()` reading
+the now-contaminated ledger; the assertion was tightened to also require the `"any class"` phrase
+in the refusal reason, not just the partition number.
+
+A third regression test was added for the MAJOR itself, using GPT-PM's own counter-example: four
+partitions run genuinely out of numeric order (2, 1, 3, 4), each 25h after whichever ran
+immediately before it in real wall-clock time -- proving the restored pairwise check is actually
+what catches it, since the any-class check alone would pass this fixture. Both fixes verified
+against the actual pre-fix source before being accepted as real, per §3. Full suite: **235/235**
+(was 232/232; 3 new checks -- 2 for the ordering regression, 1 tightened assertion on the rewritten
+MAJOR-1 test -- and the 3 pre-existing checks in that same fixture were the ones rewritten to stop
+being vacuous, not added).
+
+Round-2 disposition, in GPT-PM's own words: prior MAJOR 1 (stress-probe) fixed but the remediation
+introduced a new MAJOR (ordering); prior MAJOR 2 (absent-partition) fixed with no regression; one
+MINOR on test evidence quality. This is exactly the "verify the fix, not just the finding" scope
+§17 assigns to a round-2 review -- and exactly why it matters: the round-1 fix was reviewed and
+genuinely correct on its own terms, and still cost the protocol a real invariant in the process of
+closing the first gap.

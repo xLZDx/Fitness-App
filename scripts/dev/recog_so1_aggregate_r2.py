@@ -308,13 +308,25 @@ def partition_ledger_window(partition: int, ledger_entries: list) -> tuple[datet
 
 
 def verify_isolation_gaps(present_partitions: list[int], ledger_entries: list, hours: int = ISOLATION_HOURS) -> list[str]:
-    """For EVERY partition's start, the gap since the last ledger entry of ANY
-    class -- any partition, stress probes (`partition: None`) included --
-    must be >= `hours`. This mirrors `Ledger.isolation_ok()`'s own contract
-    exactly ("of any class deliberately"): comparing a partition only against
-    the PREVIOUS partition's own last entry misses a stress probe or any
-    other request interposed between two partitions, which genuinely resets
-    the isolation clock the runner itself reads.
+    """Two independent gap requirements, both drawn verbatim from the frozen
+    protocol (RECOG_SO1_PREREGISTRATION_R2_2026-09-08.md, section 7):
+
+    1. For EVERY partition's start, the gap since the last ledger entry of ANY
+       class -- any partition, stress probes (`partition: None`) included --
+       must be >= `hours`. This mirrors `Ledger.isolation_ok()`'s own contract
+       exactly ("of any class deliberately"): an interposed stress probe or any
+       other request genuinely resets the isolation clock the runner itself
+       reads, no matter which partition (if any) it is filed under.
+    2. For every LATER partition specifically, the gap since the PREVIOUS
+       partition's (by number) own last ledger entry must ALSO independently
+       be >= `hours` -- "Each later partition may not start until 24 hours
+       after the previous partition's last ledger entry." Requirement 1 alone
+       does not enforce that partitions ran in ascending numeric/chronological
+       order: a partition run out of number order can still pass requirement 1
+       against whatever the closest preceding entry of any kind happens to be,
+       while silently violating this pairwise rule the protocol separately
+       states. Dropping this when requirement 1 was added was a real
+       regression, caught by GPT-PM's round-2 review of that very fix.
     """
     reasons: list[str] = []
     windows: dict[int, tuple[datetime, datetime]] = {}
@@ -328,7 +340,9 @@ def verify_isolation_gaps(present_partitions: list[int], ledger_entries: list, h
         return reasons
 
     required = timedelta(hours=hours)
-    for p in sorted(present_partitions):
+    ordered = sorted(present_partitions)
+
+    for p in ordered:
         start_p, _ = windows[p]
         earlier = [e.at for e in ledger_entries if e.at < start_p]
         if not earlier:
@@ -338,6 +352,16 @@ def verify_isolation_gaps(present_partitions: list[int], ledger_entries: list, h
             reasons.append(
                 f"partition {p}: only {gap.total_seconds() / 3600:.1f}h since the last ledger "
                 f"entry of any class before it (< {hours}h)"
+            )
+
+    for prev, cur in zip(ordered, ordered[1:]):
+        _, end_prev = windows[prev]
+        start_cur, _ = windows[cur]
+        gap = start_cur - end_prev
+        if gap < required:
+            reasons.append(
+                f"partition {cur}: only {gap.total_seconds() / 3600:.1f}h since partition {prev}'s "
+                f"last ledger entry (< {hours}h)"
             )
     return reasons
 

@@ -198,13 +198,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 3856193</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 196f69a</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -665,12 +667,46 @@ and <code>ledger_path</code> did not, and the defect surfaced immediately as a g
 Caught by the suite itself, not by a reviewer &mdash; the same class of defect as all eighteen
 before it: a claim wider than the check standing behind it.</p>
 
+<h3>Gate §15: two rounds of mandatory commit review, both with real findings</h3>
+
+<p><code>review.js</code>'s automated ChatGPT-composer transport (Playwright) failed four times in
+a row on commit <code>7f38147</code>'s diff &mdash; "ChatGPT's send button never became enabled" &mdash;
+including after a fresh <code>pm_bridge_restart()</code>. The same ChatGPT conversation, reached
+directly via <code>gpt_send_and_await</code>, worked reliably. Round 2 (for commit
+<code>196f69a</code>) hit the identical failure, but this time simultaneously, in the same few
+minutes, across three independent projects (<code>AI_trading_assistance</code>, <code>Ferma</code>,
+and this one) &mdash; confirming a transport-wide outage, not anything specific to this diff. Both
+rounds were obtained via <code>gpt_send_and_await</code> directly instead.</p>
+
+<p><strong>Round 1</strong> (<code>7f38147</code>): <code>VERDICT: REVISE</code>, 0 BLOCKER /
+2 MAJOR. MAJOR 1 &mdash; <code>verify_isolation_gaps()</code> compared partitions 2&ndash;4 only
+against the PREVIOUS PARTITION's own last entry, not the last entry of ANY class before that
+partition's start &mdash; a stress probe interposed between two partitions went undetected. MAJOR 2
+&mdash; a partition tagged <code>absent_after_terminal</code> ("never run") was never actually
+checked against the ledger. Both verified against the pre-fix source before being accepted, both
+fixed in commit <code>196f69a</code>.</p>
+
+<p><strong>Round 2</strong> (<code>196f69a</code>, verifying round 1's own fix): <code>VERDICT:
+REVISE</code>, 0 BLOCKER / 1 MAJOR / 1 MINOR. New MAJOR &mdash; the MAJOR-1 fix merged "partition 1
+vs any earlier entry" and "later partitions vs specifically the previous partition's entry" into one
+"closest earlier entry" check, silently dropping the frozen protocol's separately-stated
+partition-number ordering requirement. GPT-PM's counter-example: partitions run out of numeric
+order (2, 1, 3, 4), each 25h after whichever ran immediately before it &mdash; passes the any-class
+check while violating the numeric ordering rule. Fixed by restoring the pairwise
+previous-partition-by-number check ALONGSIDE the any-class check, not instead of it. MINOR &mdash;
+the MAJOR-1 regression test was vacuous: the real <code>run_partition()</code> call for partition 2
+refused at the runner's own live isolation gate before ever writing the output file, so
+<code>aggregate()</code> failed on "file does not exist" &mdash; a message that happens to also
+contain "partition 2" &mdash; rather than on the isolation check under test. Rewritten to build all
+four partition files for real first (a genuine 25h gap throughout), then splice the probe into the
+ledger post-hoc.</p>
+
 <h3>Evidence</h3>
 
 <ul>
-  <li><code>recog_so1_r2.tests.py</code> &mdash; <strong>222 of 222</strong>, sections (y)&ndash;(hh),
-      92 new checks, every one against genuinely-produced <code>run_partition()</code> output or a
-      real, unmutated seal.</li>
+  <li><code>recog_so1_r2.tests.py</code> &mdash; <strong>235 of 235</strong>, sections (y)&ndash;(ii),
+      105 new checks (92 in (y)&ndash;(hh), 13 in (ii) &mdash; two §15 review rounds), every one
+      against genuinely-produced <code>run_partition()</code> output or a real, unmutated seal.</li>
   <li><code>recog_so1.tests.py</code> &mdash; <strong>61 of 61</strong>, revision 1 untouched.</li>
   <li><code>--partition 1 --dry-run</code> &mdash; exit 2 (empty seal), <code>--stress-probe</code>
       &mdash; exit 7 (isolation): neither runner gate was disturbed.</li>
@@ -683,6 +719,8 @@ before it: a claim wider than the check standing behind it.</p>
 answers remain quarantined: unread, ungrouped, unscored. The contact sheets showing identifiable
 people, including two children, are not published and do not travel.</p>
 </div>
+
+
 
 
 

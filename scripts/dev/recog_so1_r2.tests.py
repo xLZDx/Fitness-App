@@ -1803,7 +1803,7 @@ if hh_bundle is not None:
 
 
 # ==========================================================================
-# (ii) TWO ADVERSARIAL CASES FROM GPT-PM's MANDATORY COMMIT REVIEW OF 7f38147
+# (ii) ADVERSARIAL CASES FROM GPT-PM's MANDATORY COMMIT REVIEW (7f38147, then 196f69a)
 # ==========================================================================
 print("\n--- (ii) isolation reads the WHOLE ledger; an absent_after_terminal partition is proven unrun ---")
 
@@ -1814,6 +1814,20 @@ print("\n--- (ii) isolation reads the WHOLE ledger; an absent_after_terminal par
 # two partitions' OWN windows were far enough apart. Ledger.isolation_ok()'s
 # own contract is "the last request of ANY class", and this fixture builds
 # exactly that gap with a genuine ledger write, not a hand-typed timestamp.
+#
+# Rewritten after GPT-PM's round-2 review (MINOR): the original version of
+# this test made partition 2's run_partition() call only 12h after the probe,
+# relying on run_partition()'s OWN live isolation_ok() gate to refuse before
+# writing part_2.jsonl at all (recog_so1_run_r2.py: the isolation guard runs
+# before the output file is opened). aggregate() then failed on "partition 2
+# output file ... does not exist" (recog_so1_aggregate_r2.py:488) -- a message
+# that also happens to contain the substring "partition 2" -- so the
+# assertions passed without verify_isolation_gaps() itself ever running. Fixed
+# by building BOTH partition files for real first, 25h apart (so run_partition
+# never refuses either one), then splicing the stress probe directly into the
+# ledger POST-HOC -- the same technique section (ff)/(ii2 below) already use --
+# so the only thing that can make aggregate() refuse afterward is
+# verify_isolation_gaps() reading the now-contaminated ledger.
 II_TMP = Path(tempfile.mkdtemp())
 ii_manifests = four_manifests(II_TMP, sizes=(1, 1, 1, 1))
 ii_prereg = new_preregistration_stand_in(II_TMP, "ii")
@@ -1821,27 +1835,38 @@ ii_clock = FakeClock(datetime(2026, 1, 1, tzinfo=timezone.utc))
 ii_ledger = ledger_mod.Ledger(II_TMP / "ledger.jsonl", clock=ii_clock)
 ii_ledger.initialise()
 
-o1 = part_obs(1, 1)
-runner.run_partition(1, o1, CORPUS, "prompt", VOCAB, CONFIG, "k",
-                     Replies([(200, {}, OK_BODY)] * 2), ii_ledger, II_TMP / "part_1.jsonl",
-                     sleep=lambda s: None)
-ii_clock.advance(hours=36)
-ii_ledger.record(model=CONFIG["model"], request_class="stress_probe", partition=None)
-ii_clock.advance(hours=12)  # only 12h since the stress probe when partition 2 begins
-o2 = part_obs(2, 1)
-runner.run_partition(2, o2, CORPUS, "prompt", VOCAB, CONFIG, "k",
-                     Replies([(200, {}, OK_BODY)] * 2), ii_ledger, II_TMP / "part_2.jsonl",
-                     sleep=lambda s: None)
+ii_out = {}
+for p in AGG_PARTITIONS:  # a real, valid COMPLETE shape needs all four present
+    o = part_obs(p, 1)
+    runner.run_partition(p, o, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                         Replies([(200, {}, OK_BODY)] * 2), ii_ledger, II_TMP / f"part_{p}.jsonl",
+                         sleep=lambda s: None)
+    ii_out[p] = II_TMP / f"part_{p}.jsonl"
+    ii_clock.advance(hours=25)
 
-bundle, reasons = agg.aggregate(
-    {1: II_TMP / "part_1.jsonl", 2: II_TMP / "part_2.jsonl"}, ledger_path=ii_ledger.path,
-    manifest_paths=ii_manifests, preregistration_path=ii_prereg,
+ii_bundle, ii_reasons = agg.aggregate(
+    ii_out, ledger_path=ii_ledger.path, manifest_paths=ii_manifests, preregistration_path=ii_prereg,
     load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
-check(bundle is None,
-      "MAJOR 1 regression: a stress probe 12h before partition 2's start refuses aggregate(), even "
-      "though partition 2 is a full 48h after partition 1's OWN last entry", reasons)
-check(bundle is None and any("partition 2" in r for r in reasons),
-      "  -- and names partition 2 as the one that fails isolation", reasons)
+check(ii_bundle is not None, "(setup) a genuinely 25h-spaced four-partition bundle builds", ii_reasons)
+
+if ii_bundle is not None:
+    p1_at = [e.at for e in ii_ledger.entries() if e.partition == 1]
+    p2_at = [e.at for e in ii_ledger.entries() if e.partition == 2]
+    p1_end, p2_start = max(p1_at), min(p2_at)
+    probe_at = p1_end + (p2_start - p1_end) * 3 / 4  # well under 24h before partition 2's start
+    with ii_ledger.path.open("a", encoding="utf-8", newline="\n") as fh:
+        probe = ledger_mod.LedgerEntry(model="m", at=probe_at, request_class="stress_probe", partition=None)
+        fh.write(probe.to_json() + "\n")
+
+    bundle, reasons = agg.aggregate(
+        ii_out, ledger_path=ii_ledger.path, manifest_paths=ii_manifests, preregistration_path=ii_prereg,
+        load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+    check(bundle is None,
+          "MAJOR 1 regression, non-vacuous: a stress probe spliced into the ledger AFTER every "
+          "partition file already exists refuses aggregate(), even though partition 2 is a full "
+          "25h after partition 1's OWN last entry", reasons)
+    check(bundle is None and any("partition 2" in r and "any class" in r for r in reasons),
+          "  -- and the refusal names partition 2 and cites the any-class gap, not a missing file", reasons)
 
 # The same defect, proven the other direction: a genuinely well-isolated
 # four-partition bundle validates cleanly, and THEN an interposed stress
@@ -1889,6 +1914,45 @@ if ii2_bundle is not None:
     check(vb is None,
           "MAJOR 1 regression, validate_bundle() side: the same interposed stress probe refuses "
           "RE-validation of an already-valid bundle, once it is written to the live ledger", vr)
+
+# GPT-PM's round-2 review of the MAJOR-1 fix itself found a new MAJOR: merging
+# "partition 1 vs any earlier entry" and "later partitions vs the previous
+# partition's own entry" into one "any earlier entry, whichever is closest"
+# rule silently dropped the frozen protocol's OTHER, separately-stated
+# invariant -- "Each later partition may not start until 24 hours after the
+# PREVIOUS partition's last ledger entry" (preregistration section 7) is a
+# claim about partition NUMBER order, not merely "some entry >=24h ago". This
+# fixture runs partitions out of numeric order (2, 1, 3, 4), each individually
+# a full 25h after whichever one ran immediately before it in real wall-clock
+# time -- so the any-class check alone (requirement 1) would pass every one of
+# them, and only the restored pairwise previous-partition-by-number check
+# (requirement 2) can catch it.
+IORD_TMP = Path(tempfile.mkdtemp())
+iord_manifests = four_manifests(IORD_TMP, sizes=(1, 1, 1, 1))
+iord_prereg = new_preregistration_stand_in(IORD_TMP, "iord")
+iord_clock = FakeClock(datetime(2026, 1, 1, tzinfo=timezone.utc))
+iord_ledger = ledger_mod.Ledger(IORD_TMP / "ledger.jsonl", clock=iord_clock)
+iord_ledger.initialise()
+
+iord_out = {}
+for p in (2, 1, 3, 4):  # deliberately run OUT of partition-number order
+    o = part_obs(p, 1)
+    runner.run_partition(p, o, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                         Replies([(200, {}, OK_BODY)] * 2), iord_ledger, IORD_TMP / f"part_{p}.jsonl",
+                         sleep=lambda s: None)
+    iord_out[p] = IORD_TMP / f"part_{p}.jsonl"
+    iord_clock.advance(hours=25)
+
+bundle, reasons = agg.aggregate(
+    iord_out, ledger_path=iord_ledger.path, manifest_paths=iord_manifests,
+    preregistration_path=iord_prereg, load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+check(bundle is None,
+      "round-2 MAJOR regression: partitions run out of numeric order (2, 1, 3, 4), each "
+      "individually >=24h after whatever ran immediately before it in wall-clock time, still "
+      "refuses -- proving the restored previous-partition-by-number check is actually enforced, "
+      "not just the any-class one", reasons)
+check(bundle is None and any("partition 2" in r and "partition 1" in r for r in reasons),
+      "  -- and names the contradicted pair (partition 2 ran before partition 1's own entry)", reasons)
 
 # MAJOR 2: a partition tagged absent_after_terminal is a claim that it was
 # NEVER RUN. Neither aggregate() nor validate_bundle() checked the ledger for
