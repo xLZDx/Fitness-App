@@ -445,16 +445,19 @@ Everything below runs offline. `py -3 scripts/dev/recog_so1_r2.tests.py` — **1
 call, no real sleep**, cover the pre-aggregation-gate R2 runner alone. Every mutation is reverted
 and the revert is itself asserted.
 
-**Stale-count note, added after GPT-PM's §15 closure review flagged this section as unreconciled
-with the aggregation-contract gate's own additions:** the file now holds **235** checks in total.
-The 162 below are unchanged; the remaining 73 (sections (y) through (jj)) verify the separate
-aggregation-contract gate -- Contracts 1-5, B and D, plus the two defects that gate's own mandatory
-`review.js` review found and had fixed -- and are documented in `core/DECISION_LOG.md`, not here.
-This section is intentionally left describing the runner alone rather than rewritten to describe
-both gates at once, since the aggregation contract has its own artefact-digest entry in the
-provisional appendix below and its own closure evidence in the decision log; duplicating that here
-would be exactly the kind of claim this document keeps warning against -- one wider than the check
-that backs it, restated in a second place where it can drift out of sync again.
+**Stale-count note, added after GPT-PM's Rosetta closure review flagged this section as
+unreconciled with the aggregation-contract gate's own additions -- and deliberately carrying no
+second number here after that same fix was itself found stale one round later (a specific count
+written here drifted out of sync with the growing suite twice in a row, which is exactly the
+failure mode a second copy of a moving number always produces):** the 162 below describe the
+pre-aggregation-gate R2 runner alone and are unchanged. Sections (y) onward, added by the separate
+aggregation-contract gate -- Contracts 1-5, B and D, plus every defect that gate's own mandatory
+`review.js`/closure review found and had fixed -- are NOT counted here. The file's current whole
+total lives in `core/DECISION_LOG.md`, the single place it is updated as the suite grows, not
+retyped into this document a second time. This section stays deliberately scoped to the runner
+alone rather than rewritten to describe both gates at once, for the same reason: the aggregation
+contract already has its own artefact-digest entry in the provisional appendix below and its own
+closure evidence in the decision log.
 
 - the nine wait values, exactly, as totals
 - exactly one sleep per transport call, structurally — not two fragments summing to the same number

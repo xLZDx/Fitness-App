@@ -46791,3 +46791,28 @@ that drifts out of sync again, which is what caused this MINOR in the first plac
 
 Full suite after both fixes: **242/242** (was 235/235; net +7, all from the new (jj) section --
 (gg)'s own check count is unchanged, only what its sidecar assertion actually verifies changed).
+
+### Rosetta closure review, round 2: `VERDICT: REVISE`, 0 MAJOR / 1 MINOR -- the MINOR fix was itself stale
+
+Re-submitted `pm_rosetta_close` after pushing `80230c1` (the MAJOR+MINOR fix above). Confirmed the
+prior MAJOR (Contract D's (gg) test not proving what the closure claimed) genuinely closed: the new
+(jj) section exercises the real `score_r2.main()` boundary, spies `load_rows()` from inside it,
+requires exactly one call fed the pre-mutation snapshot, and monitors every write-mode file open for
+the whole call -- "the technical gate is materially sound," in GPT-PM's own words. No new production
+regression found.
+
+But the MINOR's own remediation was itself stale: the stale-count note added to preregistration
+section 11 said "the file now holds 235 checks... the remaining 73," numbers accurate at the moment
+that note was first drafted -- BEFORE section (jj) was added later in the same commit, which raised
+the real total to 242 (+7, not +73-from-162). The note was never updated after (jj) landed, so it
+shipped internally inconsistent with the same commit's own message ("Full suite: 242/242") and with
+`DECISION_LOG.md`. Exactly the "two different stories" failure the original MINOR was about,
+recreated one level down. Verified by reading the pushed file directly before accepting.
+
+Fixed by removing the specific number entirely rather than correcting it to 242/80 -- GPT-PM's own
+suggested fix, and the more robust one: a hand-maintained count in a second document is what
+produced this exact defect twice in one gate. Section 11 now states only that the 162 below describe
+the pre-aggregation-gate runner alone, that sections (y) onward (a separate gate) are not counted
+there, and that the file's current whole total lives in `DECISION_LOG.md` -- one place, updated as
+the suite grows, never retyped into a second place that can drift out of sync again. Full suite
+unaffected by this doc-only fix: 242/242.
