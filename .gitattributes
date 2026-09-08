@@ -71,3 +71,9 @@ scripts/dev/recog_so1_build_manifest.py text eol=lf
 scripts/dev/recog_so1_run.py text eol=lf
 scripts/dev/recog_so1_score.py text eol=lf
 scripts/dev/recog_so1.tests.py text eol=lf
+
+# SO1 run #1 is preserved as an audit artefact of an INVALID instrument run:
+# 46 answered, 58 quota failures, deliberately never scored. Same reasoning as
+# the recog_c1_raw line above -- an evidence file that a later reader may want
+# to hash must not depend on which platform checked it out.
+core/plans/recog_so1_raw/*.jsonl -text

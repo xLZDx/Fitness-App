@@ -46075,3 +46075,109 @@ stubbed to return 0.0 -- waits 0.0s there and is then reverted, asserted. 57 che
 second caught by the reviewer rather than by me. The config text said the runner "sleeps after every
 completed observation" and the four new abort tests plus the 503 test all passed; none of them
 exercised an exhausted retryable failure, which is the one path where the sentence was false.
+
+## 2026-09-08 — SO1 run #1: INVALID_INSTRUMENT. The photographs were sent, the experiment was not run
+
+The 104-observation pass executed under the sealed protocol: seal verified 12/12, consent AUTHORISED,
+no abort fired, all 104 observations attempted. **46 answered, 58 unresolved, every failure HTTP 429.**
+Raw output preserved unscored at `core/plans/recog_so1_raw/RECOG_SO1_RUN_2026-09-08.jsonl`.
+
+**The sealed scorer was NOT run, and that is GPT-PM's ruling rather than my choice.** Asked to rule
+before step 8, it refused to authorise scoring "even for information": 46 answered plus 58 quota
+failures would convert provider quota behaviour into model evidence.
+
+### The 58 failures are two limits, and neither is the one the pacing was built against
+
+**TPD — tokens per day, 200,000, enforced per ORGANIZATION.** 48 of the 58. From the real body:
+`Rate limit reached ... on tokens per day (TPD): Limit 200000, Used 199789, Requested 2495`. It hit
+at observation 47 of 104; everything after it died.
+
+**OTPM — output tokens per minute, 1,000.** 10 of the 58, two of them BEFORE the daily budget was
+gone. From the real body: `Request too large ... on output tokens per minute (OTPM): Limit 1000,
+Requested 1072. The request's expected output tokens exceed the enforced limit; reduce max_tokens`.
+Groq's own per-request estimate ranged 1072–2123 across the ten, while the ACTUAL completions on the
+answered requests were **22–41 tokens**. The estimate is derived pessimistically from the sealed
+`max_completion_tokens: 4096`, so this is not a rate at all — it is a per-request ceiling, and no
+amount of pacing reaches it.
+
+### And a third number I had wrong, measured from this run's own usage blocks
+
+I told GPT-PM the worst-case prompt was **1813** tokens. Over the 46 answered observations the real
+mean is **2153** and the max **2198** (arm A mean 2113, arm B mean 2198). The pacing arithmetic used
+a figure 18% too low.
+
+**The arithmetic that settles it: a CLEAN 104-observation pass, with ZERO retries, costs about
+2153 × 104 = 224,000 input tokens against a 200,000 daily ceiling. THE EXPERIMENT DOES NOT FIT IN
+ONE DAY ON THIS TIER AT ALL.** The retry policy made it worse — 260 requests were made for 104
+observations, 61 of them using all three attempts — but even a perfect run is 112% of a day.
+
+### A DEFECT IN THE SEALED PRE-REGISTRATION, reported rather than worked around
+
+The power floor was meant to stop a degraded run from producing a verdict. It does not.
+`unique_sources` (`scripts/dev/recog_so1_score.py:221`) counts **rows**, not **answers**: it reports
+26/26/26/26 for this run and passes, because all 104 rows exist — 58 of them simply have no reply.
+The floor's description is broader than the check behind it, which is the same defect class this
+session keeps producing; this is the eighth instance and the third caught by the reviewer.
+
+The scorer is NOT being edited to repair it. Editing a sealed scorer after a run exists is exactly
+what the seal forbids, and GPT-PM was explicit that it would not simply make today's run read
+INCONCLUSIVE.
+
+### GPT-PM's ruling, adopted in full
+
+- **Option A**: this run is an INVALID instrument run, archived unscored; a new pre-registration
+  revision, then a clean re-run. Option B (change provider/model) rejected — it would change the
+  hypothesis while Groq remains technically feasible across two days. Option C (score what exists)
+  rejected. Option D only in the narrow sense that the run is preserved and reported as an
+  instrument-feasibility failure, **not** as a performance pilot: no D, no delta, no agreement, no
+  accuracy, no per-arm figure may be computed from those 46.
+- **A run-validity gate must precede hypothesis scoring**, distinguishing `INVALID_INSTRUMENT` (a
+  provider/config/quota failure makes the planned measurement structurally invalid — no statistics
+  produced) from `INCONCLUSIVE` (execution valid, too few answers survived the coverage floor).
+- **An ANSWER-coverage floor is required**: ≥20 unique source photographs per GT kind with valid
+  parsed answers in BOTH arms. A 429, timeout, 5xx or parse failure does not count toward it merely
+  because its manifest row exists. With mutation evidence: 26 sources present but only 19 complete
+  answered pairs in one kind, point estimates otherwise PASS-like, must be forced to INCONCLUSIVE,
+  and removing the guard must make the same fixture wrongly reach PASS.
+- **The re-run is two deterministic day partitions, frozen before transmission** — 13
+  `canonical_single` + 13 `multiple` sources per day, both arms of a source always on the same day,
+  so day and quota conditions cannot confound GT kind or arm. Not "run until the quota runs out and
+  resume".
+- **Retry policy by quota class, not by status code**: TPD exhausted stops that day's partition;
+  a per-request OTPM refusal is an instrument failure and stops; ordinary ITPM honours `Retry-After`
+  with a tight bound; 5xx/timeout keeps a small predeclared bound. **No cycling keys, projects or
+  accounts to evade an organization limit.**
+- `max_completion_tokens` **may** change in the revision, because the current value is demonstrated
+  to make valid requests impossible — but the replacement is chosen from the response contract and
+  validated with synthetic images against the exact strict schema and prompt, **never optimised
+  against the 46 answers now visible**. The 22–41 actual completion tokens are recorded as
+  operational evidence and are not an optimisation surface.
+- The 2153/2198 measurements legitimately replace the wrong 1813: token usage is instrument
+  metadata, not an SO1 outcome.
+- **From now until the revised protocol is sealed, the 46 machine names are quarantined** — not
+  inspected, summarised, grouped or scored. The re-run starts from observation 1; the 58 missing are
+  NOT filled in and combined with the old 46, which would mix two execution regimes.
+
+### CONSENT: GPT-PM read the record more strictly than I did, and it is right
+
+I proposed that the committed consent covers a re-run, because it is the same photographs to the
+same endpoint under the same retention state. GPT-PM disagreed: the record authorises that exact
+manifest **once**, and the completed run consumed that authorisation. Same files and same endpoint
+reduce the incremental privacy change; they do not turn "once" into "as many attempts as needed".
+
+**A second transmission therefore requires a new, explicit operator reaffirmation** — recording that
+the first 104-observation transmission occurred and failed as an instrument, that a second pass of
+the same 52 photographs is proposed to the same frozen model and endpoint, that it will span
+multiple days, that Global ZDR remains enabled, and that the operator authorises it. It binds the
+new pre-registration and the new day-partitioned manifest.
+
+**This is operator-only under §4/§20 and is where this program stops.** No reviewer approval
+substitutes for it.
+
+### Contamination, disclosed rather than buried
+
+46 raw machine names were seen while reading the failure classes. No agreement, delta or accuracy
+was computed and none will be. Every change the revision makes is forced by measured provider
+instrumentation — token caps, quota classes, partitioning, retry behaviour, validity gating — not by
+anything visible in the answers. GPT-PM's judgement: a clean re-run remains defensible, provided
+the quarantine above holds.
