@@ -1803,6 +1803,145 @@ if hh_bundle is not None:
 
 
 # ==========================================================================
+# (ii) TWO ADVERSARIAL CASES FROM GPT-PM's MANDATORY COMMIT REVIEW OF 7f38147
+# ==========================================================================
+print("\n--- (ii) isolation reads the WHOLE ledger; an absent_after_terminal partition is proven unrun ---")
+
+# MAJOR 1: verify_isolation_gaps() originally compared each partition only to
+# the PREVIOUS PARTITION's own last entry, so a stress probe (or any other
+# request) interposed between two partitions -- close enough to the second
+# one's start to violate the real 24h rule -- went unnoticed as long as the
+# two partitions' OWN windows were far enough apart. Ledger.isolation_ok()'s
+# own contract is "the last request of ANY class", and this fixture builds
+# exactly that gap with a genuine ledger write, not a hand-typed timestamp.
+II_TMP = Path(tempfile.mkdtemp())
+ii_manifests = four_manifests(II_TMP, sizes=(1, 1, 1, 1))
+ii_prereg = new_preregistration_stand_in(II_TMP, "ii")
+ii_clock = FakeClock(datetime(2026, 1, 1, tzinfo=timezone.utc))
+ii_ledger = ledger_mod.Ledger(II_TMP / "ledger.jsonl", clock=ii_clock)
+ii_ledger.initialise()
+
+o1 = part_obs(1, 1)
+runner.run_partition(1, o1, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                     Replies([(200, {}, OK_BODY)] * 2), ii_ledger, II_TMP / "part_1.jsonl",
+                     sleep=lambda s: None)
+ii_clock.advance(hours=36)
+ii_ledger.record(model=CONFIG["model"], request_class="stress_probe", partition=None)
+ii_clock.advance(hours=12)  # only 12h since the stress probe when partition 2 begins
+o2 = part_obs(2, 1)
+runner.run_partition(2, o2, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                     Replies([(200, {}, OK_BODY)] * 2), ii_ledger, II_TMP / "part_2.jsonl",
+                     sleep=lambda s: None)
+
+bundle, reasons = agg.aggregate(
+    {1: II_TMP / "part_1.jsonl", 2: II_TMP / "part_2.jsonl"}, ledger_path=ii_ledger.path,
+    manifest_paths=ii_manifests, preregistration_path=ii_prereg,
+    load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+check(bundle is None,
+      "MAJOR 1 regression: a stress probe 12h before partition 2's start refuses aggregate(), even "
+      "though partition 2 is a full 48h after partition 1's OWN last entry", reasons)
+check(bundle is None and any("partition 2" in r for r in reasons),
+      "  -- and names partition 2 as the one that fails isolation", reasons)
+
+# The same defect, proven the other direction: a genuinely well-isolated
+# four-partition bundle validates cleanly, and THEN an interposed stress
+# probe written directly into the ledger (mirroring section (ff)'s technique)
+# makes a later re-validation of the SAME bundle refuse.
+II2_TMP = Path(tempfile.mkdtemp())
+ii2_manifests = four_manifests(II2_TMP, sizes=(1, 1, 1, 1))
+ii2_prereg = new_preregistration_stand_in(II2_TMP, "ii2")
+ii2_clock = FakeClock(datetime(2026, 1, 1, tzinfo=timezone.utc))
+ii2_ledger = ledger_mod.Ledger(II2_TMP / "ledger.jsonl", clock=ii2_clock)
+ii2_ledger.initialise()
+ii2_out = {}
+for p in AGG_PARTITIONS:
+    o = part_obs(p, 1)
+    runner.run_partition(p, o, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                         Replies([(200, {}, OK_BODY)] * 2), ii2_ledger, II2_TMP / f"part_{p}.jsonl",
+                         sleep=lambda s: None)
+    ii2_out[p] = II2_TMP / f"part_{p}.jsonl"
+    ii2_clock.advance(hours=25)
+
+ii2_bundle, ii2_reasons = agg.aggregate(
+    ii2_out, ledger_path=ii2_ledger.path, manifest_paths=ii2_manifests,
+    preregistration_path=ii2_prereg, load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+check(ii2_bundle is not None, "(setup) a correctly-isolated four-partition bundle builds", ii2_reasons)
+
+if ii2_bundle is not None:
+    ii2_bundle_path = II2_TMP / "bundle.jsonl"
+    ii2_bundle_path.write_bytes(ii2_bundle)
+    vb, vr = agg.validate_bundle(
+        ii2_bundle_path, preregistration_path=ii2_prereg, manifest_paths=ii2_manifests,
+        ledger_path=ii2_ledger.path, load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+    check(vb is not None, "(setup) it validates cleanly before the interposed stress probe", vr)
+
+    p2_at = [e.at for e in ii2_ledger.entries() if e.partition == 2]
+    p3_at = [e.at for e in ii2_ledger.entries() if e.partition == 3]
+    p2_end, p3_start = max(p2_at), min(p3_at)
+    probe_at = p2_end + (p3_start - p2_end) * 3 / 4  # 6.25h before partition 3, well under 24h
+    with ii2_ledger.path.open("a", encoding="utf-8", newline="\n") as fh:
+        probe = ledger_mod.LedgerEntry(model="m", at=probe_at, request_class="stress_probe", partition=None)
+        fh.write(probe.to_json() + "\n")
+
+    vb, vr = agg.validate_bundle(
+        ii2_bundle_path, preregistration_path=ii2_prereg, manifest_paths=ii2_manifests,
+        ledger_path=ii2_ledger.path, load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+    check(vb is None,
+          "MAJOR 1 regression, validate_bundle() side: the same interposed stress probe refuses "
+          "RE-validation of an already-valid bundle, once it is written to the live ledger", vr)
+
+# MAJOR 2: a partition tagged absent_after_terminal is a claim that it was
+# NEVER RUN. Neither aggregate() nor validate_bundle() checked the ledger for
+# that claim -- they simply never looked past the present/terminal partitions.
+# A genuine ledger entry for a declared-absent partition must refuse both.
+II3_TMP = Path(tempfile.mkdtemp())
+ii3_manifests = four_manifests(II3_TMP, sizes=(1, 1, 1, 1))
+ii3_prereg = new_preregistration_stand_in(II3_TMP, "ii3")
+ii3_clock = FakeClock(datetime(2026, 1, 1, tzinfo=timezone.utc))
+ii3_ledger = ledger_mod.Ledger(II3_TMP / "ledger.jsonl", clock=ii3_clock)
+ii3_ledger.initialise()
+
+o1_ii3 = part_obs(1, 1)
+runner.run_partition(1, o1_ii3, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                     Replies([(400, {}, "bad request")]), ii3_ledger, II3_TMP / "part_1.jsonl",
+                     sleep=lambda s: None)  # the availability check itself fails -> terminal at 1
+
+bundle3, reasons3 = agg.aggregate(
+    {1: II3_TMP / "part_1.jsonl"}, ledger_path=ii3_ledger.path, manifest_paths=ii3_manifests,
+    preregistration_path=ii3_prereg, load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+check(bundle3 is not None,
+      "(setup) a genuine availability-invalid TERMINAL_INVALID-at-1 bundle builds", reasons3)
+
+if bundle3 is not None:
+    bundle3_path = II3_TMP / "bundle.jsonl"
+    bundle3_path.write_bytes(bundle3)
+    vb, vr = agg.validate_bundle(
+        bundle3_path, preregistration_path=ii3_prereg, manifest_paths=ii3_manifests,
+        ledger_path=ii3_ledger.path, load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+    check(vb is not None, "(setup) it validates cleanly before any partition-2 ledger activity", vr)
+
+    with ii3_ledger.path.open("a", encoding="utf-8", newline="\n") as fh:
+        contraband = ledger_mod.LedgerEntry(model="m", at=ii3_clock.now, request_class="availability", partition=2)
+        fh.write(contraband.to_json() + "\n")
+
+    vb, vr = agg.validate_bundle(
+        bundle3_path, preregistration_path=ii3_prereg, manifest_paths=ii3_manifests,
+        ledger_path=ii3_ledger.path, load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+    check(vb is None,
+          "MAJOR 2 regression: a genuine ledger entry for the declared-absent partition 2 refuses "
+          "re-validation of an otherwise structurally valid TERMINAL_INVALID-at-1 bundle", vr)
+    check(vb is None and any("partition 2" in r and "absent_after_terminal" in r for r in vr),
+          "  -- and names partition 2's contradicted absent_after_terminal claim", vr)
+
+    bundle4, reasons4 = agg.aggregate(
+        {1: II3_TMP / "part_1.jsonl"}, ledger_path=ii3_ledger.path, manifest_paths=ii3_manifests,
+        preregistration_path=ii3_prereg, load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+    check(bundle4 is None,
+          "MAJOR 2 regression, build side: aggregate() itself refuses once the ledger holds an "
+          "entry for a partition the shape declares was never run", reasons4)
+
+
+# ==========================================================================
 print("\n" + "=" * 74)
 failed = [label for ok, label in RESULTS if not ok]
 print(f"{len(RESULTS) - len(failed)} of {len(RESULTS)} checks passed")

@@ -46602,3 +46602,47 @@ Unchanged from Round 4's entry above: the 24-hour isolation wait, then the two s
 sealing, then renewed operator consent, then the execution gate. This gate is offline and additive
 only -- no R1 file, no R2 runner/config/prompt/vocab file, and no partition manifest was touched; the
 real seal is still `{}`.
+
+### §15 mandatory commit review of 7f38147: `VERDICT: REVISE`, 2 MAJOR -- both real, both fixed
+
+`review.js`'s own automated composer paste failed four consecutive times on this diff
+("ChatGPT's send button never became enabled after the payload landed"), including after a fresh
+`pm_bridge_restart`, so the review was carried out via `gpt_send_and_await` directly, split into two
+messages (content, then the explicit verdict ask) -- the same workaround this session used earlier
+for an unrelated transport stall. GPT-PM gave a genuine, correlated review and returned
+`VERDICT: REVISE`, 0 BLOCKER / 2 MAJOR, confirming the round-8 TOCTOU fix itself was implemented
+correctly and finding two real defects the 222/222 suite never exercised:
+
+**MAJOR 1** -- `verify_isolation_gaps()` checked the FIRST partition correctly (gap since the last
+ledger entry of ANY class, matching `Ledger.isolation_ok()`'s own "of any class deliberately"
+contract), but for partitions 2-4 it compared only against the PREVIOUS PARTITION's own last entry
+(`start_cur - end_prev`). A stress probe (`partition: None`) interposed between two partitions --
+close enough to the second one's start to violate the real 24h rule, while the two partitions' own
+windows are far enough apart to pass the old check -- went undetected in both `aggregate()` and
+`validate_bundle()`, since both call the same function. Verified against the code before accepting:
+confirmed at `recog_so1_aggregate_r2.py`'s original `verify_isolation_gaps()`, lines 337-345 of the
+pre-fix version. Fixed by computing, for EVERY partition (not just the first), the gap since the max
+timestamp of every ledger entry strictly before that partition's own start, over the whole ledger --
+which also simplified the function, since the "first partition" case no longer needs separate
+handling.
+
+**MAJOR 2** -- a partition tagged `absent_after_terminal` is a claim that it was never run, but
+neither `aggregate()` nor `validate_bundle()` checked the ledger for that claim; both confined every
+reconciliation and isolation check to `present`/`present_like` partitions and simply never looked at
+what the ledger held for the ones marked absent. A TERMINAL_INVALID bundle claiming terminal-at-1
+could therefore validate while the ledger held real requests for partition 2, 3, or 4 -- directly
+contradicting the module's own documented closed shape. Fixed with a new predicate,
+`verify_absent_partitions_are_truly_unrun()`, requiring zero ledger entries (any class) for every
+partition a bundle tags `absent_after_terminal`; wired into both `aggregate()` and `validate_bundle()`
+immediately after the isolation check.
+
+Both fixes were verified against the actual (pre-fix) source before being accepted as real, per §3 --
+not taken on the reviewer's word alone. Two regression tests were added, section (ii) in
+`recog_so1_r2.tests.py`, using GPT-PM's own examples: a genuine `run_partition()`-produced two-partition
+fixture with a real stress-probe ledger entry interposed 12h before the second partition's start
+(refuses both `aggregate()` and, via the `(ff)`-style post-hoc ledger write, `validate_bundle()` on
+re-validation); and a genuine availability-invalid TERMINAL_INVALID-at-1 bundle that validates cleanly
+until a real ledger entry for partition 2 is appended, at which point both `aggregate()` and
+`validate_bundle()` refuse and name the contradicted claim. Full suite: **232/232** (was 222/222; the
+existing 222 were unaffected by either fix, confirming no regression -- and confirming, exactly as
+GPT-PM's review noted, that the original suite never exercised either adversarial case).

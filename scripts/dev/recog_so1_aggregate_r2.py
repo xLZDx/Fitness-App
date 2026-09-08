@@ -308,8 +308,13 @@ def partition_ledger_window(partition: int, ledger_entries: list) -> tuple[datet
 
 
 def verify_isolation_gaps(present_partitions: list[int], ledger_entries: list, hours: int = ISOLATION_HOURS) -> list[str]:
-    """Re-derive the >= `hours` gap before the first partition and between
-    each consecutive pair, from the ledger alone -- never from a claim.
+    """For EVERY partition's start, the gap since the last ledger entry of ANY
+    class -- any partition, stress probes (`partition: None`) included --
+    must be >= `hours`. This mirrors `Ledger.isolation_ok()`'s own contract
+    exactly ("of any class deliberately"): comparing a partition only against
+    the PREVIOUS partition's own last entry misses a stress probe or any
+    other request interposed between two partitions, which genuinely resets
+    the isolation clock the runner itself reads.
     """
     reasons: list[str] = []
     windows: dict[int, tuple[datetime, datetime]] = {}
@@ -323,25 +328,38 @@ def verify_isolation_gaps(present_partitions: list[int], ledger_entries: list, h
         return reasons
 
     required = timedelta(hours=hours)
-    ordered = sorted(present_partitions)
-    first = ordered[0]
-    start_first, _ = windows[first]
-    earlier = [e.at for e in ledger_entries if e.at < start_first]
-    if earlier:
-        gap = start_first - max(earlier)
+    for p in sorted(present_partitions):
+        start_p, _ = windows[p]
+        earlier = [e.at for e in ledger_entries if e.at < start_p]
+        if not earlier:
+            continue
+        gap = start_p - max(earlier)
         if gap < required:
             reasons.append(
-                f"partition {first}: only {gap.total_seconds() / 3600:.1f}h since the last ledger "
+                f"partition {p}: only {gap.total_seconds() / 3600:.1f}h since the last ledger "
                 f"entry of any class before it (< {hours}h)"
             )
-    for prev, cur in zip(ordered, ordered[1:]):
-        _, end_prev = windows[prev]
-        start_cur, _ = windows[cur]
-        gap = start_cur - end_prev
-        if gap < required:
+    return reasons
+
+
+def verify_absent_partitions_are_truly_unrun(states: dict[int, str], ledger_entries: list) -> list[str]:
+    """A partition tagged `absent_after_terminal` is a claim that it was NEVER
+    RUN. Prove it against the WHOLE ledger rather than merely omitting it from
+    reconciliation -- otherwise a bundle correctly shaped for partitions 1..k
+    validates regardless of what the ledger actually holds for k+1..4, and the
+    closed TERMINAL_INVALID shape (`recog_so1_aggregate_r2.py`'s own module
+    docstring: "they were never run, so nothing is expected of them") is
+    unenforced exactly where it matters.
+    """
+    reasons: list[str] = []
+    for p in PARTITIONS:
+        if states.get(p) != "absent_after_terminal":
+            continue
+        if partition_ledger_window(p, ledger_entries) is not None:
             reasons.append(
-                f"partition {cur}: only {gap.total_seconds() / 3600:.1f}h since partition {prev}'s "
-                f"last ledger entry (< {hours}h)"
+                f"partition {p} is declared absent_after_terminal -- never run -- but the ledger "
+                f"holds request(s) recorded for it; that contradicts the closed TERMINAL_INVALID "
+                f"shape this bundle claims"
             )
     return reasons
 
@@ -498,6 +516,10 @@ def aggregate(
         return None, reasons
 
     reasons.extend(verify_isolation_gaps(present, ledger_entries))
+    if reasons:
+        return None, reasons
+
+    reasons.extend(verify_absent_partitions_are_truly_unrun(states, ledger_entries))
     if reasons:
         return None, reasons
 
@@ -757,6 +779,10 @@ def validate_bundle(
                 observation_lines.append(ln)
 
     reasons.extend(verify_isolation_gaps(present_like, ledger_entries))
+    if reasons:
+        return None, reasons
+
+    reasons.extend(verify_absent_partitions_are_truly_unrun(states, ledger_entries))
     if reasons:
         return None, reasons
 
