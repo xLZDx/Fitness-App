@@ -1,0 +1,635 @@
+<title>SO1 Instrument, Revision 2</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+  :root {
+    --ground: #f2f4f7;
+    --surface: #ffffff;
+    --surface-sunk: #e9edf3;
+    --ink: #16202e;
+    --ink-soft: #4a5768;
+    --ink-faint: #78859a;
+    --rule: #ccd5e0;
+    --rule-strong: #9aa9bd;
+    --accent: #b45309;
+    --accent-soft: #fdf3e3;
+    --verified: #0f6f66;
+    --verified-soft: #e2f1ef;
+    --halt: #8f1d3f;
+    --halt-soft: #fbe9ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #10161f;
+      --surface: #172030;
+      --surface-sunk: #1d2839;
+      --ink: #e6ecf4;
+      --ink-soft: #a9b6c8;
+      --ink-faint: #7d8ba0;
+      --rule: #2b3749;
+      --rule-strong: #46566e;
+      --accent: #e9a13b;
+      --accent-soft: #2c2110;
+      --verified: #59c9bb;
+      --verified-soft: #102a29;
+      --halt: #f090a9;
+      --halt-soft: #2c1220;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #10161f;
+    --surface: #172030;
+    --surface-sunk: #1d2839;
+    --ink: #e6ecf4;
+    --ink-soft: #a9b6c8;
+    --ink-faint: #7d8ba0;
+    --rule: #2b3749;
+    --rule-strong: #46566e;
+    --accent: #e9a13b;
+    --accent-soft: #2c2110;
+    --verified: #59c9bb;
+    --verified-soft: #102a29;
+    --halt: #f090a9;
+    --halt-soft: #2c1220;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 16.5px;
+    line-height: 1.62;
+    margin: 0;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 22px 90px; }
+
+  header {
+    padding: 54px 0 26px;
+    border-bottom: 2px solid var(--rule-strong);
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 14px;
+  }
+  h1 {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700; font-size: clamp(30px, 5.2vw, 46px);
+    line-height: 1.08; letter-spacing: -.02em; margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  .standfirst { font-size: 19px; color: var(--ink-soft); margin: 0; max-width: 62ch; }
+
+  h2 {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600; font-size: 21px; letter-spacing: -.01em;
+    margin: 54px 0 4px; padding-top: 20px; border-top: 1px solid var(--rule);
+    text-wrap: balance;
+  }
+  h2 .num {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 500;
+    color: var(--accent); display: block; margin-bottom: 7px; letter-spacing: .1em;
+  }
+  h3 {
+    font-family: Archivo, sans-serif; font-weight: 600; font-size: 16px;
+    margin: 30px 0 6px; color: var(--ink);
+  }
+  p { margin: 14px 0; max-width: 68ch; }
+  strong { font-weight: 600; }
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .88em;
+  }
+  code { background: var(--surface-sunk); padding: 1px 5px; border-radius: 3px; }
+
+  .band {
+    display: flex; flex-wrap: wrap; gap: 14px; align-items: baseline;
+    margin: 30px 0 0; padding: 18px 20px;
+    background: var(--accent-soft);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 5px 5px 0;
+  }
+  .band .tag {
+    font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 12px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--accent);
+  }
+  .band p { margin: 0; font-size: 15.5px; color: var(--ink); }
+
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; }
+  .scroll { overflow-x: auto; margin: 20px 0; }
+  .scroll table { margin: 0; min-width: 560px; }
+  th, td {
+    text-align: left; padding: 9px 12px 9px 0;
+    border-bottom: 1px solid var(--rule); vertical-align: top;
+  }
+  th {
+    font-family: Archivo, sans-serif; font-weight: 600; font-size: 12px;
+    letter-spacing: .07em; text-transform: uppercase; color: var(--ink-faint);
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  td.n, th.n { text-align: right; font-family: "IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums; padding-right: 0; }
+
+  .pill {
+    display: inline-block; font-family: "IBM Plex Mono", monospace;
+    font-size: 11px; font-weight: 600; letter-spacing: .05em;
+    padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+  }
+  .pill.done { background: var(--verified-soft); color: var(--verified); }
+  .pill.partial { background: var(--accent-soft); color: var(--accent); }
+
+  pre {
+    background: var(--surface-sunk); color: var(--ink);
+    padding: 16px 18px; border-radius: 5px; overflow-x: auto;
+    font-family: "IBM Plex Mono", monospace; font-size: 13px; line-height: 1.55;
+    border-left: 3px solid var(--rule-strong); margin: 18px 0;
+  }
+  blockquote {
+    margin: 18px 0; padding: 2px 0 2px 18px;
+    border-left: 3px solid var(--accent);
+    color: var(--ink-soft); font-style: italic;
+  }
+  .halt {
+    margin: 34px 0 0; padding: 22px 24px;
+    background: var(--halt-soft); border: 1px solid var(--halt);
+    border-radius: 6px;
+  }
+  .halt h2 { margin-top: 0; padding-top: 0; border-top: none; color: var(--halt); }
+  .halt .num { color: var(--halt); }
+  ul { max-width: 68ch; padding-left: 20px; }
+  li { margin: 7px 0; }
+  .foot {
+    margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule);
+    font-size: 13.5px; color: var(--ink-faint);
+  }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">RECOG-SO1 · revision 2 · 8 September 2026</p>
+  <h1>The instrument is rebuilt, and not cleared to run</h1>
+  <p class="standfirst">Run #1 was stopped by limits it had not been built against.
+  Revision 2 guards the ones that actually exist — and refuses to start itself
+  until four conditions are met.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 11d4fc5</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="band">
+  <span class="tag">Status</span>
+  <p><strong>DRAFTED AND UNSEALED.</strong> The protocol's seal is empty and the runner
+  refuses on an empty seal. No corpus photograph has gone anywhere. Four conditions gate
+  transmission and all four are currently unmet — verified by real invocations rather than
+  asserted.</p>
+</div>
+
+<h2><span class="num">01</span>What run #1 was not guarding</h2>
+
+<p>104 observations, 46 answered, 58 refused, every failure HTTP 429. Neither of the two limits
+behind those refusals was the one the 20-second pacing had been computed for.</p>
+
+<div class="scroll">
+<table>
+  <tr><th>Limit</th><th>What it is</th><th class="n">Refusals</th><th>Guarded?</th></tr>
+  <tr><td class="mono">ITPM 7,000</td><td>input tokens per minute</td><td class="n">0</td>
+      <td>yes — this is what the pacing was for</td></tr>
+  <tr><td class="mono">TPD 200,000</td><td>tokens per <strong>day</strong>, per <strong>organisation</strong></td>
+      <td class="n">48</td><td>no</td></tr>
+  <tr><td class="mono">OTPM 1,000</td><td>output tokens, a <strong>per-request</strong> ceiling</td>
+      <td class="n">10</td><td>no</td></tr>
+</table>
+</div>
+
+<p>The decisive arithmetic, measured from the run's own usage blocks: mean prompt 2,153 tokens,
+maximum 2,198 — not the 1,813 the pacing assumed. A clean pass of 104 observations with zero
+retries costs <strong>2,153 × 104 = 223,962 input tokens against a 200,000 daily ceiling</strong>.
+The experiment does not fit in one day on this tier at all. 260 requests were made to obtain 104
+observations, and no part of the program knew that.</p>
+
+<p>OTPM is a per-request ceiling rather than a rate: Groq estimates output pessimistically from
+<code>max_completion_tokens</code> and refuses when the estimate exceeds 1,000. Run #1 sent 4,096
+and was refused for that reason alone ten times, twice while the daily budget was still intact.
+<strong>Pacing cannot avoid a per-request ceiling.</strong> Actual completions were 22–41 tokens.</p>
+
+<h2><span class="num">02</span>The trap the classifier is built around</h2>
+
+<p>The daily refusal and the ordinary minute refusal open with <em>identical words</em>:</p>
+
+<pre>Rate limit reached for model `qwen/qwen3.8-27b` ... on tokens per day (TPD): Limit 200000, Used 199789, Requested 2495.
+Rate limit reached for model `qwen/qwen3.8-27b` ... on tokens per minute (TPM): Limit 7000, Used 6671, Requested 2096.</pre>
+
+<p>A classifier keyed on that prefix would read a spent <strong>day</strong> as a spent
+<strong>minute</strong> and retry into it. Classification is therefore on the parenthesised limit
+code — <code>(TPD)</code>, <code>(RPD)</code>, <code>(OTPM)</code>, <code>(TPM)</code>,
+<code>(RPM)</code> — and anything else <strong>stops the run</strong>. Both bodies above are
+verbatim test fixtures.</p>
+
+<h2><span class="num">03</span>One wait authority instead of three signals</h2>
+
+<p>Revision 1 had two: the ordinary pacing sleep and <code>pace_after_failure()</code>, which took
+<code>max(pacing, Retry-After)</code> on the failure path only. A third guard beside them would
+have left the composition of three signals undefined. <strong>In revision 2
+<code>pace_after_failure</code> does not exist.</strong> One function computes the interval before
+every transmission, and the runner sleeps once:</p>
+
+<pre>wait = 20                                    # the frozen pacing, always the floor
+if valid x-ratelimit-remaining-tokens &lt; 3600:
+    wait = max(wait, reset + 2)              # the provider's own TPM reset, plus margin
+    if reset is absent or malformed:
+        wait = max(wait, 60)                 # conservative fallback
+if this attempt follows a retryable 429 with a valid Retry-After:
+    wait = max(wait, Retry-After)
+# a malformed or absent Retry-After contributes NOTHING
+sleep ONCE</pre>
+
+<p><strong>Maximum, not addition.</strong> Each term states when a request <em>may</em> go, so the
+binding one is the latest. Nine values are frozen and asserted as the <em>total</em> interval
+before the next transmission, with an injected clock and no real sleeping:</p>
+
+<div class="scroll">
+<table>
+  <tr><th>remaining</th><th>reset</th><th>Retry-After</th><th class="n">total</th></tr>
+  <tr><td>low</td><td>12 s</td><td>—</td><td class="n">20 s</td></tr>
+  <tr><td>low</td><td>30 s</td><td>—</td><td class="n">32 s</td></tr>
+  <tr><td>low</td><td>malformed</td><td>—</td><td class="n">60 s</td></tr>
+  <tr><td>healthy</td><td>30 s</td><td>—</td><td class="n">20 s</td></tr>
+  <tr><td>header absent</td><td>—</td><td>—</td><td class="n">20 s</td></tr>
+  <tr><td>low</td><td>12 s</td><td>45</td><td class="n">45 s</td></tr>
+  <tr><td>low</td><td>30 s</td><td>10</td><td class="n">32 s</td></tr>
+  <tr><td>low</td><td>malformed</td><td>75</td><td class="n">75 s</td></tr>
+  <tr><td>healthy</td><td>—</td><td>none</td><td class="n">20 s</td></tr>
+</table>
+</div>
+
+<p><strong>The sleep consumes no attempt.</strong> Only the transmission does. A request that waits
+45 seconds and then succeeds is one attempt and one ledger entry.</p>
+
+<p><code>next_request_tpm_bound</code> is <strong>3,600</strong> — the same number as the empirical
+per-request charge bound. One measured quantity used for two purposes: two separately invented
+numbers could disagree, one cannot.</p>
+
+<h2><span class="num">04</span>The ledger, and the day counted locally</h2>
+
+<p>Every transmission of every class — stress probe, availability check, corpus observation, and
+<strong>every retry separately</strong> — is written <em>before</em> it is sent. A missing,
+unreadable or malformed ledger stops everything: an absent file is indistinguishable from a deleted
+one, and the deleted one is the case that matters.</p>
+
+<pre>tokens per day, measured           200,000   (verbatim: "Limit 200000, Used 199789, Requested 2495")
+daily experiment budget            160,000   = 80% of measured
+empirical charge bound per request   3,600   = 3,408 observed maximum + 5.6% margin
+requests per partition                  44   = floor(160000 / 3600)
+                                             = 1 availability + 26 corpus + at most 17 retries</pre>
+
+<p>3,600 is <strong>empirical with a margin, not a proven ceiling</strong>: a request the provider
+charges more for would break this arithmetic, and nothing here can rule that out. Stated as it is.</p>
+
+<p>The ledger is seeded with <strong>run #1's 260 transmissions</strong>, or the isolation rule
+would be vacuous on its first day. That is the sum of the <code>attempts</code> field across the
+104 archived records. Measured immediately after seeding: <em>"only 2.1h since the last Qwen
+request; the isolation rule requires 24h"</em>. <strong>Partition 1 cannot start today</strong> —
+a refusal the program performs, not a sentence this document asserts.</p>
+
+<h2><span class="num">05</span>Four partitions, generated rather than described</h2>
+
+<p>Within each kind, sources are ordered by ascending hex of
+<code>sha256(source_photo_id)</code> and dealt round-robin with a per-kind offset: 0 for
+<code>canonical_single</code>, 2 for <code>multiple</code>. The offsets differ because 26 sources
+dealt four ways gives 7, 7, 6, 6 — not 6.5 each.</p>
+
+<div class="scroll">
+<table>
+  <tr><th>Partition</th><th class="n">canonical_single</th><th class="n">multiple</th>
+      <th class="n">sources</th><th class="n">observations</th></tr>
+  <tr><td>1</td><td class="n">7</td><td class="n">6</td><td class="n">13</td><td class="n">26</td></tr>
+  <tr><td>2</td><td class="n">7</td><td class="n">6</td><td class="n">13</td><td class="n">26</td></tr>
+  <tr><td>3</td><td class="n">6</td><td class="n">7</td><td class="n">13</td><td class="n">26</td></tr>
+  <tr><td>4</td><td class="n">6</td><td class="n">7</td><td class="n">13</td><td class="n">26</td></tr>
+  <tr><td><strong>total</strong></td><td class="n"><strong>26</strong></td>
+      <td class="n"><strong>26</strong></td><td class="n"><strong>52</strong></td>
+      <td class="n"><strong>104</strong></td></tr>
+</table>
+</div>
+
+<p>Blindness is preserved by emitting <strong>four separate files</strong> rather than one with a
+<code>partition</code> column: partition membership is derived from the ground truth, and the
+runner's input schema is closed precisely so nothing ground-truth-derived reaches it. A
+row-shuffled input manifest regenerates byte-identical partitions.</p>
+
+<h2><span class="num">06</span>Run validity precedes every statistic</h2>
+
+<p>Revision 1 had the right thresholds in the wrong order: the scorer computed the disagreement
+rates, the delta, the permutation <em>p</em> and the competence figures, and only <em>then</em>
+reached the power floor. And that floor counted <strong>manifest rows</strong>: it reported 26
+sources per arm and kind for a run in which 58 of 104 observations had no reply at all.</p>
+
+<p><strong>INVALID_INSTRUMENT</strong> is not PASS, FAIL or INCONCLUSIVE. It means the measurement
+is structurally invalid and the hypothesis statistics are <em>not produced at all</em> — not
+computed-and-withheld, not reported-with-caveats. There is nothing to caveat.</p>
+
+<p>Proven by instrumentation rather than by reading rendered text: spies substituted for
+<code>rate</code>, <code>delta_pp</code>, <code>permutation_p</code> and <code>competence</code>
+raise when called, and an invalid fixture reaches <strong>zero</strong> of the four. Beside it sits
+a control on a valid fixture where all four must fire — otherwise the zero-call assertion would
+pass simply because nothing ever calls them.</p>
+
+<p><strong>The coverage floor counts answers.</strong> At least 20 source photographs per kind with
+a valid parsed answer in <em>both</em> arms. On run #1's shape the difference between rows and
+answers is 26 against 6.</p>
+
+<h2><span class="num">07</span>Planned, Definition of Done, actual status</h2>
+
+<div class="scroll">
+<table>
+  <tr><th class="n">#</th><th>Planned</th><th>Definition of Done</th><th>Status</th></tr>
+  <tr><td class="n">1</td><td>Single request ledger, written before transport, fail-closed</td>
+      <td>the ledger is the sole authority for the count and the isolation clock</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">2</td><td>Validity structurally before any statistic</td>
+      <td>one <code>run_validity()</code> first in <code>verdict()</code> and <code>report()</code></td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">3</td><td>Decision table as data</td>
+      <td>every row exercised on verbatim bodies; unknown 429 fails closed</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">4</td><td>Coverage floor of 20 sources in both arms</td>
+      <td>counts answers, printed beside the row count</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">5</td><td>Ordering proven by raising spies</td>
+      <td>an invalid fixture reaches zero of four</td>
+      <td><span class="pill done">done</span> + control</td></tr>
+  <tr><td class="n">6</td><td><code>machine</code> as an enum from the sealed vocabulary</td>
+      <td>the request body carries exactly 71 names and the sentinel</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">7</td><td>TPD guard on the local ledger, ceiling 44</td>
+      <td>the 45th request is refused before transport</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">8</td><td>One wait authority; <code>pace_after_failure</code> deleted</td>
+      <td>nine frozen totals, one sleep per transmission</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">9</td><td>24-hour isolation from the ledger, probes included</td>
+      <td>a probe advances the same clock the partition gate reads</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">10</td><td>256 from the OTPM envelope; stress probes before sealing</td>
+      <td>no probe finishes on <code>length</code></td>
+      <td><span class="pill partial">partial</span></td></tr>
+  <tr><td class="n">11</td><td>Four-partition manifest</td>
+      <td>7+6 / 7+6 / 6+7 / 6+7, byte-stable under shuffling</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">12</td><td>Runner on the decision table, every guard from the ledger</td>
+      <td>every mutation flips a fixture and is reverted</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">13</td><td>Revision 2 pre-registration and seal</td>
+      <td>17 artefacts, verified in the repo and a fresh tree</td>
+      <td><span class="pill partial">partial</span></td></tr>
+  <tr><td class="n">14</td><td>End-to-end offline verification</td>
+      <td>both suites green, both seals verify, the runner refuses</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">15</td><td>Log, report, commit, push, stop at consent</td>
+      <td>the renewed-consent request reaches the operator</td>
+      <td><span class="pill done">done</span></td></tr>
+</table>
+</div>
+
+<h3>The tail on item 10</h3>
+
+<p>The stress probes have <strong>not run and cannot run today</strong>, for two independent
+reasons either of which suffices: the organisation's daily budget stood at 199,789 of 200,000, and
+the isolation rule requires 24 hours of quiet since run #1's last request. So revision 2 is a
+<strong>draft not cleared for transmission</strong>, and that state is mechanical rather than a
+note: <code>stress_probe_receipt_ok()</code> refuses with exit 8 until a receipt exists bound to
+this exact configuration digest.</p>
+
+<p>256 is justified by the OTPM envelope <em>alone</em> and is <strong>not a serialization
+proof</strong> — it cannot be one: <code>confidence</code> is a JSON number with no bounded textual
+length. That is why <code>finish_reason "length"</code> is pre-registered as unresolved and never
+retried.</p>
+
+<h2><span class="num">08</span>Evidence</h2>
+
+<ul>
+  <li><code>recog_so1_r2.tests.py</code> — <strong>162 of 162</strong>, with no network call and no
+      real sleep.</li>
+  <li><code>recog_so1.tests.py</code> — <strong>61 of 61</strong>, revision 1 untouched.</li>
+  <li>Revision 1's seal verifies 12/12 in the working tree and in a fresh
+      <code>git checkout-index</code> tree. Revision 2's seal is <strong>empty</strong>, and the
+      runner refuses on it — exit 2.</li>
+  <li>A real runner invocation — <strong>exit 3</strong>, refused: no consent binds the new
+      pre-registration.</li>
+  <li>A real probe invocation — <strong>exit 7</strong>, refused on isolation.</li>
+  <li>Partitions: <code>--check</code> exit 0, 7+6 / 7+6 / 6+7 / 6+7.</li>
+</ul>
+
+<p>Revision 1's files were not edited at all: its seal hashes them, and editing in place would have
+destroyed the only record of what run #1 was actually measured against. Revision 2 <em>imports</em>
+revision 1's arithmetic, so "the hypothesis did not move" is a property of the code rather than a
+claim about it.</p>
+
+<p>One instrument error of my own is recorded too: a first pass reported revision 1's seal failing
+12 of 12 in a fresh tree. That was my checker, not the seal — it ran under Windows Python against an
+MSYS <code>/tmp</code> path, so every file read as missing. A check that fails for a reason
+unrelated to what it checks is the same defect class as a check that cannot fail.</p>
+
+
+<h2><span class="num">10</span>What the closure review found, and what was done</h2>
+
+<p>GPT-PM returned <strong>REVISE, 0 BLOCKER / 5 MAJOR</strong> on the finished work. All five were
+verified against the code, all five were facts, and all five are fixed in one batch.</p>
+
+<div class="scroll">
+<table>
+  <tr><th>Finding</th><th>Why it is a defect</th><th>What was done</th></tr>
+  <tr><td><strong>The "stress probe" stressed nothing</strong></td>
+      <td>A gray frame produces the <em>shortest</em> answer and was standing as evidence about the
+          longest. No image can force a worst-case reply.</td>
+      <td>The criterion was revised rather than fudged: answer length is now
+          <strong>bounded offline</strong> (243 bytes against a 256 cap, a hard gate with a
+          mutation), and the probe answers only whether the provider accepts this request
+          shape.</td></tr>
+  <tr><td><strong>The receipt validator accepted failure</strong></td>
+      <td>It checked a config hash and the absence of <code>length</code>. A receipt with two
+          <em>failed</em> probes and <code>cleared:false</code> satisfied it.</td>
+      <td>Both arm shapes, a success for each, <code>cleared:true</code>, and bindings to config,
+          <strong>prompt and vocabulary</strong> — otherwise a probe under a different prompt could
+          clear a shape it never tested.</td></tr>
+  <tr><td><strong>R2 consent was inexpressible</strong></td>
+      <td>R1's consent schema is <em>closed</em>: it would reject the exclusivity attestation field.
+          And one <code>manifest_sha256</code> binds one partition, forcing consent to be rewritten
+          between days.</td>
+      <td>Its own contract: one immutable record binds <strong>all four</strong> partitions, the
+          pre-registration, and an explicit attestation. A missing attestation refuses.</td></tr>
+  <tr><td><strong>(OTPM) collapsed into one class</strong></td>
+      <td>My own config said to read the form; the code read only the limit code. An ordinary
+          rolling-window OTPM refusal would have invalidated a whole partition.</td>
+      <td>Classification by code <strong>and</strong> form; unknown (OTPM) wording fails closed. A
+          mutation restores the old behaviour and fails the test.</td></tr>
+  <tr><td><strong>A timeout never reached the table</strong></td>
+      <td>R1's transport catches only <code>HTTPError</code>. The "3 attempts" row was unreachable,
+          and a timeout crashed the process <em>after</em> its ledger entry.</td>
+      <td>Network exceptions convert into the frozen class; one ledger entry per attempt.</td></tr>
+  <tr><td><strong>Availability bypassed the attempt engine</strong></td>
+      <td>One shot, and on a transient 429 it recorded "degraded" and transmitted the corpus anyway.
+          The question the check exists to answer went unanswered.</td>
+      <td>The same attempt engine. <strong>Only a success</strong> opens the corpus; exhaustion is
+          INVALID_INSTRUMENT. Test: after a failure, <strong>zero</strong> photographs read.</td></tr>
+</table>
+</div>
+
+<p>Separately, the seal was <strong>removed</strong>. An earlier draft carried a filled seal while
+the probes were still outstanding, justified by distinguishing "sealing the artefact list" from
+"clearing transmission". The reviewer rejected that as going beyond the approved branch, and was
+right — the approved plan said plainly: <em>drafted but not sealed</em>. The digests moved to an
+explicitly provisional appendix that no program reads, and the runner refuses on an empty seal.</p>
+
+<h3>Round two: one of the six fixes was itself incomplete</h3>
+
+<p>The reviewer closed four findings. The fifth came back, and both halves of it were true.
+<strong>A label is not evidence that a frame shape was probed:</strong> the validator compared only
+the <em>set</em> of <code>arm_shape</code> labels, so three records labelled A, A, B would have
+passed, and a receipt with no <code>dimensions</code> field at all was accepted. My own "positive"
+fixture was structurally exactly that receipt — I wrote the hole, then wrote a test that
+demonstrated it while looking like proof of the opposite. And <strong>the receipt sat outside the
+seal:</strong> after sealing it could have been swapped with <code>verify_seal()</code> noticing
+nothing.</p>
+
+<p>It now requires exactly one probe per arm, each carrying the real declared frame dimensions
+(1640×1082 and 1868×4000), with refusals for missing, wrong, duplicated and extra records, plus a
+round-trip proving the receipt the runner writes satisfies the runner's own validator. The receipt
+became the eighteenth sealed artefact, and <code>seal_binds_receipt()</code> refuses a non-empty
+seal that omits it.</p>
+
+<h3>Round three: the receipt could lie about which request it had tested</h3>
+
+<p><code>run_stress_probes()</code> took the prompt, vocabulary and config as arguments, built the
+request from them, and then wrote the digests of the <em>files on disk</em> into the receipt
+regardless of what it had actually been handed. A probe run with a modified prompt would have
+produced a receipt claiming the frozen prompt's digest; that receipt would have become the
+eighteenth sealed artefact, passed both checks, and permanently sealed evidence saying the frozen
+request was tested when a different one was.</p>
+
+<p>My own round-trip test — added as proof that "the writer and the validator agree" — passed the
+literal string <code>"p"</code> as the prompt and validated. The third time running that a test of
+mine exhibited the hole while reading as proof of the opposite.</p>
+
+<p>The arguments are gone: the function reads the frozen files itself, once, and the same bytes both
+build the request and produce the digest. Nothing is left to forge with. Checks: the signature has no
+prompt, vocabulary or config parameter; the receipt binds the real digests; and a mutation pointing
+the writer at a decoy prompt produces a receipt binding the decoy, which then fails to clear the
+frozen request shape.</p>
+
+<div class="halt">
+<h2><span class="num">09</span>Where this stops: a decision only the operator can make</h2>
+
+<p>The consent recorded before run #1 authorised that manifest <strong>once</strong>, and run #1
+consumed it. A second pass over the same 52 photographs requires a <strong>new explicit operator
+reaffirmation</strong>. No reviewer approval substitutes for it.</p>
+
+<p>What is being put forward for confirmation:</p>
+<ul>
+  <li>the first transmission of 104 observations <strong>happened</strong> and failed as an
+      instrument;</li>
+  <li>a second pass over the same 52 photographs is proposed, to the same frozen model and
+      endpoint;</li>
+  <li>it will span <strong>four partitions at least 24 hours apart</strong>, not one day;</li>
+  <li>the provider's Global ZDR remains enabled;</li>
+  <li>an <strong>organisation-exclusivity attestation</strong> is also required — that no other
+      traffic is spending <code>qwen/qwen3.8-27b</code> under the same organisation. The provider
+      exposes nothing that could verify this mechanically, which is why it is an attestation rather
+      than a check.</li>
+</ul>
+
+<p>Until that confirmation the runner refuses to transmit anything, and today it would refuse
+regardless, on isolation.</p>
+</div>
+
+<p class="foot">No model-performance statistic appears in this report, by construction. Run #1's 46
+answers remain quarantined: unread, ungrouped, unscored. The contact sheets showing identifiable
+people, including two children, are not published and do not travel.</p>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

@@ -1,0 +1,639 @@
+<title>Приборы SO1, ревизия 2</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+  :root {
+    --ground: #f2f4f7;
+    --surface: #ffffff;
+    --surface-sunk: #e9edf3;
+    --ink: #16202e;
+    --ink-soft: #4a5768;
+    --ink-faint: #78859a;
+    --rule: #ccd5e0;
+    --rule-strong: #9aa9bd;
+    --accent: #b45309;
+    --accent-soft: #fdf3e3;
+    --verified: #0f6f66;
+    --verified-soft: #e2f1ef;
+    --halt: #8f1d3f;
+    --halt-soft: #fbe9ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #10161f;
+      --surface: #172030;
+      --surface-sunk: #1d2839;
+      --ink: #e6ecf4;
+      --ink-soft: #a9b6c8;
+      --ink-faint: #7d8ba0;
+      --rule: #2b3749;
+      --rule-strong: #46566e;
+      --accent: #e9a13b;
+      --accent-soft: #2c2110;
+      --verified: #59c9bb;
+      --verified-soft: #102a29;
+      --halt: #f090a9;
+      --halt-soft: #2c1220;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #10161f;
+    --surface: #172030;
+    --surface-sunk: #1d2839;
+    --ink: #e6ecf4;
+    --ink-soft: #a9b6c8;
+    --ink-faint: #7d8ba0;
+    --rule: #2b3749;
+    --rule-strong: #46566e;
+    --accent: #e9a13b;
+    --accent-soft: #2c2110;
+    --verified: #59c9bb;
+    --verified-soft: #102a29;
+    --halt: #f090a9;
+    --halt-soft: #2c1220;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 16.5px;
+    line-height: 1.62;
+    margin: 0;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 22px 90px; }
+
+  header {
+    padding: 54px 0 26px;
+    border-bottom: 2px solid var(--rule-strong);
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 14px;
+  }
+  h1 {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700; font-size: clamp(30px, 5.2vw, 46px);
+    line-height: 1.08; letter-spacing: -.02em; margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  .standfirst { font-size: 19px; color: var(--ink-soft); margin: 0; max-width: 62ch; }
+
+  h2 {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600; font-size: 21px; letter-spacing: -.01em;
+    margin: 54px 0 4px; padding-top: 20px; border-top: 1px solid var(--rule);
+    text-wrap: balance;
+  }
+  h2 .num {
+    font-family: "IBM Plex Mono", monospace; font-size: 12px; font-weight: 500;
+    color: var(--accent); display: block; margin-bottom: 7px; letter-spacing: .1em;
+  }
+  h3 {
+    font-family: Archivo, sans-serif; font-weight: 600; font-size: 16px;
+    margin: 30px 0 6px; color: var(--ink);
+  }
+  p { margin: 14px 0; max-width: 68ch; }
+  strong { font-weight: 600; }
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .88em;
+  }
+  code { background: var(--surface-sunk); padding: 1px 5px; border-radius: 3px; }
+
+  .band {
+    display: flex; flex-wrap: wrap; gap: 14px; align-items: baseline;
+    margin: 30px 0 0; padding: 18px 20px;
+    background: var(--accent-soft);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 5px 5px 0;
+  }
+  .band .tag {
+    font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 12px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--accent);
+  }
+  .band p { margin: 0; font-size: 15.5px; color: var(--ink); }
+
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 15px; }
+  .scroll { overflow-x: auto; margin: 20px 0; }
+  .scroll table { margin: 0; min-width: 560px; }
+  th, td {
+    text-align: left; padding: 9px 12px 9px 0;
+    border-bottom: 1px solid var(--rule); vertical-align: top;
+  }
+  th {
+    font-family: Archivo, sans-serif; font-weight: 600; font-size: 12px;
+    letter-spacing: .07em; text-transform: uppercase; color: var(--ink-faint);
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  td.n, th.n { text-align: right; font-family: "IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums; padding-right: 0; }
+
+  .pill {
+    display: inline-block; font-family: "IBM Plex Mono", monospace;
+    font-size: 11px; font-weight: 600; letter-spacing: .05em;
+    padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+  }
+  .pill.done { background: var(--verified-soft); color: var(--verified); }
+  .pill.partial { background: var(--accent-soft); color: var(--accent); }
+
+  pre {
+    background: var(--surface-sunk); color: var(--ink);
+    padding: 16px 18px; border-radius: 5px; overflow-x: auto;
+    font-family: "IBM Plex Mono", monospace; font-size: 13px; line-height: 1.55;
+    border-left: 3px solid var(--rule-strong); margin: 18px 0;
+  }
+  blockquote {
+    margin: 18px 0; padding: 2px 0 2px 18px;
+    border-left: 3px solid var(--accent);
+    color: var(--ink-soft); font-style: italic;
+  }
+  .halt {
+    margin: 34px 0 0; padding: 22px 24px;
+    background: var(--halt-soft); border: 1px solid var(--halt);
+    border-radius: 6px;
+  }
+  .halt h2 { margin-top: 0; padding-top: 0; border-top: none; color: var(--halt); }
+  .halt .num { color: var(--halt); }
+  ul { max-width: 68ch; padding-left: 20px; }
+  li { margin: 7px 0; }
+  .foot {
+    margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule);
+    font-size: 13.5px; color: var(--ink-faint);
+  }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">RECOG-SO1 · ревизия 2 · 8 сентября 2026</p>
+  <h1>Прибор пересобран, но к передаче не допущен</h1>
+  <p class="standfirst">Прогон №1 остановили не те лимиты, против которых он был построен.
+  Ревизия 2 сторожит те, что существуют на самом деле, — и сама себе отказывает в запуске,
+  пока не выполнены четыре условия.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 11d4fc5</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<div class="band">
+  <span class="tag">Статус</span>
+  <p><strong>СОСТАВЛЕНО И НЕ ЗАПЕЧАТАНО.</strong> Печать протокола пуста, и раннер
+  отказывается на пустой печати. Ни одна фотография корпуса никуда не отправлена. Четыре
+  условия закрывают передачу, и все четыре сейчас не выполнены — это проверено реальными
+  вызовами, а не заявлено.</p>
+</div>
+
+<h2><span class="num">01</span>Что именно не сторожил прогон №1</h2>
+
+<p>104 наблюдения, 46 ответов, 58 отказов, все — HTTP 429. Ни один из двух лимитов,
+стоявших за отказами, не был тем, под который считалась пауза в 20 секунд.</p>
+
+<div class="scroll">
+<table>
+  <tr><th>Лимит</th><th>Что это</th><th class="n">Отказов</th><th>Сторожился?</th></tr>
+  <tr><td class="mono">ITPM 7 000</td><td>входных токенов в минуту</td><td class="n">0</td>
+      <td>да — под него и строилась пауза</td></tr>
+  <tr><td class="mono">TPD 200 000</td><td>токенов в <strong>сутки</strong>, на всю <strong>организацию</strong></td>
+      <td class="n">48</td><td>нет</td></tr>
+  <tr><td class="mono">OTPM 1 000</td><td>выходных токенов, потолок <strong>на запрос</strong></td>
+      <td class="n">10</td><td>нет</td></tr>
+</table>
+</div>
+
+<p>Решающая арифметика, измеренная по собственным usage-блокам прогона: средний промпт
+2 153 токена, максимум 2 198 — а не 1 813, из которых исходила пауза. Чистый проход
+104 наблюдений без единого повтора стоит <strong>2 153 × 104 = 223 962 входных токена
+против суточного потолка в 200 000</strong>. Эксперимент не помещается в сутки на этом
+тарифе вообще. На 104 наблюдения было сделано 260 запросов, и ни одна часть программы
+об этом не знала.</p>
+
+<p>OTPM — потолок на запрос, а не скорость: Groq оценивает выход пессимистично по
+<code>max_completion_tokens</code> и отказывает, если оценка превышает 1 000. Прогон №1
+слал 4 096 и получил отказ по одной этой причине десять раз, дважды — когда суточный
+бюджет был ещё цел. <strong>Паузами потолок на запрос обойти нельзя.</strong> Фактические
+ответы были длиной 22–41 токен.</p>
+
+<h2><span class="num">02</span>Ловушка, вокруг которой построен классификатор</h2>
+
+<p>Суточный отказ и обычный минутный отказ начинаются <em>одинаковыми словами</em>:</p>
+
+<pre>Rate limit reached for model `qwen/qwen3.8-27b` ... on tokens per day (TPD): Limit 200000, Used 199789, Requested 2495.
+Rate limit reached for model `qwen/qwen3.8-27b` ... on tokens per minute (TPM): Limit 7000, Used 6671, Requested 2096.</pre>
+
+<p>Классификатор по началу строки прочитал бы израсходованные <strong>сутки</strong> как
+израсходованную <strong>минуту</strong> и стал бы повторять запросы в неё. Поэтому
+классификация идёт по коду лимита в скобках — <code>(TPD)</code>, <code>(RPD)</code>,
+<code>(OTPM)</code>, <code>(TPM)</code>, <code>(RPM)</code>, — а всё прочее
+<strong>останавливает прогон</strong>. Оба тела выше — дословные фикстуры тестов.</p>
+
+<h2><span class="num">03</span>Одна инстанция ожидания вместо трёх сигналов</h2>
+
+<p>В ревизии 1 их было две: обычная пауза и <code>pace_after_failure()</code>, бравшая
+<code>max(пауза, Retry-After)</code> только на пути отказа. Третий сторож рядом с ними
+оставил бы композицию трёх сигналов неопределённой. <strong>В ревизии 2
+<code>pace_after_failure</code> не существует.</strong> Одна функция считает интервал перед
+каждой отправкой, и раннер спит один раз:</p>
+
+<pre>wait = 20                                    # замороженная пауза, всегда нижняя граница
+если валидный x-ratelimit-remaining-tokens &lt; 3600:
+    wait = max(wait, reset + 2)              # собственный TPM-сброс провайдера плюс запас
+    если reset отсутствует или испорчен:
+        wait = max(wait, 60)                 # консервативный запасной вариант
+если попытка следует за retryable-429 с валидным Retry-After:
+    wait = max(wait, Retry-After)
+# испорченный или отсутствующий Retry-After не добавляет НИЧЕГО
+спать ОДИН раз</pre>
+
+<p><strong>Максимум, а не сумма.</strong> Каждое слагаемое — утверждение о том, когда
+запрос <em>может</em> уйти, поэтому связывает самое позднее. Девять значений заморожены и
+проверяются как <em>полный</em> интервал перед следующей отправкой, с подставленными
+часами и без единого настоящего сна:</p>
+
+<div class="scroll">
+<table>
+  <tr><th>remaining</th><th>reset</th><th>Retry-After</th><th class="n">итого</th></tr>
+  <tr><td>низкий</td><td>12 с</td><td>—</td><td class="n">20 с</td></tr>
+  <tr><td>низкий</td><td>30 с</td><td>—</td><td class="n">32 с</td></tr>
+  <tr><td>низкий</td><td>испорчен</td><td>—</td><td class="n">60 с</td></tr>
+  <tr><td>здоровый</td><td>30 с</td><td>—</td><td class="n">20 с</td></tr>
+  <tr><td>заголовка нет</td><td>—</td><td>—</td><td class="n">20 с</td></tr>
+  <tr><td>низкий</td><td>12 с</td><td>45</td><td class="n">45 с</td></tr>
+  <tr><td>низкий</td><td>30 с</td><td>10</td><td class="n">32 с</td></tr>
+  <tr><td>низкий</td><td>испорчен</td><td>75</td><td class="n">75 с</td></tr>
+  <tr><td>здоровый</td><td>—</td><td>нет</td><td class="n">20 с</td></tr>
+</table>
+</div>
+
+<p><strong>Сон не тратит попытку.</strong> Тратит только отправка. Запрос, подождавший
+45 секунд и получивший ответ, — это одна попытка и одна запись в реестре.</p>
+
+<p>Порог <code>next_request_tpm_bound</code> равен <strong>3 600</strong> — то же число, что
+и эмпирическая граница стоимости одного запроса. Это одна измеренная величина, использованная
+дважды: два отдельно выдуманных числа могли бы разойтись, одно — нет.</p>
+
+<h2><span class="num">04</span>Реестр, и сутки, посчитанные локально</h2>
+
+<p>Каждая отправка любого класса — стресс-зонд, проверка доступности, наблюдение корпуса
+и <strong>каждая повторная попытка отдельно</strong> — записывается <em>до</em> отправки.
+Отсутствующий, нечитаемый или испорченный реестр останавливает всё: отсутствующий файл
+неотличим от удалённого, а именно удалённый и важен.</p>
+
+<pre>токенов в сутки, измерено           200 000   (дословно: "Limit 200000, Used 199789, Requested 2495")
+суточный бюджет эксперимента        160 000   = 80 % от измеренного
+эмпирическая граница на запрос        3 600   = 3 408 наблюдённый максимум + 5,6 % запаса
+запросов на партицию                     44   = floor(160000 / 3600)
+                                              = 1 доступность + 26 корпуса + не более 17 повторов</pre>
+
+<p>3 600 — это <strong>эмпирическая величина с запасом, а не доказанный потолок</strong>:
+запрос, за который провайдер спишет больше, сломал бы эту арифметику, и исключить это
+нечем. Сказано как есть.</p>
+
+<p>Реестр засеян <strong>260 отправками прогона №1</strong> — иначе правило изоляции было бы
+пустым в первый же день. Это сумма поля <code>attempts</code> по 104 архивным записям.
+Измерено сразу после засева: <em>«прошло только 2,1 ч с последнего запроса Qwen; правило
+изоляции требует 24 ч»</em>. <strong>Партиция 1 сегодня стартовать не может</strong> — и это
+отказ, который программа совершает, а не фраза в документе.</p>
+
+<h2><span class="num">05</span>Четыре партиции, порождённые, а не описанные</h2>
+
+<p>Внутри каждого вида источники упорядочены по возрастанию hex от
+<code>sha256(source_photo_id)</code> и раздаются по кругу со смещением, своим для вида:
+0 для <code>canonical_single</code>, 2 для <code>multiple</code>. Смещения различаются потому,
+что 26 источников на четверых дают 7, 7, 6, 6 — а не 6,5 каждому.</p>
+
+<div class="scroll">
+<table>
+  <tr><th>Партиция</th><th class="n">canonical_single</th><th class="n">multiple</th>
+      <th class="n">источников</th><th class="n">наблюдений</th></tr>
+  <tr><td>1</td><td class="n">7</td><td class="n">6</td><td class="n">13</td><td class="n">26</td></tr>
+  <tr><td>2</td><td class="n">7</td><td class="n">6</td><td class="n">13</td><td class="n">26</td></tr>
+  <tr><td>3</td><td class="n">6</td><td class="n">7</td><td class="n">13</td><td class="n">26</td></tr>
+  <tr><td>4</td><td class="n">6</td><td class="n">7</td><td class="n">13</td><td class="n">26</td></tr>
+  <tr><td><strong>всего</strong></td><td class="n"><strong>26</strong></td>
+      <td class="n"><strong>26</strong></td><td class="n"><strong>52</strong></td>
+      <td class="n"><strong>104</strong></td></tr>
+</table>
+</div>
+
+<p>Слепота сохранена тем, что это <strong>четыре отдельных файла</strong>, а не один со
+столбцом <code>partition</code>: принадлежность к партиции выведена из ground truth, а схема
+входа раннера закрыта именно для того, чтобы туда не попало ничего, выведенного из ground
+truth. Перемешанный по строкам входной манифест порождает побайтово те же партиции.</p>
+
+<h2><span class="num">06</span>Валидность прогона идёт раньше любой статистики</h2>
+
+<p>В ревизии 1 пороги стояли правильные, а порядок — нет: скорер считал доли расхождений,
+дельту, перестановочное <em>p</em> и точность, и только <em>потом</em> доходил до порога
+мощности. А тот порог считал <strong>строки манифеста</strong>: он сообщал 26 источников на
+плечо и вид для прогона, где 58 из 104 наблюдений не имели ответа вовсе.</p>
+
+<p><strong>INVALID_INSTRUMENT</strong> — не PASS, не FAIL и не INCONCLUSIVE. Это значит, что
+измерение структурно недействительно и статистика гипотезы <em>не производится вообще</em>:
+не «посчитана и скрыта», не «с оговорками». Оговаривать нечего.</p>
+
+<p>Доказано инструментально, а не чтением текста: шпионы, подставленные вместо
+<code>rate</code>, <code>delta_pp</code>, <code>permutation_p</code> и <code>competence</code>,
+бросают исключение при вызове, и недействительная фикстура доходит до <strong>нуля</strong>
+из четырёх. Рядом — контроль на действительной фикстуре, где все четыре обязаны сработать:
+иначе утверждение о нуле проходило бы просто потому, что их никто не зовёт.</p>
+
+<p><strong>Порог покрытия считает ответы.</strong> Не меньше 20 фотографий-источников на вид,
+с валидным разобранным ответом в <em>обоих</em> плечах. На форме прогона №1 разница между
+строками и ответами — 26 против 6.</p>
+
+<h2><span class="num">07</span>План, критерий готовности и фактический статус</h2>
+
+<div class="scroll">
+<table>
+  <tr><th class="n">#</th><th>Запланировано</th><th>Definition of Done</th><th>Статус</th></tr>
+  <tr><td class="n">1</td><td>Единый реестр запросов, запись до отправки, fail-closed</td>
+      <td>реестр — единственная инстанция для счёта и часов изоляции</td>
+      <td><span class="pill done">сделано</span></td></tr>
+  <tr><td class="n">2</td><td>Валидность структурно раньше статистики</td>
+      <td>один <code>run_validity()</code> первым в <code>verdict()</code> и <code>report()</code></td>
+      <td><span class="pill done">сделано</span></td></tr>
+  <tr><td class="n">3</td><td>Таблица решений как данные</td>
+      <td>каждая строка прогнана на дословных телах; неизвестный 429 fail-closed</td>
+      <td><span class="pill done">сделано</span></td></tr>
+  <tr><td class="n">4</td><td>Порог покрытия ≥ 20 источников в обоих плечах</td>
+      <td>считает ответы и печатается рядом со счётом строк</td>
+      <td><span class="pill done">сделано</span></td></tr>
+  <tr><td class="n">5</td><td>Порядок доказан шпионами</td>
+      <td>недействительная фикстура — ноль из четырёх</td>
+      <td><span class="pill done">сделано</span> + контроль</td></tr>
+  <tr><td class="n">6</td><td><code>machine</code> — enum из запечатанного словаря</td>
+      <td>в теле запроса ровно 71 имя и сентинел</td>
+      <td><span class="pill done">сделано</span></td></tr>
+  <tr><td class="n">7</td><td>TPD-гард на локальном реестре, потолок 44</td>
+      <td>45-й запрос отклоняется до транспорта</td>
+      <td><span class="pill done">сделано</span></td></tr>
+  <tr><td class="n">8</td><td>Одна инстанция ожидания; <code>pace_after_failure</code> удалён</td>
+      <td>девять замороженных сумм, один сон на отправку</td>
+      <td><span class="pill done">сделано</span></td></tr>
+  <tr><td class="n">9</td><td>Изоляция 24 ч по реестру, включая зонды</td>
+      <td>зонд двигает те же часы, что читает гейт партиции</td>
+      <td><span class="pill done">сделано</span></td></tr>
+  <tr><td class="n">10</td><td>256 из OTPM-огибающей; стресс-зонды до печати</td>
+      <td>ни один зонд не завершился на <code>length</code></td>
+      <td><span class="pill partial">частично</span></td></tr>
+  <tr><td class="n">11</td><td>Манифест четырёх партиций</td>
+      <td>7+6 / 7+6 / 6+7 / 6+7, побайтово устойчиво к перемешиванию</td>
+      <td><span class="pill done">сделано</span></td></tr>
+  <tr><td class="n">12</td><td>Раннер по таблице отказов, все гарды из реестра</td>
+      <td>каждая мутация переворачивает фикстуру и откатывается</td>
+      <td><span class="pill done">сделано</span></td></tr>
+  <tr><td class="n">13</td><td>Предрегистрация R2 и печать</td>
+      <td>17 артефактов, проверены в репозитории и в свежем дереве</td>
+      <td><span class="pill partial">частично</span></td></tr>
+  <tr><td class="n">14</td><td>Сквозная офлайн-проверка</td>
+      <td>оба набора зелёные, обе печати сходятся, раннер отказывает</td>
+      <td><span class="pill done">сделано</span></td></tr>
+  <tr><td class="n">15</td><td>Лог, отчёт, коммит, пуш, остановка на согласии</td>
+      <td>запрос на возобновлённое согласие дошёл до оператора</td>
+      <td><span class="pill done">сделано</span></td></tr>
+</table>
+</div>
+
+<h3>Хвост по пункту 10</h3>
+
+<p>Стресс-зонды <strong>не запускались и сегодня запуститься не могут</strong> по двум
+независимым причинам, каждая из которых достаточна: суточный бюджет организации стоял на
+199 789 из 200 000, а правило изоляции требует 24 часов тишины с последнего запроса прогона №1.
+Поэтому ревизия 2 — <strong>проект, не допущенный к передаче</strong>, и это состояние
+механическое, а не примечание: <code>stress_probe_receipt_ok()</code> отказывает с кодом 8,
+пока нет расписки, привязанной к дайджесту именно этой конфигурации.</p>
+
+<p>256 обосновано <em>только</em> OTPM-огибающей и <strong>не является доказательством
+сериализуемости</strong> — им и быть не может: <code>confidence</code> это JSON-число без
+ограниченной текстовой длины. Поэтому <code>finish_reason "length"</code> заранее объявлен
+неразрешённым и никогда не повторяется.</p>
+
+<h2><span class="num">08</span>Доказательства</h2>
+
+<ul>
+  <li><code>recog_so1_r2.tests.py</code> — <strong>162 из 162</strong>, без единого сетевого
+      вызова и без единого настоящего сна.</li>
+  <li><code>recog_so1.tests.py</code> — <strong>61 из 61</strong>, ревизия 1 не тронута.</li>
+  <li>Печать ревизии 1 сходится 12/12 и в рабочем дереве, и в свежем
+      <code>git checkout-index</code>. Печать ревизии 2 <strong>пуста</strong>, и раннер на ней
+      отказывается — код 2.</li>
+  <li>Реальный вызов раннера — <strong>код 3</strong>, отказ: согласия, связанного с новой
+      предрегистрацией, нет.</li>
+  <li>Реальный вызов зондов — <strong>код 7</strong>, отказ по изоляции.</li>
+  <li>Партиции: <code>--check</code> код 0, 7+6 / 7+6 / 6+7 / 6+7.</li>
+</ul>
+
+<p>Файлы ревизии 1 не редактировались вообще: её печать хеширует их, и правка на месте
+уничтожила бы единственную запись о том, по какому протоколу прогон №1 в действительности
+измерялся. Ревизия 2 <em>импортирует</em> арифметику ревизии 1, поэтому «гипотеза не
+сдвинулась» — свойство кода, а не утверждение о нём.</p>
+
+<p>Отдельно записана и собственная ошибка измерения: первый проход сообщил, что печать
+ревизии 1 не сходится 12 из 12 в свежем дереве. Это был мой чекер, а не печать — он работал
+под Windows-Python по MSYS-пути <code>/tmp</code>, и все файлы читались как отсутствующие.
+Проверка, падающая по причине, не имеющей отношения к проверяемому, — тот же класс дефекта,
+что и проверка, которая не может упасть.</p>
+
+
+<h2><span class="num">10</span>Что нашло закрывающее ревью, и что с этим сделано</h2>
+
+<p>GPT-PM вернул <strong>REVISE, 0 BLOCKER / 5 MAJOR</strong> на готовую работу. Все пять я
+проверил на коде, все пять оказались фактами, и все пять исправлены одним пакетом.</p>
+
+<div class="scroll">
+<table>
+  <tr><th>Находка</th><th>Почему это дефект</th><th>Что сделано</th></tr>
+  <tr><td><strong>«Стресс-зонд» ничего не напрягал</strong></td>
+      <td>Серый кадр даёт <em>самый короткий</em> ответ, а выдавался за свидетельство о самом
+          длинном. Изображением нельзя заставить модель ответить длинно.</td>
+      <td>Критерий переписан, а не подогнан: длина ответа теперь <strong>ограничена офлайн</strong>
+          (243 байта против потолка 256, жёсткий гейт с мутацией), а зонд отвечает только за то,
+          принимает ли провайдер такую форму запроса.</td></tr>
+  <tr><td><strong>Валидатор расписки принимал провал</strong></td>
+      <td>Проверялся только хеш конфига и отсутствие <code>length</code>. Расписка с двумя
+          <em>провалившимися</em> зондами и <code>cleared:false</code> проходила.</td>
+      <td>Требуются обе формы кадра, успех каждой, <code>cleared:true</code> и привязка к конфигу,
+          <strong>промпту и словарю</strong> — иначе зонд под другим промптом «очистил» бы форму,
+          которую не проверял.</td></tr>
+  <tr><td><strong>Согласие R2 невыразимо</strong></td>
+      <td>Схема согласия R1 <em>закрыта</em>: поле аттестации эксклюзивности она отвергла бы. И один
+          <code>manifest_sha256</code> связал бы одну партицию, вынуждая переписывать согласие между
+          днями.</td>
+      <td>Свой контракт: одна неизменяемая запись связывает <strong>все четыре</strong> партиции,
+          предрегистрацию и явную аттестацию. Отсутствие аттестации — отказ.</td></tr>
+  <tr><td><strong>(OTPM) сворачивался в один класс</strong></td>
+      <td>Мой же конфиг говорил различать по форме, а код читал только код лимита. Обычный минутный
+          отказ с (OTPM) обрушил бы всю партицию.</td>
+      <td>Классификация по коду <strong>и</strong> форме; неизвестная формулировка (OTPM) —
+          fail-closed. Мутация возвращает старое поведение и роняет тест.</td></tr>
+  <tr><td><strong>Таймаут не доходил до таблицы</strong></td>
+      <td>Транспорт R1 ловит только <code>HTTPError</code>. Строка «3 попытки» была недостижима, а
+          таймаут ронял процесс <em>после</em> записи в реестр.</td>
+      <td>Исключения сети конвертируются в замороженный класс; одна запись реестра на попытку.</td></tr>
+  <tr><td><strong>Доступность обходила движок попыток</strong></td>
+      <td>Один выстрел, и на транзиентном 429 писалось «degraded», после чего корпус всё равно
+          отправлялся. Вопрос, ради которого проверка существует, оставался без ответа.</td>
+      <td>Тот же движок попыток. <strong>Только успех</strong> открывает корпус; исчерпание —
+          INVALID_INSTRUMENT. Тест: после провала прочитано <strong>ноль</strong> фотографий.</td></tr>
+</table>
+</div>
+
+<p>Отдельно: печать была <strong>снята</strong>. Ранняя версия документа несла заполненную печать,
+пока зонды не прошли, и оправдывала это различением «запечатать список артефактов» и «допустить к
+передаче». Ревьюер отклонил это как выход за рамки утверждённой ветки, и был прав — утверждённый
+план говорил просто: <em>составлено, но не запечатано</em>. Дайджесты перенесены в явно
+предварительное приложение, которое ни одна программа не читает, а раннер отказывается на пустой
+печати.</p>
+
+<h3>Второй раунд: одно из шести исправлений было само по себе неполным</h3>
+
+<p>Четыре находки ревьюер закрыл. Пятая вернулась, и обе её половины верны.
+<strong>Ярлык — не доказательство, что форма кадра проверялась:</strong> валидатор сравнивал только
+<em>множество</em> меток <code>arm_shape</code>, поэтому три записи с метками A, A, B прошли бы, а
+расписка вообще без поля <code>dimensions</code> принималась. Мой собственный «положительный»
+фикстур был структурно ровно такой распиской — я написал дыру, а потом тест, который её
+демонстрировал, выглядя как доказательство обратного. И <strong>расписка лежала вне печати:</strong>
+после запечатывания её можно было бы подменить, и <code>verify_seal()</code> ничего бы не заметил.</p>
+
+<p>Теперь требуется ровно один зонд на плечо, каждый с реальными объявленными размерами кадра
+(1640×1082 и 1868×4000), с отказами на отсутствующие, неверные, дублированные и лишние записи; плюс
+проверка, что расписка, которую пишет сам раннер, проходит его же валидатор. Расписка стала
+восемнадцатым запечатываемым артефактом, а <code>seal_binds_receipt()</code> отвергает непустую
+печать без неё.</p>
+
+<h3>Третий раунд: расписка могла солгать о том, какой запрос она проверяла</h3>
+
+<p><code>run_stress_probes()</code> принимала промпт, словарь и конфиг аргументами, строила из них
+запрос — а в расписку писала дайджесты <em>файлов на диске</em>, независимо от того, что ей на самом
+деле передали. Зонд с изменённым промптом дал бы расписку, утверждающую дайджест замороженного
+промпта; она стала бы восемнадцатым запечатанным артефактом, прошла бы обе проверки и навсегда
+запечатала бы свидетельство, что проверялся замороженный запрос, тогда как проверялся другой.</p>
+
+<p>Мой же round-trip-тест, добавленный как доказательство «писатель и валидатор согласны», передавал
+строку <code>"p"</code> вместо промпта — и проходил. Третий раз подряд мой тест демонстрировал дыру,
+читаясь как доказательство обратного.</p>
+
+<p>Аргументов больше нет: функция читает замороженные файлы сама, один раз, и те же байты и строят
+запрос, и дают дайджест. Подделать нечем. Проверки: в сигнатуре нет параметров промпта, словаря и
+конфига; расписка связывает настоящие дайджесты; а мутация с подставным промптом даёт расписку,
+связывающую подставной файл, которая замороженную форму запроса не очищает.</p>
+
+<div class="halt">
+<h2><span class="num">09</span>Здесь программа останавливается: нужно ваше решение</h2>
+
+<p>Согласие, зафиксированное перед прогоном №1, разрешало этот манифест <strong>один
+раз</strong>, и прогон №1 это разрешение израсходовал. Второй проход по тем же 52 фотографиям
+требует <strong>нового явного подтверждения оператора</strong>. Это только ваше решение —
+никакое одобрение ревьюера его не заменяет.</p>
+
+<p>Что именно предлагается подтвердить:</p>
+<ul>
+  <li>первая передача 104 наблюдений <strong>состоялась</strong> и провалилась как прибор;</li>
+  <li>предлагается второй проход по тем же 52 фотографиям, к той же замороженной модели
+      и тому же эндпойнту;</li>
+  <li>он растянется на <strong>четыре партиции, минимум по суткам между ними</strong>,
+      а не пройдёт за один день;</li>
+  <li>Global ZDR у провайдера остаётся включённым;</li>
+  <li>дополнительно требуется ваша <strong>аттестация эксклюзивности организации</strong> —
+      что никакой другой трафик не расходует <code>qwen/qwen3.8-27b</code> под той же
+      организацией. Провайдер не даёт ничего, чем это можно проверить машинно, поэтому это
+      именно аттестация, а не проверка.</li>
+</ul>
+
+<p>До этого подтверждения раннер отказывается передавать что-либо, и сегодня он отказался
+бы всё равно — по изоляции.</p>
+</div>
+
+<p class="foot">Ни одной характеристики качества модели в этом отчёте нет — по построению.
+46 ответов прогона №1 остаются в карантине: не прочитаны, не сгруппированы, не оценены.
+Контактные листы с узнаваемыми людьми, включая двоих детей, не публикуются и никуда
+не передаются.</p>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

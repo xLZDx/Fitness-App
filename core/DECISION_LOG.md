@@ -46194,3 +46194,242 @@ was computed and none will be. Every change the revision makes is forced by meas
 instrumentation — token caps, quota classes, partitioning, retry behaviour, validity gating — not by
 anything visible in the answers. GPT-PM's judgement: a clean re-run remains defensible, provided
 the quarantine above holds.
+
+---
+
+## 2026-09-08 — RECOG-SO1 revision 2 built: planned versus actual, item by item
+
+Rosetta plan `fitness_app-2026-09-08T08-34-50-318Z-2c1216`, hash
+`ff5acab35dac223e3f19495c89dbecf53364896c7fddd60a55649d0790e25e2b`, GPT-PM `VERDICT: APPROVE`,
+0 BLOCKER / 0 MAJOR. Eight revisions were needed to get there; each of the seven REVISE verdicts
+carried a real finding, and the last two were the same defect one layer apart — a rule stated
+without the number it depends on, then a composition frozen for two of three signals while the third
+stayed loose. The defect class this session has been tracking, "a claim broader than the check behind
+it", is now at fourteen instances.
+
+### What was planned, and what actually happened
+
+| # | Planned | Definition of Done (GPT-PM) | Status |
+| --- | --- | --- | --- |
+| 1 | Single Qwen request ledger, written before transport, failing closed | ledger is the sole authority for the partition count and `last_qwen_request_at` | **done** |
+| 2 | Validity structurally precedes every statistic | one `run_validity()` called first by both `verdict()` and `report()` | **done** |
+| 3 | Frozen decision table as data | every row exercised on verbatim run #1 bodies; unknown 429 fails closed | **done** |
+| 4 | Answer-coverage floor, at least 20 sources per kind in both arms | counts answers, sits beside the row count | **done** |
+| 5 | Ordering proven by raising spies | invalid fixture reaches zero of four statistics | **done**, plus a control proving the assertion can fail |
+| 6 | `machine` as an enum derived from the sealed vocabulary | serialized body carries exactly 71 names plus the sentinel | **done** |
+| 7 | TPD guard as local ledger accounting, ceiling 44 | the 45th request is refused before transport | **done** |
+| 8 | One wait authority; `pace_after_failure` deleted | nine frozen totals, one sleep per call | **done** |
+| 9 | 24-hour isolation from the ledger, probes included | a probe advances the same clock the partition gate reads | **done** |
+| 10 | `max_completion_tokens` 256 from the OTPM envelope; stress probes before any seal | no probe finishes on `length` | **PARTIAL** — see the tail below |
+| 11 | Four-partition manifest, generated | 7+6 / 7+6 / 6+7 / 6+7, byte-identical under a shuffled input | **done** |
+| 12 | Runner rewritten to the table, every guard reading the ledger | every mutation flips a fixture, and is reverted | **done** |
+| 13 | Revision 2 pre-registration and seal | 17 artefacts, verified in the repo and in a fresh tree | **PARTIAL** — written; the seal is deliberately EMPTY until the probes succeed |
+| 14 | End-to-end offline verification | both suites green, both seals verify, the runner refuses | **done** |
+| 15 | Decision log, bilingual report, commit, push, stop at consent | the renewed-consent request reaches the operator | **done** (this entry) |
+
+**The tail on item 10, stated rather than buried.** The stress probes have NOT run and cannot run
+today, for two independent reasons that both hold: the organisation's daily budget stood at 199,789
+of 200,000 tokens, and the isolation rule requires 24 hours of quiet since run #1's last request.
+Measured after seeding the ledger: "only 2.1h since the last Qwen request; the isolation rule
+requires 24h". So revision 2 is **DRAFTED, NOT CLEARED FOR TRANSMISSION**, and that state is
+mechanical rather than a note — `stress_probe_receipt_ok()` refuses with exit 8 until a receipt
+exists that is bound to this exact configuration digest and shows no probe finishing on `length`.
+
+### Decisions taken during the build, with their reasons
+
+**Revision 1's files are not edited, at all.** The revision 1 seal hashes `recog_so1_run.py`,
+`recog_so1_score.py`, `recog_so1_config.json` and `recog_so1.tests.py`; editing any of them in place
+would have destroyed the only record of what run #1 was actually measured against. Revision 2 is a
+parallel set of files. Revision 1's suite still passes 61/61 and its seal still verifies 12/12 in a
+fresh `git checkout-index` tree.
+
+**Revision 2 imports revision 1's arithmetic rather than restating it.** `recog_so1_score_r2.py`
+takes `rate`, `delta_pp`, `permutation_p`, `competence` and every threshold from the sealed revision
+1 scorer. "The hypothesis did not move" is therefore a property of the code, not a claim about it.
+The consequence is that revision 1's runner and scorer are load-bearing for revision 2, so both are
+sealed in revision 2's own seal — otherwise editing them would change this experiment silently.
+
+**The four partitions are four separate manifest files, not one file with a `partition` column.**
+Partition membership is derived from the ground truth, and the runner's input schema is closed
+precisely so that nothing ground-truth-derived can reach it. Four files carrying revision 1's closed
+schema unchanged keep blindness exactly as it was; the partition is named by which file the runner
+is pointed at.
+
+**The classifier reads the limit code, not the opening words.** The daily refusal and the ordinary
+rolling-window refusal both begin `Rate limit reached for model ...`. A prefix-keyed classifier would
+read a spent day as a spent minute and retry into it. Classification is on `(TPD)`, `(RPD)`,
+`(OTPM)`, `(TPM)`, `(RPM)`, and anything else stops the run. Both bodies are test fixtures, verbatim.
+
+**`next_request_tpm_bound` is 3,600 — the same number as the empirical per-request charge bound, on
+purpose.** It is one measured quantity, what a single request may cost, used for two purposes. Two
+separately invented numbers could disagree; one cannot.
+
+**The ledger is seeded with run #1's 260 transmissions.** Without them the isolation rule would be
+vacuous on its first day. 260 is the sum of `attempts` across the 104 archived records — the same
+figure the failure report gives. They are dated at the archive's own commit time, which is later than
+the last real request and therefore lengthens the wait rather than shortening it. Reading `attempts`
+is transmission bookkeeping; **the 46 answers remain unread and unscored.**
+
+**`.gitattributes` gained pins for every revision 2 artefact.** Git said so itself when they were
+first staged: "LF will be replaced by CRLF the next time Git touches it". With `core.autocrlf=true`
+and no pin, the next checkout would have handed back different bytes and every digest in the revision
+2 seal would have failed — on this machine, not only on a Linux runner.
+`RECOG_C1_GROUND_TRUTH_2026-09-05.csv` is pinned here because revision 2 is the first protocol to
+seal it: the partition algorithm reads it, so the allocation depends on its exact bytes.
+
+**One instrument error of my own, recorded because it nearly became a finding.** A first pass
+reported revision 1's seal failing 12 of 12 in a fresh tree. That was my checker, not the seal: it
+ran under Windows Python against an MSYS `/tmp` path, so every file read as missing. Re-run against a
+path both interpreters can see, revision 1 verifies 12/12 and revision 2 17/17. A check that reports
+failure for a reason unrelated to what it is checking is the same defect class as a check that cannot
+fail.
+
+### Evidence
+
+- `py -3 scripts/dev/recog_so1_r2.tests.py` — **109/109**, no network call, no real sleep.
+- `py -3 scripts/dev/recog_so1.tests.py` — **61/61**, revision 1 untouched.
+- `py -3 scripts/dev/recog_so1_build_partitions.py --check` — exit 0; 7+6 / 7+6 / 6+7 / 6+7.
+- Both seals verified against the working tree and a fresh `git checkout-index` tree: revision 1
+  12/12, revision 2 17/17.
+- `py -3 scripts/dev/recog_so1_run_r2.py --partition 1 ... --dry-run` → **exit 3**, refused: no
+  consent record binds the new pre-registration.
+- `py -3 scripts/dev/recog_so1_run_r2.py --stress-probe` → **exit 7**, refused on isolation.
+
+### Closure review: REVISE, 0 BLOCKER / 5 MAJOR — all five verified, all five fixed
+
+The 15 steps above were finished and then reviewed. GPT-PM returned five MAJORs on the finished
+work. Each was checked against the code before being accepted; each turned out to be a FACT, and
+several were contradictions between artefacts I had written myself.
+
+**1. The "stress probe" stressed nothing.** `run_stress_probes()` sent the ordinary frozen prompt
+against a solid-colour frame — which produces the *shortest* possible answer, `unknown` with no
+alternatives — and that reply was standing as evidence about the *longest* one.
+`longest_canonical_names()` was written into the receipt as decoration and used for nothing. No
+image can force a worst-case answer, because the model chooses its own, so the criterion was
+revised rather than fudged, exactly as the review directed. Serialization headroom is now bounded
+**offline**: since `machine` is an enum, the longest permitted answer is determined, and
+`worst_case_answer_bytes()` measures it at **243 bytes** against a 256 cap. It is a hard gate —
+lengthen the vocabulary enough and the run refuses, which the suite demonstrates. The probe now
+answers only the question it can answer: does the provider accept this request shape.
+
+**2. The receipt validator accepted a failure as clearance.** It required a matching config digest,
+a non-empty probe list, and no `finish_reason == "length"`. A receipt recording two *failed* probes
+with `cleared: false` and `finish_reason: null` satisfied all three. It also bound the config alone,
+so a probe obtained under a different prompt or vocabulary could have cleared a request shape it had
+never tested. It now requires both arm shapes, HTTP 200 and class `ok` for each, `cleared: true`,
+and bindings to config, prompt **and** vocabulary. The old, loose receipt is now an explicit
+refusal case in the suite.
+
+**3. The revision 2 consent contract could not be written at all.** Revision 1's `evaluate_consent()`
+has a **closed** schema: it refuses any property it does not know. The organisation-exclusivity
+attestation this revision's own pre-registration requires would therefore have been rejected as an
+undefined property — the suite now demonstrates that refusal rather than asserting it. And its
+single `manifest_sha256` would have bound one partition, forcing the consent record to be rewritten
+between partition days, which makes "the operator consented" something this program edits on its own
+behalf. `evaluate_consent_r2()` defines the contract instead: one immutable record binding this
+pre-registration, **all four** partition manifests, the retention state, the verbatim statement, and
+`organisation_exclusivity_attested: true`. Eight refusal cases and a positive control.
+
+**4. `(OTPM)` was collapsed into one class, contradicting my own config.** The sealed configuration
+said to classify by failure form; the code mapped the `(OTPM)` code unconditionally to the permanent
+per-request ceiling. An ordinary rolling-window OTPM refusal — which the frozen table says to retry
+twice — would have invalidated an entire partition. This is the same trap as the TPD/TPM prefix, one
+level down: the *code* is ambiguous just as the *opening words* are. Classification now reads code
+and form, unknown `(OTPM)` wording fails closed, and a mutation restoring the old behaviour fails
+the test.
+
+**5. Two guards were unreachable with the real transport, and one bypassed the table.** Revision 1's
+`HttpTransport` converts only `HTTPError`, so a read timeout or reset connection propagated straight
+out — the frozen `transport_failure → 3 attempts` row could never fire in production, and a timeout
+would have crashed the process *after* its ledger entry was written, leaving spent budget with no
+result record. And the availability check had a single-shot path of its own: on a transient 429 it
+recorded `degraded` and transmitted the corpus anyway, so the one question it exists to answer went
+unanswered while the photographs were spent regardless. Network exceptions now convert into the
+frozen class, and availability runs through the same bounded attempt engine as everything else, with
+**only a success** permitting corpus transmission. The suite asserts zero corpus images are read
+after a failed availability check.
+
+### The seal was removed, and item 13 is now PARTIAL
+
+The first draft of the pre-registration carried a **filled** seal while the stress probes were still
+outstanding, and justified it by distinguishing "sealing the artefact list" from "clearing
+transmission". GPT-PM rejected that as going beyond the branch the approved plan allowed, which said
+plainly: if the probes cannot run, the revision is *drafted but not sealed*. Inventing a second
+sense of "sealed" to satisfy the first half of that is the same defect this session keeps producing
+— a claim wider than the check behind it. The seal block is now empty, `load_seal()` returning `{}`
+makes the runner refuse with exit 2, and the digests live in an explicitly provisional appendix that
+no program reads. **Item 13 is therefore PARTIAL, not done**, and the report says so.
+
+Note recorded because it matters: `verify_seal({})` reports no problems. An empty seal verifies
+*successfully* against nothing, so refusing it had to be an explicit check rather than a consequence
+— the suite asserts both halves.
+
+### Round 2: four of five closed, one remediation was itself incomplete
+
+GPT-PM verified the batch and closed four. The fifth came back, and both halves of it were true.
+
+**A label is not evidence that a frame shape was probed.** `stress_probe_receipt_ok()` compared only
+the SET of `arm_shape` values, so three records labelled A, A, B would have satisfied it, and a
+receipt carrying no `dimensions` field at all passed. The suite's own positive fixture was
+structurally exactly that receipt -- I wrote the hole, then wrote a test that demonstrated it while
+appearing to prove the opposite. It now requires exactly one probe per arm, each carrying the real
+declared frame dimensions, with refusals for missing, wrong, duplicated and extra probes, plus a
+round-trip check that a receipt the runner writes satisfies the runner's own validator.
+
+**The clearance evidence sat outside the seal.** The 17-artefact list did not include the
+stress-probe receipt, so once sealing happened the receipt could be replaced and `verify_seal()`
+would notice nothing -- the corpus path could later be cleared by evidence that was not the evidence
+sealing rested on. The receipt is now the eighteenth sealed artefact, and `seal_binds_receipt()`
+refuses a non-empty seal that omits it, so it is a check rather than a step someone remembers.
+
+Suite: **158/158** (was 149). Revision 1 still 61/61 and untouched.
+
+### Round 3: the receipt could lie about which request it had tested
+
+The A/B and seal halves were accepted. A third hole was found underneath them, and my own test was
+again the exhibit.
+
+`run_stress_probes()` took `prompt`, `vocab` and `config` as arguments, built the request from
+them, and then wrote the digests of the on-disk frozen files into the receipt **regardless of what
+it had actually been handed**. So a probe run with a modified prompt would produce a receipt
+claiming the frozen prompt's digest -- and that receipt, now the eighteenth sealed artefact, would
+pass both `verify_seal()` and `stress_probe_receipt_ok()`, permanently sealing evidence that said
+the frozen request was tested when a different one was.
+
+The round-trip test I had just added as proof that "the writer and the validator agree" passed the
+literal string `"p"` as the prompt, and validated. It was demonstrating the hole while reading as
+proof of the opposite -- the third time in this remediation that a test of mine did that.
+
+The three parameters are gone. `run_stress_probes()` reads the frozen files itself, once, and the
+same bytes both build the request and produce the digest, so there is no argument left through which
+a different request could enter. Tests: the signature carries no `prompt`/`vocab`/`config`
+parameter; the receipt the writer produces binds the real frozen digests; and a behavioural mutation
+pointing the writer at a decoy prompt produces a receipt binding the decoy, which then fails to
+clear the frozen request shape.
+
+Suite: **162/162**.
+
+### Deferred to the next gate, by the reviewer's own instruction
+
+GPT-PM raised, and explicitly excluded from this verdict, that scoring will need a mechanical
+aggregation contract for the four partition JSONLs: `run_r2` writes one output per partition while
+`score_r2` accepts a single `--so1` file. Manual concatenation without exact-id, duplicate,
+missing-partition and invalid-marker checks is not acceptable. Not fixed here, because this plan
+stops before the rerun; it belongs to the execution gate and is recorded so it cannot be forgotten.
+
+### Evidence after remediation
+
+- `py -3 scripts/dev/recog_so1_r2.tests.py` — **149/149** (was 109), no network call, no real sleep.
+- `py -3 scripts/dev/recog_so1.tests.py` — **61/61**, revision 1 still untouched.
+- `py -3 scripts/dev/recog_so1_run_r2.py --partition 1 ... --dry-run` → **exit 2**, refused on the
+  empty seal.
+- `py -3 scripts/dev/recog_so1_run_r2.py --stress-probe` → **exit 7**, refused on isolation.
+
+The defect class this session tracks is now at **nineteen** instances. Five of them were found by a
+reviewer reading work I had already called finished, and two were contradictions between two files I
+wrote myself an hour apart.
+
+### Where this stops
+
+**Renewed operator consent.** It is operator-only under §4/§20, no reviewer approval substitutes for
+it, and no corpus photograph has moved anywhere under this plan.

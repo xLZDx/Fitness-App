@@ -77,3 +77,27 @@ scripts/dev/recog_so1.tests.py text eol=lf
 # the recog_c1_raw line above -- an evidence file that a later reader may want
 # to hash must not depend on which platform checked it out.
 core/plans/recog_so1_raw/*.jsonl -text
+
+# RECOG-SO1 REVISION 2. Same reasoning as the revision 1 block above, and git
+# said so itself when these files were first staged: "LF will be replaced by
+# CRLF the next time Git touches it". With core.autocrlf=true and no pin, the
+# next checkout would hand back different bytes and every digest in the
+# revision 2 seal would fail -- on this machine, not only on a Linux runner.
+# RECOG_C1_GROUND_TRUTH is pinned here rather than in the revision 1 block
+# because revision 2 is the first protocol to seal it: the partition algorithm
+# reads the ground truth, so the allocation depends on its exact bytes.
+core/plans/RECOG_C1_GROUND_TRUTH_2026-09-05.csv text eol=lf
+core/plans/RECOG_SO1_PARTITION_1_R2_2026-09-08.csv text eol=lf
+core/plans/RECOG_SO1_PARTITION_2_R2_2026-09-08.csv text eol=lf
+core/plans/RECOG_SO1_PARTITION_3_R2_2026-09-08.csv text eol=lf
+core/plans/RECOG_SO1_PARTITION_4_R2_2026-09-08.csv text eol=lf
+core/plans/RECOG_SO1_PREREGISTRATION_R2_2026-09-08.md text eol=lf
+core/plans/RECOG_SO1_CONSENT_R2.json text eol=lf
+core/plans/RECOG_SO1_STRESS_PROBE_RECEIPT_R2.json text eol=lf
+core/plans/recog_so1_raw/RECOG_SO1_QWEN_REQUEST_LEDGER.jsonl -text
+scripts/dev/recog_so1_config_r2.json text eol=lf
+scripts/dev/recog_so1_ledger.py text eol=lf
+scripts/dev/recog_so1_build_partitions.py text eol=lf
+scripts/dev/recog_so1_run_r2.py text eol=lf
+scripts/dev/recog_so1_score_r2.py text eol=lf
+scripts/dev/recog_so1_r2.tests.py text eol=lf

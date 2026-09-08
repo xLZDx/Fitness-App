@@ -1,0 +1,137 @@
+{
+  "_comment": "Frozen SO1 REVISION 2 request configuration. Revision 1's own config is NOT edited: it is sealed in RECOG_SO1_PREREGISTRATION_2026-09-07.md and run #1 must remain judgeable by the protocol it actually ran under. This is a separate file with a separate seal, and the two coexist deliberately.",
+
+  "_why_revision_2": "Revision 1 produced an INVALID_INSTRUMENT run on 2026-09-08. 104 observations were attempted, 46 answered, 58 refused, every failure HTTP 429 -- and neither limit behind them was the one the pacing had been built against. The pacing guarded ITPM (7,000 input tokens/minute). What actually bound the run was TPD (200,000 tokens/day, enforced per ORGANISATION) and OTPM (1,000 output tokens, a PER-REQUEST ceiling that pacing cannot reach). Revision 2 exists to guard the limits that actually exist.",
+
+  "model": "qwen/qwen3.8-27b",
+  "_model_unchanged": "Identical to revision 1, deliberately. Changing the model would change the hypothesis; this revision changes only the instrument.",
+
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 20260907,
+  "_determinism_note": "Carried forward verbatim from revision 1. temperature 0 plus a pinned seed makes the run reproducible rather than merely repeatable, and is also why a reply that fails to parse is never retried.",
+
+  "max_completion_tokens": 256,
+  "_max_tokens_justification_OTPM_ONLY": "256 is chosen from the OUTPUT-TOKENS-PER-MINUTE envelope and from nothing else. Measured from a real refusal on 2026-09-08: 'Request too large for model qwen/qwen3.8-27b ... Limit 1000, Requested 1072 ... reduce max_tokens'. Groq estimates a request's output cost pessimistically FROM max_completion_tokens and refuses outright when that estimate exceeds 1,000 -- so this is a per-request ceiling, not a rate, and no amount of pacing can avoid it. Revision 1 sent 4096 and was refused 10 times for that reason alone, twice while the daily budget was still intact. 256 sits far inside the per-request ceiling, and at the frozen 3 requests/minute the rate view is 3 x 256 = 768, also inside 1,000.",
+  "_two_separate_claims_two_separate_instruments": "GPT-PM's closure review, MAJOR: the first implementation called a solid-colour frame a 'stress probe' and let the reply it produced -- which is the SHORTEST possible answer, 'unknown' with no alternatives -- stand as evidence about the LONGEST one. A gray frame cannot exercise the worst envelope, and no image can be made to force one, because the model chooses its own answer. So the criterion is revised rather than pretended, and the two claims are proven by the two instruments that can actually prove them.",
+  "_claim_1_serialization_headroom_PROVEN_OFFLINE": "The longest answer this schema now PERMITS is bounded, and the bound is computed rather than assumed. Since 'machine' became an enum, the longest possible names are the three longest canonical names in the sealed vocabulary; 'alternatives' has maxItems 2; the keys and punctuation are fixed. worst_case_answer_bytes() builds that exact answer and measures it: 243 bytes with 17-significant-digit confidences. A UTF-8 byte is at least one token's worth of input to any tokeniser, so 243 bytes is an upper bound of 243 tokens, under 256. This is checked as a hard gate that REFUSES the run, not a comment -- add a long enough name to the vocabulary and it fires.",
+  "_claim_1_residual_stated_not_hidden": "The bound assumes a confidence literal of at most 19 bytes. JSON numbers have no length limit, so a model emitting an exact double expansion could exceed it. That residual is not argued away: it lands on finish_reason 'length', which is pre-registered as unresolved, never retried, and counts AGAINST the signal. The conservative direction, by construction.",
+  "_claim_2_provider_acceptance_NEEDS_A_PROBE": "Whether the provider ACCEPTS this request shape at this cap cannot be settled offline, because Groq's output-cost estimator is not documented and the only datum is that max_completion_tokens 4096 produced 'Requested 1072' against a limit of 1000. So synthetic probes in both arm shapes must be sent through the ledger and must come back with a successful class and no finish_reason 'length'. A receipt is accepted only if it records BOTH arm shapes, a successful outcome for each, cleared:true, and bindings to the config, the prompt AND the vocabulary -- not the config alone, or a probe obtained under a different prompt could clear a request shape it never tested.",
+
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "equipment_recognition",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "machine": { "type": "string", "enum_from_vocab": true },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "alternatives": {
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "properties": {
+                "machine": { "type": "string", "enum_from_vocab": true },
+                "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+              },
+              "required": ["machine", "confidence"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["machine", "confidence", "alternatives"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "_enum_from_vocab_note": "'enum_from_vocab': true is a build-time marker, never transmitted. The runner replaces each marked property with an explicit enum of the 71 canonical names in the sealed vocabulary plus the sentinel 'unknown', in the vocabulary's own order. It is DERIVED rather than copied here on purpose: a hand-typed list in this file could drift from the sealed vocabulary and nothing would notice. The test suite asserts the SERIALIZED body's enum equals exactly canonical_machines + the sentinel, and that dropping a name from the vocabulary changes the body.",
+  "_enum_honest_consequence": "This closes the off-list answer class by construction on the Qwen side: the model can no longer name equipment outside the frozen vocabulary. Under revision 1's scorer an off-list name was a DISAGREEMENT, which pushes delta toward PASS, so removing that class is conservative rather than favourable. The asymmetry objection raised against this change was tested rather than argued: Gemini's own off-list rate across all 104 revision-1 observations is 0 of 104, so there is no real asymmetry to create.",
+  "_bounds_note": "'confidence' gains minimum 0 and maximum 1 at both levels, and 'alternatives' gains maxItems 2, so the transmitted schema now matches the production reply contract in expected_output_schema instead of being looser than it.",
+
+  "extra_body": { "reasoning_effort": "none" },
+  "_reasoning_unchanged": "Carried forward frozen from revision 1: 'none' is instruct / non-thinking mode, the closest methodological analogue to the production Gemini recognition path, which runs with thinking disabled.",
+
+  "expected_output_schema": {
+    "machine": "string; a name from the frozen canonical list, or the sentinel 'unknown'",
+    "confidence": "number in [0,1]",
+    "alternatives": "array of at most 2 objects {machine: string, confidence: number}; may be absent or empty"
+  },
+
+  "decision_table": {
+    "_comment": "The complete, frozen classification of every outcome a request can have. Read as data by the runner and the scorer; a class that appears here nowhere is refused rather than guessed at. Attempt counts are TRANSPORT attempts -- actual calls that spend tokens and write a ledger entry -- never sleeps.",
+    "http_400": { "outcome": "INVALID_INSTRUMENT", "attempts": 1, "stops_run": true },
+    "http_401": { "outcome": "INVALID_INSTRUMENT", "attempts": 1, "stops_run": true },
+    "http_403": { "outcome": "INVALID_INSTRUMENT", "attempts": 1, "stops_run": true },
+    "http_404": { "outcome": "INVALID_INSTRUMENT", "attempts": 1, "stops_run": true },
+    "otpm_request_too_large": { "outcome": "INVALID_INSTRUMENT", "attempts": 1, "stops_run": true },
+    "tpd_exhausted": { "outcome": "INVALID_INSTRUMENT", "attempts": 1, "stops_run": true },
+    "unrecognised_429": { "outcome": "INVALID_INSTRUMENT", "attempts": 1, "stops_run": true },
+    "rolling_window_429": { "outcome": "unresolved", "attempts": 2, "stops_run": false },
+    "transport_failure": { "outcome": "unresolved", "attempts": 3, "stops_run": false },
+    "parse_failure": { "outcome": "unresolved", "attempts": 1, "stops_run": false },
+    "finish_reason_length": { "outcome": "unresolved", "attempts": 1, "stops_run": false },
+    "ledger_budget_exceeded": { "outcome": "INVALID_INSTRUMENT", "attempts": 0, "stops_run": true },
+    "availability_failed": { "outcome": "INVALID_INSTRUMENT", "attempts": 0, "stops_run": true }
+  },
+  "_429_classification": "Classification reads BOTH the parenthesised limit code AND the failure form, because the code alone is ambiguous for OTPM. '(TPD)' or '(RPD)' -> tpd_exhausted. '(TPM)' or '(RPM)' -> rolling_window_429. '(OTPM)' splits: with 'Request too large' or 'expected output tokens exceed' it is a PERMANENT per-request ceiling -> otpm_request_too_large; with 'Rate limit reached' it is an ordinary rolling window -> rolling_window_429. Anything else, including an '(OTPM)' body in wording nobody has seen, FAILS CLOSED as unrecognised_429 and stops the run.",
+  "_429_classification_defect_found_in_review": "GPT-PM's closure review, MAJOR: the first implementation mapped the '(OTPM)' code unconditionally to the permanent class, which contradicted this very field. A rolling-window OTPM refusal -- which the provider is free to send, and which the frozen table says to retry twice -- would have been read as a structural request-too-large error and would have invalidated the whole partition. The config said one thing and the code did another; the code now reads the form as well.",
+  "_availability_failed_reasoning": "The availability check exists to answer 'is the model answering at all before the corpus?'. GPT-PM's closure review, MAJOR: the first implementation sent exactly one request and, on a transient 429 or 503, recorded 'degraded' and went straight on to transmitting corpus photographs -- so the one question it was there to settle went unanswered and the corpus was spent anyway. It now runs through the same bounded attempt engine as every other request, and ONLY a success permits corpus transmission. Exhausted attempts are INVALID_INSTRUMENT: not a verdict, and not permission to proceed.",
+  "_why_invalid_is_not_a_verdict": "INVALID_INSTRUMENT is not PASS, FAIL or INCONCLUSIVE. It means the measurement is structurally invalid and NO hypothesis statistic may be computed from it at all -- not reported-with-caveats, not computed-and-withheld. INCONCLUSIVE is different: execution was valid and there were simply too few valid answers.",
+
+  "wait_rule": {
+    "_comment": "ONE authority computes the interval before EVERY transport call -- first attempt, retry, availability check, stress probe. Revision 1 had two: an ordinary pacing sleep and pace_after_failure(), which took max(pacing, Retry-After) on the failure path only. Adding a third guard beside two would have left the composition of three signals undefined; instead the three collapse into one maximum, taken once.",
+    "ordinary_pacing_seconds": 20,
+    "next_request_tpm_bound": 3600,
+    "tpm_reset_margin_seconds": 2,
+    "missing_reset_wait_seconds": 60,
+    "_algorithm": "wait = ordinary_pacing_seconds. If the latest VALID x-ratelimit-remaining-tokens is below next_request_tpm_bound: wait = max(wait, parsed x-ratelimit-reset-tokens + tpm_reset_margin_seconds), or max(wait, missing_reset_wait_seconds) when that reset is absent or unparseable. If this attempt follows a retryable 429 carrying a VALID Retry-After: wait = max(wait, Retry-After). A malformed or absent Retry-After contributes nothing. Sleep ONCE for the result.",
+    "_why_maximum_not_sum": "Each term is a statement about the EARLIEST time the next request may go, so the binding one is the latest of them. Adding them would honour none of the three and would stretch a 44-request partition past every wall-clock estimate in the pre-registration.",
+    "_worked_values": "reset 12 + low remaining -> 20; reset 30 -> 32; malformed reset + low remaining -> 60; healthy remaining -> 20; remaining header absent -> 20; Retry-After 45 + reset 12 + low remaining -> 45; Retry-After 10 + reset 30 + low remaining -> 32; Retry-After 75 + malformed reset -> 75; no Retry-After + healthy TPM -> 20.",
+    "_the_wait_consumes_no_attempt": "Sleeping is not attempting. The attempt counts in decision_table are transport calls; a request that waits 45 seconds and then succeeds has made one attempt and written one ledger entry.",
+    "_header_is_TPM_only": "x-ratelimit-remaining-tokens and x-ratelimit-reset-tokens describe Groq's TOKENS-PER-MINUTE window. They are not an ITPM or OTPM remaining budget and above all they are not a statement about the DAY. Revision 1's plan very nearly used them as a second daily guard, which would have read the minute bucket and reported it as the day."
+  },
+
+  "budget": {
+    "_comment": "The daily ceiling is enforced from the LOCAL LEDGER, never from a response header. The provider exposes no remaining-per-day figure at all, and the minute-window headers say nothing about the day.",
+    "tokens_per_day_measured": 200000,
+    "_tokens_per_day_source": "Read from the body of a REAL 429 on 2026-09-08: 'Limit 200000, Used 199789, Requested 2495'. Enforced per ORGANISATION, not per key and not per project.",
+    "daily_experiment_budget": 160000,
+    "_daily_experiment_budget_reasoning": "80% of the measured 200,000, leaving headroom for anything else in the organisation and for the fact that the bound below is empirical rather than proven.",
+    "empirical_charge_bound_per_request": 3600,
+    "_empirical_charge_bound_derivation": "The largest 'Requested' value observed across all 58 refusals in run #1 was 3,408 tokens. 3,408 x 1.056 = 3,599 -> 3,600. This is an EMPIRICAL bound with a 5.6% margin, NOT a proven ceiling: a request the provider charges more than 3,600 for would break the arithmetic below, and nothing here can rule that out. Stated as what it is.",
+    "requests_per_partition_ceiling": 44,
+    "_ceiling_arithmetic": "floor(160000 / 3600) = 44. Those 44 are spent as 1 availability check + 26 corpus observations + at most 17 retries. Every one of the three classes is counted, from the same ledger: the availability call either counts, or the arithmetic is 45.",
+    "_same_number_twice_on_purpose": "empirical_charge_bound_per_request and wait_rule.next_request_tpm_bound are both 3,600 because they are the same measured quantity used for two purposes -- what one request may cost. Two separately invented numbers could disagree; one cannot."
+  },
+
+  "isolation": {
+    "_comment": "Revision 1 spent 199,789 of the organisation's 200,000 daily tokens in a single afternoon. Four partitions at least a day apart is what makes the same 104 observations fit inside a limit they cannot fit inside in one day.",
+    "hours_between_partitions": 24,
+    "_first_partition_rule": "Partition 1 may not start until 24 hours after the ledger's last Qwen request of ANY class -- stress probes included. A probe run while sealing this document spends the same organisation's tokens as a corpus observation does.",
+    "_later_partition_rule": "Each later partition may not start until 24 hours after the previous partition's last ledger entry.",
+    "_organisation_exclusivity_is_ATTESTED_not_verified": "The daily limit is enforced per organisation, and the provider exposes NOTHING that could confirm no other traffic is using qwen/qwen3.8-27b under the same organisation. So this is an operator ATTESTATION recorded in the consent record, not a machine check. It is named here so that nobody later mistakes it for something the runner verified."
+  },
+
+  "partitions": {
+    "_comment": "Four partitions, generated rather than described. Both arms of a source photograph always travel together, in the same partition, because the frozen ground truth makes kind a property of the photograph.",
+    "count": 4,
+    "algorithm": "within each ground-truth kind, order sources by ascending hex of sha256(source_photo_id); partition = (index + offset) mod 4",
+    "offset_canonical_single": 0,
+    "offset_multiple": 2,
+    "_why_the_offsets_differ": "26 sources round-robin four ways gives 7, 7, 6, 6 -- not 6.5 each. With BOTH kinds at offset 0 the partitions would hold 14, 14, 12, 12 observations' worth of sources, not 13 each. Offsetting 'multiple' by 2 puts its two 7s where canonical_single has its two 6s. Generated counts: 7+6 / 7+6 / 6+7 / 6+7 = 13 sources and 26 observations per partition, totals 26 canonical_single and 26 multiple.",
+    "_order_independence": "Ordering by the hash of the source id rather than by manifest position makes the allocation a property of the corpus, not of the file. Regenerating from a row-shuffled input manifest must produce a byte-identical partition manifest."
+  },
+
+  "coverage_floor": {
+    "_comment": "The power floor now counts ANSWERS, not rows. Revision 1's unique_sources() counted manifest rows, so it reported 26/26/26/26 for a run in which 58 of 104 observations had no reply at all -- the safeguard against exactly this situation could not fire.",
+    "min_unique_sources_with_answers_in_both_arms": 20
+  },
+
+  "endpoint": "https://api.groq.com/openai/v1/chat/completions",
+  "user_agent": "fitness-app-recog-so1/2.0",
+
+  "_carried_forward_unchanged": "The hypothesis, the PASS and FAIL thresholds, the prompt, the vocabulary, the ground truth and the 52 source photographs are IDENTICAL to revision 1 and are bound by digest in the revision 2 pre-registration. This revision changes the instrument, never what is being measured."
+}
