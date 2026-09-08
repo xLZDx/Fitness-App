@@ -46839,3 +46839,70 @@ Pushed to `origin/master` as `3856193..6cf2936` (7 commits). This gate is comple
 wait (~15h remaining as of this close), the stress probe, seal-filling, and renewed consent are the
 program's next steps, gated behind real time passing rather than anything this gate could close
 further.
+
+## 2026-09-08 — The compromised Groq key is revoked, and that makes the key file the next run's blocker
+
+The operator revoked the key that had been pasted into a chat transcript on 2026-09-07 (recorded
+above: compromised from the moment it entered the transcript, and revocation was always the
+operator's own action). That closes the first of the four items this log listed as still the
+operator's alone.
+
+**What it breaks, and it is worth knowing before the isolation window opens.** The runner reads no
+environment variable and has no default: `--api-key-file` is required for a real run and for a
+stress probe alike (`scripts/dev/recog_so1_run_r2.py:1183-1186` and `:1089-1093`). The file that has
+served that role since 2026-09-07 is
+`D:\Temp\claude\d--Repo\5c302c91-31c2-4e5a-8695-d3eb4d063e24\scratchpad\.groq_key` — outside the
+repository, as required, and it now holds a revoked key. Partition 2 cannot run until a live key is
+written there, or another path is passed.
+
+**The hazard is the write ordering, and the ordering is deliberate.** `Ledger.record()` is called
+BEFORE the request is sent and takes no outcome parameter — it cannot know whether the request
+succeeded (`scripts/dev/recog_so1_ledger.py:181-188`, whose docstring gives the rationale:
+"Recording first can over-count if the process dies between the write and the send, and
+over-counting is the safe direction"). `send_with_retries()` states the same order explicitly —
+"Budget-check, wait, LEDGER, send -- in that order" (`scripts/dev/recog_so1_run_r2.py:610-630`).
+`isolation_ok()` then measures the gap to the last entry of any class, whatever its outcome
+(`scripts/dev/recog_so1_ledger.py:164-177`).
+
+So an attempt made with a dead key writes a ledger entry, receives its 401, spends zero tokens — and
+restarts the 24-hour isolation clock regardless. FACT, verified at source rather than inferred from
+behaviour. A five-second mistake costs a full extra day. Nothing is at risk yet, because the runner
+still refuses at the isolation preflight (12.6h remaining as of 2026-09-08T18:52Z, live-checked —
+this supersedes the "~15h" in the closure entry above, which was already stale when written). The
+danger is precisely the FIRST attempt after the window opens. **The key file has to be valid before
+the window opens, not discovered dead after it.**
+
+**Validating a replacement costs nothing.** Only the runner writes to the ledger, so a plain
+`GET /openai/v1/models` against the Groq API touches neither the ledger nor the isolation window and
+spends no completion tokens — it is metadata, not inference. That is how to confirm a new key works
+without paying a day for the answer. A second key (created 9/4, never used, never present in any
+transcript) is recorded above as uncompromised and may still be live; a third key need not be issued
+on this account.
+
+## 2026-09-08 — Refused: a provider fallback cascade for RECOG-SO1 itself
+
+The operator, on learning the isolation wait is self-imposed rather than a Groq-side reset, asked
+for the alternative: study the workspace free-LLM catalogue and say what fits better, then — *"или
+сделай каскад фолбэков чтобы квота вообще никогда не кончалось"* — or build a fallback cascade so
+the quota never runs out at all.
+
+Built, but deliberately not for this experiment. `complete_with_fallback()` now exists in the shared
+workspace catalogue (`D:\Repo\free_llm_apis.py`) for ordinary, interchangeable LLM calls in any
+child project: it walks ranked candidates and moves to the next on 429/402/transport failure. It is
+documented there with an explicit exclusion, and this is the reason for the exclusion.
+
+RECOG-SO1's own config freezes the model as part of the hypothesis rather than the transport —
+`"Changing the model would change the hypothesis; this revision changes only the instrument."` A
+cascade that substitutes a model on quota exhaustion would leave different partitions answered by
+different models. That is not a transport detail: it dissolves the pre-registered comparison the
+protocol exists to make. Swapping the instrument is a protocol redesign needing a new
+pre-registration and its own GPT-PM approval, not a runtime setting.
+
+A second, independent reason to refuse: nothing in the catalogue records whether a candidate
+supports `response_format: {"type": "json_schema", "strict": true}`, which this protocol depends on —
+`free_llm_apis.json` carries no such field for any model. Every candidate is therefore unverified
+for the one capability that would have to hold, and a model that quietly returns non-conforming JSON
+instead of an error would corrupt a run rather than fail it.
+
+Recommendation put to the operator: wait out the remaining window on the approved design, because a
+redesign costs more than the wait it would save. The operator has not yet chosen.
