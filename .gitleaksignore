@@ -45,16 +45,23 @@ ae0e24f607d382637ff318c4fa704e5625760f8a:reports/2026-08-20-defect-burndown-d02-
 ae0e24f607d382637ff318c4fa704e5625760f8a:reports/2026-08-20-defect-burndown-d02-d06-d07.html:generic-api-key:403
 ae0e24f607d382637ff318c4fa704e5625760f8a:reports/2026-08-20-defect-burndown-d02-d06-d07.html:generic-api-key:404
 
-# REAL finding, NOT a false positive -- flagged directly to the operator
-# 2026-08-27 rather than silently allowlisted as routine. A registered
-# Firebase App Check debug token was committed in plaintext in
-# core/DECISION_LOG.md and is still present in the CURRENT tracked file, not
-# just history. Revocation is a Firebase Console action -- outside this
-# gate's engineering scope and outside what this session can do
-# autonomously (CLAUDE.md Sec4/Sec16: secrets/credentials stay the
-# operator's). This allowlist entry exists ONLY so this pre-existing,
-# already-known, already-reported exposure does not block CI while awaiting
-# operator action -- remove this line once the token is revoked in Firebase
-# Console (revoking makes the committed value harmless, at which point this
-# suppression should be deleted, not kept as permanent debt).
+# False positive, re-classified 2026-09-08 on the operator's instruction, and
+# the re-classification is the point of this entry rather than a softening of
+# it. This was carried from 2026-08-27 to 2026-09-08 as "a REAL finding: a
+# registered App Check debug token committed in plaintext, awaiting operator
+# revocation". Two things retired that description:
+#
+#   1. The string is a debug token's RESOURCE ID, not its secret. The App
+#      Check Admin API names a debug token `projects/../apps/../debugTokens/
+#      <id>`, and <id> cannot be exchanged for an App Check token -- proven
+#      directly by the 403s recorded in core/DECISION_LOG.md when three
+#      "registered" values of exactly this shape were tried as secrets.
+#   2. The referenced debug tokens were deleted from Firebase on 2026-09-08
+#      (operator GO), so the id now names a resource that no longer exists.
+#
+# The entry stays because gitleaks scans the FULL history and commit
+# 2fed5a7c is immutable: the finding resurfaces on every run regardless of
+# what the current tree holds, and this job has no --exit-code 0. What was
+# actually deleted here is the debt -- the standing claim of an unresolved
+# credential exposure pending operator action, which was not true.
 2fed5a7c48cdd45852f41fe10eea189f658734bd:core/DECISION_LOG.md:generic-api-key:22121

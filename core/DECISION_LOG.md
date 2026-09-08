@@ -46906,3 +46906,52 @@ instead of an error would corrupt a run rather than fail it.
 
 Recommendation put to the operator: wait out the remaining window on the approved design, because a
 redesign costs more than the wait it would save. The operator has not yet chosen.
+
+## 2026-09-08 — Operator GO on deletion, carried out: three App Check debug tokens, the revoked key file, the .gitleaksignore debt
+
+The operator gave a GO for deletion and asked that it be executed here rather than by hand. Deletion
+is the one class §20 keeps with the operator outright, and §21 records an incident of exactly this
+shape — a broad deletion instruction read too widely, costing §1–§20 of the global rules file. So
+the object was pinned down by explicit question before anything was touched. The answer named all
+three candidates; nothing outside those three was touched, and the fourth deletable thing found
+along the way was deliberately left alone.
+
+**Three dead App Check debug tokens — deleted.** Listing before deleting is what made this safe, and
+it changed the picture: the debug app (`1:988522745882:android:7c05c915aa42410ec201a3`) carried
+FOUR debug tokens, not three. The fourth is `RECOG-C1 window 2 (2026-09-07)`, minted on 2026-09-07
+and compiled into the debug build distributed to App Tester — deleting it would have broken that
+build. The three genuinely dead ones, matching this log's earlier "three older debug tokens ... now
+known to be unusable (their secrets exist nowhere)", were `G4-Step5-S8-debug-probe-2026-08-29`,
+`SCAN-G1 R2 device testing 2026-09-05` and `local dev (sptr.debug, API 2026-08-20)`. The delete
+script refused to act on any token whose `displayName` did not still match the one recorded for that
+resource id, and hard-refused anything matching `RECOG-C1 window 2` whatever its id claimed. Post-
+delete listing confirms exactly one token remains on the debug app: the live one. A fifth token,
+`local dev (F0.6, created via API)`, lives on a DIFFERENT app (`...682db78304b13de2c201a3`) and was
+never in scope of the three — left untouched rather than swept up as "while we are here".
+
+**The revoked Groq key file — deleted, and the deletion is protective rather than mere tidying.**
+The entry above records the hazard: a run attempted with a dead key writes its ledger row before it
+sees the 401, and restarts the 24-hour isolation window for nothing. With the file gone, that
+failure mode is unreachable — the runner either refuses at argument validation
+(`scripts/dev/recog_so1_run_r2.py:1183-1184`) or dies on the unreadable path at `:1186`, both of
+them strictly before any ledger write. The file must still be recreated with a live key before the
+window opens; what changed is that forgetting to now costs a crash instead of a day.
+
+**The `.gitleaksignore` entry — the debt deleted, the suppression deliberately kept.** The literal
+reading (drop the fingerprint line) was checked against the workflow before acting and rejected on
+evidence: `.github/workflows/secrets.yml` runs `gitleaks git . --redact` with no `--exit-code 0` and
+no `continue-on-error`, over `fetch-depth: 0`, and its own step comment states the design — "A
+fingerprint not in that file fails this job". Commit `2fed5a7c` is immutable, so the finding
+resurfaces on every run no matter what the current tree holds: removing the line would have turned
+CI red permanently, short of a history rewrite nobody authorised.
+
+What was actually retired is the claim the entry carried. It had stood since 2026-08-27 as "a REAL
+finding: a registered App Check debug token committed in plaintext, awaiting operator revocation",
+and that description was already known to be wrong — the string is a debug token's resource id, not
+its secret, proven by the 403s recorded above when three values of that exact shape were tried as
+secrets. As of today it is also an id naming a resource that no longer exists. The entry is now
+classified as a false positive with that reasoning written into it. This is stated plainly because
+it is not what "delete the line" literally asked for: the debt the comment complained about is gone,
+CI stays green, and the file no longer asserts an open credential exposure that was never real. If
+the intent was instead to purge the string from history itself, that is a rewrite and needs its own
+authorisation.
