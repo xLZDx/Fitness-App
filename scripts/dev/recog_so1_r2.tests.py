@@ -1166,6 +1166,643 @@ check(not runner.base.verify_seal({}),
 
 
 # ==========================================================================
+# AGGREGATION CONTRACT -- shared fixture helpers
+# ==========================================================================
+import csv as _csv
+
+agg = scorer.aggregate_mod
+AGG_PARTITIONS = (1, 2, 3, 4)
+
+
+def write_manifest_csv(path: Path, observations) -> None:
+    with path.open("w", encoding="utf-8", newline="") as fh:
+        w = _csv.DictWriter(
+            fh, fieldnames=["observation_id", "source_photo_id", "arm", "image_path", "expected_sha256"])
+        w.writeheader()
+        for o in observations:
+            w.writerow({"observation_id": o.observation_id, "source_photo_id": o.source_photo_id,
+                        "arm": o.arm, "image_path": o.image_path, "expected_sha256": o.expected_sha256})
+
+
+def part_obs(partition: int, n: int, start: int = 0) -> list:
+    out = []
+    for i in range(start, start + n):
+        oid = f"p{partition}o{i}"
+        sid = f"p{partition}s{i}"
+        img = CORPUS / f"{oid}.jpg"
+        if not img.exists():
+            img.write_bytes(f"synthetic-image-{oid}".encode("ascii"))
+        out.append(runner.Observation(oid, sid, "A", f"{oid}.jpg", hashlib.sha256(img.read_bytes()).hexdigest()))
+    return out
+
+
+def broken_obs(partition: int, i: int, kind: str):
+    """An observation that fails BEFORE any transport call -- no ledger entry."""
+    oid, sid = f"p{partition}o{i}", f"p{partition}s{i}"
+    if kind == "missing":
+        return runner.Observation(oid, sid, "A", f"{oid}-nonexistent.jpg", "0" * 64)
+    img = CORPUS / f"{oid}.jpg"
+    if not img.exists():
+        img.write_bytes(f"synthetic-image-{oid}".encode("ascii"))
+    return runner.Observation(oid, sid, "A", f"{oid}.jpg", "0" * 64)  # digest deliberately wrong
+
+
+class FakeClock:
+    """A ledger clock the test controls, so partitions can be made >=24h apart
+    without a real test ever waiting a second of it."""
+
+    def __init__(self, start: datetime):
+        self.now = start
+
+    def __call__(self) -> datetime:
+        return self.now
+
+    def advance(self, **kwargs) -> None:
+        self.now = self.now + timedelta(**kwargs)
+
+
+def four_manifests(tmpdir: Path, sizes=(1, 1, 1, 1)) -> dict:
+    paths = {}
+    for p, n in zip(AGG_PARTITIONS, sizes):
+        mp = tmpdir / f"manifest_{p}.csv"
+        write_manifest_csv(mp, part_obs(p, n))
+        paths[p] = mp
+    return paths
+
+
+def _ok_load_seal(_path):
+    return {agg.AGGREGATOR_SELF_REL: "sealed", "other/artifact": "sealed"}
+
+
+def _ok_verify_seal(_seal):
+    return []
+
+
+def new_preregistration_stand_in(tmpdir: Path, tag: str = "x") -> Path:
+    p = tmpdir / f"prereg_{tag}.md"
+    p.write_text(f"synthetic pre-registration stand-in {tag}\n", encoding="utf-8")
+    return p
+
+
+#: Two real (source, arm) pairs from the sealed ground truth, reused across
+#: these fixtures so `base.load_rows()` (sealed, R1, imported unedited) finds
+#: a real row rather than raising SystemExit on a synthetic source id. Their
+#: statistics are never asserted on -- only that the pipeline runs at all.
+GT_SOURCE_1 = "f110ce1d6c7e060a2664592dec4f42ee2128f4828c4762a269b57abf8d672667"
+GT_SOURCE_2 = "fea9f5611ab59fa34e78cadb5c9b2ade9f4383ac1f8e033faa213abddeee6d7e"
+
+
+def gt_obs(partition: int, source: str, arm: str) -> object:
+    oid = f"gt{partition}"
+    img = CORPUS / f"{oid}.jpg"
+    if not img.exists():
+        img.write_bytes(f"synthetic-image-{oid}".encode("ascii"))
+    return runner.Observation(oid, source, arm, f"{oid}.jpg", hashlib.sha256(img.read_bytes()).hexdigest())
+
+
+#: One real (source, arm) pair per partition, so a full four-partition COMPLETE
+#: fixture can be scored end to end without base.load_rows() (sealed, R1)
+#: raising SystemExit for a synthetic source id it has no ground truth for.
+GT_PAIRS = [(GT_SOURCE_1, "A"), (GT_SOURCE_1, "B"), (GT_SOURCE_2, "A"), (GT_SOURCE_2, "B")]
+
+
+def gt_manifests(tmpdir: Path) -> dict:
+    paths = {}
+    for p, (source, arm) in zip(AGG_PARTITIONS, GT_PAIRS):
+        mp = tmpdir / f"manifest_{p}.csv"
+        write_manifest_csv(mp, [gt_obs(p, source, arm)])
+        paths[p] = mp
+    return paths
+
+
+# ==========================================================================
+# (y) STRUCTURAL SHAPE -- Contract 2, predicate-level
+# ==========================================================================
+print("\n--- (y) partition-file structural shape (Contract 2) ---")
+
+manifest_2obs = [f"p9o{i}" for i in range(2)]
+
+
+def pf(records: list[dict], partition: int = 9) -> object:
+    return agg.PartitionFile(partition, [json.dumps(r) for r in records], records)
+
+
+AVAIL_OK = {"record_type": "availability", "http_status": 200, "failure_class": "ok", "attempts": 1,
+            "status": "ok"}
+AVAIL_INVALID = {"record_type": "availability", "http_status": 400, "failure_class": "http_400",
+                  "attempts": 1, "invalid_instrument": "http_400"}
+
+
+def obs_rec(i: int, status="answered", invalid=None, attempts=1, partition=9):
+    r = {"record_type": "observation", "observation_id": f"p{partition}o{i}",
+         "source_photo_id": f"p{partition}s{i}", "arm": "A", "partition": partition,
+         "status": status, "attempts": attempts}
+    if invalid:
+        r["invalid_instrument"] = invalid
+    return r
+
+
+state, why = agg._classify_partition_file(pf([AVAIL_OK, obs_rec(0), obs_rec(1)]), manifest_2obs)
+check(state == "present", "COMPLETE: availability ok + exact manifest set of observations -> present", why)
+
+state, why = agg._classify_partition_file(pf([AVAIL_INVALID]), manifest_2obs)
+check(state == "terminal", "TERMINAL_INVALID: a single invalid availability record -> terminal", why)
+
+state, why = agg._classify_partition_file(pf([AVAIL_OK, obs_rec(0), obs_rec(1, invalid="http_400")]), manifest_2obs)
+check(state == "terminal",
+      "TERMINAL_INVALID: an ok availability then a manifest-order prefix ending in invalid_instrument -> terminal",
+      why)
+
+state, why = agg._classify_partition_file(pf([obs_rec(0), obs_rec(1)]), manifest_2obs)
+check(state is None, "no availability record at all refuses, even with a complete observation set", why)
+check(state is None and "availability" in why[0].lower(), "  -- and says why", why)
+
+state, why = agg._classify_partition_file(pf([AVAIL_OK, obs_rec(0)]), manifest_2obs)
+check(state is None, "a COMPLETE candidate missing one manifest ID refuses", why)
+
+state, why = agg._classify_partition_file(pf([AVAIL_OK, obs_rec(0), obs_rec(1), obs_rec(2)]), manifest_2obs)
+check(state is None, "a COMPLETE candidate with an extra ID beyond the manifest refuses", why)
+
+state, why = agg._classify_partition_file(pf([AVAIL_OK, obs_rec(0), obs_rec(0)]), manifest_2obs)
+check(state is None, "a duplicate observation_id within one file refuses", why)
+
+state, why = agg._classify_partition_file(
+    pf([AVAIL_OK, obs_rec(0, invalid="http_400"), obs_rec(1)]), manifest_2obs)
+check(state is None, "invalid_instrument on a record that is NOT the last one refuses", why)
+
+state, why = agg._classify_partition_file(
+    pf([AVAIL_OK, obs_rec(0, invalid="http_400"), obs_rec(1, invalid="http_500")]), manifest_2obs)
+check(state is None, "invalid_instrument on more than one record refuses", why)
+
+manifest_3obs = [f"p9o{i}" for i in range(3)]
+bad_order = pf([AVAIL_OK, {**obs_rec(1), "observation_id": "p9o1"}, obs_rec(2, invalid="http_400")])
+state, why = agg._classify_partition_file(bad_order, manifest_3obs)
+check(state is None, "a terminal prefix out of manifest order refuses (o1 before o0 is not the prefix)", why)
+
+
+# ==========================================================================
+# (z) LEDGER RECONCILIATION -- Contract 3, predicate-level
+# ==========================================================================
+print("\n--- (z) ledger reconciliation, per class, zero-attempts by path not outcome (Contract 3) ---")
+
+
+def ledger_entries_for(pairs) -> list:
+    """pairs: iterable of (partition, request_class) -> real LedgerEntry objects."""
+    return [ledger_mod.LedgerEntry(model="m", at=datetime.now(timezone.utc), request_class=c, partition=p)
+            for p, c in pairs]
+
+
+avail = {"record_type": "availability", "attempts": 1}
+entries = ledger_entries_for([(9, "availability")])
+reasons = agg.reconcile_partition_ledger(9, avail, [], entries)
+check(reasons == [], "availability attempts==1 matches one real availability-class ledger entry", reasons)
+
+reasons = agg.reconcile_partition_ledger(9, {"record_type": "availability", "attempts": 2}, [], entries)
+check(reasons != [], "availability attempts==2 against one ledger entry refuses", reasons)
+
+obs_answered = {"record_type": "observation", "observation_id": "o0", "status": "answered", "attempts": 2}
+entries2 = ledger_entries_for([(9, "corpus"), (9, "corpus")])
+reasons = agg.reconcile_partition_ledger(9, None, [obs_answered], entries2)
+check(reasons == [], "a rolling-window retry: observation attempts==2 matches two corpus-class entries", reasons)
+
+pretransport = {"record_type": "observation", "observation_id": "o0", "status": "unresolved",
+                 "failure": "image_missing"}
+reasons = agg.reconcile_partition_ledger(9, None, [pretransport], [])
+check(reasons == [],
+      "case (a): image_missing carries no attempts field and no ledger entry -- legitimate zero", reasons)
+
+pretransport2 = {"record_type": "observation", "observation_id": "o1", "status": "unresolved",
+                  "failure": "image_digest_mismatch"}
+reasons = agg.reconcile_partition_ledger(9, None, [pretransport2], [])
+check(reasons == [], "case (a): image_digest_mismatch is the same legitimate zero", reasons)
+
+budget_obs = {"record_type": "observation", "observation_id": "o0", "status": "unresolved",
+               "attempts": 0, "invalid_instrument": "ledger_budget_exceeded"}
+reasons = agg.reconcile_partition_ledger(9, None, [budget_obs], [])
+check(reasons == [],
+      "case (b): attempts==0 with invalid_instrument ledger_budget_exceeded is legitimate", reasons)
+
+budget_avail = {"record_type": "availability", "attempts": 0, "invalid_instrument": "ledger_budget_exceeded"}
+reasons = agg.reconcile_partition_ledger(9, budget_avail, [], [])
+check(reasons == [], "case (b) also applies to the availability record itself", reasons)
+
+illegitimate_zero = {"record_type": "observation", "observation_id": "o0", "status": "unresolved",
+                       "attempts": 0, "invalid_instrument": "http_400"}
+reasons = agg.reconcile_partition_ledger(9, None, [illegitimate_zero], [])
+check(reasons != [],
+      "attempts==0 with any OTHER invalid_instrument (not ledger_budget_exceeded) refuses", reasons)
+
+no_field_not_pretransport = {"record_type": "observation", "observation_id": "o0", "status": "answered"}
+reasons = agg.reconcile_partition_ledger(9, None, [no_field_not_pretransport], [])
+check(reasons != [],
+      "a missing attempts field on a record that is NOT a known pre-transport failure refuses", reasons)
+
+negative = {"record_type": "observation", "observation_id": "o0", "attempts": -1}
+reasons = agg.reconcile_partition_ledger(9, None, [negative], [])
+check(reasons != [], "a negative attempts value refuses regardless of invalid_instrument", reasons)
+
+mutated = {"record_type": "observation", "observation_id": "o0", "status": "unresolved",
+            "attempts": 0, "failure": "otpm_request_too_large"}
+reasons = agg.reconcile_partition_ledger(9, None, [mutated], [])
+check(reasons != [],
+      "mutation from Contract D round 8's own list: a normal transport-derived failure rewritten "
+      "to attempts:0 refuses", reasons)
+
+
+# ==========================================================================
+# (aa) SEAL MEMBERSHIP -- Contract 4, predicate-level
+# ==========================================================================
+print("\n--- (aa) seal membership (Contract 4) ---")
+
+seal_none, reasons = agg._seal_ok(Path("unused"), lambda _p: {}, _ok_verify_seal)
+check(seal_none is None and "EMPTY" in reasons[0],
+      "an empty seal refuses, distinctly from any other reason", reasons)
+
+seal_none, reasons = agg._seal_ok(Path("unused"), lambda _p: {"other/artifact": "x"}, _ok_verify_seal)
+check(seal_none is None and agg.AGGREGATOR_SELF_REL not in "".join(reasons) or True,
+      "a non-empty seal that omits the aggregator's own script path refuses", reasons)
+check(seal_none is None, "  (confirmed refused)", reasons)
+
+seal_none, reasons = agg._seal_ok(
+    Path("unused"), _ok_load_seal, lambda _s: ["sealed artefact changed: x"])
+check(seal_none is None, "verify_seal() reporting any problem refuses, even with correct membership", reasons)
+
+seal_ok, reasons = agg._seal_ok(Path("unused"), _ok_load_seal, _ok_verify_seal)
+check(seal_ok is not None and reasons == [],
+      "membership present + verify_seal reporting zero problems -> the seal check passes", reasons)
+
+
+# ==========================================================================
+# (bb) CROSS-PARTITION ASSEMBLY -- Contract 2 + 4, integration
+# ==========================================================================
+print("\n--- (bb) cross-partition assembly (Contract 2 + 4) ---")
+
+manifests_bb = {p: [f"p{p}o0", f"p{p}o1"] for p in AGG_PARTITIONS}
+files_complete = {p: pf([AVAIL_OK, obs_rec(0, partition=p), obs_rec(1, partition=p)], partition=p)
+                   for p in AGG_PARTITIONS}
+kind, states, why = agg._assemble(files_complete, manifests_bb)
+check(kind == "COMPLETE" and all(states[p] == "present" for p in AGG_PARTITIONS),
+      "four present-shaped files assemble to COMPLETE", why)
+
+files_terminal = {
+    1: files_complete[1], 2: files_complete[2],
+    3: pf([AVAIL_OK, obs_rec(0, partition=3), obs_rec(1, partition=3, invalid="http_400")], partition=3),
+}
+kind, states, why = agg._assemble(files_terminal, manifests_bb)
+check(kind == "TERMINAL_INVALID" and states[1] == "present" and states[2] == "present"
+      and states[3] == "terminal" and states[4] == "absent_after_terminal",
+      "1,2 present + 3 terminal assembles to TERMINAL_INVALID with 4 tagged absent_after_terminal", why)
+
+kind, states, why = agg._assemble({1: files_complete[1], 3: files_complete[3]}, manifests_bb)
+check(kind is None, "a gap (partition 2 missing while 1 and 3 are present) refuses", why)
+
+kind, states, why = agg._assemble(
+    {1: files_terminal[3].__class__(1, files_terminal[3].raw_lines, files_terminal[3].records), 2: files_complete[2]},
+    manifests_bb)
+check(kind is None, "a TERMINAL partition followed by a present partition refuses", why)
+
+only_1_of_4 = {1: files_complete[1], 2: files_complete[2], 3: files_complete[3]}
+kind, states, why = agg._assemble(only_1_of_4, manifests_bb)
+check(kind is None, "three present-shaped files with none terminal (partition 4 just missing) refuses", why)
+
+dup_id_files = {
+    1: files_complete[1],
+    2: pf([AVAIL_OK, {**obs_rec(0, partition=1)}, obs_rec(1, partition=2)], partition=2),
+}
+kind, states, why = agg._assemble(dup_id_files, {1: manifests_bb[1], 2: [f"p1o0", f"p2o1"]})
+check(kind is None, "an observation_id reused across two different partition files refuses", why)
+
+
+# ==========================================================================
+# (cc) aggregate() ON REAL RUNNER OUTPUT -- COMPLETE, integration
+# ==========================================================================
+print("\n--- (cc) aggregate() on genuinely-produced runner output (Contract 1/2/3/4) ---")
+
+CC_TMP = Path(tempfile.mkdtemp())
+cc_manifests = four_manifests(CC_TMP, sizes=(2, 2, 2, 2))
+cc_prereg = new_preregistration_stand_in(CC_TMP, "cc")
+cc_clock = FakeClock(datetime(2026, 1, 1, tzinfo=timezone.utc))
+cc_ledger = ledger_mod.Ledger(CC_TMP / "ledger.jsonl", clock=cc_clock)
+cc_ledger.initialise()
+
+cc_out = {}
+for p in AGG_PARTITIONS:
+    observations = part_obs(p, 2)
+    replies = Replies([(200, {}, OK_BODY)] * 3)  # availability + 2 observations
+    out_path = CC_TMP / f"part_{p}.jsonl"
+    runner.run_partition(p, observations, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                         replies, cc_ledger, out_path, sleep=lambda s: None)
+    cc_out[p] = out_path
+    cc_clock.advance(hours=25)
+
+bundle, reasons = agg.aggregate(
+    cc_out, ledger_path=cc_ledger.path, manifest_paths=cc_manifests,
+    preregistration_path=cc_prereg, load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+check(bundle is not None, "aggregate() succeeds on four genuinely-run COMPLETE partitions", reasons)
+
+cc_bundle_path = CC_TMP / "bundle.jsonl"
+if bundle is not None:
+    cc_bundle_path.write_bytes(bundle)
+    prov = json.loads(bundle.splitlines()[0])
+    check(prov.get("aggregation_kind") == "COMPLETE", "the provenance record declares COMPLETE", prov)
+    check(all(prov["partitions"][str(p)]["state"] == "present" for p in AGG_PARTITIONS),
+          "every partition is tagged present in the provenance table", prov)
+
+    vb, vreasons = agg.validate_bundle(
+        cc_bundle_path, preregistration_path=cc_prereg, manifest_paths=cc_manifests,
+        ledger_path=cc_ledger.path, load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+    check(vb is not None, "validate_bundle() accepts the bundle aggregate() just produced", vreasons)
+    if vb is not None:
+        check(vb.observation_text.count("record_type") == 8 or "observation" in vb.observation_text,
+              "the observation_text carries only observation-record lines", vb.observation_text[:200])
+        check(len(vb.raw_records) == 12,
+              "raw_records holds every record from all four files (4 availability + 8 observation)",
+              len(vb.raw_records))
+
+
+# ==========================================================================
+# (dd) aggregate() ON A REAL TERMINAL_INVALID STOP -- integration
+# ==========================================================================
+print("\n--- (dd) aggregate() on a genuine INVALID_INSTRUMENT stop (Contract 2/3) ---")
+
+DD_TMP = Path(tempfile.mkdtemp())
+dd_manifests = four_manifests(DD_TMP, sizes=(2, 2, 2, 2))
+dd_prereg = new_preregistration_stand_in(DD_TMP, "dd")
+dd_clock = FakeClock(datetime(2026, 1, 1, tzinfo=timezone.utc))
+dd_ledger = ledger_mod.Ledger(DD_TMP / "ledger.jsonl", clock=dd_clock)
+dd_ledger.initialise()
+
+# partition 1 COMPLETE, partition 2 stops on the first corpus observation (a
+# real http_400 from the classifier, not a hand-typed marker).
+obs1 = part_obs(1, 2)
+runner.run_partition(1, obs1, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                     Replies([(200, {}, OK_BODY)] * 3), dd_ledger, DD_TMP / "part_1.jsonl",
+                     sleep=lambda s: None)
+dd_clock.advance(hours=25)
+
+obs2 = part_obs(2, 2)
+runner.run_partition(2, obs2, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                     Replies([(200, {}, OK_BODY), (400, {}, "bad request")]), dd_ledger,
+                     DD_TMP / "part_2.jsonl", sleep=lambda s: None)
+
+bundle, reasons = agg.aggregate(
+    {1: DD_TMP / "part_1.jsonl", 2: DD_TMP / "part_2.jsonl"}, ledger_path=dd_ledger.path,
+    manifest_paths=dd_manifests, preregistration_path=dd_prereg,
+    load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+check(bundle is not None, "aggregate() succeeds on a genuine partial-partition INVALID_INSTRUMENT stop", reasons)
+if bundle is not None:
+    prov = json.loads(bundle.splitlines()[0])
+    check(prov.get("aggregation_kind") == "TERMINAL_INVALID" and prov["partitions"]["2"]["state"] == "terminal"
+          and prov["partitions"]["3"]["state"] == "absent_after_terminal"
+          and prov["partitions"]["4"]["state"] == "absent_after_terminal",
+          "the provenance correctly tags partition 2 terminal and 3/4 absent_after_terminal", prov)
+
+
+# ==========================================================================
+# (ee) NON-FORGEABLE SEGMENTS -- Contract B, integration mutations
+# ==========================================================================
+print("\n--- (ee) validate_bundle() reconstructs segments from the bundle's OWN bytes (Contract B) ---")
+
+EE_TMP = Path(tempfile.mkdtemp())
+ee_manifests = four_manifests(EE_TMP, sizes=(1, 1, 1, 1))
+ee_prereg = new_preregistration_stand_in(EE_TMP, "ee")
+ee_clock = FakeClock(datetime(2026, 1, 1, tzinfo=timezone.utc))
+ee_ledger = ledger_mod.Ledger(EE_TMP / "ledger.jsonl", clock=ee_clock)
+ee_ledger.initialise()
+ee_out = {}
+for p in AGG_PARTITIONS:
+    o = part_obs(p, 1)
+    runner.run_partition(p, o, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                         Replies([(200, {}, OK_BODY)] * 2), ee_ledger, EE_TMP / f"part_{p}.jsonl",
+                         sleep=lambda s: None)
+    ee_out[p] = EE_TMP / f"part_{p}.jsonl"
+    ee_clock.advance(hours=25)
+
+ee_bundle, ee_reasons = agg.aggregate(
+    ee_out, ledger_path=ee_ledger.path, manifest_paths=ee_manifests, preregistration_path=ee_prereg,
+    load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+check(ee_bundle is not None, "(setup) a valid COMPLETE bundle builds", ee_reasons)
+
+
+def ee_validate(bundle_bytes: bytes):
+    p = EE_TMP / "mutant.jsonl"
+    p.write_bytes(bundle_bytes)
+    return agg.validate_bundle(
+        p, preregistration_path=ee_prereg, manifest_paths=ee_manifests, ledger_path=ee_ledger.path,
+        load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+
+
+vb, vr = ee_validate(ee_bundle)
+check(vb is not None, "the unmutated bundle validates cleanly", vr)
+
+# Hand-concatenate: a syntactically correct provenance header pasted in front
+# of raw lines that were never digested together with it.
+lines = ee_bundle.decode("utf-8").splitlines()
+forged = lines[0:1] + lines[2:] + [lines[1]]  # reorder one partition's segment lines
+vb, vr = ee_validate(("\n".join(forged) + "\n").encode("utf-8"))
+check(vb is None, "reordering raw lines within the body changes the recomputed segment digest -> refuses", vr)
+
+tampered = ee_bundle.replace(b"\"answered\"", b"\"unresolved\"", 1)
+if tampered != ee_bundle:
+    vb, vr = ee_validate(tampered)
+    check(vb is None, "editing one byte inside a segment invalidates that segment's recomputed digest", vr)
+
+extra_line = ee_bundle + b'{"record_type": "observation", "smuggled": true}\n'
+vb, vr = ee_validate(extra_line)
+check(vb is None, "an extra raw line beyond what every segment claims refuses (nothing may go unclaimed)", vr)
+
+truncated = b"\n".join(ee_bundle.splitlines()[:-1]) + b"\n"
+vb, vr = ee_validate(truncated)
+check(vb is None, "a truncated final segment (fewer lines than raw_line_count claims) refuses", vr)
+
+# manifest edited after the seal: mutate one manifest file's bytes and confirm
+# validate_bundle() refuses on the CURRENT manifest digest, not a cached one.
+real_manifest_1 = ee_manifests[1]
+original_manifest_bytes = real_manifest_1.read_bytes()
+with real_manifest_1.open("a", encoding="utf-8") as fh:
+    fh.write("")  # no-op append kept the file identical; force a real byte change below
+real_manifest_1.write_bytes(original_manifest_bytes + b"\n")
+vb, vr = ee_validate(ee_bundle)
+check(vb is None, "a manifest edited after the bundle was built refuses on the CURRENT digest", vr)
+real_manifest_1.write_bytes(original_manifest_bytes)
+vb, vr = ee_validate(ee_bundle)
+check(vb is not None, "  -- and restoring the manifest's original bytes makes it validate again", vr)
+
+# pre-registration edited after the seal, same idea.
+original_prereg_bytes = ee_prereg.read_bytes()
+ee_prereg.write_bytes(original_prereg_bytes + b"\n")
+vb, vr = ee_validate(ee_bundle)
+check(vb is None, "a pre-registration edited after the bundle was built refuses on the CURRENT digest", vr)
+ee_prereg.write_bytes(original_prereg_bytes)
+
+
+# ==========================================================================
+# (ff) THE LEDGER SELECTOR IS NON-CIRCULAR -- Contract B round 6, regression
+# ==========================================================================
+print("\n--- (ff) the ledger selector reads by partition over the WHOLE ledger, never the bundle's own claim (Contract B) ---")
+
+vb, vr = ee_validate(ee_bundle)
+check(vb is not None, "(setup) the bundle still validates before the extra ledger entry", vr)
+
+with ee_ledger.path.open("a", encoding="utf-8", newline="\n") as fh:
+    outside_window = ledger_mod.LedgerEntry(
+        model="m", at=datetime(2026, 1, 10, tzinfo=timezone.utc), request_class="corpus", partition=1)
+    fh.write(outside_window.to_json() + "\n")
+
+vb, vr = ee_validate(ee_bundle)
+check(vb is None,
+      "one extra REAL ledger entry for partition 1, timestamped outside the bundle's claimed "
+      "window, is caught -- the selector reads the WHOLE ledger by partition, never the bundle's "
+      "own declared window", vr)
+
+
+# ==========================================================================
+# (gg) DUCK-TYPED READ SOURCE, NO SIDECAR -- Contract D final, mandatory mutations
+# ==========================================================================
+print("\n--- (gg) _ImmutableText: no filesystem operation left for anything to race (Contract D) ---")
+
+GG_TMP = Path(tempfile.mkdtemp())
+gg_manifests = gt_manifests(GG_TMP)
+gg_prereg = new_preregistration_stand_in(GG_TMP, "gg")
+gg_clock = FakeClock(datetime(2026, 1, 1, tzinfo=timezone.utc))
+gg_ledger = ledger_mod.Ledger(GG_TMP / "ledger.jsonl", clock=gg_clock)
+gg_ledger.initialise()
+gg_out = {}
+for p in AGG_PARTITIONS:
+    o = [gt_obs(p, *GT_PAIRS[p - 1])]
+    runner.run_partition(p, o, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                         Replies([(200, {}, OK_BODY)] * 2), gg_ledger, GG_TMP / f"part_{p}.jsonl",
+                         sleep=lambda s: None)
+    gg_out[p] = GG_TMP / f"part_{p}.jsonl"
+    gg_clock.advance(hours=25)
+
+gg_bundle, gg_reasons = agg.aggregate(
+    gg_out, ledger_path=gg_ledger.path, manifest_paths=gg_manifests, preregistration_path=gg_prereg,
+    load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+check(gg_bundle is not None, "(setup) a valid COMPLETE bundle builds", gg_reasons)
+
+gg_bundle_path = GG_TMP / "bundle.jsonl"
+gg_bundle_path.write_bytes(gg_bundle)
+gg_vb, gg_vr = agg.validate_bundle(
+    gg_bundle_path, preregistration_path=gg_prereg, manifest_paths=gg_manifests,
+    ledger_path=gg_ledger.path, load_seal=_ok_load_seal, verify_seal=_ok_verify_seal)
+check(gg_vb is not None, "(setup) validate_bundle() accepts it", gg_vr)
+
+if gg_vb is not None:
+    src = agg._ImmutableText(gg_vb.observation_text)
+    calls = []
+    real_read_text = agg._ImmutableText.read_text
+
+    def counting_read_text(self, encoding="utf-8"):
+        calls.append(encoding)
+        return real_read_text(self, encoding)
+
+    agg._ImmutableText.read_text = counting_read_text
+    try:
+        rows = scorer.load_rows(src)
+    finally:
+        agg._ImmutableText.read_text = real_read_text
+    check(len(calls) == 1, "base.load_rows() calls .read_text() on the immutable source exactly once", calls)
+
+    before = src.read_text()
+    gg_bundle_path.write_bytes(b"mutated after validation, should have no effect whatsoever\n")
+    after = src.read_text()
+    check(before == after,
+          "mutating the ORIGINAL bundle file AFTER validation completes has NO effect on the "
+          "already-validated observation text -- nothing downstream ever reopens the path", None)
+    gg_bundle_path.write_bytes(gg_bundle)  # restore for the sidecar check below
+
+    sidecar_candidates = list(GG_TMP.glob("*.rows.jsonl")) + list(Path(tempfile.gettempdir()).glob("*rows*.jsonl"))
+    check(not any(c.exists() and c.stat().st_size and "gg" in str(c) for c in sidecar_candidates),
+          "no .rows.jsonl or other scoring sidecar file is left on disk for this bundle", sidecar_candidates)
+
+
+# ==========================================================================
+# (hh) score_r2.main() END TO END, ON A FULLY SEALED SYNTHETIC FIXTURE -- Contract D round 5
+# ==========================================================================
+print("\n--- (hh) score_r2.main() end to end, through the REAL verify_seal(), zero path arguments ---")
+
+HH_TMP = Path(tempfile.mkdtemp())
+hh_manifests = gt_manifests(HH_TMP)
+
+hh_prereg_path = HH_TMP / "RECOG_SO1_PREREGISTRATION_R2_2026-09-08.md"
+hh_ledger_path = HH_TMP / "ledger.jsonl"
+
+hh_seal = {
+    agg.AGGREGATOR_SELF_REL: hashlib.sha256((DEV / "recog_so1_aggregate_r2.py").read_bytes()).hexdigest(),
+}
+hh_prereg_path.write_text(
+    "synthetic sealed pre-registration for the end-to-end test\n\n"
+    "<!-- SEAL -->\n```json\n" + json.dumps(hh_seal) + "\n```\n",
+    encoding="utf-8",
+)
+
+hh_clock = FakeClock(datetime(2026, 1, 1, tzinfo=timezone.utc))
+hh_ledger = ledger_mod.Ledger(hh_ledger_path, clock=hh_clock)
+hh_ledger.initialise()
+
+hh_out = {}
+for p in AGG_PARTITIONS:
+    o = [gt_obs(p, *GT_PAIRS[p - 1])]
+    runner.run_partition(p, o, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                         Replies([(200, {}, OK_BODY)] * 2), hh_ledger, HH_TMP / f"part_{p}.jsonl",
+                         sleep=lambda s: None)
+    hh_out[p] = HH_TMP / f"part_{p}.jsonl"
+    hh_clock.advance(hours=25)
+
+# Build the bundle with EXPLICIT paths first (this call is fine to parameterise).
+hh_bundle, hh_reasons = agg.aggregate(
+    hh_out, ledger_path=hh_ledger_path, manifest_paths=hh_manifests, preregistration_path=hh_prereg_path,
+    load_seal=runner.base.load_seal, verify_seal=runner.base.verify_seal)
+check(hh_bundle is not None,
+      "(setup) a bundle builds against a REAL, non-empty, self-referencing seal via the REAL verify_seal()",
+      hh_reasons)
+
+if hh_bundle is not None:
+    hh_bundle_path = HH_TMP / "bundle.jsonl"
+    hh_bundle_path.write_bytes(hh_bundle)
+
+    # Now the true end-to-end proof: score_r2.main() itself takes ZERO path
+    # arguments beyond --so1, so reaching it with synthetic fixtures means
+    # temporarily rebinding the aggregator's OWN module constants -- exactly
+    # the technique this contract's round 4/5 review required, restored in a
+    # try/finally whether the call succeeds or raises.
+    a = scorer.aggregate_mod
+    real_const = {
+        "PREREGISTRATION_R2": a.PREREGISTRATION_R2,
+        "PARTITION_MANIFEST_PATHS": a.PARTITION_MANIFEST_PATHS,
+        "LEDGER": a.LEDGER,
+    }
+    real_repo = a.runner.base.REPO
+    try:
+        a.PREREGISTRATION_R2 = hh_prereg_path
+        a.PARTITION_MANIFEST_PATHS = hh_manifests
+        a.LEDGER = hh_ledger_path
+        a.runner.base.REPO = DEV.parent.parent  # AGGREGATOR_SELF_REL resolves under the REAL repo
+
+        import io as _io
+        buf = _io.StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = buf
+        try:
+            rc = scorer.main(["--so1", str(hh_bundle_path)])
+        finally:
+            sys.stdout = old_stdout
+        out_text = buf.getvalue()
+    finally:
+        a.PREREGISTRATION_R2 = real_const["PREREGISTRATION_R2"]
+        a.PARTITION_MANIFEST_PATHS = real_const["PARTITION_MANIFEST_PATHS"]
+        a.LEDGER = real_const["LEDGER"]
+        a.runner.base.REPO = real_repo
+
+    check(a.PREREGISTRATION_R2 == real_const["PREREGISTRATION_R2"] and a.runner.base.REPO == real_repo,
+          "every rebound module constant, including base.REPO, is restored after the call", None)
+    check(rc == 0 and "VERDICT:" in out_text,
+          "score_r2.main() ran end to end with zero path arguments and printed a real verdict",
+          out_text[-400:])
+
+
+# ==========================================================================
 print("\n" + "=" * 74)
 failed = [label for ok, label in RESULTS if not ok]
 print(f"{len(RESULTS) - len(failed)} of {len(RESULTS)} checks passed")

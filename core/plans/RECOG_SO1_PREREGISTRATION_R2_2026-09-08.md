@@ -545,9 +545,16 @@ this experiment silently.
   "scripts/dev/recog_so1_run_r2.py": "de06224839a04b3e0c2b931f6f1ea0f433180405916db3d00133ab2aaaf89118",
   "scripts/dev/recog_so1_score_r2.py": "dda27e92250da56b873a82cc0c6d2b8d0a114657b0fb3fbd49b3523c1243b74c",
   "scripts/dev/recog_so1_r2.tests.py": "61e14d754d0bde09843b73a7df8f81be5eb1385dbc3b03b03c9d266d61e98949",
+  "scripts/dev/recog_so1_aggregate_r2.py": "43c00fd78af796d9d3c72ac6ae4fa0dbf4116387785c53d7ac664448078d48eb",
   "core/plans/RECOG_SO1_STRESS_PROBE_RECEIPT_R2.json": "<computed at sealing time; this file does not exist yet and is what sealing waits on>"
 }
 ```
+
+Artefact 19, `scripts/dev/recog_so1_aggregate_r2.py`, is the aggregation-contract boundary between the
+runner's four per-partition outputs and the scorer's one evidence bundle
+(`recog_so1_score_r2.py`'s `main()` now runs entirely behind its `validate_bundle()`). Recorded here,
+documentation only, exactly like every other entry above: nothing verifies against this table, and
+this digest will be recomputed at sealing time along with the other eighteen.
 
 
 **The raw photographs are deliberately not sealed here and are not in this repository.** They live

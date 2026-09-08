@@ -46484,3 +46484,121 @@ The operator's own decision -- renewed consent for a second transmission of the 
 with the organisation-exclusivity attestation -- comes at step 4 above, after a successful probe and
 a filled seal, and is operator-only under §4/§20 with no reviewer approval substituting for it. No
 corpus photograph has moved anywhere under this plan.
+
+## Aggregation-contract gate: eight plan revisions, one bounded module
+
+Rosetta plan `fitness_app-2026-09-08T13-39-24-599Z-46c229`, `VERDICT: APPROVE` (round 8, 0 BLOCKER /
+0 MAJOR) on hash `14ec6845781416989784bdbc50950ba1ac7199a646809145ab2eea4074039f3d`. This gate builds
+the mechanical, fail-closed boundary GPT-PM had deferred to "the execution gate" in earlier rounds:
+`scripts/dev/recog_so1_aggregate_r2.py` (new), plus one additive change to
+`recog_so1_score_r2.py`'s `main()`.
+
+### Why eight plan revisions
+
+Rosetta's rule is "material change -> new plan." Every one of the eight review rounds returned at
+least one genuine, code-verified MAJOR, so eight plans were opened in sequence, each with a new
+hash; only revision 8 was approved. This is not "reopening a closed gate" -- no plan before 8 was
+ever approved, so none was closed.
+
+### The seven contracts, final form
+
+1. **Format incompatibility** (round 2). `load_rows()` dereferences `source_photo_id`/`arm`
+   unconditionally (`recog_so1_score.py:175`) with no `record_type` filter -- an availability record
+   or a bare provenance header has neither key. The evidence bundle is exactly one artefact: a
+   provenance record, then every raw record verbatim. Its original mechanism (write a
+   `.rows.jsonl` sidecar file) was replaced entirely by Contract D's final form (round 8); the
+   *format* rule stands, the *mechanism* does not.
+2. **Partial files on INVALID_INSTRUMENT** (round 2, tightened round 3). The corpus loop's only
+   `break` is at `recog_so1_run_r2.py:715`; an availability failure returns before any observation is
+   attempted (`~665`). Two closed shapes, not "four complete files or bust": COMPLETE (all four
+   partitions, one `status:"ok"` availability record first, observation IDs exactly the manifest
+   set, no `invalid_instrument` anywhere) and TERMINAL_INVALID (0..2 COMPLETE partitions, one
+   partition ending in either an availability-invalid single record or a corpus-invalid
+   manifest-order-consistent prefix ending in exactly one `invalid_instrument`, the rest genuinely
+   absent).
+3. **Ledger reconciliation per class, zero-attempts by path not outcome** (round 2, tightened rounds
+   3 and 4). Availability and corpus share one retry engine (`send_with_retries`,
+   `recog_so1_run_r2.py:610-640`), so per-class counts -- not one pooled total -- must equal the
+   ledger's own per-partition, per-class entry counts. Zero attempts is legitimate in exactly two
+   situations: the record never reached the retry engine (`image_missing`, `image_digest_mismatch`),
+   or `budget_room()`'s pre-transport refusal fired on the first call
+   (`invalid_instrument: "ledger_budget_exceeded"`, on either the availability probe or a corpus
+   observation, `recog_so1_run_r2.py:389-398`). Any other zero or any negative value refuses.
+4. **Seal membership + per-partition provenance** (round 2, provenance table tightened round 3). The
+   aggregator refuses to run at all unless the pre-registration's seal is non-empty, contains an
+   entry for the aggregator's own script path, and `verify_seal()` reports zero problems over the
+   WHOLE seal -- not a hand-picked subset. The provenance record carries one table entry per
+   partition (`present`/`terminal`/`absent_after_terminal`), each with a raw-line-count and a sha256
+   -- never a fixed "four digests" shape, which would contradict TERMINAL_INVALID's own absent
+   partitions.
+5. **Mutation independence** (round 2). Predicate-level tests (one positive, one negative fixture
+   per named predicate) plus integration-level mutations (missing file, duplicate file, cross-file
+   duplicate ID, dropped marker, edited-after-seal manifest, ...), asserted against the EXPECTED SET
+   of refusal reasons, not a single exclusive one.
+6. **Contract B -- the scorer refuses anything not aggregation-contract-valid** (round 3, closed round
+   6). `score_r2.main()` runs entirely behind `validate_bundle()`. Final form recomputes each
+   partition segment's sha256 from the BUNDLE'S OWN raw bytes (never a declared header field alone),
+   re-verifies the whole seal, re-checks the CURRENT pre-registration/manifest digests, and reruns
+   the same per-class ledger reconciliation against the CURRENT ledger -- selecting rows by
+   `entry.partition == N` over the WHOLE ledger, never by any window the bundle itself claims. Round
+   5's first version selected by the bundle's own claimed timestamp window -- the artefact under
+   validation choosing its own evidence; round 6 fixed the circularity structurally.
+7. **Contract D -- the TOCTOU is eliminated, not narrowed** (round 3, final form round 8). Three
+   successive designs: a temp-file-plus-post-hash check (round 7) narrowed the race window without
+   closing it; the final form exploits that `base.load_rows()`'s ONLY operation on its argument is
+   `.read_text(encoding)` (`recog_so1_score.py:171`) -- Python duck typing lets an in-memory
+   `_ImmutableText` object stand in for a `Path`, so there is no file on disk for anything to race
+   against after `validate_bundle()` returns.
+
+### A ninth defect, found after APPROVE, during implementation
+
+`aggregate()`/`validate_bundle()` originally defaulted `preregistration_path`/`ledger_path` as
+literal `= PREREGISTRATION_R2` / `= LEDGER` parameter values. Python binds a default parameter value
+ONCE, at function-definition time -- rebinding the module constant afterward (exactly what the
+`score_r2.main()` end-to-end test does, per Contract D round 5's own design) silently has no effect
+on a call using the default. `manifest_paths` already used the correct pattern (`= None`, resolved
+inside the function body against the live module constant); `preregistration_path` and `ledger_path`
+did not, and the bug surfaced immediately as a live test failure -- a `preregistration_sha256`
+mismatch that made no sense until traced to Python's own binding rule. Fixed by bringing all three
+parameters onto the same `None`-sentinel, late-bound pattern. Caught by the suite that was written
+specifically to prove this exact rebinding technique works (`recog_so1_r2.tests.py`, section (hh)),
+not by a reviewer -- recorded because the defect class is the same one this gate spent eight rounds
+naming: a claim ("this is a module-level constant a test can rebind") that the actual code did not
+make true.
+
+### What was built
+
+- `scripts/dev/recog_so1_aggregate_r2.py` (new) -- `aggregate()`, `validate_bundle()`,
+  `_ImmutableText`, `ValidatedBundle`, and the independently-testable predicates
+  (`_classify_partition_file`, `_attempts_of`, `reconcile_partition_ledger`, `verify_isolation_gaps`,
+  `_seal_ok`, `_assemble`).
+- `scripts/dev/recog_so1_score_r2.py` -- `main()` now calls `validate_bundle()` with zero path
+  arguments and reads rows through `_ImmutableText`; `load_raw()` deleted (superseded).
+- `core/plans/RECOG_SO1_PREREGISTRATION_R2_2026-09-08.md` -- artefact 19 added to the PROVISIONAL
+  digest appendix (documentation only; the real `<!-- SEAL -->` block is untouched, still `{}`).
+- `scripts/dev/recog_so1_r2.tests.py` -- extended with sections (y) through (hh), 92 new checks, all
+  against genuinely-produced runner output (real `run_partition()` calls with a scripted transport,
+  never hand-typed JSON) or a real, unmutated seal via a temp-rooted fixture for the one true
+  end-to-end proof.
+
+### Evidence
+
+- `py -3 scripts/dev/recog_so1_r2.tests.py` -- **222/222** checks passed.
+- `py -3 scripts/dev/recog_so1.tests.py` -- **61/61**, revision 1 untouched, seal still verifies.
+- `py -3 scripts/dev/recog_so1_run_r2.py --partition 1 --corpus-root . --out <tmp> --dry-run` -- exit
+  2, empty-seal refusal unaffected.
+- `py -3 scripts/dev/recog_so1_run_r2.py --stress-probe` -- exit 7, isolation refusal unaffected
+  (6.8h of 24h elapsed at this check).
+- `py -3 scripts/dev/recog_so1_aggregate_r2.py --out <path>` against the real, empty, production seal
+  -- exit 1, `REFUSED: ... the pre-registration seal is EMPTY ...`, and the output path was never
+  created.
+- `py -3 scripts/dev/recog_so1_score_r2.py --so1 <a hand-concatenated file with two bare observation
+  records and no provenance line>` -- exit 9, `REFUSED: ... the evidence bundle's first line is not
+  a provenance record`.
+
+### Where this stops
+
+Unchanged from Round 4's entry above: the 24-hour isolation wait, then the two stress probes, then
+sealing, then renewed operator consent, then the execution gate. This gate is offline and additive
+only -- no R1 file, no R2 runner/config/prompt/vocab file, and no partition manifest was touched; the
+real seal is still `{}`.

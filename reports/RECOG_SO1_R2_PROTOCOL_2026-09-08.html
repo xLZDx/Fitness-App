@@ -198,13 +198,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 50deb08</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 3856193</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -606,10 +608,83 @@ regardless, on isolation. Nothing is being asked of the operator right now: the 
 is the isolation wait and the probes, which is a pause rather than a decision.</p>
 </div>
 
+<h2><span class="num">11</span>The aggregation-contract gate: plan, Definition of Done, status</h2>
+
+<p>A separate gate, closed after section 09: the mechanical, fail-closed boundary between the
+runner's four output files and the scorer's one input file &mdash; the thing GPT-PM had previously
+deferred to as "the execution gate's business." Eight plan revisions (Rosetta's own "material change
+means a new plan" rule), each one turning up at least one genuine, code-verified MAJOR; only the
+eighth was approved &mdash; plan <code>fitness_app-2026-09-08T13-39-24-599Z-46c229</code>, hash
+<code>14ec6845&hellip;</code>, <code>VERDICT: APPROVE</code>, 0 BLOCKER / 0 MAJOR.</p>
+
+<div class="scroll">
+<table>
+  <tr><th class="n">#</th><th>Planned</th><th>Definition of Done</th><th>Status</th></tr>
+  <tr><td class="n">1</td><td>Format: one evidence artefact instead of the runner's raw files</td>
+      <td><code>load_rows()</code> receives only <code>record_type=="observation"</code> lines,
+      nothing else is read on the scorer side</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">2</td><td>Two closed partition states instead of "four files or nothing"</td>
+      <td>COMPLETE / TERMINAL_INVALID verified against genuine <code>run_partition()</code> output;
+      any other shape refuses</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">3</td><td>Ledger reconciliation per class, zero by path not by outcome name</td>
+      <td>both legitimate zeros (never reached transport; a pre-transport budget refusal) verified
+      separately and separately disproved by mutation</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">4</td><td>Seal membership + per-partition provenance</td>
+      <td>the aggregator refuses on an empty seal and on a seal missing its own path; the
+      provenance table is per-partition, never "four digests"</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">5</td><td>Mutation independence: predicate + integration</td>
+      <td>every named predicate has its own positive and negative fixture; integration mutations
+      run against REAL runner output</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">B</td><td>The scorer refuses anything not aggregation-contract-valid</td>
+      <td>each partition segment is recomputed from the bundle's OWN bytes; the ledger is
+      re-selected by <code>entry.partition == N</code> over the WHOLE ledger, never a window the
+      bundle itself declares</td>
+      <td><span class="pill done">done</span></td></tr>
+  <tr><td class="n">D</td><td>The TOCTOU is eliminated, not narrowed</td>
+      <td>an in-memory <code>_ImmutableText</code> replaces a file; <code>base.load_rows()</code>
+      is called exactly once; editing the original bundle file after validation has no effect on
+      anything</td>
+      <td><span class="pill done">done</span></td></tr>
+</table>
+</div>
+
+<h3>A ninth defect, found after the GO, during implementation</h3>
+
+<p><code>aggregate()</code>/<code>validate_bundle()</code> originally defaulted
+<code>preregistration_path</code>/<code>ledger_path</code> as literal parameter values. Python
+binds a default value ONCE, at function-definition time &mdash; rebinding the same-named module
+constant afterward (exactly what the <code>score_r2.main()</code> end-to-end test does) silently
+has no effect on a call using the default. <code>manifest_paths</code> already used the correct
+technique (<code>None</code>, resolved inside the function body); <code>preregistration_path</code>
+and <code>ledger_path</code> did not, and the defect surfaced immediately as a genuine test failure.
+Caught by the suite itself, not by a reviewer &mdash; the same class of defect as all eighteen
+before it: a claim wider than the check standing behind it.</p>
+
+<h3>Evidence</h3>
+
+<ul>
+  <li><code>recog_so1_r2.tests.py</code> &mdash; <strong>222 of 222</strong>, sections (y)&ndash;(hh),
+      92 new checks, every one against genuinely-produced <code>run_partition()</code> output or a
+      real, unmutated seal.</li>
+  <li><code>recog_so1.tests.py</code> &mdash; <strong>61 of 61</strong>, revision 1 untouched.</li>
+  <li><code>--partition 1 --dry-run</code> &mdash; exit 2 (empty seal), <code>--stress-probe</code>
+      &mdash; exit 7 (isolation): neither runner gate was disturbed.</li>
+  <li>The real aggregator CLI against the real empty seal &mdash; exit 1, no output file written.</li>
+  <li>The real scorer CLI against a hand-concatenated file with no provenance line &mdash; exit 9,
+      refused before a single statistic.</li>
+</ul>
+
 <p class="foot">No model-performance statistic appears in this report, by construction. Run #1's 46
 answers remain quarantined: unread, ungrouped, unscored. The contact sheets showing identifiable
 people, including two children, are not published and do not travel.</p>
 </div>
+
+
 
 
 

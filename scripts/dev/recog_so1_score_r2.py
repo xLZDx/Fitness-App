@@ -71,6 +71,11 @@ def _load_module(name: str, path: Path):
 #: The sealed revision 1 scorer. Imported, never edited.
 base = _load_module("so1_score_base", DEV / "recog_so1_score.py")
 
+#: The aggregation-contract boundary. `main()` stands entirely behind
+#: `validate_bundle()` -- see recog_so1_aggregate_r2.py's own module docstring
+#: for what it re-derives rather than trusts from the bundle it is handed.
+aggregate_mod = _load_module("so1_aggregate_r2", DEV / "recog_so1_aggregate_r2.py")
+
 # Re-exported for callers' convenience. The ordering test does NOT patch these
 # copies: the arithmetic actually executes inside `base`, so the spies are
 # installed on `base.rate`, `base.delta_pp`, `base.permutation_p` and
@@ -274,26 +279,23 @@ def report(
 
 
 # --------------------------------------------------------------------------
-# Loading
+# Loading -- entirely behind the aggregation-contract boundary
 # --------------------------------------------------------------------------
-
-def load_raw(so1_jsonl: Path) -> list[dict]:
-    out: list[dict] = []
-    for line in so1_jsonl.read_text("utf-8").splitlines():
-        if line.strip():
-            out.append(json.loads(line))
-    return out
-
 
 def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--so1", required=True, help="the runner's JSONL output")
+    ap.add_argument("--so1", required=True, help="the aggregator's evidence bundle")
     args = ap.parse_args(argv)
 
-    path = Path(args.so1)
-    raw = load_raw(path)
-    rows = load_rows(path)
-    print(report(rows, raw))
+    bundle, reasons = aggregate_mod.validate_bundle(Path(args.so1))
+    if bundle is None:
+        print("REFUSED: the evidence bundle failed validation, before any statistic was computed:")
+        for r in reasons:
+            print("  " + r)
+        return 9
+
+    rows = load_rows(aggregate_mod._ImmutableText(bundle.observation_text))
+    print(report(rows, bundle.raw_records))
     return 0
 
 
