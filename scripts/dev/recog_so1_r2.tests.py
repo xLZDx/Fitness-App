@@ -1712,8 +1712,23 @@ if gg_vb is not None:
           "already-validated observation text -- nothing downstream ever reopens the path", None)
     gg_bundle_path.write_bytes(gg_bundle)  # restore for the sidecar check below
 
-    sidecar_candidates = list(GG_TMP.glob("*.rows.jsonl")) + list(Path(tempfile.gettempdir()).glob("*rows*.jsonl"))
-    check(not any(c.exists() and c.stat().st_size and "gg" in str(c) for c in sidecar_candidates),
+    # GPT-PM's §15 round-3-of-closure review (MAJOR): the "gg" in str(c) filter
+    # this check used to apply gated the assertion on a substring a real
+    # sidecar's path essentially never contains -- GG_TMP is an unprefixed
+    # tempfile.mkdtemp() directory, so a genuine GG_TMP/bundle.rows.jsonl
+    # does NOT reliably contain "gg", and the filter could silently exclude a
+    # real sidecar from ever failing this check. Fixed by dropping the filter
+    # AND the system-wide tempdir glob it existed to narrow -- that second
+    # glob searched the WHOLE machine tempdir for "*rows*.jsonl", which on a
+    # machine that runs concurrent sessions (see auto-memory
+    # concurrent-sessions-in-workspace) risks a false failure from some
+    # unrelated process's own file. GG_TMP alone is private to this test run,
+    # so no filter is needed there at all. (This check still only looks AFTER
+    # the fact, at whatever a leftover-file glob catches post-hoc -- see the
+    # (jj) end-to-end test below for the load-bearing, during-execution proof
+    # this finding actually required.)
+    sidecar_candidates = list(GG_TMP.glob("*.rows.jsonl"))
+    check(not any(c.exists() and c.stat().st_size for c in sidecar_candidates),
           "no .rows.jsonl or other scoring sidecar file is left on disk for this bundle", sidecar_candidates)
 
 
@@ -2003,6 +2018,159 @@ if bundle3 is not None:
     check(bundle4 is None,
           "MAJOR 2 regression, build side: aggregate() itself refuses once the ledger holds an "
           "entry for a partition the shape declares was never run", reasons4)
+
+
+# ==========================================================================
+# (jj) score_r2.main() END TO END, TOCTOU PROVEN AT THE ACTUAL BOUNDARY (Contract D)
+# ==========================================================================
+print("\n--- (jj) score_r2.main(): load_rows() called exactly once, fed the PRE-mutation snapshot, zero disk writes ---")
+
+# GPT-PM's Rosetta-closure review of this gate found that (gg) above proves
+# load_rows() reads its own argument once when called DIRECTLY -- it never
+# proves score_r2.main() itself calls load_rows() exactly once with the
+# validated snapshot, never recomputes anything after a post-validation
+# mutation to show the RESULT is actually unaffected (only that read_text()
+# returns the same string), and its sidecar check only looks for LEFTOVER
+# files after the fact rather than catching one created and deleted DURING
+# execution. This test closes all three, wrapped around the real production
+# entry point, `score_r2.main()`, not a direct call to an internal function.
+import builtins as _builtins
+
+JJ_TMP = Path(tempfile.mkdtemp())
+jj_manifests = gt_manifests(JJ_TMP)
+
+jj_prereg_path = JJ_TMP / "RECOG_SO1_PREREGISTRATION_R2_2026-09-08.md"
+jj_ledger_path = JJ_TMP / "ledger.jsonl"
+
+jj_seal = {
+    agg.AGGREGATOR_SELF_REL: hashlib.sha256((DEV / "recog_so1_aggregate_r2.py").read_bytes()).hexdigest(),
+}
+jj_prereg_path.write_text(
+    "synthetic sealed pre-registration for the end-to-end TOCTOU test\n\n"
+    "<!-- SEAL -->\n```json\n" + json.dumps(jj_seal) + "\n```\n",
+    encoding="utf-8",
+)
+
+jj_clock = FakeClock(datetime(2026, 1, 1, tzinfo=timezone.utc))
+jj_ledger = ledger_mod.Ledger(jj_ledger_path, clock=jj_clock)
+jj_ledger.initialise()
+
+jj_out = {}
+for p in AGG_PARTITIONS:
+    o = [gt_obs(p, *GT_PAIRS[p - 1])]
+    runner.run_partition(p, o, CORPUS, "prompt", VOCAB, CONFIG, "k",
+                         Replies([(200, {}, OK_BODY)] * 2), jj_ledger, JJ_TMP / f"part_{p}.jsonl",
+                         sleep=lambda s: None)
+    jj_out[p] = JJ_TMP / f"part_{p}.jsonl"
+    jj_clock.advance(hours=25)
+
+jj_bundle, jj_reasons = agg.aggregate(
+    jj_out, ledger_path=jj_ledger_path, manifest_paths=jj_manifests, preregistration_path=jj_prereg_path,
+    load_seal=runner.base.load_seal, verify_seal=runner.base.verify_seal)
+check(jj_bundle is not None, "(setup) a bundle builds against a real, self-referencing seal", jj_reasons)
+
+if jj_bundle is not None:
+    jj_bundle_path = JJ_TMP / "bundle.jsonl"
+    jj_bundle_path.write_bytes(jj_bundle)
+
+    # Ground truth: the UNMUTATED bundle's real observation_text, from a
+    # clean, unpatched validate_bundle() call -- this is what main() must
+    # still feed to load_rows() even after the file is corrupted mid-flight.
+    jj_ground, jj_ground_reasons = agg.validate_bundle(
+        jj_bundle_path, preregistration_path=jj_prereg_path, manifest_paths=jj_manifests,
+        ledger_path=jj_ledger_path, load_seal=runner.base.load_seal, verify_seal=runner.base.verify_seal)
+    check(jj_ground is not None, "(setup) a clean, unpatched validate_bundle() succeeds first", jj_ground_reasons)
+
+    a = scorer.aggregate_mod
+    real_const = {
+        "PREREGISTRATION_R2": a.PREREGISTRATION_R2,
+        "PARTITION_MANIFEST_PATHS": a.PARTITION_MANIFEST_PATHS,
+        "LEDGER": a.LEDGER,
+    }
+    real_repo = a.runner.base.REPO
+    real_validate_bundle = a.validate_bundle
+    real_load_rows = scorer.load_rows
+    real_builtin_open = _builtins.open
+    real_path_open = Path.open
+
+    load_rows_calls: list[str] = []
+    write_opens: list[str] = []
+
+    def mutating_validate_bundle(path, **kwargs):
+        # The REAL validation runs first, against the UNMUTATED bytes. Only
+        # once it has returned a genuine ValidatedBundle does this corrupt
+        # the file on disk -- simulating a write landing in the exact gap
+        # between validate_bundle() returning and load_rows() being reached.
+        # If anything downstream ever reopened the path instead of using the
+        # already-extracted in-memory snapshot, this is what would catch it.
+        # Uses the SAVED real open() directly, bypassing the write-open spy
+        # below -- this corruption write is the test's own deliberate probe,
+        # not a production write the "zero write opens" assertion should see.
+        result = real_validate_bundle(path, **kwargs)
+        if result[0] is not None:
+            with real_path_open(path, "wb") as fh:
+                fh.write(b"mutated between validate_bundle() returning and load_rows() being called\n")
+        return result
+
+    def spy_load_rows(src):
+        load_rows_calls.append(src.read_text())
+        return real_load_rows(src)
+
+    def spying_builtin_open(file, mode="r", *args, **kwargs):
+        if any(m in mode for m in ("w", "a", "x", "+")):
+            write_opens.append(str(file))
+        return real_builtin_open(file, mode, *args, **kwargs)
+
+    def spying_path_open(self, mode="r", *args, **kwargs):
+        if any(m in mode for m in ("w", "a", "x", "+")):
+            write_opens.append(str(self))
+        return real_path_open(self, mode, *args, **kwargs)
+
+    try:
+        a.PREREGISTRATION_R2 = jj_prereg_path
+        a.PARTITION_MANIFEST_PATHS = jj_manifests
+        a.LEDGER = jj_ledger_path
+        a.runner.base.REPO = DEV.parent.parent
+        a.validate_bundle = mutating_validate_bundle
+        scorer.load_rows = spy_load_rows
+        _builtins.open = spying_builtin_open
+        Path.open = spying_path_open
+
+        buf = _io.StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = buf
+        try:
+            jj_rc = scorer.main(["--so1", str(jj_bundle_path)])
+        finally:
+            sys.stdout = old_stdout
+        jj_out_text = buf.getvalue()
+    finally:
+        a.PREREGISTRATION_R2 = real_const["PREREGISTRATION_R2"]
+        a.PARTITION_MANIFEST_PATHS = real_const["PARTITION_MANIFEST_PATHS"]
+        a.LEDGER = real_const["LEDGER"]
+        a.runner.base.REPO = real_repo
+        a.validate_bundle = real_validate_bundle
+        scorer.load_rows = real_load_rows
+        _builtins.open = real_builtin_open
+        Path.open = real_path_open
+
+    check(a.PREREGISTRATION_R2 == real_const["PREREGISTRATION_R2"] and a.runner.base.REPO == real_repo
+          and a.validate_bundle is real_validate_bundle and scorer.load_rows is real_load_rows
+          and _builtins.open is real_builtin_open and Path.open is real_path_open,
+          "every rebound module constant AND every patched function/builtin is restored after the call", None)
+    check(jj_rc == 0 and "VERDICT:" in jj_out_text,
+          "score_r2.main() succeeds even though the bundle file was corrupted DURING its own run, "
+          "immediately after validate_bundle() returned", jj_out_text[-400:])
+    check(len(load_rows_calls) == 1,
+          "load_rows() is called from inside main() EXACTLY ONCE, not zero or more than one time",
+          load_rows_calls)
+    check(bool(load_rows_calls) and load_rows_calls[0] == jj_ground.observation_text,
+          "the single load_rows() call is fed the PRE-mutation, validated snapshot -- not the "
+          "corrupted bytes the file held by the time load_rows() actually ran",
+          (load_rows_calls[0][:200] if load_rows_calls else None))
+    check(write_opens == [],
+          "zero write-mode file opens happened anywhere during main() -- no scoring sidecar is ever "
+          "created, not even transiently and then deleted", write_opens)
 
 
 # ==========================================================================

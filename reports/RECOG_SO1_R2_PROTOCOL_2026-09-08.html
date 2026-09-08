@@ -198,13 +198,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 196f69a</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 5150aaa</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -701,11 +703,43 @@ contain "partition 2" &mdash; rather than on the isolation check under test. Rew
 four partition files for real first (a genuine 25h gap throughout), then splice the probe into the
 ledger post-hoc.</p>
 
+<p><strong>Round 3</strong> (<code>b948780</code>, verifying round 2's own fix): <code>VERDICT:
+APPROVE</code>, 0 BLOCKER / 0 MAJOR / 0 MINOR &mdash; the mechanical gate was finally satisfied
+(<code>correlated:true</code>, <code>final:true</code> receipt), after three straight transport
+failures specific to this repo's conversation (while <code>review.js</code> succeeded for other
+projects under the same daemon in the same window) and two identical failures even via
+<code>gpt_send_and_await</code> &mdash; the transport recovered on its own, and a retry went through
+cleanly. Pushed immediately after.</p>
+
+<h3>A separate Rosetta closure review: <code>VERDICT: REVISE</code>, 1 MAJOR + 1 MINOR</h3>
+
+<p><code>pm_rosetta_close</code> auto-notifies GPT-PM on a <code>passed</code> result &mdash; a
+SEPARATE review pass from the three §15 rounds above, examining the gate's entire accumulated
+evidence rather than just the latest delta. MAJOR &mdash; section (gg) (Contract D's
+TOCTOU-elimination test) did not actually prove what the closure claimed: it called
+<code>load_rows()</code> directly rather than through <code>score_r2.main()</code>, so it never
+proved <code>main()</code> itself calls it exactly once with the validated snapshot; its
+post-mutation check only compared text before/after, never recomputing the resulting Rows/verdict;
+and its sidecar check carried its own bug &mdash; the <code>"gg" in str(c)</code> filter almost
+never matched a real unprefixed <code>tempfile.mkdtemp()</code> path, so a genuine leftover sidecar
+could exist and still pass. Fixed with a new section (jj): a genuine end-to-end test wrapped around
+<code>score_r2.main()</code> itself, which patches <code>validate_bundle()</code> so the file is
+corrupted only AFTER real validation succeeds, spies on <code>load_rows()</code> (exactly one call,
+fed the pre-corruption snapshot), and intercepts <code>builtins.open</code>/<code>Path.open</code>
+for the whole <code>main()</code> call, requiring zero write-mode opens. Mutation-tested twice
+before trusting it: a temporary sidecar-write mutation in <code>main()</code> was caught by the new
+check; a temporary TOCTOU mutation crashed the suite entirely (both reverted, confirmed by a clean
+<code>git diff</code>). MINOR &mdash; the pre-registration's §11 still said "162 checks" after the
+aggregation-contract gate had raised the real total well past that; fixed with a note pointing to
+<code>DECISION_LOG.md</code> for the current total rather than duplicating it into a second
+document.</p>
+
 <h3>Evidence</h3>
 
 <ul>
-  <li><code>recog_so1_r2.tests.py</code> &mdash; <strong>235 of 235</strong>, sections (y)&ndash;(ii),
-      105 new checks (92 in (y)&ndash;(hh), 13 in (ii) &mdash; two §15 review rounds), every one
+  <li><code>recog_so1_r2.tests.py</code> &mdash; <strong>242 of 242</strong>, sections (y)&ndash;(jj),
+      112 new checks (92 in (y)&ndash;(hh), 13 in (ii), 7 in the new (jj) &mdash; three §15 review
+      rounds plus one Rosetta closure review), every one
       against genuinely-produced <code>run_partition()</code> output or a real, unmutated seal.</li>
   <li><code>recog_so1.tests.py</code> &mdash; <strong>61 of 61</strong>, revision 1 untouched.</li>
   <li><code>--partition 1 --dry-run</code> &mdash; exit 2 (empty seal), <code>--stress-probe</code>
@@ -719,6 +753,8 @@ ledger post-hoc.</p>
 answers remain quarantined: unread, ungrouped, unscored. The contact sheets showing identifiable
 people, including two children, are not published and do not travel.</p>
 </div>
+
+
 
 
 

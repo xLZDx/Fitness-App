@@ -46738,3 +46738,56 @@ acted on, all fixed, final round clean. The transport outage cost real time (rou
 across ~7 failed attempts spanning two independent send mechanisms) but never blocked forward
 progress on the actual defect-finding work -- only the final mechanical receipt, which resolved
 itself once the shared browser session recovered.
+
+### Rosetta closure review of the gate as a whole: `VERDICT: REVISE`, 1 MAJOR + 1 MINOR -- both real, both fixed
+
+`pm_rosetta_close` auto-notifies GPT-PM on a `passed` result, and this is a SEPARATE review pass
+from §15's per-commit gate above -- it re-examines the gate's entire accumulated evidence, not just
+the latest delta. It found two real gaps the three per-commit rounds never touched, both genuine on
+verification against source (§3):
+
+**MAJOR** -- section (gg) (Contract D's TOCTOU-elimination test) does not actually prove what the
+approved closure claimed. It calls `scorer.load_rows(src)` directly rather than through
+`score_r2.main()`, so it proves `load_rows()` reads its argument once when called directly, never
+that `main()` itself calls it exactly once with the validated snapshot. Its post-mutation check only
+compares `src.read_text()` before and after corrupting the file -- it never recomputes `Rows` or the
+verdict to show the RESULT is actually unaffected. And its sidecar check had a genuine bug of its
+own: `"gg" in str(c)` filtered candidates from `GG_TMP.glob("*.rows.jsonl")`, but `GG_TMP` is an
+unprefixed `tempfile.mkdtemp()` directory whose path essentially never contains the literal
+substring `"gg"` -- so a real sidecar sitting right there could exist with nonzero size and still
+pass the check, because the filter (not the existence test) is what actually gated the assertion.
+Confirmed by reading the pre-fix code directly (`recog_so1_r2.tests.py`, section (gg)) before
+accepting. GPT-PM was explicit this is a verification/governance finding, not a newly discovered
+production defect -- the actual `aggregate_r2.py`/`score_r2.py` implementation was already correct.
+
+Fixed two ways. First, the (gg) sidecar check itself: dropped the `"gg"` filter AND the
+system-wide `tempfile.gettempdir()` glob it existed to narrow -- that second glob searched the
+WHOLE machine tempdir, which risks a false failure from an unrelated concurrent session's own file
+(see auto-memory `concurrent-sessions-in-workspace`); `GG_TMP` alone is private to this test run, so
+no filter is needed there at all. Second, a new section (jj) added after (ii): a genuine end-to-end
+test wrapped around the real `score_r2.main()` entry point (reusing (hh)'s real-seal,
+module-constant-rebinding technique), that (a) monkey-patches `aggregate_mod.validate_bundle` to
+run the REAL validation first and only THEN corrupt the bundle file on disk -- simulating a write
+landing in the exact gap between validation returning and `load_rows()` being reached; (b) spies on
+`scorer.load_rows` to assert it is called from inside `main()` exactly once, with an argument whose
+`.read_text()` matches a ground-truth `observation_text` obtained from an independent, unpatched
+`validate_bundle()` call made before any corruption; (c) monkey-patches `builtins.open` and
+`Path.open` for the duration of the `main()` call to record every write-mode open anywhere, and
+asserts there are none -- catching a sidecar created and deleted DURING execution, not just one
+left over afterward. Mutation-tested twice before trusting it: a temporary sidecar-write mutation in
+`score_r2.main()` was caught by the new write-open assertion; a temporary TOCTOU mutation (re-reading
+`args.so1` instead of using the validated in-memory `observation_text`) crashed the suite entirely
+(via `KeyError` inside `load_rows()`, since the corrupted bytes are not valid observation JSON) --
+both mutations reverted afterward, `git diff` confirmed clean.
+
+**MINOR** -- `core/plans/RECOG_SO1_PREREGISTRATION_R2_2026-09-08.md` section 11 still said "162
+checks" after the aggregation-contract gate's own sections had raised the real total past that,
+creating two different stories in the gate's own primary protocol document. Fixed with a stale-count
+note immediately under the original line: the 162 remain accurate for the pre-aggregation-gate R2
+runner alone, and the total is now 235 (242 after this round's own (gg) fix and new (jj) section),
+with the aggregation-contract gate's own checks pointed at `DECISION_LOG.md` rather than duplicated
+into this document a second time -- deliberately, since a second copy is exactly the kind of claim
+that drifts out of sync again, which is what caused this MINOR in the first place.
+
+Full suite after both fixes: **242/242** (was 235/235; net +7, all from the new (jj) section --
+(gg)'s own check count is unchanged, only what its sidecar assertion actually verifies changed).

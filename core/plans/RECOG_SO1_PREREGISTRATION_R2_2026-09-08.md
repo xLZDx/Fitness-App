@@ -442,7 +442,19 @@ own test alongside a positive control.
 ## 11. Verification
 
 Everything below runs offline. `py -3 scripts/dev/recog_so1_r2.tests.py` — **162 checks, no network
-call, no real sleep.** Every mutation is reverted and the revert is itself asserted.
+call, no real sleep**, cover the pre-aggregation-gate R2 runner alone. Every mutation is reverted
+and the revert is itself asserted.
+
+**Stale-count note, added after GPT-PM's §15 closure review flagged this section as unreconciled
+with the aggregation-contract gate's own additions:** the file now holds **235** checks in total.
+The 162 below are unchanged; the remaining 73 (sections (y) through (jj)) verify the separate
+aggregation-contract gate -- Contracts 1-5, B and D, plus the two defects that gate's own mandatory
+`review.js` review found and had fixed -- and are documented in `core/DECISION_LOG.md`, not here.
+This section is intentionally left describing the runner alone rather than rewritten to describe
+both gates at once, since the aggregation contract has its own artefact-digest entry in the
+provisional appendix below and its own closure evidence in the decision log; duplicating that here
+would be exactly the kind of claim this document keeps warning against -- one wider than the check
+that backs it, restated in a second place where it can drift out of sync again.
 
 - the nine wait values, exactly, as totals
 - exactly one sleep per transport call, structurally — not two fragments summing to the same number
