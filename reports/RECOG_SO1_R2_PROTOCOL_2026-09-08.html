@@ -198,13 +198,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 5150aaa</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 6cf2936</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -734,6 +736,15 @@ aggregation-contract gate had raised the real total well past that; fixed with a
 <code>DECISION_LOG.md</code> for the current total rather than duplicating it into a second
 document.</p>
 
+<p><strong>A second closure-review round</strong> caught that this same MINOR fix was itself
+stale: the note still said "235 total / 73 new," accurate only BEFORE section (jj) was added later
+in that same commit and raised the real total to 242 &mdash; the exact "two different stories"
+defect the MINOR existed to remove, recreated one level down. Fixed on GPT-PM's own suggestion:
+the specific number was removed entirely rather than corrected to 242/80, since a hand-maintained
+count in a second document is what produced this defect twice in the same gate. The closure review
+then returned <code>VERDICT: APPROVE</code>, 0/0/0 &mdash; the Rosetta plan closed as
+<code>passed</code>.</p>
+
 <h3>Evidence</h3>
 
 <ul>
@@ -753,6 +764,8 @@ document.</p>
 answers remain quarantined: unread, ungrouped, unscored. The contact sheets showing identifiable
 people, including two children, are not published and do not travel.</p>
 </div>
+
+
 
 
 

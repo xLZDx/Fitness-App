@@ -46816,3 +46816,26 @@ the pre-aggregation-gate runner alone, that sections (y) onward (a separate gate
 there, and that the file's current whole total lives in `DECISION_LOG.md` -- one place, updated as
 the suite grows, never retyped into a second place that can drift out of sync again. Full suite
 unaffected by this doc-only fix: 242/242.
+
+### Aggregation-contract gate: CLOSED
+
+Re-submitted `pm_rosetta_close` after pushing `6cf2936` (the round-2-of-closure-review MINOR fix
+above). Genuine re-review, confirmed live against `master` rather than the repeated closure
+narrative -- GPT-PM's own words: *"master is still exactly 6cf2936... there is no new delta after
+the commit I already approved... this final commit is documentation-only... Closure stands."*
+`VERDICT: APPROVE`, 0 BLOCKER / 0 MAJOR / 0 MINOR. Rosetta plan `fitness_app-2026-09-08T13-39-24-
+599Z-46c229` closed with `result: passed`.
+
+Final tally across the whole gate, from the 8-round plan-approval process through this closure: 7
+approved contracts implemented (format, two closed partition shapes, per-class ledger reconciliation,
+seal membership + provenance, predicate/integration mutation independence, non-circular scorer
+validation, TOCTOU elimination), 1 self-found defect (Python default-argument late binding), 3 §15
+mandatory-review rounds on the module itself (2 MAJOR, then 1 MAJOR introduced by remediation + 1
+MINOR, then clean), 2 Rosetta closure-review rounds (1 MAJOR + 1 MINOR, then 1 MINOR on the first
+MINOR's own remediation), all ten findings independently verified against actual source per §3
+before being accepted or acted on, all fixed, several mutation-tested by hand before being trusted.
+Full suite: `recog_so1_r2.tests.py` 242/242, `recog_so1.tests.py` 61/61 (revision 1, untouched).
+Pushed to `origin/master` as `3856193..6cf2936` (7 commits). This gate is complete; the isolation
+wait (~15h remaining as of this close), the stress probe, seal-filling, and renewed consent are the
+program's next steps, gated behind real time passing rather than anything this gate could close
+further.
