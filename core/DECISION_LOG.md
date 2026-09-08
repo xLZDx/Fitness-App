@@ -46225,7 +46225,7 @@ it", is now at fourteen instances.
 | 12 | Runner rewritten to the table, every guard reading the ledger | every mutation flips a fixture, and is reverted | **done** |
 | 13 | Revision 2 pre-registration and seal | 17 artefacts, verified in the repo and in a fresh tree | **PARTIAL** — written; the seal is deliberately EMPTY until the probes succeed |
 | 14 | End-to-end offline verification | both suites green, both seals verify, the runner refuses | **done** |
-| 15 | Decision log, bilingual report, commit, push, stop at consent | the renewed-consent request reaches the operator | **done** (this entry) |
+| 15 | Decision log, bilingual report, commit, push, stop at consent | the renewed-consent request reaches the operator | **PARTIAL** — log, reports, commit `50deb08` and push are done; the consent request is deliberately NOT sent, because this item's own DoD was wrong (see "Round 4" below) |
 
 **The tail on item 10, stated rather than buried.** The stress probes have NOT run and cannot run
 today, for two independent reasons that both hold: the organisation's daily budget stood at 199,789
@@ -46419,8 +46419,10 @@ stops before the rerun; it belongs to the execution gate and is recorded so it c
 
 ### Evidence after remediation
 
-- `py -3 scripts/dev/recog_so1_r2.tests.py` — **149/149** (was 109), no network call, no real sleep.
-- `py -3 scripts/dev/recog_so1.tests.py` — **61/61**, revision 1 still untouched.
+- `py -3 scripts/dev/recog_so1_r2.tests.py` — **162/162** at the gate's close (109 → 149 → 158 →
+  162 across the four review rounds), no network call, no real sleep.
+- `py -3 scripts/dev/recog_so1.tests.py` — **61/61**, revision 1 still untouched, its own 12-artefact
+  seal verifying 12/12.
 - `py -3 scripts/dev/recog_so1_run_r2.py --partition 1 ... --dry-run` → **exit 2**, refused on the
   empty seal.
 - `py -3 scripts/dev/recog_so1_run_r2.py --stress-probe` → **exit 7**, refused on isolation.
@@ -46429,7 +46431,56 @@ The defect class this session tracks is now at **nineteen** instances. Five of t
 reviewer reading work I had already called finished, and two were contradictions between two files I
 wrote myself an hour apart.
 
+### Round 4: APPROVE on the code, REVISE on where I said the program stops
+
+The fourth closure round returned `VERDICT: APPROVE`, 0 BLOCKER / 0 MAJOR, receipt `final: true`,
+on the code: the production writer no longer accepts an injectable request shape, the new tests are
+load-bearing, and the `--stress-probe` call site uses the closed signature. That APPROVE authorised
+the push under §20/§22. Commit `50deb08`, 16 files, +5713.
+
+The Rosetta closure review then returned `VERDICT: REVISE`, 1 MAJOR -- not against the code, which
+it explicitly left approved, but against the sentence every closing text in this gate ended on.
+
+**The finding, and it is a fact rather than a preference.** I wrote that the next step is renewed
+operator consent. It is not, and asking for it now would have been an error the whole gate exists to
+prevent. `evaluate_consent_r2()` binds a consent record to `sha256(PREREGISTRATION_R2)`
+(`recog_so1_run_r2.py:467-475`), and the `<!-- SEAL -->` block sits **inside that same document**, at
+line 482. So filling the seal changes the file's bytes, changes its digest, and a consent granted
+today would bind a document that no longer exists -- the runner would refuse it with
+`preregistration_sha256 binds ... but the document on disk hashes to ...`. The operator would have
+had to consent twice, or someone would have been tempted to carry forward a consent that no longer
+binds the sealed experiment. That is precisely the provenance mismatch this revision was built
+around.
+
+I verified both citations against the files before accepting the finding, per §3; the review's own
+pointers were correct.
+
+**The remaining sequence, in order, replacing what I had written:**
+
+1. Wait until the 24-hour isolation condition is satisfied -- `isolation_ok()`, read from the ledger
+   seeded with run #1's own 260 transmissions.
+2. Run the two synthetic stress probes, one per arm shape. Nothing from the corpus is involved.
+3. **Only if they clear**: write the final 18-artefact seal including the probe receipt, verify it,
+   commit and push that sealed state.
+4. **Only then** put the single renewed-consent request to the operator, bound to the digest of the
+   *sealed* pre-registration and to all four partition manifests.
+5. After affirmative consent, and not before, enter the execution gate.
+
+If the probes fail, the document stays DRAFTED AND UNSEALED and **no corpus consent is requested at
+all** -- there would be nothing coherent to consent to.
+
+§0 of the pre-registration already had this order right: its condition 3 reads "a non-empty seal,
+written only after condition 2", and consent is condition 4. The gate table was correct and my prose
+around it was not, which is the same defect class this session has been tracking -- a claim wider
+than the check behind it -- reaching **twenty** instances, and the second time the contradiction was
+between two documents I wrote myself.
+
 ### Where this stops
 
-**Renewed operator consent.** It is operator-only under §4/§20, no reviewer approval substitutes for
-it, and no corpus photograph has moved anywhere under this plan.
+**The 24-hour isolation window**, which had 2.1 h of 24 h elapsed when this gate closed. That is a
+wait, not a decision, and nothing about it is operator-only.
+
+The operator's own decision -- renewed consent for a second transmission of the same 52 photographs,
+with the organisation-exclusivity attestation -- comes at step 4 above, after a successful probe and
+a filled seal, and is operator-only under §4/§20 with no reviewer approval substituting for it. No
+corpus photograph has moved anywhere under this plan.

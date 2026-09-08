@@ -156,7 +156,7 @@
   }
   .halt h2 { margin-top: 0; padding-top: 0; border-top: none; color: var(--halt); }
   .halt .num { color: var(--halt); }
-  ul { max-width: 68ch; padding-left: 20px; }
+  ul, ol { max-width: 68ch; padding-left: 20px; }
   li { margin: 7px 0; }
   .foot {
     margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule);
@@ -198,13 +198,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 11d4fc5</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 50deb08</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 <div class="band">
   <span class="tag">Status</span>
@@ -417,7 +419,7 @@ answers is 26 against 6.</p>
       <td><span class="pill done">done</span></td></tr>
   <tr><td class="n">15</td><td>Log, report, commit, push, stop at consent</td>
       <td>the renewed-consent request reaches the operator</td>
-      <td><span class="pill done">done</span></td></tr>
+      <td><span class="pill partial">partial</span></td></tr>
 </table>
 </div>
 
@@ -547,14 +549,45 @@ prompt, vocabulary or config parameter; the receipt binds the real digests; and 
 the writer at a decoy prompt produces a receipt binding the decoy, which then fails to clear the
 frozen request shape.</p>
 
+<h3>Item 15's tail</h3>
+
+<p>The log, the reports, the commit and the push are done. The item's Definition of Done, however,
+turned out to be wrong, and meeting it literally would have committed exactly the error this whole
+revision was built against: a consent taken before the seal is filled does not bind the document
+that ends up sealed. The consent request is therefore <strong>not sent</strong>, and moves to step 4
+of the order above &mdash; after successful probes and a filled seal. A wrong DoD is not satisfied by
+having complied with it.</p>
+
 <div class="halt">
-<h2><span class="num">09</span>Where this stops: a decision only the operator can make</h2>
+<h2><span class="num">09</span>What happens next, in order &mdash; and why your decision is not first</h2>
 
-<p>The consent recorded before run #1 authorised that manifest <strong>once</strong>, and run #1
-consumed it. A second pass over the same 52 photographs requires a <strong>new explicit operator
-reaffirmation</strong>. No reviewer approval substitutes for it.</p>
+<p>This section was written wrongly, and the closure review caught it. I named renewed operator
+consent as the next step. It is not the next step, and asking for it now would have been an error:
+consent is bound mechanically to the <code>sha256</code> of the pre-registration document, and the
+seal block lives <strong>inside that same file</strong>. Filling the seal changes the bytes, changes
+the digest &mdash; and a consent granted today would no longer bind the experiment that actually
+gets sealed. The runner would refuse it. The operator would have had to confirm twice.</p>
 
-<p>What is being put forward for confirmation:</p>
+<p>The correct order:</p>
+<ol>
+  <li>wait out 24 hours of quiet since the last Qwen request (2.1 hours had elapsed when this gate
+      closed);</li>
+  <li>run the two synthetic stress probes, one per arm shape. No corpus photograph is involved;</li>
+  <li><strong>only if they clear</strong> &mdash; write the final 18-artefact seal including the
+      probe receipt, verify it, commit and push;</li>
+  <li><strong>only then</strong> &mdash; one request for operator consent, bound to the digest of the
+      <em>sealed</em> document and to all four manifests;</li>
+  <li>after consent, the execution gate.</li>
+</ol>
+
+<p>If the probes fail, the document stays unsealed and consent is <strong>not requested at
+all</strong> &mdash; there would be nothing coherent to consent to.</p>
+
+<p>So that step 4 is not a surprise, here is what it will put forward. The consent recorded before
+run #1 authorised that manifest <strong>once</strong>, and run #1 consumed it; a second pass over the
+same 52 photographs requires a new explicit reaffirmation, and no reviewer approval substitutes for
+it:</p>
+
 <ul>
   <li>the first transmission of 104 observations <strong>happened</strong> and failed as an
       instrument;</li>
@@ -569,13 +602,16 @@ reaffirmation</strong>. No reviewer approval substitutes for it.</p>
 </ul>
 
 <p>Until that confirmation the runner refuses to transmit anything, and today it would refuse
-regardless, on isolation.</p>
+regardless, on isolation. Nothing is being asked of the operator right now: the immediate next step
+is the isolation wait and the probes, which is a pause rather than a decision.</p>
 </div>
 
 <p class="foot">No model-performance statistic appears in this report, by construction. Run #1's 46
 answers remain quarantined: unread, ungrouped, unscored. The contact sheets showing identifiable
 people, including two children, are not published and do not travel.</p>
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>
