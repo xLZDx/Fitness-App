@@ -1,0 +1,909 @@
+<title>A Mention Is Not a Call</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap');
+
+  :root {
+    /* The palette IS the subject: the four lexical classes this gate added. */
+    --code:        #1b2430;
+    --string:      #9a5518;
+    --comment:     #5f7a6b;
+    --keyword:     #6b4a9c;
+
+    --ground:      #f7f6f3;
+    --surface:     #ffffff;
+    --surface-sunk:#f0eeea;
+    --ink:         #1b2430;
+    --ink-soft:    #4d5666;
+    --ink-faint:   #7b8494;
+    --rule:        #ddd9d2;
+    --rule-strong: #c2bcb2;
+
+    --good:        #2f6f4f;
+    --bad:         #a33a2a;
+    --warn:        #8a6a1f;
+
+    --measure: 68ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --code:        #dfe5ee;
+      --string:      #e0a468;
+      --comment:     #7fa593;
+      --keyword:     #b79ae0;
+
+      --ground:      #14181e;
+      --surface:     #1b2029;
+      --surface-sunk:#232935;
+      --ink:         #e4e8ef;
+      --ink-soft:    #a8b1bf;
+      --ink-faint:   #78818f;
+      --rule:        #2e3540;
+      --rule-strong: #414a58;
+
+      --good:        #6fc79a;
+      --bad:         #e8836f;
+      --warn:        #d8b25e;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --code:        #dfe5ee;
+    --string:      #e0a468;
+    --comment:     #7fa593;
+    --keyword:     #b79ae0;
+
+    --ground:      #14181e;
+    --surface:     #1b2029;
+    --surface-sunk:#232935;
+    --ink:         #e4e8ef;
+    --ink-soft:    #a8b1bf;
+    --ink-faint:   #78818f;
+    --rule:        #2e3540;
+    --rule-strong: #414a58;
+
+    --good:        #6fc79a;
+    --bad:         #e8836f;
+    --warn:        #d8b25e;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.62;
+    margin: 0;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px 96px; }
+
+  header {
+    border-bottom: 2px solid var(--rule-strong);
+    padding: 64px 0 28px;
+    margin-bottom: 0;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(30px, 5vw, 46px);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin: 0;
+  }
+
+  h2 {
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-weight: 600;
+    font-size: 25px;
+    letter-spacing: -0.01em;
+    margin: 56px 0 6px;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+    margin: 32px 0 6px;
+  }
+  p, li { max-width: var(--measure); }
+  p { margin: 0 0 16px; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 9px; }
+  a { color: var(--keyword); }
+
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, "Cascadia Code", monospace; }
+  p code, li code, td code {
+    font-size: 0.88em;
+    background: var(--surface-sunk);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* --- the verdict strip: one row, read at a glance ---------------------- */
+  .verdict {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0;
+    border: 1px solid var(--rule-strong);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 36px 0 8px;
+    background: var(--surface);
+  }
+  .verdict div { padding: 16px 18px; border-right: 1px solid var(--rule); }
+  .verdict div:last-child { border-right: none; }
+  .verdict dt {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 6px;
+  }
+  .verdict dd {
+    margin: 0;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 21px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .verdict .ok { color: var(--good); }
+  .verdict .was { color: var(--bad); }
+
+  /* --- exhibits: the classified source itself --------------------------- */
+  .exhibit {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--rule-strong);
+    border-radius: 3px;
+    margin: 22px 0 26px;
+    overflow: hidden;
+  }
+  .exhibit-head {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--surface-sunk);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+  }
+  .exhibit pre {
+    margin: 0;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--code);
+  }
+  .exhibit-note {
+    padding: 12px 16px;
+    border-top: 1px dashed var(--rule);
+    font-size: 14.5px;
+    color: var(--ink-soft);
+  }
+  .exhibit-note p { max-width: none; margin: 0; }
+
+  .t-str { color: var(--string); }
+  .t-com { color: var(--comment); font-style: italic; }
+  .t-key { color: var(--keyword); }
+  .t-dim { color: var(--ink-faint); }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 18px 0 0;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--rule);
+  }
+  .legend span::before {
+    content: "";
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    margin-right: 7px;
+    vertical-align: baseline;
+  }
+  .legend .l-code::before { background: var(--code); }
+  .legend .l-str::before  { background: var(--string); }
+  .legend .l-com::before  { background: var(--comment); }
+
+  /* --- measurement pairs ------------------------------------------------ */
+  .measures { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 14px; margin: 24px 0; }
+  .measure-card {
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 16px 18px;
+    background: var(--surface);
+  }
+  .measure-card h4 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .measure-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    padding: 5px 0;
+    border-top: 1px dotted var(--rule);
+  }
+  .measure-row:first-of-type { border-top: none; }
+  .measure-row b { font-size: 19px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .n-blind { color: var(--bad); }
+  .n-seen  { color: var(--good); }
+
+  /* --- the planned / DoD / status table --------------------------------- */
+  .table-scroll { overflow-x: auto; margin: 22px 0 8px; border: 1px solid var(--rule); border-radius: 4px; }
+  table { border-collapse: collapse; width: 100%; min-width: 780px; background: var(--surface); }
+  th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; font-size: 14.5px; }
+  th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--surface-sunk);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td:first-child { font-family: "IBM Plex Mono", monospace; color: var(--ink-faint); white-space: nowrap; }
+  .status {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid currentColor;
+  }
+  .s-done { color: var(--good); }
+
+  /* --- evidence ---------------------------------------------------------- */
+  .evidence { border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); margin: 22px 0; }
+  .evidence-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(0, 1.9fr);
+    gap: 16px;
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 14.5px;
+  }
+  .evidence-row:last-child { border-bottom: none; }
+  .evidence-row > :first-child { color: var(--ink-soft); }
+  .evidence-row > :last-child { font-family: "IBM Plex Mono", monospace; font-size: 13px; font-variant-numeric: tabular-nums; }
+
+  .pull {
+    border-left: 3px solid var(--string);
+    padding: 4px 0 4px 20px;
+    margin: 28px 0;
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-size: 20px;
+    line-height: 1.45;
+    color: var(--ink);
+    max-width: var(--measure);
+  }
+
+  .caveat {
+    background: var(--surface-sunk);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin: 22px 0;
+  }
+  .caveat h3 { margin-top: 0; }
+  .caveat p:last-child { margin-bottom: 0; }
+
+  footer {
+    margin-top: 72px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+    font-size: 13.5px;
+    color: var(--ink-faint);
+  }
+  footer p { max-width: none; }
+
+  @media (max-width: 620px) {
+    .evidence-row { grid-template-columns: 1fr; gap: 4px; }
+    .wrap { padding: 0 18px 64px; }
+  }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App · gate RED-BASELINE · 9 September 2026</p>
+  <h1>A Mention Is Not a Call</h1>
+  <p class="standfirst">Twelve red tests rested on one defect: the checks read file text, and text cannot tell a call from a sentence about a call. A cross-reference comment failed ten tests, and a list of paths for <code>git&nbsp;status</code> was reported as a breach of build isolation.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ ffb0449</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="verdict">
+  <div><dt>GPT-PM verdict</dt><dd class="ok">APPROVE</dd></div>
+  <div><dt>Before</dt><dd class="was">12 failed</dd></div>
+  <div><dt>After</dt><dd class="ok">0 failed</dd></div>
+  <div><dt>Tests in the two files</dt><dd>27 → 154</dd></div>
+  <div><dt>Tests removed</dt><dd class="ok">0</dd></div>
+  <div><dt>Whole directory</dt><dd class="ok">503 passed</dd></div>
+</dl>
+
+<h2>Why this gate exists</h2>
+
+<p>Twelve tests in <code>test_baseline.py</code> and <code>test_deployment_isolation.py</code> were red at <code>ffb0449</code>. They were disclosed at G3 round 7 as carried forward and <b>unowned</b>: neither file imports <code>rights.py</code>, and both were clean at the commit that last touched them.</p>
+
+<p>GPT-PM, as roadmap owner, picked them as the next gate — the only thing that is <em>broken now</em> rather than waiting on a human. It set one condition that shaped the whole gate: <b>do not pre-decide</b> "update the tests" versus "fix the source". The evidence chooses.</p>
+
+<p class="pull">The evidence chose: the source violated neither invariant. The checks did — they were reading prose as fact.</p>
+
+<h2>One defect class, two symptoms</h2>
+
+<p>Both root causes are the same thing: a structural assertion implemented as a raw-substring scan over file text. Such a scan cannot distinguish a dependency from a mention of one.</p>
+
+<h3>First symptom: a comment failed ten tests</h3>
+
+<div class="exhibit">
+  <div class="exhibit-head"><span>mobile/lib/features/visual_equipment/data/mlkit_live_equipment_service.dart:201</span><span>the only occurrence of "gemini" in the whole file</span></div>
+<pre><span class="t-com">// Branch at the call site -- see gemini_equipment_service.dart's</span>
+<span class="t-com">// matching comment. G3_STEP10B_PROBE=false (every normal build)</span>
+<span class="t-com">// must call FirebaseCrashlytics directly, with no</span>
+<span class="t-com">// g3_step10b_probe.dart frame in between.</span>
+<span class="t-key">if</span> (G3Step10bProbe.kEnabled) {</pre>
+  <div class="exhibit-note"><p><code>_live_mode_has_no_offline_downgrade_guard</code> raised whenever "gemini" or "cloud" appeared anywhere in the file. Measured: "cloud" is absent entirely; "gemini" occurs exactly once, here, in a comment added by <code>6ab9ff5</code>. The live path calls no cloud classifier at all.</p></div>
+</div>
+
+<p>The uncomfortable part: this module's own header <b>already</b> forbade that reading. Lines 13–14 of <code>recognition_baseline.py</code> require every fact to be extracted from a file's actual text — "this branch/enum/guard exists <em>in the source, not in a comment about the source</em>". The check was stale against its own module's contract.</p>
+
+<h3>Second symptom: a scope list was called an isolation breach</h3>
+
+<div class="exhibit">
+  <div class="exhibit-head"><span>functions/src/release_guard.ts:1040</span><span>one of six occurrences — zero of them imports</span></div>
+<pre><span class="t-key">const</span> PROVENANCE_RELEVANT_PATHS = [
+  <span class="t-str">"functions"</span>,
+  <span class="t-str">"functions-equipment-identity"</span>,
+  <span class="t-str">"firebase.json"</span>,
+  <span class="t-str">".firebaserc"</span>,
+  <span class="t-str">".gitignore"</span>,
+  RELEASE_EVIDENCE_PATH,
+] <span class="t-key">as const</span>;</pre>
+  <div class="exhibit-note"><p>This is the scope for <code>git status --porcelain -- &lt;paths&gt;</code>, added by <code>791d221</code> on a GPT-PM round-5 MAJOR: <code>firebase deploy --only functions</code> deploys <b>both</b> codebases in one invocation, so a dirty identity tree must block the release. The only <code>import</code> in this file is <code>import * as ts from "typescript"</code>.</p></div>
+</div>
+
+<p>The two invariants never conflicted. P0.G6 protects <b>compile</b> isolation: a broken identity module must not block a Stripe hotfix. G4 Step 9 protects <b>provenance</b>: an unreviewed dirty tree must not ship alongside. The substring ban was a proxy far coarser than the invariant it was named for.</p>
+
+<div class="legend">
+  <span class="l-code">CODE — executable</span>
+  <span class="l-str">STRING — literal</span>
+  <span class="l-com">LINE_COMMENT / BLOCK_COMMENT — prose</span>
+</div>
+
+<h2>Two plans refused, and that was the most useful part</h2>
+
+<p>The plan went for GO three times. GPT-PM returned the first two with two MAJORs each. Every finding was verified by <b>measurement</b> rather than accepted on assertion — and all of them were fact.</p>
+
+<h3>First refusal: the proof was narrower than the claim</h3>
+
+<ul>
+  <li><code>functions/tsconfig.json</code> is <code>"include": ["src"]</code>, and <b>nothing checks it</b>. Add <code>"../functions-equipment-identity/src"</code> and a compile dependency exists with no forbidden import string anywhere.</li>
+  <li><code>run_broken_identity_probe</code> breaks a <b>copy</b> in a temp directory and then builds the <b>real</b> <code>functions/</code> tree. It proves exactly the scenario it executes. It says nothing about the real compiler graph — and the docstring implied it did.</li>
+</ul>
+
+<h3>Second refusal: two blind spots, the second worse than described</h3>
+
+<div class="measures">
+  <div class="measure-card">
+    <h4>Project references</h4>
+    <div class="measure-row"><span>Own files listed</span><b>1</b></div>
+    <div class="measure-row"><span>Files from the referenced project</span><b class="n-blind">0</b></div>
+    <p style="margin:12px 0 0;font-size:13.5px;color:var(--ink-soft)"><code>tsc --listFilesOnly</code> does not enumerate them at all. Plan v2's claim that the check "covers project references" was simply false.</p>
+  </div>
+  <div class="measure-card">
+    <h4>A junction alias into identity</h4>
+    <div class="measure-row"><span>Matched by substring</span><b class="n-blind">0</b></div>
+    <div class="measure-row"><span>Found by realpath</span><b class="n-seen">30</b></div>
+    <p style="margin:12px 0 0;font-size:13.5px;color:var(--ink-soft)">The compiler read 30 real identity files and reported every one of them <b>under the alias path</b>. A lexical test for the package name matched none.</p>
+  </div>
+</div>
+
+<p>The second is not a theoretical risk but a working bypass on this very machine: <code>mklink /J</code> needs no elevation. The remedy was measured too, before it entered the plan: <code>os.path.realpath</code> resolves the junction to the physical path, and the same compiler output then yields 30 instead of 0.</p>
+
+<h3>And a third MAJOR, about the lexer itself</h3>
+
+<p>GPT-PM refused a code-versus-comment split with a counterexample this repository could not have answered. With the <b>real call order reversed</b>:</p>
+
+<div class="exhibit">
+  <div class="exhibit-head"><span>GPT-PM's counterexample</span><span>the real call order is the opposite of the one claimed</span></div>
+<pre>debugPrint(<span class="t-str">'${</span><span class="t-str">"_anchorOnPrintedText("</span><span class="t-str">}'</span>);
+<span class="t-key">await</span> service.classifyFile(path);
+<span class="t-key">await</span> _anchorOnPrintedText(path);</pre>
+  <div class="exhibit-note"><p>A lexer that paints the whole <code>${…}</code> span as code sees the mention before the real call and certifies an order that does not exist. Dart interpolation is a recursive state: it can itself contain strings, comments and nested braces, and <code>r'…'</code> does not interpolate at all.</p></div>
+</div>
+
+<p>Both refused plans were closed as <code>rejected</code> rather than left pending. The third was approved: <b>VERDICT: APPROVE, 0 BLOCKER / 0 MAJOR</b>.</p>
+
+<h2>What was built</h2>
+
+<ul>
+  <li><b>A recursive four-class Dart lexer.</b> Every character is CODE, STRING, LINE_COMMENT or BLOCK_COMMENT. Interpolation is a state transition, not a span; <code>$identifier</code> is an expression; raw strings never interpolate; block comments nest, as Dart's do. It fails closed on anything it cannot read to the end — reclassifying code as string is the direction that <em>hides</em> a violation. Measured over the real corpus: <b>697 Dart files, 0 failures</b>.</li>
+  <li><b>The live-mode guard</b> now fires on CODE <em>or</em> STRING — a string naming a cloud endpoint is a real concept reference — while comment-only mentions pass and are <b>recorded</b> as <code>cloudConceptMentionsInCommentsOnly</code>. A new mention still changes the baseline and forces a deliberate regeneration. "Needs re-deriving, not assuming" survives; it just stopped firing on prose.</li>
+  <li><b>The ordering and structural body checks</b> consume CODE only. <code>_exact_identity_absent</code> stays on raw text, on GPT-PM's explicit ruling: its contract is lexical by design.</li>
+  <li><b>Compile isolation as a compiler-resolved graph assertion.</b> <code>tsc --listFilesOnly</code>, every path through <code>realpath</code>/<code>normcase</code>, containment by <code>commonpath</code> over components rather than <code>startswith</code>: <code>functions-equipment-identity-old</code> is a different directory.</li>
+  <li><b>Project references walked separately</b>, from <code>tsc --showConfig</code>, recursively — because <code>--listFilesOnly</code> provably cannot see them.</li>
+  <li><b>The source-level checks kept as additional guards</b>, explicitly not claimed exhaustive: a module specifier, a <code>../</code> traversal into the package, and a <code>functions/package.json</code> dependency field — a channel never covered before.</li>
+</ul>
+
+<h2>Three defects in this gate's own instruments</h2>
+
+<p>Each was found by measurement rather than review, and each would have produced a green result for the wrong reason.</p>
+
+<div class="exhibit">
+  <div class="exhibit-head"><span>functions/src/ai_coach_advice.ts:62</span><span>what the first comment stripper gave up on</span></div>
+<pre><span class="t-key">const</span> FORBIDDEN_SUBJECT_NAME_CHARS = <span class="t-str">/["\r\n\t]/</span>;</pre>
+  <div class="exhibit-note"><p>Its first docstring said that not modelling regex literals was <b>safe</b> — "the worst case is a false alarm". Not true: the quote inside that character class opens a string that never closes, and the scanner abandoned the whole file. A claim wider than the check, inside the gate whose subject is exactly that. Regex literals are now modelled. Measured: <b>87 TypeScript files, 0 failures</b>.</p></div>
+</div>
+
+<p><b>Second.</b> The regression <code>test_3c_…_that_3b_cannot_see</code> claimed step 3b "cannot see" a reference to the identity package. It never got that far: <code>tsc</code> exits 1 with TS6306 because the identity project is not <code>composite</code>. Drawing "3b cannot see it" from <em>that</em> failure is the same error as counting a mutant killed because an unrelated exception turned the run red. Split into two tests, each measuring what it says.</p>
+
+<p><b>Third.</b> <code>verify_deployment_isolation.py</code> is pure LF while its sibling <code>recognition_baseline.py</code> is pure CRLF. The patch tooling asserted rather than assumed, and refused to rewrite 302 line endings into a diff nobody could review.</p>
+
+
+<h2>The implementation review: two more MAJORs, both mine</h2>
+
+<p>GPT-PM reviewed the implementation and returned <b>2 MAJOR, 0 BLOCKER</b>. Both were verified by measurement against the real code before acceptance. All four constituent claims were fact.</p>
+
+<h3>First: the fix reproduced the very defect it was fixing</h3>
+
+<p><code>verify_no_cross_import</code> stripped comments and then matched module-specifier and traversal <em>shapes</em> with regular expressions over the surviving text — which still contains string literals. Measured:</p>
+
+<div class="measures">
+  <div class="measure-card">
+    <h4>False positive on prose</h4>
+    <div class="measure-row"><span><code>const note = 'do not import "…"'</code></span><b class="n-blind">rejected</b></div>
+    <p style="margin:12px 0 0;font-size:13.5px;color:var(--ink-soft)">Prose read as code — exactly the class of defect that produced the twelve red tests, reintroduced by the remedy for it.</p>
+  </div>
+  <div class="measure-card">
+    <h4>Missed computed paths</h4>
+    <div class="measure-row"><span><code>require("../" + "…")</code></span><b class="n-blind">passed</b></div>
+    <div class="measure-row"><span><code>path.join("..", "…", "terms.json")</code></span><b class="n-blind">passed</b></div>
+    <p style="margin:12px 0 0;font-size:13.5px;color:var(--ink-soft)">Real couplings, invisible to a pattern hunting one contiguous spelling. And in a file under <code>__tests__</code>, step 3b cannot rescue the miss — it excludes them.</p>
+  </div>
+</div>
+
+<p>Remediated by handing both questions to <b>TypeScript's own parser</b> (<code>ts_dependency_probe.cjs</code>, using the compiler already installed in <code>functions/node_modules</code>). A module specifier is read from the AST node that <em>is</em> a specifier. A runtime path is constant-folded from call arguments: string literals, substitution-free templates, <code>+</code> concatenation, and <code>path.join</code>/<code>path.resolve</code> over constants. A folded value counts as a path only when the <b>whole value</b> is one — its first component is <code>.</code> or <code>..</code>. That is what separates a real <code>path.join</code> from a sentence quoting the same characters.</p>
+
+<p class="pull">The hand-written comment stripper was deleted, not kept. Once the parser answered the same questions, nothing distinguished the scanner from its own absence — and its three tests went with it.</p>
+
+<p>That is the repository's own precedent: G3 measured an absolute-path guard against 11,110 strings, found nothing could tell it from not existing, and deleted it. A subsumed check kept in place is not defence in depth; it is a claim.</p>
+
+<h3>Second: a fourth dependency channel — tsconfig inheritance</h3>
+
+<p>A config can <code>extends</code> a file inside the identity package: compiler options arrive, source files do not. Measured on a fixture doing exactly that:</p>
+
+<div class="evidence">
+  <div class="evidence-row"><span>Step 3a — imports</span><span>passed: there is no import</span></div>
+  <div class="evidence-row"><span>Step 3b — compiler graph</span><span>passed: 52 files, 0 inside identity</span></div>
+  <div class="evidence-row"><span>Step 3c — reference walk</span><span>passed: no project reference</span></div>
+  <div class="evidence-row"><span><code>--showConfig</code></span><span>the word <code>extends</code> is absent from its output entirely</span></div>
+</div>
+
+<p>Yet the default build could not run if that file were deleted. <b>Step 3d</b> was added: the chain is read from the config files themselves through TypeScript's own JSONC-aware <code>readConfigFile</code>, resolving both the string and the TS 5 array form, canonicalized with the same realpath and component-containment discipline as 3b, walked transitively with cycle protection — and it <b>fails closed</b> when an <code>extends</code> target cannot be resolved: an unreadable link in the chain is not proof that there is nothing at the end of it.</p>
+
+<p>Regressions were added, one per named bypass: import-shaped prose and a <code>git status</code> test title stay clean; four computed-path shapes in an <em>excluded</em> test file are each rejected; a direct <code>extends</code> into identity, a junction-alias <code>extends</code> and a transitive one through a neutral intermediate are each rejected; an ordinary third-party base config is the green control; an unresolvable <code>extends</code> fails closed; a cycle terminates rather than hanging. The alias fixture asserts that its own text does <b>not</b> name the package — otherwise it would pass for the wrong reason.</p>
+
+<div class="caveat">
+  <h3>The bound that remains</h3>
+  <p>Constant folding is limited to the forms listed above, and detection is bound to real sinks. Not detectable: a path assembled at runtime from a variable; a filesystem call through an alias the file never bound from <code>fs</code>; and an inline <code>require("path").join(…)</code>. For a file excluded from <code>functions/tsconfig.json</code>, step 3b will not cover those misses either. All of it is recorded in the docstring as <b>named gaps</b>, not as covered cases — which is precisely the discipline this gate was opened to restore.</p>
+</div>
+
+
+<h3>Round 2: the remediation had two regressions of its own — the same defect again</h3>
+
+<p>GPT-PM verified the fixes and returned <b>2 MAJOR</b> — both direct regressions from that remediation, which is the one thing §17 permits a third round for.</p>
+
+<div class="exhibit">
+  <div class="exhibit-head"><span>what the probe rejected as a dependency</span><span>five false positives, measured</span></div>
+<pre>console.log(<span class="t-str">"../functions-equipment-identity/src/x"</span>);     <span class="t-dim">→ rejected</span>
+foo.join(<span class="t-str">".."</span>, <span class="t-str">"functions-equipment-identity"</span>, <span class="t-str">"x"</span>);      <span class="t-dim">→ rejected</span>
+foo.resolve(<span class="t-str">".."</span>, <span class="t-str">"functions-equipment-identity"</span>, <span class="t-str">"x"</span>);   <span class="t-dim">→ rejected</span>
+obj.require(<span class="t-str">"../functions-equipment-identity/src/x"</span>);     <span class="t-dim">→ rejected</span></pre>
+  <div class="exhibit-note"><p>The probe was semantic at the AST node but not at the <b>sink</b>: it accepted any property named <code>.join</code>, <code>.resolve</code> or <code>.require</code>, and treated the constant arguments of <em>every</em> call as paths. Data read as behaviour — this gate's own defect for the <b>third</b> time, each time one layer further down: a comment read as code, then a string read as code, now an arbitrary object's method read as node's <code>path</code>.</p></div>
+</div>
+
+<p>Remediated by binding the sinks to the modules they claim to be. The probe collects which local names the file <em>actually</em> imported from <code>path</code> and <code>fs</code> — via <code>import * as</code>, a default import, named imports, <code>import x = require(…)</code>, <code>const x = require(…)</code> and destructuring — and only then treats <code>path.join</code>/<code>path.resolve</code> as path construction and a method on an <code>fs</code> binding as a filesystem sink. <code>require</code> is the bare identifier; <code>obj.require</code> is an ordinary method call.</p>
+
+<p>The fixtures moved with the contract: they now read through <code>fs.readFileSync(path.join(…))</code> in six shapes, and five controls assert the non-dependency forms above stay clean. One older fixture calling an unbound <code>readFileSync(…)</code> stopped being detected and was <b>corrected rather than exempted</b> — an unbound identifier is not node's filesystem module, and pretending otherwise is precisely how <code>foo.join(…)</code> became a dependency.</p>
+
+<h4 style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:16px;margin:28px 0 6px">And the second: the <code>extends</code> walk disagreed with TypeScript about a valid chain</h4>
+
+<p>It parsed JSONC with TypeScript but <em>resolved</em> bare specifiers with node's <code>require.resolve</code>. Measured on a config package declaring <code>{"main": "index.js", "tsconfig": "base.json"}</code>: <b>tsc accepts it and inherits <code>base.json</code></b> — exit 0, <code>"strict": true</code> present in the resolved options — while the hand-rolled resolver followed <code>main</code>, landed on JavaScript, and called the chain unreadable. An instrument that fails a valid build is the same defect class as one that passes an invalid one.</p>
+
+<p>The hand-rolled resolver is gone. <code>ts.getParsedCommandLineOfConfigFile</code> now runs with an instrumented host whose <code>readFile</code> records every file consumed, so the chain is <em>by construction</em> exactly what TypeScript read. Diagnostics 5083/6053 still fail the check closed; 18003 ("no inputs") is ignored, because whether a config matches source files says nothing about what it inherits. The added regression first asserts that <b>tsc itself</b> accepts such a package and inherits the option, so it measures a disagreement rather than asserting one.</p>
+
+
+<h3>Round 3: the sink model knew WHICH object — but not which binding, which argument, or what a path is</h3>
+
+<p>GPT-PM closed the configuration-inheritance MAJOR and returned <b>2 MAJOR</b> more, again regressions from the previous remediation. Five counterexamples, all measured before acceptance, all fact.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Counterexample</th><th>Submitted behaviour</th></tr></thead>
+  <tbody>
+    <tr><td><code>import { readFileSync } from "fs"</code>, then reading an identity path</td><td>clean — only namespace bindings were collected</td></tr>
+    <tr><td>the destructured CJS and aliased forms of the same</td><td>clean</td></tr>
+    <tr><td><code>fs.writeFileSync("output.txt", "../&lt;identity&gt;/src/x")</code></td><td>rejected — the second argument is file <b>content</b></td></tr>
+    <tr><td><code>fs.readFileSync(p.join("scratch", "..", "..", "&lt;identity&gt;", "terms.json"))</code></td><td>clean</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The last is the sharpest. Node normalizes that <code>join</code> to <code>../&lt;identity&gt;/terms.json</code> — verified by running node rather than by reading its documentation — while the probe folded it by concatenation into <code>scratch/../../&lt;identity&gt;/terms.json</code>, whose first component is <code>scratch</code>, so the containment predicate said no. A fully constant, correctly bound filesystem dependency, missed. And unlike the runtime-variable cases, constant <code>path.join</code> was <b>explicitly claimed as covered</b>: a claim wider than its check, again.</p>
+
+<p>The remediation was made principled rather than patched, in three parts: bindings by name and alias, not only by namespace; an <code>FS_PATH_ARGUMENTS</code> table saying which argument <em>positions</em> of each filesystem API are pathnames (a method outside the table is read at position 0, stated as the convention it is); and real path semantics — <code>normalizeJoin</code> with <code>.</code>/<code>..</code> cancellation and a preserved leading <code>..</code>, <code>normalizeResolve</code> with the right-to-left scan for an absolute argument. An absolute result is judged by physical <code>realpath</code> containment, the same discipline as step 3b — which also closed a channel nothing had covered: a constant absolute read into the package.</p>
+
+<p>Regressions added: four named/aliased/destructured <code>fs</code> sinks, each rejected; two file-<b>content</b> fixtures, each staying clean; the cancelling <code>join</code> rejected, with node's own answer measured <em>inside</em> the test rather than asserted; a <code>join</code> that walks into the package and back out again staying clean, so normalization is proven real rather than a rule that fires on any mention of the name; and an absolute read into the package rejected.</p>
+
+
+<h3>Round 4: the same defect, in the two things the code still did by hand</h3>
+
+<p>GPT-PM closed the round-3 findings and returned <b>2 MAJOR</b> more. The shape is worth naming plainly this time: <b>the check was still reimplementing what the already-loaded tool answers by itself.</b></p>
+
+<h4>MAJOR 1 — a name is not a binding</h4>
+
+<p>The collector walked the whole file and put the <em>names</em> bound anywhere into file-global sets. That is not what a binding is, and three counterexamples followed — all measured before acceptance, all fact.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Counterexample</th><th>Submitted</th><th>Correct</th></tr></thead>
+  <tbody>
+    <tr><td><code>import * as fs from "fs"</code> + <code>function inspect(fs: FakeFs) { fs.readFileSync("../&lt;NAME&gt;/terms.json") }</code></td><td><b>rejected</b></td><td>clean — the parameter shadows the import</td></tr>
+    <tr><td>the same with a block-local <code>const fs = {…}</code></td><td><b>rejected</b></td><td>clean</td></tr>
+    <tr><td><code>import { promises as fsp } from "fs"</code> + <code>fsp.readFile("../&lt;NAME&gt;/terms.json")</code></td><td><b>clean</b></td><td>reject — <code>fsp</code> IS bound from <code>fs</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The first two are the round-2 defect exactly — an arbitrary object's method read as node's API — one scope deeper. The third is its mirror: a real binding missed because the collector had no model of an object export. None of the three belongs to the declared residue "an alias this file does not bind from <code>fs</code>": two are bound from <code>fs</code>, and the first is not bound from it at all.</p>
+
+<h4>MAJOR 2 — hand-written path algebra disagrees with node on Windows</h4>
+
+<p><code>normalizeJoin</code> treated any drive prefix as anchoring, turning a drive-<b>relative</b> path into a drive-<b>absolute</b> one. Measured, node against that code:</p>
+
+<pre><code>path.win32.join("D:..", "&lt;NAME&gt;", "package.json")
+  node        -&gt; "D:..\&lt;NAME&gt;\package.json"   (isAbsolute false -- relative to the D: cwd)
+  hand-rolled -&gt; "D:/&lt;NAME&gt;/package.json"       (absolute, a different place)</code></pre>
+
+<p>Physical containment then judged the wrong path and reported clean. A fully constant, correctly bound dependency, missed — and constant <code>path.join</code> was <b>explicitly claimed as covered</b>, so it cannot be routed into the runtime-variable residue. A claim wider than its check, for the fourth round running.</p>
+
+<h4>The remediation is a deletion in both cases, and that is the point</h4>
+
+<p>The probe already loads the real TypeScript compiler and already runs inside node. It had no business owning a second, worse copy of either.</p>
+
+<ul>
+  <li><code>collectModuleBindings</code> and <code>leftmostIdentifier</code> are <b>gone</b>. <code>makeBindingResolver</code> asks <code>checker.getSymbolAtLocation</code> what an identifier is bound to <em>at this occurrence</em> and reads the declaration it lands on. Parameters, block scope, nested binding patterns and every other scoping rule come free, because TypeScript already implements them.</li>
+  <li><code>normalizeJoin</code> and <code>normalizeResolve</code> are <b>gone</b>. <code>foldPathCall</code> calls the real <code>path.win32</code> / <code>path.posix</code>. A binding's flavour comes from its module specifier, and a plain <code>path</code> import is folded under <b>both</b> — this probe runs on Windows while <code>functions</code> deploys to nodejs20 on Linux, so choosing one would silently choose a platform.</li>
+  <li><code>FS_OBJECT_EXPORTS</code> names <code>promises</code> as the one <code>fs</code> export that is an object carrying the same path-taking API.</li>
+  <li><code>require</code> is node's only when the identifier is bound to nothing.</li>
+</ul>
+
+<h4>The internal review that ran before this round (§17): one confirmed, two refuted</h4>
+
+<p>The specialist reviewer ran <em>before</em> the round was sent and reported four MAJOR. Measurement confirmed one as a live defect and refuted two — recorded here because a finding accepted without measurement is an opinion.</p>
+
+<ul>
+  <li><b>Confirmed and fixed:</b> the <code>package.json</code> dependency channel matched by raw <em>substring</em> while every other channel in the same function matched by <em>component</em>. Measured: <code>{"other-lib": "npm:&lt;NAME&gt;-old@1.0.0"}</code> — a different package — was rejected as an isolation breach.</li>
+  <li><b>Refuted by measurement:</b> that the <code>-old</code> sibling was mishandled at the specifier and fs-path sinks (it was not — both already read clean), and that the dual <code>[0, 1]</code> positions and the untabulated fallback were broken (they were not). In both cases the behaviour was already right and only the <em>fixture</em> was missing — a real finding by this gate's own standard, but a test gap, not a defect. Fixtures added for all of them.</li>
+</ul>
+
+<h4>The green suite was not taken as evidence</h4>
+
+<p>Every new guard was mutation-checked: 14 mutations, each removing exactly one guard and naming the test ids that must go red. Anchors and node ids are pre-flighted first, because this project has recorded twice that an anchor matching nothing reads as a pass. <b>14 of 14 killed</b> — but only on the second run. The first killed 12 of 13, and the survivor is worth recording:</p>
+
+<blockquote>Folding a plain <code>path</code> import under posix <em>only</em> survived the drive-relative regression, because the Python side rescued that particular value. For every fixture then in the suite, the guard was indistinguishable from its own absence — the G3 subsumption case again. Rather than delete it or keep it on faith, two fixtures were measured that separate the algebras: <code>join("..\scratch", "..", NAME, "x")</code> is <code>..\&lt;NAME&gt;\x</code> under win32 and a bare <code>&lt;NAME&gt;/x</code> under posix; <code>join("a\b", "..", "..", NAME, "x")</code> is <code>../&lt;NAME&gt;/x</code> under posix and a bare <code>&lt;NAME&gt;\x</code> under win32. Each algebra catches exactly one, so both are load-bearing — and now both are proven so, by a test that <em>measures</em> node's two answers rather than asserting a spelling of them.</blockquote>
+
+<p><b>A deliberate scope decision, stated rather than left silent.</b> Negative fixtures for steps 1 and 2 were added even though this gate did not touch that code and §17 would allow deferring them. Reason: same module, same verifier run, same defect class the gate exists for — both checks' rejection paths were unreached, so deleting their bodies would have kept the suite green. Fifteen lines of fixture is not the scope creep §17 guards against; carrying "a check nothing distinguishes from its absence" through a gate <em>about that</em> is worse.</p>
+
+
+<h3>Round 5: each round-4 fix was right in one of the two places it had to hold</h3>
+
+<p>GPT-PM closed the path-algebra MAJOR and confirmed, on the direct question, that the declared residue is <b>not a blocker</b> — step 3a is a bounded additional guard, step 3b is the isolation proof, and the limits are now stated rather than claimed as covered. Two new <b>MAJOR, 0 BLOCKER</b>.</p>
+
+<h4>MAJOR 1 — the checker was consulted in one of the two places <code>require</code> is read</h4>
+
+<p><code>isRequireCall</code> asked <code>isUnbound</code> before treating a bare call as node's loader. <code>moduleOfRequire</code>, which decides that <code>const fs = require("fs")</code> creates an <code>fs</code> binding, checked only the <em>spelling</em>. Measured:</p>
+
+<pre><code>function require(n: string) { return { readFileSync: (p) =&gt; p }; }
+const fs = require("fs");
+fs.readFileSync("../&lt;NAME&gt;/terms.json");          -&gt; REJECTED, wrongly</code></pre>
+
+<p>A locally declared function read as node's module loader, binding a fake object to the real <code>fs</code>. Round 4's own note said the checker now answers "what is this bound to HERE" — true of one call site, and the claim covered both. This gate's defect, committed by its own description of the fix.</p>
+
+<h4>MAJOR 1, second half — the one-program approach leaked script globals between files</h4>
+
+<p>A genuine regression introduced by round 4, and the round's most serious finding because it is a <b>miss</b> rather than a false alarm. TypeScript treats a source with no import and no export as a <em>script</em>, whose top-level declarations share one global scope with every other script in the program. Measured:</p>
+
+<pre><code>other.ts   function require(name: string) { ... }        // no import, no export
+probe.ts   const mod = require("../&lt;NAME&gt;/src/index");    -&gt; CLEAN, wrongly</code></pre>
+
+<p>A real, unambiguous cross-import read as clean because an <em>unrelated</em> sibling file declared a function of the same name. Node runs each file in its own module wrapper; one program over all of them did not, so one file's isolation answer came to depend on another file's contents. Fixed with <code>moduleDetection: ts.ModuleDetectionKind.Force</code> (TypeScript 5.9.3, presence verified), restoring the per-file scope the runtime actually has.</p>
+
+<h4>MAJOR 2 — the chain model introduced a false negative on an API this file already tabulated</h4>
+
+<p><code>fs.realpath.native</code> and <code>fs.realpathSync.native</code> are real callable functions — measured in node, not read off documentation — taking the same pathname in the same position as their parents. Round 4's rule required every intermediate chain segment to be an <em>object</em> export of <code>fs</code>; <code>realpath</code> is a function, so the whole call was discarded as "not a sink". Both read clean. <code>FS_NATIVE_VARIANTS</code> is now a bounded set of exactly those two names, deliberately not a rule like "any <code>.native</code> member", because the point of the chain model is that an arbitrary <code>.foo.bar()</code> is an arbitrary object.</p>
+
+<h4>The mutation check: 23 mutations, 23 killed — after two survivors that meant opposite things</h4>
+
+<p>The first extended run left the chain <em>control</em> alive. Investigated rather than assumed: the fixture rooted its chain at <code>const anything = fs as unknown as {…}</code>, which is not a module binding at all, so the deleted check was never reached. <b>The mutant was inert against that fixture, which is not the same as the guard being redundant</b> — a distinction this project has already recorded once. The control was rerooted at a genuine namespace binding (<code>fs.constants.readFileSync(…)</code>, where <code>constants</code> is a real <code>fs</code> export that is still not an object of path-taking functions), and the mutant died. Compare round 4's survivor, where the same investigation reached the <em>opposite</em> conclusion and produced two new fixtures instead: a surviving mutant is a question, and the answer is not always the same one.</p>
+
+
+<h3>Round 6: a declaration is not a binding</h3>
+
+<p><b>1 MAJOR, 0 BLOCKER</b> — the first round to come back with fewer than two. Both halves of round 5's MAJOR 1 closed, and the <code>.native</code> MAJOR closed with its bounded list and negative control intact.</p>
+
+<p>The remaining MAJOR is the round-5 fix's own regression, and it is the sharpest statement of this gate's subject so far. Round 5 defined "not node's <code>require</code>" as <b>"the checker returned a declaration"</b>. But a declaration is not a binding: <code>declare function require(name: string): any;</code> gives the checker a <code>FunctionDeclaration</code> symbol and emits no JavaScript at all — what executes is still node's own module wrapper. Measured on the round-5 code:</p>
+
+<pre><code>declare function require(name: string): any;
+const fs = require("fs");
+fs.readFileSync("../&lt;NAME&gt;/terms.json");        -&gt; CLEAN, wrongly
+require("../&lt;NAME&gt;/src/index");                 -&gt; CLEAN, wrongly</code></pre>
+
+<p>Both channels, because <code>isUnbound</code> feeds the CJS initializer AND the bare-call specifier reader — so this is the "fixed in one of the two places it lives" pattern again, arriving this time through the <em>predicate they share</em> rather than through either caller. <code>declare const require: …</code> behaves the same way; a type-only <code>interface require</code> already read correctly and is kept as a control.</p>
+
+<p><code>isRuntimeValueDeclaration</code> now decides it: a declaration in a <code>.d.ts</code>, one carrying the <code>declare</code> modifier or sitting in an ambient context, an interface, a type alias, a type parameter, or a type-only import creates no runtime value and therefore shadows nothing. <b>The direction is chosen deliberately and stated rather than left to the reader:</b> treating something as NOT a shadow means treating the call as node's, so a wrong guess that way costs a false alarm and a wrong guess the other way costs a miss. Fail-closed points at "assume it is node's".</p>
+
+
+<h3>Round 7: <code>import type</code> is erased — and a finding two-thirds refuted</h3>
+
+<p><b>1 MAJOR, 0 BLOCKER.</b> The round-6 ambient-declaration fix closed. The remaining MAJOR is its own next layer, but the more useful record is this: <b>two thirds of the finding were refuted by measurement, and the third was real.</b></p>
+
+<p>The claim: the predicate read <code>declaration.isTypeOnly</code>, the PER-SPECIFIER flag, and therefore missed the whole-clause form <code>import type { Foo as require }</code>, where the specifier's own flag is false and the enclosing clause's is true. The AST shape is exactly as described — measured:</p>
+
+<pre><code>import type { Foo as require }   ImportSpecifier  own isTypeOnly=false      clause isTypeOnly=true
+import type * as require         NamespaceImport  own isTypeOnly=undefined  clause isTypeOnly=true
+import { Bar as b2 }             ImportSpecifier  own isTypeOnly=false      clause isTypeOnly=false</code></pre>
+
+<p>But the predicted <em>behaviour</em> held for only one of the three fixtures:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Fixture</th><th>Round-6 code</th></tr></thead>
+  <tbody>
+    <tr><td>whole-clause <code>import type { Foo as require }</code></td><td><b>already rejected</b></td></tr>
+    <tr><td>per-specifier <code>import { type Foo as require }</code></td><td><b>already rejected</b></td></tr>
+    <tr><td><code>import type * as require</code></td><td><b>CLEAN — a real miss</b></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The reason the first two were already right is worth writing down, because this code did not choose it: <code>checker.getSymbolAtLocation</code> returns <em>no declarations at all</em> for a type-only alias used in a VALUE position, so <code>isUnbound</code> was true by default and the call was correctly read as node's. The namespace form is the one the checker does resolve, and it was the live defect.</p>
+
+<p><b>So the guard was right for a reason it had not stated — this gate's own defect wearing the opposite face.</b> Relying on that accident would be a check <em>narrower</em> than its claim rather than wider, and just as unearned. The hand-rolled flag test is gone; <code>ts.isTypeOnlyImportOrExportDeclaration</code> answers it instead, verified on all three shapes before adoption. The same move as <code>collectExtends</code>, <code>makeBindingResolver</code> and <code>foldPathCall</code> before it: the compiler already knows — stop writing a second copy.</p>
+
+<p>Regressions cover all three type-only shapes plus <b>two value-import controls</b> (<code>import { Foo as require }</code> and <code>import * as require</code>) which must still shadow — without them the rule would be indistinguishable from "no import ever shadows <code>require</code>". Both control mutants for that over-correction are in the harness, and both die.</p>
+
+
+<h3>Round 8: <code>VERDICT: APPROVE</code> — 0 BLOCKER / 0 MAJOR</h3>
+
+<p>The gate is closed. Stating the verdict plainly, and stating who gave it: <b>GPT-PM</b> approved it, not the implementer and not the operator. The remark worth recording is the one the reviewer made about its own previous finding:</p>
+
+<blockquote>"I also agree with the measurement correction to my previous finding: the whole-clause named and per-specifier cases were already rejected under the round-6 implementation because the checker returned no usable declaration at the value-position occurrence; the actual demonstrated miss was the namespace form. The remediation fixes the semantic rule rather than preserving that accidental behaviour."</blockquote>
+
+<p>And on the controls that are easiest not to write:</p>
+
+<blockquote>"This matters because without those controls, replacing the predicate with 'all imports are non-runtime' could make the new type-only tests green for the wrong reason."</blockquote>
+
+<h4>What the gate actually turned out to be</h4>
+
+<p>Eight review rounds found <b>twelve</b> MAJOR, and not one of them was in the project's source. All twelve were in the checks — and nearly all in checks added by the <em>previous</em> round of this same gate. The sequence is worth reading whole:</p>
+
+<ol>
+  <li>the check read a comment as code;</li>
+  <li>the fix read a string literal as code;</li>
+  <li>the fix read an arbitrary object's method as node's API;</li>
+  <li>the fix read a name as a binding, and concatenation as path algebra;</li>
+  <li>the fix asked the checker in one of two places, and leaked globals between files;</li>
+  <li>the fix treated a <em>declaration</em> as a runtime binding;</li>
+  <li>the fix read a per-specifier flag instead of the import's semantics.</li>
+</ol>
+
+<p>Every step is the same thing: <b>a claim wider — and once narrower — than what the check actually checks</b>. And every real fix was a <em>deletion</em>: the hand-rolled <code>extends</code> walker, the hand-rolled comment stripper, the hand-rolled binding collector, the hand-rolled path algebra, the hand-rolled type-only test — all removed and replaced by asking the compiler, or node, which were already loaded and already knew.</p>
+
+<h2>Planned versus done</h2>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Step</th><th>Planned</th><th>Definition of Done (from GPT-PM)</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Recursive four-class Dart lexer, failing closed</td><td>Interpolation is a recursive state transition, not a span; raw strings never interpolate; nested block comments; EOF inside a construct is an error</td><td><span class="status s-done">done</span></td></tr>
+    <tr><td>2</td><td>Test the lexer directly, before its callers</td><td>The four named cases: a string inside <code>${…}</code> is not CODE; a comment inside <code>${…}</code> is not CODE; a real call inside <code>${…}</code> is CODE; <code>r'${…}'</code> is STRING end to end</td><td><span class="status s-done">done</span></td></tr>
+    <tr><td>3</td><td>Live-mode guard: CODE or STRING raises, comments are counted</td><td>A comment passes and is recorded in the payload; a code occurrence is still rejected</td><td><span class="status s-done">done</span></td></tr>
+    <tr><td>4</td><td>Ordering and body checks on CODE only; leave <code>_exact_identity_absent</code></td><td>GPT-PM's explicit ruling: its contract is lexical, so changing it would change baseline semantics rather than repair the 12 failures</td><td><span class="status s-done">done</span></td></tr>
+    <tr><td>5</td><td>GPT-PM's counterexample as a required failing test, in both forms</td><td>The interpolated form is the one that fails with an oversimplified lexer, so it is what gives the plain form its meaning</td><td><span class="status s-done">done</span></td></tr>
+    <tr><td>6</td><td>Isolation as a compiler-graph assertion, with canonicalized paths</td><td>Zero files physically inside the identity package; empty or non-zero output is an error, not "nothing found"</td><td><span class="status s-done">done</span></td></tr>
+    <tr><td>7</td><td>Walk project references separately, via <code>--showConfig</code></td><td>Recursive, cycle-safe; the docstring states plainly that <code>--listFilesOnly</code> does not cover them</td><td><span class="status s-done">done</span></td></tr>
+    <tr><td>8</td><td>Regressions for the three bypasses, all in the scratchpad</td><td>Each bypass rejected for its own reason; nothing written into the tracked tree</td><td><span class="status s-done">done</span></td></tr>
+    <tr><td>9</td><td>Source-level checks as additional guards, one fixture per rule</td><td>Each fixture rejected by exactly one rule; a rule indistinguishable from its own absence is deleted, not kept</td><td><span class="status s-done">done</span></td></tr>
+    <tr><td>10</td><td>Correct every docstring whose claim is wider than its check</td><td>The probe states it proves its own scenario; the source scan is not the isolation proof</td><td><span class="status s-done">done</span></td></tr>
+    <tr><td>11</td><td>Regenerate the baseline, printing the diff</td><td>Exactly 4 stale sha256 values, <code>sourceCommit</code> and the new field — nothing wider</td><td><span class="status s-done">done</span></td></tr>
+    <tr><td>12</td><td>Full run, report, and a decision-log entry recording both sides</td><td>The log records the plan and the outcome item by item, including the two refused plans</td><td><span class="status s-done">done</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p style="font-size:14.5px;color:var(--ink-soft)">No item was dropped or narrowed. None is partial.</p>
+
+<h2>Evidence</h2>
+
+<div class="evidence">
+  <div class="evidence-row"><span>The two target files</span><span>12 failed / 15 passed → <b>154 passed, 0 failed</b></span></div>
+  <div class="evidence-row"><span>Test identifiers</span><span>27 → 154; 0 removed, 127 added (list diffed, not asserted); 27/27 mutants killed</span></div>
+  <div class="evidence-row"><span>Whole directory</span><span>503 passed, including the 224 G3 rights tests</span></div>
+  <div class="evidence-row"><span>Dart lexer over the corpus</span><span>697 files, 0 failures</span></div>
+  <div class="evidence-row"><span>Dependencies via the TypeScript parser</span><span>48 <code>.ts</code> files; specifiers and paths from the AST</span></div>
+  <div class="evidence-row"><span><code>verify_deployment_isolation.py</code></span><span>exit 0; all 12 markers including 3a / 3b / 3c / 3d</span></div>
+  <div class="evidence-row"><span>Default compiler graph</span><span>855 files, 0 inside identity; 1 project in the reference graph; 0 inherited configs</span></div>
+  <div class="evidence-row"><span><code>recognition_baseline.py --check</code></span><span>exit 0 against the regenerated artefact</span></div>
+  <div class="evidence-row"><span>Regeneration diff</span><span>6 changed leaves: 4 sha256, sourceCommit, the new field</span></div>
+  <div class="evidence-row"><span>Working tree</span><span>5 modified files, no probe debris</span></div>
+</div>
+
+<p>The four stale hashes belong to <code>gemini_equipment_service.dart</code>, <code>machine_describer.dart</code>, <code>mlkit_live_equipment_service.dart</code> and <code>visual_equipment_providers.dart</code>, moved by <code>6ab9ff5</code>, <code>5d75709</code>, <code>d3c456f</code> and <code>70467cc</code> — all reviewed later gates. The committed baseline had simply never been regenerated after them, which is precisely what <code>test_10</code> exists to catch.</p>
+
+<div class="caveat">
+  <h3>What remains — stated, not left to silence</h3>
+  <p><b><code>_extract_block</code>'s bracket counting is still raw.</b> A brace inside a string or comment could in principle skew block extraction. It does not today — measured, every block resolves correctly — it was not among the twelve failures, and widening the gate to it was forbidden by the gate's own bound. It belongs to whichever gate next touches that helper.</p>
+  <p><b>Step 3a is kept alongside 3b, and the reason is proven by a fixture rather than argued:</b> <code>functions/tsconfig.json</code> excludes <code>src/**/__tests__</code>, so an import there is invisible to the compiler graph — yet <code>firebase.json</code>'s default <code>predeploy</code> runs <code>npm test</code>. Had no fixture distinguished the two rules, the rule would have been deleted, as G3 deleted its unkillable absolute-path guard.</p>
+</div>
+
+<footer>
+  <p>Rosetta plan <code>fitness_app-2026-09-09T18-34-33-919Z-20bbc9</code>, hash <code>ddc656a7…6327</code>, base <code>ffb0449</code>. Approved by GPT-PM (VERDICT: APPROVE, 0 BLOCKER / 0 MAJOR) after two refused plans, both closed as <code>rejected</code>. The implementation went through eight review rounds and closed on GPT-PM's <b>APPROVE, 0 BLOCKER / 0 MAJOR</b>: 2 MAJOR in each of the first five, then 1, every time on the previous remediation's own regressions, all remediated as packages. Plus two internal reviews before sending (§17), which produced four more confirmed defects, and several findings refuted by measurement.</p>
+</footer>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

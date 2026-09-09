@@ -208,12 +208,274 @@ def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def _matching_close(text: str, open_index: int, open_ch: str, close_ch: str) -> int:
+# ---------------------------------------------------------------------------
+# Lexical position: which characters of a Dart source are executable code.
+#
+# Every structural assertion below used to ask `token in text` or
+# `text.find(token)` over the RAW file. That cannot tell a call from a
+# comment mentioning the call, and it is the defect that made this whole
+# module's suite red: a comment added to `mlkit_live_equipment_service.dart`
+# reading "see gemini_equipment_service.dart's matching comment" tripped a
+# guard whose subject is whether the LIVE PATH CALLS A CLOUD CLASSIFIER.
+# This module's own header already forbade that reading -- a fact must come
+# from "the source, not ... a comment about the source" -- so the check was
+# stale against its own contract, not the source against the check.
+#
+# Four classes, not two. GPT-PM refused a code-vs-comment split with a
+# counterexample this repository could not have answered:
+#
+#     debugPrint('${"_anchorOnPrintedText("}');
+#     await service.classifyFile(path);
+#     await _anchorOnPrintedText(path);
+#
+# The real call order is REVERSED, and a lexer that treats a string as code
+# -- or that paints a whole `${...}` span CODE without lexing inside it --
+# reads the mention as the call and certifies the wrong order. So string
+# content is its own class, ordering checks consume CODE only, and
+# interpolation is a recursive state transition rather than a span.
+#
+# FAILS CLOSED, deliberately and in one direction: an unterminated string,
+# block comment or interpolation raises rather than returning a partial
+# classification. Over-classifying as STRING/comment HIDES a real code
+# occurrence, and no caller-level test can distinguish that from a file
+# that is genuinely clean -- which is why `test_baseline.py` tests this
+# function directly rather than only through its callers.
+# ---------------------------------------------------------------------------
+
+CODE = "CODE"
+STRING = "STRING"
+LINE_COMMENT = "LINE_COMMENT"
+BLOCK_COMMENT = "BLOCK_COMMENT"
+
+#: Everything that is not executable. Named so a caller reads as a claim.
+NON_EXECUTABLE = frozenset({STRING, LINE_COMMENT, BLOCK_COMMENT})
+#: A concept reference: code, or a string naming it. Comments excluded.
+CODE_OR_STRING = frozenset({CODE, STRING})
+#: Executable structure only.
+CODE_ONLY = frozenset({CODE})
+
+_IDENT_START = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_")
+_IDENT_BODY = _IDENT_START | set("0123456789")
+
+
+def classify_dart_source(text: str) -> list[str]:
+    """Classify every character of a Dart source as CODE, STRING,
+    LINE_COMMENT or BLOCK_COMMENT.
+
+    The four classes partition the input: the returned list has exactly one
+    entry per character, and `test_baseline.py` asserts that no character is
+    left unclassified.
+
+    Modelled, because each of these silently changes the answer:
+
+    - Dart block comments NEST (`/* /* */ */` is ONE comment).
+    - A `//` inside a string literal is not a comment; an apostrophe inside
+      a comment does not open a string.
+    - `${...}` is an expression context that can itself contain strings,
+      raw strings, comments and further interpolation, and it ends at the
+      MATCHING brace, not the first one.
+    - `$identifier` is an expression too, so the identifier is CODE.
+    - A raw string (`r'...'`) never interpolates and never honours escapes,
+      so `r'${f()}'` is STRING end to end.
+
+    Raises BaselineError on anything it cannot model to the end -- an
+    unterminated string, block comment or interpolation. That is the safe
+    direction: the failure mode worth preventing is a caller being told a
+    real code occurrence is only a comment.
+    """
+    n = len(text)
+    classes: list[str | None] = [None] * n
+
+    def mark(start: int, end: int, kind: str) -> None:
+        for k in range(start, min(end, n)):
+            classes[k] = kind
+
+    # A frame is either an interpolation-aware code context or a string.
+    #   ["code", depth]   depth None at top level, else open-brace count
+    #   ["string", quote, triple, raw]
+    stack: list[list] = []
+    frame: list = ["code", None]
+    i = 0
+
+    while i < n:
+        if frame[0] == "code":
+            ch = text[i]
+
+            if ch == "/" and text.startswith("//", i):
+                end = text.find("\n", i)
+                end = n if end == -1 else end
+                mark(i, end, LINE_COMMENT)
+                i = end
+                continue
+
+            if ch == "/" and text.startswith("/*", i):
+                depth = 0
+                j = i
+                while j < n:
+                    if text.startswith("/*", j):
+                        depth += 1
+                        j += 2
+                    elif text.startswith("*/", j):
+                        depth -= 1
+                        j += 2
+                        if depth == 0:
+                            break
+                    else:
+                        j += 1
+                if depth != 0:
+                    raise BaselineError(
+                        f"unterminated block comment opened at offset {i} -- refusing to "
+                        "classify a source this function cannot model to the end"
+                    )
+                mark(i, j, BLOCK_COMMENT)
+                i = j
+                continue
+
+            raw = ch == "r" and i + 1 < n and text[i + 1] in "\"'"
+            quote_at = i + 1 if raw else i
+            if quote_at < n and text[quote_at] in "\"'":
+                quote = text[quote_at]
+                triple = text[quote_at:quote_at + 3] == quote * 3
+                qlen = 3 if triple else 1
+                mark(i, quote_at + qlen, STRING)
+                stack.append(frame)
+                frame = ["string", quote, triple, raw]
+                i = quote_at + qlen
+                continue
+
+            if frame[1] is not None:
+                if ch == "{":
+                    frame[1] += 1
+                elif ch == "}":
+                    if frame[1] == 0:
+                        # Closes the interpolation: the brace belongs to the
+                        # literal, and the enclosing string resumes.
+                        mark(i, i + 1, STRING)
+                        frame = stack.pop()
+                        i += 1
+                        continue
+                    frame[1] -= 1
+
+            mark(i, i + 1, CODE)
+            i += 1
+            continue
+
+        # frame[0] == "string"
+        _, quote, triple, raw = frame
+        closer = quote * (3 if triple else 1)
+
+        if not raw and text[i] == "\\":
+            mark(i, i + 2, STRING)
+            i += 2
+            continue
+
+        if text.startswith(closer, i):
+            mark(i, i + len(closer), STRING)
+            frame = stack.pop()
+            i += len(closer)
+            continue
+
+        if not raw and text[i] == "$":
+            if i + 1 < n and text[i + 1] == "{":
+                mark(i, i + 2, STRING)
+                stack.append(frame)
+                frame = ["code", 0]
+                i += 2
+                continue
+            if i + 1 < n and text[i + 1] in _IDENT_START:
+                mark(i, i + 1, STRING)
+                j = i + 1
+                while j < n and text[j] in _IDENT_BODY:
+                    j += 1
+                mark(i + 1, j, CODE)
+                i = j
+                continue
+
+        if not triple and text[i] == "\n":
+            raise BaselineError(
+                f"newline inside a single-line string opened before offset {i} -- "
+                "refusing to classify a source this function cannot model to the end"
+            )
+
+        mark(i, i + 1, STRING)
+        i += 1
+
+    if stack or frame[0] != "code" or frame[1] is not None:
+        raise BaselineError(
+            "source ended inside a string or an interpolation -- refusing to "
+            "classify a source this function cannot model to the end"
+        )
+    if any(c is None for c in classes):
+        raise BaselineError(
+            "internal: classify_dart_source left a character unclassified"
+        )
+    return classes  # type: ignore[return-value]
+
+
+def find_in(text: str, token: str, allowed: frozenset[str]) -> list[int]:
+    """Offsets where `token` occurs with EVERY one of its characters in one
+    of the `allowed` lexical classes.
+
+    Every character, not just the first: a token straddling a boundary
+    belongs to neither side cleanly, and letting the first character decide
+    would let `"gemin` + `i` style splits through.
+    """
+    classes = classify_dart_source(text)
+    hits: list[int] = []
+    start = text.find(token)
+    while start != -1:
+        if all(classes[k] in allowed for k in range(start, start + len(token))):
+            hits.append(start)
+        start = text.find(token, start + 1)
+    return hits
+
+
+def first_in_code(text: str, token: str) -> int:
+    """Offset of the first executable occurrence of `token`, or -1.
+
+    The ordering checks below use this instead of `str.find`, which is what
+    made a printed mention of a call indistinguishable from the call.
+    """
+    hits = find_in(text, token, CODE_ONLY)
+    return hits[0] if hits else -1
+
+
+def _index_of(
+    text: str, token: str, classes: list[str], allowed: frozenset[str], start: int = 0
+) -> int:
+    """First offset at or after `start` where `token` occurs and its FIRST
+    character is classified into `allowed`; -1 when there is none.
+
+    Takes a classification rather than computing one, so a caller that needs
+    several searches over the same file lexes it once and every search agrees
+    about what that file is.
+    """
+    index = text.find(token, start)
+    while index != -1:
+        if classes[index] in allowed:
+            return index
+        index = text.find(token, index + 1)
+    return -1
+
+
+def _matching_close(
+    text: str, open_index: int, open_ch: str, close_ch: str, classes: list[str] | None = None
+) -> int:
     """Index of the `close_ch` that balances `open_ch` at `open_index`,
     counting only that one bracket pair (a Dart named-parameter block's
-    `{`/`}` does not perturb a `(`/`)` search, and vice versa)."""
+    `{`/`}` does not perturb a `(`/`)` search, and vice versa).
+
+    Brackets are counted in CODE only. A brace inside a string literal or a
+    comment is a character, not a block boundary -- counting it raw would end
+    a block early or run past its end, which is this gate's own defect
+    committed by the function that decides where to APPLY the lexer.
+    """
+    if classes is None:
+        classes = classify_dart_source(text)
     depth = 0
     for i in range(open_index, len(text)):
+        if classes[i] != CODE:
+            continue
         if text[i] == open_ch:
             depth += 1
         elif text[i] == close_ch:
@@ -221,6 +483,50 @@ def _matching_close(text: str, open_index: int, open_ch: str, close_ch: str) -> 
             if depth == 0:
                 return i
     raise BaselineError(f"unbalanced {open_ch!r}/{close_ch!r} from index {open_index}")
+
+
+def _block_bounds(text: str, marker: str) -> tuple[int, int]:
+    """Shared bracket work for `_extract_block` and `_extract_block_span`, so
+    the span and the body can never disagree about where a block is.
+
+    The marker is located in CODE, and the brackets are counted in CODE. This
+    was a raw `text.find` until round 4, which made the whole lexer beside the
+    point at the one step that chooses what to lex. Measured on that version:
+    a doc-comment quoting `if (answeredOffline) {` above the real guard moved
+    the extracted body from line 6 to line 1, and what came back was the
+    commented code -- a fact taken from a comment about the source, which is
+    exactly what this module's header says must never happen.
+    """
+    classes = classify_dart_source(text)
+    start = _index_of(text, marker, classes, CODE_ONLY)
+    if start == -1:
+        raise BaselineError(f"marker not found in code (only in prose, if at all): {marker!r}")
+
+    if marker.endswith("{"):
+        brace_open = start + len(marker) - 1
+    elif marker.endswith("("):
+        paren_open = start + len(marker) - 1
+        paren_close = _matching_close(text, paren_open, "(", ")", classes)
+        brace_open = _index_of(text, "{", classes, CODE_ONLY, paren_close)
+        if brace_open == -1:
+            raise BaselineError(f"no body brace found in code after parameter list: {marker!r}")
+    else:
+        raise BaselineError(f"marker must end with '{{' or '(': {marker!r}")
+
+    brace_close = _matching_close(text, brace_open, "{", "}", classes)
+    return brace_open + 1, brace_close
+
+
+def _extract_block_span(text: str, marker: str) -> tuple[int, int]:
+    """`(start, end)` offsets of the body `_extract_block` would return.
+
+    Callers that need LEXICAL classification take the span and classify the
+    whole file, rather than lexing the extracted fragment: a fragment can
+    begin inside a string or comment whose opening it does not contain, and
+    `classify_dart_source` fails closed on exactly that, which would turn a
+    correct check into an unexplained error.
+    """
+    return _block_bounds(text, marker)
 
 
 def _extract_block(text: str, marker: str) -> str:
@@ -240,23 +546,14 @@ def _extract_block(text: str, marker: str) -> str:
       mistaken for the method body), then the body's own `{` is the next
       one found after that parameter list closes.
     """
-    start = text.find(marker)
-    if start == -1:
-        raise BaselineError(f"marker not found in source: {marker!r}")
+    start, end = _block_bounds(text, marker)
+    return text[start:end]
 
-    if marker.endswith("{"):
-        brace_open = start + len(marker) - 1
-    elif marker.endswith("("):
-        paren_open = start + len(marker) - 1
-        paren_close = _matching_close(text, paren_open, "(", ")")
-        brace_open = text.find("{", paren_close)
-        if brace_open == -1:
-            raise BaselineError(f"no body brace found after parameter list: {marker!r}")
-    else:
-        raise BaselineError(f"marker must end with '{{' or '(': {marker!r}")
 
-    brace_close = _matching_close(text, brace_open, "{", "}")
-    return text[brace_open + 1:brace_close]
+def _in_span(hits: list[int], span: tuple[int, int]) -> list[int]:
+    """The offsets of `hits` that fall inside `span`."""
+    start, end = span
+    return [h for h in hits if start <= h < end]
 
 
 # ---------------------------------------------------------------------------
@@ -293,20 +590,23 @@ def _offline_never_confident() -> bool:
     review, `fitness-flutter-reviewer` substitute, flagged the two paths
     being described under one unscoped name as misleading)."""
     text = _read(VISUAL_EQUIPMENT / "data" / "scan_outcome.dart")
-    body = _extract_block(text, "factory ScanResult.fromMatches(")
-    if "if (answeredOffline) {" not in body:
+    factory_span = _extract_block_span(text, "factory ScanResult.fromMatches(")
+    if not _in_span(find_in(text, "if (answeredOffline) {", CODE_ONLY), factory_span):
         raise BaselineError(
             "scan_outcome.dart: fromMatches no longer special-cases "
             "answeredOffline — the offline-never-confident invariant may "
             "have been removed"
         )
-    guard_body = _extract_block(body, "if (answeredOffline) {")
-    if "ScanResult.alternatives" not in guard_body:
+    guard_span = _extract_block_span(text, "if (answeredOffline) {")
+    # CODE only: a guard is executable structure, so a printed or commented
+    # mention of `ScanResult.confident` must neither satisfy the positive
+    # check nor trip the negative one.
+    if not _in_span(find_in(text, "ScanResult.alternatives", CODE_ONLY), guard_span):
         raise BaselineError(
             "scan_outcome.dart: the answeredOffline guard no longer returns "
             "ScanResult.alternatives"
         )
-    if "ScanResult.confident" in guard_body:
+    if _in_span(find_in(text, "ScanResult.confident", CODE_ONLY), guard_span):
         raise BaselineError(
             "scan_outcome.dart: the answeredOffline guard now also mentions "
             "ScanResult.confident — offline results may have stopped being "
@@ -327,16 +627,36 @@ def _live_mode_has_no_offline_downgrade_guard() -> dict[str, Any]:
     differently: the photo path CAN run on-device and gets downgraded when it
     does; the live path is ALWAYS on-device and is never downgraded for it."""
     live_service_text = _read(VISUAL_EQUIPMENT / "data" / "mlkit_live_equipment_service.dart")
-    if "gemini" in live_service_text.lower() or "cloud" in live_service_text.lower():
+    lowered = live_service_text.lower()
+    # CODE **or STRING**, deliberately wider than the ordering checks below:
+    # a string naming a cloud endpoint is a real concept reference, so the
+    # conservative reading applies here. Only comments are excluded, and they
+    # are excluded because this module's own header forbids taking a fact
+    # from "a comment about the source" — which is exactly what the previous
+    # raw-substring version did, turning a cross-reference comment naming
+    # `gemini_equipment_service.dart` into a false cloud-coupling report.
+    executable_hits = (
+        find_in(lowered, "gemini", CODE_OR_STRING)
+        + find_in(lowered, "cloud", CODE_OR_STRING)
+    )
+    if executable_hits:
         raise BaselineError(
             "mlkit_live_equipment_service.dart: now references a cloud/Gemini "
             "concept — the live path may no longer be on-device-only, so the "
             "no-offline-downgrade-guard fact needs re-deriving, not assuming"
         )
+    # Comment-only mentions pass, but are RECORDED rather than dropped: the
+    # count is part of the payload, so a new mention still changes the
+    # baseline and forces a deliberate regeneration. "Needs re-deriving, not
+    # assuming" survives; it just stops firing on prose.
+    commented_mentions = len(
+        find_in(lowered, "gemini", NON_EXECUTABLE)
+        + find_in(lowered, "cloud", NON_EXECUTABLE)
+    )
 
     smoother_text = _read(VISUAL_EQUIPMENT / "data" / "live_recognition.dart")
-    add_body = _extract_block(smoother_text, "LiveRecognition? add(VisualMatch? top) {")
-    if "offline" in add_body.lower():
+    add_span = _extract_block_span(smoother_text, "LiveRecognition? add(VisualMatch? top) {")
+    if _in_span(find_in(smoother_text.lower(), "offline", CODE_ONLY), add_span):
         raise BaselineError(
             "live_recognition.dart: RecognitionSmoother.add now mentions "
             "'offline' — it may have grown a downgrade guard this baseline "
@@ -353,6 +673,7 @@ def _live_mode_has_no_offline_downgrade_guard() -> dict[str, Any]:
         "livePathIsOnDeviceOnly": True,
         "settledLiveReadingHasNoOfflineDowngradeEquivalent": True,
         "settledLiveReadingsAreWrittenToHistory": True,
+        "cloudConceptMentionsInCommentsOnly": commented_mentions,
         "note": "Live mode's `settled` state is the functional analogue of "
                 "ScanOutcome.confident (persisted to recognition history the "
                 "same way) but has no answeredOffline-style guard, because it "
@@ -377,9 +698,14 @@ def _text_anchor_runs_first() -> bool:
     B5b's whole design rationale (measured: printed text beats the
     classifier 18-for-18 vs 5-of-18) depends on."""
     text = _read(VISUAL_EQUIPMENT / "state" / "visual_equipment_providers.dart")
-    body = _extract_block(text, "Future<void> classifyFilePath(String path) async {")
-    anchor_idx = body.find("_anchorOnPrintedText(")
-    classifier_idx = body.find("service.classifyFile(")
+    span = _extract_block_span(text, "Future<void> classifyFilePath(String path) async {")
+    # CODE only. `body.find(...)` read a printed or interpolated mention as
+    # the call itself, so a source whose real order is REVERSED could still
+    # record the ordering this function claims to have measured.
+    anchor_hits = _in_span(find_in(text, "_anchorOnPrintedText(", CODE_ONLY), span)
+    classifier_hits = _in_span(find_in(text, "service.classifyFile(", CODE_ONLY), span)
+    anchor_idx = anchor_hits[0] if anchor_hits else -1
+    classifier_idx = classifier_hits[0] if classifier_hits else -1
     if anchor_idx == -1 or classifier_idx == -1:
         raise BaselineError(
             "visual_equipment_providers.dart: classifyFilePath no longer "
@@ -425,9 +751,16 @@ def _hybrid_cloud_before_local() -> bool:
         raise BaselineError(
             "gemini_equipment_service.dart: class HybridVisualEquipmentService not found"
         )
-    body = _extract_block(text[class_idx:], "Future<List<VisualMatch>> classifyFile(")
-    cloud_idx = body.find("cloud.classifyFile(")
-    local_idx = body.find("local.classifyFile(")
+    span_start, span_end = _extract_block_span(
+        text[class_idx:], "Future<List<VisualMatch>> classifyFile("
+    )
+    span = (class_idx + span_start, class_idx + span_end)
+    # CODE only, same reason as `_text_anchor_runs_first`: this records a
+    # call ORDER, and a printed mention of either call is not a call.
+    cloud_hits = _in_span(find_in(text, "cloud.classifyFile(", CODE_ONLY), span)
+    local_hits = _in_span(find_in(text, "local.classifyFile(", CODE_ONLY), span)
+    cloud_idx = cloud_hits[0] if cloud_hits else -1
+    local_idx = local_hits[0] if local_hits else -1
     if cloud_idx == -1 or local_idx == -1:
         raise BaselineError(
             "gemini_equipment_service.dart: HybridVisualEquipmentService no "

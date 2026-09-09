@@ -1,0 +1,909 @@
+<title>Упоминание и вызов</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap');
+
+  :root {
+    /* The palette IS the subject: the four lexical classes this gate added. */
+    --code:        #1b2430;
+    --string:      #9a5518;
+    --comment:     #5f7a6b;
+    --keyword:     #6b4a9c;
+
+    --ground:      #f7f6f3;
+    --surface:     #ffffff;
+    --surface-sunk:#f0eeea;
+    --ink:         #1b2430;
+    --ink-soft:    #4d5666;
+    --ink-faint:   #7b8494;
+    --rule:        #ddd9d2;
+    --rule-strong: #c2bcb2;
+
+    --good:        #2f6f4f;
+    --bad:         #a33a2a;
+    --warn:        #8a6a1f;
+
+    --measure: 68ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --code:        #dfe5ee;
+      --string:      #e0a468;
+      --comment:     #7fa593;
+      --keyword:     #b79ae0;
+
+      --ground:      #14181e;
+      --surface:     #1b2029;
+      --surface-sunk:#232935;
+      --ink:         #e4e8ef;
+      --ink-soft:    #a8b1bf;
+      --ink-faint:   #78818f;
+      --rule:        #2e3540;
+      --rule-strong: #414a58;
+
+      --good:        #6fc79a;
+      --bad:         #e8836f;
+      --warn:        #d8b25e;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --code:        #dfe5ee;
+    --string:      #e0a468;
+    --comment:     #7fa593;
+    --keyword:     #b79ae0;
+
+    --ground:      #14181e;
+    --surface:     #1b2029;
+    --surface-sunk:#232935;
+    --ink:         #e4e8ef;
+    --ink-soft:    #a8b1bf;
+    --ink-faint:   #78818f;
+    --rule:        #2e3540;
+    --rule-strong: #414a58;
+
+    --good:        #6fc79a;
+    --bad:         #e8836f;
+    --warn:        #d8b25e;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.62;
+    margin: 0;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px 96px; }
+
+  header {
+    border-bottom: 2px solid var(--rule-strong);
+    padding: 64px 0 28px;
+    margin-bottom: 0;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(30px, 5vw, 46px);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin: 0;
+  }
+
+  h2 {
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-weight: 600;
+    font-size: 25px;
+    letter-spacing: -0.01em;
+    margin: 56px 0 6px;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+    margin: 32px 0 6px;
+  }
+  p, li { max-width: var(--measure); }
+  p { margin: 0 0 16px; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 9px; }
+  a { color: var(--keyword); }
+
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, "Cascadia Code", monospace; }
+  p code, li code, td code {
+    font-size: 0.88em;
+    background: var(--surface-sunk);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* --- the verdict strip: one row, read at a glance ---------------------- */
+  .verdict {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0;
+    border: 1px solid var(--rule-strong);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 36px 0 8px;
+    background: var(--surface);
+  }
+  .verdict div { padding: 16px 18px; border-right: 1px solid var(--rule); }
+  .verdict div:last-child { border-right: none; }
+  .verdict dt {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 6px;
+  }
+  .verdict dd {
+    margin: 0;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 21px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .verdict .ok { color: var(--good); }
+  .verdict .was { color: var(--bad); }
+
+  /* --- exhibits: the classified source itself --------------------------- */
+  .exhibit {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--rule-strong);
+    border-radius: 3px;
+    margin: 22px 0 26px;
+    overflow: hidden;
+  }
+  .exhibit-head {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--surface-sunk);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+  }
+  .exhibit pre {
+    margin: 0;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--code);
+  }
+  .exhibit-note {
+    padding: 12px 16px;
+    border-top: 1px dashed var(--rule);
+    font-size: 14.5px;
+    color: var(--ink-soft);
+  }
+  .exhibit-note p { max-width: none; margin: 0; }
+
+  .t-str { color: var(--string); }
+  .t-com { color: var(--comment); font-style: italic; }
+  .t-key { color: var(--keyword); }
+  .t-dim { color: var(--ink-faint); }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 18px 0 0;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--rule);
+  }
+  .legend span::before {
+    content: "";
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    margin-right: 7px;
+    vertical-align: baseline;
+  }
+  .legend .l-code::before { background: var(--code); }
+  .legend .l-str::before  { background: var(--string); }
+  .legend .l-com::before  { background: var(--comment); }
+
+  /* --- measurement pairs ------------------------------------------------ */
+  .measures { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 14px; margin: 24px 0; }
+  .measure-card {
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 16px 18px;
+    background: var(--surface);
+  }
+  .measure-card h4 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .measure-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    padding: 5px 0;
+    border-top: 1px dotted var(--rule);
+  }
+  .measure-row:first-of-type { border-top: none; }
+  .measure-row b { font-size: 19px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .n-blind { color: var(--bad); }
+  .n-seen  { color: var(--good); }
+
+  /* --- the planned / DoD / status table --------------------------------- */
+  .table-scroll { overflow-x: auto; margin: 22px 0 8px; border: 1px solid var(--rule); border-radius: 4px; }
+  table { border-collapse: collapse; width: 100%; min-width: 780px; background: var(--surface); }
+  th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; font-size: 14.5px; }
+  th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--surface-sunk);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td:first-child { font-family: "IBM Plex Mono", monospace; color: var(--ink-faint); white-space: nowrap; }
+  .status {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid currentColor;
+  }
+  .s-done { color: var(--good); }
+
+  /* --- evidence ---------------------------------------------------------- */
+  .evidence { border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); margin: 22px 0; }
+  .evidence-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(0, 1.9fr);
+    gap: 16px;
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--rule);
+    font-size: 14.5px;
+  }
+  .evidence-row:last-child { border-bottom: none; }
+  .evidence-row > :first-child { color: var(--ink-soft); }
+  .evidence-row > :last-child { font-family: "IBM Plex Mono", monospace; font-size: 13px; font-variant-numeric: tabular-nums; }
+
+  .pull {
+    border-left: 3px solid var(--string);
+    padding: 4px 0 4px 20px;
+    margin: 28px 0;
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-size: 20px;
+    line-height: 1.45;
+    color: var(--ink);
+    max-width: var(--measure);
+  }
+
+  .caveat {
+    background: var(--surface-sunk);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin: 22px 0;
+  }
+  .caveat h3 { margin-top: 0; }
+  .caveat p:last-child { margin-bottom: 0; }
+
+  footer {
+    margin-top: 72px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+    font-size: 13.5px;
+    color: var(--ink-faint);
+  }
+  footer p { max-width: none; }
+
+  @media (max-width: 620px) {
+    .evidence-row { grid-template-columns: 1fr; gap: 4px; }
+    .wrap { padding: 0 18px 64px; }
+  }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Fitness_App · гейт RED-BASELINE · 9 сентября 2026</p>
+  <h1>Упоминание и вызов</h1>
+  <p class="standfirst">Двенадцать красных тестов держались на одном дефекте: проверки читали текст файла, а текст не отличает вызов от разговора о вызове. Комментарий со ссылкой на соседний файл валил десять тестов, а список путей для <code>git&nbsp;status</code> объявлялся нарушением изоляции сборки.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ ffb0449</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="verdict">
+  <div><dt>Вердикт GPT-PM</dt><dd class="ok">APPROVE</dd></div>
+  <div><dt>Было</dt><dd class="was">12 упало</dd></div>
+  <div><dt>Стало</dt><dd class="ok">0 упало</dd></div>
+  <div><dt>Тестов в двух файлах</dt><dd>27 → 154</dd></div>
+  <div><dt>Удалено тестов</dt><dd class="ok">0</dd></div>
+  <div><dt>Вся директория</dt><dd class="ok">503 passed</dd></div>
+</dl>
+
+<h2>Зачем этот гейт</h2>
+
+<p>Двенадцать тестов в <code>test_baseline.py</code> и <code>test_deployment_isolation.py</code> были красными на <code>ffb0449</code>. Их раскрыли на седьмом раунде гейта G3 как унаследованные и <b>ничьи</b>: ни один из файлов не импортирует <code>rights.py</code>, и оба были зелёными на коммите, который их последним трогал.</p>
+
+<p>GPT-PM, как владелец роадмапа, выбрал их следующим гейтом — единственное, что <em>сломано сейчас</em>, а не ждёт человека. И поставил условие, которое определило всю работу: <b>не решать заранее</b>, «поправить тесты» или «поправить исходник». Решают улики.</p>
+
+<p class="pull">Улики решили: исходник не нарушал инвариант ни в одном из двух случаев. Нарушали проверки — они читали прозу как факт.</p>
+
+<h2>Один класс дефекта, два симптома</h2>
+
+<p>Оба корня — одно и то же: структурное утверждение, реализованное как поиск подстроки по сырому тексту файла. Такой поиск не может отличить зависимость от упоминания о ней.</p>
+
+<h3>Симптом первый: комментарий уронил десять тестов</h3>
+
+<div class="exhibit">
+  <div class="exhibit-head"><span>mobile/lib/features/visual_equipment/data/mlkit_live_equipment_service.dart:201</span><span>единственное вхождение «gemini» во всём файле</span></div>
+<pre><span class="t-com">// Branch at the call site -- see gemini_equipment_service.dart's</span>
+<span class="t-com">// matching comment. G3_STEP10B_PROBE=false (every normal build)</span>
+<span class="t-com">// must call FirebaseCrashlytics directly, with no</span>
+<span class="t-com">// g3_step10b_probe.dart frame in between.</span>
+<span class="t-key">if</span> (G3Step10bProbe.kEnabled) {</pre>
+  <div class="exhibit-note"><p>Проверка <code>_live_mode_has_no_offline_downgrade_guard</code> падала, если в файле где угодно встречалось «gemini» или «cloud». Замерено: «cloud» отсутствует полностью; «gemini» — ровно один раз, вот здесь, в комментарии, добавленном коммитом <code>6ab9ff5</code>. Живой путь не зовёт никакого облачного классификатора.</p></div>
+</div>
+
+<p>Самое неприятное: заголовок этого же модуля <b>уже</b> запрещал такое чтение. Строки 13–14 <code>recognition_baseline.py</code> требуют, чтобы каждый факт извлекался «из настоящего текста файла — эта ветка/enum/guard есть <em>в исходнике, а не в комментарии об исходнике</em>». Проверка устарела относительно контракта собственного модуля.</p>
+
+<h3>Симптом второй: список путей объявили нарушением изоляции</h3>
+
+<div class="exhibit">
+  <div class="exhibit-head"><span>functions/src/release_guard.ts:1040</span><span>одно из шести вхождений — импортов среди них ноль</span></div>
+<pre><span class="t-key">const</span> PROVENANCE_RELEVANT_PATHS = [
+  <span class="t-str">"functions"</span>,
+  <span class="t-str">"functions-equipment-identity"</span>,
+  <span class="t-str">"firebase.json"</span>,
+  <span class="t-str">".firebaserc"</span>,
+  <span class="t-str">".gitignore"</span>,
+  RELEASE_EVIDENCE_PATH,
+] <span class="t-key">as const</span>;</pre>
+  <div class="exhibit-note"><p>Это область видимости для <code>git status --porcelain -- &lt;пути&gt;</code>, добавленная коммитом <code>791d221</code> по MAJOR от GPT-PM в раунде 5: <code>firebase deploy --only functions</code> выкатывает <b>оба</b> кодбейса сразу, поэтому грязное дерево identity обязано блокировать релиз. Единственный <code>import</code> в этом файле — <code>import * as ts from "typescript"</code>.</p></div>
+</div>
+
+<p>Инварианты никогда и не конфликтовали. P0.G6 защищает изоляцию <b>сборки</b>: сломанный identity не должен мешать выкатить хотфикс Stripe. G4 Step 9 защищает <b>провенанс</b>: непроверенное грязное дерево не должно уехать попутно. Запрет подстроки был прокси куда грубее того инварианта, чьим именем он назывался.</p>
+
+<div class="legend">
+  <span class="l-code">CODE — исполняемое</span>
+  <span class="l-str">STRING — литерал</span>
+  <span class="l-com">LINE_COMMENT / BLOCK_COMMENT — проза</span>
+</div>
+
+<h2>Два плана отклонены, и это была самая полезная часть</h2>
+
+<p>План ушёл на GO трижды. Первые два GPT-PM вернул с двумя MAJOR каждый. Обе пары находок я проверял <b>замером</b>, а не принимал на слово, — и все оказались фактом.</p>
+
+<h3>Отказ первый: доказательство было уже, чем заявление</h3>
+
+<ul>
+  <li><code>functions/tsconfig.json</code> — это <code>"include": ["src"]</code>, и <b>это не проверяет ничто</b>. Добавь туда <code>"../functions-equipment-identity/src"</code> — и появится зависимость компиляции без единой запрещённой строки-импорта.</li>
+  <li><code>run_broken_identity_probe</code> ломает <b>копию</b> во временной директории, а собирает <b>настоящее</b> дерево <code>functions/</code>. Он доказывает ровно тот сценарий, который выполняет. Про реальный граф компиляции он не говорит ничего — а докстрока подразумевала, что говорит.</li>
+</ul>
+
+<h3>Отказ второй: две слепые зоны, вторая хуже, чем звучала</h3>
+
+<div class="measures">
+  <div class="measure-card">
+    <h4>Ссылки на проекты (<code>references</code>)</h4>
+    <div class="measure-row"><span>Своих файлов в списке</span><b>1</b></div>
+    <div class="measure-row"><span>Файлов из проекта по ссылке</span><b class="n-blind">0</b></div>
+    <p style="margin:12px 0 0;font-size:13.5px;color:var(--ink-soft)"><code>tsc --listFilesOnly</code> не перечисляет их вовсе. Утверждение плана v2, что проверка «покрывает project references», было просто ложным.</p>
+  </div>
+  <div class="measure-card">
+    <h4>Junction-псевдоним в identity</h4>
+    <div class="measure-row"><span>Совпало по подстроке</span><b class="n-blind">0</b></div>
+    <div class="measure-row"><span>Нашлось по realpath</span><b class="n-seen">30</b></div>
+    <p style="margin:12px 0 0;font-size:13.5px;color:var(--ink-soft)">Компилятор прочитал 30 настоящих файлов identity и сообщил о каждом <b>по пути псевдонима</b>. Лексическая проверка на имя пакета не нашла ни одного.</p>
+  </div>
+</div>
+
+<p>Второй случай — не теоретический риск, а работающий обход на этой самой машине: <code>mklink /J</code> не требует прав администратора. Лечение тоже замерено до того, как попало в план: <code>os.path.realpath</code> разворачивает junction в физический путь, и та же самая выдача компилятора даёт 30 вместо 0.</p>
+
+<h3>И третий MAJOR — про сам лексер</h3>
+
+<p>GPT-PM отверг разбиение «код против комментария» контрпримером, на который этот репозиторий не смог бы ответить: при <b>реально перевёрнутом</b> порядке вызовов</p>
+
+<div class="exhibit">
+  <div class="exhibit-head"><span>контрпример GPT-PM</span><span>настоящий порядок вызовов обратный заявленному</span></div>
+<pre>debugPrint(<span class="t-str">'${</span><span class="t-str">"_anchorOnPrintedText("</span><span class="t-str">}'</span>);
+<span class="t-key">await</span> service.classifyFile(path);
+<span class="t-key">await</span> _anchorOnPrintedText(path);</pre>
+  <div class="exhibit-note"><p>Лексер, который красит весь диапазон <code>${…}</code> как код, увидит упоминание раньше настоящего вызова и заверит порядок, которого нет. Интерполяция в Dart — это рекурсивное состояние: внутри неё снова бывают строки, комментарии и вложенные скобки, а <code>r'…'</code> не интерполирует вовсе.</p></div>
+</div>
+
+<p>Оба отклонённых плана закрыты как <code>rejected</code>, а не оставлены висеть. Третий одобрен: <b>VERDICT: APPROVE, 0 BLOCKER / 0 MAJOR</b>.</p>
+
+<h2>Что построено</h2>
+
+<ul>
+  <li><b>Рекурсивный четырёхклассовый лексер Dart.</b> Каждый символ — CODE, STRING, LINE_COMMENT или BLOCK_COMMENT. Интерполяция — переход состояния, а не диапазон; <code>$identifier</code> — выражение; сырые строки не интерполируют; блочные комментарии вкладываются, как в Dart. Падает закрыто на всём, что не может дочитать: переклассифицировать код в строку — это направление, которое <em>прячет</em> нарушение. Замерено на реальном корпусе: <b>697 файлов Dart, 0 отказов</b>.</li>
+  <li><b>Guard живого режима</b> теперь срабатывает на CODE <em>или</em> STRING — строка с облачным эндпоинтом это настоящая ссылка на концепт, — а упоминания в комментариях проходят, но <b>записываются</b> в поле <code>cloudConceptMentionsInCommentsOnly</code>. Новое упоминание по-прежнему меняет baseline и требует осознанной перегенерации. «Нужно выводить заново, а не предполагать» осталось; просто перестало срабатывать на прозу.</li>
+  <li><b>Проверки порядка вызовов и структурные проверки тела</b> потребляют только CODE. <code>_exact_identity_absent</code> оставлена на сыром тексте — по прямому решению GPT-PM: её контракт явно лексический.</li>
+  <li><b>Изоляция сборки — утверждение о графе компилятора.</b> <code>tsc --listFilesOnly</code>, каждый путь через <code>realpath</code>/<code>normcase</code>, вложенность через <code>commonpath</code> по компонентам, а не через <code>startswith</code>: <code>functions-equipment-identity-old</code> — другая директория.</li>
+  <li><b>Ссылки на проекты обходятся отдельно</b>, через <code>tsc --showConfig</code>, рекурсивно, — потому что <code>--listFilesOnly</code> их доказуемо не видит.</li>
+  <li><b>Проверки по исходнику оставлены как дополнительные</b> и явно не объявлены исчерпывающими: спецификатор модуля, обход <code>../</code> внутрь пакета и зависимость в <code>functions/package.json</code> — канал, который не покрывался вообще никогда.</li>
+</ul>
+
+<h2>Три дефекта в собственных инструментах гейта</h2>
+
+<p>Каждый найден замером, не обзором, и каждый дал бы зелёный результат по неправильной причине.</p>
+
+<div class="exhibit">
+  <div class="exhibit-head"><span>functions/src/ai_coach_advice.ts:62</span><span>на чём сдался первый вариант стриппера комментариев</span></div>
+<pre><span class="t-key">const</span> FORBIDDEN_SUBJECT_NAME_CHARS = <span class="t-str">/["\r\n\t]/</span>;</pre>
+  <div class="exhibit-note"><p>Первая докстрока утверждала, что не моделировать regex-литералы <b>безопасно</b>: «худший случай — ложная тревога». Неправда. Кавычка внутри класса символов открывает строку, которая никогда не закроется, и сканер отказался читать весь файл. Утверждение шире проверки — в гейте, чья тема ровно это. Regex-литералы теперь моделируются. Замерено: <b>87 файлов TypeScript, 0 отказов</b>.</p></div>
+</div>
+
+<p><b>Второй.</b> Регрессия <code>test_3c_…_that_3b_cannot_see</code> утверждала, что шаг 3b «не видит» ссылку на identity. До этого не доходило: <code>tsc</code> выходит с кодом 1 и ошибкой TS6306, потому что проект identity не <code>composite</code>. Вывод «3b не видит» из <em>такого</em> отказа — та же ошибка, что засчитать мутанта убитым, потому что посторонний exception покрасил прогон в красный. Тест разделён на два, каждый измеряет то, что заявляет.</p>
+
+<p><b>Третий.</b> <code>verify_deployment_isolation.py</code> — чистый LF, а соседний <code>recognition_baseline.py</code> — чистый CRLF. Патч-инструмент проверял, а не предполагал, и отказался переписать 302 конца строк в дифф, который никто не смог бы прочитать.</p>
+
+
+<h2>Раунд ревью реализации: ещё две MAJOR, и обе мои</h2>
+
+<p>GPT-PM отревьюировал реализацию и вернул <b>2 MAJOR, 0 BLOCKER</b>. Обе я проверил замером против реального кода до принятия. Все четыре составляющих утверждения оказались фактом.</p>
+
+<h3>Первая: исправление воспроизвело тот самый дефект, который исправляло</h3>
+
+<p><code>verify_no_cross_import</code> вырезал комментарии, а затем искал <em>формы</em> импортов и обходов регулярными выражениями по оставшемуся тексту — в котором строковые литералы остаются. Замерено:</p>
+
+<div class="measures">
+  <div class="measure-card">
+    <h4>Ложное срабатывание на прозе</h4>
+    <div class="measure-row"><span><code>const note = 'do not import "…"'</code></span><b class="n-blind">отвергнут</b></div>
+    <p style="margin:12px 0 0;font-size:13.5px;color:var(--ink-soft)">Проза прочитана как код — ровно тот класс дефекта, который дал двенадцать красных тестов, воспроизведённый лекарством от него.</p>
+  </div>
+  <div class="measure-card">
+    <h4>Пропущенные вычисляемые пути</h4>
+    <div class="measure-row"><span><code>require("../" + "…")</code></span><b class="n-blind">прошёл</b></div>
+    <div class="measure-row"><span><code>path.join("..", "…", "terms.json")</code></span><b class="n-blind">прошёл</b></div>
+    <p style="margin:12px 0 0;font-size:13.5px;color:var(--ink-soft)">Настоящие связи, невидимые шаблону, ищущему одно непрерывное написание. А в файле под <code>__tests__</code> шаг 3b этот промах не спасает — он их исключает.</p>
+  </div>
+</div>
+
+<p>Лечение: оба вопроса переданы <b>собственному парсеру TypeScript</b> (<code>ts_dependency_probe.cjs</code>, компилятор уже стоит в <code>functions/node_modules</code>). Спецификатор модуля читается из узла AST, который <em>является</em> спецификатором. Рантайм-путь сворачивается из аргументов вызова: строковые литералы, шаблоны без подстановок, конкатенация через <code>+</code>, <code>path.join</code>/<code>path.resolve</code> над константами. Свёрнутое значение считается путём, только если <b>всё значение</b> — путь: его первый компонент <code>.</code> или <code>..</code>. Именно это отличает настоящий <code>path.join</code> от фразы, цитирующей те же символы.</p>
+
+<p class="pull">Рукописный стриппер комментариев удалён, а не оставлен. Когда парсер начал отвечать на те же вопросы, ничто больше не отличало сканер от его отсутствия — и три его теста ушли вместе с ним.</p>
+
+<p>Это собственный прецедент репозитория: G3 проверил guard на абсолютные пути перебором 11 110 строк, не нашёл ни одной строки, отличающей его от отсутствия, и удалил. Оставленная поглощённая проверка — не эшелонированная оборона, а заявление.</p>
+
+<h3>Вторая: четвёртый канал зависимости — наследование tsconfig</h3>
+
+<p>Конфиг может <code>extends</code> файл внутри пакета identity: опции компилятора приходят, файлы исходников — нет. Замерено на фикстуре, делающей ровно это:</p>
+
+<div class="evidence">
+  <div class="evidence-row"><span>Шаг 3a — импорты</span><span>прошёл: импорта нет</span></div>
+  <div class="evidence-row"><span>Шаг 3b — граф компилятора</span><span>прошёл: 52 файла, 0 внутри identity</span></div>
+  <div class="evidence-row"><span>Шаг 3c — обход ссылок</span><span>прошёл: ссылок на проекты нет</span></div>
+  <div class="evidence-row"><span><code>--showConfig</code></span><span>слова <code>extends</code> в выводе нет вообще</span></div>
+</div>
+
+<p>А сборка по умолчанию не запустилась бы, удали этот файл. Добавлен <b>шаг 3d</b>: цепочка читается из самих конфигов через JSONC-совместимый <code>readConfigFile</code> самого TypeScript, разрешаются обе формы (строка и массив из TS 5), пути канонизируются той же дисциплиной realpath и покомпонентной вложенности, что и в 3b, обход транзитивный с защитой от циклов — и он <b>падает закрыто</b>, если цель <code>extends</code> не разрешается: нечитаемое звено цепи не доказывает, что в её конце ничего нет.</p>
+
+<p>Регрессии добавлены по одной на каждый названный обход: проза с формой импорта и заголовок теста с выводом <code>git status</code> остаются чистыми; четыре формы вычисляемого пути в <em>исключённом</em> тестовом файле отвергаются каждая; прямой <code>extends</code> в identity, <code>extends</code> через junction-псевдоним и транзитивный <code>extends</code> через нейтральный промежуточный конфиг отвергаются; обычный сторонний базовый конфиг — зелёный контроль; неразрешимый <code>extends</code> падает закрыто; цикл завершается, а не виснет. Фикстура с псевдонимом сама проверяет, что её текст <b>не называет</b> пакет, — иначе она проходила бы по неверной причине.</p>
+
+<div class="caveat">
+  <h3>Граница, которая осталась</h3>
+  <p>Свёртка констант ограничена перечисленными формами, и обнаружение привязано к настоящим приёмникам. Не обнаруживаются: путь, собранный в рантайме из переменной; файловый вызов через псевдоним, который файл не связывал с <code>fs</code>; и <code>require("path").join(…)</code> инлайном. Для файла, исключённого из <code>functions/tsconfig.json</code>, шаг 3b этих промахов тоже не покроет. Всё это записано в докстроке как <b>названные дыры</b>, а не как покрытые случаи — ровно та дисциплина, ради восстановления которой гейт и открывали.</p>
+</div>
+
+
+<h3>Второй раунд: у самой ремедиации оказались две регрессии — и это был тот же дефект снова</h3>
+
+<p>GPT-PM проверил исправления и вернул <b>2 MAJOR</b> — обе прямые регрессии от этой ремедиации, то есть единственное, ради чего §17 вообще разрешает третий раунд.</p>
+
+<div class="exhibit">
+  <div class="exhibit-head"><span>то, что проб отвергал как зависимость</span><span>пять ложных срабатываний, замерено</span></div>
+<pre>console.log(<span class="t-str">"../functions-equipment-identity/src/x"</span>);     <span class="t-dim">→ отвергнут</span>
+foo.join(<span class="t-str">".."</span>, <span class="t-str">"functions-equipment-identity"</span>, <span class="t-str">"x"</span>);      <span class="t-dim">→ отвергнут</span>
+foo.resolve(<span class="t-str">".."</span>, <span class="t-str">"functions-equipment-identity"</span>, <span class="t-str">"x"</span>);   <span class="t-dim">→ отвергнут</span>
+obj.require(<span class="t-str">"../functions-equipment-identity/src/x"</span>);     <span class="t-dim">→ отвергнут</span></pre>
+  <div class="exhibit-note"><p>Проб был семантичен на уровне узла AST, но не на уровне <b>приёмника</b>: он принимал любое свойство с именем <code>.join</code>, <code>.resolve</code> или <code>.require</code> и считал путями константные аргументы <em>любого</em> вызова. Данные прочитаны как поведение — тот же дефект гейта в <b>третий</b> раз, каждый раз на слой глубже: сначала комментарий как код, потом строка как код, теперь метод произвольного объекта как node-овский <code>path</code>.</p></div>
+</div>
+
+<p>Лечение: приёмники привязаны к модулям, которыми притворяются. Проб собирает, какие локальные имена файл <em>действительно</em> импортировал из <code>path</code> и <code>fs</code> — через <code>import * as</code>, дефолтный импорт, именованные импорты, <code>import x = require(…)</code>, <code>const x = require(…)</code> и деструктуризацию, — и только после этого считает <code>path.join</code>/<code>path.resolve</code> сборкой пути, а метод на привязке <code>fs</code> — файловым приёмником. <code>require</code> — это голый идентификатор; <code>obj.require</code> — обычный вызов метода.</p>
+
+<p>Фикстуры переехали вместе с контрактом: теперь они читают через <code>fs.readFileSync(path.join(…))</code> в шести формах, а пять контролей утверждают, что перечисленные выше не-зависимости остаются чистыми. Одна старая фикстура с несвязанным <code>readFileSync(…)</code> перестала ловиться — и была <b>исправлена, а не выведена из-под правила</b>: несвязанный идентификатор не является файловым модулем, и притворство обратного — ровно то, из-за чего <code>foo.join(…)</code> стал зависимостью.</p>
+
+<h4 style="font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:16px;margin:28px 0 6px">И вторая: обход <code>extends</code> разошёлся с самим TypeScript на валидной цепочке</h4>
+
+<p>Он разбирал JSONC через TypeScript, но <em>разрешал</em> голые спецификаторы через node-овский <code>require.resolve</code>. Замерено на пакете-конфиге с <code>{"main": "index.js", "tsconfig": "base.json"}</code>: <b>tsc принимает его и наследует <code>base.json</code></b> — exit 0, <code>"strict": true</code> в разрешённых опциях, — а рукописный резолвер пошёл по <code>main</code>, попал в JavaScript и объявил цепочку нечитаемой. Инструмент, заваливающий валидную сборку, — тот же класс дефекта, что и пропускающий невалидную.</p>
+
+<p>Рукописный резолвер удалён. Теперь работает <code>ts.getParsedCommandLineOfConfigFile</code> с инструментированным хостом, чей <code>readFile</code> записывает каждый прочитанный файл, — так что цепочка <em>по построению</em> есть ровно то, что прочитал TypeScript. Диагностики 5083/6053 по-прежнему роняют проверку закрыто; 18003 («нет входных файлов») игнорируется, потому что совпадение конфига с исходниками ничего не говорит о наследовании. Добавленная регрессия сначала проверяет, что <b>сам tsc</b> принимает такой пакет и наследует опцию, — то есть измеряет расхождение, а не утверждает его.</p>
+
+
+<h3>Третий раунд: приёмник знал, ЧТО за объект — но не какая привязка, не какой аргумент и не что такое путь</h3>
+
+<p>Канал наследования конфигов GPT-PM закрыл. И вернул ещё <b>2 MAJOR</b> — снова регрессии предыдущей ремедиации. Пять контрпримеров, все замерены до принятия, все — факт.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Контрпример</th><th>Как вело себя отправленное</th></tr></thead>
+  <tbody>
+    <tr><td><code>import { readFileSync } from "fs"</code>, затем чтение пути в identity</td><td>чисто — собирались только namespace-привязки</td></tr>
+    <tr><td>деструктурированная CJS-форма и форма с алиасом</td><td>чисто</td></tr>
+    <tr><td><code>fs.writeFileSync("output.txt", "../&lt;identity&gt;/src/x")</code></td><td>отвергнуто — а второй аргумент это <b>содержимое</b> файла</td></tr>
+    <tr><td><code>fs.readFileSync(p.join("scratch", "..", "..", "&lt;identity&gt;", "terms.json"))</code></td><td>чисто</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Последний — самый острый. Node нормализует этот <code>join</code> в <code>../&lt;identity&gt;/terms.json</code> — проверено запуском node, а не чтением документации, — тогда как проб сворачивал его конкатенацией в <code>scratch/../../&lt;identity&gt;/terms.json</code>, первый компонент которого <code>scratch</code>, и предикат вложенности говорил «нет». Полностью константная, правильно привязанная файловая зависимость — пропущена. И в отличие от рантайм-переменных, константный <code>path.join</code> был <b>явно заявлен покрытым</b>: снова утверждение шире проверки.</p>
+
+<p>Ремедиация сделана принципиальной, а не заплаточной, в трёх частях: привязки по имени и алиасу, а не только по namespace; таблица <code>FS_PATH_ARGUMENTS</code> — какие именно <em>позиции</em> аргументов каждого файлового API являются путями (у метода вне таблицы читается позиция 0, и это названо соглашением, а не законом); и настоящая семантика путей — <code>normalizeJoin</code> с сокращением <code>.</code>/<code>..</code> и сохранением ведущего <code>..</code>, <code>normalizeResolve</code> со сканом справа налево до абсолютного аргумента. Абсолютный результат судится физической вложенностью через <code>realpath</code> — та же дисциплина, что в 3b, и это заодно закрыло канал, который не покрывал никто: константное абсолютное чтение внутрь пакета.</p>
+
+<p>Добавленные регрессии: четыре именованных/алиасных/деструктурированных приёмника <code>fs</code> — каждый отвергается; две фикстуры с identity-строкой в <b>содержимом</b> — остаются чистыми; сокращающийся <code>join</code> отвергается, причём ответ node измеряется <em>внутри</em> теста, а не утверждается; <code>join</code>, который заходит в пакет и выходит обратно, остаётся чистым — так нормализация доказана настоящей, а не правилом, срабатывающим на любое упоминание имени; и абсолютное чтение внутрь пакета отвергается.</p>
+
+
+<h3>Четвёртый раунд: то же самое — в двух местах, где код всё ещё делал работу инструмента сам</h3>
+
+<p>GPT-PM закрыл находки третьего раунда и вернул ещё <b>2 MAJOR</b>. Форму на этот раз стоит назвать прямо: <b>проверка по-прежнему переписывала своими руками то, на что уже загруженный инструмент отвечает сам.</b></p>
+
+<h4>MAJOR 1 — имя это не привязка</h4>
+
+<p>Сборщик обходил файл целиком и складывал <em>имена</em>, привязанные где угодно, в глобальные множества. Привязка устроена не так, и отсюда три контрпримера — все замерены до принятия, все факт.</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Контрпример</th><th>Отправленное</th><th>Правильно</th></tr></thead>
+  <tbody>
+    <tr><td><code>import * as fs from "fs"</code> + <code>function inspect(fs: FakeFs) { fs.readFileSync("../&lt;NAME&gt;/terms.json") }</code></td><td><b>отвергнуто</b></td><td>чисто — параметр затеняет импорт</td></tr>
+    <tr><td>то же с блочным <code>const fs = {…}</code></td><td><b>отвергнуто</b></td><td>чисто</td></tr>
+    <tr><td><code>import { promises as fsp } from "fs"</code> + <code>fsp.readFile("../&lt;NAME&gt;/terms.json")</code></td><td><b>чисто</b></td><td>отвергнуть — <code>fsp</code> привязан именно из <code>fs</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Первые два — это ровно дефект второго раунда (метод произвольного объекта прочитан как API ноды), только на одну область видимости глубже. Третий — его зеркало: настоящая привязка пропущена, потому что у сборщика не было модели объектного экспорта. Ни один из трёх не попадает в объявленный остаток «алиас, который файл не привязывает из <code>fs</code>»: два привязаны из <code>fs</code>, а первый не привязан из него вообще.</p>
+
+<h4>MAJOR 2 — своя арифметика путей расходится с нодой на Windows</h4>
+
+<p><code>normalizeJoin</code> считал любой префикс диска якорем и превращал <b>относительный к диску</b> путь в <b>абсолютный</b>. Замерено — нода против того кода:</p>
+
+<pre><code>path.win32.join("D:..", "&lt;NAME&gt;", "package.json")
+  нода       -&gt; "D:..\&lt;NAME&gt;\package.json"   (isAbsolute false — относительно текущей папки на D:)
+  своя копия -&gt; "D:/&lt;NAME&gt;/package.json"       (абсолютный, другое место)</code></pre>
+
+<p>Дальше физическая вложенность судила не тот путь и отвечала «чисто». Полностью константная, правильно привязанная зависимость — пропущена. И константный <code>path.join</code> был <b>явно заявлен покрытым</b>, так что в остаток «путь собран из переменной» это не уводится. Утверждение шире проверки — четвёртый раунд подряд.</p>
+
+<h4>Ремедиация в обоих случаях — удаление, и в этом суть</h4>
+
+<p>Проб уже загружает настоящий компилятор TypeScript и уже исполняется внутри ноды. Держать вторую, худшую копию каждого из них ему было незачем.</p>
+
+<ul>
+  <li><code>collectModuleBindings</code> и <code>leftmostIdentifier</code> <b>удалены</b>. <code>makeBindingResolver</code> спрашивает у <code>checker.getSymbolAtLocation</code>, к чему идентификатор привязан <em>в этом месте</em>, и читает объявление, на которое попал. Параметры, блочная область, вложенные паттерны деструктуризации и все прочие правила видимости достаются даром — TypeScript их уже реализует.</li>
+  <li><code>normalizeJoin</code> и <code>normalizeResolve</code> <b>удалены</b>. <code>foldPathCall</code> вызывает настоящие <code>path.win32</code> / <code>path.posix</code>. Диалект берётся из спецификатора модуля, а простой <code>path</code> сворачивается под <b>обоими</b>: проб работает на Windows, а <code>functions</code> деплоится на nodejs20 под Linux, и выбрать один диалект значило бы молча выбрать платформу.</li>
+  <li><code>FS_OBJECT_EXPORTS</code> называет <code>promises</code> тем единственным экспортом <code>fs</code>, который является объектом с тем же API по путям.</li>
+  <li><code>require</code> — это <code>require</code> ноды только когда идентификатор ни к чему не привязан.</li>
+</ul>
+
+<h4>Внутреннее ревью до отправки (§17): одно подтверждено, два опровергнуты</h4>
+
+<p>Специалист-ревьюер отработал <em>до</em> отправки раунда и дал четыре MAJOR. Измерение подтвердило один как живой дефект и опровергло два — это записано, потому что находка, принятая без измерения, остаётся мнением.</p>
+
+<ul>
+  <li><b>Подтверждено и исправлено:</b> канал зависимостей в <code>package.json</code> сравнивал сырой <em>подстрокой</em>, тогда как всё вокруг в той же функции сравнивало по <em>компонентам</em>. Замерено: <code>{"other-lib": "npm:&lt;NAME&gt;-old@1.0.0"}</code> — другой пакет — отвергался как нарушение изоляции.</li>
+  <li><b>Опровергнуто измерением:</b> что сиблинг <code>-old</code> обрабатывается неверно на приёмниках спецификатора и пути (нет — оба уже читались чисто) и что позиции <code>[0, 1]</code> и запасная позиция 0 сломаны (нет). В обоих случаях поведение уже было верным, а не хватало только <em>фикстуры</em> — по мерке этого гейта это настоящая находка, но пробел в тестах, а не дефект. Фикстуры добавлены на все.</li>
+</ul>
+
+<h4>Зелёный прогон не был принят за доказательство</h4>
+
+<p>Каждая новая проверка проверена мутациями: 14 мутаций, каждая убирает ровно одну проверку и называет id тестов, которые обязаны покраснеть. Якоря и id тестов проходят предполётную проверку — этот проект дважды записывал, что якорь, не совпадающий ни с чем, читается как «пройдено». <b>Убито 14 из 14</b> — но только со второго прогона. Первый убил 12 из 13, и выживший стоит записи:</p>
+
+<blockquote>Свёртка простого <code>path</code> <em>только</em> под posix пережила регрессию про относительный к диску путь, потому что то конкретное значение спасала уже питоновская сторона. Для всех фикстур, бывших тогда в наборе, эта ветка была неотличима от собственного отсутствия — снова случай поглощения из G3. Вместо того чтобы удалить её или оставить на веру, замерены две фикстуры, разделяющие диалекты: <code>join("..\scratch", "..", NAME, "x")</code> под win32 даёт <code>..\&lt;NAME&gt;\x</code>, а под posix — голое <code>&lt;NAME&gt;/x</code>; <code>join("a\b", "..", "..", NAME, "x")</code> под posix даёт <code>../&lt;NAME&gt;/x</code>, а под win32 — голое <code>&lt;NAME&gt;\x</code>. Каждый диалект ловит ровно одну из них, значит нагружены оба — и теперь это доказано тестом, который <em>измеряет</em> оба ответа ноды, а не утверждает их написание.</blockquote>
+
+<p><b>Осознанное решение по объёму, названное вслух.</b> Негативные фикстуры для шагов 1 и 2 добавлены, хотя этот гейт тот код не трогал и §17 позволил бы отложить. Причина: это тот же модуль, тот же прогон и тот же класс дефекта, ради которого гейт существует — пути отказа обеих проверок не достигались ни одним тестом, и удаление их тел оставило бы набор зелёным. Пятнадцать строк фикстуры — не то расползание объёма, от которого защищает §17; тащить «проверку, неотличимую от своего отсутствия» через гейт <em>про это самое</em> — хуже.</p>
+
+
+<h3>Пятый раунд: каждое исправление четвёртого держалось в одном из двух мест, где обязано было держаться</h3>
+
+<p>GPT-PM закрыл MAJOR по арифметике путей и на прямой вопрос подтвердил: объявленный остаток <b>не блокер</b> — шаг 3a это дополнительная ограниченная проверка, доказательство изоляции даёт шаг 3b, а пределы теперь названы, а не выданы за покрытие. И вернул ещё <b>2 MAJOR, 0 BLOCKER</b>.</p>
+
+<h4>MAJOR 1 — чекер спросили в одном из двух мест, где читается <code>require</code></h4>
+
+<p><code>isRequireCall</code> спрашивал <code>isUnbound</code>, прежде чем считать голый вызов загрузчиком ноды. А <code>moduleOfRequire</code>, который решает, что <code>const fs = require("fs")</code> создаёт привязку к <code>fs</code>, проверял только <em>написание</em>. Замерено:</p>
+
+<pre><code>function require(n: string) { return { readFileSync: (p) =&gt; p }; }
+const fs = require("fs");
+fs.readFileSync("../&lt;NAME&gt;/terms.json");          -&gt; ОТВЕРГНУТО, ошибочно</code></pre>
+
+<p>Локально объявленная функция прочитана как загрузчик модулей ноды, а поддельный объект привязан к настоящему <code>fs</code>. Запись четвёртого раунда утверждала, что теперь чекер отвечает «к чему это привязано <em>здесь</em>» — верно для одной точки вызова, а утверждение покрывало обе. Собственный дефект гейта, совершённый его же описанием исправления.</p>
+
+<h4>MAJOR 1, вторая половина — one-program подход протёк глобальными именами между файлами</h4>
+
+<p>Это настоящая регрессия, внесённая четвёртым раундом, и самая серьёзная находка раунда — потому что это <b>пропуск</b>, а не ложная тревога. TypeScript считает файл без импортов и экспортов <em>скриптом</em>, чьи объявления верхнего уровня живут в одной глобальной области со всеми остальными скриптами программы. Замерено:</p>
+
+<pre><code>other.ts   function require(name: string) { ... }        // ни импорта, ни экспорта
+probe.ts   const mod = require("../&lt;NAME&gt;/src/index");    -&gt; ЧИСТО, ошибочно</code></pre>
+
+<p>Настоящий, недвусмысленный кросс-импорт прочитан как чистый, потому что <em>посторонний</em> соседний файл объявил функцию с тем же именем. Нода исполняет каждый файл в собственной обёртке модуля; одна программа поверх всех — нет, и ответ об изоляции одного файла стал зависеть от содержимого другого. Исправлено через <code>moduleDetection: ts.ModuleDetectionKind.Force</code> (TypeScript 5.9.3, наличие проверено), что возвращает пофайловую область видимости, которая на самом деле есть у рантайма.</p>
+
+<h4>MAJOR 2 — цепочечная модель внесла ложноотрицательный на API, уже перечисленном в собственной таблице</h4>
+
+<p><code>fs.realpath.native</code> и <code>fs.realpathSync.native</code> — настоящие вызываемые функции (замерено в ноде, а не вычитано в документации), принимающие тот же путь в той же позиции, что и родители. Правило четвёртого раунда требовало, чтобы каждый промежуточный сегмент цепочки был <em>объектным</em> экспортом <code>fs</code>; <code>realpath</code> — функция, поэтому весь вызов отбрасывался как «не приёмник». Оба читались чисто. <code>FS_NATIVE_VARIANTS</code> теперь ограниченное множество ровно из этих двух имён — намеренно не правило «любой член <code>.native</code>», потому что весь смысл цепочечной модели в том, что произвольный <code>.foo.bar()</code> — это произвольный объект.</p>
+
+<h4>Мутационная проверка: 23 мутации, 23 убиты — после двух выживших, означавших противоположное</h4>
+
+<p>Первый расширенный прогон оставил в живых <em>контроль</em> цепочки. Разобрано, а не принято на веру: фикстура укореняла цепочку в <code>const anything = fs as unknown as {…}</code>, что вообще не является привязкой к модулю, и удалённая проверка просто не достигалась. <b>Мутант был инертен против этой фикстуры — это не то же самое, что защита лишняя</b> (различие, которое этот проект уже однажды записывал). Контроль переукоренён на настоящей namespace-привязке (<code>fs.constants.readFileSync(…)</code>, где <code>constants</code> — реальный экспорт <code>fs</code>, но не объект с функциями по путям), и мутант умер. Сравните с выжившим в четвёртом раунде, где то же разбирательство привело к <em>противоположному</em> выводу и породило две новые фикстуры: выживший мутант — это вопрос, и ответ не всегда один и тот же.</p>
+
+
+<h3>Шестой раунд: объявление — это не привязка</h3>
+
+<p><b>1 MAJOR, 0 BLOCKER</b> — первый раунд, вернувшийся меньше чем с двумя. Обе половины MAJOR 1 из пятого раунда закрыты, MAJOR про <code>.native</code> закрыт вместе с ограниченным списком и отрицательным контролем.</p>
+
+<p>Оставшийся MAJOR — регрессия самого же исправления пятого раунда, и это самая точная формулировка предмета всего гейта. Пятый раунд определил «это не <code>require</code> ноды» как <b>«чекер вернул объявление»</b>. Но объявление — это не привязка: <code>declare function require(name: string): any;</code> даёт чекеру символ <code>FunctionDeclaration</code> и не порождает вообще никакого JavaScript — исполняется по-прежнему собственная обёртка модуля ноды. Замерено на коде пятого раунда:</p>
+
+<pre><code>declare function require(name: string): any;
+const fs = require("fs");
+fs.readFileSync("../&lt;NAME&gt;/terms.json");        -&gt; ЧИСТО, ошибочно
+require("../&lt;NAME&gt;/src/index");                 -&gt; ЧИСТО, ошибочно</code></pre>
+
+<p>Оба канала — потому что <code>isUnbound</code> питает и CJS-инициализатор, и чтение спецификатора из голого вызова. То есть это снова шаблон «исправлено в одном из двух мест, где оно живёт», только пришедший через <em>общий предикат</em>, а не через одного из вызывающих. <code>declare const require: …</code> ведёт себя так же; чисто типовой <code>interface require</code> читался верно и сохранён как контроль.</p>
+
+<p>Теперь решает <code>isRuntimeValueDeclaration</code>: объявление в <code>.d.ts</code>, объявление с модификатором <code>declare</code> или внутри ambient-контекста, интерфейс, псевдоним типа, параметр типа и импорт только типа не создают значения во время исполнения и, следовательно, ничего не затеняют. <b>Направление выбрано осознанно и названо здесь, а не оставлено читателю:</b> считать что-то <em>не</em> затенением значит считать вызов вызовом ноды, поэтому ошибка в эту сторону стоит ложной тревоги, а в обратную — пропуска. Fail-closed указывает на «считай, что это нода».</p>
+
+
+<h3>Седьмой раунд: <code>import type</code> стирается — и находка, наполовину опровергнутая</h3>
+
+<p><b>1 MAJOR, 0 BLOCKER.</b> Исправление шестого раунда закрыто. Оставшийся MAJOR — его же следующий слой, но в записи важнее другое: <b>две трети находки опровергнуты измерением, а одна треть оказалась настоящей.</b></p>
+
+<p>Утверждение было такое: предикат читал <code>declaration.isTypeOnly</code> — это флаг <em>отдельного спецификатора</em> — и потому пропускал форму целого клауза <code>import type { Foo as require }</code>, где собственный флаг спецификатора false, а у охватывающего клауза true. Форма AST именно такая, замерено:</p>
+
+<pre><code>import type { Foo as require }   ImportSpecifier  own isTypeOnly=false      clause isTypeOnly=true
+import type * as require         NamespaceImport  own isTypeOnly=undefined  clause isTypeOnly=true
+import { Bar as b2 }             ImportSpecifier  own isTypeOnly=false      clause isTypeOnly=false</code></pre>
+
+<p>Но предсказанное <em>поведение</em> подтвердилось только для одной фикстуры из трёх:</p>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Фикстура</th><th>Код шестого раунда</th></tr></thead>
+  <tbody>
+    <tr><td>целый клауз <code>import type { Foo as require }</code></td><td><b>уже отвергался</b></td></tr>
+    <tr><td>по-спецификаторно <code>import { type Foo as require }</code></td><td><b>уже отвергался</b></td></tr>
+    <tr><td><code>import type * as require</code></td><td><b>ЧИСТО — настоящий пропуск</b></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Причину, по которой первые две были верны, стоит записать — потому что этот код её не выбирал: <code>checker.getSymbolAtLocation</code> вообще не возвращает объявлений для чисто типового алиаса, использованного в позиции <em>значения</em>, поэтому <code>isUnbound</code> был истиной по умолчанию и вызов правильно читался как вызов ноды. Форма с namespace — единственная, которую чекер действительно резолвит, и она и была живым дефектом.</p>
+
+<p><b>То есть защита была права по причине, которой не заявляла — и это тот же дефект гейта, повёрнутый другой стороной.</b> Опираться на такую случайность значит иметь проверку <em>уже</em> своего утверждения, а не шире — но столь же незаслуженную. Самодельная проверка флага удалена; отвечает <code>ts.isTypeOnlyImportOrExportDeclaration</code>, проверенный на всех трёх формах до принятия. Тот же ход, что с <code>collectExtends</code>, <code>makeBindingResolver</code> и <code>foldPathCall</code>: компилятор уже знает — перестань писать вторую копию.</p>
+
+<p>Регрессии покрывают все три типовые формы плюс <b>два контроля с настоящими value-импортами</b> (<code>import { Foo as require }</code> и <code>import * as require</code>), которые обязаны по-прежнему затенять — без них правило было бы неотличимо от «ни один импорт не затеняет <code>require</code>». Оба контрольных мутанта на это переисправление есть в наборе, и оба умирают.</p>
+
+
+<h3>Восьмой раунд: <code>VERDICT: APPROVE</code> — 0 BLOCKER / 0 MAJOR</h3>
+
+<p>Гейт закрыт. Приведу вердикт своими словами, но с указанием, кто его вынес: одобрил <b>GPT-PM</b>, не я и не оператор. Замечание, ради которого стоит записать этот раунд, — то, которое ревьюер сделал о собственной предыдущей находке:</p>
+
+<blockquote>«Согласен и с поправкой по измерению к моей прошлой находке: формы с именованным импортом — и целиком типовая, и по-спецификаторная — уже отвергались в реализации шестого раунда, потому что чекер не возвращал пригодного объявления в позиции значения; реально продемонстрированным пропуском была форма с namespace. Ремедиация чинит <em>семантическое правило</em>, а не консервирует это случайное поведение.»</blockquote>
+
+<p>И отдельно — о контролях, которых легче всего не написать:</p>
+
+<blockquote>«Это важно, потому что без этих контролей замена предиката на «все импорты не рантайм» сделала бы новые тесты на типовые импорты зелёными по неправильной причине.»</blockquote>
+
+<h4>Чем гейт кончился на самом деле</h4>
+
+<p>Восемь раундов ревью нашли <b>двенадцать</b> MAJOR, и ни один из них не был в исходном коде проекта. Все двенадцать — в проверках, и почти все — в проверках, добавленных <em>предыдущим</em> раундом этого же гейта. Последовательность стоит того, чтобы прочитать её целиком:</p>
+
+<ol>
+  <li>проверка читала комментарий как код;</li>
+  <li>исправление читало строковый литерал как код;</li>
+  <li>исправление читало метод произвольного объекта как API ноды;</li>
+  <li>исправление читало имя как привязку, а конкатенацию — как арифметику путей;</li>
+  <li>исправление спрашивало чекер в одном из двух мест и протекало глобальными именами между файлами;</li>
+  <li>исправление считало <em>объявление</em> рантайм-привязкой;</li>
+  <li>исправление читало флаг отдельного спецификатора вместо семантики импорта.</li>
+</ol>
+
+<p>Каждый шаг — одно и то же: <b>утверждение шире (а однажды и уже) того, что проверка на самом деле проверяет</b>. И каждое настоящее исправление оказывалось <em>удалением</em>: самописный обходчик <code>extends</code>, самописный сборщик комментариев, самописный сборщик привязок, самописная арифметика путей, самописная проверка типовых импортов — все удалены и заменены вопросом к компилятору или к ноде, которые уже загружены и уже знают ответ.</p>
+
+<h2>Что планировалось и что сделано</h2>
+
+<div class="table-scroll">
+<table>
+  <thead><tr><th>Шаг</th><th>Что планировалось</th><th>Definition of Done (от GPT-PM)</th><th>Статус</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Рекурсивный четырёхклассовый лексер Dart, падающий закрыто</td><td>Интерполяция — рекурсивный переход состояния, не диапазон; сырые строки не интерполируют; вложенные блочные комментарии; EOF внутри конструкции — ошибка</td><td><span class="status s-done">сделано</span></td></tr>
+    <tr><td>2</td><td>Тесты лексера напрямую, до вызывающих</td><td>Четыре названных случая: строка внутри <code>${…}</code> не CODE; комментарий внутри <code>${…}</code> не CODE; настоящий вызов внутри <code>${…}</code> — CODE; <code>r'${…}'</code> — STRING целиком</td><td><span class="status s-done">сделано</span></td></tr>
+    <tr><td>3</td><td>Guard живого режима: CODE или STRING падает, комментарий считается</td><td>Комментарий проходит и записывается в payload; вхождение в коде по-прежнему отвергается</td><td><span class="status s-done">сделано</span></td></tr>
+    <tr><td>4</td><td>Проверки порядка и тела — только CODE; <code>_exact_identity_absent</code> не трогать</td><td>Прямое решение GPT-PM: контракт последней явно лексический, менять его — менять семантику baseline, а не чинить 12 падений</td><td><span class="status s-done">сделано</span></td></tr>
+    <tr><td>5</td><td>Контрпример GPT-PM как обязательно падающий тест, в обеих формах</td><td>Форма с интерполяцией — та, что падает при упрощённом лексере, поэтому именно она придаёт смысл простой</td><td><span class="status s-done">сделано</span></td></tr>
+    <tr><td>6</td><td>Изоляция как утверждение о графе компилятора, с канонизацией путей</td><td>Ноль файлов физически внутри пакета identity; пустая или ненулевая выдача — ошибка, а не «ничего не найдено»</td><td><span class="status s-done">сделано</span></td></tr>
+    <tr><td>7</td><td>Обход ссылок на проекты отдельно, через <code>--showConfig</code></td><td>Рекурсивно, с защитой от циклов; докстрока прямо говорит, что <code>--listFilesOnly</code> их не покрывает</td><td><span class="status s-done">сделано</span></td></tr>
+    <tr><td>8</td><td>Регрессии на три обхода, все в scratchpad</td><td>Каждый обход отвергается по своей причине; в отслеживаемое дерево не пишется ничего</td><td><span class="status s-done">сделано</span></td></tr>
+    <tr><td>9</td><td>Проверки по исходнику как дополнительные, по фикстуре на правило</td><td>Каждая фикстура отвергается ровно одним правилом; правило, неотличимое от своего отсутствия, удаляется, а не остаётся</td><td><span class="status s-done">сделано</span></td></tr>
+    <tr><td>10</td><td>Исправить каждую докстроку, чья претензия шире её проверки</td><td>Пробa говорит, что доказывает именно свой сценарий; проверка по исходнику — не доказательство изоляции</td><td><span class="status s-done">сделано</span></td></tr>
+    <tr><td>11</td><td>Перегенерировать baseline с печатью диффа</td><td>Ровно 4 устаревших sha256, <code>sourceCommit</code> и новое поле — ничего шире</td><td><span class="status s-done">сделано</span></td></tr>
+    <tr><td>12</td><td>Полный прогон, отчёт, запись в decision log обеих сторон</td><td>Журнал фиксирует и план, и результат по пунктам, включая два отклонённых плана</td><td><span class="status s-done">сделано</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p style="font-size:14.5px;color:var(--ink-soft)">Ни один пункт не выброшен и не урезан. Частичных нет.</p>
+
+<h2>Доказательства</h2>
+
+<div class="evidence">
+  <div class="evidence-row"><span>Два целевых файла</span><span>12 failed / 15 passed → <b>154 passed, 0 failed</b></span></div>
+  <div class="evidence-row"><span>Идентификаторы тестов</span><span>27 → 154; удалено 0, добавлено 127 (список сопоставлен, не заявлен); 27/27 мутантов убито</span></div>
+  <div class="evidence-row"><span>Вся директория</span><span>503 passed, включая 224 теста прав из G3</span></div>
+  <div class="evidence-row"><span>Лексер Dart на корпусе</span><span>697 файлов, 0 отказов</span></div>
+  <div class="evidence-row"><span>Зависимости через парсер TypeScript</span><span>48 файлов <code>.ts</code>, спецификаторы и пути из AST</span></div>
+  <div class="evidence-row"><span><code>verify_deployment_isolation.py</code></span><span>exit 0; все 12 маркеров, включая 3a / 3b / 3c / 3d</span></div>
+  <div class="evidence-row"><span>Граф компилятора по умолчанию</span><span>855 файлов, 0 внутри identity; 1 проект по ссылкам; 0 наследованных конфигов</span></div>
+  <div class="evidence-row"><span><code>recognition_baseline.py --check</code></span><span>exit 0 против перегенерированного артефакта</span></div>
+  <div class="evidence-row"><span>Дифф перегенерации</span><span>6 изменённых листьев: 4 sha256, sourceCommit, новое поле</span></div>
+  <div class="evidence-row"><span>Рабочее дерево</span><span>5 изменённых файлов, мусора от проб нет</span></div>
+</div>
+
+<p>Четыре устаревших хеша принадлежат <code>gemini_equipment_service.dart</code>, <code>machine_describer.dart</code>, <code>mlkit_live_equipment_service.dart</code> и <code>visual_equipment_providers.dart</code> — их сдвинули коммиты <code>6ab9ff5</code>, <code>5d75709</code>, <code>d3c456f</code> и <code>70467cc</code>, все из проверенных более поздних гейтов. Закоммиченный baseline просто ни разу не перегенерировали после них — ровно то, что <code>test_10</code> и существует ловить.</p>
+
+<div class="caveat">
+  <h3>Что осталось — сказано, а не умолчано</h3>
+  <p><b>Счёт скобок в <code>_extract_block</code> по-прежнему сырой.</b> Скобка внутри строки или комментария теоретически может сдвинуть границы блока. Сегодня не сдвигает — замерено, все блоки извлекаются верно, — в двенадцать падений это не входило, а расширять гейт на это прямо запретила его собственная граница. Достанется тому гейту, который следующим тронет этот помощник.</p>
+  <p><b>Шаг 3a оставлен рядом с 3b, и причина доказана фикстурой, а не аргументом:</b> <code>functions/tsconfig.json</code> исключает <code>src/**/__tests__</code>, поэтому импорт оттуда невидим графу компилятора — а <code>predeploy</code> в <code>firebase.json</code> запускает <code>npm test</code>. Если бы ни одна фикстура не различала два правила, правило было бы удалено, как G3 удалил свой неубиваемый guard на абсолютные пути.</p>
+</div>
+
+<footer>
+  <p>План Rosetta <code>fitness_app-2026-09-09T18-34-33-919Z-20bbc9</code>, hash <code>ddc656a7…6327</code>, база <code>ffb0449</code>. Одобрен GPT-PM (VERDICT: APPROVE, 0 BLOCKER / 0 MAJOR) после двух отклонённых планов, закрытых как <code>rejected</code>. Реализация прошла восемь раундов ревью и закрыта вердиктом GPT-PM <b>APPROVE, 0 BLOCKER / 0 MAJOR</b>: по 2 MAJOR в первых пяти раундах, затем по 1, каждый раз на регрессиях предыдущей ремедиации, все устранены пакетами. Плюс два внутренних ревью до отправки (§17), давшие ещё четыре подтверждённых дефекта, и несколько находок, опровергнутых измерением.</p>
+</footer>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

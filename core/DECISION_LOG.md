@@ -47993,3 +47993,719 @@ premise is asserted in the test itself — `callable(vars(C)["export"])` is Fals
 `callable(C.export)` is True — so the fix cannot be mistaken for decoration.
 
 **Evidence:** `test_rights.py` 224 passed, mutation battery 10 of 10, jest 313.
+
+---
+
+## RED-BASELINE — 12 carried-forward failures adopted, and the defect class behind them
+
+**Date:** 2026-09-09
+**Rosetta plan:** `fitness_app-2026-09-09T18-34-33-919Z-20bbc9` (hash `ddc656a7…6327`)
+**Base commit:** `ffb0449`
+**Preceded by two REFUSED plans**, recorded below, because what they were refused for is the
+substance of this gate.
+
+### Why this gate exists
+
+Twelve tests in `scripts/equipment_identity/test_baseline.py` and `test_deployment_isolation.py`
+were red at `ffb0449`. They were disclosed at G3 round 7 as carried forward and **unowned** —
+neither file imports `rights.py`, and both were clean at the commit that last touched them. GPT-PM,
+asked as roadmap owner what to do next given that every other thread waits on a human, ruled: adopt
+them now, as a standalone plan, and explicitly do NOT pre-decide "update the tests" versus "fix the
+source" — the evidence chooses. It also bounded the gate: the 12 carried failures plus direct
+regressions, not "clean every equipment_identity test".
+
+### The evidence, and what it chose
+
+Both root causes are **one defect class**: a structural assertion implemented as a raw-substring
+scan over file text, which cannot tell a dependency from a mention of one.
+
+**Root cause 1 — ten failures.** `_live_mode_has_no_offline_downgrade_guard` raised whenever
+`"gemini"` or `"cloud"` appeared anywhere in `mlkit_live_equipment_service.dart`. Measured:
+`"cloud"` is absent from that file entirely; `"gemini"` occurs exactly once, at line 201, inside a
+`//` comment reading *"Branch at the call site -- see gemini_equipment_service.dart's matching
+comment"* — a cross-reference to a Crashlytics probe-branch comment added by `6ab9ff5`. The live
+path calls no cloud classifier. The check was stale against **its own module's contract**: the
+header of `recognition_baseline.py` already required every fact to come from "the source, not …
+a comment about the source". So the source did not violate the invariant; the check was reading
+prose.
+
+**Root cause 2 — two failures.** `verify_no_cross_import` banned the literal
+`functions-equipment-identity` in any `.ts` under `functions/src`. Measured: six occurrences, **zero
+imports**. One doc comment; one string in `PROVENANCE_RELEVANT_PATHS`, the `git status --porcelain
+-- <paths>` scope list added by `791d221` to satisfy a GPT-PM round-5 MAJOR (because `firebase
+deploy --only functions` deploys BOTH codebases, so a dirty identity tree must block the release);
+and four test titles and git-status output fixtures. The only import in that file is
+`import * as ts from "typescript"`. The two invariants never conflicted: P0.G6 protects **compile**
+isolation, G4 Step 9 protects **provenance**. The grep was a proxy far coarser than the invariant it
+was named for.
+
+### Two plans refused, and why that mattered
+
+**Plan …05f6c6 — REFUSED, 2 MAJOR.** It proposed a code-vs-comment split and claimed the
+broken-identity probe carried the isolation invariant. Both findings were verified against source
+before acceptance, and both were fact:
+
+* `functions/tsconfig.json` is `"include": ["src"]` and **nothing checks it**. A future
+  `"include": ["src", "../functions-equipment-identity/src"]` creates a compile dependency with no
+  forbidden import string anywhere.
+* `run_broken_identity_probe` breaks a temp **copy** and then builds the **real** `functions/` tree.
+  It proves the scenario it executes; it says nothing about whether the real default compiler graph
+  can reach the real identity tree. The docstring's implied claim was wider than the probe.
+
+**Plan …ad9cca — REFUSED, 2 MAJOR.** Two blind spots, both re-measured here rather than accepted on
+assertion, and the second worse than described:
+
+* `tsc -p <cfg> --listFilesOnly` does **not** enumerate project-reference files. A scratch project
+  referencing another listed only its own `src/index.ts`; zero from the reference. The plan's claim
+  that the check "covers project references" was simply false.
+* A junction alias **hides the physical path**. A scratch project whose `src/vendor_identity` was an
+  NTFS junction to the real `functions-equipment-identity/src` compiled **30 real identity files**,
+  and the compiler reported every one of them under the alias path. A lexical prefix test for the
+  package name matched **0**. Re-scoring the same list by `os.path.realpath` containment yields
+  **30**. The compiler was reading identity source and the check would have said clean.
+
+Both plans were closed `rejected` rather than left pending. Plan v3 was approved 0/0/0.
+
+### What was built
+
+1. **A recursive four-class Dart lexer** in `recognition_baseline.py` — every character is CODE,
+   STRING, LINE_COMMENT or BLOCK_COMMENT. Not code-vs-comment, because GPT-PM supplied a
+   counterexample this repository could not have answered: with the real call order reversed,
+   `debugPrint('${"_anchorOnPrintedText("}');` makes a span-painting lexer read the mention as the
+   call. Interpolation is a recursive state transition that keeps recognizing nested strings, raw
+   strings, comments and balanced braces; `$identifier` is an expression; raw strings never
+   interpolate; block comments nest, as Dart's do. Fails closed on anything it cannot model to the
+   end — over-classifying as string or comment is the direction that HIDES a violation.
+   **Measured over the real corpus: 697 Dart files, 0 failures.**
+2. **The callers rewired.** The live-mode guard now fires on CODE **or STRING** — a string naming a
+   cloud endpoint is a real reference — while comment-only mentions pass and are **recorded** as
+   `cloudConceptMentionsInCommentsOnly`, so a new mention still changes the baseline and forces a
+   deliberate regeneration. The two ordering checks and the two structural body checks consume
+   **CODE only**. `_exact_identity_absent` stays on raw text, per GPT-PM's ruling: its contract is
+   explicitly lexical.
+3. **Compile isolation as a compiler-resolved graph assertion** — `tsc --listFilesOnly` with every
+   reported path canonicalised through `realpath`/`normcase` before a **component-wise** containment
+   test (`commonpath`, not `startswith`: `functions-equipment-identity-old` is a different
+   directory).
+4. **Project references walked separately**, from `tsc --showConfig`, recursively with a visited
+   set — because `--listFilesOnly` provably cannot see them.
+5. **The source-level checks kept as ADDITIONAL guards, explicitly not exhaustive**: a module
+   specifier, a `../` traversal into the package, and a `functions/package.json` dependency field —
+   a channel never covered before. A bare mention of the directory name in data is not a
+   dependency and now passes.
+6. **Every docstring whose claim was wider than its check, corrected** — the probe, the source
+   scan, and `--listFilesOnly`'s reference blindness.
+
+### Three defects found in this gate's own instruments
+
+Recorded because each was found by measurement, not by review, and each would have shipped a
+green-for-the-wrong-reason result:
+
+* **The TS comment stripper failed on real source.** Its first docstring said not modelling regex
+  literals was safe — "the worst case is a false alarm". False: `functions/src/ai_coach_advice.ts:62`
+  contains `/["\r\n\t]/`, and the quote inside that character class opened a string that never
+  closed, so the scanner gave up on the whole file. A claim wider than the check, in the gate whose
+  subject is exactly that. Regex literals are now modelled with the standard preceding-token
+  heuristic, whose two failure modes are both safe. **Measured: 87 TypeScript files, 0 failures.**
+* **A regression asserted the right conclusion from the wrong failure.** `test_3c_…_that_3b_cannot_see`
+  claimed step 3b "cannot see" a reference to the identity package. It never got that far: `tsc`
+  exits 1 with TS6306 because the identity project is not `composite: true`. Concluding
+  "3b cannot see it" from that would be the same error as counting a mutant killed because an
+  unrelated exception turned the suite red. Split into two tests, each measuring what it says.
+* **`verify_deployment_isolation.py` is pure LF while `recognition_baseline.py` is pure CRLF.** The
+  patch tooling asserted rather than assumed, and refused to rewrite 302 line endings into a diff
+  nobody could review.
+
+### Evidence
+
+| | |
+| --- | --- |
+| Two target files | **12 failed / 15 passed → 75 passed, 0 failed** |
+| Test ids | 27 → 75; **0 removed**, 48 added (list diffed, not asserted) |
+| Whole directory | **424 passed** (376 before + 48), including the 224 G3 rights tests |
+| `verify_deployment_isolation.py` | exit 0, all 11 step markers including 3a/3b/3c |
+| `recognition_baseline.py --check` | exit 0 against the regenerated artefact |
+| Baseline regeneration | exactly 6 changed leaves — 4 stale `scannerContracts` sha256, `sourceCommit`, and the new comment-mention field. Nothing wider. |
+| Working tree | 5 modified files, no probe debris: every fixture, including the junction, lived outside the repository |
+
+The four stale hashes belong to `gemini_equipment_service.dart`, `machine_describer.dart`,
+`mlkit_live_equipment_service.dart` and `visual_equipment_providers.dart`, moved by `6ab9ff5`,
+`5d75709`, `d3c456f` and `70467cc` — reviewed later gates. The committed baseline had simply never
+been regenerated after them, which is precisely what `test_10` exists to catch.
+
+### Round 1 of the implementation review: two more MAJORs, both mine
+
+GPT-PM reviewed the implementation and returned **2 MAJOR, 0 BLOCKER**. Both were verified by
+measurement against the real code before acceptance, and all four constituent claims were fact.
+
+**MAJOR 1 — the fix reproduced the defect it was fixing, one layer down.** `verify_no_cross_import`
+stripped comments and then matched module-specifier and traversal *shapes* with regular expressions
+over the surviving text — which still contains string literals. Measured:
+
+* `const note = 'do not import "../functions-equipment-identity/src/x"';` was **REJECTED**. Prose
+  read as code: exactly the class of defect that produced this gate's twelve red tests, reintroduced
+  by the remediation for it.
+* `require("../" + "functions-equipment-identity/src/x")` and
+  `path.join("..", "functions-equipment-identity", "terms.json")` both **PASSED**. Real couplings,
+  invisible to a pattern hunting one contiguous spelling — and in a file under `src/**/__tests__`,
+  which `functions/tsconfig.json` excludes, step 3b cannot rescue that miss.
+
+Remediated by handing both questions to **TypeScript's own parser**
+(`scripts/equipment_identity/ts_dependency_probe.cjs`, using the compiler already installed in
+`functions/node_modules`). A module specifier is now read from the AST node that *is* a specifier;
+a runtime path is constant-folded from call arguments, covering string literals, substitution-free
+template literals, `+` concatenation, and `path.join`/`path.resolve` over constants. A folded value
+counts as a path only when the whole value is one — its first component is `.` or `..` — which is
+what separates a real `path.join` from a sentence quoting the same characters.
+
+**The hand-written comment stripper was deleted, not kept.** Once the parser answered the same
+questions, nothing distinguished the scanner from its own absence, and its three tests went with it.
+That is this repository's own precedent: G3 measured an absolute-path guard against 11,110 strings,
+found nothing could tell it from not existing, and deleted it. Keeping a subsumed check is not
+defence in depth; it is a claim.
+
+**MAJOR 2 — a fourth dependency channel: `tsconfig` inheritance.** A config can `extends` a file
+inside the identity package, contributing compiler options but no source files. Measured on a
+fixture doing exactly that: **3a passed** (no import), **3b passed** (52 program files, zero inside
+the identity package), **3c passed** (no project reference) — and `--showConfig` did not contain the
+word `extends` at all, because its output is the resolved options, not the files consumed to produce
+them. The default build nevertheless could not run if that file were deleted.
+
+Remediated as **step 3d**, `verify_no_config_inheritance_from_identity`: the chain is read from the
+config files themselves through TypeScript's JSONC-aware `readConfigFile`, resolved for both the
+string and TS5 array forms, canonicalised with the same `realpath`/component-containment discipline
+as 3b, walked transitively with cycle protection, and **failing closed** on an `extends` target that
+cannot be resolved — an unreadable link is not proof there is nothing at the end of it.
+
+**Regressions added, one per named bypass:** import-shaped prose and a git-status test title stay
+clean; four computed-path shapes in an *excluded* test file are each rejected; a direct `extends`
+into identity, a junction-alias `extends`, and a transitive `extends` through a neutral intermediate
+are each rejected; an ordinary non-identity base config is the green control; an unresolvable
+`extends` fails closed; a cycle terminates instead of hanging. The alias fixture asserts that its own
+config text does **not** name the package, so it cannot pass for the wrong reason.
+
+**Evidence after remediation:** whole directory **434 passed** (was 424 at round 1, 376 before the
+gate); `verify_deployment_isolation.py` exit 0 with 3a=48 files, 3b=855 program files / 0 inside
+identity, 3c=1 project, 3d=0 inherited configs; test ids **27 → 85** with **zero** of the original
+27 missing.
+
+**The bound that remains, stated plainly.** Constant folding is bounded to the forms named above. A
+path assembled at runtime from a variable is not detectable statically, and for a file excluded from
+`functions/tsconfig.json` step 3b cannot cover it. That residue is a named gap in the docstring, not
+a covered case — which is the whole discipline this gate was opened to restore.
+
+### Round 2: the remediation had two regressions of its own, and they were the same defect again
+
+GPT-PM verified the round-1 fixes and returned **2 MAJOR, 0 BLOCKER** — both direct regressions
+from that remediation, which is the one thing §17 permits a third round for. Both were measured
+against the submitted code before acceptance.
+
+**MAJOR 1 — the AST probe was semantic at the syntax node but not at the SINK.** It accepted any
+property named `.join`, `.resolve` or `.require`, and treated every call's constant-foldable
+arguments as filesystem paths. Measured, five false positives:
+
+```
+console.log("../functions-equipment-identity/src/x");     -> REJECTED
+foo.join("..", "functions-equipment-identity", "x");      -> REJECTED
+foo.resolve("..", "functions-equipment-identity", "x");   -> REJECTED
+obj.require("../functions-equipment-identity/src/x");     -> REJECTED
+```
+
+Data read as behaviour. That is this gate's own defect for the **third** time, each time one layer
+further down: first a comment read as code, then a string read as code, now an arbitrary object's
+method read as node's `path`.
+
+Remediated by binding the sinks to the modules they claim to be. The probe now collects which local
+names this file actually imported from `path` and `fs` — through `import * as`, a default import,
+named imports, `import x = require(...)`, `const x = require(...)` and object destructuring — and
+only then treats `path.join`/`path.resolve` as path construction and a method on an `fs` binding as
+a filesystem sink. `require` means the bare identifier; `obj.require` is an ordinary method call.
+Paths are read **only** from a real sink's arguments, not from every call.
+
+The fixtures moved with the contract: they now read through `fs.readFileSync(path.join(...))` in
+six shapes rather than assigning a bare `path.join(...)` to a variable, and five controls assert the
+non-dependency forms above stay clean. One older fixture that called an unbound `readFileSync(...)`
+stopped being detected and was corrected rather than special-cased — an unbound identifier is not
+node's filesystem module, and pretending otherwise is exactly how `foo.join(...)` became a
+dependency.
+
+**MAJOR 2 — the `extends` walk disagreed with TypeScript about a valid chain.** It parsed JSONC with
+TypeScript but resolved bare specifiers with node's `require.resolve`. Measured on a config package
+declaring `{"main": "index.js", "tsconfig": "base.json"}`: **tsc accepts it and inherits
+`base.json`** (exit 0, `"strict": true` present in the resolved options), while the hand-rolled
+resolver followed `main`, landed on JavaScript, and reported the chain unreadable. An instrument
+that fails a valid build is the same defect class as one that passes an invalid one.
+
+Remediated by deleting the hand-rolled resolver. `ts.getParsedCommandLineOfConfigFile` now runs with
+an instrumented host whose `readFile` records every file consumed — so the chain is, by
+construction, exactly what TypeScript read. Diagnostics `5083`/`6053` still fail the check closed;
+`18003` (no inputs) is ignored, because whether a config matches source files says nothing about
+what it inherits. A recorded path that does not exist is reported as unresolved rather than counted
+as an inherited config.
+
+Added regression: the `main`+`tsconfig` package must be accepted, and the test first asserts that
+**tsc itself** accepts it and inherits the option, so it measures a disagreement rather than
+asserting one.
+
+**Evidence after round 2:** whole directory **442 passed**; the two target files **93 collected, 0
+failed** against 27 before the gate, with **zero** of the original 27 missing;
+`verify_deployment_isolation.py` exit 0 with 3a = 48 files, 3b = 855 program files / 0 inside
+identity, 3c = 1 project, 3d = 0 inherited configs.
+
+**The residue, named rather than implied,** now in the docstring: a path assembled at runtime from a
+variable, a filesystem call through an alias the file does not bind from `fs`, and
+`require("path").join(...)` inline are not detectable here — and for a file excluded from
+`functions/tsconfig.json`, step 3b cannot rescue those misses either.
+
+### Round 3: the sink model knew WHICH object but not which binding, which argument, or what a path is
+
+GPT-PM closed the configuration-inheritance MAJOR and returned **2 MAJOR** more, both again
+regressions from the previous remediation. Five counterexamples, all measured against the submitted
+code before acceptance, all fact — three real dependencies read as clean, one piece of data read as
+a dependency:
+
+| counterexample | submitted behaviour |
+| --- | --- |
+| `import { readFileSync } from "fs"` then `readFileSync("../<identity>/terms.json")` | **clean** — only namespace bindings were collected |
+| the destructured CJS and aliased forms of the same | **clean** |
+| `fs.writeFileSync("output.txt", "../<identity>/src/x")` | **rejected** — the second argument is file CONTENT |
+| `fs.readFileSync(p.join("scratch", "..", "..", "<identity>", "terms.json"))` | **clean** |
+
+The last one is the sharpest. Node normalises that `join` to `../<identity>/terms.json` — verified by
+running node, not by reading its documentation — while the probe folded it as string concatenation
+into `scratch/../../<identity>/terms.json`, whose first component is `scratch`, so the containment
+predicate said no. A fully constant, correctly bound filesystem dependency, missed. And unlike the
+runtime-variable cases, constant `path.join`/`path.resolve` was explicitly CLAIMED as covered, so it
+was a claim wider than its check rather than a declared gap.
+
+**Remediation, made principled rather than patched.** Three parts:
+
+1. **Bindings by name and alias, not only by namespace.** `import { readFileSync as read } from "fs"`,
+   `const { readFileSync: read } = require("fs")` and their ESM/CJS variants now map a local name to
+   the `fs` export it stands for, so an aliased sink is still a sink.
+2. **Argument positions, not all arguments.** `FS_PATH_ARGUMENTS` says which parameters of each
+   filesystem API are pathnames — `writeFileSync` at 0, `copyFile`/`rename`/`symlink` at 0 and 1, and
+   so on. A method not in the table is read at position 0, node's near-universal convention, stated as
+   the convention it is.
+3. **Real path semantics.** `normalizeJoin` implements `path.join` including `.`/`..` cancellation and
+   a preserved leading `..`; `normalizeResolve` implements `resolve`'s right-to-left scan for an
+   absolute argument. Every emitted pathname is normalised in the probe, so the Python side compares
+   components and never reimplements node. Absolute results are judged by physical `realpath`
+   containment, the same discipline step 3b uses — which also closes a channel nothing had covered:
+   a constant absolute read into the package.
+
+**Regressions added:** four named/aliased/destructured `fs` sinks each rejected; two file-CONTENT
+fixtures each staying clean; the cancelling-`join` case rejected, with node's own answer measured
+inside the test rather than asserted; a `join` that walks into the package and back out again staying
+clean, so normalisation is proven real rather than a rule that fires on any mention of the name; and
+an absolute read into the package rejected.
+
+**Evidence after round 3:** whole directory **451 passed**; the two target files at **102 collected,
+0 failed** against 27 before the gate; **zero** of the original 27 test ids missing;
+`verify_deployment_isolation.py` exit 0 with 3a = 48 files, 3b = 855 / 0, 3c = 1, 3d = 0.
+
+**Residue, still named rather than implied:** a path assembled at runtime from a variable; a
+filesystem call through an alias the file never bound from `fs`; an inline `require("path").join(...)`;
+and a `path.resolve` whose arguments are all relative, whose true target depends on the working
+directory and is therefore emitted in its normalised relative form.
+
+### Round 4 of the implementation review — the same defect, in the two things the code still did by hand
+
+GPT-PM closed the round-3 findings and returned **2 MAJOR**, again regressions of the remediation
+itself. Both had the same shape as everything before them, and this time the shape is worth naming
+plainly: **the check was still reimplementing something the loaded tool already answers.**
+
+**MAJOR 1 — a name is not a binding.** `collectModuleBindings` walked the whole file and put the
+NAMES bound anywhere into file-global sets. That is not what a binding is, and three measured
+counterexamples followed from it. All FACT, measured against the submitted code before any fix:
+
+| counterexample | submitted | correct |
+| --- | --- | --- |
+| `import * as fs from "fs"` + `function inspect(fs: FakeFs) { fs.readFileSync("../<NAME>/terms.json") }` | **rejected** | clean — the parameter shadows the import |
+| the same with a block-local `const fs = {...}` | **rejected** | clean |
+| `import { promises as fsp } from "fs"` + `fsp.readFile("../<NAME>/terms.json")` | **clean** | reject — `fsp` IS bound from `fs` |
+
+The first two are the round-2 defect exactly — an arbitrary object's method read as node's API —
+one scope deeper. The third is its mirror: a real binding missed because the collector had no model
+of an object export. Neither belongs to the declared residue *"an alias this file does not bind from
+`fs`"*: two of them are bound from `fs`, and the first is not bound from it at all.
+
+**MAJOR 2 — hand-written path algebra disagrees with node on Windows.** `normalizeJoin` treated any
+drive prefix as anchoring, so it turned a drive-RELATIVE path into a drive-ABSOLUTE one. Measured,
+node against that code:
+
+```
+path.win32.join("D:..", "<NAME>", "package.json")
+  node        -> "D:..\<NAME>\package.json"   (isAbsolute false -- relative to the D: cwd)
+  hand-rolled -> "D:/<NAME>/package.json"       (absolute, a different place)
+```
+
+Physical containment then judged the wrong path and reported clean. A fully constant, correctly
+bound dependency, missed — and constant `path.join` was **explicitly claimed as covered**, so it
+could not be routed into the runtime-variable residue. Claim wider than check, for the fourth round
+running.
+
+**The remediation is a deletion in both cases, and that is the point.** The probe already loads the
+real TypeScript compiler and already runs inside node. It had no business owning a second, worse
+copy of either.
+
+* `collectModuleBindings` and `leftmostIdentifier` are **gone**. `makeBindingResolver` asks
+  `checker.getSymbolAtLocation` what an identifier is bound to AT THIS OCCURRENCE and reads the
+  declaration it lands on. Parameters, block scope, nested binding patterns, re-declaration and
+  every other scoping rule come free, because TypeScript already implements them. The program is
+  built with `noResolve`/`noLib` deliberately: nothing here needs `fs` to resolve to real type
+  declarations, and loading lib files would make the answer depend on what happens to be installed.
+* `normalizeJoin` and `normalizeResolve` are **gone**. `foldPathCall` calls the real
+  `path.win32` / `path.posix`. A binding's flavour comes from its module specifier, and a plain
+  `path` import is folded under **both** — this probe runs on Windows while `functions` deploys to
+  nodejs20 on Linux, so choosing one would silently choose a platform.
+* `FS_OBJECT_EXPORTS` names `promises` as the one `fs` export that is an object carrying the same
+  path-taking API, so `fs.promises.readFile`, `import { promises as fsp }` and
+  `const { promises: { readFile } } = require("fs")` all arrive at the same sink.
+* `require` is node's only when the identifier is bound to nothing — a file that declares its own
+  `require` no longer has its calls read as module resolution.
+
+**Two more, from the internal specialist review that ran BEFORE this round was sent (CLAUDE.md
+§17).** It reported four MAJOR; measurement confirmed one as a live defect and refuted two, which is
+recorded here because a finding accepted without measurement is an opinion:
+
+* **CONFIRMED, and fixed:** the `package.json` dependency channel matched by raw SUBSTRING while
+  every other channel in the same function matched by COMPONENT. Measured:
+  `{"other-lib": "npm:<NAME>-old@1.0.0"}` — a different package — was rejected as an isolation
+  breach. `_spec_components` now strips the `file:`/`link:`/`npm:`/`github:` protocol, splits on
+  path separators, and treats `@version` and `#ref` as decorations on a component rather than parts
+  of one. `file:../<NAME>` still rejects; the sibling and the fork do not.
+* **REFUTED by measurement:** that the `-old` sibling was mishandled at the specifier and fs-path
+  sinks (it was not — both already read clean), and that the dual-position `FS_PATH_ARGUMENTS`
+  entries and the untabulated fallback were broken (they were not). In both cases the behaviour was
+  already right and only the FIXTURE was missing — a real finding under this gate's own standard,
+  but a test gap, not a defect. Fixtures added for all of them.
+
+**The green suite was not taken as evidence.** Every new guard was mutation-checked: 14 mutations,
+each removing exactly one guard, each naming the test ids that must go red. Anchors and node ids are
+pre-flighted first, because this project has recorded twice that an anchor matching nothing reads as
+a pass. **14 of 14 killed** — but only after the first run, which killed 12 of 13 and left one
+survivor worth recording:
+
+> Folding a plain `path` import under posix ONLY survived the drive-relative regression, because the
+> Python side's drive-relative reading rescued that particular value. The guard was, for every
+> fixture then in the suite, indistinguishable from its own absence — the G3 subsumption case again.
+> Rather than delete it or keep it on faith, two fixtures were measured that separate the algebras:
+> `join("..\scratch", "..", NAME, "x")` is `..\<NAME>\x` under win32 and a bare `<NAME>/x` under
+> posix; `join("a\b", "..", "..", NAME, "x")` is `../<NAME>/x` under posix and a bare `<NAME>\x`
+> under win32. Each algebra catches exactly one of them, so both are load-bearing — and now both are
+> proven so, by a test that measures node's two answers rather than asserting a spelling of them.
+
+**Deliberate scope decision, stated rather than left silent.** Negative fixtures for steps 1 and 2
+(`firebase.json` codebases, byte-identical lockfiles) were added even though this gate did not touch
+that code and §17 would allow deferring them. Reason: they are the same module, the same verifier
+run, and the same defect class this gate exists for — both checks' rejection paths were unreached, so
+deleting their bodies would have kept the suite green. Fifteen lines of fixture is not the scope
+creep §17 guards against; carrying "a check nothing distinguishes from its absence" into a gate ABOUT
+that is worse.
+
+**Evidence after the two MAJORs above were closed:** whole directory 480 passed; the two target
+files at 131 collected, 0 failed; 14/14 mutants killed. Superseded by the numbers at the end of the
+next section, because the second internal review then found three more fail-open paths and the work
+did not stop there.
+
+### Round 4, continued — the three fail-open paths the second internal reviewer found, all in code this gate itself added
+
+The §17 sequencing exists for this: the internal specialists run BEFORE the work goes to GPT-PM. A
+second reviewer, hunting specifically for failures that pass silently in the SAFE-looking direction,
+returned three. All three were measured before acceptance, all three are FACT, and all three are the
+same defect class one more time — in code written during this gate, under docstrings that already
+promised the opposite.
+
+**F3 — the lexer was pointed at a span chosen by prose.** `classify_dart_source` itself was found
+clean: every truncation path raises, the fail-closed claim holds. But `_block_bounds`, the function
+that decides WHERE to apply it, located its marker with a raw `text.find` and counted brackets over
+raw characters. Measured on a fixture with a doc comment quoting the guard it looks for:
+
+```
+raw text.find  -> offset  41  (line 1, inside the comment)
+first_in_code  -> offset 135  (line 6, the real guard)
+_block_bounds returned the COMMENTED body
+```
+
+A fact taken from a comment about the source — the one thing this module's header says must never
+happen, committed by the step that chooses what to lex. `_block_bounds` now finds its marker in CODE
+via a shared `_index_of`, `_matching_close` counts brackets in CODE only (a `}` inside a string is a
+character, not a block end), and a marker that exists only in prose raises instead of falling back to
+it.
+
+**F1 — `extends` diagnostics outside a two-code allowlist were discarded.** `collectExtends` recorded
+only 5083 and 6053 as unresolved. Measured:
+
+| config | diagnostic | probe said | step 3d printed |
+| --- | --- | --- | --- |
+| circular `extends` chain | 18000 | `ok:true, unresolved:[]` | **OK, 1 inherited config** |
+| `"extends": 42` | 5024 | `ok:true, unresolved:[]` | **OK, 0 inherited configs** |
+
+Both are configs TypeScript could not follow, reported as configs with nothing to follow — an unread
+link read as no link, which is the subject of this whole gate. The allowlist is now an **exemption**
+list: every diagnostic counts as unresolved except 18003 ("no inputs were found"), which is about the
+files a config selects rather than the configs it inherits. The exemption is evidence-based — the
+real `functions/tsconfig.json` emits no diagnostics at all (measured), and every fixture config
+without sources emits 18003.
+
+**This exposed a test that had been green for the wrong reason.** `test_3d_survives_a_cycle_rather_
+than_hanging` asserted `>= 1` — it proved the check terminates, then accepted a RESULT over a chain
+TypeScript had explicitly refused to resolve. It now asserts both halves of what its name means:
+that the check refuses, and that it refuses promptly. A round-2 review passed that assertion; the
+fail-closed rule is what caught it.
+
+**F2 — an empty scan reported as a clean one.** `verify_no_cross_import` returned 0 for an empty
+`src/` and for a MISSING one, and `main()` printed `3a. no cross-import from functions/src: OK (0 .ts
+files)`. Its own docstring said an empty scan would be *"visibly empty rather than silently
+passing"* — visible was never the same as refused, and that gap is the claim-wider-than-check defect
+written into this gate's own prose. It now raises.
+
+**The mutation check grew with them, and found one more fixture weakness.** 19 mutations now, each
+removing exactly one guard. The first run of the extended set killed 18 of 19; the survivor was the
+body-brace guard, and the mutation was **not** inert — it genuinely moved where the body started. The
+fixture simply could not see the difference, because a body beginning at the comment's brace still
+contains the statement it asserted on and still excludes the comment text it asserted against. The
+fixture was rewritten to assert what the body must NOT contain (`f`'s real body opens no block, so a
+body holding a `{` at all started in the wrong place), and the mutant then died. Recorded because the
+lesson is the reviewer's own: a surviving mutant is a question, and the answer here was "the test was
+weak", not "the guard is redundant".
+
+**Evidence after round 4 in full:** whole directory **486 passed**; the two target files at **137
+collected, 0 failed** against 27 before the gate; **zero** of the original 27 ids missing; **19/19**
+mutants killed on a pre-flighted, green baseline; `verify_deployment_isolation.py` exit 0 with
+3a = 48 files, 3b = 855 / 0 inside identity, 3c = 1 project, 3d = 0 inherited configs;
+`recognition_baseline.py --check` exit 0, both payload hashes matching.
+
+**Residue, unchanged and still named rather than implied:** a path assembled at runtime from a
+variable; a filesystem call through an alias the file never bound from `fs`; an inline
+`require("path").join(...)`; and a `path.resolve` whose arguments are all relative, whose true target
+depends on the working directory and is therefore emitted in its normalised relative form. A
+Windows drive-relative path with no leading `..` (`D:<NAME>/x`) stays clean for the same reason a
+bare `<NAME>/x` does: nothing in it marks it as a path rather than a name.
+
+
+### Round 5 of the implementation review — each round-4 fix was right in one of the two places it had to hold
+
+GPT-PM closed the path-algebra MAJOR outright and confirmed, on the direct question, that the
+declared residue is **not** a blocker: step 3a is a bounded additional source-level guard, step 3b is
+the isolation proof, and the limits are now stated rather than falsely claimed. Two new MAJOR, 0
+BLOCKER — and the pattern has a name by now.
+
+**MAJOR 1 — the checker was consulted in one of the two places `require` is read.** `isRequireCall`
+asked `isUnbound` before treating a bare call as node's loader. `moduleOfRequire`, which decides that
+`const fs = require("fs")` creates an `fs` binding, checked only the SPELLING. Measured:
+
+```
+function require(n: string) { return { readFileSync: (p) => p }; }
+const fs = require("fs");
+fs.readFileSync("../<NAME>/terms.json");          -> REJECTED, wrongly
+```
+
+A locally declared function read as node's module loader, binding a fake object to the real `fs`.
+The round-4 note in this log said the checker now answers "what is this bound to HERE" — true of one
+call site, and the claim covered both. That is this gate's own defect committed by its own
+description of the fix.
+
+**MAJOR 1, second half — the one-program approach leaked SCRIPT globals between files.** This one is
+a genuine regression introduced by round 4, and the most serious finding of the round because it is a
+MISS rather than a false alarm. TypeScript treats a source with no import and no export as a script,
+whose top-level declarations share one global scope with every other script in the program. Measured:
+
+```
+other.ts   function require(name: string) { ... }        // no import, no export
+probe.ts   const mod = require("../<NAME>/src/index");    -> CLEAN, wrongly
+```
+
+A real, unambiguous cross-import read as clean because an UNRELATED sibling file declared a function
+of the same name. Node runs each file in its own module wrapper; one program over all of them did
+not, so one file's isolation answer came to depend on another file's contents. Fixed with
+`moduleDetection: ts.ModuleDetectionKind.Force` (TypeScript 5.9.3, verified present), which restores
+the per-file scope the runtime actually has.
+
+**MAJOR 2 — the chain model introduced a false negative on an API this file already tabulated.**
+`fs.realpath.native` and `fs.realpathSync.native` are real callable functions — measured in node, not
+read off documentation — taking the same pathname in the same position as their parents. The round-4
+rule required every intermediate chain segment to be an fs OBJECT export; `realpath` is a function,
+so the entire call was discarded as "not a sink". Both read clean. `FS_NATIVE_VARIANTS` is now a
+bounded set of exactly those two names, deliberately not a rule like "any `.native` member", because
+the whole point of the chain model is that an arbitrary `.foo.bar()` is an arbitrary object.
+
+**Mutation check, now 23 mutations, 23 killed — after two survivors that meant opposite things.**
+The first extended run left the `.native` chain CONTROL alive. Investigated rather than assumed: the
+fixture rooted its chain at `const anything = fs as unknown as {...}`, which is not a module binding
+at all, so the deleted check was never reached. **The mutant was inert against that fixture, which is
+not the same as the guard being redundant** — the distinction this project has already recorded once.
+The control was rerooted at a genuine `fs` namespace binding (`fs.constants.readFileSync(...)`,
+where `constants` is a real `fs` export that is still not an object of path-taking functions), and
+the mutant died. Compare the earlier survivor in round 4, where the same investigation reached the
+opposite conclusion and produced two new fixtures instead: a surviving mutant is a question, and the
+answer is not always the same one.
+
+**Evidence after round 5:** whole directory **493 passed**; the two target files at **144 collected,
+0 failed** against 27 before the gate; **zero** of the original 27 ids missing; **23/23** mutants
+killed on a pre-flighted, green baseline; `verify_deployment_isolation.py` exit 0 with 3a = 48 files,
+3b = 855 / 0 inside identity, 3c = 1 project, 3d = 0 inherited configs;
+`recognition_baseline.py --check` exit 0, both payload hashes matching.
+
+**GPT-PM's ruling on the residue, recorded because it settles a question this gate kept re-asking:**
+the declared limits — a runtime-assembled path, an alias never bound from `fs`, an inline
+`require("path").join(...)`, an all-relative `path.resolve`, and a drive-relative path with no
+leading `..` — are **not** a blocker. Step 3a is an additional bounded guard, not the exhaustive
+compile-isolation proof; step 3b is. The limits are acceptable precisely because they are stated
+rather than claimed as covered, which is the entire lesson of the five rounds above.
+
+
+### Round 6 of the implementation review — a declaration is not a binding
+
+**1 MAJOR, 0 BLOCKER** — the first round to come back with fewer than two. Both halves of round 5's
+MAJOR 1 closed (the checker-aware CJS initializer, and `moduleDetection: Force` against cross-file
+script globals), and the `.native` MAJOR closed with its bounded list and its negative control
+intact.
+
+The remaining MAJOR is the round-5 fix's own regression, and it is the sharpest statement of this
+gate's subject so far. Round 5 defined "not node's `require`" as **"the checker returned a
+declaration"**. But a declaration is not a binding: `declare function require(name: string): any;`
+gives the checker a `FunctionDeclaration` symbol and emits no JavaScript at all — what executes is
+still node's own module wrapper. Measured on the round-5 code:
+
+```
+declare function require(name: string): any;
+const fs = require("fs");
+fs.readFileSync("../<NAME>/terms.json");        -> CLEAN, wrongly
+require("../<NAME>/src/index");                 -> CLEAN, wrongly
+```
+
+Both channels, because `isUnbound` feeds the CJS initializer AND the bare-call specifier reader — so
+this is also the "fixed in one of the two places it lives" pattern from round 5, arriving through the
+predicate they share rather than through either caller. `declare const require: ...` behaves the same
+way; a type-only `interface require` already read correctly and is kept as a control.
+
+`isRuntimeValueDeclaration` now decides it: a declaration in a `.d.ts`, one carrying the `declare`
+modifier or sitting in an ambient context, an interface, a type alias, a type parameter, or a
+type-only import creates no runtime value and therefore shadows nothing. **The direction is chosen
+deliberately and stated here rather than left to the reader:** treating something as NOT a shadow
+means treating the call as node's, so a wrong guess in that direction costs a false alarm, and a
+wrong guess the other way costs a miss. Fail-closed points at "assume it is node's".
+
+**Evidence after round 6:** whole directory **498 passed**; the two target files at **149 collected,
+0 failed** against 27 before the gate; **zero** of the original 27 ids missing; **25/25** mutants
+killed on a pre-flighted, green baseline — including a control mutant (`isUnbound` returns true for
+everything) which proves the rule did not collapse into "nothing shadows `require`";
+`verify_deployment_isolation.py` exit 0 with 3a = 48 files, 3b = 855 / 0 inside identity, 3c = 1
+project, 3d = 0 inherited configs; `recognition_baseline.py --check` exit 0.
+
+
+### Round 7 of the implementation review — `import type` is erased, and a partly-refuted finding
+
+**1 MAJOR, 0 BLOCKER.** The round-6 ambient-declaration fix closed. The remaining MAJOR is its own
+next layer, and this entry records something more useful than the fix: **two thirds of the finding
+were refuted by measurement, and the third was real.**
+
+GPT-PM's claim was that `isRuntimeValueDeclaration` read `declaration.isTypeOnly`, which is the
+PER-SPECIFIER flag, and therefore missed the whole-clause form `import type { Foo as require }` where
+the specifier's own flag is false and the enclosing clause's is true. The AST shape is exactly as
+described — measured:
+
+```
+import type { Foo as require }   ImportSpecifier  own isTypeOnly=false  clause isTypeOnly=true
+import type * as require         NamespaceImport  own isTypeOnly=undefined  clause isTypeOnly=true
+import { Bar as b2 }             ImportSpecifier  own isTypeOnly=false  clause isTypeOnly=false
+```
+
+But the predicted BEHAVIOUR did not follow for two of the three fixtures. Measured end to end:
+
+| fixture | round-6 code |
+| --- | --- |
+| whole-clause `import type { Foo as require }` | **already rejected** |
+| per-specifier `import { type Foo as require }` | **already rejected** |
+| `import type * as require` | **CLEAN — a real miss** |
+
+The reason the first two were already right is worth writing down, because this code did not choose
+it: `checker.getSymbolAtLocation` returns **no declarations at all** for a type-only alias used in a
+VALUE position, so `isUnbound` was true by default and the call was correctly read as node's. The
+namespace form is the one the checker does resolve, and it was the live defect.
+
+**So the guard was right for a reason it had not stated — which is this gate's own defect wearing
+the opposite face.** Relying on that accident would be a check narrower than its claim rather than
+wider, and just as unearned. The hand-rolled flag test is gone; `ts.isTypeOnlyImportOrExportDeclaration`
+answers it instead, verified on all three shapes before adoption. Same move as `collectExtends`,
+`makeBindingResolver` and `foldPathCall` before it: the compiler already knows, stop writing a second
+copy.
+
+Regressions cover all three type-only shapes, plus **two value-import controls**
+(`import { Foo as require }` and `import * as require`) which must still shadow — without them the
+rule would be indistinguishable from "no import ever shadows `require`". Both control mutants for
+that over-correction are in the harness and both die.
+
+**Evidence after round 7:** whole directory **503 passed**; the two target files at **154 collected,
+0 failed** against 27 before the gate; **zero** of the original 27 ids missing; **27/27** mutants
+killed on a pre-flighted, green baseline; `verify_deployment_isolation.py` exit 0;
+`recognition_baseline.py --check` exit 0.
+
+
+### Round 8 — VERDICT: APPROVE, 0 BLOCKER / 0 MAJOR. Gate closed.
+
+Authorized by **GPT-PM**, not by the operator and not by the implementer — stated that way because
+CLAUDE.md §20 makes that verdict the authorization for the reversible actions that follow (commit,
+push), and reporting it as "I decided" would hide who is actually answerable for it. The receipt is
+`review.js` round 8, `verdict: "APPROVE"`, `correlated: true`, `verdict_contradiction: false`,
+reply id `8fb69351-f620-48d1-a6eb-1601cc237e49`.
+
+Two lines from the verdict are worth keeping verbatim, because both are about how the evidence was
+handled rather than about the code:
+
+> "I also agree with the measurement correction to my previous finding: the whole-clause named and
+> per-specifier cases were already rejected under the round-6 implementation because the checker
+> returned no usable declaration at the value-position occurrence; the actual demonstrated miss was
+> the namespace form. The remediation fixes the semantic rule rather than preserving that accidental
+> behaviour."
+
+> "This matters because without those controls, replacing the predicate with 'all imports are
+> non-runtime' could make the new type-only tests green for the wrong reason."
+
+### What this gate actually turned out to be
+
+Eight review rounds produced **twelve MAJOR**, and not one of them was in the project's source. All
+twelve were in the CHECKS — and nearly all of them in checks added by the PREVIOUS round of this same
+gate. The sequence, in order:
+
+1. the check read a comment as code;
+2. the fix read a string literal as code;
+3. the fix read an arbitrary object's method as node's API;
+4. the fix read a name as a binding, and string concatenation as path algebra;
+5. the fix asked the checker in one of the two places that needed it, and leaked script globals
+   between files;
+6. the fix treated a *declaration* as a runtime binding;
+7. the fix read a per-specifier flag instead of the import's semantics.
+
+Every step is the same defect: **a claim wider than what the check actually checks** — and once,
+in round 7, a claim NARROWER than it, where the guard was right for a reason it had not stated. Both
+are unearned in the same way.
+
+And every genuine fix was a **deletion**. The hand-rolled `extends` walker, the hand-rolled comment
+stripper, the hand-rolled binding collector, the hand-rolled path algebra, the hand-rolled type-only
+test — all removed, each replaced by asking the TypeScript compiler or node itself, both of which
+were already loaded in the same process and already knew the answer. `ts_dependency_probe.cjs` got
+*more* correct at every round while the amount of logic it owns went down.
+
+**The one thing this gate should be remembered for:** the source was innocent throughout. Twelve red
+tests at `ffb0449` were adopted on the explicit condition that the evidence, not a prior preference,
+would decide between "update the tests" and "fix the source". The evidence decided, repeatedly, and
+never once in favour of the source being wrong.
+
+
+### Planned versus done
+
+Every one of the twelve planned steps is **done**. Nothing was descoped. Two things are worth
+stating rather than leaving to silence:
+
+* `_extract_block`'s bracket counting is still raw — a `{` inside a string or comment could skew
+  block extraction. It does not today (measured: every block resolves correctly), it was not part of
+  the twelve failures, and widening the gate to it was explicitly refused by the gate's own bound.
+  It belongs to whichever gate next touches that helper.
+* Step 3a is kept alongside 3b rather than deleted as redundant, and the reason is proven by a
+  fixture, not argued: `functions/tsconfig.json` excludes `src/**/__tests__`, so an import there is
+  invisible to the compiler graph — yet `firebase.json`'s default `predeploy` runs `npm test`. Had
+  no fixture distinguished the two, the rule would have been deleted, as G3 deleted its unkillable
+  absolute-path guard.

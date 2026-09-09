@@ -24,6 +24,7 @@
     },
     "hybridServiceTriesCloudBeforeOnDevice": true,
     "liveMode": {
+      "cloudConceptMentionsInCommentsOnly": 1,
       "livePathIsOnDeviceOnly": true,
       "note": "Live mode's `settled` state is the functional analogue of ScanOutcome.confident (persisted to recognition history the same way) but has no answeredOffline-style guard, because it is always on-device. Do not assume offlineFallbackNeverReportsConfident covers this path.",
       "settledLiveReadingHasNoOfflineDowngradeEquivalent": true,
@@ -79,12 +80,12 @@
     {
       "path": "mobile/lib/features/visual_equipment/data/gemini_equipment_service.dart",
       "role": "CLOUD_CLASSIFIER_AND_HYBRID — GeminiVisualEquipmentService (primary) and HybridVisualEquipmentService (cloud-first, on-device-fallback orchestration)",
-      "sha256": "22f68cbcaf34420f530bae5058bc955020d0a810f61a0770100c370d0fc5185f"
+      "sha256": "f7fb0cb0291136a358d28340266a1e518521276eb5455989ed951547e979e764"
     },
     {
       "path": "mobile/lib/features/visual_equipment/data/machine_describer.dart",
       "role": "DESCRIBER_FALLBACK — names a machine that matched nothing in the catalogue; distinguishes ScanOutcome.unknown from .noEquipment",
-      "sha256": "c81505bc32dc70ac4bb32105ec95d22a270ab9577281df55f9cd727d122ff26b"
+      "sha256": "4231263007bd5e839c68ec1621a2e208656cb2cafafb0c413e1594c7371f155b"
     },
     {
       "path": "mobile/lib/features/visual_equipment/data/machine_text_anchor.dart",
@@ -94,7 +95,7 @@
     {
       "path": "mobile/lib/features/visual_equipment/data/mlkit_live_equipment_service.dart",
       "role": "LIVE_VIEWFINDER_RECOGNITION — continuous scan-tab recognition, same text-anchor-first ordering as the single-photo path",
-      "sha256": "475128c114b7de4c5fc37841478d63f49759c9a31bbb5d6bf2e9941e5939c6c7"
+      "sha256": "9318ff084d4d8696025b883d2288799b5948ffe4c613bcbbfc0ee646d057ad42"
     },
     {
       "path": "mobile/lib/features/visual_equipment/data/mlkit_text_recogniser.dart",
@@ -124,9 +125,9 @@
     {
       "path": "mobile/lib/features/visual_equipment/state/visual_equipment_providers.dart",
       "role": "ORCHESTRATION_CONTROLLER — VisualEquipmentController.classifyFilePath, wires text anchor -> hybrid classifier -> describer in one call",
-      "sha256": "9924cde8ea62fe4258c84ebedabfa83e6514fd7ae80a14108591227f9924db49"
+      "sha256": "6ded8d33e40cd1a0bfa8571048652962c288b0f135bd1b3a801a6069bdac5e29"
     }
   ],
   "schemaVersion": 1,
-  "sourceCommit": "f6315dd8b43c158871b1fb7778fa65d8269c36c7"
+  "sourceCommit": "ffb044913109a3da02e76d6b3b21b8b9b58c5fd5"
 }
