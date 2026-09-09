@@ -47311,3 +47311,44 @@ token invented for a single string.
 
 **Still open:** O1 — chrome-free footage, a versioned landmark track, and rendering through the
 app's own overlay. It needs an input this repository does not contain, and it is a separate gate.
+
+### G1-interim closure: GPT-PM refused the first close, and the DoD was amended rather than downgraded
+
+The closure review of `6ca2c36` returned `VERDICT: REVISE` with one MAJOR, and it was correct: I6's
+S8 evidence had three parts — the interim state, the tracked-body hand-over, and the foreground
+package — and the gate was being closed with the hand-over uncaptured. GPT-PM's words for what that
+would have been: *"a change to the previously approved Definition of Done [that] must be explicitly
+re-approved rather than silently converted from 'required' to 'covered by widget test'."*
+
+**Why it could not be captured.** The hand-over needs a human body in the S8's camera frame, and no
+part of that is reachable from this session: `adb` cannot inject camera frames into a physical
+device, the phone's aim cannot be changed from here, and the app exposes no debug hook feeding
+synthetic frames to the production pose pipeline — `MockPoseDetectorService` exists only inside
+`flutter test`. It is a physical input, not an avoided decision.
+
+**My error, recorded because it is the reusable part.** The plan named "S8 device evidence" without
+noticing that one third of it depends on a person being present. That should have been flagged when
+the plan was registered, not discovered at closure. A device-evidence item is worth reading twice
+for the difference between what a session can drive and what a human has to be there for.
+
+**The amendment, approved by GPT-PM.** I6 splits:
+
+- **I6a** — the interim no-demo state on the S8, on both the picker and the live screen, foreground
+  package confirmed under each capture. **DONE**, evidence in `6ca2c36`.
+- **I6b** — the tracked-body hand-over captured on the S8 with the foreground package confirmed.
+  **OPEN**, carried forward as a **mandatory** named item into O1's hardware closure: O1 may not
+  close until a real S8 capture proves no-demo → tracked body with the debug package confirmed
+  foreground, unless that future DoD is itself separately amended.
+
+The original I6 result stays recorded as partial. It is not retroactively rewritten as passed — the
+amendment is recorded after it, which is GPT-PM's own instruction and the only version of this that
+stays honest when read later.
+
+**What the residual actually is, stated rather than minimised.** The unverified condition is
+specifically that full-body detection becomes drawable on this physical S8 and causes the hand-over.
+Two things bound it, and neither is offered as a substitute: this gate did not touch
+`coachBodyDrawableProvider`, the native detector, camera ingestion or the drawability transition, so
+a failure there would predate `6ca2c36` rather than be caused by it; and the live capture shows the
+readiness band producing a real verdict from a real camera frame («Отойдите, чтобы в кадр попало всё
+тело»), so the native camera and the pose gate are both alive on this device — what is missing is a
+body, not a pipeline.

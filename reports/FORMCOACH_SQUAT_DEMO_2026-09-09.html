@@ -155,13 +155,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ a45bf10</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 6ca2c36</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 <div class="wrap">
 
@@ -501,6 +503,47 @@
     one open item, and it is named here rather than hidden inside a "done".
   </p>
 
+
+  <h2>An amendment to the Definition of Done</h2>
+  <p class="sub">The gate's closure was refused, and rightly</p>
+  <p>
+    The first attempt to close this gate drew <code>VERDICT: REVISE</code> from GPT-PM with one
+    MAJOR: I6's device evidence had three parts — the interim state, the tracked-body hand-over and
+    the foreground package — and the gate was being closed with the hand-over uncaptured. Quietly
+    calling it "covered by a widget test" would have downgraded an already-approved acceptance
+    criterion without asking.
+  </p>
+  <p>
+    It genuinely cannot be captured here: it needs a human body in the S8's camera frame.
+    <code>adb</code> cannot inject camera frames into a physical device, the phone's aim cannot be
+    changed from this session, and the app exposes no debug hook feeding synthetic frames to the
+    production pose pipeline — <code>MockPoseDetectorService</code> exists only inside
+    <code>flutter test</code>. It is a missing physical input, not avoided work.
+  </p>
+  <p>
+    <strong>The error was in the plan, not in the work.</strong> "S8 device evidence" was written
+    without noticing that a third of it depends on a person being present. That belonged in the plan
+    at registration, not in a discovery at closure.
+  </p>
+  <p><strong>The approved amendment:</strong> I6 splits.</p>
+  <ul>
+    <li>
+      <strong>I6a</strong> — the interim state on the S8, on both screens, with the package
+      confirmed. <span class="pill done">done</span>
+    </li>
+    <li>
+      <strong>I6b</strong> — the tracked-body hand-over captured on the S8 with the package
+      confirmed. <span class="pill no">open</span>, and carried into O1's closure as a
+      <strong>mandatory</strong> named item: O1 may not close until a real S8 capture proves
+      no-demo → tracked body with the debug package confirmed foreground.
+    </li>
+  </ul>
+  <p>
+    The historical result above is not rewritten: I6 was partial and stays recorded as partial. The
+    amendment sits after it rather than in place of it, which is the only version of this that stays
+    honest when read later.
+  </p>
+
   <h2>What remains</h2>
   <p>
     <strong>O1</strong> — footage free of anyone else's UI, a versioned landmark track, and rendering
@@ -521,6 +564,8 @@
   </p>
 
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>
