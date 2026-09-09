@@ -47061,3 +47061,35 @@ G1.5 (device evidence, which is only worth taking after the clip is fixed), G2.2
 load-bearing one: without it, every other assertion here is satisfied by a JSON file nothing reads.
 
 Report: `reports/FORMCOACH_SKY_ROM_GATE_2026-09-08.ru.html` and its English pair.
+
+## 2026-09-08 — G2.4: the three-way proof, and a registry pin that was checked for teeth
+
+**The proof is three-directional because two directions would have been free.** "Perturbing a ROM
+bound changes no rep count" is satisfied perfectly by a JSON file nothing reads, so the positive
+direction carries the weight: moving `typicalMinDeg` from 30 to 36 must move a 35-degree
+measurement from `withinTypical` to `belowTypical`. It does. The same perturbation leaves the squat
+fixture at exactly 1 rep, and dropping the squat config's `enterBelowDeg` from 115 to 90 — below the
+descent's 100 — takes that same fixture to 0. Without that third assertion the first two would only
+have shown that two unrelated things are unrelated.
+
+Both mutating directions are self-verifying, which is worth stating because this project has
+shipped tests that passed for the wrong reason. If the `replaceFirst` that perturbs the bound had
+matched nothing, the parsed reference would have been the shipped one and the `belowTypical`
+expectation would have failed; if `enterBelowDeg: 90` changed no behaviour, the expectation of 0
+would have failed. Eight tests pass in
+`mobile/test/core/reference/joint_rom_reference_test.dart`, plus the metric guard: `advise()`
+returns null for knee flexion, hip flexion and elbow flexion, so a sagittal rep angle cannot reach
+a transverse rotation range even by a caller trying.
+
+**The registry entry was mutation-checked rather than trusted.** `joint_rom_reference` is now in
+`core/ml/DATASET_REGISTRY.json` (AVAILABLE, 3 rows, sha256 `1a23d60e9d02a2b1…`). Registering it is
+slightly outside that registry's stated "two consumers, both models" framing, and the reason it
+belongs anyway is the one thing it does that nothing else here does: bind a name to bytes. This
+artifact is hand-editable JSON sitting in `mobile/assets/data/`, where an edit would look permanent
+and would in fact be silently reverted by the next builder run. So: edited the asset in place
+(`30` to `31`), ran `--check`, and it failed with "Either a dataset changed without the registry
+being regenerated, or the registry was hand-edited"; rebuilt, `--check` passes again, `git diff` on
+the asset clean. The pin has teeth.
+
+`created_at` is deliberately null. The builder writes no timestamp, because a timestamp is exactly
+what would stop two runs producing byte-identical output — the property the registry is pinning.

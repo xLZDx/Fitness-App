@@ -308,11 +308,68 @@ def _scanner_unresolved() -> dict[str, Any]:
     }
 
 
+def _joint_rom_reference() -> dict[str, Any]:
+    """The joint range-of-motion reference — a shipped asset, not training data.
+
+    It is registered here for the one thing this registry does that nothing
+    else does: bind a name to bytes, so `--check` fails when the file on disk
+    stops being the file the entry describes. That matters more than usual for
+    this artifact, because it is a hand-editable JSON sitting in
+    `mobile/assets/data/` where a well-meaning edit would look permanent and
+    would in fact be reverted by the next builder run.
+
+    `created_at` is None and that is deliberate rather than missing: the
+    builder writes no timestamp, because a timestamp is exactly what would
+    stop two runs producing byte-identical output.
+    """
+    path = REPO / "mobile" / "assets" / "data" / "joint_rom_reference.json"
+    if not path.is_file():
+        return None
+    doc = json.loads(path.read_text("utf-8"))
+    rows = doc.get("rows", [])
+    return {
+        "dataset_id": "joint_rom_reference",
+        "dataset_version": doc.get("schema", "joint_rom_reference/v1").split("/")[-1],
+        "purpose": (
+            "Advisory plausibility bounds for joint range of motion. NOT "
+            "exercise thresholds (those are measured from MM-Fit) and NOT a "
+            "clinical instrument: the artifact carries clinical_use=false."
+        ),
+        "status": "AVAILABLE",
+        "source_commit": _last_commit_touching(
+            "scripts/catalog/build_joint_rom_reference.py"),
+        "schema_version": doc.get("schema"),
+        "sources": {
+            "built_by": "scripts/catalog/build_joint_rom_reference.py",
+            "note": (
+                "Values recorded in core/DECISION_LOG.md on 2026-08-08 from an "
+                "operator poster photograph plus an article, kept there as a "
+                "SECOND source for plausibility bounds. They match the "
+                "benchmarks the usual clinical references publish, which is "
+                "not the same as being cited from one — hence clinical_use="
+                "false and no third-party table reproduced."
+            ),
+        },
+        "row_count": len(rows),
+        "splits": None,
+        "label_schema": sorted({k for r in rows for k in r}),
+        "label_provenance": (
+            "Per-row `provenance` field, carried on every row rather than "
+            "asserted once for the file."
+        ),
+        "artifact": {
+            "path": "mobile/assets/data/joint_rom_reference.json",
+            "sha256": _digest(path),
+        },
+        "created_at": None,
+    }
+
+
 def build() -> dict[str, Any]:
     entries = [
         e for e in
         (_ct1_catalogue(), *_review_batches(), _clinical_worklist(),
-         _scanner_unresolved())
+         _scanner_unresolved(), _joint_rom_reference())
         if e is not None
     ]
     for e in entries:

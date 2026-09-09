@@ -169,7 +169,7 @@
       "purpose": "The row-level worklist issued for external clinical validation of the contraindication tags. Answers D1/H3; not a training corpus.",
       "row_count": 1887,
       "schema_version": 1,
-      "source_commit": "8e1dc5ee8c39867ad252da6994840d15305a183e",
+      "source_commit": "698c6988c876b93c31b3e2864f91dfd9e3292762",
       "sources": {
         "catalogue": "mobile/assets/data/exercises_vendor.json",
         "catalogue_sha256": "d9de3a740f9cc3d20e5ee994170969fe90bbdb7549444f5330483b904f3197c8",
@@ -202,9 +202,41 @@
       },
       "splits": null,
       "status": "UNRESOLVED"
+    },
+    {
+      "artifact": {
+        "path": "mobile/assets/data/joint_rom_reference.json",
+        "sha256": "1a23d60e9d02a2b19d9db3d450a8aecc0acc26b79702b91fe1986e343385e535"
+      },
+      "created_at": null,
+      "dataset_id": "joint_rom_reference",
+      "dataset_version": "v1",
+      "label_provenance": "Per-row `provenance` field, carried on every row rather than asserted once for the file.",
+      "label_schema": [
+        "id",
+        "joint",
+        "measurementMethod",
+        "motion",
+        "plane",
+        "population",
+        "provenance",
+        "typicalMaxDeg",
+        "typicalMinDeg",
+        "unit"
+      ],
+      "purpose": "Advisory plausibility bounds for joint range of motion. NOT exercise thresholds (those are measured from MM-Fit) and NOT a clinical instrument: the artifact carries clinical_use=false.",
+      "row_count": 3,
+      "schema_version": "joint_rom_reference/v1",
+      "source_commit": "ad90c32fae4f1f758f4d435c8699f90d7e8c3869",
+      "sources": {
+        "built_by": "scripts/catalog/build_joint_rom_reference.py",
+        "note": "Values recorded in core/DECISION_LOG.md on 2026-08-08 from an operator poster photograph plus an article, kept there as a SECOND source for plausibility bounds. They match the benchmarks the usual clinical references publish, which is not the same as being cited from one — hence clinical_use=false and no third-party table reproduced."
+      },
+      "splits": null,
+      "status": "AVAILABLE"
     }
   ],
-  "registry_commit": "cc02f57ec15a843167db2aa760d62bb40a01d16d",
+  "registry_commit": "ad90c32fae4f1f758f4d435c8699f90d7e8c3869",
   "required_fields": [
     "dataset_id",
     "dataset_version",
