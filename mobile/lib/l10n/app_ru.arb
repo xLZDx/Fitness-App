@@ -1263,6 +1263,8 @@
   "formcheckPrepOpenCamera": "Готово — разрешить камеру",
   "formcheckSelectionStart": "Нажмите когда готовы",
   "formcheckSelectionDemoSemantics": "Показ выбранного движения: фигура выполняет его",
+  "formcheckSelectionDemoUnavailableSemantics": "Показа выбранного движения пока нет",
+  "formcheckDemoUnavailable": "Показа для этого движения пока нет",
   "photosConsentTitle": "Перед первым фото прогресса",
   "photosConsentOnDevice": "Фото шифруется на этом телефоне. Копии на сервере нет, и отсюда его нельзя ни отправить, ни выгрузить.",
   "photosConsentNoBackup": "Из этого же следует, что резервной копии нет. Переустановка приложения или потеря ключа — и фото не восстановит никто.",

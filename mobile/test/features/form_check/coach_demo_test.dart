@@ -24,7 +24,7 @@ import 'package:fitness_app/features/form_check/widgets/coach_demo_clip.dart';
 /// its own `value` the way the real one would, so `CoachDemoClip` cannot tell
 /// the difference and neither can the widget that builds on `value.size`.
 class _RecordingController extends VideoPlayerController {
-  _RecordingController() : super.asset('assets/coach_demo/squat_side.mp4');
+  _RecordingController() : super.asset('assets/test_only/no_such_clip.mp4');
 
   final calls = <String>[];
 
@@ -113,6 +113,19 @@ class _SlowController extends _RecordingController {
 }
 
 final _poster = find.byKey(const Key('form_check.demo_poster'));
+
+/// The clip these tests drive is never opened — every controller here is a
+/// fake — so this path only has to be a string.
+const _fakeClip = 'assets/test_only/no_such_clip.mp4';
+
+/// The poster, however, is a real `Image.asset`, so it has to be a bundled
+/// one or the widget throws before any of the lifecycle clauses run.
+///
+/// It is deliberately NOT the squat's old poster. That asset stopped being
+/// bundled with G1.2 (2026-09-09) — see `pubspec.yaml` — and a test for a
+/// widget that outlives the clip should not depend on the clip's leftovers.
+/// Any small bundled image does; this one is 5 KB.
+const _realPoster = 'assets/posters/girl/3_4_sit_up.jpg';
 final _video = find.byKey(const Key('form_check.demo_video'));
 
 Widget _host(
@@ -132,8 +145,8 @@ Widget _host(
             width: 270,
             height: 480,
             child: CoachDemoClip(
-              asset: 'assets/coach_demo/squat_side.mp4',
-              poster: 'assets/coach_demo/squat_side_poster.jpg',
+              asset: _fakeClip,
+              poster: _realPoster,
               active: active,
             ),
           ),
@@ -143,12 +156,22 @@ Widget _host(
 
 void main() {
   group('coachDemoFor', () {
-    test('the squat is the reference clip', () {
+    // I4a. Both halves matter and they fail for different reasons. The squat
+    // must be the STATED absence, not the clip (which G1.2 proved unusable)
+    // and not null (which renders nothing and is reserved for a movement the
+    // coach does not teach) and above all not the drawn figure — the squat has
+    // an authored `poseTargetsFor` pair, so a missing branch here would fall
+    // through to it silently and ship the stand-in the 2026-09-09 ruling
+    // rejected.
+    test('the squat is an explicit absence, not a clip and not a figure', () {
       final source = coachDemoFor(FormExercise.squat);
-      expect(source, isA<CoachDemoClipSource>());
-      source as CoachDemoClipSource;
-      expect(source.asset, 'assets/coach_demo/squat_side.mp4');
-      expect(source.poster, 'assets/coach_demo/squat_side_poster.jpg');
+      expect(source, isA<CoachDemoUnavailableSource>());
+      expect(source, isNot(isA<CoachDemoClipSource>()));
+      expect(source, isNot(isA<CoachDemoFigureSource>()));
+      expect(source, isNotNull,
+          reason: 'an absence the coach states, not one it renders as nothing');
+      expect(poseTargetsFor(FormExercise.squat), isNotNull,
+          reason: 'the fall-through this branch exists to prevent is real');
     });
 
     test('every other authored movement is the drawn figure, from the same '

@@ -31,7 +31,7 @@ import 'unscorable_frame_test.dart' show oneSquat;
 /// MAJOR). The recording controller is the only way to see the second half.
 
 class _RecordingController extends VideoPlayerController {
-  _RecordingController() : super.asset('assets/coach_demo/squat_side.mp4');
+  _RecordingController() : super.asset('assets/test_only/no_such_clip.mp4');
 
   final calls = <String>[];
 
@@ -96,8 +96,22 @@ final _target = find.byKey(const Key('form_check.silhouette'));
 final _clip = find.byKey(const Key('form_check.demo_clip'));
 final _skeleton = find.byKey(const Key('form_check.skeleton'));
 final _figure = find.byKey(const Key('form_check.demo_figure'));
+final _unavailable = find.byKey(const Key('form_check.demo_unavailable'));
 
 double _opacity(WidgetTester t) => t.widget<AnimatedOpacity>(_liveDemo).opacity;
+
+/// The lifecycle flag the host hands the demonstration: true while the
+/// demonstration is what the user is looking at, including for the whole fade
+/// that hides it.
+///
+/// These assertions used to read a video decoder's play/pause calls, because
+/// the squat's demonstration was a clip and the decoder was the only visible
+/// consequence of this flag. The squat's clip is gone (G1.2, 2026-09-09) and
+/// the flag is not: it is the contract `CoachDemoClip` consumes, and reading
+/// it directly keeps the timing covered without tying the page's hand-over
+/// behaviour to which source a movement happens to have. `coach_demo_test.dart`
+/// still holds the decoder's own end of the same contract.
+bool _active(WidgetTester t) => t.widget<CoachDemo>(find.byType(CoachDemo)).active;
 
 PoseTarget _demoTarget(WidgetTester t) =>
     (t.widget<CustomPaint>(_figure).painter! as DemoFigurePainter).target;
@@ -162,13 +176,19 @@ void main() {
 
     expect(_demo, findsOneWidget);
     expect(_opacity(t), 1);
-    expect(factory.only.calls, contains('play'));
-    expect(factory.only.calls, isNot(contains('pause')));
+    expect(_active(t), isTrue);
     expect(_avatar, findsNothing, reason: 'positive control: nobody to draw');
     expect(_target, findsNothing);
+    // I4b. The squat's demonstration is a stated absence now, so the live
+    // panel must show that and neither of the other two sources.
+    expect(_unavailable, findsOneWidget);
+    expect(_clip, findsNothing);
+    expect(_figure, findsNothing);
+    expect(factory.created, isEmpty,
+        reason: 'no decoder is opened for a movement with no clip');
   });
 
-  testWidgets('a tracked body fades it out, then stops the decoder',
+  testWidgets('a tracked body fades it out, then releases the demonstration',
       (t) async {
     _phoneSized(t);
     final factory = _Factory();
@@ -178,14 +198,14 @@ void main() {
 
     expect(_avatar, findsOneWidget, reason: 'positive control: a body IS drawn');
     expect(_opacity(t), 0);
-    expect(factory.only.calls.last, 'pause',
-        reason: 'a hidden loop must not keep decoding under the avatar');
+    expect(_active(t), isFalse,
+        reason: 'a hidden demonstration must not keep running under the avatar');
     expect(_target, findsNothing);
   });
 
-  testWidgets('the decoder keeps running until the fade has finished',
+  testWidgets('the demonstration stays active until the fade has finished',
       (t) async {
-    // The clause the previous test cannot see: pausing at the START of the
+    // The clause the previous test cannot see: releasing at the START of the
     // fade would freeze the last frame mid-fade and still end in the same
     // settled state. Stop half-way through the 300 ms fade and look.
     _phoneSized(t);
@@ -196,16 +216,14 @@ void main() {
     await t.pump(const Duration(seconds: 2));
     // The body is drawable; the fade has been started by this frame.
     expect(_opacity(t), 0, reason: 'positive control: the fade is under way');
-    expect(factory.only.calls, contains('play'));
 
     await t.pump(const Duration(milliseconds: 150));
-    expect(factory.only.calls, isNot(contains('pause')),
-        reason: 'mid-fade the clip must still be decoding');
+    expect(_active(t), isTrue,
+        reason: 'mid-fade the demonstration must still be running');
 
     await t.pump(const Duration(milliseconds: 400));
     await t.pump();
-    expect(factory.only.calls.last, 'pause',
-        reason: 'and stop once the fade has ended');
+    expect(_active(t), isFalse, reason: 'and stop once the fade has ended');
   });
 
   testWidgets('losing the body brings the demonstration back', (t) async {
@@ -217,7 +235,7 @@ void main() {
 
     expect(_avatar, findsNothing);
     expect(_opacity(t), 1);
-    expect(factory.only.calls.last, 'play');
+    expect(_active(t), isTrue);
   });
 
   testWidgets('camera mode hands over on the same body', (t) async {
@@ -232,16 +250,15 @@ void main() {
 
     expect(_avatar, findsNothing, reason: 'camera mode draws no avatar');
     expect(_opacity(t), 0);
-    expect(factory.only.calls.last, 'pause');
+    expect(_active(t), isFalse);
     expect(_target, findsNothing);
   });
 
   testWidgets('under reduce motion the hand-over still completes and the '
-      'clip never plays', (t) async {
+      'demonstration is released', (t) async {
     // The fade is zero-length here (`hudMotionDuration`), and `onEnd` is
-    // what returns the clip to inactive — if it did not fire for a
-    // zero-length animation, `active` would stay true for good. Observable
-    // on the clip widget itself.
+    // what returns the demonstration to inactive — if it did not fire for a
+    // zero-length animation, `active` would stay true for good.
     _phoneSized(t);
     t.platformDispatcher.accessibilityFeaturesTestValue =
         const FakeAccessibilityFeatures(disableAnimations: true);
@@ -253,8 +270,7 @@ void main() {
 
     expect(_avatar, findsOneWidget, reason: 'positive control');
     expect(_opacity(t), 0);
-    expect(factory.only.calls, isNot(contains('play')));
-    expect(t.widget<CoachDemoClip>(_clip).active, isFalse);
+    expect(_active(t), isFalse);
   });
 
   testWidgets('the drawn demonstration moves on the live screen while nobody '
@@ -369,6 +385,6 @@ void main() {
     expect(c.read(avatarCannotPlaceBodyProvider), isTrue,
         reason: 'positive control');
     expect(_opacity(t), 1);
-    expect(factory.only.calls, isNot(contains('pause')));
+    expect(_active(t), isTrue);
   });
 }

@@ -183,16 +183,23 @@ flutter:
     # party to credit. Stated because every other image directory here does have
     # one, and silence would read as an omission.
     - assets/coach_bg/
-    # G17. The Form Coach demonstration: the design reference's own clip
-    # (`core/design/reference/fitness_hud_v1/uploads/clip2-*.mp4`, a real
-    # person squatting side-on with a lit skeleton) cropped to 9:16 around the
-    # figure so the prototype's baked-in chrome is outside the frame, 540x960,
-    # 10 s loop, ~680 KB, plus its first frame as a poster for the moment
-    # before the decoder is ready and for reduce-motion. Bundled for the same
-    # reason the backdrops are: it is the first thing on the picker, and the
-    # operator's requirement is that it looks exactly like the reference — a
-    # drawn figure standing in for it was rejected on device (2026-09-04).
-    - assets/coach_demo/
+    # NOT bundled, deliberately: `assets/coach_demo/` is absent from this list.
+    #
+    # It held the Form Coach's squat demonstration, cropped from the design
+    # reference's own clip. The comment that used to sit here said the crop
+    # put "the prototype's baked-in chrome outside the frame", and G1.2
+    # (2026-09-09) measured that claim and found it false. The source is a
+    # screen recording of an older prototype: its coach line "stand tall to
+    # start counting" is present in all 240 frames, it crosses the standing
+    # figure's head so no crop can reach it, the rep counter reads 0
+    # throughout, and a toast reads "Too dark or too blurry to read your
+    # position". GPT-PM ruled the clip out of production until real
+    # chrome-free footage exists (`core/DECISION_LOG.md`, 2026-09-09).
+    #
+    # The files stay on disk and in git — they are the record of what was
+    # investigated, and deleting them is not this gate's call to make. Leaving
+    # them undeclared is what keeps them out of the app: nothing in `lib/`
+    # names them any more, and `coach_demo_test.dart` holds that.
 
   # The two families the design uses, bundled rather than fetched.
   #

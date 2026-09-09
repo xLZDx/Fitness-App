@@ -379,9 +379,26 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
               // not decoration. One static label rather than a live
               // description of the pose: a screen reader re-announcing a
               // looping animation would talk over everything else.
+              //
+              // The label follows the SOURCE, and has to. It used to say "a
+              // figure performing it" for every movement, so once the squat
+              // became an explicit absence (2026-09-09) the panel would have
+              // read "no demonstration yet" while announcing a figure
+              // performing one — the screen honest and the screen reader lied
+              // to. Caught by GPT-PM reviewing this gate's plan, which is
+              // where it had to be caught: a golden photographs pixels and
+              // cannot see a semantics tree at all.
+              //
+              // `excludeSemantics` keeps it to ONE announcement. The absence
+              // is stated visibly as well, and without this the panel would
+              // offer the wrapper's label and that text as two nodes.
               Semantics(
                 container: true,
-                label: l10n.formcheckSelectionDemoSemantics,
+                excludeSemantics: true,
+                label: coachDemoFor(ref.watch(selectedExerciseProvider))
+                        is CoachDemoUnavailableSource
+                    ? l10n.formcheckSelectionDemoUnavailableSemantics
+                    : l10n.formcheckSelectionDemoSemantics,
                 child: AspectRatio(
                   aspectRatio: 9 / 16,
                   child: ClipRRect(

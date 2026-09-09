@@ -608,8 +608,22 @@ void main() {
     // for exactly these two files (`git show HEAD:<f> | grep -v '^\s*//' |
     // grep -oE 'Colors\.white[0-9]*' | wc -l`): 4 and 1, nothing else in
     // `lib/` moved.
+    // 52 -> 53, 2026-09-09 (G1-interim: the squat's stated absence). The first
+    // INCREASE since G17, and the first entry in this ledger that is plain
+    // text rather than the figure's own drawing — so it is worth saying why it
+    // is a literal instead of a token.
+    //
+    // `widgets/coach_demo.dart` 0 -> 1: `_DemoUnavailable`'s sentence, at
+    // `Colors.white.withValues(alpha: 0.62)`. The demonstration panel is an
+    // opaque dark box (`form_check_page.dart`, `Colors.black` at .85) whatever
+    // theme the app is in, so a theme-following ink is exactly wrong here —
+    // under the light theme `textSecondary` is dark, and this text would be
+    // dark-on-near-black. That is why `coach_readiness_band.dart`'s own two
+    // entries in this ledger are literal whites too: same surface, same
+    // reason, and this one is deliberately consistent with them rather than
+    // inventing a token for a single string.
     final total = whites.values.fold<int>(0, (a, b) => a + b);
-    expect(total, 52, reason: 'per file: $whites');
+    expect(total, 53, reason: 'per file: $whites');
   });
 
   group('lerp', () {

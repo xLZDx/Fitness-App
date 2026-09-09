@@ -2292,6 +2292,8 @@
   "formcheckPrepOpenCamera": "Ready - allow the camera",
   "formcheckSelectionStart": "Press when you are ready",
   "formcheckSelectionDemoSemantics": "Demonstration of the chosen movement: a figure performing it",
+  "formcheckSelectionDemoUnavailableSemantics": "No demonstration of the chosen movement is available yet",
+  "formcheckDemoUnavailable": "No demonstration for this movement yet",
   "photosConsentTitle": "Before your first progress photo",
   "photosConsentOnDevice": "The photo is encrypted on this phone. There is no copy on a server, and nothing here can share or export one.",
   "photosConsentNoBackup": "Which also means there is no backup. Reinstalling the app, or losing its key, loses the photos - nobody can restore them for you.",

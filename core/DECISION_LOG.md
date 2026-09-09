@@ -47093,3 +47093,221 @@ the asset clean. The pin has teeth.
 
 `created_at` is deliberately null. The builder writes no timestamp, because a timestamp is exactly
 what would stop two runs producing byte-identical output — the property the registry is pinning.
+
+## 2026-09-09 — G1.2: the squat clip cannot be repaired from its source, and the reference amplifies the defect
+
+**The step was "choose branch A (re-render the clip without the prototype's chrome) or branch B
+(switch the squat to `CoachDemoFigureSource`), from the repository rather than assumption." The
+answer is neither, and the evidence closing each is different.**
+
+### What the shipped asset actually is
+
+`core/design/reference/fitness_hud_v1/uploads/clip2-1786933639870-ww0q.mp4` (1280x720, 24 fps,
+240 frames, md5 `26e56ed5eed3037e7c3101c958d89f37`, byte-identical to the `full_handoff_v1` copy) is
+not footage of a person. It is a **screen recording of an older prototype**, complete with its UI:
+a back arrow, a "Form coach" title, the coach line "stand tall to start counting" with a progress
+bar under it, a "reps / 0" counter, a bottom toast and a home indicator.
+`mobile/assets/coach_demo/squat_side.mp4` is a crop of that recording.
+
+Two defects in it are worse than "chrome", and neither was previously recorded:
+
+- **The recorded run never counts a repetition.** Across all 240 frames the counter reads `0`.
+  Measured, not sampled: frame-to-frame difference on the digit region is 3/255 everywhere except
+  frames 144-156, and those excursions are the figure's own arm crossing the region — inspected,
+  the digit still reads `0` in every one of them. The same measurement registers 159/255 when the
+  arm crosses, which is the control proving it can detect a real change.
+- **The recording shows the coach failing.** From roughly 4 s the bottom toast reads, in plain
+  English, "Too dark or too blurry to read your position". Before it, the toast is a file chip
+  ("...oo 1.png"). So the app's flagship demonstration of a squat is a video of a coach that cannot
+  read the squat.
+
+And the baked line is not merely untranslated decoration. `formcheckWaitingForTop` is the app's own
+string (`mobile/lib/l10n/app_en.arb:1119`, `mobile/lib/l10n/app_ru.arb:539` — «встаньте прямо,
+чтобы начать счёт»), so a Russian user reads the Russian band over an English duplicate burned into
+the pixels beneath it. Worse, `mobile/lib/features/form_check/widgets/coach_readiness_band.dart:31`
+records that this exact line was one of four instruction surfaces deliberately collapsed into one
+widget after a real phone caught all four disagreeing in a single frame. The clip re-introduces it
+as pixels, outside that priority order, permanently on.
+
+### Branch A is closed at every mechanism, measured
+
+1. **Time-crop to a clean segment** — impossible. The coach line is in all 240 frames: mean
+   brightness of the "counting" region stays within 165.36-166.76 and frame-to-frame change never
+   exceeds 14/255 (against 159/255 for a real change elsewhere).
+2. **Spatial crop** — impossible while keeping the figure. The line spans x 477-707 at y 68-95; the
+   standing figure occupies x 505-610 with the head top at y 35. The widest chrome-free 9:16 window
+   (`crop=340:605:430:115`) decapitates the standing pose and cuts the arms off the squat — it
+   removes exactly the alignment a form demonstration exists to show.
+3. **Inpainting** — already attempted and rejected: it smeared the face (G17 report).
+4. **Background-plate matte** — no plate exists. The clip's backdrop is not any of the app's ten
+   `assets/coach_bg/*.webp`; best PSNR across all ten is 14.17 dB (`10_beach_sunset`), the rest
+   7.1-10.8 dB, where a match would be 30+.
+5. **The reference's own compositing** — measured, and it does the opposite of what was assumed.
+
+### The correction that decided it
+
+`core/design/reference/fitness_hud_v1/Fitness Form Coach Phone.dc.html:22-25` does not show the clip
+as-is. It stacks two copies of it: a base at `saturate(.85) brightness(.72) contrast(1.02)`, and
+over it `grayscale(1) brightness(.62) contrast(7) sepia(1) hue-rotate(62deg) saturate(6)` with
+`mix-blend-mode:screen`, under a `radial-gradient(120% 80% at 50% 42%, rgba(8,10,18,.12),
+rgba(8,10,18,.86))` scrim. Reproducing that pipeline exactly (the `object-fit:cover` /
+`object-position:42% center` window computes to source x 397.9, width 332.7, full height) renders
+the reference look faithfully — which is how the reproduction is known to be right.
+
+It also disproves the hypothesis it was built to test. **The reference's glow layer amplifies the
+chrome instead of hiding it.** `contrast(7)` keeps whatever is brightest, and the white UI text is
+as bright as the skeleton lines, so "stand tall to start counting", "Form coach" and "Too dark or
+too blurry to read your position" come back glowing green alongside the body. There is therefore no
+rendering of this clip — including the design reference's own — in which the prototype's chrome is
+not visible.
+
+The same reproduction corrects an earlier reading in this log ("the misaligned skeleton"). The lit
+skeleton is not misaligned and is not an overlay the app could re-register: it is drawn into the
+recorded prototype's pixels, and the reference's second layer merely re-derives a glow from it.
+That also means new footage of a real person would produce no skeleton at all under this pipeline —
+the glow exists only because the recording already contained one.
+
+### Branch B is closed by a recorded product requirement, not by taste
+
+`mobile/lib/features/form_check/widgets/coach_demo_clip.dart:3-10` records the operator's
+requirement of 2026-09-04 and the three drawn stand-ins rejected on a real phone before it — a stick
+figure, a filled outline and a composed outline, the last rejected while every test and review of it
+was green. Switching the squat to `CoachDemoFigureSource` is a fourth drawn stand-in. Doing it
+unilaterally would be exactly the silent reinterpretation of a product requirement the working
+contract forbids, so it goes to the product owner rather than into a commit.
+
+### Where this leaves the demo
+
+The requirement ("a real person, dark against a dusk lake, a lit skeleton on the body") and the
+reference's *implementation* of it (screen-record a prototype) are separable, and only the second
+is unusable. The app already draws that exact figure — dark fill, faint rim, white glowing bones,
+joint dots — for the user's own avatar, so chrome-free footage plus the app's own overlay would
+satisfy the requirement honestly, localized, and in one visual language with what the user then
+sees of themselves. What is missing is the footage, which is a content-production input this
+repository does not contain.
+
+### GPT-PM ruling on G1.2, 2026-09-09
+
+Asked as a DECISION REQUEST with four options and a recommendation, per the working contract's rule
+that a product call goes to the product owner rather than into a commit. The ruling:
+
+- **Target: O1, approved.** New chrome-free side-on squat footage plus the app's own overlay
+  language — not the prototype recording.
+- **Interim: no squat demonstration at all.** O2 (drawn figure) rejected as the default interim
+  precisely because it contradicts the operator's recorded 2026-09-04 decision — *"I do not want to
+  silently reverse that requirement just to fill the slot."* O3 (chrome-free crop) rejected as
+  anatomically unusable. O4 (keep the current clip) rejected outright. *"At this stage, a missing
+  squat demo is less harmful than a false or visibly broken one."*
+- **O1's shape: a landmark track plus an app-owned overlay, not a burned-in video.** *"Do not burn
+  counters, English instructions, or readiness/status text into the delivered video."*
+
+The recommendation sent was O1 as target with O2 as the interim; the ruling took O1 and overrode the
+interim. That override is the right call and the reasoning is recorded here rather than paraphrased:
+shipping a drawn figure would have quietly reversed a settled operator decision to fill a slot, and
+"there are no real users yet" is an argument for tolerating an empty slot, not for reversing a
+decision cheaply.
+
+**Interim Definition of Done (set by GPT-PM, not by the implementer):** `coachDemoFor(squat)` no
+longer resolves to the clip; `squat_side.mp4` and its poster are not production-reachable for the
+squat; the UI renders an explicit honest no-demo state — no fake illustration, no prototype clip and
+no drawn-figure substitution; one widget/golden test proves that state renders deterministically;
+the three Form Coach goldens pass on their own page-rendering terms; S8 evidence shows the interim
+state, the tracked-body hand-over and the foreground package; and this log records both branches as
+investigated and unavailable, the interim as a product decision, and O1 as the approved target.
+
+**Final Definition of Done for O1:** footage with recorded provenance and rights, free of baked
+title, instruction text, counter, toast or foreign chrome; a deterministic, versioned landmark
+track; rendering through the app's own overlay; a complete squat cycle (standing, bottom, return);
+any instructional chrome app-owned and localized once; branch-specific verification including a
+mutation in which the old dirty clip fails and a revert confirmed clean; page-level goldens passing;
+S8 evidence; and no change to rep-counting or scoring behaviour elsewhere.
+
+**One implementation fact the ruling depends on, established before planning it.**
+`poseTargetsByTag['squat']` exists (`mobile/lib/features/form_check/data/pose_target.dart:539`), and
+`coachDemoFor` falls through to `CoachDemoFigureSource` for any movement with authored targets. So
+simply deleting the squat's clip branch would silently produce exactly the drawn figure the ruling
+rejects. The no-demo state has to be an explicit variant of `CoachDemoSource`, not an absence.
+
+## 2026-09-09 — G1-interim: the squat's demonstration becomes a stated absence
+
+Plan `fitness_app-2026-09-09T12-30-23-883Z-1718c8`, hash `41b2a50f0a5f3784…`, approved by GPT-PM
+(`VERDICT: APPROVE`, 0 BLOCKER / 0 MAJOR) against base `a45bf10`. The plan before it, hash
+`83227555…`, was refused with one MAJOR; the refusal is the most useful part of this entry and is
+recorded below rather than summarised away.
+
+**What shipped.** `coachDemoFor(FormExercise.squat)` returns a new `CoachDemoUnavailableSource`, and
+`CoachDemo` renders it as a sentence on the panel — «Показа для этого движения пока нет» /
+"No demonstration for this movement yet". `assets/coach_demo/` is no longer declared in
+`mobile/pubspec.yaml`, so the prototype recording is not bundled. The files stay on disk and in git:
+they are the record of what G1.2 investigated, and deleting them is not this gate's call.
+
+**Why the variant is explicit rather than a deleted branch.** `poseTargetsByTag['squat']` exists
+(`mobile/lib/features/form_check/data/pose_target.dart:539`), and `coachDemoFor` falls through to
+`CoachDemoFigureSource` for anything with authored targets. Simply removing the squat's clip branch
+would therefore have produced the drawn stand-in GPT-PM's ruling rejects — silently, and with every
+existing test still green. The absence had to be stated, not arrived at. A test now asserts the
+fall-through is real, so this reasoning cannot rot into a comment nobody re-checks.
+
+**GPT-PM's MAJOR, and what it would have shipped.** The first plan made the panel honest on screen
+and left `mobile/lib/features/form_check/form_check_page.dart:384` announcing
+`formcheckSelectionDemoSemantics` — "Demonstration of the chosen movement: a figure performing it"
+(`app_en.arb:2294`), «Показ выбранного движения: фигура выполняет его» (`app_ru.arb:1265`) —
+regardless of what the panel actually held. A sighted user would have read "no demonstration yet"
+while TalkBack said a figure was performing the squat. Verified against those three files before
+accepting the finding. The label is now source-aware, and the wrapper carries `excludeSemantics:
+true` so the visible sentence is not announced a second time in different words.
+
+That defect is invisible to everything this gate would otherwise have run. The goldens photograph
+pixels; a semantics tree has none. It is the same class as the four-surfaces-disagreeing defect
+`coach_readiness_band.dart:31` already records for this screen, which is worth noting: the screen
+that once shipped four contradicting instructions was about to ship a fifth, in the one channel
+nobody looks at.
+
+**The tests are proven, not asserted.** Two mutations, both run, both directions recorded.
+
+1. Squat restored to a `CoachDemoClipSource` (with a bundled poster, so a failure could not be the
+   trivial "asset missing"): six tests red across all four files — the source mapping in
+   `coach_demo_test.dart`, the render in `demo_silhouette_test.dart` (×2) and `live_demo_test.dart`,
+   and both semantics tests in `coach_selection_screen_test.dart`.
+2. The semantics label alone reverted to the source-independent one, leaving the rendering
+   untouched: exactly the two semantics tests red, `demo_silhouette_test.dart` still green. This
+   second mutation is the one that matters. Mutation 1 kills the semantics tests at their FIRST
+   assertion, which happens to be a widget-key one — so on its own it would have proved the
+   accessibility assertion is present, not that it has teeth. It does: the failure is
+   `bySemanticsLabel` finding 0 candidates.
+
+Revert green both times: 654 tests, and 3418 across `test/features`, `test/core`, `test/theme` and
+`test/shared`.
+
+**Goldens.** Verified in `ghcr.io/cirruslabs/flutter:3.27.1`, the only environment that can judge
+them — Windows font rasterisation differs from the masters'. `form_coach_live.png` and
+`form_coach_faulted.png` pass WITHOUT re-recording, which is the result the plan asked for and not a
+foregone one: both screens have a drawn body, so their demonstration is faded out and the change
+cannot reach them. `form_coach_selection.png` failed at 41.08 % / 230,032 px and was re-recorded,
+because the panel genuinely changed from a photograph of a person to a sentence. Only that one
+master moved. Windows then needed `flutter clean && flutter pub get` to undo the container's
+`.dart_tool`.
+
+**One test-fixture consequence, recorded because it looks like unrelated churn in the diff.**
+Removing `assets/coach_demo/` from the bundle broke the ten `CoachDemoClip` lifecycle tests: the
+widget's poster is a real `Image.asset`, and an undeclared asset throws before any lifecycle clause
+runs. `CoachDemoClip` itself is kept — O1 will need it — so its tests were pointed at a small
+bundled image (`assets/posters/girl/3_4_sit_up.jpg`) instead of the clip's leftovers. The assertions
+were already keyed on `form_check.demo_poster` rather than on a path, so nothing about what they
+prove changed.
+
+**And one deliberate coverage move.** `live_demo_test.dart` used to read a video decoder's
+play/pause calls to prove the demonstration keeps running until the fade ends and stops afterwards.
+With no clip in production there is no decoder to read, so those assertions now read
+`CoachDemo.active` — the flag the decoder was only ever a visible consequence of. The timing
+contract is unchanged and `coach_demo_test.dart` still holds the decoder's own end of it; what went
+away is the page-level test's dependence on which source a movement happens to have.
+
+**The white census moved 52 → 53** (`test/theme/app_semantic_colors_test.dart`), with the ledger
+entry that file requires. The panel is an opaque dark box in either theme, so a theme-following ink
+would be dark-on-near-black under the light theme; `coach_readiness_band.dart`'s own two literal
+whites are in this ledger for the same reason, and this one is consistent with them rather than a
+token invented for a single string.
+
+**Still open:** O1 — chrome-free footage, a versioned landmark track, and rendering through the
+app's own overlay. It needs an input this repository does not contain, and it is a separate gate.
