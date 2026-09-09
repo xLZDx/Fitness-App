@@ -1,0 +1,306 @@
+<title>The Coach's Sky and the ROM Reference</title>
+<style>
+  :root {
+    --ink: #16202b;
+    --ink-soft: #4a5c6d;
+    --ground: #f6f4ef;
+    --surface: #fffefb;
+    --line: #dcd7cc;
+    --accent: #1f6f6a;
+    --accent-soft: #e3efed;
+    --warn: #9a6510;
+    --warn-soft: #f7eddc;
+    --stop: #96331f;
+    --stop-soft: #f8e6e1;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8eef3;
+      --ink-soft: #a3b2bf;
+      --ground: #12181e;
+      --surface: #1a222a;
+      --line: #2e3a45;
+      --accent: #6fc9c1;
+      --accent-soft: #16302e;
+      --warn: #e0a94f;
+      --warn-soft: #2f2618;
+      --stop: #e08268;
+      --stop-soft: #33201b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8eef3; --ink-soft: #a3b2bf; --ground: #12181e; --surface: #1a222a;
+    --line: #2e3a45; --accent: #6fc9c1; --accent-soft: #16302e;
+    --warn: #e0a94f; --warn-soft: #2f2618; --stop: #e08268; --stop-soft: #33201b;
+  }
+  body { background: var(--ground); color: var(--ink);
+    font: 16px/1.65 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
+  .wrap { max-width: 62rem; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 1.2rem; margin-bottom: 1.5rem; }
+  h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.15; margin: 0 0 .5rem;
+       text-wrap: balance; letter-spacing: -.015em; }
+  .sub { color: var(--ink-soft); font-size: 1.05rem; margin: 0; }
+  h2 { font-size: 1.4rem; margin: 2.6rem 0 .8rem; letter-spacing: -.01em; }
+  h3 { font-size: 1.08rem; margin: 1.6rem 0 .4rem; }
+  p, li { color: var(--ink); }
+  .lede { font-size: 1.15rem; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+          padding: 1.1rem 1.3rem; margin: 1.1rem 0; }
+  .headline { border-left: 4px solid var(--accent); background: var(--accent-soft); }
+  .alarm { border-left: 4px solid var(--stop); background: var(--stop-soft); }
+  .num { font-variant-numeric: tabular-nums; font-weight: 700; }
+  code, .mono { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: .89em; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .93rem;
+          font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  th, td { text-align: left; vertical-align: top; padding: .6rem .7rem;
+           border-bottom: 1px solid var(--line); }
+  th { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em;
+       color: var(--ink-soft); font-weight: 600; }
+  .pill { display: inline-block; padding: .12rem .5rem; border-radius: 99px;
+          font-size: .76rem; font-weight: 700; white-space: nowrap;
+          font-family: system-ui, sans-serif; }
+  .ok { background: var(--accent-soft); color: var(--accent); }
+  .part { background: var(--warn-soft); color: var(--warn); }
+  .no { background: var(--stop-soft); color: var(--stop); }
+  .meas { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: .8rem 0 0; }
+  .meas div { flex: 1 1 12rem; }
+  .meas .v { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums;
+             font-family: system-ui, sans-serif; }
+  .meas .k { font-size: .8rem; color: var(--ink-soft); text-transform: uppercase;
+             letter-spacing: .05em; }
+</style>
+
+<div class="wrap">
+<header>
+  <h1>The Coach's Sky and the ROM Reference</h1>
+  <p class="sub">Gate G1&#8239;+&#8239;G2 · Rosetta plan <span class="mono">…22-18-51-089Z-9eb0b8</span> · 8 September 2026</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ a3b5041</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<p class="lede">Three Form Coach goldens were failing at 54% and had been excluded from verification
+with the note "we will come back to the coach later". The cause was not the layout.</p>
+
+<div class="card headline">
+  <h3 style="margin-top:0">What was actually breaking the masters</h3>
+  <p>The sky phase comes from the wall clock, and each of the six phases draws a <em>different</em>
+  backdrop photograph. The masters were recorded under one phase and checked under another, so the
+  difference depended on what time of day the suite happened to run.</p>
+  <div class="meas">
+    <div><div class="k">pinned to noon (day)</div><div class="v">55.31 / 55.53 / 55.29%</div></div>
+    <div><div class="k">pinned to 02:00 (night)</div><div class="v">3.33 / 4.20 / 1.64%</div></div>
+    <div><div class="k">in the Linux CI env</div><div class="v" style="color:var(--accent)">all three pass</div></div>
+  </div>
+  <p style="margin-bottom:0">The same numbers prove the clock injection is not decorative — change
+  the pinned instant and the picture changes — and they showed the masters were recorded under
+  night, which is why night is what the test pins. Any other choice would have meant re-recording
+  all three wholesale, and with them erasing the few percent that are about the coach rather than
+  about the weather.</p>
+</div>
+
+<div class="card alarm">
+  <h3 style="margin-top:0">The squat demo itself is still wrong</h3>
+  <p style="margin-bottom:0">What is fixed is the <em>ability to verify</em>, not the clip. The MP4
+  and its poster still carry the prototype's own chrome baked in — the text "stand tall to start
+  counting", a white pill, and a fake glow skeleton that does not line up with the joints — and the
+  still frame shows a standing person rather than a squat. Those are steps G1.2 and G1.3, and they
+  have not been started.</p>
+</div>
+
+<h2>Planned / Definition of Done / status</h2>
+<div class="scroll">
+<table>
+  <thead><tr><th>Step</th><th>Planned</th><th>Definition of Done (GPT-PM)</th><th>Status</th><th>Tail</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="mono">G1.1</td>
+      <td>Remove the two <code>DateTime.now()</code> call sites, pin the goldens to one instant, keep six phases alive in production</td>
+      <td>Repeated renders are byte-identical irrespective of the wall clock; a separate test still shows the six distinct phases at their boundaries</td>
+      <td><span class="pill ok">done</span></td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="mono">G1.2</td>
+      <td>Decide on evidence: re-render the clip without the foreign chrome, or move squat to the drawn figure</td>
+      <td>A branch is chosen and justified by recorded evidence rather than preference</td>
+      <td><span class="pill no">not started</span></td>
+      <td>Establish whether a chrome-free source clip exists (the G17 report mentions an original plus an ffmpeg derivation)</td>
+    </tr>
+    <tr>
+      <td class="mono">G1.3</td>
+      <td>Branch-specific verification: real MP4 frames, or an assertion about the figure source</td>
+      <td>Substituting the old dirty clip must fail the test; a golden that renders the poster is not evidence about the clip</td>
+      <td><span class="pill no">not started</span></td>
+      <td>Depends on G1.2's branch. The container log confirmed the golden only ever sees the poster (<code>UnimplementedError: init()</code>)</td>
+    </tr>
+    <tr>
+      <td class="mono">G1.4</td>
+      <td>Return the three excluded goldens to verification and make them pass</td>
+      <td>The three pass on their own terms, claiming nothing about clip content</td>
+      <td><span class="pill ok">done</span></td>
+      <td>No mechanical skip ever existed — "excluded" was a decision in the log. They can only be checked in <code>ghcr.io/cirruslabs/flutter:3.27.1</code></td>
+    </tr>
+    <tr>
+      <td class="mono">G1.5</td>
+      <td>Hardware evidence: the squat demonstration and the tracked-body hand-over</td>
+      <td>Screenshots taken by this session from the S8, foreground package confirmed</td>
+      <td><span class="pill no">not started</span></td>
+      <td>Only meaningful after G1.2 — there is nothing worth photographing until the clip is fixed</td>
+    </tr>
+    <tr>
+      <td class="mono">G2.1</td>
+      <td>Settle source and licence before building anything</td>
+      <td>A verdict is recorded: either a citable reference with an explicit licence, or a narrowing to internal bounds with no clinical assertion</td>
+      <td><span class="pill ok">done</span></td>
+      <td>Verdict: <strong>narrow</strong>. Detail below</td>
+    </tr>
+    <tr>
+      <td class="mono">G2.2</td>
+      <td>Build a metric-typed reference the way this repository already builds reference data</td>
+      <td>Every row carries joint, motion, method, unit, population and provenance; the build is deterministic; the registry pins it by hash</td>
+      <td><span class="pill part">partial</span></td>
+      <td>Builder and asset exist, determinism proven by an identical sha256 across two runs. Registration in <code>dataset_registry.py</code> is not done yet</td>
+    </tr>
+    <tr>
+      <td class="mono">G2.3</td>
+      <td>Land it as an independent reference, not wired to the rep configs</td>
+      <td>No ROM value affects any rep count</td>
+      <td><span class="pill ok">done</span></td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="mono">G2.4</td>
+      <td>Prove consumption in three directions at once</td>
+      <td>A ROM perturbation changes an advisory result; the same perturbation leaves rep counts identical; a measured-config perturbation changes a rep count</td>
+      <td><span class="pill no">not started</span></td>
+      <td>The Dart consumer is written, the tests are not. The positive direction is mandatory: without it a green result is compatible with dead code</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Why the ROM reference did not become clinical</h2>
+<p>The numbers (hip internal rotation 30–40°, external 40–60°, tibial rotation 10–15°) existed only
+as prose in the 8 August decision-log entry. Their provenance is a photograph of a poster and a blog
+article. A search confirmed the values match the benchmarks published in the usual clinical
+references, but "matches something widely repeated" is not a citation, and the authoritative
+goniometry references are copyrighted.</p>
+<p>So the verdict is to <strong>narrow the claim</strong>: the artifact carries
+<code>clinical_use: false</code>, every row carries the origin it actually has, and nothing here may
+be shown to a user as a medical finding. A side benefit of that choice is that the artifact then
+depends on no third-party licence at all, because no external table is reproduced.</p>
+
+<h3>And why it is not wired to rep counting</h3>
+<p>This correction came from GPT-PM's review and was verified against source. The rep counter drives
+every movement from a three-landmark <em>sagittal</em> angle — squat is
+<code>leftHip/leftKnee/leftAnkle</code>. Every row in the reference is a <em>transverse-plane
+rotation</em>. They are different measurements about different axes, and the fact that both are
+expressed in degrees is not a relationship between them. Constraining a 70–172° knee measurement by
+a 30–60° hip-rotation interval would have produced validation that reads as rigorous and means
+nothing.</p>
+
+<h2>Evidence</h2>
+<ul>
+  <li><span class="num">655</span> tests pass: <code>hud_sky_test.dart</code> plus the whole <code>form_check</code> suite — the injection changed no coach behaviour, and the six phases are still asserted independently.</li>
+  <li><span class="num">3 of 3</span> goldens pass inside <code>ghcr.io/cirruslabs/flutter:3.27.1</code>, the very environment the masters were recorded in (commit <code>49630fb</code>).</li>
+  <li>The 1.6–4.2% residual on Windows is a difference on <em>text glyphs only</em>, with the backdrop and poster clean. That is another OS's font rasterisation, which is why these goldens cannot be verified to pass on this machine at all.</li>
+  <li>Identical sha256 for the ROM asset across two builder runs; <code>--check</code> passes.</li>
+  <li>No file owned by the separate G3 plan (<code>source_registry.json</code>, <code>rights.py</code>, <code>canonical_selection_eligibility.py</code>) was touched.</li>
+</ul>
+
+<h2>A note on evidence hygiene</h2>
+<p><code>docker pull</code> reported <code>exited with code 0</code> while in fact doing nothing: the
+daemon was not running, and the <code>| tail</code> in the pipeline replaced the real exit status. It
+was caught by reading the output rather than trusting the code. Recorded in the decision log because
+it is this project's recurring defect in miniature — a green result that proves nothing.</p>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

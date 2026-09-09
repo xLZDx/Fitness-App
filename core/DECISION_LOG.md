@@ -47009,3 +47009,55 @@ follow-up rather than silently widened.
 passing, so the injection changes no coach behaviour and the six-phase boundary mapping is still
 asserted independently. Diff is 45 insertions / 2 deletions across three files; nothing owned by the
 G3 plan (`source_registry.json`, `rights.py`, `canonical_selection_eligibility.py`) is touched.
+
+## 2026-09-08 — G1.4 settled in the container, and G2 lands as a deliberately non-clinical reference
+
+**G1.4: the three goldens pass, and only Linux can say so.** Run inside
+`ghcr.io/cirruslabs/flutter:3.27.1` — the environment commit `49630fb` recorded the masters as
+coming from — all three report `+3: All tests passed!` with the clock pinned to night. That closes
+the question the entry above opened: the 54% was the sky, and nothing about the layout was ever
+wrong. Two details worth keeping. There was never a mechanical skip; "excluded from verification"
+was a decision in this log, so nothing needed re-enabling. And the container log carries
+`coach demo clip failed to load: assets/coach_demo/squat_side.mp4: UnimplementedError: init() has
+not been implemented` — direct confirmation that these goldens render the POSTER and never a pixel
+of the MP4, which is exactly why the plan makes G1.3's clip evidence branch-specific rather than
+letting a green golden stand in for it.
+
+Afterwards `flutter clean && flutter pub get` on Windows, because the container's Linux `pub get`
+writes a `.dart_tool` the native toolchain cannot use. Re-verified with a Windows run: 41 passing.
+
+**G2.1 verdict: narrow the claim.** The choice offered was a citable reference with an explicit
+licence, or an artifact that makes no clinical assertion. Taken: the second. A web search confirmed
+the documented values (hip internal rotation 30-40, external 40-60) match the benchmarks the usual
+clinical references publish, which is why they are worth keeping at all — but "matches something
+widely repeated" is not a citation, the authoritative goniometry sources are copyrighted textbooks,
+and this project ships a fitness app rather than a diagnostic instrument. So the artifact carries
+`clinical_use: false`, each row carries the origin it actually has (a poster photograph and an
+article, named as such), and nothing in it may be shown to a user as a medical finding. That also
+removes the licence question rather than answering it weakly: no external table is reproduced, so
+no third-party licence is depended on.
+
+**G2.2 built the way this repository already builds reference data.**
+`scripts/catalog/build_joint_rom_reference.py` emits
+`mobile/assets/data/joint_rom_reference.json`. Determinism is measured, not asserted: two runs
+produce sha256 `1a23d60e9d02a2b1…`, and `--check` passes against the committed file. Every row
+carries `joint`, `motion`, `plane`, `unit`, `measurementMethod`, `population`, the typical range and
+`provenance`, and the builder refuses to emit a row missing any of them or holding an inverted
+range. `assets/data/` is already declared as a directory in `pubspec.yaml`, so nothing there needed
+touching.
+
+**G2.3: independent, and the code enforces it rather than a comment asking nicely.**
+`mobile/lib/core/reference/joint_rom_reference.dart` addresses a row by joint AND motion, and
+`advise()` returns null when nothing describes that metric. A squat's
+`leftHip/leftKnee/leftAnkle` angle therefore cannot be scored against a hip-rotation range even by
+accident — the caller would have to name a joint/motion pair that does not exist and would get
+nothing back. It lives in `core/reference/` rather than `core/health/` (which is Health Connect and
+HealthKit) or under a feature, because GPT-PM's ruling is precisely that it belongs to neither.
+
+**Still open in this plan:** G1.2 and G1.3 (the clip itself is still the prototype's, with the baked
+text and the misaligned skeleton — what got fixed so far is the ability to verify it, not the demo),
+G1.5 (device evidence, which is only worth taking after the clip is fixed), G2.2's registration in
+`dataset_registry.py`, and G2.4's three-way mutation proof. G2.4's positive direction is the
+load-bearing one: without it, every other assertion here is satisfied by a JSON file nothing reads.
+
+Report: `reports/FORMCOACH_SKY_ROM_GATE_2026-09-08.ru.html` and its English pair.

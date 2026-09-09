@@ -1,0 +1,303 @@
+<title>Небо тренера и справочник амплитуд</title>
+<style>
+  :root {
+    --ink: #16202b;
+    --ink-soft: #4a5c6d;
+    --ground: #f6f4ef;
+    --surface: #fffefb;
+    --line: #dcd7cc;
+    --accent: #1f6f6a;
+    --accent-soft: #e3efed;
+    --warn: #9a6510;
+    --warn-soft: #f7eddc;
+    --stop: #96331f;
+    --stop-soft: #f8e6e1;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e8eef3;
+      --ink-soft: #a3b2bf;
+      --ground: #12181e;
+      --surface: #1a222a;
+      --line: #2e3a45;
+      --accent: #6fc9c1;
+      --accent-soft: #16302e;
+      --warn: #e0a94f;
+      --warn-soft: #2f2618;
+      --stop: #e08268;
+      --stop-soft: #33201b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e8eef3; --ink-soft: #a3b2bf; --ground: #12181e; --surface: #1a222a;
+    --line: #2e3a45; --accent: #6fc9c1; --accent-soft: #16302e;
+    --warn: #e0a94f; --warn-soft: #2f2618; --stop: #e08268; --stop-soft: #33201b;
+  }
+  body { background: var(--ground); color: var(--ink);
+    font: 16px/1.65 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; }
+  .wrap { max-width: 62rem; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 1.2rem; margin-bottom: 1.5rem; }
+  h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.15; margin: 0 0 .5rem;
+       text-wrap: balance; letter-spacing: -.015em; }
+  .sub { color: var(--ink-soft); font-size: 1.05rem; margin: 0; }
+  h2 { font-size: 1.4rem; margin: 2.6rem 0 .8rem; letter-spacing: -.01em; }
+  h3 { font-size: 1.08rem; margin: 1.6rem 0 .4rem; }
+  p, li { color: var(--ink); }
+  .lede { font-size: 1.15rem; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+          padding: 1.1rem 1.3rem; margin: 1.1rem 0; }
+  .headline { border-left: 4px solid var(--accent); background: var(--accent-soft); }
+  .alarm { border-left: 4px solid var(--stop); background: var(--stop-soft); }
+  .num { font-variant-numeric: tabular-nums; font-weight: 700; }
+  code, .mono { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: .89em; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .93rem;
+          font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  th, td { text-align: left; vertical-align: top; padding: .6rem .7rem;
+           border-bottom: 1px solid var(--line); }
+  th { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em;
+       color: var(--ink-soft); font-weight: 600; }
+  .pill { display: inline-block; padding: .12rem .5rem; border-radius: 99px;
+          font-size: .76rem; font-weight: 700; white-space: nowrap;
+          font-family: system-ui, sans-serif; }
+  .ok { background: var(--accent-soft); color: var(--accent); }
+  .part { background: var(--warn-soft); color: var(--warn); }
+  .no { background: var(--stop-soft); color: var(--stop); }
+  .meas { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: .8rem 0 0; }
+  .meas div { flex: 1 1 12rem; }
+  .meas .v { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums;
+             font-family: system-ui, sans-serif; }
+  .meas .k { font-size: .8rem; color: var(--ink-soft); text-transform: uppercase;
+             letter-spacing: .05em; }
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Небо тренера и справочник амплитуд</h1>
+  <p class="sub">Гейт G1&#8239;+&#8239;G2 · Rosetta-план <span class="mono">…22-18-51-089Z-9eb0b8</span> · 8 сентября 2026</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ a3b5041</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<p class="lede">Три golden-теста Form Coach падали с расхождением 54% и были выведены из проверки
+формулировкой «к тренеру вернёмся позже». Причина оказалась не в вёрстке.</p>
+
+<div class="card headline">
+  <h3 style="margin-top:0">Что на самом деле ломало эталоны</h3>
+  <p>Фаза неба берётся от настенных часов, а каждая из шести фаз рисует <em>другую</em> фоновую
+  фотографию. Эталоны записывали в одной фазе, а проверяли в другой — расхождение зависело от того,
+  в какое время суток запущен прогон.</p>
+  <div class="meas">
+    <div><div class="k">пин на полдень (day)</div><div class="v">55.31 / 55.53 / 55.29%</div></div>
+    <div><div class="k">пин на 02:00 (night)</div><div class="v">3.33 / 4.20 / 1.64%</div></div>
+    <div><div class="k">в CI-среде Linux</div><div class="v" style="color:var(--accent)">все три проходят</div></div>
+  </div>
+  <p style="margin-bottom:0">Эти же цифры доказывают, что инъекция часов не декоративна: меняешь
+  закреплённый момент — меняется картинка. И они же показали, что эталоны записаны в ночной фазе,
+  поэтому закреплена ночь: любой другой выбор потребовал бы переписать все три эталона и вместе с
+  ними стереть те несколько процентов, которые единственные относятся к тренеру, а не к погоде.</p>
+</div>
+
+<div class="card alarm">
+  <h3 style="margin-top:0">Само демо приседа всё ещё неправильное</h3>
+  <p style="margin-bottom:0">Починена <em>возможность проверять</em>, а не сам ролик. В MP4 и постер
+  по-прежнему запечены элементы прототипа — надпись «stand tall to start counting», белая плашка и
+  фальшивый светящийся скелет, не совпадающий с суставами, — а стоп-кадр показывает стоящего
+  человека, а не присед. Это шаги G1.2 и G1.3, они не начаты.</p>
+</div>
+
+<h2>Планировалось / критерий приёмки / статус</h2>
+<div class="scroll">
+<table>
+  <thead><tr><th>Шаг</th><th>Что планировалось</th><th>Definition of Done (GPT-PM)</th><th>Статус</th><th>Хвост</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="mono">G1.1</td>
+      <td>Убрать два вызова <code>DateTime.now()</code>, закрепить goldenы на одном моменте, сохранив шесть фаз в проде</td>
+      <td>Повторные рендеры байт-идентичны независимо от настенных часов; отдельный тест по-прежнему подтверждает шесть различных фаз на границах</td>
+      <td><span class="pill ok">сделано</span></td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="mono">G1.2</td>
+      <td>Решить по фактам: перерендерить ролик без чужой графики либо перевести присед на рисованную фигуру</td>
+      <td>Ветка выбрана и обоснована зафиксированной уликой, а не предпочтением</td>
+      <td><span class="pill no">не начато</span></td>
+      <td>Проверить, существует ли исходник ролика без графики прототипа (в отчёте G17 упомянут оригинал и ffmpeg-производная)</td>
+    </tr>
+    <tr>
+      <td class="mono">G1.3</td>
+      <td>Проверка под выбранную ветку: тест на кадрах реального MP4 либо утверждение о fig-источнике</td>
+      <td>Подмена старого «грязного» ролика обязана ронять тест; golden, рисующий постер, доказательством о ролике не считается</td>
+      <td><span class="pill no">не начато</span></td>
+      <td>Зависит от ветки в G1.2. Лог контейнера подтвердил, что golden видит только постер (<code>UnimplementedError: init()</code>)</td>
+    </tr>
+    <tr>
+      <td class="mono">G1.4</td>
+      <td>Вернуть три исключённых goldenа в проверку и добиться прохождения</td>
+      <td>Три goldenа проходят на своих условиях, без претензии на доказательство содержимого ролика</td>
+      <td><span class="pill ok">сделано</span></td>
+      <td>Механического скипа не существовало — «исключены» было решением в логе. Проверять их можно только в контейнере <code>ghcr.io/cirruslabs/flutter:3.27.1</code></td>
+    </tr>
+    <tr>
+      <td class="mono">G1.5</td>
+      <td>Доказательство с телефона: сам показ приседа и передача на отслеженное тело</td>
+      <td>Скриншоты сняты этой сессией с S8, foreground-пакет подтверждён</td>
+      <td><span class="pill no">не начато</span></td>
+      <td>Осмысленно только после G1.2 — снимать нечего, пока ролик не исправлен</td>
+    </tr>
+    <tr>
+      <td class="mono">G2.1</td>
+      <td>Закрыть вопрос источника и лицензии до того, как что-то строить</td>
+      <td>Вердикт записан: либо цитируемый источник с явной лицензией, либо сужение до внутренних границ без клинического утверждения</td>
+      <td><span class="pill ok">сделано</span></td>
+      <td>Вердикт — <strong>сузить</strong>. Подробности ниже</td>
+    </tr>
+    <tr>
+      <td class="mono">G2.2</td>
+      <td>Собрать типизированный по метрике справочник существующим в репозитории способом</td>
+      <td>Каждая строка несёт сустав, движение, метод измерения, единицу, популяцию и провенанс; сборка детерминирована; пин по хэшу в реестре</td>
+      <td><span class="pill part">частично</span></td>
+      <td>Генератор и ассет готовы, детерминизм подтверждён одинаковым sha256 на двух прогонах. Регистрация в <code>dataset_registry.py</code> ещё не сделана</td>
+    </tr>
+    <tr>
+      <td class="mono">G2.3</td>
+      <td>Положить справочник как независимый, не подключая к конфигам счёта повторов</td>
+      <td>Ни одно значение амплитуды не влияет на счёт повторов</td>
+      <td><span class="pill ok">сделано</span></td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td class="mono">G2.4</td>
+      <td>Доказать потребление тремя направлениями сразу</td>
+      <td>Сдвиг границы меняет консультативный результат; он же не меняет счёт повторов; сдвиг измеренного конфига счёт меняет</td>
+      <td><span class="pill no">не начато</span></td>
+      <td>Потребитель на Dart написан, тесты — нет. Положительное направление обязательно: без него зелёный результат совместим с мёртвым кодом</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Почему справочник амплитуд не стал клиническим</h2>
+<p>Числа (внутренняя ротация бедра 30–40°, наружная 40–60°, ротация голени 10–15°) существовали
+только прозой в журнале решений от 8 августа. Их провенанс — фотография плаката и статья в блоге.
+Поиск подтвердил, что значения совпадают с общепринятыми клиническими бенчмарками, но «совпадает с
+чем-то широко растиражированным» — это не ссылка, а авторитетные справочники по гониометрии
+защищены авторским правом.</p>
+<p>Поэтому вердикт — <strong>сузить утверждение</strong>: артефакт несёт <code>clinical_use:
+false</code>, каждая строка — свой настоящий провенанс, и ничто отсюда не может быть показано
+пользователю как медицинский вывод. Побочный выигрыш: при таком решении артефакт вообще не зависит
+от чужой лицензии, потому что ни одна внешняя таблица не воспроизводится.</p>
+
+<h3>И почему он не подключён к счёту повторов</h3>
+<p>Это исправление пришло из ревью GPT-PM и было проверено по исходникам. Счётчик повторов ведёт
+каждое движение от трёхточечного <em>сагиттального</em> угла — присед это
+<code>leftHip/leftKnee/leftAnkle</code>. Все строки справочника — <em>ротации в поперечной
+плоскости</em>. Это разные измерения вокруг разных осей, и то, что и там и там градусы, отношением
+между ними не является. Ограничить измерение колена в 70–172° интервалом ротации бедра в 30–60°
+значило бы получить валидацию, которая выглядит строгой и не значит ничего.</p>
+
+<h2>Улики</h2>
+<ul>
+  <li><span class="num">655</span> тестов проходят: <code>hud_sky_test.dart</code> плюс вся связка <code>form_check</code> — инъекция не изменила поведение тренера, а шесть фаз по-прежнему проверяются отдельно.</li>
+  <li><span class="num">3 из 3</span> golden-теста проходят в контейнере <code>ghcr.io/cirruslabs/flutter:3.27.1</code> — той самой среде, в которой эталоны и записывались (коммит <code>49630fb</code>).</li>
+  <li>Остаток в 1.6–4.2% под Windows — расхождение <em>только на глифах текста</em>, фон и постер чисты. Это растеризация шрифтов другой ОС, поэтому на этой машине goldenы на прохождение проверить нельзя в принципе.</li>
+  <li>Одинаковый sha256 ассета амплитуд на двух прогонах генератора; <code>--check</code> проходит.</li>
+  <li>Ни один файл, закреплённый за отдельным планом G3 (<code>source_registry.json</code>, <code>rights.py</code>, <code>canonical_selection_eligibility.py</code>), не тронут.</li>
+</ul>
+
+<h2>Замечание о гигиене доказательств</h2>
+<p><code>docker pull</code> отрапортовал <code>exited with code 0</code>, хотя на деле не выполнился:
+демон не был запущен, а <code>| tail</code> в конвейере подменил реальный код возврата. Поймано
+чтением вывода, а не доверием к коду. Записано в журнал решений, потому что это в миниатюре
+повторяющийся дефект проекта — зелёный результат, который ничего не доказывает.</p>
+
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

@@ -1,0 +1,46 @@
+{
+  "schema": "joint_rom_reference/v1",
+  "generated_by": "scripts/catalog/build_joint_rom_reference.py",
+  "clinical_use": false,
+  "disclaimer": "Non-clinical plausibility bounds. These values are not a diagnosis, not a clinical assessment, and must never be presented to a user as a medical finding. Exercise thresholds come from measurement (MM-Fit), never from here.",
+  "not_rep_thresholds": "Every row is a transverse-plane rotation. The rep counter measures sagittal three-landmark angles. A bound here may only ever be applied to a measurement of the SAME metric, which today means none of the rep configs.",
+  "limitation_note_ru": "ограничение значимо при < 20°",
+  "rows": [
+    {
+      "id": "hip_internal_rotation",
+      "joint": "hip",
+      "motion": "internal_rotation",
+      "plane": "transverse",
+      "unit": "degree",
+      "measurementMethod": "goniometry_passive",
+      "population": "adult_general",
+      "typicalMinDeg": 30,
+      "typicalMaxDeg": 40,
+      "provenance": "core/DECISION_LOG.md 2026-08-08: operator poster photograph plus a bodycoach article, recorded there as a SECOND source for plausibility bounds and explicitly not as exercise thresholds"
+    },
+    {
+      "id": "hip_external_rotation",
+      "joint": "hip",
+      "motion": "external_rotation",
+      "plane": "transverse",
+      "unit": "degree",
+      "measurementMethod": "goniometry_passive",
+      "population": "adult_general",
+      "typicalMinDeg": 40,
+      "typicalMaxDeg": 60,
+      "provenance": "core/DECISION_LOG.md 2026-08-08: operator poster photograph plus a bodycoach article, recorded there as a SECOND source for plausibility bounds and explicitly not as exercise thresholds"
+    },
+    {
+      "id": "tibial_rotation",
+      "joint": "tibia",
+      "motion": "rotation",
+      "plane": "transverse",
+      "unit": "degree",
+      "measurementMethod": "goniometry_passive",
+      "population": "adult_general",
+      "typicalMinDeg": 10,
+      "typicalMaxDeg": 15,
+      "provenance": "core/DECISION_LOG.md 2026-08-08: operator poster photograph plus a bodycoach article, recorded there as a SECOND source for plausibility bounds and explicitly not as exercise thresholds"
+    }
+  ]
+}
