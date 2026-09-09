@@ -47352,3 +47352,51 @@ a failure there would predate `6ca2c36` rather than be caused by it; and the liv
 readiness band producing a real verdict from a real camera frame («Отойдите, чтобы в кадр попало всё
 тело»), so the native camera and the pose gate are both alive on this device — what is missing is a
 body, not a pipeline.
+
+## 2026-09-09 — G3 findings re-verified against source; one of the three was wrong as recorded
+
+Three opening findings had been carried forward for a separate G3 plan. Re-read against the files
+before planning anything on them, and the outcome is worth recording because one did not survive.
+
+**"Retire the executable 50/4 floor in `canonical_selection_eligibility.py`" — WITHDRAWN.** The file
+says what it is, and it is not drift:
+`scripts/equipment_identity/canonical_selection_eligibility.py` enforces a precondition GPT-PM set
+and two earlier decision-log entries carry, the per-brand and pool counts are *"computed fresh from
+the real data every time this runs, never hardcoded"* (only the thresholds 4 and 50 are constants,
+at `:124` and `:126`), and the two-factor rule is deliberately fail-closed — a genuinely
+well-corroborated Matrix candidate still does not unlock canonical selection while Technogym and
+Panatta sit at zero. Retiring it would remove a working mechanical guard, not tidy one up.
+
+The observation underneath it is still true, and is narrower than the finding it was written as:
+**the 50/4 floor is not the binding constraint.** All 17 sources in
+`core/equipment_identity/p0/source_registry.json` are `legalReviewState: UNREVIEWED`, and
+`scripts/equipment_identity/rights.py` refuses every privileged use for an UNREVIEWED source with no
+exception route. So even a pool that reached 50 tomorrow would put nothing in the app. Effort spent
+crawling toward the floor is effort spent on the lock that is not holding the door. That is a
+sequencing statement for the roadmap, not a change to the gate — and stating it as "retire the
+floor" would have turned a priority observation into a request to weaken a safety control.
+
+**"A source-wide grant can rest on evidence covering only part of the population" — CONFIRMED.**
+`rights.py` has no concept of population scope at all: permissions are granted per `sourceId`,
+wholesale. `core/equipment_identity/p1/wger_staging/wger_license_raw.json` records that individual
+wger records do not carry a resolved reference into wger's own licence list, so promoting
+`wger_project` to REVIEWED would grant the whole source on evidence that demonstrably covers only
+some of it. Nothing in the contract can currently express "reviewed for this subset".
+
+**"REVIEWED/BLOCKED decisions are not bound to a terms snapshot" — CONFIRMED.** `rights.py` requires
+`reviewedAt` for both REVIEWED and BLOCKED, and `termsCaptured: true` for REVIEWED — but
+`termsSnapshotSha256` is validated only when it is already present (`if rights["termsCaptured"] and
+"termsSnapshotSha256" in rights`). So a source can become REVIEWED on terms nobody can re-check
+later, and BLOCKED needs no captured terms at all. "A human reviewed actual captured terms" is
+enforced as a boolean the reviewer sets, not as a hash of what they read.
+
+**What this means for the next gate.** G3 is worth doing and is now two items rather than three:
+make the rights contract able to express a scoped grant, and bind a REVIEWED/BLOCKED decision to the
+bytes of the terms it rests on. Both are preparation for the one action that can actually unblock
+the branded equipment data — a human reviewing real terms — so that when that review happens it is
+expressible and auditable rather than a boolean somebody set. Neither touches the 50/4 floor.
+
+**The reusable lesson.** The withdrawn finding reached this session as a one-line summary of earlier
+work, and read as actionable. Reading the file it named took a few minutes and reversed it. A
+finding carried across a context boundary is a claim about a file, not a fact, until the file has
+been read again.
