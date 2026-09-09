@@ -361,7 +361,8 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
   Widget _selectionScreen(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return HudSkyBackground(
-      selection: HudSkySelection(phase: HudSkyPhase.forTime(DateTime.now())),
+      selection: HudSkySelection(
+          phase: HudSkyPhase.forTime(ref.watch(coachClockProvider)())),
       child: FrostedScaffold(
         appBar: GlassAppBar(title: l10n.formcheckFormCoach),
         body: HudQuality(
@@ -537,7 +538,8 @@ class _FormCheckPageState extends ConsumerState<FormCheckPage>
         _backToSelection();
       },
       child: HudSkyBackground(
-      selection: HudSkySelection(phase: HudSkyPhase.forTime(DateTime.now())),
+      selection: HudSkySelection(
+          phase: HudSkyPhase.forTime(ref.watch(coachClockProvider)())),
       child: FrostedScaffold(
       appBar: GlassAppBar(
         title: AppLocalizations.of(context).formcheckFormCoach,

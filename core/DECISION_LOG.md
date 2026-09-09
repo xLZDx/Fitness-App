@@ -46955,3 +46955,57 @@ it is not what "delete the line" literally asked for: the debt the comment compl
 CI stays green, and the file no longer asserts an open credential exposure that was never real. If
 the intent was instead to purge the string from history itself, that is a rewrite and needs its own
 authorisation.
+
+## 2026-09-08 — G1.1: the Form Coach sky becomes injectable, and the measurement that chose the pinned instant
+
+Under Rosetta plan `fitness_app-2026-09-08T22-18-51-089Z-9eb0b8` (GPT-PM APPROVE, after 7 MAJOR then
+3 MAJOR across two earlier revisions; G3 split into its own plan).
+
+**What changed.** `coachClockProvider` joins `coachBackdropRandomProvider` in
+`form_check_providers.dart`, and the two `HudSkyPhase.forTime(DateTime.now())` call sites in
+`form_check_page.dart` now read it. It hands out `DateTime.now` itself — a function, not a
+`DateTime` — deliberately: a `Provider<DateTime>` is computed once per container, which would pin
+the phase for a whole session and silently stop the sky advancing from dusk to night while the app
+is open. Handing out the function keeps production evaluating the phase on every rebuild exactly as
+before, and lets a test override it with a fixed instant.
+
+**The pinned instant was measured, not chosen by taste, and the measurement found something.** With
+the clock pinned to noon (`day`) the three goldens differ from their masters by 55.31 / 55.53 /
+55.29 percent. Pinned to 02:00 (`night`): 3.33 / 4.20 / 1.64. Two facts fall out at once. The
+override is genuinely load-bearing — change the instant and the picture changes — and **the
+committed masters were recorded under `night`**. Pinning any other phase would have required
+re-recording all three wholesale, which would have swallowed that remaining few percent: the only
+part of the difference that is about the coach rather than about the weather. So the test pins
+02:00, well inside a band that wraps midnight (`h < 5 || h >= 22`).
+
+This is the answer to why those three goldens sat excluded at "54%" since
+`DECISION_LOG.md:41716-41722`. It was never a layout regression. The images were recorded in one sky
+phase and checked in another, and which phase you got depended on what time of day the suite ran.
+
+**The residual few percent is not ours, and here is the evidence.** The isolated diff for
+`form_coach_selection` shows differences on TEXT GLYPHS ONLY — every heading, chip and paragraph
+outlined, the backdrop and the demonstration poster clean. Commit `49630fb`
+("regenerate form_coach goldens from a CI-matching Linux env") records that the masters were
+produced inside `ghcr.io/cirruslabs/flutter:3.27.1`. This session runs on Windows, whose font
+rasterisation differs. **These three goldens therefore cannot be verified to PASS on this machine at
+all** — that is G1.4's job and it needs the container, not a re-record here. Re-recording them on
+Windows would have made them green and simultaneously destroyed their value for CI, which is exactly
+the failure mode `form_coach_golden_test.dart`'s own header warns about.
+
+**Docker is installed but its daemon is not running**, so the container run is not available right
+now: `docker pull` reported `exited with code 0` while its actual output was
+`failed to connect to the docker API ... check if the daemon is running`. The pipeline's `| tail`
+had masked the real exit status. Recorded because it is this project's recurring defect in miniature
+— a green result that proves nothing — and because it was caught only by reading the output rather
+than trusting the code.
+
+**Deliberately not touched.** Three further `HudSkyPhase.forTime(DateTime.now())` call sites exist:
+`coach_intro_cards.dart:65` (also inside `features/form_check/`), `onboarding_page.dart:196` and
+`main_shell.dart:29`. None is rendered by these three goldens — they cover the live HUD, a faulted
+rep and the picker — and the approved plan scopes G1.1 to the two call sites that are. Left as a
+follow-up rather than silently widened.
+
+**Evidence.** `flutter test test/core/background/hud_sky_test.dart test/features/form_check/` — 655
+passing, so the injection changes no coach behaviour and the six-phase boundary mapping is still
+asserted independently. Diff is 45 insertions / 2 deletions across three files; nothing owned by the
+G3 plan (`source_registry.json`, `rights.py`, `canonical_selection_eligibility.py`) is touched.

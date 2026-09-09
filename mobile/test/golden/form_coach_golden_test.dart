@@ -138,8 +138,32 @@ void main() {
   /// container its own sequence, starting from the same seed, so the first
   /// pick and the reshuffle are pinned independent of what any other
   /// container's provider tree has done.
+  /// The sky phase needs the same treatment, and did not have it. A seeded
+  /// `Random` pins which of the ten scenes is drawn, but `HudSkyPhase.forTime`
+  /// picks the PHASE from the wall clock, and each phase draws a different
+  /// photograph — so these goldens rendered one picture when recorded and
+  /// another when checked a few hours later. That is the 54% difference that
+  /// left all three excluded from verification rather than any layout change.
+  ///
+  /// 02:00 is not an arbitrary pick, and the measurement that chose it is
+  /// worth keeping. Pinned to noon (`day`) these three goldens differ from
+  /// their masters by 55.31 / 55.53 / 55.29 percent; pinned to 02:00 (`night`)
+  /// the same three differ by 3.33 / 4.20 / 1.64. The masters were therefore
+  /// recorded under `night`, and pinning any other phase would have meant
+  /// re-recording all three wholesale — which would have swallowed that
+  /// remaining few percent, the only part that is about the coach rather than
+  /// the weather. 02:00 also sits well inside the band, which wraps midnight
+  /// (`h < 5 || h >= 22`), so no rounding or timezone detail can push a run
+  /// into `dawn`.
+  ///
+  /// Pinning ONE instant is the whole point: asserting that two DIFFERENT
+  /// phases render alike would be asserting the six-phase behaviour away.
+  /// `hud_sky_test.dart` still holds that boundary mapping honest, and the
+  /// 55%-vs-3% split above is the evidence that this override is load-bearing
+  /// rather than decorative — change the instant and the picture changes.
   List<Override> deterministic() => [
         coachBackdropRandomProvider.overrideWithValue(math.Random(7)),
+        coachClockProvider.overrideWithValue(() => DateTime(2026, 8, 19, 2)),
       ];
 
   ProviderContainer container(CoachPhase phase) {

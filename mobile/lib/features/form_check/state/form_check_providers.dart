@@ -383,6 +383,23 @@ const kCoachBackdrops = <String>[
 /// time in ten for a reason nobody could reproduce.
 final coachBackdropRandomProvider = Provider<math.Random>((_) => math.Random());
 
+/// The clock the coach's sky phase is read from, injectable for the same
+/// reason [coachBackdropRandomProvider] is.
+///
+/// `HudSkyPhase.forTime` maps the hour onto one of six phases, and each phase
+/// draws a DIFFERENT backdrop photograph, so a golden taken at 18:59 and one
+/// taken at 19:01 disagree over most of their pixels. That is what left the
+/// three Form Coach goldens failing at 54% and excluded from verification: the
+/// images were re-recorded under one phase and compared under another.
+///
+/// A function rather than a `DateTime` deliberately. A `Provider<DateTime>` is
+/// computed once per container, which would pin the phase for a whole session
+/// and silently stop the sky advancing between dusk and night while the app is
+/// open. Handing out `DateTime.now` itself keeps production evaluating the
+/// phase on every rebuild exactly as it did before this became injectable; a
+/// test overrides it with a fixed instant and gets a fixed sky.
+final coachClockProvider = Provider<DateTime Function()>((_) => DateTime.now);
+
 /// Which scene is on screen, re-rolled each time the coach page is opened.
 ///
 /// "Each time" is the page mount, not the app launch: the operator asked for a
