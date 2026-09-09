@@ -101,3 +101,13 @@ scripts/dev/recog_so1_build_partitions.py text eol=lf
 scripts/dev/recog_so1_run_r2.py text eol=lf
 scripts/dev/recog_so1_score_r2.py text eol=lf
 scripts/dev/recog_so1_r2.tests.py text eol=lf
+
+# P0.G3's rights contract binds a REVIEWED/BLOCKED/captured decision to the
+# sha256 of the exact bytes of the terms snapshot it rests on, and rights.py
+# re-hashes the file on every validation. core.autocrlf (enabled here) would
+# hand a Windows checkout CRLF and a Linux CI runner LF -- same document, two
+# different hashes, and a legal decision that verifies on one machine and
+# fails on the other for a reason that has nothing to do with the terms.
+# Same reasoning as core/audit/** above, and the same remedy: these are
+# captured originals, so they are stored byte-for-byte.
+core/equipment_identity/p0/terms_snapshots/** -text

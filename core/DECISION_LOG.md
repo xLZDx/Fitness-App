@@ -47400,3 +47400,596 @@ expressible and auditable rather than a boolean somebody set. Neither touches th
 work, and read as actionable. Reading the file it named took a few minutes and reversed it. A
 finding carried across a context boundary is a claim about a file, not a fact, until the file has
 been read again.
+
+## 2026-09-09 — G3: the equipment-rights contract gains bytes, a subject, and one shared grammar
+
+Rosetta plan `fitness_app-2026-09-09T15-19-42-340Z-5af404`, hash
+`40cbbe990be8097cb7d3f683f722ad84c731db4acd86978cdf9357a33580f06d`, base `916ef0a`, class HIGH.
+GPT-PM `VERDICT: APPROVE`. **Both sides recorded below: what was planned, and what the work actually
+found — including where the plan was wrong.**
+
+### What was planned, in one paragraph
+
+Three defects in `scripts/equipment_identity/rights.py`: a REVIEWED/BLOCKED decision was not bound to
+the bytes of the terms it rested on; a grant had no population and no subject to compare one against;
+and the `.strict()` Zod mirror would have rejected whatever was added. The gate makes a legal
+decision expressible, auditable and hard to fake. It does not make one, and none was made.
+
+### The plan took six rounds to get a GO, and the refusals are the informative part
+
+Every finding below was verified against source before being accepted, and each changed the work.
+
+**v2 → four MAJORs.** The one that mattered: I proposed making the five `eligible_for_*` helpers
+private and proving non-bypassability with a grep for a public per-use helper. `rights.py:331` held
+`ELIGIBILITY_BY_USE`, a module-level dict whose VALUES were those same five callables, dispatched
+through at `:355` and iterated at four sites in the test suite. Renaming the functions would have
+left `ELIGIBILITY_BY_USE["DISPLAY"](record)` returning a permission with no subject at all — and my
+grep would have reported success over it. I had read `:280-330` and stopped one line short of the
+table. Also: `keyNamespace` was recorded but my API took only `subject_key`, so the namespace could
+not participate in authorization; "repository-relative path" was prose with no confinement, and
+`Path(root) / "C:/x"` discards the root; and Python "grants nothing" against Zod "rejects" was two
+different contracts wearing one description.
+
+**v3 → three MAJORs.** I had tidied the evidence matrix into three rows and, in doing so, forbidden
+`termsSnapshotPath` on an `UNREVIEWED` source. `P0_G3_RIGHTS_GOVERNANCE.md:57-59` says the opposite
+in as many words: *"termsCaptured is factual metadata … a source can honestly have its terms captured
+and still be entirely unreviewed."* That would have fused capture and legal review into one atomic
+act — a regression of an approved semantic that no previous finding had asked for, produced by
+making a table look neater. Also: my verification permitted exactly four test edits while the suite
+held 20 two-argument `eligible_for(` call sites and REVIEWED fixtures with neither snapshot nor
+scope, so it was not strict but impossible — and a rule that cannot be obeyed gets quietly dropped
+during the work. And I had claimed documentation-vs-code agreement while omitting
+`P0_G3_RIGHTS_GOVERNANCE.md`, the document describing the very contract being changed, from my own
+touch set.
+
+**v4 → two MAJORs.** `@dataclass(frozen=True)` prevents mutation, not empty values: `SubjectRef("",
+"")` was constructible and every scope test I had listed would have passed while the identity
+collapsed to nothing. And my confinement mutation could not move behaviour: the lexical `..` ban and
+resolved containment each independently reject a `..` traversal, so deleting one leaves the fixture
+still rejected and the mutant survives while the guard is genuinely gone.
+
+**v5 → one MAJOR, and it was the sharpest.** I had written that a byte-identical `^\S(?:.*\S)?$` in
+Python, JSON Schema and Zod gives "one rule rather than three approximations of one." That is false.
+Measured in both engines before replanning:
+
+| input | Python `re` | Node `RegExp` |
+|---|---|---|
+| U+0085 | reject | **accept** |
+| U+FEFF | **accept** | reject |
+| `"abc\n"` | **accept** | reject |
+
+The first two are GPT-PM's counterexamples, confirmed. The third is mine and is broader: Python's `$`
+matches before a trailing newline, so **every** `$`-anchored shared pattern diverges there —
+including the plain-ASCII grammar I first reached for after dropping `\S`. Since the Python
+`jsonschema` package compiles `pattern` with Python's own `re`, two layers would have agreed with
+each other while the third silently disagreed. **v6 was approved.**
+
+### What the contract says now
+
+    UNREVIEWED + termsCaptured=false   snapshot forbidden, scope forbidden
+    UNREVIEWED + termsCaptured=true    snapshot required,  scope forbidden
+    REVIEWED                           snapshot required,  scope required
+    BLOCKED                            snapshot required,  scope forbidden
+
+Two rules: a capture is bound to real bytes in every state, and a scope belongs to exactly one state.
+Enforced identically in `rights.py`, `rights_decision.schema.json` (draft-07 `if`/`then`) and the
+`.strict()` Zod mirror, which was kept strict — relaxing it would have silenced the mismatch rather
+than fixing it.
+
+- **Bytes.** `termsSnapshotPath` + `termsSnapshotSha256`, the file opened and re-hashed, confined to
+  `core/equipment_identity/p0/terms_snapshots/` by two guards that are deliberately not merged:
+  a lexical one (absolute, drive/UNC, any `..`) and a resolved one (symlinks followed, containment,
+  regular file). Absoluteness is tested under **both** `PureWindowsPath` and `PurePosixPath` rules,
+  because `/etc/passwd` is not absolute to the first and a drive-qualified path is not absolute to
+  the second — this repo is developed on Windows and tested on Linux, so a single-flavour check
+  leaves the other platform's form as a hole.
+- **Subject.** `eligible_for(record, use, subject)` with a `SubjectRef(key_namespace, key)` whose
+  `__post_init__` refuses an empty, whitespace-only or non-ASCII identity. `rightsScope` is
+  `WHOLE_SOURCE` or `SUBSET`, both carrying the namespace.
+- **`WHOLE_SOURCE` trusts upstream provenance, and now says so.** The registry has no population
+  oracle and cannot know a key does NOT belong to a source. An earlier draft claimed an unknown key
+  would be denied; nothing could have implemented that, so the claim was deleted rather than left
+  standing. The namespace IS knowable because the source declares it — hence namespace matching for
+  both kinds, key matching only under `SUBSET`.
+- **`BLOCKED` is bound to bytes too**, over my stated objection that requiring evidence for bad news
+  makes bad news the costlier thing to report. GPT-PM's call: `BLOCKED` is a human legal conclusion,
+  not an absence, and a source whose terms could not be reached is `UNREVIEWED` — already
+  fail-closed, already the honest word for "nobody could look". Recorded as the reviewer's over the
+  implementer's.
+- **`BLOCKED` forbids a scope**, because a scope there could only mean a partial block, which this
+  contract cannot express. Named as a limitation, not left to be discovered.
+- **`ELIGIBILITY_BY_USE` is gone**, replaced by `USES` — names, not callables. The private dispatch
+  entries each independently demand the subject, so three defences stand where any one alone would
+  be defeatable.
+- **`main()` stopped printing per-use eligibility.** It has no subject, and a synthetic one would
+  print a permission about an object that does not exist. Nothing informative was lost: every source
+  is `UNREVIEWED`, so the column read `eligible_for=NONE` for all 17.
+
+### The identifier grammar
+
+    ^[A-Za-z0-9](?:[A-Za-z0-9._:-]*[A-Za-z0-9])?(?![\s\S])
+
+Enumerated ASCII rather than `\S`, and `(?![\s\S])` rather than `$`, for the measured reasons above.
+`[\s\S]` is a set unioned with its own complement, so it means "any character" in both engines
+whatever either calls whitespace. Deliberately narrower than Unicode: a source whose upstream keys
+cannot be expressed fails closed and is visible, rather than silently transliterated into something
+that no longer identifies anything.
+
+### Evidence
+
+- `pytest scripts/equipment_identity/test_rights.py scripts/equipment_identity/test_canonical_selection_eligibility.py -q` → **189 passed**. The
+  canonical-selection suite is untouched, which is what proves the one other importer of `rights` —
+  it uses `load_registry()` alone, never `eligible_for` — really was unaffected.
+- `npm run build` (runs `check:p0-snapshot` and `check:p1-generated`, then `tsc`) → clean.
+  `npm test` → **273 passed, 17 suites**, including the new `p1_rights_contract.test.ts`.
+- **Nine mutations, 9/9 killed, all reverted, file restored byte-identical**, and three of them
+  carried a control that had to STAY green:
+  - dropping the `..` ban kills its test while resolved containment's test holds — and vice versa.
+    That pair is the fix for v4's masked mutant: `sub/../terms.txt` resolves INSIDE the root so only
+    the lexical guard refuses it, and an in-root junction to a file outside contains no `..` so only
+    containment refuses it.
+  - dropping the namespace comparison kills the same-key/different-namespace test while the
+    different-key test holds, which is what makes the namespace separately load-bearing rather than
+    incidentally covered.
+  - The harness pre-flights every anchor (exactly one occurrence) and every node-id (pytest exit 5
+    is not a pass). The pre-flight earned its keep immediately: it caught a stale indentation in one
+    anchor that would otherwise have applied no mutation and reported a survivor.
+- Guard B's escape fixture was created with a **Windows directory junction** (`mklink /J`).
+  `os.symlink` fails here with WinError 1314 (privilege not held), so the junction is what made this
+  provable locally rather than deferred to a Linux container. The test SKIPs rather than passes
+  where neither mechanism exists, and that skip is explicitly not evidence.
+
+### Claims held to what the checks earn
+
+**Capture-is-not-permission is two layers, and only the outer is publicly provable.** Validation
+refuses an `UNREVIEWED` record carrying any true permission boolean, and `_reviewed()` separately
+gates on `legalReviewState`. With the first standing, no record reachable through the public API can
+distinguish the second — so the inner layer is proven by a deliberately white-box call to a private
+predicate with an unvalidated record, and is labelled as such rather than folded into one claim.
+
+**Identifier parity is proven for the code points actually exercised**, not for Unicode in general.
+
+**One number in the approved plan was wrong.** It said 20 — the figure in the plan was 23, taken from
+a `grep -c` counting LINES containing `eligible_for(`, three of which are comments. The real count of
+call expressions is 20, all converted. Recorded because a plan's own measurement can be off by the
+tool used to take it.
+
+### Documentation corrected, and which artifact was stale
+
+`rights_decision.schema.json` contradicted both the code and itself: `:38` already claimed
+`rights.py` enforced the snapshot rule while `:17` hedged "ideally with `termsSnapshotSha256`". The
+`:17` half was the stale one; both now state the requirement and it is now true. The blanket
+"structural shape only" description narrowed to what a schema CAN enforce here and what it cannot.
+`P0_G3_RIGHTS_GOVERNANCE.md` gained §9 recording this amendment, with its §6 review records left
+intact as history — the same discipline the I6 DoD amendment followed. Its §1 table also said the
+registry holds 12 sources; it holds 17, so that live claim was corrected. `P1_G1_SCHEMA.md` was read
+and its claims are gate history rather than live contract statements — none is falsified, so it was
+not edited.
+
+`.gitattributes` gained `core/equipment_identity/p0/terms_snapshots/** -text`. `core.autocrlf` is on
+in this repo, and a hash-bound artifact cannot survive EOL normalisation: a Windows checkout would
+hand back CRLF and a Linux runner LF, same document, two hashes, a legal decision that verifies on
+one machine and not the other. Same reasoning and same remedy as `core/audit/**`.
+
+### What this did NOT do
+
+No source was promoted. All 17 remain `UNREVIEWED` with `termsCaptured: false`,
+`source_registry.json` is byte-unchanged, and every snapshot artifact added is synthetic and says so
+in its own bytes. The 50/4 corroboration floor was not touched — a carried-forward finding said to
+retire it and re-reading `canonical_selection_eligibility.py` withdrew that; it enforces a GPT-PM
+precondition, computes its counts fresh, and is deliberately fail-closed. The narrower true statement
+underneath it stands: the floor is not the binding constraint, because every source is `UNREVIEWED`
+and no corroboration count changes that.
+
+### The closure review found four defects, all real, and this is what they were
+
+Run against the finished gate rather than the plan. None was a style note; three of the four were
+places where a check described more than it did, which is the recurring defect in this repository.
+
+**1. A path could name bytes that are in no checkout — and it was measured doing it, not argued.**
+`terms.txt:legal-review` is lexically innocent by every rule the validator had: not absolute, no
+drive, no `..`, inside the declared directory, resolving to a regular file. On NTFS it addresses a
+SEPARATE alternate data stream. Git stores no such stream and `.gitattributes -text` cannot preserve
+one, so a legal decision could be bound to a digest of bytes that exist on exactly one machine. The
+escape was confirmed by writing the stream and watching validation accept it, before any fix.
+
+The remedy is a portable-path grammar, `SNAPSHOT_PATH_PATTERN`, shared verbatim by all three layers,
+which refuses the colon on every platform — including those with no such concept, because a path
+meaning one file on Linux and a hidden stream on Windows is not the portable reference this field
+claims to be, and a rule that changes by platform is not a contract. It is ordered AFTER the
+absolute-path and `..` checks deliberately: each of the three keeps a fixture only IT rejects, so
+none masks another's mutant.
+
+**2. A mutant died of the wrong exception, and the harness called that a kill.** Mutation (i)
+removed the inner `legalReviewState` gate; pytest went red; the harness reported KILLED. The record
+was invalid in a SECOND dimension (no `rightsScope`), so the mutated code raised `KeyError` and
+nothing whatsoever had been demonstrated about the guard. GPT-PM's required change, verbatim: *"Have
+the mutation harness assert that semantic flip explicitly, so an unrelated exception cannot count as
+a kill"* — *"Baseline must return False; after mutation (i), the predicate must return True, not
+merely make pytest non-zero."*
+
+So the harness no longer scores on pytest's exit code. Every mutation now declares, before running,
+the exact observable it flips and BOTH of its values; `probe.py` prints one token for one behaviour;
+the baseline token is verified on unmutated source; and the mutant must print the declared token.
+Any other token — including an exception raised elsewhere — is not a kill however red the suite
+goes. A pre-flight also rejects a pair of expectations that happen to be equal, since that check
+could never fail. Mutation (i)'s fixture is now invalid in exactly one dimension and the predicate's
+answer moves `False → True`.
+
+One expectation is deliberately not an acceptance and is worth stating plainly rather than dressing
+up: mutation (b) weakens `has_path and has_hash` to `or`, and there is no fixture that then gets
+accepted, because the next lines read both fields unconditionally. Its declared flip is
+`RightsValidationError → KeyError` — the guard's real job being to turn half the evidence into a
+stated refusal before the code walks into the missing half. Declaring that token keeps it a proof:
+an unrelated exception still fails, because the token has to be that one.
+
+**3. Parity covered one field out of three.** The three-engine claim was earned for the scope
+identifier and quietly extended in prose to the two fields carrying the actual legal evidence.
+Measured: Python rejected a whitespace-only `termsSnapshotPath` that the JSON Schema and Zod both
+accepted, and all three still spelled the sha256 rule with `$`, which Python matches before a
+trailing newline and JavaScript does not. The shared case file gained `snapshot_path_valid/invalid`
+(5 + 21) and `sha256_valid/invalid` (3 + 8), and all four sections now run through Python's `re`,
+the Draft-07 schema and Zod. `sub/../terms.txt` stays deliberately LEGAL to all three grammars: a
+schema cannot resolve a path, so claiming containment there would be a promise this layer has no way
+to keep, and `rights.py`'s separate guard stays independently provable.
+
+**4. The structural check did not walk functions.** It enumerated module-level ASSIGNMENTS, so a new
+public `def eligible_for_export(record)` — a permission route reachable by name, in no container at
+all — would have left it green. It now walks function definitions and applies one rule with no
+allowlist: any module-level function reading a name in `PERMISSION_FIELDS` must require a subject.
+No allowlist is the point; "these helpers are exempt" is exactly the bookkeeping that goes stale, so
+`_commercially_allowed` takes and demands a subject it never reads rather than being written down
+somewhere as a special case.
+
+### Evidence after remediation
+
+`test_rights.py` 220 passed. `functions-equipment-identity` 313 passed across 17 suites, build
+green (P0 snapshot and P1 generated checks included). The mutation battery is 10 of 10 — each one
+flipping its declared observable, turning its named test red, keeping its control green, and
+restoring both the observable and the test on revert. A tenth mutation was added for the new
+grammar, and it reproduces defect 1 exactly: with the guard removed the stream path validates.
+
+**Stated rather than implied:** the wider `scripts/equipment_identity` directory has 12 failures in
+`test_baseline.py` and `test_deployment_isolation.py`. They are not this gate's. Both files are
+clean at HEAD, neither imports `rights.py`, and the assertions read a Gemini/cloud reference in
+`mlkit_live_equipment_service.dart` and a `functions-equipment-identity` string in
+`functions/src/release_guard.ts` (last touched 2026-08-29). They are carried forward as a separate
+finding, not folded into this gate's result and not reported as green.
+
+### The verification round found two more, and both were defects in the remediation itself
+
+Neither was a regression in the approved work; both were places where the remediation's own
+evidence claimed more than it demonstrated. Verified against source before being accepted — and one
+of them by measurement, because the argument for it was not settled by reading.
+
+**5. The new grammar swallowed the absolute-path guard, and the source went on certifying that
+guard as independently provable.** `_resolve_terms_snapshot` refused absolute, drive and UNC paths
+in a dedicated check, then applied `_SNAPSHOT_PATH_RE`, with a comment stating each ordered check
+kept a fixture only IT rejected. That comment was false the moment the grammar landed: everything
+that makes a path absolute — a leading `/`, a `:`, a `\` — is outside the grammar's alphabet.
+
+Measured rather than argued. An exhaustive search over 11,110 strings built from the grammar's own
+alphabet plus `:`, `\`, `/` and space, up to length four, found **no** string the grammar accepts
+and the absolute check would reject. The guard was unkillable by construction: deleting it left
+every test green, which is precisely the masked-guard defect the earlier remediation claimed to have
+eliminated.
+
+The guard is **removed**, not kept as defence in depth. A check indistinguishable from its own
+absence is not depth; it is a claim, and this contract has now been bitten three times by a check
+that described more than it did. The class is still refused — by the grammar, with `/etc/passwd`,
+`C:/Windows/win.ini`, `C:\Windows\win.ini`, `\\server\share\terms.txt` and `/a` in the shared
+invalid-case list proving it in all three engines, and with mutation (j) proving the grammar itself
+is load-bearing. The three original tests still pass, unchanged in what they assert. The
+subsumption itself is now a test (`test_the_absolute_path_class_is_the_grammars_job_not_a_dead_
+guards`), which re-runs that exhaustive search: if a distinguishing string ever appears, the guard
+becomes provable and the failing test is the instruction to bring it back.
+
+Two lexical checks remain, and each keeps a fixture only it rejects: the grammar (mutation j) and
+the `..` ban (mutation c, `sub/../terms.txt` — well-shaped, resolves inside the root).
+
+**6. The AST check found permission READERS, not permission ROUTES.** It flagged a module-level
+function containing a string literal from `PERMISSION_FIELDS`. The bypass it was written to catch
+contains no such literal:
+
+```python
+def eligible_for_export(record):
+    return eligible_for(record, "DISPLAY", SubjectRef("test", "item1"))
+```
+
+That wrapper hands out a permission while its own caller names no object, and the check never
+looked at it. The remediation had cited this exact function signature as the class it caught.
+
+The rule now computes reachability to a fixed point over a graph of module-level names. The first
+attempt built that graph from calls and proved the point again by missing the real front door:
+`eligible_for` dispatches through `_ELIGIBILITY_BY_USE[use](record, subject)`, a call on a
+Subscript, so it had no edge to any sink and a wrapper around it stayed invisible for a second,
+unrelated reason. The graph is therefore built from NAME REFERENCES, with module-level assignments
+as relay nodes — which also re-covers by construction the older rule that no public container may
+publish a permission callable. Sinks are seeded only from functions containing a literal;
+`PERMISSION_FIELDS`, being a tuple of exactly those strings, would otherwise make every record
+validator inherit a subject requirement it has no use for.
+
+**Demonstrated on the real module, not inferred from a fixture passing.** The wrapper is appended to
+`rights.py`'s actual source and the rule is asked about that, in all three forms the review named:
+through the public `eligible_for`, through a private `_eligible_for_*` predicate, and through the
+dispatch table directly. Each is flagged; the same wrapper with a `subject` parameter is not; a
+wrapper around the wrapper is flagged transitively; and a function touching neither a permission
+field nor a permission route is not, so the rule is not simply "every function".
+
+**Evidence after this round:** `test_rights.py` 223 passed, mutation battery still 10 of 10, jest
+unchanged at 313 (no TypeScript or schema file was touched by this round).
+
+### Round 8 found the same bug a third time, in its third form
+
+**7. An assignment could be a permission route, and the rule excluded assignments by construction.**
+The reference graph made module-level assignments relay nodes, and then said in as many words that
+they are "never offenders themselves". So this was invisible:
+
+```python
+eligible_for_export = lambda record: eligible_for(record, "DISPLAY", SubjectRef("test", "item1"))
+```
+
+The assignment references `eligible_for`, enters the reachable set, and is then dropped from the
+offender set for not being a `FunctionDef`. The neighbouring public-container check did not catch
+it either — that one inspects dict/list/tuple/set values, and this is a callable directly.
+Reproduced against the implemented helper before fixing: reachable set did not even contain the
+name, offenders was empty.
+
+Three rounds, three forms of one mistake — literal, then call edge, then node kind — and each time
+the check was correct about the form in front of it and wrong about the class. The rule now judges
+a reaching assignment on what it EXPOSES rather than on what syntax produced it: any `lambda`
+anywhere in the value (including buried in a container) must take a `subject`; a bare alias
+inherits the aliased function's parameters; a pure container with no lambda relays only, which is
+what keeps `_ELIGIBILITY_BY_USE` non-offending; and anything else reaching a sink counts as an
+offender, because an expression whose signature cannot be read cannot be shown to demand a
+subject. Conservative deliberately — a false offender costs one argument in a review, a false
+clean is a permission handed out about nothing.
+
+Regressions, all against the real `rights.py` source: the lambda form is flagged; the same lambda
+taking `subject` is not; a lambda buried in a container is flagged; `public_eligible_for =
+eligible_for` is NOT flagged, because the alias inherits a signature that already demands a
+subject, and a rule that flagged it would be "no aliases" rather than "no subjectless routes"; and
+`_ELIGIBILITY_BY_USE` is asserted to stay reachable-but-clean, so the rule cannot drift into "no
+containers". A `functools.partial` with the subject pre-bound covers the unknown-expression branch.
+
+**Evidence:** `test_rights.py` 223 passed, mutation battery 10 of 10 re-run, jest unchanged at 313.
+
+### Round 9 found three more of the same, and that is where the patching stopped
+
+**8. A parameter NAMED `subject` is not a subject requirement.** The check read the name and never
+the signature, so `lambda record, subject=SubjectRef("test", "item1"): eligible_for(...)` was clean
+and `eligible_for_export(record)` still handed out a permission. Same for a `def` with a default,
+and for a keyword-only parameter with one.
+
+**9. Exempting every lambda-free container recreated the original bypass.** `EXPORTS = {"DISPLAY":
+functools.partial(eligible_for, use="DISPLAY", subject=SubjectRef(...))}` references `eligible_for`,
+so it reached — and was then declared clean for being a dict with no lambda in it. That is
+materially `_ELIGIBILITY_BY_USE`'s own class of route with `partial` in place of a predicate.
+
+**10. A class was not a node in the graph at all.** So
+
+```python
+class EligibleExport:
+    def __call__(self, record):
+        return eligible_for(record, "DISPLAY", SubjectRef("test", "item1"))
+
+eligible_for_export = EligibleExport()
+```
+
+created no edge, never entered the reachable set, and left nothing for the conservative
+unknown-expression branch to judge.
+
+**Four rounds, one mistake, and it is now named as one thing.** Literal → call edge → node kind →
+signature/container/class. Each version was correct about the form in front of it and wrong about
+the class, and each fix was written in terms of syntax. So the rule is not written that way any
+more: it asks one question of every reachable module-level name — *what callable does this expose,
+and can that callable be invoked without a mandatory subject?* A lambda is judged on its own args;
+an alias inherits the aliased function's; a container is judged recursively on what it holds; a
+class is judged on its methods that touch a permission; a class instantiation is judged on that
+class's `__call__`; and anything whose signature cannot be read is an offender, because "cannot be
+shown to demand a subject" and "does not demand one" have to be treated alike here. `requires_
+subject` now accounts for `defaults`, `kw_defaults` and `posonlyargs`.
+
+Nine regressions were added, all appended to `rights.py`'s **real** source: the defaulted lambda,
+the defaulted `def`, the defaulted keyword-only, the `partial` inside a dict, and the callable class
+with its instance — each with the control that differs only in making the subject mandatory, plus
+`EXPORTS = {"DISPLAY": eligible_for}` and `public_eligible_for = eligible_for` as the containers and
+aliases that must STAY clean, or the rule would have become "no containers, no aliases".
+
+**And the claim is now bounded rather than growing.** The helper's docstring states what a static
+read of one module's text cannot see: dynamic access via `getattr`, a route built at runtime or by a
+signature-rewriting decorator, and anything outside this module. The honest claim is *no permission
+route is reachable by name from this module's own source without a mandatory subject* — which is
+what every bypass found across four rounds actually was, and is not the same as "no bypass exists".
+Writing that down is what stops the next round from being round eleven.
+
+**Evidence:** `test_rights.py` 223 passed, mutation battery 10 of 10, jest 313.
+
+### Round 10: three more, all one hole — the rule enumerated syntax in three places
+
+**11. The fail-closed fallback failed open.** The helper's own text said an unreadable callable
+surface must count as an offender; the code's last line returned `False`. So
+`export = partial(eligible_for, subject=...) if FLAG else eligible_for` — an `ast.IfExp` — walked
+through it, and `export(record)` handed out a permission. The same hole existed for a `Subscript`
+selecting a pre-bound callable.
+
+**12. Sinks were seeded from `def`s only**, so a route that READS a permission without calling
+anything never entered the graph:
+`export = lambda record: record["rights"]["displayAllowed"]`, and the same as a class `__call__`.
+The previous class regression only covered a class that CALLS `eligible_for`, which is why it did
+not expose this.
+
+**13. The binding collector knew four statement types.** `(export := lambda record: ...)` binds a
+module global; `for export in [...]` binds one; `with ... as export` binds one. None was collected,
+so the names were invisible — and the claim said "reachable by name from this module's own source".
+
+**The fix is the same fix in all three places: stop enumerating syntax.** Bindings are now found by
+locating module-scope STORES rather than by listing statement types — which is why a walrus, a
+`for` target, a `with ... as`, and a name bound inside `if TYPE_CHECKING:` or a `try`/`except` pair
+are all covered by one change instead of five cases, and an unidentifiable binding value is an
+offender rather than a silent pass. Sinks are seeded from any node kind that intrinsically reads a
+permission — a function, a class method, a lambda, an instance of such a class — but deliberately
+NOT from a bare tuple of those strings, or `PERMISSION_FIELDS` would be a sink and every record
+validator would inherit a subject requirement it has no use for. And the classifier's fallback now
+fails closed for real: an expression it does not model is an offender whenever it can pull a
+permission in at all, with `IfExp`, `BoolOp` and `Starred` given real branch analysis so the rule
+is not simply "any expression I have not seen".
+
+Regressions added, again all appended to the REAL source, each with a control differing only in the
+one thing that should matter: the conditional with a pre-bound `partial` (and `eligible_for if FLAG
+else eligible_for` staying clean, so the branch analysis is real); the direct-literal lambda and
+the direct-literal callable class (and both with a mandatory `subject`); the walrus; the `for`
+binding; and a `with ... as` whose value cannot be identified. That last fixture also caught an
+over-flag in the first attempt — `_ = eligible_for` inside the `with` body was being treated as an
+unknown binding rather than as the alias it is — which is why binding discovery walks nested
+statements rather than only the top-level one.
+
+**Evidence:** `test_rights.py` 223 passed, mutation battery 10 of 10, jest 313 across 17 suites.
+
+### Round 11: three more, and the conclusion that a static lint was the wrong sole instrument
+
+**14. One binding remembered per name.** `bindings.setdefault` kept the FIRST binding, so
+`export = eligible_for` followed by `export = lambda record: eligible_for(...)` read clean while
+Python keeps the second. Bindings are now a list per name, and the effective set is every binding
+at or after the last UNCONDITIONAL one: an unconditional rebind really does overwrite what came
+before (so the reverse order stays clean, and it has a control saying so), while a conditional
+rebind after it might still be live and is judged.
+
+**15. The scope walker dropped nested definitions.** `if ENABLE_EXPORT: def eligible_for_export(...)`
+binds a module global, and the walker refused to enqueue any `FunctionDef` child at all. Also
+missed: a walrus in a function DEFAULT or a comprehension, both of which execute in the enclosing
+scope, and `match` captures, which live on pattern nodes rather than on `Name`. Binding discovery
+is now an explicit descent over module-scope statements carrying a `conditional` flag, which
+registers a nested `def`/`class` without descending into its body and visits the expressions around
+it — decorators, defaults, bases — because those run in the enclosing scope.
+
+**16. Sink seeding still enumerated callable shapes**, so `operator.itemgetter("displayAllowed")`
+and a class-level `export = lambda record: record["rights"]["displayAllowed"]` never entered the
+graph and so never reached the fail-closed judging stage. Seeding is now the inverse: a value
+containing a permission literal seeds UNLESS it is provably passive data — a constant, or a
+container/`frozenset(...)` of constants. That one exception exists for exactly one shape,
+`PERMISSION_FIELDS`, and has its own control asserting a tuple of those strings does not seed.
+
+**And the conclusion, which is the part worth keeping.** Six rounds, sixteen findings, every one of
+them a real form the static check could not see. The reason is structural: a hand-written AST walk
+has to model Python's binding and scope semantics, and getting that exactly right is not a thing a
+test helper achieves. So the lint is no longer the only instrument.
+
+`test_no_live_callable_answers_a_permission_without_a_subject` models nothing. It reads
+`vars(rights)` — Python's own answer about what the module bound — and asks every callable the same
+question twice, about two records differing ONLY in their permission booleans. A callable whose
+BOOLEAN ANSWER CHANGES has read a permission and answered from a record alone, with no subject.
+That criterion needs no scope rules, so a conditional `def`, a walrus, a `match` capture, a class
+attribute and an `itemgetter` are all visible to it identically. `_reviewed` and
+`_not_discovery_only` return the same value for both records, because they report review state and
+priority rather than a permission, and there is a control asserting exactly that so the criterion
+is not "any bool-returning callable". Its teeth are proven rather than assumed: the test binds the
+original bypass onto the module, confirms it is caught, and removes it in a `finally`.
+
+Two narrowings, stated: only `bool` answers count, and only callables accepting a single positional
+record are probed — which costs nothing, since a signature that cannot be called without a subject
+is what the test is looking for.
+
+The static lint stays as defence in depth over the source, with its own limits written into its
+docstring; the runtime enforcement (`_require_subject`, called by `eligible_for` and separately by
+every per-use predicate) remains the actual guarantee.
+
+**Evidence:** `test_rights.py` 224 passed, mutation battery 10 of 10, jest 313 across 17 suites.
+
+### Round 12 corrected a claim in this log, and that correction matters more than the two code fixes
+
+**17. `_require_subject` is NOT the guarantee that the caller supplied a subject, and the entry
+above said it was.** The closure argument written one round earlier — "the runtime enforcement
+remains the actual guarantee, the lint is defence in depth over it" — is wrong, and the review
+proved it with the very bypass these rounds exist for:
+
+```python
+def eligible_for_export(record):
+    return eligible_for(record, "DISPLAY", SubjectRef("test", "item1"))
+```
+
+That wrapper constructs a perfectly valid `SubjectRef` internally. `eligible_for` and every private
+predicate pass `_require_subject` happily, while the external caller named no object at all. So
+`_require_subject` guarantees that the enforcement predicates RECEIVE a valid `SubjectRef`; it
+cannot establish who supplied it. **"The caller must name the object" is a separate,
+public-surface invariant**, and the structural and runtime instruments are what carry it — which
+means a miss in either is a real miss, and using the runtime guard to excuse one was exactly the
+kind of claim-wider-than-the-check this gate keeps finding. The corrected wording is now in the
+helper's docstring, in both reports, and here.
+
+**18. The runtime probe's two extreme records could not detect permission dependence.** It compared
+all-permissions-true against all-permissions-false, which two points cannot characterise:
+
+```python
+eligible_for_export = lambda record: (
+    record["rights"]["displayAllowed"] != record["rights"]["trainingAllowed"]
+)
+```
+
+answers `False` on both, and `True` on any mixed record. The probe now enumerates the whole space —
+six fields, 64 records, everything else held permissive and equal — and flags a callable whose
+successful boolean answer VARIES across it. The XOR case is a regression, so the two-point version
+cannot come back unnoticed.
+
+**19. Neither instrument saw a class attribute bound under class-body control flow.**
+
+```python
+class EligibleExport:
+    if ENABLE_EXPORT:
+        export = lambda record: record["rights"]["displayAllowed"]
+```
+
+The static side read only `cls.body`, saw the `If`, and stopped, so the class never seeded. The
+runtime side iterated `vars(rights)` and probed the class OBJECT, which constructs it rather than
+calling `.export`. Both were fixed for this one case: `class_members` now descends through
+class-body control flow without entering nested `def`/`class` bodies, and the runtime walk descends
+one level into classes the module itself defines. The runtime half is proven independently — the
+test binds such a class onto the live module and asserts the offender list is exactly
+`["EligibleExport.export"]`.
+
+**Evidence:** `test_rights.py` 224 passed, mutation battery 10 of 10, jest 313.
+
+### Round 13 closed the correction and found two more, both in the runtime instrument
+
+The `_require_subject` correction was accepted as materially right, and so were the XOR fix and the
+`if`-in-a-class-body case. Two remained.
+
+**20. A grant can be a boolean OR an exception, and the probe threw the exceptions away.**
+
+```python
+def eligible_for_export(record):
+    if record["rights"]["displayAllowed"]:
+        return True
+    raise RightsValidationError("not allowed")
+```
+
+The caller learns the permission either way — True is the grant, the exception is the denial — but
+the probe collected only successful boolean answers, so its `seen` set was `{True}` across all 64
+records and it reported clean. It now records an OUTCOME per record — a boolean value, a non-boolean
+value's type, or the exception class — and flags a callable when a boolean appears at all AND the
+outcome varies. A callable that never produces a boolean (wrong arity, say) is still not a route.
+Three controls keep that from becoming "anything that ever raises": a constant value, a callable
+that always raises, and one that reads `legalReviewState` rather than a permission.
+
+**21. A `match` in a class body, and a `classmethod` descriptor, defeated the two halves
+separately.**
+
+```python
+class EligibleExport:
+    match 1:
+        case 1:
+            @classmethod
+            def export(cls, record):
+                return record["rights"]["displayAllowed"]
+```
+
+Statically, the class-body descent walked `body`/`orelse`/`finalbody`/`handlers`, and a `match`
+keeps its branches under `cases` — so it was never reached. At runtime, `vars(cls)["export"]` is a
+classmethod DESCRIPTOR, which is not itself callable, while `EligibleExport.export` is: reading the
+raw stored value skipped exactly the descriptor forms. Fixed on both sides, and generically rather
+than by extending two lists: the static descent now follows every child that is a statement or has
+a body, and the runtime walk reads `getattr(cls, name)` instead of the raw `vars` entry. The
+premise is asserted in the test itself — `callable(vars(C)["export"])` is False while
+`callable(C.export)` is True — so the fix cannot be mistaken for decoration.
+
+**Evidence:** `test_rights.py` 224 passed, mutation battery 10 of 10, jest 313.

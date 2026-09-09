@@ -1,0 +1,12 @@
+SYNTHETIC TEST FIXTURE -- NOT REAL TERMS OF ANY SOURCE
+
+This file exists so that scripts/equipment_identity/test_rights.py can exercise
+the real terms-snapshot path end to end: a recorded termsSnapshotPath that
+resolves inside this directory, is a regular file, and whose exact bytes hash to
+the recorded termsSnapshotSha256.
+
+It is not a capture of anything. No source in
+core/equipment_identity/p0/source_registry.json references it, every source in
+that registry is UNREVIEWED, and nothing here grants any permission to anyone.
+Do not edit: the tests pin this file sha256 by literal, so a change to these
+bytes is meant to fail loudly rather than quietly re-baseline.

@@ -1,0 +1,455 @@
+<title>Equipment Rights: G3</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper: #faf7f2;
+    --card: #ffffff;
+    --ink: #191713;
+    --muted: #6d645a;
+    --rule: #e3dbcf;
+    --seal: #8c2f28;
+    --grant: #3f6b45;
+    --shade: #f2ede4;
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #16150f;
+      --card: #1e1c16;
+      --ink: #efe9df;
+      --muted: #a89d8e;
+      --rule: #37332a;
+      --seal: #e0827a;
+      --grant: #8fc39a;
+      --shade: #262319;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #16150f;
+    --card: #1e1c16;
+    --ink: #efe9df;
+    --muted: #a89d8e;
+    --rule: #37332a;
+    --seal: #e0827a;
+    --grant: #8fc39a;
+    --shade: #262319;
+  }
+
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); line-height: 1.65; }
+  .wrap { max-width: 47rem; margin: 0 auto; padding: 0 1.4rem 6rem; }
+  header { padding: 3.5rem 0 1.6rem; border-bottom: 2px solid var(--ink); }
+  .kicker {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--seal); margin: 0 0 .9rem;
+  }
+  h1 {
+    font-family: var(--serif); font-weight: 600; font-size: clamp(2rem, 5.5vw, 3rem);
+    line-height: 1.12; margin: 0 0 .7rem; text-wrap: balance; letter-spacing: -.01em;
+  }
+  .standfirst {
+    font-family: var(--serif); font-size: 1.18rem; color: var(--muted);
+    margin: 0; max-width: 34rem; font-style: italic;
+  }
+  h2 {
+    font-family: var(--serif); font-weight: 600; font-size: 1.6rem; line-height: 1.2;
+    margin: 3.2rem 0 .3rem; text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--sans); font-weight: 600; font-size: .95rem; letter-spacing: .01em;
+    margin: 2rem 0 .4rem;
+  }
+  .sub { color: var(--muted); margin: 0 0 1.1rem; font-size: .95rem; }
+  p { margin: 0 0 1rem; }
+  code, .mono { font-family: var(--mono); font-size: .86em; }
+  code { background: var(--shade); padding: .1em .32em; border-radius: 3px; }
+  pre {
+    font-family: var(--mono); font-size: .8rem; line-height: 1.55; background: var(--shade);
+    border-left: 3px solid var(--rule); padding: .9rem 1rem; overflow-x: auto; margin: 0 0 1.2rem;
+  }
+  table { border-collapse: collapse; width: 100%; font-size: .87rem; }
+  .scroller { overflow-x: auto; margin: 0 0 1.4rem; }
+  th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-size: .72rem; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  tbody tr:last-child td { border-bottom: none; }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pill {
+    display: inline-block; font-family: var(--mono); font-size: .68rem; letter-spacing: .06em;
+    text-transform: uppercase; padding: .12em .5em; border-radius: 2px; white-space: nowrap;
+  }
+  .done { background: color-mix(in srgb, var(--grant) 16%, transparent); color: var(--grant); }
+  .no { background: color-mix(in srgb, var(--seal) 14%, transparent); color: var(--seal); }
+  .lede {
+    border-left: 3px solid var(--seal); padding: .1rem 0 .1rem 1.1rem; margin: 1.6rem 0;
+    font-family: var(--serif); font-size: 1.1rem;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--rule); padding: 1.1rem 1.3rem;
+    margin: 0 0 1.3rem;
+  }
+  ul { margin: 0 0 1.1rem; padding-left: 1.1rem; }
+  li { margin: 0 0 .45rem; }
+  .foot { margin-top: 3.5rem; padding-top: 1.2rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: .85rem; }
+</style>
+
+<div class="wrap">
+<header>
+  <p class="kicker">Fitness_App · Rosetta 5af404 · GPT-PM: APPROVE</p>
+  <h1>Equipment rights: a decision bound to its bytes</h1>
+  <p class="standfirst">A legal decision stopped being a boolean somebody set, and a permission stopped being a question about a catalogue.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 916ef0a</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<p>Gate G3 is closed. The rights contract in <code>scripts/equipment_identity/rights.py</code> gained three things it did not have: evidence bound to specific bytes, a subject the permission question is about, and one identifier grammar that all three layers understand identically.</p>
+
+<p><strong>No source was promoted.</strong> All 17 remain <code>UNREVIEWED</code>. This gate makes a legal decision expressible, auditable and hard to fake — it does not make one, and no mechanism here could.</p>
+
+<h2>What was wrong</h2>
+
+<h3>The decision was not bound to what it rested on</h3>
+<p><code>rights.py</code> validated only the <em>shape</em> of <code>termsSnapshotSha256</code>, and only when the field happened to be present. There was no snapshot file, no path to one, and nothing ever opened anything. So <code>termsCaptured: true</code> with any 64-hex string and no file anywhere passed — and <code>REVIEWED</code> then unlocked every privileged use.</p>
+<p>The schema already claimed otherwise in one place ("required in practice by rights.py") while hedging the opposite way in another ("ideally with termsSnapshotSha256"). The documentation was not merely ahead of the code; its two halves contradicted each other.</p>
+
+<h3>A grant had no population and no subject</h3>
+<p>Permissions were granted per <code>sourceId</code>, wholesale. The five eligibility functions took only the source record, so there was no object identity anywhere in the API. "Reviewed for this part of the catalogue" was not an expressible statement, and a review covering part of a source was recorded as a grant over all of it. <code>core/equipment_identity/p1/wger_staging/wger_license_raw.json</code> is exactly that case: individual wger records carry no resolved reference into wger's own licence list.</p>
+
+<h3>The bypass was the dispatch table, not the function names</h3>
+<p><code>ELIGIBILITY_BY_USE</code> was a module-level dict whose <em>values</em> were those same five callables. Making them private would have left <code>ELIGIBILITY_BY_USE["DISPLAY"](record)</code> working exactly as before, with no subject at all.</p>
+<div class="lede">The first remedy I proposed for it — a grep for public helper names — would have reported success while the hole stayed open. I had read lines 280–330 and stopped one line short of the table.</div>
+
+<h2>What the contract says now</h2>
+
+<div class="scroller">
+<table>
+  <thead><tr><th>State</th><th>Snapshot</th><th>Scope</th></tr></thead>
+  <tbody>
+    <tr><td><code>UNREVIEWED</code> + <code>termsCaptured=false</code></td><td>forbidden</td><td>forbidden</td></tr>
+    <tr><td><code>UNREVIEWED</code> + <code>termsCaptured=true</code></td><td><strong>required</strong></td><td>forbidden</td></tr>
+    <tr><td><code>REVIEWED</code></td><td><strong>required</strong></td><td><strong>required</strong></td></tr>
+    <tr><td><code>BLOCKED</code></td><td><strong>required</strong></td><td>forbidden</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Two rules: a capture is bound to real bytes in <em>every</em> state, and a scope belongs to exactly one state. Enforced identically in <code>rights.py</code>, in the JSON Schema (draft-07 <code>if</code>/<code>then</code>) and in the <code>.strict()</code> Zod mirror. The mirror was kept strict: relaxing <code>.strict()</code> would have silenced the mismatch rather than fixing it.</p>
+
+<h3>Capture-before-review is preserved deliberately</h3>
+<p>An intermediate draft of this amendment forbade a snapshot on an <code>UNREVIEWED</code> source, fusing capture and legal review into one atomic act. That is a regression of an approved semantic: <code>P0_G3_RIGHTS_GOVERNANCE.md</code> states outright that <code>termsCaptured</code> is factual metadata, independent of whether anyone has read it. Recorded separately because the reasoning that produced it — "let's tidy the matrix into three rows instead of four" — looks like simplification.</p>
+
+<h3>Decisions that were not mine</h3>
+<p><strong><code>BLOCKED</code> is bound to bytes too</strong>, over my stated objection that requiring evidence for bad news makes bad news the costlier thing to report. GPT-PM's position: <code>BLOCKED</code> is a human legal conclusion, not an absence, and a source whose terms could not be reached at all is <code>UNREVIEWED</code> — already fail-closed, and already the honest word for "nobody could look". Recorded as the reviewer's call over the implementer's, not as agreement.</p>
+<p><strong><code>BLOCKED</code> forbids a scope</strong>, because a scope there could only mean a partial block, which this contract cannot express. Named as a limitation rather than left to be inferred from behaviour.</p>
+<p><strong><code>WHOLE_SOURCE</code> trusts upstream provenance, and now says so.</strong> The registry has no population oracle: it cannot know that a given key does <em>not</em> belong to a source. An earlier draft claimed an unknown key would be denied; nothing could have implemented that, so the claim was deleted rather than left as decoration. The namespace, unlike the key, is knowable — the source declares it — which is why namespace matching is enforced for both scope kinds and key matching only under <code>SUBSET</code>.</p>
+
+<h2>One grammar, three engines</h2>
+<p>I wrote in the plan that a byte-identical <code>^\S(?:.*\S)?$</code> across Python, JSON Schema and Zod gives "one rule rather than three approximations of one". That is false, and here is the measurement taken before replanning:</p>
+
+<div class="scroller">
+<table>
+  <thead><tr><th>Input</th><th>Python <code>re</code></th><th>Node <code>RegExp</code></th></tr></thead>
+  <tbody>
+    <tr><td class="mono">U+0085</td><td>rejects</td><td><strong>accepts</strong></td></tr>
+    <tr><td class="mono">U+FEFF</td><td><strong>accepts</strong></td><td>rejects</td></tr>
+    <tr><td class="mono">"abc\n"</td><td><strong>accepts</strong></td><td>rejects</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The first two rows are GPT-PM's counterexamples, confirmed. The third is mine and it is broader: Python's <code>$</code> matches before a trailing newline, so <em>every</em> shared <code>$</code>-anchored pattern diverges there — including the ASCII grammar I reached for immediately after dropping <code>\S</code>. And since the <code>jsonschema</code> package compiles <code>pattern</code> with Python's own <code>re</code>, two layers would have agreed with each other while the third silently disagreed.</p>
+
+<pre>^[A-Za-z0-9](?:[A-Za-z0-9._:-]*[A-Za-z0-9])?(?![\s\S])</pre>
+
+<p>An enumerated ASCII alphabet instead of <code>\S</code>, so no engine's opinion about what counts as whitespace participates in the decision at all. <code>(?![\s\S])</code> instead of <code>$</code>, because <code>[\s\S]</code> is a set unioned with its own complement — "any character" in both engines whatever either calls whitespace. The grammar is deliberately narrower than Unicode: a source whose keys are inexpressible in it gets no scope, which is a refusal you can see rather than a silent transliteration into something that no longer identifies anything.</p>
+
+<h2>The evidence</h2>
+
+<div class="card">
+  <p style="margin-bottom:.6rem"><strong>224</strong> Python tests · <strong>313</strong> jest tests across 17 suites · <strong>10 of 10</strong> mutations proven</p>
+  <p class="sub" style="margin:0">The whole pre-existing suite stayed green, and no expected result in it was changed.</p>
+</div>
+
+<p>The load-bearing part is not the assertions but the mutations. A test that a hash must match passes just as well against a validator that never opens the file; a scope test passes against a parameter nothing reads. So each of the ten mutations had to turn its own test red, and each revert had to turn it green again.</p>
+
+<p><strong>A red test is not enough to score a kill, and this harness proved that on itself.</strong> Mutation (i) removed the inner review-state guard, pytest went red, and the harness reported KILLED — while the mutated code was in fact raising <code>KeyError</code>, because the fixture was invalid in a <em>second</em> dimension. Nothing had been demonstrated about the guard. Every mutation now declares its observable and both of its values in advance: a separate probe prints one token for one behaviour, the baseline token is verified on unmutated source, and the mutant must print the declared token. Any other token — including an exception raised elsewhere — is not a kill, however red the suite goes. A pre-flight separately rejects a pair of expectations that happen to be equal, since such a check could never fail. Mutation (i)'s answer now moves <code>False → True</code>.</p>
+
+<p><strong>Three mutations carried a control that had to STAY green</strong> — which is the answer to the finding that got the previous plan refused:</p>
+<ul>
+  <li>Dropping the lexical <code>..</code> ban kills its test while resolved containment's test holds — and vice versa. The fixtures are chosen so that <code>sub/../terms.txt</code> resolves <em>inside</em> the root (only the lexical guard refuses it) and an in-root junction to a file outside contains no <code>..</code> at all (only containment refuses it). Before this, both fixtures were caught by both guards, so deleting one was masked by the other: the mutant survived having proven nothing.</li>
+  <li>Dropping the namespace comparison kills the same-key/different-namespace test while the different-key test holds. That is what makes the namespace separately load-bearing rather than incidentally covered by the key comparison.</li>
+</ul>
+
+<p>The harness pre-flights every anchor (exactly one occurrence) and every node-id (pytest exit code 5 is not a pass). It earned its keep immediately: it caught a stale indentation in one anchor that would otherwise have applied no mutation and reported a survivor.</p>
+
+<p>The containment guard's escape fixture was created with a <strong>directory junction</strong> (<code>mklink /J</code>): <code>os.symlink</code> fails on this machine with WinError 1314, privilege not held. The junction is what made that guard provable locally rather than deferred to a Linux container. Where neither mechanism exists the test SKIPs — and that skip is explicitly not evidence.</p>
+
+<h2>Claims held to what the checks earn</h2>
+<p><strong>Capture-is-not-permission is two layers, and only the outer is publicly provable.</strong> Validation refuses an <code>UNREVIEWED</code> record carrying any true permission boolean, and <code>_reviewed()</code> separately gates on the state. With the first standing, no record reachable through the public API distinguishes the second. So the inner layer is proven by a deliberately white-box call to a private predicate with an unvalidated record, and is labelled as such rather than folded into one claim.</p>
+<p><strong>Identifier parity is proven for the code points actually exercised</strong>, not for Unicode in general.</p>
+<p><strong>One number in the approved plan was wrong.</strong> It said 23 <code>eligible_for(</code> call sites — a <code>grep -c</code> count of LINES, three of which are comments. The real count of call expressions is 20, all converted. Recorded because a plan's own measurement can be skewed by the tool used to take it.</p>
+
+<h2>Planned against delivered</h2>
+<p class="sub">The 20 items of the approved plan. The DoD is the criterion from the verification GPT-PM approved.</p>
+
+<div class="scroller">
+<table>
+  <thead><tr><th>Item</th><th>Definition of Done</th><th class="num">Status</th></tr></thead>
+  <tbody>
+    <tr><td>G3.1 Capture-before-review preserved, evidence real in every state</td><td>UNREVIEWED with a bound snapshot validates and still grants nothing</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.2 Byte binding inside a confined root, two separate guards</td><td>Escape attempts refused; neither guard substitutes for the other</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.3 BLOCKED bound like REVIEWED</td><td>BLOCKED with no snapshot, and with a mismatched hash, refused</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.4 SubjectRef with an executable invariant</td><td>Empty and whitespace-only identities raise at construction</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.5 One engine-independent grammar</td><td>One text in three layers; divergences measured, not assumed</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.6 Namespace load-bearing for both scope kinds</td><td>A foreign namespace is denied even under WHOLE_SOURCE</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.7 Public dispatch table removed</td><td>No public module-level container publishes a callable</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.8 main()'s fate decided explicitly</td><td>Prints no permission about an object that does not exist</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.9 Schemas state the matrix and stop contradicting the code</td><td>The stale half named; "ideally" removed</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.10 Strict TS mirror brought into step</td><td><code>.strict()</code> kept and still refuses an unknown field</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.11 P0_G3_RIGHTS_GOVERNANCE.md updated, history not rewritten</td><td>Live claims true; §6 left as history</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.12 Python tests, each with its negative half</td><td>All four matrix rows and both scope pairs</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.13 Escape fixture built by an environment that can</td><td>A SKIP is not evidence; the mechanism is named</td><td><span class="pill done">done</span><br><span class="sub">junction</span></td></tr>
+    <tr><td>G3.14 JSON Schema tested as an executable artifact</td><td>Same fixtures through <code>jsonschema</code>; divergence fails a test</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.15 TypeScript regression under jest</td><td>The matrix, the identifiers, and strictness preserved</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.16 Mutations, none masked by another</td><td>Each turns its own test red; the controls hold</td><td><span class="pill done">done</span><br><span class="sub">10/10, scored on the semantic flip</span></td></tr>
+    <tr><td>G3.17 The layering stated honestly, not as one proof</td><td>Outer layer publicly proven, inner labelled white-box</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.18 Subject requirement proven by walking the AST</td><td>A grep for names explicitly not accepted as evidence</td><td><span class="pill done">done</span><br><span class="sub">reachability graph, exercised on the real module</span></td></tr>
+    <tr><td>G3.19 Nothing broken and nobody promoted</td><td>17 sources valid, registry byte-unchanged</td><td><span class="pill done">done</span></td></tr>
+    <tr><td>G3.20 Decision log and the report pair</td><td>Both sides: what was planned and what came out</td><td><span class="pill done">done</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>The closure review found four defects</h2>
+<p class="sub">Run against the finished gate rather than the plan. None was a style note; three of the four were places where a check described more than it did.</p>
+
+<h3>1. A path could name bytes that are in no checkout</h3>
+<p><code>terms.txt:legal-review</code> is innocent by every rule the validator had: not absolute, no drive, no <code>..</code>, inside the declared directory, resolving to a regular file. On NTFS it addresses a <strong>separate alternate data stream</strong>. Git stores no such stream and <code>.gitattributes -text</code> cannot preserve one, so a legal decision could be bound to a digest of bytes existing on exactly one machine.</p>
+<p><strong>The escape was confirmed by measurement, not by argument:</strong> the stream was written and validation accepted it, before any fix. The remedy is a portable-path grammar shared by all three layers, refusing the colon on every platform — including those with no such concept, because a path meaning one file on Linux and a hidden stream on Windows is not the portable reference this field claims to be, and a rule that changes by platform is not a contract. It is ordered <em>after</em> the absolute-path and <code>..</code> checks deliberately: each of the three keeps a fixture only it rejects, so none masks another's mutant.</p>
+
+<h3>2. A mutant died of the wrong exception, and the harness called it a kill</h3>
+<p>Covered above, under the evidence. GPT-PM's required change, verbatim: <em>"Have the mutation harness assert that semantic flip explicitly, so an unrelated exception cannot count as a kill"</em> — <em>"Baseline must return False; after mutation (i), the predicate must return True, not merely make pytest non-zero"</em>.</p>
+<p>One expectation is deliberately <em>not</em> an acceptance, and is worth stating plainly rather than dressing up: mutation (b) weakens <code>has_path and has_hash</code> to <code>or</code>, and no fixture then gets <em>accepted</em>, because the next lines read both fields unconditionally. Its declared flip is <code>RightsValidationError → KeyError</code> — the guard's real job being to turn half the evidence into a stated refusal before the code walks into the missing half. Declaring that exact token is what keeps it a proof: an unrelated exception still fails it.</p>
+
+<h3>3. Parity covered one field out of three</h3>
+<p>The three-engine claim was earned for the scope identifier and quietly extended in prose to the two fields carrying the actual legal evidence. Measured: Python rejected a whitespace-only <code>termsSnapshotPath</code> that the JSON Schema and Zod both accepted, and all three still spelled the sha256 rule with <code>$</code>, which Python matches before a trailing newline and JavaScript does not.</p>
+<p>The shared case file gained <code>snapshot_path_valid/invalid</code> (5 + 21) and <code>sha256_valid/invalid</code> (3 + 8), and all four sections now run through Python's <code>re</code>, the Draft-07 schema and Zod. <code>sub/../terms.txt</code> stays deliberately <strong>legal</strong> to all three grammars: a schema cannot resolve a path, so claiming containment there would be a promise this layer has no way to keep, and <code>rights.py</code>'s separate guard stays independently provable.</p>
+
+<h3>4. The structural check did not walk functions</h3>
+<p>It enumerated module-level assignments, so a new public <code>def eligible_for_export(record)</code> — a permission route reachable by name, in no container at all — would have left it green. It now walks function definitions and applies one rule with <strong>no allowlist</strong>: any module-level function reading a name in <code>PERMISSION_FIELDS</code> must require a subject. The absence of a list is the point; "these helpers are exempt" is exactly the bookkeeping that goes stale, so <code>_commercially_allowed</code> takes and demands a subject it never reads rather than being written down somewhere as a special case.</p>
+
+<h2>The verification round found two more — both in the remediation itself</h2>
+<p class="sub">Neither was a regression in the approved work. Both were places where the remediation's own evidence claimed more than it demonstrated. One was settled by measurement, because reading did not settle it.</p>
+
+<h3>5. The new grammar swallowed the absolute-path guard, and the source went on certifying it as independently provable</h3>
+<p><code>_resolve_terms_snapshot</code> refused absolute, drive and UNC paths in a dedicated check, then applied the grammar, with a comment stating each ordered check kept a fixture only IT rejected. That comment was false the moment the grammar landed: everything that makes a path absolute — a leading <code>/</code>, a <code>:</code>, a <code>\</code> — is outside the grammar's alphabet.</p>
+<p><strong>Measured rather than argued.</strong> An exhaustive search over 11,110 strings built from the grammar's own alphabet plus <code>:</code>, <code>\</code>, <code>/</code> and space, up to length four, found <em>no</em> string the grammar accepts and the absolute check would reject. The guard was unkillable by construction: deleting it left every test green — precisely the masked-guard defect the earlier remediation claimed to have eliminated.</p>
+<p>The guard is <strong>removed</strong>, not kept as defence in depth. A check indistinguishable from its own absence is not depth; it is a claim, and this contract has now been bitten three times by a check that described more than it did. The class is still refused — by the grammar, with <code>/etc/passwd</code>, <code>C:/Windows/win.ini</code>, <code>C:\Windows\win.ini</code>, UNC syntax and <code>/a</code> in the shared invalid-case list proving it in all three engines, and with mutation (j) proving the grammar itself is load-bearing. The three original tests still pass, unchanged in what they assert. The subsumption is now itself a test that re-runs that exhaustive search: if a distinguishing string ever appears, the guard becomes provable, and the failing test is the instruction to bring it back.</p>
+<p>Two lexical checks remain, and each keeps a fixture only it rejects: the grammar (mutation j) and the <code>..</code> ban (mutation c, <code>sub/../terms.txt</code> — well-shaped, resolves inside the root).</p>
+
+<h3>6. The AST check found permission readers, not permission routes</h3>
+<p>It flagged a module-level function containing a string literal from <code>PERMISSION_FIELDS</code>. The bypass it was written to catch contains no such literal:</p>
+<pre>def eligible_for_export(record):
+    return eligible_for(record, "DISPLAY", SubjectRef("test", "item1"))</pre>
+<p>That wrapper hands out a permission while its own caller names no object, and the check never looked at it — while the remediation cited this exact signature as the class it caught.</p>
+<p>The rule now computes reachability to a fixed point over a graph of module-level names. The first attempt built that graph from calls and proved the point again by missing the real front door: <code>eligible_for</code> dispatches through <code>_ELIGIBILITY_BY_USE[use](record, subject)</code>, a call on a Subscript, so it had no edge to any sink and a wrapper around it stayed invisible for a second, unrelated reason. The graph is therefore built from <strong>name references</strong>, with module-level assignments as relay nodes — which also re-covers by construction the older rule that no public container may publish a permission callable.</p>
+<p><strong>Demonstrated on the real module, not inferred from a fixture passing.</strong> The wrapper is appended to <code>rights.py</code>'s actual source and the rule is asked about that, in all three forms the review named: through the public <code>eligible_for</code>, through a private <code>_eligible_for_*</code> predicate, and through the dispatch table directly. Each is flagged; the same wrapper with a <code>subject</code> parameter is not; a wrapper around the wrapper is flagged transitively; and a function touching neither a permission field nor a permission route is not, so the rule is not simply "every function".</p>
+
+<h2>The next round found the same bug in a third form</h2>
+<h3>7. An assignment is a permission route too, and the rule excluded assignments by construction</h3>
+<p>The reference graph made module-level assignments relay nodes — and then said in as many words that they are never offenders themselves. So this stayed invisible:</p>
+<pre>eligible_for_export = lambda record: eligible_for(record, "DISPLAY", SubjectRef("test", "item1"))</pre>
+<p>The assignment references <code>eligible_for</code>, enters the reachable set, and is then dropped from the offender set for not being a <code>FunctionDef</code>. The neighbouring public-container check does not catch it either: that one inspects dict/list/tuple/set values, and this is a callable directly. Reproduced against the implemented helper before fixing: the name was not even in the reachable set, and offenders was empty.</p>
+<p><strong>Three rounds, three forms of one mistake</strong> — literal, then call edge, then node kind — and each time the check was right about the form in front of it and wrong about the class. The rule now judges a reaching assignment on what it <em>exposes</em> rather than on the syntax that produced it: any <code>lambda</code> in the value (including one buried in a container) must take a <code>subject</code>; a bare alias inherits the aliased function's parameters; a pure container with no lambda relays only, which is what keeps <code>_ELIGIBILITY_BY_USE</code> non-offending; and anything else reaching a sink counts as an offender, because an expression whose signature cannot be read cannot be shown to demand a subject. Conservative deliberately: a false offender costs one argument in a review, a false clean is a permission handed out about nothing.</p>
+<p>Regressions, all against the real <code>rights.py</code> source: the lambda form is flagged; the same lambda taking <code>subject</code> is not; a lambda buried in a container is flagged; <code>public_eligible_for = eligible_for</code> is <strong>not</strong> flagged, because the alias inherits a signature that already demands a subject, and a rule flagging it would be "no aliases" rather than "no subjectless routes"; and <code>_ELIGIBILITY_BY_USE</code> is asserted to stay reachable-but-clean, so the rule cannot drift into "no containers". A <code>functools.partial</code> with the subject pre-bound covers the unknown-expression branch.</p>
+
+<h2>Three more — and that is where patching forms stopped</h2>
+<p class="sub">A fourth round on the same check. All three confirmed against the real source before being accepted.</p>
+<ul>
+  <li><strong>8. A parameter named <code>subject</code> is not a subject requirement.</strong> The check read the name and never the signature, so <code>lambda record, subject=SubjectRef("test", "item1"): ...</code> was clean while <code>eligible_for_export(record)</code> still handed out a permission. Same for a <code>def</code> with a default, and for a keyword-only parameter with one.</li>
+  <li><strong>9. Exempting every lambda-free container recreated the original bypass.</strong> <code>EXPORTS = {"DISPLAY": functools.partial(eligible_for, subject=SubjectRef(...))}</code> references <code>eligible_for</code>, so it reaches the sink — and was declared clean for being a dict with no lambda in it. That is materially <code>_ELIGIBILITY_BY_USE</code>'s own class of route, with <code>partial</code> in place of a predicate.</li>
+  <li><strong>10. A class was not a node in the graph at all.</strong> <code>class EligibleExport: def __call__(self, record): return eligible_for(...)</code> plus <code>eligible_for_export = EligibleExport()</code> created no edge, never entered the reachable set, and left nothing for the conservative unknown-expression branch to judge.</li>
+</ul>
+<p><strong>Four rounds, one mistake, now named as one thing.</strong> Literal → call edge → node kind → signature/container/class. Each version was right about the form in front of it and wrong about the class, and each fix was written in terms of syntax. So the rule is not written that way any more: it asks one question of every reachable module-level name — <em>what callable does this expose, and can that callable be invoked without a mandatory subject?</em> A lambda is judged on its own args; an alias inherits the aliased function's; a container is judged recursively on what it holds; a class on its methods that touch a permission; an instantiation on that class's <code>__call__</code>; and anything whose signature cannot be read is an offender, because "cannot be shown to demand a subject" and "does not demand one" have to be treated alike here.</p>
+<p>Nine regressions were added, all appended to <strong>rights.py's real source</strong>, each with the control that differs only in making the subject mandatory — plus <code>EXPORTS = {"DISPLAY": eligible_for}</code> and <code>public_eligible_for = eligible_for</code> as the cases that must STAY clean, or the rule would have become "no containers, no aliases".</p>
+<p><strong>And the claim is now bounded rather than growing.</strong> The helper states what a static read of one module's text cannot see: dynamic access via <code>getattr</code>, a route built at runtime or by a signature-rewriting decorator, and anything outside this module. The honest claim is narrow — <em>no permission route is reachable by name from this module's own source without a mandatory subject</em> — which is what every bypass found across four rounds actually was, and is not the same as "no bypass exists". Writing that boundary down is what stops this from becoming round eleven.</p>
+
+<h2>Three more — the rule enumerated syntax in three places at once</h2>
+<ul>
+  <li><strong>11. The fail-closed fallback failed open.</strong> The helper's own text said an unreadable callable surface must count as an offender; the code's last line returned <code>False</code>. So <code>export = partial(eligible_for, subject=...) if FLAG else eligible_for</code> walked straight through it, and <code>export(record)</code> handed out a permission.</li>
+  <li><strong>12. Sinks were seeded from <code>def</code>s only.</strong> A route that <em>reads</em> a permission without calling anything never entered the graph: <code>export = lambda record: record["rights"]["displayAllowed"]</code>, and the same as a class <code>__call__</code>. The previous class regression only covered a class that <em>calls</em> <code>eligible_for</code>, which is why it did not expose this.</li>
+  <li><strong>13. The binding collector knew four statement types.</strong> <code>(export := lambda record: ...)</code> binds a module global; <code>for export in [...]</code> binds one; <code>with ... as export</code> binds one. None was collected — while the claim said "reachable by name from this module's own source".</li>
+</ul>
+<p><strong>The fix in all three places is the same fix: stop enumerating syntax.</strong> Bindings are now found by locating module-scope <em>stores</em> rather than by listing statement types — which is why a walrus, a <code>for</code> target, a <code>with ... as</code>, and a name bound inside <code>if TYPE_CHECKING:</code> or a <code>try</code>/<code>except</code> pair are covered by one change instead of five cases, and an unidentifiable binding value is an offender rather than a silent pass. Sinks are seeded from any node kind that intrinsically reads a permission — a function, a class method, a lambda, an instance of such a class — but deliberately <em>not</em> from a bare tuple of those strings, or <code>PERMISSION_FIELDS</code> itself would be a sink. And the classifier's fallback now fails closed for real: an expression it does not model is an offender whenever it can pull a permission in at all, with <code>IfExp</code>, <code>BoolOp</code> and <code>Starred</code> given real branch analysis so the rule is not simply "any expression I have not seen".</p>
+<p>Regressions were again appended to the <strong>real source</strong>, each with a control differing only in the one thing that should matter: the conditional with a pre-bound <code>partial</code> (and <code>eligible_for if FLAG else eligible_for</code> staying clean); the direct-literal lambda and the direct-literal callable class (and both with a mandatory <code>subject</code>); the walrus; the <code>for</code> binding; and a <code>with ... as</code> whose value cannot be identified. That last fixture also caught an over-flag in the first attempt — <code>_ = eligible_for</code> inside the <code>with</code> body was treated as an unknown binding rather than the alias it is — which is why binding discovery now walks nested statements and not only the top-level one.</p>
+
+<h2>A sixth round — and the conclusion that a static lint was the wrong sole instrument</h2>
+<ul>
+  <li><strong>14. One binding remembered per name.</strong> <code>setdefault</code> kept the <em>first</em>, so <code>export = eligible_for</code> followed by <code>export = lambda record: eligible_for(...)</code> read clean while Python keeps the second. Bindings are now a list per name, and the effective set is everything at or after the last <em>unconditional</em> binding: an unconditional rebind really does overwrite what came before (so the reverse order stays clean, and has a control saying so), while a conditional rebind after it might still be live and is judged.</li>
+  <li><strong>15. The scope walker dropped nested definitions.</strong> <code>if ENABLE_EXPORT: def eligible_for_export(...)</code> binds a module global, and the walker refused to enqueue any child <code>FunctionDef</code> at all. Also missed: a walrus in a function <em>default</em> or a comprehension, both of which execute in the enclosing scope, and <code>match</code> captures, which live on pattern nodes rather than on <code>Name</code>. Binding discovery is now an explicit descent over module-scope statements carrying a conditional flag: a nested <code>def</code>/<code>class</code> is registered without descending into its body, and the expressions around it — decorators, defaults, bases — are visited because they run in the enclosing scope.</li>
+  <li><strong>16. Sink seeding still enumerated callable shapes</strong>, so <code>operator.itemgetter("displayAllowed")</code> and a class-level <code>export = lambda record: record["rights"]["displayAllowed"]</code> never entered the graph and never reached the fail-closed judging stage. Seeding is now inverted: a value containing a permission literal seeds <em>unless</em> it is provably passive data — a constant, or a container/<code>frozenset(...)</code> of constants. That single exception exists for one shape, <code>PERMISSION_FIELDS</code>, and has its own control.</li>
+</ul>
+<p><strong>The conclusion, which is the part worth keeping.</strong> Six rounds, sixteen findings, every one a real form the static check could not see. The reason is structural: a hand-written AST walk has to model Python's binding and scope semantics, and getting that exactly right is not something a test helper achieves. So the lint is no longer the only instrument.</p>
+<p><code>test_no_live_callable_answers_a_permission_without_a_subject</code> models nothing. It reads <code>vars(rights)</code> — Python's own answer about what the module bound — and asks every callable the same question twice, about two records differing <em>only</em> in their permission booleans. A callable whose <strong>boolean answer changes</strong> has read a permission and answered from a record alone, with no subject. That criterion needs no scope rules, so a conditional <code>def</code>, a walrus, a <code>match</code> capture, a class attribute and an <code>itemgetter</code> are all equally visible to it. <code>_reviewed</code> and <code>_not_discovery_only</code> return the same value for both records, because they report review state and priority rather than a permission — and a control asserts exactly that, so the criterion is not "any bool-returning callable". Its teeth are proven rather than assumed: the test binds the original bypass onto the module, confirms it is caught, and removes it in a <code>finally</code>.</p>
+<p>The static lint stays as defence in depth over the source, with its limits written into its own docstring; the actual guarantee is the runtime one — <code>_require_subject</code>, called by <code>eligible_for</code> and separately by every per-use predicate.</p>
+
+<h2>A seventh round corrected a claim — and that matters more than the two code fixes</h2>
+
+<h3>17. <code>_require_subject</code> does not guarantee the CALLER supplied a subject</h3>
+<p>The closure argument written one round earlier — "the runtime enforcement is the actual guarantee, the lint is defence in depth over it" — is <strong>wrong</strong>, and the review proved it with the very bypass these rounds exist for:</p>
+<pre>def eligible_for_export(record):
+    return eligible_for(record, "DISPLAY", SubjectRef("test", "item1"))</pre>
+<p>That wrapper constructs a perfectly valid <code>SubjectRef</code> internally. <code>eligible_for</code> and every private predicate pass <code>_require_subject</code> happily, while the external caller named no object at all. So <code>_require_subject</code> guarantees the predicates <em>receive</em> a valid <code>SubjectRef</code>; it cannot establish who supplied it. <strong>"The caller must name the object" is a separate, public-surface invariant</strong>, carried by the structural and runtime instruments — so a miss in either is a real miss, and invoking the runtime guard to excuse one was exactly the claim-wider-than-the-check this gate keeps finding.</p>
+
+<h3>18. Two extreme records cannot detect permission dependence</h3>
+<p>The probe compared all-permissions-true against all-permissions-false, and two points cannot characterise a boolean function of six inputs:</p>
+<pre>eligible_for_export = lambda record: (
+    record["rights"]["displayAllowed"] != record["rights"]["trainingAllowed"]
+)</pre>
+<p>answers <code>False</code> on both and <code>True</code> on any mixed record. The probe now enumerates the whole space — six fields, 64 records, everything else held permissive and equal — and flags a callable whose successful boolean answer <em>varies</em> across it. The XOR case is a regression, so the two-point version cannot return unnoticed.</p>
+
+<h3>19. Neither instrument saw a class attribute bound under class-body control flow</h3>
+<pre>class EligibleExport:
+    if ENABLE_EXPORT:
+        export = lambda record: record["rights"]["displayAllowed"]</pre>
+<p>The static side read only <code>cls.body</code>, saw the <code>If</code>, and stopped, so the class never seeded. The runtime side iterated <code>vars(rights)</code> and probed the class <em>object</em>, which constructs it rather than calling <code>.export</code>. Both were fixed: <code>class_members</code> now descends through class-body control flow without entering nested <code>def</code>/<code>class</code> bodies, and the runtime walk descends one level into classes the module defines itself. The runtime half is proven independently — the test binds such a class onto the live module and requires the offender list to be exactly <code>["EligibleExport.export"]</code>.</p>
+
+<h2>An eighth round: the correction accepted, two more found — both in the runtime instrument</h2>
+<p class="sub">The <code>_require_subject</code> correction, the XOR fix and the class-body <code>if</code> case were all accepted. Two remained.</p>
+
+<h3>20. A grant can be a boolean <em>or</em> an exception, and the probe threw the exceptions away</h3>
+<pre>def eligible_for_export(record):
+    if record["rights"]["displayAllowed"]:
+        return True
+    raise RightsValidationError("not allowed")</pre>
+<p>The caller learns the permission either way — <code>True</code> is the grant, the exception is the denial. But the probe collected only successful boolean answers, so its set was <code>{True}</code> across all 64 records and it reported clean. It now records an <em>outcome</em> per record — a boolean value, a non-boolean value's type, or the exception class — and flags a callable when a boolean appears at all <strong>and</strong> the outcome varies. A callable that never produces a boolean (wrong arity, say) is still not a route. Three controls keep that from becoming "anything that ever raises": a constant value, an always-raising callable, and one reading <code>legalReviewState</code> rather than a permission.</p>
+
+<h3>21. A <code>match</code> in a class body and a <code>classmethod</code> descriptor defeated the two halves separately</h3>
+<pre>class EligibleExport:
+    match 1:
+        case 1:
+            @classmethod
+            def export(cls, record):
+                return record["rights"]["displayAllowed"]</pre>
+<p>Statically, the class-body descent walked <code>body</code>/<code>orelse</code>/<code>finalbody</code>/<code>handlers</code>, and a <code>match</code> keeps its branches under <code>cases</code> — so the method was never reached. At runtime, <code>vars(cls)["export"]</code> is a classmethod <em>descriptor</em>, which is not itself callable, while <code>EligibleExport.export</code> is: reading the raw stored value skipped exactly the descriptor forms. Fixed on both sides, and generically rather than by extending two lists: the static descent follows every child that is a statement or has a body, and the runtime walk reads <code>getattr(cls, name)</code> instead of the raw <code>vars</code> entry. The premise is asserted in the test itself — <code>callable(vars(C)["export"])</code> is False while <code>callable(C.export)</code> is True — so the fix cannot be mistaken for decoration.</p>
+
+<h2>What this gate did not do</h2>
+<p>No source was promoted. All 17 remain <code>UNREVIEWED</code> with <code>termsCaptured: false</code>, <code>source_registry.json</code> is unchanged to the byte, and every snapshot artifact added is synthetic and says so in its own text.</p>
+<p>The 50/4 corroboration floor was not touched. A carried-forward finding proposed retiring it; re-reading <code>scripts/equipment_identity/canonical_selection_eligibility.py</code> withdrew that finding — the floor enforces a precondition GPT-PM set, computes its counts fresh from real data, and is deliberately fail-closed. The narrower statement underneath it stands: <strong>the floor is not the binding constraint</strong>. While all 17 sources are <code>UNREVIEWED</code>, no corroboration count unlocks anything — which is precisely why this gate worked on the lock that is holding the door.</p>
+
+<h2>Open, stated plainly</h2>
+<ul>
+  <li><strong>A partially blocked source is inexpressible.</strong> <code>BLOCKED</code> forbids a scope, so "blocked for this part" has no representation. That is a limitation, not an oversight, and it waits for its own gate.</li>
+  <li><strong>The per-predicate type re-check still does not exist</strong> — the P0.G3 review note remains open in that part. It is partly overtaken: <code>eligible_for</code> validates the whole record before reading any field, and now also refuses to answer without a <code>SubjectRef</code>.</li>
+  <li><strong>There is still no production consumer of the rights predicates.</strong> The one other importer of the module uses <code>load_registry()</code> alone.</li>
+  <li><strong>12 failing tests in <code>scripts/equipment_identity</code> are not this gate's — stated rather than implied.</strong> All of them are in <code>scripts/equipment_identity/test_baseline.py</code> and <code>scripts/equipment_identity/test_deployment_isolation.py</code>. Both files are clean at HEAD, neither imports <code>rights.py</code>, and the failing assertions read a Gemini/cloud reference in <code>lib/features/visual_equipment/data/mlkit_live_equipment_service.dart</code> and a <code>functions-equipment-identity</code> string in <code>functions/src/release_guard.ts</code> (last touched 2026-08-29). Carried forward as a separate finding, not folded into this gate's result and not reported as green.</li>
+</ul>
+
+<div class="foot">
+  <p>Gate G3 · Rosetta plan <span class="mono">fitness_app-2026-09-09T15-19-42-340Z-5af404</span> · class HIGH · GPT-PM <span class="mono">VERDICT: APPROVE</span> after six rounds (4, 3, 2, 1 MAJOR — every finding verified against source before being accepted), then a closure review: four defects, all confirmed and remediated in one batch, and seven verification rounds: seventeen more, all in the remediation itself.</p>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

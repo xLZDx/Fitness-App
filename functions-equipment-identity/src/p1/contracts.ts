@@ -15,9 +15,19 @@ import { z } from "zod";
 
 // --- shared primitives ------------------------------------------------
 
+/** A lowercase hex SHA-256 digest.
+ *
+ * The end assertion is `(?![\s\S])` rather than `$` so this agrees with the
+ * Python side character for character. JavaScript's `$` already refuses a
+ * trailing newline, but Python's `$` accepts one — and both
+ * `scripts/equipment_identity/rights.py` and the Draft-07 schema (validated
+ * with Python's own `re`) previously used `$`, so `"a".repeat(64) + "\n"` was
+ * legal to two layers and illegal to this one. Not a permission bypass; a
+ * digest like that fails the byte comparison anyway. It simply made the
+ * claim "all three layers enforce the same shape" untrue. */
 export const Sha256HexSchema = z
   .string()
-  .regex(/^[0-9a-f]{64}$/, "must be a lowercase 64-character hex SHA-256 digest");
+  .regex(/^[0-9a-f]{64}(?![\s\S])/, "must be a lowercase 64-character hex SHA-256 digest");
 
 export const IsoTimestampSchema = z.string().datetime({ offset: true });
 
@@ -108,6 +118,73 @@ export type ProvenanceRef = z.infer<typeof ProvenanceRefSchema>;
 
 export const LegalReviewStateSchema = z.enum(["UNREVIEWED", "REVIEWED", "BLOCKED"]);
 
+/** One grammar for every scope identifier, shared VERBATIM with
+ * `scripts/equipment_identity/rights.py` (`IDENTIFIER_PATTERN`) and
+ * `rights_decision.schema.json` (`#/definitions/scopeIdentifier`).
+ *
+ * The two odd choices in it are what make that sharing real rather than
+ * cosmetic — identical characters are not identical meaning:
+ *
+ * - The alphabet is enumerated ASCII, never `\w` or `\S`, because Python and
+ *   JavaScript disagree about which code points are whitespace. Measured in
+ *   both engines: Python's `\S` rejects U+0085 and accepts U+FEFF; ours does
+ *   exactly the reverse.
+ * - The end assertion is `(?![\s\S])` rather than `$`, because Python's `$`
+ *   also matches just before a trailing newline while ours does not — and the
+ *   Python `jsonschema` package compiles `pattern` with Python's own `re`. A
+ *   `$` here would therefore leave Python and the JSON Schema agreeing with
+ *   each other while this mirror silently disagreed, which is precisely the
+ *   drift this file exists to prevent. `[\s\S]` is a set unioned with its own
+ *   complement, so it means "any character" in both engines whatever either
+ *   calls whitespace.
+ *
+ * Exported as the pattern TEXT so the contract tests can feed the identical
+ * string to all three runtimes instead of comparing source files by eye. */
+export const SCOPE_IDENTIFIER_PATTERN =
+  "^[A-Za-z0-9](?:[A-Za-z0-9._:-]*[A-Za-z0-9])?(?![\\s\\S])";
+
+export const ScopeIdentifierSchema = z.string().regex(new RegExp(SCOPE_IDENTIFIER_PATTERN));
+
+/** The lexical shape of a recorded `termsSnapshotPath`, shared verbatim with
+ * `rights.py` (`SNAPSHOT_PATH_PATTERN`) and the Draft-07 schema — so all three
+ * agree on the VALUE and not merely on whether the field is present. A
+ * previous version used `z.string().min(1)` here, `{"type": "string"}` in the
+ * schema and a `.strip()` check in Python, which meant `" "` was accepted by
+ * two layers and refused by the third.
+ *
+ * The component alphabet is what closes an NTFS alternate data stream:
+ * `terms.txt:legal-review` is not absolute, has no drive and no `..`, sits
+ * inside the declared directory and resolves to a regular file — and yet
+ * addresses a separate stream whose bytes Git never stored. Measured on the
+ * Windows checkout: such a record validated and its hash matched. Colons are
+ * refused on every platform, because a path that names one file on Linux and
+ * a hidden stream on Windows is not the portable repository reference this
+ * field claims to be.
+ *
+ * It deliberately does NOT reject `..`; `rights.py` bans that separately, so
+ * that guard stays independently mutation-provable rather than subsumed. */
+export const SNAPSHOT_PATH_PATTERN = "^[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*(?![\\s\\S])";
+
+/** The population a grant covers. `WHOLE_SOURCE` means every subject in the
+ * declared namespace — a deliberate act of trust in upstream provenance,
+ * since the registry holds no population oracle and cannot know that a key
+ * does NOT belong to a source. `SUBSET` enumerates the covered keys. The
+ * namespace is carried by both kinds, because two upstream catalogues can
+ * each number an item `123` and only the namespace tells them apart. */
+export const RightsScopeSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("WHOLE_SOURCE"),
+    keyNamespace: ScopeIdentifierSchema,
+  }).strict(),
+  z.object({
+    kind: z.literal("SUBSET"),
+    keyNamespace: ScopeIdentifierSchema,
+    // A SUBSET covering nothing is an ambiguity, not a grant.
+    keys: z.array(ScopeIdentifierSchema).nonempty(),
+  }).strict(),
+]);
+export type RightsScope = z.infer<typeof RightsScopeSchema>;
+
 export const RightsDecisionSchema = z.object({
   legalReviewState: LegalReviewStateSchema,
   commercialAllowed: z.boolean(),
@@ -120,12 +197,77 @@ export const RightsDecisionSchema = z.object({
   shareAlike: z.boolean(),
   noAiRestriction: z.boolean(),
   termsCaptured: z.boolean(),
+  termsSnapshotPath: z.string().regex(new RegExp(SNAPSHOT_PATH_PATTERN)).optional(),
   termsSnapshotSha256: Sha256HexSchema.optional(),
+  rightsScope: RightsScopeSchema.optional(),
   licenseIdOrTermsVersion: z.string().optional(),
   reviewedAt: IsoTimestampSchema.optional(),
   recheckAt: IsoTimestampSchema.optional(),
   decisionBasis: z.string().optional(),
-}).strict();
+}).strict().superRefine((rights, ctx) => {
+  // The evidence/scope matrix, identical to the `allOf` blocks in
+  // rights_decision.schema.json and to validate_rights() in rights.py:
+  //
+  //   UNREVIEWED + termsCaptured=false  snapshot forbidden, scope forbidden
+  //   UNREVIEWED + termsCaptured=true   snapshot required,  scope forbidden
+  //   REVIEWED                          snapshot required,  scope required
+  //   BLOCKED                           snapshot required,  scope forbidden
+  //
+  // Capture-before-review (the second row) is deliberate: terms text can
+  // honestly exist before anyone has reviewed it. What the matrix requires is
+  // that a capture be re-checkable, not that it wait for a review.
+  //
+  // Only presence/absence is checked here. Whether the recorded sha256 is
+  // actually the hash of the file at termsSnapshotPath is a question about
+  // bytes on disk, which neither this mirror nor a JSON Schema can answer;
+  // rights.py opens the file and compares.
+  const state = rights.legalReviewState;
+
+  if (rights.termsCaptured) {
+    if (rights.termsSnapshotPath === undefined || rights.termsSnapshotSha256 === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "termsCaptured=true requires both termsSnapshotPath and termsSnapshotSha256 — " +
+          "a captured snapshot nobody can re-read is a boolean somebody set, not evidence",
+      });
+    }
+  } else if (rights.termsSnapshotPath !== undefined || rights.termsSnapshotSha256 !== undefined) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "termsSnapshotPath/termsSnapshotSha256 is set but termsCaptured=false",
+    });
+  }
+
+  if (state === "REVIEWED") {
+    if (rights.rightsScope === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "legalReviewState=REVIEWED requires rightsScope — a grant with no stated " +
+          "population reads as covering the whole source, which the review behind it " +
+          "may never have claimed",
+      });
+    }
+  } else if (rights.rightsScope !== undefined) {
+    // BLOCKED grants nothing, so a scope there could only mean a PARTIAL
+    // block, which this contract cannot express and must not appear to.
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `legalReviewState=${state} must not carry rightsScope`,
+    });
+  }
+
+  if ((state === "REVIEWED" || state === "BLOCKED") && rights.termsCaptured !== true) {
+    // BLOCKED is a human legal conclusion, not an absence: a source whose
+    // terms could not be reached at all is UNREVIEWED, which is already
+    // fail-closed and is already the honest word for "nobody could look".
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `legalReviewState=${state} requires termsCaptured=true`,
+    });
+  }
+});
 export type RightsDecision = z.infer<typeof RightsDecisionSchema>;
 
 export const SourceClassSchema = z.enum([

@@ -2,8 +2,15 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "rights_decision.schema.json",
   "title": "Rights decision",
-  "description": "The rights state attached to one source_registry.json record. Structural shape only -- scripts/equipment_identity/rights.py's eligibility helpers are the actual fail-closed enforcement (a static schema cannot express 'legalReviewState must equal REVIEWED before displayAllowed is trusted', only that the field exists and has the right type).",
+  "description": "The rights state attached to one source_registry.json record. This schema enforces field shape, the identifier grammar, and the presence/absence obligations of the evidence matrix below -- it CANNOT resolve a path or hash a file, so 'the recorded sha256 matches the bytes of the recorded snapshot' is necessarily enforced only by scripts/equipment_identity/rights.py, which is also where the fail-closed eligibility rules live (a static schema cannot express 'legalReviewState must equal REVIEWED and the asked-about subject must be inside rightsScope before displayAllowed is trusted'). The matrix, enforced identically here, in rights.py and in the Zod mirror at functions-equipment-identity/src/p1/contracts.ts: UNREVIEWED+termsCaptured=false forbids the snapshot fields and rightsScope; UNREVIEWED+termsCaptured=true requires the snapshot fields and forbids rightsScope (capturing terms before anyone reviews them is legal and deliberate); REVIEWED requires termsCaptured=true, the snapshot fields and rightsScope; BLOCKED requires termsCaptured=true and the snapshot fields and forbids rightsScope, because BLOCKED grants nothing and a scope on it could only mean a partial block this contract cannot express.",
   "type": "object",
+  "definitions": {
+    "scopeIdentifier": {
+      "type": "string",
+      "description": "One grammar for every scope identifier, shared verbatim with rights.py and the Zod mirror. The alphabet is enumerated ASCII rather than \\w or \\S because Python and JavaScript disagree about which code points are whitespace -- measured, not assumed: Python's \\S rejects U+0085 and accepts U+FEFF, JavaScript's does the opposite. The end assertion is (?![\\s\\S]) rather than $ because Python's $ also matches before a trailing newline while JavaScript's does not, and the Python jsonschema package compiles this pattern with Python's own re -- so a $ here would make this schema and rights.py agree with each other while Zod silently disagreed. [\\s\\S] is a set unioned with its own complement, so it means 'any character' in both engines regardless of what either calls whitespace.",
+      "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9._:-]*[A-Za-z0-9])?(?![\\s\\S])"
+    }
+  },
   "required": [
     "legalReviewState",
     "commercialAllowed", "displayAllowed", "recognitionProcessingAllowed",
@@ -14,7 +21,7 @@
     "legalReviewState": {
       "type": "string",
       "enum": ["UNREVIEWED", "REVIEWED", "BLOCKED"],
-      "description": "UNREVIEWED is the default and the only state a source may seed at without captured, reviewed terms evidence. REVIEWED means a human reviewed actual captured terms (termsCaptured=true, ideally with termsSnapshotSha256). BLOCKED means review happened and the answer was no -- distinct from UNREVIEWED, which just means nobody has looked yet."
+      "description": "UNREVIEWED is the default and the only state a source may seed at without captured, reviewed terms evidence. REVIEWED means a human reviewed actual captured terms (termsCaptured=true, with termsSnapshotPath and termsSnapshotSha256 required and, in rights.py, re-hashed against the file's real bytes). BLOCKED means review happened and the answer was no -- distinct from UNREVIEWED, which just means nobody has looked yet -- and carries the same evidence requirement, because it is a human legal conclusion rather than an absence."
     },
     "commercialAllowed": { "type": "boolean" },
     "displayAllowed": { "type": "boolean" },
@@ -26,22 +33,56 @@
     "shareAlike": { "type": "boolean" },
     "noAiRestriction": {
       "type": "boolean",
-      "description": "true means the source's terms explicitly forbid AI/ML use (a 'No AI' clause or equivalent). This is a HARD block on recognition processing, training and derivative use regardless of any other permission boolean -- see rights.py's eligibility helpers."
+      "description": "true means the source's terms explicitly forbid AI/ML use (a 'No AI' clause or equivalent). This is a HARD block on recognition processing, training and derivative use regardless of any other permission boolean -- see rights.py's eligibility predicates."
     },
     "termsCaptured": {
       "type": "boolean",
-      "description": "true only if the actual terms text has been captured (a snapshot exists), never inferred from a source's reputation or category."
+      "description": "true only if the actual terms text has been captured (a snapshot file exists), never inferred from a source's reputation or category. Independent of review: a source can honestly have its terms captured and still be entirely unreviewed. Whenever true, termsSnapshotPath and termsSnapshotSha256 are both required -- here structurally, and in rights.py by re-hashing the file."
+    },
+    "termsSnapshotPath": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*(?![\\s\\S])",
+      "description": "Repository-relative path to the captured terms snapshot. The pattern is the same lexical policy rights.py and the Zod mirror apply, so all three agree on the VALUE and not merely on the field's presence: a relative POSIX-style path of conservative components. A colon is refused on every platform because filename:stream is NTFS alternate-data-stream syntax -- lexically innocent, inside the directory, resolving to a regular file, and yet addressing bytes Git never stored and .gitattributes cannot preserve. It deliberately does NOT reject '..', which rights.py bans separately so that guard stays independently testable. rights.py additionally requires that it resolve inside core/equipment_identity/p0/terms_snapshots/ and be a regular file: absolute paths, drive/UNC prefixes and '..' components are refused lexically, and a resolved target outside that root -- reached by symlink or junction, with no '..' anywhere in the text -- is refused separately. Neither guard subsumes the other, and this schema can enforce neither."
     },
     "termsSnapshotSha256": {
       "type": "string",
-      "pattern": "^[0-9a-f]{64}$",
-      "description": "sha256 of the captured terms snapshot, when one exists. Required in practice (by rights.py, not this schema) whenever termsCaptured=true."
+      "pattern": "^[0-9a-f]{64}(?![\\s\\S])",
+      "description": "sha256 of the captured terms snapshot's exact bytes. Required whenever termsCaptured=true. The end assertion is (?![\\s\\S]) rather than $ because Python's $ also matches before a trailing newline while JavaScript's does not, and this file is validated with Python's re -- a $ here would make this schema and rights.py agree while the Zod mirror silently disagreed. This schema can only check the shape; rights.py opens the file at termsSnapshotPath and compares, which is what makes the decision bound to the terms rather than to a well-formed string."
+    },
+    "rightsScope": {
+      "description": "The population this grant covers, required on REVIEWED and forbidden everywhere else. WHOLE_SOURCE means every subject in the declared namespace; it trusts upstream provenance deliberately, because the registry has no population oracle and so cannot know that a key does NOT belong to a source. SUBSET enumerates the covered keys. The namespace is matched for BOTH kinds, because two upstream catalogues can each number an item 123 and only the namespace tells them apart.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind", "keyNamespace"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "WHOLE_SOURCE" },
+            "keyNamespace": { "$ref": "#/definitions/scopeIdentifier" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "keyNamespace", "keys"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "SUBSET" },
+            "keyNamespace": { "$ref": "#/definitions/scopeIdentifier" },
+            "keys": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/definitions/scopeIdentifier" },
+              "description": "A SUBSET covering nothing is an ambiguity, not a grant, so an empty array is refused."
+            }
+          }
+        }
+      ]
     },
     "licenseIdOrTermsVersion": { "type": "string" },
     "reviewedAt": {
       "type": "string",
       "format": "date-time",
-      "description": "ISO-8601. Required in practice whenever legalReviewState != UNREVIEWED."
+      "description": "ISO-8601. Required in practice (by rights.py, not this schema) whenever legalReviewState != UNREVIEWED."
     },
     "recheckAt": {
       "type": "string",
@@ -53,5 +94,32 @@
       "description": "Free-text note on why the decision was made. Never itself a source of permission -- a string like 'royalty free' here grants nothing; the boolean fields are the only thing rights.py reads for eligibility."
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "termsCaptured": { "const": true } }, "required": ["termsCaptured"] },
+      "then": { "required": ["termsSnapshotPath", "termsSnapshotSha256"] },
+      "else": {
+        "allOf": [
+          { "not": { "required": ["termsSnapshotPath"] } },
+          { "not": { "required": ["termsSnapshotSha256"] } }
+        ]
+      }
+    },
+    {
+      "if": { "properties": { "legalReviewState": { "const": "REVIEWED" } }, "required": ["legalReviewState"] },
+      "then": {
+        "required": ["rightsScope", "termsCaptured"],
+        "properties": { "termsCaptured": { "const": true } }
+      },
+      "else": { "not": { "required": ["rightsScope"] } }
+    },
+    {
+      "if": { "properties": { "legalReviewState": { "const": "BLOCKED" } }, "required": ["legalReviewState"] },
+      "then": {
+        "required": ["termsCaptured"],
+        "properties": { "termsCaptured": { "const": true } }
+      }
+    }
+  ]
 }
