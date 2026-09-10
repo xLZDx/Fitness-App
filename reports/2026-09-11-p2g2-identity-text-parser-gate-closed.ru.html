@@ -1,0 +1,397 @@
+<title>Гейт P2.G2: парсер идентичности из текста</title>
+<style>
+  :root {
+    --ink: #1b2129;
+    --ink-soft: #4b5563;
+    --paper: #f7f6f1;
+    --surface: #ffffff;
+    --surface-2: #f0eee6;
+    --line: #dcd8cc;
+    --accent: #0e6f63;
+    --accent-soft: #e4f1ee;
+    --good: #15803d;
+    --good-soft: #e6f4ea;
+    --warn: #b45309;
+    --warn-soft: #fbecdb;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", monospace;
+    --sans: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e9e6dc;
+      --ink-soft: #b3b0a6;
+      --paper: #14171b;
+      --surface: #1b1f24;
+      --surface-2: #20252b;
+      --line: #33383f;
+      --accent: #4fc3b0;
+      --accent-soft: #1a3532;
+      --good: #4ade80;
+      --good-soft: #16321f;
+      --warn: #f0a860;
+      --warn-soft: #3a2a13;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e9e6dc;
+    --ink-soft: #b3b0a6;
+    --paper: #14171b;
+    --surface: #1b1f24;
+    --surface-2: #20252b;
+    --line: #33383f;
+    --accent: #4fc3b0;
+    --accent-soft: #1a3532;
+    --good: #4ade80;
+    --good-soft: #16321f;
+    --warn: #f0a860;
+    --warn-soft: #3a2a13;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); line-height: 1.55; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header { padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 600; font-size: clamp(28px, 4vw, 40px);
+    margin: 0 0 10px; text-wrap: balance; letter-spacing: -0.01em;
+  }
+  .sub { color: var(--ink-soft); font-size: 16px; max-width: 66ch; margin: 0; }
+
+  .status-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0 8px; }
+  .chip {
+    font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    padding: 7px 14px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip.good { background: var(--good-soft); color: var(--good); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.plan { background: var(--accent-soft); color: var(--accent); }
+
+  h2 {
+    font-family: var(--display); font-weight: 600; font-size: 22px; margin: 44px 0 14px;
+    letter-spacing: -0.01em;
+  }
+  h3 { font-family: var(--sans); font-weight: 700; font-size: 15px; margin: 24px 0 10px; }
+  p { margin: 0 0 14px; }
+  .lede { font-size: 16px; color: var(--ink-soft); max-width: 68ch; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0 8px; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+  }
+  .stat .n {
+    font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 600;
+    color: var(--ink); display: block;
+  }
+  .stat .l { font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; display: block; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 760px; }
+  thead th {
+    text-align: left; font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink-soft); background: var(--surface-2);
+    padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td.step { font-family: var(--mono); color: var(--ink-soft); white-space: nowrap; }
+  td.done { white-space: nowrap; }
+  .badge-done {
+    font-family: var(--mono); font-size: 11.5px; font-weight: 600; color: var(--good);
+    background: var(--good-soft); border-radius: 6px; padding: 3px 8px; display: inline-block;
+  }
+  .note { color: var(--ink-soft); font-size: 12.5px; }
+
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 8px;
+    background: var(--surface); padding: 14px 18px; margin: 12px 0;
+  }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout h4 { margin: 0 0 6px; font-size: 14px; font-family: var(--sans); }
+  .callout p { margin: 0 0 6px; font-size: 13.5px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  code {
+    font-family: var(--mono); background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: 0.92em;
+  }
+  .evidence {
+    font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 14px 16px; white-space: pre-wrap; overflow-x: auto; line-height: 1.6;
+  }
+  ul.disclosures { margin: 0; padding-left: 20px; }
+  ul.disclosures li { margin-bottom: 10px; }
+
+  .rounds { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 20px; }
+  .round {
+    border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; background: var(--surface);
+    display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap;
+  }
+  .round .tag {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+    padding: 3px 9px; border-radius: 6px; white-space: nowrap;
+  }
+  .round .tag.revise { background: var(--warn-soft); color: var(--warn); }
+  .round .tag.approve { background: var(--good-soft); color: var(--good); }
+  .round p { margin: 0; font-size: 13.5px; flex: 1 1 320px; }
+
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: 13px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SPTR &middot; Equipment Identity &middot; закрытие гейта Rosetta</p>
+    <h1>Гейт P2.G2: парсер идентичности из текста</h1>
+    <p class="sub">Второй гейт направления OCR-first (слой A). Чистая функция <code>parseIdentityText</code>, превращающая структурированный OCR в кандидатов бренда/линейки/модели/типа оборудования, с ownership-safe политикой для плаката соседней машины &mdash; построена напрямую из решения GPT-PM, процитированного дословно ниже.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 09dc5dc</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+  <div class="status-row">
+    <span class="chip good">&#10003; P2.G2 PASSED</span>
+    <span class="chip plan">GPT-PM VERDICT: APPROVE &middot; раунд 2 из 2</span>
+    <span class="chip warn">1 REVISE (4 MAJOR) &rarr; 1 APPROVE</span>
+  </div>
+
+  <p class="lede">План прошёл один раунд <code>REVISE</code> с четырьмя MAJOR-замечаниями, все четыре проверены против первоисточника лично перед принятием &mdash; включая одно, которое оказалось не просто недоказанным, а прямо ЛОЖНЫМ &mdash; и исправлены одним пакетом (CLAUDE.md &sect;23/&sect;3/&sect;17).</p>
+
+  <div class="stats">
+    <div class="stat"><span class="n">428</span><span class="l">тестов прошло, вся папка visual_equipment</span></div>
+    <div class="stat"><span class="n">+93 / 0</span><span class="l">новых тестов добавлено / пропало из базовой линии</span></div>
+    <div class="stat"><span class="n">0 байт</span><span class="l">диф по всем 24 предсуществующим файлам</span></div>
+    <div class="stat"><span class="n">7 / 4</span><span class="l">MAJOR / MINOR за 2 раунда pre-commit review, все исправлены</span></div>
+  </div>
+
+  <h2>Путь плана: 1 REVISE (4 MAJOR), затем APPROVE</h2>
+  <div class="rounds">
+    <div class="round">
+      <span class="tag revise">РАУНД 1 &middot; REVISE &middot; 4 MAJOR</span>
+      <p>Заявление про failure-path OP-01 оказалось ЛОЖНЫМ, а не просто недоказанным &mdash; в клиенте нигде не существует концепции <code>failureCode</code>/<code>UNAVAILABLE_*</code>. Для двух из пяти полей <code>ParsedIdentityText</code> не было деривации, с риском дублирования реального <code>EquipmentAliasIndex</code>. Форма модели-кода отклоняла реальную модель Star Trac («8TRx»), но принимала голое «200» из фикстуры MAX/KG как ложное срабатывание. И явный вопрос о product-ruling по владению вторичным кластером был напрямую задан GPT-PM, а не решён единолично.</p>
+    </div>
+    <div class="round">
+      <span class="tag approve">РАУНД 2 &middot; APPROVE</span>
+      <p>0 BLOCKER / 0 MAJOR, все четыре замечания закрыты без регрессии. Хеш плана <code>674874ab&hellip;7ba9f</code>, reply_id <code>437608ff&hellip;</code>.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <h4>Решение GPT-PM по владению, процитировано дословно &mdash; несущее решение, реализованное этим гейтом</h4>
+    <p>&laquo;код из кластера, уверенно определённого как вторичный/соседний, подавляется из modelCodeCandidates; если у первичного кластера нет кода, код соседа всё равно не должен становиться кандидатом на модель. Но &laquo;побеждает наибольшая суммарная площадь bbox&raquo; не может молча сломать близкую/равную сцену с двумя машинами: при неоднозначном владении сохраняются оба правдоподобных кода и явно фиксируется конфликт/неоднозначность, а не произвольный выбор одного из них&raquo;.</p>
+    <p>Тот же ответ одобрил реализованную ниже сверку по OP-01, а не поднял её как замечание: &laquo;текст только с брендом должен сохранять свои brandCandidates &hellip; сравнение проводится по no-model подформе &hellip; а не через стирание валидного brand-свидетельства ради побайтовой идентичности всего объекта&raquo;.</p>
+  </div>
+
+  <h2>Pre-commit review (<code>review.js</code>, &sect;15): раунд 1 &mdash; 5 MAJOR / 3 MINOR, исправлено</h2>
+  <p class="lede">Отдельно от ревью плана выше: обязательное pre-commit ревью реальной реализации нашло настоящие дефекты, которые ревью на уровне плана не могло увидеть. Все восемь замечаний независимо проверены против кода перед исправлением (CLAUDE.md &sect;23/&sect;3) &mdash; ни одно не оказалось ложным срабатыванием.</p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Замечание</th><th>Исправление</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="step">MAJOR</td><td>Подавление при уверенном владении применялось только к модели-коду; бренд/линейка/тип подавленного соседа всё равно просачивались в результат</td><td>Ветка уверенного владения теперь возвращает разбор первичного кластера без изменений &mdash; подавлено ВСЁ свидетельство вторичного, а не только его код</td></tr>
+        <tr><td class="step">MAJOR</td><td>Сопоставление фраз лексикона не нормализовало OCR-пунктуацию (<code>STAR-TRAC</code> не совпадал с <code>Star Trac</code>)</td><td>Новая <code>normalizePhraseText</code> сворачивает пунктуацию в пробелы только для сопоставления фраз; определение модели-кода по-прежнему использует сырые разделители</td></tr>
+        <tr><td class="step">MAJOR</td><td>Слитные измерения (<code>220V</code>, <code>150KG</code>, <code>3SETS</code>, без пробела) всё ещё классифицировались как модели-коды</td><td>Новый regex «цифры+суффикс единицы измерения» отклоняет их до общего допуска смешанного алфанумерика</td></tr>
+        <tr><td class="step">MAJOR</td><td>Пара OCR-путаницы цифра/буква (<code>9NP1</code>/<code>9NPI</code>) ошибочно конфликтовала, когда встречалась в двух неоднозначных кластерах</td><td>Та же проверка <code>isOcrConfusionVariant</code>, что уже использовалась внутри одного кластера, теперь применена и к межкластерному слиянию</td></tr>
+        <tr><td class="step">MAJOR</td><td>Порядок вывода зависел от порядка итерации <code>Set</code> &mdash; два семантически идентичных лексикона, построенных в разном порядке, давали неравные результаты</td><td>Каждый выходной список теперь сортируется перед возвратом, во всех путях кода</td></tr>
+        <tr><td class="step">MINOR</td><td>Тест no-model подформы OP-01 не сравнивал <code>productLineCandidates</code></td><td>Добавлено недостающее сравнение</td></tr>
+        <tr><td class="step">MINOR</td><td>Формулировка закрытия преувеличивала покрытие равенства <code>IdentityLexicon</code> (у него нет <code>==</code>)</td><td>Формулировка исправлена: только конструирование для <code>IdentityLexicon</code>, конструирование и равенство для <code>ParsedIdentityText</code></td></tr>
+        <tr><td class="step">MINOR</td><td>Необъяснённый разрыв в шесть тестов (335 против «341» из P2.G1) был оставлен как «другое измерение»</td><td>Найдена точная причина: собственный extraction-скрипт P2.G1 считал 6 синтетических псевдо-записей <code>(setUpAll)</code>/<code>(tearDownAll)</code> реальными тестами; сегодняшние цифры их исключают, совпадая со счётом самого compact-репортера</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Pre-commit review раунд 2 &mdash; 2 MAJOR / 1 MINOR, оба &mdash; настоящие регрессии в собственном исправлении раунда 1</h2>
+  <p class="lede">Ещё один раунд легитимен по CLAUDE.md &sect;17 именно потому, что это дефекты В САМОМ исправлении раунда 1, а не новые несвязанные замечания.</p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Замечание</th><th>Исправление</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="step">MAJOR</td><td>Новый нормализатор пунктуации сломал реальный RU-источник алиасов, который сам же документирует как вход от вызывающей стороны &mdash; ASCII-only фильтр <code>[^a-z0-9]</code> сводит реальный алиас вроде <code>беговая дорожка</code> (подтверждено напрямую в <code>equipment_aliases.json</code> &mdash; 433 реальных кириллических фрагмента) к пустой строке</td><td>Переиспользована СОБСТВЕННАЯ существующая Cyrillic-safe конвенция репозитория из <code>equipment_alias_index.dart</code> (нижний регистр, ё&rarr;е, оставить <code>[a-zа-я0-9]</code>). При тестировании исправления вскрылась ВТОРАЯ, более глубокая ошибка: <code>\b</code> в Dart работает только на ASCII и вообще никогда не привязывается к кириллическому тексту &mdash; сопоставление фраз переписано на сравнение нормализованных списков слов вместо <code>\b</code></td></tr>
+        <tr><td class="step">MAJOR</td><td>Отклонение слитных измерений покрывало только целые+единица; десятичные и диапазонные формы (<code>2.5HP</code>, <code>1.5KW</code>, <code>220-240V</code>) всё ещё становились модели-кодами</td><td>Regex слитных измерений расширен опциональной десятичной частью и опциональным дефисным диапазоном перед суффиксом единицы</td></tr>
+        <tr><td class="step">MINOR</td><td>Блок evidence «Покрытие по шагам» в обоих отчётах всё ещё говорил «модель + конструирование/равенство лексикона», противореча собственной исправленной формулировке DoD из раунда 1</td><td>Исправлено в обоих отчётах: <code>ParsedIdentityText</code> (конструирование + равенство) отдельно от <code>IdentityLexicon</code> (только конструирование)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Запланировано / критерий готовности / статус</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Запланировано</th><th>Критерий готовности (GPT-PM, раунд 2)</th><th>Статус</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="step">1</td><td><code>ParsedIdentityText</code> + конфиг-тип <code>IdentityLexicon</code></td><td><code>ParsedIdentityText</code> протестирован на конструирование И равенство; <code>IdentityLexicon</code> только на конструирование (у него нет <code>==</code>)</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">2</td><td>Контекстно-зависимый классификатор модели-кода как отдельная изолированная функция</td><td>Изолированные позитивные И негативные фикстуры, не подогнанные только под шесть story-сценариев</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">3</td><td>Сопоставление фраз бренда/линейки/типа против внедрённого лексикона</td><td>Позитивные тесты для линейки продукта и type hint, не только для бренда</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">4</td><td>Эвристика кластеризации/центральности по bounding box как отдельная чистая функция</td><td>Покрыты случаи явного primary, только-сосед и near-tied</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">5</td><td>Собрать <code>parseIdentityText</code>, внедрить решение по владению + обнаружение конфликтов в одном кластере</td><td>Вторичный подавляется даже без кода у primary; неоднозначный кластер сохраняет оба + конфликт; OCR-confusion пары НЕ конфликтуют</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">6</td><td>Все шесть Story AC hard case юнит-протестированы сквозным путём</td><td>Все шесть проходят, в точности соответствуя решению GPT-PM</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">7</td><td><code>flutter analyze</code> чисто, журнал решений, отчёты, коммит, push</td><td>Решение процитировано дословно; пробел OP-01 назван отложенным, а не закрытым</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Ни один пункт не был сокращён или оставлен частично выполненным. Failure-path половина OP-01 никогда не заявлялась готовой &mdash; см. предупреждение ниже.</p>
+
+  <h2>Доказательства регрессии</h2>
+  <p>Это полностью новый, самодостаточный модуль, никуда не подключённый &mdash; подключение это забота P2.G3, не этого гейта. Заново перемерено сегодня, а не унаследовано из записи P2.G1 (CLAUDE.md &sect;3): 24 предсуществующих файла в сумме по-прежнему дают 335 проходящих тестов (синтетические скрытые псевдо-записи репортера <code>&laquo;loading ...&raquo;</code>/<code>(setUpAll)</code>/<code>(tearDownAll)</code> исключены &mdash; полная трассировка причины расхождения с «341» из P2.G1 в MINOR-замечании pre-commit review выше); 5 новых файлов теперь добавляют 93 (итог после обоих раундов исправления; было 66 до раунда 1, 83 после раунда 1); оба числа точно сходятся с прогоном по всей папке, перепроверено после обоих раундов.</p>
+  <div class="evidence">только предсуществующие файлы (24 файла, перемерено сегодня):    335 passed
+5 новых файлов P2.G2 добавляют (итог после обоих раундов):          93 теста
+                                                              335 + 93 = 428
+
+git diff 09dc5dcb6c5ebb1137c7315c8206cd1a7a631df1 -- mobile/test/features/visual_equipment/ mobile/lib/features/visual_equipment/
+  (только предсуществующие пути, новые файлы P2.G2 исключены из проверки)
+  &rarr; пусто, 0 строк
+
+flutter test test/features/visual_equipment/
+  &rarr; 428 passed, 0 failed
+
+flutter analyze lib/.../identity_text_parser.dart lib/.../parsed_identity_text.dart + 5 test-файлов
+  &rarr; No issues found!</div>
+
+  <h2>Покрытие по шагам (итог после обоих раундов pre-commit review)</h2>
+  <div class="evidence">parsed_identity_text_test.dart                    10 тестов  (ParsedIdentityText конструирование/равенство;
+                                                              IdentityLexicon только конструирование, нет ==)
+identity_text_parser_model_code_test.dart         38 тестов  (tokenize, stripPunctuation,
+                                                               looksLikeModelCode +/-, isOcrConfusionVariant,
+                                                               +8 фикстур слитных измерений раунд 1,
+                                                               +5 фикстур decimal/range раунд 2)
+identity_text_parser_phrase_matching_test.dart    20 тестов  (бренд / линейка / type hint,
+                                                               +5 фикстур нормализации пунктуации раунд 1,
+                                                               +5 RU/кириллических фикстур раунд 2)
+identity_text_parser_clustering_test.dart         10 тестов  (clusterLines, determineOwnership)
+identity_text_parser_test.dart                    15 тестов  (шесть Story AC hard case + неоднозначное
+                                                               владение, сквозь parseIdentityText,
+                                                               +2 контроля утечки вторичного, +1 контроль
+                                                               confusion-variant, +1 контроль детерминизма,
+                                                               все раунд 1)</div>
+
+  <h2>Шесть Story AC hard case, каждый доказан независимо</h2>
+  <ul class="disclosures">
+    <li><strong>Две машины в кадре.</strong> <code>9NPL</code> первичного кластера сохранён; <code>EFX885</code> соседнего кластера никогда не попадает в <code>modelCodeCandidates</code>. Второй тест (добавлен при исправлении) доказывает, что бренд (<code>Precor</code>) и тип (<code>treadmill</code>) соседа тоже не просачиваются.</li>
+    <li><strong>Подавление соседнего плаката, у первичного нет кода.</strong> Код соседа всё равно подавлен, даже когда у первичного своего кода нет &mdash; именно этот пограничный случай явно назван в решении GPT-PM. Второй тест (добавлен при исправлении) доказывает, что бренд соседа тоже подавлен, а не только его код.</li>
+    <li><strong>Два модели-кода на одном плакате.</strong> Оба сохранены, зафиксирован конфликт; контрольный тест доказывает, что пара OCR-путаницы цифра/буква (<code>9NP1</code>/<code>9NPI</code>) НЕ создаёт ложный конфликт.</li>
+    <li><strong>OCR-шум.</strong> Искажённый, не-лексиконный, не похожий на код текст даёт пустых кандидатов без падения; контрольный тест доказывает, что шум вокруг реального бренда не подавляет реальное совпадение.</li>
+    <li><strong>Текст только с брендом.</strong> <code>brandCandidates</code> заполнен, <code>modelCodeCandidates</code> пуст, <code>isEmpty</code> false.</li>
+    <li><strong>OP-01 &mdash; ноль читаемого текста.</strong> Пустой и состоящий только из пробелов <code>fullText</code> оба дают полностью пустой <code>ParsedIdentityText()</code>; тест прямого сравнения доказывает, что результат с нулевым текстом и результат «только бренд» разделяют идентичную no-model подформу (теперь включая <code>productLineCandidates</code>, по исправлению), отличаясь только <code>brandCandidates</code> &mdash; одобренная GPT-PM сверка, а не заявление о побайтовой идентичности всего объекта.</li>
+  </ul>
+  <p class="note">Два случая сверх шести: near-tied неоднозначные кластеры (оба кода сохранены, конфликт явно назван "ambiguous placard ownership"), и (добавлено при исправлении) near-tied пара OCR-confusion-variant, дающая ноль конфликтов, плюс контроль детерминизма, доказывающий, что два лексикона с обратным порядком вставки в <code>Set</code> дают идентичный результат.</p>
+
+  <div class="callout warn">
+    <h4>Пробел failure-path OP-01 &mdash; ОТЛОЖЕН, назван прямо, а не заявлен закрытым</h4>
+    <p>Замечание раунда 1 было не «недоказанным», а прямо ЛОЖНЫМ в исходной формулировке: концепции <code>failureCode</code>/<code>UNAVAILABLE_*</code> в этом клиенте нигде не существует. И фото-путь (<code>visual_equipment_providers.dart:200-203</code>), и live-путь ловят реальное исключение OCR через <code>debugPrint</code> + <code>return null</code> &mdash; ИДЕНТИЧНОЕ наблюдаемое поведение с «OCR ничего не нашёл». Этот гейт доказывает только то, что результат с нулевым читаемым текстом и результат «только бренд без модели» разделяют одну no-model подформу (половина OP-01 про «обычный успешный пустой результат»). Отличение этого от реального сбоя OCR/плагина &mdash; реальный, пока не заполненный пробел, оставленный тому будущему гейту, который реально введёт этот failure-classification runtime &mdash; не заявленный здесь как решённый.</p>
+  </div>
+
+  <h2>Что изменилось для существующего поведения</h2>
+  <p>Ничего наблюдаемого больше нигде. <code>parsed_identity_text.dart</code> и <code>identity_text_parser.dart</code> &mdash; полностью новый, самодостаточный модуль, ещё никуда не подключённый. Существующая generic-логика denoising/matching в <code>machine_text_anchor.dart</code> была изучена на предмет переиспользования и сознательно НЕ переиспользована &mdash; её <code>normaliseText</code> удаляет все цифры, а сопоставление фраз работает по отдельным словам в нижнем регистре &mdash; обе формы неверны для сохранения бренд-фраз и модели-кодов.</p>
+
+  <h2>Что дальше</h2>
+  <p>Продолжение автономно к P2.G3 (серверный точный текстовый поиск, с переиспользованием уже подтверждённого реального <code>functions/src/abuse_guard.ts</code>), согласно указанию оператора «OCR-first (слой A)» и режиму PM.</p>
+
+  <footer>
+    План <code>fitness_app-2026-09-10T21-01-29-906Z-195723</code> &middot; хеш <code>674874abe7796523b317edf0d2850ee6e6061bdae92d93491a7ce918d4dbf75f</code> &middot; полное повествование в <code>core/DECISION_LOG.md</code>
+  </footer>
+</div>
+
+
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

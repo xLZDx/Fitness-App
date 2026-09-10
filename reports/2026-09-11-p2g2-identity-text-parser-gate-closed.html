@@ -1,0 +1,396 @@
+<title>Gate P2.G2: identity text parser</title>
+<style>
+  :root {
+    --ink: #1b2129;
+    --ink-soft: #4b5563;
+    --paper: #f7f6f1;
+    --surface: #ffffff;
+    --surface-2: #f0eee6;
+    --line: #dcd8cc;
+    --accent: #0e6f63;
+    --accent-soft: #e4f1ee;
+    --good: #15803d;
+    --good-soft: #e6f4ea;
+    --warn: #b45309;
+    --warn-soft: #fbecdb;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", monospace;
+    --sans: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e9e6dc;
+      --ink-soft: #b3b0a6;
+      --paper: #14171b;
+      --surface: #1b1f24;
+      --surface-2: #20252b;
+      --line: #33383f;
+      --accent: #4fc3b0;
+      --accent-soft: #1a3532;
+      --good: #4ade80;
+      --good-soft: #16321f;
+      --warn: #f0a860;
+      --warn-soft: #3a2a13;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e9e6dc;
+    --ink-soft: #b3b0a6;
+    --paper: #14171b;
+    --surface: #1b1f24;
+    --surface-2: #20252b;
+    --line: #33383f;
+    --accent: #4fc3b0;
+    --accent-soft: #1a3532;
+    --good: #4ade80;
+    --good-soft: #16321f;
+    --warn: #f0a860;
+    --warn-soft: #3a2a13;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); line-height: 1.55; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header { padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 600; font-size: clamp(28px, 4vw, 40px);
+    margin: 0 0 10px; text-wrap: balance; letter-spacing: -0.01em;
+  }
+  .sub { color: var(--ink-soft); font-size: 16px; max-width: 66ch; margin: 0; }
+
+  .status-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0 8px; }
+  .chip {
+    font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    padding: 7px 14px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip.good { background: var(--good-soft); color: var(--good); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.plan { background: var(--accent-soft); color: var(--accent); }
+
+  h2 {
+    font-family: var(--display); font-weight: 600; font-size: 22px; margin: 44px 0 14px;
+    letter-spacing: -0.01em;
+  }
+  h3 { font-family: var(--sans); font-weight: 700; font-size: 15px; margin: 24px 0 10px; }
+  p { margin: 0 0 14px; }
+  .lede { font-size: 16px; color: var(--ink-soft); max-width: 68ch; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0 8px; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+  }
+  .stat .n {
+    font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 600;
+    color: var(--ink); display: block;
+  }
+  .stat .l { font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; display: block; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 760px; }
+  thead th {
+    text-align: left; font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink-soft); background: var(--surface-2);
+    padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td.step { font-family: var(--mono); color: var(--ink-soft); white-space: nowrap; }
+  td.done { white-space: nowrap; }
+  .badge-done {
+    font-family: var(--mono); font-size: 11.5px; font-weight: 600; color: var(--good);
+    background: var(--good-soft); border-radius: 6px; padding: 3px 8px; display: inline-block;
+  }
+  .note { color: var(--ink-soft); font-size: 12.5px; }
+
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 8px;
+    background: var(--surface); padding: 14px 18px; margin: 12px 0;
+  }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout h4 { margin: 0 0 6px; font-size: 14px; font-family: var(--sans); }
+  .callout p { margin: 0 0 6px; font-size: 13.5px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  code {
+    font-family: var(--mono); background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: 0.92em;
+  }
+  .evidence {
+    font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 14px 16px; white-space: pre-wrap; overflow-x: auto; line-height: 1.6;
+  }
+  ul.disclosures { margin: 0; padding-left: 20px; }
+  ul.disclosures li { margin-bottom: 10px; }
+
+  .rounds { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 20px; }
+  .round {
+    border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; background: var(--surface);
+    display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap;
+  }
+  .round .tag {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+    padding: 3px 9px; border-radius: 6px; white-space: nowrap;
+  }
+  .round .tag.revise { background: var(--warn-soft); color: var(--warn); }
+  .round .tag.approve { background: var(--good-soft); color: var(--good); }
+  .round p { margin: 0; font-size: 13.5px; flex: 1 1 320px; }
+
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: 13px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SPTR &middot; Equipment Identity &middot; Rosetta gate closure</p>
+    <h1>Gate P2.G2: identity text parser</h1>
+    <p class="sub">Second gate of the OCR-first (Layer A) direction. A pure <code>parseIdentityText</code> function that turns structured OCR into brand/product-line/model-code/type-hint candidates, with an ownership-safe policy for a neighbour machine's placard, built directly from a GPT-PM ruling quoted verbatim below.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 09dc5dc</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+  <div class="status-row">
+    <span class="chip good">&#10003; P2.G2 PASSED</span>
+    <span class="chip plan">GPT-PM VERDICT: APPROVE &middot; round 2 of 2</span>
+    <span class="chip warn">1 REVISE (4 MAJOR) &rarr; 1 APPROVE</span>
+  </div>
+
+  <p class="lede">The plan went through one round of <code>REVISE</code> with four MAJOR findings, all four verified against a primary source personally before being accepted &mdash; including one that turned out to be flatly FALSE rather than merely unproven &mdash; and remediated as one batch (CLAUDE.md &sect;23/&sect;3/&sect;17).</p>
+
+  <div class="stats">
+    <div class="stat"><span class="n">428</span><span class="l">tests passed, whole visual_equipment folder</span></div>
+    <div class="stat"><span class="n">+93 / 0</span><span class="l">new tests added / missing from baseline</span></div>
+    <div class="stat"><span class="n">0 bytes</span><span class="l">diff across all 24 pre-existing files</span></div>
+    <div class="stat"><span class="n">7 / 4</span><span class="l">MAJOR / MINOR across 2 pre-commit rounds, all remediated</span></div>
+  </div>
+
+  <h2>Plan history: 1 REVISE (4 MAJOR), then APPROVE</h2>
+  <div class="rounds">
+    <div class="round">
+      <span class="tag revise">ROUND 1 &middot; REVISE &middot; 4 MAJOR</span>
+      <p>OP-01's failure-path claim was FALSE, not merely unproven &mdash; no <code>failureCode</code>/<code>UNAVAILABLE_*</code> runtime exists anywhere in the client. Two of five <code>ParsedIdentityText</code> fields had no derivation, risking duplication of the real <code>EquipmentAliasIndex</code>. The model-code shape rejected a real Star Trac model ("8TRx") while accepting a bare "200" out of a MAX/KG fixture as a false positive. And an explicit product-ruling question on secondary-cluster ownership was put to GPT-PM directly, rather than decided unilaterally.</p>
+    </div>
+    <div class="round">
+      <span class="tag approve">ROUND 2 &middot; APPROVE</span>
+      <p>0 BLOCKER / 0 MAJOR, all four findings closed with no regression. Plan hash <code>674874ab&hellip;7ba9f</code>, reply_id <code>437608ff&hellip;</code>.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <h4>GPT-PM's ownership ruling, quoted verbatim &mdash; the load-bearing decision this gate implements</h4>
+    <p>&ldquo;a code from a cluster confidently identified as secondary/neighbour is suppressed from modelCodeCandidates; if the primary has no code, the neighbour's code still must not become the model candidate. But &lsquo;largest total bbox area wins&rsquo; cannot silently break a close/tied two-machine scene: when ownership is ambiguous, preserve both plausible codes and surface conflict/ambiguity rather than arbitrarily selecting one.&rdquo;</p>
+    <p>The same reply approved the OP-01 reconciliation actually implemented below, rather than raising it as a finding: &ldquo;brand-only text should retain its brandCandidates &hellip; tested on the no-model subshape &hellip; not by erasing valid brand evidence merely to make the whole object byte-identical.&rdquo;</p>
+  </div>
+
+  <h2>Pre-commit review (<code>review.js</code>, &sect;15): round 1 &mdash; 5 MAJOR / 3 MINOR, remediated</h2>
+  <p class="lede">Separate from the plan review above: the mandatory pre-commit review of the actual implementation diff found real defects the plan-level review couldn't see. Every one of the eight findings was independently verified against the code before being fixed (CLAUDE.md &sect;23/&sect;3) &mdash; none was a false positive.</p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Finding</th><th>Fix</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="step">MAJOR</td><td>Confident-ownership suppression applied only to the model code; a suppressed neighbour's brand/product-line/type still leaked into the result</td><td>Confident-ownership branch now returns the primary cluster's parse unchanged &mdash; ALL secondary evidence suppressed, not only its code</td></tr>
+        <tr><td class="step">MAJOR</td><td>Lexicon phrase matching didn't normalize OCR punctuation (<code>STAR-TRAC</code> failed to match <code>Star Trac</code>)</td><td>New <code>normalizePhraseText</code> collapses punctuation to spaces for phrase matching only; model-code detection still uses raw delimiters</td></tr>
+        <tr><td class="step">MAJOR</td><td>Compact measurements (<code>220V</code>, <code>150KG</code>, <code>3SETS</code>, fused with no space) still classified as model codes</td><td>New compact digits-then-unit-suffix regex rejects them before the generic mixed-alphanumeric acceptance</td></tr>
+        <tr><td class="step">MAJOR</td><td>An OCR digit/letter confusion pair (<code>9NP1</code>/<code>9NPI</code>) wrongly conflicted when it occurred across two ambiguous clusters</td><td>The same <code>isOcrConfusionVariant</code> guard already used same-cluster is now applied to the cross-cluster merge too</td></tr>
+        <tr><td class="step">MAJOR</td><td>Output order depended on <code>Set</code> iteration order &mdash; two semantically identical lexicons built in a different order produced unequal results</td><td>Every output list is now sorted before being returned, in every code path</td></tr>
+        <tr><td class="step">MINOR</td><td>The OP-01 no-model-subshape test omitted <code>productLineCandidates</code></td><td>Added the missing comparison</td></tr>
+        <tr><td class="step">MINOR</td><td>Closure wording overstated <code>IdentityLexicon</code> equality coverage (it has no <code>==</code>)</td><td>Wording corrected: construction-only for <code>IdentityLexicon</code>, construction-and-equality for <code>ParsedIdentityText</code></td></tr>
+        <tr><td class="step">MINOR</td><td>An unexplained six-test gap (335 vs. P2.G1's own "341") was left as "a different measurement"</td><td>Root-caused: P2.G1's own extraction script counted 6 synthetic <code>(setUpAll)</code>/<code>(tearDownAll)</code> reporter pseudo-entries as real tests; today's figures exclude them, matching the compact reporter's own count</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Pre-commit review round 2 &mdash; 2 MAJOR / 1 MINOR, both genuine regressions in round 1's own fix</h2>
+  <p class="lede">A further round is legitimate under CLAUDE.md &sect;17 specifically because these are defects IN the round-1 remediation itself, not new unrelated findings.</p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Finding</th><th>Fix</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="step">MAJOR</td><td>The new punctuation normalizer broke the real RU alias source it documents as a caller input &mdash; an ASCII-only <code>[^a-z0-9]</code> filter degrades a real alias like <code>&#1073;&#1077;&#1075;&#1086;&#1074;&#1072;&#1103; &#1076;&#1086;&#1088;&#1086;&#1078;&#1082;&#1072;</code> (verified genuinely present in <code>equipment_aliases.json</code> &mdash; 433 real Cyrillic fragments) to an empty string</td><td>Reused the repo's OWN existing Cyrillic-safe convention from <code>equipment_alias_index.dart</code> (lowercase, &#1105;&rarr;&#1077;, keep <code>[a-z&#1072;-&#1103;0-9]</code>). A SECOND, deeper bug surfaced testing the fix: Dart's <code>\b</code> is ASCII-only and never anchors on Cyrillic text at all &mdash; rewrote phrase containment to compare normalized word lists instead of using <code>\b</code></td></tr>
+        <tr><td class="step">MAJOR</td><td>Compact-measurement rejection handled only integer+unit forms; decimal and range forms (<code>2.5HP</code>, <code>1.5KW</code>, <code>220-240V</code>) still became model codes</td><td>Extended the compact-measurement regex to accept an optional decimal and an optional dash range before the unit suffix</td></tr>
+        <tr><td class="step">MINOR</td><td>Both reports' "Coverage by step" evidence block still said "model + lexicon construction/equality," contradicting round 1's own corrected DoD wording</td><td>Corrected in both reports to distinguish <code>ParsedIdentityText</code> (construction + equality) from <code>IdentityLexicon</code> (construction only)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Planned / Definition of Done / Status</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Planned</th><th>Definition of Done (GPT-PM, round 2)</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="step">1</td><td><code>ParsedIdentityText</code> + <code>IdentityLexicon</code> config type</td><td><code>ParsedIdentityText</code> tested for construction AND equality; <code>IdentityLexicon</code> for construction only (it has no <code>==</code>)</td><td class="done"><span class="badge-done">DONE</span></td></tr>
+        <tr><td class="step">2</td><td>Context-aware model-code classifier as its own isolated function</td><td>Isolated positive AND negative fixtures, not tuned only against the six story scenarios</td><td class="done"><span class="badge-done">DONE</span></td></tr>
+        <tr><td class="step">3</td><td>Brand/product-line/type-hint phrase matching against the injected lexicon</td><td>Positive tests for product-line and type-hint extraction, not just brand</td><td class="done"><span class="badge-done">DONE</span></td></tr>
+        <tr><td class="step">4</td><td>Bounding-box clustering/centrality heuristic as its own pure function</td><td>Clear-primary, neighbour-only, and near-tied cases covered</td><td class="done"><span class="badge-done">DONE</span></td></tr>
+        <tr><td class="step">5</td><td>Assemble <code>parseIdentityText</code>, wire the ownership ruling + same-cluster conflict detection</td><td>Secondary suppressed even with no primary code; ambiguous cluster keeps both + conflict; OCR-confusion pairs do NOT conflict</td><td class="done"><span class="badge-done">DONE</span></td></tr>
+        <tr><td class="step">6</td><td>All six Story AC hard cases unit-tested end-to-end</td><td>All six pass, matching GPT-PM's ruling exactly</td><td class="done"><span class="badge-done">DONE</span></td></tr>
+        <tr><td class="step">7</td><td><code>flutter analyze</code> clean, decision log, reports, commit, push</td><td>Ruling quoted verbatim; OP-01 gap named as deferred, not claimed resolved</td><td class="done"><span class="badge-done">DONE</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">No item was descoped or left partial. The OP-01 failure-path half was never claimed done &mdash; see the callout below.</p>
+
+  <h2>Regression evidence</h2>
+  <p>This is a wholly new, self-contained module wired into no existing call site &mdash; P2.G3's concern, not this gate's. Freshly re-measured today rather than carried over from the P2.G1 entry (CLAUDE.md &sect;3): the 24 pre-existing files alone still total 335 passing tests (the reporter's own hidden <code>&quot;loading ...&quot;</code>/<code>(setUpAll)</code>/<code>(tearDownAll)</code> pseudo-entries excluded &mdash; see the pre-commit review's MINOR finding above for the full root-cause trace of why this isn't P2.G1's own &quot;341&quot;); the 5 new files now add 93 (final, after both remediation rounds; was 66 before round 1, 83 after round 1); the two reconcile exactly against the full-folder run, re-verified after both rounds.</p>
+  <div class="evidence">pre-existing files only (24 files, re-measured today):    335 passed
+5 new P2.G2 files add (final, after both rounds):           93 tests
+                                                        335 + 93 = 428
+
+git diff 09dc5dcb6c5ebb1137c7315c8206cd1a7a631df1 -- mobile/test/features/visual_equipment/ mobile/lib/features/visual_equipment/
+  (every pre-existing path only, new P2.G2 files excluded from the check)
+  &rarr; empty, 0 lines
+
+flutter test test/features/visual_equipment/
+  &rarr; 428 passed, 0 failed
+
+flutter analyze lib/.../identity_text_parser.dart lib/.../parsed_identity_text.dart + 5 test files
+  &rarr; No issues found!</div>
+
+  <h2>Coverage by step (final, after both pre-commit review rounds)</h2>
+  <div class="evidence">parsed_identity_text_test.dart                    10 tests  (ParsedIdentityText construction/equality;
+                                                              IdentityLexicon construction only, no ==)
+identity_text_parser_model_code_test.dart         38 tests  (tokenize, stripPunctuation,
+                                                              looksLikeModelCode +/-, isOcrConfusionVariant,
+                                                              +8 compact-measurement fixtures round 1,
+                                                              +5 decimal/range fixtures round 2)
+identity_text_parser_phrase_matching_test.dart    20 tests  (brand / product-line / type-hint,
+                                                              +5 punctuation-normalization fixtures round 1,
+                                                              +5 RU/Cyrillic fixtures round 2)
+identity_text_parser_clustering_test.dart         10 tests  (clusterLines, determineOwnership)
+identity_text_parser_test.dart                    15 tests  (six Story AC hard cases + ambiguous
+                                                              ownership, end-to-end through parseIdentityText,
+                                                              +2 secondary-leak controls, +1 confusion-variant
+                                                              control, +1 determinism control, all round 1)</div>
+
+  <h2>Six Story AC hard cases, each independently proven</h2>
+  <ul class="disclosures">
+    <li><strong>Two machines in frame.</strong> Primary cluster's <code>9NPL</code> is kept; neighbour cluster's <code>EFX885</code> never reaches <code>modelCodeCandidates</code>. A second test (added in remediation) proves the neighbour's brand (<code>Precor</code>) and type (<code>treadmill</code>) don't leak in either.</li>
+    <li><strong>Neighbour placard suppression, no primary code.</strong> The neighbour's code is still suppressed even when the primary has none of its own &mdash; the exact edge case GPT-PM's ruling called out by name. A second test (added in remediation) proves the neighbour's brand is suppressed too, not only its code.</li>
+    <li><strong>Two model codes, same placard.</strong> Both kept, a conflict recorded; a control test proves an OCR digit/letter confusion pair (<code>9NP1</code>/<code>9NPI</code>) does NOT falsely conflict.</li>
+    <li><strong>OCR noise.</strong> Garbled, non-lexicon, non-code-shaped text yields all-empty candidates with no crash; a control test proves noise around a real brand does not suppress the real match.</li>
+    <li><strong>Brand-only text.</strong> <code>brandCandidates</code> populated, <code>modelCodeCandidates</code> empty, <code>isEmpty</code> false.</li>
+    <li><strong>OP-01 &mdash; zero readable text.</strong> Empty and whitespace-only <code>fullText</code> both produce an all-empty <code>ParsedIdentityText()</code>; a direct comparison test proves the zero-text result and the brand-only result share an identical no-model subshape (now including <code>productLineCandidates</code>, per remediation), differing only in <code>brandCandidates</code> &mdash; GPT-PM's approved reconciliation, not a whole-object byte-identity claim.</li>
+  </ul>
+  <p class="note">Two cases beyond the six: near-tied ambiguous clusters (both codes preserved, conflict text names "ambiguous placard ownership" explicitly), and (added in remediation) a near-tied OCR-confusion-variant pair producing zero conflicts, plus a determinism control proving two lexicons built with reversed <code>Set</code> insertion order produce an identical result.</p>
+
+  <div class="callout warn">
+    <h4>OP-01 failure-path gap &mdash; DEFERRED, stated plainly rather than claimed resolved</h4>
+    <p>Round 1's finding was not "unproven," it was FALSE as originally claimed: no <code>failureCode</code>/<code>UNAVAILABLE_*</code> concept exists anywhere in this client today. Both the photo path (<code>visual_equipment_providers.dart:200-203</code>) and the live path catch an actual OCR exception with <code>debugPrint</code> + <code>return null</code> &mdash; IDENTICAL observable behaviour to "OCR found nothing." This gate proves only that a zero-readable-text result and a brand-only-with-no-model result share the same no-model subshape (the "ordinary successful empty result" half of OP-01). Distinguishing that from an actual OCR/plugin failure is a real, currently-unfilled gap, left for whichever future gate introduces that failure-classification runtime &mdash; not silently claimed as satisfied here.</p>
+  </div>
+
+  <h2>What changed for existing behaviour</h2>
+  <p>Nothing observable anywhere else. <code>parsed_identity_text.dart</code> and <code>identity_text_parser.dart</code> are a wholly new, self-contained module with zero call sites wired into it yet. <code>machine_text_anchor.dart</code>'s existing generic denoising/matching was inspected for reuse and deliberately NOT reused &mdash; its <code>normaliseText</code> strips all digits and its phrase matching works on single lowercase-word fragments, both the wrong shape for brand-phrase and model-code preservation.</p>
+
+  <h2>What's next</h2>
+  <p>Continuing autonomously to P2.G3 (Server exact text lookup, reusing the already-confirmed-real <code>functions/src/abuse_guard.ts</code>), per the operator's "OCR-first (Layer A)" direction and PM mode.</p>
+
+  <footer>
+    Plan <code>fitness_app-2026-09-10T21-01-29-906Z-195723</code> &middot; hash <code>674874abe7796523b317edf0d2850ee6e6061bdae92d93491a7ce918d4dbf75f</code> &middot; full narrative in <code>core/DECISION_LOG.md</code>
+  </footer>
+</div>
+
+
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

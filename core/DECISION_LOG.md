@@ -49155,3 +49155,292 @@ generic OCR/anchor behaviour is unchanged and proven so by an empty `git diff` o
 pre-existing test file, and the privacy rule for OCR content is upheld both in the shipped code and
 in this gate's own verification evidence. Next: P2.G2 (IdentityTextParser), continuing
 autonomously per the operator's "OCR-first (Layer A)" direction and PM mode.
+
+## P2.G2 -- IdentityTextParser (2026-09-10/11)
+
+Continuing autonomously per the operator's "OCR-first (Layer A)" direction and PM mode (CLAUDE.md
+§18), immediately after P2.G1's close. Binding design: `SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_
+CONTRACTS_AND_AC_DOD_2026-08-22.md` lines 586-624 (P2.G2 gate contract, including the OP-01
+sixth-hard-case correction) and v4.1 CONSENSUS lines 338-344 (`ParsedIdentityText` struct).
+
+### Rosetta plan history -- one REVISE round before APPROVE
+
+Round 1 plan (`fitness_app-2026-09-10T20-52-20-464Z-e49890`) returned `VERDICT: REVISE -- 0
+BLOCKER / 4 MAJOR`:
+
+1. **OP-01 failure-path DoD not actually satisfied.** GPT-PM: "the current photo path catches OCR
+   exceptions and simply returns null; the live path reports the exception and also returns null.
+   Neither surfaces a failureCode." Verified TRUE directly against the real files: `scan_outcome.dart:13`
+   (`ScanOutcome`) has no `failureCode`/`UNAVAILABLE_*` concept at all;
+   `visual_equipment_providers.dart:200-203` and the live-path catch both just `debugPrint` +
+   `return null` on an actual OCR exception -- identical observable behavior to "OCR found
+   nothing." No runtime anywhere in this client distinguishes the two today.
+2. **Missing `productLineCandidates`/`typeHints` derivation, risk of duplicating `EquipmentAliasIndex`.**
+   GPT-PM: "define a pure caller-supplied lexicon/config boundary ... Do not duplicate the existing
+   type alias source inside the parser." Verified TRUE: the repo has real canonical type-alias
+   infrastructure (`equipment_alias_index.dart`, `assets/data/equipment_aliases.json`) the round-1
+   plan's bare `knownBrands: Set<String>` API never referenced, and defined no derivation for two
+   of the struct's five fields at all.
+3. **Model-code shape rejects real codes, accepts real non-codes.** GPT-PM: "A token requiring a
+   digit plus either `-`/`/` or 3+ digits rejects Star Trac's real model 8TRx ... a standalone 200
+   from the already-used MAX 200 KG fixture satisfies the '3+ digits' side and can become a fake
+   model candidate." Verified TRUE by direct self-testing of the round-1 shape against exactly
+   those two strings before accepting the finding.
+4. **Product ruling on secondary-cluster ownership (GPT-PM's own explicit ruling, quoted
+   verbatim, not paraphrased):** "a code from a cluster confidently identified as secondary/
+   neighbour is suppressed from modelCodeCandidates; if the primary has no code, the neighbour's
+   code still must not become the model candidate. But 'largest total bbox area wins' cannot
+   silently break a close/tied two-machine scene: when ownership is ambiguous, preserve both
+   plausible codes and surface conflict/ambiguity rather than arbitrarily selecting one." The same
+   reply also approved, rather than flagged as a finding, the OP-01 reconciliation actually
+   implemented below: "brand-only text should retain its brandCandidates ... tested on the
+   no-model subshape ... not by erasing valid brand evidence merely to make the whole object
+   byte-identical."
+
+Round 2 plan (`fitness_app-2026-09-10T21-01-29-906Z-195723`, remediating all four) returned
+`VERDICT: APPROVE -- 0 BLOCKER / 0 MAJOR`, hash
+`674874abe7796523b317edf0d2850ee6e6061bdae92d93491a7ce918d4dbf75f`, reply_id
+`437608ff-031b-4959-aefc-335cf8e2ab85`, `base_head 09dc5dcb6c5ebb1137c7315c8206cd1a7a631df1` (the
+P2.G1 commit). Every finding above was independently verified against a primary source before
+being accepted as true (CLAUDE.md §23/§3) -- none was taken on GPT-PM's say-so alone. As with
+P2.G1's round 4, `pm_rosetta_go` initially refused ("no exact durable outbound record exists for
+this plan review body and request id") because the GO request was not sent as GPT-PM's own exact
+canonical text; fixed by resending the plan review verbatim with a fresh request_id.
+
+**OP-01 gap, stated plainly and not resolved by this gate:** the "distinct from an actual OCR/
+plugin failure" half of binding T4 remains **DEFERRED / NOT SATISFIED**. No `failureCode`/
+`UNAVAILABLE_*` runtime exists anywhere in this client today, so nothing distinguishes "OCR
+succeeded and found zero text" from "OCR/plugin actually failed" at any layer this gate touches.
+P2.G2 proves only that a zero-readable-text result and a brand-only-with-no-model result share the
+same no-model subshape (the "ordinary successful empty result" half); the failure-classification
+half is left for whichever future gate actually introduces that runtime layer.
+
+### Pre-commit review (`review.js`, §15) -- round 1: 5 MAJOR / 3 MINOR, remediated in one batch
+
+Separate from the Rosetta PLAN review above: this is the mandatory pre-commit code review of the
+actual implementation diff, per CLAUDE.md §15/§17. `VERDICT: REVISE -- 0 BLOCKER / 5 MAJOR / 3
+MINOR`. Every finding independently verified against the real code before remediation (CLAUDE.md
+§23/§3) -- all eight turned out genuinely true, none was a false positive.
+
+1. **MAJOR -- confident-ownership suppression applied only to model codes, not to brand/
+   product-line/type evidence.** GPT-PM: "the result still says brands {Star Trac, Precor} and
+   types {leg press, treadmill} with no ownership distinction." Verified TRUE by reading the
+   confident-ownership branch directly: it suppressed only `modelCodeCandidates` from the
+   secondary cluster while unioning `brandCandidates`/`productLineCandidates`/`typeHints` from
+   both clusters -- exactly the leak GPT-PM described, silently defeating the ownership
+   distinction T3 exists to establish. **Fixed:** the confident-ownership branch now returns
+   `primaryParsed` unchanged, suppressing the ENTIRE secondary cluster's evidence, not only its
+   model code -- there is no provenance/confidence field in the flat `ParsedIdentityText` schema
+   to mark secondary evidence as lower-confidence, so merging any of it was unsafe. New tests:
+   both hard-case-1 and hard-case-2 now assert the neighbour's brand/type do NOT appear in the
+   result, not only that its model code is absent.
+2. **MAJOR -- lexicon phrase matching did not normalize OCR punctuation.** GPT-PM: "Lexicon `Star
+   Trac` fails against OCR `STAR-TRAC` or `STAR/TRAC`." Verified TRUE by tracing the regex: the
+   old `normalizedText` only lowercased and rejoined tokens with spaces, so a single OCR token like
+   `STAR-TRAC` (no internal space) never matched a `\bstar trac\b` boundary check. **Fixed:** added
+   `normalizePhraseText` (collapses every run of non-alphanumeric characters to a single space,
+   used ONLY for phrase matching, never for model-code detection, which still needs raw hyphens/
+   slashes as delimiters). New tests: hyphen-joined, slash-joined, and comma-separated OCR forms of
+   real lexicon phrases.
+3. **MAJOR -- compact measurements still classified as model codes.** GPT-PM: "220V, 2HP, 150KG,
+   10MM, 3SETS all satisfy `hasLetter && hasDigit && length <= 10`." Verified TRUE by tracing
+   `looksLikeModelCode`: the unit-adjacency check only looked at a unit word as its OWN separate
+   token, never a unit fused directly onto the number with no space. **Fixed:** added
+   `_kCompactMeasurementSuffix`, a digits-then-unit-suffix regex checked before the generic
+   mixed-alphanumeric acceptance. New tests: all five of GPT-PM's own fixtures as negatives, plus
+   two positive controls (`8TRx`, `100SL`) proving legitimate codes are not over-filtered.
+4. **MAJOR -- OCR-confusion variants incorrectly conflict across ambiguous (near-tied) clusters.**
+   GPT-PM: "the ambiguous-ownership merge ignores that predicate and adds a conflict whenever
+   `p != s`." Verified TRUE: the same-cluster conflict loop inside `_parseTokens` correctly guards
+   with `!isOcrConfusionVariant`, but the separate cross-cluster ambiguous-merge loop in
+   `parseIdentityText` did not. **Fixed:** added the identical `!isOcrConfusionVariant(p, s)` guard
+   to the ambiguous-merge loop. New test: a near-tied `9NP1`/`9NPI` pair across two clusters
+   produces zero conflicts.
+5. **MAJOR -- output not deterministic for semantically identical lexicons.** GPT-PM: "two callers
+   ... construct their sets in different orders ... produces different candidate ordering and
+   unequal `ParsedIdentityText`." Verified TRUE: `IdentityLexicon`'s three fields are `Set<String>`
+   iterated directly into ordered `List<String>` output, and `ParsedIdentityText.==` treats list
+   order as semantically significant (this gate's own test proves it: "field order within a list
+   matters"). **Fixed:** every output list (`brandCandidates`, `productLineCandidates`, `typeHints`,
+   `modelCodeCandidates`, `conflicts`) is now sorted before being returned, in both the single-
+   cluster and the merged-cluster paths. New test: two `IdentityLexicon`s built with deliberately
+   reversed `Set` insertion order produce an `equals()`-identical `ParsedIdentityText` for the same
+   input text.
+6. **MINOR -- the OP-01 no-model-subshape test omitted `productLineCandidates`.** GPT-PM: "the
+   approved remediation explicitly defined the subshape as product-line + model-code + type-hints +
+   conflicts" but the test never compared `productLineCandidates`. Verified TRUE by reading the
+   test. **Fixed:** added the missing comparison.
+7. **MINOR -- closure record overstates `IdentityLexicon` equality coverage.** GPT-PM: "`
+   IdentityLexicon` defines fields and constructor only -- no `==`/`hashCode` -- and its tests only
+   verify defaults/field retention." Verified TRUE by reading `parsed_identity_text.dart`:
+   `IdentityLexicon` has no `operator ==` at all; only `ParsedIdentityText` does. **Fixed:** the
+   Planned/DoD table below now states construction-only for `IdentityLexicon` and
+   construction-and-equality for `ParsedIdentityText`, matching what is actually implemented and
+   tested.
+8. **MINOR -- an unexplained six-test discontinuity (335 vs P2.G1's own "341") was left as "a
+   different measurement."** GPT-PM, correctly: "Do not leave the discrepancy explained only as
+   'different measurement.'" **Root-caused, not hand-waved:** captured the JSON reporter's raw
+   output for the same 24 pre-existing files and diffed hidden vs. visible `testDone` events. Of
+   365 total `testDone` events, 30 are marked `hidden: true` by the reporter itself -- 24 synthetic
+   `"loading <file>"` pseudo-entries (one per file) plus 6 synthetic `"(setUpAll)"`/`"(tearDownAll)"`
+   pseudo-entries (2 each, from the 3 files that use those hooks:
+   `recog_c1_contract_test.dart`, `recog_c1_ground_truth_test.dart`, `recog_c1_metrics_test.dart` --
+   all three pre-dating both P2.G1 and P2.G2, unrelated to either gate's own work). 335 visible +
+   30 hidden = 365, matching exactly. P2.G1's own stable-key extraction script evidently filtered
+   out the `"loading ..."` pseudo-entries but NOT the `"(setUpAll)"`/`"(tearDownAll)"` ones, so its
+   312/341 totals both carried +6 synthetic pseudo-test entries that were never real tests -- a
+   counting-methodology artifact in that one-time scratch script, not a missing or regressed test,
+   and not a defect in the shipped product. The DELTA P2.G1 reported (+29 real new tests) was still
+   numerically correct because the same +6 constant was present in both its baseline and
+   post-implementation counts and cancelled out of the delta -- only the two ABSOLUTE totals (312,
+   341) were ever off, by exactly +6 each. Today's 335/418 figures (see Evidence below) are the
+   compact reporter's own hidden-excluded counts and are what this gate's evidence relies on.
+
+**Round 2** (after the batch above) returned `VERDICT: REVISE -- 0 BLOCKER / 2 MAJOR / 1 MINOR`.
+Per CLAUDE.md §17, a further round is legitimate here specifically because these are genuine
+regressions/gaps IN the round-1 remediation itself, not new unrelated findings:
+
+1. **MAJOR -- the new punctuation normalizer broke the real RU alias source it documents as a
+   caller input.** GPT-PM: "`normalizePhraseText()` replaces everything outside ASCII `[a-z0-9]`
+   with spaces .. a legitimate alias such as `беговая дорожка` normalizes to an empty string ..
+   this creates degenerate matching behavior." Verified TRUE two ways: (a) directly parsed the real
+   `mobile/assets/data/equipment_aliases.json` and confirmed 433 genuine Cyrillic fragments
+   including the exact phrase `беговая дорожка` GPT-PM cited -- this was not a hypothetical; (b)
+   found the repo's OWN existing, pre-P2.G2 Cyrillic-safe normalization convention at
+   `equipment_alias_index.dart:37-44` (`EquipmentAliasIndex.normalise`): lowercase, `ё`->`е`, keep
+   `[a-zа-я0-9]`, collapse the rest to spaces -- exactly the convention GPT-PM's required change
+   asked for by name. **Fixed:** `normalizePhraseText` now mirrors that exact convention instead of
+   an ASCII-only one. A SECOND, deeper defect surfaced only while testing the fix: even after
+   normalization stopped producing an empty string, the old `\b...\b`-anchored `_containsPhrase`
+   still failed to match real Cyrillic text, because Dart's (ECMAScript-style) `RegExp` `\b` is
+   ASCII-only (`\w` excludes Cyrillic entirely), so neither side of a Cyrillic word is ever "inside
+   a word" to `\b` and the anchor silently never fires. Caught live by the gate's own new RU test
+   failing on first run, not by a second GPT-PM round. **Fixed:** `_containsPhrase` was rewritten
+   to compare already-space-normalized WORD LISTS instead of using a `\b`-anchored regex at all,
+   sidestepping `\w`/`\b` semantics entirely; also added an explicit empty-phrase guard (GPT-PM's
+   own ask: "explicitly reject/skip any alias whose normalized representation is empty").
+2. **MAJOR -- compact-measurement rejection handled only integer+unit forms, not decimal/range
+   forms.** GPT-PM: "`2.5HP`, `1.5KW`, or `220-240V` miss the digits-only compact-measurement regex
+   .. become modelCodeCandidates." Verified TRUE by tracing the regex directly: `_kCompact
+   MeasurementSuffix` was `^[0-9]+(UNIT)$`, so a decimal point or a range hyphen inside the token
+   made it fall through to the generic mixed-alphanumeric acceptance branch. **Fixed:** extended the
+   regex to `^[0-9]+(\.[0-9]+)?(-[0-9]+(\.[0-9]+)?)?(UNIT)$`, covering plain, decimal, and
+   dash-separated range forms before a unit suffix.
+3. **MINOR -- the "Coverage by step" evidence block in both staged reports still said "model +
+   lexicon construction/equality"**, contradicting the corrected DoD-table wording from round 1's
+   own MINOR #7 fix. Verified TRUE by reading both report files directly. **Fixed:** both reports'
+   evidence blocks now read "ParsedIdentityText construction/equality; IdentityLexicon construction
+   only, no ==".
+
+Remediated in one more batch. New tests: 4 RU-alias/Cyrillic-matching fixtures + 1 degenerate-alias
+control in `identity_text_parser_phrase_matching_test.dart`; 4 decimal/range negative fixtures + 1
+positive control in `identity_text_parser_model_code_test.dart`. Full suite re-verified green
+(see Evidence below) and zero-modification proof re-confirmed unchanged.
+
+### Planned / DoD / Status, per item
+
+| # | Planned | Definition of Done (GPT-PM, round 2 APPROVE) | Status |
+| --- | --- | --- | --- |
+| 1 | `ParsedIdentityText` model + `IdentityLexicon` config type + pure unit tests for construction/equality | `ParsedIdentityText` unit-tested for construction AND equality (`==`/`hashCode`); `IdentityLexicon` unit-tested for construction only (it defines no `==`/`hashCode` -- corrected wording, pre-commit review MINOR #7) | **DONE** -- `parsed_identity_text.dart`, 10 tests in `parsed_identity_text_test.dart` |
+| 2 | Context-aware model-code token classifier (unit-adjacent/MAX-MIN exclusion, short mixed alpha+digit acceptance, pure-numeric-needs-context) as its own isolated function, positive AND negative fixtures beyond the six hard cases | Isolated positive/negative classifier fixtures, not tuned only against the six Story AC scenarios | **DONE** -- `tokenize`/`stripPunctuation`/`looksLikeModelCode`/`isOcrConfusionVariant` in `identity_text_parser.dart`, 25 tests in `identity_text_parser_model_code_test.dart` |
+| 3 | Brand/product-line/type-hint phrase matching against the injected `IdentityLexicon`, isolated tests per category | Positive tests for product-line and type-hint extraction, not just brand | **DONE** -- 10 tests in `identity_text_parser_phrase_matching_test.dart` |
+| 4 | Bounding-box clustering/centrality heuristic (largest-area = primary; near-tied = ambiguous) as its own pure function, tested against synthetic geometries | Clear-primary, neighbour-only, and near-tied cases covered | **DONE** -- `clusterLines`/`determineOwnership` in `identity_text_parser.dart`, 10 tests in `identity_text_parser_clustering_test.dart` |
+| 5 | Assemble `parseIdentityText` from steps 2-4; wire GPT-PM's ownership ruling + same-cluster conflict detection | Secondary-cluster codes suppressed (even with no primary code); ambiguous-cluster codes both surfaced + conflict; same-cluster distinct codes conflict; OCR-confusion-variant codes do NOT conflict | **DONE** -- `parseIdentityText` in `identity_text_parser.dart` |
+| 6 | Unit-test all six Story AC hard cases end-to-end | All six pass, quoting the exact GPT-PM ruling behavior | **DONE** -- 11 tests in `identity_text_parser_test.dart` (six hard cases + an explicit ambiguous-ownership case) |
+| 7 | `flutter analyze` clean; decision log (ruling quoted verbatim, OP-01 gap named, reconciliation recorded); RU/EN reports; commit; push | -- | **DONE**, this entry + reports below |
+
+No item was descoped or left partial. The OP-01 failure-path half (item 6/1 above) was never
+claimed done -- it is explicitly out of this gate's scope per the round-2 plan's own "OUT OF
+SCOPE" clause ("building the actual failureCode/UNAVAILABLE_* runtime ... named as deferred, not
+built here").
+
+### Evidence
+
+**Zero-modification proof.** `git diff 09dc5dcb6c5ebb1137c7315c8206cd1a7a631df1 -- mobile/test/
+features/visual_equipment/ mobile/lib/features/visual_equipment/` -> **empty, 0 lines.**
+`git status --short` on both directories shows only 7 new untracked (`??`) files -- this is a
+brand-new module wired into no existing call site, so no pre-existing test file could have been
+touched, and the diff confirms none was.
+
+**New files (all untracked, none pre-existing):**
+- `mobile/lib/features/visual_equipment/data/parsed_identity_text.dart`
+- `mobile/lib/features/visual_equipment/data/identity_text_parser.dart`
+- `mobile/test/features/visual_equipment/parsed_identity_text_test.dart` (10 tests)
+- `mobile/test/features/visual_equipment/identity_text_parser_model_code_test.dart` (38 tests,
+  post-remediation: +8 compact-measurement fixtures round 1, +5 decimal/range fixtures round 2)
+- `mobile/test/features/visual_equipment/identity_text_parser_phrase_matching_test.dart` (20 tests,
+  post-remediation: +5 punctuation-normalization fixtures round 1, +5 RU/Cyrillic fixtures round 2)
+- `mobile/test/features/visual_equipment/identity_text_parser_clustering_test.dart` (10 tests)
+- `mobile/test/features/visual_equipment/identity_text_parser_test.dart` (15 tests,
+  post-remediation: +2 secondary-leak controls, +1 confusion-variant control, +1 determinism
+  control, all round 1)
+
+**Full suite.** `flutter test test/features/visual_equipment/` -> **428 passed, 0 failed**
+(final, post-both-remediation-rounds; was 401 before the pre-commit review's first batch of
+fixtures, 418 after round 1's remediation, 428 after round 2's). Freshly re-measured today via the
+JSON reporter (not carried over from the P2.G1 log entry, per CLAUDE.md §3): the 24 pre-existing
+files alone -> **335 passed, 0 failed** (visible `testDone` events only, i.e. excluding the
+reporter's own synthetic `"loading ..."`/`"(setUpAll)"`/`"(tearDownAll)"` pseudo-entries -- see
+pre-commit review MINOR #8 above for the full root-cause trace of why this differs from P2.G1's own
+"341"); the 5 new P2.G2 files now add **93** tests (10 + 38 + 20 + 10 + 15); 335 + 93 = 428,
+reconciling exactly against the full-directory run. `flutter analyze
+lib/features/visual_equipment/data/identity_text_parser.dart
+lib/features/visual_equipment/data/parsed_identity_text.dart` plus all five new test files ->
+**No issues found!** Zero-modification proof re-verified after both remediation rounds: `git diff
+09dc5dcb6c5ebb1137c7315c8206cd1a7a631df1` over every pre-existing (non-P2.G2) path under both
+directories -> still **empty, 0 lines**.
+
+**Six Story AC hard cases, each independently proven in `identity_text_parser_test.dart`:**
+1. Two machines in frame -- primary cluster's `9NPL` kept, neighbour cluster's `EFX885` never
+   appears in `modelCodeCandidates`; a second test (added in remediation, MAJOR #1) proves the
+   neighbour's brand (`Precor`) and type hint (`treadmill`) don't leak in either.
+2. Neighbour placard suppression with NO primary code -- neighbour's `EFX885` still suppressed;
+   `typeHints` still carries `leg press` from the primary's own text; a second test (added in
+   remediation, MAJOR #1) proves the neighbour's brand is suppressed too, not only its model code.
+3. Two model codes, same placard -- `9NPL` and `8TRX` both kept, `conflicts` non-empty; a control
+   test proves an OCR digit/letter confusion pair (`9NP1`/`9NPI`) does NOT falsely conflict.
+4. OCR noise -- garbled non-lexicon, non-code-shaped text yields all-empty candidates with no
+   crash; a control test proves noise around a real brand does not suppress the real match.
+5. Brand-only text -- `brandCandidates` populated, `modelCodeCandidates` empty, `isEmpty` false.
+6. OP-01 (zero readable text) -- empty and whitespace-only `fullText` both produce
+   `ParsedIdentityText()` (`isEmpty` true); a direct comparison test proves the zero-text result
+   and the brand-only result share an identical no-model subshape (`productLineCandidates`
+   included as of remediation MINOR #6, plus `modelCodeCandidates`, `typeHints`, `conflicts` all
+   equal), differing only in `brandCandidates` -- exactly GPT-PM's approved reconciliation, not a
+   whole-object byte-identity claim.
+
+Two cases beyond the six were tested: near-tied ambiguous-ownership clusters (both codes preserved,
+conflict text names "ambiguous placard ownership" explicitly), and (added in remediation, MAJOR
+#4) a near-tied OCR-confusion-variant pair (`9NP1`/`9NPI` across two clusters) producing zero
+conflicts, plus (MAJOR #5) a determinism control proving two `IdentityLexicon`s built with reversed
+`Set` insertion order produce an `equals()`-identical result.
+
+### What changed vs the pre-existing codebase
+
+Nothing observable anywhere else. This is a wholly new, self-contained module
+(`parsed_identity_text.dart`, `identity_text_parser.dart`) with zero call sites wired into it yet
+-- wiring `parseIdentityText` into a live scan flow is explicitly P2.G3's concern, not this gate's
+(round-2 plan's own "OUT OF SCOPE" clause). `machine_text_anchor.dart`'s existing generic
+denoising/matching was not read for modification, only inspected for reuse (and explicitly NOT
+reused for model-code/brand logic, since its `normaliseText` strips all digits and its phrase
+matching is single-lowercase-word, both wrong shapes for this gate's needs). The pre-commit review's
+round-2 fix DOES reuse an existing pattern deliberately: `normalizePhraseText`'s Cyrillic-safe
+normalization (`ё`->`е`, keep `[a-zа-я0-9]`) mirrors `equipment_alias_index.dart`'s own
+`EquipmentAliasIndex.normalise` convention verbatim rather than inventing a second one.
+
+### Closing gate status
+
+**P2.G2 PASSED.** `ParsedIdentityText`/`IdentityLexicon`/`parseIdentityText` exist, are pure and
+side-effect-free, implement GPT-PM's ownership ruling verbatim -- including the round-1 pre-commit
+review's correction that CONFIDENT secondary-cluster suppression covers the entire identity result,
+not only the model code (ambiguous-cluster dual-preservation, same-cluster AND cross-cluster
+OCR-confusion-variant non-conflict, deterministic sorted output regardless of lexicon `Set`
+insertion order) -- and the round-2 correction that phrase matching is genuinely Cyrillic-safe
+(both the normalization AND the word-boundary check, not only the former) and that compact-
+measurement rejection covers decimal/range forms, not only plain integers. All six Story AC hard
+cases plus the isolated per-step fixtures, now strengthened by two pre-commit review rounds (5
+MAJOR / 3 MINOR, then 2 MAJOR / 1 MINOR, all genuinely verified and fixed), pass (428 total, 0
+failed). The OP-01 failure-path gap is recorded as DEFERRED/NOT SATISFIED, not silently claimed
+resolved. Next: P2.G3 (Server exact text lookup, reusing the already-confirmed-real
+`functions/src/abuse_guard.ts`), continuing autonomously per the operator's "OCR-first (Layer A)"
+direction and PM mode.
