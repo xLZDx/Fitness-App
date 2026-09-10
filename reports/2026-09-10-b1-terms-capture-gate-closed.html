@@ -1,0 +1,316 @@
+<title>B1 Terms Capture Gate</title>
+<style>
+  :root {
+    --ink: #1b2129;
+    --ink-soft: #4b5563;
+    --paper: #f7f6f1;
+    --surface: #ffffff;
+    --surface-2: #f0eee6;
+    --line: #dcd8cc;
+    --accent: #0e6f63;
+    --accent-soft: #e4f1ee;
+    --good: #15803d;
+    --good-soft: #e6f4ea;
+    --warn: #b45309;
+    --warn-soft: #fbecdb;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", monospace;
+    --sans: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e9e6dc;
+      --ink-soft: #b3b0a6;
+      --paper: #14171b;
+      --surface: #1b1f24;
+      --surface-2: #20252b;
+      --line: #33383f;
+      --accent: #4fc3b0;
+      --accent-soft: #1a3532;
+      --good: #4ade80;
+      --good-soft: #16321f;
+      --warn: #f0a860;
+      --warn-soft: #3a2a13;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e9e6dc;
+    --ink-soft: #b3b0a6;
+    --paper: #14171b;
+    --surface: #1b1f24;
+    --surface-2: #20252b;
+    --line: #33383f;
+    --accent: #4fc3b0;
+    --accent-soft: #1a3532;
+    --good: #4ade80;
+    --good-soft: #16321f;
+    --warn: #f0a860;
+    --warn-soft: #3a2a13;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); line-height: 1.55; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header { padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 600; font-size: clamp(28px, 4vw, 40px);
+    margin: 0 0 10px; text-wrap: balance; letter-spacing: -0.01em;
+  }
+  .sub { color: var(--ink-soft); font-size: 16px; max-width: 62ch; margin: 0; }
+
+  .status-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0 8px; }
+  .chip {
+    font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    padding: 7px 14px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip.good { background: var(--good-soft); color: var(--good); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.plan { background: var(--accent-soft); color: var(--accent); }
+
+  h2 {
+    font-family: var(--display); font-weight: 600; font-size: 22px; margin: 44px 0 14px;
+    letter-spacing: -0.01em;
+  }
+  h3 { font-family: var(--sans); font-weight: 700; font-size: 15px; margin: 24px 0 10px; }
+  p { margin: 0 0 14px; }
+  .lede { font-size: 16px; color: var(--ink-soft); max-width: 68ch; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0 8px; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+  }
+  .stat .n {
+    font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 600;
+    color: var(--ink); display: block;
+  }
+  .stat .l { font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; display: block; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 760px; }
+  thead th {
+    text-align: left; font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink-soft); background: var(--surface-2);
+    padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td.step { font-family: var(--mono); color: var(--ink-soft); white-space: nowrap; }
+  td.done { white-space: nowrap; }
+  .badge-done {
+    font-family: var(--mono); font-size: 11.5px; font-weight: 600; color: var(--good);
+    background: var(--good-soft); border-radius: 6px; padding: 3px 8px; display: inline-block;
+  }
+  .note { color: var(--ink-soft); font-size: 12.5px; }
+
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 8px;
+    background: var(--surface); padding: 14px 18px; margin: 12px 0;
+  }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout h4 { margin: 0 0 6px; font-size: 14px; font-family: var(--sans); }
+  .callout p { margin: 0 0 6px; font-size: 13.5px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  code {
+    font-family: var(--mono); background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: 0.92em;
+  }
+  .evidence {
+    font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 14px 16px; white-space: pre-wrap; overflow-x: auto; line-height: 1.6;
+  }
+  ul.disclosures { margin: 0; padding-left: 20px; }
+  ul.disclosures li { margin-bottom: 10px; }
+
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: 13px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SPTR &middot; Equipment Identity &middot; Rosetta gate closure</p>
+    <h1>B1 Terms Capture Gate</h1>
+    <p class="sub">The capture MECHANISM, not a capture &mdash; identity, provenance, authority resolution, atomic publication, offline verification. Steps 1&ndash;17, executed under one approved plan and one operator GO.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 47270af</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="status-row">
+    <span class="chip good">&#10003; B1 PASSED</span>
+    <span class="chip warn">&#9679; B2 BLOCKED_HUMAN_CAPTURE_BASIS</span>
+    <span class="chip plan">GPT-PM VERDICT: APPROVE &middot; 0 BLOCKER / 0 MAJOR</span>
+  </div>
+
+  <p class="lede">B1 builds the mechanism a real terms capture will use. It captures nothing itself: the acquisition and retention basis registries ship empty by design, so B2 (an actual document) has nothing to resolve authority against. That is the intended state, not an oversight &mdash; and it is what the closing status below says plainly rather than as &ldquo;terms-capture passed.&rdquo;</p>
+
+  <div class="stats">
+    <div class="stat"><span class="n">791</span><span class="l">tests passed, full suite</span></div>
+    <div class="stat"><span class="n">+288</span><span class="l">new tests, 0 missing from baseline</span></div>
+    <div class="stat"><span class="n">57 / 58</span><span class="l">mutants killed (1 confirmed inert)</span></div>
+    <div class="stat"><span class="n">0</span><span class="l">uncommitted diff on source_registry.json</span></div>
+  </div>
+
+  <h2>Steps 1&ndash;17: planned, definition of done, status</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Step</th><th>Planned</th><th>Definition of done</th><th>Status</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="step">1</td><td>Acquisition preflight ledger</td><td>Every AUTO_FETCH_REFUSED carries a verbatim quoted clause or a robots Disallow; a robots-Allow alone can never yield PERMITTED_BY_BASIS</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">10/10 mutation-killed. Closes the earlier unverified-claim incident (CLAUDE.md &sect;23)</td></tr>
+        <tr><td class="step">2</td><td>Candidate manifest</td><td>Legal-conclusion fields (operative, isOperative, &hellip;) structurally unrepresentable; candidateDocId grammar proven structurally, not by sample</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">&mdash;</td></tr>
+        <tr><td class="step">3</td><td>Basis registry</td><td>Basis existence alone is never sufficient &mdash; capability + full scope required; ships empty</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">&mdash;</td></tr>
+        <tr><td class="step">4</td><td>Authorization registry</td><td>Origin-scoped (scheme, host, port); ships empty; no permitting row committed anywhere</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">Grepped against the real committed files, not a fixture</td></tr>
+        <tr><td class="step">5</td><td>Shipped-authority closure check</td><td><code>main()</code> exits non-zero if a basis or a permitting authorization is ever committed</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">Makes &ldquo;B2 blocked&rdquo; checkable, not asserted</td></tr>
+        <tr><td class="step">6</td><td>resolve_source_id</td><td>Byte-for-byte match against the real registry; B1-target membership required before any path is built</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">&mdash;</td></tr>
+        <tr><td class="step">7</td><td>resolve_candidate</td><td>Only entry point for document metadata; returns a deep copy the caller cannot use to edit the trusted record</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">Deep-copy isolation mutation-killed at step 16</td></tr>
+        <tr><td class="step">8</td><td>Capture identity (captureId)</td><td>Clock-generated, never CLI-supplied; round-tripped via canonical re-rendering</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">Defect found + fixed: strptime alone is not a grammar (see disclosures)</td></tr>
+        <tr><td class="step">9</td><td>Atomic publication</td><td>One directory rename; an existing destination is refused, never overwritten; bounded retry for a transient Windows handle</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">Retry loop itself untested until step 16; closed there</td></tr>
+        <tr><td class="step">10</td><td>Sidecar (asserted vs. observed)</td><td>Partitioned by acquisition method; fields that don&rsquo;t apply are absent, not null; enforced bidirectionally</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">&mdash;</td></tr>
+        <tr><td class="step">11</td><td>register_from_file</td><td>Full manual-capture chain: candidate, both bases, media type, identity check, publish</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">9/9 mutation-killed + 1 confirmed inert (documented, not rounded up)</td></tr>
+        <tr><td class="step">12&ndash;13</td><td>register_from_network</td><td>No request reaches an unauthorized or downgraded hop; every redirect checked before connecting to it</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">Defect found + fixed: three exception classes mistaken for a hierarchy. 5/5 mutation-killed</td></tr>
+        <tr><td class="step">14</td><td>--verify --all</td><td>Offline, exhaustive over B1&rsquo;s own namespace, proven by a socket-block test</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">2 defects + 1 overlapping-guard gap found and closed this gate. 10/10 mutation-killed</td></tr>
+        <tr><td class="step">15</td><td>Registry invariants</td><td>17 records, all UNREVIEWED, six grants false, noAiRestriction true, termsCaptured false, live git-diff-empty check</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">Against the real file via rights.py, not a parallel hand check</td></tr>
+        <tr><td class="step">16</td><td>Consolidated mutation summary</td><td>Every previously untested guard across steps 2/3/4/6/7/9 gets an isolating fixture and a mutation kill</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">23/23 killed; 3 test gaps closed first (see disclosures)</td></tr>
+        <tr><td class="step">17</td><td>Final regression, evidence, report</td><td>Full suite green; ID-list diff proves zero regressions; registry diff empty; decision log + this report</td><td class="done"><span class="badge-done">DONE</span></td><td class="note">This document</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Regression evidence</h2>
+  <p>A count alone cannot prove nothing regressed &mdash; a suite can gain ten tests while quietly losing three elsewhere. So this gate diffed the actual node-id <em>lists</em>, not their sizes.</p>
+  <div class="evidence">baseline (7 tracked test files, untouched by this gate):  503 ids
+current  (15 test files, 8 new from this gate):          791 ids
+
+missing from current (must be zero):                       0
+new in current, all from the 8 new files:                288
+
+pytest scripts/equipment_identity/ -q
+  &rarr; 791 passed, 0 failed, 0 skipped, 1 warning in 184.65s
+
+git diff HEAD --quiet -- core/equipment_identity/p0/source_registry.json
+  &rarr; exit 0 (empty)</div>
+
+  <h3>A corrected figure</h3>
+  <p>An earlier working note in this session carried a baseline of &ldquo;741&rdquo; tests. That number matches nothing in this repository. The actual last recorded whole-directory figure in <code>core/DECISION_LOG.md</code> is <strong>503</strong>, and re-collecting against only the seven git-tracked test files this gate never touched reproduces exactly 503 today &mdash; confirming the log&rsquo;s own figure rather than the remembered one. Stated here because it was wrong, not because it changed anything material: the real diff (above) is what the &ldquo;no regression&rdquo; claim actually rests on.</p>
+
+  <h2>What was found and fixed during the gate</h2>
+  <p class="lede">This gate&rsquo;s own tests found genuine defects on their first run, not on review. Recorded here rather than smoothed over.</p>
+  <ul class="disclosures">
+    <li><strong>Step 8 &mdash; a timestamp grammar that wasn&rsquo;t one.</strong> Python&rsquo;s <code>strptime</code> accepts a single-digit day and matches literal <code>T</code>/<code>Z</code> case-insensitively, so <code>"2026091T142233Z"</code> and <code>"20260910t142233z"</code> both parsed as valid despite being malformed. Fixed by requiring the canonical re-rendering to match the input string exactly.</li>
+    <li><strong>Steps 12&ndash;13 &mdash; three exception classes mistaken for one hierarchy.</strong> <code>AuthorityError</code>, <code>CaptureError</code> and <code>CandidateManifestError</code> are unrelated classes from three different modules. Three tests wrote <code>pytest.raises(CaptureError)</code> where the real code path raises <code>AuthorityError</code> &mdash; they caught nothing and would have passed silently on a broken guard. Fixed by importing the real classes and correcting the three tests.</li>
+    <li><strong>Step 14 &mdash; an overlapping guard that masked its own mutant.</strong> The original orphan-file test used a filename that <em>also</em> failed a separate name-parse check, so disabling the <code>is_dir()</code> guard specifically changed nothing observable &mdash; the mutant survived, correctly, and that survival is recorded rather than erased. Fixed by adding a fixture (a file whose name genuinely parses as a valid capture identity) that isolates the one guard the first fixture couldn&rsquo;t.</li>
+  </ul>
+
+  <h2>Guards recorded as unproven, not silently claimed</h2>
+  <p class="lede">Three guards across this gate cannot currently be distinguished from their own absence by any fixture &mdash; not because they are dead code, but because an earlier check in the same function already guarantees the condition they test. Each is documented in-source rather than deleted or claimed as mutation-proven.</p>
+  <div class="callout warn">
+    <h4>register_from_file (step 11) &mdash; M10</h4>
+    <p>Assigning <code>resolve_source_id(...)</code>&rsquo;s return value rather than reusing the input is defence in depth: the function compares byte-for-byte, so on every path that doesn&rsquo;t raise, its return value is provably identical to the input. No fixture can currently make the two diverge.</p>
+  </div>
+  <div class="callout warn">
+    <h4>terms_verify.py (step 14) &mdash; two guards</h4>
+    <p>The <code>capture_id_matches_timestamp</code> re-check is implied by two earlier checks in the same function (the sidecar&rsquo;s own internal consistency check, then the cross-bound directory check) &mdash; both already run first. The duplicate-identity check in <code>verify_all</code> is unreachable for the current three mutually-prefix-free B1 target sources, kept for a future target set that isn&rsquo;t.</p>
+  </div>
+
+  <h2>Registry state (unchanged, verified live)</h2>
+  <p>All 17 <code>source_registry.json</code> records: <code>legalReviewState=UNREVIEWED</code>, all six grant fields (<code>commercialAllowed</code>, <code>displayAllowed</code>, <code>recognitionProcessingAllowed</code>, <code>trainingAllowed</code>, <code>derivativeAllowed</code>, <code>redistributionAllowed</code>) <code>false</code>, <code>noAiRestriction=true</code>, <code>termsCaptured=false</code>. Zero uncommitted diff on that file. This is now a committed regression test (step 15), not only a claim in this report.</p>
+
+  <h2>What was not done</h2>
+  <p>B2 &mdash; an actual document capture &mdash; was not performed and cannot be under the currently committed (empty) basis and authorization registries. The Core H&amp;F portal access request at <code>corehandf.my.site.com</code> remains <code>REQUESTED_NOT_GRANTED</code>; no action was taken on it in this gate. Per standing direction, work now moves to OCR-first identification (brand / line / model / code from a user&rsquo;s own photographed nameplate) rather than to B2.</p>
+
+  <footer>
+    Plan <code>fitness_app-2026-09-09T22-52-27-581Z-3528cb</code> &middot; full narrative in <code>core/DECISION_LOG.md</code>
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "manifestKind": "TERMS_CANDIDATE_DOCUMENTS",
+  "purpose": "The trusted registry of terms documents B1 may capture, keyed by (sourceId, candidateDocId). Every capture resolves against this file before acquisition or publication. Metadata only -- no document bytes are stored here.",
+  "rules": [
+    "A caller may name a (sourceId, candidateDocId). A caller may NEVER supply the document URL, the declared media type, the allowed final URLs or the identity expectations: those are owned here, or the identity guard checks the caller's expectation against the caller's own document and proves nothing.",
+    "No record may declare which document is operative or governing. That is a legal conclusion, it belongs to a human, and the schema refuses the field rather than leaving it unset -- so promoting one would require a visible manifest diff.",
+    "observationState=NOT_OBSERVED means nobody has opened it. Such a record carries no identityExpectations at all. Registering a document that exists is honest; describing its contents unseen is not.",
+    "A source with no known terms document records an empty candidate list AND a reason, so a later reader can tell 'none found' from 'nobody looked'."
+  ],
+  "sources": [
+    {
+      "sourceId": "technogym_product_catalog",
+      "candidates": [],
+      "noCandidatesReason": "www.technogym.com returns HTTP 403 to programmatic requests, so no terms document could be located. Not 'no terms exist' -- 'none identified'. A human retrieving the footer link in a browser would close this."
+    },
+    {
+      "sourceId": "life_fitness_hammer_strength_product_catalog",
+      "candidates": [
+        {
+          "candidateDocId": "terms_of_use",
+          "documentTitle": "Terms of Use",
+          "documentUrls": [
+            "https://www.lifefitness.com/en-us/terms-of-use"
+          ],
+          "declaredMediaTypes": [
+            "text/html"
+          ],
+          "allowedFinalUrls": [
+            "https://www.lifefitness.com/en-us/terms-of-use"
+          ],
+          "observationState": "OBSERVED",
+          "observedAtUtc": "2026-09-10T00:00:00Z",
+          "observationMethod": "WEB_FETCH_MARKDOWN_EXTRACTION",
+          "identityExpectations": {
+            "requiredMarkers": [
+              "Use of the Site and Standards of Conduct",
+              "Intellectual Property",
+              "robot",
+              "spider",
+              "scraper"
+            ],
+            "markerNote": "Section headings and clause vocabulary actually seen in the document on the date above. Factual: they assert what the DOCUMENT is, never whether its terms permit anything."
+          }
+        },
+        {
+          "candidateDocId": "legal_terms_conditions",
+          "documentTitle": null,
+          "documentUrls": [
+            "https://www.lifefitness.com/en-us/legal/terms-conditions"
+          ],
+          "declaredMediaTypes": [
+            "text/html"
+          ],
+          "allowedFinalUrls": [
+            "https://www.lifefitness.com/en-us/legal/terms-conditions"
+          ],
+          "observationState": "NOT_OBSERVED",
+          "observedAtUtc": null,
+          "observationMethod": null,
+          "note": "A second Life Fitness legal document, reached from the site's own footer. NOT opened. Whether it is distinct from terms_of_use, and which of the two governs, are both open questions B1 does not answer."
+        }
+      ],
+      "noCandidatesReason": null
+    },
+    {
+      "sourceId": "core_health_fitness_nautilus_product_catalog",
+      "candidates": [
+        {
+          "candidateDocId": "terms_and_conditions",
+          "documentTitle": "Terms and Conditions",
+          "documentUrls": [
+            "https://www.corehandf.com/terms-and-conditions?hsLang=en"
+          ],
+          "declaredMediaTypes": [
+            "text/html"
+          ],
+          "allowedFinalUrls": [
+            "https://www.corehandf.com/terms-and-conditions?hsLang=en"
+          ],
+          "observationState": "OBSERVED",
+          "observedAtUtc": "2026-09-10T00:00:00Z",
+          "observationMethod": "WEB_FETCH_MARKDOWN_EXTRACTION",
+          "identityExpectations": {
+            "requiredMarkers": [
+              "PROHIBITED ACTIVITIES",
+              "INTELLECTUAL PROPERTY RIGHTS",
+              "automated or non-human means",
+              "Systematically retrieve"
+            ],
+            "markerNote": "Section headings and clause vocabulary actually seen in the document on the date above."
+          }
+        },
+        {
+          "candidateDocId": "pages_terms_and_conditions",
+          "documentTitle": null,
+          "documentUrls": [
+            "https://www.corehandf.com/pages/terms-and-conditions"
+          ],
+          "declaredMediaTypes": [
+            "text/html"
+          ],
+          "allowedFinalUrls": [
+            "https://www.corehandf.com/pages/terms-and-conditions"
+          ],
+          "observationState": "NOT_OBSERVED",
+          "observedAtUtc": null,
+          "observationMethod": null,
+          "note": "A second path on the same host that may serve the same document as terms_and_conditions. NOT opened, so sameness is unverified and is not asserted in either direction -- registering it separately claims less than folding it in would."
+        }
+      ],
+      "noCandidatesReason": null
+    }
+  ]
+}

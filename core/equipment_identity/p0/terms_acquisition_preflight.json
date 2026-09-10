@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "ledgerKind": "TERMS_ACQUISITION_PREFLIGHT",
+  "purpose": "A factual record of whether each B1 target's terms could be acquired by an automated request, and on what evidence. It records observations, never conclusions: no entry here grants permission to fetch, to retain, or to use anything, and no entry here is a legal review.",
+  "outcomeVocabulary": {
+    "AUTO_FETCH_REFUSED": "The source's own published terms carry an explicit prohibition on automated access, or robots.txt Disallows the path. Requires a verbatim quotation.",
+    "AUTO_FETCH_DEFERRED_POLICY_UNAVAILABLE": "The policy could not be read at all -- robots.txt absent, non-2xx, or the host refused the request. Unknown, NOT prohibited.",
+    "AUTO_FETCH_PERMITTED_BY_BASIS": "Reachable only with an explicit recorded authorization that resolves to a real basis record carrying the ACQUISITION capability. No entry currently holds it.",
+    "AUTO_FETCH_POLICY_UNVERIFIED": "A prohibition has been asserted but the primary source was never opened. Records an unverified claim as unverified. Constrains nothing."
+  },
+  "invariants": [
+    "A robots.txt 'Allow' is ONE POSITIVE SIGNAL and can never by itself produce AUTO_FETCH_PERMITTED_BY_BASIS. Both hosts below allow, and both are still REFUSED, because the terms are the stronger instrument and they say otherwise.",
+    "A robots.txt 403 is POLICY_UNAVAILABLE and can never produce AUTO_FETCH_REFUSED. A host that will not show you its policy has not stated one.",
+    "An outcome of AUTO_FETCH_REFUSED requires a verbatim quotation with its section heading. A paraphrase, a summary, or another agent's characterisation is not sufficient and must be recorded as AUTO_FETCH_POLICY_UNVERIFIED instead."
+  ],
+  "evidenceMethods": {
+    "ROBOTS_PARSER_PROBE": "urllib.robotparser against the live host. Records status, byte length and the can_fetch verdict for the target path.",
+    "WEB_FETCH_MARKDOWN_EXTRACTION": "The page was fetched, converted to markdown, and the clause extracted by a model. This yields TEXT, not bytes: no sha256 is recorded and none may be inferred. Weaker than a byte-exact capture and deliberately labelled so.",
+    "COMMITTED_REPOSITORY_DOCUMENT": "A document already committed in this repository."
+  },
+  "observations": [
+    {
+      "sourceId": "technogym_product_catalog",
+      "outcome": "AUTO_FETCH_DEFERRED_POLICY_UNAVAILABLE",
+      "reason": "www.technogym.com returns HTTP 403 to programmatic requests, robots.txt included, so its automated-access policy cannot be read. Unknown, not prohibited -- and not a reason to substitute a User-Agent or retry.",
+      "termsDocumentUrl": null,
+      "termsDocumentUrlNote": "Not discoverable: the host refuses programmatic requests.",
+      "documentBytesHeld": false,
+      "documentSha256": null,
+      "evidence": [
+        {
+          "method": "ROBOTS_PARSER_PROBE",
+          "target": "https://www.technogym.com/robots.txt",
+          "observedAtUtc": "2026-09-09T00:00:00Z",
+          "result": "HTTPError: HTTP Error 403: Forbidden"
+        },
+        {
+          "method": "COMMITTED_REPOSITORY_DOCUMENT",
+          "target": "core/equipment_identity/p1/P1_G2_OFFICIAL_P0_ADAPTERS.md",
+          "observedAtUtc": "2026-08-22T00:00:00Z",
+          "result": "SEARCH_INDEX_SNIPPET only -- technogym.com returned HTTP 403 on every direct attempt (product page, category page, a regional variant, robots.txt, a support-download endpoint)"
+        }
+      ],
+      "quotedClauses": []
+    },
+    {
+      "sourceId": "life_fitness_hammer_strength_product_catalog",
+      "outcome": "AUTO_FETCH_REFUSED",
+      "reason": "The published Terms of Use prohibit unauthorised automated access. Note the word 'unauthorised': this is a prohibition on UNAUTHORISED automation, so an authorization is contemplated by the document itself and would change this outcome. None is held today.",
+      "termsDocumentUrl": "https://www.lifefitness.com/en-us/terms-of-use",
+      "termsDocumentUrlNote": "A second document exists at https://www.lifefitness.com/en-us/legal/terms-conditions. Which one governs is a legal question B1 does not answer.",
+      "documentBytesHeld": false,
+      "documentSha256": null,
+      "documentBytesNote": "Operator decision 2026-09-10: option C -- observe and record, retain no bytes. The copying clause below is why the choice mattered.",
+      "evidence": [
+        {
+          "method": "ROBOTS_PARSER_PROBE",
+          "target": "https://www.lifefitness.com/robots.txt",
+          "observedAtUtc": "2026-09-09T00:00:00Z",
+          "result": "HTTP 200, 1045 bytes, can_fetch('SPTR-terms-capture')=True, can_fetch('*')=True -- a positive signal that does NOT grant permission"
+        },
+        {
+          "method": "WEB_FETCH_MARKDOWN_EXTRACTION",
+          "target": "https://www.lifefitness.com/en-us/terms-of-use",
+          "observedAtUtc": "2026-09-10T00:00:00Z",
+          "result": "Clauses quoted verbatim below."
+        }
+      ],
+      "quotedClauses": [
+        {
+          "topic": "AUTOMATED_ACCESS",
+          "section": "Section 5: Use of the Site and Standards of Conduct",
+          "verbatim": "Access the Site using any unauthorised \"robot,\" \"spider,\" \"scraper\" or other automated means."
+        },
+        {
+          "topic": "COPYING_AND_RETENTION",
+          "section": "Section 10: Intellectual Property",
+          "verbatim": "The copying, downloading and/or printing of content included on the Site is for your personal and non-commercial use only and is conditioned on your not modifying or deleting any copyright, trademark or other proprietary notice that appears on the content."
+        }
+      ]
+    },
+    {
+      "sourceId": "core_health_fitness_nautilus_product_catalog",
+      "outcome": "AUTO_FETCH_REFUSED",
+      "reason": "The published Terms and Conditions prohibit automated access flatly, with no 'unauthorised' qualifier, and separately prohibit systematic retrieval to build a compilation or database -- which describes a catalogue directly.",
+      "termsDocumentUrl": "https://www.corehandf.com/terms-and-conditions?hsLang=en",
+      "termsDocumentUrlNote": "https://www.corehandf.com/pages/terms-and-conditions is a second path on the same host. It was NOT opened, so whether it serves the same document is unverified and is asserted in neither direction: terms_candidates.json registers it as a separate NOT_OBSERVED candidate, which claims less than folding it in would.",
+      "documentBytesHeld": false,
+      "documentSha256": null,
+      "documentBytesNote": "Operator decision 2026-09-10: option C -- observe and record, retain no bytes.",
+      "evidence": [
+        {
+          "method": "ROBOTS_PARSER_PROBE",
+          "target": "https://www.corehandf.com/robots.txt",
+          "observedAtUtc": "2026-09-09T00:00:00Z",
+          "result": "HTTP 200, 3634 bytes, can_fetch('SPTR-terms-capture')=True, can_fetch('*')=True -- a positive signal that does NOT grant permission"
+        },
+        {
+          "method": "WEB_FETCH_MARKDOWN_EXTRACTION",
+          "target": "https://www.corehandf.com/terms-and-conditions?hsLang=en",
+          "observedAtUtc": "2026-09-10T00:00:00Z",
+          "result": "Clauses quoted verbatim below."
+        }
+      ],
+      "quotedClauses": [
+        {
+          "topic": "AUTOMATED_ACCESS",
+          "section": "Section 4: PROHIBITED ACTIVITIES",
+          "verbatim": "you will not access the Site through automated or non-human means, whether through a bot, script, or otherwise"
+        },
+        {
+          "topic": "SYSTEMATIC_RETRIEVAL",
+          "section": "Section 4: PROHIBITED ACTIVITIES",
+          "verbatim": "Systematically retrieve data or other content from the Site to create or compile, directly or indirectly, a collection, compilation, database, or directory"
+        },
+        {
+          "topic": "AUTOMATED_ACCESS",
+          "section": "Section 4: PROHIBITED ACTIVITIES",
+          "verbatim": "use, launch, develop, or distribute any automated system, including without limitation, any spider, robot, cheat utility, scraper, or offline reader that accesses the Site"
+        },
+        {
+          "topic": "COPYING_AND_RETENTION",
+          "section": "Section 2: INTELLECTUAL PROPERTY RIGHTS",
+          "verbatim": "you are granted a limited license to access and use the Site and to download or print a copy of any portion of the Content to which you have properly gained access solely for your personal, non-commercial use"
+        }
+      ]
+    }
+  ],
+  "pendingAuthorizations": [
+    {
+      "sourceId": "core_health_fitness_nautilus_product_catalog",
+      "state": "REQUESTED_NOT_GRANTED",
+      "target": "https://corehandf.my.site.com",
+      "observedAtUtc": "2026-09-10T00:00:00Z",
+      "observation": "Salesforce Experience Cloud portal. Root returns an empty client-rendered shell; /s/ returns HTTP 401 Unauthorized. The operator has requested official access.",
+      "note": "A REQUEST is not a grant. This entry exists so the request is not forgotten, and it must never be read as an authorization. If access is granted, the portal's own terms -- not the public www terms quoted above -- become the governing document for what that account may do, and a basis record would be written then, not now."
+    }
+  ],
+  "recordedCorrection": "These two AUTO_FETCH_REFUSED outcomes were asserted in four successive plan revisions before either document had been opened. The assertion originated as a GPT-PM review finding and was repeated until it read like a measurement. It has now been checked against the primary sources and is CORRECT -- but it was unearned when it was first written, and the quotations above are what make it evidence rather than hearsay. See core/DECISION_LOG.md and CLAUDE.md 23."
+}

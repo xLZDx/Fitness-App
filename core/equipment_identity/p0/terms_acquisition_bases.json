@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "registryKind": "TERMS_ACQUISITION_BASES",
+  "purpose": "The only route from a reference string to authority. A basis record carries explicit CAPABILITIES and an explicit SCOPE; resolve_basis returns it only when it exists, carries the capability being asked for, and covers this source, this candidate document and this acquisition method.",
+  "rules": [
+    "Existence is the WEAKEST of four conditions, not the only one. A reference that merely resolves authorises nothing.",
+    "ACQUISITION and RETENTION are separate capabilities and neither implies the other. Obtaining a document and having the right to keep a copy of it are different questions, and a basis that answers one does not answer the other.",
+    "Scope is checked on all three dimensions. A basis granted for one candidate document does not cover another, and a basis granted for manual retrieval does not cover an automated fetch.",
+    "Test bases are injected as a parameter. There is no CLI flag that supplies one, because a caller able to hand over the authority it is being checked against is not being checked."
+  ],
+  "bases": [],
+  "emptinessNote": "Deliberately empty at B1 closure. No basis exists for technogym_product_catalog, life_fitness_hammer_strength_product_catalog or core_health_fitness_nautilus_product_catalog -- not for acquisition, not for retention. B2 stays BLOCKED_HUMAN_CAPTURE_BASIS, and this file is what makes that statement checkable rather than merely asserted. Adding a row here is a visible diff and a deliberate act."
+}

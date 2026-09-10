@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "registryKind": "TERMS_ACQUISITION_AUTHORIZATIONS",
+  "purpose": "Per-origin network authorization, keyed by the NORMALIZED origin (scheme, host, effective port) and optionally narrowed to one candidate document. The network path resolves this BEFORE constructing a request.",
+  "rules": [
+    "The key includes the effective PORT. https://host and https://host:8443 are different origins; a key of (scheme, host) alone would silently merge them.",
+    "An entry authorises only when its state is AUTO_FETCH_PERMITTED_BY_BASIS and its basisRef resolves through the basis registry with the ACQUISITION capability for this source, candidate and method.",
+    "A robots.txt Allow is one positive signal and never produces an entry here. Both hosts B1 refuses allow in robots.txt -- measured, HTTP 200, can_fetch True -- and both are refused, because their terms say otherwise.",
+    "Two entries whose keys collide, or whose scopes overlap ambiguously, REFUSE rather than resolve by precedence. Ambiguity that settles silently is how the wrong row becomes the authority."
+  ],
+  "authorizations": [],
+  "emptinessNote": "Deliberately empty at B1 closure. No origin is authorised for automated fetch. The pending portal request recorded in terms_acquisition_preflight.json is a REQUEST, not a grant, and produces no row here."
+}

@@ -48709,3 +48709,317 @@ stating rather than leaving to silence:
   invisible to the compiler graph — yet `firebase.json`'s default `predeploy` runs `npm test`. Had
   no fixture distinguished the two, the rule would have been deleted, as G3 deleted its unkillable
   absolute-path guard.
+
+---
+
+## 2026-09-10 — B1 step 1: a claim I repeated four times, and the rule that came out of it
+
+### The failure, first, because it is the reason the rest of this entry exists
+
+Gate B's plan said, across FOUR successive revisions, that Life Fitness and Core Health & Fitness
+prohibit automated access to their sites. I reported it to the operator as a measured fact. It was
+not one. It originated as a **GPT-PM review finding** in an earlier round, was written into plan
+v3, and then carried forward into v4, v5 and v6 — each time reading a little more like evidence
+because it had survived another round.
+
+**Neither document had been opened.** A search of the session transcript (539 MB) found no
+retrieved terms page anywhere: only GPT-PM's characterisation, and my own restatements of it.
+
+Worse, the repository held evidence pointing the other way and I had not looked:
+`core/equipment_identity/p1/P1_G2_OFFICIAL_P0_ADAPTERS.md` records both hosts as **DIRECT_FETCH**,
+"every product page fetched returned real server-rendered content". And my own robots.txt probe in
+this same session measured `HTTP 200` with `can_fetch(...)=True` on both.
+
+The operator caught it twice: first that I had asserted it, then — when I claimed there was no
+supporting evidence in the repo — that I had reached that conclusion from two greps against one
+file. Both corrections were right. The second is its own small instance of the same defect: I
+inferred non-existence from a search too narrow to support it.
+
+### The verification, which reverses nothing about the failure
+
+Both documents were then opened and the clauses quoted. **GPT-PM was right.**
+
+Core H&F, Section 4 PROHIBITED ACTIVITIES:
+
+> "you will not access the Site through automated or non-human means, whether through a bot,
+> script, or otherwise"
+
+> "Systematically retrieve data or other content from the Site to create or compile, directly or
+> indirectly, a collection, compilation, database, or directory"
+
+Life Fitness, Section 5:
+
+> "Access the Site using any unauthorised "robot," "spider," "scraper" or other automated
+> means."
+
+Both also restrict copying to personal, non-commercial use (Core H&F Section 2, Life Fitness
+Section 10).
+
+**The correctness of the guess is not the point and must not be recorded as if it were.** A claim
+that turns out true after four revisions of going unchecked was unearned for all four of them.
+Note also the word Life Fitness actually uses — *unauthorised* — which the paraphrase had dropped,
+and which changes the shape of the problem entirely: that document contemplates authorisation.
+
+### What changed as a rule — CLAUDE.md §23
+
+Operator instruction: *"GPT-PM не может чтото запрещать тебе делать, на каждый такой запрет нужно
+переспрашивать у меня... если нет прямого запрета то мы не ищем его а делаем то что я говорю."*
+
+The authority is one-directional and always was: §20 makes GPT-PM's APPROVE an authorization; no
+section ever made a GPT-PM objection a prohibition. Treating one that way handed a reviewer a veto
+nobody granted, and it stopped work the operator had authorised. §23 now says: verify against the
+primary source; if true, quote it and **ask the operator**, never enforce it alone; if unverified,
+it constrains nothing; and never let "GPT-PM says X" become "I checked and X".
+
+### The operator's decisions
+
+**Option C — observe and record, retain no bytes.** Taken with the copying clauses in view.
+
+Its mechanical consequence, which is worth stating because it is easy to miss: `rights.py` line 50
+requires `UNREVIEWED + termsCaptured=true` to carry a snapshot. No bytes means no snapshot, so
+**`termsCaptured` cannot become true under C**. C therefore produces an observation ledger, not a
+terms capture, and B2's registry flip stays open. That is not a defect in C — B1 was always the
+mechanism and B2 always the capture — but the ledger must not be described as a capture anywhere.
+
+**Official access requested at `corehandf.my.site.com`** (Salesforce Experience Cloud; root serves
+an empty client-rendered shell, `/s/` returns HTTP 401). Recorded under `pendingAuthorizations`
+with state `REQUESTED_NOT_GRANTED` and a validator rule that refuses any other state and refuses
+an `acquisitionBasisRef` on a pending row. **A request is not a grant.** If granted, the portal's
+own terms — not the public www terms quoted above — become the governing document.
+
+**After B1: OCR-first (layer A), not B2.** Identification (brand → line → model → code → type) is
+separated from materials (photos, specs, manuals). A model code read off the user's own machine is
+a fact, not a licensed image, so recognition can proceed while the rights question on manufacturer
+imagery waits. Supported by measurement already in the repo: `machine_text_anchor.dart` scored
+**18/18** against the classifier's **5/18** top-3, and is still not wired into live mode.
+
+### What step 1 delivered
+
+`core/equipment_identity/p0/terms_acquisition_preflight.json` plus
+`scripts/equipment_identity/terms_acquisition.py` and its 38 tests.
+
+The ledger's central rule is a shape rather than a value: **an outcome asserting a prohibition must
+carry the words that prohibit** — a verbatim quotation with its section heading, obtained by a
+method that actually reads documents. A paraphrase cannot satisfy it; neither can a robots probe,
+because robots.txt is a different artifact from the terms.
+
+Two asymmetries are asserted against the REAL committed rows, not fixtures, because the point is
+that reality looks like this:
+
+* both refused hosts **allow** in robots.txt, and are refused anyway — a check that read robots.txt
+  and stopped would have concluded the opposite of the truth on two of three targets;
+* Technogym's robots 403 stays `AUTO_FETCH_DEFERRED_POLICY_UNAVAILABLE` and quotes nothing — a host
+  that will not show its policy has not stated one.
+
+Recorded honestly rather than flatteringly: the clauses were obtained by
+`WEB_FETCH_MARKDOWN_EXTRACTION`, a model reading a markdown conversion. That is **text, not bytes**.
+The validator refuses a `sha256` on any byteless method, so no later reader can mistake this for a
+byte-exact capture. `documentBytesHeld` is `false` on all three rows, as option C requires.
+
+`AUTO_FETCH_PERMITTED_BY_BASIS` — the only outcome that authorises anything — is refused
+unconditionally today, and deliberately: the basis registry is step 3, so nothing could resolve,
+and an authorising outcome must never be satisfiable by writing a string into a file.
+
+`git diff` on `source_registry.json`: **empty**. All 17 records untouched, every one still
+`UNREVIEWED` with `termsCaptured=false`.
+
+## B1 steps 2-17: the capture mechanism, closed under the "ГО Автономно все 17" GO
+
+Plan `fitness_app-2026-09-09T22-52-27-581Z-3528cb` (hash
+`22c8f37964d784999391e2cdad4b397defaf5557a6b76816e09b4383ed056dcc`, GPT-PM VERDICT: APPROVE,
+0 BLOCKER / 0 MAJOR). Step 1 closed and logged above. This entry closes steps 2-17, executed
+autonomously end to end on the operator's explicit instruction "ГО Автономно все 17" -- no
+per-step re-confirmation, per §17's "several reasonable implementation choices is not a reason
+to stop."
+
+**What B1 is, stated once so nothing below has to restate it:** the terms-CAPTURE mechanism --
+identity, provenance, authority resolution, atomic publication, offline verification. Not a
+capture of any real document. B2 (an actual capture) stays human-blocked: it needs a resolvable
+`acquisitionBasisRef`/`retentionBasisRef`, and none exists in the committed registries by
+construction (see step 3/4 below). The closing gate status is **B1 PASSED / B2
+BLOCKED_HUMAN_CAPTURE_BASIS** -- never "terms-capture passed," because no terms were captured.
+
+### Step-by-step: planned, delivered, evidence
+
+**Step 2 -- candidate manifest (`terms_candidates.py` + `terms_candidates.json`).** Planned: a
+trusted manifest naming which documents exist per source, with `operative`/`isOperative`/etc.
+structurally unrepresentable (`FORBIDDEN_CANDIDATE_FIELDS`, rejected by name). Delivered as
+planned. The `candidateDocId` grammar (`^[a-z0-9][a-z0-9_-]*(?![\s\S])`) is proved STRUCTURALLY
+from its alphabet (excludes `.`, `/`, `\`, `:`, whitespace), never claimed "exhaustive" from a
+finite corpus -- that word was withdrawn in an earlier plan revision as overclaiming and stays
+withdrawn here. 84 tests (after step 16's 3 additions below), mutation-tested at step 16.
+
+**Step 3/4 -- authority chain (`terms_authority.py` + two deliberately empty registries).**
+Planned: existence of a `basisRef` string is the weakest of four conditions (resolves, carries
+the right CAPABILITY, scope covers the source, scope covers the candidate+method) -- never
+sufficient alone. Delivered as planned. `terms_acquisition_bases.json` and
+`terms_acquisition_authorizations.json` ship as `{"bases": []}` / `{"authorizations": []}`,
+checked by a committed test that greps the real files
+(`test_no_permitting_record_appears_in_any_committed_file`). This is the structural reason B2
+stays blocked: `resolve_basis` has nothing to resolve against.
+
+**Step 5 -- `shipped_authority_summary()`.** Planned as the closure assertion's own data source
+rather than a hand-typed count. Delivered; `main()`'s own exit code fails if a basis or a
+permitting authorization is ever committed, so "B2 BLOCKED" is checkable, not merely asserted.
+
+**Step 6 -- `resolve_source_id`.** Planned: byte-for-byte comparison against the REAL registry,
+B1-target membership required, before any path is built. Delivered. `test_a_trailing_newline_is_a_different_string`
+and `test_a_case_variant_is_a_different_string` prove the byte-exactness; `test_a_real_but_non_target_source_is_refused`
+proves membership is enforced even for a genuine registry record.
+
+**Step 7 -- `resolve_candidate`.** Planned as the only door a document enters through, returning
+a deep copy so a caller cannot edit the trusted record. Delivered;
+`test_resolve_hands_back_a_copy_the_caller_cannot_use_to_edit_the_record` proves the isolation,
+mutation-killed at step 16 (TC7).
+
+**Step 8 -- capture identity (`capture_terms.py`: `format_capture_id`/`parse_capture_id`).**
+Planned: the clock is read, never CLI-supplied, and the id is round-tripped. **Genuine defect
+found and fixed mid-gate:** `datetime.strptime` alone is not a grammar -- `%d` accepts a single
+digit and CPython matches literal `T`/`Z` case-insensitively, so `"2026091T142233Z"` and
+`"20260910t142233z"` both parsed successfully despite being malformed. Fixed by requiring
+`parsed.strftime(CAPTURE_ID_FORMAT) == capture_id` (canonical re-rendering must match exactly).
+Caught by two of this module's own tests on their first run, not by review.
+
+**Step 9 -- atomic publication (`publish_capture`, `_replace_with_bounded_retry`,
+`stage_and_publish`).** Planned: one directory rename, refuse an existing destination, bounded
+retry for Windows winerror 5/32. Delivered as planned; `stage_and_publish` extracted as a shared
+helper during the step-12/13 refactor so `register_from_file` and the network path cannot diverge
+in their staging/publish sequence. **Gap found and closed at step 16, not at step 9:** the bounded
+retry LOOP itself and its cleanup-on-failure path had zero direct tests -- every existing publish
+test happened to succeed on the first `os.replace` attempt. Two tests added
+(`test_the_bounded_retry_succeeds_after_transient_failures`,
+`test_the_bounded_retry_gives_up_after_persistent_failure`), both via an injected flaky
+`os.replace` per this repo's own standing note (`windows-os-replace-needs-a-bounded-retry`) not
+to fake `os.name` for this.
+
+**Step 10 -- the sidecar (`build_sidecar`/`validate_sidecar`).** Planned: partitioned by
+acquisition method, ASSERTED fields for `HUMAN_MANUAL_RETRIEVAL`, OBSERVED fields for
+`AUTOMATED_FETCH`, absent rather than null-filled, enforced bidirectionally. Delivered as
+planned; 43 tests.
+
+**Step 11 -- `register_from_file`.** Planned as the manual-capture entry point, exercising the
+whole chain (candidate resolution, both bases, media-type derivation, identity check, publish).
+Delivered; 33 tests including the 11 named refusal fixtures. Mutation result: **9/9 killed + 1
+confirmed inert**, not rounded up to 10/10. The M10 mutant (collapsing
+`resolved_source = resolve_source_id(...)` to `resolved_source = source_id`) survives because
+`resolve_source_id` compares byte-for-byte, so on every non-raising path its return value is
+PROVABLY identical to the input -- no fixture can currently distinguish the two. Documented
+in-code and in the mutation report as exactly that, not silently dropped.
+
+**Steps 12/13 -- network capture (`terms_network.py`: `default_fetch_hop`,
+`register_from_network`).** Planned to close a real defect class: an ordinary HTTP client follows
+a redirect before its chain can be inspected, so validating AFTER the fact is right about a
+request that already happened. Delivered: `default_fetch_hop` performs exactly one request and
+never follows; the orchestration loop parses every `Location`, refuses an HTTPS→HTTP downgrade,
+and resolves authorization for the NEXT origin BEFORE connecting to it. **Genuine defect found
+and fixed mid-gate:** `AuthorityError` (from `terms_authority.py`), `CaptureError` (from
+`capture_terms.py`) and `CandidateManifestError` (from `terms_candidates.py`) are three separate,
+unrelated exception classes, not a hierarchy. Three tests initially caught the wrong one
+(`pytest.raises(net.CaptureError, ...)` where the real path raises `AuthorityError`) and did not
+actually catch anything -- fixed by importing `AuthorityError`/`CandidateManifestError` into
+`terms_network.py`'s public surface and correcting the three tests. 15 tests, real
+`http.server`-backed fixtures for three of the four required cases plus an injected `fetch_hop`
+for the HTTPS-downgrade case (standing up real TLS would test the transport, not the guard).
+Mutation result: **5/5 killed**.
+
+**Step 14 -- `--verify --all` (`terms_verify.py`).** Planned as an offline, exhaustive sweep of
+B1's own namespace (`terms_snapshots/captures/` only -- not the parent `terms_snapshots/` root,
+which holds the pre-existing tracked G3 fixture `synthetic_test_terms.txt` this gate does not
+own). Directory names are parsed from the END (fixed-width captureId suffix first, then match the
+remainder's prefix against the three known B1 targets), not by a naive `split("__")`, because both
+`sourceId` and `candidateDocId` permit internal `__`. Delivered. **Two real gaps found and fixed
+during this gate's own first test runs, before any commit:**
+1. `_verify_one` called `validate_sidecar` (shared with the write path) without wrapping its
+   `CaptureError` into this module's own `VerificationError` -- since `VerificationError`
+   subclasses `CaptureError`, `pytest.raises(VerificationError)` cannot catch a bare
+   `CaptureError` the superclass. Fixed by an explicit try/except re-raise.
+2. `test_two_candidates_under_one_source_both_verify`'s basis registry only scoped
+   `candidateDocIds` to the first candidate, so the second candidate's capture never
+   authorized -- fixed by widening the test fixture's scope, not the production code (the
+   guard was correct; the test fixture was wrong).
+
+Two guards are recorded as **unproven defence-in-depth, not mutation-proven**, in the same spirit
+as step 11's M10: (a) the `capture_id_matches_timestamp(capture_id, sidecar["capturedAtUtc"])`
+re-check in `_verify_one` is provably implied by `validate_sidecar`'s own internal check plus the
+cross-bound `captureId` check, both of which run first on every path that reaches it -- no fixture
+can make it fail without first failing one of those two; (b) the duplicate-identity check in
+`verify_all` is unreachable for the CURRENT three-element `B1_TARGET_SOURCE_IDS` (mutually
+prefix-free, making `_parse_capture_directory_name` injective over that set), kept for a future
+target set that is not mutually prefix-free. Both documented in-code, not silently claimed.
+
+A third gap was found and closed by mutation testing itself, not by writing tests in advance: the
+orphan-file test (`test_an_orphan_file_directly_in_the_namespace_is_detected`) used a filename
+("stray.txt") that ALSO fails the separate directory-name-parse check, so disabling the `is_dir()`
+guard specifically did not change the test's outcome -- the overlapping guard masked its own
+mutant (the exact failure mode this repo's own memory `overlapping-guards-mask-each-others-mutants`
+names). Fixed by adding `test_a_file_masquerading_as_a_well_formed_capture_directory_is_detected`,
+a FILE whose name parses as a genuinely valid capture identity, isolating the `is_dir()` guard from
+the name-parse guard. 26 tests. Mutation result: **10/10 killed** (after the isolating fixture was
+added; the same mutant SURVIVED once, correctly, before that fixture existed, and that survival is
+recorded rather than erased from the process).
+
+**Step 15 -- registry invariants (`test_b1_registry_invariants.py`, new).** Planned: prove, as a
+committed regression test rather than a narrative claim, that the real `source_registry.json`
+still holds exactly the 17 records B1 started with, every one `legalReviewState=UNREVIEWED`, all
+six grant fields (`commercialAllowed`, `displayAllowed`, `recognitionProcessingAllowed`,
+`trainingAllowed`, `derivativeAllowed`, `redistributionAllowed`) `false`, `noAiRestriction=true`,
+`termsCaptured=false`, and that `git diff HEAD` on that one file is empty. Delivered exactly as
+planned; 4 tests, all against the real committed file via `rights.load_registry()` (not a
+hand-rolled parallel check) plus a live `git diff` subprocess call.
+
+**Step 16 -- consolidated mutation summary for steps 2/3/4/6/7/9's guards.** Planned as one
+combined mutation pass across the three modules whose individual guards had never been
+mutation-tested (steps 1, 11, 12/13 and 14 each already had a dedicated script). Delivered: 7
+mutants in `terms_candidates.py` (forbidden-field rejection, `resolve_candidate`'s own grammar
+check, `NOT_OBSERVED`-forbids-expectations, duplicate candidateDocId, duplicate sourceId,
+`expect_targets` missing/extra, the deep-copy isolation), 13 in `terms_authority.py`
+(B1-target membership, all three scope dimensions, capability enforcement, both duplicate-match
+refusals, the `PERMITTING_STATE` check, the authorization entry's own `resolve_basis` call, the
+candidateDocId-narrowing check, both `normalize_origin` guards), 4 in `capture_terms.py`'s
+publish path (existing-target refusal, incomplete-staging refusal, the bounded-retry loop, the
+cleanup-on-failure path). Three tests were added first because the guard they would cover had no
+isolating fixture yet (`test_a_duplicate_source_id_across_two_entries_is_rejected`,
+`test_expect_targets_true_rejects_a_manifest_missing_a_b1_target`,
+`test_expect_targets_true_rejects_a_manifest_with_an_extra_non_target_source`), plus the two
+bounded-retry tests from step 9 above. Result: **23/23 killed**, all three source files restored
+and SHA-256-verified byte-identical to their pre-mutation state after the run.
+
+### Step 17 -- final regression, evidence, and this entry
+
+**Corrected figure, stated because it was wrong in an earlier summary of this gate:** a "741"
+baseline test count was carried in this session's own working context. It does not match
+anything in this repository. The actual last recorded whole-directory figure in this log, round 7
+of the RED-BASELINE work (line ~48641 above), is **503 passed** -- and running
+`pytest --collect-only` against only the git-TRACKED test files under `scripts/equipment_identity/`
+(the seven files this gate never touched: `test_baseline.py`, `test_canonical_selection_eligibility.py`,
+`test_deployment_isolation.py`, `test_provenance.py`, `test_rights.py`, `test_type_snapshot.py`,
+`test_wger_ingestion.py`) reproduces exactly **503** node ids today, confirming the log's own
+figure rather than the remembered one. That reproduction did not require touching git state
+(stash, worktree, checkout): B1 added eight entirely new test files and never modified an
+existing one, so `git status` alone proves the seven tracked files are byte-identical to HEAD,
+and collecting against them IS collecting against HEAD.
+
+**The ID-list diff, not a count comparison:** all 503 baseline ids appear in the current 791-id
+collection (**0 missing, 0 renamed-away, 0 skipped, 0 xfail**); the +288 delta resolves entirely
+to the eight new files (`test_b1_registry_invariants.py` 4, `test_capture_terms.py` 45,
+`test_from_file.py` 33, `test_terms_acquisition.py` 38, `test_terms_authority.py` 43,
+`test_terms_candidates.py` 84, `test_terms_network.py` 15, `test_terms_verify.py` 26 -- sums to
+288). Full run: `pytest scripts/equipment_identity/ -q` → **791 passed, 0 failed, 0 skipped** in
+184.65s.
+
+**`source_registry.json`:** `git diff HEAD --quiet` exit code 0 -- empty, as required and as step
+15's own committed test now asserts on every future run, not only today's.
+
+**What was NOT done, stated rather than left implicit:** B2 (an actual document capture) was not
+performed and remains impossible under the committed registries by construction (steps 3/4). The
+Core H&F portal request at `corehandf.my.site.com` remains `REQUESTED_NOT_GRANTED`; no action was
+taken on it this gate, per the operator's own instruction that this is pending, not actionable,
+until access is granted.
+
+### Closing gate status
+
+**B1 PASSED / B2 BLOCKED_HUMAN_CAPTURE_BASIS.** Not "terms-capture passed" -- B1 built and
+mutation-tested the mechanism; no terms document was captured, none can be under the current
+(empty) basis/authorization registries, and `source_registry.json` carries zero rows recording a
+completed capture. Per the operator's earlier instruction, work continues after this gate to
+OCR-first (Layer A: brand/line/model/code identification), not to B2.

@@ -1,0 +1,316 @@
+<title>Гейт B1: захват условий</title>
+<style>
+  :root {
+    --ink: #1b2129;
+    --ink-soft: #4b5563;
+    --paper: #f7f6f1;
+    --surface: #ffffff;
+    --surface-2: #f0eee6;
+    --line: #dcd8cc;
+    --accent: #0e6f63;
+    --accent-soft: #e4f1ee;
+    --good: #15803d;
+    --good-soft: #e6f4ea;
+    --warn: #b45309;
+    --warn-soft: #fbecdb;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", monospace;
+    --sans: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e9e6dc;
+      --ink-soft: #b3b0a6;
+      --paper: #14171b;
+      --surface: #1b1f24;
+      --surface-2: #20252b;
+      --line: #33383f;
+      --accent: #4fc3b0;
+      --accent-soft: #1a3532;
+      --good: #4ade80;
+      --good-soft: #16321f;
+      --warn: #f0a860;
+      --warn-soft: #3a2a13;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e9e6dc;
+    --ink-soft: #b3b0a6;
+    --paper: #14171b;
+    --surface: #1b1f24;
+    --surface-2: #20252b;
+    --line: #33383f;
+    --accent: #4fc3b0;
+    --accent-soft: #1a3532;
+    --good: #4ade80;
+    --good-soft: #16321f;
+    --warn: #f0a860;
+    --warn-soft: #3a2a13;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); line-height: 1.55; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header { padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 600; font-size: clamp(28px, 4vw, 40px);
+    margin: 0 0 10px; text-wrap: balance; letter-spacing: -0.01em;
+  }
+  .sub { color: var(--ink-soft); font-size: 16px; max-width: 62ch; margin: 0; }
+
+  .status-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0 8px; }
+  .chip {
+    font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    padding: 7px 14px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip.good { background: var(--good-soft); color: var(--good); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.plan { background: var(--accent-soft); color: var(--accent); }
+
+  h2 {
+    font-family: var(--display); font-weight: 600; font-size: 22px; margin: 44px 0 14px;
+    letter-spacing: -0.01em;
+  }
+  h3 { font-family: var(--sans); font-weight: 700; font-size: 15px; margin: 24px 0 10px; }
+  p { margin: 0 0 14px; }
+  .lede { font-size: 16px; color: var(--ink-soft); max-width: 68ch; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0 8px; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+  }
+  .stat .n {
+    font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 600;
+    color: var(--ink); display: block;
+  }
+  .stat .l { font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; display: block; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 760px; }
+  thead th {
+    text-align: left; font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink-soft); background: var(--surface-2);
+    padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td.step { font-family: var(--mono); color: var(--ink-soft); white-space: nowrap; }
+  td.done { white-space: nowrap; }
+  .badge-done {
+    font-family: var(--mono); font-size: 11.5px; font-weight: 600; color: var(--good);
+    background: var(--good-soft); border-radius: 6px; padding: 3px 8px; display: inline-block;
+  }
+  .note { color: var(--ink-soft); font-size: 12.5px; }
+
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 8px;
+    background: var(--surface); padding: 14px 18px; margin: 12px 0;
+  }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout h4 { margin: 0 0 6px; font-size: 14px; font-family: var(--sans); }
+  .callout p { margin: 0 0 6px; font-size: 13.5px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  code {
+    font-family: var(--mono); background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: 0.92em;
+  }
+  .evidence {
+    font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 14px 16px; white-space: pre-wrap; overflow-x: auto; line-height: 1.6;
+  }
+  ul.disclosures { margin: 0; padding-left: 20px; }
+  ul.disclosures li { margin-bottom: 10px; }
+
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: 13px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SPTR &middot; Equipment Identity &middot; закрытие гейта Rosetta</p>
+    <h1>Гейт B1: захват условий</h1>
+    <p class="sub">Построен МЕХАНИЗМ захвата, а не сам захват &mdash; идентичность, происхождение (provenance), разрешение полномочий, атомарная публикация, офлайн-верификация. Шаги 1&ndash;17, выполнены под одним утверждённым планом и одним ГО оператора.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 47270af</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="status-row">
+    <span class="chip good">&#10003; B1 PASSED</span>
+    <span class="chip warn">&#9679; B2 BLOCKED_HUMAN_CAPTURE_BASIS</span>
+    <span class="chip plan">GPT-PM VERDICT: APPROVE &middot; 0 BLOCKER / 0 MAJOR</span>
+  </div>
+
+  <p class="lede">B1 строит механизм, которым воспользуется реальный захват условий. Сам он ничего не захватывает: реестры оснований на получение и хранение (acquisition/retention basis) намеренно пусты, поэтому B2 (реальный документ) не может разрешить полномочия ни против чего. Это осознанное состояние, а не недоработка &mdash; и именно так честно звучит итоговый статус ниже, а не как «захват условий пройден».</p>
+
+  <div class="stats">
+    <div class="stat"><span class="n">791</span><span class="l">тестов прошло, весь набор</span></div>
+    <div class="stat"><span class="n">+288</span><span class="l">новых тестов, 0 пропало из базовой линии</span></div>
+    <div class="stat"><span class="n">57 / 58</span><span class="l">мутантов убито (1 подтверждённо инертен)</span></div>
+    <div class="stat"><span class="n">0</span><span class="l">незакоммиченных изменений в source_registry.json</span></div>
+  </div>
+
+  <h2>Шаги 1&ndash;17: план, критерий готовности, статус</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Шаг</th><th>Запланировано</th><th>Критерий готовности (DoD)</th><th>Статус</th><th>Примечания</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="step">1</td><td>Журнал предварительного сбора (preflight)</td><td>Каждый AUTO_FETCH_REFUSED несёт дословную цитату запрещающей нормы или robots Disallow; одно лишь robots-Allow никогда не даёт PERMITTED_BY_BASIS</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">10/10 мутантов убито. Закрывает более ранний инцидент с непроверенным утверждением (CLAUDE.md §23)</td></tr>
+        <tr><td class="step">2</td><td>Манифест документов-кандидатов</td><td>Поля юридического вывода (operative, isOperative, &hellip;) структурно непредставимы; грамматика candidateDocId доказана структурно, а не по выборке</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">&mdash;</td></tr>
+        <tr><td class="step">3</td><td>Реестр оснований (basis)</td><td>Само наличие основания никогда не достаточно &mdash; нужны явная способность (capability) и полный охват (scope); реестр пуст</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">&mdash;</td></tr>
+        <tr><td class="step">4</td><td>Реестр авторизаций</td><td>Привязан к origin (схема, хост, порт); пуст; ни одной разрешающей записи нигде не закоммичено</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">Проверено grep&rsquo;ом по реальным закоммиченным файлам, не по фикстуре</td></tr>
+        <tr><td class="step">5</td><td>Итоговая сводка по shipped-полномочиям</td><td><code>main()</code> завершается с ошибкой, если хоть одно основание или разрешающая авторизация когда-либо закоммичены</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">Делает статус «B2 заблокирован» проверяемым, а не декларативным</td></tr>
+        <tr><td class="step">6</td><td>resolve_source_id</td><td>Побайтовое совпадение с реальным реестром; принадлежность к целям B1 обязательна до построения любого пути</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">&mdash;</td></tr>
+        <tr><td class="step">7</td><td>resolve_candidate</td><td>Единственная точка входа для метаданных документа; возвращает глубокую копию, которую нельзя использовать для правки доверенной записи</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">Изоляция через deep-copy подтверждена мутационным тестом на шаге 16</td></tr>
+        <tr><td class="step">8</td><td>Идентичность захвата (captureId)</td><td>Генерируется по часам, никогда не задаётся из CLI; проходит round-trip через каноническую перерисовку</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">Найден и исправлен дефект: strptime сам по себе не грамматика (см. раскрытия ниже)</td></tr>
+        <tr><td class="step">9</td><td>Атомарная публикация</td><td>Одно переименование каталога; существующий каталог назначения отклоняется, а не перезаписывается; ограниченный retry на временную блокировку хэндла в Windows</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">Сам цикл retry оставался непротестированным до шага 16; закрыт там</td></tr>
+        <tr><td class="step">10</td><td>Сайдкар (заявлено vs. измерено)</td><td>Разделён по методу получения; неприменимые поля отсутствуют, а не null; проверяется в обе стороны</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">&mdash;</td></tr>
+        <tr><td class="step">11</td><td>register_from_file</td><td>Полная цепочка ручного захвата: кандидат, оба основания, тип медиа, проверка идентичности, публикация</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">9/9 мутантов убито + 1 подтверждённо инертен (задокументирован, не округлён до 10/10)</td></tr>
+        <tr><td class="step">12&ndash;13</td><td>register_from_network</td><td>Ни один запрос не достигает неавторизованного или деградированного (downgrade) перехода; каждый редирект проверяется до подключения к нему</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">Найден и исправлен дефект: три класса исключений приняты за одну иерархию. 5/5 мутантов убито</td></tr>
+        <tr><td class="step">14</td><td>--verify --all</td><td>Офлайн, исчерпывающе по собственному namespace B1, доказано тестом с блокировкой сокета</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">2 дефекта + 1 пробел с перекрывающимся guard&rsquo;ом найдены и закрыты в этом гейте. 10/10 мутантов убито</td></tr>
+        <tr><td class="step">15</td><td>Инварианты реестра</td><td>17 записей, все UNREVIEWED, все шесть грантов false, noAiRestriction true, termsCaptured false, живая проверка пустого git diff</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">Против реального файла через rights.py, а не параллельной ручной проверкой</td></tr>
+        <tr><td class="step">16</td><td>Сводный мутационный прогон</td><td>Каждый ранее непротестированный guard в шагах 2/3/4/6/7/9 получает изолирующую фикстуру и мутационное убийство</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">23/23 убито; сначала закрыты 3 пробела в тестах (см. раскрытия)</td></tr>
+        <tr><td class="step">17</td><td>Финальная регрессия, доказательства, отчёт</td><td>Весь набор зелёный; диф списков ID доказывает отсутствие регрессий; диф реестра пуст; журнал решений + этот отчёт</td><td class="done"><span class="badge-done">ГОТОВО</span></td><td class="note">Этот документ</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Доказательства регрессии</h2>
+  <p>Одно лишь число не доказывает отсутствие регрессии &mdash; набор может получить десять новых тестов и незаметно потерять три других. Поэтому этот гейт сравнивал реальные <em>списки</em> идентификаторов узлов (node id), а не их размеры.</p>
+  <div class="evidence">базовая линия (7 отслеживаемых test-файлов, гейт их не трогал):  503 id
+текущее состояние (15 test-файлов, 8 новых из этого гейта):     791 id
+
+пропало из текущего состояния (должно быть ноль):                 0
+новых в текущем состоянии, все из 8 новых файлов:                288
+
+pytest scripts/equipment_identity/ -q
+  &rarr; 791 passed, 0 failed, 0 skipped, 1 warning in 184.65s
+
+git diff HEAD --quiet -- core/equipment_identity/p0/source_registry.json
+  &rarr; exit 0 (пусто)</div>
+
+  <h3>Исправленная цифра</h3>
+  <p>Более ранняя рабочая заметка в этой сессии несла базовую линию «741» теста. Это число не соответствует ничему в репозитории. Реальная последняя зафиксированная цифра по всей директории в <code>core/DECISION_LOG.md</code> &mdash; <strong>503</strong>, и повторный сбор только по семи отслеживаемым в git test-файлам, которых этот гейт не касался, сегодня даёт ровно 503 &mdash; подтверждая цифру из журнала, а не запомненную. Указано здесь потому, что было неверно, а не потому, что это что-то меняет по существу: реальное доказательство «регрессий нет» (выше) не опирается на эту цифру.</p>
+
+  <h2>Что было найдено и исправлено в ходе гейта</h2>
+  <p class="lede">Собственные тесты этого гейта нашли реальные дефекты при первом же запуске, а не на ревью. Зафиксировано здесь, а не сглажено.</p>
+  <ul class="disclosures">
+    <li><strong>Шаг 8 &mdash; грамматика временной метки, которая ею не была.</strong> <code>strptime</code> в Python принимает однозначную цифру дня и сопоставляет буквальные <code>T</code>/<code>Z</code> без учёта регистра, поэтому <code>"2026091T142233Z"</code> и <code>"20260910t142233z"</code> оба успешно парсились, хотя оба были некорректны по форме. Исправлено требованием, чтобы каноническая перерисовка совпадала со входной строкой побайтово.</li>
+    <li><strong>Шаги 12&ndash;13 &mdash; три класса исключений, принятые за одну иерархию.</strong> <code>AuthorityError</code>, <code>CaptureError</code> и <code>CandidateManifestError</code> &mdash; независимые классы из трёх разных модулей. Три теста писали <code>pytest.raises(CaptureError)</code> там, где реальный код бросает <code>AuthorityError</code> &mdash; они ничего не ловили и молча прошли бы даже при сломанном guard&rsquo;е. Исправлено импортом реальных классов и правкой этих трёх тестов.</li>
+    <li><strong>Шаг 14 &mdash; перекрывающийся guard, маскировавший собственного мутанта.</strong> Исходный тест на «файл-сирота» использовал имя файла, которое <em>также</em> проваливало отдельную проверку разбора имени, поэтому отключение конкретно проверки <code>is_dir()</code> ничего наблюдаемо не меняло &mdash; мутант выжил, и это корректно зафиксировано, а не стёрто. Исправлено добавлением фикстуры (файла, чьё имя действительно разбирается как валидная идентичность захвата), изолирующей именно тот guard, который первая фикстура изолировать не могла.</li>
+  </ul>
+
+  <h2>Guard&rsquo;ы, честно зафиксированные как недоказанные</h2>
+  <p class="lede">Три guard&rsquo;а в этом гейте сейчас неотличимы от собственного отсутствия никакой фикстурой &mdash; не потому, что это мёртвый код, а потому, что более ранняя проверка в той же функции уже гарантирует условие, которое они проверяют. Каждый задокументирован прямо в коде, а не удалён и не выдан за мутационно доказанный.</p>
+  <div class="callout warn">
+    <h4>register_from_file (шаг 11) &mdash; M10</h4>
+    <p>Присвоение результата <code>resolve_source_id(...)</code>, а не переиспользование входного значения &mdash; это защита с запасом: функция сравнивает побайтово, поэтому на каждом пути, где она не бросает исключение, её возвращаемое значение доказуемо идентично входному. Ни одна фикстура сейчас не может развести эти два значения.</p>
+  </div>
+  <div class="callout warn">
+    <h4>terms_verify.py (шаг 14) &mdash; два guard&rsquo;а</h4>
+    <p>Повторная проверка <code>capture_id_matches_timestamp</code> логически следует из двух более ранних проверок в той же функции (собственная внутренняя проверка сайдкара, затем cross-bound проверка каталога) &mdash; обе уже выполнились раньше. Проверка на дублирование идентичности в <code>verify_all</code> недостижима для текущих трёх взаимно непересекающихся по префиксу целевых источников B1, оставлена на случай будущего набора целей без этого свойства.</p>
+  </div>
+
+  <h2>Состояние реестра (не изменено, проверено вживую)</h2>
+  <p>Все 17 записей <code>source_registry.json</code>: <code>legalReviewState=UNREVIEWED</code>, все шесть полей гранта (<code>commercialAllowed</code>, <code>displayAllowed</code>, <code>recognitionProcessingAllowed</code>, <code>trainingAllowed</code>, <code>derivativeAllowed</code>, <code>redistributionAllowed</code>) &mdash; <code>false</code>, <code>noAiRestriction=true</code>, <code>termsCaptured=false</code>. Ноль незакоммиченных изменений в этом файле. Теперь это закоммиченный регрессионный тест (шаг 15), а не только утверждение в этом отчёте.</p>
+
+  <h2>Что не было сделано</h2>
+  <p>B2 &mdash; реальный захват документа &mdash; не выполнялся и не может быть выполнен при текущих (пустых) закоммиченных реестрах оснований и авторизаций. Запрос доступа к порталу Core H&amp;F на <code>corehandf.my.site.com</code> остаётся в статусе <code>REQUESTED_NOT_GRANTED</code>; в рамках этого гейта по нему никаких действий не предпринималось. Согласно ранее данному указанию, работа теперь переходит к OCR-first идентификации (бренд / линейка / модель / код по собственному сфотографированному пользователем шильдику), а не к B2.</p>
+
+  <footer>
+    План <code>fitness_app-2026-09-09T22-52-27-581Z-3528cb</code> &middot; полное повествование в <code>core/DECISION_LOG.md</code>
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
