@@ -49023,3 +49023,135 @@ mutation-tested the mechanism; no terms document was captured, none can be under
 (empty) basis/authorization registries, and `source_registry.json` carries zero rows recording a
 completed capture. Per the operator's earlier instruction, work continues after this gate to
 OCR-first (Layer A: brand/line/model/code identification), not to B2.
+
+## P2.G1 -- Structured OCR capability (2026-09-10)
+
+Operator direction: "OCR-first (Layer A)" after B1's close. Per PM mode (CLAUDE.md §18) and
+Rosetta protocol (§19), this gate proceeded through Plan → GO → Act → Validate without waiting for
+a further operator instruction. The design binding was NOT re-derived: it already existed,
+GPT-PM-consensus-approved, in `core/design/sptr_equipment_recognition_v4_1/
+SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md` (P2.G1 gate contract) and
+the v4.1/v4.2 master plans. This gate operationalises that spec, not a new one.
+
+### Rosetta plan history -- three REVISE rounds before APPROVE, not glossed over
+
+Round 1 plan (`fitness_app-2026-09-10T19-50-11-413Z-3ade0b`) returned `VERDICT: REVISE -- 0
+BLOCKER / 3 MAJOR`:
+1. `MachineTextEvidence.fullText` was missing from the proposed model. Verified TRUE against the
+   binding design (`..._MASTER_TECHNICAL_PLAN_v4.1_CONSENSUS_2026-08-21.md` lines 315-345;
+   `..._v4.2_REMEDIATED_RC_2026-08-22.md` line 381 names `MachineTextEvidence.fullText` explicitly).
+2. No real adapter/`is`-probe wiring at actual call sites was in the plan. Verified TRUE via grep:
+   `visual_equipment_providers.dart:190` and `mlkit_live_equipment_service.dart:176` are real,
+   then-unwired call sites.
+3. The plan relied on a pure mapping-function unit test only, not device/plugin evidence. Verified
+   TRUE via `grep -rln MlKitMachineTextRecogniser mobile/test/` returning empty -- zero existing
+   coverage of the real ML Kit integration seam anywhere in the repo.
+
+Round 2 plan (remediating all three) returned `VERDICT: REVISE -- 0 BLOCKER / 2 MAJOR`:
+1. The remediated plan's device-test step said to "capture the actual on-device output verbatim as
+   evidence" -- violates the binding privacy rule. Verified TRUE by re-reading
+   `..._v4.2_REMEDIATED_RC_2026-08-22.md` section 8.5 directly: "the 'no raw image in Firestore or
+   logs' rule extends explicitly to raw and structured OCR text (`MachineTextEvidence.fullText`,
+   `ParsedIdentityText.lines[].text`) ... full-frame OCR text gets the same ephemeral-processing
+   default as the image itself."
+2. The plan's verification cited a "503-test baseline" for the Flutter suite -- invalid. Verified
+   TRUE by grepping this very file: 503 is the pre-B1 baseline of `pytest scripts/equipment_identity/`
+   (a Python suite, 791 after B1), unrelated to `mobile/test/features/visual_equipment/`.
+
+Round 3 plan (remediating both) returned `VERDICT: REVISE -- 0 BLOCKER / 1 MAJOR`:
+1. The stable-key fix still used the JSON reporter's numeric `test.id` as part of the comparison
+   key. Verified TRUE against the primary source: `test-1.25.8/doc/json_reporter.md` line 381,
+   "The test's ID is unique in the context of this test run" -- run-local, not a cross-run
+   identity. Fixed to use (suite path, full test name) only, plus a separate `git diff` requirement
+   proving zero pre-existing test file modified.
+
+Round 4: `VERDICT: APPROVE`, plan `fitness_app-2026-09-10T19-58-56-184Z-ba31af`, hash
+`63b9be9051c5e8f27701cf9b5fa7168651fd025335771d4b8bc7f7aaff7ba9f9`, reply_id
+`066319c9-ff00-4184-aae4-2c79635bdd36`. Every finding above was independently verified against a
+primary source before being accepted as true (CLAUDE.md §23/§3) -- none was taken on GPT-PM's
+say-so alone.
+
+A genuine PM-Bridge transport defect recurred during round 3's send: the same pattern already
+recorded earlier this session (`attempts`/`updatedAt` frozen across `CHATGPT_SEND_UNCONFIRMED`
+retries on the same `request_id` while the daemon itself was idle). Resolved the same way: peeked
+the conversation to confirm nothing landed, then issued a fresh `request_id` rather than continuing
+to replay a stuck record.
+
+### Planned / DoD / Status, per item
+
+| # | Planned | Definition of Done (GPT-PM, round 4 APPROVE) | Status |
+| --- | --- | --- | --- |
+| 1 | `MachineTextEvidence{fullText, lines[]}` + `MachineTextLine{text, bounds, cornerPoints?, angle?, confidence?}` matching the binding design | Model exists, unit-tested for construction/equality | **DONE** -- `mobile/lib/features/visual_equipment/data/machine_text_evidence.dart`, 14 tests in `machine_text_evidence_test.dart` |
+| 2 | `StructuredTextRecogniser`, a SEPARATE interface from `MachineTextRecogniser`, mirroring the `FallbackReportingRecogniser` capability-interface pattern | Interface + `FakeStructuredTextRecogniser` exist; a legacy-only fake is NOT an instance of it | **DONE** -- `mlkit_text_recogniser.dart`; proven by `capability probe FakeMachineTextRecogniser is NOT a StructuredTextRecogniser` |
+| 3 | `MlKitMachineTextRecogniser` implements it, mapping real `mlkit.RecognizedText` -> `MachineTextEvidence` | Mapping unit-tested against a hand-built real `RecognizedText` (plugin's own public constructors, no platform channel) | **DONE** -- extracted as the top-level `machineTextEvidenceFromRecognizedText`, 6 unit tests in `mlkit_text_recogniser_test.dart` |
+| 4 | Adapter wired at `visual_equipment_providers.dart:190` (photo path), `is`-probe with legacy fallback | Structured path proven preferred when available; legacy path proven unchanged when not | **DONE** -- `text_anchor_structured_adapter_test.dart` (new file, 2 tests); pre-existing `text_anchor_pipeline_test.dart` untouched (0-byte git diff) |
+| 5 | Same adapter at `mlkit_live_equipment_service.dart:176` (live path) | Same dual proof; `_anchorFromFrame` itself is untestable on desktop (pre-existing constraint: needs camera stream + native labeler) so the probe was extracted to a testable top-level `readTextForLiveAnchor` | **DONE** -- `live_text_anchor_structured_wiring_test.dart` (new file, 3 tests); pre-existing `live_text_anchor_test.dart` untouched (0-byte git diff) |
+| 6 | Fresh, stable-key Flutter baseline captured pre-edit at `base_head 833e548`, diffed post-edit; separate `git diff` over every pre-existing test file required empty | 0 missing/renamed pre-existing tests; empty `git diff` (additions only) | **DONE** -- see Evidence below |
+| 7 | Device/plugin integration test on the connected S8, privacy-safe evidence only | Real `MlKitMachineTextRecogniser.readStructured` executed on-device; evidence limited to SHA-256/PASS-FAIL/line-count/bounds-boolean/nullability-presence | **DONE** -- `mobile/integration_test/p2g1_structured_ocr_test.dart`, see Evidence below |
+| 8 | `flutter analyze` clean, decision log, RU/EN reports, commit, push | -- | **DONE**, this entry + reports below |
+
+No item was descoped or left partial.
+
+### Evidence
+
+**Stable-key baseline diff.** `flutter test mobile/test/features/visual_equipment/ --reporter=json`
+captured at `base_head 833e548` via `git stash push -u` (clean pre-edit tree) BEFORE any
+implementation edit, then popped back after capture. Keys are `(suite path, full test name)` pairs
+-- the JSON reporter's numeric `test.id` is deliberately excluded (round-3 finding: run-local, not
+a cross-run identity). Baseline: **312** keys. Post-implementation: **341** keys. Diff: **0
+missing, 29 added** -- every added key belongs to one of the four new test files
+(`machine_text_evidence_test.dart` 14, `mlkit_text_recogniser_test.dart` 10,
+`text_anchor_structured_adapter_test.dart` 2, `live_text_anchor_structured_wiring_test.dart` 3 =
+29). Four non-JSON stray stdout lines (`Shell: cloud photo resize failed, sending original:
+RangeError...`, pre-existing noise from `gemini_equipment_service_test.dart`'s own fixtures,
+unrelated to this gate) were skipped by the extraction script rather than causing a false parse
+failure.
+
+**Zero-modification proof.** `git diff 833e548 -- <all 20 pre-existing files under
+mobile/test/features/visual_equipment/>` → **empty, exit 0, 0 bytes**. New coverage for the
+adapter wiring was added as two NEW files
+(`text_anchor_structured_adapter_test.dart`, `live_text_anchor_structured_wiring_test.dart`)
+specifically so this diff could be empty -- an earlier draft of steps 4-5 had edited
+`text_anchor_pipeline_test.dart`/`live_text_anchor_test.dart` directly, which would have failed
+this exact GO-approved requirement; caught and corrected before committing, not after.
+
+**Full suite.** `flutter test test/features/visual_equipment/` → **341 passed, 0 failed**.
+`flutter analyze lib/features/visual_equipment/ test/features/visual_equipment/
+integration_test/p2g1_structured_ocr_test.dart` → **No issues found!**
+
+**Device/plugin evidence (S8, `ce02171299f0711005`, `SM_G950F`).**
+`flutter test integration_test/p2g1_structured_ocr_test.dart -d ce02171299f0711005` → **1 passed,
+0 failed**. Fixture: a deterministic 480x160 PNG ("LEG PRESS" / "MAX 200 KG", Arial Bold, generated
+with Pillow), embedded as inline base64 in the test file (no `pubspec.yaml` asset change, per the
+GO-approved plan), SHA-256 `011d2dfa08b3dd3b60ffead51b0b8e4596c8efcff0d1ef50443044599e9d6316`. The
+real `MlKitMachineTextRecogniser.readStructured` ran against it on-device. Privacy-safe evidence
+line, printed by the test itself (no verbatim OCR text anywhere in this line, per
+CLAUDE.md §23/v4.2 section 8.5):
+
+```
+P2.G1 device OCR evidence: fixtureSha256=011d2dfa08b3dd3b60ffead51b0b8e4596c8efcff0d1ef50443044599e9d6316 result=PASS lineCount=2 nonDegenerateBounds=true confidencePresent=true anglePresent=true
+```
+
+`lineCount=2` matches the fixture's two printed lines; `confidencePresent=true` and
+`anglePresent=true` show this Android device (S8) DOES populate both nullable ML Kit fields for
+this fixture -- consistent with `angle` being documented Android-only (null on iOS) and
+`confidence` being "commonly null on-device" in general, not universally null on Android.
+
+### What changed vs the pre-existing legacy path
+
+Nothing observable. `readText`/`readFrame` behave exactly as before for any recogniser without the
+structured capability (`FakeMachineTextRecogniser`-only fakes, or a caller that has not been taught
+to probe). `MlKitMachineTextRecogniser` now ALSO implements `StructuredTextRecogniser`; both real
+call sites prefer the structured method when available, and its `fullText` is byte-identical to
+what `readText`/`readFrame` already returned (both derive from the same `mlkit.RecognizedText.text`
+field) -- so the generic anchor's decisions are unchanged, only the recognition call actually made
+differs. `machine_text_anchor.dart`'s matching logic was not touched.
+
+### Closing gate status
+
+**P2.G1 PASSED.** Structured OCR capability (`MachineTextEvidence`, `StructuredTextRecogniser`,
+production mapping, adapter at both real call sites, device-verified) is in place and wired,
+generic OCR/anchor behaviour is unchanged and proven so by an empty `git diff` over every
+pre-existing test file, and the privacy rule for OCR content is upheld both in the shipped code and
+in this gate's own verification evidence. Next: P2.G2 (IdentityTextParser), continuing
+autonomously per the operator's "OCR-first (Layer A)" direction and PM mode.

@@ -187,7 +187,16 @@ class VisualEquipmentController extends Notifier<AsyncValue<ScanResult>> {
     if (recogniser == null) return null;
     final String text;
     try {
-      text = await recogniser.readText(path).timeout(timeout);
+      // Structured capability probed first, same `is` pattern as
+      // `service is FallbackReportingRecogniser` above: when present, its
+      // `fullText` is the exact same value the legacy `readText` already
+      // returns, so this changes nothing about what reaches the anchor below
+      // -- only which recognition call is actually made. Falls back to the
+      // legacy String API for a recogniser without the capability (e.g.
+      // `FakeMachineTextRecogniser` in existing tests).
+      text = recogniser is StructuredTextRecogniser
+          ? (await recogniser.readStructured(path).timeout(timeout)).fullText
+          : await recogniser.readText(path).timeout(timeout);
     } catch (e) {
       debugPrint('text anchor: could not read text: $e');
       return null;

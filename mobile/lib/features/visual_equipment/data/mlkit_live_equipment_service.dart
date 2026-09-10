@@ -173,7 +173,7 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
       if (G3Step10bProbe.forceOcrFailure) {
         throw Exception('G3_STEP10B_PROBE: injected OCR anchor failure');
       }
-      final text = await recogniser.readFrame(input);
+      final text = await readTextForLiveAnchor(recogniser, input);
       if (text.trim().isEmpty) return null;
       final hits = matchMachineText(text, catalogue: catalogue);
       // Exactly one, or nothing. Several candidates means the text could not
@@ -303,3 +303,25 @@ class MlKitLiveEquipmentService implements LiveEquipmentService {
     await _ctrl.close();
   }
 }
+
+/// Reads text for the live anchor, preferring the structured capability when
+/// [recogniser] exposes it -- same pattern as the photo-scan path in
+/// `visual_equipment_providers.dart`: when present, the structured call's
+/// `fullText` is the exact same value `readFrame` already returns, so this
+/// changes nothing about what reaches the anchor -- only which recognition
+/// call is actually made.
+///
+/// A top-level function rather than inline in `_anchorFromFrame`, so the
+/// wiring is unit-testable on its own: `_anchorFromFrame` is private and only
+/// reachable through the live camera/labeler pipeline, which needs a
+/// platform channel this repository cannot run on a desktop test runner (see
+/// this file's own class doc and `live_text_anchor_test.dart`'s header
+/// comment) -- extracting the probe is what keeps THIS gate's own change
+/// covered despite that pre-existing constraint.
+Future<String> readTextForLiveAnchor(
+  MachineTextRecogniser recogniser,
+  InputImage input,
+) =>
+    recogniser is StructuredTextRecogniser
+        ? recogniser.readStructuredFrame(input).then((e) => e.fullText)
+        : recogniser.readFrame(input);

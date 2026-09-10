@@ -1,0 +1,337 @@
+<title>Гейт P2.G1: структурированный OCR</title>
+<style>
+  :root {
+    --ink: #1b2129;
+    --ink-soft: #4b5563;
+    --paper: #f7f6f1;
+    --surface: #ffffff;
+    --surface-2: #f0eee6;
+    --line: #dcd8cc;
+    --accent: #0e6f63;
+    --accent-soft: #e4f1ee;
+    --good: #15803d;
+    --good-soft: #e6f4ea;
+    --warn: #b45309;
+    --warn-soft: #fbecdb;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", monospace;
+    --sans: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e9e6dc;
+      --ink-soft: #b3b0a6;
+      --paper: #14171b;
+      --surface: #1b1f24;
+      --surface-2: #20252b;
+      --line: #33383f;
+      --accent: #4fc3b0;
+      --accent-soft: #1a3532;
+      --good: #4ade80;
+      --good-soft: #16321f;
+      --warn: #f0a860;
+      --warn-soft: #3a2a13;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e9e6dc;
+    --ink-soft: #b3b0a6;
+    --paper: #14171b;
+    --surface: #1b1f24;
+    --surface-2: #20252b;
+    --line: #33383f;
+    --accent: #4fc3b0;
+    --accent-soft: #1a3532;
+    --good: #4ade80;
+    --good-soft: #16321f;
+    --warn: #f0a860;
+    --warn-soft: #3a2a13;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); line-height: 1.55; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  header { padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 600; font-size: clamp(28px, 4vw, 40px);
+    margin: 0 0 10px; text-wrap: balance; letter-spacing: -0.01em;
+  }
+  .sub { color: var(--ink-soft); font-size: 16px; max-width: 66ch; margin: 0; }
+
+  .status-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 24px 0 8px; }
+  .chip {
+    font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+    padding: 7px 14px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip.good { background: var(--good-soft); color: var(--good); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.plan { background: var(--accent-soft); color: var(--accent); }
+
+  h2 {
+    font-family: var(--display); font-weight: 600; font-size: 22px; margin: 44px 0 14px;
+    letter-spacing: -0.01em;
+  }
+  h3 { font-family: var(--sans); font-weight: 700; font-size: 15px; margin: 24px 0 10px; }
+  p { margin: 0 0 14px; }
+  .lede { font-size: 16px; color: var(--ink-soft); max-width: 68ch; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 18px 0 8px; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px;
+  }
+  .stat .n {
+    font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 600;
+    color: var(--ink); display: block;
+  }
+  .stat .l { font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; display: block; }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 760px; }
+  thead th {
+    text-align: left; font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink-soft); background: var(--surface-2);
+    padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td.step { font-family: var(--mono); color: var(--ink-soft); white-space: nowrap; }
+  td.done { white-space: nowrap; }
+  .badge-done {
+    font-family: var(--mono); font-size: 11.5px; font-weight: 600; color: var(--good);
+    background: var(--good-soft); border-radius: 6px; padding: 3px 8px; display: inline-block;
+  }
+  .note { color: var(--ink-soft); font-size: 12.5px; }
+
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 8px;
+    background: var(--surface); padding: 14px 18px; margin: 12px 0;
+  }
+  .callout.warn { border-left-color: var(--warn); }
+  .callout h4 { margin: 0 0 6px; font-size: 14px; font-family: var(--sans); }
+  .callout p { margin: 0 0 6px; font-size: 13.5px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  code {
+    font-family: var(--mono); background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: 0.92em;
+  }
+  .evidence {
+    font-family: var(--mono); font-size: 12.5px; background: var(--surface-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 14px 16px; white-space: pre-wrap; overflow-x: auto; line-height: 1.6;
+  }
+  ul.disclosures { margin: 0; padding-left: 20px; }
+  ul.disclosures li { margin-bottom: 10px; }
+
+  .rounds { display: flex; flex-direction: column; gap: 10px; margin: 12px 0 20px; }
+  .round {
+    border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; background: var(--surface);
+    display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap;
+  }
+  .round .tag {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+    padding: 3px 9px; border-radius: 6px; white-space: nowrap;
+  }
+  .round .tag.revise { background: var(--warn-soft); color: var(--warn); }
+  .round .tag.approve { background: var(--good-soft); color: var(--good); }
+  .round p { margin: 0; font-size: 13.5px; flex: 1 1 320px; }
+
+  footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: 13px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">SPTR &middot; Equipment Identity &middot; закрытие гейта Rosetta</p>
+    <h1>Гейт P2.G1: структурированный OCR</h1>
+    <p class="sub">Первый гейт направления OCR-first (слой A). <code>MachineTextEvidence</code> с <code>fullText</code> и построчной геометрией, отдельный интерфейс <code>StructuredTextRecogniser</code>, адаптер на обеих реальных точках вызова с фолбэком, доказано на реальном устройстве.</p>
+  </header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 833e548</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+  <div class="status-row">
+    <span class="chip good">&#10003; P2.G1 PASSED</span>
+    <span class="chip plan">GPT-PM VERDICT: APPROVE &middot; раунд 4 из 4</span>
+    <span class="chip warn">3 REVISE &rarr; 1 APPROVE</span>
+  </div>
+
+  <p class="lede">План прошёл через три раунда <code>REVISE</code>, прежде чем получить <code>APPROVE</code> &mdash; каждое замечание проверено против первоисточника лично, а не принято на слово (CLAUDE.md &sect;23/&sect;3), и исправлено одним пакетом на раунд, а не по одному пункту за цикл (&sect;17).</p>
+
+  <div class="stats">
+    <div class="stat"><span class="n">341</span><span class="l">тестов прошло, вся папка visual_equipment</span></div>
+    <div class="stat"><span class="n">+29 / 0</span><span class="l">новых тестов добавлено / пропало из базовой линии</span></div>
+    <div class="stat"><span class="n">0 байт</span><span class="l">диф по всем 20 предсуществующим test-файлам</span></div>
+    <div class="stat"><span class="n">1 / 1</span><span class="l">device-тест прошёл на реальном S8</span></div>
+  </div>
+
+  <h2>Путь плана: 3 REVISE, затем APPROVE</h2>
+  <div class="rounds">
+    <div class="round">
+      <span class="tag revise">РАУНД 1 &middot; REVISE &middot; 3 MAJOR</span>
+      <p>Отсутствовал <code>fullText</code> в модели; не было реального адаптера на точках вызова; верификация опиралась только на чистый unit-тест маппинга, без device-доказательства. Все три подтверждены истинными против первоисточников (дизайн-документы, grep по реальным вызовам, отсутствие покрытия <code>MlKitMachineTextRecogniser</code>).</p>
+    </div>
+    <div class="round">
+      <span class="tag revise">РАУНД 2 &middot; REVISE &middot; 2 MAJOR</span>
+      <p>Требование «зафиксировать сырой OCR-вывод дословно как evidence» нарушало правило приватности v4.2 &sect;8.5; заявленный бейзлайн «503 теста» относился к другому (Python) набору тестов, не к Flutter. Оба подтверждены прямым чтением первоисточников.</p>
+    </div>
+    <div class="round">
+      <span class="tag revise">РАУНД 3 &middot; REVISE &middot; 1 MAJOR</span>
+      <p>Числовой <code>test.id</code> JSON-репортера &mdash; opaque и локален для одного запуска (подтверждено документацией пакета <code>test</code>), непригоден для межзапускового сравнения. Исправлено на ключ (путь suite, полное имя теста) плюс отдельный <code>git diff</code>.</p>
+    </div>
+    <div class="round">
+      <span class="tag approve">РАУНД 4 &middot; APPROVE</span>
+      <p>0 BLOCKER / 0 MAJOR. Хеш плана <code>63b9be90&hellip;ba9f9</code>, reply_id <code>066319c9&hellip;</code>.</p>
+    </div>
+  </div>
+
+  <h2>Запланировано / критерий готовности / статус</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Запланировано</th><th>Критерий готовности (GPT-PM, раунд 4)</th><th>Статус</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="step">1</td><td><code>MachineTextEvidence{fullText, lines[]}</code> + <code>MachineTextLine</code></td><td>Модель существует, юнит-протестирована на конструирование/равенство</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">2</td><td><code>StructuredTextRecogniser</code> &mdash; ОТДЕЛЬНЫЙ интерфейс, по образцу <code>FallbackReportingRecogniser</code></td><td>Интерфейс + фейк существуют; легаси-фейк НЕ является его экземпляром</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">3</td><td><code>MlKitMachineTextRecogniser</code> реализует его, маппинг реального <code>RecognizedText</code></td><td>Маппинг юнит-протестирован против реально сконструированного <code>RecognizedText</code></td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">4</td><td>Адаптер на <code>visual_equipment_providers.dart:190</code> (фото)</td><td>Доказан приоритет структурного пути; легаси-путь доказано не изменён</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">5</td><td>Тот же адаптер на <code>mlkit_live_equipment_service.dart:176</code> (live)</td><td>То же доказательство; извлечено в тестируемую функцию из-за недостижимости <code>_anchorFromFrame</code> на desktop</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">6</td><td>Свежий бейзлайн Flutter-тестов ДО правок, диф ПОСЛЕ по стабильному ключу</td><td>0 пропавших/переименованных; пустой <code>git diff</code> по предсуществующим файлам</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">7</td><td>Device-тест на реальном S8, приватность-safe evidence</td><td>Реальный <code>readStructured</code> выполнен на устройстве; evidence ограничен нужными полями</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+        <tr><td class="step">8</td><td><code>flutter analyze</code> чисто, журнал решений, отчёты, коммит, push</td><td>&mdash;</td><td class="done"><span class="badge-done">ГОТОВО</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Ни один пункт не был сокращён или оставлен частично выполненным.</p>
+
+  <h2>Доказательства регрессии</h2>
+  <p>Бейзлайн снят через <code>git stash push -u</code> на чистом дереве <code>base_head 833e548</code> ДО первой правки реализации, затем стэш восстановлен. Сравнение &mdash; по стабильному ключу (путь suite, полное имя теста), а не по числовому <code>test.id</code> JSON-репортера, который сам документирован как «уникален только в контексте одного запуска».</p>
+  <div class="evidence">бейзлайн (папка visual_equipment, до правок):         312 ключей
+после реализации:                                     341 ключ
+
+пропало (должно быть ноль):                              0
+новых, все из 4 новых test-файлов:                      29
+
+git diff 833e548 -- &lt;все 20 предсуществующих test-файлов&gt;
+  &rarr; пусто, exit 0, 0 байт
+
+flutter test test/features/visual_equipment/
+  &rarr; 341 passed, 0 failed
+
+flutter analyze lib/features/visual_equipment/ test/features/visual_equipment/ integration_test/p2g1_structured_ocr_test.dart
+  &rarr; No issues found!</div>
+  <p>Новое покрытие адаптера (шаги 4&ndash;5) добавлено ДВУМЯ НОВЫМИ файлами (<code>text_anchor_structured_adapter_test.dart</code>, <code>live_text_anchor_structured_wiring_test.dart</code>), а не правкой существующих &mdash; ранний черновик правил <code>text_anchor_pipeline_test.dart</code>/<code>live_text_anchor_test.dart</code> напрямую, что нарушило бы это же утверждённое требование; поймано и исправлено до коммита, а не после.</p>
+
+  <h2>Доказательство на реальном устройстве</h2>
+  <p>S8 (<code>ce02171299f0711005</code>, <code>SM_G950F</code>). Фикстура &mdash; детерминированный PNG 480&times;160 («LEG PRESS» / «MAX 200 KG», Arial Bold, сгенерирован Pillow), встроен как base64-литерал прямо в test-файл (без изменения <code>pubspec.yaml</code>, согласно утверждённому плану), SHA-256 <code>011d2dfa08b3&hellip;e9d6316</code>.</p>
+  <div class="evidence">flutter test integration_test/p2g1_structured_ocr_test.dart -d ce02171299f0711005
+  &rarr; 1 passed, 0 failed
+
+P2.G1 device OCR evidence: fixtureSha256=011d2dfa08b3dd3b60ffead51b0b8e4596c8efcff0d1ef50443044599e9d6316 result=PASS lineCount=2 nonDegenerateBounds=true confidencePresent=true anglePresent=true</div>
+  <p class="note"><code>lineCount=2</code> совпадает с двумя строками фикстуры. <code>confidencePresent</code>/<code>anglePresent</code> = true показывают, что этот Android-девайс реально заполняет оба nullable-поля ML Kit для этой фикстуры &mdash; согласуется с тем, что <code>angle</code> документирован как Android-only (null на iOS), а <code>confidence</code> «commonly null on-device» в общем случае, но не универсально null на Android.</p>
+
+  <div class="callout warn">
+    <h4>Приватность OCR-контента (v4.2 &sect;8.5) &mdash; соблюдена и в самом гейте</h4>
+    <p>Правило «no raw image in Firestore or logs» явно распространено на <code>MachineTextEvidence.fullText</code>/<code>lines[].text</code>: полный OCR-текст получает тот же ephemeral-режим, что и сам кадр. Внутрипроцессные ассерты теста сравнивают <code>fullText</code> напрямую (это его собственная логика pass/fail, не что-то, покидающее процесс) &mdash; но evidence, показанный выше и записанный в журнал решений, ограничен SHA-256 фикстуры, PASS/FAIL, числом строк, булевым флагом непустой геометрии и присутствием (не значением) nullable-полей. Нигде дословный OCR-текст.</p>
+  </div>
+
+  <h2>Что изменилось для существующего поведения</h2>
+  <p>Ничего наблюдаемого. <code>readText</code>/<code>readFrame</code> ведут себя в точности как раньше для любого распознавателя без структурной способности. <code>MlKitMachineTextRecogniser</code> теперь ТАКЖЕ реализует <code>StructuredTextRecogniser</code>; обе реальные точки вызова предпочитают структурный метод, когда он доступен, и его <code>fullText</code> побайтово идентичен тому, что уже возвращали <code>readText</code>/<code>readFrame</code> (оба берутся из одного и того же поля <code>mlkit.RecognizedText.text</code>) &mdash; решения generic-якоря не изменились, изменился только сам вызов распознавания. <code>machine_text_anchor.dart</code> не тронут.</p>
+
+  <h2>Что дальше</h2>
+  <p>Продолжение автономно к P2.G2 (IdentityTextParser), согласно указанию оператора «OCR-first (слой A)» и режиму PM.</p>
+
+  <footer>
+    План <code>fitness_app-2026-09-10T19-58-56-184Z-ba31af</code> &middot; хеш <code>63b9be9051c5e8f27701cf9b5fa7168651fd025335771d4b8bc7f7aaff7ba9f9</code> &middot; полное повествование в <code>core/DECISION_LOG.md</code>
+  </footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
