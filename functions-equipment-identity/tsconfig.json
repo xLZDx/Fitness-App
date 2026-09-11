@@ -13,5 +13,5 @@
   },
   "compileOnSave": true,
   "include": ["src"],
-  "exclude": ["src/**/__tests__", "src/**/*.test.ts"]
+  "exclude": ["src/**/__tests__", "src/**/__e2e__", "src/**/*.test.ts"]
 }

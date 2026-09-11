@@ -1,7 +1,8 @@
 /**
- * Same shape as functions/jest.config.js. Pure unit tests only -- this
- * package makes no network/SDK calls at all yet (see src/index.ts), so
- * there is nothing here to mock.
+ * Same shape as functions/jest.config.js. Pure unit tests only -- every
+ * collaborator that does real Firestore I/O is mocked in this suite
+ * (`p2/__tests__/orchestrator.test.ts` et al.); the real Admin SDK path is
+ * exercised only under `jest.e2e.config.js`, against a real emulator.
  */
 /** @type {import("ts-jest").JestConfigWithTsJest} */
 module.exports = {

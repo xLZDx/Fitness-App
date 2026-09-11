@@ -104,7 +104,14 @@ The P0-P6 gate program (`core/design/sptr_equipment_recognition_v4_1...v4_4`) is
 
 - **P0** (baseline/governance) — *corrected 2026-08-26, GPT-PM round 1 (§11a): the original "closed, 6/6" overstated this.* **P0.G1–G6 CLOSED** (all gates closeable within an autonomous coding session); **P0.G0 remains `BLOCKED_EXTERNAL_PLATFORM_MIGRATION`** — a real App Check/platform-migration precondition, not engineering work. Phase closeout is complete only within that scoped boundary; any P4/P6 production work must still carry the App Check migration precondition forward.
 - **P1** (catalog/ontology ingestion) — G1-G4 closed, G5 blocked (`BLOCKED_ON_SOURCE_EVIDENCE`), G6 not started.
-- **P2** (OCR text-recognition engine) — not started.
+- **P2** (OCR text-recognition engine) — *updated 2026-09-11.* **P2.G1** (structured OCR capability)
+  and **P2.G2** (IdentityTextParser) CLOSED. **P2.G3** (server exact text lookup,
+  `functions-equipment-identity/`) implementation is reviewed (5 GPT-PM rounds, final
+  `VERDICT: APPROVE`, 0 open BLOCKER/MAJOR) and pushed, but the **gate itself is
+  OPEN/DEPLOYMENT_PENDING, not CLOSED** — see `core/DECISION_LOG.md`'s matching 2026-09-11 entries
+  for the full implementation/review history and the targeted `firebase deploy --dry-run` evidence.
+  A real (non-dry-run) index/function deployment to `fitness-app-korostelev` is a separate,
+  later-authorized action, not covered by this implementation review. P2.G4+ not started.
 - **P4** (visual retrieval, evidence fusion, calibration, Gemini verifier) — not started, deliberately deferred by the `OCR_TEXT_ONLY_DEFER_VISUAL` decision.
 - **P6** (shadow deploy, telemetry) — not started.
 

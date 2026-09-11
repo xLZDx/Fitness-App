@@ -1,16 +1,19 @@
 {
   "name": "functions-equipment-identity",
-  "description": "The equipment-identity Cloud Functions codebase, isolated from the default (Stripe) codebase per P0.G6 -- see core/equipment_identity/p0/P0_G6_DEPLOYMENT_ISOLATION.md. No production identity function is exported yet -- see core/equipment_identity/p0/P0_G5_CLOUD_FEASIBILITY.md for why.",
+  "description": "The equipment-identity Cloud Functions codebase, isolated from the default (Stripe) codebase per P0.G6 -- see core/equipment_identity/p0/P0_G6_DEPLOYMENT_ISOLATION.md. Exports equipmentIdentityResolveFromText (P2.G3, text-only exact-model lookup); see core/design/sptr_equipment_recognition_v4_1/ for the gate contract.",
   "scripts": {
-    "build": "npm run check:p0-snapshot && npm run check:p1-generated && tsc",
+    "build": "npm run check:p0-snapshot && npm run check:p1-generated && npm run check:p0-app-check-readiness && tsc",
     "build:watch": "tsc --watch",
     "deploy": "firebase deploy --only functions:equipment-identity",
-    "pretest": "npm run check:p0-snapshot && npm run check:p1-generated",
+    "pretest": "npm run check:p0-snapshot && npm run check:p1-generated && npm run check:p0-app-check-readiness",
     "test": "jest",
+    "test:e2e": "node scripts/run_emulator_tests.js jest.e2e.config.js firestore demo-equipment-identity-e2e",
     "sync:p0-snapshot": "node scripts/sync_p0_type_snapshot.js",
     "check:p0-snapshot": "node scripts/sync_p0_type_snapshot.js --check",
     "sync:p1-generated": "node scripts/sync_p1_generated.js",
     "check:p1-generated": "node scripts/sync_p1_generated.js --check",
+    "sync:p0-app-check-readiness": "node scripts/sync_p0_app_check_readiness.js",
+    "check:p0-app-check-readiness": "node scripts/sync_p0_app_check_readiness.js --check",
     "generate:p0-brand-candidates": "npm run build && node scripts/generate_p0_brand_candidates.js"
   },
   "engines": {

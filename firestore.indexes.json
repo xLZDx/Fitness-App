@@ -1,4 +1,13 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "equipment_model_text_keys",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "catalogVersion", "order": "ASCENDING" },
+        { "fieldPath": "lookupKey", "order": "ASCENDING" }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }

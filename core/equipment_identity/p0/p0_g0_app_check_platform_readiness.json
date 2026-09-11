@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "status": "BLOCKED_EXTERNAL_PLATFORM_MIGRATION",
+  "updatedAt": "2026-08-22T00:00:00Z",
+  "evidenceRef": "core/equipment_identity/p0/P0_EVIDENCE_INDEX.md#P0.G0 -- App Check platform readiness; see also core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md, section \"P0.G0\""
+}

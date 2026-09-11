@@ -647,6 +647,19 @@ production: inherits the platform's staged rollout, never independently asserted
 limiting goes through the existing `abuse_guard.ts`/`users/{uid}/usage/{day}` mechanism — never a
 new competing `rate_limit.ts`.
 
+**"type compatibility" scope, amended (binding governance decision, GPT-PM, P2.G3 pre-commit
+review round 4, 2026-09-11 — finding #7, quoted verbatim in `core/DECISION_LOG.md`'s matching
+entry):** P2.G3's own runtime has no authoritative generic-type evidence source — its only input is
+OCR text, which can honestly produce nothing stronger than `LOW_CONFIDENCE`/`AMBIGUOUS` type hints.
+"Type compatibility" for THIS gate means exactly that: OCR-derived type hints are soft evidence
+only and MUST NOT be promoted to `HIGH_ASSURANCE`/`VERIFIED`; P2.G3 closure does **not** require a
+runtime authoritative generic-type recognizer. The exact-resolution policy MUST retain and test the
+rule that externally authoritative `VERIFIED`/`HIGH_ASSURANCE` incompatible type evidence yields
+`NEED_MORE_VIEW` (already implemented and tested — see `evaluateExactResolutionPolicy`) — that
+contract is preserved for whenever P4 actually supplies such evidence. **P4 MUST provide the real
+authoritative generic-type evidence boundary and prove end-to-end that an incompatible
+`VERIFIED`/`HIGH_ASSURANCE` generic-type result vetoes exact-model emission with `NEED_MORE_VIEW`.**
+
 **Story DoD** (corrected — GPT-PM devil's-advocate review round, 2026-08-22, AC-B02: the earlier
 "(P6-T `VERIFIED`)" wording created a real circular dependency, since P1.G6 deliberately gates
 `VERIFIED` behind P6-T's own promotion pipeline and only ever hands P2 an `EXPERIMENTAL` status —

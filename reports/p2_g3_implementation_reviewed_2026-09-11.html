@@ -1,0 +1,333 @@
+<title>P2.G3 — implementation approved</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --surface-2: #f0f0ee;
+    --border: #dcdcd6;
+    --text: #1e1e1c;
+    --text-dim: #5c5c56;
+    --accent: #3a5a8c;
+    --accent-dim: #eef2f8;
+    --done: #2f7d4f;
+    --done-bg: #e9f5ee;
+    --partial: #a06a12;
+    --partial-bg: #faf1e0;
+    --notstarted: #6b6b64;
+    --notstarted-bg: #eeeeec;
+    --major: #b3401f;
+    --major-bg: #fbeae4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17181a;
+      --surface: #1f2023;
+      --surface-2: #26282b;
+      --border: #34363a;
+      --text: #ececea;
+      --text-dim: #a3a49f;
+      --accent: #7fa1d6;
+      --accent-dim: #24304a;
+      --done: #66c690;
+      --done-bg: #1a3325;
+      --partial: #e0ac4c;
+      --partial-bg: #3a2d13;
+      --notstarted: #9a9b95;
+      --notstarted-bg: #2a2b2d;
+      --major: #e0785a;
+      --major-bg: #3d2018;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17181a;
+    --surface: #1f2023;
+    --surface-2: #26282b;
+    --border: #34363a;
+    --text: #ececea;
+    --text-dim: #a3a49f;
+    --accent: #7fa1d6;
+    --accent-dim: #24304a;
+    --done: #66c690;
+    --done-bg: #1a3325;
+    --partial: #e0ac4c;
+    --partial-bg: #3a2d13;
+    --notstarted: #9a9b95;
+    --notstarted-bg: #2a2b2d;
+    --major: #e0785a;
+    --major-bg: #3d2018;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); }
+  .wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.55;
+  }
+  h1, h2, h3 { font-family: "Inter", -apple-system, sans-serif; text-wrap: balance; }
+  header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 8px; }
+  header .eyebrow {
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 8px;
+  }
+  header h1 { font-size: 28px; margin: 0 0 6px; font-weight: 700; }
+  header .sub { color: var(--text-dim); font-size: 15px; }
+  h2 {
+    font-size: 18px; margin: 40px 0 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 15px; margin: 20px 0 8px; }
+  p { margin: 0 0 12px; }
+  code, .mono { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 0.92em; }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat .n {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 24px; font-weight: 600; line-height: 1.1;
+  }
+  .stat .l { font-size: 12.5px; color: var(--text-dim); margin-top: 4px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+    white-space: nowrap;
+  }
+  .pill.done { color: var(--done); background: var(--done-bg); }
+  .pill.partial { color: var(--partial); background: var(--partial-bg); }
+  .pill.notstarted { color: var(--notstarted); background: var(--notstarted-bg); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  th, td { text-align: left; padding: 10px 12px; vertical-align: top; border-bottom: 1px solid var(--border); }
+  th { background: var(--surface-2); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); }
+  tr:last-child td { border-bottom: none; }
+  td.step-col { font-weight: 600; white-space: nowrap; color: var(--text); }
+  td.tail { color: var(--text-dim); font-style: italic; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px; margin-bottom: 12px;
+  }
+  .card h3 { margin-top: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .card ul { margin: 8px 0 0; padding-left: 20px; }
+  .card li { margin-bottom: 6px; }
+  .verdict-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .verdict-row .n { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 700; }
+  .verdict-row .blocker { color: var(--major); }
+  .verdict-row .major { color: var(--partial); }
+  .verdict-row .clean { color: var(--done); }
+  ul.plain { margin: 8px 0 0; padding-left: 20px; }
+  ul.plain li { margin-bottom: 6px; }
+  .note {
+    background: var(--accent-dim); border-left: 3px solid var(--accent);
+    padding: 12px 14px; border-radius: 0 8px 8px 0; font-size: 13.5px; margin: 16px 0;
+  }
+  .timeline { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+  .tl-row {
+    display: grid; grid-template-columns: 90px 110px 1fr; gap: 12px; align-items: start;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px;
+    font-size: 13px;
+  }
+  .tl-round { font-weight: 700; color: var(--text-dim); }
+  a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Rosetta final report &middot; PM mode ON</div>
+  <h1>P2.G3 &mdash; Server exact text lookup</h1>
+  <div class="sub">Plan <code>fitness_app-2026-09-10T22-46-31-098Z-91565a</code> (revision 5) &middot; implementation APPROVED by GPT-PM (round 5, <strong>VERDICT: APPROVE</strong>) &middot; steps 1&ndash;9 done, step 10 (plan closure) completed by this same report</div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 570d73a</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+<div class="note" style="margin-top:20px">
+  <strong>Important distinction (held throughout this report):</strong> this report closes the
+  <em>implementation plan</em> (Rosetta Step 10) &mdash; not the P2.G3 gate itself. GPT-PM made this
+  distinction explicit in its own APPROVE: the implementation is reviewed and approved, but the
+  P2.G3 gate stays <strong>OPEN/DEPLOYMENT_PENDING</strong> until a separately-authorized real
+  (non-dry-run) deployment of the indexes/function to production.
+</div>
+
+<div class="stat-grid">
+  <div class="stat"><div class="n">432</div><div class="l">equipment-identity unit tests, all green</div></div>
+  <div class="stat"><div class="n">57</div><div class="l">e2e tests against a real Firestore emulator</div></div>
+  <div class="stat"><div class="n">601+121</div><div class="l">default-codebase unit + rules tests, zero regressions</div></div>
+  <div class="stat"><div class="n">5</div><div class="l">GPT-PM review rounds to a clean APPROVE</div></div>
+</div>
+
+<h2>GPT-PM review path &mdash; five rounds, each closing exactly what the prior one left open</h2>
+<p>Per CLAUDE.md &sect;17's discipline (one broad sweep, then verification of only the declared remainder &mdash; never one finding at a time).</p>
+<div class="timeline">
+  <div class="tl-row"><div class="tl-round">Round 1</div><div><span class="pill" style="color:var(--major);background:var(--major-bg)">1 BLOCKER / 8 MAJOR</span></div><div>Full adversarial sweep of the whole diff against the approved DoD.</div></div>
+  <div class="tl-row"><div class="tl-round">Round 2</div><div><span class="pill partial">4 MAJOR / 0 BLOCKER</span></div><div>Verified round-1's 9 fixes. 5 closed, 4 (#3, #4, #6, #7) remained open with a specific required change each.</div></div>
+  <div class="tl-row"><div class="tl-round">Round 3</div><div><span class="pill partial">2 MAJOR / 0 BLOCKER</span></div><div>#4 and #6 correctly closed. #3 (cross-scan supersession) and #7 (authoritative type veto) remained open &mdash; #3 with a specific architectural required change.</div></div>
+  <div class="tl-row"><div class="tl-round">Round 4</div><div><span class="pill partial">1 MAJOR / 0 BLOCKER</span></div><div>#7 closed via GPT-PM's own formal governance amendment (path b &mdash; moving the authoritative generic-type veto requirement to P4). #3: base admission linearization confirmed, but expired-lease reclaim was unfenced &mdash; a new MAJOR with an exact required change (claimId/generation fencing).</div></div>
+  <div class="tl-row"><div class="tl-round">Round 5</div><div><span class="pill done">VERDICT: APPROVE</span></div><div>claimId/generation fencing implemented, plus the three required real-emulator regressions. 0 BLOCKER / 0 MAJOR / 0 MINOR. <strong>Implementation approved.</strong></div></div>
+</div>
+
+<h2>This gate's architectural center: a two-phase admit/finalize lifecycle fenced by claimId</h2>
+<p>Rounds 3&ndash;5 rewrote the session/quota atomicity mechanism from scratch &mdash; not a patch on the old "pin at the end" model, but a genuine two-phase design.</p>
+<div class="card">
+  <h3>admitSessionClaim <span class="verdict-row"><span class="n clean">1</span> transaction</span></h3>
+  <p>Linearizes, in ONE Firestore transaction: session ownership, latest-scan ordering, and quota admission &mdash; before the expensive pipeline runs, not only at the end. Transaction commit order is itself a real total order: a brand-new claim is always, by construction, the most recently admitted scan for this uid.</p>
+</div>
+<div class="card">
+  <h3>Bounded lease + lazy reclaim, no sweeper subsystem</h3>
+  <p>A hung/crashed request never permanently wedges (uid, scanId): any later call to <code>admitSessionClaim</code> notices an expired lease (30s) and reclaims the slot itself &mdash; but only for a genuine retry of the SAME request (matching fingerprint) and only while the session is still latest.</p>
+</div>
+<div class="card">
+  <h3>claimId/generation fencing (round-4 finding, round-5 closure)</h3>
+  <p>Every successful admission/reclaim mints a fresh, immutable <code>claimId</code>. <code>finalizeSessionOutcome</code> requires an exact generation match &mdash; a genuinely still-alive (merely slow, not crashed) original owner whose lease expired and was reclaimed by a fresher attempt presents its own stale claimId and observes ABANDONED, never overwriting the reclaimer's live claim.</p>
+</div>
+<div class="card">
+  <h3>finalizeSessionOutcome <span class="verdict-row"><span class="n clean">RESOLVED / SUPERSEDED / ABANDONED</span></span></h3>
+  <p>Re-verifies "am I still latest?" at the very END, inside the same transaction that writes the outcome &mdash; a scan superseded while it was still running discovers this at finalize and never emits a stale MATCH.</p>
+</div>
+
+<h2>#7 &mdash; closed by a formal governance amendment, not a "deferred" comment</h2>
+<p>GPT-PM offered two honest paths: (a) build a real runtime boundary for authoritative generic-type evidence, or (b) formally move this requirement to P4 via a separate governance decision. Path (a) is not honestly buildable within this gate &mdash; P2.G3 has no authoritative generic-type evidence source, only OCR text. GPT-PM chose (b) and dictated the exact binding text, now recorded verbatim in <code>core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</code> (next to P2.G3's own Story AC) and in <code>core/DECISION_LOG.md</code>.</p>
+
+<h2>Targeted dry-run deploy &mdash; first-deployment isolation evidence</h2>
+<p>Plan Step 9 requires a dry-run deploy against the real, live Firebase project (<code>fitness-app-korostelev</code>) as evidence that the isolated <code>equipment-identity</code> codebase genuinely builds and packages independently of the default <code>functions/</code> one. Before running this against the operator's real account, the risk was verified against a primary source rather than assumed: the actually-installed CLI's own <code>firebase deploy --help</code> (v15.17.0) states verbatim &mdash; <em>"this may still enable APIs on the target project."</em> Authorization was routed to GPT-PM (CLAUDE.md &sect;16/&sect;20) with this evidence, not decided unilaterally.</p>
+<div class="card">
+  <h3>Result <span class="verdict-row"><span class="n clean">Dry run complete!</span></span></h3>
+  <ul class="plain">
+    <li>GPT-PM authorized exactly <code>firebase deploy --only functions:equipment-identity --dry-run --project fitness-app-korostelev</code>, explicitly excluding any real (non-dry-run) deployment.</li>
+    <li>Enabled-GCP-API snapshot before and after &mdash; byte-identical (59 APIs). Zero new APIs were actually enabled: everything the CLI "ensured enabled" was already on from the default codebase's own prior deployments.</li>
+    <li>Predeploy build (P0 snapshot check, P1 generated-fixture check, P0 App Check readiness check, <code>tsc</code>) &mdash; all <strong>OK</strong>; the <code>equipment-identity</code> codebase was prepared, analyzed, and packaged (362.72 KB).</li>
+    <li><code>firebase functions:list</code> confirms only the pre-existing default-codebase functions are live &mdash; nothing was actually deployed.</li>
+  </ul>
+</div>
+
+<h2>Rosetta plan &mdash; planned / DoD / status per step</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Step</th><th>Planned</th><th>Definition of Done</th><th>Status</th><th>Tail</th></tr></thead>
+<tbody>
+<tr><td class="step-col">1</td><td>Ground in the exact v4.4/v4.1 schema, citing exact source line ranges.</td><td>Design decisions trace to cited source text, not assumption.</td><td><span class="pill done">done</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">2</td><td>App Check readiness artifact + fail-closed reader.</td><td>APP_CHECK_PLATFORM_READINESS is read from a P0-owned tracked artifact, fail-closed on any invalid case.</td><td><span class="pill done">done</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">3</td><td>Text-key materializer + resolver, per-model deduplicated.</td><td>Resolver decides uniqueness by distinct modelId count, never row count.</td><td><span class="pill done">done</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">4</td><td>Full v4.1 &sect;6.2 exact-resolution policy.</td><td>EXPERIMENTAL always shadow-only; VERIFIED required for production.</td><td><span class="pill done">done</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">5</td><td>Quota primitive ported from <code>abuse_guard.ts</code>.</td><td>Identical atomic <code>users/{uid}/usage/{day}</code> store.</td><td><span class="pill done">done</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">6</td><td>Full v4.4 contract, callable wired end to end.</td><td>Every response is schema-valid with a pinned RecognitionAuthorityTuple.</td><td><span class="pill done">done</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">7</td><td>Session repository + authoritative pre-emission read.</td><td>A stored session's authority tuple cannot be mutated; revoked state blocks emission.</td><td><span class="pill done">done</span></td><td>Evolved through rounds 3&ndash;5 into the full two-phase admit/finalize model with claimId fencing &mdash; see above.</td></tr>
+<tr><td class="step-col">8</td><td>Security/Node-TS/ontology review before GPT-PM.</td><td>No open BLOCKER/MAJOR.</td><td><span class="pill done">done</span></td><td>5 specialists (security, code, type-design, silent-failure, ontology), 0 BLOCKER, 6 MAJOR total, all closed.</td></tr>
+<tr><td class="step-col">9</td><td>Full regression + dry-run deploy + decision log + GPT-PM review + html report.</td><td>Existing tests unchanged; first-deploy isolation confirmed via dry-run; pushed commit reproduces the reviewed bytes.</td><td><span class="pill done">done</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">10</td><td><code>pm_rosetta_close</code> the implementation plan with full evidence.</td><td>The evidence package substantiates every criterion above; the gate itself stays OPEN/DEPLOYMENT_PENDING.</td><td><span class="pill partial">by this report</span></td><td>Closes immediately after the commit/push this report references.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Next</h2>
+<ul class="plain">
+  <li>Commit + push this diff (already GPT-PM approved; push authorized by the approved GO per CLAUDE.md &sect;22).</li>
+  <li><code>pm_rosetta_close</code> the implementation plan (passed) with this report's evidence.</li>
+  <li>The P2.G3 <strong>gate</strong> stays OPEN/DEPLOYMENT_PENDING &mdash; a real (non-dry-run) production deploy of the indexes/function needs its own separate authorization when the time comes.</li>
+  <li>Continue autonomously toward P2.G4 and the rest of the P2 phase, unless blocked on a genuine operator-only decision under CLAUDE.md &sect;4/&sect;14.</li>
+</ul>
+
+</div>
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

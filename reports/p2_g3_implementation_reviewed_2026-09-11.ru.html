@@ -1,0 +1,333 @@
+<title>P2.G3 — реализация одобрена</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --surface-2: #f0f0ee;
+    --border: #dcdcd6;
+    --text: #1e1e1c;
+    --text-dim: #5c5c56;
+    --accent: #3a5a8c;
+    --accent-dim: #eef2f8;
+    --done: #2f7d4f;
+    --done-bg: #e9f5ee;
+    --partial: #a06a12;
+    --partial-bg: #faf1e0;
+    --notstarted: #6b6b64;
+    --notstarted-bg: #eeeeec;
+    --major: #b3401f;
+    --major-bg: #fbeae4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17181a;
+      --surface: #1f2023;
+      --surface-2: #26282b;
+      --border: #34363a;
+      --text: #ececea;
+      --text-dim: #a3a49f;
+      --accent: #7fa1d6;
+      --accent-dim: #24304a;
+      --done: #66c690;
+      --done-bg: #1a3325;
+      --partial: #e0ac4c;
+      --partial-bg: #3a2d13;
+      --notstarted: #9a9b95;
+      --notstarted-bg: #2a2b2d;
+      --major: #e0785a;
+      --major-bg: #3d2018;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17181a;
+    --surface: #1f2023;
+    --surface-2: #26282b;
+    --border: #34363a;
+    --text: #ececea;
+    --text-dim: #a3a49f;
+    --accent: #7fa1d6;
+    --accent-dim: #24304a;
+    --done: #66c690;
+    --done-bg: #1a3325;
+    --partial: #e0ac4c;
+    --partial-bg: #3a2d13;
+    --notstarted: #9a9b95;
+    --notstarted-bg: #2a2b2d;
+    --major: #e0785a;
+    --major-bg: #3d2018;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); }
+  .wrap {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.55;
+  }
+  h1, h2, h3 { font-family: "Inter", -apple-system, sans-serif; text-wrap: balance; }
+  header { border-bottom: 1px solid var(--border); padding-bottom: 20px; margin-bottom: 8px; }
+  header .eyebrow {
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 8px;
+  }
+  header h1 { font-size: 28px; margin: 0 0 6px; font-weight: 700; }
+  header .sub { color: var(--text-dim); font-size: 15px; }
+  h2 {
+    font-size: 18px; margin: 40px 0 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 15px; margin: 20px 0 8px; }
+  p { margin: 0 0 12px; }
+  code, .mono { font-family: "JetBrains Mono", ui-monospace, Consolas, monospace; font-size: 0.92em; }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .stat .n {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 24px; font-weight: 600; line-height: 1.1;
+  }
+  .stat .l { font-size: 12.5px; color: var(--text-dim); margin-top: 4px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+    white-space: nowrap;
+  }
+  .pill.done { color: var(--done); background: var(--done-bg); }
+  .pill.partial { color: var(--partial); background: var(--partial-bg); }
+  .pill.notstarted { color: var(--notstarted); background: var(--notstarted-bg); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  th, td { text-align: left; padding: 10px 12px; vertical-align: top; border-bottom: 1px solid var(--border); }
+  th { background: var(--surface-2); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); }
+  tr:last-child td { border-bottom: none; }
+  td.step-col { font-weight: 600; white-space: nowrap; color: var(--text); }
+  td.tail { color: var(--text-dim); font-style: italic; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px; margin-bottom: 12px;
+  }
+  .card h3 { margin-top: 0; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .card ul { margin: 8px 0 0; padding-left: 20px; }
+  .card li { margin-bottom: 6px; }
+  .verdict-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .verdict-row .n { font-family: "JetBrains Mono", ui-monospace, monospace; font-weight: 700; }
+  .verdict-row .blocker { color: var(--major); }
+  .verdict-row .major { color: var(--partial); }
+  .verdict-row .clean { color: var(--done); }
+  ul.plain { margin: 8px 0 0; padding-left: 20px; }
+  ul.plain li { margin-bottom: 6px; }
+  .note {
+    background: var(--accent-dim); border-left: 3px solid var(--accent);
+    padding: 12px 14px; border-radius: 0 8px 8px 0; font-size: 13.5px; margin: 16px 0;
+  }
+  .timeline { display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+  .tl-row {
+    display: grid; grid-template-columns: 90px 110px 1fr; gap: 12px; align-items: start;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px;
+    font-size: 13px;
+  }
+  .tl-round { font-weight: 700; color: var(--text-dim); }
+  a { color: var(--accent); }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Итоговый отчёт Rosetta &middot; PM-режим включён</div>
+  <h1>P2.G3 &mdash; Серверный точный текстовый поиск</h1>
+  <div class="sub">План <code>fitness_app-2026-09-10T22-46-31-098Z-91565a</code> (ревизия 5) &middot; реализация одобрена GPT-PM (round 5, <strong>VERDICT: APPROVE</strong>) &middot; шаги 1&ndash;9 готовы, шаг 10 (закрытие плана) выполняется этим же отчётом</div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 570d73a</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+
+
+
+
+<div class="note" style="margin-top:20px">
+  <strong>Важное разделение (сохраняется во всём этом отчёте):</strong> этот отчёт закрывает
+  <em>план реализации</em> (Rosetta Step 10) &mdash; не сам гейт P2.G3. GPT-PM явно подтвердил это
+  различие в своём же APPROVE: реализация проверена и одобрена, но сам гейт P2.G3 остаётся
+  <strong>OPEN/DEPLOYMENT_PENDING</strong> до отдельно авторизованного реального (не dry-run)
+  деплоя индексов/функции в продакшен.
+</div>
+
+<div class="stat-grid">
+  <div class="stat"><div class="n">432</div><div class="l">unit-тестов equipment-identity, всё зелёное</div></div>
+  <div class="stat"><div class="n">57</div><div class="l">e2e-тестов против реального эмулятора Firestore</div></div>
+  <div class="stat"><div class="n">601+121</div><div class="l">unit + rules тестов дефолтного codebase, без регрессий</div></div>
+  <div class="stat"><div class="n">5</div><div class="l">раундов ревью GPT-PM до чистого APPROVE</div></div>
+</div>
+
+<h2>Путь ревью GPT-PM &mdash; пять раундов, каждый закрывал ровно то, что оставил предыдущий</h2>
+<p>По дисциплине CLAUDE.md &sect;17 (один широкий проход, затем верификация только заявленного остатка &mdash; не поиск одной находки за раз).</p>
+<div class="timeline">
+  <div class="tl-row"><div class="tl-round">Round 1</div><div><span class="pill" style="color:var(--major);background:var(--major-bg)">1 BLOCKER / 8 MAJOR</span></div><div>Полный adversarial-проход по всему диффу против утверждённого DoD.</div></div>
+  <div class="tl-row"><div class="tl-round">Round 2</div><div><span class="pill partial">4 MAJOR / 0 BLOCKER</span></div><div>Проверка исправлений всех 9 находок round 1. 5 закрыто, 4 (#3, #4, #6, #7) остались открытыми с конкретным required change каждая.</div></div>
+  <div class="tl-row"><div class="tl-round">Round 3</div><div><span class="pill partial">2 MAJOR / 0 BLOCKER</span></div><div>#4 и #6 закрыты корректно. #3 (cross-scan supersession) и #7 (authoritative type veto) остались открытыми &mdash; #3 с конкретным архитектурным required change.</div></div>
+  <div class="tl-row"><div class="tl-round">Round 4</div><div><span class="pill partial">1 MAJOR / 0 BLOCKER</span></div><div>#7 закрыт формальной governance-поправкой GPT-PM (path b &mdash; перенос authoritative generic-type veto в P4). #3: базовая линеаризация admission подтверждена, но expired-lease reclaim не был fenced &mdash; новый MAJOR с точным required change (claimId/generation fencing).</div></div>
+  <div class="tl-row"><div class="tl-round">Round 5</div><div><span class="pill done">VERDICT: APPROVE</span></div><div>claimId/generation fencing реализован и три требуемых real-emulator regression добавлены. 0 BLOCKER / 0 MAJOR / 0 MINOR. <strong>Реализация одобрена.</strong></div></div>
+</div>
+
+<h2>Архитектурный центр этого гейта: двухфазный admission/finalize с fencing по claimId</h2>
+<p>Round 3&ndash;5 переписали механизм атомарности сессии/квоты с нуля &mdash; не патч поверх старого "pin at the end", а настоящая двухфазная модель.</p>
+<div class="card">
+  <h3>admitSessionClaim <span class="verdict-row"><span class="n clean">1</span> транзакция</span></h3>
+  <p>Линеаризует в ОДНОЙ Firestore-транзакции: session ownership, latest-scan ordering и quota admission &mdash; до запуска дорогого pipeline, а не только в конце. Порядок commit транзакций сам по себе является настоящим тотальным порядком: новый claim всегда, по построению, самый недавно допущенный скан для этого uid.</p>
+</div>
+<div class="card">
+  <h3>Bounded lease + ленивый reclaim, без sweeper-подсистемы</h3>
+  <p>Зависший/упавший запрос никогда не блокирует (uid, scanId) навсегда: любой следующий вызов <code>admitSessionClaim</code> сам замечает истёкший lease (30с) и переиспользует слот &mdash; но только для генуинного повтора ТОГО ЖЕ запроса (тот же fingerprint) и только пока сессия всё ещё latest.</p>
+</div>
+<div class="card">
+  <h3>claimId/generation fencing (round-4 находка, round-5 закрытие)</h3>
+  <p>Каждый успешный admission/reclaim получает новый immutable <code>claimId</code>. <code>finalizeSessionOutcome</code> требует точное совпадение generation &mdash; генуинно ещё живой (просто медленный, не упавший) первоначальный владелец, чей lease истёк и был reclaimed более свежей попыткой, представляет свой устаревший claimId и получает ABANDONED, никогда не перезаписывая живой claim reclaimer'а.</p>
+</div>
+<div class="card">
+  <h3>finalizeSessionOutcome <span class="verdict-row"><span class="n clean">RESOLVED / SUPERSEDED / ABANDONED</span></span></h3>
+  <p>Перепроверяет "я всё ещё latest?" в САМОМ КОНЦЕ, внутри той же транзакции, что пишет исход &mdash; скан, вытесненный, пока он ещё выполнялся, обнаруживает это на finalize и никогда не выдаёт устаревший MATCH.</p>
+</div>
+
+<h2>#7 &mdash; закрыт формальной governance-поправкой, не комментарием &laquo;deferred&raquo;</h2>
+<p>GPT-PM предложил два честных пути: (a) построить реальную runtime-границу authoritative generic-type evidence, или (b) формально перенести это требование в P4 отдельным governance-решением. Path (a) не реализуем честно в рамках этого гейта &mdash; у P2.G3 нет источника authoritative generic-type evidence, только OCR-текст. GPT-PM выбрал (b) и продиктовал точный связывающий текст, который теперь записан дословно в <code>core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</code> (рядом с P2.G3 Story AC) и в <code>core/DECISION_LOG.md</code>.</p>
+
+<h2>Целевой dry-run деплой &mdash; доказательство изоляции первого деплоя</h2>
+<p>Шаг 9 плана требует dry-run деплой против реального живого Firebase-проекта (<code>fitness-app-korostelev</code>) как доказательство того, что изолированный codebase <code>equipment-identity</code> действительно собирается и упаковывается независимо от дефолтного <code>functions/</code>. Перед запуском против реального аккаунта оператора этот риск был проверен по первоисточнику, а не принят на веру: официальный `firebase deploy --help` (установленная версия 15.17.0) дословно говорит &mdash; <em>&laquo;this may still enable APIs on the target project&raquo;</em>. Вопрос авторизации отправлен GPT-PM (CLAUDE.md &sect;16/&sect;20) с этой evidence, а не решён самостоятельно.</p>
+<div class="card">
+  <h3>Результат <span class="verdict-row"><span class="n clean">Dry run complete!</span></span></h3>
+  <ul class="plain">
+    <li>GPT-PM авторизовал ровно команду <code>firebase deploy --only functions:equipment-identity --dry-run --project fitness-app-korostelev</code>, явно исключив любой реальный (не dry-run) деплой.</li>
+    <li>Снимок включённых GCP API до и после запуска &mdash; побайтово идентичен (59 API). Ни один новый API фактически не был включён: все, что CLI &laquo;ensures enabled&raquo;, уже было включено дефолтным codebase ранее.</li>
+    <li>Предеплойная сборка (P0-снэпшот, P1-генерируемые фикстуры, P0 App Check readiness, <code>tsc</code>) &mdash; всё <strong>OK</strong>; codebase <code>equipment-identity</code> подготовлен, проанализирован и упакован (362.72 KB).</li>
+    <li><code>firebase functions:list</code> подтверждает: в проекте по-прежнему только прежние функции дефолтного codebase &mdash; ничего реально не задеплоено.</li>
+  </ul>
+</div>
+
+<h2>План Rosetta &mdash; план / DoD / статус по каждому шагу</h2>
+<div class="table-scroll">
+<table>
+<thead><tr><th>Шаг</th><th>Запланировано</th><th>Definition of Done</th><th>Статус</th><th>Хвост</th></tr></thead>
+<tbody>
+<tr><td class="step-col">1</td><td>Опереться на точную схему v4.4/v4.1 с указанием строк источника.</td><td>Проектные решения прослеживаются до процитированного текста источника.</td><td><span class="pill done">готово</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">2</td><td>Артефакт готовности App Check + fail-closed reader.</td><td>APP_CHECK_PLATFORM_READINESS читается из P0-владеемого артефакта, fail-closed на любой невалидный случай.</td><td><span class="pill done">готово</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">3</td><td>Материализатор текстовых ключей + резолвер, дедуп по модели.</td><td>Резолвер определяет уникальность по числу различных modelId, никогда по числу строк.</td><td><span class="pill done">готово</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">4</td><td>Полная политика точного разрешения v4.1 &sect;6.2.</td><td>EXPERIMENTAL всегда только shadow; VERIFIED нужен для production.</td><td><span class="pill done">готово</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">5</td><td>Примитив квоты, портированный из <code>abuse_guard.ts</code>.</td><td>Идентичное атомарное хранилище <code>users/{uid}/usage/{day}</code>.</td><td><span class="pill done">готово</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">6</td><td>Полный контракт v4.4, callable подключён целиком.</td><td>Каждый ответ валиден по схеме с закреплённым RecognitionAuthorityTuple.</td><td><span class="pill done">готово</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">7</td><td>Репозиторий сессии + авторитетное чтение перед эмиссией.</td><td>Authority tuple сохранённой сессии нельзя изменить; отозванное состояние блокирует эмиссию.</td><td><span class="pill done">готово</span></td><td>Эволюционировало в round 3&ndash;5 в полную двухфазную admission/finalize модель с claimId fencing &mdash; см. выше.</td></tr>
+<tr><td class="step-col">8</td><td>Ревью security/Node-TS/онтологии до GPT-PM.</td><td>Ни одного открытого BLOCKER/MAJOR.</td><td><span class="pill done">готово</span></td><td>5 специалистов (security, code, type-design, silent-failure, онтология), 0 BLOCKER, 6 MAJOR всего, все закрыты.</td></tr>
+<tr><td class="step-col">9</td><td>Полный регресс + dry-run деплой + decision-log + ревью GPT-PM + html-отчёт.</td><td>Существующие тесты не изменились; изоляция первого деплоя подтверждена; коммит воспроизводит проверенные байты.</td><td><span class="pill done">готово</span></td><td>&mdash;</td></tr>
+<tr><td class="step-col">10</td><td><code>pm_rosetta_close</code> плана реализации с полными доказательствами.</td><td>Пакет доказательств подтверждает каждый критерий выше; гейт остаётся OPEN/DEPLOYMENT_PENDING.</td><td><span class="pill partial">этим отчётом</span></td><td>Закрывается сразу после коммита/пуша, на который ссылается этот отчёт.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2>Что дальше</h2>
+<ul class="plain">
+  <li>Коммит + пуш этого диффа (уже одобрен GPT-PM, push авторизован approved GO per CLAUDE.md &sect;22).</li>
+  <li><code>pm_rosetta_close</code> плана реализации (passed) с полными доказательствами этого отчёта.</li>
+  <li>P2.G3 <strong>гейт</strong> остаётся OPEN/DEPLOYMENT_PENDING &mdash; реальный (не dry-run) деплой индексов/функции в продакшен требует отдельной авторизации, когда придёт время.</li>
+  <li>Продолжение автономной работы к P2.G4 и остальной части фазы P2, если нет блокировки на operator-only решение по CLAUDE.md &sect;4/&sect;14.</li>
+</ul>
+
+</div>
+
+
+
+
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

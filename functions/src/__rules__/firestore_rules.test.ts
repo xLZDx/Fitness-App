@@ -903,6 +903,39 @@ describe("P1.G1: equipment_identity_sessions — fully server-internal", () => {
   });
 });
 
+describe("P2.G3: equipment_identity_latest_session — fully server-internal", () => {
+  test("client read is refused", async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(
+        doc(ctx.firestore(), `users/${ALICE}/equipment_identity_latest_session/current`),
+        { recognitionSessionId: "s1" },
+      );
+    });
+    await assertFails(
+      getDoc(doc(asAlice(), `users/${ALICE}/equipment_identity_latest_session/current`)),
+    );
+  });
+
+  test("client create is refused", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), `users/${ALICE}/equipment_identity_latest_session/current`), {
+        recognitionSessionId: "s1",
+      }),
+    );
+  });
+
+  test("server/admin write succeeds", async () => {
+    await assertSucceeds(
+      env.withSecurityRulesDisabled(async (ctx) => {
+        await setDoc(
+          doc(ctx.firestore(), `users/${ALICE}/equipment_identity_latest_session/current`),
+          { recognitionSessionId: "s1" },
+        );
+      }),
+    );
+  });
+});
+
 describe("P1.G1: equipment_identity_telemetry — fully server-internal", () => {
   test("client read is refused", async () => {
     await env.withSecurityRulesDisabled(async (ctx) => {
@@ -949,6 +982,9 @@ describe("P1.G1: top-level catalog authority collections — server/admin only",
     "equipment_catalog_publish_jobs",
     "equipment_catalog_versions",
     "equipment_catalog_active",
+    // P2.G3: derived lookup-key index (functions-equipment-identity/src/p2/text_key_index.ts).
+    // Same server/admin-only posture as every other catalog collection above.
+    "equipment_model_text_keys",
   ];
 
   for (const coll of catalogCollections) {

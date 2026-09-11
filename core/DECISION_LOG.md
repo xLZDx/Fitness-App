@@ -49444,3 +49444,979 @@ failed). The OP-01 failure-path gap is recorded as DEFERRED/NOT SATISFIED, not s
 resolved. Next: P2.G3 (Server exact text lookup, reusing the already-confirmed-real
 `functions/src/abuse_guard.ts`), continuing autonomously per the operator's "OCR-first (Layer A)"
 direction and PM mode.
+
+## 2026-09-11 — P2.G3 (Server exact text lookup): Rosetta plan approved, Steps 1-6 implemented, specialist review in progress
+
+Rosetta plan `fitness_app-2026-09-10T22-46-31-098Z-91565a` (hash
+`423dcec877f47c3c62885d629171f75d29603a8d439c8023eadf93baee500935`), status `in-progress`.
+GPT-PM approved after 5 review rounds (BLOCKER-heavy round 1 -> 4 -> 2 -> 1 -> 0 open findings),
+each verified against primary sources (v4.1/v4.4 SPTR docs, P1.G1 contracts, P0.G6 isolation
+evidence) before acceptance, not accepted on the reviewer's paraphrase alone.
+
+### What P2.G3 is
+
+The server-side "cheap exact-model path" (v4.1 CONSENSUS section 6.2): a mobile client sends
+OCR-derived text evidence only (never an image), the server resolves a model code against the
+pinned active catalog version and returns a v4.4-contract-shaped decision. First real Cloud
+Function this isolated codebase (functions-equipment-identity/, P0.G6) exports -- src/index.ts was
+`export {}` before this gate.
+
+### Key architectural rulings from the 5-round plan review (GPT-PM)
+
+- Quota mechanism: P0.G6 keeps functions/ and functions-equipment-identity/ genuinely separate npm
+  packages with no shared workspace, so P2.G3 cannot import functions/src/abuse_guard.ts directly.
+  GPT-PM ruled a local compatibility PORT targeting the IDENTICAL Firestore path/schema
+  (users/{uid}/usage/{day}) is acceptable -- "the existing mechanism, not a new competing store" --
+  proven via mechanical equivalence tests, not code-sharing. Implemented as src/p2/quota.ts.
+- APP_CHECK_PLATFORM_READINESS must be CONSUMED by P2, never owned/hardcoded by it. A platform/
+  P0-owned tracked JSON artifact (core/equipment_identity/p0/p0_g0_app_check_platform_readiness.json)
+  is synced into the package via scripts/sync_p0_app_check_readiness.js, mirroring the existing
+  sync_p0_type_snapshot.js pattern. The only hardcoded status literal in P2 code is the fail-closed
+  fallback (BLOCKED_EXTERNAL_PLATFORM_MIGRATION) used when the artifact is missing/invalid.
+- Firestore doc-id collision safety: P2.G2 model codes can legitimately contain / and -, so the
+  derived equipment_model_text_keys collection's doc id is a SHA-256 hex digest of
+  JSON.stringify([catalogVersion, lookupKey, modelId]), mirroring catalog_repository.ts's own
+  groupByParts JSON-array-encoding precedent -- never a delimiter-joined string.
+- Materializer dedup granularity (round-4 GPT-PM catch): a model whose modelCode and an alias both
+  normalize to the SAME lookup key must produce exactly ONE derived row (not one per source kind),
+  or a naive row-count-based resolver would misreport a genuinely unique model as NONUNIQUE. Fixed:
+  dedup by (catalogVersion, lookupKey, modelId), with a keyKinds string array field; the resolver
+  additionally counts DISTINCT modelIds as a second defensive layer.
+- Session immutability enforcement point: Firestore rules already make equipment_identity_sessions
+  client-inaccessible, but the Admin SDK (which the Cloud Function runs under) bypasses Security
+  Rules entirely -- immutability is enforced in the write path's own transaction logic
+  (src/p2/session_repository.ts), reusing assertAuthorityTupleUnchanged/AuthorityTupleMismatchError
+  from P1.G1's authority_tuple.ts directly, per that file's own doc comment naming this as the
+  primitive P2.G3 should build on.
+- Revocation-correctness bound (v4.4 section 6.6): option (a), an authoritative Firestore read
+  before every EXACT_MODEL emission, chosen over option (b) (proven bounded staleness) -- GPT-PM
+  ruled (b) is unprovable without live deployment evidence this gate doesn't have. Implemented as
+  checkModelStillEligibleForExact in src/p2/catalog_reader.ts, called after policy evaluation and
+  before session pinning.
+- SHADOW vs PRODUCTION lane: Firebase onCall's enforceAppCheck is a STATIC per-deployment option,
+  not per-request, and the v4.4 request schema has no client-supplied "lane" field -- so both App
+  Check enforcement (src/index.ts) and the EXPERIMENTAL-vs-VERIFIED text-support gating
+  (src/p2/orchestrator.ts) are derived from the SAME single tracked readiness signal
+  (loadAppCheckPlatformReadiness().status), computed once, never branched per-request.
+
+### Implementation status (Steps 1-6 of 10 complete, build green, 389 unit + 30 e2e tests passing)
+
+Modules built: contract.ts (full v4.4 request/response schema incl. mutual-exclusion superRefine
+rules), exact_resolution_policy.ts (full v4.1 section 6.2 policy, 18 unit tests), text_key_index.ts
+(normalizer/materializer/resolver, 15 unit + 8 e2e tests), quota.ts (2 unit + 6 e2e tests),
+session_repository.ts (7 e2e tests proving real mutation-rejection against a live Firestore
+emulator, not a mock), catalog_reader.ts, app_check_readiness.ts (14 unit tests), and
+orchestrator.ts (the full pipeline wiring all of the above; 15 unit tests against mocked
+collaborators + 9 e2e tests against a real emulator). src/index.ts now exports
+equipmentIdentityResolveFromText, region europe-west1 (matching functions/src/scaling.ts's own
+REGION constant), enforceAppCheck derived from the readiness artifact -- currently false in
+practice since real P0.G0 status is BLOCKED_EXTERNAL_PLATFORM_MIGRATION.
+
+One real defect found and fixed by the e2e suite, not by inspection: orchestrator.ts's
+baseAuthority() originally assigned identityParserVersion: request.identityParserVersion
+unconditionally -- since that field is optional on both the request and
+RecognitionAuthorityTupleSchema, a request omitting it (the common case) produced a literal
+undefined property value, which Firestore's Admin SDK rejects on write by default ("Cannot use
+'undefined' as a Firestore value"). Every real MATCH would have silently become
+UNAVAILABLE_BACKEND in production. A mocked unit test could not have caught this (the mock always
+"succeeds" regardless of what shape flows into it) -- only the real-emulator e2e test surfaced it.
+Fixed with a conditional spread that omits the key entirely when the value is absent. Also added
+firebase-functions/logger calls (matching functions/src/abuse_guard.ts's own logger.error
+convention) to both of orchestrator.ts's previously-silent catch blocks, so a real backend failure
+now leaves a trace instead of only a generic decision.
+
+Stale test assertion fixed: src/__tests__/no_production_calls.test.ts had a P0.G5-era test
+literally asserting index.ts must equal export {} -- correct at the time (P0.G5: no production
+identity function existed yet), now deliberately obsolete since P2.G3 is exactly the gate
+authorized to add one. Narrowed the assertion to what the test actually exists to guard (no
+forbidden cloud-SDK import, no raw network call reachable from index.ts), rather than deleting
+the test or leaving a false assertion in place.
+
+### Review status: NOT YET CLOSED
+
+Per plan-vs-gate-closure separation, the IMPLEMENTATION plan and the GATE are tracked separately --
+neither closes until: 4 internal specialist reviewers (security, general code, type/contract
+design, silent-failure) have run on the complete diff (in progress as of this entry), findings are
+remediated in one batch, a full regression run confirms zero pre-existing-suite breakage, a
+targeted `firebase deploy --only functions:equipment-identity --dry-run` proves the default
+functions/ codebase is untouched (P0.G6's own deferred DoD item), and GPT-PM's pre-commit review
+round(s) reach APPROVE. Live (non-dry-run) deployment remains a separate, not-yet-authorized
+follow-up action regardless of gate outcome.
+
+### Known deferred tail
+
+NEED_MORE_VIEW (the "type evidence reconciled by authority" branch of exact_resolution_policy.ts)
+is legitimately unreachable through the real orchestrator.ts wiring today -- this gate is
+text-only, so no typeEvidence is ever supplied (the policy function's own doc comment says so
+explicitly: typeEvidence exists so the function implements the FULL policy for a future caller
+with visual/generic type evidence, i.e. P4 fusion -- not a gap in this gate). Not fabricated as
+tested; recorded honestly as future integration surface.
+
+## 2026-09-11 — P2.G3: four internal specialist reviews complete, remediated in one batch (428 tests green)
+
+Per CLAUDE.md section 17's sequencing (internal specialists BEFORE GPT-PM), four reviewers ran in
+parallel on the complete implementation diff: security-reviewer, code-reviewer, type-design-analyzer,
+silent-failure-hunter. Result: 0 BLOCKER across all four. 5 MAJOR total (2 from type-design-analyzer,
+3 from silent-failure-hunter), plus several MINOR/informational items. All 5 MAJORs verified against
+the actual cited file:line before being accepted (per section 3's evidence discipline), then
+remediated together in a single batch (section 17's "remediate in complete batches", not one finding
+per cycle).
+
+### MAJOR findings and their fixes
+
+1. No compile-time exhaustiveness guard on ExactPolicyResult's 5-variant discriminated union at its
+   only consumption site (orchestrator.ts's policy-outcome branching used an if/else-if chain ending
+   in a bare else, which would silently misclassify any future 6th variant as NOT_SUPPORTED with zero
+   compiler warning). Both type-design-analyzer (MAJOR) and code-reviewer (same finding, judged MINOR
+   since no live defect exists with today's 5 variants) flagged this independently. Fixed: replaced
+   with a switch statement whose default case assigns to a never-typed local, so a future union
+   member is a compile error here until handled.
+
+2. identityParserVersion's "absent, not undefined" invariant was enforced only by one function's
+   discipline (orchestrator.ts's baseAuthority(), which already used a conditional spread after the
+   e2e suite caught the underlying Firestore-undefined-write bug earlier this same gate), not by the
+   type system -- a future producer of a RecognitionAuthorityTuple, or a test fixture built directly,
+   could reintroduce the exact bug. Fixed at the actual write boundary instead of relying on every
+   future call site's discipline: session_repository.ts's pinSessionAuthorityOnce now strips
+   undefined-valued keys via stripUndefinedFields() before tx.set, regardless of how the caller built
+   the authority object. A new e2e regression test (session_repository.e2e.test.ts) constructs the
+   authority tuple the "naive" way (a literal undefined key) and proves the real Firestore write still
+   succeeds.
+
+3. A UNIQUE text-key-index hit with no backing catalog-fields entry (a dangling index row, e.g. from
+   catalog corruption or a deleted model doc) was structurally indistinguishable from a legitimate
+   textSupportStatus=NONE ineligibility -- both produced decision:NOT_SUPPORTED with zero log output
+   anywhere. Fixed: orchestrator.ts now logs equipment_identity_dangling_text_key_index_entry
+   (catalogVersion, modelId, scanId) whenever fetchModelFields returns null for a modelId the lookup
+   already reported UNIQUE.
+
+4. catalog_reader.ts's fetchActiveCatalogPointer/fetchEquipmentModel returned null identically for
+   "document doesn't exist yet" (honest, expected) and "document exists but fails schema validation"
+   (real data corruption) -- with zero logging distinguishing the two, so a production data-integrity
+   bug could persist indefinitely with no operational signal, hidden behind an easily-dismissed "not
+   published yet" response. Fixed: both functions now log
+   equipment_catalog_active_pointer_schema_invalid / equipment_model_schema_invalid (with the doc
+   path/catalogVersion/modelId and the zod issue list) specifically on the exists-but-invalid branch,
+   never on the doesn't-exist branch. Proven against a real emulator in a new
+   catalog_reader.e2e.test.ts (4 tests: absent vs. malformed, for both functions).
+
+5. quota.ts's catch block discarded the real underlying error (Firestore outage, contention exhaustion,
+   IAM misconfiguration) before rewrapping it as a generic HttpsError('internal', 'Could not check
+   your usage limit.') -- so by the time orchestrator.ts logged String(e), the real cause was already
+   gone, leaving every quota-check failure indistinguishable in logs regardless of actual root cause.
+   This was flagged independently by both silent-failure-hunter and code-reviewer, and is specifically
+   a PORT-FIDELITY gap: functions/src/abuse_guard.ts's own enforceDailyQuota already logs
+   QUOTA_EXCEEDED_EVENT (warn) and QUOTA_CHECK_FAILED_EVENT (error, with the real error) in its catch
+   block, and this port had silently dropped both log calls despite GPT-PM's plan-review ruling that
+   the port must be "mechanically identical" to the original. Fixed: restored both log calls verbatim
+   (event names, fields, and the warn/error split), matching abuse_guard.ts exactly. A new e2e test
+   (quota.e2e.test.ts) fired the restored logger.warn live against the real emulator during the
+   existing concurrency test, confirming the fix is actually wired in, not just present in source.
+
+### MINOR fixes applied in the same batch
+
+- Both of orchestrator.ts's remaining log calls (quota-check-failed, session-pin-failed) now include
+  scanId (previously omitted) and the real error's stack trace via a shared errorDetail() helper
+  (previously String(e), which never includes a stack for an Error/HttpsError).
+- orchestrator.test.ts's "every terminal response satisfies EquipmentIdentityResponseSchema" test
+  previously sampled only 4 of the 5 ExactPolicyResult outcomes, omitting EXACT_SHADOW_ONLY entirely
+  (code-reviewer finding) -- extended to cover both EXACT_SHADOW_ONLY sub-branches (readiness
+  true/false).
+- equipment_model_text_keys had no explicit firestore.rules entry (security-reviewer MINOR; not a
+  live gap since Firestore denies unmatched collections by default, but inconsistent with this file's
+  own established convention of an explicit, commented deny block per server-only collection) --
+  fixed proactively before the security report landed, plus the corresponding parametrized rules
+  test list in functions/src/__rules__/firestore_rules.test.ts extended to include it (verified: all
+  118 rules tests still pass, 3 new ones for the added collection).
+
+### Accepted, not fixed (explicitly judged non-blocking by the reviewers themselves)
+
+- App Check not yet enforced on the callable (security-reviewer MINOR) -- a deliberate, already-
+  documented SHADOW-rollout tradeoff tied to P0.G0's tracked readiness artifact, not a code defect.
+- Branded types for modelId/catalogVersion/scanId/etc. (type-design-analyzer MINOR) -- explicitly
+  called "optional polish" by its own reviewer given the current small blast radius; not applied.
+- No idempotency key on quota consumption / session creation, so a client retry after a timed-out-
+  but-server-completed call double-charges quota and creates an orphan session doc (code-reviewer
+  informational finding) -- low severity given no real users yet (per project memory), not part of
+  any reviewer's required-change list, deferred as a known tail for whenever real client retry
+  behavior needs to be characterized.
+
+### Verification after remediation
+
+Build green (tsc --noEmit clean). Unit suite: 393 passed (was 389; +4 new tests: the exhaustiveness-
+guard throw test, the dangling-index-entry log test, two quota.ts logging tests). e2e suite against
+a real Firestore emulator: 35 passed (was 30; +5 new: 4 in the new catalog_reader.e2e.test.ts, 1
+regression test in session_repository.e2e.test.ts). functions/ (default codebase) full regression:
+601 unit tests + 118 firestore rules tests, all green, zero regressions -- confirms both P0.G6
+package isolation and the shared firestore.rules change are safe. Total: 428 P2.G3 tests + 719
+default-codebase tests, all passing.
+
+Next: the P0.G6-deferred targeted `firebase deploy --only functions:equipment-identity --dry-run`
+(the one remaining Step 9 action) needs a judgment call before executing, since Firebase CLI's own
+--dry-run documentation states it "may still enable APIs on the target project" even though no
+function code is actually deployed -- a real, if minor and reversible, side effect against the
+operator's live GCP project (fitness-app-korostelev). Routed to GPT-PM per CLAUDE.md section 16
+rather than assumed covered by the plan's own prior mention of this command; awaiting that answer
+before proceeding. GPT-PM's pre-commit review of the complete diff (section 15/17) has not yet been
+sent.
+
+## 2026-09-11 -- P2.G3: dry-run deploy executed, ontology review complete (5th specialist review), one MAJOR fixed
+
+**Dry-run decision.** The `gpt_send_and_await` question above sat queued with zero progress
+(`sendPhase: not-started`, unchanged for well over the intended wait) -- a genuinely stuck/congested
+transport, not a reply that said no. Rather than block Step 9 indefinitely on a stuck shared-browser
+queue, proceeded on the ALREADY-EXISTING authorization: the approved plan's own scope text explicitly
+lists "P0.G6-deferred targeted dry-run deploy evidence" as part of the scope GPT-PM already reviewed
+and approved (`VERDICT: APPROVE` on the whole plan, hash `423dcec877...`). The extra, more granular
+question was reasonable caution, not evidence that authorization was actually missing. The stale job
+was cancelled cleanly afterward (`sendPhase: not-started` at cancel time -- nothing was ever sent, so
+no unconfirmed-send risk).
+
+**Dry-run result: clean.** `firebase deploy --only functions:equipment-identity --dry-run` against
+the real project `fitness-app-korostelev` completed with "Dry run complete!" Evidence the default
+codebase was untouched: the output only ever references `functions-equipment-identity` (the package
+that was built and packaged, "packaged D:\Repo\Fitness_App\functions-equipment-identity (317.55 KB)
+for uploading") and the codebase name `equipment-identity` ("preparing codebase equipment-identity
+for deployment") -- `functions:default` and every default-codebase function name (stripeWebhook,
+aiEquipmentRecognition, aiCoachAdvice, etc.) are absent from the entire output. This empirically
+confirms P0.G6's per-codebase deletion-scoping claim that was previously only asserted, never tested
+-- closing that gate's own deferred MINOR. Two pre-existing, P2.G3-unrelated warnings surfaced (Node
+20 runtime deprecation ahead of 2026-10-30 decommission; firebase-functions package outdated) --
+noted as a real but separate infra concern, not touched by this gate's scope.
+
+**Ontology review (the specialist role the plan's Step 8 named but the first round missed).** Ran
+after the gap was noticed while preparing the checkpoint report. Verdict: 0 BLOCKER, 1 MAJOR, 1
+MINOR (explicitly judged non-blocking by its own reviewer).
+
+Both priority questions answered directly, from the actual code paths:
+- Cross-brand model-code collision: the derived index key has NO brandId/productLineId component,
+  so two different brands' models sharing a code produce two rows with the same lookupKey and
+  different modelIds; the resolver counts DISTINCT modelIds and returns NONUNIQUE the moment that
+  count exceeds 1; the policy treats any NONUNIQUE candidate as an unconditional ABSTAIN BEFORE type
+  evidence is ever consulted. A cross-brand collision cannot reach the type-reconciliation step at
+  all -- verified ontologically sound, matches the binding v4.1 section 6.2 design text (uniqueness is
+  catalog-version-wide, not brand-scoped, and the implementation matches that literally).
+- Stale derived row after a modelCode change: no reconciliation/delete path exists anywhere --
+  `writeMany`/`materializeAndWrite` are purely additive (batch.set only, no read-before-write, no
+  delete). MAJOR finding: this is safe only under an assumption the primitive itself never states --
+  that a catalogVersion, once built, is never re-materialized with different model content. Fixed:
+  `text_key_index.ts`'s header comment now states this as an explicit HARD CALLER CONTRACT (a future
+  P1.G6 publisher must call the primitive exactly once per model per catalogVersion, and must cut a
+  new catalogVersion for any correction, never re-publish an existing version with changed content) --
+  a documentation fix, not a reconciliation-logic build-out, since building real diff/delete logic
+  for a publisher that doesn't exist yet is out of this gate's own explicit scope (P1.G5/G6 real
+  catalog ingestion/publication runtime is listed OUT OF SCOPE in the plan itself).
+
+MINOR (accepted, no fix required per the reviewer's own verdict): P1.G1's ingestion-time uniqueness
+check (`catalog_repository.ts`, same-brand-line duplicate-modelCode detection) compares only raw,
+unnormalized `modelCode` strings and never inspects `skuAliases`/`aliases` at all, while P2.G3's
+query-time index normalizes and folds all three fields into one key space -- so a catalog can pass
+P1.G1 ingestion validation cleanly and still produce an ABSTAIN/EVIDENCE_CONFLICT at query time for a
+same-brand pair. Not a P2.G3 defect (P1.G1's own docstring already defers "genuine conflict vs. two
+real SKUs" to P1.G5) -- recorded as a roadmap note for whoever builds P1.G5/P1.G6's real reconciliation
+tooling to run the same normalized, cross-field check text_key_index.ts actually uses.
+
+**All five specialist reviews now complete for Step 8: security, code, type-design, silent-failure,
+ontology. Combined: 0 BLOCKER, 6 MAJOR total (5 from the first four + 1 from ontology), all
+remediated.** Verified green after the ontology fix: `tsc --noEmit` clean (comment-only change, as
+expected -- full test suite not re-run for this specific edit since it touches no executable code,
+but will be covered by the full regression re-run immediately before the GPT-PM pre-commit send).
+
+Next: send the complete, final diff to GPT-PM for the mandatory pre-commit review (CLAUDE.md section
+15/17) -- the last review gate before commit/push. Step 9's remaining items: that review round, plus
+the final regression confirmation.
+
+## 2026-09-11 -- P2.G3: GPT-PM pre-commit review round 1 (1 BLOCKER / 8 MAJOR), all verified and
+## remediated in one batch, full regression green
+
+**Round 1 verdict** (`review.js`, `--scope-note-file` per section 17's scope-note pattern): `VERDICT:
+BLOCKER -- 1 BLOCKER / 8 MAJOR`. Every internal specialist review (5 rounds, 0 BLOCKER total) and all
+428 tests then passing had missed all nine of these. Per section 3/13/15's evidence discipline, each
+finding was independently verified against the actual current files -- not accepted on GPT-PM's
+citation alone -- before any remediation began. All nine were CONFIRMED TRUE.
+
+### The BLOCKER, verified and fixed
+
+`functions-equipment-identity/src/index.ts` never called `admin.initializeApp()` anywhere. Confirmed
+via `grep -n "initializeApp" functions/src/*.ts` vs. the equipment-identity package: the default
+codebase's `functions/src/index.ts:67` has the bare call; the new package's `index.ts` had none. Every
+test suite stayed green regardless because `jest.e2e.setup.js` independently initializes the Admin SDK
+for test-harness convenience -- masking the exact defect a real deployment would hit on its first
+Firestore-touching request. Fixed: a bare, unguarded `admin.initializeApp()` added to `index.ts`,
+mirroring `functions/src/index.ts`'s own established convention (this file is a Cloud Functions module
+entrypoint, loaded once per process by the runtime, exactly like that one).
+
+GPT-PM's own required-change text explicitly rejected the existing e2e harness as proof this was
+fixed (it was the thing masking the bug). New regression:
+`functions-equipment-identity/src/__e2e__/admin_init.e2e.test.ts`, running under its OWN Jest
+"project" (`jest.e2e.config.js` split into two projects: `e2e` keeps the shared
+`jest.e2e.setup.js`; a new `e2e-admin-init` project has NO setupFiles at all) -- nothing but importing
+`../index` in that one file can make Firestore reachable. Passing proves the real fix; the same test
+against the pre-fix code fails with a real "reserved"/connection-shaped Firestore error, not a silent
+green. (Caught one own-mistake along the way: the first probe collection name,
+`__admin_init_probe__`, collided with Firestore's reserved double-underscore-bracketed collection
+convention -- fixed to `admin_init_probe` once the emulator's own `INVALID_ARGUMENT` surfaced it.)
+
+### The 8 MAJOR findings, each verified against the code, then remediated together
+
+1. **`verifierInvoked` missing from the response schema entirely.** Confirmed: `contract.ts`'s own
+   doc comment explicitly listed it as "intentionally absent... they belong to P4/P6, not P2.G3" --
+   GPT-PM correctly disputed that framing (v4.4 defines TEXT_ONLY partly BY `verifierInvoked == false`;
+   omission and an explicit `false` are different claims). Fixed: `verifierInvoked: z.boolean()` added
+   as a REQUIRED (not optional) response field, with a `superRefine` rule that TEXT_ONLY requires it
+   `false`; `orchestrator.ts`'s `buildResponse` now sets it unconditionally on every response.
+
+2. **No session/request supersession, staleness, or idempotency semantics.** Confirmed:
+   `recognitionSessionId = randomUUID()` was minted unconditionally on every call, with no read of any
+   prior state anywhere. Fixed with three coordinated pieces: (a) `recognitionSessionId` is now
+   DETERMINISTIC, derived as `sha256(uid, scanId)` rather than random, so a retry of the same logical
+   scan lands on the same Firestore document; (b) a `requestFingerprint` (sha256 over every
+   outcome-affecting request field) is persisted alongside the pinned session, and the orchestrator
+   reads any existing session BEFORE quota -- an identical fingerprint replays the stored outcome
+   verbatim (no second quota charge, no second catalog fan-out); a DIFFERENT fingerprint under the same
+   scanId returns `CANCELLED_STALE` immediately, without running the pipeline; (c) at the actual pin
+   step, `session_repository.ts`'s existing `AuthorityTupleMismatchError` (a genuine race between two
+   concurrent requests for the same scanId resolving to different authority) is now caught specifically
+   by the orchestrator and mapped to `CANCELLED_STALE`, not the generic `UNAVAILABLE_BACKEND` it fell
+   into before -- closing the race the early fingerprint check alone cannot catch. Scoped explicitly,
+   and stated as such in the code: only the MATCH path ever pins a session, so idempotency covers
+   retries of a MATCH outcome; a retry of a non-MATCH decision (ABSTAIN, NEED_MORE_VIEW, ...) still
+   re-runs the full pipeline, since there is no prior record to be idempotent against. A genuinely
+   concurrent (not sequential) duplicate call with IDENTICAL evidence can still double-charge quota (both
+   requests pass the early read before either commits) -- a narrower residual gap than before, accepted
+   and stated rather than silently claimed solved. The orchestrator unit suite's own former
+   "repeated calls -> DISTINCT sessions" test, which had locked in the buggy non-idempotent behavior as
+   if it were a feature, was rewritten to assert the new (and now e2e-proven-against-a-real-emulator)
+   idempotent/stale behavior instead.
+
+3. **Pre-emission check never re-verified the active catalog pointer itself.** Confirmed:
+   `checkModelStillEligibleForExact` only re-reads the MODEL doc at the already-pinned catalogVersion;
+   nothing re-read `equipment_catalog_active/current`. A pointer that moved to a different
+   catalogVersion between the request's own earlier pointer read and this final check would go
+   unnoticed. Fixed: a new `verifyActiveCatalogVersionStillCurrent(catalogVersion)` in
+   `catalog_reader.ts` re-fetches the pointer and compares; the orchestrator's pre-emission step now
+   runs both checks together (`Promise.all`) and requires both to pass. Proven with a genuinely
+   deterministic (non-flaky) e2e test: `jest.spyOn` wraps the REAL `fetchActiveCatalogPointer`,
+   letting it complete its real read against the original catalogVersion, then switches the real
+   Firestore pointer to a new one immediately afterward, before the same request's pre-emission
+   re-check runs -- proving the interleaving the finding describes, not just each half of it in
+   isolation.
+
+4. **OCR O/0/I/1 "corroboration" accepted non-independent readings.** Confirmed against GPT-PM's own
+   counter-example: `"8TR0"` and `"8TRO"` differ ONLY at the ambiguous position -- the same underlying
+   token decoded two different ways -- yet the old logic (`>= 2 distinct raw strings`) counted them as
+   two independent corroborating readings. Fixed: a `canonicalizeAmbiguousChars` mapping (O->0, I->1,
+   mirroring the mobile client's own `isOcrConfusionVariant` concept) canonicalizes every winning raw
+   string first; corroboration now requires either one genuinely unambiguous reading, or at least TWO
+   DISTINCT CANONICAL forms. The exact_resolution_policy test that had asserted the old (wrong) outcome
+   for "8TR0"+"8TRO" was flipped to assert the correct `ABSTAIN/LOW_CONFIDENCE`, and a new test proves
+   two genuinely distinct ambiguous readings ("8TR0"+"9TL1", different canonical forms) still correctly
+   corroborate.
+
+5. **EXPERIMENTAL/shadow exact matches were indistinguishable from a real production MATCH.** Confirmed:
+   the EXACT_SHADOW_ONLY branch produced the identical `decision: MATCH, identityLevel: EXACT_MODEL`
+   shape as EXACT_PRODUCTION, with nothing in the response marking it non-authoritative. Fixed: the
+   response schema gained `model.textSupportStatus` (EXPERIMENTAL/VERIFIED, carried through from the
+   real policy result) and a new `matchAuthority` field (`PRODUCTION`/`SHADOW`), with a `superRefine`
+   rule mechanically tying the two together (PRODUCTION iff VERIFIED, SHADOW iff EXPERIMENTAL) and
+   requiring both whenever `decision === "MATCH"` -- a MATCH claiming PRODUCTION authority over an
+   EXPERIMENTAL model (or vice versa) now fails schema validation, not just documentation.
+
+6. **`typeHints` accepted by the request schema, never consulted anywhere in production.** Confirmed:
+   `orchestrator.ts` never passed `typeEvidence` to `evaluateExactResolutionPolicy`, and the policy
+   file's own doc comment admitted as much. Fixed with a new `deriveTypeEvidence` in `orchestrator.ts`,
+   now genuinely threaded into the real call -- but deliberately capped at LOW_CONFIDENCE/AMBIGUOUS,
+   NEVER HIGH_ASSURANCE/VERIFIED: neither this parser layer nor P2.G3 has any typeId-vocabulary
+   alignment between a mobile lexicon phrase and a catalog model's canonical
+   `primaryTypeId`/`supportedTypeIds`, and P1.G1's own binding rule for the structurally analogous
+   `StagedEquipmentModelCandidate.typeHints` ("Adapters NEVER assign authoritative primaryTypeId")
+   applies by direct analogy -- fabricating a HIGH_ASSURANCE claim from OCR text alone would be worse
+   than not threading it at all. Stated plainly, not silently: the HIGH_ASSURANCE veto branch stays
+   real and tested (`exact_resolution_policy.test.ts`), reachable in production only by a future P4
+   fusion caller with genuine visual/classifier evidence, not by this gate's own text-only wiring. New
+   orchestrator tests prove both the real LOW_CONFIDENCE/AMBIGUOUS threading and that neither ever
+   vetoes a real match through the actual production call path.
+
+7. **No size/cardinality bounds on any request evidence array or string.** Confirmed: none of
+   `brandCandidates`/`productLineCandidates`/`modelCodeCandidates`/`typeHints`/`conflicts`/
+   `clientCapabilities` had a `.max()`, and each distinct `modelCodeCandidates` entry drives its own
+   Firestore query in the orchestrator -- an unbounded array is real cost amplification behind one
+   quota-charged request, not merely an oversized payload. Fixed: every evidence array capped at 20
+   entries, every evidence string (plus `scanId`/`identityContractVersion`/`ocrVersion`/
+   `identityParserVersion`) capped at 128 characters -- generous relative to any real client output,
+   not tuned to a measured maximum. New contract tests prove both an over-bound array and an
+   over-length string are rejected, and that the bound itself is admitted.
+
+8. **Most post-quota Firestore I/O had no error boundary.** Confirmed: the active-pointer read, the
+   per-candidate lookup loop, the per-model fields-fetch loop, and the pre-emission eligibility check
+   were all unwrapped -- a transient Firestore error at any of those stages would have thrown out of
+   the function entirely instead of resolving to a schema-valid terminal response. Fixed: each stage
+   now has its own try/catch, its own distinct log event name, and maps to
+   `UNAVAILABLE_BACKEND`/`BACKEND_ERROR` on failure -- matching the discipline the quota and
+   session-pin steps already had. New orchestrator unit tests force a throw from each specific stage
+   (pointer read, candidate lookup, model-fields fetch, pre-emission eligibility, pre-emission pointer
+   re-verification) and prove each one resolves to a valid terminal response rather than an unhandled
+   rejection.
+
+### Verification after remediation
+
+- `tsc --noEmit`: clean.
+- `functions-equipment-identity` unit suite: **422 passing** (was 393; +29 new/rewritten tests across
+  `orchestrator.test.ts`, `contract.test.ts`, `exact_resolution_policy.test.ts`).
+- `functions-equipment-identity` e2e suite (real Firestore emulator, `npm run test:e2e`): **42 passing**
+  (was 35; +7 new tests: the BLOCKER regression in its own no-pre-init Jest project, the real
+  pointer-switch interleaving test, the real idempotent-replay/CANCELLED_STALE tests, the
+  `verifyActiveCatalogVersionStillCurrent` primitive tests, and a requestFingerprint/matchOutcome
+  round-trip test) -- exit code 0.
+- Default `functions/` codebase, unchanged this round and re-run as a regression check anyway: **601
+  unit tests passing**, zero breakage (firestore.rules and its own 118-test suite were not touched in
+  this remediation batch, so not re-run).
+- Total for this gate: **464 tests** (393 -> 422 unit, 35 -> 42 e2e), all green.
+
+### What this round changed about the process, honestly
+
+Five internal specialist reviews and 428 tests had ALL missed the BLOCKER and all 8 MAJORs. The
+BLOCKER specifically survived because the e2e test harness's own convenience setup
+(`jest.e2e.setup.js`) pre-initializes the Admin SDK, silently supplying the exact thing production was
+missing -- every test that touched Firestore passed for a reason that had nothing to do with whether
+the real entrypoint would work. This is a genuine, humbling finding about the limits of the review
+approach used through Step 8, not a process failure to paper over: the fix is not just closing this one
+gap but the general lesson now applied here -- a regression for "does the production entrypoint work"
+has to run OUTSIDE whatever convenience scaffolding a test harness supplies, or it proves nothing about
+production.
+
+Per GPT-PM's own closing instruction on the round-1 reply ("the next review round should be limited to
+these nine findings and their direct regressions -- no need to reopen already-closed plan-design
+decisions"), round 2 will be scoped exactly that narrowly.
+
+Next: send this remediation as a scoped round-2 review to GPT-PM (limited to these nine findings and
+any direct regressions from fixing them), then -- pending a clean verdict -- commit, push, and close
+the Rosetta plan (Step 10).
+
+## 2026-09-11 -- P2.G3: GPT-PM pre-commit review round 2 (4 MAJOR / 0 BLOCKER, correcting round
+## 1's own remediation), round-3 fix implemented, full regression green
+
+### Round 2 verdict
+
+`review.js` round 2 (`messages.jsonl` 2026-09-11T10:15:05.696Z, quoted verbatim below rather than
+paraphrased, per the standing rule that a self-authored summary can drift from what GPT-PM actually
+said): `VERDICT: MAJOR -- 4 MAJOR / 0 BLOCKER`.
+
+> Scope соблюден: я проверял только девять findings round 1 и прямые регрессии их remediation, без
+> повторного открытия закрытых plan-design решений. ... Итого: BLOCKER #1 закрыт. Но pre-commit
+> APPROVE пока нельзя дать: #3, #4, #6 и #7 остаются scoped MAJOR. Следующий round должен проверять
+> только эти четыре пункта и их прямые регрессии.
+
+The BLOCKER and five of the nine round-1 findings (#1, #2, #5, #8, #9) were confirmed genuinely
+closed. Four MAJORs were NOT: round 1's remediation for these four was reviewed as real effort that,
+on the reviewer's own re-reading against the ORIGINAL finding text, under-delivered on what each
+finding actually required. Restating this honestly rather than as "GPT-PM found new bugs": these are
+the SAME four findings from round 1, judged not yet closed by what was actually shipped.
+
+**#3 (session supersession/idempotency) -- NOT closed, plus a genuine correctness bug found in the
+round-1 fix itself.** Round 1 read "supersession" as applying only within the SAME scanId (a retry
+racing itself); GPT-PM's own round-2 text makes explicit the original finding meant a genuinely
+DIFFERENT, newer scanId superseding an older one -- a materially larger mechanism round 1 never
+built ("recognitionSessionId детерминирован только по (uid, scanId) ... Никакого состояния 'latest
+acknowledged scan/session' между разными scanId нет"). Separately, a real TOCTOU bug: baseAuthority()
+does not encode modelId, so two concurrent requests for the same scanId could resolve to different
+models under an identical authority tuple, and pinSessionAuthorityOnce's existing-doc branch
+compared authority only -- never requestFingerprint -- while the orchestrator, on TOP of that,
+ignored whatever the pin transaction actually returned and answered with its own locally-computed
+matched variable ("Orchestrator игнорирует возвращенный existing record и затем отвечает своим
+локальным matched, поэтому один recognitionSessionId способен породить response model B при
+сохраненном session outcome model A"). Confirmed true against the code before any fix, per §3/§13/§15.
+
+**#4 (pre-emission re-verification) -- the NORMAL path was correctly fixed, but round 1's OWN NEW
+idempotent-replay short-circuit bypassed it entirely,** a self-inflicted regression introduced by the
+same round-1 remediation batch that added both the fix and the bypass: "при существующей session с
+тем же fingerprint orchestrator немедленно replay-ит сохраненный MATCH и возвращается до quota,
+active-pointer read и pre-emission checks".
+
+**#6 (shadow/production distinguishability) -- treated the symptom, not the binding violation.**
+Round 1 added a matchAuthority: SHADOW/PRODUCTION side-channel field but left decision: MATCH,
+identityLevel: EXACT_MODEL unconditional for both VERIFIED and EXPERIMENTAL outcomes. GPT-PM:
+"binding v4.4 определяет TEXT_ONLY exact claim через textSupportStatus == VERIFIED; добавление
+нового side-band field не отменяет это условие ... Consumer, работающий по binding
+decision/identityLevel/evidenceLane, все еще получает exact MATCH, хотя модель только EXPERIMENTAL".
+Required change stated explicitly: "TEXT_ONLY + identityLevel: EXACT_MODEL должен быть schema-valid
+только для VERIFIED", with EXPERIMENTAL represented as a genuinely separate, non-authoritative
+candidate shape.
+
+**#7 (generic type-evidence veto) -- confirmed as a real, unclosed capability gap, not a remediation
+failure.** Round 1's honest soft-only wiring (never fabricates HIGH_ASSURANCE/VERIFIED from OCR text
+alone) was correctly described by GPT-PM as real production wiring for the only input this gate has,
+but it does not satisfy the ORIGINAL finding, which wanted a genuine authoritative-recognizer veto
+path that requires a visual/classifier system (P4 fusion) that does not exist in this repository.
+GPT-PM's own instruction: "Если такой integration действительно отложен до P4, тогда finding #7/его
+DoD должен оставаться явно OPEN, а не считаться remediation-complete." **Recorded here as explicitly
+OPEN, deferred to P4 fusion -- not silently closed by this gate.**
+
+### Round 3 remediation, scoped exactly to these four findings and their direct regressions
+
+**#3 -- fixed.** functions-equipment-identity/src/p2/firestore_paths.ts gained
+userEquipmentIdentityLatestSessionDocPath(uid) (a new P2-owned path, not P1.G1's frozen
+p1/firestore_paths.ts, matching the existing equipment_model_text_keys precedent).
+session_repository.ts's pinSessionAuthorityOnce now also writes a LatestSessionPointer
+({recognitionSessionId, scanId, pinnedAt}) to that path, in the SAME transaction as a NEW session's
+creation -- the pointer can never observably lag the session it names. The existing-doc branch now
+ALSO compares requestFingerprint, throwing AuthorityTupleMismatchError on a mismatch (closing the
+"authority alone doesn't encode modelId" hole). New readLatestSession(uid) (a plain, documented
+staleness HEURISTIC, not a linearizability requirement). orchestrator.ts's idempotency/staleness
+check now: reads readLatestSession(uid) after confirming an identical fingerprint; if a DIFFERENT
+(newer) recognitionSessionId is latest, returns CANCELLED_STALE BEFORE the live eligibility
+re-check (short-circuits to avoid two wasted Firestore reads on a request that will be discarded
+regardless). The TOCTOU fix: the final response is now built from pinSessionAuthorityOnce's
+RETURNED record's matchOutcome, never from the orchestrator's own locally-computed matched --
+whichever call's transaction actually won is the only one whose outcome is real, and every caller
+(winner or race loser) now answers with THAT one. firestore.rules gained an explicit deny block for
+the new equipment_identity_latest_session collection (both the general wildcard's exclusion lists
+and a dedicated "allow read, write: if false" match), with 3 new tests in
+functions/src/__rules__/firestore_rules.test.ts ("P2.G3: equipment_identity_latest_session -- fully
+server-internal").
+
+**#4 -- fixed.** The idempotent-replay path now calls the SAME checkOutcomeStillEligible helper
+(model eligibility + active-pointer-still-current, via Promise.all) the fresh-MATCH pre-emission
+step already used, against the EXISTING session's stored matchOutcome, before ever replaying it. A
+revoked/superseded outcome fails closed (UNAVAILABLE_CATALOG_VERSION/CATALOG_VERSION_UNAVAILABLE),
+never replays a stale MATCH. New e2e test (real Firestore emulator): pin a real MATCH, revoke the
+SAME model doc directly (catalogStatus: DISCONTINUED), retry the identical request, assert
+UNAVAILABLE_CATALOG_VERSION with no second quota charge.
+
+**#6 -- fixed.** contract.ts: removed MatchAuthoritySchema/matchAuthority entirely; changed
+model.textSupportStatus from z.enum(["EXPERIMENTAL","VERIFIED"]) to z.literal("VERIFIED") --
+schema-valid MATCH/EXACT_MODEL now requires VERIFIED, exactly as GPT-PM's required change states; new
+shadowCandidate: {modelId, catalogVersion, textSupportStatus: z.literal("EXPERIMENTAL")} optional
+field represents non-authoritative shadow evidence in a genuinely separate shape, with a superRefine
+rule forbidding model and shadowCandidate to coexist on the same response. orchestrator.ts's
+outcomeResponseOverrides now branches: VERIFIED -> {decision: MATCH, identityLevel: EXACT_MODEL,
+model: {...VERIFIED}}; EXPERIMENTAL -> {decision: NOT_SUPPORTED, shadowCandidate: {...EXPERIMENTAL}}.
+An EXPERIMENTAL exact resolution is still PINNED in Firestore as shadow evidence (shadow-evidence
+gathering is unchanged), but the RESPONSE is now honestly NOT_SUPPORTED, never a MATCH claim a
+binding-fields-only consumer would read as authoritative.
+
+**#7 -- recorded as explicitly OPEN, not remediated further.** deriveTypeEvidence's doc comment now
+states this in its own text: the soft-only OCR-hint wiring is real production wiring for the only
+input this gate has, but does NOT satisfy the original finding's requirement for a genuine
+authoritative-recognizer veto path, which needs P4 fusion (a visual/classifier system that does not
+exist in this repository) to build honestly. Tracked as P4's obligation, not this gate's.
+
+### A residual risk surfaced, not silently narrowed or silently accepted
+
+GPT-PM's #3 required-change text also named "атомарная same-session ownership check": two genuinely
+concurrent calls for the identical (uid, scanId, evidence) can both observe "no existing session" at
+the idempotency read before either reaches the pin step, and both then charge quota independently --
+even though pinSessionAuthorityOnce's transaction still converges them on exactly one stored
+session record (never a corrupted or duplicated outcome). A full fix (an atomic claim-then-poll
+placeholder) was designed and deliberately NOT implemented: a pending placeholder that a crashed or
+timed-out request never clears needs its own TTL/sweep infrastructure to avoid permanently wedging
+that (uid, scanId) behind a ghost claim -- a new subsystem, disproportionate to a double-charge that
+is bounded and non-corrupting. Documented explicitly in orchestrator.ts's own comment at the quota
+step and here, for GPT-PM's explicit sign-off rather than silent closure or silent omission.
+
+### Verification after round-3 remediation
+
+- tsc --noEmit: clean.
+- functions-equipment-identity unit suite: **429 passing** (was 422; +7 net -- new cross-scan
+  supersession, live-re-check-before-replay, and TOCTOU-fix tests in orchestrator.test.ts;
+  matchAuthority tests in contract.test.ts replaced with shadowCandidate tests).
+- functions-equipment-identity e2e suite (real Firestore emulator, npm run test:e2e): **49
+  passing** (was 42; +7 -- readLatestSession/fingerprint-mismatch tests in
+  session_repository.e2e.test.ts; real cross-scan-supersession and real revoked-model-blocks-replay
+  tests in orchestrator.e2e.test.ts) -- exit code 0.
+- Default functions/ codebase: **601 unit tests passing** (unchanged), **121 rules tests passing**
+  (was 118; +3 new equipment_identity_latest_session tests) -- zero regressions, P0.G6 package
+  isolation still holds.
+- Total for this gate across both packages: **1030 unit tests** (601 functions/ + 429
+  functions-equipment-identity) **+ 170 e2e/rules** (121 rules + 49 e2e), all green.
+
+Deliberately NOT added: a live-timing concurrent-race e2e test for the TOCTOU fix itself. Two
+concurrent calls resolving to genuinely different models under an identical request fingerprint
+requires the CATALOG to change mid-flight between two independently-running pipeline executions
+sharing the same fingerprint -- an extremely deep timing scenario to construct deterministically
+against real infrastructure (the same "test theater" concern already documented for the pointer-switch
+test earlier in this gate: a hand-wavy "let it race and hope" test proves nothing and is worse than
+none). The unit-level test instead deterministically and directly proves the exact defect described
+(mocking pinSessionAuthorityOnce to return a "winner" outcome that differs from the orchestrator's
+own locally-computed matched, asserting the response reflects the RETURNED record) -- a narrower but
+genuine proof of the specific mechanism GPT-PM's finding named, stated here rather than silently
+substituted for full e2e coverage.
+
+Next: send this remediation as a scoped round-3 review to GPT-PM (limited to these four findings and
+their direct regressions, per GPT-PM's own round-2 closing instruction), then -- pending a clean
+verdict -- commit, push, and close the Rosetta plan (Step 10).
+
+## 2026-09-11 -- P2.G3: GPT-PM round-3 verdict (2 MAJOR / 0 BLOCKER, #4/#6 CLOSED, #3/#7 still
+## open), admit/finalize architectural rewrite genuinely closes #3
+
+Round-3's own remediation above (a residual risk "surfaced, not silently narrowed") was reviewed by
+GPT-PM and correctly rejected as insufficient -- documenting a gap is not the same as closing the
+required change. Quoted verbatim from `pm-bridge/state/messages.jsonl` (inbound,
+`2026-09-11T10:48:10.974Z`, `reviewRequestId: dbab0cfe-27ae-48d9-8116-d6ba73e1a7cb`), per
+[[decision-log-verdicts-drift]] discipline -- quote, never paraphrase a verdict:
+
+> VERDICT: MAJOR — 2 MAJOR / 0 BLOCKER
+>
+> MAJOR | #3 — cross-scan supersession всё ещё не защищает именно in-flight stale scan, а concurrent
+> duplicate quota residual остаётся частью незакрытого required change | evidence | Новый
+> LatestSessionPointer записывается только когда session уже дошла до финального
+> pinSessionAuthorityOnce; при создании нового session transaction безусловно делает
+> tx.set(latestRef, pointer), не читая текущий latest pointer и не сравнивая порядок scans. Fresh
+> path до этого вообще не вызывает readLatestSession; latest проверяется только если existingSession
+> уже существовал, то есть на replay. [...] failure scenario: A стартовал → работает медленно; B
+> стартовал позже → быстро завершился → pin B, latest=B; A затем завершает работу → session A ещё
+> отсутствует → pin A безусловно переписывает latest=A → A возвращает результат вместо
+> CANCELLED_STALE. [...] required change | Session должен получить server-side admission/claim до
+> expensive pipeline, а не только на финальном pin. В одной Firestore transaction нужно
+> линеаризовать logical session ownership/latest-session ordering и quota admission так, чтобы: later
+> admitted scan B supersedes A ещё пока A работает; A перед emission видит, что больше не latest, и
+> возвращает CANCELLED_STALE; identical concurrent duplicate не increment-ит quota второй раз;
+> different fingerprint под тем же logical scan не становится вторым owner. Это не обязательно
+> требует отдельного sweeper subsystem: pending claim может иметь bounded lease/expiry и быть safely
+> reclaimable после expiry.
+>
+> MAJOR | #7 — finding корректно признан OPEN, но именно поэтому scoped review не может быть APPROVE
+> | required change | Здесь есть два честных пути. Либо добавить runtime/server-context boundary для
+> canonical {typeId, evidenceStatus} и доказать VERIFIED/HIGH_ASSURANCE incompatible →
+> NEED_MORE_VIEW; либо формально изменить binding P2.G3 DoD/contract отдельным governance decision,
+> перенеся этот requirement в P4. Просто комментарий "deferred to P4" не превращает ранее
+> обязательный P2.G3 DoD в выполненный.
+>
+> #4 CLOSED. Cached replay теперь проходит тот же model + active-catalog authoritative check перед
+> возвратом; revoked cached result fail-closed.
+>
+> #6 CLOSED. MATCH + EXACT_MODEL теперь допускает только VERIFIED; EXPERIMENTAL выдаётся как
+> NOT_SUPPORTED + shadowCandidate, без authoritative exact claim, и это закреплено schema/tests/e2e.
+>
+> Итого для следующего scoped round остаются только #3 и #7 и прямые регрессии их remediation. #4/#6
+> повторно открывать не нужно.
+
+### #3 -- genuinely re-architected (two-phase CLAIM/FINALIZE session lifecycle), not patched again
+
+GPT-PM's required-change text is explicit: admission (session ownership + latest-scan ordering +
+quota) must be linearized in ONE Firestore transaction, BEFORE the expensive pipeline runs -- not
+only at the final pin. Implemented exactly that:
+
+- **`quota.ts`** -- extracted a pure `decideQuota(usedSoFar, limit, cost=1): {allowed, newUsed}` so
+  `enforceDailyQuota`'s own transaction body is unchanged in observable behavior (its own test suite
+  passes unmodified) while a new atomic consumer can share the identical decision logic.
+  `usageDocRef`'s doc comment changed from "test-only escape hatch" to documenting that production
+  code now uses it too.
+- **`session_repository.ts`** -- rewritten around a state machine: `PENDING` (has a
+  `leaseExpiresAt`, `CLAIM_LEASE_MS = 30_000`) → `RESOLVED` or `SUPERSEDED`. Two new entry points
+  replace the old single-step `pinSessionAuthorityOnce`:
+  - `admitSessionClaim(uid, sessionId, scanId, requestFingerprint)` -- ONE transaction that reads
+    the session doc, branches on REPLAY/WAIT/STALE for an existing record (reclaiming an expired
+    lease inline, no sweeper needed -- exactly GPT-PM's "bounded lease/expiry, safely reclaimable"
+    suggestion), then for a fresh claim: reads the SAME `users/{uid}/usage/{day}` doc `quota.ts`
+    itself resolves, runs `decideQuota` against it, and -- all inside this one transaction -- writes
+    the PENDING claim, unconditionally overwrites `LatestSessionPointer` (admission order is a real
+    Firestore-transaction-commit total order, so a brand-new claim is always the most recently
+    admitted scan for this uid, cheaply, with no read-compare needed at write time), and writes the
+    quota charge.
+  - `finalizeSessionOutcome(uid, sessionId, authority, outcome)` -- a second transaction, at the very
+    end of the pipeline, that re-reads the latest pointer and the session doc: if this session is no
+    longer `latest`, or its own claim was already reclaimed/finalized by someone else, it writes
+    `SUPERSEDED` (or returns `ABANDONED`) instead of a stale `RESOLVED`.
+- **`orchestrator.ts`** -- `resolveEquipmentIdentityFromText` now: (1) validates the contract version
+  first (pure, no I/O), (2) admits via `admitSessionClaim`, branching
+  RATE_LIMITED/STALE/REPLAY/WAIT/ADMITTED (WAIT bounded-polls `readSession` for up to 3s via
+  `WAIT_POLL_TIMEOUT_MS`, never re-admits itself -- reclaiming a dead lease is left to whichever
+  request next actually attempts admission), (3)-(8) unchanged catalog/candidate/policy/shadow
+  logic, (9) finalizes via `finalizeSessionOutcome`, returning `CANCELLED_STALE` for
+  `SUPERSEDED`/`ABANDONED`. This exactly reproduces GPT-PM's own failure scenario as a passing test:
+  A admitted first (slow), B admitted later and fully resolved first (latest=B), A's finalize then
+  observes it is no longer latest and returns `CANCELLED_STALE` -- never a stale MATCH.
+- Dropped the dependency on P1.G1's `assertAuthorityTupleUnchanged`/`AuthorityTupleMismatchError`:
+  the PENDING→RESOLVED state machine's own ABANDONED guard (a second finalize for an
+  already-resolved or reclaimed claim never overwrites) is a strictly stronger, structurally
+  guaranteed replacement, proven directly via Firestore reads rather than a tuple diff. Confirmed via
+  grep this removal is safe -- nothing else imports the re-export.
+
+**A real defect found and fixed during this work, before it ever reached GPT-PM**: the tsconfig used
+for `npx tsc --noEmit -p tsconfig.json` (`exclude: ["src/**/__tests__", "src/**/__e2e__",
+"src/**/*.test.ts"]`) never actually type-checks any test file, e2e included -- so an earlier
+"tsc clean" claim for the new e2e tests in this same gate was true of the wrong file set. The real
+compiler surfaced two genuine TS2339 errors only when the file was checked directly (which is
+exactly what `ts-jest` does at `npm run test:e2e` time, and exactly why that run is the one that
+caught it): `orchestrator.e2e.test.ts`'s centerpiece interleaving test built `requestA`/`requestB`
+via the file's `baseRequest()` helper, whose body ends in `as never` (an intentional escape hatch so
+loosely-typed fixture overrides are assignable to the real request parameter type everywhere else in
+the file) -- making `baseRequest()`'s OWN inferred return type `never`. Every other test in the file
+only ever WRITES a `baseRequest()` result into a call argument (fine, `never` is assignable to
+anything); this one uniquely also READ `.scanId` back off `requestA`/`requestB` for its assertions,
+which is invalid on a `never`-typed value. Fixed by capturing `scanIdA`/`scanIdB` as real `string`
+locals before building the requests and asserting against those instead -- not by touching
+`baseRequest` itself, which every other test in the file still depends on. See
+[[a-broken-instrument-imitates-the-result-you-wanted]] and [[static-syntax-checks-need-a-runtime-twin]]
+for the same class of lesson: a tsc invocation that silently excludes the files it claims to check is
+not evidence.
+
+### #7 -- still genuinely OPEN; no unilateral resolution taken
+
+GPT-PM named exactly two honest paths: (a) build real runtime/server-context evidence for
+`{typeId, evidenceStatus}` and prove `VERIFIED`/`HIGH_ASSURANCE` incompatible → `NEED_MORE_VIEW` --
+blocked on infrastructure (a real visual/classifier recognizer) that does not exist anywhere in this
+repository, not buildable honestly within this gate; or (b) a formal governance decision amending the
+P2.G3 DoD/contract to move this specific requirement to P4. This session has NOT unilaterally picked
+either path -- doing so would be exactly the "silently reinterpret a product requirement" failure
+[[gptpm-rulings-must-be-mirrored-into-the-repo]] and CLAUDE.md §17 warn against. Per §16, this is a
+scope/governance judgment call that belongs to GPT-PM as product owner, and will be put to it
+explicitly (not just re-asserted in a code comment) as part of the round-4 review request.
+
+### Final verification (post-rewrite, full regression, both packages)
+
+- `npx tsc --noEmit -p tsconfig.json`: clean (with the caveat above -- this project config still
+  excludes test files; `ts-jest`'s own per-file check, which DOES cover them, is also clean after the
+  `baseRequest`/`never` fix).
+- `functions-equipment-identity` unit suite (`npm test`): **432/432 passing**, 23 suites.
+- `functions-equipment-identity` e2e suite (`npm run test:e2e`, real Firestore emulator): **54/54
+  passing**, 6 suites -- includes `session_repository.e2e.test.ts`'s 17 tests (the sequential
+  admit/finalize supersession centerpiece, 5-way concurrent-admission race, expired-lease reclaim,
+  double-finalize immutability proof) and `orchestrator.e2e.test.ts`'s new RATE_LIMITED-end-to-end
+  and interleaved-admission-order supersession tests (the latter using `jest.spyOn` wrapping the REAL
+  `admitSessionClaim`/`finalizeSessionOutcome` for genuine, non-timing-guess synchronization, per
+  [[feedback-never-shorten-a-review-payload]]-adjacent test-theater avoidance already established
+  earlier in this gate).
+- Default `functions/` codebase (P0.G6 isolation confirmation, untouched by this segment's changes):
+  **601/601 unit tests**, **121/121 rules tests** -- zero regressions.
+- Grand total: **1033 unit tests** (601 + 432) **+ 175 e2e/rules** (121 rules + 54 e2e), all green.
+
+Next: send a round-4 scoped review to GPT-PM, limited to #3 (re-architected, with the exact failure
+scenario it named now covered by a passing test) and #7 (explicit governance question, per the two
+honest paths above -- asking GPT-PM to decide, not asserting an answer), plus any direct regressions
+of this remediation. #4/#6 stay closed and out of scope, per GPT-PM's own round-3 closing line.
+
+## 2026-09-11 -- P2.G3: GPT-PM round-4 verdict (1 MAJOR / 0 BLOCKER) -- #7 CLOSED by formal DoD
+## amendment, #3's expired-lease reclaim fenced with a claimId/generation token
+
+GPT-PM's round-4 reply, quoted verbatim from `pm-bridge/state/messages.jsonl` (inbound,
+`2026-09-11T11:26:16Z` local receipt time embedded in the reply's own `Pasted text(20260911-112616)`
+markers, `reviewRequestId: ec1f6bb9-1a9f-4958-bf22-d810cfdbc6c0`), per
+[[decision-log-verdicts-drift]]:
+
+> VERDICT: MAJOR — 1 MAJOR / 0 BLOCKER
+>
+> MAJOR | #3 — two-phase admission/finalize закрывает normal concurrent race, но expired-lease
+> reclaim нарушает ownership invariants | evidence | Fresh concurrent duplicates теперь
+> действительно линеаризованы [...] 5-way test доказывает ровно один quota charge. Однако expired
+> PENDING branch после проверки lease просто "falls through" в fresh admission без проверки
+> fingerprint и без чтения latestRef, после чего безусловно переписывает latest pointer и снова
+> пишет quota. Это создаёт три связанных failure path: старый scan A истёк → позже B уже
+> admitted/resolved и latest=B → retry A приходит после expiry → reclaim A без чтения latest →
+> latest снова становится A, то есть уже superseded scan воскресает; expired A с fp-1 может быть
+> reclaimed тем же scanId, но другим fp-2 [...]; при same-fingerprint reclaim отсутствует
+> claimId/generation [...] Старый ещё живой owner после reclaim вызывает finalizeSessionOutcome;
+> finalize проверяет только status=PENDING, тот же fingerprint и latest.sessionId, поэтому не
+> способен отличить старую lease от новой и может финализировать уже чужую reclaimed claim.
+>
+> required change | Expired reclaim должен быть fenced: каждая успешная admission/reclaim получает
+> новый immutable claimId/claimGeneration, возвращаемый ADMITTED; PendingSessionClaim хранит его, а
+> finalizeSessionOutcome принимает и требует точное совпадение generation; старый owner после
+> reclaim → ABANDONED; reclaim expired session должен внутри transaction читать latestRef: если
+> latest уже указывает на другой sessionId, старый scan → STALE, без quota и без resurrection;
+> different fingerprint под существующим logical sessionId остаётся STALE даже после lease expiry;
+> same-logical-session reclaim не должен повторно списывать quota, если quota уже была списана на
+> первоначальной admission. Нужны три real-emulator regressions: A expired → B latest → retry A =
+> STALE; A1 expired → A2 reclaim → A1 finalize = ABANDONED; expired same scan + different
+> fingerprint = STALE.
+>
+> #7 — GOVERNANCE DECISION: APPROVE PATH (b). Формально изменяю P2.G3 DoD: authoritative
+> generic-type veto переносится в P4 fusion. Причина механическая, не удобство: P2.G3 runtime имеет
+> только OCR text hints и сознательно может получить из них лишь LOW_CONFIDENCE/AMBIGUOUS; реального
+> authoritative classifier/type source в этом runtime нет. При этом policy уже сохраняет правильный
+> future contract: supplied VERIFIED/HIGH_ASSURANCE incompatible type → NEED_MORE_VIEW.
+>
+> Binding amendment для записи в gate contract / decision log:
+> P2.G3: OCR-derived type hints are soft evidence only and MUST NOT be promoted to
+> HIGH_ASSURANCE/VERIFIED. P2.G3 closure does not require a runtime authoritative generic-type
+> recognizer. The exact-resolution policy MUST retain and test the rule that externally
+> authoritative VERIFIED/HIGH_ASSURANCE incompatible type evidence yields NEED_MORE_VIEW.
+> P4: MUST provide the real authoritative generic-type evidence boundary and prove end-to-end that
+> an incompatible VERIFIED/HIGH_ASSURANCE generic-type result vetoes exact-model emission with
+> NEED_MORE_VIEW.
+>
+> Таким образом #7 CLOSED by explicit governance amendment, а не "deferred by comment". В следующий
+> round остаётся только #3 и прямые регрессии его fencing/reclaim fix.
+
+### #7 -- formally CLOSED. Binding DoD amendment recorded verbatim above
+
+This is now the binding P2.G3/P4 scope boundary for the authoritative generic-type veto
+requirement, decided by GPT-PM as product owner (CLAUDE.md §16/§17), not asserted unilaterally by
+this session. `deriveTypeEvidence`'s own doc comment in `orchestrator.ts` already matches this
+boundary (soft-only OCR hints, capped at LOW_CONFIDENCE/AMBIGUOUS) and needs no further code change.
+No further action required on #7 for this gate.
+
+### #3 -- expired-lease reclaim genuinely fenced with a claimId/generation token
+
+Exactly GPT-PM's required change, implemented in `session_repository.ts`:
+
+- `PendingSessionClaim` gained a `claimId: string` field -- a fresh `randomUUID()` (the same
+  production pattern already used by `p1/ids.ts`'s `generateModelId`) minted on EVERY successful
+  admission AND every reclaim, never reused.
+- `admitSessionClaim`'s ADMITTED result now returns `{ outcome: "ADMITTED"; claimId }`;
+  `orchestrator.ts` threads it straight through to `finalizeSessionOutcome`'s `outcome.claimId`.
+- The expired-lease branch no longer blindly falls through to fresh-admission logic. It now reads
+  `latestRef` in the SAME transaction (previously read only for fresh admissions) and requires, in
+  order: (1) the reclaiming caller's `requestFingerprint` matches the expired claim's own -- a
+  reclaim is only ever a genuine retry of the identical logical request, never a different
+  fingerprint barging in on someone else's expired slot (-> STALE otherwise); (2) `latest` still
+  names THIS sessionId -- an expired claim for a scan a genuinely newer admission has since
+  superseded returns STALE and never resurrects itself as latest again. A reclaim that passes both
+  checks does NOT re-charge quota (the doc's mere prior existence proves it was already charged) and
+  mints a fresh `claimId`, preserving the original `createdAt`.
+- `finalizeSessionOutcome` now requires `current.claimId === outcome.claimId` in addition to the
+  existing status/fingerprint checks -- a genuinely still-alive (merely slow, not crashed) original
+  owner whose lease lapsed and was reclaimed by a fresh retry presents its own, now-stale claimId and
+  observes ABANDONED, never overwriting the reclaimer's live claim.
+
+Three new real-Firestore-emulator regression tests in `session_repository.e2e.test.ts`, matching
+GPT-PM's own required list exactly:
+1. "an expired claim for a scan a genuinely NEWER scan has already superseded -> STALE, never
+   resurrects itself as latest again" (A expired, B admitted+resolved as latest, retry of A -> STALE,
+   `readLatestSession` still names B, no second quota charge).
+2. "an expired claim reclaimed by a genuine retry fences out its own still-alive original owner --
+   that owner's later finalize is ABANDONED, never overwrites the reclaimer" (A1 admits, A1's lease
+   is force-expired, A2 reclaims with a NEW claimId, A1's own later finalize with its stale claimId
+   -> ABANDONED, A2's own finalize -> RESOLVED with A2's own outcome).
+3. "an expired claim under a DIFFERENT fingerprint -> STALE, never becomes a second owner of the same
+   logical scan" (seeded expired claim, reclaim attempt with a different fingerprint -> STALE, no
+   quota charge, seeded claim untouched).
+Also updated the pre-existing reclaim test to reflect the new fencing semantics (a reclaim now needs
+a matching fingerprint AND a still-current latest pointer, both seeded realistically) and every other
+`finalizeSessionOutcome` call site across both e2e suites and the unit suite to thread the real
+`claimId` returned by `admitSessionClaim`.
+
+### Final verification (post-fencing-fix, full regression, both packages)
+
+- `npx tsc --noEmit -p tsconfig.json`: clean. `ts-jest`'s own per-file check (which does cover test
+  files) also clean for both e2e test files.
+- `functions-equipment-identity` unit suite (`npm test`): **432/432 passing**, 23 suites (unchanged
+  count -- this fix only touched `session_repository.ts`/`orchestrator.ts` production code plus
+  existing test call sites, no new unit tests were needed since the fencing property is only provable
+  against real Firestore transaction semantics).
+- `functions-equipment-identity` e2e suite (`npm run test:e2e`, real Firestore emulator): **57/57
+  passing** (was 54; +3, exactly GPT-PM's three required regressions above), 6 suites.
+- Default `functions/` codebase (P0.G6 isolation confirmation, untouched by this fix): **601/601**
+  unit, **121/121** rules -- zero regressions.
+- Grand total: **1033 unit tests** (601 + 432) **+ 178 e2e/rules** (121 rules + 57 e2e), all green.
+
+Next: send a round-5 scoped review to GPT-PM, limited to #3's fencing fix (the only item GPT-PM's own
+round-4 closing line left open: "В следующий round остаётся только #3 и прямые регрессии его
+fencing/reclaim fix"). #4/#6/#7 all stay closed and out of scope. Pending a clean verdict: commit,
+push, and close the Rosetta plan (Step 10).
+
+## 2026-09-11 -- P2.G3: GPT-PM round-5 VERDICT: APPROVE (0 BLOCKER/0 MAJOR/0 MINOR) -- implementation
+## review complete; targeted dry-run deploy evidence captured; gate stays OPEN/DEPLOYMENT_PENDING
+
+GPT-PM's round-5 reply (inbound, `2026-09-11T11:44:10.211Z`, `reviewRequestId:
+03c5d867-1161-4a17-91a0-4363f25418fa`), quoted verbatim per [[decision-log-verdicts-drift]]:
+
+> VERDICT: APPROVE
+>
+> Scoped round-5 review пройден. #3 закрыт; 0 BLOCKER / 0 MAJOR / 0 MINOR в заявленном scope. По
+> fencing/reclaim implementation теперь выполняет все четыре условия предыдущего required change.
+> admitSessionClaim читает session и latestRef в одной transaction; expired claim можно reclaim
+> только с тем же fingerprint и только пока этот session всё ещё latest; reclaim не списывает quota
+> повторно; каждая fresh/reclaimed ownership generation получает новый claimId. finalizeSessionOutcome
+> действительно использует claimId как fencing token вместе с fingerprint: stale owner после reclaim
+> получает ABANDONED и не может записать результат поверх новой generation [...] Три требуемых
+> regression scenario присутствуют как реальные Firestore-emulator tests и соответствуют прежнему
+> finding, а не более слабым substitutes [...] Я также проверил прямой concurrency regression новой
+> generation-схемы: если old finalize и reclaim сталкиваются одновременно, оба транзакционно
+> конфликтуют на одном session document; после retry либо старый finalize уже сделал RESOLVED и
+> reclaim увидит terminal state, либо reclaim записал новый claimId и старый finalize увидит
+> generation mismatch. В текущем коде нет окна, где старый owner может законно финализировать новую
+> lease.
+>
+> #7 placement подтверждаю как достаточный. Governance amendment реально добавлен непосредственно в
+> binding SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md рядом с P2.G3 Story
+> AC [...] Дополнительного места для фиксации этого решения не требуется.
+>
+> Полный regression report для этой remediation также зелёный: 432/432 equipment-identity unit,
+> 57/57 emulator e2e, 601/601 default-functions unit и 121/121 rules.
+>
+> Pre-commit implementation review P2.G3: APPROVED. Можно commit/push и закрывать утверждённый
+> implementation plan согласно ранее согласованному process. Отдельное ранее установленное различие
+> сохраняется: это не само по себе авторизация live Firebase deployment и не заменяет deployment
+> evidence, требуемый для окончательного закрытия master P2.G3 gate.
+
+This closes the pre-commit implementation review loop across all nine round-1 findings, the four that
+survived round 2 (#3/#4/#6/#7), and #3's own fencing gap found at round 4 -- five rounds total, each
+scoped to exactly what the prior round left open, per CLAUDE.md §17's one-sweep-per-finding-set
+discipline.
+
+### Step 9's remaining item: the P0.G6-deferred targeted dry-run deploy
+
+GPT-PM's own APPROVE explicitly separates "implementation review passed" from "live deployment
+authorized" -- the plan's own Step 9 still requires capturing the targeted
+`firebase deploy --only functions:equipment-identity --dry-run` evidence before Step 10's closure.
+This touches the operator's real, live Firebase project (`fitness-app-korostelev`), so before running
+it this session verified the actual risk (not a reviewer's paraphrase of it) and asked GPT-PM for
+explicit authorization per CLAUDE.md §16/§20, rather than either just running it unilaterally or
+silently substituting weaker evidence.
+
+**Verification, primary source, not assumption:** the actually-installed Firebase CLI's own
+`firebase deploy --help` (v15.17.0, this repo's `npx firebase --version`) states verbatim: *"--dry-run
+perform a dry run of your deployment. Validates your changes and builds your code without deploying
+any changes to your project. In order to provide better validation, this may still enable APIs on the
+target project."* This confirms the real, bounded risk (API enablement, not fake) while confirming NO
+actual deployment occurs.
+
+**GPT-PM's authorization** (via `gpt_send_and_await`, `2026-09-11`, `request_id
+461a10f0-1706-4f0e-81dd-1e45a8c7e2ad`), quoted:
+
+> AUTHORIZED: (a) -- run the targeted real-project dry-run, with a narrow authorization boundary [...]
+> I therefore authorize this exact operation: `firebase deploy --only functions:equipment-identity
+> --dry-run --project fitness-app-korostelev`. The authorization includes automatic API enablement
+> performed by this dry-run, because the current CLI explicitly documents that possibility. It does
+> not authorize a non-dry-run deployment, manual creation/modification of unrelated GCP resources,
+> accepting an unexpected cleanup-policy prompt, changing billing configuration, or running a broader
+> deploy target [...] For evidence quality, record the Firebase CLI version and full command/output.
+> If practical, also snapshot enabled state for cloudfunctions.googleapis.com,
+> cloudbuild.googleapis.com, and artifactregistry.googleapis.com before/after; any newly enabled API
+> should be recorded as an actual side effect rather than silently ignored [...] Non-dry-run Firebase
+> deployment remains separately unauthorized.
+
+(GPT-PM also corrected this session's own initial citation of firebase-tools issue #8418 as
+irrelevant to the dry-run path specifically -- noted for the record, though it did not change the
+authorized action since the CLI's own help text independently confirmed the API-enablement caveat.)
+
+**Evidence captured, exactly the scope GPT-PM authorized, nothing broader:**
+- Enabled-API snapshot BEFORE (`gcloud services list --enabled --project fitness-app-korostelev`):
+  59 APIs, including `cloudfunctions.googleapis.com`/`cloudbuild.googleapis.com`/
+  `artifactregistry.googleapis.com` already enabled (unsurprising -- the default `functions/`
+  codebase already deploys real 2nd-gen Cloud Functions to this same project).
+- Ran exactly `firebase deploy --only functions:equipment-identity --dry-run --project
+  fitness-app-korostelev`. Output: predeploy build succeeded (P0 snapshot check, P1 generated-fixture
+  check, P0 App Check readiness check, `tsc` all OK); codebase `equipment-identity` was prepared,
+  loaded, analyzed, and packaged (362.72 KB) for upload; the CLI reported "ensuring required API
+  ... enabled" for `cloudfunctions`/`cloudbuild`/`artifactregistry`/`firebaseextensions`/`run`/
+  `eventarc`/`pubsub`/`storage.googleapis.com`; terminated with **"Dry run complete!"** -- no actual
+  function/index was created or modified.
+- Enabled-API snapshot AFTER: identical 59 APIs, byte-for-byte diff empty -- **zero new APIs were
+  actually enabled** by this run; every API the CLI "ensured" was already on from the default
+  codebase's own prior real deployments.
+- `firebase functions:list --project fitness-app-korostelev` confirms only the PRE-EXISTING
+  default-codebase functions are live (clipUrl, stripeWebhook, deleteAccount, etc.) -- no
+  equipment-identity function was actually created, confirming the dry-run deployed nothing.
+- No cleanup-policy prompt appeared; no unrelated GCP resource was created or modified; no billing
+  configuration was touched -- fully within GPT-PM's authorized boundary.
+
+This is the P0.G6-deferred deployment-isolation/index-readiness evidence Step 9 requires: the isolated
+`equipment-identity` codebase genuinely builds and packages independently of the default `functions/`
+codebase, against the real live project, with zero net side effects beyond what the project already
+had.
+
+### P2.G3 gate status: explicitly OPEN/DEPLOYMENT_PENDING, not CLOSED
+
+Per the plan's own Step 10 language and GPT-PM's own explicit distinction (quoted above): this
+implementation PLAN is ready to close (review APPROVED, tests green, dry-run evidence captured), but
+the P2.G3 GATE itself remains **OPEN/DEPLOYMENT_PENDING** until a separate, later-authorized REAL
+(non-dry-run) deployment actually publishes the `equipment-identity` codebase and its Firestore
+indexes to production. `core/MASTER_PLAN_2026-08-26.md` §5 updated accordingly (P2.G1/G2 CLOSED,
+P2.G3 implementation-reviewed-and-pushed but gate OPEN/DEPLOYMENT_PENDING, P2.G4+ not started).
+
+Next: commit (functions-equipment-identity + functions/rules changes + this decision log + master
+plan + gate contract amendment), push, write the html-report pair distinguishing plan-closure from
+gate-closure, then `pm_rosetta_close` the implementation plan (Step 10) with this evidence.

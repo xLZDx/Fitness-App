@@ -54,9 +54,23 @@ describe("no real cloud SDK call exists yet in this package", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("index.ts exports nothing -- no production identity Cloud Function exists yet", () => {
+  it("index.ts's callable never imports a raw Vertex/Gemini/AI-gateway module -- P2.G3 is text-only lookup against Firestore, never a model call", () => {
+    // This test used to assert `index.ts` exported nothing at all
+    // ("export {}"), which was P0.G5's honest boundary at the time --
+    // no production identity Cloud Function existed yet. P2.G3 is
+    // specifically the gate authorized to add one (a Firestore-only
+    // exact-model-code lookup), so that assertion is now stale by design,
+    // not a regression: the two checks above (no forbidden cloud-SDK
+    // import, no raw network call) still enforce the property this file
+    // actually exists to guard -- that this package does not silently
+    // grow a real network/model call ahead of the gate that legitimizes
+    // one. This third check narrows that same guarantee onto index.ts by
+    // name, so removing the file's real assertions isn't mistaken for
+    // satisfying its stated purpose.
     const indexPath = path.join(SRC_DIR, "index.ts");
     const content = fs.readFileSync(indexPath, "utf-8");
-    expect(content).toContain("export {}");
+    const forbiddenRe = /from\s+["'](@google-cloud\/(?!.*-types)[^"']+|googleapis|google-auth-library|@google\/generative-ai)["']/;
+    expect(forbiddenRe.test(content)).toBe(false);
+    expect(/\b(https?\.request|fetch)\s*\(/.test(content)).toBe(false);
   });
 });
