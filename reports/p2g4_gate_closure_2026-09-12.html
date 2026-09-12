@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>P2.G4 Gate Closure — Additive Mobile Identity Contract</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-alt: #1c2438;
+    --line: #2b3550;
+    --ink: #e7ebf5;
+    --ink-dim: #a3adc4;
+    --ink-faint: #6b7591;
+    --accent: #7dd6c0;
+    --accent-dim: #4a8a7a;
+    --ok: #7dd6a0;
+    --warn: #e0b866;
+    --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f4f6fb;
+      --panel: #ffffff;
+      --panel-alt: #eef1f8;
+      --line: #d8dde8;
+      --ink: #1a2135;
+      --ink-dim: #4d5975;
+      --ink-faint: #8890a6;
+      --accent: #1f8a70;
+      --accent-dim: #bfe8dc;
+      --ok: #1f8a4f;
+      --warn: #9a6a12;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f6fb;
+    --panel: #ffffff;
+    --panel-alt: #eef1f8;
+    --line: #d8dde8;
+    --ink: #1a2135;
+    --ink-dim: #4d5975;
+    --ink-faint: #8890a6;
+    --accent: #1f8a70;
+    --accent-dim: #bfe8dc;
+    --ok: #1f8a4f;
+    --warn: #9a6a12;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; }
+  header { padding-bottom: 4px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  h1 { font-size: 28px; line-height: 1.25; margin: 0 0 8px; text-wrap: balance; }
+  .subtitle { color: var(--ink-dim); font-size: 15px; margin: 0 0 20px; max-width: 68ch; }
+  .verdict-row {
+    display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 8px;
+  }
+  .pill {
+    font-family: var(--mono); font-size: 12.5px; padding: 6px 12px;
+    border-radius: 999px; border: 1px solid var(--line); color: var(--ink-dim);
+    background: var(--panel-alt);
+  }
+  .pill.ok { color: var(--ok); border-color: var(--ok); }
+  section { margin-top: 40px; }
+  h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--ink-faint); border-bottom: 1px solid var(--line);
+    padding-bottom: 10px; margin: 0 0 18px;
+  }
+  p { color: var(--ink-dim); }
+  .grid-summary {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px; background: var(--line); border: 1px solid var(--line);
+    border-radius: 10px; overflow: hidden; margin-bottom: 8px;
+  }
+  .stat { background: var(--panel); padding: 16px 18px; }
+  .stat .n { font-family: var(--mono); font-size: 22px; font-weight: 600; }
+  .stat .l { font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  th, td {
+    text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--ink-faint); background: var(--panel-alt); white-space: nowrap;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.status { white-space: nowrap; }
+  .status-done { color: var(--ok); font-weight: 600; }
+  .status-done::before { content: "✓ "; }
+  .step-num { font-family: var(--mono); color: var(--ink-faint); }
+  .rounds {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .round {
+    display: grid; grid-template-columns: 92px 1fr; gap: 14px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 16px; align-items: start;
+  }
+  .round .tag {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-faint);
+    padding-top: 2px;
+  }
+  .round .verdict { font-weight: 600; }
+  .round .verdict.approve { color: var(--ok); }
+  .round .verdict.revise { color: var(--warn); }
+  .round .detail { color: var(--ink-dim); font-size: 13px; margin-top: 3px; }
+  code { font-family: var(--mono); font-size: 0.92em; background: var(--panel-alt);
+    padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+  .findings { display: grid; gap: 10px; }
+  .finding {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .finding .who {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-faint);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .finding .what { font-weight: 600; margin: 4px 0 6px; }
+  .finding .why { font-size: 13.5px; color: var(--ink-dim); }
+  ul.tight { margin: 6px 0 0; padding-left: 20px; color: var(--ink-dim); font-size: 13.5px; }
+  ul.tight li { margin-bottom: 4px; }
+  footer.note {
+    margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line);
+    color: var(--ink-faint); font-size: 12.5px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="eyebrow">Rosetta gate closure · P2.G4</p>
+  <h1>Additive Mobile Identity Contract &amp; Progressive UX Plumbing</h1>
+  <p class="subtitle">
+    Plan <code>fitness_app-2026-09-11T18-28-24-330Z-bced53</code> (rev4), hash
+    <code>75de74d9…8775ddd7e</code>. Adds the mobile-side EquipmentIdentity contract on top of the
+    generic scan pipeline, additively — collapsed identity badge on the scanner page and on
+    WorkoutPlayerPage's in-workout surface, both gated to render nothing unless the server has
+    real evidence.
+  </p>
+  <div class="verdict-row">
+    <span class="pill ok">STATUS: CLOSED</span>
+    <span class="pill ok">GPT-PM: APPROVE — 0 BLOCKER / 0 MAJOR</span>
+    <span class="pill ok">flutter analyze: clean</span>
+    <span class="pill ok">flutter test: 3808 total, 25 pre-existing golden failures, 0 new</span>
+    <span class="pill">commit <code>b3fd37c</code> → pushed to <code>master</code></span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Project</dt><dd>Fitness-App</dd>
+    <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ b3fd37c</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Copy page" data-done="Copied"
+          data-fail="Select manually">Copy page</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <h2>At a glance</h2>
+  <div class="grid-summary">
+    <div class="stat"><div class="n">13/13</div><div class="l">plan steps done</div></div>
+    <div class="stat"><div class="n">4→2→0</div><div class="l">MAJOR findings, gate review</div></div>
+    <div class="stat"><div class="n">26</div><div class="l">files changed</div></div>
+    <div class="stat"><div class="n">+5033 / -13</div><div class="l">lines</div></div>
+  </div>
+  <p>
+    Two review loops ran on this gate: the <strong>plan itself</strong> went through four
+    GPT-PM rounds before a GO was issued (rev1 → rev4, 8 → 3 → 3 → 0 MAJOR), and the
+    <strong>built diff</strong> went through three more once implementation and internal review
+    were done (4 → 2 → 0 MAJOR). Every finding in both loops was verified against real files —
+    server-side policy code, the actual gate-contracts DoD document, and this repo's own test
+    output — before being accepted or acted on.
+  </p>
+</section>
+
+<section>
+  <h2>Plan revision history (before the GO)</h2>
+  <div class="rounds">
+    <div class="round">
+      <div class="tag">rev1 → rev2</div>
+      <div>
+        <span class="verdict revise">REVISE — 0 BLOCKER / 8 MAJOR</span>
+        <div class="detail">First submission. GPT-PM's own DoD table drove the largest single
+        revision — provider lifecycle ownership, fixture parity direction, and outcome-sink
+        payload completeness all originate here.</div>
+      </div>
+    </div>
+    <div class="round">
+      <div class="tag">rev2 → rev3</div>
+      <div>
+        <span class="verdict revise">REVISE — 0 BLOCKER / 3 MAJOR</span>
+        <div class="detail">Down from 8 to 3 — the same three structural questions (scanId→path
+        cleanup ownership, cross-language fixture source, outcome dedupe granularity) narrowed
+        rather than new ones appearing.</div>
+      </div>
+    </div>
+    <div class="round">
+      <div class="tag">rev3 → rev4</div>
+      <div>
+        <span class="verdict revise">REVISE — 0 BLOCKER / 3 MAJOR</span>
+        <div class="detail">Deeper refinement of the same 3 open points, not new findings: cleanup
+        moved from the provider's own <code>onDispose</code> to the explicit <code>_scanAgain()</code>
+        termination event; fixtures widened to cover request AND response shape; outcome-sink
+        payload widened to the full meaningful projection.</div>
+      </div>
+    </div>
+    <div class="round">
+      <div class="tag">rev4</div>
+      <div>
+        <span class="verdict approve">APPROVE — 0 BLOCKER / 0 MAJOR</span>
+        <div class="detail">GO recorded. Push pre-authorized under this plan. Implementation began.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Diff review (after implementation)</h2>
+  <div class="rounds">
+    <div class="round">
+      <div class="tag">Internal, 1 sweep</div>
+      <div>
+        <span class="verdict approve">Remediated — 0 open</span>
+        <div class="detail">4 specialists in parallel (flutter-reviewer, a11y-architect,
+        security-reviewer, silent-failure-hunter) before GPT-PM ever saw the diff, per this
+        project's one-sweep review discipline.</div>
+      </div>
+    </div>
+    <div class="round">
+      <div class="tag">GPT-PM r1</div>
+      <div>
+        <span class="verdict revise">REVISE — 0 BLOCKER / 4 MAJOR</span>
+        <div class="detail">Zero-evidence badge visibility, WorkoutPlayerPage's surface never
+        actually rendering, identity visibility wrongly coupled to the generic ScanOutcome, and an
+        incomplete terminal-outcome dedupe projection. All four verified against server policy
+        code / the stored plan text / the gate-contracts doc, then fixed in one batch.</div>
+      </div>
+    </div>
+    <div class="round">
+      <div class="tag">GPT-PM r2</div>
+      <div>
+        <span class="verdict revise">REVISE — 0 BLOCKER / 2 MAJOR</span>
+        <div class="detail">Both findings were about round 1's own remediation: the collapsed
+        badge's width was never actually bounded, and removing the ScanOutcome coupling had also
+        dropped the required "type result before identity" ordering. See findings below.</div>
+      </div>
+    </div>
+    <div class="round">
+      <div class="tag">GPT-PM r3</div>
+      <div>
+        <span class="verdict approve">APPROVE — 0 BLOCKER / 0 MAJOR</span>
+        <div class="detail">Both findings closed with evidence cited against the diff. Gate
+        review complete.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>The two round-2 findings, in detail</h2>
+  <div class="findings">
+    <div class="finding">
+      <div class="who">Finding A — collapsed badge footprint</div>
+      <div class="what">The badge's "small fixed size" requirement (OP-02 / task T6) was
+      height-only; width was never bounded and the pill stretched edge-to-edge on
+      WorkoutPlayerPage's list and, it turned out, on the scanner page too.</div>
+      <div class="why">Root cause: <code>HudSurface</code>'s own <code>topHighlight</code> branch
+      wraps content in <code>Stack(fit: StackFit.passthrough)</code>, and that <code>Stack</code>
+      reports its size as the biggest its constraints allow, regardless of its child's actual
+      size — confirmed empirically after two wrong hand-derivations (an <code>Align</code>
+      without, then with, <code>widthFactor</code> — neither changed the measured width). Fixed
+      with an explicit <code>ConstrainedBox(maxWidth: 220, maxHeight: 60)</code>, applied only
+      while collapsed, since T6's DoD text is specific to the collapsed state and constraining the
+      expanded panel the same way risked clipping a longer detail line.</div>
+    </div>
+    <div class="finding">
+      <div class="who">Finding B — progressive rendering order (task T2)</div>
+      <div class="what">Round 1's fix for "don't gate identity on the generic ScanOutcome" also
+      removed the <code>!scan.isLoading</code> boundary, letting the identity badge appear before
+      the primary scan result had settled.</div>
+      <div class="why">Restored by splitting the value into an unconditional
+      <code>resolvedIdentity</code> and a displayed <code>identity = scan.isLoading ? null :
+      resolvedIdentity</code> — keeps the independence fix from round 1 while restoring "UI
+      renders type result before identity resolves" (T2). Proven with a <code>Completer</code>-backed
+      fake service that holds the generic classification open on purpose.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Plan steps — planned / DoD / status</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>#</th><th>Planned</th><th>Definition of Done</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="step-num">1</td><td>Contract/version model + request &amp; response canonical fixtures at <code>core/equipment_identity/p2/</code></td><td>Unsupported-version case renders via OP-01 silence; fixtures cover both shapes</td><td class="status status-done">Done</td></tr>
+      <tr><td class="step-num">2</td><td><code>CloudEquipmentIdentityService</code> pure request-builder, tested against the canonical request fixtures</td><td>Emitted JSON shape matches the same fixtures the server-side test consumes</td><td class="status status-done">Done</td></tr>
+      <tr><td class="step-num">3</td><td><code>equipmentIdentityProvider</code> family keyed by scanId only; scanId→imagePath map survives transient dispose/recreate</td><td>Family-instance churn does not lose context; a second concurrent scanId cannot corrupt an older one; enrichment-off is a verified zero-call path</td><td class="status status-done">Done</td></tr>
+      <tr><td class="step-num">4</td><td>Scanner lifecycle wiring: fresh capture mints scanId, retry reuses it, <code>_scanAgain()</code> explicitly clears its own entry</td><td>Tests prove new-capture/retry/scan-again each behave as specified, including the superseded scanId's map entry being cleared (round-1 fix)</td><td class="status status-done">Done</td></tr>
+      <tr><td class="step-num">5</td><td><code>EquipmentIdentityBadge</code>: OP-02 collapsed/tap-to-expand, OP-01 silence for empty/ABSTAIN/error</td><td>Renders nothing for a genuine zero-evidence <code>NOT_SUPPORTED</code>; collapsed footprint bounded in both width and height</td><td class="status status-done">Done (fixed across GPT-PM rounds 1 &amp; 2)</td></tr>
+      <tr><td class="step-num">6</td><td>One scan-level identity slot on the scanner page, independent of the generic match/alternatives/unknown result</td><td>Visibility depends only on the identity result and the primary scan having settled (T2), never on the generic <code>ScanOutcome</code></td><td class="status status-done">Done (fixed across GPT-PM rounds 1 &amp; 2)</td></tr>
+      <tr><td class="step-num">7</td><td>WorkoutPlayerPage in-workout surface: scanId threaded across the 3-hop route chain, identity slot actually rendered</td><td>OP-01/OP-02 hold on this surface too; every no-scanId entry point renders nothing; collapsed footprint bounded</td><td class="status status-done">Done (surface was missing entirely at GPT-PM round 1; added and then width-fixed at round 2)</td></tr>
+      <tr><td class="step-num">8</td><td><code>EquipmentIdentityOutcomeSink.recordTerminal</code>: full payload dedupe, not a bare Decision enum</td><td>Identical replay is a silent no-op; any differing field (all 10 authority fields, session/contract/evidence-lane/verifier-invoked included) is a detected conflict</td><td class="status status-done">Done (widened at GPT-PM round 1 from a 2-of-10-field authority comparison to all 10)</td></tr>
+      <tr><td class="step-num">9</td><td>Widget-test matrix: OP-01, OP-02 on both surfaces, full decision-state coverage</td><td>Every state (type-only/brand/exact/needMoreView/unknown/cancelled/unavailable) has a passing test on both surfaces</td><td class="status status-done">Done</td></tr>
+      <tr><td class="step-num">10</td><td>Fixture-parity: server-side contract test loads the same canonical request/response fixtures as the Dart side</td><td>One canonical source for both shapes, never independently duplicated JSON</td><td class="status status-done">Done</td></tr>
+      <tr><td class="step-num">11</td><td>Internal specialist review (4 agents, one sweep), remediate the full batch</td><td>0 BLOCKER before GPT-PM sees the diff</td><td class="status status-done">Done</td></tr>
+      <tr><td class="step-num">12</td><td>GPT-PM pre-commit review (HIGH class) of the complete diff; remediate; verify</td><td>GPT-PM VERDICT: APPROVE on the complete diff</td><td class="status status-done">Done (3 rounds: 4 MAJOR → 2 MAJOR → APPROVE)</td></tr>
+      <tr><td class="step-num">13</td><td>Final <code>flutter analyze</code>/<code>flutter test</code>, diff-stat proof, commit, push, decision log, report pair, Rosetta close</td><td>Zero-diff proof on the two protected generic test files; all evidence attached to the closure</td><td class="status status-done">Done — this report</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>Evidence</h2>
+  <ul class="tight">
+    <li><code>flutter analyze</code>: clean on every file this gate touched (whole-repo pass: the
+    same 17 pre-existing issues, none in this gate's files).</li>
+    <li><code>flutter test</code>: 3808 tests total, exactly the same 25 pre-existing golden
+    failures (font substitution, documented before this gate started), zero new failures.</li>
+    <li><code>git diff --stat</code> on <code>mobile/test/features/scanner_page_test.dart</code>
+    and <code>mobile/test/features/visual_equipment/scan_controller_test.dart</code>: empty,
+    reconfirmed after every remediation round.</li>
+    <li>Commit <code>b3fd37c</code>, pushed to <code>master</code> — 26 files changed,
+    +5033/-13.</li>
+    <li>Full round-by-round detail, including every finding's verification evidence, is in
+    <code>core/DECISION_LOG.md</code>.</li>
+  </ul>
+</section>
+
+<footer class="note">
+  P2.G4 does not authorize a real (non-dry-run) deployment of
+  <code>functions-equipment-identity</code> — that stays explicitly out of this gate's scope, per
+  GPT-PM's own plan approval note.
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>

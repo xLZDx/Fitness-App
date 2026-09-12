@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>P2.G4 Gate Closure — Additive Mobile Identity Contract</title>
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-alt: #1c2438;
+    --line: #2b3550;
+    --ink: #e7ebf5;
+    --ink-dim: #a3adc4;
+    --ink-faint: #6b7591;
+    --accent: #7dd6c0;
+    --accent-dim: #4a8a7a;
+    --ok: #7dd6a0;
+    --warn: #e0b866;
+    --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f4f6fb;
+      --panel: #ffffff;
+      --panel-alt: #eef1f8;
+      --line: #d8dde8;
+      --ink: #1a2135;
+      --ink-dim: #4d5975;
+      --ink-faint: #8890a6;
+      --accent: #1f8a70;
+      --accent-dim: #bfe8dc;
+      --ok: #1f8a4f;
+      --warn: #9a6a12;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f6fb;
+    --panel: #ffffff;
+    --panel-alt: #eef1f8;
+    --line: #d8dde8;
+    --ink: #1a2135;
+    --ink-dim: #4d5975;
+    --ink-faint: #8890a6;
+    --accent: #1f8a70;
+    --accent-dim: #bfe8dc;
+    --ok: #1f8a4f;
+    --warn: #9a6a12;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; }
+  header { padding-bottom: 4px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+  h1 { font-size: 28px; line-height: 1.25; margin: 0 0 8px; text-wrap: balance; }
+  .subtitle { color: var(--ink-dim); font-size: 15px; margin: 0 0 20px; max-width: 68ch; }
+  .verdict-row {
+    display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 8px;
+  }
+  .pill {
+    font-family: var(--mono); font-size: 12.5px; padding: 6px 12px;
+    border-radius: 999px; border: 1px solid var(--line); color: var(--ink-dim);
+    background: var(--panel-alt);
+  }
+  .pill.ok { color: var(--ok); border-color: var(--ok); }
+  section { margin-top: 40px; }
+  h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--ink-faint); border-bottom: 1px solid var(--line);
+    padding-bottom: 10px; margin: 0 0 18px;
+  }
+  p { color: var(--ink-dim); }
+  .grid-summary {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px; background: var(--line); border: 1px solid var(--line);
+    border-radius: 10px; overflow: hidden; margin-bottom: 8px;
+  }
+  .stat { background: var(--panel); padding: 16px 18px; }
+  .stat .n { font-family: var(--mono); font-size: 22px; font-weight: 600; }
+  .stat .l { font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  th, td {
+    text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--ink-faint); background: var(--panel-alt); white-space: nowrap;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.status { white-space: nowrap; }
+  .status-done { color: var(--ok); font-weight: 600; }
+  .status-done::before { content: "✓ "; }
+  .step-num { font-family: var(--mono); color: var(--ink-faint); }
+  .rounds {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .round {
+    display: grid; grid-template-columns: 92px 1fr; gap: 14px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 16px; align-items: start;
+  }
+  .round .tag {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-faint);
+    padding-top: 2px;
+  }
+  .round .verdict { font-weight: 600; }
+  .round .verdict.approve { color: var(--ok); }
+  .round .verdict.revise { color: var(--warn); }
+  .round .detail { color: var(--ink-dim); font-size: 13px; margin-top: 3px; }
+  code { font-family: var(--mono); font-size: 0.92em; background: var(--panel-alt);
+    padding: 1px 5px; border-radius: 4px; color: var(--ink); }
+  .findings { display: grid; gap: 10px; }
+  .finding {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .finding .who {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-faint);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .finding .what { font-weight: 600; margin: 4px 0 6px; }
+  .finding .why { font-size: 13.5px; color: var(--ink-dim); }
+  ul.tight { margin: 6px 0 0; padding-left: 20px; color: var(--ink-dim); font-size: 13.5px; }
+  ul.tight li { margin-bottom: 4px; }
+  footer.note {
+    margin-top: 48px; padding-top: 18px; border-top: 1px solid var(--line);
+    color: var(--ink-faint); font-size: 12.5px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="eyebrow">Закрытие гейта Rosetta · P2.G4</p>
+  <h1>Аддитивный мобильный контракт идентификации оборудования и прогрессивный UX</h1>
+  <p class="subtitle">
+    План <code>fitness_app-2026-09-11T18-28-24-330Z-bced53</code> (rev4), хэш
+    <code>75de74d9…8775ddd7e</code>. Добавляет мобильный EquipmentIdentity-контракт поверх
+    существующего общего пайплайна сканирования — аддитивно: свёрнутый бейдж идентификации на
+    странице сканера и на экране тренировки (WorkoutPlayerPage), оба скрыты по умолчанию, пока у
+    сервера нет реального подтверждения.
+  </p>
+  <div class="verdict-row">
+    <span class="pill ok">СТАТУС: ЗАКРЫТ</span>
+    <span class="pill ok">GPT-PM: APPROVE — 0 BLOCKER / 0 MAJOR</span>
+    <span class="pill ok">flutter analyze: чисто</span>
+    <span class="pill ok">flutter test: 3808 всего, 25 уже существующих golden-падений, 0 новых</span>
+    <span class="pill">коммит <code>b3fd37c</code> → запушен в <code>master</code></span>
+  </div>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ b3fd37c</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <h2>Кратко</h2>
+  <div class="grid-summary">
+    <div class="stat"><div class="n">13/13</div><div class="l">шагов плана выполнено</div></div>
+    <div class="stat"><div class="n">4→2→0</div><div class="l">MAJOR-находок, ревью диффа</div></div>
+    <div class="stat"><div class="n">26</div><div class="l">изменённых файлов</div></div>
+    <div class="stat"><div class="n">+5033 / -13</div><div class="l">строк</div></div>
+  </div>
+  <p>
+    По этому гейту прошло два цикла ревью: сам <strong>план</strong> прошёл четыре раунда GPT-PM
+    до выдачи GO (rev1 → rev4, 8 → 3 → 3 → 0 MAJOR), а уже <strong>собранный дифф</strong> — ещё
+    три раунда после реализации и внутреннего ревью (4 → 2 → 0 MAJOR). Каждая находка в обоих
+    циклах была проверена по реальным файлам — серверному policy-коду, самому тексту gate-contracts
+    DoD и реальному выводу тестов этого репозитория — прежде чем приниматься или исполняться.
+  </p>
+</section>
+
+<section>
+  <h2>История ревизий плана (до выдачи GO)</h2>
+  <div class="rounds">
+    <div class="round">
+      <div class="tag">rev1 → rev2</div>
+      <div>
+        <span class="verdict revise">REVISE — 0 BLOCKER / 8 MAJOR</span>
+        <div class="detail">Первая подача. Собственная DoD-таблица GPT-PM определила самую крупную
+        правку — владение жизненным циклом провайдера, направление паритета фикстур и полнота
+        payload'а outcome-синка берут начало здесь.</div>
+      </div>
+    </div>
+    <div class="round">
+      <div class="tag">rev2 → rev3</div>
+      <div>
+        <span class="verdict revise">REVISE — 0 BLOCKER / 3 MAJOR</span>
+        <div class="detail">С 8 до 3 — те же три структурных вопроса (владение очисткой
+        scanId→путь, кросс-языковой источник фикстур, гранулярность дедупликации outcome) сузились,
+        а не появились новые.</div>
+      </div>
+    </div>
+    <div class="round">
+      <div class="tag">rev3 → rev4</div>
+      <div>
+        <span class="verdict revise">REVISE — 0 BLOCKER / 3 MAJOR</span>
+        <div class="detail">Более глубокое уточнение тех же 3 открытых пунктов, не новые находки:
+        очистка перенесена с собственного <code>onDispose</code> провайдера на явное событие
+        завершения <code>_scanAgain()</code>; фикстуры расширены на форму запроса И ответа;
+        payload outcome-синка расширен до полной значимой проекции.</div>
+      </div>
+    </div>
+    <div class="round">
+      <div class="tag">rev4</div>
+      <div>
+        <span class="verdict approve">APPROVE — 0 BLOCKER / 0 MAJOR</span>
+        <div class="detail">GO зафиксирован. Пуш заранее авторизован в рамках этого плана. Начата
+        реализация.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Ревью диффа (после реализации)</h2>
+  <div class="rounds">
+    <div class="round">
+      <div class="tag">Внутреннее, 1 проход</div>
+      <div>
+        <span class="verdict approve">Устранено — 0 открытых</span>
+        <div class="detail">4 специалиста параллельно (flutter-reviewer, a11y-architect,
+        security-reviewer, silent-failure-hunter) ещё до того, как GPT-PM увидел дифф — по
+        принятой в проекте дисциплине «один проход ревью».</div>
+      </div>
+    </div>
+    <div class="round">
+      <div class="tag">GPT-PM р1</div>
+      <div>
+        <span class="verdict revise">REVISE — 0 BLOCKER / 4 MAJOR</span>
+        <div class="detail">Видимость бейджа при нулевой уверенности, отсутствующая отрисовка на
+        WorkoutPlayerPage, видимость идентификации, ошибочно завязанная на общий ScanOutcome, и
+        неполная проекция дедупликации terminal-outcome. Все четыре проверены по серверному
+        policy-коду / сохранённому тексту плана / документу gate-contracts, затем исправлены одним
+        пакетом.</div>
+      </div>
+    </div>
+    <div class="round">
+      <div class="tag">GPT-PM р2</div>
+      <div>
+        <span class="verdict revise">REVISE — 0 BLOCKER / 2 MAJOR</span>
+        <div class="detail">Обе находки — про само устранение раунда 1: ширина свёрнутого бейджа
+        так и не была ограничена, а удаление зависимости от ScanOutcome заодно убрало требуемый
+        порядок «сначала результат типа, потом идентификация». Подробности ниже.</div>
+      </div>
+    </div>
+    <div class="round">
+      <div class="tag">GPT-PM р3</div>
+      <div>
+        <span class="verdict approve">APPROVE — 0 BLOCKER / 0 MAJOR</span>
+        <div class="detail">Обе находки закрыты с указанием конкретных доказательств по диффу.
+        Ревью гейта завершено.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Две находки раунда 2, подробно</h2>
+  <div class="findings">
+    <div class="finding">
+      <div class="who">Находка A — площадь свёрнутого бейджа</div>
+      <div class="what">Требование «маленький фиксированный размер» бейджа (OP-02 / задача T6)
+      было ограничено только по высоте; ширина не ограничивалась вовсе, и плашка растягивалась во
+      всю ширину — на списке WorkoutPlayerPage, а, как выяснилось, и на странице сканера тоже.</div>
+      <div class="why">Первопричина: собственная ветка <code>topHighlight</code> у
+      <code>HudSurface</code> оборачивает содержимое в <code>Stack(fit: StackFit.passthrough)</code>,
+      и этот <code>Stack</code> сообщает свой размер как максимально допустимый его ограничениями,
+      независимо от реального размера дочернего элемента — подтверждено эмпирически, после двух
+      неверных предположений «на бумаге» (<code>Align</code> без, затем с <code>widthFactor</code>
+      — ни то ни другое не изменило измеренную ширину). Исправлено явным
+      <code>ConstrainedBox(maxWidth: 220, maxHeight: 60)</code>, применённым только в свёрнутом
+      состоянии, поскольку текст DoD задачи T6 говорит именно о свёрнутом состоянии, а такое же
+      ограничение развёрнутой панели рисковало обрезать более длинную строку деталей.</div>
+    </div>
+    <div class="finding">
+      <div class="who">Находка B — порядок прогрессивной отрисовки (задача T2)</div>
+      <div class="what">Исправление раунда 1 («не завязывать идентификацию на общий ScanOutcome»)
+      заодно убрало границу <code>!scan.isLoading</code>, из-за чего бейдж идентификации мог
+      появиться раньше, чем устоится основной результат скана.</div>
+      <div class="why">Восстановлено разделением значения на безусловный
+      <code>resolvedIdentity</code> и отображаемый <code>identity = scan.isLoading ? null :
+      resolvedIdentity</code> — сохраняет исправление независимости из раунда 1, восстанавливая
+      «UI отображает результат типа раньше, чем разрешится идентификация» (T2). Доказано тестом с
+      фейковым сервисом на <code>Completer</code>, намеренно удерживающим общую классификацию
+      незавершённой.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Шаги плана — план / DoD / статус</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>#</th><th>Запланировано</th><th>Definition of Done</th><th>Статус</th></tr></thead>
+    <tbody>
+      <tr><td class="step-num">1</td><td>Модель контракта/версии + канонические фикстуры запроса и ответа в <code>core/equipment_identity/p2/</code></td><td>Случай неподдерживаемой версии отрисовывается через молчание OP-01; фикстуры покрывают обе формы</td><td class="status status-done">Готово</td></tr>
+      <tr><td class="step-num">2</td><td><code>CloudEquipmentIdentityService</code> — чистый билдер запроса, протестирован против канонических фикстур запроса</td><td>Форма отправляемого JSON совпадает с теми же фикстурами, что использует серверный тест</td><td class="status status-done">Готово</td></tr>
+      <tr><td class="step-num">3</td><td>Провайдер <code>equipmentIdentityProvider</code>-family, ключ только по scanId; карта scanId→путь переживает временный dispose/recreate</td><td>Churn инстанса family не теряет контекст; второй одновременный scanId не может повредить запись более старого; выключенное обогащение — доказанно нулевые вызовы</td><td class="status status-done">Готово</td></tr>
+      <tr><td class="step-num">4</td><td>Жизненный цикл сканера: новый снимок минтит scanId, повтор переиспользует его, <code>_scanAgain()</code> явно очищает свою запись</td><td>Тесты доказывают поведение для нового снимка/повтора/scan-again, включая очистку записи вытесненного scanId (правка раунда 1)</td><td class="status status-done">Готово</td></tr>
+      <tr><td class="step-num">5</td><td><code>EquipmentIdentityBadge</code>: OP-02 свёрнут/разворачивается по тапу, OP-01 молчание при пустом/ABSTAIN/ошибке</td><td>Ничего не рисует при подлинном нулевом <code>NOT_SUPPORTED</code>; площадь свёрнутого состояния ограничена и по ширине, и по высоте</td><td class="status status-done">Готово (исправлено в раундах GPT-PM 1 и 2)</td></tr>
+      <tr><td class="step-num">6</td><td>Один слот идентификации на уровне скана на странице сканера, независимо от общего результата совпадения/альтернатив/неизвестно</td><td>Видимость зависит только от результата идентификации и от того, что основной скан устоялся (T2), никогда — от общего <code>ScanOutcome</code></td><td class="status status-done">Готово (исправлено в раундах GPT-PM 1 и 2)</td></tr>
+      <tr><td class="step-num">7</td><td>Экран тренировки (WorkoutPlayerPage): scanId прокинут через цепочку из 3 маршрутов, слот идентификации реально отрисовывается</td><td>OP-01/OP-02 действуют и на этой поверхности; каждая точка входа без scanId ничего не рисует; площадь свёрнутого состояния ограничена</td><td class="status status-done">Готово (поверхность отсутствовала целиком на раунде 1 GPT-PM; добавлена, затем исправлена по ширине на раунде 2)</td></tr>
+      <tr><td class="step-num">8</td><td><code>EquipmentIdentityOutcomeSink.recordTerminal</code>: дедупликация по полному payload'у, а не по голому enum Decision</td><td>Идентичный повтор — тихий no-op; любое отличающееся поле (включая все 10 полей authority, сессию/версию контракта/evidence-lane/verifierInvoked) — обнаруженный конфликт</td><td class="status status-done">Готово (расширено на раунде 1 GPT-PM с 2 из 10 полей authority до всех 10)</td></tr>
+      <tr><td class="step-num">9</td><td>Матрица widget-тестов: OP-01, OP-02 на обеих поверхностях, полное покрытие состояний решения</td><td>У каждого состояния (type-only/brand/exact/needMoreView/unknown/cancelled/unavailable) есть проходящий тест на обеих поверхностях</td><td class="status status-done">Готово</td></tr>
+      <tr><td class="step-num">10</td><td>Паритет фикстур: серверный contract-тест загружает те же канонические фикстуры запроса/ответа, что и Dart-сторона</td><td>Один канонический источник для обеих форм, никогда не дублируемый независимо JSON</td><td class="status status-done">Готово</td></tr>
+      <tr><td class="step-num">11</td><td>Внутреннее ревью специалистов (4 агента, один проход), устранить весь пакет</td><td>0 BLOCKER до того, как GPT-PM увидит дифф</td><td class="status status-done">Готово</td></tr>
+      <tr><td class="step-num">12</td><td>Предкоммитное ревью GPT-PM (класс HIGH) по полному диффу; устранить; проверить</td><td>GPT-PM VERDICT: APPROVE по полному диффу</td><td class="status status-done">Готово (3 раунда: 4 MAJOR → 2 MAJOR → APPROVE)</td></tr>
+      <tr><td class="step-num">13</td><td>Финальные <code>flutter analyze</code>/<code>flutter test</code>, доказательство diff-stat, коммит, пуш, decision log, пара отчётов, закрытие Rosetta</td><td>Доказательство нулевого диффа по двум защищённым generic-тестовым файлам; все доказательства приложены к закрытию</td><td class="status status-done">Готово — этот отчёт</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>Доказательства</h2>
+  <ul class="tight">
+    <li><code>flutter analyze</code>: чисто по каждому файлу, затронутому этим гейтом (проход по
+    всему репо: те же 17 уже существующих замечаний, ни одного в файлах этого гейта).</li>
+    <li><code>flutter test</code>: 3808 тестов всего, ровно те же 25 уже существующих
+    golden-падений (замена шрифта, задокументировано ещё до начала этого гейта), 0 новых.</li>
+    <li><code>git diff --stat</code> по <code>mobile/test/features/scanner_page_test.dart</code>
+    и <code>mobile/test/features/visual_equipment/scan_controller_test.dart</code>: пусто,
+    перепроверено после каждого раунда исправлений.</li>
+    <li>Коммит <code>b3fd37c</code>, запушен в <code>master</code> — 26 изменённых файлов,
+    +5033/-13.</li>
+    <li>Полная детализация по каждому раунду, включая доказательства проверки каждой находки — в
+    <code>core/DECISION_LOG.md</code>.</li>
+  </ul>
+</section>
+
+<footer class="note">
+  P2.G4 не авторизует реальный (не dry-run) деплой <code>functions-equipment-identity</code> —
+  это явно вне рамок этого гейта, согласно собственной заметке GPT-PM при одобрении плана.
+</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->
+</body>
+</html>
