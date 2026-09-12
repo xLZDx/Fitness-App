@@ -31,9 +31,13 @@ import 'widgets/exercise_reference.dart';
 /// workout. Reference leads to doing; doing does not lead back to reference,
 /// because the player already shows everything this page does.
 class ExercisePage extends ConsumerWidget {
-  const ExercisePage({super.key, required this.exerciseId});
+  const ExercisePage({super.key, required this.exerciseId, this.scanId});
 
   final String exerciseId;
+
+  /// P2.G4 -- see [EquipmentDetailPage.scanId]. Forwarded on to
+  /// `/workout/:id` when the user starts this exercise.
+  final String? scanId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -59,8 +63,11 @@ class ExercisePage extends ConsumerWidget {
                   const SizedBox(height: 20),
                   AppPrimaryButton(
                     key: const Key('exercise.start'),
-                    onPressed: () =>
-                        GoRouter.of(context).push('/workout/${item.id}'),
+                    onPressed: () => GoRouter.of(context).push(
+                      scanId == null
+                          ? '/workout/${item.id}'
+                          : '/workout/${item.id}?scanId=$scanId',
+                    ),
                     label: AppLocalizations.of(context).exerciseStartWorkout,
                   ),
                 ],

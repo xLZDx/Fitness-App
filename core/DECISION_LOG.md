@@ -50420,3 +50420,804 @@ P2.G3 implementation-reviewed-and-pushed but gate OPEN/DEPLOYMENT_PENDING, P2.G4
 Next: commit (functions-equipment-identity + functions/rules changes + this decision log + master
 plan + gate contract amendment), push, write the html-report pair distinguishing plan-closure from
 gate-closure, then `pm_rosetta_close` the implementation plan (Step 10) with this evidence.
+
+## 2026-09-11 -- P2.G4: Rosetta plan round 1 REVISE (0 BLOCKER/8 MAJOR), all findings verified against the repo, plan revised to rev2
+
+After P2.G3's plan closure, per PM mode's continuation mandate, background research grounded a Rosetta
+plan for the next gate, P2.G4 ("Additive mobile identity contract & progressive UX plumbing",
+`core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md`
+lines 694-757). Plan `fitness_app-2026-09-11T12-33-45-497Z-bbceb9` (hash `442df182...b7621837`) was
+submitted to GPT-PM for GO via `pm_rosetta_plan`/`gpt_send_and_await`.
+
+**Transport note**: the `gpt_send_and_await` call itself timed out client-side after 1500s with no
+result returned to this session. Per the `pmbridge-send-unconfirmed-peek-before-retrying` memory, this
+was NOT treated as "not sent" -- `pm_bridge_job_status` confirmed `sendPhase: "sent"` (genuinely
+delivered), and `gpt_session_peek` against the mapped conversation ("План структурированного OCR")
+returned the real reply, verbatim-matching what the operator independently pasted into this session
+moments later. No resend occurred; the reply was recovered and verified via peek, not reconstructed
+from the operator's paste alone.
+
+**GPT-PM's verdict: `VERDICT: REVISE -- 0 BLOCKER / 8 MAJOR`.** Every one of the 8 findings was
+independently verified against the actual repository state (not accepted on citation alone, per
+CLAUDE.md section 3/13/15) before any plan revision:
+
+1. **Provider key vs. binding `family(scanId)` + retry semantics** -- CONFIRMED. The gate contract's
+   own Story AC says `family(scanId)` (single param); the submitted plan used a composite
+   `{scanId, imagePath}` key. Separately confirmed live in `mobile/lib/features/scanner/scanner_page.dart`:
+   `_retryLastScan()` (line ~511) calls `_classify(path)` directly -- if `_lastScanId` were minted
+   inside `_classify()` as originally planned, every retry of the same shot would remint a fresh scanId,
+   breaking the very staleness boundary the family key exists to define.
+2. **Missing rollback/disable mechanism** -- CONFIRMED. The gate contract's own "Rollback / failure
+   mode" line reads verbatim: "Disable identity enrichment flag; generic scanner behavior remains
+   identical." The submitted plan's fail-open `catch -> null` design still runs OCR and attempts the
+   (not yet deployed) callable on every scan by default -- not a rollback.
+3. **UI insertion point misses the single confident-match path** -- CONFIRMED by direct read of
+   `scanner_page.dart`: the locked top match renders via a SEPARATE `ScanMatchCard` widget
+   (`mobile/lib/features/scanner/widgets/scan_match_card.dart`) above the primary button; the
+   `ScanOutcome.confident` branch inside the `_Matches`/`_MatchDetails` area (where the submitted plan
+   proposed inserting the badge) only renders `result.matches.skip(1)` and returns
+   `SizedBox.shrink()` entirely when `result.matches.length == 1` -- i.e. for the single most common
+   confident-match case, the planned insertion point never renders at all.
+4. **In-workout OP-02 proof excluded on a false "no such surface exists" basis** -- CONFIRMED:
+   `WorkoutPlayerPage` (`mobile/lib/features/equipment/workout_player_page.dart`) is real and reachable
+   via `app_router.dart`'s `/workout/:id` route. Further repo investigation (beyond GPT-PM's own claim)
+   found the real navigation chain from the scanner is THREE hops, not one --
+   `/equipment/:id` (`_openEquipment`) -> `/exercise/:id` -> `/workout/:id` -- confirmed via
+   `equipment_detail_page.dart`/`exercise_page.dart`'s own push calls; this is materially larger plumbing
+   than GPT-PM's own example implied, and rev2's plan states that size explicitly rather than absorbing
+   it silently.
+5. **No authoritative data source for brand/model/setup display copy** -- CONFIRMED: `firestore.rules`
+   lines 378-389 read `allow read, write: if false;` for `equipment_brands`, `equipment_product_lines`,
+   `equipment_models`, and `equipment_model_setup_specs` outright -- the client has no legitimate read
+   path to canonical display names or setup guidance at all. P2.G3's actual response shape
+   (`functions-equipment-identity/src/p2/contract.ts`) only ever carries an opaque `modelId`/
+   `catalogVersion`/`textSupportStatus`, never a display name.
+6. **Missing contract-version/capability compatibility work** -- CONFIRMED: grepped
+   `mlkit_text_recogniser.dart` for any "version" property -- none exists, so `ocrVersion` (a required
+   request field per `contract.ts`) had no defined source in the submitted plan.
+7. **T3/denominator claim has no real carrier** -- CONFIRMED: `recognition_history.dart`'s own doc
+   comment states verbatim "deliberately NOT an event log," keyed by `equipmentId`, one row per machine
+   -- the submitted plan's claim that "nothing filters NEED_MORE_VIEW out of whatever recognition-history
+   path already exists" referred to a store that cannot carry a per-scan NEED_MORE_VIEW outcome at all.
+8. **Review batch doesn't map onto the gate's own "Flutter/product UX + safety review" line** -- a
+   process/judgment finding, accepted: the originally selected specialists (flutter-reviewer,
+   a11y-architect, silent-failure-hunter) do not explicitly cover a "safety" (privacy/data-boundary)
+   mandate; `security-reviewer` added, with each agent's mandate mapping now stated explicitly rather
+   than assumed.
+
+**Resolution**: plan revised to `fitness_app-2026-09-11T13-16-30-881Z-92dfdf` (hash
+`3ae0082238800d6b2c0102bba2643d3294716c645ae548a1cad8b1ec9fd1e8c9`), addressing all 8 findings
+concretely (scanId-only family key with a side-channel imagePath provider mirroring the existing
+`lastMachineCardProvider` pattern; an `equipmentIdentityEnrichmentEnabledProvider` default-false flag
+gating all OCR/network work; a single scan-level identity slot covering the locked/alternatives/unknown
+cases; an optional `scanId` threaded through the real 3-hop router chain into `WorkoutPlayerPage`;
+badge content restricted to P2.G3's real response fields only, explicitly separated from local OCR
+hints, no fabricated brand/model/setup copy; named contract-version/OCR-version/parser-version
+constants plus canonical JSON fixtures; an injectable `EquipmentIdentityOutcomeSink` observer seam
+proving lossless NEED_MORE_VIEW handoff without touching `recognition_history.dart`; explicit reviewer
+mandate mapping including `security-reviewer`). Declared review class raised `STANDARD -> HIGH` per
+GPT-PM's own instruction. Resubmitted for GO; GPT-PM's own DoD table from the REVISE reply is adopted
+verbatim as this plan's acceptance bar rather than a self-authored one, per the `rosetta` skill's
+transparency requirement.
+
+## 2026-09-11 -- P2.G4 rev2 GO request: PM Bridge transport stuck (CHATGPT_SEND_UNCONFIRMED), stopped retrying after 3 identical attempts
+
+After revising the P2.G4 plan to rev2 (`fitness_app-2026-09-11T13-16-30-881Z-92dfdf`, hash
+`3ae0082238800d6b2c0102bba2643d3294716c645ae548a1cad8b1ec9fd1e8c9`) addressing all 8 of GPT-PM's
+round-1 findings, three separate `gpt_send_and_await` calls with the same `request_id`
+(`a218e9ad-b025-4a58-a4ff-afd2751a1327`, per the tool's own instruction not to mint a new one) all
+returned identically: `CHATGPT_SEND_UNCONFIRMED -- No matching new ChatGPT user turn appeared after
+Enter`. `pm_bridge_job_status` showed the underlying job record frozen (`updatedAt` byte-identical
+across all three checks spanning ~25 minutes, `attempts` stuck at 1, `sendingLineageActive: true`)
+even past its own `deadlineAt` (16:49:05) -- the record itself was never actually re-driven by any of
+the three calls, not merely failing on each genuine retry. `gpt_session_peek` confirmed no new
+assistant turn ever appeared; the conversation still shows only round 1's REVISE reply.
+
+This matches the documented, unresolved transport fragility in `~/.claude/CLAUDE.md` section 15
+("Confirmed live, 2026-08-21: the shared profile is a single-writer resource... a genuinely
+hung/crashed browser process could still stall a commit until the per-call timeout elapses") rather
+than a genuine content/review problem -- the plan itself was never actually delivered for a fresh
+review. Per the `feedback-pmbridge-restart-after-20min-unresponsive` memory (force-restart needs
+operator consent -- a stuck job and a dead daemon look identical, and force hits every concurrent
+session on the machine), stopped retrying and escalating to the operator rather than looping the
+transport further or forcing a restart unilaterally.
+
+**Rosetta status**: plan rev2 remains `pending` (no GO recorded); no code for P2.G4 has been written;
+nothing in this session proceeded past the Plan phase without authorization -- consistent with
+Rosetta's own "a plan is not permission" rule.
+
+## 2026-09-11 -- P2.G4: PM Bridge transport recovered (operator-authorized full restart); GPT-PM round 2 REVISE (0 BLOCKER/3 MAJOR, down from 8) on plan rev2
+
+**Transport resolution**: after 4 consecutive stuck `gpt_send_and_await` attempts across two request_ids
+(documented in the prior entry), `pm_bridge_mode_status` briefly reported PM Bridge mode OFF, then
+`pm_bridge_mode_on` reported it already running (pid 39008) -- a genuinely contradictory pair of reads
+seconds apart, consistent with CLAUDE.md section 18's own documented caveat that liveness detection is a
+bare TCP connect and can misread a wedged daemon as live. The operator, asked directly (via the
+`[GPT-ASKED]` escape hatch on the `ask_routing_gate` hook, since GPT-PM itself was the unreachable
+party), replied "попробуй щас" (try now); one more attempt still failed identically. The operator then
+directly instructed a full daemon/orchestrator restart ("делай полный рестарт демона и аркестратора").
+Executed `pm_bridge_restart(force: true)` -- new pid 44852. A fresh send (new request_id, since the two
+prior request_ids' job records were permanently latched -- `attempts` frozen, `updatedAt` never advanced
+across 4 tries and past their own deadlines, confirmed via `gpt_session_peek` that nothing from either
+attempt ever reached the conversation) succeeded immediately after the restart.
+
+**GPT-PM round 2 verdict: `VERDICT: REVISE -- 0 BLOCKER / 3 MAJOR`** on plan rev2
+(`fitness_app-2026-09-11T13-16-30-881Z-92dfdf`, hash `3ae0082238800d6b2c0102bba2643d3294716c645ae548a1cad8b1ec9fd1e8c9`).
+Explicitly confirms findings #2/#3/#4/#5/#8 from round 1 CLOSED -- genuine convergence, not a fresh
+8-item sweep. The 3 remaining, verified against repo/design evidence before further revision:
+
+1. **(round-1 #1) Context isolation must also be keyed by scanId.** The rev2 design used a single mutable
+   `Provider<_ScanIdentityContext?>` "latest" side-channel for the scanId->imagePath association --
+   correctly flagged as a real defect: a second concurrent scanId (e.g. the in-workout surface still
+   watching an older scanId while the scanner mints a fresh one) would silently overwrite the shared
+   slot, corrupting the older lookup's imagePath. Accepted; fix is a scanId-keyed store (map or
+   provider-owned self-cleanup), never a single "latest" pointer.
+6. **(round-1 #6) OCR/parser authority must use semantic epochs, and fixtures must be genuinely shared,
+   not duplicated.** `kMobileOcrVersion` tied to the literal `google_mlkit_text_recognition: ^0.15.0`
+   pubspec constraint conflates a dependency-pin with an outcome-affecting-behavior identifier -- a patch
+   bump with no behavioral change would force a version bump with no real meaning, and the reverse (same
+   package version, different effective platform behavior) is also possible. Accepted; fix is named
+   epoch constants bumped only on real behavior change, e.g. `p2g1-mlkit-latin-structured-v1` /
+   `p2g2-identity-parser-v1`. Separately, a real existing precedent for the fixture request was found:
+   `core/equipment_identity/p1/type_reference_validation_fixtures.json` already establishes exactly this
+   shared-JSON-fixture pattern in this repo; `functions-equipment-identity/src/p2/__tests__/contract.test.ts`
+   was checked and currently builds its test objects inline (no fixture file at all yet) -- so "genuinely
+   shared, not duplicated" means placing one canonical fixture file and pointing BOTH the new Dart tests
+   and a retrofit of the existing TS contract tests at the same bytes.
+7. **(round-1 #7) Outcome handoff must be idempotent per logical scanId.** `autoDispose` permits the
+   `equipmentIdentityProvider` to execute more than once for the same scanId (dispose/recreate across
+   navigation, or the scanner and workout surfaces both watching the same scanId concurrently), and a
+   naive fire-once-per-execution sink would double-count -- a real correctness gap given P2.G5 is
+   expected to later aggregate these records into a denominator. Accepted; fix is
+   `recordTerminal(scanId, outcome)` with upsert/dedupe and explicit conflict detection when two
+   different terminal outcomes are recorded for the same scanId.
+
+Resolution: plan to be revised to rev3, addressing exactly these 3 items (rev2's other content -- steps
+2/4/5/6/7/9-12 addressing round-1's #2-#5/#8 -- carried forward unchanged, per GPT-PM's own instruction
+not to re-touch already-closed findings).
+
+## 2026-09-11 -- P2.G4 rev3 GO request: PM Bridge transport failed 4 consecutive times post-restart, stopped retrying
+
+After GPT-PM's round-2 REVISE (0 BLOCKER/3 MAJOR) was received cleanly immediately following the
+operator-authorized full `pm_bridge_restart`, plan rev3
+(`fitness_app-2026-09-11T16-42-53-648Z-354a70`, hash
+`9857ce26fc5f4b898bee4efb4749162443478d46a017a10c4eafcb82fa4ba301`) was drafted addressing all 3
+remaining findings (verified against the repo, see prior entry) and submitted for GO. Four consecutive
+`gpt_send_and_await` attempts across three different request_ids (`86a82ab8...` x2, `86cf54c4...`,
+`122913f9...`), including one attempt after a deliberate ~2.5-minute idle wait to respect the
+documented post-reply browser linger window, all failed identically with
+`CHATGPT_SEND_UNCONFIRMED -- No matching new ChatGPT user turn appeared after Enter`. `gpt_session_peek`
+confirmed after each attempt that the conversation still shows only the round-2 reply -- nothing from
+rev3 has ever reached GPT-PM.
+
+Pattern across the whole exchange: round-1 send succeeded (first attempt, cold). Round-2 send succeeded
+(first attempt, immediately after an operator-authorized full daemon restart). Every attempt SINCE then
+(4 for rev3) has failed identically regardless of same-id retry, fresh-id retry, or a genuine idle wait.
+This is not the "browser needs to settle" pattern hypothesized after the first rev3 failure -- it held
+even after 2.5 minutes of idle time. It looks instead like the daemon degrades again shortly after each
+restart/cold-start, consistent with the "single-writer shared browser profile, genuinely hung/crashed
+process can stall a commit" gap CLAUDE.md section 15 already documents as open and unresolved.
+
+**Stopped retrying** rather than looping further on my own judgment, per PM mode's continuation
+mandate read together with the explicit instruction (from my own prior wakeup prompt) to report a
+persistent pattern plainly instead of continuing indefinitely. Reporting to the operator with the full
+history and asking how to proceed, rather than attempting another unilateral restart (which the operator
+authorized once already, not as a standing grant) or waiting indefinitely.
+
+**Rosetta status unchanged**: plan rev3 remains `pending`, no GO recorded, no P2.G4 code written.
+
+## 2026-09-11 -- P2.G4 deferred by explicit operator instruction
+
+Asked the operator directly (via the `[GPT-ASKED]` escape hatch, since GPT-PM -- the party section 16
+would normally route this to -- is the unreachable one) how to proceed after 4 consecutive
+`gpt_send_and_await` failures for plan rev3 following a working round-2 exchange. Operator chose:
+"Отложить P2.G4 до позже" (defer P2.G4 until later), rather than another restart or manual browser
+check.
+
+**Status at deferral**: Rosetta plan `fitness_app-2026-09-11T16-42-53-648Z-354a70` (rev3, hash
+`9857ce26fc5f4b898bee4efb4749162443478d46a017a10c4eafcb82fa4ba301`) remains `pending` -- no GO, no code
+written for P2.G4. GPT-PM's round-2 verdict (0 BLOCKER/3 MAJOR on rev2) is the last real review
+received; rev3 (addressing all 3 remaining findings, verified against the repo) has never actually
+reached GPT-PM due to the transport fault documented in the prior two entries. P2.G3 remains fully
+closed (implementation reviewed/approved/pushed/plan-closed) with its gate OPEN/DEPLOYMENT_PENDING as
+already recorded. No other Rosetta-governed work is currently in flight in this session.
+
+Honoring the operator's explicit instruction: stopping further P2.G4 work (plan submission, code, or
+transport retries) until resumed on request. Not starting a new, unrelated gate speculatively, since
+any such gate would need its own Plan+GO cycle through the identical broken transport.
+
+## 2026-09-11 -- P2.G4: transport false-negative confirmed live; GPT-PM round 3 REVISE (0 BLOCKER/3 MAJOR, deeper refinement of the same 3 points)
+
+Operator resumed P2.G4 ("го") after the deferral. `pm_bridge_mode_status` showed the daemon healthy and
+idle (queue depth 0, last job finished 2s prior for a DIFFERENT concurrent project
+"ai-trading-assistance") -- confirming the round-2-to-rev3 failure run was very likely cross-project
+contention on the single shared browser profile (the documented CLAUDE.md section 15 gap), not a dead
+daemon. Sent rev3 again; `gpt_send_and_await` again reported `CHATGPT_SEND_UNCONFIRMED`, but
+`gpt_session_peek` immediately after showed a genuine NEW reply (3 assistant turns, up from 1) --
+**the send actually succeeded; only the tool's own delivery-confirmation heuristic produced a false
+negative.** Per the `pmbridge-send-unconfirmed-peek-before-retrying` memory's own discipline, did not
+resend -- read the real reply via peek instead. Confirms this session's earlier round-1 and round-2
+deliveries were genuine (not artifacts of restarting), and reinforces: an "uncertain" send error from
+this transport must always be checked via peek before assuming non-delivery, in this project as much as
+any other.
+
+**GPT-PM round 3: `VERDICT: REVISE -- 0 BLOCKER / 3 MAJOR`**, same 3 items (#1/#6/#7), refined deeper
+rather than reopened as new findings; #2/#3/#4/#5/#8 stay CLOSED:
+
+1. **(refined) Context lifetime**: rev3's design tied the scanId->imagePath map entry's cleanup to the
+   `equipmentIdentityProvider` family instance's OWN `ref.onDispose` -- GPT-PM correctly points out
+   `autoDispose` can tear down and recreate the SAME family instance on ordinary transient
+   unwatch/rewatch churn (e.g. brief navigation flicker), which is not the same event as the scan
+   actually ending. Required fix: the map entry's cleanup must be driven by an explicit LOGICAL event
+   (scan termination/supersession -- i.e. `_scanAgain()` clearing its own scanId's entry), never by the
+   family provider's own internal dispose lifecycle. Required test: dispose -> recreate of the same
+   scanId (simulating transient unwatch/rewatch) resolves correctly with no need to re-register the path.
+2. **(refined) Request-side fixtures**: rev3 added shared RESPONSE fixtures but not REQUEST fixtures.
+   Required: the canonical fixture set also covers request shape, consumed by both the Dart request
+   builder's own tests and the server's `EquipmentIdentityRequestSchema`-validating test.
+3. **(refined) Sink payload richness**: `recordTerminal(scanId, Decision)` is insufficient -- a bare
+   Decision enum loses information a real conflict could hide (e.g. same Decision, different
+   identityLevel). Required: the sink stores at minimum decision, identityLevel, model/shadowCandidate,
+   authority/catalog identity, and abstainReason/failureCode; an identical replay (same scanId, byte-
+   identical payload) dedupes silently; ANY differing payload for the same scanId is a detected conflict.
+
+Resolution: revising to rev4 addressing exactly these 3 refinements; everything else from rev3 carries
+forward unchanged per GPT-PM's own repeated instruction not to re-touch closed findings.
+
+## 2026-09-11 -- P2.G4: GPT-PM VERDICT: APPROVE (rev4), Rosetta GO recorded -- implementation begins
+
+Operator resumed P2.G4 ("го") after the earlier deferral. Sent rev4 (addressing round-3's 3 refined
+findings, see prior entry) via `gpt_send_and_await` -- GPT-PM returned `VERDICT: APPROVE, 0 BLOCKER/0
+MAJOR` for plan `fitness_app-2026-09-11T18-28-24-330Z-bced53`, hash
+`75de74d9424b7470e336570f99444996ffb96e78dc2157a5ef121398775ddd7e`.
+
+First `pm_rosetta_go` attempt was refused: "no exact durable outbound record exists for this plan
+review body and request id" -- the condensed GO-request text I had been sending across all 4 rounds
+(paraphrasing `pm_rosetta_plan`'s own auto-generated review body rather than pasting it verbatim) did
+not match what the tool expects to correlate against. Resent the EXACT literal body `pm_rosetta_plan`
+returned, verbatim; GPT-PM returned a second, independently-worded `VERDICT: APPROVE` confirming the
+same plan/hash. `pm_rosetta_go` then succeeded: plan is now `in-progress`, approved by GPT-PM against
+hash `75de74d9424b7470e336570f99444996ffb96e78dc2157a5ef121398775ddd7e`.
+
+**Lesson for future rounds in this project**: `pm_rosetta_go` requires the literal auto-generated
+review body (not a paraphrase) to have been sent for the SPECIFIC request_id/reply_id passed to it,
+even if a condensed paraphrase already produced a genuine, correlated, content-accurate APPROVE from
+GPT-PM. Send the tool's own generated text verbatim for the round intended to actually open the plan.
+
+Full round history for this gate: round 1 (0 BLOCKER/8 MAJOR) -> round 2, after an operator-authorized
+PM Bridge restart (0 BLOCKER/3 MAJOR, 5 of 8 closed) -> round 3, refinement of the same 3 (0 BLOCKER/3
+MAJOR) -> round 4 (VERDICT: APPROVE, 0/0). Beginning implementation now per the approved rev4 plan's
+13 steps.
+
+## 2026-09-12 -- P2.G4 implementation checkpoint: Steps 1-2 (mobile-side model + service)
+
+Progress checkpoint against the approved rev4 plan (`fitness_app-2026-09-11T18-28-24-330Z-bced53`,
+hash `75de74d9424b7470e336570f99444996ffb96e78dc2157a5ef121398775ddd7e`, status `in-progress`),
+saved on explicit operator instruction ("сохрани состояние") mid-implementation.
+
+**Step 10 (fixture parity), done for both languages on the server side:**
+- `core/equipment_identity/p2/equipment_identity_response_fixtures.json` (18 valid + 10 invalid cases)
+  and `equipment_identity_request_fixtures.json` (5 valid + 7 invalid cases) created, canonical,
+  consumed by `functions-equipment-identity/src/p2/__tests__/contract.test.ts` (additively extended,
+  64/64 passing; full suite 473/473, zero regressions).
+
+**Step 1, done:**
+- `mobile/lib/features/visual_equipment/data/identity_contract_version.dart` --
+  `kMobileIdentityContractVersion='v1'`, `kOcrAuthorityEpoch='p2g1-mlkit-latin-structured-v1'`,
+  `kIdentityParserEpoch='p2g2-identity-parser-v1'` (app-owned epochs, decoupled from the raw
+  `google_mlkit_text_recognition` pubspec version per GPT-PM round-2/round-3).
+- `mobile/lib/features/visual_equipment/data/equipment_identity.dart` -- hand-written
+  `EquipmentIdentity`/`RecognitionAuthorityTuple`/`EquipmentIdentityModel`/
+  `EquipmentIdentityShadowCandidate` (no codegen, mirrors `machine_card.dart`'s convention, verified
+  against `mobile/pubspec.yaml` having no `json_serializable`/`freezed`). `fromJson` re-checks every
+  server `.superRefine()` invariant (MATCH<=>model, model/shadowCandidate mutual exclusion,
+  TEXT_ONLY<=>verifierInvoked===false, abstainReason/failureCode mutual exclusion, UNAVAILABLE_*<=>
+  failureCode) plus `.strict()`-equivalent unknown-field rejection on both the response object and the
+  nested `authority` object, throwing `FormatException` rather than silently accepting a malformed
+  reply. Nested objects are defensively re-keyed to `Map<String, dynamic>` (`_asStringKeyedMap`) rather
+  than cast directly, because Cloud Functions' platform channel can decode a nested map as
+  `Map<Object?, Object?>` even when the top-level result was typed `Map<String, dynamic>` -- a bare
+  `as Map<String, dynamic>` on one of those throws at runtime; this was designed in defensively before
+  hitting it live, not discovered as a bug.
+- `mobile/test/features/visual_equipment/equipment_identity_test.dart` -- 7 tests, consumes the SAME
+  canonical `equipment_identity_response_fixtures.json` the server side validates (Dart/TS parity from
+  one source, GPT-PM round-3 requirement). All passing. `flutter analyze` clean on both new lib files
+  and the test file.
+
+**Step 2, code written, NOT YET independently verified this checkpoint** (no test run, no
+`flutter analyze` pass yet for this specific file):
+- `mobile/lib/features/visual_equipment/data/cloud_equipment_identity_service.dart` --
+  `kEquipmentIdentityFunctionName='equipmentIdentityResolveFromText'` (matches
+  `functions-equipment-identity/src/index.ts`'s real `onCall` export name, confirmed by grep before
+  writing), `buildEquipmentIdentityRequestBody` (pure, `@visibleForTesting`, mirrors
+  `gemini_equipment_service.dart`'s `buildEquipmentRecognitionRequest` split -- `HttpsCallable` has a
+  private constructor so this shape cannot be exercised through the real SDK in a plain unit test),
+  `CloudEquipmentIdentityService.resolveFromText` (thin: does not catch/reinterpret
+  `FirebaseFunctionsException` or `FormatException`, leaves fail-open-to-null to Step 3's
+  `equipmentIdentityProvider`, not yet written).
+
+**Remaining, unchanged from the plan**: Step 2's own unit test (against
+`equipment_identity_request_fixtures.json`'s valid cases); Steps 3-9 (provider, scanner-page wiring,
+badge widget, scan-level slot, WorkoutPlayerPage 3-hop threading, outcome sink, widget-test matrix);
+Step 10's remaining half (Dart-side fixture-consuming tests, response side done, request side pending
+for the client builder); Steps 11-13 (internal specialist review, GPT-PM pre-commit HIGH review,
+verify/commit/push/report/Rosetta-close). Nothing has been committed yet -- all of the above is
+untracked/modified working-tree state only (`git status` confirms).
+
+## 2026-09-12 -- P2.G4 implementation checkpoint: Steps 2-6 complete
+
+Continuing from the prior checkpoint. All green, `flutter analyze` clean on every touched file.
+
+**Step 2, now verified** (was code-only at the prior checkpoint): `cloud_equipment_identity_service.dart`
+switched to a lazy `late final FirebaseFunctions _fns` (mirrors `GeminiVisualEquipmentService._cloud`'s
+own lazy pattern one file over) -- the eager `: _fns = functions ?? functionsForRegion` initializer
+would have reached for Firebase at CONSTRUCTION time, before any real call, breaking a bare Provider
+default in tests that never touch Firebase. `cloud_equipment_identity_service_test.dart` (3 tests)
+proves the request builder always emits this build's own version constants (never a caller-supplied
+one) and matches the shared `equipment_identity_request_fixtures.json` field-for-field.
+
+**Step 3, done:** `mobile/lib/features/visual_equipment/state/equipment_identity_providers.dart` --
+`equipmentIdentityEnrichmentEnabledProvider` (default false, checked FIRST inside the family provider
+itself as a second gate, not only at the call site), `scanIdImagePathProvider`
+(`StateProvider<Map<String,String>>`, cleared only by `_scanAgain()`'s explicit event -- see Step 4),
+`identityLexiconProvider` (deliberately empty brand/product-line sets -- no canonical lexicon exists in
+this repo yet per `identity_text_parser.dart`'s own scope note; `modelCodeCandidates`/`conflicts`, the
+signal that actually drives `EXACT_MODEL`, come from pattern heuristics and do not depend on it),
+`equipmentIdentityProvider` (`FutureProvider.autoDispose.family<EquipmentIdentity?, String>` keyed by
+scanId only, fails open to null on every failure path). 7 tests in
+`equipment_identity_providers_test.dart`, including the GPT-PM round-3-required regression: a disposed
+and recreated family instance for the SAME scanId still resolves (`container.invalidate` then re-read),
+and the disabled-by-default proof (zero OCR/zero ask calls when the flag is off, even when directly
+read).
+
+**Step 4, done:** `scanner_page.dart`'s `_classify` now takes `{bool isRetry = false}`; a fresh capture
+mints `'scan-${DateTime.now().microsecondsSinceEpoch}'` and registers it in `scanIdImagePathProvider`,
+a retry (`_retryLastScan` now passes `isRetry: true`) reuses `_currentScanId` instead of minting a new
+one (same photo, same attempt). `_scanAgain()` explicitly removes its own scanId's map entry before
+clearing local state -- the "explicit logical event" GPT-PM round-3 required, never the family
+provider's own dispose.
+
+**Step 5, done:** `mobile/lib/features/scanner/widgets/equipment_identity_badge.dart` --
+`EquipmentIdentityBadge` (OP-01: renders `SizedBox.shrink()` for null/ABSTAIN/UNAVAILABLE_*/
+CANCELLED_STALE/UNSUPPORTED_CLIENT_CONTRACT/NEED_MORE_VIEW; OP-02: collapsed pill for MATCH/
+NOT_SUPPORTED only, tap-to-expand reveals opaque modelId/catalogVersion and the raw identityLevel
+enum value -- never a fabricated brand/model name, since none exists on the client yet; a
+shadowCandidate is always captioned "not a confirmed match") and
+`EquipmentIdentityNeedMoreViewPrompt` (the separate plain re-scan prompt for NEED_MORE_VIEW). 5 new
+ARB keys added to both `app_en.arb`/`app_ru.arb` (real Russian translations, not copies -- verified by
+the existing `no_untranslated_strings_test.dart`, still 18/18 passing after the addition).
+`equipment_identity_badge_test.dart`: 10 widget tests covering every OP-01/OP-02 branch.
+
+**Step 6, done:** one scan-level slot inserted into `scanner_page.dart` right after the `scan.when(...)`
+switch, gated on `result != null && !scan.isLoading && outcome in {confident, alternatives, unknown}`
+-- covers the locked `ScanMatchCard` case, `alternatives`, and `unknown`/`MachineCardView` from a single
+insertion point rather than three separate ones, per GPT-PM's own Step 6 wording. Both new widgets
+already no-op for every ineligible state, so no further branching was needed at the call site.
+
+**Additive proof, mechanically verified this checkpoint:** `git diff --stat` on
+`mobile/test/features/scanner_page_test.dart` and
+`mobile/test/features/visual_equipment/scan_controller_test.dart` -- empty (zero changes to either).
+Both suites re-run green regardless: `scanner_page_test.dart` 51/51, `scan_controller_test.dart` 11/11.
+
+**Remaining, unchanged from the plan**: Step 7 (WorkoutPlayerPage 3-hop scanId threading), Step 8
+(EquipmentIdentityOutcomeSink), Step 9 (the rest of the widget-test AC matrix beyond the badge's own
+10 tests), Step 10's remaining half already done (both fixture sides consumed by both languages -- this
+entry supersedes the "pending" note in the prior checkpoint: Step 10 is now fully complete), Steps 11-13
+(internal specialist review, GPT-PM pre-commit HIGH review, verify/commit/push/report/Rosetta-close).
+Nothing committed yet.
+
+## 2026-09-12 -- P2.G4 implementation checkpoint: Step 7 complete
+
+**Step 7, done:** optional `scanId` threaded across the real 3-hop router chain
+`/equipment/:id` -> `/exercise/:id` -> `/workout/:id`, each hop forwarding it only when it itself
+received one (mirrors the existing `?day=` pattern):
+- `app_router.dart`: all three `GoRoute`s now read `state.uri.queryParameters['scanId']` and pass it
+  to the page constructor.
+- `equipment_detail_page.dart`: `EquipmentDetailPage.scanId` (optional) forwarded to `_ExerciseCard`,
+  which appends `?scanId=$scanId` to its `/exercise/:id` push only when non-null.
+- `exercise_page.dart`: `ExercisePage.scanId` (optional) forwarded the same way to its
+  `/workout/:id` push.
+- `workout_player_page.dart`: `WorkoutPlayerPage.scanId` (optional) -- pure plumbing, not consumed by
+  anything on this page yet (P2.G5's denominator/report arithmetic is deferred; this gate is only the
+  lossless-handoff seam).
+- `scanner_page.dart`'s `_openEquipment` now forwards `_currentScanId` into the first hop.
+
+Verified via `grep` before touching anything: six OTHER push sites reach these same pages
+(`ai_planner_page.dart`, `home_page.dart` x3, `workouts_page.dart` x2, `workout_summary_page.dart`) --
+none of them append a `scanId`, so they are unaffected by construction (the param is optional and
+defaults to null everywhere). New test file `mobile/test/router/scan_identity_threading_test.dart` (5
+tests) exercises both forwarding hops through REAL navigation (a minimal real `GoRouter`, actual
+query-string parsing, an actual tap), not just field presence. All pre-existing tests touching these
+pages re-run green with zero file changes: `catalog_boundary_test.dart` (17),
+`equipment_detail_coach_gate_test.dart` (9), `equipment_report_gym_routing_test.dart` (8),
+`exercise_page_test.dart` (9), `player_substitution_transition_test.dart` (6),
+`workout_player_day_test.dart` (18), `app_router_test.dart` (16) -- 83/83, zero regressions.
+
+**Additive proof reconfirmed**: `git diff --stat` on `scanner_page_test.dart` and
+`scan_controller_test.dart` -- still empty.
+
+**Remaining, unchanged from the plan**: Step 8 (EquipmentIdentityOutcomeSink), Step 9 (rest of the
+widget-test AC matrix), Steps 11-13 (internal specialist review, GPT-PM pre-commit HIGH review,
+verify/commit/push/report/Rosetta-close). Nothing committed yet.
+
+## 2026-09-12 -- P2.G4 implementation checkpoint: Step 8 complete
+
+**Step 8, done:** `mobile/lib/features/visual_equipment/data/equipment_identity_outcome_sink.dart` --
+`EquipmentIdentityOutcome` (a richer value object: decision/identityLevel/modelId+catalogVersion/
+shadowCandidate-modelId+catalogVersion/authority catalogVersion+identityPolicyVersion/abstainReason/
+failureCode -- deliberately NOT a bare `Decision` enum, per GPT-PM round-3's own correction: two
+outcomes sharing a Decision but differing in `identityLevel` must be distinguishable) with real
+value equality/hashCode. `EquipmentIdentityOutcomeSink` interface + `InMemoryEquipmentIdentityOutcomeSink`:
+`recordTerminal(scanId, outcome)` is a silent no-op for a byte-identical replay (the SAME outcome for
+a scanId already recorded), and flags `conflictedScanIds` for any DIFFERING outcome recorded against
+an already-recorded scanId -- the first recorded outcome is kept rather than silently overwritten.
+`recognition_history.dart` untouched, exactly as required (this sink is keyed by scanId, the opposite
+shape from that equipmentId-keyed, explicitly-not-an-event-log).
+
+Wired into `equipment_identity_providers.dart`: `equipmentIdentityOutcomeSinkProvider` (app-lifetime,
+not `autoDispose` -- a recorded outcome must outlive the family instance that produced it, for
+P2.G5 to read later), called from `equipmentIdentityProvider`'s own success path only -- never on a
+fail-open-to-null path (OCR failure, ask failure, disabled, no image path), since there is no genuine
+terminal decision to hand off from those.
+
+Tests: `equipment_identity_outcome_sink_test.dart` (6, dedupe/conflict/cross-scanId isolation) +
+2 new cases appended to `equipment_identity_providers_test.dart` (a genuine success records exactly
+once; both fail-open paths never reach the sink at all, proven with a `_SpyOutcomeSink` call counter)
+-- 10/10 in that file total. `flutter analyze` clean on both files.
+
+**Full `flutter test` run across the whole mobile suite launched as a baseline check before Steps 9/
+11-13** (internal review + GPT-PM review are about to touch shared surfaces this gate has already
+modified -- router, two ARB files, two equipment pages -- so a full-suite green baseline is being
+captured now rather than assumed from the targeted subsets run so far).
+
+**Remaining, unchanged from the plan**: Step 9 (rest of the widget-test AC matrix beyond the badge's
+own 10 tests -- OP-01/OP-02 across both surfaces plus the full Story AC state coverage), Steps 11-13
+(internal specialist review, GPT-PM pre-commit HIGH review, verify/commit/push/report/Rosetta-close).
+Nothing committed yet.
+
+## 2026-09-12 -- P2.G4: full mobile suite baseline confirmed clean before internal review
+
+Full `flutter test` run (whole `mobile/` suite, 3790 tests, ~2m54s): `+3765 -25`. All 25 failures are
+in `test/golden/` (hud_golden_test.dart, composed_screen_golden_test.dart, scan_reference_golden_test.dart,
+form_coach_golden_test.dart) -- every one a pixel-diff percentage match against the SAME pre-existing,
+already-documented font-substitution artifact this repo's own decision log recorded earlier (verified
+there by restoring HEAD's `main.dart` and reproducing byte-identical diff percentages; not this gate's
+regression, not fixable under the one-sweep rule). `scan_reference_golden_test.dart` is in that list --
+checked specifically, since this gate touched `scanner_page.dart` -- but every one of its failing cases
+matches the pre-existing set already on record, and this gate added no visual change inside the
+SCAN-G1 reference-bound region (everything new sits below the primary button, same convention as
+`ExperimentalBanner`/`_ScanNote`). Zero NEW failures anywhere in the suite from this gate's Steps 1-8/10.
+
+Proceeding to Step 11: internal specialist review (flutter-reviewer, a11y-architect, security-reviewer,
+silent-failure-hunter, in parallel) before sending anything to GPT-PM, per CLAUDE.md section 17.
+
+## 2026-09-12 -- P2.G4 Step 11: internal specialist review (4 agents, one sweep) + remediation batch
+
+**Round 1 -- all 4 specialists ran independently in parallel over the complete diff** (no agent
+seeded with another's findings, per CLAUDE.md section 6). Verdict per agent:
+
+- **flutter-reviewer**: no BLOCKER/MAJOR. 1 MINOR (`EquipmentIdentityBadge` has no `Key` at its call
+  site, so Flutter reuses `_expanded` state across a different scan's identity -- currently
+  unreachable, `equipmentIdentityEnrichmentEnabledProvider` defaults `false`). 2 informational NITs
+  (raw string route interpolation; theoretical future risk only).
+- **a11y-architect**: **2 MAJOR** -- (1) `EquipmentIdentityBadge`'s tappable pill had no `Semantics`
+  wrapper at all: no button role, no expanded/collapsed state ever announced to a screen reader: (2)
+  the pill's background was a bare `Container`/`BoxDecoration` at 8-12% alpha, the exact class of fill
+  `hud_tokens.dart`'s own doc comment documents as insufficient over an uncontrolled photograph
+  background -- bypassing the app's own contrast-engineered `HudSurface`/`HudGlass` system every other
+  tappable chip-style surface in the app already uses. Plus 2 MINOR: touch target ~32px, under the
+  44px/`HudTokens.minTapTarget` floor; an already-disclosed, in-code scope decision (raw enum wire
+  value shown untranslated in the Russian sentence) noted but not treated as a defect.
+- **security-reviewer**: no BLOCKER/MAJOR. 2 MINOR, both explicitly optional hardening -- raw string
+  interpolation into route query params (no live risk: `scanId` is a closed-form app-generated string,
+  digits+dash only, traced to its one production source); `_asStringKeyedMap`'s cast can throw
+  `TypeError` instead of `FormatException` on a pathological non-string-keyed nested map (cosmetic --
+  the sole caller's catch-all is exception-type-agnostic already). Confirmed T4 (no raw image/full OCR
+  text ever leaves the device) and App Check coverage (already active app-wide, `main.dart:275`,
+  reused automatically by every `FirebaseFunctions` handle including this gate's new service).
+- **silent-failure-hunter**: **1 MAJOR** -- `scanner_page.dart`'s `_classify` minted a new scanId on
+  every fresh (non-retry) scan but never removed the SUPERSEDED scanId's entry from
+  `scanIdImagePathProvider`'s map; the camera capture button is gated behind `_scanAgain` (which does
+  clear it) but the gallery button (`_recogniseFromGallery`) has no such gate, so repeated gallery
+  picks with no intervening "Scan again" tap grew the map by one entry per pick, unbounded, for the
+  app process's lifetime. Plus 1 MINOR: the provider's catch-all treats a genuine `parseIdentityText`
+  "never throws" invariant violation identically to an expected network/backend failure (`debugPrint`
+  only, no differentiated telemetry) -- both fail open to `null` correctly either way, so this is a
+  monitoring gap, not a user-facing defect.
+
+**Every file:line citation was verified against the actual current source before acting on it**
+(CLAUDE.md section 3/7 -- a reviewer's claim is not accepted at face value): confirmed the gallery
+button's missing gate directly in `scanner_page.dart`, confirmed the badge file has zero `Semantics`
+usage, confirmed the raw `Container`/`BoxDecoration` fill, and confirmed `HudSurface`/`HudPanel`
+(`shared/widgets/hud/hud_surface.dart`) is the established codebase mechanism these should have used.
+
+**Remediated in one batch (all 3 MAJOR):**
+
+1. `scanner_page.dart`'s `_classify`: now clears the SUPERSEDED scanId's `scanIdImagePathProvider`
+   entry at the moment a fresh scan mints a new one (not only on `_scanAgain`), closing the gallery-
+   repeat leak while leaving the retry path (`isRetry: true`, reuses `_currentScanId`) and the explicit
+   `_scanAgain` clear (still needed for the terminal "abandon this scan with nothing new to replace
+   it" case) unchanged. New regression test:
+   `mobile/test/features/scanner/scanner_page_scan_id_cleanup_test.dart` -- drives two real gallery
+   picks through the actual widget (fake `ImagePickerPlatform` returning a different path each call,
+   no `_scanAgain` tap between them) and asserts `scanIdImagePathProvider`'s map holds exactly one
+   entry, the latest, after the second pick. Fails against the pre-fix code (verified the failure mode
+   is real, not hypothetical, by tracing the exact call sites before writing the fix).
+2. `equipment_identity_badge.dart`: the header (icon+label+chevron) is now wrapped in
+   `Semantics(button: true, expanded: _expanded, label: ..., excludeSemantics: true)`; the whole pill
+   is routed through `HudSurface(glass: t.chip, ...)` (the app's own contrast-engineered chip recipe,
+   already used by every other tappable chip-style surface) instead of a raw `Container`, wrapped in a
+   `ConstrainedBox(minHeight: HudTokens.minTapTarget)` to also close the touch-target MINOR at the same
+   time (44px, WCAG 2.5.5). `EquipmentIdentityNeedMoreViewPrompt` (same file) had NO background at all
+   -- an even milder case of the identical MAJOR's root cause -- given the same `HudSurface`/`t.chip`
+   treatment for consistency (CLAUDE.md section 17: "fix the class, not the instance").
+   New regression test (`equipment_identity_badge_test.dart`, new group): asserts, via
+   `tester.ensureSemantics()` + `matchesSemantics`, that the header's semantics node is `isButton`,
+   `isFocusable`, has tap+focus actions, `hasExpandedState`, and `isExpanded` flips false->true across
+   a real tap. **Verified finding, corrected in-flight**: the header's own doc comment originally
+   claimed the expanded detail lines would stay "independently reachable, not swallowed by
+   excludeSemantics" -- the FIRST version of this test proved that claim wrong: because the header is
+   the ONLY semantics boundary anywhere in the pill, the sibling detail-line `Text` widgets merge INTO
+   the header's own semantics node (confirmed via the actual merged `label` string Flutter produced),
+   rather than forming separate reachable nodes. This is not a defect -- a screen reader gets ONE
+   focus stop that reads label + role + expanded state + the detail content together, which is a
+   correct and arguably better disclosure-widget pattern than separate stops -- but the doc comment
+   was rewritten to state the VERIFIED behavior instead of the original (wrong) assumption, per
+   CLAUDE.md section 3's "verify before claiming" applied to a fix's own reasoning, not just to
+   reviewer findings.
+
+**Deferred, not silently dropped (all MINOR/informational, all explicitly optional per their own
+reviewer):** flutter-reviewer's badge-state-reuse-across-scans MINOR (unreachable while the
+enrichment flag defaults `false`); both security MINORs (URL-encoding hardening, `TypeError` vs
+`FormatException` cosmetic mismatch); silent-failure's Crashlytics-differentiation MINOR for the
+parser's "never throws" invariant; a11y's untranslated-enum-fragment MINOR (already an explicit,
+in-code, disclosed P2.G4 scope decision, not a defect the reviewer itself asked to fix). Each is a
+real, evidence-backed observation worth a future gate's attention, not a finding this gate is
+sweeping under the rug -- recorded here so a later session does not have to re-derive them.
+
+**Post-remediation verification:** `flutter analyze` clean on all 3 touched/created files (badge
+widget, scanner_page.dart, providers file -- the last touched only transiently during drafting and
+reverted to its pre-existing content, see below). Targeted suites green:
+`equipment_identity_badge_test.dart` (15/15, including the 2 new semantics tests),
+`scanner_page_scan_id_cleanup_test.dart` (1/1, new), `scanner_page_test.dart` (85/85),
+`scan_controller_test.dart`, `equipment_identity_providers_test.dart` -- all green, zero regressions.
+`git diff --stat` on `scanner_page_test.dart`/`scan_controller_test.dart` reconfirmed empty. Full
+whole-suite `flutter test` re-run launched as the final baseline before Step 12 (GPT-PM pre-commit
+HIGH review).
+
+**Note on `equipment_identity_providers.dart`**: briefly, mistakenly, added a duplicate
+`import 'package:flutter/foundation.dart' show debugPrint;` while drafting a Crashlytics-
+differentiation fix for the (deferred, not implemented) silent-failure MINOR above, then reverted it
+in the same turn on noticing the file already imported `debugPrint` (it is used at the provider's
+existing catch block) -- caught before it reached disk in any committed state; recorded only because
+this file's own decision-log discipline asks for genuine mistakes to be visible, not just successes.
+
+**Full whole-suite `flutter test` re-run after remediation, confirmed clean**: 3817 tests, `+3792
+-25`. Grepped every `[E]` line in the full log
+(`D:/Temp/claude/d--Repo/5c302c91-31c2-4e5a-8695-d3eb4d063e24/scratchpad/full_test_run_2.log`):
+all 25 failures are in `test/golden/` (`hud_golden_test.dart`, `composed_screen_golden_test.dart`,
+`scan_reference_golden_test.dart`, `form_coach_golden_test.dart`), the exact same 25 cases already
+on record from the pre-remediation baseline earlier this gate -- same test names, same count. Zero
+new failures from the Step 11 remediation batch. `git diff --stat` on `scanner_page_test.dart`/
+`scan_controller_test.dart` reconfirmed empty a second time, post-remediation. Proceeding to Step 12:
+GPT-PM pre-commit HIGH-class review of the complete gate diff.
+
+## 2026-09-12 -- P2.G4 Step 12, round 1: GPT-PM REVISE (0 BLOCKER / 4 MAJOR), all confirmed and
+## remediated in one batch
+
+Sent the complete gate diff to GPT-PM (`review.js --uncommitted --project Fitness_App`, scope note
+at `D:/Temp/claude/d--Repo/5c302c91-31c2-4e5a-8695-d3eb4d063e24/scratchpad/p2g4_scope_note.md`
+summarising the already-remediated Step 11 internal-review MAJORs so the round would not re-spend
+itself on those). Reply (`reviewInputHash 8d6ad3de...`, `correlated: true`): `VERDICT: REVISE -- 0
+BLOCKER / 4 MAJOR`. **Every finding was verified against real repository evidence before acting on
+it** (CLAUDE.md section 3/7/23 -- a reviewer's claim is a finding to check, not a fact) -- all 4
+confirmed genuine:
+
+1. **OP-01 zero-evidence badge visibility was actually wrong, not merely untested.**
+   `functions-equipment-identity/src/p2/exact_resolution_policy.ts:148` ("no candidate resolves ->
+   NOT_ELIGIBLE") + `orchestrator.ts:606-607` (NOT_ELIGIBLE -> NOT_SUPPORTED, no shadowCandidate)
+   confirm a genuine zero-evidence scan resolves to `NOT_SUPPORTED` with no shadow candidate --
+   and `EquipmentIdentityBadge.isVisible` returned `true` for ANY `NOT_SUPPORTED` regardless of
+   shadowCandidate. The rev4 plan's own step 5 text says "Renders nothing for empty/ABSTAIN/any
+   UNAVAILABLE_*/error (OP-01)" -- "empty" is exactly this case. Even the existing test's own name
+   ("NOT_SUPPORTED with no shadowCandidate renders nothing") contradicted its own assertion
+   (`findsOneWidget`), which is itself evidence this was a real, previously-unnoticed defect, not a
+   reviewer's misreading.
+2. **The in-workout surface (WorkoutPlayerPage) was never actually implemented -- Step 9 was
+   entered before Step 11 with a real gap.** The rev4 plan's own step 7 TITLE is "WorkoutPlayerPage
+   in-workout SURFACE" and step 9's DoD requires OP-01/OP-02 "(both surfaces)" -- read against the
+   plan file itself (`D:\Repo\pm-bridge\state\rosetta\plans\
+   fitness_app-2026-09-11T18-28-24-330Z-bced53.json`), "both surfaces" can only mean the scanner
+   slot and this page's own "surface," not two widgets on one page. The prior implementation only
+   threaded `scanId` as inert plumbing ("not consumed by anything on this page yet... deliberately
+   deferred") -- a silent scope narrowing made without re-confirming it against the plan's own
+   words (exactly what CLAUDE.md section 17 warns against: "never silently reinterpret a product
+   requirement").
+3. **Identity-surface visibility depended on the GENERIC `ScanOutcome`, which can silently discard
+   an independently-resolved identity result.** The scanner-page identity slot's gating condition
+   (`result.outcome == confident/alternatives/unknown`) matched the rev4 plan's OWN literal step-6
+   text -- so this was a genuine defect in the plan's own design, not an implementation slip. OCR-
+   driven identity resolution and the generic visual matcher are deliberately independent
+   pipelines (that independence is P2.G4's whole premise); a machine the generic recognizer cannot
+   place (`noEquipment`/`timeout`/`failed`) can still have a placard OCR resolves to a real server
+   MATCH, and the old gating would silently drop that already-recorded (in the outcome sink)
+   result from the widget tree. Per CLAUDE.md section 17 ("ground truth order: repository, then
+   decision log, then approved roadmap... never preserve a design known to be wrong because an
+   older plan still says it"), this is fixed as a correction to the plan's own design, not treated
+   as an unauthorized deviation from it.
+4. **Terminal-outcome dedupe did not compare the complete meaningful payload the rev4 amendment
+   itself asked for.** The plan's own step-8 text says "the meaningful subset of EquipmentIdentity's
+   own real fields, not just its bare Decision enum" -- verified that the first implementation
+   captured only decision/identityLevel/model+shadow ids and catalog versions/2-of-10 authority
+   fields/abstain+failure, silently normalising away a difference in `ocrVersion`/
+   `textPolicyVersion`/`fusionPolicyVersion`/`identityParserVersion`/`recognitionSessionId`/
+   `identityContractVersion`/`evidenceLane`/`verifierInvoked` between two terminal replies for the
+   same scanId -- exactly the class of drift rev4's "ANY differing payload is a conflict" rule was
+   designed to catch. GPT-PM's own suggested resolution ("preferably the complete immutable
+   response projection") was adopted rather than a narrower reading, given the genuine ambiguity in
+   "meaningful subset" and the real risk of silently hiding a policy/algorithm-version drift the
+   sink exists specifically to surface.
+
+**Remediated, all 4, in one batch:**
+
+1. `equipment_identity_badge.dart`: `EquipmentIdentityBadge.isVisible` now requires `MATCH` OR
+   (`NOT_SUPPORTED` AND `shadowCandidate != null`) -- an ordinary no-candidate `NOT_SUPPORTED`
+   renders nothing. Fixed the pre-existing self-contradictory test
+   (`equipment_identity_badge_test.dart`) to assert `findsNothing`, matching its own name.
+2. `workout_player_page.dart`: now actually renders `EquipmentIdentityBadge`/
+   `EquipmentIdentityNeedMoreViewPrompt` (computed the same way `scanner_page.dart`'s own slot is,
+   at the top of `build`, unconditional -- both widgets self-gate) right after `ExerciseHero`. New
+   test file `mobile/test/features/equipment/workout_player_identity_test.dart` (3 tests): a
+   resolved MATCH renders the badge with a measured bounded footprint (`t.getSize(badge).height <
+   60`) -- a numeric size assertion rather than a `matchesGoldenFile` pixel golden, deliberately:
+   this repo's own documented font-substitution environment issue (25 pre-existing golden failures
+   on this Windows machine, unrelated to any gate's changes) would make a pixel golden an unreliable
+   proof of the actual claim ("stays within a small fixed footprint"), where a numeric height bound
+   is unaffected by font rendering. Flagged this substitution explicitly rather than silently
+   presenting it as a literal golden. Also proves the no-scanId and enrichment-off cases still
+   render nothing, so every pre-existing entry point is unaffected. `workout_player_day_test.dart`
+   (the pre-existing suite) reconfirmed green, 12/12, no regression.
+3. `scanner_page.dart`: the identity slot's visibility condition no longer references `result`/
+   `scan.isLoading`/`ScanOutcome` at all -- both widgets are now rendered unconditionally (they
+   already fully self-gate). New test file
+   `mobile/test/features/scanner/scanner_page_identity_visibility_test.dart` (4 tests): zero-
+   evidence-with-enrichment-on and enrichment-off both render nothing (the OP-01 equivalence
+   finding #1 required); `noEquipment` (generic) + identity `MATCH`/`NEED_MORE_VIEW` (independent
+   pipeline) still render the badge/prompt respectively (finding #3).
+4. `equipment_identity.dart`: added real value `==`/`hashCode` to `RecognitionAuthorityTuple`
+   (all 10 fields). `equipment_identity_outcome_sink.dart`: `EquipmentIdentityOutcome` widened to
+   carry `recognitionSessionId`, `identityContractVersion`, `evidenceLane`, `verifierInvoked`, and
+   the FULL `authority` tuple (not 2 of 10 fields) alongside the existing decision/identityLevel/
+   model+shadow/abstain+failure fields -- the complete `EquipmentIdentity` projection except
+   `scanId` itself (the sink's own map key, not part of the payload). 8 new mutation tests appended
+   to `equipment_identity_outcome_sink_test.dart` proving each newly-widened field alone makes two
+   outcomes unequal (recognitionSessionId, identityContractVersion, evidenceLane, verifierInvoked,
+   and 4 authority sub-fields including one null-vs-set case).
+
+**Post-remediation verification:** `flutter analyze` clean on every touched/new file (whole-repo
+pass: the same 17 pre-existing issues, none in this gate's files). Every directly affected suite
+green: `equipment_identity_badge_test.dart` (17/17 incl. the corrected test), `scanner_page_test.dart`
+(100/100 across the combined run), `scan_controller_test.dart`, `equipment_identity_providers_test.dart`,
+`equipment_identity_outcome_sink_test.dart` (22/22 incl. the 8 new mutation tests), the 2 new
+integration test files (4/4 and 3/3), `workout_player_day_test.dart` (12/12, no regression) -- all
+green. `git diff --stat` on `scanner_page_test.dart`/`scan_controller_test.dart` reconfirmed empty a
+third time. Full whole-suite `flutter test` re-run launched to confirm zero new failures anywhere
+before sending round 2 back to GPT-PM for verification (per CLAUDE.md section 17's review budget:
+round 2 verifies the reported fixes plus any regression the remediation itself caused, nothing else).
+
+Full re-run confirmed clean (3807+ tests, exactly the same 25 pre-existing golden failures, zero
+new). Sent round 2 to GPT-PM (`review.js --uncommitted --round 2`, scope note narrowing to exactly
+the 4 fixes above). First send attempt failed cleanly: the orchestrator daemon was running a stale
+build (`452d6ad0` in-memory vs `877ce575` on disk) from a concurrent session's earlier restart --
+`pm_bridge_mode_off`/`pm_bridge_mode_on` cycled it to the current build before retrying, per this
+repo's own standing practice of never resending into a broken transport blind. The retried send
+parked mid-flight (another restart raced it) and was recovered via `pm_bridge_job_status` on its
+`jobId` rather than re-sent -- the job's own `parkedState`/`generationLease` showed it was still
+genuinely in flight, matching this project's memory note that a parked/cancelled request's real
+answer belongs in PM Bridge's own job record, not a blind retry.
+
+## 2026-09-12 -- P2.G4 Step 12, round 2: GPT-PM REVISE (0 BLOCKER / 2 MAJOR) -- both confirmed
+## against real evidence, remediated
+
+Round 2 verdict: `VERDICT: REVISE -- 0 BLOCKER / 2 MAJOR`. GPT-PM closed findings #1 and #4 outright
+("Finding #1 is CLOSED" / "Finding #4 is CLOSED") and raised 2 NEW findings -- both about the round-1
+remediation ITSELF, squarely inside section 17's round-2 budget ("verification of the reported fixes
+plus regressions directly caused by that remediation"), not new unrelated scope. Both verified against
+real evidence before acting (section 3/7/23), not accepted on the reviewer's say-so:
+
+**Finding A (on fix #2): the in-workout badge's "small fixed footprint" was height-only, not width.**
+Read `smooth_scroll_list.dart` (a plain `ListView.builder`) and Flutter's own sliver-to-box constraint
+conversion: a vertical list gives every item a TIGHT cross-axis (width) constraint equal to the
+viewport width -- confirmed empirically (a probe test, `test/_scratch_align_probe_test.dart`, deleted
+after use), not asserted from memory of the Flutter layout algorithm, which had already produced two
+wrong predictions earlier in this same round (see below). The pre-existing `scanner_page.dart`
+placement uses `crossAxisAlignment: CrossAxisAlignment.stretch` (line 793), which gives the exact same
+tight-width behavior -- so this was never a WorkoutPlayerPage-only defect; it was a latent defect in
+`EquipmentIdentityBadge` itself, unnoticed until a width assertion existed anywhere. GPT-PM's citation
+of OP-02/T6 ("the collapsed indicator's footprint... does not exceed a small fixed badge size") was
+verified against the actual gate-contracts doc,
+`core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_
+DOD_2026-08-22.md:756` (T6) -- a real, binding, pre-existing DoD line, not an invented one.
+
+**Finding B (on fix #3): removing the `ScanOutcome` gate also removed the `!scan.isLoading` gate**,
+letting the identity slot render before the generic ("type") result settles. Read
+`scanner_page.dart`'s own identity computation (`identity` was gated only on
+`equipmentIdentityEnrichmentEnabledProvider && currentScanId != null`, with no reference to `scan` at
+all) and confirmed GPT-PM's cited contract line directly:
+`SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md:752`, task T2 -- "Progressive
+type-first rendering | No spinner dependency on exact identity | UI renders type result before
+identity resolves" -- a real, pre-existing, binding DoD line, confirmed by direct primary-source read,
+not GPT-PM's own paraphrase accepted on faith.
+
+**Remediation, round 3, both fixed in one batch:**
+
+- **Finding B**: `scanner_page.dart` -- split the identity computation into `resolvedIdentity` (the
+  raw provider read, unconditional on `scan`) and `identity = scan.isLoading ? null : resolvedIdentity`
+  -- restores the T2 boundary without reintroducing any `ScanOutcome` dependency (finding #3's fix
+  stays intact: settling to `noEquipment`/`timeout`/`failed` still shows an independently-resolved
+  identity; only *still loading* suppresses it). New test in
+  `scanner_page_identity_visibility_test.dart` ("T2: identity resolves before the generic scan
+  settles...") uses a controllable `_DelayedMatchService` (a `Completer`-backed fake, the same idiom
+  `scanner_page_test.dart`'s own `_HangingService`/`_RetryProbeService` already establish) to prove
+  BOTH halves in one test: the badge stays hidden while the generic classification is still pending
+  (regardless of how many frames are pumped), then appears once the generic future completes to
+  `noEquipment` -- proving T2 and finding #3's independence fix hold simultaneously.
+
+- **Finding A**: this took two wrong iterations before the actual fix, kept here because the
+  reasoning-vs-verification gap is the real lesson, not just the final diff. First attempt: wrapped
+  the badge/prompt in an outer `Align(alignment: centerLeft)` with no `widthFactor` -- reasoned (not
+  measured) that `Align` "loosens" the constraint it hands its child; measured width was unchanged
+  (768/360, same as before the fix). Second attempt: added `widthFactor: 1.0`, mirroring `HudChip`'s
+  own already-shipped `widthFactor: expand ? null : 1.0` shrink-to-content idiom
+  (`hud_surface.dart:859`) -- still unchanged. A probe test isolating each layer (`Align` alone,
+  `Material`+`InkWell` alone, `HudSurface` alone) found the actual cause: `HudSurface`'s own
+  `topHighlight` branch (fired whenever a glass recipe defines one -- `t.chip` always does, both
+  themes) wraps its content in `Stack(fit: StackFit.passthrough)`, and empirically that `Stack`
+  reports its OWN size as the biggest its incoming constraints allow, REGARDLESS of its children's
+  actual size -- confirmed by five independent probe measurements landing on exactly that pattern
+  (504/64 unbounded-height, 200/208 bounded-width-only, 200/160 bounded-both). This is `HudSurface`'s
+  own behavior, shared by every one of its callers (`HudButton`, `HudChip`, `HudPanel`, `HudSheet`),
+  not specific to this widget -- fixing `HudSurface` itself was out of this gate's scope (a shared,
+  widely-golden-tested component). Fixed instead with an explicit `ConstrainedBox(maxWidth: 220,
+  maxHeight: 60)` around the pill, applied ONLY while collapsed (`!_expanded`) -- T6's own DoD text
+  says "the COLLAPSED indicator's footprint," and constraining the EXPANDED state the same way risked
+  silently clipping a longer detail line (`HudSurface` clips via its own `ClipRRect`) for no
+  requirement that asks for it. `maxHeight` had to be bounded alongside `maxWidth`, not on its own:
+  bounding width alone (with height left to the `ListView`'s natural unbounded-height) made the same
+  `Stack` fall back to some large, unrelated value (measured 208px for one short line) rather than a
+  small natural height -- bounding both together avoids that fallback entirely. Left
+  `EquipmentIdentityNeedMoreViewPrompt` alone (reverted its own ineffective `Align` wrapper from the
+  first iteration): it is a full instructional sentence meant to wrap across lines, not a collapsed
+  one-line pill, and T6's DoD text is specific to the collapsed BADGE.
+
+  Width/height test assertions in `scanner_page_identity_visibility_test.dart` and
+  `workout_player_identity_test.dart` updated to `lessThanOrEqualTo` against the real bounds now in
+  the code (220 width; 70 height at the outer keyed element, which includes the pill's own 10px top
+  spacing on top of the 60px bounded content) -- `lessThan` would fail at the boundary itself, since
+  the `Stack` quirk above means the bounded size is reported as exactly the max, not merely under it.
+
+**Post-remediation verification:** `flutter analyze` clean on all three touched files (`scanner_page.
+dart`, `equipment_identity_badge.dart`, `workout_player_page.dart` unchanged this round). Every
+directly affected suite green: `equipment_identity_badge_test.dart` (13/13),
+`scanner_page_identity_visibility_test.dart` (5 tests incl. the new T2 test),
+`workout_player_identity_test.dart` (3/3), `workout_player_day_test.dart` (12/12, no regression).
+`git diff --stat` on `scanner_page_test.dart`/`scan_controller_test.dart` reconfirmed empty a fourth
+time. Full whole-suite `flutter test` re-run launched to confirm zero new failures before sending
+round 3 back to GPT-PM.
+
+Full re-run confirmed clean (3808 tests total, exactly the same 25 pre-existing golden failures,
+zero new). Sent round 3 (`review.js --uncommitted --round 3`, scope note narrowing to exactly
+findings A/B above) via the current, stable orchestrator build (`pm_bridge_mode_status` confirmed:
+this session's own MCP connection is one build behind on disk but routing/project-resolution is
+unaffected -- explicitly not a reason to stop, per the tool's own message).
+
+## 2026-09-12 -- P2.G4 Step 12, round 3: GPT-PM APPROVE -- 0 BLOCKER / 0 MAJOR -- gate CLOSED for review
+
+`VERDICT: APPROVE -- 0 BLOCKER / 0 MAJOR`, correlated, on `reviewInputHash
+ac43eefb6625ebc6e41940d0aaab451a41c564671af7b2b2dcc5c7e250c836af`. Both findings CLOSED with
+specific evidence cited against the actual diff (the `ConstrainedBox(maxWidth: 220, maxHeight: 60)`
+scoping to the collapsed pill; the `scan.isLoading ? null : resolvedIdentity` split preserving
+finding #3's independence fix while restoring T2). No new BLOCKER/MAJOR found in the round-2-to-
+round-3 remediation. Per CLAUDE.md section 17 ("No unresolved BLOCKER/MAJOR -> VERDICT: APPROVE,
+gate CLOSED"), P2.G4's review is complete. Proceeding to Step 13: final verification, commit, push,
+decision-log closure entry, html-report pair, and `pm_rosetta_close`.

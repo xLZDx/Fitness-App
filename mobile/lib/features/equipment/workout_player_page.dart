@@ -29,6 +29,9 @@ import '../workouts/state/set_timer_providers.dart';
 import '../workouts/widgets/rest_timer.dart';
 import '../workouts/widgets/set_capture_sheet.dart';
 import '../home/home_page.dart' show formatScheduleLabel;
+import '../scanner/widgets/equipment_identity_badge.dart';
+import '../visual_equipment/data/equipment_identity.dart';
+import '../visual_equipment/state/equipment_identity_providers.dart';
 import '../workouts/widgets/set_timer_card.dart';
 import '../workouts/widgets/warmup_calculator.dart';
 import 'data/equipment_models.dart';
@@ -133,9 +136,21 @@ class WorkoutPlayerPage extends ConsumerWidget {
     super.key,
     required this.exerciseId,
     this.dayId,
+    this.scanId,
   });
 
   final String exerciseId;
+
+  /// P2.G4: the scan (if any) whose server identity resolution led here,
+  /// threaded through `/equipment/:id` -> `/exercise/:id` -> here, each hop
+  /// forwarding it only when it itself received one -- mirrors [dayId]'s own
+  /// optional-and-forwarded shape. Consumed by this page's own in-workout
+  /// identity slot (GPT-PM pre-commit review, this gate: the rev4 plan's own
+  /// step 7 titles this page's identity display "the in-workout surface",
+  /// and step 9's DoD requires OP-01/OP-02 on BOTH surfaces -- the scanner
+  /// slot and this one -- not threading with nothing rendered at the end of
+  /// it). Never used for denominator/report arithmetic, which stays P2.G5's.
+  final String? scanId;
 
   /// The scheduled day this visit belongs to, or null when the player was
   /// opened on a single exercise (a scan, a deep link, the AI planner).
@@ -164,6 +179,16 @@ class WorkoutPlayerPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final exercise = ref.watch(exerciseResolutionProvider(exerciseId));
+    // P2.G4's in-workout identity surface (GPT-PM pre-commit review, this
+    // gate) -- computed unconditionally at the top of build, same pattern
+    // `scanner_page.dart`'s own identity slot uses, rather than only inside
+    // the `data:` branch below, so a rebuild reliably re-subscribes to it
+    // regardless of `exercise`'s own loading/error state.
+    final String? scanIdHere = scanId;
+    final EquipmentIdentity? identity =
+        scanIdHere != null && ref.watch(equipmentIdentityEnrichmentEnabledProvider)
+            ? ref.watch(equipmentIdentityProvider(scanIdHere)).valueOrNull
+            : null;
 
     return FrostedScaffold(
       appBar: GlassAppBar(title: AppLocalizations.of(context).equipmentWorkout),
@@ -267,6 +292,14 @@ class WorkoutPlayerPage extends ConsumerWidget {
                   const SizedBox(height: 16),
                 ],
                 ExerciseHero(exercise: item),
+                // P2.G4's in-workout identity surface (GPT-PM pre-commit
+                // review, this gate) -- both widgets fully self-gate
+                // (`isVisible`, OP-01), so rendering them unconditionally
+                // here is exactly as safe as on `scanner_page.dart`'s own
+                // slot: a null `scanId` or enrichment-off (the default)
+                // resolves `identity` to null and both render nothing.
+                EquipmentIdentityBadge(identity: identity),
+                EquipmentIdentityNeedMoreViewPrompt(identity: identity),
                 const SizedBox(height: 16),
                 // A clip or nothing. The two photograph fallbacks that used to sit
                 // here are gone: `frames` and `imageUrls` are both stills of a man

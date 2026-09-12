@@ -53,9 +53,15 @@ String resolveEquipmentReportGymId(EquipmentAccess? equipment) {
 }
 
 class EquipmentDetailPage extends ConsumerWidget {
-  const EquipmentDetailPage({super.key, required this.equipmentId});
+  const EquipmentDetailPage({super.key, required this.equipmentId, this.scanId});
 
   final String equipmentId;
+
+  /// P2.G4: present only when this page was reached from a scan that
+  /// resolved a server identity -- forwarded to `/exercise/:id` when the
+  /// user opens one of this equipment's exercises (`_ExerciseCard`'s own
+  /// `scanId`), absent for every other entry point.
+  final String? scanId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -280,7 +286,7 @@ class EquipmentDetailPage extends ConsumerWidget {
                     widgets.add(const SizedBox(height: 12));
                   }
                   for (final e in rec.items) {
-                    widgets.add(_ExerciseCard(exercise: e));
+                    widgets.add(_ExerciseCard(exercise: e, scanId: scanId));
                     widgets.add(const SizedBox(height: 12));
                   }
                   return widgets;
@@ -486,14 +492,21 @@ class _SuitabilityCard extends ConsumerWidget {
 // how "one design" becomes two.
 
 class _ExerciseCard extends StatelessWidget {
-  const _ExerciseCard({required this.exercise});
+  const _ExerciseCard({required this.exercise, this.scanId});
   final ExerciseItem exercise;
+
+  /// P2.G4 -- see [EquipmentDetailPage.scanId].
+  final String? scanId;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return HudPanel(
-      onTap: () => GoRouter.of(context).push('/exercise/${exercise.id}'),
+      onTap: () => GoRouter.of(context).push(
+        scanId == null
+            ? '/exercise/${exercise.id}'
+            : '/exercise/${exercise.id}?scanId=$scanId',
+      ),
       child: Row(
         children: [
           ExerciseThumb(exercise: exercise, size: 52),

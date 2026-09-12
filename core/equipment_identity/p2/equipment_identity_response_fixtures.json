@@ -1,0 +1,594 @@
+{
+  "$comment": "P2.G4 rev4 (SPTR Equipment Recognition v4.4) -- shared cross-language fixture cases proving functions-equipment-identity/src/p2/contract.ts's EquipmentIdentityResponseSchema and mobile/lib/features/visual_equipment/data/equipment_identity.dart's EquipmentIdentity.fromJson stay behaviorally identical. Consumed by functions-equipment-identity/src/p2/__tests__/contract.test.ts and mobile/test/features/visual_equipment/equipment_identity_test.dart. GPT-PM rev4 GO (2026-09-11) required this fixture set to exist and be consumed by both languages, not independently duplicated JSON.",
+  "schemaVersion": 1,
+  "validCases": [
+    {
+      "name": "match_exact_model",
+      "response": {
+        "scanId": "scan-fixture-001",
+        "recognitionSessionId": "session-fixture-001",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "identityParserVersion": "p2g2-identity-parser-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "MATCH",
+        "identityLevel": "EXACT_MODEL",
+        "model": {
+          "modelId": "life-fitness-9nph-9-15",
+          "catalogVersion": "cv-2026-09-01",
+          "textSupportStatus": "VERIFIED"
+        },
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "match_shadow_candidate_experimental",
+      "response": {
+        "scanId": "scan-fixture-002",
+        "recognitionSessionId": "session-fixture-002",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "identityParserVersion": "p2g2-identity-parser-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "ABSTAIN",
+        "abstainReason": "INSUFFICIENT_EVIDENCE",
+        "shadowCandidate": {
+          "modelId": "star-trac-8trx",
+          "catalogVersion": "cv-2026-09-01",
+          "textSupportStatus": "EXPERIMENTAL"
+        },
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "abstain_low_confidence",
+      "response": {
+        "scanId": "scan-fixture-003",
+        "recognitionSessionId": "session-fixture-003",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "ABSTAIN",
+        "abstainReason": "LOW_CONFIDENCE",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "abstain_out_of_distribution",
+      "response": {
+        "scanId": "scan-fixture-004",
+        "recognitionSessionId": "session-fixture-004",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "ABSTAIN",
+        "abstainReason": "OUT_OF_DISTRIBUTION",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "abstain_evidence_conflict",
+      "response": {
+        "scanId": "scan-fixture-005",
+        "recognitionSessionId": "session-fixture-005",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "ABSTAIN",
+        "abstainReason": "EVIDENCE_CONFLICT",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "need_more_view",
+      "response": {
+        "scanId": "scan-fixture-006",
+        "recognitionSessionId": "session-fixture-006",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "NEED_MORE_VIEW",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "not_supported",
+      "response": {
+        "scanId": "scan-fixture-007",
+        "recognitionSessionId": "session-fixture-007",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "NOT_SUPPORTED",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "not_supported_with_shadow_candidate",
+      "response": {
+        "scanId": "scan-fixture-007b",
+        "recognitionSessionId": "session-fixture-007b",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "NOT_SUPPORTED",
+        "shadowCandidate": {
+          "modelId": "precor-amt-885",
+          "catalogVersion": "cv-2026-09-01",
+          "textSupportStatus": "EXPERIMENTAL"
+        },
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "cancelled_stale",
+      "response": {
+        "scanId": "scan-fixture-008",
+        "recognitionSessionId": "session-fixture-008",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "CANCELLED_STALE",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "unsupported_client_contract",
+      "response": {
+        "scanId": "scan-fixture-009",
+        "recognitionSessionId": "session-fixture-009",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "UNSUPPORTED_CLIENT_CONTRACT",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "unavailable_timeout",
+      "response": {
+        "scanId": "scan-fixture-010",
+        "recognitionSessionId": "session-fixture-010",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "UNAVAILABLE_TIMEOUT",
+        "failureCode": "TIMEOUT",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "unavailable_network",
+      "response": {
+        "scanId": "scan-fixture-011",
+        "recognitionSessionId": "session-fixture-011",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "UNAVAILABLE_NETWORK",
+        "failureCode": "NETWORK",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "unavailable_appcheck",
+      "response": {
+        "scanId": "scan-fixture-012",
+        "recognitionSessionId": "session-fixture-012",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "UNAVAILABLE_APPCHECK",
+        "failureCode": "APPCHECK",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "unavailable_rate_limit",
+      "response": {
+        "scanId": "scan-fixture-013",
+        "recognitionSessionId": "session-fixture-013",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "UNAVAILABLE_RATE_LIMIT",
+        "failureCode": "RATE_LIMITED",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "unavailable_backend",
+      "response": {
+        "scanId": "scan-fixture-014",
+        "recognitionSessionId": "session-fixture-014",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "UNAVAILABLE_BACKEND",
+        "failureCode": "BACKEND_ERROR",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "unavailable_catalog_version",
+      "response": {
+        "scanId": "scan-fixture-015",
+        "recognitionSessionId": "session-fixture-015",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "UNAVAILABLE_CATALOG_VERSION",
+        "failureCode": "CATALOG_VERSION_UNAVAILABLE",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "type_only_identity_level",
+      "response": {
+        "scanId": "scan-fixture-016",
+        "recognitionSessionId": "session-fixture-016",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "ABSTAIN",
+        "abstainReason": "INSUFFICIENT_EVIDENCE",
+        "identityLevel": "TYPE_ONLY",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "brand_and_type_identity_level",
+      "response": {
+        "scanId": "scan-fixture-017",
+        "recognitionSessionId": "session-fixture-017",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "ABSTAIN",
+        "abstainReason": "INSUFFICIENT_EVIDENCE",
+        "identityLevel": "BRAND_AND_TYPE",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "product_line_identity_level",
+      "response": {
+        "scanId": "scan-fixture-018",
+        "recognitionSessionId": "session-fixture-018",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "ABSTAIN",
+        "abstainReason": "INSUFFICIENT_EVIDENCE",
+        "identityLevel": "PRODUCT_LINE",
+        "verifierInvoked": false
+      }
+    }
+  ],
+  "invalidCases": [
+    {
+      "name": "match_missing_model",
+      "reason": "decision MATCH requires model",
+      "response": {
+        "scanId": "scan-fixture-i01",
+        "recognitionSessionId": "session-fixture-i01",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "MATCH",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "model_present_without_match",
+      "reason": "model is present but decision is not MATCH",
+      "response": {
+        "scanId": "scan-fixture-i02",
+        "recognitionSessionId": "session-fixture-i02",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "ABSTAIN",
+        "abstainReason": "LOW_CONFIDENCE",
+        "model": {
+          "modelId": "life-fitness-9nph-9-15",
+          "catalogVersion": "cv-2026-09-01",
+          "textSupportStatus": "VERIFIED"
+        },
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "model_and_shadow_candidate_both_present",
+      "reason": "model and shadowCandidate are mutually exclusive",
+      "response": {
+        "scanId": "scan-fixture-i03",
+        "recognitionSessionId": "session-fixture-i03",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "MATCH",
+        "model": {
+          "modelId": "life-fitness-9nph-9-15",
+          "catalogVersion": "cv-2026-09-01",
+          "textSupportStatus": "VERIFIED"
+        },
+        "shadowCandidate": {
+          "modelId": "star-trac-8trx",
+          "catalogVersion": "cv-2026-09-01",
+          "textSupportStatus": "EXPERIMENTAL"
+        },
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "abstain_reason_and_failure_code_both_present",
+      "reason": "abstainReason and failureCode are mutually exclusive",
+      "response": {
+        "scanId": "scan-fixture-i04",
+        "recognitionSessionId": "session-fixture-i04",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "UNAVAILABLE_TIMEOUT",
+        "abstainReason": "LOW_CONFIDENCE",
+        "failureCode": "TIMEOUT",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "abstain_reason_without_abstain_decision",
+      "reason": "abstainReason is present but decision is not ABSTAIN",
+      "response": {
+        "scanId": "scan-fixture-i05",
+        "recognitionSessionId": "session-fixture-i05",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "NEED_MORE_VIEW",
+        "abstainReason": "LOW_CONFIDENCE",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "unavailable_missing_failure_code",
+      "reason": "decision UNAVAILABLE_* requires a failureCode",
+      "response": {
+        "scanId": "scan-fixture-i06",
+        "recognitionSessionId": "session-fixture-i06",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "UNAVAILABLE_TIMEOUT",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "failure_code_without_unavailable_decision",
+      "reason": "failureCode is present but decision is not an UNAVAILABLE_* value",
+      "response": {
+        "scanId": "scan-fixture-i07",
+        "recognitionSessionId": "session-fixture-i07",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "NEED_MORE_VIEW",
+        "failureCode": "TIMEOUT",
+        "verifierInvoked": false
+      }
+    },
+    {
+      "name": "text_only_lane_with_verifier_invoked_true",
+      "reason": "TEXT_ONLY evidenceLane requires verifierInvoked === false",
+      "response": {
+        "scanId": "scan-fixture-i08",
+        "recognitionSessionId": "session-fixture-i08",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "NEED_MORE_VIEW",
+        "verifierInvoked": true
+      }
+    },
+    {
+      "name": "missing_required_verifier_invoked_field",
+      "reason": "verifierInvoked is required, not optional",
+      "response": {
+        "scanId": "scan-fixture-i09",
+        "recognitionSessionId": "session-fixture-i09",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "NEED_MORE_VIEW"
+      }
+    },
+    {
+      "name": "unknown_extra_field_rejected",
+      "reason": "schema is .strict() -- an unrecognised field must be rejected",
+      "response": {
+        "scanId": "scan-fixture-i10",
+        "recognitionSessionId": "session-fixture-i10",
+        "identityContractVersion": "v1",
+        "authority": {
+          "catalogVersion": "cv-2026-09-01",
+          "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+          "textPolicyVersion": "text-policy-v1",
+          "fusionPolicyVersion": "fusion-policy-v1",
+          "identityPolicyVersion": "identity-policy-v1"
+        },
+        "evidenceLane": "TEXT_ONLY",
+        "decision": "NEED_MORE_VIEW",
+        "verifierInvoked": false,
+        "unexpectedField": "should not be here"
+      }
+    }
+  ]
+}

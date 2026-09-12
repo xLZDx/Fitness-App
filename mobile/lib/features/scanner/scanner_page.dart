@@ -24,11 +24,13 @@ import '../../shared/widgets/app_buttons.dart';
 import '../../shared/widgets/experimental_banner.dart';
 import '../../shared/widgets/hud/hud_scaffold.dart';
 import '../../shared/widgets/hud/hud_surface.dart';
+import '../visual_equipment/data/equipment_identity.dart';
 import '../visual_equipment/data/live_recognition.dart';
 import '../visual_equipment/data/scan_outcome.dart';
 import '../visual_equipment/data/recognition_history.dart';
 import '../visual_equipment/data/visual_equipment_match.dart';
 import '../visual_equipment/data/machine_card.dart';
+import '../visual_equipment/state/equipment_identity_providers.dart';
 import '../visual_equipment/state/live_equipment_providers.dart';
 import '../visual_equipment/state/machine_card_providers.dart';
 import '../visual_equipment/state/recognition_history_providers.dart';
@@ -37,6 +39,7 @@ import '../visual_equipment/widgets/machine_card_view.dart';
 import 'scan_evidence.dart';
 import 'state/scan_match_providers.dart';
 import 'state/scan_preview_provider.dart';
+import 'widgets/equipment_identity_badge.dart';
 import 'widgets/scan_frame.dart';
 import 'widgets/scan_glyph.dart';
 import 'widgets/scan_match_card.dart';
@@ -384,7 +387,13 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// Navigates away. The route listener releases the camera on its own.
   Future<void> _openEquipment(String id) async {
     if (!mounted) return;
-    await GoRouter.of(context).push('/equipment/$id');
+    // P2.G4: forwards this scan's scanId (if any) into the 3-hop chain
+    // `/equipment/:id` -> `/exercise/:id` -> `/workout/:id` -- see
+    // `WorkoutPlayerPage.scanId`'s own doc comment for why.
+    final scanId = _currentScanId;
+    await GoRouter.of(context).push(
+      scanId == null ? '/equipment/$id' : '/equipment/$id?scanId=$scanId',
+    );
   }
 
   /// The viewfinder card's rendered size right now, or the reference's own
@@ -462,9 +471,45 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   /// without making the user photograph the machine again.
   String? _lastScannedPath;
 
-  Future<void> _classify(String path) async {
+  /// P2.G4: this scan's own identity, keyed independently of
+  /// [_lastScannedPath] because [equipmentIdentityProvider] is keyed by
+  /// scanId, not by path -- see `equipment_identity_providers.dart`'s own
+  /// doc comment for why cleanup of the scanId->path association is an
+  /// explicit logical event ([_scanAgain]) rather than tied to that
+  /// provider's own dispose lifecycle.
+  String? _currentScanId;
+
+  Future<void> _classify(String path, {bool isRetry = false}) async {
     if (mounted) setState(() => _attempted = true);
     _lastScannedPath = path;
+
+    // A retry re-runs recognition on the SAME photo -- it is still the same
+    // scan attempt, so it reuses the existing scanId rather than minting a
+    // new one (a new scanId here would silently orphan the identity
+    // resolution already in flight/cached for the original one). A fresh
+    // capture always mints a new scanId: two different photos must never
+    // share one, or `equipmentIdentityProvider`'s cached result from the
+    // first would be served for the second.
+    final bool freshScan = !isRetry || _currentScanId == null;
+    final scanId = freshScan
+        ? 'scan-${DateTime.now().microsecondsSinceEpoch}'
+        : _currentScanId!;
+    // A fresh scan supersedes whatever this page was previously showing. The
+    // camera capture button already forces `_scanAgain` (which clears the
+    // prior scanId's entry) before a second capture is reachable, but the
+    // gallery button has no such gate -- without clearing it here too,
+    // picking repeatedly from the gallery without ever tapping "Scan again"
+    // would grow `scanIdImagePathProvider`'s map by one entry per pick for
+    // the lifetime of the app process (silent-failure review, this gate).
+    final String? supersededScanId = freshScan ? _currentScanId : null;
+    _currentScanId = scanId;
+    ref.read(scanIdImagePathProvider.notifier).update((map) {
+      final next = {...map};
+      if (supersededScanId != null) next.remove(supersededScanId);
+      next[scanId] = path;
+      return next;
+    });
+
     await ref
         .read(visualEquipmentControllerProvider.notifier)
         .classifyFilePath(path);
@@ -492,9 +537,23 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
   void _scanAgain() {
     if (_handling) return;
     ref.read(visualEquipmentControllerProvider.notifier).reset();
+    // The explicit logical event that ends this scan (GPT-PM round-3
+    // correction, `core/DECISION_LOG.md`, 2026-09-11): clears THIS scan's
+    // own scanId->path entry, never left to `equipmentIdentityProvider`'s
+    // own `autoDispose` lifecycle, which can tear down and recreate the
+    // same family instance on ordinary transient unwatch/rewatch churn that
+    // is not the same event as the scan actually ending.
+    final endedScanId = _currentScanId;
+    if (endedScanId != null) {
+      ref.read(scanIdImagePathProvider.notifier).update((map) {
+        final next = {...map}..remove(endedScanId);
+        return next;
+      });
+    }
     setState(() {
       _attempted = false;
       _lastScannedPath = null;
+      _currentScanId = null;
     });
   }
 
@@ -513,7 +572,7 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
     if (path == null || _handling) return;
     setState(() => _handling = true);
     try {
-      await _classify(path);
+      await _classify(path, isRetry: true);
     } finally {
       if (mounted) setState(() => _handling = false);
     }
@@ -589,6 +648,25 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
             ? l10n.scannerReadOnMachine(locked.labelHint!.toUpperCase())
             : null;
     final bool scanned = _attempted && !scan.isLoading;
+    // P2.G4: this scan's own server identity, watched only when the
+    // enrichment surface is actually on (default off) -- see
+    // `equipmentIdentityProvider`'s own doc comment for why it also
+    // re-checks this flag itself as a second gate.
+    final String? currentScanId = _currentScanId;
+    final EquipmentIdentity? resolvedIdentity =
+        ref.watch(equipmentIdentityEnrichmentEnabledProvider) && currentScanId != null
+            ? ref.watch(equipmentIdentityProvider(currentScanId)).valueOrNull
+            : null;
+    // GPT-PM round-2 review (this gate): the earlier fix for finding #3
+    // (identity visibility must not depend on the GENERIC ScanOutcome) went
+    // too far and dropped the `!scan.isLoading` boundary along with it. T2's
+    // own binding DoD ("UI renders type result before identity resolves" --
+    // `SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md`)
+    // requires the primary/generic scan to settle first, regardless of which
+    // ScanOutcome it settles to -- identity resolving faster than the
+    // generic classifier must never let the identity slot appear while the
+    // primary "Recognising..." state is still on screen.
+    final EquipmentIdentity? identity = scan.isLoading ? null : resolvedIdentity;
     final String hint = scan.isLoading
         ? l10n.scannerHintRecognising
         : locked != null
@@ -835,6 +913,25 @@ class _ScannerPageState extends ConsumerState<ScannerPage>
                     ),
                 },
               ),
+              // P2.G4: one scan-level identity slot. GPT-PM pre-commit review
+              // (this gate) corrected the original design here: visibility
+              // used to depend on the GENERIC recognizer's `result.outcome`
+              // (confident/alternatives/unknown only), but OCR-driven
+              // identity resolution is a genuinely INDEPENDENT pipeline from
+              // that generic visual matcher -- a machine the generic
+              // recognizer cannot place (`noEquipment`/`timeout`/`failed`)
+              // can still have a placard OCR resolves to a real server
+              // MATCH/NEED_MORE_VIEW, and gating on the generic outcome would
+              // silently discard that independently-resolved, already-
+              // recorded (in the outcome sink) identity result from the
+              // widget tree entirely. Both widgets already fully self-gate
+              // (`isVisible`, OP-01) on the identity RESULT, never on the
+              // generic pipeline's own outcome. The `identity` value passed
+              // below still respects the ONE ScanOutcome-independent
+              // boundary that must remain -- `!scan.isLoading` (T2) -- see
+              // where `identity` is computed above.
+              EquipmentIdentityBadge(identity: identity),
+              EquipmentIdentityNeedMoreViewPrompt(identity: identity),
               // Also gated on `_cameraFailure == null`, the same condition the
               // viewfinder itself branches on: without it, denying camera
               // permission left this card showing regardless, its `_LiveCard`

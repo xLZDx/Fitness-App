@@ -300,13 +300,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/equipment/:id',
         pageBuilder: (_, state) => _fadeThrough(
-          EquipmentDetailPage(equipmentId: state.pathParameters['id']!),
+          EquipmentDetailPage(
+            equipmentId: state.pathParameters['id']!,
+            // P2.G4: optional, present only when this page was reached from
+            // a scan that resolved a server identity -- forwarded on to
+            // `/exercise/:id` -> `/workout/:id` (see those routes' own
+            // `scanId` params) so a later gate can correlate a scan with
+            // what the user actually did with the equipment it identified.
+            // Absent for every other entry point (the equipment list, a
+            // deep link), exactly like `?day=` below is absent outside a
+            // scheduled day.
+            scanId: state.uri.queryParameters['scanId'],
+          ),
         ),
       ),
       GoRoute(
         path: '/exercise/:id',
-        builder: (context, state) =>
-            ExercisePage(exerciseId: state.pathParameters['id']!),
+        builder: (context, state) => ExercisePage(
+          exerciseId: state.pathParameters['id']!,
+          scanId: state.uri.queryParameters['scanId'],
+        ),
       ),
       // No `:id`: the summary is of the DAY, not of one session. The app
       // writes one exercise per session (`workout_player_page.dart:265`), so a
@@ -327,6 +340,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           WorkoutPlayerPage(
             exerciseId: state.pathParameters['id']!,
             dayId: state.uri.queryParameters['day'],
+            scanId: state.uri.queryParameters['scanId'],
           ),
         ),
       ),

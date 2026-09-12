@@ -2578,5 +2578,36 @@
   "formcheckCloseSet": "Close set",
   "@formcheckCloseSet": {
     "description": "Form coach live HUD (gate G3)."
+  },
+  "equipmentIdentityBadgeLabel": "Server check",
+  "@equipmentIdentityBadgeLabel": {
+    "description": "P2.G4: collapsed-by-default badge label on the scan result, tap to expand. Deliberately plain/technical -- this is progressive plumbing, not a polished catalog display (no canonical brand/model text exists to show yet)."
+  },
+  "equipmentIdentityBadgeMatchLine": "Server-confirmed model: {arg0} ({arg1})",
+  "@equipmentIdentityBadgeMatchLine": {
+    "description": "P2.G4 badge, expanded, decision MATCH. arg0=modelId, arg1=catalogVersion -- both shown as opaque internal identifiers, never a fabricated display name.",
+    "placeholders": {
+      "arg0": { "type": "Object" },
+      "arg1": { "type": "Object" }
+    }
+  },
+  "equipmentIdentityBadgeShadowLine": "Internal experimental candidate, not a confirmed match: {arg0} ({arg1})",
+  "@equipmentIdentityBadgeShadowLine": {
+    "description": "P2.G4 badge, expanded, a non-authoritative shadowCandidate. Must never read as a real match -- see ShadowCandidateSchema's own doc comment server-side.",
+    "placeholders": {
+      "arg0": { "type": "Object" },
+      "arg1": { "type": "Object" }
+    }
+  },
+  "equipmentIdentityBadgeLevelLine": "Identity level: {arg0}",
+  "@equipmentIdentityBadgeLevelLine": {
+    "description": "P2.G4 badge, expanded. arg0 is the raw contract enum value (e.g. EXACT_MODEL), shown opaque rather than translated -- a technical detail, not user-facing catalog copy.",
+    "placeholders": {
+      "arg0": { "type": "Object" }
+    }
+  },
+  "equipmentIdentityNeedMoreViewPrompt": "The server needs another angle to confirm this machine. Try scanning again from a different angle.",
+  "@equipmentIdentityNeedMoreViewPrompt": {
+    "description": "P2.G4: shown instead of the badge when decision is NEED_MORE_VIEW -- a plain re-scan prompt, not the collapsible badge."
   }
 }

@@ -1,0 +1,226 @@
+{
+  "$comment": "P2.G4 rev4 (SPTR Equipment Recognition v4.4) -- shared cross-language fixture cases proving functions-equipment-identity/src/p2/contract.ts's EquipmentIdentityRequestSchema and mobile/lib/features/visual_equipment/data/cloud_equipment_identity_service.dart's buildEquipmentIdentityRequestBody stay behaviorally identical. Consumed by functions-equipment-identity/src/p2/__tests__/contract.test.ts and mobile/test/features/visual_equipment/cloud_equipment_identity_service_test.dart. GPT-PM rev4 GO (2026-09-11) required this fixture set to exercise the previously specified contract edges (current v1, optional identityParserVersion absence, unsupported contract version, malformed/bounded evidence), not merely one happy-path payload.",
+  "schemaVersion": 1,
+  "validCases": [
+    {
+      "name": "current_version_full_evidence",
+      "request": {
+        "scanId": "scan-req-fixture-001",
+        "identityContractVersion": "v1",
+        "clientCapabilities": ["MULTI_VIEW"],
+        "evidence": {
+          "brandCandidates": ["Life Fitness"],
+          "productLineCandidates": ["Inspiration"],
+          "modelCodeCandidates": ["9NPH"],
+          "typeHints": ["leg press"],
+          "conflicts": []
+        },
+        "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+        "identityParserVersion": "p2g2-identity-parser-v1"
+      }
+    },
+    {
+      "name": "current_version_no_identity_parser_version",
+      "reason": "identityParserVersion is optional -- a caller that ran no parser stage at all must still validate",
+      "request": {
+        "scanId": "scan-req-fixture-002",
+        "identityContractVersion": "v1",
+        "clientCapabilities": [],
+        "evidence": {
+          "brandCandidates": [],
+          "productLineCandidates": [],
+          "modelCodeCandidates": [],
+          "typeHints": [],
+          "conflicts": []
+        },
+        "ocrVersion": "p2g1-mlkit-latin-structured-v1"
+      }
+    },
+    {
+      "name": "current_version_empty_evidence_every_field",
+      "reason": "the zero-evidence shape OP-01 depends on -- every candidate array present but empty",
+      "request": {
+        "scanId": "scan-req-fixture-003",
+        "identityContractVersion": "v1",
+        "clientCapabilities": [],
+        "evidence": {
+          "brandCandidates": [],
+          "productLineCandidates": [],
+          "modelCodeCandidates": [],
+          "typeHints": [],
+          "conflicts": []
+        },
+        "ocrVersion": "p2g1-mlkit-latin-structured-v1"
+      }
+    },
+    {
+      "name": "current_version_conflicting_evidence",
+      "request": {
+        "scanId": "scan-req-fixture-004",
+        "identityContractVersion": "v1",
+        "clientCapabilities": [],
+        "evidence": {
+          "brandCandidates": ["Technogym"],
+          "productLineCandidates": [],
+          "modelCodeCandidates": ["8TRX", "9XYZ"],
+          "typeHints": [],
+          "conflicts": ["8TRX", "9XYZ"]
+        },
+        "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+        "identityParserVersion": "p2g2-identity-parser-v1"
+      }
+    },
+    {
+      "name": "evidence_array_at_max_bound",
+      "reason": "MAX_EVIDENCE_ARRAY_LENGTH is 20 -- exactly 20 entries is still valid, 21 is not (see invalidCases)",
+      "request": {
+        "scanId": "scan-req-fixture-005",
+        "identityContractVersion": "v1",
+        "clientCapabilities": [],
+        "evidence": {
+          "brandCandidates": [],
+          "productLineCandidates": [],
+          "modelCodeCandidates": [
+            "M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08", "M09", "M10",
+            "M11", "M12", "M13", "M14", "M15", "M16", "M17", "M18", "M19", "M20"
+          ],
+          "typeHints": [],
+          "conflicts": []
+        },
+        "ocrVersion": "p2g1-mlkit-latin-structured-v1"
+      }
+    }
+  ],
+  "invalidCases": [
+    {
+      "name": "unsupported_contract_version",
+      "reason": "identityContractVersion outside SUPPORTED_IDENTITY_CONTRACT_VERSIONS is a MALFORMED REQUEST at the schema layer only if empty -- the version-support check itself is not a schema .min(1) failure but a runtime isSupportedIdentityContractVersion() rejection; this case is still schema-VALID (the field is a non-empty string) but the mobile-side test must prove the runtime call site rejects it as UNSUPPORTED_CLIENT_CONTRACT, not that this fixture itself fails schema parsing",
+      "schemaValid": true,
+      "runtimeSupported": false,
+      "request": {
+        "scanId": "scan-req-fixture-i01",
+        "identityContractVersion": "v99-does-not-exist",
+        "clientCapabilities": [],
+        "evidence": {
+          "brandCandidates": [],
+          "productLineCandidates": [],
+          "modelCodeCandidates": [],
+          "typeHints": [],
+          "conflicts": []
+        },
+        "ocrVersion": "p2g1-mlkit-latin-structured-v1"
+      }
+    },
+    {
+      "name": "empty_contract_version_string",
+      "reason": "identityContractVersion requires min(1)",
+      "schemaValid": false,
+      "request": {
+        "scanId": "scan-req-fixture-i02",
+        "identityContractVersion": "",
+        "clientCapabilities": [],
+        "evidence": {
+          "brandCandidates": [],
+          "productLineCandidates": [],
+          "modelCodeCandidates": [],
+          "typeHints": [],
+          "conflicts": []
+        },
+        "ocrVersion": "p2g1-mlkit-latin-structured-v1"
+      }
+    },
+    {
+      "name": "empty_scan_id",
+      "reason": "scanId requires min(1)",
+      "schemaValid": false,
+      "request": {
+        "scanId": "",
+        "identityContractVersion": "v1",
+        "clientCapabilities": [],
+        "evidence": {
+          "brandCandidates": [],
+          "productLineCandidates": [],
+          "modelCodeCandidates": [],
+          "typeHints": [],
+          "conflicts": []
+        },
+        "ocrVersion": "p2g1-mlkit-latin-structured-v1"
+      }
+    },
+    {
+      "name": "missing_ocr_version",
+      "reason": "ocrVersion is required, not optional",
+      "schemaValid": false,
+      "request": {
+        "scanId": "scan-req-fixture-i03",
+        "identityContractVersion": "v1",
+        "clientCapabilities": [],
+        "evidence": {
+          "brandCandidates": [],
+          "productLineCandidates": [],
+          "modelCodeCandidates": [],
+          "typeHints": [],
+          "conflicts": []
+        }
+      }
+    },
+    {
+      "name": "evidence_array_over_max_bound",
+      "reason": "MAX_EVIDENCE_ARRAY_LENGTH is 20 -- 21 entries must be rejected (cost-amplification guard, GPT-PM MAJOR P2.G3 pre-commit review)",
+      "schemaValid": false,
+      "request": {
+        "scanId": "scan-req-fixture-i04",
+        "identityContractVersion": "v1",
+        "clientCapabilities": [],
+        "evidence": {
+          "brandCandidates": [],
+          "productLineCandidates": [],
+          "modelCodeCandidates": [
+            "M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08", "M09", "M10",
+            "M11", "M12", "M13", "M14", "M15", "M16", "M17", "M18", "M19", "M20", "M21"
+          ],
+          "typeHints": [],
+          "conflicts": []
+        },
+        "ocrVersion": "p2g1-mlkit-latin-structured-v1"
+      }
+    },
+    {
+      "name": "evidence_string_over_max_length",
+      "reason": "MAX_EVIDENCE_STRING_LENGTH is 128 -- a single 129-char token must be rejected",
+      "schemaValid": false,
+      "request": {
+        "scanId": "scan-req-fixture-i05",
+        "identityContractVersion": "v1",
+        "clientCapabilities": [],
+        "evidence": {
+          "brandCandidates": [],
+          "productLineCandidates": [],
+          "modelCodeCandidates": ["MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM"],
+          "typeHints": [],
+          "conflicts": []
+        },
+        "ocrVersion": "p2g1-mlkit-latin-structured-v1"
+      }
+    },
+    {
+      "name": "unknown_extra_field_rejected",
+      "reason": "schema is .strict() -- an unrecognised field must be rejected",
+      "schemaValid": false,
+      "request": {
+        "scanId": "scan-req-fixture-i06",
+        "identityContractVersion": "v1",
+        "clientCapabilities": [],
+        "evidence": {
+          "brandCandidates": [],
+          "productLineCandidates": [],
+          "modelCodeCandidates": [],
+          "typeHints": [],
+          "conflicts": []
+        },
+        "ocrVersion": "p2g1-mlkit-latin-structured-v1",
+        "unexpectedField": "should not be here"
+      }
+    }
+  ]
+}

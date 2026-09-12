@@ -1,3 +1,5 @@
+import * as fs from "fs";
+import * as path from "path";
 import {
   EquipmentIdentityRequestSchema,
   EquipmentIdentityResponseSchema,
@@ -263,5 +265,70 @@ describe("EquipmentIdentityResponseSchema -- model / shadowCandidate separation"
       shadowCandidate: { modelId: "m1", catalogVersion: "catalog-v1", textSupportStatus: "EXPERIMENTAL" },
     };
     expect(EquipmentIdentityResponseSchema.safeParse(response).success).toBe(false);
+  });
+});
+
+// P2.G4 rev4 (GPT-PM GO, 2026-09-11): request/response shape parity proven
+// against the SAME canonical fixture files the Dart client's tests consume
+// (core/equipment_identity/p2/*.json) -- never independently duplicated
+// JSON on either side of the language boundary.
+const FIXTURES_ROOT = path.resolve(__dirname, "../../../../core/equipment_identity/p2");
+
+function loadFixture(name: string): {
+  validCases: Array<{ name: string; response?: unknown; request?: unknown }>;
+  invalidCases: Array<{
+    name: string;
+    response?: unknown;
+    request?: unknown;
+    schemaValid?: boolean;
+    runtimeSupported?: boolean;
+  }>;
+} {
+  const raw = fs.readFileSync(path.join(FIXTURES_ROOT, name), "utf8");
+  return JSON.parse(raw);
+}
+
+describe("EquipmentIdentityResponseSchema -- shared canonical fixtures", () => {
+  const fixtures = loadFixture("equipment_identity_response_fixtures.json");
+
+  test.each(fixtures.validCases.map((c) => [c.name, c.response] as const))(
+    "valid case %s parses successfully",
+    (_name, response) => {
+      const result = EquipmentIdentityResponseSchema.safeParse(response);
+      expect(result.success).toBe(true);
+    },
+  );
+
+  test.each(fixtures.invalidCases.map((c) => [c.name, c.response] as const))(
+    "invalid case %s is rejected",
+    (_name, response) => {
+      const result = EquipmentIdentityResponseSchema.safeParse(response);
+      expect(result.success).toBe(false);
+    },
+  );
+});
+
+describe("EquipmentIdentityRequestSchema -- shared canonical fixtures", () => {
+  const fixtures = loadFixture("equipment_identity_request_fixtures.json");
+
+  test.each(fixtures.validCases.map((c) => [c.name, c.request] as const))(
+    "valid case %s parses successfully",
+    (_name, request) => {
+      const result = EquipmentIdentityRequestSchema.safeParse(request);
+      expect(result.success).toBe(true);
+    },
+  );
+
+  test.each(
+    fixtures.invalidCases.map(
+      (c) => [c.name, c.request, c.schemaValid ?? false, c.runtimeSupported] as const,
+    ),
+  )("invalid case %s matches its declared schemaValid/runtimeSupported expectation", (_name, request, schemaValid, runtimeSupported) => {
+    const result = EquipmentIdentityRequestSchema.safeParse(request);
+    expect(result.success).toBe(schemaValid);
+    if (runtimeSupported !== undefined && result.success) {
+      const parsed = result.data as { identityContractVersion: string };
+      expect(isSupportedIdentityContractVersion(parsed.identityContractVersion)).toBe(runtimeSupported);
+    }
   });
 });

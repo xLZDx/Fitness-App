@@ -1459,5 +1459,36 @@
   "formcheckCloseSet": "Закрыть сет",
   "@formcheckCloseSet": {
     "description": "Form coach live HUD (gate G3)."
+  },
+  "equipmentIdentityBadgeLabel": "Проверка сервером",
+  "@equipmentIdentityBadgeLabel": {
+    "description": "P2.G4: collapsed-by-default badge label on the scan result, tap to expand."
+  },
+  "equipmentIdentityBadgeMatchLine": "Модель подтверждена сервером: {arg0} ({arg1})",
+  "@equipmentIdentityBadgeMatchLine": {
+    "description": "P2.G4 badge, expanded, decision MATCH.",
+    "placeholders": {
+      "arg0": { "type": "Object" },
+      "arg1": { "type": "Object" }
+    }
+  },
+  "equipmentIdentityBadgeShadowLine": "Внутренний экспериментальный кандидат, не подтверждённое совпадение: {arg0} ({arg1})",
+  "@equipmentIdentityBadgeShadowLine": {
+    "description": "P2.G4 badge, expanded, a non-authoritative shadowCandidate.",
+    "placeholders": {
+      "arg0": { "type": "Object" },
+      "arg1": { "type": "Object" }
+    }
+  },
+  "equipmentIdentityBadgeLevelLine": "Уровень идентификации: {arg0}",
+  "@equipmentIdentityBadgeLevelLine": {
+    "description": "P2.G4 badge, expanded.",
+    "placeholders": {
+      "arg0": { "type": "Object" }
+    }
+  },
+  "equipmentIdentityNeedMoreViewPrompt": "Серверу нужен другой ракурс, чтобы подтвердить этот тренажёр. Попробуйте отсканировать ещё раз под другим углом.",
+  "@equipmentIdentityNeedMoreViewPrompt": {
+    "description": "P2.G4: shown instead of the badge when decision is NEED_MORE_VIEW."
   }
 }
