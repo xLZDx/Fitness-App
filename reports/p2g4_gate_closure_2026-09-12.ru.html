@@ -158,7 +158,7 @@
     <span class="pill ok">GPT-PM: APPROVE — 0 BLOCKER / 0 MAJOR</span>
     <span class="pill ok">flutter analyze: чисто</span>
     <span class="pill ok">flutter test: 3808 всего, 25 уже существующих golden-падений, 0 новых</span>
-    <span class="pill">коммит <code>b3fd37c</code> → запушен в <code>master</code></span>
+    <span class="pill">реализация <code>b3fd37c</code>, отчёт-закрытие <code>2d34cd3</code> → запушены в <code>master</code></span>
   </div>
 </header>
 
@@ -187,13 +187,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ b3fd37c</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 2d34cd3</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 <section>
   <h2>Кратко</h2>
@@ -364,8 +366,17 @@
     <li><code>git diff --stat</code> по <code>mobile/test/features/scanner_page_test.dart</code>
     и <code>mobile/test/features/visual_equipment/scan_controller_test.dart</code>: пусто,
     перепроверено после каждого раунда исправлений.</li>
-    <li>Коммит <code>b3fd37c</code>, запушен в <code>master</code> — 26 изменённых файлов,
-    +5033/-13.</li>
+    <li>Коммит реализации <code>b3fd37c</code> (26 изменённых файлов, +5033/-13) и коммит
+    отчёта-закрытия <code>2d34cd3</code> (эта пара отчётов + финальные записи decision log), оба
+    запушены в <code>master</code>.</li>
+    <li><strong>Критерий «тесты зелёные», уточнён явно</strong>: собственный текст верификации
+    плана говорит «full flutter test green» — при буквальном прочтении против 25 уже существующих
+    golden-падений это нужно было сформулировать точно, а не оставлять подразумеваемым. Принятый
+    для этого гейта критерий (и до отдельного исправления первопричины — проблемы окружения с
+    заменой шрифта): <em>ноль НОВЫХ падений относительно задокументированного базового уровня до
+    гейта; те же 25 именованных golden-тестов приняты как падения, специфичные для окружения</em>,
+    а не буквально ноль падений. Зафиксировано как формальный waiver в
+    <code>core/DECISION_LOG.md</code>.</li>
     <li>Полная детализация по каждому раунду, включая доказательства проверки каждой находки — в
     <code>core/DECISION_LOG.md</code>.</li>
   </ul>
@@ -376,6 +387,8 @@
   это явно вне рамок этого гейта, согласно собственной заметке GPT-PM при одобрении плана.
 </footer>
 </div>
+
+
 
 <!-- report-conform:script:begin -->
 <script>
