@@ -81,6 +81,28 @@ describe("resolveEquipmentIdentityAndRecordTelemetry -- request validation runs 
     expect(mResolve).not.toHaveBeenCalled();
     expect(mRecordTelemetry).not.toHaveBeenCalled();
   });
+
+  // GPT-PM MAJOR (retrospective review of commit afca346, round 3,
+  // 2026-09-15): the persistence-boundary backstop alone left a
+  // contract-valid, Firestore-unsafe scanId able to reach a real identity
+  // response while silently losing its telemetry record. The contract
+  // schema itself must now reject it before the orchestrator ever runs.
+  test("a scanId containing '/' is rejected at the CONTRACT boundary -- the orchestrator never runs", async () => {
+    await expect(
+      resolveEquipmentIdentityAndRecordTelemetry("u1", validRawRequest({ scanId: "scan/../other" })),
+    ).rejects.toThrow();
+    expect(mResolve).not.toHaveBeenCalled();
+    expect(mRecordTelemetry).not.toHaveBeenCalled();
+  });
+
+  test("a scanId containing '--' is NOT rejected -- it is not part of the unrelated {catalogVersion}--{entityId} composite scheme", async () => {
+    const response = matchResponse({ scanId: "scan--123" });
+    mResolve.mockResolvedValue(response);
+
+    const result = await resolveEquipmentIdentityAndRecordTelemetry("u1", validRawRequest({ scanId: "scan--123" }));
+    expect(result).toEqual(response);
+    expect(mRecordTelemetry).toHaveBeenCalledWith("u1", "scan--123", response);
+  });
 });
 
 describe("resolveEquipmentIdentityAndRecordTelemetry -- telemetry wiring", () => {

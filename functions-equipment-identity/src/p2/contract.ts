@@ -24,6 +24,7 @@
  */
 import { z } from "zod";
 import { RecognitionAuthorityTupleSchema } from "../p1/contracts";
+import { isFirestoreDocIdSegment } from "../p1/firestore_paths";
 
 // --- request ---------------------------------------------------------
 
@@ -83,7 +84,22 @@ export type IdentityTextEvidence = z.infer<typeof IdentityTextEvidenceSchema>;
 
 export const EquipmentIdentityRequestSchema = z
   .object({
-    scanId: z.string().min(1).max(MAX_EVIDENCE_STRING_LENGTH),
+    // GPT-PM MAJOR (retrospective review of commit afca346, round 3,
+    // 2026-09-15): the persistence-boundary backstop
+    // (`assertFirestoreDocIdSegment` in `p1/firestore_paths.ts`) alone was
+    // not enough -- scanId also becomes this response's own telemetry
+    // docId (`identity_handler.ts` passes `response.scanId` straight to
+    // `recordServerTerminalTelemetry`), so a contract-valid but
+    // Firestore-unsafe scanId could still produce a normal identity
+    // response while silently losing its telemetry record -- exactly the
+    // invisible-denominator-loss failure this gate exists to prevent.
+    // Enforcing the SAME rule here, at the contract boundary, rejects it
+    // before any work happens instead of only failing to persist it after.
+    scanId: z
+      .string()
+      .min(1)
+      .max(MAX_EVIDENCE_STRING_LENGTH)
+      .refine(isFirestoreDocIdSegment, { message: "scanId must be a valid Firestore document-ID segment" }),
     identityContractVersion: z.string().min(1).max(MAX_EVIDENCE_STRING_LENGTH),
     clientCapabilities: evidenceStringArray(),
     evidence: IdentityTextEvidenceSchema,

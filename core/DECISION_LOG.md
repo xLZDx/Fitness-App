@@ -51669,3 +51669,62 @@ case).
 **Not yet done:** round 3, scoped strictly to the remaining Finding 3 plus this round's own direct
 regression fix (per GPT-PM's own stated scope for the next round) — not yet sent. Nothing beyond the
 `assertFirestoreDocIdSegment` fix is committed on top of `0563335` yet.
+
+---
+
+## 2026-09-15 20:05-20:52 UTC — round 3: PM Bridge daemon desync mid-round (fixed by the operator in
+## another session), Finding 3 still MAJOR (contract-boundary half missing), fixed and re-verified
+
+Committed the regression fix from the previous entry as `8b2a4bd`, pushed it, and sent round 3
+(scoped, per GPT-PM's own instruction in round 2, to Finding 3 plus that round's regression only).
+The send itself failed: `"No compatible orchestrator is active. Gate C disables the multi-writer
+direct browser path..."`. `pm_bridge_mode_status` explained why: the daemon (pid 41972) was running
+build `b6b82262e134263f` while the code on disk was already `41f5100e75dde105` -- someone had edited
+`pm-bridge/src` after the daemon started, in a DIFFERENT session, not this one. The tool itself named
+the fix (`/pm-bridge-mode off` then `on`), but that daemon is shared across every concurrent session
+on this machine, so this session did not restart it unilaterally (per standing guidance: a force
+restart hits everyone, ask first). Routed the question to GPT-PM per CLAUDE.md §16 via
+`AskUserQuestion`; the gate refused twice -- first because the question contained no literal
+`[GPT-ASKED]` token (an explanatory `[GPT-ASKED — ...]` with text inside the brackets does not count,
+the exact substring `[GPT-ASKED]` must appear), then, once written correctly, it went to the
+**operator** (PM Bridge itself was unreachable, which is exactly the condition that marker exists
+for). The operator's answer: "перезапустил в другой ветке" (already restarted, from another
+session/branch). `pm_bridge_mode_status` re-checked afterward: new pid `41164`, build synced,
+routing confirmed unaffected during the gap ("the project-resolution code it depends on is
+unchanged"). No action needed beyond re-sending.
+
+**Round 3 reply: `VERDICT: REVISE — 0 BLOCKER / 1 MAJOR`.** The `scan--123` direct regression from
+round 2 confirmed **RESOLVED** by reading the actual pushed `8b2a4bd` diff. Finding 3 itself: **still
+MAJOR** -- GPT-PM's own framing, and correct on inspection: the persistence-boundary backstop
+(`assertFirestoreDocIdSegment` in the path helper) is necessary but not sufficient. `scanId` also
+becomes the SAME string used as this response's own telemetry docId (`identity_handler.ts` passes
+`response.scanId` straight to `recordServerTerminalTelemetry`), so a contract-valid, Firestore-unsafe
+scanId (e.g. containing `/`) still passes the public request schema, still runs the full orchestrator
+pipeline, still gets a real identity response returned to the caller -- and ONLY the telemetry write
+afterward silently fails and is swallowed. That is exactly the original "invisible denominator loss"
+Finding 3 named; a path-helper-only fix relocates where the loss happens without preventing it.
+
+**Fixed:** `firestore_paths.ts` now exports `isFirestoreDocIdSegment` (a boolean-returning sibling of
+`assertFirestoreDocIdSegment`, same Firestore-native rules, no composite-scheme `--` ban) so a public
+Zod schema can enforce the identical rule at the CONTRACT boundary, not only at persistence.
+`EquipmentIdentityRequestSchema.scanId` (`contract.ts`) now `.refine(isFirestoreDocIdSegment, ...)`.
+New regression coverage, exactly matching GPT-PM's own stated requirement ("handler-level regression
+should prove a `/`-containing scanId gets invalid-argument before orchestrator/writer, and `scan--123`
+remains valid and gets recorded"):
+- `p2/__tests__/identity_handler.test.ts` (mocked): a `/`-scanId rejects and the orchestrator mock is
+  never called; a `--`-scanId is accepted and wired through correctly.
+- `__e2e__/identity_handler.e2e.test.ts` (real Firestore, through the actual seam): a `/`-scanId
+  rejects with NO telemetry document created anywhere in that uid's whole collection (the unsafe
+  scanId cannot even be turned into a real doc path to check a single doc's absence -- checked the
+  whole collection instead, which is what actually proves nothing was written); a `--`-scanId request
+  resolves to a real MATCH and a real `SERVER_TERMINAL` telemetry record end to end.
+- Caught by the test run itself, not GPT-PM: this session's OWN first draft of the `/`-rejection e2e
+  test tried to read back the telemetry doc using the SAME unsafe scanId through the now-safe path
+  helper, which of course also throws for it -- fixed by asserting the whole collection is empty
+  instead of a single doc read.
+
+**Verified again:** `npx tsc --noEmit` clean; `npm run build` clean; `npm test` -- 24 suites / 480
+tests green; `npm run test:e2e` -- 8 suites / 74 tests green.
+
+**Not yet done:** commit this fix, push, and send round 4 (scoped strictly to Finding 3's completion)
+to GPT-PM.

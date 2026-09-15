@@ -30,12 +30,29 @@ function assertFirestoreSafeIdPart(label: string, value: string): void {
   }
 }
 
-/** Runtime backstop for a STANDALONE Firestore document-ID segment -- unlike
- * `assertFirestoreSafeIdPart` above, this enforces only Firestore's own
- * actual documented doc-ID constraints (no `/`, not literally `.` or `..`,
- * not matching the reserved `__.*__` pattern), never the
- * `{catalogVersion}--{entityId}` composite scheme's `--`-separator rule,
- * which has no meaning for an id that is not part of that scheme.
+/** Firestore's own actual documented doc-ID constraints for a STANDALONE
+ * segment -- unlike `assertFirestoreSafeIdPart` above, this never applies
+ * the `{catalogVersion}--{entityId}` composite scheme's `--`-separator
+ * rule, which has no meaning for an id that is not part of that scheme.
+ * Exported so a public request schema (e.g. `EquipmentIdentityRequestSchema
+ * .scanId`) can enforce the SAME rule at the contract boundary, not only at
+ * the persistence boundary (GPT-PM MAJOR, retrospective review of commit
+ * afca346, round 3, 2026-09-15: a path-helper-only backstop still lets a
+ * contract-valid, `/`-containing scanId through the orchestrator to a real
+ * identity response -- the telemetry write is then the only thing that
+ * silently fails, which is exactly the "invisible denominator loss" the
+ * original finding named; the contract boundary has to reject it before
+ * any work happens, not just fail to persist it afterward). */
+export function isFirestoreDocIdSegment(value: string): boolean {
+  if (value.includes("/")) return false;
+  if (value === "." || value === "..") return false;
+  if (/^__.*__$/.test(value)) return false;
+  return true;
+}
+
+/** Runtime backstop, independent of Zod, for the persistence boundary --
+ * see `isFirestoreDocIdSegment`'s own doc comment for what this checks and
+ * why a public schema enforces the identical rule separately.
  *
  * GPT-PM MAJOR (retrospective review of commit 0563335, round 2, 2026-09-15):
  * `userEquipmentIdentityTelemetryDocPath` originally reused
@@ -43,14 +60,8 @@ function assertFirestoreSafeIdPart(label: string, value: string): void {
  * Firestore-safe, contract-valid scanId like `scan--123` was wrongly
  * rejected -- a direct regression from that fix, not a pre-existing gap. */
 function assertFirestoreDocIdSegment(label: string, value: string): void {
-  if (value.includes("/")) {
-    throw new Error(`${label} must not contain '/', got ${JSON.stringify(value)}`);
-  }
-  if (value === "." || value === "..") {
-    throw new Error(`${label} must not be '.' or '..', got ${JSON.stringify(value)}`);
-  }
-  if (/^__.*__$/.test(value)) {
-    throw new Error(`${label} must not match the reserved '__.*__' pattern, got ${JSON.stringify(value)}`);
+  if (!isFirestoreDocIdSegment(value)) {
+    throw new Error(`${label} is not a valid Firestore document-ID segment, got ${JSON.stringify(value)}`);
   }
 }
 

@@ -156,4 +156,41 @@ describe("resolveEquipmentIdentityAndRecordTelemetry -- the real wiring seam, en
     const telemetry = await readTelemetry(uid, scanId);
     expect(telemetry).toBeUndefined();
   });
+
+  // GPT-PM MAJOR (retrospective review of commit afca346, round 3,
+  // 2026-09-15): proves, through the REAL exported seam end to end, that a
+  // Firestore-unsafe scanId is rejected at the CONTRACT boundary -- the
+  // orchestrator never runs, no session or telemetry document is ever
+  // created -- rather than reaching a real identity response and only
+  // silently failing to persist its telemetry afterward.
+  test("a real request with a scanId containing '/' is rejected before the orchestrator ever runs -- no telemetry document is created", async () => {
+    const uid = randomUid();
+    await expect(
+      resolveEquipmentIdentityAndRecordTelemetry(uid, baseRawRequest({ scanId: "scan/../other" })),
+    ).rejects.toThrow();
+
+    // The unsafe scanId itself cannot even be turned into a real doc path
+    // (the same backstop that rejected it at the contract boundary would
+    // also reject it here) -- so the real proof is that this uid's whole
+    // telemetry collection stays empty, not a targeted single-doc read.
+    const collectionSnap = await admin.firestore().collection(`users/${uid}/equipment_identity_telemetry`).get();
+    expect(collectionSnap.empty).toBe(true);
+  });
+
+  test("a real request with a scanId containing '--' succeeds end to end -- it is not part of the unrelated {catalogVersion}--{entityId} composite scheme", async () => {
+    const catalogVersion = randomCatalogVersion();
+    const model = makeModel(catalogVersion, { textSupportStatus: "VERIFIED" });
+    await seedModel(model);
+    await seedActiveCatalogPointer(catalogVersion);
+
+    const uid = randomUid();
+    const scanId = `scan--${Date.now()}`;
+    const response = await resolveEquipmentIdentityAndRecordTelemetry(uid, baseRawRequest({ scanId }));
+
+    expect(response.decision).toBe("MATCH");
+    expect(response.scanId).toBe(scanId);
+
+    const telemetry = await readTelemetry(uid, scanId);
+    expect(telemetry?.state).toBe("SERVER_TERMINAL");
+  });
 });
