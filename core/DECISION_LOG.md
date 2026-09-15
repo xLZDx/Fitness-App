@@ -51762,3 +51762,70 @@ one's contract-boundary half, which this session already verified locally the sa
 e2e tests specifically proving the `/`-scanId/`--`-scanId behavior GPT-PM itself specified). The
 debt is procedural (no independent round-4 confirmation yet), not a known or suspected code defect.
 to GPT-PM.
+
+## 2026-09-16 -- round 4 actually ran after a daemon restart; VERDICT: APPROVE, 0 BLOCKER / 0 MAJOR;
+## plan GO/close completed
+
+Operator instruction: retry, and restart the PM Bridge daemon first (`pm_bridge_restart({force:
+true})` -- operator break-glass, used only on this direct instruction). New daemon pid 35560, port
+8765. Re-sent round 4 (`request_id 7cd1ff35-d012-42ff-892f-9a1808262506`, `reply_id
+855bc5c1-9d3c-4341-aeb1-9d1fe0f56346`), scoped strictly to Finding 3's now-closed contract-boundary
+half per round 3's own stated next-round scope.
+
+**Reply: VERDICT: APPROVE -- 0 BLOCKER / 0 MAJOR.** GPT-PM confirmed Finding 3 fully closed (the
+`EquipmentIdentityRequestSchema.scanId` `.refine(isFirestoreDocIdSegment, ...)` contract-boundary
+check plus its regression tests) and all 5 original round-1 findings resolved against the actual
+pushed commit `5d3a471`, read directly via GitHub. One non-blocking documentation nit: a stale
+comment on `userEquipmentIdentityTelemetryDocPath` in `firestore_paths.ts` still read "no character
+restriction" after the contract boundary started enforcing one. Fixed the comment locally (`tsc
+--noEmit` clean) but left it uncommitted at that point.
+
+**Rosetta GO, attempt 1 -- refused.** `pm_rosetta_go` for plan
+`fitness_app-2026-09-15T18-42-48-726Z-bb78f1` (opened for this same gate's step 2, blocked earlier
+by the PM Bridge send-transport bug documented above) was called against the round-4 verification
+exchange's `review_request_id`/`reply_id` -- refused: "GO refused: no exact durable outbound record
+exists for this plan review body and request id." Root cause, found by reading
+`src/planApprovalEvidence.js`/`src/rosetta.js` directly rather than guessing: `pm_rosetta_go`
+requires the outbound message's stored `text` to be BYTE-IDENTICAL to `withExecutionAuthority(
+planReviewPrompt(plan))`, i.e. the plan's own canonical review body (regenerated fresh from the
+plan's stored JSON fields, not from memory) plus the auto-appended EXECUTION AUTHORITY footer, with
+literally nothing else. The round-4 message was a paraphrased status-check, not that literal body,
+so it could never satisfy this regardless of its VERDICT.
+
+**Fix: re-sent the literal canonical body.** Read the plan's own JSON
+(`pm-bridge/state/rosetta/plans/fitness_app-2026-09-15T18-42-48-726Z-bb78f1.json`) and
+`planReviewPrompt()`'s exact line-by-line construction, reconstructed the canonical text by hand
+(this also surfaced that an earlier resend attempt, `request_id a3168a1d-...`, additionally used a
+paraphrased final line instead of the canonical "Review this exact plan and hash. Return one
+explicit VERDICT line..." -- a second, independent reason that attempt could not have matched even
+without the extra status paragraph it also carried), sent it verbatim with a fresh `request_id
+b6cc2bc5-4b65-46be-abe6-5cd427839272` -- reply: `VERDICT: APPROVE` (`reply_id
+f2e599eb-0752-4967-bd3d-1fe1166f130f`), byte-exact correlation succeeded.
+`pm_rosetta_go(plan_id, review_request_id: b6cc2bc5-..., reply_id: f2e599eb-..., expected_hash:
+c2a69d4588e96d98289abf7d4a07a45a38878b6002caeab04ba8d9fd3ea6722d)` succeeded: plan moved to
+`in-progress`.
+
+**Rosetta close, attempt 1 -- review-blocked, VERDICT: REVISE, 1 MAJOR (evidence-vs-reality gap, not
+a code defect).** `pm_rosetta_close(result: "passed", evidence: ...)` was submitted citing the
+comment fix as "pending in this same close" and describing round 4's real outcome, but at that
+moment the comment fix was still uncommitted and this very decision-log entry did not yet exist on
+`origin/master` -- so the closure evidence described a state ahead of what `git`/GitHub could
+actually verify. GPT-PM's closure review (evidence authority is git for this plan, so it checked the
+real repository, not the submitted prose) correctly declined to accept it: confirmed no reason to
+reopen the CODE review (`origin/master` at `457ad00`, which only touches this file, changes no
+production/test code since the already-approved `5d3a471`), but held that (a) the stale
+"no character restriction" comment was still live on `origin/master`, and (b) this decision log, as
+committed, still ended on the round-4-blocked narrative and never recorded the actual APPROVE/GO
+that followed -- exactly the gap this entry now closes.
+
+**This entry, plus the already-pending comment fix, are being committed and pushed together as the
+documentation-only fix GPT-PM asked for**, with no further code-review round requested or needed
+(GPT-PM's own words: "у меня нет оставшегося технического основания удерживать P2.G5-readiness
+step 2 открытым" once this is a documentation/closure-record-only diff on top of already-approved
+code). `pm_rosetta_close` will be re-submitted against the resulting head, citing this commit.
+
+**Final state for step 2 of this gate:** 5/5 MAJOR findings from round 1 remediated across rounds
+2-3 (one self-introduced regression in round 2, also fixed and independently re-verified); round 4
+APPROVE 0/0 on the final pushed state (`5d3a471`); `tsc --noEmit`/`npm run build`/`npm test` (24
+suites, 480 tests)/`npm run test:e2e` (8 suites, 74 tests) all green at every verified step. Commits:
+`afca346`, `0563335`, `8b2a4bd`, `5d3a471`, `457ad00`, and this entry's own commit.

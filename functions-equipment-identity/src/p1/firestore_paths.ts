@@ -149,9 +149,11 @@ export function userEquipmentIdentityTelemetryDocPath(uid: string, docId: string
   if (!docId) throw new Error("userEquipmentIdentityTelemetryDocPath: docId must be non-empty");
   // GPT-PM MAJOR (retrospective review of commit afca346, 2026-09-15): docId
   // here is a mobile-minted scanId that reaches this function through the
-  // public request contract (`EquipmentIdentityRequestSchema.scanId`, any
-  // non-empty string up to 128 chars -- no character restriction). Runtime
-  // backstop, independent of Zod: a `/` would silently nest an unintended
+  // public request contract. As of round 3 (2026-09-15),
+  // `EquipmentIdentityRequestSchema.scanId` ALSO enforces this exact rule
+  // via `.refine(isFirestoreDocIdSegment, ...)` at the contract boundary --
+  // this call is the independent runtime backstop at the persistence
+  // boundary, not the only check: a `/` would silently nest an unintended
   // subcollection or land the write at an unexpected path instead of
   // `equipment_identity_telemetry/{scanId}` -- the caller
   // (`recordServerTerminalTelemetry`) already catches and logs any thrown
