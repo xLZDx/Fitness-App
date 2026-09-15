@@ -8,6 +8,48 @@ Step 1 of that plan, written BEFORE any implementation code (steps 2-9 depend on
 contract, not the other way around). Any change to this contract after step 2 starts is a material
 change to the plan and needs its own Rosetta revision + GO, not a silent edit here.
 
+**Revision, 2026-09-16**: §6 (merge semantics), §4.2/§4.2a/§4.2b (reason enums, real caller
+reachability), and §7 items 4-5 (genericOutcome, lifecycle-end events) amended under the step 3a
+Rosetta plan that supersedes the rejected `fitness_app-2026-09-15T22-49-23-311Z-616bf0` — see that
+plan's own GPT-PM review (2 BLOCKER / 4 MAJOR) for what drove each change, and the revised plan's
+own GO for this revision's authorization.
+
+**Revision 2, 2026-09-16, same day**: a second GPT-PM review, of the first revision's own plan
+(`fitness_app-2026-09-15T23-01-35-427Z-fd85bd`), returned 2 BLOCKER / 5 MAJOR — undefined
+same-mobile-state progressive-enrichment merge semantics, `scanEndedAt` measuring dwell time rather
+than pipeline latency, an unclosed provider-to-scanner data-flow for the classified failure reason,
+a lost `malformedReply` audit trail under enrichment, a kill-switch/network-guarantee conflict for
+`ENRICHMENT_DISABLED`, App Check/region parity, and timestamp validation. §4.2b, §5.4, §6 rule 5,
+and §3's record shape amended again in response — this round's fix also SHRINKS step 3a's own scope
+(no `ENRICHMENT_DISABLED` network send; `genericOutcome` deferred to step 3b) rather than adding
+more moving parts, which structurally eliminates the same-state-enrichment and data-flow findings
+rather than working around them. See the second revised plan's own GO for authorization.
+
+**Revision 3, 2026-09-16, same day**: a third GPT-PM review, of the second revision's own plan
+(`fitness_app-2026-09-15T23-12-21-164Z-974219`), returned 2 BLOCKER / 5 MAJOR — narrower "tie up
+loose ends" findings rather than another structural redesign: `scanStartedAt` had no real mobile
+source (fixed by parsing it from `scanId`'s own embedded mint timestamp, needing no new state);
+`clientObservedFailures` was asymmetric between arrival orders (fixed — §6 rule 3's mobile-to-
+mobile-or-SERVER_TERMINAL transition now also populates it, not just rule 5's reverse order);
+same-state-different-reason retries needed explicit semantics (clarified as already covered by rule
+3, restated explicitly); a client-observed failure on an otherwise-eligible `SERVER_TERMINAL` record
+was invisible to every metric (fixed — §5.3 gained a third `incomplete_evidence_count` term); no
+successful scan ever got mobile timing at all, so §5.4's latency metric would only ever see failure
+records (fixed — the provider's success path now also sends a timing-only enrichment fragment via
+rule 5); RFC3339 validation needed an explicit UTC mandate on the Dart side (fixed, §5.4). §3, §5.3,
+§5.4, and §6 rules 3/5 amended accordingly. See the third revised plan's own GO for authorization.
+
+**Revision 4, 2026-09-16, same day**: a fourth GPT-PM review, of the third revision's own plan
+(`fitness_app-2026-09-15T23-21-46-920Z-4c1f49`), returned 0 BLOCKER / 1 MAJOR — confirming rounds
+1-3's fixes hold, with one narrower correction: §5.4's proposed 15-minute upper bound on
+`scanEndedAt - scanStartedAt` would silently reject legitimate long-running retries (the app reuses
+`scanId` across a retry with no time boundary of its own), biasing the latency metric toward its
+fast cases. The upper bound is removed; only `scanEndedAt >= scanStartedAt` remains validated.
+
+No change to §0/§1/§2/§5.1-§5.2/§5.5-§5.7 (scope, gate contract, prior art, eligibility/resolution-
+rate/coverage formulas) across any of the four revisions; §5.3 changes with revision 3 specifically
+(one additive term, described above).
+
 ## 0. Scope
 
 IN SCOPE: define the durable per-scan telemetry record, its lifecycle states, its idempotency
@@ -84,10 +126,17 @@ EquipmentIdentityTelemetryRecordV1 {
   localFailureReason: LocalFailureReason | null,    // present only when state=LOCAL_FAILURE
   requestFailureReason: RequestFailureReason | null,// present only when state=REQUEST_FAILURE
   scanStartedAt: string | null,   // RFC3339 — for latency, see §5.4
-  scanEndedAt: string | null,     // RFC3339 — for latency, see §5.4
+  scanEndedAt: string | null,     // RFC3339 — for latency, see §5.4 (revised 2026-09-16: the
+                                   // identity pipeline's own settle instant, not _scanAgain())
   payloadFingerprint: string,        // sha256 over the canonical outcome-affecting fields below
                                       // (mirrors orchestrator.ts's own requestFingerprint pattern,
                                       // orchestrator.ts:150-162) — the idempotency key for §6
+  priorStates: PriorStateEntry[] | null,          // audit only, §6 rule 3 — not in any §5 formula
+  conflictingWrites: ConflictingWrite[] | null,    // audit only, §6 rule 4 — not in any §5 formula
+  clientObservedFailures: ClientObservedFailure[] | null,  // NEW 2026-09-16, §6 rule 5 — a mobile
+                                      // LOCAL_FAILURE/REQUEST_FAILURE report that arrived after this
+                                      // record was already SERVER_TERMINAL; audit only, not in any
+                                      // §5 formula; shape {state, reason, recordedAt}
 }
 ```
 
@@ -131,14 +180,63 @@ was skipped."
 
 ### 4.2 `LocalFailureReason` (present iff `state = LOCAL_FAILURE`)
 
-Placeholder set, to be confirmed against `equipment_identity_providers.dart` in step 2 before
-being frozen further:
-`missingImagePath | missingStructuredRecognizer | ocrException | parserException`.
-This is the plan's own step-1 wording ("localFailure (with a reason: missing path/missing
-structured recognizer/OCR exception/parser exception)"), not yet independently verified against
-the four branches `core/DECISION_LOG.md:50859-50861` names. **Action for step 2**: open
-`equipment_identity_providers.dart`, confirm these four (or however many actually exist) map
-1:1 onto real `catch`/branch sites, and correct this enum before the schema ships.
+**Confirmed 2026-09-16** against `equipment_identity_providers.dart`'s real `equipmentIdentityProvider`
+(recon for the step 3a plan): the placeholder four map 1:1 onto real branches, once the provider's
+single try/catch is split into distinguishable stages (step 3a's own step 2):
+`missingImagePath` (no `scanIdImagePathProvider` entry for this scanId), `missingStructuredRecognizer`
+(`machineTextRecogniser` is not a `StructuredTextRecogniser`), `ocrException` (`recogniser
+.readStructured` throws), `parserException` (`parseIdentityText` throws). All four happen strictly
+BEFORE the network `ask()` call — none of them means a request ever reached the server, which is
+the actual dividing line between this state and `REQUEST_FAILURE` below.
+
+### 4.2a `RequestFailureReason` (present iff `state = REQUEST_FAILURE`)
+
+**Confirmed 2026-09-16** against `cloud_equipment_identity_service.dart`'s real throw surface
+(recon for the step 3a plan): `resolveFromText` can fail two structurally different ways after the
+OCR/parse stages already succeeded: (a) the `httpsCallable(...).call(...)` itself throws — typically
+`FirebaseFunctionsException` (network unreachable, timeout, App Check, auth, rate limit, backend
+error — the file's own doc comment names these as "whatever `cloud_functions` throws"), meaning the
+mobile client genuinely does not know whether the server ever received or processed the request; or
+(b) the call SUCCEEDS (a reply was received) but `EquipmentIdentity.fromJson(result.data)` throws
+`FormatException` — a decode failure of a reply that was, by definition, already sent by a server
+that had already reached SOME terminal decision and, per this callable's own step-2 wiring, already
+attempted to persist it as `SERVER_TERMINAL` before replying.
+
+These two are handled identically at the STATE level (both are `REQUEST_FAILURE` — from the
+client's perspective, neither produces a usable `EquipmentIdentity` to show or a confirmed
+`SERVER_TERMINAL` outcome it can rely on) but are recorded as different reasons, and §6 rule 5
+(above) is precisely what makes lumping the decode-failure case into `REQUEST_FAILURE` SAFE rather
+than misleading: if the server's write already landed as `SERVER_TERMINAL`, a later
+`REQUEST_FAILURE:malformedReply` mobile report can never downgrade or conflict it — it only
+contributes metadata. Enum: `networkUnreachable | timeout | appCheckOrAuth | rateLimited |
+backendError | unknownClientError | malformedReply` — the first six covering (a), the last covering
+(b). `unknownClientError` is the catch-all for a `FirebaseFunctionsException`/other throw whose
+code does not match a more specific bucket, so this enum never needs to enumerate every possible
+`FirebaseFunctionsException.code` value to stay exhaustive.
+
+### 4.2b `ENRICHMENT_DISABLED` — schema-reserved, deliberately NOT populated by step 3a
+
+**Revised 2026-09-16** (GPT-PM MAJOR twice over, across two review rounds): the first finding was
+that `equipmentIdentityProvider`'s own internal `if (!ref.watch(equipmentIdentityEnrichmentEnabledProvider))
+return null;` branch is dead code in production — BOTH real callers (`scanner_page.dart:657`,
+`workout_player_page.dart:189`) already gate the `ref.watch(equipmentIdentityProvider(...))` call
+itself behind the same flag in the same ternary, so the provider is never even watched while the
+flag is `false`. The second, more decisive finding: `equipmentIdentityEnrichmentEnabledProvider`'s
+own doc comment documents a product/privacy guarantee — "OFF by default... a caller that watches the
+family unconditionally must still get zero OCR and zero network calls while this reads false." Since
+this flag is HARDCODED `false` everywhere today (no remote-config/per-user override exists yet), a
+telemetry NETWORK call fired specifically because the flag is false would (a) contradict that
+documented zero-network guarantee, and (b) fire on every single scan in the app for zero
+per-scan signal — the value would be constant, not informative, for as long as the flag stays a
+global off-switch.
+
+**Decision: step 3a does NOT send `ENRICHMENT_DISABLED` telemetry over the network at all.** The
+state stays defined in the schema (exactly like `NOT_ATTEMPTED`, which §4's own table already
+accepts may simply never occur — "an unused enum value is not a defect; a missing one that later
+occurs uncategorized would be"), reserved for whenever the flag becomes a real, variable, per-user
+toggle worth measuring — a future gate's own decision, not this one's. This removes the need for any
+scanner-level telemetry-staging/data-flow design for this one state, and removes the kill-switch
+contract conflict entirely.
 
 ### 4.3 `IdentityTerminalOutcome` (present iff `state = SERVER_TERMINAL`)
 
@@ -209,7 +307,19 @@ incomplete_evidence_count = count(state IN {LOCAL_FAILURE, REQUEST_FAILURE, CONF
                                     UNAVAILABLE_TIMEOUT, UNAVAILABLE_NETWORK, UNAVAILABLE_APPCHECK,
                                     UNAVAILABLE_RATE_LIMIT, UNAVAILABLE_BACKEND,
                                     UNAVAILABLE_CATALOG_VERSION})
+                           + count(state=SERVER_TERMINAL AND clientObservedFailures is non-empty)
 ```
+
+**Revised 2026-09-16** (GPT-PM MAJOR, round 3): the third term is new. A record can be
+`SERVER_TERMINAL` with an eligible `identityOutcome.decision` (e.g. `MATCH`) while `clientObservedFailures`
+(§6 rule 5) shows the mobile client itself could never use that answer (a `malformedReply` decode
+failure, or a late client-side timeout on a request the server ultimately completed). `state`/
+`identityOutcome` stay untouched — the server's answer is still real and still counted toward
+eligibility/resolution-rate/coverage (§5.1/§5.2/§5.5), because it genuinely happened — but this term
+ALSO surfaces such a scan in `incomplete_evidence_count`, so a reader is never confidently silent
+about the fact that the user's own device never actually saw a usable result for it. This is
+additive (a record can now be counted by both the second and third terms if it independently
+qualifies for each), not a replacement for the existing rule.
 
 `incomplete_evidence_count` is reported ALONGSIDE every P2.G5 metric, never folded into or silently
 subtracted from `eligible_scans`. Step 6(b)'s denominator-honesty test asserts this bucket is
@@ -219,10 +329,52 @@ non-zero and correctly populated when a deliberately broken/incomplete synthetic
 
 `latency_ms = scanEndedAt - scanStartedAt`, computed only for records where both timestamps are
 present (i.e. not `NOT_ATTEMPTED`/`ENRICHMENT_DISABLED`). `scanStartedAt` is the mobile-side scan
-start (`scanner_page.dart:_classify`, §2 of the recon), `scanEndedAt` is the mobile-side
-`_scanAgain()` logical end-of-scan event (`scanner_page.dart:537-558`) — chosen deliberately over
-the identity callable's own server-side duration, because P2.G5's latency question is "how long
-does the USER wait," not "how long does one network call take."
+start (`scanner_page.dart:_classify`, §2 of the recon).
+
+**Revised 2026-09-16** (GPT-PM BLOCKER, review of plan `fitness_app-2026-09-15T23-01-35-427Z-fd85bd`):
+`scanEndedAt` was originally defined as the mobile-side `_scanAgain()` logical end-of-scan event.
+That is wrong for this metric: `_scanAgain()` fires when the user, having ALREADY seen the result,
+decides to start a NEW scan — that gap is dwell time (how long the user looked at the answer before
+moving on), not wait time. It can be seconds or minutes after the pipeline actually finished, and it
+does not fire at all for a scan the user simply abandons. `scanEndedAt` is now defined as **the
+moment `equipmentIdentityProvider`'s own async attempt settles** — the same instant its `try` block
+either returns a real `EquipmentIdentity` or its (now stage-classified, §4.2/§4.2a) `catch` runs —
+`DateTime.now()` captured at that exact point, inside the provider itself, alongside the
+state/reason it is already recording. This is the honest answer to "how long does the user wait for
+an answer," is available immediately (no dependency on what the user does afterward), and is the
+SAME event that already produces the LOCAL_FAILURE/REQUEST_FAILURE telemetry send (§6) — so this
+fragment is now self-contained (state + reason + scanStartedAt + scanEndedAt, all known at once,
+sent once, no partial/progressive send from this source). On the SUCCESS path, the same settle
+instant produces a timing-only enrichment fragment instead (§6 rule 5), since the server has already
+committed `SERVER_TERMINAL` by the time a successful client reply exists to act on.
+`_scanAgain()`/fresh-scan supersession remain exactly what they always were — the
+`scanIdImagePathProvider` cleanup events — with no telemetry role at all now.
+
+**`scanStartedAt` source, revised 2026-09-16** (GPT-PM BLOCKER, round 3): no mint-time record of any
+kind exists in mobile code today (`scanIdImagePathProvider` stores only `scanId -> path`, no
+timestamp), and this gate does not add one. `scanStartedAt` is instead **parsed directly from the
+`scanId` string itself** — `scanId` is minted as `'scan-${DateTime.now().microsecondsSinceEpoch}'`
+(`scanner_page.dart:495`), so the mint instant is already durably encoded in the id every fragment
+already carries; no new mobile state, no `scanner_page.dart` changes, needed. A retry reuses the
+SAME `scanId` (`isRetry && _currentScanId != null`), so a parsed `scanStartedAt` on a retry correctly
+still reads as the ORIGINAL attempt's start, which is the right answer for "how long has this scan
+attempt, across retries, been going."
+
+**Timestamp provenance and validation, revised 2026-09-16** (GPT-PM MAJOR, round 3; upper bound
+REMOVED, GPT-PM MAJOR, round 4): both timestamps are produced with
+`DateTime.now().toUtc().toIso8601String()` (never bare `DateTime.now()` — Dart's
+`toIso8601String()` omits the `Z`/offset suffix for a non-UTC `DateTime`, which a strict RFC3339
+server-side validator must reject) — client-device-clock-sourced, documented as such, never treated
+as an authoritative time source elsewhere. The server contract-boundary schema validates strict
+RFC3339 and rejects `scanEndedAt < scanStartedAt` — **no upper bound on the gap**. Round 3 proposed
+a 15-minute ceiling; round 4 correctly rejected it: `scanId` is reused across a retry
+(`isRetry && _currentScanId != null`, `scanner_page.dart`), which the app itself treats as "the same
+scan attempt" with NO time boundary — a user can leave the screen open and retry an hour later, and
+that is still, honestly, how long this scan attempt took. Rejecting the long tail would silently bias
+§5.4's latency metric toward only its fast cases, which is exactly the kind of "no silent drop"
+violation §4.3.2 already refuses to accept for outcome counts. A record legitimately reflecting a
+long gap is real evidence, not a data-quality defect; there is nothing else in this design that would
+benefit from an arbitrary duration ceiling, so none is added.
 
 ### 5.5 Catalog coverage
 
@@ -267,47 +419,126 @@ Fixed here, before any counted pilot scan, per the plan's own requirement:
 
 ## 6. Idempotent merge semantics
 
+**Revised 2026-09-16** (GPT-PM BLOCKER, review of the original step 3a plan,
+`fitness_app-2026-09-15T22-49-23-311Z-616bf0`, rejected before GO): the original 4 rules below
+never defined what happens when a SERVER-authored fragment and a MOBILE-authored fragment arrive
+independently for the same `{uid, scanId}` — step 2 only ever wrote `SERVER_TERMINAL`, so rules
+3/4 were validated only for server-only writes. Step 3a introduces the first MOBILE-originated
+writes, so this section now also fixes, structurally, WHO may write WHAT:
+
+**Authority split, enforced at the contract boundary (Zod discriminated union), not just by
+convention:** a mobile client may only ever submit `state IN {ENRICHMENT_DISABLED, LOCAL_FAILURE,
+REQUEST_FAILURE}`. `SERVER_TERMINAL` is written exclusively by the server's own identity-resolution
+path (unchanged from step 2); `CONFLICT` is written exclusively by this repository's own merge
+logic below, never accepted as an incoming state from any caller. This makes rules 4/5 below
+structurally exhaustive rather than convention-only: a client-submitted write can never itself be
+`SERVER_TERMINAL`/`CONFLICT`, so the "two independently-arriving terminal writes disagree" case
+rule 4 protects against can now only ever originate from the server's own path (e.g. a genuine
+re-resolution), never from mobile.
+
 On each write attempt for `{uid, scanId}`:
+
 1. If no record exists yet: create it (`state`, all applicable outcome fields, `payloadFingerprint`).
 2. If a record exists and the incoming write's `payloadFingerprint` matches the stored one exactly:
    **no-op** — update only `updatedAt`, change nothing else. This is what makes a retried delivery
-   (outbox retry, step 3) safe to replay any number of times.
-3. If a record exists, its `state` is NOT terminal (i.e. still `LOCAL_FAILURE`/`REQUEST_FAILURE` —
-   a genuine progression from "we couldn't tell yet" to "now we can") and the incoming write is a
-   `SERVER_TERMINAL`/different state: this is a legitimate transition, not a conflict — overwrite,
-   recording the prior state in an internal `priorStates` audit array (not exposed to the metric
-   formulas, kept for debugging only).
+   (outbox retry, step 3b) safe to replay any number of times.
+3. If a record exists, its `state` is one of the MOBILE-authoritative non-terminal states
+   (`ENRICHMENT_DISABLED`, `LOCAL_FAILURE`, `REQUEST_FAILURE`) and the incoming write's
+   `payloadFingerprint` differs: this is a legitimate transition, not a conflict — overwrite.
+   **Revised 2026-09-16** (GPT-PM BLOCKER + MAJOR, round 3): the REPLACED fragment's full
+   `{state, reason, recordedAt}` — not just its state name — is appended to `clientObservedFailures`
+   (defined under rule 5 below; introduced here first since this is the first rule that needs it).
+   This makes BOTH arrival orders symmetric: a mobile fragment superseded by a later genuine
+   `SERVER_TERMINAL` (this rule) preserves the same full detail that rule 5 already preserves when
+   `SERVER_TERMINAL` arrives FIRST and a mobile fragment arrives late. `priorStates` (bare
+   `{state, recordedAt}`, no reason) remains for the mobile-to-mobile sub-case specifically, as a
+   lighter-weight trail of "this scanId's mobile-side state changed over time" independent of the
+   full-detail audit `clientObservedFailures` provides. This covers every arity: a mobile retry that
+   lands in a DIFFERENT mobile-authoritative state than its predecessor (`LOCAL_FAILURE` then
+   `REQUEST_FAILURE`); a retry that lands in the SAME state with a DIFFERENT reason (two
+   `REQUEST_FAILURE` attempts, `timeout` then `backendError` — the fingerprint still differs because
+   the reason differs, so this rule applies identically; A→B→C is simply this rule applied twice in
+   sequence, each replacement individually recorded); and a mobile-authoritative state superseded by
+   a genuine `SERVER_TERMINAL` resolution.
 4. If a record exists, IS already terminal (`SERVER_TERMINAL` or `CONFLICT`), and the incoming
-   write's `payloadFingerprint` differs: **do not overwrite**. Transition to `state = CONFLICT`,
-   preserve the original terminal record's fields under `conflictingWrites: [...]` rather than
-   losing either version. `CONFLICT` records are excluded from every §5 formula except
-   `incomplete_evidence_count`.
+   write is ALSO a state-defining write whose `payloadFingerprint` differs — structurally only
+   possible from the server's own path now, per the authority split above: **do not overwrite**.
+   Transition to `state = CONFLICT`, preserve the original terminal record's fields under
+   `conflictingWrites: [...]` rather than losing either version. `CONFLICT` records are excluded
+   from every §5 formula except `incomplete_evidence_count`.
+5. If a record exists, IS already terminal (`SERVER_TERMINAL` or `CONFLICT`), and the
+   incoming write is a MOBILE-authoritative fragment: this is **not** a conflict. The server's
+   terminal answer is authoritative and is never overwritten or downgraded by a client report that,
+   by construction, cannot know whether the server ultimately succeeded. Instead, **enrich only the
+   metadata fields the server-side write could never have supplied** — `scanStartedAt`/`scanEndedAt`,
+   filled in only if not already set on the existing record (first-write-wins per field).
+   `state`/`identityOutcome` are never touched. Two shapes of mobile-authoritative fragment can reach
+   this rule:
+   - A `LOCAL_FAILURE`/`REQUEST_FAILURE` fragment (e.g. a `REQUEST_FAILURE: malformedReply`
+     observation that raced a server response which actually completed and committed
+     `SERVER_TERMINAL` first): its own `{state, reason, recordedAt}` is additionally appended to a
+     `clientObservedFailures: [...]` audit array (shape `{state, reason, recordedAt}`,
+     unbounded-by-formula like `priorStates`/`conflictingWrites` — kept for debugging/data-quality
+     review, and see §5.3 for its ONE formula effect). This is how a real client-observed delivery
+     failure stays on the durable record even when it is not the record's authoritative outcome. A
+     repeat of the SAME `clientObservedFailures` entry (identical fingerprint) is a no-op (extends
+     rule 2's idempotency to this array, same as `conflictingWrites` already does).
+   - **New 2026-09-16** (GPT-PM MAJOR, round 3): a **timing-only enrichment fragment** — no `state`
+     at all, just `{scanId, scanStartedAt, scanEndedAt}` — sent from `equipmentIdentityProvider`'s
+     OWN success path, immediately after a `MATCH`/other terminal decision returns. Necessary because
+     the server's resolve callable (step 2) already commits `SERVER_TERMINAL` synchronously, BEFORE
+     replying to the client — by the time the client can send anything at all on a successful path,
+     the record is already terminal, so this fragment always lands here, never at rule 1/2/3. Without
+     it, §5.4's latency metric would have zero data from any `SERVER_TERMINAL`/`MATCH` record — the
+     only records that ever get real mobile timestamps would be exactly the ones §5.1 excludes from
+     eligibility. This fragment carries no reason/state to preserve, so it touches only
+     `scanStartedAt`/`scanEndedAt`, first-write-wins, same as above.
 
 This mirrors, server-side, the exact semantic `equipment_identity_outcome_sink.dart` already
 implements client-side in memory (`core/DECISION_LOG.md:50843-50861`) — the same rule, applied at
-the durable layer that step 2 is adding.
+the durable layer that step 2 is adding, now extended to a second, independent writer.
 
 ## 7. Open items step 2/3 must resolve before code, not after
 
-1. Confirm the real branch set behind `LOCAL_FAILURE`/`LocalFailureReason` by reading
-   `equipment_identity_providers.dart` directly (not yet opened this session).
-2. Confirm whether an `ENRICHMENT_DISABLED` path genuinely exists on the mobile side, or remove
-   that state before schema freeze if it does not.
-3. Confirm mobile-side network/quota failure surface by reading
-   `cloud_equipment_identity_service.dart` directly (not yet opened this session) — needed to
-   finalize `RequestFailureReason`'s value set (this document has not yet defined that enum's
-   values because the evidence for it was not gathered this session; step 2 must write it from the
-   real file, not guess).
-4. `functions-equipment-identity` test commands, confirmed: `npm test` (jest, unit), `npm run
+1. **Resolved 2026-09-16** — see §4.2: the four `LocalFailureReason` branches confirmed 1:1 against
+   `equipment_identity_providers.dart`.
+2. **Resolved 2026-09-16** — `ENRICHMENT_DISABLED` genuinely exists (`equipmentIdentityEnrichmentEnabledProvider`,
+   hardcoded `false` today — the whole surface is off by default) but is unreachable from the
+   provider's OWN internal branch in production; see §4.2b for the real-caller-site fix step 3a
+   must apply. The state stays in the schema.
+3. **Resolved 2026-09-16** — see §4.2a: `RequestFailureReason`'s real value set, confirmed against
+   `cloud_equipment_identity_service.dart`, including the `malformedReply` case §6 rule 5 makes safe.
+4. **Resolved 2026-09-16, deferred rather than closed**: `genericOutcome` (§4.1, "always recorded,
+   independent of identity state") is captured on a SEPARATE async timeline from the identity
+   pipeline (`scanner_page.dart`'s `_classify()` knows it, from `result.outcome`, a `ScanOutcome`
+   matching `GenericScanOutcomeSchema` exactly — but only after `classifyFilePath` resolves, on its
+   own schedule relative to `equipmentIdentityProvider`'s independent settle). Wiring a second,
+   independent mobile-originated fragment source for just this one field was the direct cause of
+   BLOCKER 1 in GPT-PM's review of `fitness_app-2026-09-15T23-01-35-427Z-fd85bd` (undefined
+   same-mobile-state progressive-enrichment merge semantics). Given `genericOutcome` is not
+   load-bearing for any §5 formula on a `LOCAL_FAILURE`/`REQUEST_FAILURE` record specifically (only
+   `SERVER_TERMINAL` records feed §5.1-§5.2/§5.5; `LOCAL_FAILURE`/`REQUEST_FAILURE` only ever feed
+   `incomplete_evidence_count`, §5.3, which `genericOutcome` does not affect either way), step 3a
+   explicitly DEFERS populating `genericOutcome` on mobile-authoritative records to step 3b, where a
+   real cross-fragment merge mechanism is being built anyway for durability. `genericOutcome` stays
+   `null` on every record step 3a itself writes — disclosed here rather than silently dropped.
+5. **Resolved 2026-09-16**: see §5.4's revision — `scanEndedAt` is now the identity pipeline's own
+   settle instant (captured inside `equipmentIdentityProvider` itself, at the same point as the
+   state/reason it already records), not `_scanAgain()`/fresh-scan supersession. Both original
+   concerns (GPT-PM's "dwell time, not wait time" correction, and "`_classify()`'s own supersession
+   is a second real end-event `_scanAgain()` alone missed") are moot under this definition: there is
+   only one send, self-contained, at one well-defined instant, per identity-pipeline attempt — no
+   deferred/partial send, no second end-event to track.
+6. `functions-equipment-identity` test commands, confirmed: `npm test` (jest, unit), `npm run
    test:e2e` (emulator-backed, `functions-equipment-identity/package.json:9-10`). Rules tests run
    separately: `npm --prefix functions run test:rules` (comment header,
    `functions/src/__rules__/firestore_rules.test.ts:16`).
-5. Legal-text pipeline, confirmed: canonical source is `scripts/legal/legal_text.py`, generator is
+7. Legal-text pipeline, confirmed: canonical source is `scripts/legal/legal_text.py`, generator is
    `scripts/legal/build_legal.py` (`legal_text.py:12-14`: "`build_legal.py` is the generator").
    Current claim to preserve/extend accurately: `legal_text.py:201-202` — "No advertising
    identifier is collected, and no third-party analytics or attribution SDK is built into the
    app." This telemetry is first-party Firestore, consistent with that claim; step 4's legal-text
    update must describe the new collection without contradicting it.
-6. No existing Admin-SDK report/admin script was found anywhere under `scripts/` (grepped for
+8. No existing Admin-SDK report/admin script was found anywhere under `scripts/` (grepped for
    `firebase-admin`/`admin.initializeApp` — zero matches) — step 5's operator-only report script is
    new work, not an extension of an existing one.

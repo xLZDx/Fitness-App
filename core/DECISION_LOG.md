@@ -51829,3 +51829,74 @@ code). `pm_rosetta_close` will be re-submitted against the resulting head, citin
 APPROVE 0/0 on the final pushed state (`5d3a471`); `tsc --noEmit`/`npm run build`/`npm test` (24
 suites, 480 tests)/`npm run test:e2e` (8 suites, 74 tests) all green at every verified step. Commits:
 `afca346`, `0563335`, `8b2a4bd`, `5d3a471`, `457ad00`, and this entry's own commit.
+
+## 2026-09-16 -- P2.G5-readiness step 3a: design revised through 4 real Rosetta plan/GO rounds
+## before any implementation code; GPT-PM APPROVE, 0 BLOCKER / 0 MAJOR
+
+Operator instruction: continue autonomously (PM mode); S8 device connected for on-device testing
+when this gate reaches that stage. Scope: step 3 of the parent design
+(`core/design/p2_g5_readiness/P2_G5_READINESS_SHADOW_TELEMETRY_LIFECYCLE_CONTRACT_2026-09-12.md`) --
+"mobile durable outbox, the other 5 telemetry states" -- was deliberately narrowed at the outset to
+step 3a: mobile-originated LOCAL_FAILURE/REQUEST_FAILURE (+ success-path timing) telemetry, WITHOUT
+the actual local durable persistence layer (deferred to step 3b, alongside `ENRICHMENT_DISABLED` and
+`genericOutcome` on mobile records -- all three disclosed as out of scope, not silently dropped).
+
+Recon before any plan: `equipmentIdentityProvider`'s single `try/catch` conflates OCR/parser/network
+failures (no LOCAL_FAILURE vs REQUEST_FAILURE distinction possible today); no durable-storage package
+(Hive/sqflite/drift/isar) or `connectivity_plus` exists anywhere in `mobile/pubspec.yaml`; Firestore
+rules deny all client read/write on `equipment_identity_telemetry` (server-only, a new callable is
+required); `scanId` is minted as `scan-${DateTime.now().microsecondsSinceEpoch}` and reused across a
+retry.
+
+**Round 1** (plan `616bf0`): VERDICT REVISE, 2 BLOCKER / 4 MAJOR. A mobile client could submit
+`SERVER_TERMINAL`/`CONFLICT` (never mobile-authoritative); cross-source (server+mobile) merge
+semantics were entirely undefined by the frozen §6; `ENRICHMENT_DISABLED` was unreachable from any
+real caller (`scanner_page.dart:657`/`workout_player_page.dart:189` both gate the provider's own
+watch behind the same flag, confirmed by direct grep before accepting); a post-reply `FormatException`
+misclassified as `REQUEST_FAILURE` risked a false `CONFLICT` against a real `SERVER_TERMINAL`; the
+lifecycle-end boundary was incomplete. Plan rejected (never GO'd) rather than left open.
+
+**Round 2** (plan `fd85bd`): VERDICT REVISE, 2 BLOCKER / 5 MAJOR. The redesign's own 3-trigger-point
+partial-snapshot send scheme left same-mobile-state progressive enrichment undefined; `scanEndedAt` =
+`_scanAgain()` measured dwell time (time until the user chooses to scan again), not pipeline latency,
+contradicting §5.4's own "how long does the user wait" intent; the provider-to-scanner data flow for
+the classified failure reason was never closed; `ENRICHMENT_DISABLED` network-send contradicted
+`equipmentIdentityEnrichmentEnabledProvider`'s own documented zero-network guarantee. Fixed by
+SHRINKING scope rather than adding machinery: each telemetry send became self-contained (one send, at
+the identity pipeline's own settle instant, carrying state+reason+both timestamps together);
+`ENRICHMENT_DISABLED` send and mobile-side `genericOutcome` both explicitly deferred to step 3b.
+
+**Round 3** (plan `974219`): VERDICT REVISE, 2 BLOCKER / 5 MAJOR -- narrower "tie up loose ends"
+findings, no further redesign needed. `scanStartedAt` had no real mobile source despite the plan
+claiming one (fixed: parsed directly from `scanId`'s own embedded mint microsecond-epoch, no new
+mobile state); `clientObservedFailures` was asymmetric between arrival orders (fixed: §6 rule 3 now
+also populates it when a mobile fragment is superseded by a later `SERVER_TERMINAL`, matching rule
+5's reverse-order behavior); a client-observed failure on an otherwise-eligible `SERVER_TERMINAL`
+record was invisible to every metric (fixed: §5.3's `incomplete_evidence_count` gained a third,
+additive term); no successful scan ever got mobile timing, so §5.4's latency metric would only ever
+see failure records (fixed: the success path now also sends a timing-only enrichment fragment via
+rule 5, since the server already commits `SERVER_TERMINAL` before the client can send anything);
+RFC3339 validation needed an explicit UTC mandate (`DateTime.now().toUtc()`, never bare local time).
+
+**Round 4** (plan `4c1f49`): VERDICT REVISE, 0 BLOCKER / 1 MAJOR -- GPT-PM explicitly confirmed
+rounds 1-3's fixes held ("I am not reopening those findings"). Sole finding: a proposed 15-minute
+upper bound on `scanEndedAt - scanStartedAt` would silently reject a legitimate long-running retry,
+since `scanId` is reused across a retry with no time boundary of its own (verified against
+`scanner_page.dart`'s real retry logic before accepting) -- fixed by removing the upper bound
+entirely, keeping only `scanEndedAt >= scanStartedAt`.
+
+**Round 5** (plan `f0797e`): **VERDICT APPROVE, 0 BLOCKER / 0 MAJOR** (request_id
+`9631e508-3188-4236-9ac1-19fd68219d89`, reply_id `d841fe28-73e9-4879-8767-63d132b11ed4`). GPT-PM
+independently re-verified every prior round's fix was not regressed before approving. `pm_rosetta_go`
+succeeded on the first attempt this time (the plan review body was sent byte-exact to
+`planReviewPrompt()`'s own canonical output from the start, having learned this exact lesson earlier
+the same session on the step-2 gate's own closure).
+
+Every design-doc revision (4 rounds) was committed to the frozen contract
+(`core/design/p2_g5_readiness/P2_G5_READINESS_SHADOW_TELEMETRY_LIFECYCLE_CONTRACT_2026-09-12.md`)
+under this same plan's own governance, per that document's own header rule that a material change to
+it needs its own Rosetta revision + GO, not a silent edit.
+
+Implementation (mobile provider restructuring, the new `equipmentIdentityRecordTelemetry` callable,
+`telemetry_contract.ts`/`telemetry_repository.ts` extensions, regression tests both sides) follows in
+subsequent commits under this same approved plan `fitness_app-2026-09-15T23-26-30-825Z-f0797e`.
