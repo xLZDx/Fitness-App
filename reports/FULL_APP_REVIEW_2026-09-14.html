@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Всестороннее ревью Fitness App — 2026-09-14</title>
+<style>
+  :root{--bg:#0f1115;--panel:#171a21;--panel2:#1e222b;--ink:#e6e8ee;--muted:#9aa3b2;--line:#2a2f3a;--accent:#5b9dff;--p0:#ff5c5c;--p1:#ffb454;--p2:#5bd6a0;--ok:#5bd6a0;--warn:#ffb454;--code:#11141a;--codeink:#cdd6e4}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;line-height:1.6;font-size:15px}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 24px 96px}
+  header.hero{padding:40px 0 24px;border-bottom:1px solid var(--line)}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:15px}
+  h2{font-size:22px;margin:40px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  h3{font-size:17px;margin:28px 0 8px;color:#cdd6e4}
+  h4{font-size:15px;margin:20px 0 6px;color:#cdd6e4}
+  p,li{color:#d4d9e2}
+  code{font-family:'JetBrains Mono','Roboto Mono',Consolas,monospace;background:var(--code);color:var(--codeink);padding:1px 6px;border-radius:5px;font-size:13px}
+  pre{background:var(--code);color:var(--codeink);padding:14px 16px;border-radius:9px;overflow:auto;border:1px solid var(--line);font-size:13px;line-height:1.55}
+  pre code{background:none;padding:0}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:#cdd6e4;font-weight:600}
+  tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:18px 20px}
+  .verdict{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .badge{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;font-weight:700;font-size:13px}
+  .b-p0{background:rgba(255,92,92,.14);color:var(--p0);border:1px solid rgba(255,92,92,.4)}
+  .b-p1{background:rgba(255,180,84,.14);color:var(--p1);border:1px solid rgba(255,180,84,.4)}
+  .b-p2{background:rgba(91,214,160,.12);color:var(--p2);border:1px solid rgba(91,214,160,.4)}
+  .b-ok{background:rgba(91,214,160,.12);color:var(--ok);border:1px solid rgba(91,214,160,.4)}
+  .b-warn{background:rgba(255,180,84,.14);color:var(--warn);border:1px solid rgba(255,180,84,.4)}
+  .b-info{background:rgba(91,157,255,.12);color:var(--accent);border:1px solid rgba(91,157,255,.4)}
+  .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+  .sev{font-weight:700;border-radius:5px;padding:2px 8px;font-size:12px}
+  .sev.p0{background:rgba(255,92,92,.18);color:var(--p0)}
+  .sev.p1{background:rgba(255,180,84,.18);color:var(--p1)}
+  .sev.p2{background:rgba(91,214,160,.16);color:var(--p2)}
+  .finding{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:18px 20px;margin:14px 0}
+  .finding .head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+  .finding h3{margin:0}
+  .meta{color:var(--muted);font-size:12.5px}
+  .agents{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin:14px 0}
+  .agent{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+  .agent .role{font-weight:700;color:#cdd6e4;font-size:14px}
+  .agent .src{font-size:11.5px;color:var(--muted);margin-bottom:6px}
+  .kpi{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin:16px 0}
+  .kpi .k{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .kpi .v{font-size:24px;font-weight:700;color:#cdd6e4}
+  .kpi .l{font-size:12px;color:var(--muted);margin-top:2px}
+  .ok{color:var(--ok)} .bad{color:var(--p0)} .warn{color:var(--warn)}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:16px 20px;margin:18px 0}
+  .toc ol{margin:6px 0 0;padding-left:20px}
+  .toc li{margin:3px 0}
+  .note{border-left:3px solid var(--accent);padding:8px 14px;background:rgba(91,157,255,.06);border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px}
+  .warn-note{border-left:3px solid var(--warn);padding:8px 14px;background:rgba(255,180,84,.06);border-radius:0 8px 8px 0;margin:12px 0;font-size:13.5px}
+  .verified{color:var(--ok);font-size:11.5px}
+  .carried{color:var(--warn);font-size:11.5px}
+  footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  @media (max-width:640px){h1{font-size:24px}.wrap{padding:20px 14px 60px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <h1>Всестороннее ревью проекта Fitness App</h1>
+  <div class="sub">D:\Repo\Fitness_App · ветка <code>master</code> (HEAD <code>5ef5613</code>) · дата ревью 2026-09-14 · панель из 7 агентов (локальные + собственные)</div>
+  <div class="verdict">
+    <span class="badge b-p0"><span class="dot"></span> ВЕРДИКТ: BLOCK для release candidate</span>
+    <span class="badge b-warn">NEEDS REVISION</span>
+    <span class="badge b-info">архитектура зрелая</span>
+  </div>
+  <p class="sub" style="margin-top:10px">Проект архитектурно зрелый и исключительно хорошо документированный, но до release-candidate есть несколько блокирующих проблем: safety-фильтрация упражнений работает <b>fail-open</b>, App Check только логируется и не enforced, полный Flutter-suite нестабилен, release-сборка APK/AAB отсутствует в CI, а публичный donor wall раскрывает PII глобально.</p>
+</header>
+
+<div class="toc">
+  <b>Содержание</b>
+  <ol>
+    <li><a href="#method">Методология и состав агентов</a></li>
+    <li><a href="#verify">Таблица проверок (живые результаты)</a></li>
+    <li><a href="#kpi">Ключевые метрики</a></li>
+    <li><a href="#p0">Блокеры — P0</a></li>
+    <li><a href="#p1">Серьёзные — P1</a></li>
+    <li><a href="#p2">Косметика/техдолг — P2</a></li>
+    <li><a href="#perspectives">Перспективы по агентам</a></li>
+    <li><a href="#strengths">Сильные стороны</a></li>
+    <li><a href="#plan">План исправлений</a></li>
+    <li><a href="#appendix">Приложение и провенанс</a></li>
+  </ol>
+</div>
+
+<h2 id="method">1. Методология и состав агентов</h2>
+<p>Ревью выполнено как консенсус-панель. Часть агентов — <b>локальные</b> (определены в <code>~/.claude/agents/</code> из <code>D:\Repo\agents-skills-repo</code>, а также проектные в <code>.claude/agents/</code>); часть — <b>собственные перспективы</b> ведущего агента (Cline), применяющие те же критерии, что и соответствующие локальные агенты. Там, где локальный агент физически запускается через Claude Code subagent, здесь его критерии применены вручную по исходникам.</p>
+
+<div class="agents">
+  <div class="agent"><div class="role">Architecture / Flutter / Firebase</div><div class="src">собственная перспектива + критерии fitness-flutter-reviewer / flutter-reviewer</div><p>Структура фич, Riverpod/go_router, iOS-портабельность, разбиение модулей, монолитный <code>index.ts</code>.</p></div>
+  <div class="agent"><div class="role">QA / ML / safety logic</div><div class="src">собственная перспектива + критерии ml-engineer / clinical-safety</div><p>Стабильность suite, safety-фильтрация, mutation-coverage, ML-провенанс, форм-коуч.</p></div>
+  <div class="agent"><div class="role">Security / privacy / abuse</div><div class="src">локальный security-reviewer (критерии применены)</div><p>App Check, Firestore rules, секреты, SSRF, PII donor wall, Stripe webhook.</p></div>
+  <div class="agent"><div class="role">Database / Firestore data model</div><div class="src">локальный database-reviewer (критерии применены)</div><p>Структура правил, wildcard vs explicit allowlist, lifecycle policies, индексы.</p></div>
+  <div class="agent"><div class="role">Silent-failure hunter</div><div class="src">локальный silent-failure-hunter (критерии применены)</div><p>Проглатываемые ошибки, false-success fallback, partial writes без rollback.</p></div>
+  <div class="agent"><div class="role">Build / analyze resolver</div><div class="src">локальный dart-build-resolver + live <code>flutter analyze</code></div><p>17 issue-ей analyze, release pipeline, подпись, R8, native ML packaging.</p></div>
+  <div class="agent"><div class="role">Docs / l10n / data-governance</div><div class="src">собственная перспектива + doc-updater</div><p>RU/EN drift, lifecycle, битые ссылки, устаревшие счётчики в документах.</p></div>
+</div>
+
+<div class="note"><b>Дисциплина доказательств.</b> Каждое ключевое утверждение помечено: <span class="verified">✓ подтверждено живым запуском</span> или <span class="carried">◇ перенесено из консенсус-ревью 2026-09-12 (не перезапускано)</span>. Изменений в файлы не вносилось — это read-only ревью.</div>
+<h2 id="verify">2. Таблица проверок (живые результаты)</h2>
+<table>
+  <tr><th>Проверка</th><th>Результат</th><th>Провенанс</th></tr>
+  <tr><td><code>flutter analyze</code></td><td class="bad">❌ exit 1, 17 warning/info</td><td><span class="verified">✓ запущено вживую (44.4с, Flutter 3.27.1)</span></td></tr>
+  <tr><td>Полный <code>flutter test</code></td><td class="bad">❌ ~3808 тестов, ~25 падений (нестабильно)</td><td><span class="carried">◇ из ревью 2026-09-12</span></td></tr>
+  <tr><td>Изолированные проблемные widget-suites</td><td class="ok">✅ проходят по отдельности</td><td><span class="carried">◇ из ревью 2026-09-12</span></td></tr>
+  <tr><td><code>functions npm test</code></td><td class="ok">✅ 601 тест</td><td><span class="carried">◇ из ревью 2026-09-12</span></td></tr>
+  <tr><td><code>functions-equipment-identity npm test</code></td><td class="ok">✅ 473 теста</td><td><span class="carried">◇ из ревью 2026-09-12</span></td></tr>
+  <tr><td>catalog pytest</td><td class="warn">⚠ 210 passed, 1 failed (отсутствует <code>openpyxl</code> в окружении — среда, не код)</td><td><span class="verified">✓ запущено вживую</span></td></tr>
+  <tr><td>App Check enforcement</td><td class="bad">❌ только <code>noteAppCheck</code> (логирование), ни одного <code>enforceAppCheck: true</code></td><td><span class="verified">✓ grep по <code>functions/src/index.ts</code>: 11 вызовов noteAppCheck, 0 enforceAppCheck</span></td></tr>
+  <tr><td>Injury safety filter</td><td class="bad">❌ fail-open: нет тегов → считается безопасным</td><td><span class="verified">✓ <code>exercise_filter.dart:38</code></td></tr>
+  <tr><td>Release APK/AAB в CI</td><td class="bad">❌ отсутствует</td><td><span class="verified">✓ grep по <code>.github/workflows/*.yml</code>: 0 совпадений по build apk/appbundle</span></td></tr>
+  <tr><td>Donor wall PII</td><td class="bad">❌ публичный read без auth</td><td><span class="verified">✓ <code>firestore.rules:236</code> + комментарий 226</span></td></tr>
+  <tr><td>Secret scanning (gitleaks)</td><td class="ok">✅ .gitleaksignore документирован по каждому fingerprint</td><td><span class="verified">✓ прочитан файл</span></td></tr>
+  <tr><td>RU/EN drift</td><td class="bad">❌ 2 новых semantic mismatch</td><td><span class="carried">◇ из ревью 2026-09-12</span></td></tr>
+  <tr><td>Lifecycle policy coverage</td><td class="bad">❌ 2 коллекции без policy</td><td><span class="carried">◇ из ревью 2026-09-12</span></td></tr>
+  <tr><td>Docs link audit</td><td class="bad">❌ 54 битые ссылки</td><td><span class="carried">◇ из ревью 2026-09-12</span></td></tr>
+  <tr><td>npm audit (оба бэкенда)</td><td class="warn">⚠ 11 moderate vulnerabilities в каждом</td><td><span class="carried">◇ из ревью 2026-09-12</span></td></tr>
+</table>
+
+<h2 id="kpi">3. Ключевые метрики</h2>
+<div class="kpi">
+  <div class="k"><div class="v">33</div><div class="l">фич-модулей (mobile/lib/features)</div></div>
+  <div class="k"><div class="v">358</div><div class="l">Dart-файлов в lib</div></div>
+  <div class="k"><div class="v">350</div><div class="l">файлов *_test.dart</div></div>
+  <div class="k"><div class="v">~3808</div><div class="l">тестов в Flutter suite</div></div>
+  <div class="k"><div class="v">2140</div><div class="l">строк в functions/src/index.ts</div></div>
+  <div class="k"><div class="v">48</div><div class="l">TS-файлов в functions/src</div></div>
+  <div class="k"><div class="v">17</div><div class="l">issue-ей flutter analyze</div></div>
+  <div class="k"><div class="v">1.0.0+14</div><div class="l">версия pubspec</div></div>
+</div>
+<div class="warn-note"><b>Дрифт счётчиков.</b> <code>AGENTS.md</code> и <code>CLAUDE.md</code> называют 214/216 тест-файлов и ~1976 тестов, тогда как фактически 350 файлов и ~3808 тестов. <code>CONVENTIONS.md:63</code> утверждает, что integration-тестов нет и их 71 — оба утверждения устарели. Это нарушение собственного правила «доки = реальность» и часть блокера P2.4.</div>
+<h2 id="p0">4. Блокеры — P0</h2>
+
+<div class="finding">
+  <div class="head"><h3>P0.1 — Injury safety работает fail-open</h3><span class="sev p0">P0 · safety</span></div>
+  <p class="meta">security + QA/safety · <span class="verified">✓ подтверждено</span> <code>mobile/lib/features/equipment/data/exercise_filter.dart:38</code></p>
+  <p>Если у упражнения нет <code>contraindications</code>, оно автоматически считается безопасным:</p>
+  <pre><code>bool isContraindicated(ExerciseItem exercise, Iterable&lt;Injury&gt; injuries) {
+  if (exercise.contraindications.isEmpty) return false; // ← fail-open
+  ...
+}</code></pre>
+  <p>В каталоге ранее зафиксировано ~360 таких строк из 1887. Пользователь с травмой может получить упражнение <b>без доказанного safety-тега</b>. Дополнительно:</p>
+  <ul>
+    <li><code>safeFor(null)</code> возвращает весь список, пока профиль ещё не загружен (<code>exercise_filter.dart:290</code>) — fail-open до hydration;</li>
+    <li>recommendation/session-пути и browse-пути фильтруются по-разному (<code>safeCatalogProvider</code> vs <code>forYouExercisesProvider</code>, <code>equipment_providers.dart:434/451</code>);</li>
+    <li>AI-generated упражнения не имеют обычных contraindication-тегов и защищены только в отдельных resolve-путях.</li>
+  </ul>
+  <div class="note"><b>Рекомендация.</b> deny-by-default для injury-sensitive поверхностей; untagged → в карантин; не показывать prescription/session-контент до hydration; CI-gate <code>untagged contraindications == 0</code> либо signed-off allowlist; integration-тесты на deep links, cache, reminders, scheduled sessions и AI-generated упражнения.</div>
+  <div class="warn-note"><b>Спорно.</b> Поведение явно закодировано и покрыто тестами — это опасная <i>спецификация</i>, а не случайный баг. Блокер остаётся.</div>
+</div>
+
+<div class="finding">
+  <div class="head"><h3>P0.2 — Полный Flutter suite нестабилен</h3><span class="sev p0">P0 · QA</span></div>
+  <p class="meta">QA/ML · <span class="carried">◇ из ревью 2026-09-12 (не перезапускано — долго)</span></p>
+  <p>Первый полный запуск: <code>3808 tests, 25 failures</code>. Проблемные widget-тесты при изолированном запуске проходят. Последовательный запуск дошёл до 1133 тестов без падений, остановлен вручную. Похоже на утечки общего состояния, глобальные mocks, semantics/rendering-state или проблемы параллелизма. Пока не исправлено — мобильную часть нельзя считать release-ready.</p>
+  <div class="note"><b>Рекомендация.</b> Найти тесты, оставляющие глобальные singleton/provider/render-state; временно гнать полный suite с <code>--concurrency=1</code>; вернуть parallel execution и доказать стабильность; добавить CI-job с повторным запуском 2–3 раза.</div>
+</div>
+
+<div class="finding">
+  <div class="head"><h3>P0.3 — Release pipeline не собирает реальный APK/AAB</h3><span class="sev p0">P0 · build/release</span></div>
+  <p class="meta">build-resolver · <span class="verified">✓ подтверждено</span> grep по <code>.github/workflows/flutter.yml</code></p>
+  <p>Workflow проверяет analyze/test/integration, но <b>не выполняет</b> полноценный release-build. Отсутствуют:</p>
+  <ul>
+    <li><code>flutter build apk --release</code> / <code>flutter build appbundle</code>;</li>
+    <li>Gradle release assembly и signing;</li>
+    <li>ProGuard/R8 shrink/obfuscation;</li>
+    <li>native ML packaging smoke (ML Kit bridge виден только в реальном APK);</li>
+    <li>Wear release pairing (в <code>wear/build.gradle.kts</code> нет <code>signingConfig</code> — отдельный блокер по докам).</li>
+  </ul>
+  <div class="note"><b>Рекомендация.</b> Добавить release-сборку APK+AAB в CI, шаг подписания, R8, native-ML smoke на <code>Pixel_API_34</code>. Доказать, что host widget-tests ≠ release rendering.</div>
+</div>
+<div class="finding">
+  <div class="head"><h3>P0.4 — App Check не enforced (fail-open на уровне attestation)</h3><span class="sev p0">P0 · security</span></div>
+  <p class="meta">security-reviewer · <span class="verified">✓ подтверждено</span> grep <code>functions/src/index.ts</code></p>
+  <p>Модуль <code>abuse_guard.ts</code> сам честно описывает ситуацию: аудит 2026-08-11 нашёл App Check <code>UNENFORCED</code> на всех сервисах. На каждом callable стоит только <code>noteAppCheck(request, "…")</code> — это <b>измерение</b> (логирует <code>attested: bool</code>), а не enforcement. Ни один callable не передаёт <code>enforceAppCheck: true</code>. Неаттестованный трафик сейчас разрешён — fail-open.</p>
+  <pre><code>// 11 вызовов noteAppCheck, 0 — enforceAppCheck:
+// startFreeTrial, createCheckoutSession, createPortalSession, optInDonorWall,
+// optOutDonorWall, generateAnnualReceipt, startCoachOnboarding,
+// bookCoachSession, reportEquipment, deleteAccount, (+1)
+noteAppCheck(request, "…");  // только логирование</code></pre>
+  <div class="note"><b>Рекомендация.</b> Это намеренный staged-rollout (сначала измерить долю неаттестованного трафика). Для RC: набрать статистику → включить enforcement per-callable → зафиксировать долю отказов. Из репозитория нельзя доказать, что флаг включён в production — отдельный пункт доказательства для release.</div>
+</div>
+
+<div class="finding">
+  <div class="head"><h3>P0.5 — Donor wall: PII глобально читаемо</h3><span class="sev p0">P0 · privacy</span></div>
+  <p class="meta">security + database-reviewer · <span class="verified">✓ подтверждено</span> <code>firestore.rules:236</code></p>
+  <p>Public donor wall — намеренное product-behavior (одна запись на донора, opt-in). Но read открыт без аутентификации. Writes корректно server-only (<code>optInDonorWall</code> проверяет активную подписку). Проблема в read: любой неавторизованный клиент перечисляет всех доноров, и если в документе есть PII (имя/аватар/идентифицируемые данные) — это глобальное раскрытие PII без согласия на публичность именно этого поля.</p>
+  <div class="note"><b>Рекомендация.</b> Либо хранить в <code>donor_wall</code> только псевдоним/инициалы без PII, либо явно получать consent на публичность каждого поля, либо ограничить read <code>request.auth != null</code>. Добавить тест правила на отсутствие PII-полей.</div>
+</div>
+<h2 id="p1">5. Серьёзные — P1</h2>
+
+<div class="finding">
+  <div class="head"><h3>P1.1 — Firestore rules: wildcard-grant антипаттерн</h3><span class="sev p1">P1 · database/security</span></div>
+  <p class="meta">database-reviewer · <span class="verified">✓ прочитано</span> <code>firestore.rules:49-66</code></p>
+  <p>Per-user wildcard <code>match /users/{uid}/{coll}/{document=**}</code> даёт blanket read/write, а затем каждая carve-out коллекция (<code>usage</code>, <code>receipts</code>, <code>profile</code>, <code>recognised_models</code>, <code>equipment_identity_*</code>) исключается поимённо. Это <b>deny-by-exclusion</b>, а не explicit allowlist. Firestore разрешает запрос, если ЛЮБОЕ matching-правило его разрешает — значит, любая новая коллекция под <code>/users/{uid}/</code> по умолчанию получает client-write, пока её не добавят в список исключений. Это хрупко: добавили коллекцию → забыли исключить → клиент может писать в серверные данные.</p>
+  <div class="note"><b>Рекомендация.</b> Переписать на explicit allowlist: перечислить разрешённые клиенту коллекции явно, всё остальное — <code>if false</code>. Это устраняет класс ошибок «забыли исключить».</div>
+</div>
+
+<div class="finding">
+  <div class="head"><h3>P1.2 — Legacy health migration и server residue</h3><span class="sev p1">P1 · privacy/data</span></div>
+  <p class="meta">security + database · <span class="carried">◇ из ревью 2026-09-12</span></p>
+  <p>Health-данные ранее хранились в профилях клиентов; миграция на серверную модель должна быть завершена с подтверждением нулевого server residue. Связано с <code>scripts/ops/strip_health_from_profiles.py</code>. Нужно доказать, что в production Firestore не осталось health-полей, читаемых клиентом.</p>
+</div>
+
+<div class="finding">
+  <div class="head"><h3>P1.3 — Region helper для всех Functions</h3><span class="sev p1">P1 · infra</span></div>
+  <p class="meta">build/architecture · <span class="carried">◇ из ревью 2026-09-12</span></p>
+  <p>Регион должен быть задан единообразно для всех callable/HTTPS-функций (латентность и стоимость). Часть функций использует <code>RUNTIME_SA</code>/<code>INTERACTIVE</code> из <code>scaling.ts</code>, но единый region-helper применён не везде.</p>
+</div>
+
+<div class="finding">
+  <div class="head"><h3>P1.4 — Тесты и OCR failure/timeout state для equipment-identity</h3><span class="sev p1">P1 · QA/ML</span></div>
+  <p class="meta">QA/ML · <span class="carried">◇ из ревью 2026-09-12</span> + <span class="verified">✓ рабочий tree содержит незакоммиченные <code>telemetry_contract.ts</code>/<code>telemetry_repository.ts</code></span></p>
+  <p>Для equipment-identity deploy нужны отдельные тесты; для OCR-пути отсутствует явный failure/timeout state (silent fallback риска). Текущая активная работа (незакоммиченные файлы P2.G5-readiness shadow telemetry) идёт именно в эту сторону.</p>
+</div>
+
+<div class="finding">
+  <div class="head"><h3>P1.5 — Lifecycle policy отсутствует для 2 коллекций</h3><span class="sev p1">P1 · data-governance</span></div>
+  <p class="meta">data-governance · <span class="carried">◇ из ревью 2026-09-12</span></p>
+  <p>В <code>scripts/ci/data_lifecycle_policy.json</code> нет policy для <code>equipment_identity_latest_session</code> и <code>equipment_model_text_keys</code>. Это нарушение GDPR-orientated data-retention дисциплины проекта.</p>
+</div>
+
+<div class="finding">
+  <div class="head"><h3>P1.6 — Устаревшие Firebase/Google зависимости и npm vulnerabilities</h3><span class="sev p1">P1 · supply-chain</span></div>
+  <p class="meta">build + security · <span class="carried">◇ из ревью 2026-09-12</span></p>
+  <p><code>npm audit</code> показывает по 11 moderate vulnerabilities в каждом бэкенде. Flutter-сторона покрыта OSV-Scanner (pinned v2.5.1) в CI — это хорошо. Firebase/Google dependencies нужно обновить. Также Flutter SDK на машине — 3.27.1 (декабрь 2024), есть свежая версия.</p>
+</div>
+<h2 id="p2">6. Косметика/техдолг — P2</h2>
+<table>
+  <tr><th>№</th><th>Находка</th><th>Где</th><th>Провенанс</th></tr>
+  <tr><td>P2.1</td><td>Монолитный <code>functions/src/index.ts</code> — 2140 строк, все entry points в одном файле. Тяжело ревьюить и тестировать изолированно.</td><td><code>functions/src/index.ts</code></td><td><span class="verified">✓</span></td></tr>
+  <tr><td>P2.2</td><td>Неиспользуемый <code>authListenable</code> и второй глобальный <code>ProviderContainer</code> в роутере.</td><td><code>app_router.dart:258-265</code></td><td><span class="carried">◇</span></td></tr>
+  <tr><td>P2.3</td><td>Монолитная route-таблица (22 маршрута в одном списке) — разбить.</td><td><code>app_router.dart:275+</code></td><td><span class="verified">✓</span></td></tr>
+  <tr><td>P2.4</td><td>Дрифт счётчиков в доках: 214/216 тестов vs 350 файлов; 1976 vs 3808 тестов; «integration-тестов нет».</td><td><code>AGENTS.md</code>, <code>CLAUDE.md</code>, <code>CONVENTIONS.md:63</code></td><td><span class="verified">✓</span></td></tr>
+  <tr><td>P2.5</td><td>54 битые ссылки в non-planning документации.</td><td>docs</td><td><span class="carried">◇</span></td></tr>
+  <tr><td>P2.6</td><td>RU/EN semantic drift: <code>formcheckExplainTitle</code>, <code>formcheckExplainPushupTuck</code>.</td><td><code>app_ru.arb</code></td><td><span class="carried">◇</span></td></tr>
+  <tr><td>P2.7</td><td><code>mobile/README.md</code> — ещё Flutter starter template.</td><td><code>mobile/README.md:1</code></td><td><span class="carried">◇</span></td></tr>
+  <tr><td>P2.8</td><td>17 analyze issue-ей: 4× <code>unnecessary_type_check</code>, <code>unused_import</code>/<code>unused_element</code>, <code>deprecated_member_use</code> (<code>.alpha</code>).</td><td>вывод analyze</td><td><span class="verified">✓</span></td></tr>
+  <tr><td>P2.9</td><td>Wear signing/pairing сломан (нет <code>signingConfig</code>) — намеренно оставлено, требует отдельного GO.</td><td><code>wear/build.gradle.kts</code></td><td><span class="verified">✓</span></td></tr>
+  <tr><td>P2.10</td><td>В рабочем дереве незакоммиченные изменения и untracked P2.G5-файлы — состояние не чистое для release-среза.</td><td><code>git status</code></td><td><span class="verified">✓</span></td></tr>
+</table>
+
+<h2 id="perspectives">7. Перспективы по агентам</h2>
+
+<h3>Architecture / Flutter / Firebase</h3>
+<p>Зрелая feature-first структура (33 модуля, единый паттерн <code>data/state/widgets</code>), Riverpod + go_router. Сильная сторона — последовательная iOS-портабельность через <code>HealthService</code> seam. Слабые: монолитный <code>index.ts</code> (2140 строк), монолитная route-таблица, второй <code>ProviderContainer</code>. Документация (<code>CODEMAP.md</code>, <code>CONVENTIONS.md</code>) — выше среднего.</p>
+
+<h3>QA / ML / safety logic</h3>
+<p>Покрытие впечатляющее: ~3808 тестов, catalog pytest 210+, functions 601+473, mutation-тестирование, CT-1 content-QA с deterministic dataset-hash проверкой. ML-провенанс ведётся (запрет train-on-machine-output, реестры). Но: safety-фильтр fail-open (P0.1), нестабильность полного suite (P0.2), отсутствие release-level native-ML smoke. Equipment-классификатор намеренно слабее text-anchor (5/18 vs 18/18) — измеренный дизайн, не дефект.</p>
+
+<h3>Security / privacy / abuse</h3>
+<p>Хорошие практики: SSRF-защита gym webhook (https-only + <code>redirect:"manual"</code>), per-user/per-day квота через transaction, секреты через Secret Manager, грамотный <code>.gitleaksignore</code> с обоснованием каждого fingerprint, quota под user-документом (стирается <code>deleteAccount</code>). Слабые: App Check не enforced (P0.4), donor wall PII (P0.5), wildcard-rules (P1.1), 11 moderate npm vuln (P1.6). Stripe в test-mode — нормально для стадии, к production требует перевода и ротации webhook-secret.</p>
+
+<h3>Database / Firestore data model</h3>
+<p>Правила подробно комментированы, carve-out коллекции изолированы серверной записью, канарейка-токен structurally excluded. Но архитектура правил — deny-by-exclusion (P1.1): новый серверный путь под <code>/users/{uid}/</code> автоматически получает client-write, пока не добавлен в исключения. Explicit allowlist безопаснее. Lifecycle-coverage не полная (P1.5).</p>
+
+<h3>Silent-failure hunter</h3>
+<p>Код демонстрирует осознанную борьбу с silent failures: <code>isDeliverableWebhook</code> логирует отказ поимённо; <code>enforceDailyQuota</code> кидает <code>resource-exhausted</code>; <code>exerciseNameMatcherProvider</code> «fails closed». Однако OCR-путь equipment-identity не имеет явного failure/timeout state (P1.4) — потенциальный silent fallback. Рекомендуется terminal-reporting для retry-путей и explicit state для OCR-timeout.</p>
+
+<h3>Build / analyze resolver</h3>
+<p><code>flutter analyze</code> — 17 issue-ей (exit 1), все warning/info уровня (0 ошибок): <code>unnecessary_type_check</code>, <code>unused_import</code>, <code>deprecated_member_use</code>. Лечится за один проход. Главная проблема не в analyze, а в отсутствии release-build в CI (P0.3): host widget-tests проходят, но native/release rendering не проверяется.</p>
+
+<h3>Docs / l10n / data-governance</h3>
+<p>Документация обширна и структурна (INDEX/CODEMAP/CONVENTIONS/TECHSTACK/DEBUGGING, decision-log, per-gate reports). Но здесь самый большой дрифт: счётчики тестов устарели в 2 раза, «integration-тестов нет» — ложь, 54 битые ссылки, 2 RU/EN semantic mismatch. Особенно болезненно для проекта с принципом «доки = реальность». <code>mobile/README.md</code> — всё ещё starter template.</p>
+<h2 id="strengths">8. Сильные стороны (что защищать)</h2>
+<div class="kpi">
+  <div class="k"><div class="v ok">✓</div><div class="l">Evidence-over-inference дисциплина: каждое утверждение проверяется against исходников/живого запуска</div></div>
+  <div class="k"><div class="v ok">✓</div><div class="l">SSRF-защита на gym webhook (https + redirect:manual)</div></div>
+  <div class="k"><div class="v ok">✓</div><div class="l">Квота через transaction, не increment — race-safe</div></div>
+  <div class="k"><div class="v ok">✓</div><div class="l">Документированный .gitleaksignore, OSV-Scanner в CI (pinned)</div></div>
+  <div class="k"><div class="v ok">✓</div><div class="l">Mutation-тестирование, deterministic dataset-hash проверка</div></div>
+  <div class="k"><div class="v ok">✓</div><div class="l">iOS-портабельность через HealthService seam</div></div>
+  <div class="k"><div class="v ok">✓</div><div class="l">Запрет train-on-machine-output, ML-провенанс</div></div>
+  <div class="k"><div class="v ok">✓</div><div class="l">Server-only запись для всех серверных коллекций</div></div>
+</div>
+<p>Особо стоит отметить культуру честного release-логирования: в истории есть коммиты, фиксирующие <b>провальные</b> сборки и отсутствующие ревью-раунды как самостоятельные записи, а не умолчания. Это редкая и ценная практика.</p>
+
+<h2 id="plan">9. План исправлений</h2>
+<h3>P0 — до release candidate</h3>
+<ol>
+  <li>Перевести injury filtering в fail-closed (deny-by-default); untagged → карантин.</li>
+  <li>Закрыть все profile-hydration/session bypass-пути; не показывать prescription-контент до hydration.</li>
+  <li>Починить нестабильность полного Flutter suite (найти утечки state, <code>--concurrency=1</code> → вернуть parallel, CI-job с повтором 2–3×).</li>
+  <li>Добавить release APK/AAB build в CI + signing + R8 + native ML smoke на <code>Pixel_API_34</code>.</li>
+  <li>Доказать production App Check enforcement (набрать статистику → enforce per-callable).</li>
+  <li>Закрыть donor wall PII (убрать PII-поля / consent / auth-gate read).</li>
+</ol>
+<h3>P1 — до production</h3>
+<ol>
+  <li>Переписать Firestore rules на explicit allowlist.</li>
+  <li>Завершить legacy health migration, подтвердить нулевое server residue.</li>
+  <li>Единый region helper для всех Functions.</li>
+  <li>Тесты для equipment-identity deploy + OCR failure/timeout state.</li>
+  <li>Lifecycle policy для <code>equipment_identity_latest_session</code> и <code>equipment_model_text_keys</code>.</li>
+  <li>Обновить Firebase/Google deps; закрыть npm moderate vuln.</li>
+</ol>
+<h3>P2 — техдолг</h3>
+<ol>
+  <li>Разбить монолитный <code>index.ts</code> на модули по entry point.</li>
+  <li>Убрать неиспользуемый <code>authListenable</code> и второй <code>ProviderContainer</code>.</li>
+  <li>Разбить route-таблицу.</li>
+  <li>Обновить счётчики тестов/файлов в AGENTS/CLAUDE/CONVENTIONS; убрать «integration-тестов нет».</li>
+  <li>Закрыть 54 битые ссылки и RU/EN drift.</li>
+  <li>Переписать <code>mobile/README.md</code>; починить 17 analyze issue-ей.</li>
+  <li>Решить Wear signing/pairing отдельным GO.</li>
+  <li>Привести рабочее дерево в чистое состояние перед release-срезом.</li>
+</ol>
+
+<h2 id="appendix">10. Приложение и провенанс</h2>
+<div class="card">
+<h4>Легенда провенанса</h4>
+<p><span class="verified">✓ подтверждено живым запуском</span> — проверено в этой сессии ревью (flutter analyze, pytest, grep/read исходников).<br>
+<span class="carried">◇ перенесено</span> — из консенсус-ревью <code>core/review/FULL_APP_CONSENSUS_REVIEW_2026-09-12.md</code>, не перезапускано в этой сессии (полный Flutter suite и npm audit длительны; помечены как reported-as-fact).</p>
+
+<h4>Окружение ревью</h4>
+<p>Windows / PowerShell 7 · Flutter 3.27.1 (Dart 3.6.0) · HEAD <code>5ef5613</code> · рабочее дерево содержит незакоммиченные изменения (<code>core/DECISION_LOG.md</code>, <code>functions-equipment-identity/src/index.ts</code>, <code>session_repository.ts</code>) и untracked P2.G5-файлы.</p>
+
+<h4>Состав панели</h4>
+<p>Локальные агенты (из <code>~/.claude/agents</code>, источник <code>D:\Repo\agents-skills-repo</code>): security-reviewer, database-reviewer, dart-build-resolver, silent-failure-hunter, flutter-reviewer, ml-engineer, doc-updater. Проектные агенты (<code>.claude/agents</code>): fitness-flutter-reviewer, clinical-safety и др. Собственные перспективы ведущего агента (Cline) применены там, где физический запуск subagent недоступен, по тем же критериям.</p>
+
+<h4>Что НЕ делалось</h4>
+<p>Изменений в файлы проекта не вносилось — это read-only ревью. Полный <code>flutter test</code> и <code>npm test</code>/<code>npm audit</code> не перезапускались (длительность); их результаты перенесены из ревью 2026-09-12 с пометкой провенанса.</p>
+</div>
+
+<footer>
+  Сгенерировано Cline · всестороннее ревью Fitness App · 2026-09-14 · read-only, без правок в исходники.<br>
+  Источник консенсус-данных: <code>core/review/FULL_APP_CONSENSUS_REVIEW_2026-09-12.md</code>. Этот отчёт: <code>reports/FULL_APP_REVIEW_2026-09-14.html</code>.
+</footer>
+
+</div>
+</body>
+</html>

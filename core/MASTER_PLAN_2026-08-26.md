@@ -4,6 +4,7 @@
 **Scope:** every plan, design, and decision found in `core/DECISION_LOG.md`, `core/plans/`, `core/*.md`, `docs/Redisign/`, and the HUD design handoff package, from project inception (2026-07-28) through the independent SPTR audit (2026-08-25).
 **Source method:** six parallel research passes (foundation era, GUI/HUD design lineage, onboarding/safety/catalog era, ML/equipment-recognition platform, release/business/governance, and the SPTR independent audit itself), each citing file:line evidence and cross-checking plan claims against current code, not just decision-log self-reports. Full source-file list in §10.
 **New in this revision:** §8, Observability & Alerting (OBS-1), added as an explicit priority gate. **Reviewed 2026-08-26 by three independent specialist agents** (architect, security-reviewer, flutter-reviewer) against current HEAD, not just against decision-log self-reports — findings adjudicated and applied throughout §4/§8/§9; full review record in §11.
+**2026-09-15 addendum:** §9's priority table gained rows 22-26 and §12, reconciling an external, unverified full-app review report (`core/review/FULL_APP_CONSENSUS_REVIEW_2026-09-12.md`) against current HEAD — see §12 for what verified as FACT, what was already tracked, and what verified as overstated or unverified.
 
 ---
 
@@ -236,6 +237,11 @@ Per the architect's review, items below split into two groups with different fai
 | 19 | R11f-2 — photo export policy decision | Low | Decision not made | — | §4 |
 | 20 | Gym-favoriting + social monitoring | Low | Plan only, never built | — | §2 |
 | 21 | **Silent failure-alert path on 4 already-deployed alerts** (Stripe reconciliation x2, delete-account x3, export-account, canary probe) — same root cause as a real MVP1.G3 Step 10A bug: `logger.error(EVENT_STRING, {...metadata})` + a `messageEquals`-exact-match `LogMatchFilterSpec` never matches, because `firebase-functions/logger` unconditionally rewrites `jsonPayload.message` into `"Error: EVENT\n<stack>"` for ERROR severity when no arg is already an `Error` instance (confirmed by reading the logger's own source, not inferred) | **High — urgent, financial-correctness-adjacent** (Stripe reconciliation alerts included) *(added 2026-08-27, GPT-PM round-9 explicit scope decision: "do not reopen Step 10A, but open an urgent dedicated remediation item immediately")* | **Closed/remediated in MVP1.G3 Step 10C (2026-08-28)**: all 8 affected call sites (`index.ts` x5, `account_export.ts` x1, `canary_schedule.ts` x2) now set `event: THE_SAME_CONSTANT`; the 4 filters switched `messageEquals`->`eventEquals` (plus a new `messageContains` for the one framework-owned "Unhandled error" message); the 4 already-deployed producers (`stripeWebhook`, `deleteAccount`, `exportAccountData`, `runProductionCanary`) were redeployed; all 4 existing alert policies were PATCHed in place (preserving displayName/enabled/notificationChannels) and read back to confirm the live filter equals current-HEAD; 5 induced-failure proof log entries, shaped like real production output, confirmed matching each policy's own live filter via `gcloud logging read`. GPT-PM review: 1 MAJOR (missing policy patch, fixed) + 2 MINOR (fixed) on the code, then VERDICT: MINOR (audit-trail wording only) on the live evidence, then confirmed sufficient for CLOSED | Full sequence, evidence, and both GPT-PM review rounds in `core/DECISION_LOG.md`, "GPT-PM round 1: real MAJOR (missing policy patch)... live remediation complete" and "GPT-PM round 2" entries, 2026-08-28; root-cause analysis in "GPT-PM round 8" entry, 2026-08-27 | §8, `monitoring/types.ts`, `monitoring/alert_definitions.ts` |
+| 22 | **No CI job builds a real release artifact** (`flutter build apk --release` / `flutter build appbundle`, signing, R8/ProGuard, native-ML packaging) — every job in `flutter.yml` (analyze-and-test, functions-build, integration, dependency-scan, ru-en-drift) stops at host-level analyze/test | **Release-blocking** *(new — 2026-09-15, external review reconciliation, §12)* | Open, verified current: `grep` for `build apk\|appbundle\|assembleRelease\|signingConfig` in `.github/workflows/flutter.yml` (426 lines) returns nothing | Distinct from item 1 (`targetSdk`); this is "no release build is ever produced or smoke-tested," not "the wrong SDK version" | §12 |
+| 23 | `functions-equipment-identity` Firebase deploy `predeploy` hook runs `npm run build` only — no `npm test`, unlike the sibling `default` codebase which runs build+test+release_guard | Medium-High *(new — 2026-09-15, §12)* | Open, verified current: `firebase.json:23-27` (default codebase) vs. `firebase.json:40-42` (equipment-identity) | A regression in `functions-equipment-identity/src` can deploy to production having only ever been checked by CI (`flutter.yml`'s `functions-build` job does `tsc`, not `npm test` either — needs its own check before treating this as closed by CI alone) | §12 |
+| 24 | Firestore rules grant read/write over `/users/{uid}/{coll}/**` via a wildcard match with a hand-maintained per-write denylist, rather than an explicit per-collection allowlist | Medium *(new — 2026-09-15, §12)* | Open, verified current: `firestore.rules:49-58` | A new server-only collection is client-readable by default unless someone remembers to add it to the denylist — the exact failure mode that would silently expose whatever P2.G5's own `equipment_identity_telemetry` collection carries if the currently-open P2.G5-readiness plan's own denylist entry (already present, `firestore.rules:58`) were ever dropped in a future edit | §12 |
+| 25 | `server_export.dart`'s `CloudFunctionsServerExport` calls `FirebaseFunctions.instance` (default region) instead of this project's own `functions_region.dart` `kFunctionsRegion`-pinned helper that every other call site uses | Low-Medium *(new — 2026-09-15, §12)* | Open, verified current: `mobile/lib/features/data_export/server_export.dart:21` vs. `mobile/lib/core/firebase/functions_region.dart:23` | Likely routes GDPR-export calls to `us-central1` instead of the deployment region — functional (Cloud Functions v2 callables resolve globally) but adds needless cross-region latency/cost, and is the one exception to an otherwise-consistent pattern | §12 |
+| 26 | Legacy health-data lazy migration leaves the server-side health block indefinitely for an account that never reopens the app; the purpose-built one-off remediation script (`scripts/ops/strip_health_from_profiles.py`) exists but is run by hand, on no schedule, with no on-record dated zero-result evidence of a completed sweep | Medium *(re-flagged — this exact gap was already required to be closed or softened by `core/audit/gate_j_regulatory_review_2026-08-15/GATE_J_REGULATORY_REVIEW_2026-08-15.md:66`; not new, but still open as of 2026-09-15, §12)* | Open — script exists (`scripts/ops/strip_health_from_profiles.py`, present), no evidence of a completed scheduled or dated run found in `core/DECISION_LOG.md`/`core/audit/` | Same underlying mechanism the currently-open P2.G5-readiness plan's own step 4 (retention/export) is building for a *different* collection — worth the same "make it a real, testable, scheduled mechanism" treatment when this row is picked up, not a new pattern to invent | §12 |
 
 ---
 
@@ -348,5 +354,134 @@ Round 5 raised 2 MAJOR. Both independently verified directly against the repo ra
 
 1. **"The two committed HTML reports were never actually verified to match the reviewed Markdown."** Legitimate concern in principle (the tool's `REVIEW_EXCLUDE` design, confirmed in round 4, means GPT-PM structurally never reads `reports/*.html`). **Closed by manual verification, not further automation** — direct `grep` across all three files (`core/MASTER_PLAN_2026-08-26.md`, `reports/MASTER_PLAN_2026-08-26.html`, `reports/MASTER_PLAN_2026-08-26.ru.html`) for the single highest-stakes corrected fact (the `targetSdk`/Play-extension wording) confirmed all three carry the same corrected substance, no divergence, no stale "non-negotiable" language surviving in either HTML. The HTML reports are intentionally an executive summary, not a full mirror of the Markdown's §11a–§11d governance trail — they were never meant to carry the P0/D1/H3 detail — so the relevant parity question is narrower than round 5 framed it: do the two report files contradict the reviewed Markdown on anything they *do* state? Checked: no.
 2. **"Round 4's automated `review.js` call may have violated a standing 'no further automated review.js calls' operator instruction."** **Verified false** by direct `grep` of `core/DECISION_LOG.md`: the cited instruction (line ~25038, dated 2026-08-22) reads "...for the rest of **this session**..." — explicitly scoped to that prior, now-ended Claude Code session's own browser-tab-duplication incident, not a durable cross-session restriction. This session is a distinct process with no inherited restriction from another session's scoped instruction.
+
+## 12. External Review Reconciliation — `FULL_APP_CONSENSUS_REVIEW_2026-09-12` (2026-09-15)
+
+**Provenance and why this section exists.** On 2026-09-12 the operator pasted a full-app review
+report into a different session (`b52e8d56-...`), which saved it verbatim, unverified, at
+`core/review/FULL_APP_CONSENSUS_REVIEW_2026-09-12.md` — reviewer identity and methodology not
+stated, none of its claims independently checked at the time. A second, HTML-rendered version
+(`reports/FULL_APP_REVIEW_2026-09-14.html`) surfaced two days later with an added "P0.5" (donor
+wall PII) not present as a confirmed blocker in the original Markdown, where it is instead listed
+under "Спорные / условные пункты" (disputed/conditional items) — the two versions disagree with
+each other on this one item's severity, which is itself worth recording rather than silently
+picking one. Per this repo's own evidence-over-inference discipline (§3/§23 of the global operator
+contract) and per this document's own established practice (§11), this session re-verified the
+report's load-bearing `file:line` citations against current HEAD before acting on any of them, and
+before adding anything to §9. **None of this touches the currently-open Rosetta plan**
+(`fitness_app-2026-09-12T21-27-25-820Z-b29fad`, P2.G5-readiness shadow telemetry) — the report's own
+saved copy already noted the two are out of scope of each other, confirmed again here; §9 rows
+22-26 are their own, separately GO-able items.
+
+### Verified as FACT, genuinely new to this document — added as §9 rows 22-25
+
+- **No CI release build.** Read the full 426-line `.github/workflows/flutter.yml`: five jobs
+  (`analyze-and-test`, `functions-build`, `integration`, `dependency-scan`, `ru-en-drift`), none of
+  which runs `flutter build apk`/`appbundle`, Gradle assembly, signing, or R8/ProGuard. Confirmed by
+  direct read, not by trusting the report's own citation of line 75 (which is actually the
+  `flutter analyze --no-fatal-warnings --no-fatal-infos` line — real, but evidence for the QA-debt
+  note about masked `analyze` warnings, not directly for "no release build," which needed its own
+  check of the whole file). → row 22.
+- **`equipment-identity` deploy predeploy hook has no test step.** `firebase.json:23-27` (default
+  codebase: build + test + `run_release_guard.mjs`) vs. `firebase.json:40-42` (equipment-identity
+  codebase: build only) — exact match to the report's citation, confirmed by direct read. → row 23.
+- **Firestore wildcard-with-denylist pattern.** `firestore.rules:49-58` — confirmed: a single
+  `match /users/{uid}/{coll}/{document=**}` grants read/write to every subcollection except six
+  (read) / seven (write) explicitly denylisted names. Structurally real, as the report describes;
+  whether it is worth the migration cost of an explicit allowlist is a product/engineering tradeoff
+  this section does not decide. → row 24.
+- **Region-inconsistent Functions call.** `mobile/lib/core/firebase/functions_region.dart:23`
+  establishes `FirebaseFunctions.instanceFor(region: kFunctionsRegion)` as the project's own
+  pattern; `server_export.dart:21` is the one call site still using the bare
+  `FirebaseFunctions.instance` default. Confirmed by `grep` across `mobile/lib` — no other bare
+  `.instance` use found among the files checked. → row 25.
+- **Legacy health lazy migration.** Confirmed the mechanism the report describes is real
+  (`device_health_profile_repository.dart:74-83`'s own comment states the exact same blind spot:
+  "an account whose owner never opens the app again is never migrated by this path"), but this is
+  **not a new finding** — `core/audit/gate_j_regulatory_review_2026-08-15/GATE_J_REGULATORY_REVIEW_2026-08-15.md:66`
+  already required either a dated zero-result run of `scripts/ops/strip_health_from_profiles.py` or
+  softened claim language, a month before this report. No evidence found of that run having
+  happened since. → row 26, marked re-flagged rather than new.
+
+### Already tracked in §9 — not duplicated, cross-referenced instead
+
+- **Injury filter fail-open (report's P0.1).** Re-verified: `exercise_filter.dart:38`
+  (`if (exercise.contraindications.isEmpty) return false;`) and the live catalog data file
+  (`assets/data/exercises_vendor.json`, counted directly: 1,887 total, 1,527 tagged, **360 untagged**
+  — an exact match to the report's number) confirm this is real and current. This is §9 row 2,
+  already release-blocking, already deferred to the `D1`/`H3` external clinical authority per §11a's
+  own correction — nothing new to add. One sub-claim needed its own check: `safeFor(null)` (report:
+  "returns the whole list while the profile hasn't loaded yet") does return the list unfiltered on a
+  null profile (`exercise_filter.dart:290`), but the cited call site (`safeCatalogProvider`,
+  `equipment_providers.dart:434-438`) awaits `screeningProfileProvider.future` before calling
+  `safeFor` — the doc comment at `exercise_filter.dart:281-285` states plainly that this is exactly
+  why "no caller passes a sampled `.valueOrNull` any more." Not independently re-checked: whether
+  every OTHER caller of `safeFor` also awaits rather than samples — worth a follow-up grep before
+  treating this specific sub-claim as closed, but the cited line itself is not the live bug it was
+  presented as.
+- **App Check fail-open (report's P0.4).** Re-verified: `functions/src/scaling.ts:172` (`envFlag`,
+  fail-open: only the literal string `"true"` enables it) and line 184
+  (`APP_CHECK_ENFORCED = envFlag("APP_CHECK_ENFORCED")`) confirm the non-AI-callable default is
+  fail-open, exactly as described. Also verified, and the report gets this part right too: the AI
+  path (`APP_CHECK_ENFORCED_AI`, line 209) uses `envFlagFailClosed` and is enforced by default. This
+  is already §9 row 14 ("App Check full enforcement picture: UNKNOWN even after 08-25 audit") — the
+  new information this reconciliation adds is that the *default-off* half is now confirmed as FACT
+  at the code level (it was previously "unknown," not "confirmed off by default"); whether production
+  actually sets the env var remains unverifiable from this repository alone, exactly as row 14 and
+  the report itself both already say. No new row added; row 14's evidence column could be
+  strengthened in a future edit, not done here to keep this reconciliation additive-only.
+- **Wear release signing.** Report cites `CLAUDE.md:66` as evidence — re-read, confirmed accurate,
+  and note that this means the report is citing an *already-documented, already-known, deliberately
+  untouched-pending-its-own-GO* item, not a fresh discovery. Not currently a §9 row; low priority
+  relative to phone release blockers, not added here.
+
+### Verified as OVERSTATED — the report's own P0.2 needs a correction, not an addition
+
+**"Полный Flutter suite нестабилен... 3808 тестов, 25 падений... похоже на утечки общего
+состояния"** (full suite unstable, looks like shared-state leaks) is the report's second P0. This
+session's own prior work on this exact repo already produced the relevant evidence, in
+`core/DECISION_LOG.md`'s P2.G4 Step 13 entry (2026-09-12, "formal waiver recorded"): the same 3,808
+tests / 25 failures figure is **the project's own already-documented, already-named, already-waived
+number** — the 25 are a fixed, reconfirmed-identical set of golden/font-substitution tests
+(`hud_golden_test.dart`, `composed_screen_golden_test.dart`, `scan_reference_golden_test.dart`,
+`form_coach_golden_test.dart`) that fail on Windows vs. the CI/reference environment's font
+rendering, reconfirmed identical across multiple full runs during that gate — not a nondeterministic
+count that would indicate test-isolation/shared-mock/parallelism leakage. The report's own evidence
+for "leak" is that a sequential, single-file-at-a-time run got to 1,133 tests with zero failures
+before being manually stopped — consistent with **either** hypothesis (isolation leak, or simply
+hitting fewer of the 25 known-golden files before stopping) and was not run to completion in either
+direction, so it does not itself distinguish them. **Correction applied:** this is not added as a
+new blocking row — the underlying number is already accepted (with a recorded waiver) by this
+project's own gate-closure process. What genuinely IS still open, and is added nowhere else in this
+document yet: **the waiver lives only in a decision-log entry, not in CI itself** — `flutter.yml`'s
+`flutter test` step (line 80-81) has no equivalent to `flutter analyze`'s explicit
+`--no-fatal-warnings --no-fatal-infos` suppression, so a CI run of the mobile suite is not visibly
+distinguished from the waived state without a human reading the decision log. Folded into row 22's
+neighborhood rather than given its own row, since fixing it is a CI-authoring detail alongside the
+release-build gap, not a distinct blocker.
+
+### Left explicitly UNVERIFIED by this reconciliation — not added to §9, not dismissed either
+
+Per §23 of the global operator contract ("an absent prohibition is not a prohibition" — read the
+converse here: an absent verification is not a refutation), the following were **not** independently
+checked this pass and should be treated as `HYPOTHESIS`, not `FACT`, until someone does:
+
+- **P0.5, donor wall PII globally readable** — the two report versions disagree on its severity
+  (P0 in the HTML, "conditional/intentional" in the Markdown); neither this session nor the prior one
+  opened the actual donor-wall implementation.
+- **Dependency vulnerabilities** ("11 moderate" per backend) — `npm audit` was not re-run this pass.
+- **2 new RU/EN semantic mismatches** (`formcheckExplainTitle`, `formcheckExplainPushupTuck`), **54
+  broken doc links**, `CONVENTIONS.md:63`'s stale test-count claim, `mobile/README.md` still reading
+  as the Flutter starter template, and the P2 items (`app_router.dart:258`'s unused
+  `authListenable`/second `ProviderContainer`) — none re-opened or re-counted this pass.
+
+### What this section does NOT do
+
+No code was changed. No GO was requested or needed for this section itself — reconciling and
+recording verified findings into this document is ordinary planning/decision-log work under this
+repo's own standing autonomy (global operator contract §17, "update the roadmap and decision log as
+part of the work"). Rows 22-26 are each their own future gate, each needing its own plan and GO
+before implementation, exactly as §9's existing rows already work. This reconciliation does not
+change the currently-open P2.G5-readiness plan's scope, steps, or hash in any way.
 
 **Decision, made here rather than by spawning a round 6 against a transport with an open cross-contamination gap:** this master plan's content is treated as substantively settled — rounds 1–4 (all correlated, all independently fact-checked before acceptance) surfaced and closed 4+5+1+4 = 14 real findings across governance, safety-authority framing, and factual accuracy, with zero findings rejected as wrong. Round 5's two findings were addressed by direct manual evidence rather than by trusting an unconfirmed-correlation automated reply or by chasing indefinite further rounds. **This is not a `--final` receipt** — no round in this chain produced one, since every MAJOR-or-above verdict automatically downgrades `--final` by `review.js`'s own design (`final_overridden: true` in rounds 4 and 5). Per this workspace's standing contract, that has no bearing on whether this work can be committed (it already is, at `cdfd7cc`) — only on whether it may be **pushed**, which this session has not requested and will not initiate without a separate, explicit operator push-GO regardless of any future review outcome.

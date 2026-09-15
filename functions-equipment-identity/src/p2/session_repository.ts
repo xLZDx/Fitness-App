@@ -162,7 +162,7 @@ export const CLAIM_LEASE_MS = 30_000;
  * 2026-09-11). Stripped here, at the actual write boundary, so the
  * guarantee holds regardless of how the caller constructed `authority`.
  */
-function stripUndefinedFields<T extends object>(value: T): T {
+export function stripUndefinedFields<T extends object>(value: T): T {
   const cleaned = {} as T;
   for (const [key, val] of Object.entries(value)) {
     if (val !== undefined) {

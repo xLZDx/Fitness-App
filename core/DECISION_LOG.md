@@ -51268,3 +51268,243 @@ LITERALLY green) is option (A) in its own finding -- not pursued here: it is an 
 tooling fix orthogonal to this gate's own scope (P2.G4 is the mobile identity contract, not the
 golden-test harness), and GPT-PM itself offered the waiver as the equally-valid option (B). Re-
 submitting closure with this waiver now on record and the report wording corrected.
+
+---
+
+## 2026-09-12 21:14-21:56 UTC -- P2.G5-readiness (rev2) plan re-recorded on the working chat
+session; Step 1 design doc written
+
+Rosetta plan `fitness_app-2026-09-12T10-13-12-848Z-77b2ca` (rev2, hash
+`ade2c4dd338dd5a0752f93caefaf4b4199bcfa03b27b8e098d267b840753578d`) had already received GPT-PM
+APPROVE earlier the same session-day, but was recorded against a DIFFERENT Claude Code session id
+(`5c302c91-...`) than the one the operator is actually continuing work in (`b52e8d56-...`, working
+directory `D:\Repo`, this repo's checkout unchanged at that point: `git log` showed HEAD still at
+`5ef56137` = the plan's own `base_head`, clean tree, zero commits since). Rosetta governs acts by
+session id, not by chat continuity, so continuing in the original chat would have recorded every
+act as ungoverned.
+
+Since no work had actually been performed under the old plan (0 changed paths, 0 commits -- verified
+via `pm_rosetta_close`'s own git-based accounting before closing it), the byte-identical plan
+(same hash, same scope/steps/verification -- session id is not a hashed field, see
+`pm-bridge/src/rosetta.js` `BASE_HASHED_FIELDS`) was re-recorded as
+`fitness_app-2026-09-12T21-27-25-820Z-b29fad` against the correct session, sent for a fresh GPT-PM
+review (`request_id 70b0fb8f-d387-4209-b483-59f03b5b6c50`, reply `1c394b60-358e-47a0-9365-f0d9d22b3756`,
+bare `VERDICT: APPROVE`), and opened with `pm_rosetta_go`. The old plan was closed `blocked` with a
+note explaining the supersession (not `rejected` -- GPT-PM never refused it, the plan was simply
+migrated to the session doing the real work).
+
+**Step 1 (frozen per-scan lifecycle + P2.G5 measurement contract) is written**:
+`core/design/p2_g5_readiness/P2_G5_READINESS_SHADOW_TELEMETRY_LIFECYCLE_CONTRACT_2026-09-12.md`.
+Key findings from recon that shaped it:
+- `users/{uid}/equipment_identity_telemetry/{docId}` is ALREADY reserved in both
+  `firestore_paths.ts:112-116` and `firestore.rules:364-366` (deny-read/deny-write), and already
+  classified `DELETE` in `scripts/ci/data_lifecycle_policy.json:56-59` -- confirmed via grep that no
+  live Admin SDK writer exists yet anywhere under `functions-equipment-identity/src`. Step 2 fills
+  an already-shaped slot; it does not need a new collection or a rules change.
+- Eligibility/text-resolution-rate/catalog-coverage formulas are this document's own frozen
+  proposal (labeled DECISION, not FACT) grounded in the 12-value `EquipmentIdentityDecision` enum
+  (`contract.ts:102-115`) and the plan's own GPT-PM-approved verification text ("eligible = resolved
+  + NEED_MORE_VIEW + other terminal outcomes").
+- Section 5.6 states explicitly, per the plan's own instruction not to imply more than the data
+  supports: no beta-feedback/survey mechanism exists in this repo today (grepped, zero matches), so
+  telemetry alone cannot supply "product value evidence" -- only pipeline-quality metrics.
+- Three items are flagged UNKNOWN/open for step 2 to resolve from the real files before schema
+  freeze, not guessed here: the exact `equipment_identity_providers.dart` local-failure branches,
+  whether an `ENRICHMENT_DISABLED` path genuinely exists, and `cloud_equipment_identity_service.dart`'s
+  network/quota failure surface -- recon hit its turn budget before those three files were opened.
+
+Operator instructed to save state and stop after this task; steps 2-9 of the plan are NOT started.
+No code outside `core/design/` and this log changed. Session remains governed
+(`pm_rosetta_status`: plan in-progress, acts recorded).
+
+---
+
+## 2026-09-12 22:24 UTC -- external full-app consensus review saved for later analysis (not verified, not actioned)
+
+Operator pasted a full-app review report into chat (source/methodology/reviewer identity not
+stated beyond three labeled reviewer roles; not produced by this session) and asked for it to be
+saved for analysis. Saved verbatim, with a provenance header marking every claim in it as
+UNVERIFIED by this session, at
+`core/review/FULL_APP_CONSENSUS_REVIEW_2026-09-12.md`. Headline claims: BLOCK verdict for release
+candidate, citing fail-open injury/contraindication filtering, an unstable full `flutter test` run
+(3808 tests / 25 failures, isolated re-runs green), an incomplete release CI pipeline (no real
+APK/AAB build), and env-flag-dependent (fail-open) App Check enforcement on non-AI callables; plus
+P1/P2 items (Firestore rules wildcard scope, lazy legacy-health migration, inconsistent Functions
+region, dependency vulnerabilities, docs drift).
+
+**Not actioned.** Out of scope of the currently open Rosetta plan
+(`fitness_app-2026-09-12T21-27-25-820Z-b29fad`, P2.G5-readiness); none of its file citations or
+test counts were independently re-checked by this session before saving. One item (a
+`data_lifecycle_policy.json` gap for `equipment_model_text_keys`) touches the same file this plan's
+own step 4 will edit and should be checked for conflict when that step runs, but was not
+investigated further here. No commit made — the file sits alongside this session's other
+uncommitted `core/design/p2_g5_readiness/` and `core/DECISION_LOG.md` changes.
+
+---
+
+## 2026-09-15 — external review reconciled into `core/MASTER_PLAN_2026-08-26.md` §9/§12 (new session,
+## `248abcfa-...`, operator instruction: "изучи отчет, это от другого агента, и обнови план на
+## основании находок")
+
+Operator asked to study the 2026-09-12 external report saved above and update the plan from its
+findings. This session is `248abcfa-...`, distinct from the session that opened and holds GO on the
+P2.G5-readiness Rosetta plan (`fitness_app-2026-09-12T21-27-25-820Z-b29fad`, opened by session
+`b52e8d56-...`) — `pm_rosetta_status` confirmed `Governed: no (no_plan)` for this session before any
+work started. This entry and the master-plan edit are documentation-only (Rosetta `LOCAL` review
+class: docs), which needs no separate plan/GO under this repo's own standing rules; no code was
+touched.
+
+**Re-verified against current HEAD before accepting anything from the report** (per CLAUDE.md §3/§23
+— treat another agent's findings as claims, not facts, until the primary source is opened):
+
+- Injury filter fail-open, 360/1,887 untagged: confirmed exact — counted `assets/data/exercises_vendor.json`
+  directly (1,887 total / 1,527 tagged / 360 untagged) and read `exercise_filter.dart:38,281-291`.
+  **Already tracked**, `MASTER_PLAN_2026-08-26.md` §9 row 2 — not duplicated. One report sub-claim
+  ("`safeFor(null)` returns unfiltered while profile is loading") does not hold at the cited call
+  site (`equipment_providers.dart:434-438` awaits the profile future before calling `safeFor`), per
+  `exercise_filter.dart:281-285`'s own comment that this exact bug is why no caller samples a
+  nullable snapshot any more — not independently checked whether every OTHER `safeFor` caller also
+  awaits.
+- No CI release-build job: confirmed by reading the full 426-line `.github/workflows/flutter.yml` —
+  no `flutter build apk`/`appbundle`/signing/R8 step in any of its 5 jobs. New — added §9 row 22.
+- `functions-equipment-identity` deploy predeploy has no test step: confirmed,
+  `firebase.json:23-27` (default codebase) vs. `:40-42` (equipment-identity). New — §9 row 23.
+- App Check fail-open for non-AI callables: confirmed, `functions/src/scaling.ts:172,184`
+  (`envFlag`, exact-string-`"true"`-only). Also confirmed the report's own credit is accurate — the
+  AI path (`:209`, `envFlagFailClosed`) is fail-closed by default. **Already tracked**, §9 row 14 —
+  not duplicated, evidence strengthened in §12 narrative instead of a new row.
+- Firestore `/users/{uid}/{coll}/**` wildcard-with-denylist: confirmed, `firestore.rules:49-58`. New
+  — §9 row 24.
+- `server_export.dart` region inconsistency: confirmed, `server_export.dart:21` uses the bare
+  `FirebaseFunctions.instance` where every other call site uses `functions_region.dart`'s
+  region-pinned helper (`grep` across `mobile/lib` found no other bare-`.instance` use). New — §9
+  row 25.
+- Legacy health lazy migration: confirmed the mechanism is real
+  (`device_health_profile_repository.dart:74-83`'s own comment states the identical blind spot), but
+  **not a new finding** — `core/audit/gate_j_regulatory_review_2026-08-15/GATE_J_REGULATORY_REVIEW_2026-08-15.md:66`
+  already required a dated zero-result run of `scripts/ops/strip_health_from_profiles.py` or a
+  softened claim, a month earlier; no evidence found that the run has since happened. Re-flagged,
+  not new — §9 row 26.
+- Wear release signing broken: report's own citation (`CLAUDE.md:66`) re-read, accurate — already
+  documented, already known, deliberately deferred pending its own GO. Not added as a row.
+
+**Verified as overstated, corrected rather than added:** the report's P0.2 ("full Flutter suite
+unstable... looks like shared-state leaks," 3,808 tests / 25 failures) reports the SAME number this
+project's own P2.G4 Step 13 entry (above, same file) already named, reconfirmed deterministic across
+multiple full runs, and formally waived as environment-only (Windows vs. CI/reference font
+rendering) — not evidence of test-isolation/shared-mock leakage, which would produce a
+non-deterministic failure set, not the same 25 names every time. Not added as a new blocking row.
+The one genuinely open gap this surfaced: the waiver lives only in this decision log, not in CI
+itself (`flutter.yml`'s `flutter test` step has no equivalent to `flutter analyze`'s explicit
+suppression flags) — noted in §12, folded near row 22 rather than given its own row.
+
+**Left explicitly unverified, not added, not dismissed** (§23 — absent verification is not
+refutation): P0.5 donor-wall PII (the two report versions — `.md` from 09-12, `.html` from 09-14 —
+disagree on its severity, neither opened the actual implementation), dependency-vulnerability counts
+(`npm audit` not re-run), the 2 RU/EN mismatches, the 54 broken doc links, `CONVENTIONS.md`'s stale
+test-count claim, `mobile/README.md`'s starter-template content, and the P2 `app_router.dart:258`
+item. Recorded as open questions in §12's own "Left explicitly UNVERIFIED" subsection rather than
+silently dropped.
+
+Full reconciliation, citations, and the corrected §9 table rows (22-26): `core/MASTER_PLAN_2026-08-26.md`
+§12 and §9. This session's P2.G5-readiness governance state is unaffected — still `no_plan` for this
+session; continuing the P2.G5 gate itself (rather than this reconciliation) requires either resuming
+session `b52e8d56-...` or opening a fresh plan/GO here.
+
+---
+
+## 2026-09-15 18:41 UTC — P2.G5-readiness step 2: server-side telemetry writer wired and
+## regression-tested (new session `69224815-...`, operator instruction: "продолжай фитнес апп дев")
+
+A prior attempt this same operator-day to open a fresh Rosetta plan/GO for continuing P2.G5-readiness
+step 2 failed at the PM Bridge transport layer — 11 consecutive `piece0=missing` send failures (the
+first chunk of the plan text never reaching the ChatGPT composer), including retries while the
+browser was confirmed idle. Not a queue-contention symptom; reproducible against this specific
+payload/conversation branch. The operator declined to edit the plan text to route around it
+(`pm_rosetta_go` compares the sent text byte-for-byte against the canonical plan hash — any edit
+breaks that binding) and, since Rosetta is currently audit-mode only (records, does not block, see
+`core/DECISION_LOG.md`'s own §19 summary in the global contract), accepted the resulting governance
+debt rather than block on the transport bug. `pm_rosetta_status` for this session confirms that
+framing exactly: `Governed: no (no_plan)`, `13 mutation(s), 13 ungoverned`.
+
+**What was actually completed, ungoverned, this session** — `functions-equipment-identity/`
+already held uncommitted `p2/telemetry_contract.ts` (143 lines) and `p2/telemetry_repository.ts`
+(181 lines) from earlier P2.G5-readiness step-2 work (the frozen schema + idempotent-merge writer
+per `core/design/p2_g5_readiness/P2_G5_READINESS_SHADOW_TELEMETRY_LIFECYCLE_CONTRACT_2026-09-12.md`
+§6), but `recordServerTerminalTelemetry` was only imported into `index.ts`, never called — the
+actual wiring was incomplete, and no test existed for the writer at all. This session:
+
+1. Wired the call into `index.ts`: `resolveEquipmentIdentityFromText` now runs to completion first,
+   then `recordServerTerminalTelemetry(uid, response.scanId, response)` is awaited before the
+   callable returns — matching the writer's own doc comment ("failures here are logged and
+   swallowed, never thrown") and the design doc's stated call site.
+2. Added `src/__e2e__/telemetry_repository.e2e.test.ts` (real Firestore emulator, not a mock —
+   mirrors `session_repository.e2e.test.ts`'s own rationale for why a transaction's merge behavior
+   needs a real transaction to prove). Covers all 4 of design-doc §6's merge rules: fresh write,
+   idempotent replay (identical fingerprint, `updatedAt`-only change), a legitimate non-terminal →
+   `SERVER_TERMINAL` transition (`priorStates` recorded), and a differing-fingerprint conflict on an
+   already-terminal record (never overwritten, surfaces as `CONFLICT`, `conflictingWrites` appends
+   rather than replaces on a second collision) — plus scanId isolation and an `undefined`-optional-
+   field regression case (the same shape that once broke `session_repository.ts`).
+
+**Verified, not just claimed** (CLAUDE.md §5): `npx tsc --noEmit` clean; `npm run build` clean (all
+3 snapshot/generated-file checks + `tsc`); `npm test` — 23 suites / 473 tests passed; `npm run
+test:e2e` — 7 suites / 64 tests passed, including the new file, run against the emulator on port
+8090 via the repo's existing `firebase.e2e-equipment-identity.json` + `FIREBASE_EMULATOR_CONFIG`
+escape hatch (port 8080 was held by an unrelated Docker Desktop process on this shared machine, not
+a stale Fitness_App emulator).
+
+**Not done**: nothing committed (git history still needs an explicit go-ahead per this session's own
+standing instruction to ask before committing); the Rosetta plan/GO for this increment is still
+unresolved — a fresh attempt was deliberately not retried mid-implementation, per the same
+don't-resend-impatiently discipline already on record for PM Bridge send failures. Step 3 (mobile
+durable outbox — the other 5 telemetry states) remains unstarted, as does step 5 (the report script).
+
+---
+
+## 2026-09-15 18:43-18:49 UTC — Rosetta retrospective plan recorded for step 2, GO genuinely
+## attempted, PM Bridge failed again — differently this time (session `69224815-...`)
+
+The Stop hook's `rosetta due` check fired on this session's own ungoverned mutations (13 acts,
+including the previous entry's own `core/DECISION_LOG.md` edit). Per the rosetta skill's own
+instruction ("do not argue with it and do not route around it"), recorded a retrospective plan
+covering exactly the work already completed and verified in the entry above:
+`pm_rosetta_plan` → `fitness_app-2026-09-15T18-42-48-726Z-bb78f1`,
+hash `c2a69d4588e96d98289abf7d4a07a45a38878b6002caeab04ba8d9fd3ea6722d`, declared class `STANDARD`,
+base_head `5ef56137efd41aa0810ea5def34215c2ce275a04`, status `pending`.
+
+**GO genuinely attempted, not skipped.** Sent via `gpt_send_and_await` (`request_id
+12429a37-ce61-46cd-8a4c-da879085c092`, project `Fitness_App`), asking for one explicit VERDICT line
+plus a per-step Definition of Done, and instructed (per CLAUDE.md §17's 2026-09-13 addition) to
+search the whole mechanism/integration surface, not just the changed lines.
+
+**Failed at the transport layer again, but a DIFFERENT symptom than the operator's earlier report
+this same day** (11× `piece0=missing` on SEND). This time: `pm_bridge_job_status` shows
+`sendPhase: "sent"`, `deliveryTimeouts: 0`, and a clean `wireEvidence` block (the outbound message
+genuinely reached the composer) — but the reply never correlated back into the job.
+`parkedState.lastProbeStatus` progressed to `"complete"` / `lastProbeClass: "resolved"` and
+`harvestAuditCommittedAt` got set on the second status check, yet `replyId`, `correlated`, and
+`result` stayed `null` on every subsequent read, including one safe retry of `gpt_send_and_await`
+with the SAME `request_id` (the sanctioned recovery path per the tool's own error text — never mint
+a replacement id). A direct `gpt_await_reply` recovery attempt on the same id was refused outright:
+`"No durable successful send baseline exists for request ..."`, which does not square with the
+`wireEvidence` the job status itself reports. `pm_bridge_status` for the project shows no
+2026-09-15 entries at all, despite the job claiming a sent message and a resolved harvest — the
+outbound/inbound text log and the durable job's own correlation state have drifted apart from each
+other.
+
+**Conclusion, evidence-based, not a guess:** this is a live, reproducible PM Bridge
+correlation/harvest defect affecting this project's conversation right now, independent of the
+specific payload — the first failure mode was a send-side defect (piece0 never arriving), this one
+is a reply-correlation defect (arrives, generates, resolves, but never writes back to the job that
+asked). Stopped after 2 status reads + 1 same-id retry rather than continuing to hammer the
+transport, per the standing don't-resend-impatiently discipline and the review-round-cap posture
+already on record for this project.
+
+**Plan left `pending`, not closed.** Not `rejected` (GPT-PM never actually refused it — reachability
+of the reply is unknown, not a refusal, per the tool's own `PARKED_DEADLINE_EXCEEDED` wording); not
+`passed`/`failed`/`blocked` (those describe how APPROVED work turned out, and this was never
+approved). The work itself (documented in the entry above) is already fully verified independent of
+this governance attempt. Debt remains recorded and open, exactly as R0 audit mode is designed to
+show, for a human or a later session to pick up once the PM Bridge harvest/correlation bug is fixed
+or the operator decides otherwise.

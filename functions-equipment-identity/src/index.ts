@@ -15,6 +15,7 @@ import * as logger from "firebase-functions/logger";
 import { EquipmentIdentityRequestSchema } from "./p2/contract";
 import { resolveEquipmentIdentityFromText } from "./p2/orchestrator";
 import { loadAppCheckPlatformReadiness, resolveAppCheckEnforcement } from "./p2/app_check_readiness";
+import { recordServerTerminalTelemetry } from "./p2/telemetry_repository";
 
 // BLOCKER, P2.G3 pre-commit review, 2026-09-11: this call was missing
 // entirely. `p2/firestore_admin.ts`'s `db()` is a lazy per-call
@@ -67,6 +68,13 @@ export const equipmentIdentityResolveFromText = onCall(
       throw new HttpsError("invalid-argument", "Malformed equipment identity request.");
     }
 
-    return resolveEquipmentIdentityFromText({ uid: request.auth.uid, request: parsed.data });
+    const response = await resolveEquipmentIdentityFromText({ uid: request.auth.uid, request: parsed.data });
+    // P2.G5-readiness step 2: records the server's own terminal identity
+    // decision for every real response path. Never throws (see
+    // `telemetry_repository.ts`'s own doc comment) -- a telemetry write
+    // failing must not turn a real identity response the caller is waiting
+    // on into a 500.
+    await recordServerTerminalTelemetry(request.auth.uid, response.scanId, response);
+    return response;
   },
 );
