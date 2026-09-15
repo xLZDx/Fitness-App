@@ -46,18 +46,19 @@ function computeServerTerminalFingerprint(identityOutcome: EquipmentIdentityResp
 }
 
 /** States a `SERVER_TERMINAL` write may legitimately supersede without it
- * being a conflict (design doc §6 rule 3) -- a genuine progression from "we
- * couldn't tell yet" to "now we can", e.g. a scan that locally failed once
- * and succeeded on a same-`scanId` retry. Not yet reachable in practice
- * (nothing writes these states today -- step 3's job), listed explicitly so
- * this function's own logic is correct the day they start arriving instead
- * of needing a second look then. */
-const NON_TERMINAL_STATES: ReadonlySet<TelemetryState> = new Set([
-  "NOT_ATTEMPTED",
-  "ENRICHMENT_DISABLED",
-  "LOCAL_FAILURE",
-  "REQUEST_FAILURE",
-]);
+ * being a conflict (design doc §6 rule 3, verbatim: "still LOCAL_FAILURE/
+ * REQUEST_FAILURE") -- a genuine progression from "we couldn't tell yet" to
+ * "now we can", e.g. a scan that locally failed once and succeeded on a
+ * same-`scanId` retry. Deliberately NOT `NOT_ATTEMPTED`/`ENRICHMENT_DISABLED`
+ * (GPT-PM MAJOR, retrospective review of commit afca346, 2026-09-15): the
+ * frozen contract never names those two, and silently allowing them here
+ * would turn a logically contradictory pair -- e.g. "enrichment explicitly
+ * disabled" followed by a SERVER_TERMINAL for the same logical scan -- into
+ * an ordinary overwrite instead of a visible CONFLICT. Not yet reachable in
+ * practice (nothing writes ANY of the four states today -- step 3's job),
+ * listed explicitly so this function's own logic is correct the day they
+ * start arriving instead of needing a second look then. */
+const NON_TERMINAL_STATES: ReadonlySet<TelemetryState> = new Set(["LOCAL_FAILURE", "REQUEST_FAILURE"]);
 
 /**
  * Records the server's own terminal identity decision for `{uid, scanId}`,
@@ -143,15 +144,33 @@ export async function recordServerTerminalTelemetry(
         return;
       }
 
-      // Rule 4: already terminal (SERVER_TERMINAL or CONFLICT) with a
-      // DIFFERING fingerprint -- never overwrite, surface as CONFLICT
-      // instead. Two genuinely different SERVER_TERMINAL outcomes for the
-      // same scanId should not happen given `session_repository.ts`'s own
-      // per-(uid, scanId) immutability guarantee -- this branch exists so a
-      // future bug in that guarantee, or in this writer's own call site,
-      // fails loudly (a CONFLICT record excluded from every §5 metric
-      // except `incomplete_evidence_count`) rather than silently picking a
-      // winner.
+      // Rule 4: either already terminal (SERVER_TERMINAL or CONFLICT), or in
+      // a state the narrowed Rule 3 set above no longer treats as a
+      // legitimate transition -- with a DIFFERING fingerprint. Never
+      // overwrite, surface as CONFLICT instead. Two genuinely different
+      // SERVER_TERMINAL outcomes for the same scanId should not happen given
+      // `session_repository.ts`'s own per-(uid, scanId) immutability
+      // guarantee -- this branch exists so a future bug in that guarantee,
+      // or in this writer's own call site, fails loudly (a CONFLICT record
+      // excluded from every §5 metric except `incomplete_evidence_count`)
+      // rather than silently picking a winner.
+      //
+      // GPT-PM MAJOR (retrospective review of commit afca346, 2026-09-15):
+      // a REPEATED delivery of the SAME conflicting payload must also be a
+      // no-op past the first time -- §6 promises "safe to replay any number
+      // of times" for ANY payload this writer has already durably recorded,
+      // not only the winning one. Checking only `existing.payloadFingerprint`
+      // (which never changes once a conflict is recorded) let every retry of
+      // an already-known conflict append a fresh `conflictingWrites` entry
+      // forever. Check the full known-fingerprint set first.
+      const alreadyKnownConflict = (existing.conflictingWrites ?? []).some(
+        (c) => c.payloadFingerprint === payloadFingerprint,
+      );
+      if (alreadyKnownConflict) {
+        tx.update(ref, { updatedAt: nowIso });
+        return;
+      }
+
       logger.warn("equipment_identity_telemetry_conflict", {
         uid,
         scanId,

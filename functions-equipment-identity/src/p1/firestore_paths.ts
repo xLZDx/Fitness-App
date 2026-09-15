@@ -112,5 +112,17 @@ export function userEquipmentIdentitySessionDocPath(uid: string, sessionId: stri
 export function userEquipmentIdentityTelemetryDocPath(uid: string, docId: string): string {
   if (!uid) throw new Error("userEquipmentIdentityTelemetryDocPath: uid must be non-empty");
   if (!docId) throw new Error("userEquipmentIdentityTelemetryDocPath: docId must be non-empty");
+  // GPT-PM MAJOR (retrospective review of commit afca346, 2026-09-15): docId
+  // here is a mobile-minted scanId that reaches this function through the
+  // public request contract (`EquipmentIdentityRequestSchema.scanId`, any
+  // non-empty string up to 128 chars -- no character restriction). Same
+  // runtime backstop as every other doc-path builder in this module,
+  // independent of Zod: a `/` would silently nest an unintended
+  // subcollection or land the write at an unexpected path instead of
+  // `equipment_identity_telemetry/{scanId}` -- the caller
+  // (`recordServerTerminalTelemetry`) already catches and logs any thrown
+  // error rather than letting it become a 500, so this fails loudly into
+  // that existing path instead of silently misplacing or dropping the write.
+  assertFirestoreSafeIdPart("docId", docId);
   return `users/${uid}/equipment_identity_telemetry/${docId}`;
 }

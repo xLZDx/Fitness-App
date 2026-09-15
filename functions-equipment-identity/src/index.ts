@@ -5,17 +5,20 @@
  * codebase (`firebase.json`'s `equipment-identity` entry), specifically so a
  * broken build here can never block the default codebase's own deploys
  * (Stripe, AI coaching, etc). This file is the thin `onCall` wrapper: it
- * owns auth/App-Check/request-shape concerns; `p2/orchestrator.ts` owns the
- * actual quota -> catalog -> policy -> session pipeline and is deliberately
- * framework-agnostic so it can be exercised directly in tests.
+ * owns only auth and the Cloud Functions module-load side effect
+ * (`admin.initializeApp()` below). Request-shape validation, the
+ * orchestrator call, and the telemetry write live in
+ * `p2/identity_handler.ts`, which -- like `p2/orchestrator.ts` -- is
+ * deliberately framework-agnostic so it can be exercised directly in
+ * tests (GPT-PM MAJOR, retrospective review of commit afca346,
+ * 2026-09-15: importing THIS file from a test unconditionally runs
+ * `admin.initializeApp()` at module load, which a plain mocked unit test
+ * cannot safely do).
  */
 import * as admin from "firebase-admin";
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
-import * as logger from "firebase-functions/logger";
-import { EquipmentIdentityRequestSchema } from "./p2/contract";
-import { resolveEquipmentIdentityFromText } from "./p2/orchestrator";
+import { resolveEquipmentIdentityAndRecordTelemetry } from "./p2/identity_handler";
 import { loadAppCheckPlatformReadiness, resolveAppCheckEnforcement } from "./p2/app_check_readiness";
-import { recordServerTerminalTelemetry } from "./p2/telemetry_repository";
 
 // BLOCKER, P2.G3 pre-commit review, 2026-09-11: this call was missing
 // entirely. `p2/firestore_admin.ts`'s `db()` is a lazy per-call
@@ -58,23 +61,6 @@ export const equipmentIdentityResolveFromText = onCall(
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Sign in to identify equipment.");
     }
-
-    const parsed = EquipmentIdentityRequestSchema.safeParse(request.data);
-    if (!parsed.success) {
-      logger.warn("equipment_identity_request_schema_invalid", {
-        uid: request.auth.uid,
-        issues: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`),
-      });
-      throw new HttpsError("invalid-argument", "Malformed equipment identity request.");
-    }
-
-    const response = await resolveEquipmentIdentityFromText({ uid: request.auth.uid, request: parsed.data });
-    // P2.G5-readiness step 2: records the server's own terminal identity
-    // decision for every real response path. Never throws (see
-    // `telemetry_repository.ts`'s own doc comment) -- a telemetry write
-    // failing must not turn a real identity response the caller is waiting
-    // on into a 500.
-    await recordServerTerminalTelemetry(request.auth.uid, response.scanId, response);
-    return response;
+    return resolveEquipmentIdentityAndRecordTelemetry(request.auth.uid, request.data);
   },
 );

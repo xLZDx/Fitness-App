@@ -51508,3 +51508,111 @@ approved). The work itself (documented in the entry above) is already fully veri
 this governance attempt. Debt remains recorded and open, exactly as R0 audit mode is designed to
 show, for a human or a later session to pick up once the PM Bridge harvest/correlation bug is fixed
 or the operator decides otherwise.
+
+---
+
+## 2026-09-15 19:04-19:48 UTC — the PM Bridge "correlation bug" was a stale conversation mapping,
+## not a transport defect; retrospective GO round 1 (real, correlated this time) returned VERDICT:
+## REVISE, 0 BLOCKER / 5 MAJOR, against already-pushed commit `afca346` -- fully remediated same
+## session (session `69224815-...`)
+
+**Root cause of both earlier PM Bridge failures this session, found by the operator, not this
+session.** The operator restarted with the correction "PM разблокирован и только по этому я начал
+новую сессию, почему ты не проверил" (PM Bridge was unblocked, and that is the ONLY reason a new
+session was started -- why wasn't that checked?) plus a fresh ChatGPT conversation link. Re-reading
+the earlier `pm_bridge_job_status` output that this session had ALREADY received: `sendSnapshot.text`
+literally contained `"[Automatic continuation -- scheduled conversation retention...] Rotation cause:
+SCHEDULED_RETENTION"` -- the conversation mapped for this project in `config/conversations.md`
+(`https://chatgpt.com/c/6a931609-...`) had rotated away mid-session, so every send that session
+landed in a moving target and no reply ever correlated back. Not a live systemic PM Bridge defect,
+as the previous entry concluded -- a stale, project-specific conversation mapping. Registered the
+operator's fresh conversation (`6aa9a1c2-a204-83ed-b5e6-d8eff55c9d9b`) as the canonical binding via
+`pm_project_register` (writes `config/projects.json`; `config/conversations.md` itself stays
+operator-authored-only, per its own header -- not edited). Saved as a standing memory:
+`feedback-pmbridge-check-rotation-before-declaring-bug.md` -- read `sendSnapshot` for a rotation
+clue before declaring a transport bug, and reach for `gpt_session_peek` (direct read, no correlation
+dependency) as soon as a job shows `harvestAuditCommittedAt` set, rather than continuing to poll
+`job_status`'s own correlation fields, which is exactly the second half of the same mistake this
+session made immediately afterward -- the retry's reply had already landed and only surfaced once
+the operator asked "ответ ка бы уже давно пришел, почему ты его не забрал?" and this session read it
+via `gpt_session_peek`.
+
+**The retrospective GO for plan `fitness_app-2026-09-15T18-42-48-726Z-bb78f1` (covering the P2.G5-
+readiness step 2 work already committed and pushed as `afca346` in the entry above) came back
+`VERDICT: REVISE — 0 BLOCKER / 5 MAJOR`.** GPT-PM's own framing: reviewed not only the diff but the
+full onCall wrapper, request contract, orchestrator/session semantics, Firestore path construction,
+the writer's whole transaction logic, the new emulator suite, and frozen design §§6-7. Every finding
+independently re-verified against the actual current source before being accepted (CLAUDE.md §3/§13)
+-- all 5 confirmed real:
+
+1. **MAJOR — conflict-replay was not idempotent.** `telemetry_repository.ts`'s Rule 4 branch compared
+   an incoming fingerprint only against the top-level `existing.payloadFingerprint`, which never
+   changes once a conflict is first recorded -- so a repeated delivery of the SAME already-known
+   conflicting payload kept appending a fresh `conflictingWrites` entry forever, violating §6's own
+   "safe to replay any number of times" promise for a losing payload, not only the winning one.
+2. **MAJOR — Rule 3's non-terminal transition set was wider than the frozen contract.** The writer
+   allowed `NOT_ATTEMPTED`/`ENRICHMENT_DISABLED` to silently transition to `SERVER_TERMINAL`; design
+   doc §6 rule 3 names, verbatim, only `LOCAL_FAILURE`/`REQUEST_FAILURE`. Re-read the design doc
+   directly to confirm before accepting -- confirmed exact.
+3. **MAJOR — `scanId` was not Firestore-safe at the persistence boundary.** The public request
+   contract allows any non-empty string up to 128 chars, including `/`; every other doc-path builder
+   in `firestore_paths.ts` calls the module's own `assertFirestoreSafeIdPart` runtime backstop
+   (independent of Zod, an existing P1.G1-reviewer-found pattern) -- `userEquipmentIdentityTelemetryDocPath`
+   was the one exception, confirmed by direct read.
+4. **MAJOR — the actual wiring (the one new line in `index.ts`) had zero regression coverage.**
+   Confirmed by grep: nothing in the repo imported or called `equipmentIdentityResolveFromText` --
+   every existing test exercised either the orchestrator or the telemetry writer directly, never the
+   real exported callable. Deleting the wiring line would have left every other test green.
+5. **MAJOR — persisted `createdAt`/`updatedAt`/`scanStartedAt`/`scanEndedAt` diverged from the frozen
+   design contract.** The design doc specified Firestore `Timestamp`; the actual schema/writer use
+   RFC3339 strings. Confirmed by direct read of both.
+
+**Remediated in one batch** (CLAUDE.md §17 -- not one finding per round):
+- Finding 1: Rule 4 now also checks the incoming fingerprint against every existing
+  `conflictingWrites[].payloadFingerprint`, not only the top-level one; a repeat of an already-known
+  conflict is now a pure `updatedAt`-only no-op.
+- Finding 2: `NON_TERMINAL_STATES` narrowed to exactly `{LOCAL_FAILURE, REQUEST_FAILURE}`.
+- Finding 3: `userEquipmentIdentityTelemetryDocPath` now calls `assertFirestoreSafeIdPart` on `docId`
+  before building the path -- an unsafe scanId now fails loudly into the writer's own existing
+  catch-and-log path (no telemetry doc at all) instead of silently misplacing or nesting one.
+- Finding 4: extracted the validation -> orchestrator -> telemetry wiring out of `index.ts` into a
+  new, framework-agnostic `p2/identity_handler.ts` (`resolveEquipmentIdentityAndRecordTelemetry`),
+  mirroring `orchestrator.ts`'s own already-established "testable seam" pattern -- `index.ts` itself
+  calls `admin.initializeApp()` unconditionally at module load, which a plain mocked unit test cannot
+  safely trigger, so the wiring had to live somewhere importable without that side effect. `index.ts`
+  is now a true one-line delegation past the auth check. Added defense-in-depth: the new handler
+  wraps its own call to `recordServerTerminalTelemetry` in try/catch too (the real writer already
+  never throws, but the property "telemetry failure never becomes a 500" is a stated design
+  invariant, not incidental, so it is now guarded at both layers).
+- Finding 5: revised the design doc's own §3 field types to RFC3339 strings, reconciling the
+  CONTRACT to the already-shipped, already-consistent-with-`session_repository.ts` implementation,
+  rather than introducing a second timestamp convention into one package. Recorded as a judgement
+  call, not assumed: no downstream reader exists yet (step 5 unstarted), so nothing breaks either way.
+
+**New regression coverage added, not just claimed:**
+- `p2/__tests__/identity_handler.test.ts` (new, mocked unit suite): malformed request never reaches
+  the orchestrator or the writer; the writer receives exactly the server-owned uid + the RESPONSE's
+  own scanId + the full response; a mocked telemetry rejection never propagates to the caller; an
+  orchestrator failure DOES propagate (only the telemetry step is defended).
+- `__e2e__/identity_handler.e2e.test.ts` (new, real Firestore, through the actual exported seam): a
+  real MATCH and a real UNAVAILABLE_CATALOG_VERSION are BOTH recorded as `SERVER_TERMINAL` telemetry
+  under the response's own uid/scanId; a malformed request creates no telemetry document at all.
+- `__e2e__/telemetry_repository.e2e.test.ts` (extended): A→B→B→B keeps `conflictingWrites` at length
+  1 (contrasted with the existing A→B→C's own length 2); `NOT_ATTEMPTED`/`ENRICHMENT_DISABLED` as the
+  EXISTING state now surfaces CONFLICT instead of silently overwriting (table-driven, both states); a
+  `/`-containing scanId writes no document at all rather than misplacing one.
+- One bug in this session's OWN first draft of the new e2e file, not in production code: the
+  `UNAVAILABLE_CATALOG_VERSION` test initially inherited a catalog pointer seeded by an earlier test
+  in the same file (shared emulator state across the file, exactly the pattern
+  `orchestrator.e2e.test.ts` already guards with its own `clearActiveCatalogPointer()`) -- caught by
+  the test run itself (`MATCH` where `UNAVAILABLE_CATALOG_VERSION` was expected), fixed by adding the
+  same clear call before asserting.
+
+**Verified, not claimed:** `npx tsc --noEmit` clean; `npm run build` clean (all 3 snapshot/generated-
+file checks + tsc); `npm test` -- 24 suites / 478 tests, all green; `npm run test:e2e` -- 8 suites /
+71 tests, all green (emulator on the repo's port-8090 fallback config, same reason as the prior
+entry).
+
+**Not yet done:** round-2 verification with GPT-PM (scoped to these 5 findings plus any direct
+regression from this remediation, per §17 -- not a fresh full sweep); the new commit carrying this
+remediation is not yet pushed pending that.

@@ -76,20 +76,30 @@ EquipmentIdentityTelemetryRecordV1 {
   schemaVersion: 1,               // literal; a future field addition bumps this
   uid: string,                    // SERVER-AUTHORITATIVE ONLY — never accepted from the client
   scanId: string,
-  createdAt: Timestamp,           // server timestamp, set once on first write for this scanId
-  updatedAt: Timestamp,           // server timestamp, set on every write
+  createdAt: string,              // RFC3339, set once on first write for this scanId
+  updatedAt: string,               // RFC3339, set on every write
   state: TelemetryState,          // see §4 — the ONE field that drives all P2.G5 arithmetic
   genericOutcome: GenericScanOutcome | null,   // see §4.1
   identityOutcome: IdentityTerminalOutcome | null,  // see §4.3, present only when state=SERVER_TERMINAL
   localFailureReason: LocalFailureReason | null,    // present only when state=LOCAL_FAILURE
   requestFailureReason: RequestFailureReason | null,// present only when state=REQUEST_FAILURE
-  scanStartedAt: Timestamp | null,   // for latency — see §5.4
-  scanEndedAt: Timestamp | null,     // for latency — see §5.4
+  scanStartedAt: string | null,   // RFC3339 — for latency, see §5.4
+  scanEndedAt: string | null,     // RFC3339 — for latency, see §5.4
   payloadFingerprint: string,        // sha256 over the canonical outcome-affecting fields below
                                       // (mirrors orchestrator.ts's own requestFingerprint pattern,
                                       // orchestrator.ts:150-162) — the idempotency key for §6
 }
 ```
+
+**Revised 2026-09-15** (GPT-PM MAJOR, retrospective review of commit afca346): the fields above were
+originally written as Firestore `Timestamp`. Step 2's actual implementation stores RFC3339 strings
+(`new Date().toISOString()`), matching `session_repository.ts`'s own already-shipped `createdAt:
+string` convention for the sibling `equipment_identity_sessions` collection this schema was designed
+to sit next to. Reconciling the CONTRACT to the CHOSEN, already-consistent representation rather than
+changing the implementation to `Timestamp` — introducing a second timestamp convention into this
+one package, inconsistent with its one existing precedent, would be the worse fix. No downstream
+reader exists yet (step 5's report script is unstarted) so there is no compatibility surface this
+revision breaks.
 
 `uid` is set only from `request.auth.uid` inside the writing Cloud Function, exactly as
 `functions-equipment-identity/src/index.ts:70` already does for the identity callable itself —

@@ -140,6 +140,75 @@ describe("recordServerTerminalTelemetry -- real Firestore merge semantics (desig
     expect(record?.conflictingWrites).toHaveLength(2);
   });
 
+  // GPT-PM MAJOR (retrospective review of commit afca346, 2026-09-15): §6
+  // promises a retried delivery is safe to replay "any number of times" --
+  // that has to hold for an already-known CONFLICTING payload too, not only
+  // the winning one. A repeated delivery of the SAME conflicting outcome
+  // must not keep growing `conflictingWrites`.
+  test("a REPEAT of an already-known conflicting payload is idempotent -- the conflictingWrites trail does not keep growing (A -> B -> B -> B stays length 1, contrasted with A -> B -> C's own length 2 above)", async () => {
+    const uid = randomUid();
+    await recordServerTerminalTelemetry(uid, "scan-1", matchResponse({ modelId: MODEL_ID }));
+    const b = matchResponse({ modelId: "22222222-2222-4222-8222-222222222222" });
+    await recordServerTerminalTelemetry(uid, "scan-1", b);
+    const afterFirstB = await readRaw(uid, "scan-1");
+    expect(afterFirstB?.conflictingWrites).toHaveLength(1);
+
+    await recordServerTerminalTelemetry(uid, "scan-1", b);
+    await recordServerTerminalTelemetry(uid, "scan-1", b);
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record?.state).toBe("CONFLICT");
+    expect(record?.conflictingWrites).toHaveLength(1);
+  });
+
+  // GPT-PM MAJOR (retrospective review of commit afca346, 2026-09-15): the
+  // frozen §6 rule 3 names ONLY LOCAL_FAILURE/REQUEST_FAILURE as legitimate
+  // non-terminal-to-SERVER_TERMINAL transitions. NOT_ATTEMPTED and
+  // ENRICHMENT_DISABLED must NOT silently overwrite -- a SERVER_TERMINAL
+  // arriving for either of those existing states is a logically
+  // contradictory pair and must surface as CONFLICT instead, exactly like
+  // any other already-settled state would.
+  test.each(["NOT_ATTEMPTED", "ENRICHMENT_DISABLED"] as const)(
+    "rule 3 boundary: an existing %s state is NOT a legitimate transition target -- a differing SERVER_TERMINAL surfaces as CONFLICT, never a silent overwrite",
+    async (existingState) => {
+      const uid = randomUid();
+      const ref = admin.firestore().doc(userEquipmentIdentityTelemetryDocPath(uid, "scan-1"));
+      await ref.set({
+        schemaVersion: 1,
+        uid,
+        scanId: "scan-1",
+        state: existingState,
+        payloadFingerprint: `${existingState}-fp`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+
+      await recordServerTerminalTelemetry(uid, "scan-1", matchResponse());
+
+      const record = await readRaw(uid, "scan-1");
+      expect(record?.state).toBe("CONFLICT");
+      expect(record?.conflictingWrites).toHaveLength(1);
+    },
+  );
+
+  // GPT-PM MAJOR (retrospective review of commit afca346, 2026-09-15): the
+  // public request contract allows any non-empty scanId up to 128 chars,
+  // including `/`, which would otherwise nest an unintended subcollection
+  // or write to an unexpected path. The path helper now rejects it before
+  // any write is attempted; the writer's own top-level try/catch (see its
+  // doc comment) swallows the resulting error rather than letting it
+  // become a 500 -- so the correct, safe outcome is simply NO telemetry
+  // document at all, not a misplaced one.
+  test("a scanId containing '/' never silently misplaces or nests a telemetry write -- no document is created at all", async () => {
+    const uid = randomUid();
+    const unsafeScanId = "scan/../other";
+
+    await expect(recordServerTerminalTelemetry(uid, unsafeScanId, matchResponse())).resolves.not.toThrow();
+
+    const escapedDoc = await admin.firestore().collection(`users/${uid}/equipment_identity_telemetry`).get();
+    expect(escapedDoc.empty).toBe(true);
+  });
+
   test("different scanIds for the same uid never interact", async () => {
     const uid = randomUid();
     await recordServerTerminalTelemetry(uid, "scan-1", matchResponse({ scanId: "scan-1", modelId: MODEL_ID }));
