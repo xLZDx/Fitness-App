@@ -209,6 +209,25 @@ describe("recordServerTerminalTelemetry -- real Firestore merge semantics (desig
     expect(escapedDoc.empty).toBe(true);
   });
 
+  // GPT-PM MAJOR (retrospective review of commit 0563335, round 2,
+  // 2026-09-15): the FIRST fix for the '/' finding above reused
+  // `assertFirestoreSafeIdPart`, which also rejects any `--` because that
+  // separator is reserved for the UNRELATED `{catalogVersion}--{entityId}`
+  // composite scheme -- a real regression, not a pre-existing gap: a
+  // perfectly valid, Firestore-safe, contract-valid scanId containing `--`
+  // was silently losing its telemetry record. `assertFirestoreDocIdSegment`
+  // (the corrected helper) must accept it.
+  test("a Firestore-safe scanId containing '--' is NOT rejected -- it is not part of the unrelated {catalogVersion}--{entityId} composite scheme", async () => {
+    const uid = randomUid();
+    const scanId = "scan--123";
+
+    await recordServerTerminalTelemetry(uid, scanId, matchResponse({ scanId }));
+
+    const record = await readRaw(uid, scanId);
+    expect(record?.state).toBe("SERVER_TERMINAL");
+    expect(record?.scanId).toBe(scanId);
+  });
+
   test("different scanIds for the same uid never interact", async () => {
     const uid = randomUid();
     await recordServerTerminalTelemetry(uid, "scan-1", matchResponse({ scanId: "scan-1", modelId: MODEL_ID }));

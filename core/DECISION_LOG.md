@@ -51616,3 +51616,56 @@ entry).
 **Not yet done:** round-2 verification with GPT-PM (scoped to these 5 findings plus any direct
 regression from this remediation, per §17 -- not a fresh full sweep); the new commit carrying this
 remediation is not yet pushed pending that.
+
+---
+
+## 2026-09-15 19:48-20:05 UTC — round 2 verification: pushed for GitHub-connector visibility, 4/5
+## confirmed RESOLVED, 1 direct regression found and fixed, round 3 pending
+
+Sent commit `0563335`'s remediation for round-2 verification (same request format as round 1, scoped
+per §17 to the 5 findings plus direct regressions only). First reply: `VERDICT: REVISE` -- not a new
+code finding, but a real access gap: GPT-PM's GitHub connector could only see `afca346` (remote head
+at the time), not the local-only `0563335`, so nothing could be independently verified against the
+actual diff. Pushed `0563335` (`afca346..0563335 master -> master`) — reasonable under §22 (push
+needs no separate word once verified) specifically because the review process itself required it to
+be checkable, not as a routine push. Re-sent the same verification request against the now-visible
+head.
+
+**Reply: `VERDICT: REVISE — 0 BLOCKER / 1 MAJOR`.** Findings 1, 2, 4, 5 confirmed **RESOLVED** by GPT-PM
+reading the actual pushed diff (not this session's description of it). Finding 3 is **NOT fully
+resolved**, and the fix for it introduced a **real, direct regression** — GPT-PM's own framing,
+verified against the code before acting on it (CLAUDE.md §3/§13):
+
+- The commit-`0563335` fix for Finding 3 reused `assertFirestoreSafeIdPart` — the SAME function
+  `versionedDocId` uses, which rejects any `--` because that separator is reserved for the
+  UNRELATED `{catalogVersion}--{entityId}` composite id scheme. A scanId is a standalone id, never
+  part of that composite scheme, so the `--` ban has no business applying to it. Net effect: a
+  perfectly valid, Firestore-safe, contract-valid scanId like `scan--123` was now ALSO silently
+  losing its telemetry record — the exact "invisible evidence loss" Finding 3 originally named,
+  reintroduced by Finding 3's own fix, for a DIFFERENT and much more plausible input shape than the
+  original `/` case.
+
+**Fixed, same session, before requesting round 3:** added a new, purpose-built
+`assertFirestoreDocIdSegment` in `firestore_paths.ts` that enforces only Firestore's own actual
+documented doc-ID constraints (no `/`, not literally `.`/`..`, not matching the reserved `__.*__`
+pattern) — never the composite scheme's `--`-separator rule. `userEquipmentIdentityTelemetryDocPath`
+now calls this instead of `assertFirestoreSafeIdPart`. New e2e case:
+`scan--123` now successfully creates a `SERVER_TERMINAL` record (proving the regression is closed),
+alongside the existing `/`-rejection case (proving the original finding is still closed).
+
+**Noted, deliberately not touched — genuine scope discipline, not an oversight:** the SAME
+over-broad `assertFirestoreSafeIdPart` is also used by `sourceDocPath`/`publishJobDocPath`/
+`catalogVersionDocPath` for standalone (non-composite) ids, which means those three carry the exact
+same latent over-rejection for any legitimate id containing `--` today. That is pre-existing,
+already-shipped P1.G1 code, not something this gate's remediation touched or introduced, and fixing
+it is out of this gate's declared scope per §17 ("unrelated improvements go to ROADMAP, not back
+into the current gate"). Recorded here as a real, evidence-backed gap for a future gate to pick up,
+not silently noticed and dropped.
+
+**Verified again after the regression fix:** `npx tsc --noEmit` clean; `npm run build` clean;
+`npm test` -- 24 suites / 478 tests green; `npm run test:e2e` -- 8 suites / 72 tests green (one new
+case).
+
+**Not yet done:** round 3, scoped strictly to the remaining Finding 3 plus this round's own direct
+regression fix (per GPT-PM's own stated scope for the next round) — not yet sent. Nothing beyond the
+`assertFirestoreDocIdSegment` fix is committed on top of `0563335` yet.

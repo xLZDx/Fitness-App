@@ -30,6 +30,30 @@ function assertFirestoreSafeIdPart(label: string, value: string): void {
   }
 }
 
+/** Runtime backstop for a STANDALONE Firestore document-ID segment -- unlike
+ * `assertFirestoreSafeIdPart` above, this enforces only Firestore's own
+ * actual documented doc-ID constraints (no `/`, not literally `.` or `..`,
+ * not matching the reserved `__.*__` pattern), never the
+ * `{catalogVersion}--{entityId}` composite scheme's `--`-separator rule,
+ * which has no meaning for an id that is not part of that scheme.
+ *
+ * GPT-PM MAJOR (retrospective review of commit 0563335, round 2, 2026-09-15):
+ * `userEquipmentIdentityTelemetryDocPath` originally reused
+ * `assertFirestoreSafeIdPart` for this, which meant a perfectly valid,
+ * Firestore-safe, contract-valid scanId like `scan--123` was wrongly
+ * rejected -- a direct regression from that fix, not a pre-existing gap. */
+function assertFirestoreDocIdSegment(label: string, value: string): void {
+  if (value.includes("/")) {
+    throw new Error(`${label} must not contain '/', got ${JSON.stringify(value)}`);
+  }
+  if (value === "." || value === "..") {
+    throw new Error(`${label} must not be '.' or '..', got ${JSON.stringify(value)}`);
+  }
+  if (/^__.*__$/.test(value)) {
+    throw new Error(`${label} must not match the reserved '__.*__' pattern, got ${JSON.stringify(value)}`);
+  }
+}
+
 export function versionedDocId(catalogVersion: string, entityId: string): string {
   if (!catalogVersion) throw new Error("versionedDocId: catalogVersion must be non-empty");
   if (!entityId) throw new Error("versionedDocId: entityId must be non-empty");
@@ -115,14 +139,18 @@ export function userEquipmentIdentityTelemetryDocPath(uid: string, docId: string
   // GPT-PM MAJOR (retrospective review of commit afca346, 2026-09-15): docId
   // here is a mobile-minted scanId that reaches this function through the
   // public request contract (`EquipmentIdentityRequestSchema.scanId`, any
-  // non-empty string up to 128 chars -- no character restriction). Same
-  // runtime backstop as every other doc-path builder in this module,
-  // independent of Zod: a `/` would silently nest an unintended
+  // non-empty string up to 128 chars -- no character restriction). Runtime
+  // backstop, independent of Zod: a `/` would silently nest an unintended
   // subcollection or land the write at an unexpected path instead of
   // `equipment_identity_telemetry/{scanId}` -- the caller
   // (`recordServerTerminalTelemetry`) already catches and logs any thrown
   // error rather than letting it become a 500, so this fails loudly into
   // that existing path instead of silently misplacing or dropping the write.
-  assertFirestoreSafeIdPart("docId", docId);
+  // Uses `assertFirestoreDocIdSegment`, NOT `assertFirestoreSafeIdPart` --
+  // a scanId is a standalone id, not part of the `{catalogVersion}--
+  // {entityId}` composite scheme, so the `--`-separator rule does not apply
+  // to it (round-2 finding: reusing the composite-scheme validator here
+  // wrongly rejected a valid scanId like `scan--123`).
+  assertFirestoreDocIdSegment("docId", docId);
   return `users/${uid}/equipment_identity_telemetry/${docId}`;
 }
