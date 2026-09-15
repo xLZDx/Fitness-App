@@ -51726,5 +51726,39 @@ remains valid and gets recorded"):
 **Verified again:** `npx tsc --noEmit` clean; `npm run build` clean; `npm test` -- 24 suites / 480
 tests green; `npm run test:e2e` -- 8 suites / 74 tests green.
 
-**Not yet done:** commit this fix, push, and send round 4 (scoped strictly to Finding 3's completion)
+Committed as `5d3a471`, pushed (`8b2a4bd..5d3a471`).
+
+## 2026-09-15 20:52-21:05 UTC -- round 4 blocked by a live PM Bridge daemon under active development
+## elsewhere on the machine, not by anything in this repo; stopped retrying, work stands verified
+## independent of this round's outcome
+
+Sent round 4 (scoped strictly to Finding 3's now-closed contract-boundary half, per round 3's own
+stated next-round scope). Refused before send: `"Refusing work: sourceRoot moved from daemon
+generation 41f5100e75dde105 to e07ee419c7d05074. Start a daemon from the new generation..."` -- a
+clean, not-started refusal (no partial/uncertain send, unlike the earlier piece0/correlation
+failures this session). Checked `pm_bridge_mode_status`: daemon stale again. Tried the
+self-service path documented for exactly this (`pm_bridge_restart --safeOnly true`, "the path any
+session may take without asking the operator") -- it itself refused: "the daemon is making progress,
+so there is nothing to recover... Restarting now would kill the shared browser under work that is
+mid-flight." `force:true` is explicitly operator break-glass, not used. Retried the same send once
+(same `request_id`, per the tool's own instruction) -- failed differently this time: "No compatible
+orchestrator is active." Re-checked status: the on-disk build had moved AGAIN, to `f40b0a919c73e401`
+-- three different generations across roughly 15 minutes. This is someone actively iterating on
+`pm-bridge/src` live, in a concurrent session, not a stuck/dead daemon this session could safely
+recover on its own, and not related to anything in this repo.
+
+**Stopped retrying rather than hammering a moving target** (standing don't-resend-impatiently
+discipline, and the daemon's own restart tool independently confirmed a restart would be unsafe right
+now). Round 4 is genuinely unresolved, not silently abandoned -- the gap is entirely on the PM Bridge
+side, external to this gate's own work.
+
+**What this does NOT put in question:** the code itself. Every fix (findings 1/2/4/5 in commit
+`0563335`, the round-2 regression fix in `8b2a4bd`, Finding 3's contract-boundary completion in
+`5d3a471`) is committed, pushed, and independently verified by THIS session against real source --
+`tsc`/`build`/`unit`/`e2e` all green at every step, not merely claimed. GPT-PM's own rounds 1-3
+already read the actual pushed diffs via GitHub and confirmed 4 of 5 original findings resolved by
+direct inspection, not by trusting this session's description. Round 4 would only confirm the fifth
+one's contract-boundary half, which this session already verified locally the same way (new unit +
+e2e tests specifically proving the `/`-scanId/`--`-scanId behavior GPT-PM itself specified). The
+debt is procedural (no independent round-4 confirmation yet), not a known or suspected code defect.
 to GPT-PM.
