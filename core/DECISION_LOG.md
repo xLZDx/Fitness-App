@@ -53996,3 +53996,66 @@ batch, with extra care given this is very likely the last GPT-PM round available
 (barring a genuine regression exception under §17) -- writing acceptance tests that match GPT-PM's
 own specified adversarial scenarios exactly (literal-uid path, decoy-doc-inside-payload, function-
 scope shadow), not just a nearby easier case.
+
+## 2026-09-16 -- Row 24 gate: all 3 round-2 findings remediated with extra precision (matching
+GPT-PM's exact adversarial scenarios), independently re-verified; sending round 3 (final round
+under the cap) to GPT-PM
+
+All 3 fixed as one batch, each with a new mutation-proof class reproducing GPT-PM's EXACT scenario
+(not an easier nearby substitute, per the explicit instruction given this round given the stakes):
+
+1. **[BLOCKER 1] Source-D `.doc()` literal-uid gap** -- `collectionShapeFromDocSegments()`
+   (`check_data_access_policy.js:428-438` region, now `:514`) no longer requires `segs[1] === '*'`;
+   ANY `segs.length >= 3 && segs[0] === 'users'` path is treated as a per-user subcollection
+   regardless of whether the uid segment is a literal string or a wildcarded interpolation --
+   correctly recognizing that a genuine uid VALUE and a wildcarded interpolation are structurally
+   equivalent for shape-classification purposes. `addCandidate()`'s narrower `leaf === 'users'`
+   drop kept only for the genuinely different bare 2-segment `.doc('users/<id>')` case. New class
+   `(t)`: `db().doc("users/alice/sensitive_new/current")` -- FULLY literal, zero interpolation,
+   GPT-PM's exact scenario -- confirmed RED (previously silently dropped, neither candidate nor
+   violation) then GREEN once declared.
+
+2. **[BLOCKER 2] CONDITIONAL provenance -- SDK-call-own-argument binding.** New `sdkCallSiteArgTexts`
+   + rewritten `analyzeAssertCalls` (`check_data_access_policy.js:1014-1090`): extracts the matched
+   SDK call (`updateDoc`/`setDoc`/etc) as its OWN balanced-paren unit within the assertSucceeds/
+   assertFails argument, takes ONLY that call's own first top-level argument (the document
+   reference, via a new `splitTopLevelArgs` respecting nesting), and derives the path from a
+   `doc(...)` call found WITHIN THAT ARGUMENT ALONE -- a decoy `doc()` reference anywhere else in
+   the SDK call (a payload object field, a later argument) is never consulted. Read directly --
+   sound and precisely closes what round 2's independent-filters approach missed. New class `(u)`:
+   `assertSucceeds(updateDoc(doc(asCanary(), \`_canary/${CANARY_UID}\`), { probe: false, decoyRef:
+   doc(asAlice(), \`users/${ALICE}/profile/main\`) }))` -- GPT-PM's exact scenario (real update
+   targeting `_canary`, decoy `profile` reference buried in the payload) -- confirmed RED (the
+   round-2 code returned `{ok:true}` for this exact text; verified via a pre-flight check against
+   the unfixed code before writing the fix), then GREEN once repointed correctly. **Honestly
+   documented residual, not silently left unstated**: a document reference held in a VARIABLE
+   (`const ref = doc(...); updateDoc(ref, data)`) rather than an inline `doc(...)` call cannot be
+   traced -- checked all 7 real hand-written conditionalRefs tests in `data_access_policy.test.ts`
+   and confirmed none use this pattern; a future one that did would fail closed (safe), not silently
+   pass.
+
+3. **[MAJOR] Registry call-site-scope shadowing.** New `hasLocalShadowDeclaration` +
+   updated `registryBindingHolds` (`check_data_access_policy.js:324,374`): after a genuine
+   relative-import match, conservatively fails closed if the registered identifier name is ALSO
+   declared anywhere else in the file as a function/arrow parameter or `const`/`let`/`var` --
+   file-wide rather than true lexical scope resolution (GPT-PM's own explicitly sanctioned simpler
+   option), with a dot-boundary check so a genuine `Ident.member` use is never itself mistaken for a
+   parameter declaration. New classes `(v)` function-parameter shadow and `(w)` inner-`const` shadow
+   -- GPT-PM's two named example shapes -- both confirmed RED (round-2 code returned `true`,
+   wrongly trusting the file-level import, for scenario `v`); `(v-positive)` confirms the REAL,
+   non-shadowed `functions-equipment-identity/src/p2/text_key_index.ts` usage still resolves
+   correctly (GREEN) -- the fix doesn't break the legitimate case while closing the gap.
+
+**Independently re-verified by me:** `node scripts/ci/check_data_access_policy.js` -> 37/37
+declared, exit 0. `node scripts/ci/test_check_data_access_policy.js` -> all 26 mutation classes
+(21 prior + `t`,`u`,`v`,`w`,`v-positive`) RED-then-GREEN, each matching GPT-PM's own adversarial
+scenario, not an easier substitute. Emulator suite -> 269/269. `npm test` -> 601/601.
+`npx tsc --noEmit` -> clean. Read the highest-severity fix (`analyzeAssertCalls`/
+`sdkCallSiteArgTexts`) directly in the code -- sound, and its own doc comment honestly states the
+one residual limit rather than implying full completeness.
+
+**Next**: send round 3 (final round under this project's 3-GPT-PM-round cap) via
+`review.js --uncommitted`. If this round returns further findings, per §17 a further round is
+permitted only for a genuine regression introduced by THIS round's own remediation -- a fresh,
+unrelated finding at this point would need the operator's awareness that the cap has been reached,
+not an automatic 4th remediation cycle.
