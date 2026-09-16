@@ -53074,3 +53074,82 @@ transport blocker, not an operator-only decision under §4/§14/§20 -- so per t
 (Tier B item 10) rather than stopping. The framed question above stays ready to send as-is the
 moment a fresh (non-stale) session or a working transport is available -- either a new Claude Code
 session in this repo, or the operator restarting this one.
+
+## 2026-09-16 -- Tier B items 10/11/12 (MVP1.G3 Step 10A/10B/10C) -- ALL THREE ALREADY CLOSED,
+## backlog brief stale, `pm_gate_status` tracker independently found stale too
+
+**Planned** (per the backlog brief): do the work for Step 10A (live enforcement-state visibility),
+then Step 10B (real device telemetry proof), then Step 10C (13-item reconciliation) -- in that
+order, since 10C explicitly "only doable once 10A/10B evidence exists."
+
+**What was actually found**, verified against real files/live state rather than trusted from any
+single document (§3/§23) -- this is the fourth stale-premise correction this session (after item 8,
+item 9's test-coverage precondition, and now this one), and the most consequential: it is not just
+the backlog brief that is stale, `pm_gate_status`'s own `MVP1.G3` record is too.
+
+1. **Ran `production_manifest.py --print` live** (read-only, matches Step 10A's own DoD exactly) to
+   get real ground truth before designing anything. Among 20 deployed `gcfv2` functions in
+   `fitness-app-korostelev`: `runEnforcementStateCheck` -- a function name never once mentioned
+   anywhere in this session's context before this moment. Not inferred, not read from a doc: seen
+   live, deployed, in production, right now.
+
+2. **Grepped for it across the repo**: `functions/src/enforcement_state_schedule.ts`,
+   `functions/src/__tests__/enforcement_state_schedule.test.ts`,
+   `reports/G3_STEP10A_ENFORCEMENT_STATE_REMEDIATION_2026-08-27.{ru.,}html`, and
+   `core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md` -- a full 13-row reconciliation table, dated
+   2026-08-28, that supersedes `core/OBS1_G3_REBASELINE_2026-08-27.md` for disposition purposes.
+   That table's row #3 (Enforcement-status dashboard, App Check/Identity Toolkit): **CLOSED**,
+   citing a documented 10-round build arc (2 live production deploys, 2 temporary proof-only
+   deploy/invoke/capture/delete cycles with genuine real-failure evidence, 2 live alert-policy
+   PATCHes with SHA-256 source==live verification, a real function redeploy confirmed by revision-
+   name change). Row #11 (client-runtime/ML telemetry, i.e. Step 10B): **CLOSED**. All 13 rows:
+   **CLOSED or REBASED→CLOSED, zero PARTIAL/PROVISIONAL remaining** (the table's own summary line).
+
+3. **Did not stop at the document's word** (§3/§17's "ground truth order: repository, then decision
+   log, then roadmap" -- and this document IS the roadmap layer, so it still needed a repository
+   check): spot-verified Step 10B's own headline claim independently. `git log --oneline --all
+   --grep="Step 10B" -i` shows a real multi-round commit sequence (`6ab9ff5` "real-device Crashlytics
+   telemetry proof, 6/6 scenarios closed", `8c3c890`/`48cc9f3` two rounds of "exact-commit build
+   provenance" remediation, `5d75709` "Step 10C: reconciliation table + close OBS-1 item #11").
+   Grepped the two files the reconciliation table's row #11 names as fixed THIS session (i.e. the
+   2026-08-28 one): `mobile/lib/features/form_check/data/tts_voice_coach.dart` and
+   `mobile/lib/features/visual_equipment/data/machine_describer.dart` both currently contain live
+   `FirebaseCrashlytics.instance.recordError(...)` call sites, exactly as claimed. Real, present,
+   current -- not a stale claim about code that was later reverted.
+
+4. **The actual gap is in `pm_gate_status`, not in the work.** `mcp__pm-bridge__pm_gate_status`
+   (queried live this session) shows `MVP1.G3: in-progress (updated 2026-08-27T16:46...)`, whose own
+   notes name Step 10A/10B/10C as the explicit remaining scope -- **timestamped BEFORE** the
+   2026-08-27/28 work that closed all three actually happened. Nobody ever called `pm_set_gate` to
+   move `MVP1.G3` (or create `MVP1.G3.Step10A`/`.Step10B`/`.Step10C` entries) to `passed` after the
+   real work closed. This is the same backfill-lag pattern this session's own gate-status log already
+   shows being caught and fixed today for `P2.G4`/`P2.G1`/`P2.G2` ("Backfill only -- no new work") --
+   this is a fourth instance of the identical lag, just not backfilled yet.
+
+**Why `pm_set_gate(..., status: "passed")` was NOT called to fix this in the same turn**: that call
+auto-notifies GPT-PM via the same playwright/daemon transport `gpt_send_and_await` already refused
+this session on (`pm_bridge_mode_status`: "THIS SESSION is the stale one... letting it send could
+deliver one project's content into another project's chat"). The tool is fail-open on the
+NOTIFICATION's own success/failure (the local JSON write happens regardless), but not verified
+fail-open against attempting the send via a stale, possibly-misrouting session in the first place --
+and unlike the earlier `gpt_send_and_await` refusal, there is no direct evidence here that the
+notify path shares that same hard guard rather than a softer one. Same posture as the row-24 GPT-PM
+referral above: not forcing a routing-risk call on a guess, deferred to a fresh session, not silently
+worked around.
+
+**DECISION**: Tier B items 10, 11, 12 are **not additional work for this run** -- they are already
+done, closed 2026-08-27/28, independently re-verified today against live production state and
+current repository content, not merely re-asserted from the reconciliation doc's own word. The
+backlog brief's premise that these needed doing was stale at the moment it was written (the brief
+itself says it was seeded from "the 2026-09-16 full-program status audit," which evidently read
+`pm_gate_status`'s stale `MVP1.G3` record rather than cross-checking `OBS1_G3_STEP10C_RECONCILIATION`
+or live production state -- exactly the failure mode this backlog's own §3 line 66-70 warned sessions
+to re-verify against, not trust). **Open, deliberately not closed by this entry**: the `pm_gate_status`
+backfill itself (`MVP1.G3`, `.Step10A`, `.Step10B`, `.Step10C` all need a `passed` write with this
+entry's evidence cited) -- deferred to a fresh, non-stale PM Bridge session for the routing-safety
+reason above, not forgotten.
+
+**Status**: verification-and-correction only, no source changed, no Rosetta plan needed (LOCAL-class
+read-only investigation). Continuing to Tier C (rows 12/19, product-copy decisions) -- those need a
+GPT-PM product ruling too, so they carry the same session-staleness caveat as row 24's referral
+above until a fresh session/transport is available; recorded honestly rather than skipped silently.
