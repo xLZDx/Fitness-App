@@ -54059,3 +54059,56 @@ one residual limit rather than implying full completeness.
 permitted only for a genuine regression introduced by THIS round's own remediation -- a fresh,
 unrelated finding at this point would need the operator's awareness that the cap has been reached,
 not an automatic 4th remediation cycle.
+
+## 2026-09-16 -- Row 24 gate: GPT-PM implementation review round 3 (final round under the cap) --
+VERDICT: REVISE, 1 BLOCKER / 1 MAJOR, both verified real; round cap reached, escalating the
+process question to GPT-PM rather than auto-looping a 4th round
+
+Sent via `review.js --uncommitted --project fitness_app --round 3`, reviewRequestId
+`4cb27dd1-b5a9-46f2-84f5-4b7c5c53d533`, replyId `b8766f19-f13e-47ff-aa09-3f293b560db2`.
+**VERDICT: REVISE, 1 BLOCKER / 1 MAJOR.** GPT-PM explicitly confirmed round-2 BLOCKER 1 (the
+literal-uid `.doc()` gap) is now fully closed, and characterized both remaining findings as "direct
+incompleteness/regressions of the three scoped fixes, not unrelated fourth-round work" -- i.e. still
+within this round's own scope, not a new area.
+
+**BLOCKER -- `analyzeAssertCalls()`'s SDK-call-own-argument binding (round 3's own fix) still
+returns success on the FIRST matching call within an assertion argument, without confirming it is
+the ONLY (or the actually-outcome-driving) SDK call there.** VERIFIED by re-reading the loop
+directly (`check_data_access_policy.js:1073-1085`): `for (const sdkArgsText of
+sdkCallSiteArgTexts(argText, sdkNames)) { ...; if (matches) return {ok:true}; }` -- returns on the
+FIRST match, so `assertFails(Promise.all([updateDoc(profileRef, validPatch),
+updateDoc(invalidCanaryRef, ...)]))` would certify the profile path even though the actual
+rejection might be entirely caused by the unrelated canary call, not the profile update. GPT-PM also
+correctly notes the whole mechanism is regex/text-based, not AST-based, so a fake SDK-call-shaped
+STRING LITERAL (not real code) would also be mistakenly matched -- an architectural property of the
+lexical-scanning approach chosen for this gate, not a one-off bug.
+
+**MAJOR -- registry shadow detection (round 3's own fix) doesn't recognize destructuring bindings.**
+VERIFIED by re-reading `hasLocalShadowDeclaration()`: it matches `const|let|var IDENT` and bare
+identifiers, but `const { P2CollectionPaths } = runtimePaths;` is a destructuring pattern the
+declaration regex doesn't match, AND the actual `.collection(P2CollectionPaths.textKeys)` use site
+is deliberately excluded from the bare-identifier detector (since it's followed by `.`, correctly
+treated as legitimate member-access elsewhere) -- so a destructured local shadow is invisible to
+both halves of the detector simultaneously.
+
+**Round-cap situation, stated plainly rather than silently continued:** this is round 3 -- the
+standing cap for this project (max 3 GPT-PM review rounds per gate, established 2026-09-13,
+communicated to GPT-PM up front in this gate's own round 2 and round 3 sends) -- and it still
+returned real, verified findings rather than closing clean. Both findings are narrower/more exotic
+than every prior round's (a `Promise.all`-wrapped multi-call assertion inside a hand-written
+CONDITIONAL test; a destructured registry import) -- neither pattern exists anywhere in the current
+7 real hand-written conditionalRefs tests or the one real registry usage, so neither is a LIVE gap
+today, only a structural one a future test/usage could hit. Rather than either (a) silently looping
+an unauthorized 4th automatic remediation-review cycle, treating the cap as if it didn't exist, or
+(b) stalling for the operator on what is a process/methodology question, not an irreversible or
+business decision -- escalating this specific question to GPT-PM directly (per CLAUDE.md SS16,
+questions go to GPT-PM, not the operator, for exactly this class of decision) with the real options,
+evidence, and a recommendation, rather than deciding unilaterally.
+
+**Next**: send a DECISION-format question to GPT-PM asking how to proceed given the round cap --
+options being (A) one explicitly-authorized 4th remediation round given both fixes are narrow and
+well-scoped, (B) accept both as documented, honestly-labeled residual risk (neither is live today)
+and close the gate as-is, (C) a larger architectural change (an AST-based parser instead of
+regex/text-based lexical scanning) to close this whole CLASS of "text-based analysis misses an
+adversarially-constructed edge case" finding at the root, deferred to a separate future gate rather
+than expanding this one further.
