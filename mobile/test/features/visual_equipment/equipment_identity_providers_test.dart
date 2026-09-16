@@ -5,6 +5,7 @@ import 'package:google_mlkit_commons/google_mlkit_commons.dart' show InputImage;
 import 'package:fitness_app/features/visual_equipment/data/cloud_equipment_identity_telemetry_service.dart';
 import 'package:fitness_app/features/visual_equipment/data/equipment_identity.dart';
 import 'package:fitness_app/features/visual_equipment/data/equipment_identity_outcome_sink.dart';
+import 'package:fitness_app/features/visual_equipment/data/equipment_identity_telemetry_outbox.dart';
 import 'package:fitness_app/features/visual_equipment/data/equipment_identity_telemetry_report.dart';
 import 'package:fitness_app/features/visual_equipment/data/identity_text_parser.dart';
 import 'package:fitness_app/features/visual_equipment/data/machine_text_evidence.dart';
@@ -519,6 +520,81 @@ void main() {
 
       expect(result?.scanId, scanId);
       expect(sent, hasLength(1));
+    });
+  });
+
+  group('P2.G5-readiness step 3b -- durable outbox wiring', () {
+    const scanId = 'scan-1700000000000000';
+
+    test('a send that fails through the real send function ends up in the outbox', () async {
+      final outbox = InMemoryEquipmentIdentityTelemetryOutbox();
+      final container = ProviderContainer(overrides: [
+        equipmentIdentityEnrichmentEnabledProvider.overrideWithValue(true),
+        machineTextRecogniserProvider.overrideWithValue(_FakeStructuredRecogniser()),
+        scanIdImagePathProvider.overrideWith((ref) => {scanId: '/tmp/photo.jpg'}),
+        equipmentIdentityAskProvider.overrideWithValue(({
+          required String scanId,
+          required ParsedIdentityText evidence,
+        }) async =>
+            _fakeIdentity(scanId)),
+        equipmentIdentityTelemetrySendProvider.overrideWithValue(
+          (body) async => throw FirebaseFunctionsException(code: 'internal', message: 'boom'),
+        ),
+        equipmentIdentityTelemetryOutboxProvider.overrideWithValue(outbox),
+      ]);
+      addTearDown(container.dispose);
+
+      final result = await container.read(equipmentIdentityProvider(scanId).future);
+      await Future<void>.delayed(Duration.zero);
+
+      // The scan's own result is untouched by the telemetry failure (same
+      // guarantee step 3a already proved) -- what step 3b adds is that the
+      // failed report is durably queued instead of silently dropped.
+      expect(result?.scanId, scanId);
+      expect(outbox.pending, hasLength(1));
+      expect(outbox.pending.single['scanId'], scanId);
+    });
+
+    test('a send that succeeds never touches the outbox', () async {
+      final outbox = InMemoryEquipmentIdentityTelemetryOutbox();
+      final container = ProviderContainer(overrides: [
+        equipmentIdentityEnrichmentEnabledProvider.overrideWithValue(true),
+        machineTextRecogniserProvider.overrideWithValue(_FakeStructuredRecogniser()),
+        scanIdImagePathProvider.overrideWith((ref) => {scanId: '/tmp/photo.jpg'}),
+        equipmentIdentityAskProvider.overrideWithValue(({
+          required String scanId,
+          required ParsedIdentityText evidence,
+        }) async =>
+            _fakeIdentity(scanId)),
+        equipmentIdentityTelemetrySendProvider.overrideWithValue((body) async {}),
+        equipmentIdentityTelemetryOutboxProvider.overrideWithValue(outbox),
+      ]);
+      addTearDown(container.dispose);
+
+      await container.read(equipmentIdentityProvider(scanId).future);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(outbox.pending, isEmpty);
+    });
+
+    test('drainEquipmentIdentityTelemetryOutbox drains through the real send provider', () async {
+      final outbox = InMemoryEquipmentIdentityTelemetryOutbox();
+      outbox.pending.add({'scanId': scanId, 'state': 'REQUEST_FAILURE'});
+      final delivered = <Map<String, dynamic>>[];
+      final container = ProviderContainer(overrides: [
+        equipmentIdentityTelemetryOutboxProvider.overrideWithValue(outbox),
+        equipmentIdentityTelemetrySendProvider.overrideWithValue((body) async {
+          delivered.add(body);
+        }),
+      ]);
+      addTearDown(container.dispose);
+
+      final send = container.read(equipmentIdentityTelemetrySendProvider);
+      await container.read(equipmentIdentityTelemetryOutboxProvider).drainPending(send);
+
+      expect(delivered, hasLength(1));
+      expect(delivered.single['scanId'], scanId);
+      expect(outbox.pending, isEmpty);
     });
   });
 }

@@ -21,13 +21,24 @@ import { recordMobileTelemetryFragment } from "./telemetry_repository";
  * A schema-invalid request is rejected outright with `invalid-argument` --
  * the mobile client has no authority to submit anything outside the 3
  * contract shapes (design doc §6's authority split, enforced here at the
- * boundary). A VALID request whose merge write itself fails is swallowed by
- * `recordMobileTelemetryFragment` the same way `recordServerTerminalTelemetry`
- * already is for the sibling callable (that function's own doc comment) --
- * so this handler still returns success to the client even on a persistence
- * failure; a lost telemetry fragment is a data-quality gap for step 5's
- * report, never a user-facing error for a report the client has no ability
- * to usefully retry (retrying would just resend the identical fragment).
+ * boundary). This is never retried by the mobile outbox regardless (a
+ * malformed request stays malformed no matter how many times it is resent),
+ * so it is a genuinely terminal failure from the client's perspective.
+ *
+ * A VALID request whose merge write itself fails throws `unavailable` --
+ * GPT-PM BLOCKER, P2.G5-readiness step 3b review, 2026-09-16, correcting
+ * this handler's own prior behavior (which used to swallow the failure and
+ * still answer `{ ok: true }`, on the stated premise that "the client has
+ * no ability to usefully retry"). That premise held for step 3a, when it
+ * was written, and stopped holding the moment step 3b shipped a durable
+ * client-side outbox specifically built to retry a failed send -- an outbox
+ * that can only ever activate on a send the CLIENT observes as having
+ * failed. `recordMobileTelemetryFragment`'s own doc comment explains why
+ * retrying is always safe here (the merge rules make an identical resend an
+ * idempotent no-op) and why `recordServerTerminalTelemetry`'s OWN sibling
+ * callable is deliberately left on its old swallow-and-succeed behavior
+ * (its caller is synchronously waiting on the user's actual scan result,
+ * with no outbox of its own to hand a retryable failure to).
  */
 export async function recordEquipmentIdentityTelemetryFragment(
   uid: string,
@@ -42,19 +53,17 @@ export async function recordEquipmentIdentityTelemetryFragment(
     throw new HttpsError("invalid-argument", "Malformed equipment identity telemetry report.");
   }
 
-  // `recordMobileTelemetryFragment` already never throws (see that
-  // function's own doc comment) -- this is the same defense-in-depth
-  // swallow-and-log discipline `identity_handler.ts` applies a second time
-  // at its own call site, for a property this design doc states as an
-  // explicit invariant, not an incidental one.
-  try {
-    await recordMobileTelemetryFragment(uid, parsed.data);
-  } catch (e) {
-    logger.error("equipment_identity_telemetry_fragment_call_failed", {
-      uid,
-      scanId: parsed.data.scanId,
-      err: e instanceof Error ? (e.stack ?? e.message) : String(e),
-    });
+  const persisted = await recordMobileTelemetryFragment(uid, parsed.data);
+  if (!persisted) {
+    // `recordMobileTelemetryFragment` already logged the underlying cause
+    // (`equipment_identity_telemetry_mobile_write_failed`) -- this is
+    // purely about turning that into a client-visible, retryable signal.
+    // "unavailable" (not e.g. "internal") is the callable-client-recognized
+    // code for "the caller may reasonably retry this."
+    throw new HttpsError(
+      "unavailable",
+      "Equipment identity telemetry fragment could not be persisted; retry.",
+    );
   }
   return { ok: true };
 }

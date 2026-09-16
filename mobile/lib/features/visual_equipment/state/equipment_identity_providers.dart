@@ -7,6 +7,7 @@ import '../data/cloud_equipment_identity_service.dart';
 import '../data/cloud_equipment_identity_telemetry_service.dart';
 import '../data/equipment_identity.dart';
 import '../data/equipment_identity_outcome_sink.dart';
+import '../data/equipment_identity_telemetry_outbox.dart';
 import '../data/equipment_identity_telemetry_report.dart';
 import '../data/identity_text_parser.dart';
 import '../data/machine_text_evidence.dart';
@@ -76,19 +77,29 @@ final equipmentIdentityTelemetrySendProvider = Provider<EquipmentIdentityTelemet
   return service.send;
 });
 
-/// Fires one telemetry report body, fire-and-forget: never awaited by the
-/// caller (a telemetry round-trip must not add latency to the scan's own
-/// result) and never able to surface as an uncaught async error (P2.G5-readiness
-/// step 3a, design doc §6/§7) -- `.catchError` is attached BEFORE
-/// `unawaited` hands the future to the zone, so a rejected send is always
-/// caught here, not by whatever error zone the app happens to be running
-/// under.
-void _sendTelemetryReport(EquipmentIdentityTelemetrySend send, Map<String, dynamic> body) {
-  unawaited(
-    send(body).catchError((Object e) {
-      debugPrint('equipment identity telemetry send failed: $e');
-    }),
-  );
+/// P2.G5-readiness step 3b: durable retry-on-failure delivery. Defaults to
+/// the in-memory fake so a test/host that never overrides this still runs
+/// (same posture as [equipmentIdentityOutcomeSinkProvider]'s own default) --
+/// the real app overrides this with `FileEquipmentIdentityTelemetryOutbox`,
+/// opened in `main()` before `runApp`, same pattern as `PrefsMomentRepository`.
+final equipmentIdentityTelemetryOutboxProvider =
+    Provider<EquipmentIdentityTelemetryOutbox>((_) => InMemoryEquipmentIdentityTelemetryOutbox());
+
+/// Fires one telemetry report body through the durable outbox: never awaited
+/// by the caller (a telemetry round-trip must not add latency to the scan's
+/// own result) and never able to surface as an uncaught async error
+/// (P2.G5-readiness step 3a, design doc §6/§7) -- the outbox's own
+/// `sendOrEnqueue` never rethrows, so there is nothing for `unawaited` to
+/// hand an error to here even without a `.catchError`.
+///
+/// Step 3a's version dropped a failed send permanently, the moment it
+/// failed. Step 3b's only change is durability: a failed attempt is now
+/// persisted and retried on the next app-resume drain
+/// (`main.dart`'s `_FitnessAppState.didChangeAppLifecycleState`), instead of
+/// silently vanishing.
+void _sendTelemetryReport(EquipmentIdentityTelemetrySend send,
+    EquipmentIdentityTelemetryOutbox outbox, Map<String, dynamic> body) {
+  unawaited(outbox.sendOrEnqueue(send, body));
 }
 
 /// Resolves one scan's on-device OCR evidence into a server-verified
@@ -121,6 +132,7 @@ final equipmentIdentityProvider =
   if (!ref.watch(equipmentIdentityEnrichmentEnabledProvider)) return null;
 
   final send = ref.read(equipmentIdentityTelemetrySendProvider);
+  final outbox = ref.read(equipmentIdentityTelemetryOutboxProvider);
   // Falls back to "now" only for the near-impossible case of a scanId this
   // app itself did not mint in the expected shape -- never fabricates a
   // start instant earlier than it can prove.
@@ -129,6 +141,7 @@ final equipmentIdentityProvider =
   void reportLocalFailure(LocalFailureReason reason) {
     _sendTelemetryReport(
       send,
+      outbox,
       buildLocalFailureReportBody(
         scanId: scanId,
         reason: reason,
@@ -193,6 +206,7 @@ final equipmentIdentityProvider =
     // as an enrichment fragment, never a state-defining write.
     _sendTelemetryReport(
       send,
+      outbox,
       buildScanTimingReportBody(scanId: scanId, scanStartedAt: scanStartedAt, scanEndedAt: nowUtcIso()),
     );
     return identity;
@@ -203,6 +217,7 @@ final equipmentIdentityProvider =
     debugPrint('equipment identity enrichment failed: $e');
     _sendTelemetryReport(
       send,
+      outbox,
       buildRequestFailureReportBody(
         scanId: scanId,
         reason: classifyRequestFailureReason(e),
@@ -213,3 +228,21 @@ final equipmentIdentityProvider =
     return null;
   }
 });
+
+/// Retries every currently-queued equipment-identity telemetry report.
+///
+/// Called from `main.dart`'s `_FitnessAppState.didChangeAppLifecycleState`
+/// on `AppLifecycleState.resumed` -- the drain trigger this app has to use
+/// in place of a real connectivity event, since no `connectivity_plus`
+/// dependency exists here (confirmed: not in `mobile/pubspec.yaml`). Resume
+/// is not a perfect proxy for "network is back" (the app can resume while
+/// still offline, in which case this drain itself fails and the reports
+/// stay queued for the NEXT resume), but it is the cheapest real signal
+/// this app already observes for every other lifecycle-driven refresh, and
+/// a failed drain attempt costs nothing beyond one extra doomed network
+/// call -- the outbox's own `drainPending` never throws.
+Future<void> drainEquipmentIdentityTelemetryOutbox(WidgetRef ref) {
+  final send = ref.read(equipmentIdentityTelemetrySendProvider);
+  final outbox = ref.read(equipmentIdentityTelemetryOutboxProvider);
+  return outbox.drainPending(send);
+}

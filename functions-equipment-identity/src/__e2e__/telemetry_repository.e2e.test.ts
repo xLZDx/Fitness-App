@@ -316,7 +316,10 @@ function timingOnly(overrides: Partial<EquipmentIdentityTelemetryReportRequest> 
 describe("recordMobileTelemetryFragment -- real Firestore merge semantics (design doc §6, step 3a)", () => {
   test("rule 1: no existing record -- creates a fresh LOCAL_FAILURE record from a state-defining fragment", async () => {
     const uid = randomUid();
-    await recordMobileTelemetryFragment(uid, localFailure());
+    // P2.G5-readiness step 3b: a genuine successful persist must resolve
+    // `true` -- `telemetry_handler.ts`'s own retryable-failure decision for
+    // the mobile outbox is keyed off this exact return value.
+    await expect(recordMobileTelemetryFragment(uid, localFailure())).resolves.toBe(true);
 
     const record = await readRaw(uid, "scan-1");
     expect(record?.state).toBe("LOCAL_FAILURE");
@@ -328,7 +331,11 @@ describe("recordMobileTelemetryFragment -- real Firestore merge semantics (desig
 
   test("rule 1: a timing-only fragment with no existing record creates nothing (dropped, logged) -- there is no state to create a record with", async () => {
     const uid = randomUid();
-    await expect(recordMobileTelemetryFragment(uid, timingOnly())).resolves.not.toThrow();
+    // An intentional no-op, not a persistence failure -- must still resolve
+    // `true` (see step 3b comment above): retrying this exact fragment
+    // would repeat the identical no-op forever, so there is nothing for a
+    // retryable failure to usefully signal here.
+    await expect(recordMobileTelemetryFragment(uid, timingOnly())).resolves.toBe(true);
 
     const record = await readRaw(uid, "scan-1");
     expect(record).toBeUndefined();

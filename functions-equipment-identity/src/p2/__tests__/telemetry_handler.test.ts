@@ -18,7 +18,7 @@ const LATER = "2026-09-16T10:00:05.000Z";
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mRecord.mockResolvedValue(undefined);
+  mRecord.mockResolvedValue(true);
 });
 
 describe("recordEquipmentIdentityTelemetryFragment -- request validation runs before the repository", () => {
@@ -137,8 +137,28 @@ describe("recordEquipmentIdentityTelemetryFragment -- repository wiring", () => 
     expect(mRecord).toHaveBeenCalledWith("u1", { scanId: "scan-1", scanStartedAt: NOW, scanEndedAt: LATER });
   });
 
-  test("a repository write failure never propagates -- the client still gets ok:true", async () => {
-    mRecord.mockRejectedValue(new Error("firestore outage"));
+  // P2.G5-readiness step 3b, GPT-PM BLOCKER (2026-09-16): a persistence
+  // failure now MUST surface as a retryable callable failure -- the mobile
+  // outbox specifically depends on a rejected `Future` from this callable to
+  // know a report needs to be durably retried. Swallowing this into
+  // `{ ok: true }` (the old behavior, see `core/DECISION_LOG.md` for that
+  // entry) would silently defeat the entire point of the outbox for exactly
+  // the failure mode it exists to catch.
+  test("a repository persistence failure surfaces as a retryable HttpsError, not ok:true", async () => {
+    mRecord.mockResolvedValue(false);
+    await expect(
+      recordEquipmentIdentityTelemetryFragment("u1", {
+        scanId: "scan-1",
+        state: "LOCAL_FAILURE",
+        reason: "ocrException",
+        scanStartedAt: NOW,
+        scanEndedAt: LATER,
+      }),
+    ).rejects.toMatchObject({ code: "unavailable" });
+  });
+
+  test("a genuine persist succeeds (repository returns true) still returns ok:true", async () => {
+    mRecord.mockResolvedValue(true);
     const result = await recordEquipmentIdentityTelemetryFragment("u1", {
       scanId: "scan-1",
       state: "LOCAL_FAILURE",

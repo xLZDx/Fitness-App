@@ -262,9 +262,31 @@ export async function recordServerTerminalTelemetry(
  * split", enforced at the contract boundary, not by convention here).
  *
  * `uid` must come from `request.auth.uid` at the call site, exactly like
- * `recordServerTerminalTelemetry`. Failures are logged and swallowed, never
- * thrown, for the identical reason that function documents: a telemetry
- * write failing must never turn a real callable response into a 500.
+ * `recordServerTerminalTelemetry`.
+ *
+ * Returns `true` on every real success (including every idempotent no-op
+ * path above -- rule 2's fingerprint match, an already-archived duplicate,
+ * an already-known conflict), `false` only when the write itself genuinely
+ * failed (the `catch` block below). Unlike `recordServerTerminalTelemetry`,
+ * this failure is NOT silently absorbed at the callable boundary -- GPT-PM
+ * BLOCKER, P2.G5-readiness step 3b review, 2026-09-16: step 3b gives the
+ * mobile client a durable local outbox that retries whenever its send to
+ * this callable fails, but that mechanism is worthless against a write that
+ * fails HERE while the callable still answers `{ ok: true }` -- the client
+ * sees success and never enqueues anything to retry, and the fragment is
+ * gone for good. `telemetry_handler.ts`'s own caller turns a `false` here
+ * into a retryable `HttpsError`, which the mobile callable client surfaces
+ * as a rejected `Future` -- exactly the failure shape the outbox already
+ * knows how to catch and durably retry. The merge rules above make ANY
+ * retry of the identical report body safe (rule 2), so retrying a write
+ * that may have PARTIALLY succeeded server-side (e.g. the transaction
+ * committed but the process crashed before returning) is not a correctness
+ * risk, only, at worst, a redundant no-op.
+ *
+ * `recordServerTerminalTelemetry` is deliberately left swallowing its own
+ * failures, unchanged: it backs a DIFFERENT callable whose response the
+ * user is synchronously waiting on for their scan's own result, and that
+ * one has no equivalent client-side outbox to hand a retryable failure to.
  *
  * Rules implemented (design doc §6, all renumbered from that section):
  * 1. No record exists -- create fresh FROM a state-defining fragment. A
@@ -295,7 +317,7 @@ export async function recordServerTerminalTelemetry(
 export async function recordMobileTelemetryFragment(
   uid: string,
   report: EquipmentIdentityTelemetryReportRequest,
-): Promise<void> {
+): Promise<boolean> {
   const scanId = report.scanId;
   try {
     const ref = db().doc(userEquipmentIdentityTelemetryDocPath(uid, scanId));
@@ -466,11 +488,13 @@ export async function recordMobileTelemetryFragment(
         }),
       );
     });
+    return true;
   } catch (e) {
     logger.error("equipment_identity_telemetry_mobile_write_failed", {
       uid,
       scanId,
       err: e instanceof Error ? (e.stack ?? e.message) : String(e),
     });
+    return false;
   }
 }

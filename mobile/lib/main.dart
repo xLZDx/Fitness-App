@@ -55,7 +55,11 @@ import 'features/profile/state/profile_providers.dart';
 import 'features/subscription/data/cloud_functions_stripe_service.dart';
 import 'features/subscription/data/firestore_subscription_repository.dart';
 import 'features/subscription/state/subscription_providers.dart';
+import 'features/visual_equipment/data/cloud_equipment_identity_telemetry_service.dart';
+import 'features/visual_equipment/data/equipment_identity_telemetry_outbox.dart';
 import 'features/visual_equipment/data/firestore_recognition_history.dart';
+import 'features/visual_equipment/state/equipment_identity_providers.dart'
+    show drainEquipmentIdentityTelemetryOutbox, equipmentIdentityTelemetryOutboxProvider;
 import 'features/visual_equipment/data/mlkit_live_equipment_service.dart';
 import 'features/ai_coach/generated_exercise_repository.dart';
 import 'features/visual_equipment/data/gemini_equipment_service.dart';
@@ -319,6 +323,27 @@ Future<void> main() async {
   // the first authenticated frame.
   final sensitiveStore = await PrefsSensitiveStore.open();
 
+  // P2.G5-readiness step 3b: durable retry-on-failure delivery for
+  // equipment-identity telemetry. Opened up-front like the repositories
+  // above -- see `equipment_identity_telemetry_outbox.dart`'s own doc
+  // comment for why blind retry is safe against the server's merge rules.
+  final equipmentIdentityTelemetryOutbox =
+      await FileEquipmentIdentityTelemetryOutbox.open();
+  // Cold-start drain, in addition to the resume-triggered one in
+  // `_FitnessAppState.didChangeAppLifecycleState`. `WidgetsBindingObserver`
+  // only reports lifecycle CHANGES from here on -- it is never invoked for
+  // the state the app is already in when the observer is registered -- so a
+  // queue populated in a prior, now-dead process (the common case on
+  // Android: the OS kills a backgrounded app, the user later taps the icon
+  // into a brand new process) would otherwise sit un-drained until the user
+  // backgrounds and resumes THIS run at least once. Unawaited and
+  // constructed directly (no `ProviderScope`/`ref` exists yet, this runs
+  // before `runApp`) -- same real `CloudEquipmentIdentityTelemetryService`
+  // the app's own provider default would hand out, since nothing here
+  // overrides that provider.
+  unawaited(equipmentIdentityTelemetryOutbox
+      .drainPending(CloudEquipmentIdentityTelemetryService().send));
+
   // Settings must be resolved BEFORE the first frame: theme and locale are
   // read during the initial build, and loading them asynchronously would
   // flash the wrong theme and the wrong language before settling.
@@ -346,6 +371,8 @@ Future<void> main() async {
         // The store is overridden as well as passed in, so that restore (H2b)
         // writes into the same instance this repository reads from.
         localSensitiveStoreProvider.overrideWithValue(sensitiveStore),
+        equipmentIdentityTelemetryOutboxProvider
+            .overrideWithValue(equipmentIdentityTelemetryOutbox),
         profileRepositoryProvider.overrideWith(
           (_) => DeviceHealthProfileRepository(
             FirestoreProfileRepository(),
@@ -562,12 +589,14 @@ class FitnessApp extends ConsumerStatefulWidget {
   ConsumerState<FitnessApp> createState() => _FitnessAppState();
 }
 
-/// Stateful only to observe [didChangeLocales].
+/// Stateful to observe [didChangeLocales] and, since P2.G5-readiness step 3b,
+/// [didChangeAppLifecycleState].
 ///
-/// Without it, changing the device language while the app is running would move
-/// the interface but not the bundled exercise text, because the content side
-/// reads a cached device-locale list. That is the same half-translated failure
-/// `resolvedLocaleCode` exists to prevent, just triggered at runtime.
+/// Without the locale observer, changing the device language while the app is
+/// running would move the interface but not the bundled exercise text,
+/// because the content side reads a cached device-locale list. That is the
+/// same half-translated failure `resolvedLocaleCode` exists to prevent, just
+/// triggered at runtime.
 class _FitnessAppState extends ConsumerState<FitnessApp>
     with WidgetsBindingObserver {
   @override
@@ -586,6 +615,18 @@ class _FitnessAppState extends ConsumerState<FitnessApp>
   void didChangeLocales(List<Locale>? locales) {
     ref.read(deviceLocalesProvider.notifier).state =
         List<Locale>.unmodifiable(locales ?? const <Locale>[]);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Retry every queued equipment-identity telemetry report on resume --
+    // see `drainEquipmentIdentityTelemetryOutbox`'s own doc comment for why
+    // resume is the signal this app uses in place of a real connectivity
+    // event. Fire-and-forget, same posture as the sends themselves: a
+    // drain must never block or fail the resume it is riding on.
+    if (state == AppLifecycleState.resumed) {
+      unawaited(drainEquipmentIdentityTelemetryOutbox(ref));
+    }
   }
 
   @override
