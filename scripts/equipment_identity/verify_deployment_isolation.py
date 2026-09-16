@@ -665,6 +665,20 @@ def run_broken_identity_probe() -> dict[str, Any]:
         for fixture_path in sorted(p1_captures_dir.glob("*.json")):
             shutil.copy2(fixture_path, temp_p1_captures_dir / fixture_path.name)
 
+        # MVP1.G4 Step 2: `npm run build` also now runs
+        # `check:p0-app-check-readiness`, which reads
+        # core/equipment_identity/p0/p0_g0_app_check_platform_readiness.json
+        # by the same relative-path convention as the two checks above --
+        # same self-caught-bug class, same fix, found live 2026-09-16 while
+        # running this probe ahead of a real Tier D production deploy (the
+        # temp copy's baseline build failed on this file's absence, which
+        # would have misread as a broken isolation probe rather than a
+        # missing fixture). Read-only P0 source, never modified.
+        shutil.copy2(
+            P0_DIR / "p0_g0_app_check_platform_readiness.json",
+            temp_p0_dir / "p0_g0_app_check_platform_readiness.json",
+        )
+
         install = _run([NPM, "ci"], temp_identity)
         if install.returncode != 0:
             raise IsolationVerificationError(

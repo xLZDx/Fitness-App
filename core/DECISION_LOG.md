@@ -53230,3 +53230,64 @@ an approved GO/APPROVE, no separate word needed). No Rosetta plan opened: this w
 resolved as a scope/product decision exchange, not a formal multi-step implementation gate, and the
 actual code/copy diff is 4 files / 14 insertions / 6 deletions -- STANDARD review class, not HIGH,
 per the `rosetta` skill's own criteria (no dependencies/CI/migrations/secrets touched).
+
+## 2026-09-16 -- Tier D pre-flight: P0.G6 deploy-isolation probe had a real, reproducible regression,
+## found and fixed by running the dry-run check the backlog itself required before touching Tier D
+
+**Context**: backlog item 15 (P2.G3's real production deploy) explicitly requires "run every
+available dry-run/isolation check first" before requesting a fresh deploy APPROVE. Ran
+`scripts/equipment_identity/test_deployment_isolation.py` (the P0.G6 harness, closed 2026-08-22) as
+that check, per `py -3 -m pytest` (bare `python` on PATH resolves to `D:\Repo\ERP\.venv\Scripts\
+python.exe`, the sibling-venv trap this project's own memory already documents -- re-ran with the
+correct interpreter to rule that out as the cause before trusting the result).
+
+**Found**: 2 of 107 tests failed, both for the same root cause. `run_broken_identity_probe()`
+(`scripts/equipment_identity/verify_deployment_isolation.py:601-`) copies `functions-equipment-
+identity` into a disposable temp directory and must mirror every build-time file dependency its
+`npm run build` script reads from OUTSIDE that directory (`core/equipment_identity/p0/...` etc.),
+because the temp copy has no sibling `core/` tree. This mirroring has already needed exactly this
+fix twice before, documented in the function's own comments (P1.G1's `functional_type_snapshot_v1.
+json`, P1.G2's `source_registry.json` + `p1/source_captures/*.json`). A THIRD pre-check was added
+later (`check:p0-app-check-readiness`, MVP1.G4 Step 2 -- `functions-equipment-identity/scripts/
+sync_p0_app_check_readiness.js`, reading `core/equipment_identity/p0/p0_g0_app_check_platform_
+readiness.json`), and nobody updated this probe to mirror it -- so the probe's own pre-injection
+BASELINE build (which exists specifically to distinguish "the probe's plumbing is broken" from "the
+injected TypeScript error actually worked," per its own comment) started failing on a missing file,
+unrelated to the isolation property being tested. A real, silent regression in a safety harness
+whose whole job is proving a broken identity-codebase build cannot block a `stripeWebhook` deploy --
+found only because this dry-run check was actually run before Tier D, not assumed still-green from
+its 2026-08-22 closure.
+
+**Fixed**: one `shutil.copy2()` call added, mirroring the exact same pattern as the two prior
+fixes -- `core/equipment_identity/p0/p0_g0_app_check_platform_readiness.json` into the temp copy's
+`core/equipment_identity/p0/` directory, before `npm ci` runs in the temp copy.
+`scripts/equipment_identity/verify_deployment_isolation.py`. Re-ran the full suite: 107/107 pass.
+
+**Independent review** (python-reviewer, R1/focused -- small, well-precedented pattern-following fix
+touching pre-deploy safety infrastructure, matched to risk level per §6): confirmed the fix is
+correct and complete (right source/destination path, right timing relative to `npm ci`/the baseline
+build); independently re-derived the full list of `functions-equipment-identity/package.json`'s
+`"build"` script pre-checks (`check:p0-snapshot`, `check:p1-generated`, `check:p0-app-check-
+readiness`, `tsc`) and confirmed no FOURTH external file dependency exists today that this probe
+still fails to mirror. One MINOR (not held): `firebase.json`'s `equipment-identity` codebase predeploy
+lacks the `default` codebase's extra `run_release_guard.mjs` step -- very likely intentional
+(Stripe-specific guard), worth a one-line confirmation before the real deploy rather than a silent
+assumption; confirmed below. **One structural observation, deliberately NOT fixed in this pass**:
+this exact bug class (the temp-copy mirror list silently drifting behind `package.json`'s real build
+script whenever a new `check:*` pre-check is added) has now recurred three times with nothing
+structurally preventing a fourth -- no CI/test cross-references the probe's mirrored-file list
+against `package.json`'s actual `"build"` script content. Recorded as disclosed technical debt for a
+future small gate, not expanded into scope here (this pass was pre-flight verification for Tier D,
+not a general hardening pass on the P0.G6 harness).
+
+**`run_release_guard.mjs` asymmetry, checked per the review's MINOR**: read `functions/scripts/
+run_release_guard.mjs` -- it is a Stripe-specific guard (verifies the live Stripe price IDs/webhook
+secret match what the code expects before a `default`-codebase deploy touches `stripeWebhook`).
+`functions-equipment-identity` has no Stripe integration at all (confirmed: no `stripe` import
+anywhere under that directory) -- the asymmetry is genuinely intentional, not a gap. No action
+needed.
+
+**Status**: fix committed as part of the Tier D pre-flight work. Deploy-isolation harness is now
+green (107/107) and independently re-verified as complete for today's real `npm run build` script
+content. This does not by itself authorize the deploy -- still needs a fresh, specific GPT-PM
+APPROVE naming the deploy action itself, per the backlog's own extra-caution framing for this item.
