@@ -29,6 +29,138 @@ def test_firebase_json_declares_both_codebases():
     assert codebases["equipment-identity"]["source"] == "functions-equipment-identity"
 
 
+def test_equipment_identity_predeploy_runs_tests():
+    vdi.verify_equipment_identity_predeploy_runs_tests()  # must not raise
+
+
+def test_equipment_identity_predeploy_missing_test_step_is_rejected(tmp_path, monkeypatch):
+    # Backlog row 23's regression: a firebase.json whose equipment-identity
+    # predeploy runs only build, the exact state this gate closed. Mutation-
+    # verified against the live file itself, not just this fixture -- see
+    # core/DECISION_LOG.md.
+    broken = tmp_path / "firebase.json"
+    broken.write_text(
+        json.dumps({
+            "functions": [
+                {"codebase": "default", "source": "functions"},
+                {
+                    "codebase": "equipment-identity",
+                    "source": "functions-equipment-identity",
+                    "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"],
+                },
+            ]
+        }),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(vdi, "FIREBASE_JSON", broken)
+    with pytest.raises(vdi.IsolationVerificationError, match="must run"):
+        vdi.verify_equipment_identity_predeploy_runs_tests()
+
+
+def test_equipment_identity_predeploy_decoy_step_is_not_accepted(tmp_path, monkeypatch):
+    # The MINOR gap a security-reviewer pass found in the first version of
+    # this guard: a bare "test" token anywhere in the step string (e.g. an
+    # unrelated "echo test") would have satisfied a naive membership check
+    # without ever running npm's test script. Both the first token (npm)
+    # and the last (test) must match now.
+    decoy = tmp_path / "firebase.json"
+    decoy.write_text(
+        json.dumps({
+            "functions": [
+                {"codebase": "default", "source": "functions"},
+                {
+                    "codebase": "equipment-identity",
+                    "source": "functions-equipment-identity",
+                    "predeploy": [
+                        "npm --prefix \"$RESOURCE_DIR\" run build",
+                        "echo test",
+                    ],
+                },
+            ]
+        }),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(vdi, "FIREBASE_JSON", decoy)
+    with pytest.raises(vdi.IsolationVerificationError, match="must run"):
+        vdi.verify_equipment_identity_predeploy_runs_tests()
+
+
+def test_equipment_identity_predeploy_wrong_package_test_is_not_accepted(tmp_path, monkeypatch):
+    # Round-2 GPT-PM MAJOR: "npm --prefix functions test" starts with npm
+    # and ends with test, but runs the DEFAULT codebase's tests, not
+    # equipment-identity's own 514. The default suite going green proves
+    # nothing about this codebase's own deploy safety.
+    wrong_pkg = tmp_path / "firebase.json"
+    wrong_pkg.write_text(
+        json.dumps({
+            "functions": [
+                {"codebase": "default", "source": "functions"},
+                {
+                    "codebase": "equipment-identity",
+                    "source": "functions-equipment-identity",
+                    "predeploy": [
+                        "npm --prefix \"$RESOURCE_DIR\" run build",
+                        "npm --prefix functions test",
+                    ],
+                },
+            ]
+        }),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(vdi, "FIREBASE_JSON", wrong_pkg)
+    with pytest.raises(vdi.IsolationVerificationError, match="must run"):
+        vdi.verify_equipment_identity_predeploy_runs_tests()
+
+
+def test_equipment_identity_predeploy_test_before_build_is_not_accepted(tmp_path, monkeypatch):
+    # Round-2 GPT-PM MAJOR, second half: both the canonical steps present,
+    # wrong order -- round 1 explicitly required build THEN test.
+    wrong_order = tmp_path / "firebase.json"
+    wrong_order.write_text(
+        json.dumps({
+            "functions": [
+                {"codebase": "default", "source": "functions"},
+                {
+                    "codebase": "equipment-identity",
+                    "source": "functions-equipment-identity",
+                    "predeploy": [
+                        "npm --prefix \"$RESOURCE_DIR\" test",
+                        "npm --prefix \"$RESOURCE_DIR\" run build",
+                    ],
+                },
+            ]
+        }),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(vdi, "FIREBASE_JSON", wrong_order)
+    with pytest.raises(vdi.IsolationVerificationError, match="must run"):
+        vdi.verify_equipment_identity_predeploy_runs_tests()
+
+
+def test_equipment_identity_predeploy_with_a_test_step_is_accepted(tmp_path, monkeypatch):
+    # The control: the check must actually turn off once the step is present,
+    # not merely fail to fire on an unrelated fixture shape.
+    ok = tmp_path / "firebase.json"
+    ok.write_text(
+        json.dumps({
+            "functions": [
+                {"codebase": "default", "source": "functions"},
+                {
+                    "codebase": "equipment-identity",
+                    "source": "functions-equipment-identity",
+                    "predeploy": [
+                        "npm --prefix \"$RESOURCE_DIR\" run build",
+                        "npm --prefix \"$RESOURCE_DIR\" test",
+                    ],
+                },
+            ]
+        }),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(vdi, "FIREBASE_JSON", ok)
+    vdi.verify_equipment_identity_predeploy_runs_tests()  # must not raise
+
+
 def test_package_locks_are_independent():
     vdi.verify_independent_package_locks()  # must not raise
 

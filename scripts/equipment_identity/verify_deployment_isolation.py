@@ -80,6 +80,52 @@ def verify_firebase_json_codebases() -> dict[str, Any]:
     return {"default": entries["default"], "equipment-identity": entries["equipment-identity"]}
 
 
+def verify_equipment_identity_predeploy_runs_tests() -> None:
+    """Backlog row 23: the equipment-identity codebase's predeploy hook must
+    actually run its own test suite, not just build it.
+
+    GPT-PM's own MAJOR on the row-23 plan: the predeploy fix that closes this
+    gap has no persistent guard, so a later firebase.json edit could silently
+    drop the test step back to build-only with nothing here to catch it --
+    especially since functions.yml (push/PR CI) never touches this codebase
+    at all (it is deliberately its own workflow, equipment-identity-
+    functions.yml, per P0.G6). Reads the SAME firebase.json step 1 already
+    reads, so a caller only pays the parse once in practice, but this is
+    checked independently so a firebase.json edit that satisfies step 1
+    (right codebase/source mapping) while breaking this (predeploy missing
+    the test step) is still caught on its own.
+    """
+    # Round-2 GPT-PM MAJOR: a first/last-token check ("npm", ..., "test")
+    # still accepted a step naming a DIFFERENT package's tests (e.g.
+    # `npm --prefix functions test`, which starts with npm and ends with
+    # test but never runs functions-equipment-identity's own 514 tests) and
+    # never checked ORDER against the build step, so a test-before-build
+    # predeploy would also pass despite round 1 explicitly requiring build
+    # then test. Fixed by matching the exact, semantic token sequence this
+    # repo's own firebase.json already uses for both codebases -- no
+    # tolerance for a different --prefix target -- and requiring the test
+    # invocation's index to come strictly after the build invocation's.
+    def _tokens(step: str) -> list[str]:
+        return [t.strip('"') for t in str(step).split()]
+
+    _BUILD = ["npm", "--prefix", "$RESOURCE_DIR", "run", "build"]
+    _TEST = ["npm", "--prefix", "$RESOURCE_DIR", "test"]
+
+    data = json.loads(FIREBASE_JSON.read_text(encoding="utf-8"))
+    entries = {e["codebase"]: e for e in data.get("functions", [])}
+    predeploy = entries.get("equipment-identity", {}).get("predeploy", [])
+    token_steps = [_tokens(step) for step in predeploy]
+    build_idx = next((i for i, t in enumerate(token_steps) if t == _BUILD), None)
+    test_idx = next((i for i, t in enumerate(token_steps) if t == _TEST), None)
+    if build_idx is None or test_idx is None or test_idx <= build_idx:
+        raise IsolationVerificationError(
+            "firebase.json: codebase 'equipment-identity' predeploy must run "
+            'npm --prefix "$RESOURCE_DIR" run build then '
+            'npm --prefix "$RESOURCE_DIR" test, in that order, against its '
+            f"OWN package -- got predeploy={predeploy!r}"
+        )
+
+
 def verify_independent_package_locks() -> None:
     """Step 2: each codebase resolves its own dependency tree -- not a
     shared or duplicated lockfile."""
@@ -713,6 +759,8 @@ def run_default_tests(cwd: Path = FUNCTIONS_DIR) -> subprocess.CompletedProcess:
 
 def main() -> int:
     print("1. firebase.json codebases:", verify_firebase_json_codebases())
+    verify_equipment_identity_predeploy_runs_tests()
+    print("1b. equipment-identity predeploy runs its own tests: OK")
     verify_independent_package_locks()
     print("2. package-locks independent: OK")
     scanned = verify_no_cross_import()

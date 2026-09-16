@@ -95,6 +95,23 @@ jobs:
     name: release build (APK + AAB)
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    # GitHub never exposes repository secrets to a `pull_request` run
+    # triggered from a fork -- GOOGLE_SERVICES_JSON_B64 below would be empty
+    # there regardless of this condition, but WITHOUT this guard the job
+    # still runs, hits the empty-secret check, and fails every external PR
+    # outright. Skipping the job entirely for a fork PR is the honest state
+    # (this job cannot build a real release from one) rather than a
+    # deterministic red X coming from an already-known-empty secret.
+    #
+    # Dependabot is its own case, not covered by the head-repo comparison
+    # alone: GitHub treats a Dependabot-authored pull_request as untrusted
+    # for secrets access even when its head branch belongs to THIS repo (a
+    # same-org dependency-bump PR, not a fork) -- so `github.actor` is
+    # checked too, per GitHub's own documented mitigation for exactly this.
+    #
+    # Same-repo, human-authored PRs still get the secret and still run this
+    # job in full.
+    if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]')
 
     steps:
       - uses: actions/checkout@v4
@@ -129,6 +146,40 @@ jobs:
       - name: flutter pub get
         working-directory: mobile
         run: flutter pub get
+
+      # google-services.json (mobile/android/app/) is the file the Google
+      # Services Gradle plugin refuses to build without. NOT confidential by
+      # Firebase's own design -- the app ID/project ID/API key it holds are
+      # compiled straight into the APK's resources regardless, and access
+      # control is enforced server-side (Firebase Security Rules/App Check),
+      # not by hiding this file. It is sourced from a secret here for a
+      # narrower reason: this repo's own .gitignore (line 69-70) calls it
+      # "per-developer Firebase secrets, never commit" -- an operator
+      # decision about per-developer config, not a confidentiality claim
+      # this workflow should re-litigate -- so CI needs its own supply path
+      # rather than a checkout ever having it. Base64, not raw JSON: GitHub
+      # masks a registered secret's exact literal value in logs, and a
+      # single-line value is more reliable to mask/redact than structured
+      # JSON containing the same characters GitHub's own log formatting
+      # uses. `if:` above already keeps this step from ever running on a
+      # fork PR, where the secret would be empty by GitHub's own design
+      # regardless of anything in this step.
+      - name: Write google-services.json
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON_B64" ]; then
+            echo "::error::GOOGLE_SERVICES_JSON_B64 repo secret is not set -- add it in" \
+                 "GitHub Settings > Secrets and variables > Actions, with the" \
+                 "base64-encoded content of the operator's local" \
+                 "mobile/android/app/google-services.json (e.g. on Windows:" \
+                 "certutil -encode mobile\\android\\app\\google-services.json b64.txt," \
+                 "then paste the base64 body, without the BEGIN/END CERTIFICATE lines," \
+                 "as the secret value). Without it this job cannot build a real release" \
+                 "artifact."
+            exit 1
+          fi
+          echo "$GOOGLE_SERVICES_JSON_B64" | base64 -d > mobile/android/app/google-services.json
+        env:
+          GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON_B64 }}
 
       # Split APK (the operator's own default distribution artifact) and AAB
       # (the Play-console form) both go through the same wrapper -- two
