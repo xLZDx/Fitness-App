@@ -202,13 +202,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ b55b1fd</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ f838ad4</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -270,7 +272,7 @@
             <tr><td class="idcell">P2.G2</td><td><span class="pill passed">passed</span></td><td>IdentityTextParser, all 6 hard cases — closed 2026-09-10/11.</td></tr>
             <tr><td class="idcell">P2.G3</td><td><span class="pill partial">review done, gate open</span></td><td>5 GPT-PM rounds, final APPROVE, code pushed — but the gate itself remains formally <b>OPEN/DEPLOYMENT_PENDING</b>: a real (non-dry-run) deploy to <span class="mono">fitness-app-korostelev</span> has not been separately authorized.</td></tr>
             <tr><td class="idcell">P2.G4</td><td><span class="pill passed">passed (confirmed 09-16)</span></td><td>Re-verified later the same day: the Rosetta plan <span class="mono">bced53</span> (rev4) carries <span class="mono">status: passed</span>, and its closure review is a genuine <span class="mono">VERDICT: APPROVE 0/0</span> from GPT-PM (2026-09-12T10:00:15Z). The gate was closed correctly on September 12 — it just was never separately mirrored into <span class="mono">pm_gate_status</span>. That tracking gap is now backfilled via <span class="mono">pm_set_gate</span>.</td></tr>
-            <tr><td class="idcell">P2.G5-readiness</td><td><span class="pill partial">steps 2/3a done</span></td><td>This is <b>not P2.G5 itself</b> — it's the telemetry infrastructure preparing for it. Step 2 (server writer) and Step 3a (mobile telemetry) — passed, the latter closed today, 2026-09-16, commit <span class="mono">f09d732</span>. <b>Step 3b is deliberately deferred</b>: <span class="mono">ENRICHMENT_DISABLED</span> is never sent over the network, mobile <span class="mono">genericOutcome</span> stays null, no durable retry outbox exists.</td></tr>
+            <tr><td class="idcell">P2.G5-readiness</td><td><span class="pill partial">steps 2/3a/3b done</span></td><td>This is <b>not P2.G5 itself</b> — it's the telemetry infrastructure preparing for it. Step 2 (server writer), Step 3a (mobile telemetry) and now <b>Step 3b (durable mobile-side retry outbox)</b> — all passed; Step 3b closed today, 2026-09-16, commit <span class="mono">b55b1fd</span> (4 GPT-PM rounds: file-backed atomic-write outbox, terminal-vs-retryable failure classification, server-side persistence-failure surfacing fixed too). <b>Still deliberately deferred from step 3b's own scope</b>: <span class="mono">ENRICHMENT_DISABLED</span> network-send wiring and mobile <span class="mono">genericOutcome</span> population — unresolved contradiction against the frozen design contract's §4.2b, needs a GPT-PM product decision before pickup.</td></tr>
             <tr><td class="idcell">P2.G5</td><td><span class="pill notstarted">not started</span></td><td>The actual GO_VISUAL/DEFER_VISUAL checkpoint. Needs: (1) a report/metrics script — per the design doc §7, no such script exists anywhere under <span class="mono">scripts/</span>; (2) a minimum of 50 eligible scans <b>and</b> 14 calendar days of real collection — collection has effectively not started, the telemetry code only just merged.</td></tr>
           </tbody>
         </table>
@@ -317,8 +319,8 @@
 <section id="formcoach">
   <h2><span class="num">03</span> FORM_COACH_HUD_ALIGNMENT</h2>
   <div class="callout">
-    <span class="pill progress">in-progress</span> — GPT-PM APPROVE + GO received 2026-08-29. Scope: bring all 4 Form Coach screens (intro, camera-readiness checklist, exercise picker, live camera/avatar view) into the HUD visual language. Bottom-nav icon redesign is explicitly deferred (<span class="mono">REFERENCE_BLOCKED_DEFERRED</span>) — pending an operator-supplied reference image.
-    <br><br><b>Untouched since 2026-08-29</b> — the tracker's last entry is that date, over two weeks with no movement while P2 work was active. Worth an explicit call: continue, or deliberately pause.
+    <span class="pill progress">in-progress, more advanced than previously tracked</span> — 09-16 correction: the "untouched since 2026-08-29" / "nav-icon blocked on an operator reference" claim below (both present in the 09-16 backlog audit and an earlier draft of this report) was stale. A fuller design-handoff archive landed 2026-08-30 supplying the missing nav-icon reference; the mapping shipped and passed a 4-round GPT-PM review (commit <span class="mono">9d43c92..bdee3cd</span>, confirmed an ancestor of current HEAD). The same day, a sequenced follow-on program was opened under its own GPT-PM governance: Session (player/timer) redesign chosen next and its first slice shipped (RestTimer → HudRing, colour-token migration, MINIMAL-DIFF scope); Form Coach avatar-mode pose-match direction chosen over the push-up-counter fix for reachability; joint-fault marker shelved until that lands; Onboarding given an explicit safety-first constraint ("the visual reference does not get authority over safety-critical information architecture").
+    <br><br><b>Not yet established</b>: whether anything shipped beyond the Session gate's first slice — the decision log shows no further entry continuing this specific thread after 2026-08-30. Fully auditing this program's current frontier is flagged as its own separate, substantial task (comparable to the OBS1_G3_STEP10C reconciliation this project has already done once), not attempted in today's pass.
   </div>
 </section>
 
@@ -335,7 +337,7 @@
         <tr><td class="idcell">4</td><td class="item">Billing integrity monitor (Stripe)</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">5</td><td class="item">RU/EN semantic-drift check</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: confirmed, the <span class="mono">ru-en-drift</span> job in flutter.yml</td></tr>
         <tr><td class="idcell">6</td><td class="item">Mobile/Dart dependency (SCA) scanning</td><td>CI</td><td><span class="pill passed">done</span></td></tr>
-        <tr><td class="idcell">7</td><td class="item">Data-lifecycle sweep verification (deletion/export coverage)</td><td>RUNTIME</td><td><span class="pill blocked">open</span> — script exists, no schedule/run (see §27 row 26)</td></tr>
+        <tr><td class="idcell">7</td><td class="item">Data-lifecycle sweep verification (deletion/export coverage)</td><td>RUNTIME</td><td><span class="pill partial">partial</span> — 09-16: script now has real tests (0→36, 4 independently mutation-verified), fail-closed document-boundary guard added, a scheduled CI workflow drafted (explicitly non-functional scaffolding — needs a new non-interactive auth path + an operator-provisioned secret). Running it for real surfaced a genuine finding: the live project currently holds 39 profile documents still carrying health fields (not 0 as last recorded 2026-08-06) — see §27 row 26 and <span class="mono">core/PLAY_DATA_SAFETY_2026-08-05.md</span>. Clearing it is a production-deletion action awaiting an operator decision.</td></tr>
         <tr><td class="idcell">8</td><td class="item">Safety-invariant regression guard</td><td>CI</td><td><span class="pill passed">done</span> — actively guards F014/F015</td></tr>
         <tr><td class="idcell">9</td><td class="item">Gemini/AI Logic direct-call monitoring</td><td>RUNTIME</td><td><span class="pill passed">done</span> — exposure eliminated (all 4 AI call sites moved to server-side <span class="mono">httpsCallable</span>), risk now owned by MVP1.G4</td></tr>
         <tr><td class="idcell">10</td><td class="item">kCanonicalMachines ↔ equipment.json parity check</td><td>CI</td><td><span class="pill passed">done</span></td></tr>
@@ -380,7 +382,7 @@
         <tr><td class="idcell">23</td><td class="item">equipment-identity deploy predeploy hook has no test step</td><td>Medium-High</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE (3 rounds), test step added + persistent regression guard (6 pytest tests)</td></tr>
         <tr><td class="idcell">24</td><td class="item">Firestore wildcard + denylist instead of allowlist</td><td>Medium</td><td><span class="pill blocked">open</span> — new, 09-15</td></tr>
         <tr><td class="idcell">25</td><td class="item">server_export.dart calls the wrong Functions region</td><td>Low-Medium</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE, region fix + regression-guard test</td></tr>
-        <tr><td class="idcell">26</td><td class="item">Legacy health-data lazy migration has no scheduled sweep</td><td>Medium</td><td><span class="pill blocked">open</span> — re-flagged, known since 08-15</td></tr>
+        <tr><td class="idcell">26</td><td class="item">Legacy health-data lazy migration has no scheduled sweep</td><td>Medium</td><td><span class="pill partial">partial</span> — 09-16: sweep script tested for the first time (0→36 tests) and re-run fresh, live, read-only. Finding: default project (fitness-app-korostelev) 39/39 profile documents still carry health fields (2026-08-06 recorded 0); legacy-shared 1/14. Likely test-device accounts (inference, unconfirmed) per "no real users yet." Clearing it (<span class="mono">--apply</span>) is a production deletion, deliberately not performed — awaiting an operator decision. Scheduled CI check drafted but non-functional pending a new auth path + secret.</td></tr>
       </tbody>
     </table>
   </div>
@@ -392,7 +394,7 @@
     <b>The master plan (<span class="mono">core/MASTER_PLAN_2026-08-26.md</span>) is the primary source, but not fully in sync with reality:</b>
     <ul>
       <li>Dated 2026-08-26, with one 2026-09-15 addendum (§12). Row 1 (targetSdk) in its own table still reads as open, even though <span class="mono">MVP1.G2</span> closed it back on 2026-08-27 — the document was simply never revisited after that gate.</li>
-      <li>Doesn't reflect this week's work: <span class="mono">P2.G5-readiness</span> step 3a (closed today, 09-16), or P2.G4's final status.</li>
+      <li>Doesn't reflect this week's work: <span class="mono">P2.G5-readiness</span> steps 3a/3b (both closed 09-16), P2.G4's final status, or rows 22/23/25's closures.</li>
       <li>Doesn't mention <span class="mono">FORM_COACH_HUD_ALIGNMENT</span> as a gate at all — that one surfaced only in <span class="mono">pm_gate_status</span>, separate from the master plan.</li>
     </ul>
     <b>pm_gate_status (the PM Bridge registry) was also incomplete:</b> it carried no individual entries for P2.G1–P2.G4 — those gates were closed only through <span class="mono">core/DECISION_LOG.md</span>, never via <span class="mono">pm_set_gate</span>. <b>Fully closed the same session, 2026-09-16:</b> all four gates were re-verified directly against their own Rosetta records and backfilled into <span class="mono">pm_gate_status</span> — P2.G1/P2.G2/P2.G4 as <span class="mono">passed</span> (genuine closure-review APPROVEs), P2.G3 deliberately as <span class="mono">in-progress</span> rather than <span class="mono">passed</span> — its own closure record explicitly states it closes only the implementation plan and keeps the master gate <span class="mono">OPEN/DEPLOYMENT_PENDING</span> until a separately authorized real deploy.
@@ -402,12 +404,13 @@
 <section id="next">
   <h2><span class="num">07</span> What I'd suggest next</h2>
   <div class="callout">
-    <span class="mono">P2.G4</span> has already been re-verified and backfilled into <span class="mono">pm_gate_status</span> as part of this same report (see §01) — struck from the list. Four real directions remain, each substantial enough for its own GO:
+    Updated 09-16, later the same day: the autonomous Tier A backlog run closed rows 22/23/25, OBS-1 items 2/5/12/13, P2.G5-readiness step 3b, and the health-data residue sweep (row 26/OBS-1 item 7) — all struck from the list below. One genuinely operator-only item surfaced and is not struck: clearing the 40 health-data-residue documents the sweep found (see §04 item 7, §27 row 26). Real directions remaining:
     <ul>
-      <li><b>Continue P2.G5-readiness</b> — step 3b (durable outbox, ENRICHMENT_DISABLED) or start collecting the real 50 scans/14 days for the eventual P2.G5.</li>
+      <li><b>Operator decision pending</b> — whether/when to run <span class="mono">strip_health_from_profiles.py --apply</span> against the 40 residue documents found today. Not GPT-PM's call; not this session's to make unilaterally (CLAUDE.md §20's deletion carve-out).</li>
+      <li><b>Audit FORM_COACH_HUD_ALIGNMENT's real current frontier</b> — the backlog's own framing of this gate was stale (see §03); a proper reconciliation audit of what shipped vs. what's still mid-flight in the Session/Form-Coach/Onboarding sequence has not been done.</li>
       <li><b>MVP1.G3 Step 10A</b> — the one formally-described sub-step that isn't confirmed closed before final G3.</li>
-      <li><b>Row 22</b> (no CI job for a release artifact) — a release blocker nobody has picked up yet.</li>
-      <li><b>Decide FORM_COACH_HUD_ALIGNMENT's fate</b> — continue it or deliberately pause it, since it hasn't moved in two weeks.</li>
+      <li><b>P2.G5-readiness's remaining deferred scope</b> — <span class="mono">ENRICHMENT_DISABLED</span> network-send wiring and mobile <span class="mono">genericOutcome</span> population, blocked on a GPT-PM product decision (a known contradiction against the frozen design contract's §4.2b).</li>
+      <li><b>Row 24</b> (Firestore wildcard + denylist pattern) — real rules-migration blast radius, needs a full Rosetta plan and real DENY/ALLOW test coverage before any push.</li>
     </ul>
   </div>
 </section>
@@ -415,6 +418,8 @@
 <footer>Sources: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 
 

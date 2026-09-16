@@ -52954,3 +52954,18 @@ backlog brief's stale premise or silently skipped.
 shipped and reviewed. Full FORM_COACH_HUD_ALIGNMENT program state -- **needs its own reconciliation
 audit before any further work is planned against it**; not attempted here. No Rosetta plan opened --
 this entry is investigation-and-correction only, no source changed.
+
+## 2026-09-16 -- Rolling status report updated in place, 3rd time today (P2.G5-readiness step 3b,
+## rows 22/23/25/26, OBS-1 items 2/5/12/13/7, FORM_COACH_HUD_ALIGNMENT correction)
+
+Report gate threshold (3 commits since the last `reports/`-touching commit) reached again.
+`reports/program_status_full_2026-09-16.ru.html`/`.html` updated in place to match every closure
+and correction recorded above this entry: P2.G5-readiness's status table row (steps 2/3a/3b all
+done, remaining scope named); OBS-1 items 7 and row 26 (partial, with the live 39+1 residue finding
+and the pending operator deletion decision stated plainly, not buried); the FORM_COACH_HUD_ALIGNMENT
+section rewritten to match this entry's own correction rather than repeating the stale
+"untouched since 2026-08-29" / "nav-icon blocked" claims; §06 (data-freshness caveats) and §07
+("what I'd suggest next") rewritten to strike everything closed today and lead with the one
+genuinely operator-only open item. Re-ran `report_conform.py`, republished the Russian file to the
+same Artifact URL (`https://claude.ai/artifact/Rv9EQo6PXyaRF5if5n76iY`, version 8). No code changes;
+LOCAL-class per the `rosetta` skill, no plan needed.
