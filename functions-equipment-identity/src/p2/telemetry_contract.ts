@@ -1,6 +1,8 @@
 /**
- * P2.G5-readiness step 2 -- the durable per-scan telemetry record schema.
- * Frozen design: `core/design/p2_g5_readiness/P2_G5_READINESS_SHADOW_TELEMETRY_LIFECYCLE_CONTRACT_2026-09-12.md`.
+ * P2.G5-readiness steps 2 + 3a -- the durable per-scan telemetry record
+ * schema, and the mobile-submittable report-request contract. Frozen design:
+ * `core/design/p2_g5_readiness/P2_G5_READINESS_SHADOW_TELEMETRY_LIFECYCLE_CONTRACT_2026-09-12.md`
+ * (4 revisions, GPT-PM APPROVE round 5).
  *
  * One logical record per `{uid, scanId}` at
  * `users/{uid}/equipment_identity_telemetry/{scanId}` (path helper:
@@ -9,33 +11,31 @@
  * before this gate -- this file adds the schema and writer, not a new
  * collection or a rules change).
  *
- * SCOPE NOTE, stated rather than silently assumed (design doc §7): this
- * step (server-side ingestion) writes ONLY the `SERVER_TERMINAL` state, from
- * the one place the server itself reaches a terminal identity decision
- * (`index.ts`, wrapping `resolveEquipmentIdentityFromText`). The other five
- * states (`NOT_ATTEMPTED`, `ENRICHMENT_DISABLED`, `LOCAL_FAILURE`,
- * `REQUEST_FAILURE`, `CONFLICT`) and the `genericOutcome`/`scanStartedAt`/
- * `scanEndedAt`/`localFailureReason`/`requestFailureReason` fields are
- * defined here for forward compatibility (so the schema does not need a
- * breaking migration when step 3 lands) but are NOT populated by this
- * step's own writer. Step 3 (mobile durable outbox) is what actually reports
- * them, through a delivery path that does not exist yet. Deliberately not
- * building that cross-source merge logic now: a server-only `SERVER_TERMINAL`
- * write and a mobile-only enrichment write of the SAME record are not
- * "conflicting" in the sense `payloadFingerprint` comparison means below --
- * they describe different aspects of the same scan -- and inventing that
- * merge rule before step 3's real request shape exists would be guessing.
- * `recordEquipmentIdentityTelemetry`'s own doc comment states this same
- * scope limit at the call site.
+ * SCOPE, current as of step 3a (design doc §4.2b/§7): the server's own
+ * terminal-decision write (`index.ts`'s `equipmentIdentityResolveFromText`)
+ * writes ONLY `SERVER_TERMINAL`. The NEW `equipmentIdentityRecordTelemetry`
+ * callable (this step) is what a mobile client uses to report
+ * `LOCAL_FAILURE`/`REQUEST_FAILURE`/timing, through
+ * `EquipmentIdentityTelemetryReportRequestSchema` below -- see
+ * `telemetry_repository.ts`'s §6 merge-rule implementation for how a
+ * mobile-authoritative fragment and a server-authoritative terminal write
+ * reconcile. `NOT_ATTEMPTED`, `ENRICHMENT_DISABLED` (schema-reserved but
+ * deliberately never sent over the network -- design doc §4.2b) and
+ * `genericOutcome` remain unpopulated; that is step 3b's scope, not this
+ * one's, and is disclosed rather than silently omitted.
  */
 import { z } from "zod";
 import { EquipmentIdentityResponseSchema } from "./contract";
+import { isFirestoreDocIdSegment } from "../p1/firestore_paths";
 
 export const TELEMETRY_SCHEMA_VERSION = 1 as const;
 
-/** Every real path a scan's telemetry can be in -- design doc §4. Only
- * `SERVER_TERMINAL` and `CONFLICT` are written by this step's own code;
- * the rest exist so step 3 does not require a schema migration to use them. */
+/** Every real path a scan's telemetry can be in -- design doc §4.
+ * `SERVER_TERMINAL`/`CONFLICT` (server-authoritative) and
+ * `LOCAL_FAILURE`/`REQUEST_FAILURE` (mobile-authoritative, via
+ * `EquipmentIdentityTelemetryReportRequestSchema` below) are all written as
+ * of step 3a. `NOT_ATTEMPTED`/`ENRICHMENT_DISABLED` remain schema-reserved,
+ * never written -- step 3b's scope (design doc §4.2b/§7). */
 export const TelemetryStateSchema = z.enum([
   "NOT_ATTEMPTED",
   "ENRICHMENT_DISABLED",
@@ -59,10 +59,10 @@ export const GenericScanOutcomeSchema = z.enum([
 ]);
 export type GenericScanOutcome = z.infer<typeof GenericScanOutcomeSchema>;
 
-/** PROVISIONAL (design doc §4.2/§7): the plan's own step-1 wording, not yet
- * independently verified against `equipment_identity_providers.dart`'s real
- * branches. Step 3 must confirm or correct this set before it ships a real
- * `LOCAL_FAILURE` write using it. */
+/** Confirmed against `equipment_identity_providers.dart`'s real OCR/parser
+ * exception branches (design doc §4.2, step 3a recon) -- all four occur
+ * strictly BEFORE any network call, which is what separates this enum from
+ * `RequestFailureReasonSchema` below. */
 export const LocalFailureReasonSchema = z.enum([
   "missingImagePath",
   "missingStructuredRecognizer",
@@ -71,16 +71,115 @@ export const LocalFailureReasonSchema = z.enum([
 ]);
 export type LocalFailureReason = z.infer<typeof LocalFailureReasonSchema>;
 
-/** PROVISIONAL (design doc §7): not yet verified against
- * `cloud_equipment_identity_service.dart`'s real failure surface. Step 3
- * must confirm or correct this set before it ships a real `REQUEST_FAILURE`
- * write using it. */
+/** Confirmed against `cloud_equipment_identity_service.dart`'s real throw
+ * surface (design doc §4.2a, step 3a recon): `networkUnreachable` /
+ * `timeout` / `appCheckOrAuth` / `rateLimited` / `backendError` /
+ * `unknownClientError` bucket a `FirebaseFunctionsException` thrown by the
+ * `httpsCallable(...).call(...)` await; `malformedReply` is the ONE
+ * post-reply case -- a `FormatException` from `EquipmentIdentity.fromJson`
+ * after the callable already returned successfully. Safe specifically
+ * because of §6 rule 5's enrichment-not-conflict behavior: the server has
+ * already committed `SERVER_TERMINAL` by the time this fires, so this
+ * fragment only ever lands as a `clientObservedFailures` entry, never as a
+ * competing state-defining write. */
 export const RequestFailureReasonSchema = z.enum([
   "networkUnreachable",
   "timeout",
+  "appCheckOrAuth",
+  "rateLimited",
+  "backendError",
   "unknownClientError",
+  "malformedReply",
 ]);
 export type RequestFailureReason = z.infer<typeof RequestFailureReasonSchema>;
+
+/** The two mobile-authoritative non-terminal states -- the only states a
+ * `clientObservedFailures` entry or a mobile report request can ever carry
+ * (design doc §6 rules 3/5a). */
+const MobileAuthoritativeStateSchema = z.enum(["LOCAL_FAILURE", "REQUEST_FAILURE"]);
+
+/** RFC3339 UTC instant -- zod's default `.datetime()` requires the literal
+ * `Z` suffix, matching design doc §5.4's mandate (Dart's own
+ * `toIso8601String()` omits `Z` for a non-UTC value, so this rejects a
+ * caller that forgot `.toUtc()` rather than silently accepting local time). */
+const utcIsoDateTime = () => z.string().datetime({ message: "must be an RFC3339 UTC timestamp (Z suffix)" });
+
+/** design doc §5.4: the ONLY ordering rule is `scanEndedAt >= scanStartedAt`
+ * -- no upper bound (a previously proposed 15-minute latency ceiling was
+ * removed in round 4 of this gate's design review: `scanId` is reused
+ * across a retry with no time boundary of its own, so a long-running
+ * legitimate retry must not be rejected). Compared via `Date#getTime()`,
+ * not lexical string order, since `.datetime()` allows variable fractional
+ * precision and two equal-precision strings are not guaranteed. */
+function assertScanTimingOrder(
+  data: { scanStartedAt: string; scanEndedAt: string },
+  ctx: z.RefinementCtx,
+): void {
+  if (new Date(data.scanEndedAt).getTime() < new Date(data.scanStartedAt).getTime()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "scanEndedAt must not be before scanStartedAt",
+      path: ["scanEndedAt"],
+    });
+  }
+}
+
+const scanIdField = () =>
+  z
+    .string()
+    .min(1)
+    .refine(isFirestoreDocIdSegment, { message: "scanId must be a valid Firestore document-ID segment" });
+
+/**
+ * The mobile-submittable request contract for the NEW
+ * `equipmentIdentityRecordTelemetry` callable (design doc §7/plan step 3):
+ * exactly 3 shapes. `SERVER_TERMINAL`/`CONFLICT`/`ENRICHMENT_DISABLED` are
+ * all rejected outright at this boundary -- a mobile client has no
+ * authority to assert any of them (§6 rules 3/4/5).
+ */
+export const LocalFailureReportSchema = z
+  .object({
+    scanId: scanIdField(),
+    state: z.literal("LOCAL_FAILURE"),
+    reason: LocalFailureReasonSchema,
+    scanStartedAt: utcIsoDateTime(),
+    scanEndedAt: utcIsoDateTime(),
+  })
+  .strict()
+  .superRefine(assertScanTimingOrder);
+
+export const RequestFailureReportSchema = z
+  .object({
+    scanId: scanIdField(),
+    state: z.literal("REQUEST_FAILURE"),
+    reason: RequestFailureReasonSchema,
+    scanStartedAt: utcIsoDateTime(),
+    scanEndedAt: utcIsoDateTime(),
+  })
+  .strict()
+  .superRefine(assertScanTimingOrder);
+
+/** The success-path fragment (design doc §6 rule 5b): timing only, no
+ * `state` at all -- sent from the provider's OWN success path, since the
+ * server already committed `SERVER_TERMINAL` before the client can act on a
+ * successful reply. */
+export const ScanTimingReportSchema = z
+  .object({
+    scanId: scanIdField(),
+    scanStartedAt: utcIsoDateTime(),
+    scanEndedAt: utcIsoDateTime(),
+  })
+  .strict()
+  .superRefine(assertScanTimingOrder);
+
+export const EquipmentIdentityTelemetryReportRequestSchema = z.union([
+  LocalFailureReportSchema,
+  RequestFailureReportSchema,
+  ScanTimingReportSchema,
+]);
+export type EquipmentIdentityTelemetryReportRequest = z.infer<
+  typeof EquipmentIdentityTelemetryReportRequestSchema
+>;
 
 /** Internal audit trail entries -- never read by the §5 metric formulas,
  * kept only so a human/debug read of a record can see what it used to be. */
@@ -93,6 +192,26 @@ const ConflictingWriteEntrySchema = z.object({
   // a fresh write against an already-terminal doc) -- stored as `unknown`,
   // never re-validated against this same schema.
   attempted: z.unknown(),
+});
+
+/** design doc §3/§6 rules 3 and 5a: audit-only trail of every
+ * mobile-authoritative failure fragment this record has ever received,
+ * REGARDLESS of whether it also became (or was superseded as) the record's
+ * own `state`. Excluded from every §5 metric formula except the new §5.3
+ * third term -- see that section for why a `SERVER_TERMINAL` record with a
+ * non-empty `clientObservedFailures` still counts as incomplete evidence. */
+const ClientObservedFailureEntrySchema = z.object({
+  state: MobileAuthoritativeStateSchema,
+  reason: z.union([LocalFailureReasonSchema, RequestFailureReasonSchema]),
+  recordedAt: z.string().min(1),
+  /** Not part of design doc §3's own abbreviated shape note, added the same
+   * way `ConflictingWriteEntrySchema` already carries it: §6 rule 5a
+   * requires "a repeat of the SAME clientObservedFailures entry (identical
+   * fingerprint) is a no-op" -- {state, reason} alone cannot tell a genuine
+   * retry of one occurrence apart from two independent occurrences sharing
+   * a reason, so the fingerprint that already makes rule 2/4 idempotent is
+   * stored per-entry here too, mirroring `conflictingWrites`. */
+  payloadFingerprint: z.string().min(1),
 });
 
 export const EquipmentIdentityTelemetryRecordSchema = z
@@ -138,6 +257,7 @@ export const EquipmentIdentityTelemetryRecordSchema = z
     updatedAt: z.string().min(1),
     priorStates: z.array(PriorStateEntrySchema).optional(),
     conflictingWrites: z.array(ConflictingWriteEntrySchema).optional(),
+    clientObservedFailures: z.array(ClientObservedFailureEntrySchema).optional(),
   })
   .strict();
 export type EquipmentIdentityTelemetryRecord = z.infer<typeof EquipmentIdentityTelemetryRecordSchema>;

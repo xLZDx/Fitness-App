@@ -51900,3 +51900,86 @@ it needs its own Rosetta revision + GO, not a silent edit.
 Implementation (mobile provider restructuring, the new `equipmentIdentityRecordTelemetry` callable,
 `telemetry_contract.ts`/`telemetry_repository.ts` extensions, regression tests both sides) follows in
 subsequent commits under this same approved plan `fitness_app-2026-09-15T23-26-30-825Z-f0797e`.
+
+## 2026-09-16 -- P2.G5-readiness step 3a: implementation (steps 2-7 of plan `f0797e`), full suites green
+
+Server side (`functions-equipment-identity/src/p2/`):
+
+- `telemetry_contract.ts`: `RequestFailureReasonSchema` expanded from the old 3-value placeholder to
+  the confirmed 7-value real set (§4.2a); new `EquipmentIdentityTelemetryReportRequestSchema` -- a
+  `z.union` of exactly 3 mobile-submittable shapes (`LocalFailureReportSchema`,
+  `RequestFailureReportSchema`, `ScanTimingReportSchema`), each `.strict()` so a client-submitted
+  `SERVER_TERMINAL`/`CONFLICT`/`ENRICHMENT_DISABLED` state is rejected outright at the contract
+  boundary (§6's authority split, enforced in code, not just by convention); `scanStartedAt`/
+  `scanEndedAt` validated via zod's `.datetime()` (requires the literal `Z` suffix) plus a
+  `superRefine` comparing `Date#getTime()` (not lexical string order -- two RFC3339 strings of
+  differing fractional-second precision do not sort correctly as strings); new
+  `clientObservedFailures` record field, with a `payloadFingerprint` added to each entry beyond the
+  design doc's own abbreviated `{state, reason, recordedAt}` shape note, needed to actually implement
+  §6 rule 5a's stated "idempotent on identical fingerprint" requirement (disclosed in that schema's
+  own comment, not a silent deviation).
+- `telemetry_repository.ts`: new `recordMobileTelemetryFragment(uid, report)`, the mobile-write
+  counterpart to the existing `recordServerTerminalTelemetry`, implementing rules 1/2/3/5a/5b exactly
+  as revised through the design doc's 4 review rounds (rule 4 is structurally unreachable from this
+  function, per the authority split). `recordServerTerminalTelemetry`'s own rule 3 branch was also
+  extended to append the replaced mobile fragment's full detail to `clientObservedFailures`, not only
+  `priorStates` -- the symmetry round 3 of the design review required.
+- `index.ts`: new `equipmentIdentityRecordTelemetry` callable, and BOTH callables now read
+  `region`/`enforceAppCheck` from one new shared constant (`p2/callable_options.ts`'s
+  `EQUIPMENT_IDENTITY_CALLABLE_OPTIONS`) instead of a second independently-typed options literal --
+  `src/__tests__/callable_options_parity.test.ts` is a source-text regression test asserting this
+  never drifts back apart.
+- New `p2/telemetry_handler.ts` (the testable, `admin.initializeApp()`-free seam for the new
+  callable, mirroring `identity_handler.ts`'s own reason for existing).
+- Tests: 34 new unit tests (`telemetry_contract.test.ts`, `telemetry_handler.test.ts`,
+  `callable_options.test.ts`, `callable_options_parity.test.ts`) plus 18 new e2e tests appended to
+  `__e2e__/telemetry_repository.e2e.test.ts` (real Firestore emulator, all 5 merge rules for the new
+  mobile writer, plus one new assertion on the existing server-writer rule-3 test for the
+  `clientObservedFailures` symmetry fix). `npm run build` (tsc), `npm test` (514/514 passed, up from
+  480), and `npm run test:e2e` (87/87 passed, up from a smaller baseline) all green.
+
+Mobile side (`mobile/lib/features/visual_equipment/`):
+
+- New `data/equipment_identity_telemetry_report.dart`: `LocalFailureReason`/`RequestFailureReason`
+  enums mirroring the server schema; `classifyRequestFailureReason` (pure, unit-testable without a
+  device, same shape as `video_failure.dart`'s `classifyVideoFailure`) bucketing a
+  `FirebaseFunctionsException`'s `.code` into the 6 pre-reply reasons and a `FormatException` into
+  `malformedReply`; `parseScanStartedAt` (parses the mint microsecond-epoch already embedded in a
+  `scan-<micros>` scanId -- no new mobile state, per design doc §5.4); `nowUtcIso()` (always
+  `.toUtc().toIso8601String()`, never bare `DateTime.now()`).
+- New `data/cloud_equipment_identity_telemetry_service.dart`: thin `onCall` client for
+  `equipmentIdentityRecordTelemetry`, mirroring `cloud_equipment_identity_service.dart`'s own shape.
+- `state/equipment_identity_providers.dart`: `equipmentIdentityProvider`'s single try/catch is now
+  stage-separated (missingImagePath / missingStructuredRecognizer / ocrException / parserException /
+  the network `ask()` catch), each firing exactly ONE self-contained fire-and-forget report
+  (`unawaited(send(body).catchError(...))` -- `.catchError` attached before `unawaited` hands the
+  Future to the zone, so a rejected send can never become an uncaught async error); the success path
+  additionally sends a timing-only fragment. The external `FutureProvider<EquipmentIdentity?>`
+  contract is byte-identical to before this change -- proven by the original 10 pre-existing tests in
+  `equipment_identity_providers_test.dart` passing unmodified.
+- **Correction to the design doc's own §4.2 claim, found during implementation**: `parseIdentityText`
+  (`identity_text_parser.dart`) is documented "Pure ... never throws, always returns a
+  ParsedIdentityText" and confirmed by reading it to contain zero `throw` statements -- so
+  `LOCAL_FAILURE:parserException` is currently UNREACHABLE in real production use, not a confirmed
+  real branch as §4.2 states. Handled the same way the design doc itself already treats
+  `NOT_ATTEMPTED`/`ENRICHMENT_DISABLED` ("an unused enum value is not a defect; a missing one that
+  later occurs uncategorized would be"): the defensive catch and the enum value both stay (protects
+  against a future change to the parser's own no-throw contract), disclosed in a source comment at
+  the catch site and in the regression test's own name/comment rather than silently implemented as
+  if the claim were verified. Not re-opened as a Rosetta plan revision -- this narrows a recon
+  finding to something more honest, it does not change the contract, the merge rules, or any shipped
+  behavior.
+- Tests: 11 new cases in `equipment_identity_providers_test.dart` (scanId-timestamp parsing including
+  a malformed-scanId fail-safe case, all classification branches, the success-path timing send,
+  enrichment-disabled sends nothing, and rejected-Future containment). `flutter analyze` clean on
+  every touched file and on the whole project (pre-existing, unrelated warnings only); the full
+  `test/features/visual_equipment/` directory (473 tests) and the whole-project analyzer both green.
+
+**Explicitly still open, disclosed rather than silently dropped (design doc's own step 3b scope,
+§4.2b/§7 item 4)**: `ENRICHMENT_DISABLED` stays schema-reserved and is NOT sent over the network;
+`genericOutcome` stays `null` on every record this step writes; the durable mobile-side outbox
+(retry-on-failure delivery, beyond today's single fire-and-forget attempt) does not exist yet. None
+of these affect §5's metric formulas for the states this step actually writes.
+
+Not yet done: `pm_rosetta_close` on plan `f0797e` (evidence above is the basis for that call), and the
+commit/push for this implementation.

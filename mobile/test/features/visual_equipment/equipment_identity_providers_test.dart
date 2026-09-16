@@ -1,8 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart' show InputImage;
+import 'package:fitness_app/features/visual_equipment/data/cloud_equipment_identity_telemetry_service.dart';
 import 'package:fitness_app/features/visual_equipment/data/equipment_identity.dart';
 import 'package:fitness_app/features/visual_equipment/data/equipment_identity_outcome_sink.dart';
+import 'package:fitness_app/features/visual_equipment/data/equipment_identity_telemetry_report.dart';
 import 'package:fitness_app/features/visual_equipment/data/identity_text_parser.dart';
 import 'package:fitness_app/features/visual_equipment/data/machine_text_evidence.dart';
 import 'package:fitness_app/features/visual_equipment/data/mlkit_text_recogniser.dart';
@@ -306,6 +309,225 @@ void main() {
       expect(sink.recordedCalls, 0);
     });
   });
+
+  group('P2.G5-readiness step 3a -- telemetry reporting', () {
+    late List<Map<String, dynamic>> sent;
+    EquipmentIdentityTelemetrySend spySend({Object? rejectWith}) {
+      return (Map<String, dynamic> body) async {
+        sent.add(body);
+        if (rejectWith != null) throw rejectWith;
+      };
+    }
+
+    setUp(() {
+      sent = [];
+    });
+
+    // scanId minted at a known instant so scanStartedAt is a known, exact
+    // RFC3339 UTC string -- design doc §5.4: parsed from scanId itself, no
+    // new mobile state.
+    const scanId = 'scan-1700000000000000';
+    const expectedScanStartedAt = '2023-11-14T22:13:20.000Z';
+
+    test('scanId minted timestamp parses to the exact expected RFC3339 UTC instant', () {
+      expect(parseScanStartedAt(scanId), expectedScanStartedAt);
+    });
+
+    test('a malformed scanId (not this app\'s own mint shape) fails safe to null', () {
+      expect(parseScanStartedAt('not-a-real-scan-id'), isNull);
+      expect(parseScanStartedAt('scan-not-a-number'), isNull);
+    });
+
+    test('missingImagePath reports LOCAL_FAILURE with that reason and scanStartedAt from scanId', () async {
+      final container = ProviderContainer(overrides: [
+        equipmentIdentityEnrichmentEnabledProvider.overrideWithValue(true),
+        machineTextRecogniserProvider.overrideWithValue(_FakeStructuredRecogniser()),
+        scanIdImagePathProvider.overrideWith((ref) => const {}),
+        equipmentIdentityTelemetrySendProvider.overrideWithValue(spySend()),
+      ]);
+      addTearDown(container.dispose);
+
+      await container.read(equipmentIdentityProvider(scanId).future);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(sent, hasLength(1));
+      expect(sent.single['state'], 'LOCAL_FAILURE');
+      expect(sent.single['reason'], 'missingImagePath');
+      expect(sent.single['scanId'], scanId);
+      expect(sent.single['scanStartedAt'], expectedScanStartedAt);
+      expect(sent.single['scanEndedAt'], isNotNull);
+    });
+
+    test('missingStructuredRecognizer reports LOCAL_FAILURE with that reason', () async {
+      final container = ProviderContainer(overrides: [
+        equipmentIdentityEnrichmentEnabledProvider.overrideWithValue(true),
+        machineTextRecogniserProvider.overrideWithValue(_PlainRecogniser()),
+        scanIdImagePathProvider.overrideWith((ref) => {scanId: '/tmp/photo.jpg'}),
+        equipmentIdentityTelemetrySendProvider.overrideWithValue(spySend()),
+      ]);
+      addTearDown(container.dispose);
+
+      await container.read(equipmentIdentityProvider(scanId).future);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(sent.single['state'], 'LOCAL_FAILURE');
+      expect(sent.single['reason'], 'missingStructuredRecognizer');
+    });
+
+    test('an OCR exception reports LOCAL_FAILURE:ocrException', () async {
+      final container = ProviderContainer(overrides: [
+        equipmentIdentityEnrichmentEnabledProvider.overrideWithValue(true),
+        machineTextRecogniserProvider.overrideWithValue(_FakeStructuredRecogniser(throwing: true)),
+        scanIdImagePathProvider.overrideWith((ref) => {scanId: '/tmp/photo.jpg'}),
+        equipmentIdentityTelemetrySendProvider.overrideWithValue(spySend()),
+      ]);
+      addTearDown(container.dispose);
+
+      await container.read(equipmentIdentityProvider(scanId).future);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(sent.single['state'], 'LOCAL_FAILURE');
+      expect(sent.single['reason'], 'ocrException');
+    });
+
+    // `parseIdentityText` is documented ("Pure ... never throws") and
+    // confirmed by reading it to have zero `throw` statements -- this
+    // reason is currently UNREACHABLE in real production use (correcting
+    // design doc §4.2's own claim). This test proves the WIRING around the
+    // defensive catch that exists anyway, via a hostile lexicon double, not
+    // that the real parser can be made to throw.
+    test('IF parseIdentityText ever throws, it reports LOCAL_FAILURE:parserException (defensive wiring only -- see source comment)', () async {
+      final container = ProviderContainer(overrides: [
+        equipmentIdentityEnrichmentEnabledProvider.overrideWithValue(true),
+        machineTextRecogniserProvider.overrideWithValue(_FakeStructuredRecogniser()),
+        scanIdImagePathProvider.overrideWith((ref) => {scanId: '/tmp/photo.jpg'}),
+        identityLexiconProvider.overrideWithValue(const _ThrowingLexicon()),
+        equipmentIdentityTelemetrySendProvider.overrideWithValue(spySend()),
+      ]);
+      addTearDown(container.dispose);
+
+      await container.read(equipmentIdentityProvider(scanId).future);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(sent.single['state'], 'LOCAL_FAILURE');
+      expect(sent.single['reason'], 'parserException');
+    });
+
+    test('a network-layer FirebaseFunctionsException reports REQUEST_FAILURE, classified by code', () async {
+      final container = ProviderContainer(overrides: [
+        equipmentIdentityEnrichmentEnabledProvider.overrideWithValue(true),
+        machineTextRecogniserProvider.overrideWithValue(_FakeStructuredRecogniser()),
+        scanIdImagePathProvider.overrideWith((ref) => {scanId: '/tmp/photo.jpg'}),
+        equipmentIdentityAskProvider.overrideWithValue(({
+          required String scanId,
+          required ParsedIdentityText evidence,
+        }) async {
+          throw FirebaseFunctionsException(code: 'deadline-exceeded', message: 'timed out');
+        }),
+        equipmentIdentityTelemetrySendProvider.overrideWithValue(spySend()),
+      ]);
+      addTearDown(container.dispose);
+
+      await container.read(equipmentIdentityProvider(scanId).future);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(sent.single['state'], 'REQUEST_FAILURE');
+      expect(sent.single['reason'], 'timeout');
+    });
+
+    test('a post-reply FormatException reports REQUEST_FAILURE:malformedReply', () async {
+      final container = ProviderContainer(overrides: [
+        equipmentIdentityEnrichmentEnabledProvider.overrideWithValue(true),
+        machineTextRecogniserProvider.overrideWithValue(_FakeStructuredRecogniser()),
+        scanIdImagePathProvider.overrideWith((ref) => {scanId: '/tmp/photo.jpg'}),
+        equipmentIdentityAskProvider.overrideWithValue(({
+          required String scanId,
+          required ParsedIdentityText evidence,
+        }) async {
+          throw const FormatException('malformed reply');
+        }),
+        equipmentIdentityTelemetrySendProvider.overrideWithValue(spySend()),
+      ]);
+      addTearDown(container.dispose);
+
+      await container.read(equipmentIdentityProvider(scanId).future);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(sent.single['state'], 'REQUEST_FAILURE');
+      expect(sent.single['reason'], 'malformedReply');
+    });
+
+    test('a successful resolution sends a timing-only (state-less) fragment, never overwriting the result', () async {
+      final container = ProviderContainer(overrides: [
+        equipmentIdentityEnrichmentEnabledProvider.overrideWithValue(true),
+        machineTextRecogniserProvider.overrideWithValue(_FakeStructuredRecogniser()),
+        scanIdImagePathProvider.overrideWith((ref) => {scanId: '/tmp/photo.jpg'}),
+        equipmentIdentityAskProvider.overrideWithValue(({
+          required String scanId,
+          required ParsedIdentityText evidence,
+        }) async =>
+            _fakeIdentity(scanId)),
+        equipmentIdentityTelemetrySendProvider.overrideWithValue(spySend()),
+      ]);
+      addTearDown(container.dispose);
+
+      final result = await container.read(equipmentIdentityProvider(scanId).future);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(result?.scanId, scanId);
+      expect(sent, hasLength(1));
+      expect(sent.single.containsKey('state'), isFalse);
+      expect(sent.single['scanId'], scanId);
+      expect(sent.single['scanStartedAt'], expectedScanStartedAt);
+    });
+
+    test('enrichment disabled sends NO telemetry at all -- design doc §4.2b', () async {
+      final container = ProviderContainer(overrides: [
+        machineTextRecogniserProvider.overrideWithValue(_FakeStructuredRecogniser()),
+        scanIdImagePathProvider.overrideWith((ref) => {scanId: '/tmp/photo.jpg'}),
+        equipmentIdentityTelemetrySendProvider.overrideWithValue(spySend()),
+      ]);
+      addTearDown(container.dispose);
+
+      await container.read(equipmentIdentityProvider(scanId).future);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(sent, isEmpty);
+    });
+
+    // Design doc §6/§7, plan step 2: a rejected telemetry send must never
+    // become an uncaught async error and must never change the provider's
+    // own resolved value.
+    test('a rejected telemetry send is contained -- the scan result is unaffected', () async {
+      final container = ProviderContainer(overrides: [
+        equipmentIdentityEnrichmentEnabledProvider.overrideWithValue(true),
+        machineTextRecogniserProvider.overrideWithValue(_FakeStructuredRecogniser()),
+        scanIdImagePathProvider.overrideWith((ref) => {scanId: '/tmp/photo.jpg'}),
+        equipmentIdentityAskProvider.overrideWithValue(({
+          required String scanId,
+          required ParsedIdentityText evidence,
+        }) async =>
+            _fakeIdentity(scanId)),
+        equipmentIdentityTelemetrySendProvider.overrideWithValue(
+          spySend(rejectWith: FirebaseFunctionsException(code: 'internal', message: 'boom')),
+        ),
+      ]);
+      addTearDown(container.dispose);
+
+      final result = await container.read(equipmentIdentityProvider(scanId).future);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(result?.scanId, scanId);
+      expect(sent, hasLength(1));
+    });
+  });
+}
+
+class _ThrowingLexicon implements IdentityLexicon {
+  const _ThrowingLexicon();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw StateError('parser exploded');
 }
 
 class _SpyOutcomeSink implements EquipmentIdentityOutcomeSink {

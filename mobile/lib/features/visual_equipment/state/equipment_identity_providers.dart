@@ -1,10 +1,15 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/cloud_equipment_identity_service.dart';
+import '../data/cloud_equipment_identity_telemetry_service.dart';
 import '../data/equipment_identity.dart';
 import '../data/equipment_identity_outcome_sink.dart';
+import '../data/equipment_identity_telemetry_report.dart';
 import '../data/identity_text_parser.dart';
+import '../data/machine_text_evidence.dart';
 import '../data/mlkit_text_recogniser.dart';
 import '../data/parsed_identity_text.dart';
 import 'visual_equipment_providers.dart' show machineTextRecogniserProvider;
@@ -59,6 +64,33 @@ final equipmentIdentityAskProvider = Provider<EquipmentIdentityAsk>((ref) {
 final equipmentIdentityOutcomeSinkProvider =
     Provider<EquipmentIdentityOutcomeSink>((_) => InMemoryEquipmentIdentityOutcomeSink());
 
+final equipmentIdentityTelemetryServiceProvider = Provider<CloudEquipmentIdentityTelemetryService>(
+  (_) => CloudEquipmentIdentityTelemetryService(),
+);
+
+/// The sender [equipmentIdentityProvider] fires telemetry reports through --
+/// overridden in tests, mirroring [equipmentIdentityAskProvider] one
+/// declaration above.
+final equipmentIdentityTelemetrySendProvider = Provider<EquipmentIdentityTelemetrySend>((ref) {
+  final service = ref.watch(equipmentIdentityTelemetryServiceProvider);
+  return service.send;
+});
+
+/// Fires one telemetry report body, fire-and-forget: never awaited by the
+/// caller (a telemetry round-trip must not add latency to the scan's own
+/// result) and never able to surface as an uncaught async error (P2.G5-readiness
+/// step 3a, design doc §6/§7) -- `.catchError` is attached BEFORE
+/// `unawaited` hands the future to the zone, so a rejected send is always
+/// caught here, not by whatever error zone the app happens to be running
+/// under.
+void _sendTelemetryReport(EquipmentIdentityTelemetrySend send, Map<String, dynamic> body) {
+  unawaited(
+    send(body).catchError((Object e) {
+      debugPrint('equipment identity telemetry send failed: $e');
+    }),
+  );
+}
+
 /// Resolves one scan's on-device OCR evidence into a server-verified
 /// [EquipmentIdentity] -- or `null`, on ANY failure (enrichment disabled, no
 /// image path recorded for this scanId, no structured recogniser configured,
@@ -69,20 +101,85 @@ final equipmentIdentityOutcomeSinkProvider =
 ///
 /// Keyed by scanId ONLY (not imagePath) -- see [scanIdImagePathProvider]'s
 /// own doc comment for why cleanup is external to this family's lifecycle.
+///
+/// P2.G5-readiness step 3a (design doc §4.2/§4.2a/§5.4/§6): the single
+/// try/catch this provider used to wrap OCR+parse+network in is now
+/// stage-separated, so each failure maps to the correct
+/// `LOCAL_FAILURE`/`REQUEST_FAILURE` reason and is reported through exactly
+/// ONE self-contained fragment (state + reason + `scanStartedAt` +
+/// `scanEndedAt`, all known at the same settle instant). `scanStartedAt` is
+/// parsed from `scanId` itself (`equipment_identity_telemetry_report.dart`'s
+/// `parseScanStartedAt`) -- no new mobile state. `enrichmentDisabled` and
+/// `missingImagePath`/`missingStructuredRecognizer` early-return BEFORE
+/// `scanStartedAt` can be meaningfully read as "the pipeline actually
+/// started", but the enrichment-disabled branch above already returns
+/// before this point and is DELIBERATELY never reported over the network
+/// (design doc §4.2b) -- everything below this comment always has a real
+/// scanId to parse a start instant from.
 final equipmentIdentityProvider =
     FutureProvider.autoDispose.family<EquipmentIdentity?, String>((ref, scanId) async {
   if (!ref.watch(equipmentIdentityEnrichmentEnabledProvider)) return null;
 
+  final send = ref.read(equipmentIdentityTelemetrySendProvider);
+  // Falls back to "now" only for the near-impossible case of a scanId this
+  // app itself did not mint in the expected shape -- never fabricates a
+  // start instant earlier than it can prove.
+  final scanStartedAt = parseScanStartedAt(scanId) ?? nowUtcIso();
+
+  void reportLocalFailure(LocalFailureReason reason) {
+    _sendTelemetryReport(
+      send,
+      buildLocalFailureReportBody(
+        scanId: scanId,
+        reason: reason,
+        scanStartedAt: scanStartedAt,
+        scanEndedAt: nowUtcIso(),
+      ),
+    );
+  }
+
   final imagePath = ref.read(scanIdImagePathProvider)[scanId];
-  if (imagePath == null) return null;
+  if (imagePath == null) {
+    reportLocalFailure(LocalFailureReason.missingImagePath);
+    return null;
+  }
 
   final recogniser = ref.read(machineTextRecogniserProvider);
-  if (recogniser is! StructuredTextRecogniser) return null;
+  if (recogniser is! StructuredTextRecogniser) {
+    reportLocalFailure(LocalFailureReason.missingStructuredRecognizer);
+    return null;
+  }
+
+  final MachineTextEvidence evidence;
+  try {
+    evidence = await recogniser.readStructured(imagePath);
+  } catch (e) {
+    debugPrint('equipment identity OCR failed: $e');
+    reportLocalFailure(LocalFailureReason.ocrException);
+    return null;
+  }
+
+  // NOTE, correcting design doc §4.2's own claim (recon finding, not yet
+  // reflected in that frozen text): `identity_text_parser.dart`'s own doc
+  // comment states `parseIdentityText` is "Pure ... never throws, always
+  // returns a ParsedIdentityText" -- confirmed by reading it (zero `throw`
+  // statements in that file). `parserException` is therefore currently
+  // UNREACHABLE in production, the same "reserved but never occurs" posture
+  // §4's own table already accepts for `NOT_ATTEMPTED`
+  // ("an unused enum value is not a defect; a missing one that later occurs
+  // uncategorized would be"). This catch stays as defense-in-depth against
+  // a future change to the parser's own no-throw contract, not because it
+  // fires today.
+  final ParsedIdentityText parsed;
+  try {
+    parsed = parseIdentityText(evidence, lexicon: ref.read(identityLexiconProvider));
+  } catch (e) {
+    debugPrint('equipment identity parse failed: $e');
+    reportLocalFailure(LocalFailureReason.parserException);
+    return null;
+  }
 
   try {
-    final evidence = await recogniser.readStructured(imagePath);
-    final parsed =
-        parseIdentityText(evidence, lexicon: ref.read(identityLexiconProvider));
     final ask = ref.read(equipmentIdentityAskProvider);
     final identity = await ask(scanId: scanId, evidence: parsed);
     // The lossless-handoff seam (Step 8): recorded only on a genuine
@@ -91,12 +188,28 @@ final equipmentIdentityProvider =
     ref
         .read(equipmentIdentityOutcomeSinkProvider)
         .recordTerminal(scanId, EquipmentIdentityOutcome.fromIdentity(identity));
+    // Design doc §6 rule 5b: the server has already committed
+    // SERVER_TERMINAL by the time this reply exists, so this always lands
+    // as an enrichment fragment, never a state-defining write.
+    _sendTelemetryReport(
+      send,
+      buildScanTimingReportBody(scanId: scanId, scanStartedAt: scanStartedAt, scanEndedAt: nowUtcIso()),
+    );
     return identity;
   } catch (e) {
     // Progressive enrichment only -- see this provider's own doc comment.
     // Same guard as `visual_equipment_providers.dart`'s own recognition
     // failure paths: telemetry-worthy, never user-facing.
     debugPrint('equipment identity enrichment failed: $e');
+    _sendTelemetryReport(
+      send,
+      buildRequestFailureReportBody(
+        scanId: scanId,
+        reason: classifyRequestFailureReason(e),
+        scanStartedAt: scanStartedAt,
+        scanEndedAt: nowUtcIso(),
+      ),
+    );
     return null;
   }
 });

@@ -18,7 +18,8 @@
 import * as admin from "firebase-admin";
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { resolveEquipmentIdentityAndRecordTelemetry } from "./p2/identity_handler";
-import { loadAppCheckPlatformReadiness, resolveAppCheckEnforcement } from "./p2/app_check_readiness";
+import { recordEquipmentIdentityTelemetryFragment } from "./p2/telemetry_handler";
+import { EQUIPMENT_IDENTITY_CALLABLE_OPTIONS } from "./p2/callable_options";
 
 // BLOCKER, P2.G3 pre-commit review, 2026-09-11: this call was missing
 // entirely. `p2/firestore_admin.ts`'s `db()` is a lazy per-call
@@ -35,32 +36,39 @@ import { loadAppCheckPlatformReadiness, resolveAppCheckEnforcement } from "./p2/
 // proves this without relying on the e2e harness's own pre-init.
 admin.initializeApp();
 
-/** Matches `functions/src/scaling.ts`'s own `REGION` constant -- kept as a
- * local literal rather than imported, since P0.G6 deliberately keeps this
- * package free of any import from the default `functions/` codebase. */
-const REGION = "europe-west1";
-
 /**
- * `enforceAppCheck` is a STATIC option Firebase reads once when this
- * function is defined/deployed, never per-request (there is no per-call
- * "lane" field in the v4.4 request schema to branch on even if it were).
- * So App Check enforcement and the SHADOW/PRODUCTION exact-match lane
- * (`orchestrator.ts`) are both derived from the exact same platform-owned
- * readiness signal, computed once here, at module load: while P0.G0 is not
- * READY_FOR_PRODUCTION, this callable does not hard-enforce App Check
- * either -- enforcing it early, on a deployment nothing has verified is
- * actually attesting real clients yet, would fail closed for every caller
- * instead of gathering shadow evidence.
+ * Both callables below share `EQUIPMENT_IDENTITY_CALLABLE_OPTIONS`
+ * (`p2/callable_options.ts`) -- `enforceAppCheck`/`region` are STATIC
+ * options Firebase reads once when a function is defined/deployed, never
+ * per-request, so deriving them from one shared constant (rather than a
+ * second local computation here) is what
+ * `__tests__/callable_options_parity.test.ts` can assert never drifts
+ * between them (design doc §7, plan step 4: the new telemetry callable must
+ * not have a weaker ingress posture than the identity callable it sits
+ * beside).
  */
-const APP_CHECK_ENFORCED =
-  resolveAppCheckEnforcement(loadAppCheckPlatformReadiness().status, "PRODUCTION");
-
 export const equipmentIdentityResolveFromText = onCall(
-  { region: REGION, enforceAppCheck: APP_CHECK_ENFORCED },
+  EQUIPMENT_IDENTITY_CALLABLE_OPTIONS,
   async (request: CallableRequest) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Sign in to identify equipment.");
     }
     return resolveEquipmentIdentityAndRecordTelemetry(request.auth.uid, request.data);
+  },
+);
+
+/**
+ * P2.G5-readiness step 3a: the mobile-originated telemetry-report callable
+ * (design doc §6/§7). See `p2/telemetry_handler.ts` for the request-schema
+ * validation and `p2/telemetry_repository.ts`'s `recordMobileTelemetryFragment`
+ * for the merge-rule implementation.
+ */
+export const equipmentIdentityRecordTelemetry = onCall(
+  EQUIPMENT_IDENTITY_CALLABLE_OPTIONS,
+  async (request: CallableRequest) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Sign in to record equipment identity telemetry.");
+    }
+    return recordEquipmentIdentityTelemetryFragment(request.auth.uid, request.data);
   },
 );

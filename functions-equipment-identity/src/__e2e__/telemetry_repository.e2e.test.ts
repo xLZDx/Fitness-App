@@ -9,10 +9,13 @@
  */
 import * as admin from "firebase-admin";
 import { userEquipmentIdentityTelemetryDocPath } from "../p1/firestore_paths";
-import { recordServerTerminalTelemetry } from "../p2/telemetry_repository";
+import { recordServerTerminalTelemetry, recordMobileTelemetryFragment } from "../p2/telemetry_repository";
 import { CURRENT_IDENTITY_CONTRACT_VERSION } from "../p2/contract";
 import type { EquipmentIdentityResponse } from "../p2/contract";
-import type { EquipmentIdentityTelemetryRecord } from "../p2/telemetry_contract";
+import type {
+  EquipmentIdentityTelemetryRecord,
+  EquipmentIdentityTelemetryReportRequest,
+} from "../p2/telemetry_contract";
 
 function randomUid(): string {
   return `e2e-telemetry-uid-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -250,5 +253,219 @@ describe("recordServerTerminalTelemetry -- real Firestore merge semantics (desig
     const record = await readRaw(uid, "scan-1");
     expect(record?.state).toBe("SERVER_TERMINAL");
     expect(Object.prototype.hasOwnProperty.call(record?.identityOutcome ?? {}, "abstainReason")).toBe(false);
+  });
+
+  // Step 3a: rule 3's REPLACED fragment must also populate
+  // clientObservedFailures, symmetric with rule 5a's reverse arrival order.
+  test("rule 3 also appends the replaced fragment's full detail to clientObservedFailures, not just priorStates", async () => {
+    const uid = randomUid();
+    const ref = admin.firestore().doc(userEquipmentIdentityTelemetryDocPath(uid, "scan-1"));
+    const seededCreatedAt = new Date(Date.now() - 60_000).toISOString();
+    await ref.set({
+      schemaVersion: 1,
+      uid,
+      scanId: "scan-1",
+      state: "REQUEST_FAILURE",
+      requestFailureReason: "timeout",
+      payloadFingerprint: "request-failure-fp",
+      createdAt: seededCreatedAt,
+      updatedAt: seededCreatedAt,
+    });
+
+    await recordServerTerminalTelemetry(uid, "scan-1", matchResponse());
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record?.state).toBe("SERVER_TERMINAL");
+    expect(record?.clientObservedFailures).toEqual([
+      { state: "REQUEST_FAILURE", reason: "timeout", recordedAt: record?.updatedAt, payloadFingerprint: "request-failure-fp" },
+    ]);
+  });
+});
+
+function localFailure(overrides: Partial<EquipmentIdentityTelemetryReportRequest> = {}): EquipmentIdentityTelemetryReportRequest {
+  return {
+    scanId: "scan-1",
+    state: "LOCAL_FAILURE",
+    reason: "ocrException",
+    scanStartedAt: "2026-09-16T10:00:00.000Z",
+    scanEndedAt: "2026-09-16T10:00:01.000Z",
+    ...overrides,
+  } as EquipmentIdentityTelemetryReportRequest;
+}
+
+function requestFailure(overrides: Partial<EquipmentIdentityTelemetryReportRequest> = {}): EquipmentIdentityTelemetryReportRequest {
+  return {
+    scanId: "scan-1",
+    state: "REQUEST_FAILURE",
+    reason: "timeout",
+    scanStartedAt: "2026-09-16T10:00:00.000Z",
+    scanEndedAt: "2026-09-16T10:00:01.000Z",
+    ...overrides,
+  } as EquipmentIdentityTelemetryReportRequest;
+}
+
+function timingOnly(overrides: Partial<EquipmentIdentityTelemetryReportRequest> = {}): EquipmentIdentityTelemetryReportRequest {
+  return {
+    scanId: "scan-1",
+    scanStartedAt: "2026-09-16T10:00:00.000Z",
+    scanEndedAt: "2026-09-16T10:00:01.000Z",
+    ...overrides,
+  } as EquipmentIdentityTelemetryReportRequest;
+}
+
+describe("recordMobileTelemetryFragment -- real Firestore merge semantics (design doc §6, step 3a)", () => {
+  test("rule 1: no existing record -- creates a fresh LOCAL_FAILURE record from a state-defining fragment", async () => {
+    const uid = randomUid();
+    await recordMobileTelemetryFragment(uid, localFailure());
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record?.state).toBe("LOCAL_FAILURE");
+    expect(record?.localFailureReason).toBe("ocrException");
+    expect(record?.scanStartedAt).toBe("2026-09-16T10:00:00.000Z");
+    expect(record?.scanEndedAt).toBe("2026-09-16T10:00:01.000Z");
+    expect(record?.createdAt).toBe(record?.updatedAt);
+  });
+
+  test("rule 1: a timing-only fragment with no existing record creates nothing (dropped, logged) -- there is no state to create a record with", async () => {
+    const uid = randomUid();
+    await expect(recordMobileTelemetryFragment(uid, timingOnly())).resolves.not.toThrow();
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record).toBeUndefined();
+  });
+
+  test("rule 2: an identical replay is a no-op except updatedAt", async () => {
+    const uid = randomUid();
+    await recordMobileTelemetryFragment(uid, localFailure());
+    const first = await readRaw(uid, "scan-1");
+
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    await recordMobileTelemetryFragment(uid, localFailure());
+    const second = await readRaw(uid, "scan-1");
+
+    expect(second?.payloadFingerprint).toBe(first?.payloadFingerprint);
+    expect(second?.createdAt).toBe(first?.createdAt);
+    expect(second?.clientObservedFailures).toBeUndefined();
+  });
+
+  test("rule 3: a mobile retry landing in a DIFFERENT mobile state overwrites and records both priorStates and clientObservedFailures", async () => {
+    const uid = randomUid();
+    await recordMobileTelemetryFragment(uid, localFailure());
+
+    await recordMobileTelemetryFragment(uid, requestFailure({ reason: "backendError" }));
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record?.state).toBe("REQUEST_FAILURE");
+    expect(record?.requestFailureReason).toBe("backendError");
+    expect(record?.priorStates).toEqual([{ state: "LOCAL_FAILURE", recordedAt: record?.updatedAt }]);
+    expect(record?.clientObservedFailures).toEqual([
+      { state: "LOCAL_FAILURE", reason: "ocrException", recordedAt: record?.updatedAt, payloadFingerprint: expect.any(String) },
+    ]);
+  });
+
+  test("rule 3: a retry landing in the SAME state with a DIFFERENT reason is also a legitimate transition (A -> B -> C)", async () => {
+    const uid = randomUid();
+    await recordMobileTelemetryFragment(uid, requestFailure({ reason: "timeout" }));
+    await recordMobileTelemetryFragment(uid, requestFailure({ reason: "backendError" }));
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record?.state).toBe("REQUEST_FAILURE");
+    expect(record?.requestFailureReason).toBe("backendError");
+    expect(record?.clientObservedFailures).toHaveLength(1);
+    expect(record?.clientObservedFailures?.[0]).toMatchObject({ state: "REQUEST_FAILURE", reason: "timeout" });
+  });
+
+  test("rule 5a: a mobile failure fragment arriving AFTER SERVER_TERMINAL never overwrites state -- it only joins clientObservedFailures", async () => {
+    const uid = randomUid();
+    await recordServerTerminalTelemetry(uid, "scan-1", matchResponse());
+    const before = await readRaw(uid, "scan-1");
+
+    await recordMobileTelemetryFragment(uid, requestFailure({ reason: "malformedReply" }));
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record?.state).toBe("SERVER_TERMINAL");
+    expect(record?.identityOutcome?.model?.modelId).toBe(MODEL_ID);
+    expect(record?.payloadFingerprint).toBe(before?.payloadFingerprint);
+    expect(record?.clientObservedFailures).toEqual([
+      { state: "REQUEST_FAILURE", reason: "malformedReply", recordedAt: record?.updatedAt, payloadFingerprint: expect.any(String) },
+    ]);
+  });
+
+  test("rule 5a is idempotent -- a repeat of the SAME mobile fragment does not keep growing clientObservedFailures", async () => {
+    const uid = randomUid();
+    await recordServerTerminalTelemetry(uid, "scan-1", matchResponse());
+
+    const fragment = requestFailure({ reason: "malformedReply" });
+    await recordMobileTelemetryFragment(uid, fragment);
+    await recordMobileTelemetryFragment(uid, fragment);
+    await recordMobileTelemetryFragment(uid, fragment);
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record?.clientObservedFailures).toHaveLength(1);
+  });
+
+  test("rule 5a: two DIFFERENT mobile failure fragments against the same terminal record both survive, distinctly", async () => {
+    const uid = randomUid();
+    await recordServerTerminalTelemetry(uid, "scan-1", matchResponse());
+
+    await recordMobileTelemetryFragment(uid, requestFailure({ reason: "timeout" }));
+    await recordMobileTelemetryFragment(uid, requestFailure({ reason: "malformedReply" }));
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record?.clientObservedFailures).toHaveLength(2);
+    expect(record?.clientObservedFailures?.map((f) => f.reason).sort()).toEqual(["malformedReply", "timeout"]);
+  });
+
+  test("rule 5b: the success-path timing-only fragment fills scanStartedAt/scanEndedAt on an already-terminal record", async () => {
+    const uid = randomUid();
+    await recordServerTerminalTelemetry(uid, "scan-1", matchResponse());
+    const before = await readRaw(uid, "scan-1");
+    expect(before?.scanStartedAt).toBeUndefined();
+
+    await recordMobileTelemetryFragment(uid, timingOnly());
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record?.state).toBe("SERVER_TERMINAL");
+    expect(record?.scanStartedAt).toBe("2026-09-16T10:00:00.000Z");
+    expect(record?.scanEndedAt).toBe("2026-09-16T10:00:01.000Z");
+    expect(record?.identityOutcome?.model?.modelId).toBe(MODEL_ID);
+  });
+
+  test("rule 5b is first-write-wins -- a second timing-only fragment with DIFFERENT timestamps does not overwrite the first", async () => {
+    const uid = randomUid();
+    await recordServerTerminalTelemetry(uid, "scan-1", matchResponse());
+    await recordMobileTelemetryFragment(uid, timingOnly());
+
+    await recordMobileTelemetryFragment(
+      uid,
+      timingOnly({ scanStartedAt: "2026-09-16T11:00:00.000Z", scanEndedAt: "2026-09-16T11:00:02.000Z" }),
+    );
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record?.scanStartedAt).toBe("2026-09-16T10:00:00.000Z");
+    expect(record?.scanEndedAt).toBe("2026-09-16T10:00:01.000Z");
+  });
+
+  test("rule 4/5 authority split: a mobile-authoritative fragment against an already-terminal record never produces CONFLICT", async () => {
+    const uid = randomUid();
+    await recordServerTerminalTelemetry(uid, "scan-1", matchResponse());
+
+    await recordMobileTelemetryFragment(uid, localFailure());
+    await recordMobileTelemetryFragment(uid, timingOnly());
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record?.state).toBe("SERVER_TERMINAL");
+    expect(record?.conflictingWrites ?? []).toHaveLength(0);
+  });
+
+  test("different scanIds for the same uid never interact", async () => {
+    const uid = randomUid();
+    await recordMobileTelemetryFragment(uid, localFailure({ scanId: "scan-1" }));
+    await recordMobileTelemetryFragment(uid, requestFailure({ scanId: "scan-2", reason: "timeout" }));
+
+    const record1 = await readRaw(uid, "scan-1");
+    const record2 = await readRaw(uid, "scan-2");
+    expect(record1?.state).toBe("LOCAL_FAILURE");
+    expect(record2?.state).toBe("REQUEST_FAILURE");
   });
 });
