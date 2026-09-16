@@ -52761,3 +52761,144 @@ fully closeable by golden-image coverage alone.
 the same Artifact URL, version 7). No Rosetta plan needed -- R0/trivial per CLAUDE.md SS6 (a single
 stale doc-comment correction) plus LOCAL-class per the `rosetta` skill for the report correction;
 neither touches executable behavior.
+
+## 2026-09-16 -- Tier A item 7, OBS-1 item 7 / row 26: real tests for the health-data residue
+## sweep + a genuine, disclosed live finding -- IMPLEMENTED, 3 GPT-PM rounds, gate closed within
+## the hard cap; production deletion deliberately NOT performed, flagged for the operator
+
+**Planned** (backlog brief, Tier A item 7): "Turn the existing one-off script
+(`scripts/ops/strip_health_from_profiles.py`) into a real scheduled, evidenced mechanism... write
+real tests proving it targets only the intended lazy-migration blind spot, nothing broader."
+
+**Definition of Done** (from `core/audit/gate_j_regulatory_review_2026-08-15/GATE_J_REGULATORY_REVIEW_2026-08-15.md:66-67`'s
+own already-published acceptance test, not self-authored): "A dated read-only query...showing 0
+profile documents carrying health fields across all projects, re-run as a release gate" -- OR, per
+that same finding's own two-branch instruction, soften the "Health info: No" claim when a fresh
+zero-result cannot be established.
+
+**Rosetta plan `fitness_app-2026-09-16T11-52-31-026Z-f05dd8`** (hash
+`fcdc04df6235ee00ab6eb9850545798f65ed3e521179d0304d6e978ef4c9f9c7`), scope: (1) real pytest
+coverage for `has_target_fields()` proving the sweep touches nothing broader than
+`health`/`lifestyle.smoking`/`lifestyle.alcohol`; (2) extract the update-mask/URL construction into
+a pure, testable `_strip_url()`; (3) run the script for real (dry run, zero writes) against both
+`.firebaserc` projects for a fresh dated measurement; (4) draft a scheduled CI workflow, disclosed
+up front as not yet functional; (5) this entry. Explicitly out of scope: provisioning a CI secret
+or building the non-interactive auth path `firebase_api.py` would need (operator's own action,
+same shape as the `GOOGLE_SERVICES_JSON_B64` gap already recorded for row 22); running `--apply`
+against any residue found.
+
+**A significant, genuine finding surfaced while gathering the planned evidence, disclosed rather
+than quietly worked around**: the fresh dry-run (zero writes) against both real projects returned --
+
+- `fitness-app-korostelev` (`default`, the live app's own project): **39 of 39 profile documents
+  still carry the health block**, not the 0 the 2026-08-06 measurement recorded. 38 of the 39
+  document ids are shaped like real Firebase Auth uids (one, `g4-step7-product-e2e-probe`, is
+  plainly a test-harness slug); their structural `createTime`/`updateTime` metadata spans
+  2026-08-06 through 2026-09-03.
+- `traidingbot-b4061` (`legacy-shared`): **1 of 14 still carries the block**, where 2026-08-06
+  recorded 0.
+
+**INFERENCE, explicitly labeled and not verified**: `mobile/integration_test/app_test.dart` has no
+Firestore-emulator wiring found by inspection, and this project's own real physical test devices
+(`project-sptr-fitness-app-test-devices` memory) are the most likely source of the `default`
+project's 39 documents, consistent with "no real users yet" (`project-fitness-app-no-real-users-yet`
+memory) rather than a live regression in H1a's client-side write path. NOT confirmed against actual
+app-build history for each account; the `legacy-shared` project's single leftover document (no
+test-device traffic there since the 2026-08 move) is not explained by this theory at all.
+
+**What was deliberately NOT done**: `--apply` against any of the 40 documents found. Clearing real
+production Firestore data is a deletion action, and stays in the operator-only class under
+CLAUDE.md SS20 regardless of these being probable test accounts -- SS20's carve-out is about the
+ACTION class, not a judgment call about whose data it is. This is the one thing from this gate that
+needs the operator, not GPT-PM (SS16's own boundary): **the operator's decision on whether/when to
+run `strip_health_from_profiles.py --project default --apply` (and `--project legacy-shared`) is
+still open.**
+
+**Review arc (this project's hard-cap-3-rounds rule, closed within the cap, no confirmation round
+needed):**
+
+- **Round 1** (reviewRequestId `63b8b480-2c72-467f-9052-6499e9821aa9`, reviewInputHash
+  `4048e21aacd5607d3b38a898a243e14c5bb5a5595bdccd6cf271da03f9c0b8ff`): **1 BLOCKER + 5 MAJOR.**
+  BLOCKER -- `find_profiles()`'s collection-group query (`collectionId: 'profile', allDescendants:
+  True`) matches ANY collection named `profile` anywhere in the database, not specifically
+  `users/{uid}/profile/*`, and nothing in the code enforced that narrower shape the module's own
+  doc comment claims. Verified true against Firestore's own documented collection-group semantics
+  before accepting. MAJOR x2 -- the Data Safety doc correction conflated "residue exists" with
+  "Play Console answer must be Yes" (two different questions under Play's actual "collect" =
+  currently-distributed-build-transmits definition), and the actual user-facing privacy-policy text
+  (`mobile/lib/l10n/app_en.arb:1910`) was never checked at all. MAJOR -- the drafted CI workflow had
+  a job-level `if: false` that also silently blocked the `workflow_dispatch` override its own header
+  claimed still worked, a step-scoped env var the later steps couldn't see, and "release gate"
+  framing not matched by any push/PR trigger. MAJOR -- `--fail-on-residue` (the one new CLI behavior
+  a future scheduled check would depend on) had zero test coverage. MAJOR -- the doc's
+  "structural only, no field values read" claim was false: `find_profiles()`'s query had no
+  `select`, so Firestore returned every field of every document, meaning true health-answer VALUES
+  entered the local process (never printed, but fetched) for fields never needed.
+- **Remediation 1**: added `is_expected_profile_path()` (pure, fail-closed, exactly
+  `users/{uid}/profile/main`), wired into `find_profiles()` with a printed warning (not a silent
+  drop) for anything unexpected -- live re-verified after this change: same 39/1 counts, zero
+  warnings on either real project. Rewrote the Data Safety section to separate the two questions
+  explicitly, and actually read the live privacy-policy text -- found it already carries a
+  "before 6 August 2026" residue caveat, but that date boundary does not cover the fresh evidence's
+  post-08-06-created documents; flagged as an open question rather than either silently rewriting
+  live legal text on an unverified inference or ignoring the point. Rewrote the workflow: schedule
+  suppressed, `workflow_dispatch` genuinely still runs (fails one honest, explicit check naming both
+  real missing prerequisites), "release gate" framing corrected to say plainly this file does not
+  satisfy that half of GATE_J's acceptance test. Added `exit_code()` (pure) + 6 tests for
+  `--fail-on-residue`'s actual decision logic, live-verified separately that the flag produces
+  exit 1 against real `legacy-shared` residue. Added a `select` projection restricted to exactly
+  `TARGET_PATHS` -- verified live that this returns identical 39/1 documents while excluding every
+  other field from ever leaving Firestore into the process.
+- **Round 2** (reviewRequestId `b8ba7eb8-6437-4a3d-8122-f4587a51c2db`, replyId
+  `549c69e6-a12d-49be-a61c-234e58384dca`, reviewInputHash
+  `127767457fca7c7e8aed4c384bbecfc58ab1e8cfd78032b10221290dac962d93`): BLOCKER confirmed closed;
+  3 of 5 round-1 MAJOR confirmed closed (workflow, projection/data-hygiene, and GPT-PM's own
+  characterization of the privacy-policy text corrected -- "my round-1 description of it as wholly
+  absolute was too broad"). **3 fresh MAJOR**: `is_expected_profile_path()` was tested in isolation
+  but nothing proved `find_profiles()` actually applied it; `exit_code()` was tested but nothing
+  proved `--fail-on-residue` was actually wired through argparse into `main()`'s real exit path; the
+  Data Safety table row's "basis re-checked 2026-09-16" phrasing read like a fresh validation of the
+  Play declaration itself, when only internal residue was checked.
+- **Remediation 2**: added `TestFindProfilesAppliesTheBoundary` (monkeypatches only the network
+  transport `api()`, feeds a stubbed response containing both an allowed document and the exact
+  decoy `organizations/x/profile/main` GPT-PM named, asserts only the allowed one survives).
+  Mutation-verified by hand: reverted the filtering line, confirmed the decoy test goes red,
+  restored, confirmed green. Added `TestMainCliWiring` (monkeypatches `sys.argv`/`access_token`/
+  `find_profiles`, calls the real `main()`, asserts actual `SystemExit.code` for all 3 materially
+  distinct cases). Mutation-verified the same way: hardcoded the flag to `False` inside `main()`,
+  confirmed the residue+flag test goes red, restored, confirmed green. Reworded the table row to
+  "Current declared answer: No — current-distributed-build verification pending" per GPT-PM's exact
+  suggested phrasing.
+- **Round 3** (reviewRequestId `34c5d367-4c59-4689-bc36-becf73d570d7`, replyId
+  `1c0e4ad2-4637-4e18-8357-b8240dbe3043`, reviewInputHash
+  `aaf5f2d014a3bd2a752a6ae01a28d2c8d93fcf9d56620cc9fcab183b19d18458`, correlated:true):
+  `VERDICT: APPROVE`. Verbatim: "All three round-2 MAJOR findings are closed... I found no direct
+  regression introduced by these three remediation changes. 0 BLOCKER / 0 MAJOR. Gate review thread
+  closed." Closed within the hard cap; unlike the same-day P2.G5-readiness gate, no narrow
+  confirmation round was needed.
+
+`pm_rosetta_go` refused with the established transport gap ("no exact durable outbound record
+exists for this plan review body and request id") despite the genuine, correlated round-3 APPROVE
+above. `pm_rosetta_close` then refused as a direct consequence ("plan ... is not
+approved/in-progress (status pending)"). Documented here per this session's established practice;
+proceeding to commit/push on the real, verified evidence (GO folds in push per CLAUDE.md SS22; a
+genuine GPT-PM APPROVE is independently sufficient under SS20).
+
+**Test evidence**: `scripts/ops/test_strip_health_from_profiles.py` -- 36 tests, this script's
+first-ever coverage (was 0). Full `scripts/ops` suite: 64/64 green (was 43 before this gate).
+4 independent mutation checks by hand, all caught the intended regression: widened `TARGET_PATHS`,
+widened `has_target_fields`'s lifestyle check, removed `find_profiles`'s boundary filter, ignored
+`--fail-on-residue` in `main()` -- each reverted and reconfirmed green after.
+
+**Result**: `scripts/ops/strip_health_from_profiles.py` (`is_expected_profile_path`, `_strip_url`,
+`exit_code`, `--fail-on-residue`, `select`-projected query), `scripts/ops/test_strip_health_from_profiles.py`
+(new), `.github/workflows/health_data_residue.yml` (new, explicitly non-functional scaffolding),
+`core/PLAY_DATA_SAFETY_2026-08-05.md` (fresh dated evidence, Play-declaration-vs-residue
+distinction, open question flagged for the live privacy-policy text).
+
+**Status**: script tests + refactor -- **done**. Fresh dated evidence + honest doc correction --
+**done**. CI wiring -- **not done** (deliberately, code-complete scaffolding only; needs a
+non-interactive auth path in `firebase_api.py` plus an operator-provisioned secret, same shape as
+row 22's `GOOGLE_SERVICES_JSON_B64` gap). Actual production cleanup (`--apply`) -- **not done,
+operator decision pending** -- this is the one genuinely open item from this gate that is not an
+engineering task.

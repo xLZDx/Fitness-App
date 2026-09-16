@@ -63,6 +63,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import urllib.parse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -105,13 +106,57 @@ def documents_root(project: str) -> str:
             '/databases/(default)/documents')
 
 
+def is_expected_profile_path(name: str) -> bool:
+    """True only for the exact shape this script is allowed to touch:
+    `.../documents/users/{uid}/profile/main`.
+
+    `collectionId: 'profile', allDescendants: True` matches ANY collection
+    named `profile` anywhere in the database, not specifically `users/*` --
+    Firestore's own documented semantics for a collection-group query, not
+    something this script's path structure narrows on its own (GPT-PM
+    review, 2026-09-16 round 1, BLOCKER). Nothing in `find_profiles()`
+    enforced the `users/{uid}/profile/main` shape the module's own doc
+    comment claims, so a document under an unrelated future collection
+    (`organizations/x/profile/main`, or a `profile` subcollection nested
+    somewhere else entirely) would have been silently included in `stale`
+    and reachable by `--apply` despite never being the app's own
+    per-user profile. This is the fail-closed guard: anything that is not
+    exactly `users/{uid}/profile/main` is excluded, never swept, regardless
+    of what fields it carries.
+    """
+    marker = '/documents/'
+    idx = name.find(marker)
+    if idx == -1:
+        return False
+    parts = name[idx + len(marker):].split('/')
+    return (len(parts) == 4 and parts[0] == 'users' and bool(parts[1])
+            and parts[2] == 'profile' and parts[3] == 'main')
+
+
 def find_profiles(project: str, token: str) -> list[dict]:
-    """Every `profile` document under any parent, via a collection-group query.
+    """Every `users/{uid}/profile/main` document, via a collection-group query.
 
     A plain list of `users` would miss accounts whose parent document does not
     exist -- Firestore happily holds `users/{uid}/profile/main` with no
     `users/{uid}` document above it, and this app creates exactly that shape.
-    Those are precisely the documents a migration must not skip.
+    Those are precisely the documents a migration must not skip. The
+    collection-group query itself is broader than that one shape (see
+    `is_expected_profile_path`'s own doc comment), so every result is
+    filtered through it before being returned -- anything outside the exact
+    expected shape is dropped here, with a printed warning, rather than
+    silently reaching a caller that assumes everything returned is safe to
+    sweep.
+
+    The query's own `select` is restricted to exactly `TARGET_PATHS` --
+    verified live against real Firestore (2026-09-16, read-only): a
+    dot-separated `fieldPath` like `lifestyle.smoking` selects that nested
+    field alone, so `lifestyle.diet`/`lifestyle.sleepHours`/every other field
+    on the document (height, weight, goals, ...) never enters this process at
+    all, not even unread. Previously this ran with no `select`, so Firestore
+    returned every field of every profile document -- true health-answer
+    VALUES were fetched into memory (never printed, but fetched) for fields
+    this script has no reason to look at (GPT-PM round 1 MAJOR, 2026-09-16:
+    this module's own data-hygiene claim overstated what was actually true).
     """
     out: list[dict] = []
     page_token = None
@@ -119,6 +164,7 @@ def find_profiles(project: str, token: str) -> list[dict]:
         body = {
             'structuredQuery': {
                 'from': [{'collectionId': 'profile', 'allDescendants': True}],
+                'select': {'fields': [{'fieldPath': p} for p in TARGET_PATHS]},
             }
         }
         url = f'{documents_root(project)}:runQuery'
@@ -134,7 +180,14 @@ def find_profiles(project: str, token: str) -> list[dict]:
         # and the break is explicit so a future reader does not assume paging
         # was forgotten.
         break
-    return out
+    expected = [d for d in out if is_expected_profile_path(d['name'])]
+    unexpected = len(out) - len(expected)
+    if unexpected:
+        print(f'  WARNING: {unexpected} document(s) matched the profile '
+              'collection-group query but not the users/{uid}/profile/main '
+              'shape -- excluded, not swept. Investigate before assuming '
+              'this is benign.')
+    return expected
 
 
 def has_target_fields(doc: dict) -> bool:
@@ -151,14 +204,52 @@ def has_target_fields(doc: dict) -> bool:
     return 'smoking' in lifestyle or 'alcohol' in lifestyle
 
 
+def _strip_url(name: str) -> str:
+    """The exact PATCH URL `strip()` sends -- pure, so it is unit-testable
+    without faking the live call itself (this repo's own established
+    convention, see `test_machine_card_contribution_report.py`'s doc comment).
+
+    The update mask names every field this script will ever touch. Building
+    it from `TARGET_PATHS` rather than inlining the three strings again here
+    means a test pinning this function's output is a direct guard against the
+    sweep quietly growing beyond health/lifestyle.smoking/lifestyle.alcohol.
+
+    `name` is quoted (slashes left literal, `?`/`&` and anything else escaped)
+    before it goes into the URL. Firebase Auth uids are alphanumeric in
+    practice, so a document `name` containing `?` or `&` is not something this
+    script has ever seen -- but Firestore document ids are not restricted to
+    that charset, and an unescaped one could otherwise inject extra query
+    params into the update mask, widening or narrowing what gets deleted.
+    Defense in depth, not a response to an observed document (security
+    review, 2026-09-16).
+    """
+    mask = '&'.join(f'updateMask.fieldPaths={p}' for p in TARGET_PATHS)
+    return f'https://firestore.googleapis.com/v1/{urllib.parse.quote(name, safe="/")}?{mask}'
+
+
 def strip(project: str, token: str, name: str) -> str | None:
     """Delete the target fields from one document. Returns an error, or None."""
-    mask = '&'.join(f'updateMask.fieldPaths={p}' for p in TARGET_PATHS)
-    url = f'https://firestore.googleapis.com/v1/{name}?{mask}'
-    res = api(url, token, method='PATCH', payload={'fields': {}})
+    res = api(_strip_url(name), token, method='PATCH', payload={'fields': {}})
     if isinstance(res, dict) and '_httpError' in res:
         return f'HTTP {res["_httpError"]}: {res["_body"][:200]}'
     return None
+
+
+def exit_code(*, apply: bool, stale_count: int, fail_on_residue: bool,
+              failed_count: int = 0) -> int:
+    """The process exit code for one run -- pure, so `--fail-on-residue`'s
+    actual behavior is directly unit-testable (GPT-PM round 1 MAJOR,
+    2026-09-16: this had zero test coverage, and a later refactor could
+    silently turn a scheduled monitor permanently green over real residue
+    with every OTHER test in this file still passing).
+
+    `--apply` failing even one document is always an error (1), independent
+    of `--fail-on-residue` -- that flag only changes whether a DRY RUN
+    finding residue counts as a failure.
+    """
+    if apply:
+        return 1 if failed_count else 0
+    return 1 if (stale_count and fail_on_residue) else 0
 
 
 def main() -> None:
@@ -169,6 +260,10 @@ def main() -> None:
                     help='.firebaserc alias to target: default (the app\'s own '
                          'project) or legacy-shared (where 14 pre-move '
                          'profiles still sit). Defaults to the safe one.')
+    ap.add_argument('--fail-on-residue', action='store_true',
+                    help='exit 1 if any profile still carries health fields, '
+                         'even in dry-run mode -- for a scheduled check that '
+                         'should be noticed, not just a human reading output')
     args = ap.parse_args()
 
     project = project_id(args.project)
@@ -185,14 +280,16 @@ def main() -> None:
 
     if not stale:
         print('\nnothing to do -- no stored profile carries the health block.')
-        return
+        sys.exit(exit_code(apply=args.apply, stale_count=0,
+                            fail_on_residue=args.fail_on_residue))
 
     if not args.apply:
         print('\nwould delete ' + ', '.join(TARGET_PATHS) + ' from:')
         for d in stale:
             print('  ' + d['name'].split('/documents/')[-1])
         print('\nre-run with --apply to perform the deletion.')
-        return
+        sys.exit(exit_code(apply=False, stale_count=len(stale),
+                            fail_on_residue=args.fail_on_residue))
 
     failed = 0
     for d in stale:
@@ -205,8 +302,9 @@ def main() -> None:
             print(f'  cleared {path}')
 
     print(f'\ncleared {len(stale) - failed} of {len(stale)}; {failed} failed.')
-    if failed:
-        sys.exit(1)
+    sys.exit(exit_code(apply=True, stale_count=len(stale),
+                        fail_on_residue=args.fail_on_residue,
+                        failed_count=failed))
 
 
 if __name__ == '__main__':

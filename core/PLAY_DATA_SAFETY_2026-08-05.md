@@ -52,31 +52,129 @@ services"* (firebase.google.com/docs/android/play-data-disclosure).
 
 | Data type | Collected | Optional? | Purposes | Evidence |
 |---|---|---|---|---|
-| Health info | **No** — changed 2026-08-06, see below | — | — | `sensitive_profile.dart` defines what never leaves the device; `device_health_profile_repository.dart` performs the split and `main.dart` binds it |
+| Health info | **Current declared answer: No — current-distributed-build verification pending; 2026-09-16 residue evidence below (GPT-PM review, round 2: "basis re-checked" read as a fresh validation of the Play declaration, when the one fact that actually decides it — currently distributed builds' behavior — was not checked)** | — | — | `sensitive_profile.dart` defines what never leaves the device; `device_health_profile_repository.dart` performs the split and `main.dart` binds it |
 | Fitness info | Yes | Optional | App functionality, Personalization | `profile_models.dart:203-218` (age, gender, height, current/target weight, activity level); workout logs at `firestore_workout_log_repository.dart:18` |
 
-**Health info was "Yes" until 2026-08-06 and is now "No".** The questionnaire
-still asks the same questions; what changed is where the answers go. Conditions,
-allergies, medications, injuries, physical limitations, recent surgeries, blood
-pressure, free-text concerns, plus the smoking and alcohol answers, are stored
-on the device and are never written to Firestore. Nothing on the server ever
-read them — no Cloud Function touches `users/{uid}/profile/main` at all — so
-they were being held without being used.
+**Two separate questions, kept separate on purpose (GPT-PM review, 2026-09-16
+round 1 — an earlier draft of this entry conflated them and was corrected
+before commit):**
 
-Two things had to both be true before this answer could change, and both are:
+1. **Does Firestore currently hold health-field residue?** Yes, per the
+   2026-09-16 re-measurement below — this is a FACT, directly measured.
+2. **Does that mean the Play Console "Health info" answer must be "Yes"?**
+   NOT necessarily, and this document does not decide it. Play's own Data
+   safety definition of "collect" is about what a **currently distributed**
+   build transmits off-device, not about historical server-side residue from
+   before H1a shipped. `device_health_profile_repository.dart` still stops
+   the client from writing these fields going forward; that write-path
+   behavior is what the Play answer is actually about, and it has not
+   changed. What HAS changed is that the evidence which justified writing
+   "No" — a fresh zero-result sweep — no longer holds, so "No" is asserted
+   on a weaker basis than the 2026-08-06 record implied, not proven false.
+   Changing the Play Console answer needs someone to check what versions
+   currently live on Play actually do, which is separate work this entry
+   does not perform.
+
+The questionnaire still asks the same questions; what changed on 2026-08-06
+is where the answers go. Conditions, allergies, medications, injuries,
+physical limitations, recent surgeries, blood pressure, free-text concerns,
+plus the smoking and alcohol answers, are meant to be stored on the device
+and never written to Firestore. Nothing on the server ever reads them — no
+Cloud Function touches `users/{uid}/profile/main` at all — so if they are
+present, they are held without being used, not exposed to a new purpose.
+
+Two things had to both be true before the "No" answer was set on 2026-08-06:
 
 1. The app stopped writing them (H1a) and moves any already-stored block down to
    the device on the next read (H1b, `_resolve` in
-   `device_health_profile_repository.dart`).
+   `device_health_profile_repository.dart`, which also deletes the server copy
+   once it moves — `device_health_profile_repository.dart:28`).
 2. The documents already written were cleared. Measured 2026-08-06:
    `fitness-app-korostelev` held 0 profile documents; the pre-move project
    `traidingbot-b4061` held 14, every one carrying the block. After
    `scripts/ops/strip_health_from_profiles.py --project legacy-shared --apply`,
-   a read-only query returns **14 documents, 0 still carrying health fields**.
+   a read-only query returned **14 documents, 0 still carrying health fields**.
 
-If a future change writes any of those fields to a server, this row goes back to
-"Yes" in the same commit. A Data safety form that says "No" while a field is
-being collected is a removal, not a warning.
+**2026-09-16 re-measurement (Tier A item 7 / OBS-1 item 7 / row 26, per
+`core/audit/gate_j_regulatory_review_2026-08-15/GATE_J_REGULATORY_REVIEW_2026-08-15.md:66-67`'s
+own required acceptance test — a dated read-only re-run, not a one-time
+claim):** `python scripts/ops/strip_health_from_profiles.py --project default`
+and `--project legacy-shared` (dry run, zero writes), run fresh today —
+
+- `fitness-app-korostelev` (`default`, the live app's own project): **39 of 39
+  profile documents still carry the health block.** This is not the 0 the
+  2026-08-06 measurement recorded for this project — 38 of the 39 document ids
+  are shaped like real Firebase Auth uids, and their `createTime`/`updateTime`
+  metadata spans 2026-08-06 through 2026-09-03, i.e. created both before and
+  well after H1a. One document id (`g4-step7-product-e2e-probe`) is plainly a
+  test-harness slug, not a real Firebase Auth uid. **Correction to an earlier
+  draft of this entry (GPT-PM review, 2026-09-16 round 1 MAJOR):** the
+  `createTime`/`updateTime` check is structural-metadata-only, but the sweep's
+  own underlying Firestore query is not -- `find_profiles()` had no `select`
+  clause, so Firestore returned every field of every matched document,
+  meaning actual health-answer VALUES were fetched into this process's memory
+  (never printed or logged, but fetched) for fields the script had no reason
+  to read. Fixed the same round: the query now carries an explicit `select`
+  restricted to exactly `health`/`lifestyle.smoking`/`lifestyle.alcohol` --
+  verified live that this still returns the same 39/1 documents with the
+  same metadata, while excluding every other field (height, weight, goals,
+  `lifestyle.diet`, ...) from ever leaving Firestore into this process at all.
+- `traidingbot-b4061` (`legacy-shared`): **1 of 14 still carries the block**
+  (`createTime` 2026-07-29, `updateTime` 2026-08-06T14:19:13Z — the same day
+  as the original `--apply` sweep, order relative to that sweep undetermined
+  from available evidence), where the 2026-08-06 record claimed 0.
+
+**INFERENCE, not verified**: `mobile/integration_test/app_test.dart` has no
+Firestore-emulator wiring found by inspection, and this project's own test
+devices (`project-sptr-fitness-app-test-devices` memory: S8 adb, S23 network)
+are real physical hardware — so the most likely explanation for the `default`
+project's 39 documents is manual/automated on-device testing hitting the live
+project directly (consistent with "no real users yet" — `project-fitness-app-no-real-users-yet`
+memory), not a live regression in H1a's own write path. This is NOT confirmed:
+it has not been verified whether H1a's client code path was actually active
+for every one of these 39 accounts' app builds at the time each was created,
+and the legacy-shared project's single leftover document is unexplained by
+this theory at all (that project has had no test-device traffic since the
+2026-08 move).
+
+**A real tension this re-measurement surfaces in the user-facing text itself
+(GPT-PM review, 2026-09-16 round 1 MAJOR), flagged rather than silently
+fixed:** `mobile/lib/l10n/app_en.arb:1910`'s `legalPrivacyBody` already
+carries a caveat for exactly this residue class — "Accounts that answered
+the questionnaire before 6 August 2026 had those answers held on the
+server... an account nobody has opened since may still have a copy sitting
+there." That caveat's own date boundary ("before 6 August 2026") does not
+describe the `default` project's documents whose `createTime` falls AFTER
+that date (up to 2026-09-03) — if any of those 39 are real users rather than
+test-device accounts, the live privacy policy is currently narrower than
+what this measurement found. The INFERENCE above is that they are very
+likely test/QA-device accounts, not real users, which would mean the
+existing "before 6 August 2026" text is still accurate for anyone who
+actually reads it as a real user. **This document does not resolve that
+either way** — rewriting consumer-facing legal text on an unverified
+inference is not this entry's call to make unilaterally; it is recorded here
+as an open question for the next review round rather than left undiscovered.
+
+**What this means for the Data safety form, right now:** the acceptance
+test's own two-branch instruction applies — either a fresh zero-result, or
+soften the claim — and the fresh result is non-zero, so this entry softens
+the claim rather than asserting a zero-result that did not happen. That is
+narrower than concluding the Play answer must flip to "Yes" (see the two
+separate questions above) — **what is actually false right now is the internal
+evidence this file previously cited for "No," not necessarily the Play
+answer itself.** Clearing these 40 documents (`--apply`) is a real production
+data-deletion action and is deliberately **not** performed by this entry or by
+the gate that produced it — see `core/DECISION_LOG.md`'s 2026-09-16 Tier A
+item 7 entry for why (operator-only deletion class, this workspace's own
+standing rule, unaffected by these being probable test accounts).
+
+If a future change writes any of those fields to a server for a real,
+non-test account on a currently-distributed build, the Play answer genuinely
+does need to become "Yes," for a different, more serious reason than the one
+recorded here. A Data safety form that says "No" while a field is being
+collected is a removal, not a warning — but this entry has not established
+that collection is currently happening on a distributed build, only that
+past residue exists.
 
 Height and weight deliberately stayed on the server. They are Fitness info in
 Play's taxonomy, not Health info, so moving them would remove no row from this

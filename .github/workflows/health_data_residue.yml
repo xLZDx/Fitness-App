@@ -1,0 +1,85 @@
+# Tier A item 7 (OBS-1 item 7 / row 26) -- scaffolding for a scheduled
+# re-run of the health-data residue sweep. NOT YET FUNCTIONAL -- read this
+# whole header before touching `if:` below.
+#
+# `core/audit/gate_j_regulatory_review_2026-08-15/GATE_J_REGULATORY_REVIEW_2026-08-15.md:66-67`'s
+# acceptance test asks for "a dated read-only query...showing 0 profile
+# documents carrying health fields across all projects, re-run as a release
+# gate". This file is honestly only PART of that: a schedule that keeps the
+# measurement current. It is NOT a release gate in this repo's own sense of
+# the term (a check that blocks a push/PR/build) -- it has no push or
+# pull_request trigger, and wiring it into the actual release path is
+# separate, larger, undone scope. Whoever picks that up next should not
+# read this file's existence as already satisfying that half of the
+# acceptance test (GPT-PM review, 2026-09-16 round 1).
+#
+# WHY THE JOB CANNOT RUN TODAY, FOR TWO SEPARATE REASONS:
+#
+# 1. AUTH CODE: `scripts/ops/strip_health_from_profiles.py` authenticates via
+#    `scripts/ops/firebase_api.py`'s `access_token()`, which unconditionally
+#    reads the OPERATOR'S OWN locally-logged-in Firebase CLI refresh token
+#    from `~/.config/configstore/firebase-tools.json`. That file does not
+#    exist on a GitHub-hosted runner, and there is no alternative,
+#    non-interactive (service-account) auth path in firebase_api.py today.
+#    Adding one is real new scope (a module 3 other ops scripts share),
+#    deliberately left out of the gate that added this file.
+# 2. SECRET: even once (1) exists, it needs a new production-Firestore-
+#    read-scoped credential in this repo's GitHub secrets, which is the
+#    operator's own action under this workspace's standing secrets policy
+#    (same shape as the already-recorded GOOGLE_SERVICES_JSON_B64 gap for
+#    a different gate).
+#
+# Neither exists yet, so the job fails a single explicit, honest check
+# below rather than the real sweep steps failing confusingly on a missing
+# local file. `workflow_dispatch` is intentionally still enabled (only the
+# schedule trigger is suppressed at the job level) so a human can run this
+# to CONFIRM it is still blocked on the same known gap, without that
+# producing a weekly unattended failure notification for something already
+# understood. Once BOTH (1) and (2) exist: replace the single check step
+# below with the real sweep (see the commented block at the end for the
+# intended shape), remove the schedule-only job condition, and give
+# FIRESTORE_AUDIT_SERVICE_ACCOUNT_JSON to the job (not one step) via a
+# job-level `env:` so every step that needs it can see it.
+name: health-data-residue
+
+on:
+  schedule:
+    - cron: '0 5 * * 1' # weekly -- see header; currently a no-op, see job `if:`
+  workflow_dispatch:
+
+concurrency:
+  group: health-data-residue-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sweep:
+    name: dry-run health-field sweep (both projects)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Scheduled runs are suppressed entirely (nothing to notice weekly about
+    # a gap that is already tracked). A human-triggered workflow_dispatch
+    # still runs, and fails the one explicit check below every time, on
+    # purpose, until the header's two prerequisites are both real.
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: This workflow is not functional yet -- see file header
+        run: |
+          echo "::error::health_data_residue.yml cannot run the real sweep yet -- both prerequisites in this file's own header comment are missing (a non-interactive auth path in firebase_api.py, and a FIRESTORE_AUDIT_SERVICE_ACCOUNT_JSON repo secret). See core/DECISION_LOG.md's Tier A item 7 entry."
+          exit 1
+
+# Intended shape once both header prerequisites exist -- kept as a comment,
+# not live steps, so this file does not imply partial functionality it does
+# not have:
+#
+#   - uses: actions/checkout@v4
+#   - uses: actions/setup-python@v5
+#     with:
+#       python-version: '3.12'
+#   - name: Sweep default (fitness-app-korostelev)
+#     run: python scripts/ops/strip_health_from_profiles.py --project default --fail-on-residue
+#   - name: Sweep legacy-shared (traidingbot-b4061)
+#     run: python scripts/ops/strip_health_from_profiles.py --project legacy-shared --fail-on-residue
+#
+# with FIRESTORE_AUDIT_SERVICE_ACCOUNT_JSON set at job level `env:`, and
+# firebase_api.access_token() extended to prefer that env var when present
+# over the local Firebase CLI file.
