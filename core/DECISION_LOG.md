@@ -52168,3 +52168,35 @@ plan/evidence exists for it yet, consistent with the report's "not started" find
 Both report files' caveats sections updated to reflect the full backfill (P2.G1/G2/G4 passed,
 P2.G3 deliberately in-progress) rather than the partial P2.G4-only state recorded in the entry
 above; re-conformed, artifact republished at the same URL (version 4), committed.
+
+## 2026-09-16 -- autonomous backlog-run brief written; PM Bridge session-staleness re-confirmed
+
+Operator asked for a self-directed prompt enabling sustained autonomous work on the remaining
+backlog without per-gate check-ins. Wrote `core/plans/AUTONOMOUS_BACKLOG_RUN_2026-09-16.md`:
+mission, the exact two operator-only carve-outs that still stop the run (deletion, real-money --
+everything else proceeds on genuine GPT-PM APPROVE per SS20/22/24), a priority-ordered backlog in
+four tiers (Tier A: clean engineering, start immediately; Tier B: needs a fresh look at whether an
+old GO still applies, or needs physical device access; Tier C: needs a GPT-PM product decision
+first; Tier D: the one genuinely high-risk item, P2.G3's real production deploy, with its own extra
+caution clause), the per-item Rosetta process, and explicit stop conditions. Embeds the literal
+marker phrase `AUTONOMOUS PROGRAM AUTHORIZED` so a session reading it as a genuine user message
+picks up program-mode report cadence mechanically (`_report_common.PROGRAM_MODE_RE`), not just by
+intent.
+
+**Checked `pm_bridge_mode_status` before treating the run as ready to execute** (this run's own
+first-step instruction): PM Bridge orchestrator mode is already ON (pid 3116) -- no action needed
+there. But the daemon reported this specific session's own long-lived MCP server subprocess as
+stale relative to current on-disk pm-bridge code, with the change reaching project-resolution/
+routing-identity logic -- the exact "THIS SESSION is the stale one" failure mode already
+documented earlier this session (see the P2.G5-readiness step 3a entries above) and in memory
+`feedback-pmbridge-...`-adjacent notes. **Not worked around by restarting the daemon.** Added an
+explicit session-staleness check + the `review.js`-via-Bash workaround (fresh process, unaffected
+by session-level staleness) as the run brief's own first-step instruction, so any future invocation
+of this file re-derives the correct transport rather than assuming MCP sends are safe. No GPT-PM
+round-trips were attempted this entry -- this is process setup, not a gate.
+
+Not yet started: the actual Tier A backlog work. Handed the brief to the operator this same turn
+rather than silently beginning a multi-hour unattended implementation run from a single reply --
+true "nonstop, unattended" execution needs `/loop` (so `ScheduleWakeup` can resume the run between
+idle periods); this session can otherwise only continue turn-by-turn as the operator sends further
+messages.
