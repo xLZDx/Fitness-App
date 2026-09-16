@@ -54302,3 +54302,180 @@ not just for accounts whose owner has reopened the app since H1a/H1b shipped. Ma
 rather than "script exists, no evidence of a completed run" -- doing that next, alongside a decision
 log commit for this entry (no code changed, data-only operation, but the mechanical decision-log
 gate still requires this file in the commit).
+
+## 2026-09-16 -- Backlog re-audit: `AUTONOMOUS_BACKLOG_RUN_2026-09-16.md` is exhausted except one
+## operator-gated item; two items excluded by direct operator instruction; on-device design-fidelity
+## verification (rows 7/8) opened as new work; ML/recognition work explicitly deferred to last
+
+**Operator instruction, verbatim (dictated, reconstructed):** "собери все хвосты помимо PM Bridge
+registry backfill и FORM_COACH_HUD_ALIGNMENT, убедись что макет дизайна на 100% соответствует
+приложению, в конце запланируй тесты кода и распознавания, но это самое последнее на проекте" --
+gather every remaining loose end except the PM Bridge gate-status registry backfill and
+FORM_COACH_HUD_ALIGNMENT; make sure the design mockup matches the app 100%; at the end, schedule
+code/recognition testing, but that is deliberately the very last thing on the project.
+
+**Re-derived ground truth before acting** (SS17 "reconstruct state before starting a gate," not
+trusted from memory of an earlier turn) -- read `core/plans/AUTONOMOUS_BACKLOG_RUN_2026-09-16.md`
+(the standing self-resuming backlog brief, Tier A-D) fresh, then cross-checked every item's claimed
+status against this file's own later entries rather than the brief's own word:
+
+- **Tier A items 1/2/3 (rows 22/25/23)**: row 25 and row 23 -- CLOSED, genuine GPT-PM APPROVE
+  (`core/DECISION_LOG.md` "Backlog row 25", "row 23" entries, 2026-09-16). Row 22 -- **PARTIAL**,
+  code-complete (`release-build` job in `.github/workflows/flutter.yml`, 3 real GPT-PM rounds, 2
+  genuine MAJOR chains fixed) but blocked on one operator action: provisioning the
+  `GOOGLE_SERVICES_JSON_B64` GitHub Actions secret. This is a secrets-provisioning action under
+  CLAUDE.md SS4/SS20/SS16 -- operator-only, not something this or any session attempts on its own
+  even though `gh` is available and the local file is readable. **Left exactly as-is**: not
+  engineering-closeable, correctly already flagged, nothing new to do here today.
+- **Tier A items 4-7**: all confirmed CLOSED in prior 2026-09-16 entries (P2.G5-readiness step 3b;
+  OBS-1 item 13 composed-screen goldens; OBS-1 items 2/5/12; OBS-1 item 7 / row 26 health sweep).
+- **Tier B item 8, FORM_COACH_HUD_ALIGNMENT**: excluded from this pass by direct, explicit operator
+  instruction. Left untouched -- its prior investigation entry ("backlog brief's framing was stale")
+  stands as the last word on it; no further action taken here.
+- **Tier B item 9 (row 24)**: CLOSED this session (commit `6c8d8bb`, GPT-PM terminal APPROVE, full
+  saga documented above under "Row 24 gate").
+- **Tier B items 10/11/12 (MVP1.G3 Step 10A/10B/10C)**: confirmed CLOSED 2026-08-27/28, independently
+  re-verified live (`production_manifest.py --print`, git log, direct grep of the two files claimed
+  fixed) in the prior "ALL THREE ALREADY CLOSED" entry. The one real gap found there -- `pm_gate_status`
+  never updated to reflect the 2026-08-27/28 closure -- is the PM Bridge gate-status registry backfill
+  the operator named as excluded from this pass. **Left exactly as-is, per instruction.**
+- **Tier C items 13/14 (rows 12/19)**: both CLOSED 2026-09-16, GPT-PM APPROVE (nonprofit/subscription
+  copy; photo-export policy WONT_BUILD).
+- **Tier D item 15 (P2.G3 production deploy)**: DONE, fresh GPT-PM APPROVE naming the deploy action
+  itself, verified live post-deploy.
+
+**Net finding: the formal engineering backlog is exhausted.** Every Tier A-D item is either closed,
+correctly left open on a named operator-only precondition, or excluded by direct instruction today.
+Nothing here required new engineering work -- this re-audit is itself the "gather all the loose
+ends" deliverable: there are none left to gather beyond what's already named above.
+
+**New work opened by this instruction, not previously tracked as its own item**: rows 7/8 (HUD/glass
+migration debt; M1-M9 visual fidelity never device-verified, WCAG contrast) were explicitly recorded
+by the OBS-1 item 13 closure entry above as "never fully closeable by golden-image coverage alone" --
+golden tests run on a host renderer, not a real device, and per project memory
+(`project-fitness-app-design-reference-canonical-source`, `project-fitness-app-formcoach-visual-
+target-100pct`) a visual-parity claim is not credible without a real on-device screenshot compared
+directly against the current canonical design export (`core/design/reference/fitness_hud_v1/`,
+verified as the current copy -- `CLAUDE.md` inside it, dated 2026-08-31, is the machine-readable
+spec: HUD glass formula, `#C9FF47`/`#4B7A00` accents, Archivo type, 158x158 circular counters, 6
+day-phase backgrounds). Token-level spot-check already done by reading `hud_tokens.dart` against the
+spec: colors match exactly (`0xFFC9FF47`, `0xFF4B7A00`, `0xFF7BF08A`, `0xFFFF5A5A`), and the file
+carries its own documented correction of a CSS-`blur()`-to-Gaussian-sigma conversion bug -- the
+token layer is not where the residual risk lives. The residual risk is real-device rendering and the
+still-incomplete `GlassCard`/`Hud*` migration (142 occurrences / 46 files per SS11's architect
+review). Debug build (`flutter build apk --debug`) started against the connected S8
+(`ce02171299f0711005`, confirmed via `adb devices -l`) to produce real screenshots of Home/Workouts/
+Scan/Progress/Profile/Form-Coach for direct comparison against `Fitness Glass Phone v1 - {Sunset,
+Light}.dc.html` and `Fitness Form Coach Phone.dc.html` -- in progress, result recorded in a follow-up
+entry once screenshots exist, per this project's own "don't claim done until on-device matches" rule.
+
+**ML/recognition work deliberately sequenced last, per direct operator instruction**: row 9
+(text-anchor equipment recognition, measured 18/18 vs. classifier's 5/18, not wired into live mode)
+and row 10 (P2.G4+ recognition-decision engine, P4/P6 not started) are real, open, engineering-
+closeable backlog items -- but the operator explicitly asked that code/recognition testing be
+scheduled as the LAST work on this project, not next. Recorded here as a standing sequencing
+decision, not a scope cut: these rows stay open, and are not to be picked up ahead of whatever
+remains after this pass, without a fresh instruction changing that order. Row 11 (AI-training licence
+conflict, blocks P4 specifically) stays out of scope regardless, per the backlog brief's own explicit
+exclusion, unaffected by this ordering note.
+
+## 2026-09-16 -- On-device design-fidelity verification: real BLOCKER-class visual defect found on
+## Home, fixed and verified against updated golden baselines; two other suspected gaps investigated
+## and correctly ruled out rather than "fixed" on a guess
+
+**Method**: debug build (`flutter build apk --debug`) installed on the connected S8
+(`ce02171299f0711005`, `adb devices -l`), launched, signed in as guest, walked through onboarding
+and the 5 bottom-nav tabs, screenshotting each -- per project memory
+(`project-fitness-app-design-reference-canonical-source`, `feedback-fitness-app-debug-builds-only-
+self-screenshot`), a design-parity claim is not credible from code/token inspection alone.
+
+**Finding 1 -- CONFIRMED and FIXED.** `home_page.dart`'s `_TotalCard` (the three "this week" stat
+tiles: workouts / kg lifted / records) rendered its numeric value with `HudType.panelHeading` (weight
+800, size 20, no glow). The design handoff states, twice, in the codebase's own doc comment on
+`HudType.bigNumber` ("Вес крупных чисел -- 400, не bold: контраст даёт размер и свечение. Вес --
+самое лёгкое, что тут перепутать"): a large metric is weight 400 with a glow, never bold. Screenshot
+of the running app (guest session, Home tab, `shot_after_tap.png`/`shot_skip.png` sequence in this
+session's scratchpad) showed exactly the mistake the comment warns about -- small, bold "0" digits,
+no glow, visually inconsistent with the login screen's own correctly-weighted numerals. Traced to
+`home_page.dart:635` (the only one of 5 `HudType.panelHeading` call sites in the whole app actually
+displaying a NUMBER rather than a title/name/label -- the other 4, checked individually
+(`workouts_page.dart:1090,1597`, `scan_match_card.dart:144`, `home_page.dart:803`), are all correctly
+textual headings and were left untouched).
+
+**Fix**: `HudType.panelHeading(t).inPanel(t)` -> `HudType.bigNumber(t, size: 34)`, no `.inPanel()`/
+`.overPhoto()` suffix -- matched against `hud_metric.dart`'s own correct usage (the ring counters),
+which also calls `bigNumber` bare, because either suffix's `copyWith(shadows: ...)` would overwrite
+`bigNumber`'s own built-in glow shadow with a plain readability shadow, silently undoing the fix's
+whole point. `flutter analyze --no-pub lib/features/home/home_page.dart`: no issues.
+
+**Verified, not just asserted**: `flutter test test/golden/composed_screen_golden_test.dart` failed
+post-fix (`composed_home_{light,dark}`, 52.77%/45.94% diff) -- read both the master (pre-fix baseline)
+and test (post-fix) images directly rather than trusting the percentage alone: the master image shows
+the small bold "0"s (matching the on-device screenshot, confirming the golden baseline itself had
+been capturing the bug all along, since M1-M9 closed without device verification -- see `core/
+MASTER_PLAN_2026-08-26.md` SS3/SS9 rows 7/8), the test image shows large, thin, glowing digits
+matching `bigNumber`'s spec exactly, with the rest of the layout unchanged apart from the expected
+downstream reflow from the taller number glyphs. Golden baselines regenerated
+(`--update-goldens`): `composed_home_{light,dark}.png`, plus the two `composed_workouts_{light,dark}`
+files that regenerated as a side effect of the same run (these were already the documented
+standalone-only font-substitution flake from the OBS-1 item 13 entry above, unrelated to this
+change -- confirmed unrelated because `_TotalCard` is Home-only, never rendered on Workouts).
+`flutter test test/features/home/ test/golden/hud_golden_test.dart`: 0 new failures -- the 10 `[E]`
+results (`HudPanel`, `HudButton`, `HudChip`, `HudNavBar` goldens) are the pre-existing, already-
+documented, already-waived font-substitution set (`core/MASTER_PLAN_2026-08-26.md` SS12, "25
+failures... reconfirmed identical across multiple full runs"), none of them the widget this change
+touched, all `test/features/home/` functional tests green.
+
+**Not verified on-device after the fix, disclosed rather than silently skipped**: reinstalling the
+rebuilt APK hit two real device obstacles in sequence -- `INSTALL_FAILED_INSUFFICIENT_STORAGE` (S8
+at 98% `/data`, worked around non-destructively via `pm trim-caches 2G`, which only clears
+reclaimable app cache, never user data/apps -- deliberately did not uninstall or clear any actual
+app data on the operator's physical device without being asked), then the device dropped off `adb
+devices` entirely (`kill-server`/`start-server` didn't recover it -- a USB/transport-level issue,
+not a `pm`-cache side effect, since it happened on a plain `input tap` after a successful reinstall).
+Not chased further: this is the operator's own physical test phone, and forcing a reconnect this
+session cannot see the cause of is exactly the kind of guess this project's own evidence discipline
+warns against. **What the fix rests on instead**: the real BEFORE screenshot (bug confirmed live), a
+clean `flutter analyze`, and the direct pixel comparison of the golden test's own before/after
+render pair (a real, if host-rendered rather than on-device, image of the corrected output) -- not
+code-reading alone, but short of the full on-device confirmation this project's own standard asks
+for. Flagged here explicitly rather than reported as "done, on-device-verified."
+
+**Finding 2 -- investigated, correctly NOT a defect.** The Workouts tab briefly showed one visually
+empty `HudPanel` card between "Распознать" and "Офлайн-загрузки · Supporter+" in a screenshot taken
+3s after switching tabs (`shot_workouts.png`). A second screenshot 5s later (`shot_workouts2.png`)
+showed the same card populated with real content ("Отобрано правилами, а не врачом" + exercise
+cards) -- an async catalog-load race in this session's own screenshot timing, not a rendering defect.
+No code change.
+
+**Finding 3 -- investigated, correctly NOT a defect.** Profile and Progress tabs showed markedly
+less of the shared photo background visible through card gaps than Home/Workouts (`shot_profile.png`).
+Hypothesis considered: `profile_page.dart`/`progress_page.dart` wrap themselves in their own
+`FrostedScaffold` (confirmed via grep -- Home/Workouts do not), suggesting a possible double-scaffold
+background bug. Ruled out before touching any code: `FrostedScaffold` itself sets
+`backgroundColor: Colors.transparent` (`glass.dart:208`) and does not paint anything opaque; the
+shared `HudSkyBackground` lives one level up in `main_shell.dart:126`, wrapping every tab body
+including Profile/Progress, so the photo IS present behind them. The actual, and legitimate,
+explanation: `hud_sky.dart`'s own `denseSurfaceAlpha` mechanism (`hud_sky.dart:163,191,423`) lets
+content-heavy cards draw a denser fill tier instead of the neutral one -- Profile/Progress simply
+have more densely-packed, text-heavy cards with less gap between them, so less photo shows through
+by construction, not because the background is missing. Backed by this project's own existing
+`dense_surface_contrast_test.dart` infrastructure (grepped, exists). No code change -- recorded here
+specifically so a future session does not re-open this exact non-issue on the same screenshot.
+
+**Net**: one real, confirmed, fixed design-fidelity defect (BLOCKER-class per the design system's own
+doc comment, though narrowly scoped -- one widget, one file); two suspected gaps investigated and
+correctly ruled out rather than acted on without evidence, per SS3/SS23 ("do not go looking for a
+prohibition" applied in reverse -- do not go looking for a defect and manufacture one either). This
+does not close SS9 rows 7/8 (HUD migration debt, 142 `GlassCard` occurrences across 46 files remains
+untouched by this pass -- that is a much larger, separate migration, not attempted here) -- this
+entry closes exactly the one concrete defect this pass's on-device walkthrough actually surfaced and
+verified, nothing broader.
+
+**Result**: `mobile/lib/features/home/home_page.dart` (+7/-2 lines), `mobile/test/golden/goldens/
+composed_home_{light,dark}.png`, `composed_workouts_{light,dark}.png` (regenerated baselines).
+Committing next, through the standard mandatory GPT-PM review gate (SS15) -- R0/R1-adjacent per
+SS6 (single-widget style-token correction restoring an already-documented, already-existing design
+rule, not a new design decision), same posture as the OBS-1 item 13 doc-comment fix above, but this
+one IS a behavior/visual change so it still goes through the mechanical commit-time review gate
+rather than being called R0-and-skipped outright.

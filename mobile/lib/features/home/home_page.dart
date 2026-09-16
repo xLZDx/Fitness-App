@@ -632,7 +632,17 @@ class _TotalCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           FittedBox(
-            child: Text(value, style: HudType.panelHeading(t).inPanel(t)),
+            // Design system rule, stated twice in the handoff and guarded by
+            // `HudType.bigNumber`'s own doc comment: a large metric is weight
+            // 400 with a glow, never bold -- `panelHeading` (w800, no glow)
+            // was the wrong style for a number, only the right one for the
+            // panel's other, textual headings (programme/machine/person
+            // names), which is what it stays reserved for everywhere else.
+            // No `.inPanel(t)`/`.overPhoto(t)` suffix: `hud_metric.dart`'s own
+            // correct usage (the ring counters) calls `bigNumber` bare too --
+            // either suffix would overwrite its own built-in glow shadow with
+            // a plain readability shadow instead.
+            child: Text(value, style: HudType.bigNumber(t, size: 34)),
           ),
           const SizedBox(height: 2),
           Text(
