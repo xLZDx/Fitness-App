@@ -205,13 +205,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ f838ad4</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 9913918</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -273,14 +275,14 @@
           <tbody>
             <tr><td class="idcell">P2.G1</td><td><span class="pill passed">passed</span></td><td>Структурированный OCR (<span class="mono">MachineTextEvidence</span>) — закрыт 2026-09-10.</td></tr>
             <tr><td class="idcell">P2.G2</td><td><span class="pill passed">passed</span></td><td>IdentityTextParser, все 6 hard-cases — закрыт 2026-09-10/11.</td></tr>
-            <tr><td class="idcell">P2.G3</td><td><span class="pill partial">review done, гейт открыт</span></td><td>5 раундов GPT-PM, финал APPROVE, код запушен — но гейт формально <b>OPEN/DEPLOYMENT_PENDING</b>: реальный (не dry-run) deploy в <span class="mono">fitness-app-korostelev</span> отдельно не авторизован.</td></tr>
+            <tr><td class="idcell">P2.G3</td><td><span class="pill passed">passed (закрыт 09-16)</span></td><td><b>Реальный production-деплой выполнен сегодня.</b> Свежий, отдельный GPT-PM APPROVE именно на действие деплоя (2 раунда — раунд 1 MAJOR на непроверенный живой инвентарь Firestore-индексов, устранено реальными данными; раунд 2 APPROVE). <span class="mono">firebase deploy --only functions:equipment-identity,firestore:indexes --project fitness-app-korostelev</span> — «Deploy complete!»: 2 функции (<span class="mono">equipmentIdentityResolveFromText</span>, <span class="mono">equipmentIdentityRecordTelemetry</span>), 1 Firestore-индекс. Проверено вживую после деплоя: 22 Cloud Functions (было 20), <span class="mono">stripeWebhook</span> — тот же source generation байт-в-байт, продакшен-путь Stripe не затронут.</td></tr>
             <tr><td class="idcell">P2.G4</td><td><span class="pill passed">passed (подтверждено 09-16)</span></td><td>Доверифицировано позже в этот же день: Rosetta-план <span class="mono">bced53</span> (rev4) имеет <span class="mono">status: passed</span>, closure review — реальный <span class="mono">VERDICT: APPROVE 0/0</span> от GPT-PM (2026-09-12T10:00:15Z). Гейт был закрыт корректно ещё 12 сентября — просто не был отдельно отражён в <span class="mono">pm_gate_status</span>. Пробел трекинга забэкфиллен через <span class="mono">pm_set_gate</span>.</td></tr>
             <tr><td class="idcell">P2.G5-readiness</td><td><span class="pill partial">шаги 2/3a/3b готовы</span></td><td>Это <b>не сам P2.G5</b>, а подготовка телеметрии к нему. Step 2 (серверный writer), Step 3a (мобильная телеметрия) и теперь <b>Step 3b (надёжный retry-outbox на мобильной стороне)</b> — все passed; Step 3b закрыт сегодня, 2026-09-16, коммит <span class="mono">b55b1fd</span> (4 раунда ревью GPT-PM: файловый outbox с атомарной записью, классификация retryable/terminal ошибок, заодно исправлено проглатывание ошибки персистентности на сервере). <b>Всё ещё намеренно отложено из объёма step 3b</b>: подключение сетевой отправки <span class="mono">ENRICHMENT_DISABLED</span> и заполнение мобильного <span class="mono">genericOutcome</span> — неразрешённое противоречие с §4.2b замороженного дизайн-контракта, нужно продуктовое решение GPT-PM перед стартом.</td></tr>
             <tr><td class="idcell">P2.G5</td><td><span class="pill notstarted">не начат</span></td><td>Сам чекпоинт GO_VISUAL/DEFER_VISUAL. Нужны: (1) report/metrics-скрипт — по §7 дизайн-дока такого скрипта в <span class="mono">scripts/</span> вообще нет; (2) минимум 50 eligible-сканов <b>и</b> 14 календарных дней сбора реальных данных — сбор фактически не начинался, код телеметрии только что смёржен.</td></tr>
           </tbody>
         </table>
       </div>
-      <p style="margin:0;">Обновление 2026-09-16: <span class="mono">pm_gate_status</span> изначально не содержал отдельных записей P2.G1–G4 — все четыре теперь забэкфиллены напрямую по своим Rosetta-записям (P2.G1/G2/G4 как <span class="mono">passed</span>, P2.G3 как <span class="mono">in-progress</span> — честно отражая его собственный статус <span class="mono">OPEN/DEPLOYMENT_PENDING</span>, а не как <span class="mono">passed</span>).</p>
+      <p style="margin:0;">Обновление 2026-09-16 (продолжение того же дня): P2.G1/G2/G4 забэкфиллены как <span class="mono">passed</span> напрямую по своим Rosetta-записям. P2.G3 закрыт по-настоящему в этой же сессии позже в тот же день — реальным деплоем, а не бэкфиллом. Запись <span class="mono">pm_set_gate(P2.G3=passed)</span> в реестр PM Bridge отложена: сессия обнаружила, что её собственная сборка транспорта устарела относительно демона (<span class="mono">pm_bridge_mode_status</span>), и отправка через этот путь рискует доставить контент не в тот проектный чат — решение и доказательства полностью зафиксированы в <span class="mono">core/DECISION_LOG.md</span>, бэкфилл — с чистой сессии.</p>
     </div>
   </div>
 
@@ -313,7 +315,7 @@
       <tbody>
         <tr><td class="idcell">MVP1.G1</td><td><span class="pill passed">passed</span></td><td>Все 4 слайса закрыты.</td></tr>
         <tr><td class="idcell">MVP1.G2</td><td><span class="pill passed">passed</span></td><td>Android 16 / API-36 targetSdk миграция. <b>Это фактически закрывает пункт 1 приоритетной таблицы</b> («targetSdk 35 vs. Play API-36») — сам мастер-план эту строку не обновил, см. оговорки ниже.</td></tr>
-        <tr><td class="idcell">MVP1.G3</td><td><span class="pill progress">in-progress</span></td><td>Step 9B (production-мониторинг) — closed. Формально открытым остаётся Step 10: <b>10A</b> (live-видимость enforcement-состояния из Firebase/GCP), <b>10B</b> (device-подтверждение Crashlytics/perf сигналов), <b>10C</b> (сверка 13 пунктов OBS-1 rebaseline). Из decision-log/§27 видно, что часть работы, помеченной как «Step 10B/10C evidence» (телеметрия, алерт-роутинг), уже фактически сделана 2026-08-28 — но записи о финальном adversarial-review и <span class="mono">pm_set_gate(G3=passed)</span> не найдено. GPT-PM явно исключил из scope: деплой AI Gateway callable и threshold-based AI paging.</td></tr>
+        <tr><td class="idcell">MVP1.G3</td><td><span class="pill passed">фактически closed, трекинг отстаёт</span></td><td><b>Исправлено 2026-09-16: Step 10A/10B/10C на самом деле уже закрыты 2026-08-27/28</b>, а не открыты, как показывал устаревший <span class="mono">pm_gate_status</span> (запись от 2026-08-27T16:46, до того как эта работа закрылась). Проверено живьём заново, а не со слов документа: живой прогон <span class="mono">production_manifest.py</span> нашёл уже задеплоенную функцию <span class="mono">runEnforcementStateCheck</span> (Step 10A); <span class="mono">core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md</span> — все 13 пунктов OBS-1 CLOSED/REBASED→CLOSED; Step 10B (Crashlytics-проводка) независимо подтверждена по текущему коду (<span class="mono">tts_voice_coach.dart</span>, <span class="mono">machine_describer.dart</span>) и по истории коммитов. Расхождение — только в бухгалтерии <span class="mono">pm_gate_status</span>, не в самой работе; бэкфилл <span class="mono">passed</span> отложен по той же причине транспорта, что и у P2.G3 выше.</td></tr>
       </tbody>
     </table>
   </div>
@@ -336,7 +338,7 @@
       <tbody>
         <tr><td class="idcell">1</td><td class="item">Auth/data-flow канарейка</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">2</td><td class="item">Functions test-health enforcement в CI</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: подтверждено, <span class="mono">functions/scripts/assert_test_health.js</span> в job <span class="mono">unit</span> (functions.yml)</td></tr>
-        <tr><td class="idcell">3</td><td class="item">Дашборд enforcement-статуса (App Check/rules/Identity)</td><td>RUNTIME</td><td><span class="pill partial">частично</span> — только видимость, общая картина App Check всё ещё UNKNOWN</td></tr>
+        <tr><td class="idcell">3</td><td class="item">Дашборд enforcement-статуса (App Check/rules/Identity)</td><td>RUNTIME</td><td><span class="pill passed">done</span> — 09-16: исправлена ошибочная запись из прежнего аудита. <span class="mono">runEnforcementStateCheck</span> уже задеплоен и жив (найдено живым прогоном <span class="mono">production_manifest.py</span>); <span class="mono">core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md</span> закрывает этот пункт ещё 27-28.08 под своей нумерацией. Расхождение было только в бухгалтерии <span class="mono">pm_gate_status</span>, не в самой работе</td></tr>
         <tr><td class="idcell">4</td><td class="item">Монитор целостности биллинга (Stripe)</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">5</td><td class="item">RU/EN semantic-drift проверка</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: подтверждено, job <span class="mono">ru-en-drift</span> в flutter.yml</td></tr>
         <tr><td class="idcell">6</td><td class="item">Mobile/Dart dependency (SCA) сканирование</td><td>CI</td><td><span class="pill passed">done</span></td></tr>
@@ -372,19 +374,19 @@
         <tr><td class="idcell">9</td><td class="item">text-anchor OCR (18/18) не подключён в live-режим</td><td>Medium-High</td><td><span class="pill blocked">open</span> с 08-07</td></tr>
         <tr><td class="idcell">10</td><td class="item">P2/P4/P6 движок распознавания</td><td>Medium/long-term</td><td><span class="pill progress">в работе</span> — P2 активно продвигается</td></tr>
         <tr><td class="idcell">11</td><td class="item">Конфликт лицензии vendor-клипов на AI-обучение</td><td>Low (пока P4 отложен)</td><td><span class="pill blocked">open</span> — блокирует возобновление P4</td></tr>
-        <tr><td class="idcell">12</td><td class="item">Противоречие nonprofit/subscription в ARB-копирайтинге</td><td>Medium</td><td><span class="pill blocked">open</span></td></tr>
+        <tr><td class="idcell">12</td><td class="item">Противоречие nonprofit/subscription в ARB-копирайтинге</td><td>Medium</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE (2 раунда). Реальным донат-языком оказалась только одна строка (<span class="mono">momentsWeReANonprofitAndThe</span>) — Условия использования уже корректно отрицали nonprofit-статус. Строка переписана в EN+RU</td></tr>
         <tr><td class="idcell">13</td><td class="item">Утёкший Roboflow-ключ — переиздание не подтверждено</td><td>Medium</td><td><span class="pill blocked">open</span> — операторское/консольное действие</td></tr>
         <tr><td class="idcell">14</td><td class="item">Полная картина App Check enforcement</td><td>Medium</td><td><span class="pill blocked">open/unknown</span></td></tr>
         <tr><td class="idcell">15</td><td class="item">kCanonicalMachines второй источник истины</td><td>Medium</td><td><span class="pill passed">closed</span></td></tr>
         <tr><td class="idcell">16</td><td class="item">Прямые вызовы Gemini без rate-limit</td><td>Medium-High</td><td><span class="pill passed">closed/rebased</span> — риск теперь под MVP1.G4</td></tr>
         <tr><td class="idcell">17</td><td class="item">Нет client-runtime/ML телеметрии</td><td>Medium</td><td><span class="pill passed">closed</span></td></tr>
         <tr><td class="idcell">18</td><td class="item">Нет SCA-сканирования Mobile/Dart</td><td>Medium</td><td><span class="pill passed">closed</span></td></tr>
-        <tr><td class="idcell">19</td><td class="item">Решение по политике экспорта фото (R11f-2)</td><td>Low</td><td><span class="pill blocked">open</span> — решение не принято</td></tr>
+        <tr><td class="idcell">19</td><td class="item">Решение по политике экспорта фото (R11f-2)</td><td>Low</td><td><span class="pill passed">closed WONT_BUILD</span> — 09-16, GPT-PM APPROVE. Экспорт фото прогресса формально не строится (сохраняет обещание «фото не покидают телефон»); код уже был совместим с 08-08, обновлена только документация. Можно переоткрыть как отдельный consent-gated гейт при реальном спросе</td></tr>
         <tr><td class="idcell">20</td><td class="item">Избранные залы + соц-мониторинг</td><td>Low</td><td><span class="pill notstarted">только план</span></td></tr>
         <tr><td class="idcell">21</td><td class="item">Молчаливый провал 8 alert-путей (Stripe × 2 и др.)</td><td>High, финансово-значимо</td><td><span class="pill passed">closed</span> — 2026-08-28</td></tr>
         <tr><td class="idcell">22</td><td class="item">Нет CI-джобы, собирающей release-артефакт</td><td>Блокер релиза</td><td><span class="pill partial">частично</span> — job добавлена и реально гоняется на ubuntu-latest (2 реальных бага найдены и исправлены: захардкоженный Windows-путь к JDK в gradle.properties, отсутствующий google-services.json); хвост — оператору нужно завести репо-секрет GOOGLE_SERVICES_JSON_B64 в GitHub, без него release-build красный по понятной причине, не по мистике</td></tr>
         <tr><td class="idcell">23</td><td class="item">equipment-identity deploy predeploy без теста</td><td>Medium-High</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE (3 раунда), тест-степ добавлен + постоянный regression-guard (6 pytest-тестов)</td></tr>
-        <tr><td class="idcell">24</td><td class="item">Firestore wildcard + денилист вместо allowlist</td><td>Medium</td><td><span class="pill blocked">open</span> — новое, 09-15</td></tr>
+        <tr><td class="idcell">24</td><td class="item">Firestore wildcard + денилист вместо allowlist</td><td>Medium</td><td><span class="pill partial">расследовано, ждёт GPT-PM</span> — 09-16: заявленная предпосылка бэклога («нет тестового покрытия») устарела — <span class="mono">firestore_rules.test.ts</span> (1016 строк) уже полное. Реальный остаточный риск найден и сформулирован (9 коллекций живут только на wildcard-грант, без явного правила), вопрос отправлен GPT-PM (allowlist-миграция vs. расширение существующего drift-guard) — отправка заблокирована устаревшей сборкой транспорта этой сессии, ждёт свежей сессии</td></tr>
         <tr><td class="idcell">25</td><td class="item">server_export.dart — не тот регион Functions</td><td>Low-Medium</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE, регион-фикс + regression-guard тест</td></tr>
         <tr><td class="idcell">26</td><td class="item">Legacy health-data lazy migration без расписания sweep</td><td>Medium</td><td><span class="pill partial">partial</span> — 09-16: скрипт впервые протестирован (0→36 тестов) и запущен заново, вживую, только на чтение. Находка: живой проект (fitness-app-korostelev) — 39/39 профильных документов всё ещё несут поля здоровья (2026-08-06 было записано 0); legacy-shared — 1/14. Вероятно тестовые аккаунты с устройств (предположение, не подтверждено) — согласуется с "реальных пользователей пока нет". Удаление (<span class="mono">--apply</span>) — действие над продакшен-данными, намеренно не выполнено, ждёт решения оператора. Плановая проверка в CI набросана, но нерабочая — нужны новый auth-путь и секрет.</td></tr>
       </tbody>
@@ -401,20 +403,37 @@
       <li>Не отражает работу этой недели: <span class="mono">P2.G5-readiness</span> шаги 3a/3b (оба закрыты 09-16), финальный статус <span class="mono">P2.G4</span>, закрытие пунктов 22/23/25.</li>
       <li>Не упоминает <span class="mono">FORM_COACH_HUD_ALIGNMENT</span> как отдельный гейт вовсе — тот появился в <span class="mono">pm_gate_status</span> отдельно от мастер-плана.</li>
     </ul>
-    <b>pm_gate_status (реестр PM Bridge) тоже был неполон:</b> не содержал отдельных записей для P2.G1–P2.G4 — те гейты закрывались только через <span class="mono">core/DECISION_LOG.md</span>, без <span class="mono">pm_set_gate</span>. <b>Полностью закрыто той же сессией, 2026-09-16:</b> все четыре гейта доверифицированы напрямую по их собственным Rosetta-записям и забэкфиллены в <span class="mono">pm_gate_status</span> — P2.G1/P2.G2/P2.G4 как <span class="mono">passed</span> (реальные closure-review APPROVE), P2.G3 намеренно как <span class="mono">in-progress</span>, а не <span class="mono">passed</span> — его собственная запись закрытия прямо говорит, что закрывает только implementation-план и держит мастер-гейт <span class="mono">OPEN/DEPLOYMENT_PENDING</span> до отдельно авторизованного реального деплоя.
+    <b>pm_gate_status (реестр PM Bridge) тоже был неполон — и не только для P2.G1–P2.G4:</b>
+    P2.G1/P2.G2/P2.G4 забэкфиллены как <span class="mono">passed</span> ранее в этой сессии. <b>Позже в тот же день</b> обнаружены и исправлены два более серьёзных расхождения: (1) P2.G3 закрыт по-настоящему реальным production-деплоем (см. §01), не бэкфиллом; (2) <span class="mono">MVP1.G3</span> в реестре всё ещё висел как <span class="mono">in-progress</span> с Step 10A/10B/10C как «остаток», хотя вся эта работа фактически закрыта ещё 2026-08-27/28 — запись в реестре просто не обновили после закрытия (см. §02). <b>Обе записи (<span class="mono">pm_set_gate(P2.G3=passed)</span> и <span class="mono">pm_set_gate(MVP1.G3=passed)</span> + Step10A/B/C) намеренно отложены до свежей сессии:</b> эта сессия обнаружила, что её собственная сборка PM Bridge устарела относительно демона по коду роутинга (<span class="mono">pm_bridge_mode_status</span>: «THIS SESSION is the stale one»), и запись гейта автоматически шлёт GPT-PM уведомление через тот же транспорт — риск доставить контент не в тот проектный чат. Полное решение и доказательства — в <span class="mono">core/DECISION_LOG.md</span>.
   </div>
+</section>
+
+<section id="today-tier-bcd">
+  <h2><span class="num">06b</span> Закрыто сегодня после этого отчёта: Tier B/C/D бэклога</h2>
+  <p class="section-note">Продолжение автономного прогона <span class="mono">core/plans/AUTONOMOUS_BACKLOG_RUN_2026-09-16.md</span> той же сессией, позже в тот же день. Полные доказательства и раунды GPT-PM — в <span class="mono">core/DECISION_LOG.md</span>, записи с 16:00 и позже.</p>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>Пункт</th><th>Статус</th><th>Что произошло</th></tr></thead>
+      <tbody>
+        <tr><td class="idcell">Tier B 9 / row 24</td><td><span class="pill partial">расследовано, ждёт GPT-PM</span></td><td>См. §05, пункт 24 выше.</td></tr>
+        <tr><td class="idcell">Tier B 10/11/12<br/>(MVP1.G3 Step 10A/B/C)</td><td><span class="pill passed">уже было закрыто, бухгалтерия исправлена</span></td><td>См. §02 выше — реальной работы не требовалось, только исправление устаревшей записи трекинга.</td></tr>
+        <tr><td class="idcell">Tier C 13/14<br/>(row 12, row 19)</td><td><span class="pill passed">closed</span></td><td>См. §05, пункты 12 и 19 выше — оба продуктовых решения от GPT-PM получены и реализованы, по 2 раунда ревью каждое.</td></tr>
+        <tr><td class="idcell">Tier D 15<br/>(P2.G3 production deploy)</td><td><span class="pill passed">DONE</span></td><td>Самый рискованный пункт всего бэклога. См. §01 (P2.G3) выше — свежий, конкретный GPT-PM APPROVE именно на действие деплоя, живая проверка индекс-инвентаря продакшена и dry-run перед реальным деплоем, живая проверка после деплоя (<span class="mono">stripeWebhook</span> не затронут).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin:8px 0 0;">Попутно найдена и исправлена реальная регрессия в P0.G6 deploy-isolation harness (<span class="mono">scripts/equipment_identity/verify_deployment_isolation.py</span>) — обнаружена только потому, что этот dry-run-чек был реально запущен перед Tier D, а не предположен всё ещё зелёным со времени своего закрытия 2026-08-22.</p>
 </section>
 
 <section id="next">
   <h2><span class="num">07</span> Что бы я предложил дальше</h2>
   <div class="callout">
-    Обновлено 09-16, позже в тот же день: автономный прогон бэклога Tier A закрыл пункты 22/23/25, OBS-1 пункты 2/5/12/13, P2.G5-readiness step 3b и sweep по остаточным данным здоровья (пункт 26 / OBS-1 пункт 7) — всё вычеркнуто из списка ниже. Один пункт по-настоящему требует решения оператора и не вычеркнут: удаление 40 документов с остаточными данными здоровья, найденных sweep'ом (см. §04, пункт 7, §27, пункт 26). Реально оставшиеся направления:
+    Обновлено 09-16, конец дня: весь бэклог <span class="mono">AUTONOMOUS_BACKLOG_RUN_2026-09-16.md</span> пройден до конца — Tier A (пункты 22/23/25, OBS-1 2/5/12/13, sweep остаточных данных здоровья), Tier B (пункт 8 — исправлена устаревшая предпосылка; пункты 10/11/12 — оказались уже закрыты 08-27/28, исправлена только бухгалтерия трекинга; пункт 9/row 24 — расследовано, вопрос сформулирован и отправлен GPT-PM, ждёт ответа), Tier C (пункты 12/19 — оба продуктовых решения получены и реализованы) и Tier D (пункт 15 — <b>реальный production-деплой P2.G3 выполнен</b>, самый рискованный пункт всего прогона). Реально оставшиеся направления:
     <ul>
-      <li><b>Ждёт решения оператора</b> — запускать ли и когда <span class="mono">strip_health_from_profiles.py --apply</span> против 40 найденных сегодня документов-остатков. Это не решение GPT-PM и не то, что эта сессия может взять на себя единолично (исключение для удаления в CLAUDE.md §20).</li>
+      <li><b>Ждёт решения оператора</b> — запускать ли и когда <span class="mono">strip_health_from_profiles.py --apply</span> против 40 найденных документов-остатков. Это не решение GPT-PM и не то, что эта сессия может взять на себя единолично (исключение для удаления в CLAUDE.md §20).</li>
+      <li><b>Ждёт свежей (не устаревшей) сессии PM Bridge</b> — два вопроса, отправка которых заблокирована устаревшей сборкой транспорта этой сессии: (1) ответ GPT-PM по пункту 24 (Firestore wildcard vs. allowlist), уже отправлен, ответ пока не получен; (2) бэкфилл <span class="mono">pm_set_gate</span> для P2.G3 и MVP1.G3/Step10A/B/C — решение уже принято и полностью задокументировано, не хватает только записи в реестр PM Bridge.</li>
       <li><b>Аудит реального текущего состояния FORM_COACH_HUD_ALIGNMENT</b> — формулировка этого гейта в бэклоге оказалась устаревшей (см. §03); полноценный реконсиляционный аудит того, что уже реализовано, а что ещё в процессе в цепочке Session/Form Coach/Onboarding, не проводился.</li>
-      <li><b>MVP1.G3 Step 10A</b> — единственный формально описанный, но не подтверждённый закрытым шаг до финального G3.</li>
       <li><b>Оставшийся отложенный объём P2.G5-readiness</b> — подключение сетевой отправки <span class="mono">ENRICHMENT_DISABLED</span> и заполнение мобильного <span class="mono">genericOutcome</span>, заблокировано на продуктовое решение GPT-PM (известное противоречие с §4.2b замороженного дизайн-контракта).</li>
-      <li><b>Пункт 24</b> (шаблон Firestore wildcard + denylist) — реальная миграция правил с реальным блэст-радиусом, нужен полноценный Rosetta-план и реальное покрытие тестами DENY/ALLOW перед любым пушем.</li>
     </ul>
   </div>
 </section>
@@ -422,6 +441,8 @@
 <footer>Источники: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 
 

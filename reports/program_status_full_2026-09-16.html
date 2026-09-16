@@ -202,13 +202,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ f838ad4</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 9913918</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -270,14 +272,14 @@
           <tbody>
             <tr><td class="idcell">P2.G1</td><td><span class="pill passed">passed</span></td><td>Structured OCR (<span class="mono">MachineTextEvidence</span>) — closed 2026-09-10.</td></tr>
             <tr><td class="idcell">P2.G2</td><td><span class="pill passed">passed</span></td><td>IdentityTextParser, all 6 hard cases — closed 2026-09-10/11.</td></tr>
-            <tr><td class="idcell">P2.G3</td><td><span class="pill partial">review done, gate open</span></td><td>5 GPT-PM rounds, final APPROVE, code pushed — but the gate itself remains formally <b>OPEN/DEPLOYMENT_PENDING</b>: a real (non-dry-run) deploy to <span class="mono">fitness-app-korostelev</span> has not been separately authorized.</td></tr>
+            <tr><td class="idcell">P2.G3</td><td><span class="pill passed">passed (closed 09-16)</span></td><td><b>Real production deploy performed today.</b> Fresh, separate GPT-PM APPROVE naming the deploy action itself (2 rounds — round 1 MAJOR on unverified live Firestore index inventory, closed with real evidence; round 2 APPROVE). <span class="mono">firebase deploy --only functions:equipment-identity,firestore:indexes --project fitness-app-korostelev</span> — "Deploy complete!": 2 functions (<span class="mono">equipmentIdentityResolveFromText</span>, <span class="mono">equipmentIdentityRecordTelemetry</span>), 1 Firestore index. Verified live post-deploy: 22 Cloud Functions (was 20), <span class="mono">stripeWebhook</span>'s source generation byte-identical — the production Stripe path was untouched.</td></tr>
             <tr><td class="idcell">P2.G4</td><td><span class="pill passed">passed (confirmed 09-16)</span></td><td>Re-verified later the same day: the Rosetta plan <span class="mono">bced53</span> (rev4) carries <span class="mono">status: passed</span>, and its closure review is a genuine <span class="mono">VERDICT: APPROVE 0/0</span> from GPT-PM (2026-09-12T10:00:15Z). The gate was closed correctly on September 12 — it just was never separately mirrored into <span class="mono">pm_gate_status</span>. That tracking gap is now backfilled via <span class="mono">pm_set_gate</span>.</td></tr>
             <tr><td class="idcell">P2.G5-readiness</td><td><span class="pill partial">steps 2/3a/3b done</span></td><td>This is <b>not P2.G5 itself</b> — it's the telemetry infrastructure preparing for it. Step 2 (server writer), Step 3a (mobile telemetry) and now <b>Step 3b (durable mobile-side retry outbox)</b> — all passed; Step 3b closed today, 2026-09-16, commit <span class="mono">b55b1fd</span> (4 GPT-PM rounds: file-backed atomic-write outbox, terminal-vs-retryable failure classification, server-side persistence-failure surfacing fixed too). <b>Still deliberately deferred from step 3b's own scope</b>: <span class="mono">ENRICHMENT_DISABLED</span> network-send wiring and mobile <span class="mono">genericOutcome</span> population — unresolved contradiction against the frozen design contract's §4.2b, needs a GPT-PM product decision before pickup.</td></tr>
             <tr><td class="idcell">P2.G5</td><td><span class="pill notstarted">not started</span></td><td>The actual GO_VISUAL/DEFER_VISUAL checkpoint. Needs: (1) a report/metrics script — per the design doc §7, no such script exists anywhere under <span class="mono">scripts/</span>; (2) a minimum of 50 eligible scans <b>and</b> 14 calendar days of real collection — collection has effectively not started, the telemetry code only just merged.</td></tr>
           </tbody>
         </table>
       </div>
-      <p style="margin:0;">Update 2026-09-16: <span class="mono">pm_gate_status</span> originally carried no individual entries for P2.G1–G4 — all four are now backfilled directly from their own Rosetta records (P2.G1/G2/G4 as <span class="mono">passed</span>, P2.G3 as <span class="mono">in-progress</span> — honestly reflecting its own <span class="mono">OPEN/DEPLOYMENT_PENDING</span> status rather than being marked <span class="mono">passed</span>).</p>
+      <p style="margin:0;">Update 2026-09-16 (later the same day): P2.G1/G2/G4 backfilled as <span class="mono">passed</span> directly from their own Rosetta records. P2.G3 was closed for real later the same session — by an actual deploy, not a backfill. <span class="mono">pm_set_gate(P2.G3=passed)</span> is deliberately deferred: this session found its own PM Bridge build stale relative to the daemon (<span class="mono">pm_bridge_mode_status</span>), and sending through that path risks misrouting content into a different project's chat — decision and evidence fully recorded in <span class="mono">core/DECISION_LOG.md</span>, backfill pending a fresh session.</p>
     </div>
   </div>
 
@@ -310,7 +312,7 @@
       <tbody>
         <tr><td class="idcell">MVP1.G1</td><td><span class="pill passed">passed</span></td><td>All 4 slices closed.</td></tr>
         <tr><td class="idcell">MVP1.G2</td><td><span class="pill passed">passed</span></td><td>Android 16 / API-36 targetSdk migration. <b>This actually closes priority-table row 1</b> ("targetSdk 35 vs. Play API-36") — the master plan's own row was never updated to reflect it; see caveats below.</td></tr>
-        <tr><td class="idcell">MVP1.G3</td><td><span class="pill progress">in-progress</span></td><td>Step 9B (production monitoring) — closed. Formally still open: Step 10 — <b>10A</b> (live enforcement-state visibility from Firebase/GCP), <b>10B</b> (device-confirmed Crashlytics/perf signals), <b>10C</b> (reconciliation of the 13 OBS-1 rebaseline items). Decision-log/§27 evidence shows parts of what's labeled "Step 10B/10C evidence" (telemetry, alert routing) were already done 2026-08-28 — but no record of a final adversarial review or <span class="mono">pm_set_gate(G3=passed)</span> was found. GPT-PM explicitly excluded from scope: AI Gateway callable deployment and threshold-based AI paging.</td></tr>
+        <tr><td class="idcell">MVP1.G3</td><td><span class="pill passed">effectively closed, tracking lagged</span></td><td><b>Corrected 2026-09-16: Step 10A/10B/10C were already closed 2026-08-27/28</b>, not open as the stale <span class="mono">pm_gate_status</span> record showed (timestamped 2026-08-27T16:46, before that work closed). Re-verified live, not from the document's word: a live <span class="mono">production_manifest.py</span> run found <span class="mono">runEnforcementStateCheck</span> already deployed (Step 10A); <span class="mono">core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md</span> shows all 13 OBS-1 rows CLOSED/REBASED→CLOSED; Step 10B (Crashlytics wiring) independently re-confirmed in current code (<span class="mono">tts_voice_coach.dart</span>, <span class="mono">machine_describer.dart</span>) and commit history. The gap was only in <span class="mono">pm_gate_status</span> bookkeeping, not the work; backfill to <span class="mono">passed</span> deferred for the same transport reason as P2.G3 above.</td></tr>
       </tbody>
     </table>
   </div>
@@ -333,7 +335,7 @@
       <tbody>
         <tr><td class="idcell">1</td><td class="item">Auth/data-flow canary</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">2</td><td class="item">Functions test-health CI enforcement</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: confirmed, <span class="mono">functions/scripts/assert_test_health.js</span> in the <span class="mono">unit</span> job (functions.yml)</td></tr>
-        <tr><td class="idcell">3</td><td class="item">Enforcement-status dashboard (App Check/rules/Identity)</td><td>RUNTIME</td><td><span class="pill partial">partial</span> — visibility only, overall App Check picture still unknown</td></tr>
+        <tr><td class="idcell">3</td><td class="item">Enforcement-status dashboard (App Check/rules/Identity)</td><td>RUNTIME</td><td><span class="pill passed">done</span> — 09-16: corrected a stale prior-audit claim. <span class="mono">runEnforcementStateCheck</span> is already deployed and live (found via a live <span class="mono">production_manifest.py</span> run); <span class="mono">core/OBS1_G3_STEP10C_RECONCILIATION_2026-08-28.md</span> closes this row 2026-08-27/28 under its own numbering. The gap was only in <span class="mono">pm_gate_status</span> bookkeeping, not the work</td></tr>
         <tr><td class="idcell">4</td><td class="item">Billing integrity monitor (Stripe)</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">5</td><td class="item">RU/EN semantic-drift check</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: confirmed, the <span class="mono">ru-en-drift</span> job in flutter.yml</td></tr>
         <tr><td class="idcell">6</td><td class="item">Mobile/Dart dependency (SCA) scanning</td><td>CI</td><td><span class="pill passed">done</span></td></tr>
@@ -368,19 +370,19 @@
         <tr><td class="idcell">9</td><td class="item">text-anchor OCR (18/18) not wired into live mode</td><td>Medium-High</td><td><span class="pill blocked">open</span> since 08-07</td></tr>
         <tr><td class="idcell">10</td><td class="item">P2/P4/P6 recognition-decision engine</td><td>Medium/long-term</td><td><span class="pill progress">in progress</span> — P2 actively moving</td></tr>
         <tr><td class="idcell">11</td><td class="item">Vendor-clip AI-training licence conflict</td><td>Low (while P4 deferred)</td><td><span class="pill blocked">open</span> — blocks P4 resumption</td></tr>
-        <tr><td class="idcell">12</td><td class="item">Nonprofit/subscription ARB copy contradiction</td><td>Medium</td><td><span class="pill blocked">open</span></td></tr>
+        <tr><td class="idcell">12</td><td class="item">Nonprofit/subscription ARB copy contradiction</td><td>Medium</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE (2 rounds). Only one string actually carried donation-solicitation language (<span class="mono">momentsWeReANonprofitAndThe</span>) — the Terms of Service already correctly disclaimed nonprofit status. Rewritten in EN+RU</td></tr>
         <tr><td class="idcell">13</td><td class="item">Leaked Roboflow key — reissue unconfirmed</td><td>Medium</td><td><span class="pill blocked">open</span> — operator/console action</td></tr>
         <tr><td class="idcell">14</td><td class="item">Full App Check enforcement picture</td><td>Medium</td><td><span class="pill blocked">open/unknown</span></td></tr>
         <tr><td class="idcell">15</td><td class="item">kCanonicalMachines second source of truth</td><td>Medium</td><td><span class="pill passed">closed</span></td></tr>
         <tr><td class="idcell">16</td><td class="item">Direct Gemini calls with no rate limit</td><td>Medium-High</td><td><span class="pill passed">closed/rebased</span> — risk now owned by MVP1.G4</td></tr>
         <tr><td class="idcell">17</td><td class="item">No client-runtime/ML telemetry</td><td>Medium</td><td><span class="pill passed">closed</span></td></tr>
         <tr><td class="idcell">18</td><td class="item">No Mobile/Dart SCA scanning</td><td>Medium</td><td><span class="pill passed">closed</span></td></tr>
-        <tr><td class="idcell">19</td><td class="item">Photo export policy decision (R11f-2)</td><td>Low</td><td><span class="pill blocked">open</span> — decision not made</td></tr>
+        <tr><td class="idcell">19</td><td class="item">Photo export policy decision (R11f-2)</td><td>Low</td><td><span class="pill passed">closed WONT_BUILD</span> — 09-16, GPT-PM APPROVE. Progress-photo export formally not built, preserving "never leaves your phone"; code was already compliant since 08-08, only documentation updated. Reopenable as a fresh consent-gated gate if real demand ever justifies it</td></tr>
         <tr><td class="idcell">20</td><td class="item">Gym-favoriting + social monitoring</td><td>Low</td><td><span class="pill notstarted">plan only</span></td></tr>
         <tr><td class="idcell">21</td><td class="item">Silent failure-alert path on 8 sites (Stripe × 2, etc.)</td><td>High, financial-correctness-adjacent</td><td><span class="pill passed">closed</span> — 2026-08-28</td></tr>
         <tr><td class="idcell">22</td><td class="item">No CI job builds a real release artifact</td><td>Release-blocking</td><td><span class="pill partial">partial</span> — job added and actually runs on ubuntu-latest (2 real bugs found and fixed: hardcoded Windows JDK path in gradle.properties, missing google-services.json); remaining tail -- operator needs to provision the GOOGLE_SERVICES_JSON_B64 repo secret in GitHub, without it release-build fails with a clear, actionable message, not a mystery</td></tr>
         <tr><td class="idcell">23</td><td class="item">equipment-identity deploy predeploy hook has no test step</td><td>Medium-High</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE (3 rounds), test step added + persistent regression guard (6 pytest tests)</td></tr>
-        <tr><td class="idcell">24</td><td class="item">Firestore wildcard + denylist instead of allowlist</td><td>Medium</td><td><span class="pill blocked">open</span> — new, 09-15</td></tr>
+        <tr><td class="idcell">24</td><td class="item">Firestore wildcard + denylist instead of allowlist</td><td>Medium</td><td><span class="pill partial">investigated, awaiting GPT-PM</span> — 09-16: the backlog's stated precondition ("no test coverage") was stale — <span class="mono">firestore_rules.test.ts</span> (1016 lines) is already complete. The real residual risk was found and framed (9 collections live only on the wildcard grant, no explicit rule); sent to GPT-PM (allowlist migration vs. extending the existing drift guard) — send blocked by this session's stale transport build, awaiting a fresh session</td></tr>
         <tr><td class="idcell">25</td><td class="item">server_export.dart calls the wrong Functions region</td><td>Low-Medium</td><td><span class="pill passed">closed</span> — 09-16, GPT-PM APPROVE, region fix + regression-guard test</td></tr>
         <tr><td class="idcell">26</td><td class="item">Legacy health-data lazy migration has no scheduled sweep</td><td>Medium</td><td><span class="pill partial">partial</span> — 09-16: sweep script tested for the first time (0→36 tests) and re-run fresh, live, read-only. Finding: default project (fitness-app-korostelev) 39/39 profile documents still carry health fields (2026-08-06 recorded 0); legacy-shared 1/14. Likely test-device accounts (inference, unconfirmed) per "no real users yet." Clearing it (<span class="mono">--apply</span>) is a production deletion, deliberately not performed — awaiting an operator decision. Scheduled CI check drafted but non-functional pending a new auth path + secret.</td></tr>
       </tbody>
@@ -397,20 +399,37 @@
       <li>Doesn't reflect this week's work: <span class="mono">P2.G5-readiness</span> steps 3a/3b (both closed 09-16), P2.G4's final status, or rows 22/23/25's closures.</li>
       <li>Doesn't mention <span class="mono">FORM_COACH_HUD_ALIGNMENT</span> as a gate at all — that one surfaced only in <span class="mono">pm_gate_status</span>, separate from the master plan.</li>
     </ul>
-    <b>pm_gate_status (the PM Bridge registry) was also incomplete:</b> it carried no individual entries for P2.G1–P2.G4 — those gates were closed only through <span class="mono">core/DECISION_LOG.md</span>, never via <span class="mono">pm_set_gate</span>. <b>Fully closed the same session, 2026-09-16:</b> all four gates were re-verified directly against their own Rosetta records and backfilled into <span class="mono">pm_gate_status</span> — P2.G1/P2.G2/P2.G4 as <span class="mono">passed</span> (genuine closure-review APPROVEs), P2.G3 deliberately as <span class="mono">in-progress</span> rather than <span class="mono">passed</span> — its own closure record explicitly states it closes only the implementation plan and keeps the master gate <span class="mono">OPEN/DEPLOYMENT_PENDING</span> until a separately authorized real deploy.
+    <b>pm_gate_status (the PM Bridge registry) was also incomplete — and not only for P2.G1–P2.G4:</b>
+    P2.G1/P2.G2/P2.G4 backfilled as <span class="mono">passed</span> earlier this session. <b>Later the same day</b>, two more serious discrepancies were found and fixed: (1) P2.G3 closed for real via an actual production deploy (see §01), not a backfill; (2) <span class="mono">MVP1.G3</span> still showed <span class="mono">in-progress</span> with Step 10A/10B/10C as the "remaining" scope, even though that work was actually closed 2026-08-27/28 — the registry entry was simply never updated afterward (see §02). <b>Both backfills (<span class="mono">pm_set_gate(P2.G3=passed)</span> and <span class="mono">pm_set_gate(MVP1.G3=passed)</span> + Step10A/B/C) are deliberately deferred</b> to a fresh session: this session found its own PM Bridge build stale relative to the daemon's routing code (<span class="mono">pm_bridge_mode_status</span>: "THIS SESSION is the stale one"), and a gate-status write auto-notifies GPT-PM through that same transport — a real risk of misrouting content into a different project's chat. Full decision and evidence in <span class="mono">core/DECISION_LOG.md</span>.
   </div>
+</section>
+
+<section id="today-tier-bcd">
+  <h2><span class="num">06b</span> Closed after this report, same day: backlog Tier B/C/D</h2>
+  <p class="section-note">Continuation of the autonomous run (<span class="mono">core/plans/AUTONOMOUS_BACKLOG_RUN_2026-09-16.md</span>), same session, later the same day. Full evidence and GPT-PM rounds in <span class="mono">core/DECISION_LOG.md</span>, entries from 16:00 onward.</p>
+  <div class="tblwrap">
+    <table>
+      <thead><tr><th>Item</th><th>Status</th><th>What happened</th></tr></thead>
+      <tbody>
+        <tr><td class="idcell">Tier B 9 / row 24</td><td><span class="pill partial">investigated, awaiting GPT-PM</span></td><td>See §05, row 24 above.</td></tr>
+        <tr><td class="idcell">Tier B 10/11/12<br/>(MVP1.G3 Step 10A/B/C)</td><td><span class="pill passed">already closed, tracking fixed</span></td><td>See §02 above — no real work was needed, only a stale tracking-record correction.</td></tr>
+        <tr><td class="idcell">Tier C 13/14<br/>(row 12, row 19)</td><td><span class="pill passed">closed</span></td><td>See §05, rows 12 and 19 above — both product decisions obtained from GPT-PM and implemented, 2 review rounds each.</td></tr>
+        <tr><td class="idcell">Tier D 15<br/>(P2.G3 production deploy)</td><td><span class="pill passed">DONE</span></td><td>The highest-risk item in the whole backlog. See §01 (P2.G3) above — a fresh, specific GPT-PM APPROVE naming the deploy action itself, live production index-inventory check and dry-run before the real deploy, live post-deploy verification (<span class="mono">stripeWebhook</span> untouched).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin:8px 0 0;">Along the way, found and fixed a real regression in the P0.G6 deploy-isolation harness (<span class="mono">scripts/equipment_identity/verify_deployment_isolation.py</span>) — found only because this dry-run check was actually run ahead of Tier D, rather than assumed still-green since its 2026-08-22 closure.</p>
 </section>
 
 <section id="next">
   <h2><span class="num">07</span> What I'd suggest next</h2>
   <div class="callout">
-    Updated 09-16, later the same day: the autonomous Tier A backlog run closed rows 22/23/25, OBS-1 items 2/5/12/13, P2.G5-readiness step 3b, and the health-data residue sweep (row 26/OBS-1 item 7) — all struck from the list below. One genuinely operator-only item surfaced and is not struck: clearing the 40 health-data-residue documents the sweep found (see §04 item 7, §27 row 26). Real directions remaining:
+    Updated 09-16, end of day: the whole <span class="mono">AUTONOMOUS_BACKLOG_RUN_2026-09-16.md</span> backlog has been worked through to the end — Tier A (rows 22/23/25, OBS-1 2/5/12/13, health-data residue sweep), Tier B (item 8 — stale premise corrected; items 10/11/12 — turned out already closed 08-27/28, only tracking bookkeeping fixed; item 9/row 24 — investigated, question framed and sent to GPT-PM, awaiting reply), Tier C (items 12/19 — both product decisions obtained and implemented), and Tier D (item 15 — <b>P2.G3's real production deploy performed</b>, the highest-risk item in the whole run). Real directions remaining:
     <ul>
-      <li><b>Operator decision pending</b> — whether/when to run <span class="mono">strip_health_from_profiles.py --apply</span> against the 40 residue documents found today. Not GPT-PM's call; not this session's to make unilaterally (CLAUDE.md §20's deletion carve-out).</li>
+      <li><b>Operator decision pending</b> — whether/when to run <span class="mono">strip_health_from_profiles.py --apply</span> against the 40 residue documents found. Not GPT-PM's call; not this session's to make unilaterally (CLAUDE.md §20's deletion carve-out).</li>
+      <li><b>Awaiting a fresh (non-stale) PM Bridge session</b> — two items blocked by this session's stale transport build: (1) GPT-PM's reply on row 24 (Firestore wildcard vs. allowlist), already sent, reply not yet received; (2) <span class="mono">pm_set_gate</span> backfill for P2.G3 and MVP1.G3/Step10A/B/C — the decision is already made and fully documented, only the PM Bridge registry entry is missing.</li>
       <li><b>Audit FORM_COACH_HUD_ALIGNMENT's real current frontier</b> — the backlog's own framing of this gate was stale (see §03); a proper reconciliation audit of what shipped vs. what's still mid-flight in the Session/Form-Coach/Onboarding sequence has not been done.</li>
-      <li><b>MVP1.G3 Step 10A</b> — the one formally-described sub-step that isn't confirmed closed before final G3.</li>
       <li><b>P2.G5-readiness's remaining deferred scope</b> — <span class="mono">ENRICHMENT_DISABLED</span> network-send wiring and mobile <span class="mono">genericOutcome</span> population, blocked on a GPT-PM product decision (a known contradiction against the frozen design contract's §4.2b).</li>
-      <li><b>Row 24</b> (Firestore wildcard + denylist pattern) — real rules-migration blast radius, needs a full Rosetta plan and real DENY/ALLOW test coverage before any push.</li>
     </ul>
   </div>
 </section>
@@ -418,6 +437,8 @@
 <footer>Sources: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 
 

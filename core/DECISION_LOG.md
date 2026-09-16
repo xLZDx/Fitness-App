@@ -53291,3 +53291,93 @@ needed.
 green (107/107) and independently re-verified as complete for today's real `npm run build` script
 content. This does not by itself authorize the deploy -- still needs a fresh, specific GPT-PM
 APPROVE naming the deploy action itself, per the backlog's own extra-caution framing for this item.
+
+## 2026-09-16 -- Tier D item 15: P2.G3's real, first production deploy -- DONE, GPT-PM fresh APPROVE
+## (2 rounds), live evidence before and after, `stripeWebhook` byte-identical throughout
+
+**Planned**: obtain a fresh, specific GPT-PM APPROVE naming the deploy action itself (not the
+2026-09-11 implementation-review APPROVE, which the P2.G3 Rosetta plan's own closure text and
+`pm_gate_status` both explicitly scope to implementation-review only, leaving the gate itself
+OPEN/DEPLOYMENT_PENDING), run every available dry-run/isolation check first, and treat any genuine
+remaining doubt about blast radius to the production `stripeWebhook` path as the operator's call
+rather than stretching §20 -- per the backlog's own extra-caution framing for this specific item and
+CLAUDE.md §21's "smaller reading is safer" default.
+
+**Pre-flight** (see the two entries directly above this one): fixed a real regression in the P0.G6
+deploy-isolation probe (found by actually running it, not assuming its 2026-08-22 closure still
+held), re-verified equipment-identity's own build+test (515/515), confirmed the exact targeted
+deploy commands via `TARGETED_DEPLOY_COMMANDS`, and confirmed `firestore.indexes.json` contains
+exactly one new composite index (`equipment_model_text_keys`).
+
+**Round 1** (via `review.js`, same session-staleness transport workaround as every other exchange
+today -- `pm_bridge_mode_status` confirmed still stale at every check today, never resolved this
+session; `reviewRequestId a9e3d0a1-6fad-4a5f-9cc4-e10c96abbc46`, `replyId
+99bd1783-8505-489d-898b-f5467a7d83bf`, correlated: true): `VERDICT: MAJOR`. GPT-PM found a real gap
+I had not closed: I had asserted the Firestore index deploy was a "pure addition" without ever
+checking the LIVE production index inventory -- Firebase's index deploy reconciles the full set, so
+a remote-only index/field-override absent from the local file can enter a deletion/reconciliation
+path, which would NOT be a pure addition. No blocker on the `functions:equipment-identity` deploy
+itself (codebase separation, targeted-command guard, refreshed isolation suite, and the 515/515
+equipment-identity tests were judged sufficient for that half). Required: run `firebase
+firestore:indexes --project fitness-app-korostelev` (read-only) and compare against
+`firestore.indexes.json`; then run the combined `--dry-run`; treat any delete/discrepancy prompt or
+unexpected resource change as a stop condition.
+
+**Evidence gathered in response, all live, all today**:
+- `firebase firestore:indexes --project fitness-app-korostelev` -> `{"indexes": [], "fieldOverrides":
+  []}`. Production held ZERO deployed indexes and ZERO field overrides at the time of this deploy --
+  the one local index entry was confirmed a genuine pure addition, nothing remote to conflict with.
+- `firebase deploy --dry-run --only functions:equipment-identity,firestore:indexes --project
+  fitness-app-korostelev`: 515/515 tests passed during predeploy (the many `console.error`/`warn`
+  lines in the raw log are deliberate test-injected error-path assertions inside the unit tests
+  themselves, e.g. simulated "firestore outage"/"emulator down" -- not real failures, confirmed by
+  the suite's own "28 passed, 28 total" summary); `firestore.rules` compiled successfully; indexes
+  read with no delete/discrepancy prompt; functions step prepared ONLY the `equipment-identity`
+  codebase (426.1 KB packaged) with no mention anywhere of the `default` codebase or `stripeWebhook`;
+  ended "Dry run complete!" with no errors. Two disclosed, non-blocking warnings: Node.js 20 runtime
+  deprecated 2026-04-30 / decommissioned 2026-10-30 (real future maintenance item, not this gate's
+  scope), and an outdated `firebase-functions` package version.
+
+**Round 2** (`reviewRequestId 644e9e60-39db-4e3b-8356-7077642f28b9`, `replyId
+11619e84-6b09-411c-b9a9-1a989c4f02a1`, correlated: true): `VERDICT: APPROVE`, 0 BLOCKER / 0 MAJOR,
+naming the exact production action: `firebase deploy --only functions:equipment-identity,firestore:
+indexes --project fitness-app-korostelev`. GPT-PM's own words: "This is stronger evidence than the
+static isolation proof alone because it validates targeting against the real production project."
+Explicit post-deploy closure condition stated: confirm the command exits 0 and the expected
+equipment-identity functions/index are present; any unexpected default-codebase mutation or
+deployment error is a stop condition, not something to waive.
+
+**Executed**: clean working tree confirmed (`git status --short` empty, HEAD = `9913918`, matching
+what was reviewed) immediately before running the real command. `firebase deploy --only
+functions:equipment-identity,firestore:indexes --project fitness-app-korostelev` -- **"Deploy
+complete!"** Two functions created: `equipment-identity:equipmentIdentityResolveFromText`
+(europe-west1) and `equipment-identity:equipmentIdentityRecordTelemetry` (europe-west1). Firestore
+index deployed successfully for the `(default)` database.
+
+**Post-deploy verification, per GPT-PM's own stated closure condition** -- live, not assumed:
+`scripts/dev/production_manifest.py --print`, re-run immediately after the deploy: 22 Cloud
+Functions now (was 20 before this deploy), including both new ones with fresh, high source-
+generation IDs (`equipmentIdentityRecordTelemetry` = `1789564789713924`,
+`equipmentIdentityResolveFromText` = `1789564751496390`). Critically: **`stripeWebhook`'s source
+generation is `1787949403958590`, byte-for-byte identical to the value read in this session's very
+first `production_manifest.py` run today, before any of this Tier D work began.** The default
+codebase was genuinely untouched by this deploy -- isolation held completely, confirmed live against
+the real production project, not merely asserted from static config or a prior gate's closure text.
+
+**DECISION**: P2.G3 -- CLOSED. The gate's own long-standing OPEN/DEPLOYMENT_PENDING status (recorded
+in `pm_gate_status` and this log's own "P2.G3 gate status" entry from 2026-09-11) is now resolved:
+the real, non-dry-run deployment this status was waiting on has happened, been verified live, and
+left the production Stripe path provably untouched.
+
+**`pm_gate_status` backfill deliberately deferred, same reason as the Step10A/B/C entry above**:
+`pm_set_gate(..., status: "passed")` auto-notifies GPT-PM via the same daemon/playwright transport
+this session's `gpt_send_and_await` was refused on for routing-safety reasons, re-checked immediately
+before this entry (`pm_bridge_mode_status`: still "THIS SESSION is the stale one," unchanged all
+session). Not forced. `core/DECISION_LOG.md` (this entry) is the authoritative record of the
+decision and evidence regardless of when the separate PM Bridge JSON tracker catches up -- to be
+backfilled (`P2.G3`, plus the still-pending `MVP1.G3`/`.Step10A`/`.Step10B`/`.Step10C` backfills from
+earlier today) from a fresh, non-stale session.
+
+**Status**: DONE. This closes the highest-risk, most-cautiously-handled item in the entire backlog
+run. `core/MASTER_PLAN_2026-08-26.md` §5/§9 and the rolling status report to be updated to match in
+the same commit as this entry.
