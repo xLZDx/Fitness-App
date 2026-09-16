@@ -53629,3 +53629,127 @@ call to make unilaterally (the second is a PM Bridge `src/` change, subject to t
 
 **Next**: implement rev4's 13 steps under this real APPROVE. Decision log entries at each closed
 step per §17's discipline of documenting as work proceeds, not only at the end.
+
+## 2026-09-16 -- Row 24 gate: implementation (steps 1-7 of rev4) complete and independently
+re-verified; cold second-round internal review (step 8) found 1 BLOCKER + 4 distinct MAJOR + 1
+MINOR, real and evidenced, remediation next before sending to GPT-PM (step 9)
+
+**Implementation** (delegated to a general-purpose agent with the full rev4 design as its brief,
+per this session's context-budget discipline; every claim independently re-run by me before
+trusting it, per "trust but verify"): new `scripts/ci/lib/rules_parser.js` (PLAIN_OWNER /
+ALWAYS_FALSE / NON_TRIVIAL / AUTHENTICATED / PUBLIC classification per match block per verb), new
+`scripts/ci/check_data_access_policy.js` (3-source discovery: rules full-path, literal
+`.collection()` across `functions/src` + `functions-equipment-identity/src` + `mobile/lib`,
+registered path-registry for constant-based calls; fail-closed non-literal-call scanner),
+`clientAccess` added to 37 collections in `scripts/ci/data_lifecycle_policy.json` (existing
+`classification`/`reason` fields confirmed byte-identical), new
+`functions/src/__rules__/data_access_policy.test.ts` (emulator-driven, operation-specific
+CONDITIONAL verification), new `scripts/ci/test_check_data_access_policy.js` (5-class
+mutation-proof self-test), new `scripts/ci/DATA_ACCESS_POLICY_DESIGN.md`, `.github/workflows/
+functions.yml` wired with a new `data-access-policy` job.
+
+**Independently re-verified by me** (not just the agent's own report): `node scripts/ci/
+check_data_access_policy.js` -> 37 discovered, 37 declared, 0 unresolved, exit 0. `node scripts/
+ci/test_check_data_access_policy.js` -> all 5 mutation classes + 1 positive case pass (RED on
+injection, GREEN on fix). Full emulator suite (`npm run test:rules` in `functions/`, using
+`FIREBASE_EMULATOR_CONFIG=../firebase.e2e-equipment-identity.json FIRESTORE_EMULATOR_PORT=8090` to
+dodge a real port-8080 conflict from `rqdo-platform-appsmith-1`, an unrelated sibling project's
+live Docker container, confirmed via `docker ps`/`netstat` before working around it rather than
+touching anything) -> 2 suites, 269/269 (121 pre-existing unchanged + 148 new). `npm test` in
+`functions/` -> 23 suites, 601/601. `npx tsc --noEmit` -> clean. Also independently verified one of
+the agent's self-reported deviations (profile.delete declared `NONE`, not `CONDITIONAL`, because
+`request.resource` does not exist on a `delete` request so `profile`'s health-gated write condition
+errors on every delete attempt) against the real `firestore.rules:181-197` and the parser's
+generalized (not profile-hardcoded) `ALWAYS_FALSE` detection in `rules_parser.js` -- correct.
+
+**Cold second-round internal specialist review** (database-reviewer + security-reviewer, run in
+parallel, each independently, neither primed with the other's findings or with any prior-round
+design discussion -- true cold reads of the actual diff, per §17's sequencing requirement that
+internal review runs before GPT-PM sees the diff):
+
+**security-reviewer -- VERDICT: CHANGES REQUIRED, 1 BLOCKER / 3 MAJOR / 1 MINOR:**
+- **BLOCKER**: `validateConditionalRef` (`check_data_access_policy.js:326-359`) never checks that
+  the referenced test's actual Firestore path matches the declared collection -- only that the
+  test has the right SDK-call shape (`updateDoc`/`setDoc`/etc) and contains both `assertSucceeds`
+  and `assertFails` somewhere. A CONDITIONAL declaration for a brand-new sensitive collection could
+  legally point at an unrelated existing test (e.g. `_canary/update`) and pass. No backstop exists
+  for this: the emulator suite's Part 2 generic sweep explicitly SKIPS every CONDITIONAL cell
+  (`data_access_policy.test.ts:222`). This defeats the gate's core promise for its highest-risk
+  cells.
+- **MAJOR**: `collectionAccess()` (`rules_parser.js:306-333`) trusts a dedicated match block's
+  classification unconditionally whenever one exists, never checking whether the wildcard's own
+  exclusion list actually excludes that leaf for that verb -- ignores Firestore's real OR-across-
+  matching-blocks semantics (`firestore.rules:20-23`'s own documented hazard). Currently dormant
+  (every live dedicated restrictive block IS correctly excluded today, verified by cross-check) but
+  structurally unsound: a future block could add a restrictive verb, forget the matching wildcard
+  exclusion, and the checker would certify a wrong (too-permissive) declaration as `NONE`/
+  `CONDITIONAL`. Partially backstopped by the emulator suite's Part 2 sweep for non-CONDITIONAL
+  cells only.
+- **MAJOR**: `parseFirestoreRules` silently keeps only the LAST `allow <verb>: if ...;` statement
+  per op when a block declares more than one for the same verb -- no union, no error, contradicting
+  Firestore's real OR semantics for multiple statements within one block. Currently dormant (no
+  live block has this shape).
+- **MAJOR**: the fail-closed non-literal-call scanner only recognizes one indirection shape
+  (`Identifier.member`, i.e. a registered registry); everything else -- including an ordinary
+  one-line helper function wrapping `.collection(name)` -- lands in the non-blocking "residue"
+  bucket with zero CI signal. `account_export.ts` already has this exact shape live in the
+  codebase today (documented as residue, not a failure). Recreates the precise failure class this
+  gate exists to prevent via ordinary refactoring, no malice required.
+- **MINOR**: `profile`'s two CONDITIONAL proofs exercise only the health-strip clause of its write
+  condition, not the co-located `lifestyle.smoking`/`lifestyle.alcohol` clauses in the same rule --
+  passes only coincidentally for those clauses, not because they're actually tested.
+- Confirmed clean: the path-registry mechanism itself (can't be tricked into misresolving a value
+  it parses correctly -- the indirection gap above is a separate issue); fail-closed behavior on
+  genuine parser errors (no exit-0-on-exception path found).
+
+**database-reviewer -- VERDICT: MAJOR issues found (2), no BLOCKER:**
+- **MAJOR** (same root cause as security-reviewer's wildcard/dedicated finding above, found
+  independently from a different angle -- both reviewers converging on this strengthens rather than
+  duplicates the finding): the static checker never unions a dedicated block's grant with the
+  wildcard's grant; verified every current exclusion is correct today by reading the full rules
+  file, but the checker itself has no mechanism enforcing that pairing stays correct going forward.
+- **MAJOR**: Source B/C (code-discovered collection names via literal `.collection()` calls or the
+  path-registry) unconditionally assume every discovered name is a per-user subcollection
+  (`derivePathVars(name, true)` hardcoded at `check_data_access_policy.js:265-275`) -- no live
+  misfire today (every current top-level collection already has a dedicated Source A rules block,
+  so this branch is never reached for them), but a genuinely new top-level collection introduced
+  code-first with no rules block yet would get its canonical path mis-derived as a user-subcollection
+  path, potentially masking exactly the omission class this gate exists to catch.
+- Confirmed clean: combined-verb (`allow read, write: if ...`) parsing correct against every real
+  block, spot-checked by hand; path-aware leaf-collision handling proven correct by the existing
+  mutation class (c), not just inspected; discovery exclusions/`walk()` correctly scoped, no
+  over-exclusion found; pre-existing `classification`/`reason` fields confirmed byte-identical via
+  direct `git diff` read (not trusted from a summary); CI wiring correct (self-test runs before the
+  real check; new emulator test file picked up automatically by the existing `jest.rules.config.js`
+  glob).
+
+**Consolidated remediation, before sending to GPT-PM (§17 "remediate the complete reported package
+in one pass, fix the class not the instance")** -- 6 items, each with its own acceptance test named
+by the reviewer who found it:
+1. [was BLOCKER] `validateConditionalRef` must derive the actual Firestore path the named test
+   exercises and confirm it matches the declared collection -- not just the operation shape.
+   Acceptance test: point `profile/update`'s ref at `_canary/update` (right shape, wrong
+   collection) and confirm the checker goes RED naming the mismatch.
+2. [was MAJOR x2, independently found] `collectionAccess()` must verify, for any dedicated verb
+   more restrictive than the wildcard would otherwise grant, that the leaf is actually present in
+   the wildcard's own exclusion set for that verb -- fail loudly naming the missing exclusion if
+   not. Acceptance test: inject a dedicated `allow write: if false;` block for a new leaf NOT added
+   to the wildcard's exclusion list; confirm the static checker (not just the emulator suite) goes
+   RED.
+3. [was MAJOR] `parseFirestoreRules` must detect a second `allow <verb>` statement for an
+   already-populated op within one block and fail closed rather than silently overwrite. Acceptance
+   test: inject a second `allow write` statement into `profile`'s block; confirm the checker errors.
+4. [was MAJOR] widen the fail-closed scanner to catch bare-identifier/helper-function indirection,
+   not just `Identifier.member`. Acceptance test: add a one-line `function coll(db,n){return
+   db.collection(n);}` helper plus a call site for a new literal collection name with no rules
+   block; confirm this is caught.
+5. [was MAJOR] Source B/C discovery must not assume subcollection-vs-top-level; disambiguate via
+   call-site shape (e.g. only resolve nesting when chained off `.doc(uid).collection(...)`) or
+   document as an accepted residual scope limit in the design doc's existing limits section.
+   Acceptance test: inject a literal `.collection('new_top_level')` call with no matching rules
+   block; confirm the checker either fails closed naming the ambiguity or the limit is documented.
+6. [was MINOR] extend `profile`'s CONDITIONAL fixtures to also exercise the
+   `lifestyle.smoking`/`lifestyle.alcohol` bypass clauses, not just health-strip.
+
+**Status**: remediation next, as one batch, before this diff goes to GPT-PM for implementation
+review (rev4 plan step 9).
