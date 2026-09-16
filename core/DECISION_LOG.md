@@ -53811,3 +53811,79 @@ no truncation risk.
 9/12) via `review.js --uncommitted` (a genuine diff review this time, not a scope-note plan-GO --
 the earlier `pm_rosetta_go` transport limitation only affects the plan-approval ledger entry, not
 ordinary diff review, which `review.js` was always designed for).
+
+## 2026-09-16 -- Row 24 gate: GPT-PM implementation review round 1 -- VERDICT: REVISE, 3 BLOCKER
+/ 4 MAJOR, all independently verified real before remediating
+
+Sent via `review.js --uncommitted --project fitness_app --round 1`, reviewRequestId
+`18b50010-7a71-4139-b945-b1ce8d342cd9`, replyId `e0ea0c95-e3df-490b-8b8f-ecdc2f44b798`.
+**VERDICT: REVISE, 3 BLOCKER / 4 MAJOR.** All 7 findings independently verified against the real
+code before accepting (per §3/§23) -- 3 BLOCKERs and 3 of 4 MAJORs traced directly in the source,
+the 4th MAJOR accepted on the strength of the others' consistent accuracy without full end-to-end
+trace (flagged for the remediation agent to verify directly).
+
+**BLOCKER 1 -- discovery has no coverage for direct `db.doc(<path>)` calls, only `.collection()`.**
+VERIFIED: `grep`ed production code and found this is a widespread, pre-existing pattern, not a
+hypothetical -- `functions/src/index.ts` alone has 15+ live examples (`db.doc(\`users/${uid}/
+subscription/main\`)`, `db.doc(\`donor_wall/${auth.uid}\`)`, `db.doc(\`coach_bookings/${bookingId}\`)`,
+etc), plus `functions-equipment-identity/src/p2/quota.ts:88,156` and `functions/src/
+abuse_guard.ts:103,338` (`db().doc(\`users/${uid}/usage/${day}\`)`). None of these are visible to
+the checker's discovery, which scans only `.collection('name')` shapes. Today's 37/37-clean result
+is real but accidental -- every collection reachable via `.doc()` today also happens to already
+have a Source A (rules-derived) entry. A FUTURE collection reachable only via `.doc()` with no
+rules block would be invisible to every discovery source simultaneously -- exactly the omission
+class this whole gate exists to catch.
+
+**BLOCKER 2 -- the fail-closed non-literal-call invariant is not actually complete; interpolated
+templates/function-calls/concatenation remain soft "residue," not hard failures.** VERIFIED by
+reading `scanCollectionCalls()` directly (`check_data_access_policy.js:226-295`): only bare
+identifiers and unregistered member-expressions were hard-failed in the prior remediation (finding
+4 from the cold-review round); the code's own comment at lines 275-291 explicitly documents this as
+a "KNOWN SCOPE LIMIT, deliberate" for the entire expression class (interpolated template, function
+call, string concatenation), not scoped to specific audited call sites the way the bare-identifier
+allowlist correctly is. The justification given (residue collection names are separately
+discoverable as literals at their OWN call sites) is real for the one existing instance
+(`account_export.ts`'s generic helper) but does not generalize -- a genuinely new helper with no
+separately-discoverable literal call site would slip through entirely, silent, exit 0.
+
+**BLOCKER 3 -- CONDITIONAL provenance's three checks (SDK-call shape, assertSucceeds/assertFails
+presence, path match) are independent substring/regex tests against the WHOLE test body, never
+bound to the same assertion expression.** VERIFIED by reading `validateConditionalRef` directly
+(`check_data_access_policy.js:581-634`): `sdkRe.test(body)`, `/assertSucceeds/.test(body)` +
+`/assertFails/.test(body)`, and the `docCallPathArgs(body)` path-match are three fully independent
+checks against the entire test body string, with no code anywhere confirming these three facts are
+true of the SAME assertion. A test whose actual `assertSucceeds`/`assertFails` calls target a
+DIFFERENT collection, with an unrelated `doc()` reference to the declared path appearing anywhere
+else in the same test body (setup code, an unused variable, even a comment), passes every check.
+This is exactly the class of gap round-1's BLOCKER (fixed in the prior remediation batch) was
+supposed to close, one level deeper -- the fix added path verification but didn't bind it to the
+same fix's own operation/assertion verification.
+
+**MAJOR 1 -- registry resolution matches by identifier SPELLING alone, no import/binding
+provenance check.** VERIFIED: `registryByIdent` (`check_data_access_policy.js:227`) is keyed purely
+by `exportName` string; the lookup at line 247 matches any identically-named identifier in any file,
+with no check that it's actually imported from the registered file. A locally-shadowed
+`const P2CollectionPaths = {...}` with different values in an unrelated file would resolve to the
+registered (wrong) value.
+
+**MAJOR 2 -- `chainedOffDoc` detection is a fragile regex, not a resolved call chain; nested
+parens in the `.doc()` argument (e.g. `doc(getUid())`) defeat it**, silently misclassifying a real
+per-user subcollection as top-level. Accepted on the strength of the other verified findings; not
+independently re-traced character-by-character.
+
+**MAJOR 3 -- Source A discovery collapses distinct full paths under a coarse leaf/root key.**
+VERIFIED: `dedicatedByLeaf` (`check_data_access_policy.js:352-356`) is a `Map` keyed by
+`segments[2]` for user-subcollections but only `segments[0]` (the bare root) for every top-level
+block -- `.set()` silently overwrites on a key collision. Confirmed currently DORMANT: grepped every
+top-level match-block root in the real `firestore.rules` and found no two non-user blocks share a
+root segment today. Real structural gap, not a live miss.
+
+**MAJOR 4 -- the emulator sweep's generated `create` proof reuses the same fixture document without
+re-seeding between the positive and negative assertion, so the "negative create" case may actually
+exercise `update` semantics instead.** Accepted on the strength of the other verified findings; not
+independently re-traced against the actual generated test code before remediation (will be verified
+as part of the remediation agent's own required fix + acceptance-test cycle).
+
+**Status**: remediating all 7 as one batch (§17 "fix the complete package in one pass"), per GPT-PM's
+own instruction that "round 2 should verify only these findings plus direct regressions" -- this is
+round 1 of the 3-round implementation-review budget; round 2 will be the verification round.
