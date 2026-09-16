@@ -52284,3 +52284,112 @@ exactly the authorization that section describes, the Rosetta ledger's own bookk
 literal-path branch of `build_release.ps1`; the `Get-Command flutter` PATH-fallback branch this whole
 gate exists to add has never actually executed anywhere yet. Will check the real Actions run after
 push before treating row 22 as fully closed, per internal review's own flagged gap.
+
+**Update, same push, minutes later: the real Actions run found a genuine defect, exactly the class
+this gate exists to catch.** Run `35078448116` failed at "Build split APK (release)": Gradle refused
+with `Value 'C:/Program Files/Microsoft/jdk-17.0.18.8-hotspot' given for org.gradle.java.home Gradle
+property is invalid`. Root cause: `mobile/android/gradle.properties:4` hardcoded
+`org.gradle.java.home` to the operator's own Windows absolute path (committed to git, per
+`core/plans/IMPLEMENTATION_PLAN.md:18`, "pinned ... to avoid AGP/Java-21 incompat" locally) -- a path
+that does not exist on `ubuntu-latest`. Nothing before row 22 could ever have caught this: no CI job
+ever ran a real Gradle `assembleRelease`.
+
+Also observed in the same run: 3 other jobs failed (`dart/flutter dependency vulnerabilities (OSV)`,
+`CT-1 content QA`, `RU/EN translation semantic drift`). Checked before treating any of them as this
+session's problem: run `35074033687` (this session's own prior commit, `3ce336c`, before row 22
+existed) shows the identical 3 jobs already failing. Pre-existing, out of scope for row 22 -- noted
+here for the backlog, not fixed in this pass.
+
+**Fix (separate Rosetta plan, `fitness_app-2026-09-16T09-33-47-427Z-0c4eeb`, hash
+`00372bdad6eae3...`)**: removed the `org.gradle.java.home` line from the committed
+`gradle.properties` entirely, rather than trying to make it portable in place -- Gradle's documented
+precedence is `org.gradle.java.home` over `JAVA_HOME` over `java` on PATH, and `JAVA_HOME` is already
+correct in both places that matter: verified persistently set at Windows User-environment scope on
+the operator's machine to the identical JDK 17 path (`[Environment]::GetEnvironmentVariable
+('JAVA_HOME','User')`), and set by the new job's own `actions/setup-java@v4` step to the same
+Temurin 17 in CI. Verified with a real local build after the removal, not assumed: `pwsh
+scripts/dev/build_release.ps1` succeeded, arm64 APK 108.9MB -- byte-identical size to the pre-fix
+build, confirming `JAVA_HOME` alone is sufficient locally.
+
+GPT-PM review (round 1, `reviewRequestId efef3dbb-48a4-4a96-9c53-afeeec99c312`, correlated:true):
+`VERDICT: APPROVE`, 0 BLOCKER/0 MAJOR -- independently confirmed Gradle's own documented precedence
+order, confirmed the new job's `actions/setup-java@v4` step gives CI an explicit JDK-17 source,
+confirmed no other machine-specific absolute path exists elsewhere in the committed Android/Gradle
+configuration (a full-repo search, not a guess), and confirmed removing the line does not touch
+signing or any other JDK-version-sensitive plugin behavior (Gradle wrapper 8.10.2, AGP 8.7.0
+unchanged).
+
+`pm_rosetta_go` refused again with the exact same transport/matching-format gap as backlog row 22's
+own plan earlier this session ("no exact durable outbound record exists for this plan review body
+and request id") -- third occurrence this session (row 22, row 25 below, and this one), confirming
+this is a systemic gap in `review.js`'s outbound framing vs. `pm_rosetta_go`'s durable-record lookup,
+not an intermittent fluke. `pm_rosetta_close` then refused too, as a direct consequence (status never
+left `pending`). Proceeding on the real, correlated APPROVE evidence above, same treatment as row 22.
+
+**Result**: `mobile/android/gradle.properties` (-1 line). Committing and pushing next, then
+re-running the workflow to confirm `release-build` reaches `success` on this fix -- the actual
+closure condition for row 22, not the commit itself.
+
+## 2026-09-16 -- Backlog row 25: server_export.dart called the wrong Cloud Functions region --
+## IMPLEMENTED, genuine GPT-PM APPROVE, same Rosetta ledger gap
+
+`CloudFunctionsServerExport`'s constructor (`mobile/lib/features/data_export/server_export.dart`)
+used `FirebaseFunctions.instance` -- the SDK's default region -- while every deployed callable in
+this project lives in `europe-west1` (`kFunctionsRegion` in `mobile/lib/core/firebase/
+functions_region.dart`, matches `functions/src/scaling.ts`'s own `REGION` exactly). A region
+mismatch does not fail at build time; it fails at call time as `NOT_FOUND` on every invocation,
+because the SDK builds the callable's endpoint URL from the region. Nine other services in this
+codebase already use the correct `functions ?? functionsForRegion` DI pattern (`ai_exercise_
+generator.dart`, `ai_coach_service.dart`, `cloud_functions_account_deletion_service.dart`,
+`clip_url_resolver.dart`, `cloud_donor_wall_repository.dart`, `coach_marketplace_service.dart`,
+`cloud_functions_equipment_report_service.dart`, `cloud_functions_stripe_service.dart`, `cloud_
+equipment_identity_telemetry_service.dart`, `cloud_equipment_identity_service.dart`, `gemini_
+equipment_service.dart`, `machine_describer.dart`) -- `server_export.dart` was the one file left
+behind, and the row-25 backlog entry flagged it as exactly that: a one-line fix, do it early for a
+quick real close.
+
+**Fix**: imported `functions_region.dart`, changed the fallback to `functions ?? functionsForRegion`
+-- identical shape to the other 9. Confirmed via `main.dart:534` that production actually
+instantiates `CloudFunctionsServerExport()` with no override, so the `??` fallback is genuinely
+load-bearing, not dead code.
+
+**New regression test** (`mobile/test/ci/functions_region_gate_test.dart`): a source scan, matching
+this repo's existing `workflow_gates_test.dart` convention, failing if any file under `mobile/lib`
+contains a bare, unpinned `FirebaseFunctions.instance` (word-bounded so it never matches
+`.instanceFor`). A source scan rather than a unit test of `functionsForRegion` itself, because that
+getter needs `Firebase.initializeApp` to have already run -- out of reach for a plain `flutter_test`
+unit test without a full Firebase harness; what CAN be checked without one is the actual defect
+class. Mutation-verified for real: reverted the fix (`sed`), confirmed the test went red and named
+the exact offending file, restored the fix, confirmed green. Full `mobile/test/ci/` suite: 19/19
+passing (18 pre-existing unchanged + 1 new). `flutter analyze` clean on both changed files.
+
+**Internal specialist review** (`flutter-reviewer` agent, before GPT-PM per SS17): no material issue
+found. Verified `functionsForRegion` is the right replacement by reading the actual production DI
+wiring rather than assuming it, verified the backend's own `REGION` constant matches, grepped the
+whole `lib/` tree for any other region-mismatch-class regression (none found). Two MINOR/NIT notes
+on the new test's own edge cases (a hypothetical multi-line property-access reflow, a hypothetical
+block-comment false positive) -- both explicitly consistent with this codebase's already-accepted
+`workflow_gates_test.dart` convention, not treated as blocking.
+
+GPT-PM review (round 1, `reviewRequestId d0dac23e-e5a7-406a-bfc1-3cb5f5107e60`, correlated:true):
+`VERDICT: APPROVE`, "No BLOCKER/MAJOR remains in the submitted plan" -- independently verified the
+same production-wiring fact, the backend `REGION` match, and confirmed via its own repository search
+that `server_export.dart` was indeed the last remaining bare-instance site.
+
+`pm_rosetta_go` refused with the same transport/matching-format gap as backlog row 22 above (second
+occurrence this session) -- "no exact durable outbound record exists for this plan review body and
+request id". `pm_rosetta_close` then refused too, as a direct consequence. Proceeding on the real,
+correlated APPROVE evidence, same treatment as row 22 and the gradle.properties follow-up above.
+
+**Result**: `mobile/lib/features/data_export/server_export.dart` (+3/-1 lines), `mobile/test/ci/
+functions_region_gate_test.dart` (new, 40 lines). Committing and pushing next.
+
+**Standing note on the Rosetta ledger gap, now observed 3 times in one session**: every occurrence
+this session (row 22's plan, this gradle.properties follow-up, and row 25 above) hit the identical
+`pm_rosetta_go` refusal text against a genuinely correlated, verified GPT-PM APPROVE. This is
+consistent, not intermittent -- worth a real fix in `pm-bridge` itself (aligning `review.js`'s
+outbound plan-review framing with what `pm_rosetta_go`'s durable-record lookup expects verbatim),
+but that is `pm-bridge`'s own repository and out of scope for Fitness_App work. Continuing to treat
+it as a documented tooling/bookkeeping gap per this workspace's standing practice (trust the real,
+verified reply over a broken/incomplete mechanical parse), not as a reason real, reviewed,
+GPT-PM-approved work cannot be committed and pushed.

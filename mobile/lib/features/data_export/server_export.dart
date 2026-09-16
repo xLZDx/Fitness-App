@@ -1,5 +1,7 @@
 import 'package:cloud_functions/cloud_functions.dart';
 
+import '../../core/firebase/functions_region.dart';
+
 /// A3 — the server half of the GDPR export.
 ///
 /// The client can assemble profile, workouts, schedule, programmes and photo
@@ -18,7 +20,7 @@ abstract class ServerExport {
 
 class CloudFunctionsServerExport implements ServerExport {
   CloudFunctionsServerExport({FirebaseFunctions? functions})
-      : _functions = functions ?? FirebaseFunctions.instance;
+      : _functions = functions ?? functionsForRegion;
 
   final FirebaseFunctions _functions;
 
