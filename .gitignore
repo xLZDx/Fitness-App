@@ -101,6 +101,14 @@ mobile/coverage/
 # (raw JPEGs, ~100 MB — never commit)
 data/gym_photos_*/
 
+# Ad-hoc copy of the same real gym photos made before the data/gym_photos_*/
+# convention above was (re)discovered during the 2026-09-17 recognition-accuracy
+# eval — contains privacy-sensitive photos (trainer portraits, a minor) that must
+# never reach git history. Left in place rather than deleted (shell policy blocks
+# recursive delete without separate confirmation); this entry is the guard against
+# accidentally staging it.
+core/ml/eval/holdout_gym_photos_2026/
+
 # Python bytecode from the catalog build scripts.
 __pycache__/
 *.pyc

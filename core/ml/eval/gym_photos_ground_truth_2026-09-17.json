@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "created": "2026-09-17",
+    "purpose": "Manual ground-truth labels for real gym photos, built to measure the live production Gemini equipment-recognition path's (functions/src/ai_equipment_recognition.ts) real accuracy. No ground-truth labels existed anywhere in the repo before this file (core/CURRENT_STATE.md CT1-human-labels: HUMAN_REVIEW_LABELS = 0).",
+    "source_photos": "D:\\Downloads\\Photos-1-001, copied into data/gym_photos_<date>/ (gitignored, pre-existing project convention)",
+    "labeler": "Claude (visual inspection), single-annotator -- not cross-checked by a second human. Confidence field reflects how legible/unambiguous the equipment identity is in the photo itself, not model performance.",
+    "privacy_filter": "Photos that are people-dominant, personal, or show a minor were excluded from this manifest entirely and are never sent to the Gemini/Vertex AI API for this evaluation.",
+    "confidence_levels": {
+      "HIGH": "A legible placard/text label on the machine confirms the category, or the form factor is unambiguous.",
+      "MODERATE": "Form factor strongly suggests the category but no legible brand/model text confirms it.",
+      "LOW": "Genuine ambiguity even for a human labeler -- multiple machines in frame, or a form factor that plausibly matches 2+ canonical categories."
+    },
+    "canonical_machines_source": "functions/src/ai_equipment_recognition.ts CANONICAL_MACHINES (70 items)"
+  },
+  "excluded_privacy": [
+    { "file": "data/gym_photos_2024-04-09/20240409_142108.jpg", "reason": "trainer portrait, visible ID badge" },
+    { "file": "data/gym_photos_2024-04-09/20240409_142346.jpg", "reason": "trainer portrait, visible ID badge" },
+    { "file": "data/gym_photos_2026-05-18/20260518_140528.jpg", "reason": "personal photo, shows a child" },
+    { "file": "data/gym_photos_2026-05-18/20260518_140616.jpg", "reason": "personal photo, shows a child" },
+    { "file": "data/gym_photos_2026-07-06/20260706_142110.jpg", "reason": "trainer portrait" }
+  ],
+  "excluded_unidentifiable": [
+    { "file": "data/gym_photos_2026-09-07/20260907_150525.jpg", "reason": "extreme close-up on machine base/frame only, no way to determine equipment category even for a human" }
+  ],
+  "cases": [
+    { "file": "data/gym_photos_2026-08-06/20260806_140007.jpg", "ground_truth": "shoulder press machine", "confidence": "HIGH", "note": "SHOULDER PRESS text visible on placard" },
+    { "file": "data/gym_photos_2026-08-06/20260806_140012.jpg", "ground_truth": "pec deck", "confidence": "MODERATE", "note": "Star Trac iso-lateral swing-arm machine, no brand label for exact type" },
+    { "file": "data/gym_photos_2026-08-06/20260806_140016.jpg", "ground_truth": "lat pulldown", "confidence": "LOW", "note": "two machines in frame (station 21 lat-pulldown-style, station 42 dip/pull-up tower), multi-machine ambiguity" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131016.jpg", "ground_truth": "smith machine", "confidence": "LOW", "note": "Nautilus Freedom Rack, ambiguous between smith machine and squat rack" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131021.jpg", "ground_truth": "squat rack", "confidence": "HIGH", "note": "POWER CAGE text visible" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131025.jpg", "ground_truth": "cable machine", "confidence": "HIGH", "note": "dual-stack Nautilus Instinct functional trainer" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131029.jpg", "ground_truth": "cable machine", "confidence": "HIGH", "note": "near-duplicate of 131025" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131129.jpg", "ground_truth": "bench press station", "confidence": "MODERATE", "note": "decline bench viewed from foot end, adversarial angle" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131137.jpg", "ground_truth": "bench press station", "confidence": "MODERATE", "note": "ambiguous vs plain flat bench, rack+bar present" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131140.jpg", "ground_truth": "bench press station", "confidence": "HIGH", "note": "clear Nautilus bench+rack, station 11" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131208.jpg", "ground_truth": "captain's chair", "confidence": "LOW", "note": "Star Trac tower station 40, assisted pull-up/dip tower -- could plausibly be assisted pull-up machine instead" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131213.jpg", "ground_truth": "cable machine", "confidence": "LOW", "note": "multi-station wide shot, stations 23 and 39; center station 23 is Nautilus Inspiration high-row/lat cable tower" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131218.jpg", "ground_truth": "cable machine", "confidence": "LOW", "note": "same multi-station scene, different angle" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131223.jpg", "ground_truth": "assisted pull-up machine", "confidence": "MODERATE", "note": "station 42, dip/chin assist tower" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131228.jpg", "ground_truth": "lat pulldown", "confidence": "HIGH", "note": "LAT PULL DOWN text visible, station 21" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131233.jpg", "ground_truth": "shoulder press machine", "confidence": "HIGH", "note": "SHOULDER PRESS text visible, station 24" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131238.jpg", "ground_truth": "shoulder press machine", "confidence": "HIGH", "note": "same station 24, rear angle" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131248.jpg", "ground_truth": "cable machine", "confidence": "HIGH", "note": "station 32, Star Trac dual-stack functional trainer tower" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131307.jpg", "ground_truth": "seated row machine", "confidence": "HIGH", "note": "cable low-row station with foot platform and sliding bench" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131311.jpg", "ground_truth": "leg press machine", "confidence": "LOW", "note": "station 18, plate-loaded seated machine, exact mechanism unclear from angle" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131350.jpg", "ground_truth": "rowing machine", "confidence": "HIGH", "note": "Concept2-style air rower, clear rail and seat" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131356.jpg", "ground_truth": "elliptical trainer", "confidence": "HIGH", "note": "Star Trac ellipticals, unambiguous form factor" },
+    { "file": "data/gym_photos_2026-08-10/20260810_131358.jpg", "ground_truth": "pec deck", "confidence": "MODERATE", "note": "station 25, Nautilus Inspiration twin-cable-arm chest fly/rear delt" },
+    { "file": "data/gym_photos_2026-08-10/20260810_133034.jpg", "ground_truth": "pec deck", "confidence": "HIGH", "note": "PEC FLY / REAR DELT text visible, station 22" },
+    { "file": "data/gym_photos_2026-09-07/20260907_143257.jpg", "ground_truth": "pec deck", "confidence": "MODERATE", "note": "close-up rear-facing seat, twin independent cable arms" },
+    { "file": "data/gym_photos_2026-09-07/20260907_143258.jpg", "ground_truth": "pec deck", "confidence": "MODERATE", "note": "same seat, different angle" },
+    { "file": "data/gym_photos_2026-09-07/20260907_143304.jpg", "ground_truth": "rotary torso machine", "confidence": "HIGH", "note": "Star Trac plate-loaded rotary torso, single long handlebar" },
+    { "file": "data/gym_photos_2026-09-07/20260907_143308.jpg", "ground_truth": "rotary torso machine", "confidence": "HIGH", "note": "same machine, front angle, Star Trac footplate branding" },
+    { "file": "data/gym_photos_2026-09-07/20260907_143320.jpg", "ground_truth": "rotary torso machine", "confidence": "HIGH", "note": "station 20, Star Trac branding on footplate" },
+    { "file": "data/gym_photos_2026-09-07/20260907_143325.jpg", "ground_truth": "rotary torso machine", "confidence": "HIGH", "note": "same station 20, different angle" },
+    { "file": "data/gym_photos_2026-09-07/20260907_143640.jpg", "ground_truth": "bench press station", "confidence": "HIGH", "note": "flat bench with barbell loaded on rack" },
+    { "file": "data/gym_photos_2026-09-07/20260907_150455.jpg", "ground_truth": "glute kickback machine", "confidence": "MODERATE", "note": "plate-loaded standing kickback machine with knee pad" },
+    { "file": "data/gym_photos_2026-09-07/20260907_150510.jpg", "ground_truth": "glute kickback machine", "confidence": "MODERATE", "note": "same machine, different angle" }
+  ]
+}

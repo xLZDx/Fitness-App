@@ -1,0 +1,411 @@
+<!doctype html>
+<title>Точность распознавания тренажёров</title>
+<style>
+:root{
+  --bg:#eef0f3;
+  --surface:#ffffff;
+  --surface-2:#f7f8fa;
+  --border:#dde1e6;
+  --text:#171a20;
+  --text-dim:#565f6b;
+  --accent:#c9611f;
+  --accent-dim:#f1e0d1;
+  --good:#1f8a53;
+  --good-bg:#e4f5ec;
+  --bad:#c4373f;
+  --bad-bg:#fbe6e6;
+  --mono-bg:#101216;
+  --mono-text:#e8eaee;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14161b;
+    --surface:#1c1f26;
+    --surface-2:#22262e;
+    --border:#31363f;
+    --text:#eceef2;
+    --text-dim:#9aa2b1;
+    --accent:#e08a4b;
+    --accent-dim:#3a2a1c;
+    --good:#4bc885;
+    --good-bg:#1a2f24;
+    --bad:#ef6b72;
+    --bad-bg:#3a1e21;
+    --mono-bg:#0b0c0f;
+    --mono-text:#e8eaee;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14161b;
+  --surface:#1c1f26;
+  --surface-2:#22262e;
+  --border:#31363f;
+  --text:#eceef2;
+  --text-dim:#9aa2b1;
+  --accent:#e08a4b;
+  --accent-dim:#3a2a1c;
+  --good:#4bc885;
+  --good-bg:#1a2f24;
+  --bad:#ef6b72;
+  --bad-bg:#3a1e21;
+  --mono-bg:#0b0c0f;
+  --mono-text:#e8eaee;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  line-height:1.55;
+  padding:0 20px 64px;
+}
+.wrap{max-width:920px;margin:0 auto}
+header{padding-top:40px}
+h1{
+  font-family:"Archivo",system-ui,sans-serif;
+  font-weight:900;
+  font-size:clamp(28px,4.6vw,42px);
+  line-height:1.08;
+  margin:0 0 10px;
+  text-wrap:balance;
+  letter-spacing:-0.01em;
+}
+.subtitle{color:var(--text-dim);font-size:17px;max-width:62ch;margin:0}
+.tag{
+  display:inline-block;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:12px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  background:var(--accent-dim);
+  color:var(--accent);
+  padding:4px 10px;
+  border-radius:999px;
+  margin-bottom:14px;
+}
+section{margin-top:44px}
+h2{
+  font-family:"Archivo",system-ui,sans-serif;
+  font-weight:800;
+  font-size:22px;
+  margin:0 0 16px;
+  letter-spacing:-0.01em;
+}
+p{margin:0 0 14px}
+.stat-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:16px;
+}
+.stat-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:22px 24px;
+}
+.stat-card .num{
+  font-family:"IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums;
+  font-weight:700;
+  font-size:44px;
+  line-height:1;
+  color:var(--accent);
+}
+.stat-card .num.small{font-size:30px;color:var(--text)}
+.stat-card .label{color:var(--text-dim);font-size:14px;margin-top:8px}
+.callout{
+  background:var(--bad-bg);
+  border:1px solid var(--bad);
+  border-radius:14px;
+  padding:20px 24px;
+}
+.callout h3{
+  margin:0 0 8px;
+  font-family:"Archivo",sans-serif;
+  font-weight:800;
+  color:var(--bad);
+  font-size:17px;
+}
+.callout p{margin:0}
+.bars{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px}
+.bar-row{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.bar-row:last-child{margin-bottom:0}
+.bar-label{width:170px;flex:none;font-size:14px;color:var(--text-dim)}
+.bar-track{flex:1;background:var(--surface-2);border-radius:6px;height:26px;position:relative;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px 0 0 6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px}
+.bar-fill.good{background:var(--good)}
+.bar-fill.bad{background:var(--bad)}
+.bar-fill span{font-family:"IBM Plex Mono",monospace;font-size:12px;color:#fff;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:14px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+th{
+  background:var(--surface-2);
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:var(--text-dim);
+  position:sticky;top:0;
+}
+tr:last-child td{border-bottom:none}
+td.file{font-family:"IBM Plex Mono",monospace;color:var(--text-dim);font-size:12px}
+td.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;text-align:right}
+.pill{
+  display:inline-block;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11px;
+  font-weight:600;
+  padding:3px 9px;
+  border-radius:999px;
+}
+.pill.good{background:var(--good-bg);color:var(--good)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.conf-tier{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11px;
+  color:var(--text-dim);
+}
+.methodology dl{margin:0}
+.methodology dt{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:12.5px;
+  color:var(--accent);
+  margin-top:14px;
+}
+.methodology dt:first-child{margin-top:0}
+.methodology dd{margin:4px 0 0;color:var(--text-dim)}
+code{
+  font-family:"IBM Plex Mono",monospace;
+  background:var(--surface-2);
+  padding:1px 6px;
+  border-radius:5px;
+  font-size:0.92em;
+}
+.recommend{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-left:4px solid var(--accent);
+  border-radius:10px;
+  padding:20px 24px;
+}
+.recommend h3{margin:0 0 10px;font-family:"Archivo",sans-serif;font-weight:800;font-size:17px}
+.recommend ol{margin:0;padding-left:20px}
+.recommend li{margin-bottom:8px}
+.caveat{color:var(--text-dim);font-size:13.5px;border-top:1px solid var(--border);padding-top:16px;margin-top:40px}
+footer{margin-top:50px;color:var(--text-dim);font-size:12.5px}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@800;900&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600;700&display=swap">
+
+<div class="wrap">
+<header>
+  <span class="tag">Оценка точности · впервые измерено</span>
+  <h1>Живое распознавание тренажёров: реальная точность — 48.5%</h1>
+  <p class="subtitle">Первое в истории проекта измерение точности продакшен-пути Gemini-распознавания тренажёров по камере на реальных фото зала. До сегодняшнего дня такого измерения не существовало нигде в репозитории.</p>
+</header>
+
+<!-- report-conform:begin -->
+<style id="rc-style">
+.rc-bar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin:1.4rem 0 0;padding:0.9rem 1.05rem;background:var(--surface,#fff);
+  border:1px solid var(--border,var(--rule,#d9d9d9));
+  border-left:3px solid var(--accent,#6a6a6a);border-radius:3px}
+.rc-bar dl{display:grid;grid-template-columns:auto 1fr;gap:0.4rem 1rem;margin:0;min-width:0;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;font-size:0.74rem;line-height:1.5}
+.rc-bar dt{color:var(--text-3,var(--muted,#888));text-transform:uppercase;letter-spacing:0.08em;
+  font-size:0.66rem;white-space:nowrap;padding-top:0.15em}
+.rc-bar dd{margin:0;color:var(--text,var(--ink,#222));word-break:break-word;min-width:0}
+.rc-copy{flex:none;cursor:pointer;white-space:nowrap;
+  font-family:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent,#6a6a6a);background:var(--surface-2,var(--surface,#fff));
+  border:1px solid var(--border,var(--rule,#d9d9d9));border-radius:2px;padding:0.45em 0.85em}
+.rc-copy:hover{border-color:var(--accent,#6a6a6a)}
+.rc-copy:focus-visible{outline:2px solid var(--accent,#6a6a6a);outline-offset:2px}
+.rc-copy.is-done{color:var(--ok,#1c6f53);border-color:currentColor}
+.rc-copy.is-fail{color:var(--bad,#9e2f2a);border-color:currentColor}
+</style>
+<div class="rc-bar">
+  <dl>
+    <dt>Проект</dt><dd>Fitness-App</dd>
+    <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 401e4a7</dd>
+  </dl>
+  <button id="rc-copy" class="rc-copy" type="button"
+          data-idle="Копировать страницу" data-done="Скопировано"
+          data-fail="Выделите вручную">Копировать страницу</button>
+</div>
+<!-- report-conform:end -->
+
+<section>
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="num">48.5%</div>
+      <div class="label">Точность top-1 на всех 33 размеченных фото</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">55.6%</div>
+      <div class="label">Точность только на однозначных фото (27 из 33, где даже человек уверен в эталоне)</div>
+    </div>
+    <div class="stat-card">
+      <div class="num small">0 из 4</div>
+      <div class="label">Полный провал категории «rotary torso machine» — верный ответ не попал даже в альтернативы</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="callout">
+    <h3>Главный вывод</h3>
+    <p>Это подтверждает опасение, которое вы озвучили: сегодня живой путь распознавания <strong>не</strong> достаточно надёжен, чтобы показывать его как доверенный реальным пользователям без дополнительной защиты. При сканировании тренажёра типа «rotary torso machine» у пользователя в этой выборке был 0% шанс получить верное совпадение — и при этом карточка показывала бы уверенность 85%.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Уверенность модели не отличает верный ответ от неверного</h2>
+  <p>Средняя самозаявленная уверенность модели по <strong>верным</strong> ответам — 95.0%. По <strong>неверным</strong> — 87.7%. Разница есть, но маленькая: в абсолютных цифрах неверный ответ в среднем показывает пользователю почти такую же уверенность (88%), что и верный (95%). Именно это число сегодня видит пользователь в UI (<code>ScanMatchCard</code>) — кольцо процента без визуального различия между «доверяй» и «не доверяй».</p>
+  <div class="bars">
+    <div class="bar-row">
+      <div class="bar-label">Верные ответы</div>
+      <div class="bar-track"><div class="bar-fill good" style="width:95%"><span>95.0%</span></div></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Неверные ответы</div>
+      <div class="bar-track"><div class="bar-fill bad" style="width:87.7%"><span>87.7%</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Полная таблица результатов</h2>
+  <p>Все 33 случая. GT = эталон (размечен вручную по фото); увер. GT = насколько однозначна была сама фотография для разметки человеком; предсказание = что вернула живая модель <code>gemini-3.6-flash</code> через тот же промпт и конфиг, что и продакшен.</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Файл</th><th>Эталон (GT)</th><th>Увер. GT</th><th>Предсказание модели</th><th>Увер. модели</th><th>Итог</th></tr></thead>
+    <tbody>
+      <tr><td class="file">20260806_140007.jpg</td><td>shoulder press machine</td><td class="conf-tier">HIGH</td><td>shoulder press machine</td><td class="num">0.95</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260806_140012.jpg</td><td>pec deck</td><td class="conf-tier">MODERATE</td><td>seated row machine</td><td class="num">0.85</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260806_140016.jpg</td><td>lat pulldown</td><td class="conf-tier">LOW</td><td>assisted pull-up machine</td><td class="num">0.95</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260810_131016.jpg</td><td>smith machine</td><td class="conf-tier">LOW</td><td>smith machine</td><td class="num">0.85</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260810_131021.jpg</td><td>squat rack</td><td class="conf-tier">HIGH</td><td>squat rack</td><td class="num">0.98</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260810_131025.jpg</td><td>cable machine</td><td class="conf-tier">HIGH</td><td>cable machine</td><td class="num">0.95</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260810_131029.jpg</td><td>cable machine</td><td class="conf-tier">HIGH</td><td>cable machine</td><td class="num">0.98</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260810_131129.jpg</td><td>bench press station</td><td class="conf-tier">MODERATE</td><td>sissy squat machine</td><td class="num">0.90</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260810_131137.jpg</td><td>bench press station</td><td class="conf-tier">MODERATE</td><td>bench press station</td><td class="num">0.98</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260810_131140.jpg</td><td>bench press station</td><td class="conf-tier">HIGH</td><td>bench press station</td><td class="num">0.98</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260810_131208.jpg</td><td>captain's chair</td><td class="conf-tier">LOW</td><td>assisted pull-up machine</td><td class="num">0.95</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260810_131213.jpg</td><td>cable machine</td><td class="conf-tier">LOW</td><td>chest press machine</td><td class="num">0.85</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260810_131218.jpg</td><td>cable machine</td><td class="conf-tier">LOW</td><td>seated row machine</td><td class="num">0.95</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260810_131223.jpg</td><td>assisted pull-up machine</td><td class="conf-tier">MODERATE</td><td>assisted pull-up machine</td><td class="num">0.95</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260810_131228.jpg</td><td>lat pulldown</td><td class="conf-tier">HIGH</td><td>lat pulldown</td><td class="num">0.98</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260810_131233.jpg</td><td>shoulder press machine</td><td class="conf-tier">HIGH</td><td>lat pulldown</td><td class="num">0.85</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260810_131238.jpg</td><td>shoulder press machine</td><td class="conf-tier">HIGH</td><td>lat pulldown</td><td class="num">0.88</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260810_131248.jpg</td><td>cable machine</td><td class="conf-tier">HIGH</td><td>cable machine</td><td class="num">0.98</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260810_131307.jpg</td><td>seated row machine</td><td class="conf-tier">HIGH</td><td>cable machine</td><td class="num">0.85</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260810_131311.jpg</td><td>leg press machine</td><td class="conf-tier">LOW</td><td>glute kickback machine</td><td class="num">0.90</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260810_131350.jpg</td><td>rowing machine</td><td class="conf-tier">HIGH</td><td>rowing machine</td><td class="num">0.98</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260810_131356.jpg</td><td>elliptical trainer</td><td class="conf-tier">HIGH</td><td>elliptical trainer</td><td class="num">0.98</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260810_131358.jpg</td><td>pec deck</td><td class="conf-tier">MODERATE</td><td>seated dip machine</td><td class="num">0.85</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260810_133034.jpg</td><td>pec deck</td><td class="conf-tier">HIGH</td><td>pec deck</td><td class="num">0.98</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260907_143257.jpg</td><td>pec deck</td><td class="conf-tier">MODERATE</td><td>lat pulldown</td><td class="num">0.88</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260907_143258.jpg</td><td>pec deck</td><td class="conf-tier">MODERATE</td><td>lat pulldown</td><td class="num">0.85</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260907_143304.jpg</td><td>rotary torso machine</td><td class="conf-tier">HIGH</td><td>seated dip machine</td><td class="num">0.85</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260907_143308.jpg</td><td>rotary torso machine</td><td class="conf-tier">HIGH</td><td>seated row machine</td><td class="num">0.85</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260907_143320.jpg</td><td>rotary torso machine</td><td class="conf-tier">HIGH</td><td>seated row machine</td><td class="num">0.85</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260907_143325.jpg</td><td>rotary torso machine</td><td class="conf-tier">HIGH</td><td>calf raise machine</td><td class="num">0.85</td><td><span class="pill bad">ошибка</span></td></tr>
+      <tr><td class="file">20260907_143640.jpg</td><td>bench press station</td><td class="conf-tier">HIGH</td><td>bench press station</td><td class="num">0.95</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260907_150455.jpg</td><td>glute kickback machine</td><td class="conf-tier">MODERATE</td><td>glute kickback machine</td><td class="num">0.85</td><td><span class="pill good">верно</span></td></tr>
+      <tr><td class="file">20260907_150510.jpg</td><td>glute kickback machine</td><td class="conf-tier">MODERATE</td><td>glute kickback machine</td><td class="num">0.88</td><td><span class="pill good">верно</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="methodology">
+  <h2>Методология</h2>
+  <dl>
+    <dt>Фото</dt>
+    <dd>33 реальных фото зала (из 62 присланных оператором), вручную размечены против каталога <code>CANONICAL_MACHINES</code> (70 категорий). 5 фото исключены как личные/с людьми в кадре (включая одно с несовершеннолетним) — никогда не отправлялись во внешний API.</dd>
+    <dt>Модель и конфиг</dt>
+    <dd>Vertex AI <code>gemini-3.6-flash</code>, location <code>global</code>, temperature 0, JSON-режим, thinking отключён, maxOutputTokens 256 — точная копия того, что использует продакшен-путь <code>functions/src/ai_equipment_recognition.ts</code> / <code>ai_gateway.ts</code>, включая промпт и полный список категорий, дословно.</dd>
+    <dt>Что НЕ тестировалось</dt>
+    <dd>Firebase Callable-обёртка (авторизация/квоты/App Check) — это отдельный, уже закрытый гейт MVP1.G4. Тестировался именно вызов модели, каким его делает продакшен-код.</dd>
+    <dt>Ограничение выборки</dt>
+    <dd>n=33 (27 на однозначных фото), один зал, один разметчик без перепроверки. Достаточно, чтобы опровергнуть «распознавание надёжно» — один воспроизводимый провал категории 0/4 уже это доказывает. Недостаточно, чтобы утверждать точное финальное число для продакшен-решения — для этого нужна выборка побольше и разнообразнее.</dd>
+  </dl>
+</section>
+
+<section>
+  <div class="recommend">
+    <h3>Рекомендация</h3>
+    <ol>
+      <li>Не представлять живое распознавание как надёжное реальным пользователям до одного из двух: (а) построить уже спроектированный fail-closed механизм (порог уверенности / режим TYPE_ONLY-NEED_MORE_VIEW, описанный в <code>core/design/sptr_equipment_recognition_v4_1/</code>) и перемерить точность на этом же манифесте, либо (б) осознанное решение оператора принять риск и запускаться с текущей UI-защитой (подтверждение перед переходом, видимый процент), имея на руках это число, а не в его отсутствие.</li>
+      <li>При построении fail-closed порога — использовать измеренный разрыв уверенности (95.0% против 87.7%) как отправную точку, но не как единственный сигнал: он слишком слабый сам по себе.</li>
+      <li>Отдельно проверить категорию <code>rotary torso machine</code> — 0/4 при HIGH-уверенности эталона это не шум, это системный провал именно этой категории; вероятно стоит добавить её в список кандидатов на принудительный TYPE_ONLY/ручное подтверждение.</li>
+      <li>Расширить выборку вторым независимым набором фото (другой зал, желательно другой разметчик) прежде чем использовать точное число 48.5% в продакшен-решении.</li>
+    </ol>
+  </div>
+</section>
+
+<p class="caveat">Полные сырые ответы модели (включая alternatives) сохранены в <code>core/ml/eval/eval_results_2026-09-17.json</code>. Манифест эталонной разметки — <code>core/ml/eval/gym_photos_ground_truth_2026-09-17.json</code>. Скрипт измерения — <code>core/ml/eval/eval_live_equipment_recognition.py</code>.</p>
+
+<footer>Отчёт сгенерирован автоматически на основе живого измерения 2026-09-17.</footer>
+</div>
+
+<!-- report-conform:script:begin -->
+<script>
+(function () {
+  var btn = document.getElementById('rc-copy');
+  if (!btn) { return; }
+
+  function pageText() {
+    // Hide the button so its own label never lands in the copied text.
+    var previous = btn.style.display;
+    btn.style.display = 'none';
+    var root = document.querySelector('.wrap') || document.body;
+    var text = (root.innerText || root.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+    btn.style.display = previous;
+    return text;
+  }
+
+  function legacyCopy(text) {
+    var field = document.createElement('textarea');
+    field.value = text;
+    field.setAttribute('readonly', '');
+    field.style.position = 'fixed';
+    field.style.top = '-1000px';
+    document.body.appendChild(field);
+    field.select();
+    var copied = false;
+    try { copied = document.execCommand('copy'); } catch (err) { copied = false; }
+    document.body.removeChild(field);
+    return copied;
+  }
+
+  function report(state) {
+    btn.textContent = btn.getAttribute('data-' + state);
+    btn.classList.toggle('is-done', state === 'done');
+    btn.classList.toggle('is-fail', state === 'fail');
+    window.setTimeout(function () {
+      btn.textContent = btn.getAttribute('data-idle');
+      btn.classList.remove('is-done', 'is-fail');
+    }, 2400);
+  }
+
+  btn.addEventListener('click', function () {
+    var text = pageText();
+    // Some hosts block the async clipboard API inside the artifact iframe, so the
+    // execCommand path stays as a real fallback rather than an assumed success.
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { report('done'); },
+        function () { report(legacyCopy(text) ? 'done' : 'fail'); }
+      );
+    } else {
+      report(legacyCopy(text) ? 'done' : 'fail');
+    }
+  });
+})();
+</script>
+<!-- report-conform:script:end -->

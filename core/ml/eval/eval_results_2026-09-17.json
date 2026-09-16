@@ -1,0 +1,553 @@
+{
+  "generated": "2026-09-17 00:41:12",
+  "model": "gemini-3.6-flash",
+  "location": "global",
+  "project": "fitness-app-korostelev",
+  "total_cases": 33,
+  "accuracy_all": 0.48484848484848486,
+  "accuracy_high_moderate_confidence_gt_only": 0.5555555555555556,
+  "correct_all": 16,
+  "correct_high_moderate": 15,
+  "total_high_moderate": 27,
+  "results": [
+    {
+      "file": "data/gym_photos_2026-08-06/20260806_140007.jpg",
+      "ground_truth": "shoulder press machine",
+      "gt_confidence": "HIGH",
+      "predicted": "shoulder press machine",
+      "match": true,
+      "raw_model_output": {
+        "machine": "shoulder press machine",
+        "confidence": 0.95,
+        "alternatives": [
+          {
+            "machine": "chest press machine",
+            "confidence": 0.05
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-06/20260806_140012.jpg",
+      "ground_truth": "pec deck",
+      "gt_confidence": "MODERATE",
+      "predicted": "seated row machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "seated row machine",
+        "confidence": 0.85,
+        "alternatives": [
+          {
+            "machine": "chest press machine",
+            "confidence": 0.15
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-06/20260806_140016.jpg",
+      "ground_truth": "lat pulldown",
+      "gt_confidence": "LOW",
+      "predicted": "assisted pull-up machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "assisted pull-up machine",
+        "confidence": 0.95,
+        "alternatives": [
+          {
+            "machine": "dip station",
+            "confidence": 0.05
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131016.jpg",
+      "ground_truth": "smith machine",
+      "gt_confidence": "LOW",
+      "predicted": "smith machine",
+      "match": true,
+      "raw_model_output": {
+        "machine": "smith machine",
+        "confidence": 0.85,
+        "alternatives": [
+          {
+            "machine": "squat rack",
+            "confidence": 0.15
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131021.jpg",
+      "ground_truth": "squat rack",
+      "gt_confidence": "HIGH",
+      "predicted": "squat rack",
+      "match": true,
+      "raw_model_output": {
+        "machine": "squat rack",
+        "confidence": 0.98,
+        "alternatives": [
+          {
+            "machine": "smith machine",
+            "confidence": 0.02
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131025.jpg",
+      "ground_truth": "cable machine",
+      "gt_confidence": "HIGH",
+      "predicted": "cable machine",
+      "match": true,
+      "raw_model_output": {
+        "machine": "cable machine",
+        "confidence": 0.95,
+        "alternatives": [
+          {
+            "machine": "lat pulldown",
+            "confidence": 0.05
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131029.jpg",
+      "ground_truth": "cable machine",
+      "gt_confidence": "HIGH",
+      "predicted": "cable machine",
+      "match": true,
+      "raw_model_output": {
+        "machine": "cable machine",
+        "confidence": 0.98,
+        "alternatives": []
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131129.jpg",
+      "ground_truth": "bench press station",
+      "gt_confidence": "MODERATE",
+      "predicted": "sissy squat machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "sissy squat machine",
+        "confidence": 0.9,
+        "alternatives": [
+          {
+            "machine": "calf raise machine",
+            "confidence": 0.1
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131137.jpg",
+      "ground_truth": "bench press station",
+      "gt_confidence": "MODERATE",
+      "predicted": "bench press station",
+      "match": true,
+      "raw_model_output": {
+        "machine": "bench press station",
+        "confidence": 0.98,
+        "alternatives": [
+          {
+            "machine": "flat bench",
+            "confidence": 0.02
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131140.jpg",
+      "ground_truth": "bench press station",
+      "gt_confidence": "HIGH",
+      "predicted": "bench press station",
+      "match": true,
+      "raw_model_output": {
+        "machine": "bench press station",
+        "confidence": 0.98,
+        "alternatives": []
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131208.jpg",
+      "ground_truth": "captain's chair",
+      "gt_confidence": "LOW",
+      "predicted": "assisted pull-up machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "assisted pull-up machine",
+        "confidence": 0.95,
+        "alternatives": [
+          {
+            "machine": "captain's chair",
+            "confidence": 0.05
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131213.jpg",
+      "ground_truth": "cable machine",
+      "gt_confidence": "LOW",
+      "predicted": "chest press machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "chest press machine",
+        "confidence": 0.85,
+        "alternatives": [
+          {
+            "machine": "shoulder press machine",
+            "confidence": 0.1
+          },
+          {
+            "machine": "seated row machine",
+            "confidence": 0.05
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131218.jpg",
+      "ground_truth": "cable machine",
+      "gt_confidence": "LOW",
+      "predicted": "seated row machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "seated row machine",
+        "confidence": 0.95,
+        "alternatives": [
+          {
+            "machine": "lat pulldown",
+            "confidence": 0.03
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131223.jpg",
+      "ground_truth": "assisted pull-up machine",
+      "gt_confidence": "MODERATE",
+      "predicted": "assisted pull-up machine",
+      "match": true,
+      "raw_model_output": {
+        "machine": "assisted pull-up machine",
+        "confidence": 0.95,
+        "alternatives": [
+          {
+            "machine": "captain's chair",
+            "confidence": 0.05
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131228.jpg",
+      "ground_truth": "lat pulldown",
+      "gt_confidence": "HIGH",
+      "predicted": "lat pulldown",
+      "match": true,
+      "raw_model_output": {
+        "machine": "lat pulldown",
+        "confidence": 0.98,
+        "alternatives": []
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131233.jpg",
+      "ground_truth": "shoulder press machine",
+      "gt_confidence": "HIGH",
+      "predicted": "lat pulldown",
+      "match": false,
+      "raw_model_output": {
+        "machine": "lat pulldown",
+        "confidence": 0.85,
+        "alternatives": [
+          {
+            "machine": "shoulder press machine",
+            "confidence": 0.15
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131238.jpg",
+      "ground_truth": "shoulder press machine",
+      "gt_confidence": "HIGH",
+      "predicted": "lat pulldown",
+      "match": false,
+      "raw_model_output": {
+        "machine": "lat pulldown",
+        "confidence": 0.88,
+        "alternatives": [
+          {
+            "machine": "chest press machine",
+            "confidence": 0.08
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131248.jpg",
+      "ground_truth": "cable machine",
+      "gt_confidence": "HIGH",
+      "predicted": "cable machine",
+      "match": true,
+      "raw_model_output": {
+        "machine": "cable machine",
+        "confidence": 0.98,
+        "alternatives": [
+          {
+            "machine": "lat pulldown",
+            "confidence": 0.02
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131307.jpg",
+      "ground_truth": "seated row machine",
+      "gt_confidence": "HIGH",
+      "predicted": "cable machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "cable machine",
+        "confidence": 0.85,
+        "alternatives": [
+          {
+            "machine": "seated row machine",
+            "confidence": 0.15
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131311.jpg",
+      "ground_truth": "leg press machine",
+      "gt_confidence": "LOW",
+      "predicted": "glute kickback machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "glute kickback machine",
+        "confidence": 0.9,
+        "alternatives": [
+          {
+            "machine": "hip abductor machine",
+            "confidence": 0.1
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131350.jpg",
+      "ground_truth": "rowing machine",
+      "gt_confidence": "HIGH",
+      "predicted": "rowing machine",
+      "match": true,
+      "raw_model_output": {
+        "machine": "rowing machine",
+        "confidence": 0.98,
+        "alternatives": []
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131356.jpg",
+      "ground_truth": "elliptical trainer",
+      "gt_confidence": "HIGH",
+      "predicted": "elliptical trainer",
+      "match": true,
+      "raw_model_output": {
+        "machine": "elliptical trainer",
+        "confidence": 0.98,
+        "alternatives": []
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_131358.jpg",
+      "ground_truth": "pec deck",
+      "gt_confidence": "MODERATE",
+      "predicted": "seated dip machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "seated dip machine",
+        "confidence": 0.85,
+        "alternatives": [
+          {
+            "machine": "triceps extension machine",
+            "confidence": 0.1
+          },
+          {
+            "machine": "assisted pull-up machine",
+            "confidence": 0.05
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-08-10/20260810_133034.jpg",
+      "ground_truth": "pec deck",
+      "gt_confidence": "HIGH",
+      "predicted": "pec deck",
+      "match": true,
+      "raw_model_output": {
+        "machine": "pec deck",
+        "confidence": 0.98,
+        "alternatives": []
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-09-07/20260907_143257.jpg",
+      "ground_truth": "pec deck",
+      "gt_confidence": "MODERATE",
+      "predicted": "lat pulldown",
+      "match": false,
+      "raw_model_output": {
+        "machine": "lat pulldown",
+        "confidence": 0.88,
+        "alternatives": [
+          {
+            "machine": "chest press machine",
+            "confidence": 0.08
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-09-07/20260907_143258.jpg",
+      "ground_truth": "pec deck",
+      "gt_confidence": "MODERATE",
+      "predicted": "lat pulldown",
+      "match": false,
+      "raw_model_output": {
+        "machine": "lat pulldown",
+        "confidence": 0.85,
+        "alternatives": [
+          {
+            "machine": "shoulder press machine",
+            "confidence": 0.15
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-09-07/20260907_143304.jpg",
+      "ground_truth": "rotary torso machine",
+      "gt_confidence": "HIGH",
+      "predicted": "seated dip machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "seated dip machine",
+        "confidence": 0.85,
+        "alternatives": [
+          {
+            "machine": "triceps extension machine",
+            "confidence": 0.15
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-09-07/20260907_143308.jpg",
+      "ground_truth": "rotary torso machine",
+      "gt_confidence": "HIGH",
+      "predicted": "seated row machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "seated row machine",
+        "confidence": 0.85,
+        "alternatives": [
+          {
+            "machine": "t-bar row",
+            "confidence": 0.15
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-09-07/20260907_143320.jpg",
+      "ground_truth": "rotary torso machine",
+      "gt_confidence": "HIGH",
+      "predicted": "seated row machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "seated row machine",
+        "confidence": 0.85,
+        "alternatives": [
+          {
+            "machine": "lat pulldown",
+            "confidence": 0.15
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-09-07/20260907_143325.jpg",
+      "ground_truth": "rotary torso machine",
+      "gt_confidence": "HIGH",
+      "predicted": "calf raise machine",
+      "match": false,
+      "raw_model_output": {
+        "machine": "calf raise machine",
+        "confidence": 0.85,
+        "alternatives": [
+          {
+            "machine": "squat rack",
+            "confidence": 0.1
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-09-07/20260907_143640.jpg",
+      "ground_truth": "bench press station",
+      "gt_confidence": "HIGH",
+      "predicted": "bench press station",
+      "match": true,
+      "raw_model_output": {
+        "machine": "bench press station",
+        "confidence": 0.95,
+        "alternatives": [
+          {
+            "machine": "flat bench",
+            "confidence": 0.1
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-09-07/20260907_150455.jpg",
+      "ground_truth": "glute kickback machine",
+      "gt_confidence": "MODERATE",
+      "predicted": "glute kickback machine",
+      "match": true,
+      "raw_model_output": {
+        "machine": "glute kickback machine",
+        "confidence": 0.85,
+        "alternatives": [
+          {
+            "machine": "hip abductor machine",
+            "confidence": 0.15
+          }
+        ]
+      }
+    },
+    {
+      "file": "data/gym_photos_2026-09-07/20260907_150510.jpg",
+      "ground_truth": "glute kickback machine",
+      "gt_confidence": "MODERATE",
+      "predicted": "glute kickback machine",
+      "match": true,
+      "raw_model_output": {
+        "machine": "glute kickback machine",
+        "confidence": 0.88,
+        "alternatives": [
+          {
+            "machine": "multi hip machine",
+            "confidence": 0.12
+          }
+        ]
+      }
+    }
+  ]
+}
