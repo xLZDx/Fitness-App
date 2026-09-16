@@ -205,13 +205,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 5a3cb52</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 9f6b785</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -329,17 +331,17 @@
       <thead><tr><th>#</th><th>Пункт</th><th>Тип</th><th>Статус</th></tr></thead>
       <tbody>
         <tr><td class="idcell">1</td><td class="item">Auth/data-flow канарейка</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
-        <tr><td class="idcell">2</td><td class="item">Functions test-health enforcement в CI</td><td>CI</td><td><span class="pill notstarted">не подтверждено</span></td></tr>
+        <tr><td class="idcell">2</td><td class="item">Functions test-health enforcement в CI</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: подтверждено, <span class="mono">functions/scripts/assert_test_health.js</span> в job <span class="mono">unit</span> (functions.yml)</td></tr>
         <tr><td class="idcell">3</td><td class="item">Дашборд enforcement-статуса (App Check/rules/Identity)</td><td>RUNTIME</td><td><span class="pill partial">частично</span> — только видимость, общая картина App Check всё ещё UNKNOWN</td></tr>
         <tr><td class="idcell">4</td><td class="item">Монитор целостности биллинга (Stripe)</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
-        <tr><td class="idcell">5</td><td class="item">RU/EN semantic-drift проверка</td><td>CI</td><td><span class="pill notstarted">не подтверждено</span></td></tr>
+        <tr><td class="idcell">5</td><td class="item">RU/EN semantic-drift проверка</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: подтверждено, job <span class="mono">ru-en-drift</span> в flutter.yml</td></tr>
         <tr><td class="idcell">6</td><td class="item">Mobile/Dart dependency (SCA) сканирование</td><td>CI</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">7</td><td class="item">Проверка data-lifecycle sweep (deletion/export coverage)</td><td>RUNTIME</td><td><span class="pill blocked">open</span> — скрипт есть, расписания/запуска нет (см. §27, пункт 26)</td></tr>
         <tr><td class="idcell">8</td><td class="item">Regression-guard на SafetyContext-инвариант</td><td>CI</td><td><span class="pill passed">done</span> — активно охраняет F014/F015</td></tr>
         <tr><td class="idcell">9</td><td class="item">Мониторинг прямых вызовов Gemini/AI Logic</td><td>RUNTIME</td><td><span class="pill passed">done</span> — экспозиция устранена (все 4 AI-вызова переведены на server-side <span class="mono">httpsCallable</span>), риск теперь под MVP1.G4</td></tr>
         <tr><td class="idcell">10</td><td class="item">kCanonicalMachines ↔ equipment.json parity-check</td><td>CI</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">11</td><td class="item">Client-runtime/ML телеметрия (frame-timing, camera/inference)</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
-        <tr><td class="idcell">12</td><td class="item">Secret-scanning с расширением на git-историю</td><td>CI</td><td><span class="pill notstarted">не подтверждено явно</span></td></tr>
+        <tr><td class="idcell">12</td><td class="item">Secret-scanning с расширением на git-историю</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: подтверждено, job <span class="mono">gitleaks (full history)</span> в secrets.yml, <span class="mono">fetch-depth: 0</span></td></tr>
         <tr><td class="idcell">13</td><td class="item">Composed-screen visual regression coverage</td><td>CI</td><td><span class="pill blocked">open</span> — держит открытыми пункты 7/8 из §27 (миграция HUD, WCAG-контраст)</td></tr>
       </tbody>
     </table>
@@ -415,6 +417,8 @@
 <footer>Источники: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 
 

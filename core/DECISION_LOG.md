@@ -52540,3 +52540,25 @@ priority table in `reports/program_status_full_2026-09-16.ru.html`/`.html` in pl
 file to the same Artifact URL (`https://claude.ai/artifact/Rv9EQo6PXyaRF5if5n76iY`, version 5).
 Continuing to the next backlog item in the same turn per this session's own PM-mode-style "report,
 then continue" authorization.
+
+## 2026-09-16 -- Tier A item 6 (OBS-1 items 2/5/12): all 3 already implemented, verify-only
+
+Backlog brief predicted these "may already exist and just weren't traced in the 09-16 audit" --
+confirmed true for all 3, no implementation needed:
+
+- **OBS-1 item 2, Functions test-health CI gate**: `functions/scripts/assert_test_health.js`,
+  invoked as the "assert test-suite health" step in `functions.yml`'s `unit` job
+  (`.github/workflows/functions.yml:81-82`). Real, asserts explicit suite/test-count floors from
+  Jest's own JSON report, not just a nonzero exit code.
+- **OBS-1 item 5, RU/EN semantic-drift check**: the `ru-en-drift` job in `flutter.yml`
+  (`.github/workflows/flutter.yml:549-550`).
+- **OBS-1 item 12, secret-scanning extended to git history**: `.github/workflows/secrets.yml`'s
+  `gitleaks` job -- `fetch-depth: 0` (full history, not just HEAD) then `gitleaks git . --redact`
+  against the whole commit history, with `.gitleaksignore` tracking known findings by fingerprint.
+
+Corrected the rolling status report's OBS-1 table (items 2, 5, 12: "unconfirmed" -> `done`, with
+the exact job/file each was verified against) -- this closes the specific inaccuracy already flagged
+earlier in this session (the report had separately marked items 5/6 in its own numbering as
+unconfirmed when they were already implemented; this entry covers the brief's own item-2/5/12
+framing, a related but not identical numbering). Republished to the same Artifact URL (version 6).
+No code changes, no Rosetta plan needed (LOCAL-class: report correction only, no source changed).

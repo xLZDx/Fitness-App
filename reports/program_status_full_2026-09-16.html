@@ -202,13 +202,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 5a3cb52</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 9f6b785</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -326,17 +328,17 @@
       <thead><tr><th>#</th><th>Item</th><th>Type</th><th>Status</th></tr></thead>
       <tbody>
         <tr><td class="idcell">1</td><td class="item">Auth/data-flow canary</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
-        <tr><td class="idcell">2</td><td class="item">Functions test-health CI enforcement</td><td>CI</td><td><span class="pill notstarted">unconfirmed</span></td></tr>
+        <tr><td class="idcell">2</td><td class="item">Functions test-health CI enforcement</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: confirmed, <span class="mono">functions/scripts/assert_test_health.js</span> in the <span class="mono">unit</span> job (functions.yml)</td></tr>
         <tr><td class="idcell">3</td><td class="item">Enforcement-status dashboard (App Check/rules/Identity)</td><td>RUNTIME</td><td><span class="pill partial">partial</span> — visibility only, overall App Check picture still unknown</td></tr>
         <tr><td class="idcell">4</td><td class="item">Billing integrity monitor (Stripe)</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
-        <tr><td class="idcell">5</td><td class="item">RU/EN semantic-drift check</td><td>CI</td><td><span class="pill notstarted">unconfirmed</span></td></tr>
+        <tr><td class="idcell">5</td><td class="item">RU/EN semantic-drift check</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: confirmed, the <span class="mono">ru-en-drift</span> job in flutter.yml</td></tr>
         <tr><td class="idcell">6</td><td class="item">Mobile/Dart dependency (SCA) scanning</td><td>CI</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">7</td><td class="item">Data-lifecycle sweep verification (deletion/export coverage)</td><td>RUNTIME</td><td><span class="pill blocked">open</span> — script exists, no schedule/run (see §27 row 26)</td></tr>
         <tr><td class="idcell">8</td><td class="item">Safety-invariant regression guard</td><td>CI</td><td><span class="pill passed">done</span> — actively guards F014/F015</td></tr>
         <tr><td class="idcell">9</td><td class="item">Gemini/AI Logic direct-call monitoring</td><td>RUNTIME</td><td><span class="pill passed">done</span> — exposure eliminated (all 4 AI call sites moved to server-side <span class="mono">httpsCallable</span>), risk now owned by MVP1.G4</td></tr>
         <tr><td class="idcell">10</td><td class="item">kCanonicalMachines ↔ equipment.json parity check</td><td>CI</td><td><span class="pill passed">done</span></td></tr>
         <tr><td class="idcell">11</td><td class="item">Client-runtime/ML telemetry (frame-timing, camera/inference)</td><td>RUNTIME</td><td><span class="pill passed">done</span></td></tr>
-        <tr><td class="idcell">12</td><td class="item">Secret-scanning extended to git history</td><td>CI</td><td><span class="pill notstarted">not explicitly confirmed</span></td></tr>
+        <tr><td class="idcell">12</td><td class="item">Secret-scanning extended to git history</td><td>CI</td><td><span class="pill passed">done</span> — 09-16: confirmed, the <span class="mono">gitleaks (full history)</span> job in secrets.yml, <span class="mono">fetch-depth: 0</span></td></tr>
         <tr><td class="idcell">13</td><td class="item">Composed-screen visual regression coverage</td><td>CI</td><td><span class="pill blocked">open</span> — keeps §27 rows 7/8 (HUD migration, WCAG contrast) open</td></tr>
       </tbody>
     </table>
@@ -411,6 +413,8 @@
 <footer>Sources: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 
 
