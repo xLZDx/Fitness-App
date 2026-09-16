@@ -53887,3 +53887,64 @@ as part of the remediation agent's own required fix + acceptance-test cycle).
 **Status**: remediating all 7 as one batch (§17 "fix the complete package in one pass"), per GPT-PM's
 own instruction that "round 2 should verify only these findings plus direct regressions" -- this is
 round 1 of the 3-round implementation-review budget; round 2 will be the verification round.
+
+## 2026-09-16 -- Row 24 gate: all 7 GPT-PM round-1 findings remediated in one batch, independently
+re-verified; sending round 2 (verification round) to GPT-PM
+
+All 7 findings fixed as one batch (fresh implementation agent, again independently re-verified by
+me rather than trusted from its own report):
+
+1. **[BLOCKER] `.doc()` discovery (Source D)** -- a 4th discovery source scans every `.doc(<arg>)`
+   call made directly on the Firestore root (`db`/`db()`/`_db`) across all `PRODUCTION_SOURCE_ROOTS`
+   and parses it as a full path, reusing the same literal/template logic already proven for
+   CONDITIONAL-ref test-body verification. `subscription` -- previously discoverable by NO source --
+   is now correctly found via `functions/src/index.ts`'s own `db.doc(...)` calls. A real scope
+   decision surfaced during the fix: a naive "anything not chained off `.collection()`" rule falsely
+   flagged 16 real relative `.doc(<localId>)` calls across 8 `mobile/lib` files (this codebase's
+   dominant idiom, `_col(uid).doc(entryId)`) -- fixed with a positive `db`/`db()`/`_db`-root-only
+   allowlist instead of a broad exclusion, documented in the design doc.
+2. **[BLOCKER, 2 sub-cases] narrowed residue policy** -- every non-literal `.collection()`/`.doc()`
+   shape (interpolated template, function call, concatenation, unregistered member-access, bare
+   identifier) now hard-fails by default; only an exact, individually-audited {file, line, arg-text}
+   allowlist entry exempts a specific call site (never a whole expression shape). 13 real production
+   call sites individually audited and allow-listed (up from the prior round's blanket "residue"
+   exemption of an entire expression class), each traced to confirm its real target collection is
+   independently discoverable elsewhere.
+3. **[BLOCKER] CONDITIONAL provenance binding** -- `analyzeAssertCalls` (`check_data_access_
+   policy.js:917-947`) now extracts each `assertSucceeds(...)`/`assertFails(...)` call's OWN
+   balanced-paren argument text and requires the op-shaped SDK call AND the path match to hold
+   WITHIN THAT SAME extracted text -- not independent facts about the whole test body. Comments
+   stripped first (`stripComments`) so a comment containing matching tokens can't count. Read
+   directly (`check_data_access_policy.js:895-948`) -- correct and precisely closes the gap GPT-PM
+   found.
+4. **[MAJOR] registry import-binding** -- `registryBindingHolds()` now requires the calling file to
+   actually `import { Name } from '<path>'` the registered export (or be the registry file itself)
+   before trusting an identifier-spelling match; a locally-shadowed, unimported same-named const no
+   longer silently resolves to the registered value.
+5. **[MAJOR] balanced-paren chain detection** -- replaced the fragile `chainedOffDoc` regex with
+   proper depth-counting call-boundary resolution (`memberCallSites`/`isAdjacentCall`), fixing a real
+   bug the remediation agent found in its own first attempt (`String.slice(start,end)` returning `''`
+   when `start>end`, producing false "adjacent" matches) before landing on the correct fix.
+6. **[MAJOR, was dormant] path-collapse in discovery/`collectionAccess`** -- both now key by the
+   FULL canonical match path rather than a lossy leaf/root string; two distinct top-level blocks
+   sharing a root segment no longer silently collapse to one entry.
+7. **[MAJOR] emulator create-proof fixture reuse -- investigated and CONFIRMED real** (this was the
+   one finding I hadn't independently traced before remediation): the generic sweep's `create` branch
+   ran the positive `assertSucceeds` (which creates the document) then reused the SAME document for
+   the negative assertion without re-seeding -- since Firestore decides create-vs-update by document
+   EXISTENCE, not SDK method, the negative case was actually testing `update` semantics. Fixed with a
+   distinct, never-seeded document ID for the create-negative call plus a self-verifying
+   `assertNegPathIsFreshForCreate()` guard.
+
+**Independently re-verified by me:** `node scripts/ci/check_data_access_policy.js` -> 37/37 declared,
+exit 0, 13 individually-audited residue entries (up from 2, each with a stated per-site
+justification, not a blanket class exemption). `node scripts/ci/test_check_data_access_policy.js`
+-> all 21 mutation classes (12 prior + 9 new: `l` doc()-discovery, `m`/`n` residue narrowing,
+`o` positive audited-residue proof, `p` CONDITIONAL-binding, `q` registry shadowing, `r` nested-paren
+chain, `s` path-collapse) RED-then-GREEN. Emulator suite (`FIRESTORE_EMULATOR_PORT=8090` workaround)
+-> 269/269. `npm test` -> 601/601. `npx tsc --noEmit` -> clean. Also read `analyzeAssertCalls`/
+`extractCallArgTexts` directly (`check_data_access_policy.js:895-948`) -- the highest-severity,
+subtlest fix -- and confirmed it's sound.
+
+**Next**: send round 2 (verification round, per GPT-PM's own stated scope -- "verify only these
+findings plus direct regressions") via `review.js --uncommitted`.
