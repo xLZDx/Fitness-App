@@ -205,13 +205,15 @@
   <dl>
     <dt>Проект</dt><dd>Fitness-App</dd>
     <dt>Папка</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7fee6f4</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ e824048</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Копировать страницу" data-done="Скопировано"
           data-fail="Выделите вручную">Копировать страницу</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -270,7 +272,7 @@
           </tbody>
         </table>
       </div>
-      <p style="margin:0;">Важно: <span class="mono">pm_gate_status</span> вообще не содержит отдельных записей P2.G1–G4 — они закрывались только через <span class="mono">core/DECISION_LOG.md</span>, без <span class="mono">pm_set_gate</span>. Пробел в едином трекере, не ошибка проверки.</p>
+      <p style="margin:0;">Обновление 2026-09-16: <span class="mono">pm_gate_status</span> изначально не содержал отдельных записей P2.G1–G4 — все четыре теперь забэкфиллены напрямую по своим Rosetta-записям (P2.G1/G2/G4 как <span class="mono">passed</span>, P2.G3 как <span class="mono">in-progress</span> — честно отражая его собственный статус <span class="mono">OPEN/DEPLOYMENT_PENDING</span>, а не как <span class="mono">passed</span>).</p>
     </div>
   </div>
 
@@ -391,7 +393,7 @@
       <li>Не отражает работу этой недели: <span class="mono">P2.G5-readiness</span> шаг 3a (закрыт сегодня, 09-16), финальный статус <span class="mono">P2.G4</span>.</li>
       <li>Не упоминает <span class="mono">FORM_COACH_HUD_ALIGNMENT</span> как отдельный гейт вовсе — тот появился в <span class="mono">pm_gate_status</span> отдельно от мастер-плана.</li>
     </ul>
-    <b>pm_gate_status (реестр PM Bridge) тоже был неполон:</b> не содержал отдельных записей для P2.G1–P2.G4 — те гейты закрывались только через <span class="mono">core/DECISION_LOG.md</span>, без <span class="mono">pm_set_gate</span>. <b>Обновление той же сессией, 2026-09-16:</b> P2.G4 доверифицирован напрямую по своей Rosetta-записи (<span class="mono">status: passed</span>, реальный closure-review APPROVE 0/0 от 2026-09-12) и забэкфиллен в <span class="mono">pm_gate_status</span>. P2.G1–P2.G3 остаются незабэкфиллены — тот же пробел, просто ещё не закрыт для этих трёх гейтов.
+    <b>pm_gate_status (реестр PM Bridge) тоже был неполон:</b> не содержал отдельных записей для P2.G1–P2.G4 — те гейты закрывались только через <span class="mono">core/DECISION_LOG.md</span>, без <span class="mono">pm_set_gate</span>. <b>Полностью закрыто той же сессией, 2026-09-16:</b> все четыре гейта доверифицированы напрямую по их собственным Rosetta-записям и забэкфиллены в <span class="mono">pm_gate_status</span> — P2.G1/P2.G2/P2.G4 как <span class="mono">passed</span> (реальные closure-review APPROVE), P2.G3 намеренно как <span class="mono">in-progress</span>, а не <span class="mono">passed</span> — его собственная запись закрытия прямо говорит, что закрывает только implementation-план и держит мастер-гейт <span class="mono">OPEN/DEPLOYMENT_PENDING</span> до отдельно авторизованного реального деплоя.
   </div>
 </section>
 
@@ -411,6 +413,8 @@
 <footer>Источники: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 
 

@@ -202,13 +202,15 @@
   <dl>
     <dt>Project</dt><dd>Fitness-App</dd>
     <dt>Folder</dt><dd>D:\Repo\Fitness_App</dd>
-    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ 7fee6f4</dd>
+    <dt>Git</dt><dd>https://github.com/xLZDx/Fitness-App.git &mdash; master @ e824048</dd>
   </dl>
   <button id="rc-copy" class="rc-copy" type="button"
           data-idle="Copy page" data-done="Copied"
           data-fail="Select manually">Copy page</button>
 </div>
 <!-- report-conform:end -->
+
+
 
 
 
@@ -267,7 +269,7 @@
           </tbody>
         </table>
       </div>
-      <p style="margin:0;">Notable: <span class="mono">pm_gate_status</span> carries no individual entries for P2.G1–G4 at all — they were closed only through <span class="mono">core/DECISION_LOG.md</span>, never via <span class="mono">pm_set_gate</span>. A real gap in the unified tracker, not a verification error.</p>
+      <p style="margin:0;">Update 2026-09-16: <span class="mono">pm_gate_status</span> originally carried no individual entries for P2.G1–G4 — all four are now backfilled directly from their own Rosetta records (P2.G1/G2/G4 as <span class="mono">passed</span>, P2.G3 as <span class="mono">in-progress</span> — honestly reflecting its own <span class="mono">OPEN/DEPLOYMENT_PENDING</span> status rather than being marked <span class="mono">passed</span>).</p>
     </div>
   </div>
 
@@ -387,7 +389,7 @@
       <li>Doesn't reflect this week's work: <span class="mono">P2.G5-readiness</span> step 3a (closed today, 09-16), or P2.G4's final status.</li>
       <li>Doesn't mention <span class="mono">FORM_COACH_HUD_ALIGNMENT</span> as a gate at all — that one surfaced only in <span class="mono">pm_gate_status</span>, separate from the master plan.</li>
     </ul>
-    <b>pm_gate_status (the PM Bridge registry) was also incomplete:</b> it carried no individual entries for P2.G1–P2.G4 — those gates were closed only through <span class="mono">core/DECISION_LOG.md</span>, never via <span class="mono">pm_set_gate</span>. <b>Same-session update, 2026-09-16:</b> P2.G4 was re-verified directly against its own Rosetta record (<span class="mono">status: passed</span>, a genuine closure-review APPROVE 0/0 from 2026-09-12) and backfilled into <span class="mono">pm_gate_status</span>. P2.G1–P2.G3 remain un-backfilled — the same gap, just not yet closed for those three.
+    <b>pm_gate_status (the PM Bridge registry) was also incomplete:</b> it carried no individual entries for P2.G1–P2.G4 — those gates were closed only through <span class="mono">core/DECISION_LOG.md</span>, never via <span class="mono">pm_set_gate</span>. <b>Fully closed the same session, 2026-09-16:</b> all four gates were re-verified directly against their own Rosetta records and backfilled into <span class="mono">pm_gate_status</span> — P2.G1/P2.G2/P2.G4 as <span class="mono">passed</span> (genuine closure-review APPROVEs), P2.G3 deliberately as <span class="mono">in-progress</span> rather than <span class="mono">passed</span> — its own closure record explicitly states it closes only the implementation plan and keeps the master gate <span class="mono">OPEN/DEPLOYMENT_PENDING</span> until a separately authorized real deploy.
   </div>
 </section>
 
@@ -407,6 +409,8 @@
 <footer>Sources: <span class="mono">core/DECISION_LOG.md</span>, <span class="mono">pm_gate_status</span> (PM Bridge), <span class="mono">core/MASTER_PLAN_2026-08-26.md</span>, <span class="mono">core/design/sptr_equipment_recognition_v4_1/SPTR_EQUIPMENT_RECOGNITION_V4_4_GATE_CONTRACTS_AND_AC_DOD_2026-08-22.md</span>.</footer>
 
 </div>
+
+
 
 
 

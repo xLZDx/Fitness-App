@@ -52129,3 +52129,42 @@ about the gate's actual closure depends on that notification succeeding.
 Both report files corrected (P2.G4 row now `passed`, "what's next" list item removed, caveats section
 updated to note P2.G1-G3 remain un-backfilled while P2.G4 no longer is), re-conformed, artifact
 republished at the same URL (version 3), committed.
+
+## 2026-09-16 -- P2.G1/P2.G2 backfilled passed, P2.G3 backfilled in-progress (deliberately not passed)
+
+Continuing the same backfill pass (still no new plan/GO needed -- pure record-keeping against
+already-closed work, CLAUDE.md SS17). Located every Fitness_App Rosetta plan whose title matches
+P2.G1/G2/G3 under `D:\Repo\pm-bridge\state\rosetta\plans\`; for each gate, only the final REMEDIATED/
+revision plan actually reached `status: "passed"` (earlier same-day revisions are `pending`/
+`rejected`, expected churn during remediation, not evidence of anything currently open).
+
+- **P2.G1** -- plan `fitness_app-2026-09-10T19-58-56-184Z-ba31af` ("P2.G1 REMEDIATED v3"), status
+  passed, closure review `VERDICT: APPROVE -- 0 BLOCKER/0 MAJOR` (post-push devil's-advocate check,
+  remote master range verified: exactly 1 commit / 12 files, RU/EN report pair included). Backfilled
+  `pm_set_gate(P2.G1, passed)`.
+- **P2.G2** -- plan `fitness_app-2026-09-10T21-01-29-906Z-195723` ("P2.G2 REMEDIATED"), status
+  passed, closure review `VERDICT: APPROVE -- 0 BLOCKER/0 MAJOR` (remote master range verified:
+  exactly 1 commit, exact declared changed set, no pre-existing files touched). Backfilled
+  `pm_set_gate(P2.G2, passed)`.
+- **P2.G3** -- plan `fitness_app-2026-09-10T22-46-31-098Z-91565a` ("P2.G3 revision 5"), status
+  passed -- but read its closure review in full before backfilling anything, per SS3/SS23 (never
+  trust a plan's bare `status` field as equivalent to "the master gate is closed"): the reviewer
+  explicitly checked and confirmed "plan closure does not incorrectly close the master gate...
+  keeps P2.G3 OPEN/DEPLOYMENT_PENDING until a separately authorized real deployment." Backfilled
+  `pm_set_gate(P2.G3, in-progress)` -- NOT `passed` -- with the full quote in the evidence field so
+  the distinction survives the next person reading only `pm_gate_status`. `pm_set_gate`'s status
+  enum has no literal `OPEN/DEPLOYMENT_PENDING` value; `in-progress` is the closest honest mapping
+  and the evidence field says so explicitly, so nobody downstream misreads it as "review incomplete."
+
+All three `pm_set_gate` calls: GPT-PM notification failed each time (`No compatible orchestrator is
+active`), gate status recorded regardless per the tool's fail-open design -- same as the P2.G4
+backfill earlier in this same pass.
+
+`pm_gate_status` for the P2 chunk is now complete and accurate: G1/G2/G4 passed, G3 in-progress
+(deployment-pending), G5-readiness.step3a passed (a distinct, narrower prep gate -- see the status
+report's own P2.G5-readiness-vs-P2.G5 distinction), G5 itself not yet a tracked gate at all (no
+plan/evidence exists for it yet, consistent with the report's "not started" finding).
+
+Both report files' caveats sections updated to reflect the full backfill (P2.G1/G2/G4 passed,
+P2.G3 deliberately in-progress) rather than the partial P2.G4-only state recorded in the entry
+above; re-conformed, artifact republished at the same URL (version 4), committed.
