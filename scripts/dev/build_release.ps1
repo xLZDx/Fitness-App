@@ -48,7 +48,28 @@ param(
 $ErrorActionPreference = 'Stop'
 $ProjectRoot = Resolve-Path "$PSScriptRoot\..\.."
 $MobileDir = Join-Path $ProjectRoot 'mobile'
+
+# The operator's Windows dev machine always has this exact path -- checked
+# first so local behavior is byte-for-byte unchanged. CI (ubuntu-latest) has
+# no D: drive at all; `subosito/flutter-action` puts `flutter` on PATH there,
+# so the fallback is what makes this script -- and the stamps/build-number
+# semantics it exists to guarantee -- usable from a Linux CI job instead of
+# reimplementing them a second time in YAML (backlog row 22, CI-F2).
 $Flutter = 'D:/flutter/bin/flutter.bat'
+if (-not (Test-Path $Flutter)) {
+    # `Get-Command <name>` (without `-All`) can still return every matching
+    # executable on PATH for an Application-type command, not just the first
+    # -- take the first explicitly so $Flutter always stays a single scalar
+    # path rather than silently becoming an array if a runner ever has more
+    # than one `flutter` on PATH.
+    $onPath = Get-Command flutter -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if (-not $onPath) {
+        throw ("Flutter not found: neither $Flutter nor 'flutter' on PATH. " +
+               'Install Flutter or add it to PATH before running this script.')
+    }
+    $Flutter = $onPath.Source
+}
 
 if ($Bundle -and $Fat) { throw '-Bundle and -Fat are mutually exclusive.' }
 

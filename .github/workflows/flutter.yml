@@ -80,6 +80,100 @@ jobs:
       - name: flutter test
         run: flutter test --no-pub --reporter=expanded
 
+  # CI-F2 (backlog row 22). No job anywhere built a real release artifact --
+  # analyze-and-test only ever runs `flutter test`, so a break in the actual
+  # release path (Gradle assembleRelease/bundleRelease, R8/resource
+  # processing, native lib packaging) was invisible to every job in this
+  # file. This job runs the project's OWN canonical release-build path
+  # (scripts/dev/build_release.ps1, CI-F2) rather than a second, independent
+  # `flutter build` invocation -- so CI proves the exact mechanism the
+  # operator's own local release/distribute workflow depends on, with the
+  # same GIT_SHA/BUILT_AT/monotonic-build-number stamping semantics, instead
+  # of a parallel path that could drift from it. Never passes -Distribute:
+  # this job proves the build works, it does not publish to testers.
+  release-build:
+    name: release build (APK + AAB)
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # build_release.ps1 derives the build number from
+          # `git rev-list --count HEAD` and refuses to run under a shallow
+          # clone that would make that number regress -- same reason
+          # analyze-and-test needs full history, see R-05 above.
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.1'
+          channel: stable
+          cache: true
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('mobile/android/**/*.gradle*', 'mobile/pubspec.lock') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: flutter pub get
+        working-directory: mobile
+        run: flutter pub get
+
+      # Split APK (the operator's own default distribution artifact) and AAB
+      # (the Play-console form) both go through the same wrapper -- two
+      # separate invocations, not one script with two output claims, so a
+      # regression specific to either build type is still caught.
+      - name: Build split APK (release)
+        run: pwsh scripts/dev/build_release.ps1
+
+      - name: Build AAB (release)
+        run: pwsh scripts/dev/build_release.ps1 -Bundle
+
+      # Size floors are real measurements (2026-09-16, this exact HEAD, same
+      # split/bundle commands run locally), not guesses -- roughly half the
+      # measured 108.9 MB (APK) / 130.5 MB (AAB), loose enough to tolerate
+      # legitimate size drift from future dependency/asset changes while
+      # still catching the "build exited 0 but produced a near-empty or
+      # corrupt file" failure mode a bare existence check would miss.
+      - name: Verify artifacts are real, not near-empty
+        run: |
+          set -euo pipefail
+          apk="mobile/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
+          aab="mobile/build/app/outputs/bundle/release/app-release.aab"
+          apk_floor=$((50 * 1024 * 1024))
+          aab_floor=$((60 * 1024 * 1024))
+          for pair in "$apk:$apk_floor:APK" "$aab:$aab_floor:AAB"; do
+            IFS=: read -r path floor label <<< "$pair"
+            if [ ! -f "$path" ]; then
+              echo "::error::$label missing at $path"
+              exit 1
+            fi
+            size=$(stat -c%s "$path")
+            echo "$label: $size bytes ($path)"
+            if [ "$size" -lt "$floor" ]; then
+              echo "::error::$label is $size bytes, below the $floor-byte floor -- build likely produced a near-empty or corrupt artifact"
+              exit 1
+            fi
+          done
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk-arm64
+          path: mobile/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+          retention-days: 7
+
   functions-build:
     name: cloud functions tsc
     runs-on: ubuntu-latest
