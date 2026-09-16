@@ -53753,3 +53753,61 @@ by the reviewer who found it:
 
 **Status**: remediation next, as one batch, before this diff goes to GPT-PM for implementation
 review (rev4 plan step 9).
+
+## 2026-09-16 -- Row 24 gate: all 6 cold-review findings remediated in one batch, independently
+re-verified; sending complete diff to GPT-PM for implementation review
+
+All 6 items fixed as one batch (delegated to a fresh implementation agent, again independently
+re-verified by me rather than trusted from its own report):
+
+1. **[was BLOCKER] CONDITIONAL-ref path verification** -- `check_data_access_policy.js` gained
+   `testDocPathCollectionSegments`/`declaredCollectionSegments`/`collectionSegmentsMatch`, wired
+   into `validateConditionalRef` (now takes the declared `path` as a parameter): derives the real
+   Firestore collection segments every `doc(...)` call in the named test body constructs, and
+   requires at least one to match the declared collection -- otherwise fails naming the mismatch.
+   Read directly (`check_data_access_policy.js:544-634`) -- sound, wildcards both `{var}` path
+   segments and `${...}` test-side interpolations on equal footing.
+2. **[was MAJOR, found independently by both reviewers] dedicated-vs-wildcard OR semantics** --
+   `collectionAccess()` now throws when a dedicated block declares a MORE RESTRICTIVE classification
+   than the wildcard would otherwise grant, and the leaf is not actually in the wildcard's own
+   per-verb exclusion set -- naming the missing `coll != '<leaf>'` clause explicitly. Read directly
+   (`rules_parser.js:368-397`) -- sound, matches exactly what both reviewers asked for.
+3. **[was MAJOR] duplicate allow-statements per verb** -- `parseFirestoreRules` now fails closed on
+   a second `allow <verb>` statement for an already-populated op. Remediation surfaced a real
+   pre-existing latent bug in the naive first attempt (the outer `/databases/{database}/documents`
+   wrapper's body textually contains every nested block's statements) -- root-caused rather than
+   patched around: blocks containing a nested `match` are now skipped for allow-statement parsing.
+4. **[was MAJOR] bare-identifier scanner gap** -- widened the fail-closed non-literal-call scanner
+   to also hard-fail on bare-identifier arguments (e.g. a `function coll(db,n){return
+   db.collection(n)}` helper), with an explicit, named allowlist entry for the one real existing
+   instance in `account_export.ts:100`.
+5. **[was MAJOR] top-level vs. subcollection ambiguity** -- mechanical fix taken (not the
+   documented-limit fallback): code-discovered `.collection()` call sites now record whether the
+   call is chained off `.doc(...)` (i.e. genuinely per-user) vs. not (top-level candidate), falling
+   back to an explicit `AMBIGUOUS` hard failure on conflicting evidence for the same name. Verified
+   this changes zero real classifications today (every live per-user call site in mobile/lib is
+   `.collection('users').doc(uid).collection(name)`-shaped; every top-level one isn't).
+6. **[was MINOR] lifestyle bypass coverage** -- extended `profile`'s existing CONDITIONAL fixtures
+   with assertFails cases for non-null `lifestyle.smoking`/`lifestyle.alcohol` alongside otherwise-
+   stripped health, closing the coincidental-pass gap.
+
+**Independently re-verified by me (not trusted from the agent's report):**
+`node scripts/ci/check_data_access_policy.js` -> 37/37, exit 0.
+`node scripts/ci/test_check_data_access_policy.js` -> all 12 mutation classes (original 6 + 6 new:
+`f` path-mismatch, `g` missing wildcard exclusion, `h` duplicate allow-statement, `i` bare-identifier
+helper, `j` top-level-not-misderived, `k` conflicting-shape ambiguity) RED-then-GREEN.
+Emulator suite (`FIRESTORE_EMULATOR_PORT=8090` workaround, port 8080 still held by the unrelated
+sibling `rqdo-platform-appsmith-1` Docker container) -> 269/269. `npm test` -> 601/601.
+`npx tsc --noEmit` -> clean. Also read the two highest-severity fixes' actual code directly
+(`check_data_access_policy.js:544-634`, `rules_parser.js:368-397`) rather than only trusting the
+mutation tests -- both sound and precisely targeted at what the reviewers asked for.
+
+`scripts/ci/DATA_ACCESS_POLICY_DESIGN.md` updated to describe the final, post-remediation
+mechanism. `firestore.rules` untouched throughout (confirmed via `git status`). Nothing committed
+yet -- diff is ~160KB total across all new/modified files, well under review.js's 600K char limit,
+no truncation risk.
+
+**Next**: send the complete uncommitted diff to GPT-PM for implementation review (rev4 plan step
+9/12) via `review.js --uncommitted` (a genuine diff review this time, not a scope-note plan-GO --
+the earlier `pm_rosetta_go` transport limitation only affects the plan-approval ledger entry, not
+ordinary diff review, which `review.js` was always designed for).
