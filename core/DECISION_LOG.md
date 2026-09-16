@@ -53381,3 +53381,69 @@ earlier today) from a fresh, non-stale session.
 **Status**: DONE. This closes the highest-risk, most-cautiously-handled item in the entire backlog
 run. `core/MASTER_PLAN_2026-08-26.md` §5/§9 and the rolling status report to be updated to match in
 the same commit as this entry.
+
+## 2026-09-16 -- Tier B item 9 / row 24 -- GPT-PM reply received (retry via `review.js`), direction
+## B APPROVED with a materially different design than proposed; new gate scoped, not yet built
+
+**Context**: the operator confirmed a GPT-PM reply had arrived and said to continue. On re-checking,
+the original row-24 referral had never actually reached GPT-PM at all -- the `gpt_send_and_await` MCP
+attempt earlier today failed outright at the transport layer ("No compatible orchestrator is
+active"), before this session's stale-build routing risk was even the deciding factor; nothing was
+sent to any project by that attempt. Retried using the same `review.js` CLI workaround already
+proven reliable for the Tier C/Tier D exchanges today (fresh OS process, unaffected by this
+session's stale in-memory PM Bridge build -- `pm_bridge_mode_status` re-checked immediately before
+sending, still reports "THIS SESSION is the stale one," unchanged all day).
+
+**Round 1** (`reviewRequestId dc43d430-5f5e-42b1-b575-eea665dea4ae`, `replyId
+1d7a84eb-581c-420f-ae22-0b4723fdbd46`, correlated: true): `VERDICT: APPROVE -- choose B`, but
+**explicitly rejects my proposed four-value enum** (`OWNER_RW`/`OWNER_RO`/`SERVER_ONLY`/
+`SHARED_READONLY`) as unable to truthfully represent shapes already present in this repo's own
+rules -- named examples: `donor_wall` (public-read/server-write) and `debug_sessions`
+(client-create-only, with a uid/shape constraint, no read/update/delete). GPT-PM's own reasoning:
+a small closed enum over real, already-diverse access shapes becomes an exception-driven enum
+rather than a durable model.
+
+**The design GPT-PM specified instead** -- an orthogonal `clientAccess` policy object per collection
+in `data_lifecycle_policy.json`, with four independently-classified operations (`read`, `create`,
+`update`, `delete`), each one of `NONE` / `OWNER` / `AUTHENTICATED` / `PUBLIC` / `CONDITIONAL` --
+every `CONDITIONAL` value must point to a named emulator test/fixture proving the condition.
+`SERVER_ONLY` becomes `{NONE,NONE,NONE,NONE}`; owner-read-only becomes `{OWNER,NONE,NONE,NONE}`;
+`donor_wall` becomes `{PUBLIC,NONE,NONE,NONE}`; `debug_sessions`' actual shape (create-only,
+uid-and-shape-constrained) becomes expressible without inventing a fifth global category.
+
+**Definition of Done, GPT-PM's own words, not self-authored**:
+1. Every currently-discovered collection (same rules+production-source union the existing
+   `check_data_lifecycle_coverage.js` already uses) gets both a lifecycle classification (existing)
+   AND an explicit `clientAccess` matrix -- no default allowed for either.
+2. A newly-discovered collection with no access declaration must fail CI exactly as a missing
+   lifecycle classification does today (reuse the existing discovery mechanism, don't duplicate it).
+3. **Do not rely on static parsing of `firestore.rules` as the semantic proof** -- Firestore's own
+   "any matching allow wins" semantics mean overlapping rules can't be reasoned about statically with
+   confidence. Verify the DECLARED access matrix against the REAL Firestore emulator. Ordinary
+   classes can be table-driven; `CONDITIONAL` entries must name dedicated tests.
+4. **Mutation proof for the actual row-24 failure mode, named explicitly**: introduce a fake new
+   `.collection('sensitive_new')` reference -> CI must fail for a missing access decision; classify
+   it `SERVER_ONLY` while leaving the wildcard's owner grant untouched in `firestore.rules` -> the
+   semantic (emulator-based) access verification must STILL fail, because the policy file's claim and
+   the rules file's actual behavior disagree; only an actual matching rules change turns it green.
+   This is the precise scenario that proves the checker catches the omission this whole item exists
+   to close, not just that the policy file itself is well-formed.
+5. Backfill explicit `clientAccess` decisions for the nine wildcard-riding collections found during
+   this item's investigation (`generated_exercises`, `equipment_setup_notes`, `programmes`,
+   `machine_cards`, `recognised_equipment`, `scheduled_sessions`, `workout_logs`, `stats`,
+   `workout_sessions`); the existing 1016-line `firestore_rules.test.ts` suite plus the new
+   access-policy tests must both stay green. Any mismatch found during backfill between what a
+   collection SHOULD have and what it actually grants is a **real decision to resolve**, not
+   something the checker should silently normalize to current behavior.
+6. Wire the new access checker into the same required CI path as the existing lifecycle guard.
+
+GPT-PM's own closing note: Option A (full allowlist rewrite) "remains a legitimate future hardening
+step, but is not necessary to close the concrete omission risk now." Option C "would leave that known
+fail-open mechanism untouched." 0 BLOCKER / 0 MAJOR on direction B.
+
+**Status**: direction and DoD are now settled and binding -- not self-authored. Not yet built. Given
+the real blast radius (touches Firestore access-control verification methodology, adds a new
+emulator-driven CI gate, requires backfilling 9 collections' access decisions with a real risk of
+disagreement discovered mid-backfill), this needs its own scoped Rosetta plan and internal specialist
+review (database-reviewer + security-reviewer, R2 per §6) before implementation starts, per §17 --
+next step in this same session.
