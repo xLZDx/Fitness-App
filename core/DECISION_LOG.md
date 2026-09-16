@@ -54112,3 +54112,43 @@ and close the gate as-is, (C) a larger architectural change (an AST-based parser
 regex/text-based lexical scanning) to close this whole CLASS of "text-based analysis misses an
 adversarially-constructed edge case" finding at the root, deferred to a separate future gate rather
 than expanding this one further.
+
+## 2026-09-16 -- Row 24 gate: GPT-PM ruled on the round-cap process question -- VERDICT: APPROVE,
+Option A authorized, one terminal round 4, with explicit closing rules for every outcome
+
+Sent via `review.js --commit 50a311a --project fitness_app --round 1` (a fresh DECISION-format
+request, not a code-diff round), reviewRequestId `de6c14da-bbc1-4ffb-8abf-12fb643a63fe`, replyId
+`6066c204-3fe2-4c1e-a4ad-4df871e0b714`. **VERDICT: APPROVE -- Option A, with one explicitly
+authorized Round 4, and Round 4 is the true final review round.** Genuine, correlated APPROVE,
+authorizing the exception per CLAUDE.md SS20/SS16.
+
+**GPT-PM's specific technical guidance for the round-4 fix, tighter than my own original framing:**
+for the BLOCKER, "acceptance should be stronger than merely 'count calls'" -- each referenced
+`assertSucceeds(...)`/`assertFails(...)` must have ONE mechanically attributable operation whose
+outcome IS the assertion's outcome. Recommended rule: require the assertion argument itself to be
+(structurally) ONE supported Firestore SDK operation expression, rather than recursively searching
+for a matching call inside arbitrary wrappers (`Promise.all([...])`, etc) -- this closes the
+multi-call case, the unrelated-failure-attribution case, AND the SDK-shaped-string-literal-decoy
+case together, in one mechanism, rather than three separate patches. For the MAJOR, extend the
+existing conservative (over-reject-rather-than-falsely-certify) shadow detector to destructuring and
+equivalent simple local-declaration forms -- explicitly NOT a full scope-resolution engine, staying
+consistent with the fail-closed philosophy already chosen.
+
+**Terminal rule, stated explicitly so the outcome is decided in advance, not argued after the
+fact:** Round 4 is final regardless of outcome -- no Round 5, ever, for this gate. But NOT
+automatic-accept for anything that remains:
+- If both named findings close AND anything newly observed is another NON-LIVE, adversarial
+  lexical-analysis limitation of the same general class -> close Row 24 with that limitation
+  explicitly documented/accepted, and open Option C (AST-based hardening) as a separate future gate.
+- If either of these SAME two named findings is still actually open, OR their remediation
+  introduces a live fail-open/direct safety regression -> do NOT relabel as "accepted risk" just
+  because the round budget expired. Stop the review loop, leave Row 24 explicitly NOT cleanly
+  closed, and move parser hardening to the separate Option-C gate instead.
+- B (accept-as-documented-residual) is the terminal disposition only for bounded, non-live residual
+  risk; C (separate AST gate) is the terminal disposition for any remaining live/material hole --
+  the cap must never become a mechanism for converting a known active defect into an approval.
+
+**Status**: proceeding with the round-4 remediation batch, scoped exactly as GPT-PM specified (the
+two named findings plus direct regressions from fixing them -- no fresh whole-mechanism sweep, no
+unrelated architecture work), then one final round-4 verification send, then applying the terminal
+rule above to decide the gate's actual closing status.
