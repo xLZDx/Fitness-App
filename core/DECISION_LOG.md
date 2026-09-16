@@ -54262,3 +54262,43 @@ future work, not a blocker for this gate's closure; (3) `pm_set_gate` PM Bridge 
 for this gate (and the still-pending P2.G3/MVP1.G3 ones from earlier this session) -- deliberately
 deferred to a fresh session, since that call auto-notifies GPT-PM via the same PM Bridge transport
 this session's stale build cannot safely use for that purpose.
+
+## 2026-09-16 -- Legacy health-data residue swept: `strip_health_from_profiles.py --apply` run
+against both projects, operator-authorized deletion, 40/40 cleared, 0 failed
+
+**Operator authorization**: explicit, action-specific, given after this session presented the
+decision plainly (`AskUserQuestion`-equivalent chat exchange: "запускать ли `strip_health_from_
+profiles.py --apply`... удаление данных, нужно ваше явное да/нет" / offered option A = run now vs.
+option B = show the 40 documents first). Operator replied "ГО А" -- GO, option A, run now. This is
+a real deletion (CLAUDE.md SS20's operator-only carve-out, unaffected by SS20's general APPROVE-
+authorizes-reversible-acts narrowing), so this was correctly held for the operator rather than
+decided by GPT-PM or this session alone.
+
+**What ran, in order:** (1) dry run against `default` (`fitness-app-korostelev`) -- 39 profile
+documents found, all 39 still carrying the health block (the stale docstring claim of "ZERO in
+default", dated 2026-08-05, was superseded by later real user signups -- not trusted, re-measured
+live before acting). (2) dry run against `legacy-shared` (`traidingbot-b4061`) -- 14 profile
+documents found, 1 still carrying the health block. 39 + 1 = 40, matching the figure already on
+record from an earlier session's measurement -- confirms nothing drifted between when that count was
+taken and this run. (3) `--apply` against `default`: 39 cleared, 0 failed. (4) `--apply` against
+`legacy-shared`: 1 cleared, 0 failed. (5) Fresh dry run against both projects afterward, confirming
+0 residual stale documents on either.
+
+**What was actually deleted** (per the script's own DELETED-not-blanked design, verified by reading
+the script before running it): the `health` field (conditions, allergies, medications, injuries,
+physical limitations, recent surgeries, blood pressure, free-text concerns) and `lifestyle.smoking`/
+`lifestyle.alcohol`, from `users/{uid}/profile/main` only -- height/weight/goals/level/equipment/
+motivation (Play Store "Fitness info", not "Health info") were explicitly left untouched, and the
+script's own `select` clause (already hardened by an earlier GPT-PM round the same day, per the
+script's own doc comments) meant those other fields were never even fetched into memory during the
+process, let alone modified. No field values were printed at any point (script's own by-design data
+hygiene) -- output was document paths and counts only, which is what appears above.
+
+**This closes the standing gap** Gate J's regulatory review (`core/audit/gate_j_regulatory_review_
+2026-08-15/GATE_J_REGULATORY_REVIEW_2026-08-15.md:66`) and this session's own earlier checklist both
+named: "we do not store health data" is now actually true for every currently-known stored profile,
+not just for accounts whose owner has reopened the app since H1a/H1b shipped. Master-plan row 26
+(`core/MASTER_PLAN_2026-08-26.md`) should be updated to reflect a completed, dated, evidenced sweep
+rather than "script exists, no evidence of a completed run" -- doing that next, alongside a decision
+log commit for this entry (no code changed, data-only operation, but the mechanical decision-log
+gate still requires this file in the commit).
