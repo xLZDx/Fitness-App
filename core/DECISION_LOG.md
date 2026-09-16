@@ -52040,3 +52040,38 @@ count -- these were e2e-only fixes), and `npm run test:e2e` (89/89, up from 87) 
 
 Round 2 (verification-only, per §17's review budget -- only the fixes plus any regression they
 introduce) follows in a subsequent entry.
+
+### P2.G5-readiness step 3a -- round 2 (verification) and closure, 2026-09-16
+
+Round 2 (GPT-PM, scope note limited to the 2 round-1 MAJORs plus any direct regression, per
+this gate's own review-round-hard-cap of 3): fresh verification against final HEAD (`eeceb14`),
+not asserted from an earlier round -- `npx tsc --noEmit` clean; full unit suite `npx jest`, 28
+suites / 514 tests, all passed; full real-Firestore e2e suite
+(`node scripts/run_emulator_tests.js jest.e2e.config.js firestore demo-equipment-identity-e2e`,
+genuine local Firestore emulator, port 8090) 8 suites / 89 tests, all passed, including both new
+regression tests. `VERDICT: APPROVE`, correlated, `final: true`
+(reviewInputHash `b5fd3de478f0f8f728e885432bc950e8ce70613c9bc8e0985cf83c3c5bbe5aa9`,
+replyId `8c83be3b-7fc8-4969-bfd4-b576c29f3c53`, reviewRequestId
+`89654d6e-1410-49f7-a638-aa2a5137a139`). Reviewer additionally traced rules 1/2/4/5b and
+third/later-fragment + transaction-retry behavior per the standing full-mechanism-check
+instruction and found no further defect; the only noted limitation was evidence access (GitHub
+connector could not yet see the unpushed `eeceb14`), not a finding.
+
+**Pushed.** `git push origin master` -> `b91806f..eeceb14`, `master...origin/master` even, working
+tree clean. GPT-PM independently re-verified via the GitHub connector after the push that `master`
+points exactly at `eeceb14` and that the remote diff matches the reviewed range.
+
+**Rosetta closure**: plan `fitness_app-2026-09-15T23-26-30-825Z-f0797e` closed `passed`
+(changed set reconstructed from git: 16 paths, 3 commits from base `5e913d7`; review class
+STANDARD). Closure review: `VERDICT: APPROVE`, 0 BLOCKER/0 MAJOR -- GPT-PM specifically tried to
+invalidate closure on delayed-replay, third/later-fragment, legacy-record (no
+`clientObservedFailures`), and transaction-retry cases before agreeing closure was sound.
+
+P2.G5-readiness step 3a (mobile-originated telemetry reporting) is now fully closed end to end:
+design (4 review rounds), implementation (`39dcfd8`), remediation (`eeceb14`, round-1 findings),
+verification (round 2, this entry), push, and Rosetta closure.
+
+Honest residual, not silently dropped: this session's own Rosetta act-ledger reports 109 tool
+calls in this session ran with no approved plan governing them (pre-existing audit-mode debt per
+CLAUDE.md SS19 -- Rosetta today records and does not block); not specific to this gate, and not
+remediated by this entry.
