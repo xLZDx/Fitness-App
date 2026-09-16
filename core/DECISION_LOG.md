@@ -53447,3 +53447,75 @@ emulator-driven CI gate, requires backfilling 9 collections' access decisions wi
 disagreement discovered mid-backfill), this needs its own scoped Rosetta plan and internal specialist
 review (database-reviewer + security-reviewer, R2 per §6) before implementation starts, per §17 --
 next step in this same session.
+
+## 2026-09-16 -- Row 24 gate: Rosetta plan recorded (`fitness_app-2026-09-16T13-53-15-199Z-6d63ba`,
+## hash `c486c71e...`), internal specialist review (design-only, R2) found real gaps, plan revised
+
+**Plan recorded** via `pm_rosetta_plan`, `base_head b107aa49ecb9be53e271e5fdfc7546eab879724e`, class
+`STANDARD`. Full scope/steps/verification text is in the tool's own returned `ROSETTA PLAN GO
+REQUEST` body, not re-quoted here -- see the plan_id above. Per §17, internal specialist review ran
+BEFORE this plan went to GPT-PM: `database-reviewer` and `security-reviewer`, in parallel, reviewing
+the DESIGN (no code existed yet) against `firestore.rules`'s actual trickier blocks (`profile`'s
+health-strip condition, `_canary`, `donor_wall`, `debug_sessions`, the equipment-identity server-only
+collections) and against GPT-PM's own DoD text.
+
+**database-reviewer**: no BLOCKER/MAJOR -- design holds. Confirmed the 5-value-per-operation matrix
+correctly expresses every spot-checked tricky block (`_canary` correctly forces `CONDITIONAL` rather
+than `OWNER`, since owner-match alone is insufficient there) BECAUSE verification is emulator-driven
+against real deployed rules rather than a static model of what each enum value means -- explicitly
+warned against ever "optimizing" this into static rule-text pattern matching later, which would
+silently reopen the exact gap GPT-PM's ruling rejected the 4-value enum for. 2 MINOR: (1) the reused
+discovery mechanism's known blind spot (`check_data_lifecycle_coverage.js:78`'s regex only matches
+literal-string `.collection('name')` calls, misses `collectionGroup()` and constant-built names) now
+also bounds the ACCESS guarantee, not just retention -- must be stated explicitly in the new gate's
+own design doc, not left implicit; (2) the mutation-proof temp-copy plan is confirmed viable with
+ZERO path-parameterization changes, because both dependent path resolutions are `__dirname`-relative
+(`check_data_lifecycle_coverage.js:33`, `firestore_rules.test.ts:57`) -- but the plan must say
+explicitly WHICH relative-depth files need mirroring, rather than let a future round rediscover it
+the way `verify_deployment_isolation.py`'s own history already needed three separate rounds for.
+Plus: the schema must write down, before backfill starts, how a single Firestore verb (`allow
+write:`) decomposes into the matrix's three-way `create`/`update`/`delete` split (identical values
+for all three) and how bare `if false` maps to `NONE` across all four.
+
+**security-reviewer**: 3 MAJOR, 1 MINOR, no BLOCKER.
+- MAJOR-1: `CONDITIONAL` as specified is an unverified ASSERTION, not a checked one -- nothing
+  confirms the named test actually proves the claimed value for that specific collection path,
+  only that the reference exists. A lazy/adversarial `CONDITIONAL` declaration could point at any
+  unrelated passing test name and pass the checker with the real access never verified. **Required
+  fix**: the checker must resolve the named test/describe block and require it to contain both a
+  positive (`assertSucceeds`) and negative (`assertFails`) assertion against the SPECIFIC collection
+  path being declared -- string-presence of a reference is not proof.
+- MAJOR-2: `OWNER` is a legal but misleadingly weak declaration for field-conditioned rules --
+  `profile`'s real write rule is owner-scoped AND field-conditioned (`healthIsStripped`); a lazy
+  backfill could validly write `{update: OWNER}` (the owner genuinely can update it) without ever
+  exercising the health-strip bypass the existing 1016-line suite exists to catch. **Required fix**:
+  any match block whose condition contains clauses beyond bare `request.auth.uid == uid` must be
+  MECHANICALLY forced to `CONDITIONAL` during backfill (parse the rule body, not left to backfill
+  discipline alone) -- not merely encouraged.
+- MAJOR-3: the mutation-proof test only closes the drift gap if the emulator-based semantic check
+  re-verifies EVERY declared collection against the LIVE rules file on EVERY CI run. A plausible
+  future "only check changed collections" runtime optimization would silently reopen the identical
+  drift this gate exists to close. **Required**: state this as a binding, non-optimizable acceptance
+  criterion in the design now, not left to be quietly relaxed later.
+- MINOR: the mutation-proof fixture must mirror the real discovery mechanism's exact
+  directory-exclusion set and quoting convention (`__tests__`/`__e2e__`/`__rules__`, `test`) or a
+  false pass/fail proves nothing about the real checker; don't need to fix the pre-existing
+  template-literal discovery gap now, just don't let the mutation test hide it.
+
+**Consolidated remediation, before any implementation starts** (§17 "remediate the complete reported
+package in one pass, fix the class not the instance"):
+1. CONDITIONAL verification: the static/semantic checker resolves the named test and requires a
+   real positive+negative assertion pair against the declared collection's actual path.
+2. Mechanical CONDITIONAL-forcing: a rule-body parser flags any match block with conditions beyond
+   bare owner-uid equality and REFUSES an `OWNER` declaration for it during backfill -- `CONDITIONAL`
+   becomes the only legal declaration for those blocks.
+3. Full-suite-every-run stated as a permanent, non-optimizable requirement -- written into the
+   design doc and the checker's own code comment, not just this log entry.
+4. Mutation-proof fixture mirrors the real discovery walk's exact exclusions/quoting.
+5. Design doc states explicitly: the discovery blind spot (literal-string-only) now bounds access
+   coverage too; the exact relative-depth files the temp copy must mirror; the single-verb-to-
+   three-operation decomposition convention; `if false` -> `NONE` across all four operations.
+
+**Status**: plan revised to incorporate all of the above before being sent to GPT-PM for GO --
+material change per Rosetta's own rule ("any material change to the plan means a new plan, not an
+edit"), recorded as a fresh `pm_rosetta_plan` call rather than mutating the one above.
