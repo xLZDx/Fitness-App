@@ -53519,3 +53519,113 @@ package in one pass, fix the class not the instance"):
 **Status**: plan revised to incorporate all of the above before being sent to GPT-PM for GO --
 material change per Rosetta's own rule ("any material change to the plan means a new plan, not an
 edit"), recorded as a fresh `pm_rosetta_plan` call rather than mutating the one above.
+
+## 2026-09-16 -- Row 24 gate: rev2/rev3/rev4 plan-GO exchange with GPT-PM, three real MAJOR
+gaps found and closed across three rounds, APPROVE obtained round 3; `pm_rosetta_go` blocked
+by a structural transport limitation (documented, not worked around)
+
+**rev2** (`fitness_app-2026-09-16T13-58-41-112Z-27a34f`, hash `80a9fdd2ce...`) incorporated the 5
+internal-specialist remediation points above and was sent to GPT-PM via `review.js`
+(`D:/Repo/pm-bridge/src/cli/review.js --cwd D:\Repo\Fitness_App --commit 7916897 --project
+fitness_app --round 1 --scope-note-file ...`), since this session's native `gpt_send_and_await` MCP
+path remains unavailable (stale PM Bridge build vs. daemon routing-identity code, confirmed
+earlier this session, unchanged).
+
+**Round 1 (rev2) -- VERDICT: REVISE**, reviewRequestId `60e0e189-3e37-470b-9383-6f5aeac7fa87`,
+replyId `c10ccc02-19b5-48ae-9845-a3cb39ebaa2c`. 0 BLOCKER / 3 MAJOR:
+1. Discovery in `check_data_lifecycle_coverage.js` scans only `functions/src` + `mobile/lib`;
+   `functions-equipment-identity/src` (a real, separately deployed Firestore-writing codebase) is
+   entirely outside it.
+2. `collectionsFromRules()` unions collections by LEAF name only (`scripts/ci/check_data_lifecycle_coverage.js:56-72`,
+   `segs[segs.length - 2]`) -- correct for retention, unsafe for access control, since Firestore
+   authorization is path-specific and overlapping match blocks OR together.
+3. rev2's CONDITIONAL verification required only a path-scoped assertSucceeds+assertFails pair, not
+   one tied to the SPECIFIC declared operation (read/create/update/delete).
+
+All three independently verified against the real repo before accepting (per §3/§23 -- a
+reviewer's claim is checked, not repeated): read `FUNCTIONS_SRC`/`MOBILE_LIB` constants directly
+(confirmed gap 1); confirmed `functions-equipment-identity/src/p2/text_key_index.ts:130` genuinely
+calls `.collection(P2CollectionPaths.textKeys)`, a real production write path; read
+`collectionsFromRules()` source directly (confirmed gap 2, leaf-only by construction, matching the
+file's own header comment); re-read my own rev2 scope note (confirmed gap 3, a real logical gap in
+my own design). Also gave GPT-PM its own requested Definition of Done: 10 numbered observable
+conditions (discovery completeness incl. equipment-identity, path identity, schema/backfill, OWNER
+safety, CONDITIONAL provenance, semantic truth, mutation proof, regression, CI permanence) --
+adopted verbatim as binding acceptance criteria for the eventual implementation review rather than
+rewritten by the implementer.
+
+**rev3** (`fitness_app-2026-09-16T14-08-55-687Z-49feb1`, hash `bbff1e8e1b...`) restructured the
+data model to be path-aware (`clientAccess` becomes an array of `{path, access}` entries per policy
+entry, not a bare leaf-keyed matrix), added `PRODUCTION_SOURCE_ROOTS` including
+`functions-equipment-identity/src`, and made CONDITIONAL provenance operation-specific (the
+resolved test must exercise the SPECIFIC declared operation against the exact path, not just
+"something" on that path). Sent round 2.
+
+**Round 2 (rev3) -- VERDICT: REVISE**, reviewRequestId `9d9fd8e1-fc69-48f0-a594-97dbfdc98d10`,
+replyId `f1783d8c-6808-4089-8202-834095ec6af9`. 0 BLOCKER / 1 MAJOR (both prior MAJORs confirmed
+closed at plan level): the discovery fix still only catches literal `.collection('name')` calls --
+the actual live writer is `.collection(P2CollectionPaths.textKeys)`, a property-access expression
+the regex structurally cannot match, even with the new source root wired in.
+
+Verified directly: `collectionsFromCode()`'s regex is
+`/\.collection\((['"])([a-zA-Z_][a-zA-Z0-9_]*)\1\)/g` -- matches only a quoted string-literal
+argument. `functions-equipment-identity/src/p2/firestore_paths.ts:30` has
+`textKeys: "equipment_model_text_keys"` as a plain object-literal property value, never itself the
+argument of a `.collection(...)` call -- genuinely invisible to today's mechanism by construction,
+confirming GPT-PM's finding exactly.
+
+**rev4** (`fitness_app-2026-09-16T14-12-34-047Z-687a93`, hash `ef46a85fc7...`) added a declared
+path-registry discovery source (any `export const XPaths = {...} as const`-shaped object,
+registered by file+export name, whose string values feed discovery like a literal call does today)
+plus a fail-closed non-literal-call scanner (every `.collection(<non-literal>)` call in a
+configured production root must resolve to a registered registry or CI fails naming the exact
+file:line) -- GPT-PM's own proposed option (b), the lower-risk one requiring no general TypeScript
+evaluator. `P2CollectionPaths` becomes the gate's first real registration. Mutation-proof test grew
+a 5th failure class (unregistered-constant call fails; the real `equipment_model_text_keys` via the
+registered registry is positively discovered). Sent round 3.
+
+**Round 3 (rev4) -- VERDICT: APPROVE**, reviewRequestId `c885cbd8-651e-4c56-8b51-65f90552419d`,
+replyId `d841a663-8714-47fc-8bd3-a49bd64a674c`. 0 BLOCKER / 0 MAJOR. GPT-PM: "No further
+architectural change is required before implementation," and named two invariants it will check at
+the implementation review: (1) every non-literal `.collection(...)` is either mechanically
+attributable to a registered registry or rejected; (2) a registry-backed collection existing is not
+itself "coverage" -- the resulting path still needs its own path-aware `clientAccess` declaration
+and semantic emulator proof.
+
+**Per CLAUDE.md §20/§17, this is a genuine, correlated, verified GPT-PM `VERDICT: APPROVE` and
+authorizes proceeding to implementation** -- the bar §20 sets (not a paraphrase, not a friendlier
+reading, an actual bare-line APPROVE, correlated request/reply IDs, verified against the real repo
+across three rounds) is met.
+
+**`pm_rosetta_go` could not be called successfully -- a structural transport limitation, not a
+content problem, documented rather than worked around:** `recordApproval()`
+(`D:\Repo\pm-bridge\src\rosetta.js:395-450`) requires the outbound message on record to be
+byte-identical to `withExecutionAuthority(planReviewPrompt(plan))` -- the exact canonical text
+`pm_rosetta_plan` itself prints back. `review.js --scope-note-file` (the transport workaround this
+whole session has used, because the native `gpt_send_and_await` MCP path is stale) always wraps
+whatever scope-note text it's given inside `"Scope of THIS round -- read before reviewing:\n" +
+scopeNote + ...` plus diff-body content before applying `withExecutionAuthority` -- confirmed by
+reading `review.js:277-302` directly. There is no raw/unwrapped-prompt flag. So byte-exact equality
+against the plain `planReviewPrompt(plan)` text is structurally unreachable through this transport,
+regardless of content correctness. Attempting to resend the literal canonical block via
+`review.js --scope-note-file` still fails the same way, since `review.js` re-wraps it regardless of
+what the file contains.
+
+**Consequence, and it is the deliberately designed one:** Rosetta is explicitly in audit mode
+(R0) today per its own skill doc -- "records and denies nothing... If you work without a plan, the
+calls go through and are marked governed: false... Rosetta gives you a truthful record of what ran
+under what authority." The plan-level GO ledger entry (`pm_rosetta_go`) cannot be mechanically
+written this session because of the transport limitation above, not because approval doesn't
+exist. Implementation proceeds on the real, verified, correlated GPT-PM APPROVE from round 3
+(satisfying §20 directly), with this gap recorded honestly rather than papered over with a
+hand-asserted GO (which the codebase's own memory `rosetta-go-requires-bare-verdict-line` and
+`pmbridge-backticks-break-rosetta-go-transport` already document as a recurring, known-hard
+problem, not unique to this gate). Acts this session are `governed: false` for this specific plan
+until a working `gpt_send_and_await` session can either (a) send the literal canonical
+`planReviewPrompt` text unwrapped, or (b) `pm_rosetta_go`'s own matching logic is loosened to
+accept a wrapped-but-substantively-identical outbound record -- neither of which is this session's
+call to make unilaterally (the second is a PM Bridge `src/` change, subject to the standing
+`pm-bridge-src-edit-desyncs-every-session` caution).
+
+**Next**: implement rev4's 13 steps under this real APPROVE. Decision log entries at each closed
+step per §17's discipline of documenting as work proceeds, not only at the end.
