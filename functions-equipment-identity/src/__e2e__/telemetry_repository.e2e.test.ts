@@ -375,6 +375,44 @@ describe("recordMobileTelemetryFragment -- real Firestore merge semantics (desig
     expect(record?.clientObservedFailures?.[0]).toMatchObject({ state: "REQUEST_FAILURE", reason: "timeout" });
   });
 
+  // GPT-PM MAJOR (round 1, implementation review of commit 39dcfd8): once A
+  // is superseded by B and archived into clientObservedFailures, a DELAYED
+  // duplicate delivery of the original A (reports are independent
+  // fire-and-forget sends with no delivery-order guarantee) no longer
+  // matches the record's own top-level fingerprint (now B's) -- without a
+  // guard, rule 3 would treat that duplicate as a brand-new legitimate
+  // transition, rolling state back to stale A and re-archiving the real
+  // current B on top of it, growing the audit trail without bound on
+  // repeated replay.
+  test("rule 3 is idempotent against a DELAYED replay of an already-archived fragment -- no rollback, no unbounded audit growth", async () => {
+    const uid = randomUid();
+    const a = requestFailure({ reason: "timeout" });
+    const b = requestFailure({ reason: "backendError" });
+
+    await recordMobileTelemetryFragment(uid, a);
+    await recordMobileTelemetryFragment(uid, b);
+    const afterB = await readRaw(uid, "scan-1");
+    expect(afterB?.state).toBe("REQUEST_FAILURE");
+    expect(afterB?.requestFailureReason).toBe("backendError");
+    expect(afterB?.clientObservedFailures).toHaveLength(1);
+
+    // A delayed duplicate of the now-superseded A arrives.
+    await recordMobileTelemetryFragment(uid, a);
+    const afterReplayA = await readRaw(uid, "scan-1");
+    expect(afterReplayA?.state).toBe("REQUEST_FAILURE");
+    expect(afterReplayA?.requestFailureReason).toBe("backendError");
+    expect(afterReplayA?.clientObservedFailures).toHaveLength(1);
+    expect(afterReplayA?.priorStates).toHaveLength(1);
+
+    // A subsequent replay of the CURRENT fragment B is also a no-op (rule 2).
+    await recordMobileTelemetryFragment(uid, b);
+    const afterReplayB = await readRaw(uid, "scan-1");
+    expect(afterReplayB?.state).toBe("REQUEST_FAILURE");
+    expect(afterReplayB?.requestFailureReason).toBe("backendError");
+    expect(afterReplayB?.clientObservedFailures).toHaveLength(1);
+    expect(afterReplayB?.priorStates).toHaveLength(1);
+  });
+
   test("rule 5a: a mobile failure fragment arriving AFTER SERVER_TERMINAL never overwrites state -- it only joins clientObservedFailures", async () => {
     const uid = randomUid();
     await recordServerTerminalTelemetry(uid, "scan-1", matchResponse());
@@ -389,6 +427,53 @@ describe("recordMobileTelemetryFragment -- real Firestore merge semantics (desig
     expect(record?.clientObservedFailures).toEqual([
       { state: "REQUEST_FAILURE", reason: "malformedReply", recordedAt: record?.updatedAt, payloadFingerprint: expect.any(String) },
     ]);
+  });
+
+  // GPT-PM MAJOR (round 1, implementation review of commit 39dcfd8): the
+  // first cut of rule 5a appended clientObservedFailures but silently
+  // discarded the fragment's own scanStartedAt/scanEndedAt -- the design
+  // doc's rule 5 preamble requires both mobile-fragment shapes reaching
+  // this rule to fill those fields (first-write-wins), not only the
+  // timing-only shape.
+  test("rule 5a ALSO fills scanStartedAt/scanEndedAt (first-write-wins) on a failure fragment -- not just clientObservedFailures", async () => {
+    const uid = randomUid();
+    await recordServerTerminalTelemetry(uid, "scan-1", matchResponse());
+    const before = await readRaw(uid, "scan-1");
+    expect(before?.scanStartedAt).toBeUndefined();
+
+    await recordMobileTelemetryFragment(uid, requestFailure({ reason: "malformedReply" }));
+
+    const record = await readRaw(uid, "scan-1");
+    expect(record?.scanStartedAt).toBe("2026-09-16T10:00:00.000Z");
+    expect(record?.scanEndedAt).toBe("2026-09-16T10:00:01.000Z");
+
+    // A LATER, differing fragment must not overwrite already-filled timing.
+    await recordMobileTelemetryFragment(
+      uid,
+      requestFailure({
+        reason: "timeout",
+        scanStartedAt: "2026-09-16T11:00:00.000Z",
+        scanEndedAt: "2026-09-16T11:00:05.000Z",
+      }),
+    );
+    const afterSecond = await readRaw(uid, "scan-1");
+    expect(afterSecond?.scanStartedAt).toBe("2026-09-16T10:00:00.000Z");
+    expect(afterSecond?.scanEndedAt).toBe("2026-09-16T10:00:01.000Z");
+    expect(afterSecond?.clientObservedFailures).toHaveLength(2);
+
+    // An identical replay of the SECOND fragment stays idempotent -- one
+    // audit entry per distinct fragment, timing untouched.
+    await recordMobileTelemetryFragment(
+      uid,
+      requestFailure({
+        reason: "timeout",
+        scanStartedAt: "2026-09-16T11:00:00.000Z",
+        scanEndedAt: "2026-09-16T11:00:05.000Z",
+      }),
+    );
+    const afterReplay = await readRaw(uid, "scan-1");
+    expect(afterReplay?.clientObservedFailures).toHaveLength(2);
+    expect(afterReplay?.scanStartedAt).toBe("2026-09-16T10:00:00.000Z");
   });
 
   test("rule 5a is idempotent -- a repeat of the SAME mobile fragment does not keep growing clientObservedFailures", async () => {

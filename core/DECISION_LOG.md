@@ -51983,3 +51983,60 @@ of these affect §5's metric formulas for the states this step actually writes.
 
 Not yet done: `pm_rosetta_close` on plan `f0797e` (evidence above is the basis for that call), and the
 commit/push for this implementation.
+
+## 2026-09-16 -- P2.G5-readiness step 3a: post-implementation GPT-PM review round 1, REVISE (0 BLOCKER / 2 MAJOR), both fixed
+
+Per §15/§17, the implementation commit (`39dcfd8`) was sent to GPT-PM for a post-hoc adversarial
+review (the plan's own design GO does not itself review the diff) via
+`pm-bridge/src/cli/review.js --commit 39dcfd8 --project Fitness_App --scope-note-file <full-sweep
+scope note>`. Scope note explicitly asked for a full mechanism/integration sweep, not a line-by-line
+read, and to independently verify the disclosed `parserException`-is-unreachable finding before
+accepting or rejecting it.
+
+**VERDICT: REVISE, 0 BLOCKER / 2 MAJOR** (request_id `260cf5aa-eaff-467a-9f45-95dc62695f75`, reply_id
+`73e2c8f6-7087-47b1-a6f6-4c51b6c61eb8`). Both findings independently verified against the real code
+before accepting, per §3/§13/§23:
+
+1. **MAJOR -- Rule 5a silently discarded a failure fragment's own `scanStartedAt`/`scanEndedAt`.**
+   The design doc's rule 5 preamble requires BOTH mobile-fragment shapes reaching this rule
+   (LOCAL_FAILURE/REQUEST_FAILURE and the timing-only one) to fill those two fields
+   (first-write-wins) -- the first cut of `recordMobileTelemetryFragment` only did this in the
+   timing-only sub-branch (5b), never in the failure-fragment sub-branch (5a). Confirmed by reading
+   the code: 5a's `tx.update` only ever wrote `updatedAt`/`clientObservedFailures`. Fixed: 5a now
+   computes the same first-write-wins `timingFill` object 5b already used and merges it into both
+   its idempotent-replay and its first-seen `tx.update` calls.
+2. **MAJOR -- Rule 3 had no idempotency guard against a DELAYED replay of an already-archived
+   fragment**, which could roll the record's current state backward and grow the audit trail
+   without bound. Confirmed by reading the code: rule 3 checked only the record's own top-level
+   `payloadFingerprint` (rule 2's check) before treating an incoming write as a legitimate new
+   transition -- once a fragment A is superseded by B and archived into `clientObservedFailures`, a
+   late duplicate delivery of the ORIGINAL A no longer matches the current top-level fingerprint (B's),
+   so it fell through to rule 3 and was treated as a brand-new transition, resurrecting A as current
+   and re-archiving B on top of it. Real risk, not hypothetical: telemetry reports are independent
+   fire-and-forget sends (this provider's own doc comment) with no delivery-order guarantee. Fixed:
+   rule 3 now checks the incoming fingerprint against `existing.clientObservedFailures` first (same
+   mechanism rule 5a's own idempotency check and `recordServerTerminalTelemetry`'s rule-4
+   `alreadyKnownConflict` check already use) and no-ops on a match.
+
+GPT-PM's independent re-verification of the disclosed `parserException` finding (round 1's own
+adversarial checklist item, not something the implementer merely asserted and moved on from):
+confirmed accurate -- "`identity_text_parser.dart` explicitly documents `parseIdentityText` as pure
+and 'never throws,' and its production implementation has no deliberate throw path; treating
+`parserException` as defensive/currently-unreachable wiring is therefore accurate rather than a
+reason to reject this implementation."
+
+Also confirmed sound by GPT-PM without a finding: all 3 mobile report paths genuinely originate from
+the provider's real branches; rejected telemetry Futures are caught before `unawaited` and never
+affect the provider's own resolved value; the contract boundary correctly rejects every unauthorized
+state via `.strict()` on all 3 union members; region/App-Check parity is enforced via one shared
+constant plus a source-text regression test, not merely two literals that happen to match today.
+
+**Remediation** (same commit batch, before any second review round -- §17 "remediate in complete
+batches"): both fixes applied to `telemetry_repository.ts`; 2 new real-Firestore e2e tests added to
+`__e2e__/telemetry_repository.e2e.test.ts` covering exactly the two failure scenarios GPT-PM named
+(5a timing-fill + first-write-wins + idempotent replay; rule-3 delayed-replay-of-archived-fragment
+with no rollback and no unbounded audit growth). `npx tsc --noEmit`, `npm test` (514/514, unchanged
+count -- these were e2e-only fixes), and `npm run test:e2e` (89/89, up from 87) all green.
+
+Round 2 (verification-only, per §17's review budget -- only the fixes plus any regression they
+introduce) follows in a subsequent entry.

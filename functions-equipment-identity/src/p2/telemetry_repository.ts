@@ -339,6 +339,29 @@ export async function recordMobileTelemetryFragment(
 
       if (isMobileNonTerminalState(existing.state)) {
         // Rule 3.
+        // GPT-PM MAJOR (round 1, implementation review of commit 39dcfd8):
+        // once a fragment has been superseded and archived into
+        // `clientObservedFailures`, a DELAYED duplicate delivery of that
+        // exact same (now-archived) fragment no longer matches the
+        // record's own top-level `payloadFingerprint` (rule 2's check), so
+        // without this guard it would fall through here and be treated as
+        // a brand-new legitimate transition -- rolling the current state
+        // BACK to the stale one and re-archiving the real current state on
+        // top of it. Reports are independent fire-and-forget sends with no
+        // delivery-order guarantee (this provider's own doc comment), so a
+        // delayed duplicate of an already-superseded send is a real
+        // scenario, not a hypothetical one. Same idempotency posture as
+        // rule 5a's own `alreadyKnown` check just below, and the same
+        // class of repeat-delivery gap `recordServerTerminalTelemetry`'s
+        // own rule 4 already had to close for conflicting writes.
+        const alreadyArchived = (existing.clientObservedFailures ?? []).some(
+          (f) => f.payloadFingerprint === payloadFingerprint,
+        );
+        if (alreadyArchived) {
+          tx.update(ref, { updatedAt: nowIso });
+          return;
+        }
+
         const replacedEntry = {
           state: existing.state,
           reason: extractMobileReason(existing),
@@ -396,17 +419,31 @@ export async function recordMobileTelemetryFragment(
       // Never a conflict for a mobile-authoritative fragment -- rule 4 is
       // structurally unreachable from this function (see header comment).
       if (isStateDefiningReport(report)) {
-        // Rule 5a: idempotent per stored fingerprint, same mechanism as
+        // Rule 5a. GPT-PM MAJOR (round 1, implementation review of commit
+        // 39dcfd8): the design doc's own rule 5 preamble -- "enrich only
+        // the metadata fields the server-side write could never have
+        // supplied -- scanStartedAt/scanEndedAt, filled in only if not
+        // already set" -- applies to BOTH mobile-fragment shapes that reach
+        // this rule, not only the timing-only one (5b). The first cut of
+        // this function only filled them in 5b, silently discarding a real
+        // failure fragment's own timestamps even though the client
+        // supplied them. First-write-wins here too, same as 5b.
+        const timingFill: Partial<Pick<EquipmentIdentityTelemetryRecord, "scanStartedAt" | "scanEndedAt">> = {};
+        if (existing.scanStartedAt === undefined) timingFill.scanStartedAt = report.scanStartedAt;
+        if (existing.scanEndedAt === undefined) timingFill.scanEndedAt = report.scanEndedAt;
+
+        // Idempotent per stored fingerprint, same mechanism as
         // `conflictingWrites`' own repeat-delivery check above.
         const alreadyKnown = (existing.clientObservedFailures ?? []).some(
           (f) => f.payloadFingerprint === payloadFingerprint,
         );
         if (alreadyKnown) {
-          tx.update(ref, { updatedAt: nowIso });
+          tx.update(ref, { updatedAt: nowIso, ...timingFill });
           return;
         }
         tx.update(ref, {
           updatedAt: nowIso,
+          ...timingFill,
           clientObservedFailures: [
             ...(existing.clientObservedFailures ?? []),
             { state: report.state, reason: report.reason, recordedAt: nowIso, payloadFingerprint },
