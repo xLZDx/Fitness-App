@@ -53948,3 +53948,51 @@ subtlest fix -- and confirmed it's sound.
 
 **Next**: send round 2 (verification round, per GPT-PM's own stated scope -- "verify only these
 findings plus direct regressions") via `review.js --uncommitted`.
+
+## 2026-09-16 -- Row 24 gate: GPT-PM implementation review round 2 -- VERDICT: REVISE, 2 BLOCKER
+/ 1 MAJOR, all verified real; this is round 3 (last round under this project's 3-round cap)
+
+Sent via `review.js --uncommitted --project fitness_app --round 2`, reviewRequestId
+`772ab64e-d905-4039-b4db-e201088cbebe`, replyId `bddde847-f658-46a5-89ac-8a849d4d3bfd`.
+**VERDICT: REVISE, 2 BLOCKER / 1 MAJOR** -- narrower than round 1 (confirms the other 4 remediations
+"materially closed": residue narrowing, balanced-paren chaining, Source-A exact-path keying, and the
+create-proof fixture fix), but the 3 remaining findings are real, deeper versions of round-1's own
+fixes that were only partially complete. All 3 independently verified against the actual code before
+accepting.
+
+**BLOCKER 1 -- Source-D `.doc()` discovery still silently drops a STATICALLY LITERAL
+`users/<uid>/<collection>/<doc>` path** (round 1's mutation only tested the templated-`${uid}` case,
+which correctly becomes a wildcard `*`). VERIFIED: `collectionShapeFromDocSegments()`
+(`check_data_access_policy.js:428-438`) only recognizes a per-user shape when `segs[1] === '*'` --
+a fully literal path like `"users/alice/sensitive_new/current"` has `segs[1] === 'alice'`, falls
+through to the generic branch, and returns `{leaf: 'users', isUserSubcollection: false}`.
+`addCandidate()`'s own `if (leaf === 'users') return;` (`check_data_access_policy.js:654`) then
+silently discards it -- neither a candidate nor a violation, for a path Firestore's real generic
+wildcard rule genuinely governs.
+
+**BLOCKER 2 -- CONDITIONAL provenance is STILL not bound to the actual SDK call's own document
+argument, only to "the SDK token is present somewhere in this assertion" and "a matching doc() call
+exists somewhere in this same assertion" as two separately-filtered but still-independent facts.**
+VERIFIED: `analyzeAssertCalls()` (`check_data_access_policy.js:930-947`) filters `calls` (the
+extracted assertSucceeds/assertFails argument texts) by "the SDK token matches somewhere in this
+text" (`sdkRe.test(argText)`), then separately filters THOSE by "some `doc()` call anywhere in that
+SAME text matches the declared path" -- neither check confirms the matching `doc()` call is actually
+the operand of the matched SDK call. `assertSucceeds(updateDoc(doc(db,'_canary/x'), {ref:
+doc(db,'users/alice/profile/main')}))` -- a real update targeting `_canary` with an unrelated
+`profile`-path `doc()` reference buried in the payload object -- would still pass both filters. This
+is a genuine, deeper version of round-1's own BLOCKER 3, not a new independent finding -- the round-2
+fix bound "which assertion" but not "which specific SDK-call-within-that-assertion."
+
+**MAJOR -- registry import-binding is file-level, not call-site-scope-level; a legitimate file-level
+import plus a closer local shadow (a function parameter or inner-scope re-declaration of the same
+name) at the actual call site still silently resolves via the file-level check.** VERIFIED:
+`registryBindingHolds()` (`check_data_access_policy.js:313-330`) scans the WHOLE FILE for a matching
+import statement and returns `true` on any match -- no analysis of what's actually in scope at the
+specific `.collection(Ident.member)` call site, so a nearer shadowing declaration is invisible to it.
+
+**Status**: this is round 3 of the 3-round implementation-review budget (this project's standing
+hard-cap rule, communicated to GPT-PM up front in round 2's own send). Remediating all 3 as one
+batch, with extra care given this is very likely the last GPT-PM round available under the cap
+(barring a genuine regression exception under §17) -- writing acceptance tests that match GPT-PM's
+own specified adversarial scenarios exactly (literal-uid path, decoy-doc-inside-payload, function-
+scope shadow), not just a nearby easier case.
