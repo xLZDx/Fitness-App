@@ -54194,3 +54194,42 @@ C separately; if either named finding is still actually open or a live regressio
 review loop (do not relabel as accepted risk) and move hardening to the separate Option-C gate
 instead. No round 5 either way -- this is genuinely the last GPT-PM exchange for this gate's
 implementation review.
+
+## 2026-09-16 -- Row 24 gate: TERMINAL round-4 VERDICT: APPROVE, 0 BLOCKER / 0 MAJOR -- gate
+CLOSED. Accepted residual: lexical/AST-parser limitation, tracked as a separate future Option-C
+gate, not this one's problem to solve further
+
+Sent via `review.js --uncommitted --project fitness_app --round 4`, reviewRequestId
+`19e2cc5f-4b52-4355-b76a-96391884c5c4`, replyId `6c6250bc-c862-4097-bea0-8dc432512c43`.
+**VERDICT: APPROVE, 0 BLOCKER / 0 MAJOR.** GPT-PM independently confirmed both round-4 fixes via
+its own read-only file access (not merely trusting the submitted report): `wholeSdkCallExpression()`
+correctly requires the complete trimmed assertion argument to start with the SDK operation and end
+at that call's own balanced close-paren; the 7 real hand-written CONDITIONAL proofs were checked
+directly and confirmed to already have this shape with no meaning changed; the destructuring-shadow
+fix was confirmed to use the exact previously-missed shape as its mutation proof. GPT-PM's own
+verbatim closing ruling: **"Row 24 can close. No Round 5. Record the lexical/AST limitation as
+accepted residual risk and open Option C -- AST-based hardening as a separate future gate/backlog
+item rather than continuing this review cycle."**
+
+**Accepted residual risk, formally recorded per GPT-PM's own terminal rule (not silently implied):**
+this gate's TypeScript-reading discovery/verification mechanisms are regex/lexical-text scanning,
+not full AST/type-aware parsing -- a deliberate scope choice, documented explicitly in
+`scripts/ci/DATA_ACCESS_POLICY_DESIGN.md`. Known specific residual (checked, not live in any of the
+7 real hand-written CONDITIONAL tests, fails CLOSED not open if it ever occurs): a document reference
+held in a variable (`const ref = doc(...); updateDoc(ref, data)`) rather than an inline `doc(...)`
+call cannot be traced by `analyzeAssertCalls()`'s path-resolution. **Option C (AST-based rewrite of
+the checker's TypeScript-reading parts, e.g. via the TypeScript compiler API) is a separate, future
+backlog item -- not implemented in this gate, not blocking this gate's closure.**
+
+**Full round history for this implementation review (for the record):** cold internal specialist
+review (database-reviewer + security-reviewer, 1 BLOCKER/4 MAJOR/1 MINOR) -> remediated -> GPT-PM
+round 1 (3 BLOCKER/4 MAJOR) -> remediated -> GPT-PM round 2 (2 BLOCKER/1 MAJOR) -> remediated ->
+GPT-PM round 3 (1 BLOCKER/1 MAJOR, round cap reached) -> GPT-PM APPROVE on round-cap process
+exception (Option A) -> GPT-PM round 4/terminal (0 BLOCKER/0 MAJOR, APPROVE). 21 real, independently
+verified defects found and fixed across 5 remediation batches before the gate closed clean. Every
+single finding across every round was independently re-verified against the actual source code
+before being accepted as real (per SS3/SS23) -- none were taken on the reviewer's word alone.
+
+**Status**: committing and pushing the gate's actual code now (nothing had been committed yet --
+every round reviewed the live uncommitted working tree). Updating `scripts/ci/data_lifecycle_policy.json`'s
+policy backfill, `MASTER_PLAN_2026-08-26.md`'s row 24 status, and the rolling status report next.

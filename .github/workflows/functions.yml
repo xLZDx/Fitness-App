@@ -222,3 +222,37 @@ jobs:
       # script only uses Node's built-in fs/path.
       - name: data lifecycle coverage check
         run: node scripts/ci/check_data_lifecycle_coverage.js
+
+  data-access-policy:
+    name: data access policy drift guard (P2-ACCESS-1)
+    runs-on: ubuntu-latest
+    # Overrides the file-level `defaults.run.working-directory: functions` --
+    # this check reads firestore.rules, functions/src/,
+    # functions-equipment-identity/src/ and mobile/lib/, so it needs the
+    # repo root, not any one subtree.
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      # P2-ACCESS-1: firestore.rules' generic per-user wildcard silently
+      # grants the owner read/write over any subcollection under their own
+      # users/{uid} except an explicit denylist -- several real
+      # subcollections ride it today with no dedicated rules block, and
+      # nothing failed CI when a NEW sensitive collection joined that list
+      # by omission. This is check_data_lifecycle_coverage.js's own proven
+      # "discover every collection, require an explicit classification,
+      # fail CI on a gap" mechanism, applied to the ACCESS-CONTROL axis
+      # instead of retention -- see scripts/ci/DATA_ACCESS_POLICY_DESIGN.md.
+      #
+      # Self-test first, same discipline as the ru-en-drift job in
+      # flutter.yml: proves the checker actually detects each of its five
+      # mutation classes (an undeclared collection, a leaf reused under a
+      # structurally different path, a wrong-operation conditionalRef, an
+      # unregistered constant-based .collection() call, ...) before the
+      # real check runs against the live repository. No npm install needed
+      # for either step -- both scripts use only Node's built-in fs/path.
+      - name: self-test -- mutation-proof (5 failure classes, red then green)
+        run: node scripts/ci/test_check_data_access_policy.js
+      - name: data access policy check
+        run: node scripts/ci/check_data_access_policy.js

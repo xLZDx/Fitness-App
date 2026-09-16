@@ -1,145 +1,601 @@
 {
-  "_comment": "MVP1.G3-CI-8 (Data Lifecycle Coverage Drift Guard). Every collection discovered by check_data_lifecycle_coverage.js (firestore.rules match-blocks UNION literal .collection('name') calls in production source) must have an entry here. classification is one of DELETE / EXPORT / BOTH / EXEMPT -- DELETE means covered by deleteAccount, EXPORT means covered by exportAccountData, BOTH means both, EXEMPT means neither applies and why. `users` itself is intentionally absent -- it is the root container, not a distinct data class; every subcollection under it is classified individually below.",
+  "_comment": "Two independent axes share this file, one row per collection, one entry per axis. RETENTION (MVP1.G3-CI-8, check_data_lifecycle_coverage.js): classification is one of DELETE / EXPORT / BOTH / EXEMPT -- DELETE means covered by deleteAccount, EXPORT means covered by exportAccountData, BOTH means both, EXEMPT means neither applies and why. ACCESS CONTROL (P2-ACCESS-1, check_data_access_policy.js): `clientAccess` is an array of {path, access, conditionalRefs?} entries -- `path` is the full firestore.rules-shaped path (one entry even when there is exactly one path, for one shape to maintain), `access` gives each of read/create/update/delete exactly one of NONE / OWNER / AUTHENTICATED / PUBLIC / CONDITIONAL, and `conditionalRefs` names the emulator test proving each CONDITIONAL cell (required, and only valid, there). See scripts/ci/DATA_ACCESS_POLICY_DESIGN.md for the full design and scripts/ci/lib/rules_parser.js for how PLAIN_OWNER/NON_TRIVIAL is decided from firestore.rules itself. Every collection discovered by EITHER checker's own discovery (firestore.rules match-blocks UNION literal .collection('name') calls in production source UNION registered path-registry exports, see the access checker for the third source) must have an entry here, both axes required. `users` itself is intentionally absent -- it is the root container, not a distinct data class; every subcollection under it is classified individually below.",
   "collections": {
     "_canary": {
       "classification": "EXEMPT",
-      "reason": "Not real user data -- the synthetic runtime-monitor identity's own namespace (firestore.rules' isCanaryToken()/_canary block, MVP1.G3 Step 9A, functions/src/canary_probe.ts). Top-level, not nested under users/, so deleteAccount's recursiveDelete never touches it; the probe writes and deletes its own single document within one call, so nothing durable is expected to accumulate there for exportAccountData to miss."
+      "reason": "Not real user data -- the synthetic runtime-monitor identity's own namespace (firestore.rules' isCanaryToken()/_canary block, MVP1.G3 Step 9A, functions/src/canary_probe.ts). Top-level, not nested under users/, so deleteAccount's recursiveDelete never touches it; the probe writes and deletes its own single document within one call, so nothing durable is expected to accumulate there for exportAccountData to miss.",
+      "clientAccess": [
+        {
+          "path": "/_canary/{canaryUid}",
+          "access": {
+            "read": "CONDITIONAL",
+            "create": "CONDITIONAL",
+            "update": "CONDITIONAL",
+            "delete": "CONDITIONAL"
+          },
+          "conditionalRefs": {
+            "read": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell _canary/read: the canary identity can read its own document",
+              "operation": "read"
+            },
+            "create": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell _canary/create: the canary identity can create its own document",
+              "operation": "create"
+            },
+            "update": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell _canary/update: the canary identity can update its own document",
+              "operation": "update"
+            },
+            "delete": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell _canary/delete: the canary identity can delete its own document",
+              "operation": "delete"
+            }
+          }
+        }
+      ]
     },
     "coach_bookings": {
       "classification": "BOTH",
-      "reason": "Top-level, keyed by clientUid/coachUid. Deleted via sweepSharedRecords (functions/src/index.ts ~1989-1991, queried by both uid fields). Exported redacted, both sides merged and de-duplicated (account_export.ts, BOOKING_SELF_FIELDS allow-list)."
+      "reason": "Top-level, keyed by clientUid/coachUid. Deleted via sweepSharedRecords (functions/src/index.ts ~1989-1991, queried by both uid fields). Exported redacted, both sides merged and de-duplicated (account_export.ts, BOOKING_SELF_FIELDS allow-list).",
+      "clientAccess": [
+        {
+          "path": "/coach_bookings/{bookingId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "coach_listings": {
       "classification": "BOTH",
-      "reason": "Top-level, one doc per coach uid. Deleted via recursiveDelete (index.ts ~2155). Exported via account_export.ts's `one(coach_listings/${uid})`. Previously had no firestore.rules entry at all (fixed as part of building this check -- see firestore.rules' own comment on that block)."
+      "reason": "Top-level, one doc per coach uid. Deleted via recursiveDelete (index.ts ~2155). Exported via account_export.ts's `one(coach_listings/${uid})`. Previously had no firestore.rules entry at all (fixed as part of building this check -- see firestore.rules' own comment on that block).",
+      "clientAccess": [
+        {
+          "path": "/coach_listings/{coachUid}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "debug_sessions": {
       "classification": "BOTH",
-      "reason": "Top-level, client-created (DEBUG builds only) with a uid field. Deleted via sweepSharedRecords. Exported via account_export.ts's `owned(\"debug_sessions\", \"uid\", uid, ...)`, capped at MAX_ROWS."
+      "reason": "Top-level, client-created (DEBUG builds only) with a uid field. Deleted via sweepSharedRecords. Exported via account_export.ts's `owned(\"debug_sessions\", \"uid\", uid, ...)`, capped at MAX_ROWS.",
+      "clientAccess": [
+        {
+          "path": "/debug_sessions/{sessionId}",
+          "access": {
+            "read": "NONE",
+            "create": "CONDITIONAL",
+            "update": "NONE",
+            "delete": "NONE"
+          },
+          "conditionalRefs": {
+            "create": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell debug_sessions/create: a correctly-shaped, self-stamped session is accepted",
+              "operation": "create"
+            }
+          }
+        }
+      ]
     },
     "donor_wall": {
       "classification": "BOTH",
-      "reason": "Top-level, one doc per donor uid. Deleted on opt-out and on account deletion (index.ts ~2154). Exported via account_export.ts's `one(donor_wall/${uid})`."
+      "reason": "Top-level, one doc per donor uid. Deleted on opt-out and on account deletion (index.ts ~2154). Exported via account_export.ts's `one(donor_wall/${uid})`.",
+      "clientAccess": [
+        {
+          "path": "/donor_wall/{donorId}",
+          "access": {
+            "read": "PUBLIC",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment": {
       "classification": "EXEMPT",
-      "reason": "Shared, client-read-only equipment catalog (firestore.rules:151-154). Not user-specific -- the same documents serve every user. Admin-tooling-managed; no per-user data to delete or export."
+      "reason": "Shared, client-read-only equipment catalog (firestore.rules:151-154). Not user-specific -- the same documents serve every user. Admin-tooling-managed; no per-user data to delete or export.",
+      "clientAccess": [
+        {
+          "path": "/equipment/{anyId}",
+          "access": {
+            "read": "AUTHENTICATED",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_assets": {
       "classification": "EXEMPT",
-      "reason": "P1 equipment-identity shared catalog (media/asset records), server/admin-only. Not user-specific."
+      "reason": "P1 equipment-identity shared catalog (media/asset records), server/admin-only. Not user-specific.",
+      "clientAccess": [
+        {
+          "path": "/equipment_assets/{docId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_brands": {
       "classification": "EXEMPT",
-      "reason": "P1 equipment-identity shared catalog (brand entities), server/admin-only. Not user-specific."
+      "reason": "P1 equipment-identity shared catalog (brand entities), server/admin-only. Not user-specific.",
+      "clientAccess": [
+        {
+          "path": "/equipment_brands/{docId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_catalog_active": {
       "classification": "EXEMPT",
-      "reason": "P1 equipment-identity shared catalog pointer doc (currently-active version). Not user-specific."
+      "reason": "P1 equipment-identity shared catalog pointer doc (currently-active version). Not user-specific.",
+      "clientAccess": [
+        {
+          "path": "/equipment_catalog_active/{docId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_catalog_publish_jobs": {
       "classification": "EXEMPT",
-      "reason": "P1 equipment-identity shared catalog admin metadata (publish-job tracking). Not user-specific."
+      "reason": "P1 equipment-identity shared catalog admin metadata (publish-job tracking). Not user-specific.",
+      "clientAccess": [
+        {
+          "path": "/equipment_catalog_publish_jobs/{jobId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_catalog_versions": {
       "classification": "EXEMPT",
-      "reason": "P1 equipment-identity shared catalog version manifests. Not user-specific."
+      "reason": "P1 equipment-identity shared catalog version manifests. Not user-specific.",
+      "clientAccess": [
+        {
+          "path": "/equipment_catalog_versions/{catalogVersion}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_external_mappings": {
       "classification": "EXEMPT",
-      "reason": "P1 equipment-identity shared catalog (external source-id mappings). Not user-specific."
+      "reason": "P1 equipment-identity shared catalog (external source-id mappings). Not user-specific.",
+      "clientAccess": [
+        {
+          "path": "/equipment_external_mappings/{docId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_identity_sessions": {
       "classification": "DELETE",
-      "reason": "Subcollection under users/{uid} -- automatically covered by deleteAccount's recursiveDelete cascade. Reserved in firestore.rules ahead of the runtime that writes it (P2.G3); functions-equipment-identity/src has no live Admin SDK writer yet, so there is no data today requiring export. Reclassify to BOTH once a real writer exists and the collection is confirmed to hold exportable user content."
+      "reason": "Subcollection under users/{uid} -- automatically covered by deleteAccount's recursiveDelete cascade. Reserved in firestore.rules ahead of the runtime that writes it (P2.G3); functions-equipment-identity/src has no live Admin SDK writer yet, so there is no data today requiring export. Reclassify to BOTH once a real writer exists and the collection is confirmed to hold exportable user content.",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/equipment_identity_sessions/{sessionId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_identity_telemetry": {
       "classification": "DELETE",
-      "reason": "Same status as equipment_identity_sessions: DELETE-covered by the recursiveDelete cascade, not yet wired to a live writer. Telemetry data (latency/outcome counts) is also unlikely to warrant user-facing export even once live -- revisit when P6's shadow-evaluation runtime lands."
+      "reason": "Same status as equipment_identity_sessions: DELETE-covered by the recursiveDelete cascade, not yet wired to a live writer. Telemetry data (latency/outcome counts) is also unlikely to warrant user-facing export even once live -- revisit when P6's shadow-evaluation runtime lands.",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/equipment_identity_telemetry/{docId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_model_setup_specs": {
       "classification": "EXEMPT",
-      "reason": "P1 equipment-identity shared catalog (per-model setup specs), server/admin-only. Not user-specific."
+      "reason": "P1 equipment-identity shared catalog (per-model setup specs), server/admin-only. Not user-specific.",
+      "clientAccess": [
+        {
+          "path": "/equipment_model_setup_specs/{docId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_models": {
       "classification": "EXEMPT",
-      "reason": "P1 equipment-identity shared catalog (model entities), server/admin-only. Not user-specific."
+      "reason": "P1 equipment-identity shared catalog (model entities), server/admin-only. Not user-specific.",
+      "clientAccess": [
+        {
+          "path": "/equipment_models/{docId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_product_lines": {
       "classification": "EXEMPT",
-      "reason": "P1 equipment-identity shared catalog (product-line entities), server/admin-only. Not user-specific."
+      "reason": "P1 equipment-identity shared catalog (product-line entities), server/admin-only. Not user-specific.",
+      "clientAccess": [
+        {
+          "path": "/equipment_product_lines/{docId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_reports": {
       "classification": "BOTH",
-      "reason": "Top-level, written via reportEquipment with a reporterUid field. Deleted via sweepSharedRecords. Exported via account_export.ts's `owned(\"equipment_reports\", \"reporterUid\", uid, ...)`, capped at MAX_ROWS."
+      "reason": "Top-level, written via reportEquipment with a reporterUid field. Deleted via sweepSharedRecords. Exported via account_export.ts's `owned(\"equipment_reports\", \"reporterUid\", uid, ...)`, capped at MAX_ROWS.",
+      "clientAccess": [
+        {
+          "path": "/equipment_reports/{anyId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "equipment_setup_notes": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid}. DELETE-covered by recursiveDelete cascade. EXPORT was missing entirely until this gate -- found by building this checker, fixed in the same commit (account_export.ts now reads it via sub(uid, \"equipment_setup_notes\", truncated))."
+      "reason": "Subcollection under users/{uid}. DELETE-covered by recursiveDelete cascade. EXPORT was missing entirely until this gate -- found by building this checker, fixed in the same commit (account_export.ts now reads it via sub(uid, \"equipment_setup_notes\", truncated)).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/equipment_setup_notes/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "OWNER",
+            "update": "OWNER",
+            "delete": "OWNER"
+          }
+        }
+      ]
     },
     "equipment_sources": {
       "classification": "EXEMPT",
-      "reason": "P1 equipment-identity shared catalog (ingestion-source metadata), server/admin-only. Not user-specific."
+      "reason": "P1 equipment-identity shared catalog (ingestion-source metadata), server/admin-only. Not user-specific.",
+      "clientAccess": [
+        {
+          "path": "/equipment_sources/{sourceId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "exercises": {
       "classification": "EXEMPT",
-      "reason": "Shared, client-read-only exercise catalog (firestore.rules:155-158). Not user-specific, admin-tooling-managed."
+      "reason": "Shared, client-read-only exercise catalog (firestore.rules:155-158). Not user-specific, admin-tooling-managed.",
+      "clientAccess": [
+        {
+          "path": "/exercises/{anyId}",
+          "access": {
+            "read": "AUTHENTICATED",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "generated_exercises": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid} (cached AI-generated exercise lists). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"generated_exercises\", truncated)."
+      "reason": "Subcollection under users/{uid} (cached AI-generated exercise lists). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"generated_exercises\", truncated).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/generated_exercises/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "OWNER",
+            "update": "OWNER",
+            "delete": "OWNER"
+          }
+        }
+      ]
     },
     "gyms": {
       "classification": "EXEMPT",
-      "reason": "Shared gym registry for QR-scan resolution (firestore.rules:163-166). Not user-specific, admin-tooling-managed."
+      "reason": "Shared gym registry for QR-scan resolution (firestore.rules:163-166). Not user-specific, admin-tooling-managed.",
+      "clientAccess": [
+        {
+          "path": "/gyms/{gymId}",
+          "access": {
+            "read": "AUTHENTICATED",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "machine_cards": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid} (per-machine cards from repeated scans). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"machine_cards\", truncated)."
+      "reason": "Subcollection under users/{uid} (per-machine cards from repeated scans). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"machine_cards\", truncated).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/machine_cards/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "OWNER",
+            "update": "OWNER",
+            "delete": "OWNER"
+          }
+        }
+      ]
     },
     "profile": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid}/profile/main (onboarding/health questionnaire, health fields server-stripped). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's one(users/${uid}/profile/main)."
+      "reason": "Subcollection under users/{uid}/profile/main (onboarding/health questionnaire, health fields server-stripped). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's one(users/${uid}/profile/main).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/profile/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "CONDITIONAL",
+            "update": "CONDITIONAL",
+            "delete": "NONE"
+          },
+          "conditionalRefs": {
+            "create": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell profile/create: a stripped health block is accepted, a real one is refused",
+              "operation": "create"
+            },
+            "update": {
+              "testFile": "functions/src/__rules__/data_access_policy.test.ts",
+              "testName": "CONDITIONAL cell profile/update: a stripped-health patch is accepted, a real one is refused",
+              "operation": "update"
+            }
+          }
+        }
+      ]
     },
     "programmes": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid} (saved/generated training programmes). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"programmes\", truncated)."
+      "reason": "Subcollection under users/{uid} (saved/generated training programmes). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"programmes\", truncated).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/programmes/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "OWNER",
+            "update": "OWNER",
+            "delete": "OWNER"
+          }
+        }
+      ]
     },
     "receipts": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid}/receipts/{year} (server-generated annual billing receipts -- index.ts's own comment calls this 'the one document a user might hand to a tax authority'). DELETE-covered by recursiveDelete cascade. EXPORT was missing entirely until this gate -- found by building this checker, fixed in the same commit."
+      "reason": "Subcollection under users/{uid}/receipts/{year} (server-generated annual billing receipts -- index.ts's own comment calls this 'the one document a user might hand to a tax authority'). DELETE-covered by recursiveDelete cascade. EXPORT was missing entirely until this gate -- found by building this checker, fixed in the same commit.",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/receipts/{year}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "recognised_equipment": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid} (AI-recognition history, one doc per equipment id). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"recognised_equipment\", truncated)."
+      "reason": "Subcollection under users/{uid} (AI-recognition history, one doc per equipment id). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"recognised_equipment\", truncated).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/recognised_equipment/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "OWNER",
+            "update": "OWNER",
+            "delete": "OWNER"
+          }
+        }
+      ]
     },
     "recognised_models": {
       "classification": "DELETE",
-      "reason": "Subcollection under users/{uid}, server-written only (P1.G1 exact-model recognitions). DELETE-covered by recursiveDelete cascade. Not yet wired to a live Admin SDK writer in functions-equipment-identity/src -- no data today requiring export. Reclassify to BOTH once a real writer exists."
+      "reason": "Subcollection under users/{uid}, server-written only (P1.G1 exact-model recognitions). DELETE-covered by recursiveDelete cascade. Not yet wired to a live Admin SDK writer in functions-equipment-identity/src -- no data today requiring export. Reclassify to BOTH once a real writer exists.",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/recognised_models/{modelId}",
+          "access": {
+            "read": "OWNER",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "scheduled_sessions": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid} (planned future workout sessions). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"scheduled_sessions\", truncated)."
+      "reason": "Subcollection under users/{uid} (planned future workout sessions). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"scheduled_sessions\", truncated).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/scheduled_sessions/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "OWNER",
+            "update": "OWNER",
+            "delete": "OWNER"
+          }
+        }
+      ]
     },
     "stats": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid}/stats/workouts (all-time workout totals). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's one(users/${uid}/stats/workouts)."
+      "reason": "Subcollection under users/{uid}/stats/workouts (all-time workout totals). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's one(users/${uid}/stats/workouts).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/stats/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "OWNER",
+            "update": "OWNER",
+            "delete": "OWNER"
+          }
+        }
+      ]
     },
     "subscription": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid}/subscription/main (Stripe-authored subscription state). DELETE-covered by recursiveDelete cascade -- the Stripe subscription itself is separately cancelled by deleteAccount's listAllSubscriptions step before the Firestore sweep. Exported via account_export.ts's one(users/${uid}/subscription/main)."
+      "reason": "Subcollection under users/{uid}/subscription/main (Stripe-authored subscription state). DELETE-covered by recursiveDelete cascade -- the Stripe subscription itself is separately cancelled by deleteAccount's listAllSubscriptions step before the Firestore sweep. Exported via account_export.ts's one(users/${uid}/subscription/main).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/subscription/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "usage": {
       "classification": "DELETE",
-      "reason": "Subcollection under users/{uid}/usage/{day} -- server-side daily rate-limit/quota counters (abuse_guard.ts's enforceDailyQuota). DELETE-covered by recursiveDelete cascade. Deliberately EXEMPT from export: purely operational metadata regenerated daily, no user-recognisable content, closed to client reads for the same reason (firestore.rules:63-65's own comment)."
+      "reason": "Subcollection under users/{uid}/usage/{day} -- server-side daily rate-limit/quota counters (abuse_guard.ts's enforceDailyQuota). DELETE-covered by recursiveDelete cascade. Deliberately EXEMPT from export: purely operational metadata regenerated daily, no user-recognisable content, closed to client reads for the same reason (firestore.rules:63-65's own comment).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/usage/{day}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     },
     "workout_logs": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid} (individual logged workout entries). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"workout_logs\", truncated)."
+      "reason": "Subcollection under users/{uid} (individual logged workout entries). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"workout_logs\", truncated).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/workout_logs/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "OWNER",
+            "update": "OWNER",
+            "delete": "OWNER"
+          }
+        }
+      ]
     },
     "workout_sessions": {
       "classification": "BOTH",
-      "reason": "Subcollection under users/{uid} (in-progress/completed workout session records). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"workout_sessions\", truncated)."
+      "reason": "Subcollection under users/{uid} (in-progress/completed workout session records). DELETE-covered by recursiveDelete cascade. Exported via account_export.ts's sub(uid, \"workout_sessions\", truncated).",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/workout_sessions/{docId}",
+          "access": {
+            "read": "OWNER",
+            "create": "OWNER",
+            "update": "OWNER",
+            "delete": "OWNER"
+          }
+        }
+      ]
+    },
+    "equipment_model_text_keys": {
+      "classification": "EXEMPT",
+      "reason": "P2-owned derived lookup-key index (functions-equipment-identity/src/p2/text_key_index.ts, firestore_paths.ts's P2CollectionPaths.textKeys). Server/admin-only, same posture as the P1 equipment-identity shared catalog collections above -- not user-specific.",
+      "clientAccess": [
+        {
+          "path": "/equipment_model_text_keys/{docId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
+    },
+    "equipment_identity_latest_session": {
+      "classification": "DELETE",
+      "reason": "Subcollection under users/{uid} (P2.G3: per-user pointer to the most recently pinned recognitionSessionId, firestore_paths.ts's userEquipmentIdentityLatestSessionDocPath). DELETE-covered by recursiveDelete cascade. Same status as equipment_identity_sessions/equipment_identity_telemetry: not yet exported, server-internal-only, reclassify to BOTH if a real export need is ever identified.",
+      "clientAccess": [
+        {
+          "path": "/users/{uid}/equipment_identity_latest_session/{docId}",
+          "access": {
+            "read": "NONE",
+            "create": "NONE",
+            "update": "NONE",
+            "delete": "NONE"
+          }
+        }
+      ]
     }
   }
 }
