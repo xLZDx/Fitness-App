@@ -54152,3 +54152,45 @@ automatic-accept for anything that remains:
 two named findings plus direct regressions from fixing them -- no fresh whole-mechanism sweep, no
 unrelated architecture work), then one final round-4 verification send, then applying the terminal
 rule above to decide the gate's actual closing status.
+
+## 2026-09-16 -- Row 24 gate: terminal round-4 remediation complete, both findings closed exactly
+per GPT-PM's own specified fix, independently re-verified; sending final round-4 verification
+
+Both findings fixed exactly as GPT-PM specified, scoped tightly (no fresh sweep, no unrelated work):
+
+1. **[BLOCKER] `wholeSdkCallExpression()`** (new, `check_data_access_policy.js:1087-1103`) --
+   replaces the recursive "search anywhere in the argument" approach with GPT-PM's own specified
+   rule: the trimmed `assertSucceeds`/`assertFails` argument must itself START with a supported SDK
+   call name, and after balancing that call's parens, only an optional trailing comma/whitespace may
+   remain (i.e. the argument IS that one call, not a call buried inside `Promise.all([...])` or
+   similar). Read directly -- correct and closes the multi-call, unrelated-failure-attribution, and
+   string-literal-decoy cases together in one mechanism, exactly as GPT-PM predicted. All 7 real
+   hand-written conditionalRefs tests in `data_access_policy.test.ts` were checked FIRST and already
+   have this exact direct shape -- none needed adjustment, confirmed by the checker exiting 0 against
+   the real, unmodified repo. New classes `(x)` (`Promise.all([...])`-wrapped assertFails for
+   profile/update, now correctly RED) and `(y)` (an SDK-call-shaped decoy substring inside an actual
+   string literal, never mistaken for evidence).
+2. **[MAJOR] `hasLocalShadowDeclaration()`** extended with object/array destructuring regexes
+   alongside the existing plain-declaration and parameter checks, per GPT-PM's own "extend the
+   conservative detector, not a full scope engine" guidance. New class `(z)` (a destructured local
+   `const { P2CollectionPaths } = runtimePaths` shadow, now correctly RED) and `(z-positive)`
+   (destructuring an unrelated name near a legitimate import does not false-positive).
+
+Design doc updated with an explicit, honest architectural note (per the round-4 brief's own
+requirement): this gate's TypeScript-reading parts are regex/lexical-text scanning, not full AST
+parsing -- a deliberate scope choice for this gate, with a real AST-based rewrite tracked as
+GPT-PM's own Option C, a separate future gate, not attempted here.
+
+**Independently re-verified by me:** `node scripts/ci/check_data_access_policy.js` -> 37/37
+declared, exit 0. `node scripts/ci/test_check_data_access_policy.js` -> all 30 mutation classes
+(26 prior + `x`,`y`,`z`,`z-positive`) RED-then-GREEN. Emulator suite -> 269/269. `npm test` ->
+601/601. `npx tsc --noEmit` -> clean. Read `wholeSdkCallExpression()` directly -- sound, precisely
+implements GPT-PM's specified structural rule.
+
+**Next**: send the final, terminal round-4 verification to GPT-PM. Per GPT-PM's own stated terminal
+rule: if both findings close and anything newly observed is another non-live lexical-analysis
+limitation of the same general class, close the gate with that limitation documented and open Option
+C separately; if either named finding is still actually open or a live regression is found, stop the
+review loop (do not relabel as accepted risk) and move hardening to the separate Option-C gate
+instead. No round 5 either way -- this is genuinely the last GPT-PM exchange for this gate's
+implementation review.
